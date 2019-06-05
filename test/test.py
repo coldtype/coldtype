@@ -4,9 +4,8 @@ dirname = os.path.dirname(__file__)
 sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
 from coldtype import StyledString, flipped_svg_pen
-from fontTools.pens.svgPathPen import SVGPathPen
-from fontTools.pens.recordingPen import replayRecording
 from furniture.geometry import Rect
+from random import randint
 
 def save_svg_artifact(filename, recording, dimensions):
     svg_pen = flipped_svg_pen(recording, dimensions[1])
@@ -24,11 +23,12 @@ f = "~/Library/Fonts/HobeauxRegular.otf"
 f = "~/Library/Fonts/FormaDJRTextItalic.otf"
 
 dimensions = (1000, 1000)
-ss = StyledString("Sello Furled",
+ss = StyledString(f"Sello {randint(0, 9)} Furled",
     fontFile="~/Type/fonts/fonts/ObviouslyVariable.ttf",
     fontSize=300,
     tracking=0,
     features=dict(ss01=True),
     variations=(dict(wght=1, slnt=1, wdth=1, scale=True)))
+    
 ss.place(Rect((0, 0, *dimensions)))
 save_svg_artifact("obviously.svg", ss.asRecording(), dimensions)

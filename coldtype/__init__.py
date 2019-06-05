@@ -218,7 +218,8 @@ class StyledString():
             variationLimits=dict(),
             increments=dict(),
             features=dict(),
-            align="C"):
+            align="C",
+            rect=None):
         self.text = text
         self.fontFile = os.path.expanduser(fontFile)
         self.ttfont = TTFont(self.fontFile)
@@ -239,6 +240,7 @@ class StyledString():
         self.increments = increments
         self.space = space
         self.align = align
+        self.rect = rect
         self.axes = OrderedDict()
         self.variations = dict()
         self.variationLimits = dict()
@@ -258,6 +260,9 @@ class StyledString():
             self.ch = os2.sCapHeight
         else:
             self.ch = 1000 # alternative?
+        
+        if rect:
+            self.place(self.rect)
     
     def addVariations(self, variations, limits=dict()):
         for k, v in self.normalizeVariations(variations).items():
