@@ -17,8 +17,9 @@ import unicodedata
 
 try:
     from booleanOperations.booleanGlyph import BooleanGlyph
+    import drawBot as db
 except:
-    pass
+    db = None
 
 
 class HarfbuzzFrame():
@@ -417,9 +418,13 @@ class StyledString():
         self.cutter = CurveCutter(path)
     
     def formattedString(self):
-        feas = dict(self.features)
-        del feas["kern"]
-        return FormattedString(self.text, font=self.fontFile, fontSize=self.fontSize, lineHeight=self.fontSize+2, tracking=self.tracking, fontVariations=self.variations, openTypeFeatures=feas)
+        if db:
+            feas = dict(self.features)
+            del feas["kern"]
+            return db.FormattedString(self.text, font=self.fontFile, fontSize=self.fontSize, lineHeight=self.fontSize+2, tracking=self.tracking, fontVariations=self.variations, openTypeFeatures=feas)
+        else:
+            print("No DrawBot available")
+            return None
     
     def drawToPen(self, out_pen, useTTFont=False):
         fr = FreetypeReader(self.fontFile, ttfont=self.ttfont)
@@ -501,14 +506,13 @@ class StyledString():
         return bg
     
     def drawBotDraw(self, removeOverlap=False):
-        try:
-            import drawBot as db
+        if db:
             g = self.asGlyph(removeOverlap=removeOverlap)
             bp = db.BezierPath()
             g.draw(bp)
             db.drawPath(bp)
-        except ImportError:
-            print("Could not import DrawBot")
+        else:
+            print("No DrawBot available")
 
 
 def flipped_svg_pen(recording, height):

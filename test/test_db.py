@@ -1,14 +1,4 @@
-import os
-import sys
-
-import importlib
-dirname = os.path.dirname(__file__)
-sys.path.insert(0, os.path.realpath(dirname + "/.."))
-
-import coldtype
-importlib.reload(coldtype)
-
-from furniture.geometry import Rect
+from db_preamble import *
 from random import randint
 
 nostra = "~/Library/Fonts/Nostrav0.9-Stream.otf"
