@@ -6,6 +6,7 @@ import freetype
 from freetype.raw import *
 from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
+from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
@@ -503,3 +504,12 @@ class StyledString():
             db.drawPath(bp)
         except ImportError:
             print("Could not import DrawBot")
+
+
+def flipped_svg_pen(recording, height):
+    svg_pen = SVGPathPen(None)
+    flipped = []
+    for t, pts in recording.value:
+        flipped.append((t, [(x, height-y) for x, y in pts]))
+    replayRecording(flipped, svg_pen)
+    return svg_pen
