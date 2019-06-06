@@ -1,0 +1,4 @@
+fonttools==3.42.0
+freetype-py==2.1.0.post2.dev2+ge8335bb
+furniture==0.2.3
+uharfbuzz==0.5.0

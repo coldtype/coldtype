@@ -519,6 +519,6 @@ def flipped_svg_pen(recording, height):
     svg_pen = SVGPathPen(None)
     flipped = []
     for t, pts in recording.value:
-        flipped.append((t, [(x, height-y) for x, y in pts]))
+        flipped.append((t, [(round(x, 1), round(height-y, 1)) for x, y in pts]))
     replayRecording(flipped, svg_pen)
     return svg_pen
