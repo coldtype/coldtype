@@ -517,8 +517,10 @@ class StyledString():
 
 def flipped_svg_pen(recording, height):
     svg_pen = SVGPathPen(None)
-    flipped = []
-    for t, pts in recording.value:
-        flipped.append((t, [(round(x, 1), round(height-y, 1)) for x, y in pts]))
-    replayRecording(flipped, svg_pen)
+    flip_pen = TransformPen(svg_pen, (1, 0, 0, -1, 0, height))
+    #flipped = []
+    #for t, pts in recording.value:
+    #    flipped.append((t, [(round(x, 1), round(height-y, 1)) for x, y in pts]))
+    #replayRecording(flipped, flip_pen)
+    replayRecording(recording.value, flip_pen)
     return svg_pen
