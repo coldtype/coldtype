@@ -1,9 +1,6 @@
-import os
-import sys
-import importlib
-dirname = os.path.dirname(__file__)
-sys.path.insert(0, os.path.realpath(dirname + "/.."))
+from test_preamble import *
 
+import importlib
 import coldtype
 importlib.reload(coldtype)
 

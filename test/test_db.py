@@ -12,9 +12,6 @@ except:
     from drawBot import *
     in_db = False
 
-fill(0)
-rect(*Rect.page())
-
 ss0 = coldtype.StyledString("Freetype".upper(), fontFile=bild, fontSize=400, rect=Rect.page().offset(0, 90).inset(-20, 0))
 
 ss1 = coldtype.StyledString("Harfbuzz Shaping",
@@ -27,18 +24,19 @@ ss1 = coldtype.StyledString("Harfbuzz Shaping",
 
 ss2 = coldtype.StyledString("&", fontFile=nostra, fontSize=500, rect=Rect.page())
 
+fill(0)
+rect(*Rect.page())
 fill(1, 1, 0)
 ss2.drawBotDraw()
-stroke(1)
-strokeWidth(2)
-fill(None)
+fill(1, 0, 0.5)
 ss0.drawBotDraw(removeOverlap=True)
 #drawBezierSkeleton(ss0.asGlyph(), randomize=True)
-stroke(None)
 fill(0, 0.5, 1)
 ss1.drawBotDraw()
 fill(1, 0, 0.5)
+fill(0)
 translate(4, 4)
 ss2.drawBotDraw()
 
-saveImage("~/Desktop/coldtype.pdf")
+save_artifact("coldtype.pdf")
+#saveImage("artifacts/coldtype.pdf")

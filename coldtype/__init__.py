@@ -1,9 +1,12 @@
-name = "coldtype"
-
 import math
 import os
 
+name = "coldtype"
+dirname = os.path.dirname(__file__)
+
 from collections import OrderedDict
+import freetype
+from freetype.raw import *
 from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.svgPathPen import SVGPathPen
@@ -13,11 +16,13 @@ from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
 from fontTools.ttLib import TTFont
 from furniture.geometry import Rect
 import unicodedata
+import uharfbuzz as hb
 
-from .harfbuzz import Harfbuzz, HarfbuzzFrame
-from .freetype import FreetypeReader
-from .beziers import CurveCutter
+if __name__ == "__main__":
+    import sys
+    sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
+from coldtype.beziers import CurveCutter
 
 try:
     from booleanOperations.booleanGlyph import BooleanGlyph
@@ -26,9 +31,133 @@ except:
     _drawBot = None
 
 
+class HarfbuzzFrame():
+    def __init__(self, info, position, frame):
+        self.gid = info.codepoint
+        self.info = info
+        self.position = position
+        self.frame = frame
+
+    def __repr__(self):
+        return f"HarfbuzzFrame: gid{self.gid}@{self.frame}"
+
+
+class Harfbuzz():
+    def __init__(self, font_path):
+        with open(font_path, 'rb') as fontfile:
+            self.fontdata = fontfile.read()
+        self.fontPath = font_path
+        
+        #self.font = hb.Font(self.face)
+        #self.upem = int(self.face.upem)
+        face = hb.Face(self.fontdata)
+        self.upem = int(face.upem)
+        #self.upem = self.face.upem
+        #self.font.scale = (self.upem, self.upem)
+        #hb.ot_font_set_funcs(self.font)
+
+    def getFrames(self, text="", axes=dict(), features=dict(kern=True, liga=True), height=1000):
+        face = hb.Face(self.fontdata)
+        font = hb.Font(face)
+        font.scale = (face.upem, face.upem)
+        hb.ot_font_set_funcs(font)
+        buf = hb.Buffer()
+        buf.add_str(text)
+        buf.guess_segment_properties()
+        
+        if len(axes.items()) > 0:
+            font.set_variations(axes)
+        
+        hb.shape(font, buf, features)
+        infos = buf.glyph_infos
+        positions = buf.glyph_positions
+        frames = []
+        x = 0
+        for info, pos in zip(infos, positions):
+            gid = info.codepoint
+            cluster = info.cluster
+            x_advance = pos.x_advance
+            x_offset = pos.x_offset
+            y_offset = pos.y_offset
+            frames.append(HarfbuzzFrame(info, pos, Rect((x+x_offset, y_offset, x_advance, height)))) # 100?
+            x += x_advance
+        return frames
+
+
+class FreetypeReader():
+    def __init__(self, font_path, ttfont):
+        self.fontPath = font_path
+        self.font = freetype.Face(font_path)
+        #self.font.set_char_size(1000)
+        #self.scale = scale
+        self.ttfont = ttfont
+        try:
+            self.axesOrder = [a.axisTag for a in self.ttfont['fvar'].axes]
+        except:
+            self.axesOrder = []
+    
+    def setVariations(self, axes=dict()):
+        if len(self.axesOrder) > 0:
+            coords = []
+            for name in self.axesOrder:
+                coord = FT_Fixed(int(axes[name]) << 16)
+                coords.append(coord)
+            ft_coords = (FT_Fixed * len(coords))(*coords)
+            freetype.FT_Set_Var_Design_Coordinates(self.font._FT_Face, len(ft_coords), ft_coords)
+    
+    def setGlyph(self, glyph_id):
+        self.glyph_id = glyph_id
+        # FT_LOAD_NO_SCALE
+        flags = freetype.FT_LOAD_DEFAULT | freetype.FT_LOAD_NO_SCALE #| freetype.FT_LOAD_NO_HINTING | freetype.FT_LOAD_NO_BITMAP
+        if isinstance(glyph_id, int):
+            self.font.load_glyph(glyph_id, flags)
+        else:
+            self.font.load_char(glyph_id, flags)
+
+    def drawOutlineToPen(self, pen, raiseCubics=True):
+        outline = self.font.glyph.outline
+        rp = RecordingPen()
+        self.font.glyph.outline.decompose(rp, move_to=FreetypeReader.moveTo, line_to=FreetypeReader.lineTo, conic_to=FreetypeReader.conicTo, cubic_to=FreetypeReader.cubicTo)
+        if len(rp.value) > 0:
+            rp.closePath()
+        replayRecording(rp.value, pen)
+        return
+    
+    def drawTTOutlineToPen(self, pen):
+        glyph_name = self.ttfont.getGlyphName(self.glyph_id)
+        g = self.ttfont.getGlyphSet()[glyph_name]
+        try:
+            g.draw(pen)
+        except TypeError:
+            print("could not draw TT outline")
+            
+    def moveTo(a, pen):
+        if len(pen.value) > 0:
+            pen.closePath()
+        pen.moveTo((a.x, a.y))
+
+    def lineTo(a, pen):
+        pen.lineTo((a.x, a.y))
+
+    def conicTo(a, b, pen):
+        if False:
+            pen.qCurveTo((a.x, a.y), (b.x, b.y))
+        else:
+            c0 = pen.value[-1][-1][-1]
+            c1 = (c0[0] + (2/3)*(a.x - c0[0]), c0[1] + (2/3)*(a.y - c0[1]))
+            c2 = (b.x + (2/3)*(a.x - b.x), b.y + (2/3)*(a.y - b.y))
+            c3 = (b.x, b.y)
+            pen.curveTo(c1, c2, c3)
+            #pen.lineTo(c3)
+
+    def cubicTo(a, b, c, pen):
+        pen.curveTo((a.x, a.y), (b.x, b.y), (c.x, c.y))
+
+
 class StyledString():
     def __init__(self,
             text="",
+            font=None,
             fontFile=None,
             fontSize=12,
             tracking=0,
@@ -42,7 +171,7 @@ class StyledString():
             rect=None,
             drawBot=_drawBot):
         self.text = text
-        self.fontFile = os.path.expanduser(fontFile)
+        self.fontFile = os.path.expanduser(font or fontFile)
         self.ttfont = TTFont(self.fontFile)
         self.harfbuzz = Harfbuzz(self.fontFile)
         self.upem = self.harfbuzz.upem
@@ -227,9 +356,12 @@ class StyledString():
             print("DOES NOT FIT", self.tries, self.text)
     
     def place(self, rect):
-        self.rect = rect
-        self.fit(rect.w)
-        x = rect.w/2 - self.width()/2
+        if isinstance(rect, Rect):
+            self.rect = rect
+        else:
+            self.rect = Rect(rect)
+        self.fit(self.rect.w)
+        x = self.rect.w/2 - self.width()/2
         self.offset = (0, 0)
         #self.offset = rect.offset(0, rect.h/2 - ch/2).xy()
     
@@ -335,12 +467,12 @@ class StyledString():
             print("No DrawBot available")
 
 
-def flipped_svg_pen(recording, height):
-    svg_pen = SVGPathPen(None)
-    flip_pen = TransformPen(svg_pen, (1, 0, 0, -1, 0, height))
-    #flipped = []
-    #for t, pts in recording.value:
-    #    flipped.append((t, [(round(x, 1), round(height-y, 1)) for x, y in pts]))
-    #replayRecording(flipped, flip_pen)
-    replayRecording(recording.value, flip_pen)
-    return svg_pen
+if __name__ == "__main__":
+    from coldtype.utils import flipped_svg_pen, pen_to_svg, pen_to_html
+    from random import randint
+    
+    txt = "hello {:04d} world".format(randint(0, 1000))
+    ss = StyledString(txt, font="~/Library/Fonts/Beastly-12Point.otf", fontSize=72)
+    ss.place((0, 0, 1000, 1000))
+    with open(dirname + "/../test/artifacts/main.html", "w") as f:
+        f.write(pen_to_html(ss.asRecording(), (1000, 1000)))

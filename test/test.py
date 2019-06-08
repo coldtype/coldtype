@@ -1,9 +1,7 @@
-import os
-import sys
-dirname = os.path.dirname(__file__)
-sys.path.insert(0, os.path.realpath(dirname + "/.."))
+from test_preamble import *
 
-from coldtype import StyledString, flipped_svg_pen
+from coldtype import StyledString
+from coldtype.utils import pen_to_svg
 from furniture.geometry import Rect
 from random import randint
 
@@ -28,12 +26,12 @@ f = "~/Library/Fonts/HobeauxRegular.otf"
 f = "~/Library/Fonts/FormaDJRTextItalic.otf"
 
 dimensions = (1000, 1000)
-ss = StyledString(f"Hello {randint(0, 9)} Wereld",
+ss = StyledString(f"Hallo {randint(0, 9)} Welt",
     fontFile="~/Type/fonts/fonts/ObviouslyVariable.ttf",
     fontSize=300,
     tracking=0,
-    features=dict(ss01=True),
+    features=dict(ss01=True, ss05=True, ss06=True),
     variations=(dict(wght=1, slnt=1, wdth=1, scale=True)))
     
 ss.place(Rect((0, 0, *dimensions)))
-save_svg_artifact("obviously.svg", ss.asRecording(), dimensions)
+save_artifact("obviously.svg", pen_to_svg(ss.asRecording(), dimensions))
