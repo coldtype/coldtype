@@ -1,1 +1,2 @@
 - Vary an axis across a word with a lambda that gets an arg of info about the position?
+- Optionally distinct glyphs/paths for each harfbuzz frame

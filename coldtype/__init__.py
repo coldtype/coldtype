@@ -352,15 +352,17 @@ class StyledString():
         else:
             return
         
-        if current_width > width:
-            print("DOES NOT FIT", self.tries, self.text)
+        print("Fitting", self.text, self.tries, "fits:", current_width <= width)
+        #if current_width > width:
+        #    print("DOES NOT FIT", self.tries, self.text)
     
-    def place(self, rect):
+    def place(self, rect, fit=True):
         if isinstance(rect, Rect):
             self.rect = rect
         else:
             self.rect = Rect(rect)
-        self.fit(self.rect.w)
+        if fit:
+            self.fit(self.rect.w)
         x = self.rect.w/2 - self.width()/2
         self.offset = (0, 0)
         #self.offset = rect.offset(0, rect.h/2 - ch/2).xy()
@@ -402,7 +404,7 @@ class StyledString():
             else:
                 fr.drawOutlineToPen(tp, raiseCubics=True)
             
-    def asRecording(self):
+    def asRecording(self, rounding=None):
         rp = RecordingPen()
         self.drawToPen(rp)
 
@@ -433,21 +435,27 @@ class StyledString():
                 yoff = self.rect.y + self.rect.h - ch
             elif y == "S":
                 yoff = self.rect.y
-            if False:
-                with savedState():
-                    fill(1, 0, 0.5, 0.5)
-                    bp = BezierPath()
-                    bp.rect(mnx, mny, mxx-mnx, mxy-mny)
-                    bp.translate(xoff, yoff)
-                    drawPath(bp)
+            
             diff = self.rect.w - (mxx-mnx)
             rp2 = RecordingPen()
             tp = TransformPen(rp2, (1, 0, 0, 1, xoff, yoff))
             replayRecording(rp.value, tp)
             self._final_offset = (xoff, yoff)
-            return rp2
+            rp = rp2
+            #return rp2
         else:
-            return rp
+            #return rp
+            pass
+        
+        if rounding is not None:
+            rounded = []
+            for t, pts in rp.value:
+                rounded.append(
+                    (t,
+                    [(round(x, rounding), round(y, rounding)) for x, y in pts]))
+            rp.value = rounded
+
+        return rp
 
     def asGlyph(self, removeOverlap=False):
         recording = self.asRecording()
@@ -468,11 +476,15 @@ class StyledString():
 
 
 if __name__ == "__main__":
-    from coldtype.utils import flipped_svg_pen, pen_to_svg, pen_to_html
+    from coldtype.utils import pen_to_html
     from random import randint
     
-    txt = "hello {:04d} world".format(randint(0, 1000))
-    ss = StyledString(txt, font="~/Library/Fonts/Beastly-12Point.otf", fontSize=72)
-    ss.place((0, 0, 1000, 1000))
+    txt = "ABC {:04d}".format(randint(0, 10000))
+    r = Rect((0, 0, 1000, 300))
+    f = "~/Library/Fonts/Beastly-12Point.otf"
+    f = "~/Library/Fonts/ObviouslyVariable.ttf"
+    v = dict(wdth=1, wght=1, slnt=1, scale=True)
+    ss = StyledString(txt, font=f, fontSize=72, variations=v)
+    ss.place(r, fit=False)
     with open(dirname + "/../test/artifacts/main.html", "w") as f:
-        f.write(pen_to_html(ss.asRecording(), (1000, 1000)))
+        f.write(pen_to_html(ss.asRecording(rounding=2), (r.w, r.h)))
