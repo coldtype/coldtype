@@ -10,6 +10,7 @@ importlib.reload(coldtype)
 from furniture.geometry import Rect
 from drawBot import *
 
+
 def normalizeBezier(bp_or_g):
     bp = bp_or_g
     bp = BezierPath()
@@ -27,10 +28,7 @@ def drawBezier(bp_or_g):
 
 
 def drawBezierSkeleton(bp_or_g, r=4, points=True, handles=True, labels=True, randomize=False, f=True, s=True):
-    bp = bp_or_g
-    if not isinstance(bp_or_g, baseContext.BezierPath):
-        bp = BezierPath()
-        bp_or_g.draw(bp)
+    bp = normalizeBezier(bp_or_g)
     with savedState():
         stroke(None)
         if f:
