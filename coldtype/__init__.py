@@ -17,9 +17,9 @@ import unicodedata
 
 try:
     from booleanOperations.booleanGlyph import BooleanGlyph
-    import drawBot as db
+    import drawBot as _drawBot
 except:
-    db = None
+    _drawBot = None
 
 
 class HarfbuzzFrame():
@@ -220,7 +220,8 @@ class StyledString():
             increments=dict(),
             features=dict(),
             align="C",
-            rect=None):
+            rect=None,
+            drawBot=_drawBot):
         self.text = text
         self.fontFile = os.path.expanduser(fontFile)
         self.ttfont = TTFont(self.fontFile)
@@ -230,7 +231,7 @@ class StyledString():
         #    self.upem = self.ttfont["head"].unitsPerEm
         #except:
         #self.upem = 1000
-        
+        self.drawBot = _drawBot
         self.fontSize = fontSize
         self.tracking = tracking
         self.trackingLimit = trackingLimit
@@ -418,10 +419,10 @@ class StyledString():
         self.cutter = CurveCutter(path)
     
     def formattedString(self):
-        if db:
+        if self.drawBot:
             feas = dict(self.features)
             del feas["kern"]
-            return db.FormattedString(self.text, font=self.fontFile, fontSize=self.fontSize, lineHeight=self.fontSize+2, tracking=self.tracking, fontVariations=self.variations, openTypeFeatures=feas)
+            return self.drawBot.FormattedString(self.text, font=self.fontFile, fontSize=self.fontSize, lineHeight=self.fontSize+2, tracking=self.tracking, fontVariations=self.variations, openTypeFeatures=feas)
         else:
             print("No DrawBot available")
             return None
@@ -506,11 +507,11 @@ class StyledString():
         return bg
     
     def drawBotDraw(self, removeOverlap=False):
-        if db:
+        if self.drawBot:
             g = self.asGlyph(removeOverlap=removeOverlap)
-            bp = db.BezierPath()
+            bp = self.drawBot.BezierPath()
             g.draw(bp)
-            db.drawPath(bp)
+            self.drawBot.drawPath(bp)
         else:
             print("No DrawBot available")
 
