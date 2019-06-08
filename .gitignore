@@ -1,3 +1,7 @@
 .vscode
 env
 test/artifacts/*
+build
+dist
+coldtype.egg-info
+__pycache__

@@ -7,6 +7,11 @@ from coldtype import StyledString, flipped_svg_pen
 from furniture.geometry import Rect
 from random import randint
 
+try:
+    os.makedirs(dirname + "/artifacts")
+except FileExistsError:
+    pass
+
 def save_svg_artifact(filename, recording, dimensions):
     svg_pen = flipped_svg_pen(recording, dimensions[1])
     d = svg_pen.getCommands()
@@ -23,7 +28,7 @@ f = "~/Library/Fonts/HobeauxRegular.otf"
 f = "~/Library/Fonts/FormaDJRTextItalic.otf"
 
 dimensions = (1000, 1000)
-ss = StyledString(f"Sello {randint(0, 9)} Furled",
+ss = StyledString(f"Hello {randint(0, 9)} Wereld",
     fontFile="~/Type/fonts/fonts/ObviouslyVariable.ttf",
     fontSize=300,
     tracking=0,
