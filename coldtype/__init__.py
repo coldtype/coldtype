@@ -88,7 +88,7 @@ class FreetypeReader():
     def __init__(self, font_path, ttfont):
         self.fontPath = font_path
         self.font = freetype.Face(font_path)
-        #self.font.set_char_size(1000)
+        self.font.set_char_size(1000)
         #self.scale = scale
         self.ttfont = ttfont
         try:
@@ -107,8 +107,8 @@ class FreetypeReader():
     
     def setGlyph(self, glyph_id):
         self.glyph_id = glyph_id
-        # FT_LOAD_NO_SCALE
-        flags = freetype.FT_LOAD_DEFAULT | freetype.FT_LOAD_NO_SCALE #| freetype.FT_LOAD_NO_HINTING | freetype.FT_LOAD_NO_BITMAP
+        flags = freetype.FT_LOAD_DEFAULT | freetype.FT_LOAD_NO_HINTING | freetype.FT_LOAD_NO_BITMAP
+        flags = freetype.FT_LOAD_DEFAULT | freetype.FT_LOAD_NO_SCALE
         if isinstance(glyph_id, int):
             self.font.load_glyph(glyph_id, flags)
         else:
@@ -480,10 +480,10 @@ if __name__ == "__main__":
     from random import randint
     
     txt = "ABC {:04d}".format(randint(0, 10000))
+    txt = "Hamburger"
     r = Rect((0, 0, 1000, 300))
-    f = "~/Library/Fonts/Beastly-12Point.otf"
-    f = "~/Library/Fonts/ObviouslyVariable.ttf"
-    v = dict(wdth=1, wght=1, slnt=1, scale=True)
+    f, v = ["~/Library/Fonts/Beastly-12Point.otf", dict()]
+    f, v = ["~/Library/Fonts/ObviouslyVariable.ttf", dict(wdth=1, wght=1, slnt=1, scale=True)]
     ss = StyledString(txt, font=f, fontSize=72, variations=v)
     ss.place(r, fit=False)
     with open(dirname + "/../test/artifacts/main.html", "w") as f:
