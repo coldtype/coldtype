@@ -476,15 +476,17 @@ class StyledString():
 
 
 if __name__ == "__main__":
-    from coldtype.utils import pen_to_html
+    from coldtype.utils import pen_to_html, pen_to_svg
+    from coldtype.previewer import update_preview
     from random import randint
     
     txt = "ABC {:04d}".format(randint(0, 10000))
     txt = "Hamburger"
     r = Rect((0, 0, 1000, 300))
     f, v = ["~/Library/Fonts/Beastly-12Point.otf", dict()]
-    f, v = ["~/Library/Fonts/ObviouslyVariable.ttf", dict(wdth=1, wght=1, slnt=1, scale=True)]
+    f, v = ["~/Library/Fonts/ObviouslyVariable.ttf", dict(wdth=.5, wght=1, slnt=1, scale=True)]
     ss = StyledString(txt, font=f, fontSize=72, variations=v)
     ss.place(r, fit=False)
+    #update_preview(pen_to_svg(ss.asRecording(rounding=2), r))
     with open(dirname + "/../test/artifacts/main.html", "w") as f:
-        f.write(pen_to_html(ss.asRecording(rounding=2), (r.w, r.h)))
+        f.write(pen_to_html(ss.asRecording(rounding=2), r))

@@ -14,16 +14,16 @@ def flipped_svg_pen(recording, height):
     return svg_pen
 
 
-def pen_to_svg(recording, dimensions):
-    svg_pen = flipped_svg_pen(recording, dimensions[1])
+def pen_to_svg(recording, rect):
+    svg_pen = flipped_svg_pen(recording, rect.h)
     return f"""
-    <svg width="{dimensions[0]}" height="{dimensions[1]}" xmlns="http://www.w3.org/2000/svg">
+    <svg width="{rect.w}" height="{rect.h}" xmlns="http://www.w3.org/2000/svg">
         <path d="{svg_pen.getCommands()}"/>
     </svg>
     """
 
 
-def pen_to_html(recording, dimensions):
+def pen_to_html(recording, rect):
     return f"""
 <!DOCTYPE html>
 <html lang="en">
@@ -40,7 +40,7 @@ def pen_to_html(recording, dimensions):
 </style>
 </head>
 <body>
-    {pen_to_svg(recording, dimensions)}
+    {pen_to_svg(recording, rect)}
 </body>
 </html>
     """
