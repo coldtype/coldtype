@@ -457,7 +457,10 @@ class StyledString():
         if self.rect and self.align != "SW":
             rp = self.alignedPen(rp)
         
-        xoff, yoff = self._final_offset
+        if hasattr(self, "_final_offset"):
+            xoff, yoff = self._final_offset
+        else:
+            xoff, yoff = 0, 0
         if atomized:
             pens = []
             for f in self._frames:
@@ -508,7 +511,7 @@ if __name__ == "__main__":
         #f, v = ["~/Library/Fonts/Fit-Variable.ttf", dict(wdth=0.5, scale=True)]
         #f, v = ["~/Library/Fonts/CoFo_Peshka_Variable_V0.1.ttf", dict(wdth=0.1, wght=1, scale=True)]
         ss = StyledString(txt, font=f, fontSize=150, variations=v, tracking=-20)
-        ss.place(r, fit=False)
+        #ss.place(r, fit=False)
         pens = ss.asRecording(rounding=2, atomized=True)
         paths = []
         pens.reverse()
@@ -518,4 +521,16 @@ if __name__ == "__main__":
             paths.extend([svg2, svg])
         update_preview(wrap_svg_paths(paths, r))
     
-    graff_test()
+    def multilang_test():
+        r = Rect((0, 0, 1000, 1000))
+        ss1 = StyledString("A", font="~/Library/Fonts/Beastly-12Point.otf", fontSize=350)
+        ss2 = StyledString("B", font="~/Library/Fonts/Beastly-72Point.otf", fontSize=350)
+        # function to combine in a single composition
+        p1 = ss1.asRecording()
+        p2 = ss2.asRecording()
+        s1 = pen_to_svg(p1, r, fill="hotpink")
+        s2 = pen_to_svg(p2, r, fill="royalblue")
+        update_preview(wrap_svg_paths([s1, s2], r))
+ 
+    #graff_test()
+    multilang_test()
