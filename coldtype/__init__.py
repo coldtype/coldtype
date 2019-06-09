@@ -380,13 +380,12 @@ class StyledString():
             print("No DrawBot available")
             return None
     
-    def drawToPen(self, out_pen, useTTFont=False):
+    def drawToPen(self, out_pen, frames, useTTFont=False):
         fr = FreetypeReader(self.fontFile, ttfont=self.ttfont)
         fr.setVariations(self.variations)
         # self.harfbuzz.setFeatures ???
-        self._frames = self.getGlyphFrames()
         
-        for idx, frame in enumerate(self._frames):
+        for idx, frame in enumerate(frames):
             fr.setGlyph(frame.gid)
             s = self.scale()
             t = Transform()
@@ -403,59 +402,76 @@ class StyledString():
                 fr.drawTTOutlineToPen(tp)
             else:
                 fr.drawOutlineToPen(tp, raiseCubics=True)
-            
-    def asRecording(self, rounding=None):
-        rp = RecordingPen()
-        self.drawToPen(rp)
+    
+    def alignedPen(self, rp):
+        cbp = ControlBoundsPen(None)
+        replayRecording(rp.value, cbp)
+        mnx, mny, mxx, mxy = cbp.bounds
+        os2 = self.ttfont["OS/2"]
+        ch = self.ch * self.scale()
+        #if hasattr(os2, "sCapHeight"):
+        #    ch = os2.sCapHeight * self.scale()
+        #else:
+        #    ch = mxy - mny
+        y = self.align[0]
+        x = self.align[1] if len(self.align) > 1 else "C"
+        w = mxx-mnx
 
-        if self.rect:
-            cbp = ControlBoundsPen(None)
-            replayRecording(rp.value, cbp)
-            mnx, mny, mxx, mxy = cbp.bounds
-            os2 = self.ttfont["OS/2"]
-            ch = self.ch * self.scale()
-            #if hasattr(os2, "sCapHeight"):
-            #    ch = os2.sCapHeight * self.scale()
-            #else:
-            #    ch = mxy - mny
-            y = self.align[0]
-            x = self.align[1] if len(self.align) > 1 else "C"
-            w = mxx-mnx
-
-            if x == "C":
-                xoff = -mnx + self.rect.x + self.rect.w/2 - w/2
-            elif x == "W":
-                xoff = self.rect.x
-            elif x == "E":
-                xoff = -mnx + self.rect.x + self.rect.w - w
-            
-            if y == "C":
-                yoff = self.rect.y + self.rect.h/2 - ch/2
-            elif y == "N":
-                yoff = self.rect.y + self.rect.h - ch
-            elif y == "S":
-                yoff = self.rect.y
-            
-            diff = self.rect.w - (mxx-mnx)
-            rp2 = RecordingPen()
-            tp = TransformPen(rp2, (1, 0, 0, 1, xoff, yoff))
-            replayRecording(rp.value, tp)
-            self._final_offset = (xoff, yoff)
-            rp = rp2
-            #return rp2
-        else:
-            #return rp
-            pass
+        if x == "C":
+            xoff = -mnx + self.rect.x + self.rect.w/2 - w/2
+        elif x == "W":
+            xoff = self.rect.x
+        elif x == "E":
+            xoff = -mnx + self.rect.x + self.rect.w - w
         
-        if rounding is not None:
+        if y == "C":
+            yoff = self.rect.y + self.rect.h/2 - ch/2
+        elif y == "N":
+            yoff = self.rect.y + self.rect.h - ch
+        elif y == "S":
+            yoff = self.rect.y
+        
+        diff = self.rect.w - (mxx-mnx)
+        rp2 = RecordingPen()
+        tp = TransformPen(rp2, (1, 0, 0, 1, xoff, yoff))
+        replayRecording(rp.value, tp)
+        self._final_offset = (xoff, yoff)
+        return rp2
+    
+    def roundPen(self, pen, rounding):
+        if rounding is None:
+            return pen
+        else:
             rounded = []
-            for t, pts in rp.value:
+            for t, pts in pen.value:
                 rounded.append(
                     (t,
                     [(round(x, rounding), round(y, rounding)) for x, y in pts]))
-            rp.value = rounded
+            pen.value = rounded
+            return pen
 
-        return rp
+    def asRecording(self, rounding=None, atomized=False):
+        rp = RecordingPen()
+        self._frames = self.getGlyphFrames()
+        self.drawToPen(rp, self._frames)
+        if self.rect and self.align != "SW":
+            rp = self.alignedPen(rp)
+        
+        xoff, yoff = self._final_offset
+        if atomized:
+            pens = []
+            for f in self._frames:
+                frp = RecordingPen()
+                self.drawToPen(frp, [f])
+                rp2 = RecordingPen()
+                tp = TransformPen(rp2, (1, 0, 0, 1, xoff, yoff))
+                replayRecording(frp.value, tp)
+                # transform
+                pens.append(rp2)
+            return pens
+            #return [self.roundPen(rp, rounding)]
+        else:
+            return self.roundPen(rp, rounding)
 
     def asGlyph(self, removeOverlap=False):
         recording = self.asRecording()
@@ -476,17 +492,30 @@ class StyledString():
 
 
 if __name__ == "__main__":
-    from coldtype.utils import pen_to_html, pen_to_svg
+    from coldtype.utils import pen_to_html, pen_to_svg, wrap_svg_paths
     from coldtype.previewer import update_preview
     from random import randint
     
-    txt = "ABC {:04d}".format(randint(0, 10000))
-    txt = "Hamburger"
-    r = Rect((0, 0, 1000, 300))
-    f, v = ["~/Library/Fonts/Beastly-12Point.otf", dict()]
-    f, v = ["~/Library/Fonts/ObviouslyVariable.ttf", dict(wdth=.5, wght=1, slnt=1, scale=True)]
-    ss = StyledString(txt, font=f, fontSize=72, variations=v)
-    ss.place(r, fit=False)
-    #update_preview(pen_to_svg(ss.asRecording(rounding=2), r))
-    with open(dirname + "/../test/artifacts/main.html", "w") as f:
-        f.write(pen_to_html(ss.asRecording(rounding=2), r))
+    def graff_test():
+        txt = "NYC{:02d}".format(randint(0, 100))
+        #txt = "Graphics"
+        #txt = "2019"
+        #txt = "NYC"
+        r = Rect((0, 0, 1000, 1000))
+        f, v = ["~/Library/Fonts/Beastly-12Point.otf", dict()]
+        #f, v = ["~/Library/Fonts/ObviouslyVariable.ttf", dict(wdth=.5, wght=1, slnt=1, scale=True)]
+        f, v = ["~/Library/Fonts/Cheee_Variable.ttf", dict(grvt=0.3, yest=1, scale=True)]
+        #f, v = ["~/Library/Fonts/Fit-Variable.ttf", dict(wdth=0.5, scale=True)]
+        #f, v = ["~/Library/Fonts/CoFo_Peshka_Variable_V0.1.ttf", dict(wdth=0.1, wght=1, scale=True)]
+        ss = StyledString(txt, font=f, fontSize=150, variations=v, tracking=-20)
+        ss.place(r, fit=False)
+        pens = ss.asRecording(rounding=2, atomized=True)
+        paths = []
+        pens.reverse()
+        for pen in pens:
+            svg = pen_to_svg(pen, r, fill="hotpink")
+            svg2 = pen_to_svg(pen, r, fill="white", stroke="black", strokeWidth=15)
+            paths.extend([svg2, svg])
+        update_preview(wrap_svg_paths(paths, r))
+    
+    graff_test()
