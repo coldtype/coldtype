@@ -169,6 +169,7 @@ class StyledString():
             features=dict(),
             align="C",
             rect=None,
+            fill=None,
             drawBot=_drawBot):
         self.text = text
         self.fontFile = os.path.expanduser(font or fontFile)
@@ -191,6 +192,7 @@ class StyledString():
         self.space = space
         self.align = align
         self.rect = rect
+        self.fill = fill # should normalize?
         self.axes = OrderedDict()
         self.variations = dict()
         self.variationLimits = dict()
@@ -498,24 +500,32 @@ class StyledStringSetter():
     def __init__(self, strings):
         self.strings = strings
     
+    def transform(self, pen, transform):
+        op = RecordingPen()
+        tp = TransformPen(op, transform)
+        replayRecording(pen.value, tp)
+        return op
+    
     def align(self, align="CC", rect=None):
-        cbp = ControlBoundsPen(None)
-        ch = 0
-        recordings = []
         last_x = 0
+        contiguous_pens = []
         for s in self.strings:
-            os2 = s.ttfont["OS/2"]
-            ch = max(ch, s.ch * s.scale())
             r = s.asRecording()
-            tp = TransformPen(cbp, (1, 0, 0, 1, last_x, 0))
-            # needs to implement a transformpen to shift according to x_offset of last frame in previous pen
-            replayRecording(r.value, tp)
-            recordings.append(r)
-            last_x += 200
-
+            contiguous_pens.append(self.transform(r, (1, 0, 0, 1, last_x, 0)))
+            x, _, w, _ = s._frames[-1].frame
+            last_x += x + w
+        
         if rect is None:
-            return recordings
+            return contiguous_pens
         else:
+            # draw everything into the boundspen
+            cbp = ControlBoundsPen(None)
+            ch = 0
+            for idx, s in enumerate(self.strings):
+                os2 = s.ttfont["OS/2"]
+                ch = max(ch, s.ch * s.scale())
+                replayRecording(contiguous_pens[idx].value, cbp)
+
             mnx, mny, mxx, mxy = cbp.bounds
             # ch = mxy - mny
             y = align[0]
@@ -536,15 +546,13 @@ class StyledStringSetter():
             elif y == "S":
                 yoff = rect.y
             
-            diff = rect.w - (mxx-mnx)
+            diff = rect.w - (mxx-mnx) # for performance-testing
+
             offset = (xoff, yoff)
-            adj_pens = []
-            for r in recordings:
-                rp = RecordingPen()
-                tp = TransformPen(rp, (1, 0, 0, 1, xoff, yoff))
-                replayRecording(r.value, tp)
-                adj_pens.append(rp)
-            return adj_pens
+            aligned_pens = []
+            for idx, s in enumerate(self.strings):
+                aligned_pens.append(self.transform(contiguous_pens[idx], (1, 0, 0, 1, xoff, yoff)))
+            return aligned_pens
 
 
 if __name__ == "__main__":
@@ -576,16 +584,15 @@ if __name__ == "__main__":
     
     def multilang_test():
         r = Rect((0, 0, 1000, 1000))
-        ss1 = StyledString("A", font="~/Library/Fonts/Beastly-12Point.otf", fontSize=350)
-        ss2 = StyledString("B", font="~/Library/Fonts/Beastly-72Point.otf", fontSize=350)
-        # function to combine in a single composition
-        #p1 = ss1.asRecording()
-        #p2 = ss2.asRecording()
-        sss = StyledStringSetter([ss1, ss2])
-        p1, p2 = sss.align()
-        s1 = pen_to_svg(p1, r, fill="deeppink")
-        s2 = pen_to_svg(p2, r, fill="royalblue")
-        update_preview(wrap_svg_paths([s1, s2], r))
+        sss = StyledStringSetter([
+            StyledString("Cold", font="~/Library/Fonts/OhnoBlazeface12point.otf", fontSize=150, fill="hotpink"),
+            StyledString("type", font="~/Library/Fonts/OhnoBlazeface24point.otf", fontSize=150, fill="skyblue"),
+            StyledString(".", font="~/Library/Fonts/OhnoBlazeface72point.otf", fontSize=150, fill="hotpink"),
+            ])
+        paths = []
+        for idx, pen in enumerate(sss.align(rect=r)): # this kind of logic should be part of the SSS class
+            paths.append(pen_to_svg(pen, r, fill=sss.strings[idx].fill))
+        update_preview(wrap_svg_paths(paths, r))
  
     #graff_test()
     multilang_test()
