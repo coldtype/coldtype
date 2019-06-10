@@ -23,6 +23,7 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
 from coldtype.beziers import CurveCutter
+from coldtype.utils import pen_to_html, pen_to_svg, wrap_svg_paths, flipped_svg_pen
 
 try:
     from booleanOperations.booleanGlyph import BooleanGlyph
@@ -30,6 +31,14 @@ try:
 except:
     _drawBot = None
 
+
+_FONT_CACHE = dict()
+
+def get_cached_font(font_path):
+    if font_path not in _FONT_CACHE:
+        with open(font_path, 'rb') as fontfile:
+            _FONT_CACHE[font_path] = fontfile.read()
+    return _FONT_CACHE[font_path]
 
 class HarfbuzzFrame():
     def __init__(self, info, position, frame):
@@ -43,21 +52,8 @@ class HarfbuzzFrame():
 
 
 class Harfbuzz():
-    def __init__(self, font_path):
-        with open(font_path, 'rb') as fontfile:
-            self.fontdata = fontfile.read()
-        self.fontPath = font_path
-        
-        #self.font = hb.Font(self.face)
-        #self.upem = int(self.face.upem)
-        face = hb.Face(self.fontdata)
-        self.upem = int(face.upem)
-        #self.upem = self.face.upem
-        #self.font.scale = (self.upem, self.upem)
-        #hb.ot_font_set_funcs(self.font)
-
-    def getFrames(self, text="", axes=dict(), features=dict(kern=True, liga=True), height=1000):
-        face = hb.Face(self.fontdata)
+    def GetFrames(fontdata, text="", axes=dict(), features=dict(kern=True, liga=True), height=1000):
+        face = hb.Face(fontdata)
         font = hb.Font(face)
         font.scale = (face.upem, face.upem)
         hb.ot_font_set_funcs(font)
@@ -163,6 +159,9 @@ class StyledString():
             tracking=0,
             trackingLimit=0,
             space=None,
+            baselineShift=0,
+            leftMargin=0,
+            rightMargin=0,
             variations=dict(),
             variationLimits=dict(),
             increments=dict(),
@@ -170,12 +169,15 @@ class StyledString():
             align="C",
             rect=None,
             fill=None,
+            fallback=None,
             drawBot=_drawBot):
         self.text = text
-        self.fontFile = os.path.expanduser(font or fontFile)
+        self.fontFile = os.path.expanduser((font or fontFile).replace("¬", "~/Library/Fonts"))
         self.ttfont = TTFont(self.fontFile)
-        self.harfbuzz = Harfbuzz(self.fontFile)
-        self.upem = self.harfbuzz.upem
+        #self.harfbuzz = Harfbuzz(self.fontFile)
+        self.fontdata = get_cached_font(self.fontFile)
+        self.upem = hb.Face(self.fontdata).upem
+        #self.upem = hb.faceself.harfbuzz.upem
         #try:
         #    self.upem = self.ttfont["head"].unitsPerEm
         #except:
@@ -184,12 +186,16 @@ class StyledString():
         self.fontSize = fontSize
         self.tracking = tracking
         self.trackingLimit = trackingLimit
+        self.baselineShift = baselineShift
+        self.leftMargin = leftMargin
+        self.rightMargin = rightMargin
         self.features = {**dict(kern=True, liga=True), **features}
         self.path = None
         self.offset = (0, 0)
         self.rect = None
         self.increments = increments
         self.space = space
+        self.fallback = fallback
         self.align = align
         self.rect = rect
         self.fill = fill # should normalize?
@@ -262,7 +268,7 @@ class StyledString():
     def trackFrames(self, frames, glyph_names):
         t = self.tracking*1/self.scale()
         t = self.tracking
-        x_off = 0
+        x_off = self.leftMargin
         has_kashida = False
         try:
             self.ttfont.getGlyphID("uni0640")
@@ -273,13 +279,13 @@ class StyledString():
         if not has_kashida:
             for idx, f in enumerate(frames):
                 gn = glyph_names[idx]
-                f.frame = f.frame.offset(x_off, 0)
+                f.frame = f.frame.offset(x_off, self.baselineShift)
                 x_off += t
                 if self.space and gn == "space":
                     x_off += self.space
         else:
             for idx, frame in enumerate(frames):
-                frame.frame = frame.frame.offset(x_off, 0)
+                frame.frame = frame.frame.offset(x_off, self.baselineShift)
                 try:
                     u = glyph_names[idx]
                     if self.vowelMark(u):
@@ -294,6 +300,8 @@ class StyledString():
                         x_off += t*f
                 except IndexError:
                     pass
+        
+        frames[-1].frame.w += self.rightMargin
         return frames
     
     def adjustFramesForPath(self, frames):
@@ -311,21 +319,25 @@ class StyledString():
                     self.tangents.append(t)
         return frames[0:self.limit]
     
+    def getGlyphNames(self, txt):
+        frames = Harfbuzz.GetFrames(self.fontdata, text=txt, axes=self.variations, features=self.features, height=self.ch)
+        glyph_names = []
+        for f in frames:
+            glyph_names.append(self.ttfont.getGlyphName(f.gid))
+        return glyph_names
+    
     def getGlyphFrames(self):
-        frames = self.harfbuzz.getFrames(text=self.text, axes=self.variations, features=self.features, height=self.ch)
+        frames = Harfbuzz.GetFrames(self.fontdata, text=self.text, axes=self.variations, features=self.features, height=self.ch)
         glyph_names = []
         for f in frames:
             f.frame = f.frame.scale(self.scale())
             glyph_name = self.ttfont.getGlyphName(f.gid)
             code = glyph_name.replace("uni", "")
-            #print(glyph_name, f.gid)
             try:
                 glyph_names.append(unicodedata.name(chr(int(code, 16))))
             except:
                 glyph_names.append(code)
-        if ".notdef" in glyph_names:
-            pass
-            #print("NOTDEF found")
+        self.glyphNames = glyph_names
         return self.adjustFramesForPath(self.trackFrames(frames, glyph_names))
     
     def width(self): # size?
@@ -354,7 +366,7 @@ class StyledString():
         else:
             return
         
-        print("Fitting", self.text, self.tries, "fits:", current_width <= width)
+        #print("Fitting", self.text, self.tries, "fits:", current_width <= width)
         #if current_width > width:
         #    print("DOES NOT FIT", self.tries, self.text)
     
@@ -385,7 +397,6 @@ class StyledString():
     def drawToPen(self, out_pen, frames, useTTFont=False):
         fr = FreetypeReader(self.fontFile, ttfont=self.ttfont)
         fr.setVariations(self.variations)
-        # self.harfbuzz.setFeatures ???
         
         for idx, frame in enumerate(frames):
             fr.setGlyph(frame.gid)
@@ -506,6 +517,12 @@ class StyledStringSetter():
         replayRecording(pen.value, tp)
         return op
     
+    def asRecording(self):
+        rp = RecordingPen()
+        for pen in self.pens:
+            replayRecording(pen.value, rp)
+        return rp
+    
     def align(self, align="CC", rect=None):
         last_x = 0
         contiguous_pens = []
@@ -516,6 +533,7 @@ class StyledStringSetter():
             last_x += x + w
         
         if rect is None:
+            self.pens = contiguous_pens
             return contiguous_pens
         else:
             # draw everything into the boundspen
@@ -552,11 +570,11 @@ class StyledStringSetter():
             aligned_pens = []
             for idx, s in enumerate(self.strings):
                 aligned_pens.append(self.transform(contiguous_pens[idx], (1, 0, 0, 1, xoff, yoff)))
+            self.pens = aligned_pens
             return aligned_pens
 
 
 if __name__ == "__main__":
-    from coldtype.utils import pen_to_html, pen_to_svg, wrap_svg_paths
     from coldtype.previewer import update_preview
     from random import randint
     
@@ -566,11 +584,11 @@ if __name__ == "__main__":
         #txt = "2019"
         #txt = "NYC"
         r = Rect((0, 0, 1000, 1000))
-        f, v = ["~/Library/Fonts/Beastly-12Point.otf", dict()]
-        #f, v = ["~/Library/Fonts/ObviouslyVariable.ttf", dict(wdth=.5, wght=1, slnt=1, scale=True)]
-        f, v = ["~/Library/Fonts/Cheee_Variable.ttf", dict(grvt=0.3, yest=1, scale=True)]
-        #f, v = ["~/Library/Fonts/Fit-Variable.ttf", dict(wdth=0.5, scale=True)]
-        #f, v = ["~/Library/Fonts/CoFo_Peshka_Variable_V0.1.ttf", dict(wdth=0.1, wght=1, scale=True)]
+        f, v = ["¬/Beastly-12Point.otf", dict()]
+        #f, v = ["¬/ObviouslyVariable.ttf", dict(wdth=.5, wght=1, slnt=1, scale=True)]
+        f, v = ["¬/Cheee_Variable.ttf", dict(grvt=0.3, yest=1, scale=True)]
+        #f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.5, scale=True)]
+        #f, v = ["¬/CoFo_Peshka_Variable_V0.1.ttf", dict(wdth=0.1, wght=1, scale=True)]
         ss = StyledString(txt, font=f, fontSize=150, variations=v, tracking=-20)
         #ss.place(r, fit=False)
         pens = ss.asRecording(rounding=2, atomized=True)
@@ -585,14 +603,26 @@ if __name__ == "__main__":
     def multilang_test():
         r = Rect((0, 0, 1000, 1000))
         sss = StyledStringSetter([
-            StyledString("Cold", font="~/Library/Fonts/OhnoBlazeface12point.otf", fontSize=150, fill="hotpink"),
-            StyledString("type", font="~/Library/Fonts/OhnoBlazeface24point.otf", fontSize=150, fill="skyblue"),
-            StyledString(".", font="~/Library/Fonts/OhnoBlazeface72point.otf", fontSize=150, fill="hotpink"),
+            StyledString("Hello, ", font="¬/OhnoBlazeface12point.otf", fontSize=100, rightMargin=100, fill="deeppink"),
+            StyledString("world", font="¬/OhnoBlazeface24point.otf", fontSize=100, baselineShift=100, fill="dodgerblue"),
+            StyledString(".", font="¬/OhnoBlazeface72point.otf", fontSize=100, leftMargin=10, baselineShift=-40, fill="black"),
             ])
         paths = []
         for idx, pen in enumerate(sss.align(rect=r)): # this kind of logic should be part of the SSS class
             paths.append(pen_to_svg(pen, r, fill=sss.strings[idx].fill))
         update_preview(wrap_svg_paths(paths, r))
  
+    def no_glyph_sub_test():
+        r = Rect((0, 0, 1000, 1000))
+        t = str(randint(0, 9))
+        f, v = "¬/TweakDisplay-VF.ttf", dict(DIST=0.5, scale=True)
+        sss = StyledStringSetter([
+            StyledString(t + "π", font=f, fontSize=200, variations=v),
+            #StyledString("π", "¬/VulfMonoRegular.otf", fontSize=200),
+        ])
+        sss.align()
+        update_preview(wrap_svg_paths(pen_to_svg(sss.asRecording(), r), r))
+
     #graff_test()
-    multilang_test()
+    #multilang_test()
+    no_glyph_sub_test()
