@@ -494,6 +494,59 @@ class StyledString():
             print("No DrawBot available")
 
 
+class StyledStringSetter():
+    def __init__(self, strings):
+        self.strings = strings
+    
+    def align(self, align="CC", rect=None):
+        cbp = ControlBoundsPen(None)
+        ch = 0
+        recordings = []
+        last_x = 0
+        for s in self.strings:
+            os2 = s.ttfont["OS/2"]
+            ch = max(ch, s.ch * s.scale())
+            r = s.asRecording()
+            tp = TransformPen(cbp, (1, 0, 0, 1, last_x, 0))
+            # needs to implement a transformpen to shift according to x_offset of last frame in previous pen
+            replayRecording(r.value, tp)
+            recordings.append(r)
+            last_x += 200
+
+        if rect is None:
+            return recordings
+        else:
+            mnx, mny, mxx, mxy = cbp.bounds
+            # ch = mxy - mny
+            y = align[0]
+            x = align[1] if len(align) > 1 else "C"
+            w = mxx-mnx
+
+            if x == "C":
+                xoff = -mnx + rect.x + rect.w/2 - w/2
+            elif x == "W":
+                xoff = rect.x
+            elif x == "E":
+                xoff = -mnx + rect.x + rect.w - w
+            
+            if y == "C":
+                yoff = rect.y + rect.h/2 - ch/2
+            elif y == "N":
+                yoff = rect.y + rect.h - ch
+            elif y == "S":
+                yoff = rect.y
+            
+            diff = rect.w - (mxx-mnx)
+            offset = (xoff, yoff)
+            adj_pens = []
+            for r in recordings:
+                rp = RecordingPen()
+                tp = TransformPen(rp, (1, 0, 0, 1, xoff, yoff))
+                replayRecording(r.value, tp)
+                adj_pens.append(rp)
+            return adj_pens
+
+
 if __name__ == "__main__":
     from coldtype.utils import pen_to_html, pen_to_svg, wrap_svg_paths
     from coldtype.previewer import update_preview
@@ -526,9 +579,11 @@ if __name__ == "__main__":
         ss1 = StyledString("A", font="~/Library/Fonts/Beastly-12Point.otf", fontSize=350)
         ss2 = StyledString("B", font="~/Library/Fonts/Beastly-72Point.otf", fontSize=350)
         # function to combine in a single composition
-        p1 = ss1.asRecording()
-        p2 = ss2.asRecording()
-        s1 = pen_to_svg(p1, r, fill="hotpink")
+        #p1 = ss1.asRecording()
+        #p2 = ss2.asRecording()
+        sss = StyledStringSetter([ss1, ss2])
+        p1, p2 = sss.align()
+        s1 = pen_to_svg(p1, r, fill="deeppink")
         s2 = pen_to_svg(p2, r, fill="royalblue")
         update_preview(wrap_svg_paths([s1, s2], r))
  
