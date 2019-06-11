@@ -24,6 +24,7 @@ if __name__ == "__main__":
 
 from coldtype.beziers import CurveCutter
 from coldtype.utils import pen_to_html, pen_to_svg, wrap_svg_paths, flipped_svg_pen
+from coldtype.pens import OutlinePen
 
 try:
     from booleanOperations.booleanGlyph import BooleanGlyph
@@ -507,6 +508,16 @@ class StyledString():
             print("No DrawBot available")
 
 
+def outlined(recording, offset=1):
+    op = OutlinePen(None, offset=offset, optimizeCurve=True)
+    replayRecording(recording.value, op)
+    op.drawSettings(drawInner=True, drawOuter=True)
+    g = op.getGlyph()
+    rp2 = RecordingPen()
+    g.draw(rp2)
+    return rp2
+
+
 class StyledStringSetter():
     def __init__(self, strings):
         self.strings = strings
@@ -591,24 +602,24 @@ if __name__ == "__main__":
         #f, v = ["¬/CoFo_Peshka_Variable_V0.1.ttf", dict(wdth=0.1, wght=1, scale=True)]
         ss = StyledString(txt, font=f, fontSize=150, variations=v, tracking=-20)
         #ss.place(r, fit=False)
-        pens = ss.asRecording(rounding=2, atomized=True)
+        pens = ss.asRecording(atomized=True)
         paths = []
         pens.reverse()
         for pen in pens:
             svg = pen_to_svg(pen, r, fill="hotpink")
-            svg2 = pen_to_svg(pen, r, fill="white", stroke="black", strokeWidth=15)
+            svg2 = pen_to_svg(outlined(pen, offset=4), r, fill="black")
             paths.extend([svg2, svg])
         update_preview(wrap_svg_paths(paths, r))
     
     def multilang_test():
         r = Rect((0, 0, 1000, 1000))
         sss = StyledStringSetter([
-            StyledString("Hello, ", font="¬/OhnoBlazeface12point.otf", fontSize=100, rightMargin=100, fill="deeppink"),
-            StyledString("world", font="¬/OhnoBlazeface24point.otf", fontSize=100, baselineShift=100, fill="dodgerblue"),
-            StyledString(".", font="¬/OhnoBlazeface72point.otf", fontSize=100, leftMargin=10, baselineShift=-40, fill="black"),
+            StyledString("Hello, ", font="¬/OhnoBlazeface12point.otf", fontSize=100, rightMargin=-100, fill="deeppink"),
+            StyledString(str(randint(2, 9)) + " worlds", font="¬/OhnoBlazeface24point.otf", fontSize=100, baselineShift=100, fill="dodgerblue"),
+            StyledString(".", font="¬/OhnoBlazeface72point.otf", fontSize=100, leftMargin=-40, baselineShift=0, fill="black"),
             ])
         paths = []
-        for idx, pen in enumerate(sss.align(rect=r)): # this kind of logic should be part of the SSS class
+        for idx, pen in enumerate(sss.align(rect=r)):
             paths.append(pen_to_svg(pen, r, fill=sss.strings[idx].fill))
         update_preview(wrap_svg_paths(paths, r))
  
@@ -616,13 +627,27 @@ if __name__ == "__main__":
         r = Rect((0, 0, 1000, 1000))
         t = str(randint(0, 9))
         f, v = "¬/TweakDisplay-VF.ttf", dict(DIST=0.5, scale=True)
+        #f, v = "¬/Eckmannpsych-Variable.ttf", dict(opsz=500)
         sss = StyledStringSetter([
-            StyledString(t + "π", font=f, fontSize=200, variations=v),
-            #StyledString("π", "¬/VulfMonoRegular.otf", fontSize=200),
+            StyledString("e", font=f, fontSize=500, variations=v, features=dict(ss01=True)),
+            StyledString("π", "¬/VulfMonoRegular.otf", fontSize=500),
         ])
-        sss.align()
+        sss.align(rect=r)
         update_preview(wrap_svg_paths(pen_to_svg(sss.asRecording(), r), r))
 
+    def outline_test():
+        r = Rect((0, 0, 1000, 1000))
+        t = "ABC"
+        f, v = ["¬/Cheee_Variable.ttf", dict(grvt=0.8, yest=1, temp=1, scale=True)]
+        ss = StyledString(t, font=f, fontSize=200, variations=v, tracking=-40)
+        rp = ss.asRecording()
+        paths = [
+            pen_to_svg(rp, r, fill="hotpink"),
+            pen_to_svg(outlined(ss.asRecording(), offset=4), r)
+        ]
+        update_preview(wrap_svg_paths(paths, r))
+
     #graff_test()
-    #multilang_test()
-    no_glyph_sub_test()
+    multilang_test()
+    #no_glyph_sub_test()
+    #outline_test()
