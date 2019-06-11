@@ -1,5 +1,7 @@
 import math
+import sys
 import os
+import re
 
 name = "coldtype"
 dirname = os.path.dirname(__file__)
@@ -14,12 +16,16 @@ from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
 from fontTools.ttLib import TTFont
-from furniture.geometry import Rect
 import unicodedata
 import uharfbuzz as hb
 
+if True:
+    sys.path.insert(0, os.path.expanduser("~/Type/furniture"))
+
+from furniture.geometry import Rect
+from furniture.viewer import previewer
+
 if __name__ == "__main__":
-    import sys
     sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
 from coldtype.beziers import CurveCutter
@@ -200,6 +206,7 @@ class StyledString():
         self.align = align
         self.rect = rect
         self.fill = fill # should normalize?
+        
         self.axes = OrderedDict()
         self.variations = dict()
         self.variationLimits = dict()
@@ -398,7 +405,7 @@ class StyledString():
     def drawToPen(self, out_pen, frames, useTTFont=False):
         fr = FreetypeReader(self.fontFile, ttfont=self.ttfont)
         fr.setVariations(self.variations)
-        
+
         for idx, frame in enumerate(frames):
             fr.setGlyph(frame.gid)
             s = self.scale()
@@ -537,8 +544,10 @@ class StyledStringSetter():
     def align(self, align="CC", rect=None):
         last_x = 0
         contiguous_pens = []
+        contiguous_offsets = []
         for s in self.strings:
             r = s.asRecording()
+            contiguous_offsets.append(last_x)
             contiguous_pens.append(self.transform(r, (1, 0, 0, 1, last_x, 0)))
             x, _, w, _ = s._frames[-1].frame
             last_x += x + w
@@ -580,16 +589,30 @@ class StyledStringSetter():
             offset = (xoff, yoff)
             aligned_pens = []
             for idx, s in enumerate(self.strings):
+                s.offset = (contiguous_offsets[idx] + xoff, yoff)
                 aligned_pens.append(self.transform(contiguous_pens[idx], (1, 0, 0, 1, xoff, yoff)))
             self.pens = aligned_pens
             return aligned_pens
+
+
+class SVGContext():
+    def __init__(self, w, h):
+        self.rect = Rect((0, 0, w, h))
+        self.paths = []
+    
+    def addPath(self, recording, **kwargs):
+        svg_path = pen_to_svg(recording, self.rect, **kwargs)
+        self.paths.append(svg_path)
+
+    def toSVG(self):
+        return wrap_svg_paths(self.paths, self.rect)
 
 
 if __name__ == "__main__":
     from coldtype.previewer import update_preview
     from random import randint
     
-    def graff_test():
+    def graff_test(preview):
         txt = "NYC{:02d}".format(randint(0, 100))
         #txt = "Graphics"
         #txt = "2019"
@@ -609,21 +632,22 @@ if __name__ == "__main__":
             svg = pen_to_svg(pen, r, fill="hotpink")
             svg2 = pen_to_svg(outlined(pen, offset=4), r, fill="black")
             paths.extend([svg2, svg])
-        update_preview(wrap_svg_paths(paths, r))
+        preview.send(wrap_svg_paths(paths, r))
     
-    def multilang_test():
-        r = Rect((0, 0, 1000, 1000))
+    def multilang_test(preview):
+        svg = SVGContext(1000, 1000)
         sss = StyledStringSetter([
             StyledString("Hello, ", font="¬/OhnoBlazeface12point.otf", fontSize=100, rightMargin=-100, fill="deeppink"),
-            StyledString(str(randint(2, 9)) + " worlds", font="¬/OhnoBlazeface24point.otf", fontSize=100, baselineShift=100, fill="dodgerblue"),
+            StyledString(str(randint(2, 9)) + " worlds", font="¬/OhnoBlazeface24point.otf", fontSize=100, baselineShift=100, fill="seagreen"),
             StyledString(".", font="¬/OhnoBlazeface72point.otf", fontSize=100, leftMargin=-40, baselineShift=0, fill="black"),
             ])
-        paths = []
-        for idx, pen in enumerate(sss.align(rect=r)):
-            paths.append(pen_to_svg(pen, r, fill=sss.strings[idx].fill))
-        update_preview(wrap_svg_paths(paths, r))
+        
+        sss.align(rect=svg.rect)
+        for s in sss.strings:
+            svg.addPath(s.asRecording(), fill=s.fill)
+        preview.send(svg.toSVG())
  
-    def no_glyph_sub_test():
+    def no_glyph_sub_test(preview):
         r = Rect((0, 0, 1000, 1000))
         t = str(randint(0, 9))
         f, v = "¬/TweakDisplay-VF.ttf", dict(DIST=0.5, scale=True)
@@ -633,21 +657,23 @@ if __name__ == "__main__":
             StyledString("π", "¬/VulfMonoRegular.otf", fontSize=500),
         ])
         sss.align(rect=r)
-        update_preview(wrap_svg_paths(pen_to_svg(sss.asRecording(), r), r))
+        preview.send(wrap_svg_paths(pen_to_svg(sss.asRecording(), r), r))
 
-    def outline_test():
+    def outline_test(preview):
         r = Rect((0, 0, 1000, 1000))
         t = "ABC"
         f, v = ["¬/Cheee_Variable.ttf", dict(grvt=0.8, yest=1, temp=1, scale=True)]
-        ss = StyledString(t, font=f, fontSize=200, variations=v, tracking=-40)
+        ss = StyledString(t, font=f, fontSize=300, variations=v, tracking=-40)
+        ss.place(r)
         rp = ss.asRecording()
         paths = [
             pen_to_svg(rp, r, fill="hotpink"),
             pen_to_svg(outlined(ss.asRecording(), offset=4), r)
         ]
-        update_preview(wrap_svg_paths(paths, r))
+        preview.send(wrap_svg_paths(paths, r))
 
-    #graff_test()
-    multilang_test()
-    #no_glyph_sub_test()
-    #outline_test()
+    with previewer() as p:
+        #graff_test(p)
+        multilang_test(p)
+        #no_glyph_sub_test(p)
+        #outline_test(p)
