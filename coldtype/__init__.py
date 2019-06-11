@@ -23,14 +23,16 @@ if True:
     sys.path.insert(0, os.path.expanduser("~/Type/furniture"))
 
 from furniture.geometry import Rect
-from furniture.viewer import previewer
 
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
 from coldtype.beziers import CurveCutter
 from coldtype.utils import pen_to_html, pen_to_svg, wrap_svg_paths, flipped_svg_pen
-from coldtype.pens import OutlinePen
+try:
+    from coldtype.pens import OutlinePen
+except:
+    pass
 
 try:
     from booleanOperations.booleanGlyph import BooleanGlyph
@@ -110,7 +112,7 @@ class FreetypeReader():
     
     def setGlyph(self, glyph_id):
         self.glyph_id = glyph_id
-        flags = freetype.FT_LOAD_DEFAULT | freetype.FT_LOAD_NO_HINTING | freetype.FT_LOAD_NO_BITMAP
+        flags = freetype.FT_LOAD_DEFAULT #| freetype.FT_LOAD_NO_HINTING | freetype.FT_LOAD_NO_BITMAP
         flags = freetype.FT_LOAD_DEFAULT | freetype.FT_LOAD_NO_SCALE
         if isinstance(glyph_id, int):
             self.font.load_glyph(glyph_id, flags)
@@ -609,7 +611,7 @@ class SVGContext():
 
 
 if __name__ == "__main__":
-    from coldtype.previewer import update_preview
+    from furniture.viewer import previewer
     from random import randint
     
     def graff_test(preview):
@@ -671,9 +673,31 @@ if __name__ == "__main__":
             pen_to_svg(outlined(ss.asRecording(), offset=4), r)
         ]
         preview.send(wrap_svg_paths(paths, r))
+    
+    def rendering_test(preview):
+        svg = SVGContext(1000, 200)
+        f = "¬/GTHaptikLight.otf"
+        f = "¬/Gooper0.2-BlackItalic.otf"
+        f = "¬/SourceSerifPro-BlackIt.ttf"
+        ss = StyledString("MONO BELOW".upper(), font=f, fontSize=12, tracking=3, rect=svg.rect)
+        svg.addPath(ss.asRecording(rounding=3), fill="black")
+        preview.send(svg.toSVG())
+        import drawBot as db
+        db.newDrawing()
+        db.size(svg.rect.w, svg.rect.h)
+        fs = ss.formattedString()
+        bp = db.BezierPath()
+        bp.text(fs, ss._final_offset)
+        db.drawPath(bp)
+        #db.text(fs, (100, 100))
+        db.saveImage(dirname + "/scratch.svg")
+        with open(dirname + "/scratch.svg", "r") as f:
+            preview.send(f.read())
+        db.endDrawing()
 
     with previewer() as p:
         #graff_test(p)
-        multilang_test(p)
+        #multilang_test(p)
         #no_glyph_sub_test(p)
         #outline_test(p)
+        rendering_test(p)
