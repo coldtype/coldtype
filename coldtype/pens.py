@@ -1,4 +1,5 @@
 from fontTools.pens.basePen import BasePen
+from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.ufoLib.pointPen import AbstractPointPen, ReverseContourPointPen
 from fontTools.misc.bezierTools import splitCubicAtT
 from defcon import Glyph
@@ -624,3 +625,12 @@ class OutlinePen(BasePen):
         pointPen = glyph.getPointPen()
         self.drawPoints(pointPen)
         return glyph
+    
+    def Record(recording, offset=1):
+        op = OutlinePen(None, offset=offset, optimizeCurve=True)
+        replayRecording(recording.value, op)
+        op.drawSettings(drawInner=True, drawOuter=True)
+        g = op.getGlyph()
+        rp2 = RecordingPen()
+        g.draw(rp2)
+        return rp2

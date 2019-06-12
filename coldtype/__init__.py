@@ -28,8 +28,10 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
 from coldtype.beziers import CurveCutter
-from coldtype.utils import pen_to_html, pen_to_svg, wrap_svg_paths, flipped_svg_pen
+from coldtype.svg import SVGContext, flipped_svg_pen
+
 try:
+    # relies on undeclared dependencies
     from coldtype.pens import OutlinePen
 except:
     pass
@@ -220,7 +222,8 @@ class StyledString():
             for axis in fvar.axes:
                 self.axes[axis.axisTag] = axis
                 self.variations[axis.axisTag] = axis.defaultValue
-                self.variationLimits[axis.axisTag] = axis.minValue
+                if axis.axisTag == "wdth": # the only reasonable default
+                    self.variationLimits[axis.axisTag] = axis.minValue
         self.addVariations(variations)
         
         os2 = self.ttfont["OS/2"]
@@ -361,11 +364,13 @@ class StyledString():
         current_width = self.width()
         self.tries = 0
         if current_width > width: # need to shrink
+            print(current_width, width)
             while self.tries < 1000 and current_width > width:
                 if self.tracking > self.trackingLimit:
                     self.tracking -= self.increments.get("tracking", 0.25)
                 else:
                     for k, v in self.variationLimits.items():
+                        print(k)
                         if self.variations[k] > self.variationLimits[k]:
                             self.variations[k] -= self.increments.get(k, 1)
                             break
@@ -499,13 +504,18 @@ class StyledString():
         else:
             return self.roundPen(rp, rounding)
 
-    def asGlyph(self, removeOverlap=False):
-        recording = self.asRecording()
-        bg = BooleanGlyph()
-        replayRecording(recording.value, bg.getPen())
-        if removeOverlap:
-            bg = bg.removeOverlap()
-        return bg
+    def asGlyph(self, removeOverlap=False, atomized=False):
+        def process(recording):
+            bg = BooleanGlyph()
+            replayRecording(recording.value, bg.getPen())
+            if removeOverlap:
+                bg = bg.removeOverlap()
+            return bg
+        
+        if atomized:
+            return [process(rec) for rec in self.asRecording(atomized=True)]
+        else:
+            return process(self.asRecording())
     
     def drawBotDraw(self, removeOverlap=False):
         if self.drawBot:
@@ -515,16 +525,6 @@ class StyledString():
             self.drawBot.drawPath(bp)
         else:
             print("No DrawBot available")
-
-
-def outlined(recording, offset=1):
-    op = OutlinePen(None, offset=offset, optimizeCurve=True)
-    replayRecording(recording.value, op)
-    op.drawSettings(drawInner=True, drawOuter=True)
-    g = op.getGlyph()
-    rp2 = RecordingPen()
-    g.draw(rp2)
-    return rp2
 
 
 class StyledStringSetter():
@@ -597,107 +597,12 @@ class StyledStringSetter():
             return aligned_pens
 
 
-class SVGContext():
-    def __init__(self, w, h):
-        self.rect = Rect((0, 0, w, h))
-        self.paths = []
-    
-    def addPath(self, recording, **kwargs):
-        svg_path = pen_to_svg(recording, self.rect, **kwargs)
-        self.paths.append(svg_path)
-
-    def toSVG(self):
-        return wrap_svg_paths(self.paths, self.rect)
-
-
 if __name__ == "__main__":
     from furniture.viewer import previewer
     from random import randint
-    
-    def graff_test(preview):
-        txt = "NYC{:02d}".format(randint(0, 100))
-        #txt = "Graphics"
-        #txt = "2019"
-        #txt = "NYC"
-        r = Rect((0, 0, 1000, 1000))
-        f, v = ["¬/Beastly-12Point.otf", dict()]
-        #f, v = ["¬/ObviouslyVariable.ttf", dict(wdth=.5, wght=1, slnt=1, scale=True)]
-        f, v = ["¬/Cheee_Variable.ttf", dict(grvt=0.3, yest=1, scale=True)]
-        #f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.5, scale=True)]
-        #f, v = ["¬/CoFo_Peshka_Variable_V0.1.ttf", dict(wdth=0.1, wght=1, scale=True)]
-        ss = StyledString(txt, font=f, fontSize=150, variations=v, tracking=-20)
-        #ss.place(r, fit=False)
-        pens = ss.asRecording(atomized=True)
-        paths = []
-        pens.reverse()
-        for pen in pens:
-            svg = pen_to_svg(pen, r, fill="hotpink")
-            svg2 = pen_to_svg(outlined(pen, offset=4), r, fill="black")
-            paths.extend([svg2, svg])
-        preview.send(wrap_svg_paths(paths, r))
-    
-    def multilang_test(preview):
-        svg = SVGContext(1000, 1000)
-        sss = StyledStringSetter([
-            StyledString("Hello, ", font="¬/OhnoBlazeface12point.otf", fontSize=100, rightMargin=-100, fill="deeppink"),
-            StyledString(str(randint(2, 9)) + " worlds", font="¬/OhnoBlazeface24point.otf", fontSize=100, baselineShift=100, fill="seagreen"),
-            StyledString(".", font="¬/OhnoBlazeface72point.otf", fontSize=100, leftMargin=-40, baselineShift=0, fill="black"),
-            ])
-        
-        sss.align(rect=svg.rect)
-        for s in sss.strings:
-            svg.addPath(s.asRecording(), fill=s.fill)
-        preview.send(svg.toSVG())
- 
-    def no_glyph_sub_test(preview):
-        r = Rect((0, 0, 1000, 1000))
-        t = str(randint(0, 9))
-        f, v = "¬/TweakDisplay-VF.ttf", dict(DIST=0.5, scale=True)
-        #f, v = "¬/Eckmannpsych-Variable.ttf", dict(opsz=500)
-        sss = StyledStringSetter([
-            StyledString("e", font=f, fontSize=500, variations=v, features=dict(ss01=True)),
-            StyledString("π", "¬/VulfMonoRegular.otf", fontSize=500),
-        ])
-        sss.align(rect=r)
-        preview.send(wrap_svg_paths(pen_to_svg(sss.asRecording(), r), r))
-
-    def outline_test(preview):
-        r = Rect((0, 0, 1000, 1000))
-        t = "ABC"
-        f, v = ["¬/Cheee_Variable.ttf", dict(grvt=0.8, yest=1, temp=1, scale=True)]
-        ss = StyledString(t, font=f, fontSize=300, variations=v, tracking=-40)
-        ss.place(r)
-        rp = ss.asRecording()
-        paths = [
-            pen_to_svg(rp, r, fill="hotpink"),
-            pen_to_svg(outlined(ss.asRecording(), offset=4), r)
-        ]
-        preview.send(wrap_svg_paths(paths, r))
-    
-    def rendering_test(preview):
-        svg = SVGContext(1000, 200)
-        f = "¬/GTHaptikLight.otf"
-        f = "¬/Gooper0.2-BlackItalic.otf"
-        f = "¬/SourceSerifPro-BlackIt.ttf"
-        ss = StyledString("MONO BELOW".upper(), font=f, fontSize=12, tracking=3, rect=svg.rect)
-        svg.addPath(ss.asRecording(rounding=3), fill="black")
-        preview.send(svg.toSVG())
-        import drawBot as db
-        db.newDrawing()
-        db.size(svg.rect.w, svg.rect.h)
-        fs = ss.formattedString()
-        bp = db.BezierPath()
-        bp.text(fs, ss._final_offset)
-        db.drawPath(bp)
-        #db.text(fs, (100, 100))
-        db.saveImage(dirname + "/scratch.svg")
-        with open(dirname + "/scratch.svg", "r") as f:
-            preview.send(f.read())
-        db.endDrawing()
 
     with previewer() as p:
-        #graff_test(p)
-        #multilang_test(p)
-        #no_glyph_sub_test(p)
-        #outline_test(p)
-        rendering_test(p)
+        svg = SVGContext(1000, 1000)
+        #svg.rect()
+        p.send(svg.toSVG())
+        pass
