@@ -14,15 +14,15 @@ def graff_test(preview):
     #txt = "NYC"
     svg = SVGContext(1000, 1000)
     f, v = ["¬/Beastly-12Point.otf", dict()]
-    #f, v = ["¬/ObviouslyVariable.ttf", dict(wdth=.5, wght=1, slnt=1, scale=True)]
+    f, v = ["¬/ObviouslyVariable.ttf", dict(wdth=.5, wght=1, slnt=1, scale=True)]
     #f, v = ["¬/Cheee_Variable.ttf", dict(grvt=0.3, yest=1, scale=True)]
     f, v = ["¬/Fit-Variable.ttf", dict(wdth=1, scale=True)]
-    #f, v = ["¬/CoFo_Peshka_Variable_V0.1.ttf", dict(wdth=1, wght=1, scale=True)]
+    f, v = ["¬/CoFo_Peshka_Variable_V0.1.ttf", dict(wdth=1, wght=1, scale=True)]
     ss = StyledString(txt, font=f, fontSize=500, variations=v, tracking=-30)
-    ss.place(svg.rect)
-    svg.addOval(svg.rect.take(ss.ch*ss.scale(), "centery"), fill="deeppink")
+    ss.place(svg.rect.inset(140, 0))
+    svg.addOval(svg.rect.take(ss.ch*ss.scale(), "centery"), fill="deeppink", stroke="seagreen", strokeWidth=20)
     for g in reversed(ss.asGlyph(removeOverlap=True, atomized=True)):
-        svg.addGlyph(g, fill="royalblue", stroke="black", strokeWidth=4)
+        svg.addGlyph(g, fill="royalblue", stroke="black", strokeWidth=10)
     preview.send(svg.toSVG())
 
 def multilang_test(preview):

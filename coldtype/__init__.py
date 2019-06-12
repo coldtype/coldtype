@@ -364,13 +364,11 @@ class StyledString():
         current_width = self.width()
         self.tries = 0
         if current_width > width: # need to shrink
-            print(current_width, width)
             while self.tries < 1000 and current_width > width:
                 if self.tracking > self.trackingLimit:
                     self.tracking -= self.increments.get("tracking", 0.25)
                 else:
                     for k, v in self.variationLimits.items():
-                        print(k)
                         if self.variations[k] > self.variationLimits[k]:
                             self.variations[k] -= self.increments.get(k, 1)
                             break
