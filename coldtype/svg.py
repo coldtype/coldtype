@@ -54,6 +54,10 @@ class SVGContext():
         glyph.draw(rp)
         self.addPath(rp, **kwargs)
     
+    def addGlyphs(self, glyphs, **kwargs):
+        for g in glyphs:
+            self.addGlyph(g, **kwargs)
+    
     def addRect(self, rect, **kwargs):
         rp = RecordingPen()
         rp.moveTo(rect.point("SW"))

@@ -14,7 +14,6 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
-from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
 from fontTools.ttLib import TTFont
 import unicodedata
 import uharfbuzz as hb
@@ -27,7 +26,7 @@ from furniture.geometry import Rect
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
-from coldtype.beziers import CurveCutter
+from coldtype.beziers import CurveCutter, raise_quadratic, simple_quadratic
 from coldtype.svg import SVGContext, flipped_svg_pen
 
 try:
@@ -50,6 +49,7 @@ def get_cached_font(font_path):
         with open(font_path, 'rb') as fontfile:
             _FONT_CACHE[font_path] = fontfile.read()
     return _FONT_CACHE[font_path]
+
 
 class HarfbuzzFrame():
     def __init__(self, info, position, frame):
@@ -150,11 +150,8 @@ class FreetypeReader():
         if False:
             pen.qCurveTo((a.x, a.y), (b.x, b.y))
         else:
-            c0 = pen.value[-1][-1][-1]
-            c1 = (c0[0] + (2/3)*(a.x - c0[0]), c0[1] + (2/3)*(a.y - c0[1]))
-            c2 = (b.x + (2/3)*(a.x - b.x), b.y + (2/3)*(a.y - b.y))
-            c3 = (b.x, b.y)
-            pen.curveTo(c1, c2, c3)
+            start = pen.value[-1][-1][-1]
+            pen.curveTo(*raise_quadratic(start, (a.x, a.y), (b.x, b.y)))
             #pen.lineTo(c3)
 
     def cubicTo(a, b, c, pen):
@@ -292,13 +289,13 @@ class StyledString():
         if not has_kashida:
             for idx, f in enumerate(frames):
                 gn = glyph_names[idx]
-                f.frame = f.frame.offset(x_off, self.baselineShift)
+                f.frame = f.frame.offset(x_off, 0)
                 x_off += t
                 if self.space and gn == "space":
                     x_off += self.space
         else:
             for idx, frame in enumerate(frames):
-                frame.frame = frame.frame.offset(x_off, self.baselineShift)
+                frame.frame = frame.frame.offset(x_off, 0)
                 try:
                     u = glyph_names[idx]
                     if self.vowelMark(u):
@@ -319,17 +316,24 @@ class StyledString():
     
     def adjustFramesForPath(self, frames):
         self.tangents = []
+        self.originalWidth = 0
         self.limit = len(frames)
         if self.path:
             for idx, f in enumerate(frames):
                 ow = f.frame.x+f.frame.w/2
+                self.originalWidth = ow
                 if ow > self.cutter.length:
                     self.limit = min(idx, self.limit)
                 else:
                     p, t = self.cutter.subsegmentPoint(end=ow)
-                    f.frame.x = p[0]
-                    f.frame.y = f.frame.y + p[1]
+                    x_shift = self.baselineShift * math.cos(math.radians(t))
+                    y_shift = self.baselineShift * math.sin(math.radians(t))
+                    f.frame.x = p[0] + x_shift
+                    f.frame.y = f.frame.y + p[1] + y_shift
                     self.tangents.append(t)
+        else:
+            for idx, f in enumerate(frames):
+                f.frame.y += self.baselineShift
         return frames[0:self.limit]
     
     def getGlyphNames(self, txt):
@@ -354,7 +358,11 @@ class StyledString():
         return self.adjustFramesForPath(self.trackFrames(frames, glyph_names))
     
     def width(self): # size?
-        return self.getGlyphFrames()[-1].frame.point("SE").x
+        fw = self.getGlyphFrames()[-1].frame.point("SE").x
+        if hasattr(self, "originalWidth"):
+            return max(fw, self.originalWidth)
+        else:
+            return fw
     
     def scale(self):
         return self.fontSize / self.upem
@@ -394,9 +402,11 @@ class StyledString():
         self.offset = (0, 0)
         #self.offset = rect.offset(0, rect.h/2 - ch/2).xy()
     
-    def addPath(self, path):
+    def addPath(self, path, fit=False):
         self.path = path
         self.cutter = CurveCutter(path)
+        if fit:
+            self.fit(self.cutter.length)
     
     def formattedString(self):
         if self.drawBot:
@@ -600,7 +610,4 @@ if __name__ == "__main__":
     from random import randint
 
     with previewer() as p:
-        svg = SVGContext(1000, 1000)
-        #svg.rect()
-        p.send(svg.toSVG())
         pass

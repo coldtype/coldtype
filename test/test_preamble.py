@@ -2,6 +2,10 @@ import os
 import sys
 dirname = os.path.dirname(__file__)
 sys.path.insert(0, os.path.realpath(dirname + "/.."))
+try:
+    sys.path.insert(0, os.path.expanduser("~/Type/furniture"))
+except:
+    pass
 
 
 def save_artifact(filename, content=None):

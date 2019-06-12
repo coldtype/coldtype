@@ -2,9 +2,11 @@ from test_preamble import *
 from coldtype import StyledString, StyledStringSetter
 from coldtype.svg import SVGContext
 from coldtype.pens import OutlinePen
+from coldtype.beziers import simple_quadratic
 from furniture.viewer import previewer
 from furniture.geometry import Rect
 from random import randint
+from fontTools.pens.recordingPen import RecordingPen, replayRecording
 
 
 def graff_test(preview):
@@ -84,14 +86,35 @@ def rendering_test(preview):
 
 def glyph_test(preview):
     svg = SVGContext(1000, 300)
-    ss = StyledString("Hello World", font="¬/CoFo_Peshka_Variable_V0.1.ttf", fontSize=100, tracking=-20)
-    svg.addGlyph(ss.asGlyph(removeOverlap=True), fill="deeppink", stroke="black", strokeWidth=4)
+    ss = StyledString("Hello World", font="¬/CoFo_Peshka_Variable_V0.1.ttf", fontSize=100, tracking=-20, rect=svg.rect)
+    svg.addGlyphs(reversed(ss.asGlyph(removeOverlap=True, atomized=True)), fill="deeppink", stroke="black", strokeWidth=4)
+    preview.send(svg.toSVG())
+
+def map_test(preview):
+    f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
+    f, v = ["¬/MapRomanVariable-VF.ttf", dict(wdth=1, scale=True)]
+
+    svg = SVGContext(500, 500)
+    ss = StyledString("New York City",
+        font=f,
+        variations=v,
+        fontSize=30,
+        tracking=21,
+        #trackingLimit=21,
+        baselineShift=10, # should incorporate tangents?
+        )
+    r = svg.rect.inset(50, 0).take(180, "centery")
+    rp = simple_quadratic(r.p("SW"), r.p("C").offset(-100, 200), r.p("NE"))
+    ss.addPath(rp, fit=True)
+    svg.addPath(rp, stroke="#eee", strokeWidth=1, fill="none")
+    svg.addGlyph(ss.asGlyph(), fill="black")
     preview.send(svg.toSVG())
 
 with previewer() as p:
-    graff_test(p)
+    #graff_test(p)
     #multilang_test(p)
     #no_glyph_sub_test(p)
     #outline_test(p)
     #rendering_test(p)
     #glyph_test(p)
+    map_test(p)
