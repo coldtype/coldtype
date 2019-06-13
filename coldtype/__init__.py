@@ -28,6 +28,7 @@ if __name__ == "__main__":
 
 from coldtype.beziers import CurveCutter, raise_quadratic, simple_quadratic
 from coldtype.svg import SVGContext, flipped_svg_pen
+from coldtype.datpen import DATPen
 
 try:
     # relies on undeclared dependencies
@@ -123,11 +124,11 @@ class FreetypeReader():
 
     def drawOutlineToPen(self, pen, raiseCubics=True):
         outline = self.font.glyph.outline
-        rp = RecordingPen()
+        rp = DATPen()
         self.font.glyph.outline.decompose(rp, move_to=FreetypeReader.moveTo, line_to=FreetypeReader.lineTo, conic_to=FreetypeReader.conicTo, cubic_to=FreetypeReader.cubicTo)
         if len(rp.value) > 0:
             rp.closePath()
-        replayRecording(rp.value, pen)
+        rp.replay(pen)
         return
     
     def drawTTOutlineToPen(self, pen):
@@ -168,6 +169,7 @@ class StyledString():
             trackingLimit=0,
             space=None,
             baselineShift=0,
+            xShift=None,
             leftMargin=0,
             rightMargin=0,
             variations=dict(),
@@ -195,6 +197,7 @@ class StyledString():
         self.tracking = tracking
         self.trackingLimit = trackingLimit
         self.baselineShift = baselineShift
+        self.xShift = xShift
         self.leftMargin = leftMargin
         self.rightMargin = rightMargin
         self.features = {**dict(kern=True, liga=True), **features}
@@ -291,7 +294,7 @@ class StyledString():
                 gn = glyph_names[idx]
                 f.frame = f.frame.offset(x_off, 0)
                 x_off += t
-                if self.space and gn == "space":
+                if self.space and gn.lower() == "space":
                     x_off += self.space
         else:
             for idx, frame in enumerate(frames):
@@ -315,10 +318,10 @@ class StyledString():
         return frames
     
     def adjustFramesForPath(self, frames):
-        self.tangents = []
-        self.originalWidth = 0
         self.limit = len(frames)
         if self.path:
+            self.tangents = []
+            self.originalWidth = 0
             for idx, f in enumerate(frames):
                 ow = f.frame.x+f.frame.w/2
                 self.originalWidth = ow
@@ -334,6 +337,11 @@ class StyledString():
         else:
             for idx, f in enumerate(frames):
                 f.frame.y += self.baselineShift
+                if self.xShift:
+                    try:
+                        f.frame.x += self.xShift[idx]
+                    except:
+                        pass
         return frames[0:self.limit]
     
     def getGlyphNames(self, txt):
@@ -417,11 +425,13 @@ class StyledString():
             print("No DrawBot available")
             return None
     
-    def drawToPen(self, out_pen, frames, useTTFont=False):
+    def drawToPen(self, out_pen, frames, index=None, useTTFont=False):
         fr = FreetypeReader(self.fontFile, ttfont=self.ttfont)
         fr.setVariations(self.variations)
 
         for idx, frame in enumerate(frames):
+            if index is not None and idx != index:
+                continue
             fr.setGlyph(frame.gid)
             s = self.scale()
             t = Transform()
@@ -441,7 +451,7 @@ class StyledString():
     
     def alignedPen(self, rp):
         cbp = ControlBoundsPen(None)
-        replayRecording(rp.value, cbp)
+        rp.replay(cbp)
         mnx, mny, mxx, mxy = cbp.bounds
         os2 = self.ttfont["OS/2"]
         ch = self.ch * self.scale()
@@ -468,9 +478,9 @@ class StyledString():
             yoff = self.rect.y
         
         diff = self.rect.w - (mxx-mnx)
-        rp2 = RecordingPen()
+        rp2 = DATPen()
         tp = TransformPen(rp2, (1, 0, 0, 1, xoff, yoff))
-        replayRecording(rp.value, tp)
+        rp.replay(tp)
         self._final_offset = (xoff, yoff)
         return rp2
     
@@ -487,7 +497,7 @@ class StyledString():
             return pen
 
     def asRecording(self, rounding=None, atomized=False):
-        rp = RecordingPen()
+        rp = DATPen()
         self._frames = self.getGlyphFrames()
         self.drawToPen(rp, self._frames)
         if self.rect and self.align != "SW":
@@ -499,23 +509,26 @@ class StyledString():
             xoff, yoff = 0, 0
         if atomized:
             pens = []
-            for f in self._frames:
-                frp = RecordingPen()
-                self.drawToPen(frp, [f])
-                rp2 = RecordingPen()
+            for idx, f in enumerate(self._frames):
+                frp = DATPen()
+                self.drawToPen(frp, self._frames, index=idx)
+                rp2 = DATPen()
                 tp = TransformPen(rp2, (1, 0, 0, 1, xoff, yoff))
-                replayRecording(frp.value, tp)
+                frp.replay(tp)
                 # transform
                 pens.append(rp2)
             return pens
             #return [self.roundPen(rp, rounding)]
         else:
             return self.roundPen(rp, rounding)
+        
+    def asDAT(self, rounding=None, atomized=False):
+        return self.asRecording(rounding=rounding, atomized=atomized)
 
     def asGlyph(self, removeOverlap=False, atomized=False):
         def process(recording):
             bg = BooleanGlyph()
-            replayRecording(recording.value, bg.getPen())
+            recording.replay(bg.getPen())
             if removeOverlap:
                 bg = bg.removeOverlap()
             return bg
@@ -540,15 +553,15 @@ class StyledStringSetter():
         self.strings = strings
     
     def transform(self, pen, transform):
-        op = RecordingPen()
+        op = DATPen()
         tp = TransformPen(op, transform)
-        replayRecording(pen.value, tp)
+        pen.replay(tp)
         return op
     
     def asRecording(self):
-        rp = RecordingPen()
+        rp = DATPen()
         for pen in self.pens:
-            replayRecording(pen.value, rp)
+            pen.replay(rp)
         return rp
     
     def align(self, align="CC", rect=None):
@@ -572,7 +585,7 @@ class StyledStringSetter():
             for idx, s in enumerate(self.strings):
                 os2 = s.ttfont["OS/2"]
                 ch = max(ch, s.ch * s.scale())
-                replayRecording(contiguous_pens[idx].value, cbp)
+                contiguous_pens[idx].replay(cbp)
 
             mnx, mny, mxx, mxy = cbp.bounds
             # ch = mxy - mny
@@ -609,5 +622,27 @@ if __name__ == "__main__":
     from furniture.viewer import previewer
     from random import randint
 
+    def map_test(preview):
+        f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
+        f, v = ["¬/Cheee_Variable.ttf", dict(yest=1, grvt=0.5, temp=0.2, scale=True)]
+        #f, v = ["¬/MapRomanVariable-VF.ttf", dict(wdth=1, scale=True)]
+
+        svg = SVGContext(500, 500)
+        ss = StyledString("New York City",
+            font=f,
+            variations=v,
+            fontSize=60,
+            tracking=-4,
+            #tracking=21,
+            #trackingLimit=21,
+            baselineShift=-19,
+            )
+        r = svg.rect.inset(50, 0).take(180, "centery")
+        rp = simple_quadratic(r.p("SW"), r.p("C").offset(100, -200), r.p("NE"))
+        ss.addPath(rp, fit=True)
+        svg.addPath(rp, stroke="#eee", strokeWidth=1, fill="none")
+        svg.addGlyph(ss.asGlyph(removeOverlap=True, atomized=True), fill="deeppink", stroke="black", strokeWidth=4)
+        preview.send(svg.toSVG())
+
     with previewer() as p:
-        pass
+        map_test(p) 

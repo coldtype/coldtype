@@ -3,6 +3,8 @@ from coldtype import StyledString, StyledStringSetter
 from coldtype.svg import SVGContext
 from coldtype.pens import OutlinePen
 from coldtype.beziers import simple_quadratic
+from coldtype.utils import transformpen
+from coldtype.datpen import DATPen
 from furniture.viewer import previewer
 from furniture.geometry import Rect
 from random import randint
@@ -93,22 +95,68 @@ def glyph_test(preview):
 def map_test(preview):
     f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
     f, v = ["¬/MapRomanVariable-VF.ttf", dict(wdth=1, scale=True)]
-
     svg = SVGContext(500, 500)
     ss = StyledString("New York City",
         font=f,
         variations=v,
-        fontSize=30,
-        tracking=21,
+        fontSize=40,
+        tracking=-2,
+        #tracking=21,
         #trackingLimit=21,
-        baselineShift=10, # should incorporate tangents?
+        baselineShift=-19,
         )
     r = svg.rect.inset(50, 0).take(180, "centery")
     rp = simple_quadratic(r.p("SW"), r.p("C").offset(-100, 200), r.p("NE"))
     ss.addPath(rp, fit=True)
     svg.addPath(rp, stroke="#eee", strokeWidth=1, fill="none")
-    svg.addGlyph(ss.asGlyph(), fill="black")
+    svg.addGlyph(ss.asGlyph(removeOverlap=True, atomized=False), fill="black")
     preview.send(svg.toSVG())
+
+def vulf_logo(r, pen):
+    a, bc = r.inset(24, 20).divide(80, "maxy")
+    b, c = bc.take(90, "maxy").offset(0, -2).subdivide(2, "maxy")
+    caps = dict(font="¬/VulfMonoLight.otf", fontSize=62, tracking=20, trackingLimit=-4)
+
+    StyledString("vulf", font="¬/VulfMonoBlackItalic.otf", fontSize=72, tracking=0, rect=a, xShift=[0, 5, 6, 0]).asDAT().replay(pen)
+    StyledString("COMPR", rect=b.inset(20, 0), **caps).asDAT().replay(pen)
+    StyledString("ESSOR", rect=c.inset(20, 0), **caps).asDAT().replay(pen)
+
+def faraday_logo(r, pen):
+    a, b, c = r.inset(24, 20).take(0.9, "maxy").subdivide(3, "maxy")
+    serif = "¬/WilliamTextPro-Italic.otf"
+    sans = "¬/antiquegothic-regular.otf"
+    StyledString("Fara", font=serif, fontSize=72, tracking=20, rect=a).asDAT().replay(pen)
+    StyledString("day", font=serif, fontSize=72, tracking=30, baselineShift=12, rect=b).asDAT().replay(pen)
+    StyledString("LIMITER", font=sans, fontSize=120, tracking=2, baselineShift=-4, rect=c).asDAT().replay(pen)
+
+def noun_ctrl(r, pen):
+    a, b = r.inset(24, 20).take(0.9, "maxy").subdivide(2, "maxy")
+    #StyledString("WOW", font="¬/HobeauxBold.otf", fontSize=76, rect=a).asDAT().replay(pen)
+    StyledString("CTRL", font="¬/CovikSansMono-Bold.otf", fontSize=76, rect=b, baselineShift=10).asDAT().replay(pen)
+    return a
+
+def tone_ctrl(r, pen):
+    a = noun_ctrl(r, pen)
+    StyledString("TONE", font="¬/CovikSansBlackItalic.otf", rect=a, fontSize=78, tracking=0, features=dict(swsh=False)).asDAT().replay(pen)
+
+def wow_ctrl(r, pen):
+    a = noun_ctrl(r, pen)
+    StyledString("WOW", font="¬/HobeauxBold.otf", fontSize=76, rect=a).asDAT().replay(pen)
+
+def logo_test(p, fn):
+    r = Rect((0, 0, 248, 248))
+    rp = DATPen()
+    #vulf_logo(r, rp)
+    fn(r, rp)
+    svg = SVGContext(r.w, r.h)
+    svg.addPath(rp, fill="black")
+    p.send(svg.toSVG())
+
+def number_test(p):
+    svg = SVGContext(300, 300)
+    ss = StyledString("51.78", font="¬/ObviouslyVariable.ttf", fontSize=300, features=dict(lnum=True, ss01=True), variations=dict(slnt=0.25, wght=1, scale=True))
+    svg.addPath(ss.asRecording())
+    p.send(svg.toSVG())
 
 with previewer() as p:
     #graff_test(p)
@@ -117,4 +165,9 @@ with previewer() as p:
     #outline_test(p)
     #rendering_test(p)
     #glyph_test(p)
-    map_test(p)
+    #map_test(p)
+    #logo_test(p, vulf_logo)
+    #logo_test(p, faraday_logo)
+    logo_test(p, wow_ctrl)
+    logo_test(p, tone_ctrl)
+    #number_test(p)

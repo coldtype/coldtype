@@ -50,9 +50,14 @@ class SVGContext():
         self.paths.append(svg_path)
     
     def addGlyph(self, glyph, **kwargs):
-        rp = RecordingPen()
-        glyph.draw(rp)
-        self.addPath(rp, **kwargs)
+        try:
+            rp = RecordingPen()
+            glyph.draw(rp)
+            self.addPath(rp, **kwargs)
+        except:
+            for g in glyph:
+                self.addGlyph(g, **kwargs)
+            
     
     def addGlyphs(self, glyphs, **kwargs):
         for g in glyphs:
