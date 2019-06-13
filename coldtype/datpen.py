@@ -19,6 +19,14 @@ class DATPen(RecordingPen):
         self.replay(tp)
         self.value = op.value
         return self
+    
+    def translate(self, translation):
+        return self.transform((1, 0, 0, 1, translation.x, translation.y))
+    
+    def scale(self, scaleX, scaleY=None, center=None):
+        # TODO centering
+        t = Transform().scale(scaleX, scaleY or scaleX)
+        return self.transform(t)
 
     def record(self, pen):
         pen.replay(self)
@@ -36,12 +44,14 @@ class DATPen(RecordingPen):
         self.lineTo(rect.point("NE").xy())
         self.lineTo(rect.point("SE").xy())
         self.closePath()
-    
+        return self
+
     def line(self, points):
         self.moveTo(points[0])
         for p in points[1:]:
             self.lineTo(p)
         self.endPath()
+        return self
     
     def roundedRect(self, rect, hr, vr):
         l, b, w, h = rect
@@ -61,9 +71,11 @@ class DATPen(RecordingPen):
         self.lineTo((l, b+vr))
         self.curveTo((l, b+vr*(1-K)), (l+hr*(1-K), b), (l+hr, b))
         self.closePath()
+        return self
     
     def oval(self, rect):
         self.roundedRect(rect, 0.5, 0.5)
+        return self
 
 if __name__ == "__main__":
     dt = DATPen()

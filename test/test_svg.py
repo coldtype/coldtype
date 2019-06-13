@@ -1,3 +1,4 @@
+import math
 from test_preamble import *
 from coldtype import StyledString, StyledStringSetter
 from coldtype.svg import SVGContext
@@ -9,6 +10,7 @@ from furniture.viewer import previewer
 from furniture.geometry import Rect
 from random import randint
 from fontTools.pens.recordingPen import RecordingPen, replayRecording
+from fontTools.misc.transform import Transform
 
 
 def graff_test(preview):
@@ -130,7 +132,7 @@ def faraday_logo(r, pen):
     StyledString("day", font=serif, fontSize=72, tracking=30, baselineShift=12, rect=b).asDAT().replay(pen)
     StyledString("LIMITER", font=sans, fontSize=100, tracking=5, baselineShift=-4, rect=c).asDAT().replay(pen)
 
-def noun_ctrl(r, pen):
+def noun_ctrl_logo(r, pen):
     a, b = r.inset(34, 20).take(0.9, "maxy").subdivide(2, "maxy")
     ctrl = StyledString("CTRL", font="¬/CovikSansMono-SemiBold.otf", fontSize=76, rect=b, baselineShift=10).asDAT()
     pen.record(ctrl)
@@ -184,6 +186,31 @@ def lohi(r, pen):
     f = "¬/GigV0.2-Regular.otf"
     pen.record(StyledString("LOHI", font=f, fontSize=92, baselineShift=[0, 0, 10, 10], rect=a).asDAT())
 
+def good_dither(r, pen):
+    a, b = r.inset(20, 30).take(0.9, "maxy").subdivide(2, "maxy")
+    attrs = dict(fontSize=42, tracking=10)
+    pen.record(StyledString("GOOD", font="¬/FormaDJRTextBold.otf", fontSize=58, rect=a, align="NE").asDAT())
+    pen.record(DATPen().rect(a.take(3, "centery").take(170, "maxx").offset(0, -10)))
+    t = Transform()
+    t = t.translate(-20, 70)
+    t = t.translate(b.x, b.y)
+    t = t.rotate(math.radians(-33))
+    t = t.translate(-b.x, -b.y)
+    pen.record(StyledString("DITHER", font="¬/FormaDJRTextRegular.otf", fontSize=58, rect=b).asDAT().transform(t))
+
+def tiltshift(r, pen):
+    a, b = r.inset(30, 30).take(0.9, "maxy").subdivide(2, "maxy")
+    #pen.record(StyledString("Tilt", font="¬/ISOv0.5-Bold.otf", rect=a, fontSize=82, tracking=0).asDAT())
+    #pen.record(StyledString("shift", font="¬/TweakDisplay-VF.ttf", rect=b, fontSize=82, tracking=0, variations=dict(DIST=1000)).asDAT())
+    pen.record(StyledString("Tilt", font="¬/ObviouslyVariable.ttf", rect=a, fontSize=82, tracking=0, baselineShift=[0, 1, 2, 3, 4], variations=dict(wght=0.8, slnt=1, wdth=1, scale=True), features=dict(ss01=True)).asDAT())
+    pen.record(StyledString("shift", font="¬/ObviouslyVariable.ttf", rect=b, fontSize=72, tracking=0, baselineShift=[-5, 0, 4, 8, 12], variations=dict(wght=0.5, slnt=0, wdth=0.3, scale=True), features=dict(ss01=True)).asDAT().transform((1, 0, 0, 1, 30)))
+
+def canopenerstudio(r, pen):
+    a, b, c = r.inset(30, 30).subdivide(3, "maxy")
+    pen.record(StyledString("CAN", font="¬/Konsole0.1-Expanded.otf", rect=a, fontSize=72, tracking=0).asDAT())
+    pen.record(StyledString("OPENER", font="¬/Konsole0.1-Condensed.otf", rect=b, fontSize=72, tracking=14, baselineShift=-4).asDAT())
+    pen.record(StyledString("STUDIO", font="¬/Konsole0.1-Regular.otf", rect=c, fontSize=52, baselineShift=0).asDAT())
+
 def logo_test(p, fn):
     r = Rect((0, 0, 248, 248))
     rp = DATPen()
@@ -191,12 +218,6 @@ def logo_test(p, fn):
     fn(r, rp)
     svg = SVGContext(r.w, r.h)
     svg.addPath(rp, fill="black")
-    p.send(svg.toSVG())
-
-def number_test(p):
-    svg = SVGContext(300, 300)
-    ss = StyledString("51.78", font="¬/ObviouslyVariable.ttf", fontSize=300, features=dict(lnum=True, ss01=True), variations=dict(slnt=0.25, wght=1, scale=True))
-    svg.addPath(ss.asRecording())
     p.send(svg.toSVG())
 
 with previewer() as p:
@@ -218,4 +239,6 @@ with previewer() as p:
     logo_test(p, midside_matrix)
     logo_test(p, panpot)
     logo_test(p, lohi)
-    #number_test(p)
+    logo_test(p, good_dither)
+    logo_test(p, tiltshift)
+    logo_test(p, canopenerstudio)
