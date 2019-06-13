@@ -113,35 +113,76 @@ def map_test(preview):
     preview.send(svg.toSVG())
 
 def vulf_logo(r, pen):
-    a, bc = r.inset(24, 20).divide(80, "maxy")
+    a, bc = r.inset(30, 20).divide(80, "maxy")
     b, c = bc.take(90, "maxy").offset(0, -2).subdivide(2, "maxy")
-    caps = dict(font="¬/VulfMonoLight.otf", fontSize=62, tracking=20, trackingLimit=-4)
+    caps = dict(font="¬/VulfMonoLight.otf", fontSize=50, tracking=20, trackingLimit=-4)
 
-    StyledString("vulf", font="¬/VulfMonoBlackItalic.otf", fontSize=72, tracking=0, rect=a, xShift=[0, 5, 6, 0]).asDAT().replay(pen)
-    StyledString("COMPR", rect=b.inset(20, 0), **caps).asDAT().replay(pen)
-    StyledString("ESSOR", rect=c.inset(20, 0), **caps).asDAT().replay(pen)
+    StyledString("vulf", font="¬/VulfMonoBlackItalic.otf", fontSize=68, tracking=0, rect=a, xShift=[0, 5, 6, 0]).asDAT().replay(pen)
+    StyledString("COMPR", rect=b.inset(0, 0), **caps).asDAT().replay(pen)
+    StyledString("ESSOR", rect=c.inset(0, 0), **caps).asDAT().replay(pen)
 
 def faraday_logo(r, pen):
     a, b, c = r.inset(24, 20).take(0.9, "maxy").subdivide(3, "maxy")
     serif = "¬/WilliamTextPro-Italic.otf"
     sans = "¬/antiquegothic-regular.otf"
+    #sans = "¬/Rainer_v0.2-Medium.otf"
     StyledString("Fara", font=serif, fontSize=72, tracking=20, rect=a).asDAT().replay(pen)
     StyledString("day", font=serif, fontSize=72, tracking=30, baselineShift=12, rect=b).asDAT().replay(pen)
-    StyledString("LIMITER", font=sans, fontSize=120, tracking=2, baselineShift=-4, rect=c).asDAT().replay(pen)
+    StyledString("LIMITER", font=sans, fontSize=100, tracking=5, baselineShift=-4, rect=c).asDAT().replay(pen)
 
 def noun_ctrl(r, pen):
-    a, b = r.inset(24, 20).take(0.9, "maxy").subdivide(2, "maxy")
-    #StyledString("WOW", font="¬/HobeauxBold.otf", fontSize=76, rect=a).asDAT().replay(pen)
-    StyledString("CTRL", font="¬/CovikSansMono-Bold.otf", fontSize=76, rect=b, baselineShift=10).asDAT().replay(pen)
+    a, b = r.inset(34, 20).take(0.9, "maxy").subdivide(2, "maxy")
+    ctrl = StyledString("CTRL", font="¬/CovikSansMono-SemiBold.otf", fontSize=76, rect=b, baselineShift=10).asDAT()
+    pen.record(ctrl)
     return a
 
 def tone_ctrl(r, pen):
     a = noun_ctrl(r, pen)
-    StyledString("TONE", font="¬/CovikSansBlackItalic.otf", rect=a, fontSize=78, tracking=0, features=dict(swsh=False)).asDAT().replay(pen)
+    StyledString("TONE", font="¬/ObviouslyVariable.ttf", variations=dict(wdth=1, wght=0.6, slnt=0.5, scale=True), rect=a, fontSize=74, tracking=0).asDAT().replay(pen)
+
+def trem_ctrl(r, pen):
+    a = noun_ctrl(r, pen)
+    StyledString("Trem", font="¬/Bahati0.1-Regular.otf", rect=a, fontSize=110, tracking=0, baselineShift=8).asDAT().replay(pen)
 
 def wow_ctrl(r, pen):
     a = noun_ctrl(r, pen)
     StyledString("WOW", font="¬/HobeauxBold.otf", fontSize=76, rect=a).asDAT().replay(pen)
+
+def lossy(r, pen):
+    a, b = r.inset(30, 20).take(0.9, "maxy").subdivide(2, "maxy")
+    f = "¬/italic 08_55.ttf"
+    attrs = dict(font=f, fontSize=72, tracking=-5, align="CW")
+    pen.record(StyledString("LOS", rect=a, **attrs).asDAT())
+    pen.record(StyledString("SY", rect=b, **attrs).asDAT())
+
+def midside(r, pen):
+    a, b = r.inset(30, 30).take(0.9, "maxy").subdivide(2, "maxy")
+    attrs = dict(fontSize=92, tracking=10)
+    pen.record(StyledString("Mid", font="¬/GTHaptikLight.otf", rect=a, **attrs).asDAT())
+    pen.record(StyledString("side", font="¬/GTHaptikLightRotalic.otf", rect=b, **attrs).asDAT())
+
+def midside_matrix(r, pen):
+    a, b, c = r.inset(30, 30).subdivide(3, "maxy")
+    pen.record(StyledString("MID", font="¬/GTHaptikLight.otf", rect=a, fontSize=72, tracking=20).asDAT())
+    pen.record(StyledString("SIDE", font="¬/GTHaptikLightRotalic.otf", rect=b, fontSize=72, tracking=12, baselineShift=-6).asDAT())
+    pen.record(StyledString("MATRIX", font="¬/GTHaptikLight.otf", rect=c, fontSize=48, baselineShift=0).asDAT())
+
+def megaverb(r, pen):
+    a, b = r.inset(30, 30).take(0.9, "maxy").subdivide(2, "maxy")
+    pen.record(StyledString("MEGA", font="¬/SenatorOT-Ultra.otf", fontSize=98, rect=a, align="CW").asDAT())
+    pen.record(StyledString("verb", font="¬/RageItalicStd.otf", fontSize=138, baselineShift=30, rect=b, align="CE").asDAT())
+
+def panpot(r, pen):
+    a, b = r.inset(30, 30).take(0.8, "maxy").subdivide(2, "maxy")
+    f = "¬/Eckmannpsych-Variable.ttf"
+    attrs = dict(font=f, fontSize=102, tracking=0, variations=dict(opsz=0, scale=True))
+    pen.record(StyledString("PAN", rect=a, **attrs).asDAT())
+    pen.record(StyledString("POT", rect=b, **attrs).asDAT())
+
+def lohi(r, pen):
+    a = r.inset(30, 30).take(0.7, "maxy")
+    f = "¬/GigV0.2-Regular.otf"
+    pen.record(StyledString("LOHI", font=f, fontSize=92, baselineShift=[0, 0, 10, 10], rect=a).asDAT())
 
 def logo_test(p, fn):
     r = Rect((0, 0, 248, 248))
@@ -166,8 +207,15 @@ with previewer() as p:
     #rendering_test(p)
     #glyph_test(p)
     #map_test(p)
-    #logo_test(p, vulf_logo)
-    #logo_test(p, faraday_logo)
+    logo_test(p, vulf_logo)
+    logo_test(p, faraday_logo)
     logo_test(p, wow_ctrl)
     logo_test(p, tone_ctrl)
+    logo_test(p, trem_ctrl)
+    logo_test(p, lossy)
+    logo_test(p, megaverb)
+    logo_test(p, midside)
+    logo_test(p, midside_matrix)
+    logo_test(p, panpot)
+    logo_test(p, lohi)
     #number_test(p)

@@ -323,20 +323,29 @@ class StyledString():
             self.tangents = []
             self.originalWidth = 0
             for idx, f in enumerate(frames):
+                try:
+                    bs = self.baselineShift[idx]
+                except:
+                    bs = self.baselineShift
+                
                 ow = f.frame.x+f.frame.w/2
                 self.originalWidth = ow
                 if ow > self.cutter.length:
                     self.limit = min(idx, self.limit)
                 else:
                     p, t = self.cutter.subsegmentPoint(end=ow)
-                    x_shift = self.baselineShift * math.cos(math.radians(t))
-                    y_shift = self.baselineShift * math.sin(math.radians(t))
+                    x_shift = bs * math.cos(math.radians(t))
+                    y_shift = bs * math.sin(math.radians(t))
                     f.frame.x = p[0] + x_shift
                     f.frame.y = f.frame.y + p[1] + y_shift
                     self.tangents.append(t)
         else:
             for idx, f in enumerate(frames):
-                f.frame.y += self.baselineShift
+                try:
+                    bs = self.baselineShift[idx]
+                except:
+                    bs = self.baselineShift
+                f.frame.y += bs
                 if self.xShift:
                     try:
                         f.frame.x += self.xShift[idx]

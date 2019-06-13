@@ -2,6 +2,7 @@ from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from furniture.geometry import Rect
+from coldtype.pens import OutlinePen
 
 
 class DATPen(RecordingPen):
@@ -17,9 +18,17 @@ class DATPen(RecordingPen):
         tp = TransformPen(op, transform)
         self.replay(tp)
         self.value = op.value
+        return self
 
     def record(self, pen):
         pen.replay(self)
+    
+    def outline(self, pen, offset=1):
+        op = OutlinePen(None, offset=offset, optimizeCurve=True)
+        pen.replay(op)
+        op.drawSettings(drawInner=True, drawOuter=True)
+        g = op.getGlyph()
+        g.draw(self)
     
     def rect(self, rect):
         self.moveTo(rect.point("SW").xy())
