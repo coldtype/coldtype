@@ -20,8 +20,8 @@ class DATPen(RecordingPen):
         self.value = op.value
         return self
     
-    def translate(self, translation):
-        return self.transform((1, 0, 0, 1, translation.x, translation.y))
+    def translate(self, x, y):
+        return self.transform((1, 0, 0, 1, x, y))
     
     def scale(self, scaleX, scaleY=None, center=None):
         # TODO centering
