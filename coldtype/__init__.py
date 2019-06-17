@@ -225,8 +225,10 @@ class StyledString():
         else:
             self.ch = 1000 # alternative?
     
-    def carbonCopy(self, newText):
-        nss = StyledString(newText, fontFile=self.fontFile, ttFont=self.ttfont, fontSize=self.fontSize, tracking=self.tracking, trackingLimit=self.trackingLimit, space=self.space, baselineShift=self.baselineShift, xShift=self.xShift, leftMargin=self.leftMargin, rightMargin=self.rightMargin, variations=self.variations, variationLimits=self.variationLimits, increments=self.increments, features=self.features, align=self.align, rect=self.rect, fill=self.fill)
+    def carbonCopy(self, newText, **kwargs):
+        copy_kwargs = dict(fontFile=self.fontFile, ttFont=self.ttfont, fontSize=self.fontSize, tracking=self.tracking, trackingLimit=self.trackingLimit, space=self.space, baselineShift=self.baselineShift, xShift=self.xShift, leftMargin=self.leftMargin, rightMargin=self.rightMargin, variations=self.variations, variationLimits=self.variationLimits, increments=self.increments, features=self.features, align=self.align, rect=self.rect, fill=self.fill)
+        mixed_kwargs = {**copy_kwargs, **kwargs}
+        nss = StyledString(newText, **mixed_kwargs)
         return nss
 
     def addVariations(self, variations, limits=dict()):
@@ -547,8 +549,11 @@ class StyledString():
 
 
 class StyledStringSetter():
-    def __init__(self, strings):
+    def __init__(self, strings, rect=None):
         self.strings = strings
+        self.rect = rect
+        if self.rect:
+            self.align(rect=self.rect)
     
     def transform(self, pen, transform):
         op = DATPen()
@@ -633,15 +638,28 @@ if __name__ == "__main__":
             tracking=-4,
             #tracking=21,
             #trackingLimit=21,
-            baselineShift=-19,
+            #baselineShift=-19,
             )
         r = svg.rect.inset(50, 0).take(180, "centery")
         rp = simple_quadratic(r.p("SW"), r.p("C").offset(100, -200), r.p("NE"))
         ss.addPath(rp, fit=True)
         ss = ss.carbonCopy("California")
+        ss.addPath(rp, fit=True)
         svg.addPath(rp, stroke="#eee", strokeWidth=1, fill="none")
         svg.addGlyph(ss.asGlyph(removeOverlap=True, atomized=True), fill="deeppink", stroke="black", strokeWidth=4)
         preview.send(svg.toSVG())
+    
+    def sss_fit_test(preview):
+        r = Rect((0, 0, 500, 100))
+        f, v = ["¬/Eckmannpsych-Variable.ttf", dict()]
+        #f, v = ["¬/Fit-Variable.ttf", dict()]
+        
+        ss = StyledString("Hello", font=f, variations=v, fontSize=120)
+        sss = StyledStringSetter([ss], rect=r)
+        svg = SVGContext(r.w, r.h)
+        svg.addPath(sss.strings[0].asDAT())
+        preview.send(svg.toSVG())
 
     with previewer() as p:
-        map_test(p) 
+        map_test(p)
+        #sss_fit_test(p)
