@@ -98,14 +98,14 @@ def map_test(preview):
     f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
     f, v = ["¬/MapRomanVariable-VF.ttf", dict(wdth=1, scale=True)]
     svg = SVGContext(500, 500)
-    ss = StyledString("New York City",
+    ss = StyledString("CALIFIA",
         font=f,
         variations=v,
         fontSize=40,
-        tracking=-2,
+        tracking=20,
         #tracking=21,
         #trackingLimit=21,
-        baselineShift=-19,
+        baselineShift=0,
         )
     r = svg.rect.inset(50, 0).take(180, "centery")
     rp = simple_quadratic(r.p("SW"), r.p("C").offset(-100, 200), r.p("NE"))
@@ -114,131 +114,12 @@ def map_test(preview):
     svg.addGlyph(ss.asGlyph(removeOverlap=True, atomized=False), fill="black")
     preview.send(svg.toSVG())
 
-def vulf_logo(r, pen):
-    a, bc = r.inset(30, 20).divide(80, "maxy")
-    b, c = bc.take(90, "maxy").offset(0, -2).subdivide(2, "maxy")
-    caps = dict(font="¬/VulfMonoLight.otf", fontSize=50, tracking=20, trackingLimit=-4)
-
-    StyledString("vulf", font="¬/VulfMonoBlackItalic.otf", fontSize=68, tracking=0, rect=a, xShift=[0, 5, 6, 0]).asDAT().replay(pen)
-    StyledString("COMPR", rect=b.inset(0, 0), **caps).asDAT().replay(pen)
-    StyledString("ESSOR", rect=c.inset(0, 0), **caps).asDAT().replay(pen)
-
-def faraday_logo(r, pen):
-    a, b, c = r.inset(24, 20).take(0.9, "maxy").subdivide(3, "maxy")
-    serif = "¬/WilliamTextPro-Italic.otf"
-    sans = "¬/antiquegothic-regular.otf"
-    #sans = "¬/Rainer_v0.2-Medium.otf"
-    StyledString("Fara", font=serif, fontSize=72, tracking=20, rect=a).asDAT().replay(pen)
-    StyledString("day", font=serif, fontSize=72, tracking=30, baselineShift=12, rect=b).asDAT().replay(pen)
-    StyledString("LIMITER", font=sans, fontSize=100, tracking=5, baselineShift=-4, rect=c).asDAT().replay(pen)
-
-def noun_ctrl_logo(r, pen):
-    a, b = r.inset(34, 20).take(0.9, "maxy").subdivide(2, "maxy")
-    ctrl = StyledString("CTRL", font="¬/CovikSansMono-SemiBold.otf", fontSize=76, rect=b, baselineShift=10).asDAT()
-    pen.record(ctrl)
-    return a
-
-def tone_ctrl(r, pen):
-    a = noun_ctrl(r, pen)
-    StyledString("TONE", font="¬/ObviouslyVariable.ttf", variations=dict(wdth=1, wght=0.6, slnt=0.5, scale=True), rect=a, fontSize=74, tracking=0).asDAT().replay(pen)
-
-def trem_ctrl(r, pen):
-    a = noun_ctrl(r, pen)
-    StyledString("Trem", font="¬/Bahati0.1-Regular.otf", rect=a, fontSize=110, tracking=0, baselineShift=8).asDAT().replay(pen)
-
-def wow_ctrl(r, pen):
-    a = noun_ctrl(r, pen)
-    StyledString("WOW", font="¬/HobeauxBold.otf", fontSize=76, rect=a).asDAT().replay(pen)
-
-def lossy(r, pen):
-    a, b = r.inset(30, 20).take(0.9, "maxy").subdivide(2, "maxy")
-    f = "¬/italic 08_55.ttf"
-    attrs = dict(font=f, fontSize=72, tracking=-5, align="CW")
-    pen.record(StyledString("LOS", rect=a, **attrs).asDAT())
-    pen.record(StyledString("SY", rect=b, **attrs).asDAT())
-
-def midside(r, pen):
-    a, b = r.inset(30, 30).take(0.9, "maxy").subdivide(2, "maxy")
-    attrs = dict(fontSize=92, tracking=10)
-    pen.record(StyledString("Mid", font="¬/GTHaptikLight.otf", rect=a, **attrs).asDAT())
-    pen.record(StyledString("side", font="¬/GTHaptikLightRotalic.otf", rect=b, **attrs).asDAT())
-
-def midside_matrix(r, pen):
-    a, b, c = r.inset(30, 30).subdivide(3, "maxy")
-    pen.record(StyledString("MID", font="¬/GTHaptikLight.otf", rect=a, fontSize=72, tracking=20).asDAT())
-    pen.record(StyledString("SIDE", font="¬/GTHaptikLightRotalic.otf", rect=b, fontSize=72, tracking=12, baselineShift=-6).asDAT())
-    pen.record(StyledString("MATRIX", font="¬/GTHaptikLight.otf", rect=c, fontSize=48, baselineShift=0).asDAT())
-
-def megaverb(r, pen):
-    a, b = r.inset(30, 30).take(0.9, "maxy").subdivide(2, "maxy")
-    pen.record(StyledString("MEGA", font="¬/SenatorOT-Ultra.otf", fontSize=98, rect=a, align="CW").asDAT())
-    pen.record(StyledString("verb", font="¬/RageItalicStd.otf", fontSize=138, baselineShift=30, rect=b, align="CE").asDAT())
-
-def panpot(r, pen):
-    a, b = r.inset(30, 30).take(0.8, "maxy").subdivide(2, "maxy")
-    f = "¬/Eckmannpsych-Variable.ttf"
-    attrs = dict(font=f, fontSize=102, tracking=0, variations=dict(opsz=0, scale=True))
-    pen.record(StyledString("PAN", rect=a, **attrs).asDAT())
-    pen.record(StyledString("POT", rect=b, **attrs).asDAT())
-
-def lohi(r, pen):
-    a = r.inset(30, 30).take(0.7, "maxy")
-    f = "¬/GigV0.2-Regular.otf"
-    pen.record(StyledString("LOHI", font=f, fontSize=92, baselineShift=[0, 0, 10, 10], rect=a).asDAT())
-
-def good_dither(r, pen):
-    a, b = r.inset(20, 30).take(0.9, "maxy").subdivide(2, "maxy")
-    attrs = dict(fontSize=42, tracking=10)
-    pen.record(StyledString("GOOD", font="¬/FormaDJRTextBold.otf", fontSize=58, rect=a, align="NE").asDAT())
-    pen.record(DATPen().rect(a.take(3, "centery").take(170, "maxx").offset(0, -10)))
-    t = Transform()
-    t = t.translate(-20, 70)
-    t = t.translate(b.x, b.y)
-    t = t.rotate(math.radians(-33))
-    t = t.translate(-b.x, -b.y)
-    pen.record(StyledString("DITHER", font="¬/FormaDJRTextRegular.otf", fontSize=58, rect=b).asDAT().transform(t))
-
-def tiltshift(r, pen):
-    a, b = r.inset(30, 30).take(0.9, "maxy").subdivide(2, "maxy")
-    #pen.record(StyledString("Tilt", font="¬/ISOv0.5-Bold.otf", rect=a, fontSize=82, tracking=0).asDAT())
-    #pen.record(StyledString("shift", font="¬/TweakDisplay-VF.ttf", rect=b, fontSize=82, tracking=0, variations=dict(DIST=1000)).asDAT())
-    pen.record(StyledString("Tilt", font="¬/ObviouslyVariable.ttf", rect=a, fontSize=82, tracking=0, baselineShift=[0, 1, 2, 3, 4], variations=dict(wght=0.8, slnt=1, wdth=1, scale=True), features=dict(ss01=True)).asDAT())
-    pen.record(StyledString("shift", font="¬/ObviouslyVariable.ttf", rect=b, fontSize=72, tracking=0, baselineShift=[-5, 0, 4, 8, 12], variations=dict(wght=0.5, slnt=0, wdth=0.3, scale=True), features=dict(ss01=True)).asDAT().transform((1, 0, 0, 1, 30)))
-
-def canopenerstudio(r, pen):
-    a, b, c = r.inset(30, 30).subdivide(3, "maxy")
-    pen.record(StyledString("CAN", font="¬/Konsole0.1-Expanded.otf", rect=a, fontSize=72, tracking=0).asDAT())
-    pen.record(StyledString("OPENER", font="¬/Konsole0.1-Condensed.otf", rect=b, fontSize=72, tracking=14, baselineShift=-4).asDAT())
-    pen.record(StyledString("STUDIO", font="¬/Konsole0.1-Regular.otf", rect=c, fontSize=52, baselineShift=0).asDAT())
-
-def logo_test(p, fn):
-    r = Rect((0, 0, 248, 248))
-    rp = DATPen()
-    #vulf_logo(r, rp)
-    fn(r, rp)
-    svg = SVGContext(r.w, r.h)
-    svg.addPath(rp, fill="black")
-    p.send(svg.toSVG())
 
 with previewer() as p:
     #graff_test(p)
-    #multilang_test(p)
+    multilang_test(p)
     #no_glyph_sub_test(p)
     #outline_test(p)
     #rendering_test(p)
     #glyph_test(p)
     #map_test(p)
-    logo_test(p, vulf_logo)
-    logo_test(p, faraday_logo)
-    logo_test(p, wow_ctrl)
-    logo_test(p, tone_ctrl)
-    logo_test(p, trem_ctrl)
-    logo_test(p, lossy)
-    logo_test(p, megaverb)
-    logo_test(p, midside)
-    logo_test(p, midside_matrix)
-    logo_test(p, panpot)
-    logo_test(p, lohi)
-    logo_test(p, good_dither)
-    logo_test(p, tiltshift)
-    logo_test(p, canopenerstudio)

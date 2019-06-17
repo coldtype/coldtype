@@ -232,8 +232,9 @@ class StyledString():
         else:
             self.ch = 1000 # alternative?
         
-        if rect:
-            self.place(self.rect)
+        self._placed = False
+        #if rect:
+        #    self.place(self.rect)
     
     def addVariations(self, variations, limits=dict()):
         for k, v in self.normalizeVariations(variations).items():
@@ -417,6 +418,7 @@ class StyledString():
             self.fit(self.rect.w)
         x = self.rect.w/2 - self.width()/2
         self.offset = (0, 0)
+        self._placed = True
         #self.offset = rect.offset(0, rect.h/2 - ch/2).xy()
     
     def addPath(self, path, fit=False):
@@ -506,6 +508,9 @@ class StyledString():
             return pen
 
     def asRecording(self, rounding=None, atomized=False):
+        if self.rect and not self._placed: # wack
+            self.place(self.rect)
+
         rp = DATPen()
         self._frames = self.getGlyphFrames()
         self.drawToPen(rp, self._frames)
@@ -531,8 +536,8 @@ class StyledString():
         else:
             return self.roundPen(rp, rounding)
         
-    def asDAT(self, rounding=None, atomized=False):
-        return self.asRecording(rounding=rounding, atomized=atomized)
+    def asDAT(self, **kwargs):
+        return self.asRecording(**kwargs)
 
     def asGlyph(self, removeOverlap=False, atomized=False):
         def process(recording):
