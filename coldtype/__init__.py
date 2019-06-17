@@ -164,6 +164,7 @@ class StyledString():
             text="",
             font=None,
             fontFile=None,
+            ttFont=None,
             fontSize=12,
             tracking=0,
             trackingLimit=0,
@@ -178,21 +179,12 @@ class StyledString():
             features=dict(),
             align="C",
             rect=None,
-            fill=None,
-            fallback=None,
-            drawBot=_drawBot):
+            fill=None):
         self.text = text
         self.fontFile = os.path.expanduser((font or fontFile).replace("¬", "~/Library/Fonts"))
-        self.ttfont = TTFont(self.fontFile)
-        #self.harfbuzz = Harfbuzz(self.fontFile)
+        self.ttfont = ttFont or TTFont(self.fontFile)
         self.fontdata = get_cached_font(self.fontFile)
         self.upem = hb.Face(self.fontdata).upem
-        #self.upem = hb.faceself.harfbuzz.upem
-        #try:
-        #    self.upem = self.ttfont["head"].unitsPerEm
-        #except:
-        #self.upem = 1000
-        self.drawBot = _drawBot
         self.fontSize = fontSize
         self.tracking = tracking
         self.trackingLimit = trackingLimit
@@ -206,11 +198,12 @@ class StyledString():
         self.rect = None
         self.increments = increments
         self.space = space
-        self.fallback = fallback
         self.align = align
         self.rect = rect
         self.fill = fill # should normalize?
-        
+        # internal state
+        self._placed = False
+        # variations
         self.axes = OrderedDict()
         self.variations = dict()
         self.variationLimits = dict()
@@ -231,11 +224,11 @@ class StyledString():
             self.ch = os2.sCapHeight
         else:
             self.ch = 1000 # alternative?
-        
-        self._placed = False
-        #if rect:
-        #    self.place(self.rect)
     
+    def carbonCopy(self, newText):
+        nss = StyledString(newText, fontFile=self.fontFile, ttFont=self.ttfont, fontSize=self.fontSize, tracking=self.tracking, trackingLimit=self.trackingLimit, space=self.space, baselineShift=self.baselineShift, xShift=self.xShift, leftMargin=self.leftMargin, rightMargin=self.rightMargin, variations=self.variations, variationLimits=self.variationLimits, increments=self.increments, features=self.features, align=self.align, rect=self.rect, fill=self.fill)
+        return nss
+
     def addVariations(self, variations, limits=dict()):
         for k, v in self.normalizeVariations(variations).items():
             self.variations[k] = v
@@ -428,10 +421,10 @@ class StyledString():
             self.fit(self.cutter.length)
     
     def formattedString(self):
-        if self.drawBot:
+        if _drawBot:
             feas = dict(self.features)
             del feas["kern"]
-            return self.drawBot.FormattedString(self.text, font=self.fontFile, fontSize=self.fontSize, lineHeight=self.fontSize+2, tracking=self.tracking, fontVariations=self.variations, openTypeFeatures=feas)
+            return _drawBot.FormattedString(self.text, font=self.fontFile, fontSize=self.fontSize, lineHeight=self.fontSize+2, tracking=self.tracking, fontVariations=self.variations, openTypeFeatures=feas)
         else:
             print("No DrawBot available")
             return None
@@ -551,15 +544,6 @@ class StyledString():
             return [process(rec) for rec in self.asRecording(atomized=True)]
         else:
             return process(self.asRecording())
-    
-    def drawBotDraw(self, removeOverlap=False):
-        if self.drawBot:
-            g = self.asGlyph(removeOverlap=removeOverlap)
-            bp = self.drawBot.BezierPath()
-            g.draw(bp)
-            self.drawBot.drawPath(bp)
-        else:
-            print("No DrawBot available")
 
 
 class StyledStringSetter():
@@ -654,6 +638,7 @@ if __name__ == "__main__":
         r = svg.rect.inset(50, 0).take(180, "centery")
         rp = simple_quadratic(r.p("SW"), r.p("C").offset(100, -200), r.p("NE"))
         ss.addPath(rp, fit=True)
+        ss = ss.carbonCopy("California")
         svg.addPath(rp, stroke="#eee", strokeWidth=1, fill="none")
         svg.addGlyph(ss.asGlyph(removeOverlap=True, atomized=True), fill="deeppink", stroke="black", strokeWidth=4)
         preview.send(svg.toSVG())
