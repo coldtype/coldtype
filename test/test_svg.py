@@ -114,12 +114,38 @@ def map_test(preview):
     svg.addGlyph(ss.asGlyph(removeOverlap=True, atomized=False), fill="black")
     preview.send(svg.toSVG())
 
+def pathops_test(p):
+    from pathops import Path, OpBuilder, PathOp
+
+    r = Rect((0, 0, 500, 500))
+    svg = SVGContext(r.w, r.h)
+    r1 = DATPen().rect(r.inset(100, 100))
+    r2 = DATPen().rect(r.inset(100, 100).offset(50, 50))
+    #svg.addPath(r1)
+    #svg.addPath(r2)
+
+    path1 = Path()
+    path2 = Path()
+    r1.replay(path1.getPen())
+    r2.replay(path2.getPen())
+
+    builder = OpBuilder(fix_winding=False, keep_starting_points=False)
+    builder.add(path1, PathOp.UNION)
+    builder.add(path2, PathOp.XOR)
+    result = builder.resolve()
+
+    r3 = DATPen()
+    result.draw(r3)
+    svg.addPath(r3)
+
+    p.send(svg.toSVG())
 
 with previewer() as p:
     #graff_test(p)
-    multilang_test(p)
+    #multilang_test(p)
     #no_glyph_sub_test(p)
     #outline_test(p)
     #rendering_test(p)
     #glyph_test(p)
     #map_test(p)
+    pathops_test(p)
