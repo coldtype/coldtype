@@ -120,23 +120,15 @@ def pathops_test(p):
     r = Rect((0, 0, 500, 500))
     svg = SVGContext(r.w, r.h)
     r1 = DATPen().rect(r.inset(100, 100))
-    r2 = DATPen().rect(r.inset(100, 100).offset(50, 50))
-    #svg.addPath(r1)
-    #svg.addPath(r2)
+    r1.xor(DATPen().rect(r.inset(100, 100).offset(50, 50)))
+    svg.addPath(r1, fill="green")
 
-    path1 = Path()
-    path2 = Path()
-    r1.replay(path1.getPen())
-    r2.replay(path2.getPen())
-
-    builder = OpBuilder(fix_winding=False, keep_starting_points=False)
-    builder.add(path1, PathOp.UNION)
-    builder.add(path2, PathOp.XOR)
-    result = builder.resolve()
-
-    r3 = DATPen()
-    result.draw(r3)
-    svg.addPath(r3)
+    track = r.take(100, "minx").inset(0, 40).take(40, "centerx")
+    l1 = DATPen()
+    l1.rect(track.take(1, "centerx", forcePixel=True))
+    l1.rect(track.take(1, "centery", forcePixel=True))
+    l1.difference(DATPen().oval(track.take(40, "maxy")))
+    svg.addPath(l1, fill="blue")
 
     p.send(svg.toSVG())
 
