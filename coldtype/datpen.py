@@ -111,12 +111,41 @@ class DATPen(RecordingPen):
     def record(self, pen):
         pen.replay(self)
     
-    def outline(self, pen, offset=1):
+    def outline(self, offset=1):
         op = OutlinePen(None, offset=offset, optimizeCurve=True)
-        pen.replay(op)
+        self.replay(op)
         op.drawSettings(drawInner=True, drawOuter=True)
         g = op.getGlyph()
-        g.draw(self)
+        p = DATPen()
+        g.draw(p)
+        self.value = p.value
+        return self
+    
+    def dots(self, radius=4):
+        dp = DATPen()
+        for t, pts in self.value:
+            if t == "moveTo":
+                x, y = pts[0]
+                dp.oval(Rect((x-radius, y-radius, radius, radius)))
+        self.value = dp.value
+        return self
+    
+    def pattern(self, rect, clip=False):
+        dp_copy = DATPen()
+        dp_copy.value = self.value
+
+        for y in range(-1, 1):
+            for x in range(-1, 1):
+                dpp = DATPen()
+                dp_copy.replay(dpp)
+                dpp.translate(rect.w*x, rect.h*y)
+                dpp.replay(self)
+        
+        self.translate(rect.w/2, rect.h/2)
+        if clip:
+            clip_box = DATPen().rect(rect)
+            return self.intersection(clip_box)
+        return self
     
     def rect(self, rect):
         self.moveTo(rect.point("SW").xy())
@@ -161,4 +190,5 @@ class DATPen(RecordingPen):
 if __name__ == "__main__":
     dt = DATPen()
     dt.rect(Rect((0, 0, 500, 500)))
+    dt.outline()
     print(dt.value)

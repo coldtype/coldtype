@@ -115,8 +115,6 @@ def map_test(preview):
     preview.send(svg.toSVG())
 
 def pathops_test(p):
-    from pathops import Path, OpBuilder, PathOp
-
     r = Rect((0, 0, 500, 500))
     svg = SVGContext(r.w, r.h)
     r1 = DATPen().rect(r.inset(100, 100))
@@ -132,6 +130,14 @@ def pathops_test(p):
 
     p.send(svg.toSVG())
 
+def pattern_test(p):
+    r = Rect((0, 0, 500, 500))
+    svg = SVGContext(r.w, r.h)
+    pattern = DATPen().rect(r.inset(150, 150).offset(200, -200))
+    pattern.pattern(r)
+    svg.addPath(pattern)
+    p.send(svg.toSVG())
+
 with previewer() as p:
     #graff_test(p)
     #multilang_test(p)
@@ -140,4 +146,5 @@ with previewer() as p:
     #rendering_test(p)
     #glyph_test(p)
     #map_test(p)
-    pathops_test(p)
+    #pathops_test(p)
+    pattern_test(p)
