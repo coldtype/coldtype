@@ -4,10 +4,10 @@ from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from furniture.geometry import Rect
-from coldtype.pens import OutlinePen
+from pathops import Path, OpBuilder, PathOp
 
 try:
-    from pathops import Path, OpBuilder, PathOp
+    from coldtype.pens import OutlinePen
 except:
     pass
 
@@ -19,6 +19,7 @@ class DATPen(RecordingPen):
     
     def addAttrs(self, **kwargs):
         self.attrs = {**self.attrs, **kwargs}
+        return self
     
     def transform(self, transform):
         op = RecordingPen()
@@ -188,7 +189,7 @@ class DATPen(RecordingPen):
 
 
 if __name__ == "__main__":
-    dt = DATPen()
+    dt = DATPen(fill=[1,2,3])
     dt.rect(Rect((0, 0, 500, 500)))
-    dt.outline()
+    #dt.outline()
     print(dt.value)
