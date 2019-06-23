@@ -16,9 +16,14 @@ class DATPen(RecordingPen):
     def __init__(self, **kwargs):
         super().__init__()
         self.attrs = kwargs
+        self.frame = None
     
     def addAttrs(self, **kwargs):
         self.attrs = {**self.attrs, **kwargs}
+        return self
+    
+    def addFrame(self, frame):
+        self.frame = frame
         return self
     
     def transform(self, transform):
