@@ -555,6 +555,9 @@ class StyledStringSetter():
         if self.rect:
             self.align(rect=self.rect)
     
+    def append(self, string):
+        self.strings.append(string)
+    
     def transform(self, pen, transform):
         op = DATPen()
         tp = TransformPen(op, transform)
@@ -566,6 +569,9 @@ class StyledStringSetter():
         for pen in self.pens:
             pen.replay(rp)
         return rp
+    
+    def asDAT(self):
+        return self.asRecording()
     
     def align(self, align="CC", rect=None):
         last_x = 0

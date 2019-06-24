@@ -74,6 +74,15 @@ class DATPen(RecordingPen):
         # TODO centering
         t = Transform().scale(scaleX, scaleY or scaleX)
         return self.transform(t)
+    
+    def rotate(self, degrees, point=None):
+        t = Transform()
+        if not point:
+            point = self.bounds().point("C")
+        t = t.translate(point.x, point.y)
+        t = t.rotate(math.radians(degrees))
+        t = t.translate(-point.x, -point.y)
+        return self.transform(t)
 
     def bounds(self):
         cbp = ControlBoundsPen(None)
