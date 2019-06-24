@@ -116,6 +116,11 @@ class DATPen(RecordingPen):
 
     def record(self, pen):
         pen.replay(self)
+        return self
+    
+    def glyph(self, glyph):
+        glyph.draw(self)
+        return self
     
     def outline(self, offset=1):
         op = OutlinePen(None, offset=offset, optimizeCurve=True)
