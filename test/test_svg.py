@@ -7,7 +7,7 @@ from coldtype.beziers import simple_quadratic
 from coldtype.utils import transformpen
 from coldtype.datpen import DATPen
 from furniture.viewer import previewer
-from furniture.geometry import Rect
+from furniture.geometry import Rect, Point
 from random import randint
 from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.misc.transform import Transform
@@ -138,6 +138,18 @@ def pattern_test(p):
     svg.addPath(pattern)
     p.send(svg.toSVG())
 
+def catmull_test(pv):
+    from random import randint
+    r = Rect((0, 0, 500, 500))
+    svg = SVGContext(r.w, r.h)
+    dp = DATPen()
+    points = []
+    for x in range(0, 25):
+        points.append((randint(0, 500), randint(0, 500)))
+    dp.catmull(points)
+    svg.addPath(dp, strokeWidth="2", stroke="black", fill="transparent")
+    pv.send(svg.toSVG())
+
 with previewer() as p:
     #graff_test(p)
     #multilang_test(p)
@@ -147,4 +159,5 @@ with previewer() as p:
     #glyph_test(p)
     #map_test(p)
     #pathops_test(p)
-    pattern_test(p)
+    #pattern_test(p)
+    catmull_test(p)

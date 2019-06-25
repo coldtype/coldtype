@@ -150,6 +150,37 @@ class DATPen(RecordingPen):
         self.value = dp.value
         return self
     
+    def catmull(self, points):
+        p0 = points[0]
+        p1, p2, p3 = points[:3]
+        pts = [p0]
+
+        i = 1
+        while i < len(points):
+            pts.append([
+                ((-p0[0] + 6 * p1[0] + p2[0]) / 6),
+                ((-p0[1] + 6 * p1[1] + p2[1]) / 6),
+                ((p1[0] + 6 * p2[0] - p3[0]) / 6),
+                ((p1[1] + 6 * p2[1] - p3[1]) / 6),
+                p2[0],
+                p2[1]
+            ])
+
+            p0 = p1
+            p1 = p2
+            p2 = p3
+            try:
+                p3 = points[i + 2]
+            except:
+                p3 = p3
+
+            i += 1
+
+        self.moveTo(pts[0])
+        for p in pts[1:]:
+            self.curveTo((p[0], p[1]), (p[2], p[3]), (p[4], p[5]))
+        self.closePath()
+    
     def pattern(self, rect, clip=False):
         dp_copy = DATPen()
         dp_copy.value = self.value
