@@ -97,7 +97,7 @@ class DATPen(RecordingPen):
         if x == "C":
             xoff = -b.x + rect.x + rect.w/2 - b.w/2
         elif x == "W":
-            xoff = self.rect.x
+            xoff = rect.x
         elif x == "E":
             xoff = -b.x + rect.x + rect.w - b.w
         
