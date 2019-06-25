@@ -5,6 +5,7 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from furniture.geometry import Rect
 from pathops import Path, OpBuilder, PathOp
+from fontPens.flattenPen import FlattenPen
 
 try:
     from coldtype.pens import OutlinePen
@@ -130,6 +131,13 @@ class DATPen(RecordingPen):
     def glyph(self, glyph):
         glyph.draw(self)
         return self
+
+    def flatten(self):
+        dp = DATPen()
+        fp = FlattenPen(dp, approximateSegmentLength=4, segmentLines=True)
+        self.replay(fp)
+        self.value = dp.value
+        return self
     
     def outline(self, offset=1):
         op = OutlinePen(None, offset=offset, optimizeCurve=True)
@@ -179,7 +187,7 @@ class DATPen(RecordingPen):
         self.moveTo(pts[0])
         for p in pts[1:]:
             self.curveTo((p[0], p[1]), (p[2], p[3]), (p[4], p[5]))
-        self.closePath()
+        #self.closePath()
     
     def pattern(self, rect, clip=False):
         dp_copy = DATPen()

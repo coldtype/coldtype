@@ -144,10 +144,21 @@ def catmull_test(pv):
     svg = SVGContext(r.w, r.h)
     dp = DATPen()
     points = []
-    for x in range(0, 25):
-        points.append((randint(0, 500), randint(0, 500)))
+    last_pt = (0, 0)
+    for x in range(0, 10):
+        too_close = True
+        while too_close:
+            pt = (randint(0, 500), randint(0, 500))
+            if abs(last_pt[0] - pt[0]) > 100 and abs(last_pt[1] - pt[1]) > 100:
+                too_close = False
+            last_pt = pt
+        points.append(last_pt)
     dp.catmull(points)
-    svg.addPath(dp, strokeWidth="2", stroke="black", fill="transparent")
+    dp.endPath()
+    #dp.flatten()
+    #dp.outline(offset=3)
+    svg.addPath(dp, strokeWidth="4", stroke="black", fill="transparent")
+    #svg.addPath(dp)
     pv.send(svg.toSVG())
 
 with previewer() as p:
