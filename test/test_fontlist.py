@@ -12,13 +12,13 @@ for f in os.listdir(font_dir):
         fonts.append(f)
 
 fonts = sorted(fonts, key=str.lower)
-fonts = [f for f in fonts if f.startswith("LoRes")]
+fonts = [f for f in fonts if f.startswith("Vulf")]
 
 with previewer() as p:
     for f in fonts:
         r = Rect((0, 0, 400, 120))
         fp = f"{font_dir}/{f}"
-        ss = StyledString("Hello", font=fp, fontSize=72, rect=r)
+        ss = StyledString("Reclining", font=fp, fontSize=72, rect=r)
         p.send(SVGPen.Composite([ss.asDAT()], r), rect=r)
         p.send(fp, rect=Rect((0, 0, 500, 30)))
     #p.send(SVGPen.Composite([dp1], r), rect=r)

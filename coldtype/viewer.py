@@ -24,6 +24,9 @@ class PreviewConnection():
 def previewer():
     return PreviewConnection()
 
+def viewer():
+    return PreviewConnection()
+
 
 if __name__ == "__main__":
     from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket

@@ -17,7 +17,7 @@ class PostScriptPen(BasePen):
         self.code.append("{:.02f} {:.02f} rlineto".format(*p))
 
     def _curveToOne(self, p1, p2, p3):
-        self.code.append("{:.02f} {:.02f} curveto".format(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]))
+        self.code.append("{:.02f} {:.02f} {:.02f} {:.02f} {:.02f} {:.02f} curveto".format(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]))
 
     def _qCurveToOne(self, p1, p2):
         print("NOT SUPPORTED")
@@ -35,14 +35,14 @@ class PostScriptPen(BasePen):
     def stroke(self, weight=1, color=None):
         if color:
             self.code.append(self.color(color))
-        self.code.append("{:.02f} setlinewidth")
+        self.code.append("{:.02f} setlinewidth".format(weight))
         self.code.append("stroke")
     
     def rect(self, rect, t="int"):
         return f"Rectangle<{t}>({t}({rect.x}), {t}({rect.y}), {t}({rect.w}), {t}({rect.h}))"
     
     def color(self, color):
-        return "{:.02f} {:.02f} {:.02f} {:.02f} setrgb".format(*color.rgba)
+        return "{:.02f} {:.02f} {:.02f} {:.02f} setrgbcolor".format(*color.rgba)
     
     def gradient(self, colors):
         pass
@@ -66,9 +66,30 @@ class PostScriptPen(BasePen):
 if __name__ == "__main__":
     import sys
     import os
+    from random import random
     sys.path.insert(0, os.path.realpath("."))
     from coldtype.pens.datpen import DATPen
 
-    dp1 = DATPen(fill=Color.from_html("deeppink")).rect(Rect((0, 0, 50, 50)))
+    r = Rect((0, 0, 500, 500))
+    dp1 = DATPen(stroke=dict(weight=4, color=Color.from_rgb(random(), random(), random())))
+    dp1.moveTo((50, 50))
+    dp1.lineTo((100, 300))
+    dp1.lineTo(r.point("C"))
+    print(r.point("SE"))
+    #dp1.oval(r.inset(100, 100))
     ps1 = PostScriptPen(dp1)
-    print(ps1.asCode())
+
+    eps = f"""
+%!PS-Adobe-3.0 EPSF-3.0
+%%Creator: Coldtype
+%%Title: Example Title
+%%DocumentData: Clean7Bit
+%%BeginProlog
+%%EndProlog
+{ps1.asCode()}
+showpage
+%%EOF
+    """
+
+    with open("test/artifacts/ps_test.eps", "w") as f:
+        f.write(eps)
