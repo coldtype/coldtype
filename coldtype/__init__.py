@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
 from coldtype.beziers import CurveCutter, raise_quadratic, simple_quadratic
 from coldtype.svg import SVGContext, flipped_svg_pen
-from coldtype.datpen import DATPen
+from coldtype.pens.datpen import DATPen
 
 try:
     # relies on undeclared dependencies
@@ -386,13 +386,19 @@ class StyledString():
         self.tries = 0
         if current_width > width: # need to shrink
             while self.tries < 1000 and current_width > width:
-                if self.tracking > self.trackingLimit:
+                adjusted = False
+                if self.tracking > 0:
                     self.tracking -= self.increments.get("tracking", 0.25)
+                    adjusted = True
                 else:
                     for k, v in self.variationLimits.items():
                         if self.variations[k] > self.variationLimits[k]:
                             self.variations[k] -= self.increments.get(k, 1)
+                            adjusted = True
                             break
+                if not adjusted and self.tracking > self.trackingLimit:
+                    self.tracking -= self.increments.get("tracking", 0.25)
+                    adjusted = True
                 self.tries += 1
                 current_width = self.width()
         elif current_width < width: # need to expand
@@ -502,7 +508,7 @@ class StyledString():
             pen.value = rounded
             return pen
 
-    def asRecording(self, rounding=None, atomized=False):
+    def asRecording(self, rounding=None, atomized=False, frame=False):
         if self.rect and not self._placed: # wack
             self.place(self.rect)
 
@@ -512,6 +518,9 @@ class StyledString():
         if self.rect and self.align != "SW":
             rp = self.alignedPen(rp)
         
+        if frame:
+            rp.addFrame(Rect((0, 0, self.width(), self.ch*self.scale())))
+
         if hasattr(self, "_final_offset"):
             xoff, yoff = self._final_offset
         else:
@@ -665,7 +674,26 @@ if __name__ == "__main__":
         svg = SVGContext(r.w, r.h)
         svg.addPath(sss.strings[0].asDAT())
         preview.send(svg.toSVG())
+    
+    def ss_bounds_test(preview):
+        f = "¬/VulfSans-Black.otf"
+        svg = SVGContext(700, 300)
+        ss = StyledString("Vulf Sans", font=f, fontSize=100)
+        r = svg.rect.inset(50, 0).take(180, "centery")
+        #ss.place(r)
+        dp = ss.asDAT(frame=True)
+        dp.align(r)
+        print(dp.frame)
+        svg.addPath(dp)
+        svg.addRect(dp.frame, fill="rgba(255, 0, 0, 0.5)")
+        print(ss.width())
+        preview.send(svg.toSVG())
+        from fontTools.pens.t2CharStringPen import T2CharStringPen
+        t2p = T2CharStringPen(ss.width(), None)
+        dp.replay(t2p)
+        print(t2p.getCharString())
 
     with previewer() as p:
-        map_test(p)
+        #map_test(p)
         #sss_fit_test(p)
+        ss_bounds_test(p)

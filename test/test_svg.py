@@ -5,7 +5,7 @@ from coldtype.svg import SVGContext
 from coldtype.pens import OutlinePen
 from coldtype.beziers import simple_quadratic
 from coldtype.utils import transformpen
-from coldtype.datpen import DATPen
+from coldtype.pens.datpen import DATPen
 from furniture.viewer import previewer
 from furniture.geometry import Rect, Point
 from random import randint

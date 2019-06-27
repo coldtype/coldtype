@@ -8,7 +8,7 @@ from pathops import Path, OpBuilder, PathOp
 from fontPens.flattenPen import FlattenPen
 
 try:
-    from coldtype.pens import OutlinePen
+    from coldtype.pens.outlinepen import OutlinePen
 except:
     pass
 
@@ -91,8 +91,11 @@ class DATPen(RecordingPen):
         mnx, mny, mxx, mxy = cbp.bounds
         return Rect((mnx, mny, mxx - mnx, mxy - mny))
     
-    def align(self, rect, x="C", y="C"):
-        b = self.bounds()
+    def align(self, rect, x="C", y="C", bounds=False):
+        if self.frame and not bounds:
+            b = self.frame
+        else:
+            b = self.bounds()
 
         if x == "C":
             xoff = -b.x + rect.x + rect.w/2 - b.w/2

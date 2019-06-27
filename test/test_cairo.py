@@ -38,7 +38,7 @@ class CairoPen(BasePen):
 
 def ss_test():
     from coldtype import StyledString
-    from coldtype.datpen import DATPen
+    from coldtype.pens.datpen import DATPen
     from furniture.viewer import previewer
     from random import random
 
