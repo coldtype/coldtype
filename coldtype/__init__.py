@@ -637,7 +637,7 @@ class StyledStringSetter():
 
 
 if __name__ == "__main__":
-    from furniture.viewer import previewer
+    from coldtype.viewer import previewer
     from random import randint
 
     def map_test(preview):

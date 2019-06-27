@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Ghz Plugin Previewer</title>
+    <style>
+        body {
+            background: #eee;
+        }
+
+        #container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        .page {
+            /* position: absolute; */
+            /* top: 10px; */
+            /* right: 10px; */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            background: white;
+            display: block;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        svg {
+            position: absolute;
+            bottom: 0px;
+            left: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+
+    <script language="javascript" type="text/javascript">
+
+        const WS_URL = "ws://localhost:8008"
+        var websocket = new WebSocket(WS_URL);
+        websocket.onopen = function (evt) { onOpen(evt) };
+        websocket.onclose = function (evt) { onClose(evt) };
+        websocket.onmessage = function (evt) { onMessage(evt) };
+        websocket.onerror = function (evt) { onError(evt) };
+
+        function onOpen(evt) {
+            console.log("connected\n");
+        }
+
+        function onClose(evt) {
+            console.log("disconnected\n");
+        }
+
+        function onMessage(evt) {
+            let container = document.querySelector("#container");
+            if (evt.data == "CLEAR") {
+                container.innerHTML = "";
+            } else {
+                container.innerHTML = container.innerHTML + evt.data;
+            }
+        }
+
+        function onError(evt) {
+            console.log('error: ' + evt.data + '\n');
+            websocket.close();
+        }
+
+        function doSend(message) {
+            console.log("sent: " + message + '\n');
+            websocket.send(message);
+        }
+
+        function doDisconnect() {
+            websocket.close();
+        }
+
+    </script>
+</body>
+
+</html>
