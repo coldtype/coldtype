@@ -4,8 +4,11 @@ dirname = os.path.dirname(__file__)
 sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
 from furniture.geometry import Rect, Point
+from coldtype import StyledString
 from coldtype.viewer import previewer
 from coldtype.pens.datpen import DATPen
+from coldtype.pens.svgpen import SVGPen
+from grapefruit import Color
 
 
 def save_artifact(filename, content=None):
