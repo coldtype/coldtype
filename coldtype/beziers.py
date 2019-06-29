@@ -1,7 +1,7 @@
 import math
 from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
-from furniture.geometry import Rect, Point
+from coldtype.geometry import Rect, Point
 
 
 def raise_quadratic(start, a, b):

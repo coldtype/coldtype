@@ -4,7 +4,7 @@ import importlib
 import coldtype
 importlib.reload(coldtype)
 
-from furniture.geometry import Rect
+from coldtype.geometry import Rect
 from drawBot import *
 
 

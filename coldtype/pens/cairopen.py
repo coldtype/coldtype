@@ -1,7 +1,7 @@
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
-from furniture.geometry import Rect, Edge, Point
+from coldtype.geometry import Rect, Edge, Point
 from grapefruit import Color
 
 try:
@@ -85,16 +85,17 @@ class CairoPen(BasePen):
         self.code.append(f"{bgf}.setOpacity(0.3f);")
         self.code.append(f"{self.dp}.setFill({bgf});")
     
-    def Composite(pens, rect, image_path):
+    def Composite(pens, rect, image_path, save=True):
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(rect.w), int(rect.h))
         ctx = cairo.Context(surface)
         ctx.scale(1, 1)
-
         for pen in pens:
             if pen:
                 CairoPen(pen, rect.h, ctx)
-        
-        surface.write_to_png(image_path)
+        if save:
+            surface.write_to_png(image_path)
+        else:
+            print("Should write to base64 and return — not yet supported")
 
 if __name__ == "__main__":
     import os

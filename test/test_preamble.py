@@ -3,7 +3,7 @@ import sys
 dirname = os.path.dirname(__file__)
 sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
-from furniture.geometry import Rect, Point
+from coldtype.geometry import Rect, Point
 from coldtype import StyledString
 from coldtype.viewer import previewer
 from coldtype.pens.datpen import DATPen

@@ -3,9 +3,14 @@ from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
-from furniture.geometry import Rect
 from pathops import Path, OpBuilder, PathOp
 from fontPens.flattenPen import FlattenPen
+
+import os
+import sys
+dirname = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(f"{dirname}/../..")
+from coldtype.geometry import Rect
 
 try:
     from coldtype.pens.outlinepen import OutlinePen

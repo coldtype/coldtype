@@ -7,10 +7,7 @@ from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.pens.transformPen import TransformPen
 from fontTools.ufoLib.glifLib import Glyph
 
-if True:
-    sys.path.insert(0, os.path.expanduser("~/Type/furniture"))
-
-from furniture.geometry import Rect
+from coldtype.geometry import Rect
 
 
 def spinalcase(s):
@@ -108,7 +105,7 @@ class SVGContext():
 
 
 if __name__ == "__main__":
-    from furniture.viewer import previewer
+    from coldtype.viewer import previewer
     from random import randint
 
     with previewer() as p:

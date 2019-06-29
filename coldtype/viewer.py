@@ -1,5 +1,5 @@
 from websocket import create_connection
-from furniture.geometry import Rect
+from coldtype.geometry import Rect
 
 WEBSOCKET_PORT = 8008
 WEBSOCKET_ADDR = f"ws://localhost:{WEBSOCKET_PORT}"

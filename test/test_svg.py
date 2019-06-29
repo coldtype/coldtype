@@ -6,8 +6,8 @@ from coldtype.pens import OutlinePen
 from coldtype.beziers import simple_quadratic
 from coldtype.utils import transformpen
 from coldtype.pens.datpen import DATPen
-from furniture.viewer import previewer
-from furniture.geometry import Rect, Point
+from coldtype.viewer import previewer
+from coldtype.geometry import Rect, Point
 from random import randint
 from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.misc.transform import Transform

@@ -2,7 +2,7 @@ from test_preamble import *
 
 from coldtype import StyledString
 from coldtype.utils import pen_to_svg
-from furniture.geometry import Rect
+from coldtype.geometry import Rect
 from random import randint
 
 try:

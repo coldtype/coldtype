@@ -8,7 +8,7 @@ sys.path.append(f"{dirname}/../..")
 from coldtype.geometry import Rect, Edge, Point
 
 
-class PostScriptPen(BasePen):
+class PDFPen(BasePen):
     def __init__(self, dat):
         BasePen.__init__(self, None)
         self.dat = dat

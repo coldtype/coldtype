@@ -18,17 +18,13 @@ from fontTools.ttLib import TTFont
 import unicodedata
 import uharfbuzz as hb
 
-if True:
-    sys.path.insert(0, os.path.expanduser("~/Type/furniture"))
-
-from furniture.geometry import Rect
-
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
 from coldtype.beziers import CurveCutter, raise_quadratic, simple_quadratic
 from coldtype.svg import SVGContext, flipped_svg_pen
 from coldtype.pens.datpen import DATPen
+from coldtype.geometry import Rect, Point
 
 try:
     # relies on undeclared dependencies
@@ -177,6 +173,7 @@ class StyledString():
             variationLimits=dict(),
             increments=dict(),
             features=dict(),
+            varyFontSize=False,
             align="C",
             rect=None,
             fill=None):
@@ -207,6 +204,7 @@ class StyledString():
         self.axes = OrderedDict()
         self.variations = dict()
         self.variationLimits = dict()
+        self.varyFontSize = varyFontSize
         try:
             fvar = self.ttfont['fvar']
         except KeyError:
@@ -398,6 +396,9 @@ class StyledString():
                             break
                 if not adjusted and self.tracking > self.trackingLimit:
                     self.tracking -= self.increments.get("tracking", 0.25)
+                    adjusted = True
+                if not adjusted and self.varyFontSize:
+                    self.fontSize -= 1
                     adjusted = True
                 self.tries += 1
                 current_width = self.width()

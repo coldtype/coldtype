@@ -4,13 +4,12 @@ from fontTools.misc.transform import Transform
 
 import os
 import sys
-import math
 dirname = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(f"{dirname}/../..")
 
-if True:
-    sys.path.insert(0, os.path.expanduser("~/Type/furniture"))
+from coldtype.geometry import Rect, Edge, Point
 
-from furniture.geometry import Rect, Edge, Point
+import math
 from grapefruit import Color
 import textwrap
 from collections import OrderedDict
@@ -110,7 +109,12 @@ class SVGPen(SVGPathPen):
         img.set("height", str(rect.h or 100))
         img.set("opacity", str(opacity))
         img.set("image-href", f"data:image/png;base64,{src}")
-        pattern = etree.Element("pattern", x="0", y="0", width="100", height="100", patternUnits="userSpaceOnUse")
+        pattern = etree.Element("pattern")
+        pattern.set("x", img.get("x"))
+        pattern.set("y", img.get("y"))
+        pattern.set("width", img.get("width"))
+        pattern.set("height", img.get("height"))
+        pattern.set("patternUnits", "userSpaceOnUse")
         pattern.set("id", f"pattern-{hsh}")
         pattern.append(img)
         self.defs.append(pattern)

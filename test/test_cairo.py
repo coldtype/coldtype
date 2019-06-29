@@ -3,7 +3,7 @@ import math
 import cairo
 
 from test_preamble import *
-from furniture.geometry import Rect
+from coldtype.geometry import Rect
 
 from fontTools.pens.basePen import BasePen
 from fontTools.pens.transformPen import TransformPen
@@ -39,7 +39,7 @@ class CairoPen(BasePen):
 def ss_test():
     from coldtype import StyledString
     from coldtype.pens.datpen import DATPen
-    from furniture.viewer import previewer
+    from coldtype.viewer import previewer
     from random import random
 
     r = Rect((0, 0, 300, 300))
