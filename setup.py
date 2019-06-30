@@ -14,7 +14,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/goodhertz/coldtype",
     packages=[
-        "furniture"
+        "coldtype"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

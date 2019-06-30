@@ -7,7 +7,7 @@ six==1.12.0
 unicodedata2==12.0.0
 git+https://github.com/rougier/freetype-py
 git+https://github.com/xav/Grapefruit
-furniture==0.2.3
+fontPens==0.2.4
 uharfbuzz==0.5.0
 booleanOperations==0.8.2
 defcon==0.6.0
