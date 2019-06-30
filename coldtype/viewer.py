@@ -1,4 +1,9 @@
 from websocket import create_connection
+
+import sys, os
+dirname = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(f"{dirname}/..")
+
 from coldtype.geometry import Rect
 
 WEBSOCKET_PORT = 8008
