@@ -72,6 +72,7 @@ if __name__ == "__main__":
     from coldtype.pens.datpen import DATPen
     from coldtype.viewer import viewer
     from random import random
+    from fpdf import FPDF
 
     r = Rect((0, 0, 500, 500))
     dp1 = DATPen(stroke=dict(weight=4, color=Color.from_rgb(random(), random(), random())))
@@ -82,20 +83,9 @@ if __name__ == "__main__":
     #dp1.lineTo(r.point("C"))
     print(r.point("SE"))
     #dp1.oval(r.inset(100, 100))
-    ps1 = PostScriptPen(dp1)
-
-    eps = f"""
-%!PS-Adobe-3.0 EPSF-3.0
-%%Creator: Coldtype
-%%Title: Example Title
-%%DocumentData: Clean7Bit
-%%BeginProlog
-%%EndProlog
-{ps1.asCode()}
-showpage
-%%EOF
-    """
-
-    p = os.path.realpath("test/artifacts/ps_test.eps")
-    with open(p, "w") as f:
-        f.write(eps)
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt="Welcome to Python!", ln=1, align="C")
+    p = os.path.realpath("test/artifacts/fpdf_test.pdf")
+    pdf.output(p)
