@@ -64,12 +64,14 @@ class Harfbuzz():
         face = hb.Face(fontdata)
         font = hb.Font(face)
         font.scale = (face.upem, face.upem)
-        hb.ot_font_set_funcs(font)
+        hb.ot_font_set_funcs(font) # necessary?
         buf = hb.Buffer()
         buf.add_str(text)
         buf.guess_segment_properties()
         
         if len(axes.items()) > 0:
+            #print("SETTING axes", axes)
+            #font.set_variations(dict(wdth=-1, wght=-1, slnt=1.0))
             font.set_variations(axes)
         
         hb.shape(font, buf, features)
@@ -638,8 +640,10 @@ class StyledStringSetter():
 
 
 if __name__ == "__main__":
+    from grapefruit import Color
     from coldtype.viewer import previewer
     from random import randint
+    from coldtype.pens.svgpen import SVGPen
 
     def map_test(preview):
         f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
@@ -677,22 +681,18 @@ if __name__ == "__main__":
         preview.send(svg.toSVG())
     
     def ss_bounds_test(preview):
-        f = "¬/VulfSans-Black.otf"
-        svg = SVGContext(700, 300)
-        ss = StyledString("Vulf Sans", font=f, fontSize=100)
-        r = svg.rect.inset(50, 0).take(180, "centery")
-        #ss.place(r)
-        dp = ss.asDAT(frame=True)
-        dp.align(r)
-        print(dp.frame)
-        svg.addPath(dp)
-        svg.addRect(dp.frame, fill="rgba(255, 0, 0, 0.5)")
-        print(ss.width())
-        preview.send(svg.toSVG())
-        from fontTools.pens.t2CharStringPen import T2CharStringPen
-        t2p = T2CharStringPen(ss.width(), None)
-        dp.replay(t2p)
-        print(t2p.getCharString())
+        f = "/Users/robstenson/Type/fonts/fonts/VinilaVariable.ttf"
+        r = Rect((0, 0, 700, 300))
+        ss = StyledString("Abc", font=f, fontSize=100, variations=dict(slnt=0, wght=0, wdth=1, scale=True))
+        dp = ss.asDAT()
+        dp.translate(20, 20)
+        #r = svg.rect.inset(50, 0).take(180, "centery")
+        #dp.align(r)
+        dpf = DATPen(fill=None, stroke=dict(color=Color.from_rgb(1, 0, 0.5, 0.5), weight=4))
+        for f in ss._frames:
+            dpf.rect(f.frame)
+        dpf.translate(20, 20)
+        preview.send(SVGPen.Composite([dp, dpf], r), r)
 
     with previewer() as p:
         #map_test(p)

@@ -12,13 +12,15 @@ for f in os.listdir(font_dir):
         fonts.append(f)
 
 fonts = sorted(fonts, key=str.lower)
-fonts = [f for f in fonts if f.startswith("VulfSans")]
+fonts = [f for f in fonts if f.startswith("Vinila")]
 
 with previewer() as p:
     for f in fonts:
-        r = Rect((0, 0, 1000, 120))
+        r = Rect((0, 0, 500, 120))
         fp = f"{font_dir}/{f}"
-        ss = StyledString("2019", font=fp, fontSize=72, rect=r, features=dict(onum=True))
-        p.send(SVGPen.Composite([ss.asDAT()], r), rect=r)
+        ss = StyledString("Illustrator", font=fp, fontSize=72, trackingLimit=0, tracking=0, variations=dict(wdth=1, wght=1, slnt=1, scale=True))
+        dp = ss.asDAT()
+        dp.translate(20, 20)
+        p.send(SVGPen.Composite([dp], r), rect=r)
         p.send(fp, rect=Rect((0, 0, 500, 30)))
     #p.send(SVGPen.Composite([dp1], r), rect=r)
