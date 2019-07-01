@@ -1,6 +1,7 @@
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
+from fontTools.svgLib.path.parser import parse_path
 
 import os
 import sys
@@ -155,16 +156,32 @@ class SVGPen(SVGPathPen):
                 sp = SVGPen(pen, rect.h)
                 docroot.append(sp.asSVG())
         return etree.tostring(docroot, pretty_print=True).decode("utf-8").replace("image-href", "xlink:href")
-
+    
+    def FromSVG(file, gid, r=Rect((0, 0, 0, 100))):
+        from bs4 import BeautifulSoup
+        with open(file, "r") as f:
+            soup = BeautifulSoup(f.read(), features="lxml")
+            dp = DATPen()
+            tp = TransformPen(dp, (1, 0, 0, -1, 0, r.h))
+            for path in soup.find(id=gid).find_all("path"):
+                parse_path(path.get("d"), tp)
+            return dp
 
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath("."))
     from coldtype.pens.datpen import DATPen
     from coldtype.viewer import previewer
-
-    r = Rect((0, 0, 500, 500))
-    dp1 = DATPen(fill=Color.from_html("deeppink"))
-    dp1.oval(r.inset(200, 200))
     
+
     with previewer() as p:
-        p.send(SVGPen.Composite([dp1], r), rect=r)
+
+        r = Rect((0, 0, 1000, 1000))
+        dp1 = DATPen(fill=Color.from_html("deeppink"))
+        dp1.oval(r.inset(200, 200))
+        
+        path = os.path.expanduser("~/Type/grafprojects/vulfsans/alternate_vulfs.svg")
+        dp = SVGPen.FromSVG(path, "script-vulf")
+        dp.align(r)
+        dp.translate(-6, 0)
+        dp.addAttrs(fill=Color.from_rgb(1, 1, 1))
+        p.send(SVGPen.Composite([dp1, dp], r), rect=r)
