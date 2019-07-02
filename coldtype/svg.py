@@ -6,8 +6,10 @@ from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.pens.transformPen import TransformPen
 from fontTools.ufoLib.glifLib import Glyph
+from fontTools.svgLib.path.parser import parse_path
 
 from coldtype.geometry import Rect
+from coldtype.pens.datpen import DATPen
 
 
 def spinalcase(s):
@@ -102,6 +104,17 @@ class SVGContext():
 
     def toSVG(self):
         return wrap_svg_paths(self.paths, self.rect)
+
+
+def read_svg_to_pen(file, gid, r=Rect((0, 0, 0, 100))):
+    from bs4 import BeautifulSoup
+    with open(file, "r") as f:
+        soup = BeautifulSoup(f.read(), features="lxml")
+        dp = DATPen()
+        tp = TransformPen(dp, (1, 0, 0, -1, 0, r.h))
+        for path in soup.find(id=gid).find_all("path"):
+            parse_path(path.get("d"), tp)
+        return dp
 
 
 if __name__ == "__main__":

@@ -65,16 +65,14 @@ class Harfbuzz():
         font = hb.Font(face)
         font.scale = (face.upem, face.upem)
         hb.ot_font_set_funcs(font) # necessary?
+        if len(axes.items()) > 0:
+            font.set_variations(axes)
+        
         buf = hb.Buffer()
         buf.add_str(text)
         buf.guess_segment_properties()
-        
-        if len(axes.items()) > 0:
-            #print("SETTING axes", axes)
-            #font.set_variations(dict(wdth=-1, wght=-1, slnt=1.0))
-            font.set_variations(axes)
-        
         hb.shape(font, buf, features)
+        
         infos = buf.glyph_infos
         positions = buf.glyph_positions
         frames = []
@@ -680,10 +678,10 @@ if __name__ == "__main__":
         svg.addPath(sss.strings[0].asDAT())
         preview.send(svg.toSVG())
     
-    def ss_bounds_test(preview):
-        f = "/Users/robstenson/Type/fonts/fonts/VinilaVariable.ttf"
+    def ss_bounds_test(font, preview):
+        f = f"/Users/robstenson/Type/fonts/fonts/{font}.ttf"
         r = Rect((0, 0, 700, 300))
-        ss = StyledString("Abc", font=f, fontSize=100, variations=dict(slnt=0, wght=0, wdth=1, scale=True))
+        ss = StyledString("Abc", font=f, fontSize=100, variations=dict(slnt=0, wght=1, wdth=1, scale=True))
         dp = ss.asDAT()
         dp.translate(20, 20)
         #r = svg.rect.inset(50, 0).take(180, "centery")
@@ -697,4 +695,5 @@ if __name__ == "__main__":
     with previewer() as p:
         #map_test(p)
         #sss_fit_test(p)
-        ss_bounds_test(p)
+        ss_bounds_test("ObviouslyVariable", p)
+        ss_bounds_test("VinilaVariable", p)
