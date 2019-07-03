@@ -5,12 +5,19 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from pathops import Path, OpBuilder, PathOp
 from fontPens.flattenPen import FlattenPen
+from grapefruit import Color
+from random import random
 
-import os
-import sys
-dirname = os.path.realpath(os.path.dirname(__file__))
-sys.path.append(f"{dirname}/../..")
-from coldtype.geometry import Rect
+
+if __name__ == "__main__":
+    import os
+    import sys
+    dirname = os.path.realpath(os.path.dirname(__file__))
+    sys.path.append(f"{dirname}/../..")
+
+from coldtype.geometry import Rect, Edge, txt_to_edge
+from coldtype.pens.drawablepen import Gradient, normalize_color
+
 
 try:
     from coldtype.pens.outlinepen import OutlinePen
@@ -21,16 +28,34 @@ except:
 class DATPen(RecordingPen):
     def __init__(self, **kwargs):
         super().__init__()
-        self.attrs = kwargs
+        self.attrs = {}
+        self.addAttrs(fill=(1, 0, 0.5))
+        self.addAttrs(**kwargs)
         self.frame = None
+        self.typographic = False
     
     def addAttrs(self, **kwargs):
-        self.attrs = {**self.attrs, **kwargs}
+        for k, v in kwargs.items():
+            if k == "fill":
+                self.attrs[k] = normalize_color(v)
+            elif k == "stroke":
+                if not isinstance(v, dict):
+                    self.attrs[k] = dict(color=normalize_color(v))
+                else:
+                    self.attrs[k] = dict(weight=v.get("weight", 1), color=normalize_color(v.get("color", 0)))
+            else:
+                self.attrs[k] = v
         return self
     
     def addFrame(self, frame):
         self.frame = frame
         return self
+    
+    def getFrame(self):
+        if self.frame:
+            return self.frame
+        else:
+            return self.bounds()
     
     def transform(self, transform):
         op = RecordingPen()
@@ -96,32 +121,31 @@ class DATPen(RecordingPen):
         mnx, mny, mxx, mxy = cbp.bounds
         return Rect((mnx, mny, mxx - mnx, mxy - mny))
     
-    def align(self, rect, x="C", y="C", bounds=False):
+    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, bounds=False):
+        x = txt_to_edge(x)
+        y = txt_to_edge(y)
+        
         if self.frame and not bounds:
             b = self.frame
         else:
             b = self.bounds()
 
-        if x == "C":
+        if x == Edge.CenterX:
             xoff = -b.x + rect.x + rect.w/2 - b.w/2
-        elif x == "W":
+        elif x == Edge.MinX:
             xoff = rect.x
-        elif x == "E":
+        elif x == Edge.MaxX:
             xoff = -b.x + rect.x + rect.w - b.w
         
-        if y == "C":
+        if y == Edge.CenterY:
             yoff = -b.y + rect.y + rect.h/2 - b.h/2
-        elif y == "N":
+        elif y == Edge.MaxY:
             yoff = rect.y + rect.h - b.h
-        elif y == "S":
+        elif y == Edge.MinY:
             yoff = rect.y
         
         diff = rect.w - b.w
         return self.translate(xoff, yoff)
-        #rp2 = DATPen()
-        #tp = TransformPen(rp2, (1, 0, 0, 1, xoff, yoff))
-        #rp.replay(tp)
-        #self._final_offset = (xoff, yoff)
 
     def round(self, rounding):
         rounded = []
@@ -215,11 +239,17 @@ class DATPen(RecordingPen):
         return self
     
     def rect(self, rect):
-        self.moveTo(rect.point("SW").xy())
-        self.lineTo(rect.point("SE").xy())
-        self.lineTo(rect.point("NE").xy())
-        self.lineTo(rect.point("NW").xy())
-        self.closePath()
+        if isinstance(rect, Rect):
+            self.moveTo(rect.point("SW").xy())
+            self.lineTo(rect.point("SE").xy())
+            self.lineTo(rect.point("NE").xy())
+            self.lineTo(rect.point("NW").xy())
+            self.closePath()
+        elif isinstance(rect[0], Rect):
+            for r in rect:
+                self.rect(r)
+        else:
+            self.rect(Rect(rect))
         return self
 
     def line(self, points):
@@ -252,10 +282,69 @@ class DATPen(RecordingPen):
     def oval(self, rect):
         self.roundedRect(rect, 0.5, 0.5)
         return self
+    
+    def polygon(self, sides, rect):
+        radius = rect.square().w / 2
+        c = rect.center()
+        one_segment = math.pi * 2 / sides
+        points = [(math.sin(one_segment * i) * radius, math.cos(one_segment * i) * radius) for i in range(sides)]
+        print(points)
+        self.moveTo(points[0])
+        for p in points[1:]:
+            self.lineTo(p)
+        self.closePath()
+        self.align(rect)
+        return self
+
+
+class DATPenSet():
+    def __init__(self, *pens):
+        self.pens = []
+        self.addPens(pens)
+    
+    def addPens(self, pens):
+        for p in pens:
+            if isinstance(p, DATPen):
+                self.pens.append(p)
+            else:
+                self.addPens(p)
+
+    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, typographicBaseline=True):
+        # split up the space according to the bounds of the individual pens
+        # then call the align method of each one individually
+        frames = []
+        for p in self.pens:
+            frames.append(p.getFrame())
+        w = sum([f.w for f in frames])
+        
+        if isinstance(rect, Rect):
+            _r = rect.take(w, x).subdivide([f.w for f in frames], Edge.MinX)
+        else:
+            _r = rect
+        
+        if typographicBaseline:
+            mxh = max([f.h for f in frames])
+            print("MXH", mxh)
+            for p in self.pens:
+                if p.typographic:
+                    p.frame.h = mxh
+
+        for idx, p in enumerate(self.pens):
+            p.align(_r[idx], x, y)
 
 
 if __name__ == "__main__":
-    dt = DATPen(fill=[1,2,3])
-    dt.rect(Rect((0, 0, 500, 500)))
-    #dt.outline()
-    print(dt.value)
+    from coldtype.viewer import viewer
+    from coldtype.pens.svgpen import SVGPen
+    from grapefruit import Color
+    
+    with viewer() as v:
+        r = Rect((0, 0, 500, 500))
+        dt1 = DATPen(fill=Gradient.Vertical(r, ("random", 0.5), ("random", 0.5)), stroke=dict(color=("random", 0.5), weight=10))
+        dt1.oval(r.inset(100, 100))
+        dt2 = DATPen(fill=Gradient.Vertical(r, ("random", 0.5), ("random", 0.5)))
+        dt2.rect(r.inset(100, 100))
+        dt2.align(r)
+        dt3 = DATPen(fill=Gradient.Vertical(r, ("random", 0.2), ("random", 0.2))).polygon(8, r)
+        dt3.rotate(120)
+        v.send(SVGPen.Composite([dt1, dt2, dt3], r), r)

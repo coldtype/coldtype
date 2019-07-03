@@ -1,7 +1,6 @@
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
-from coldtype.geometry import Rect, Edge, Point
 from grapefruit import Color
 
 try:
@@ -9,21 +8,27 @@ try:
 except:
     pass
 
+if __name__ == "__main__":
+    import sys
+    import os
+    dirname = os.path.realpath(os.path.dirname(__file__))
+    sys.path.append(f"{dirname}/../..")
 
-class CairoPen(BasePen):
+from coldtype.geometry import Rect, Edge, Point
+from coldtype.pens.drawablepen import DrawablePenMixin
+
+
+class CairoPen(DrawablePenMixin, BasePen):
     def __init__(self, dat, h, ctx):
         super().__init__(None)
         self.dat = dat
         self.h = h
         self.ctx = ctx
         tp = TransformPen(self, (1, 0, 0, -1, 0, h))
-        for k, v in self.dat.attrs.items():
+        for attr in self.dat.attrs.items():
             self.ctx.save()
             dat.replay(tp)
-            if k == "fill":
-                self.fill(v)
-            elif k == "stroke":
-                self.stroke(**v)
+            self.applyDATAttribute(attr)
             self.ctx.restore()
     
     def _moveTo(self, p):
@@ -54,37 +59,6 @@ class CairoPen(BasePen):
         self.ctx.set_line_width(weight)
         self.ctx.stroke()
     
-    def rect(self, rect, t="int"):
-        return f"Rectangle<{t}>({t}({rect.x}), {t}({rect.y}), {t}({rect.w}), {t}({rect.h}))"
-    
-    def color(self, color):
-        return "Colour::fromFloatRGBA({:.02f}f, {:.02f}f, {:.02f}f, {:.02f}f)".format(*color.rgba)
-    
-    def gradient(self, colors):
-        gradient = []
-        for color, position in colors:
-            gradient.extend([self.color(color), "{:f}f".format(position.x), "{:f}f".format(self.h-position.y)])
-        return "ColourGradient({:s}, false)".format(",".join(gradient))
-    
-    def shadow(self, clip=None, radius=14, alpha=0.3):
-        d = f"drop_{self.penID}"
-        self.code.append(f"DropShadow {d};")
-        self.code.append("{:s}.radius = {:.02f}f;".format(d, radius))
-        self.code.append(f"{d}.colour = Colours::black.withAlpha({alpha}f);") # TODO configurable
-        if clip:
-            self.code.append(f"{self.dp}.setDropShadow({d}, {self.rect(flip_rect(clip, self.h))});")
-        else:
-            self.code.append(f"{self.dp}.setDropShadow({d});")
-
-    def image(self, image):
-        bgf = f"bgFill_{self.penID}"
-        self.code.append("MemoryOutputStream mo;")
-        self.code.append(f"""Base64::convertFromBase64(mo, "{image}");""")
-        self.code.append(f"FillType {bgf};")
-        self.code.append(f"{bgf}.setTiledImage(PNGImageFormat::loadFrom(mo.getData(), mo.getDataSize()), AffineTransform().scale(1.f / (2.f)));") #g.getInternalContext().getPhysicalPixelScaleFactor()
-        self.code.append(f"{bgf}.setOpacity(0.3f);")
-        self.code.append(f"{self.dp}.setFill({bgf});")
-    
     def Composite(pens, rect, image_path, save=True):
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(rect.w), int(rect.h))
         ctx = cairo.Context(surface)
@@ -108,10 +82,7 @@ if __name__ == "__main__":
     
     r = Rect((0, 0, 500, 500))
     p = os.path.realpath(f"{dirname}/../../test/artifacts/cairopen_test2.png")
-    dp = DATPen(
-        fill=Color.from_rgb(random(), random(), random()),
-        stroke=dict(weight=20, color=Color.from_rgb(random(), random(), random()))
-        )
+    dp = DATPen(fill="random", stroke=dict(weight=20, color="random"))
     dp.oval(r.inset(100, 100))
     CairoPen.Composite([dp], r, p)
     

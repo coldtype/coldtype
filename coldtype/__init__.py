@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
 from coldtype.beziers import CurveCutter, raise_quadratic, simple_quadratic
 from coldtype.svg import SVGContext, flipped_svg_pen
-from coldtype.pens.datpen import DATPen
+from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.geometry import Rect, Point
 
 try:
@@ -178,7 +178,7 @@ class StyledString():
             rect=None,
             fill=None):
         self.text = text
-        self.fontFile = os.path.expanduser((font or fontFile).replace("¬", "~/Library/Fonts"))
+        self.fontFile = os.path.expanduser((font or fontFile).replace("¬", "~/Library/Fonts").replace("≈", "~/Type/fonts/fonts"))
         self.ttfont = ttFont or TTFont(self.fontFile)
         self.fontdata = get_cached_font(self.fontFile)
         self.upem = hb.Face(self.fontdata).upem
@@ -521,6 +521,7 @@ class StyledString():
         
         if frame:
             rp.addFrame(Rect((0, 0, self.width(), self.ch*self.scale())))
+            rp.typographic = True
 
         if hasattr(self, "_final_offset"):
             xoff, yoff = self._final_offset
@@ -680,20 +681,45 @@ if __name__ == "__main__":
     
     def ss_bounds_test(font, preview):
         f = f"/Users/robstenson/Type/fonts/fonts/{font}.ttf"
-        r = Rect((0, 0, 700, 300))
-        ss = StyledString("Abc", font=f, fontSize=100, variations=dict(slnt=0, wght=1, wdth=1, scale=True))
+        r = Rect((0, 0, 700, 120))
+        ss = StyledString("ABC", font=f, fontSize=100, variations=dict(wght=0, wdth=1, scale=True), features=dict(ss01=True))
         dp = ss.asDAT()
         dp.translate(20, 20)
         #r = svg.rect.inset(50, 0).take(180, "centery")
         #dp.align(r)
-        dpf = DATPen(fill=None, stroke=dict(color=Color.from_rgb(1, 0, 0.5, 0.5), weight=4))
+        dpf = DATPen(fill=None, stroke=dict(color=("random", 0.5), weight=4))
         for f in ss._frames:
             dpf.rect(f.frame)
         dpf.translate(20, 20)
         preview.send(SVGPen.Composite([dp, dpf], r), r)
+    
+    def ss_and_shape_test(preview):
+        r = Rect((0, 0, 500, 500))
+        f, v = ["≈/VulfSansItalicVariable.ttf", dict(wght=1, scale=True)]
+        ss1 = StyledString("yo! ", font=f, variations=v, fontSize=80)
+        f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
+        ss2 = StyledString("ABC", font=f, variations=v, fontSize=120)
+        grid = r.inset(5, 5).grid(4, 4)
+        dp1 = DATPen(fill=None, stroke=dict(color=("random", 0.5), weight=10)).rect(grid)
+        oval = DATPen()
+        #oval.oval(Rect(0, 0, 50, 50))
+        oval.polygon(3, Rect(0, 0, 50, 50))
+        #oval.rotate(85)
+        oval.addFrame(Rect(0, 0, 50, 50).expand(4, "minx"))
+        oval.typographic = False
+        dps = DATPenSet(ss1.asDAT(frame=True), ss2.asDAT(frame=True), oval)
+        #dps = DATPenSet(DATPen().rect(Rect((0, 0, 100, 200))), DATPen().oval(Rect((0, 0, 500, 200))))
+        for p in dps.pens:
+            print(p.frame)
+        #dps.align(grid)
+        dps.align(r)
+        preview.send(SVGPen.Composite(dps.pens, r), r)
 
     with previewer() as p:
         #map_test(p)
         #sss_fit_test(p)
-        ss_bounds_test("ObviouslyVariable", p)
-        ss_bounds_test("VinilaVariable", p)
+        #ss_bounds_test("ObviouslyVariable", p)
+        #ss_bounds_test("MutatorSans", p)
+        #ss_bounds_test("VinilaVariable", p)
+        #ss_bounds_test("Compressa-MICRO-GX-Rg", p)
+        ss_and_shape_test(p)

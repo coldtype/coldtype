@@ -8,6 +8,7 @@ dirname = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(f"{dirname}/../..")
 
 from coldtype.geometry import Rect, Edge, Point
+from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 
 import math
 from grapefruit import Color
@@ -16,11 +17,7 @@ from collections import OrderedDict
 from lxml import etree
 
 
-def flip_rect(r, h):
-    return Rect((r.x, h - r.h - r.y, r.w, r.h))
-
-
-class SVGPen(SVGPathPen):
+class SVGPen(DrawablePenMixin, SVGPathPen):
     def __init__(self, dat, h):
         super().__init__(None)
         self.defs = []
@@ -30,20 +27,20 @@ class SVGPen(SVGPathPen):
         tp = TransformPen(self, (1, 0, 0, -1, 0, h))
         dat.replay(tp)
     
-    def fill(self, path, color):
+    def fill(self, color):
         if color:
-            if isinstance(color, str):
-                path.set("fill", color)
-            if isinstance(color, Color):
-                path.set("fill", self.rgba(color))
-            else:
-                path.set("fill", f"url('#{self.gradient(color)}')")
+            if isinstance(color, Gradient):
+                self.path.set("fill", f"url('#{self.gradient(color)}')")
+            elif isinstance(color, str):
+                self.path.set("fill", color)
+            elif isinstance(color, Color):
+                self.path.set("fill", self.rgba(color))
         else:
-            path.set("fill", "transparent")
+            self.path.set("fill", "transparent")
     
-    def stroke(self, path, weight=1, color=None):
-        path.set("stroke-width", str(weight))
-        path.set("stroke", self.rgba(color))
+    def stroke(self, weight=1, color=None):
+        self.path.set("stroke-width", str(weight))
+        self.path.set("stroke", self.rgba(color))
     
     def rgba(self, color):
         r, g, b = color.ints
@@ -51,14 +48,14 @@ class SVGPen(SVGPathPen):
     
     def rect(self, rect):
         r = etree.Element("rect")
-        fr = flip_rect(rect, self.h)
+        fr = rect.flip(self.h)
         r.set("x", str(fr.x))
         r.set("y", str(fr.y))
         r.set("width", str(fr.w))
         r.set("height", str(fr.h))
         return r
     
-    def shadow(self, path, clip=None, radius=10, alpha=0.3):
+    def shadow(self, clip=None, radius=10, alpha=0.3):
         hsh = {hash(self.getCommands())}
         f = etree.Element("filter")
         f.set("x", "0")
@@ -81,26 +78,26 @@ class SVGPen(SVGPathPen):
             cp.set("id", f"clip-path_{hsh}")
             cp.append(self.rect(clip))
             self.defs.append(cp)
-        #path.set("fill", "rgba(0, 0, 0, 0.3)")
-        path.set("filter", f"url(#{f.get('id')})")
+        #self.path.set("fill", "rgba(0, 0, 0, 0.3)")
+        self.path.set("filter", f"url(#{f.get('id')})")
         if clip:
-            path.set("clip-path", f"url(#clip-path_{hsh})")
+            self.path.set("clip-path", f"url(#clip-path_{hsh})")
 
     def gradient(self, gradient):
         lg = etree.Element("linearGradient")
         lg.set("id", f"gradient-{hash(self.getCommands())}")
-        if gradient[1][1].x == gradient[0][1].x:
+        if gradient.stops[1][1].x == gradient.stops[0][1].x:
             lg.set("gradientTransform", "rotate(90)")
         s1 = etree.Element("stop", offset="0%")
-        s1.set("stop-color", self.rgba(gradient[0][0]))
+        s1.set("stop-color", self.rgba(gradient.stops[0][0]))
         s2 = etree.Element("stop", offset="100%")
-        s2.set("stop-color", self.rgba(gradient[1][0]))
+        s2.set("stop-color", self.rgba(gradient.stops[1][0]))
         lg.append(s1)
         lg.append(s2)
         self.defs.append(lg)
         return lg.get("id")
     
-    def image(self, path, src=None, opacity=None, rect=None):
+    def image(self, src=None, opacity=None, rect=None):
         hsh = {hash(self.getCommands())}
         img = etree.Element("image")
         img.set("x", str(rect.x or 0))
@@ -118,27 +115,19 @@ class SVGPen(SVGPathPen):
         pattern.set("id", f"pattern-{hsh}")
         pattern.append(img)
         self.defs.append(pattern)
-        path.set("fill", f"url(#pattern-{hsh})")
+        self.path.set("fill", f"url(#pattern-{hsh})")
     
     def asSVG(self):
-        path = etree.Element("path")
-        for k, v in self.dat.attrs.items():
-            if k == "shadow":
-                self.shadow(path, **v)
-                #self.fill(path, Color.from_rgb(1, 0, 0.5, 0.01))
-            elif k == "fill":
-                self.fill(path, v)
-            elif k == "stroke":
-                self.stroke(path, **v)
-            elif k == "image":
-                self.image(path, **v)
-        path.set("d", self.getCommands())
+        self.path = etree.Element("path")
+        for attr in self.dat.attrs.items():
+            self.applyDATAttribute(attr)
+        self.path.set("d", self.getCommands())
         g = etree.Element("g")
         defs = etree.Element("defs")
         for d in self.defs:
             defs.append(d)
         g.append(defs)
-        g.append(path)
+        g.append(self.path)
         for u in self.uses:
             g.append(u)
         return g
@@ -165,11 +154,11 @@ if __name__ == "__main__":
 
     with previewer() as p:
         r = Rect((0, 0, 1000, 1000))
-        dp1 = DATPen(fill=Color.from_html("deeppink"))
+        dp1 = DATPen(fill="royalblue")
         dp1.oval(r.inset(200, 200))
-        
         path = os.path.expanduser("~/Type/grafprojects/vulfsans/alternate_vulfs.svg")
-        dp = read_svg_to_pen(path, "script-vulf")
+        dp = read_svg_to_pen(path, "lombardic-vulf")
+        dp.scale(1.5)
         dp.align(r)
         dp.translate(-6, 0)
         dp.addAttrs(fill=Color.from_rgb(1, 1, 1))

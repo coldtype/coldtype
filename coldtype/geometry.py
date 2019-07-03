@@ -205,7 +205,14 @@ def offset(rect, dx, dy):
 
 
 def expand(rect, amount, edge):
-    return drop(inset(rect, amount, edge), amount/2, edge)
+    if edge == Edge.MinX:
+        x, y, w, h = rect
+        w += amount
+        x -= amount
+    elif edge == Edge.MaxX:
+        x, y, w, h = rect
+        w += amount
+    return [x, y, w, h]
 
 
 def centerpoint(rect):
@@ -313,8 +320,11 @@ class Rect():
         x, y = center
         return Rect((x - w/2, y - h/2, w, h))
 
-    def __init__(self, rect):
-        x, y, w, h = rect
+    def __init__(self, *rect):
+        if isinstance(rect[0], int) or isinstance(rect[0], float):
+            x, y, w, h = rect
+        else:
+            x, y, w, h = rect[0]
         self.x = x
         self.y = y
         self.w = w
@@ -438,17 +448,10 @@ class Rect():
         return edgepoints(self.rect(), edge)
 
     def center(self):
-        return centerpoint(self.rect())
+        return Point(centerpoint(self.rect()))
     
-    def flip(self, frame):
-        return Rect([self.x, frame.h - self.y - self.h, self.w, self.h])
-    
-    def flipSelf(self, frame):
-        x, y, w, h = self.flip(frame)
-        self.x = x
-        self.y = y
-        self.w = w
-        self.h = h
+    def flip(self, h):
+        return Rect([self.x, h - self.h - self.y, self.w, self.h])
     
     def p(self, s):
         return self.point(s)
@@ -490,4 +493,4 @@ class Rect():
             return Point((px, py))
 
 if __name__ == "__main__":
-    print(Rect([50, 50, 500, 500]).flip(Rect([0, 0, 1000, 1000])))
+    print(Rect(0, 0, 100, 100).inset(20, 20).expand(20, "minx"))
