@@ -18,6 +18,15 @@ from fontTools.ttLib import TTFont
 import unicodedata
 import uharfbuzz as hb
 
+from ctypes import *
+from ctypes.util import find_library
+chb = CDLL(find_library("harfbuzz"))
+print(find_library("harfbuzz"))
+
+from pyharfbuzz import FTLibrary, FTFace, HBFontT, HBBufferT, hb_shape, get_glyph_name,\
+    hb_buffer_get_direction, is_horizontal
+
+
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
@@ -88,6 +97,26 @@ class Harfbuzz():
         return frames
 
 
+class HB_FontRec(Structure):
+    _fields_ = [
+    ]
+HB_Font = POINTER(HB_FontRec)
+
+class HB_BufferRec(Structure):
+    _fields_ = [
+    ]
+HB_Buffer = POINTER(HB_BufferRec)
+
+class HB_FeatureRec(Structure):
+    _fields_ = [
+        ["tag", "int"],
+        ["value", "int"],
+        ["start", "int"],
+        ["end", "int"]
+    ]
+HB_Feature = POINTER(HB_FeatureRec)
+
+
 class FreetypeReader():
     def __init__(self, font_path, ttfont):
         self.fontPath = font_path
@@ -108,6 +137,29 @@ class FreetypeReader():
                 coords.append(coord)
             ft_coords = (FT_Fixed * len(coords))(*coords)
             freetype.FT_Set_Var_Design_Coordinates(self.font._FT_Face, len(ft_coords), ft_coords)
+            if True:
+                #hb_font_t = chb.hb_font_t
+                chb.hb_ft_font_create_referenced.restype = HB_Font
+                chb.hb_buffer_create.restype = HB_Buffer
+                hb_font = chb.hb_ft_font_create_referenced(self.font._FT_Face)
+                hb_buffer = chb.hb_buffer_create()
+                print(hb_buffer)
+                txt = "A".encode("utf-8")
+                txt = ctypes.c_char_p(txt)
+                chb.hb_buffer_guess_segment_properties(hb_buffer)
+                chb.hb_buffer_add_utf8(hb_buffer, txt, 1, 0, 1)                
+                #print(">>>>>>>>>", hb_font)
+            else:
+                ft_library = FTLibrary()
+                ft_library.init()
+                ft_face = FTFace()
+                ft_face.init(ft_library, self.fontPath)
+                print(ft_face.__dir__())
+                print
+
+                # Create hb-ft font.
+                #hb_font = HBFontT()
+                #hb_font.hb_ft_font_create(ft_face)
     
     def setGlyph(self, glyph_id):
         self.glyph_id = glyph_id
@@ -709,8 +761,8 @@ if __name__ == "__main__":
         oval.typographic = False
         dps = DATPenSet(ss1.asDAT(frame=True), ss2.asDAT(frame=True), oval)
         #dps = DATPenSet(DATPen().rect(Rect((0, 0, 100, 200))), DATPen().oval(Rect((0, 0, 500, 200))))
-        for p in dps.pens:
-            print(p.frame)
+        #for p in dps.pens:
+        #    print(p.frame)
         #dps.align(grid)
         dps.align(r)
         preview.send(SVGPen.Composite(dps.pens, r), r)

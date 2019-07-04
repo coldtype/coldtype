@@ -288,7 +288,6 @@ class DATPen(RecordingPen):
         c = rect.center()
         one_segment = math.pi * 2 / sides
         points = [(math.sin(one_segment * i) * radius, math.cos(one_segment * i) * radius) for i in range(sides)]
-        print(points)
         self.moveTo(points[0])
         for p in points[1:]:
             self.lineTo(p)
@@ -324,7 +323,6 @@ class DATPenSet():
         
         if typographicBaseline:
             mxh = max([f.h for f in frames])
-            print("MXH", mxh)
             for p in self.pens:
                 if p.typographic:
                     p.frame.h = mxh
