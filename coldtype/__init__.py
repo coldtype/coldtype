@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
 from coldtype.beziers import CurveCutter, raise_quadratic, simple_quadratic
 from coldtype.svg import SVGContext, flipped_svg_pen
-from coldtype.pens.datpen import DATPen, DATPenSet
+from coldtype.pens.datpen import DATPen, DATPenSet, Gradient
 from coldtype.geometry import Rect, Point
 
 try:
@@ -647,37 +647,26 @@ if __name__ == "__main__":
     def map_test(preview):
         f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
         f, v = ["¬/Cheee_Variable.ttf", dict(yest=1, grvt=0.5, temp=0.2, scale=True)]
-        #f, v = ["¬/MapRomanVariable-VF.ttf", dict(wdth=1, scale=True)]
+        f, v = ["≈/MapRomanVariable-VF.ttf", dict(wdth=0, scale=True)]
 
-        svg = SVGContext(500, 500)
-        ss = StyledString("New York City",
+        rect = Rect(0, 0, 500, 500)
+        ss = StyledString("California",
             font=f,
             variations=v,
-            fontSize=60,
-            tracking=-4,
-            #tracking=21,
-            #trackingLimit=21,
-            #baselineShift=-19,
+            fontSize=80,
+            tracking=4,
+            baselineShift=-19,
             )
-        r = svg.rect.inset(50, 0).take(180, "centery")
+        r = rect.inset(50, 0).take(180, "centery")
         rp = simple_quadratic(r.p("SW"), r.p("C").offset(100, -200), r.p("NE"))
         ss.addPath(rp, fit=True)
-        ss = ss.carbonCopy("California")
-        ss.addPath(rp, fit=True)
-        svg.addPath(rp, stroke="#eee", strokeWidth=1, fill="none")
-        svg.addGlyph(ss.asGlyph(removeOverlap=True, atomized=True), fill="deeppink", stroke="black", strokeWidth=4)
-        preview.send(svg.toSVG())
-    
-    def sss_fit_test(preview):
-        r = Rect((0, 0, 500, 100))
-        f, v = ["¬/Eckmannpsych-Variable.ttf", dict()]
-        #f, v = ["¬/Fit-Variable.ttf", dict()]
-        
-        ss = StyledString("Hello", font=f, variations=v, fontSize=120)
-        sss = StyledStringSetter([ss], rect=r)
-        svg = SVGContext(r.w, r.h)
-        svg.addPath(sss.strings[0].asDAT())
-        preview.send(svg.toSVG())
+        #ss.addPath(rp, fit=True)
+        dp1 = ss.asDAT().addAttrs(fill=Gradient.Horizontal(r, "royalblue", "skyblue"), stroke=dict(color="black", weight=0.1))
+        dp1.removeOverlap()
+        dp2 = DATPen(fill=("deeppink", 0.5)).record(dp1)
+        #svg.addPath(rp, stroke="#eee", strokeWidth=1, fill="none")
+        #svg.addGlyph(ss.asGlyph(removeOverlap=True, atomized=True), fill="deeppink", stroke="black", strokeWidth=1)
+        preview.send(SVGPen.Composite([dp2, dp1], rect), rect)
     
     def ss_bounds_test(font, preview):
         f = f"/Users/robstenson/Type/fonts/fonts/{font}.ttf"
@@ -716,10 +705,10 @@ if __name__ == "__main__":
         preview.send(SVGPen.Composite(dps.pens, r), r)
 
     with previewer() as p:
-        #map_test(p)
         #sss_fit_test(p)
         #ss_bounds_test("ObviouslyVariable", p)
         #ss_bounds_test("MutatorSans", p)
         #ss_bounds_test("VinilaVariable", p)
         #ss_bounds_test("Compressa-MICRO-GX-Rg", p)
-        ss_and_shape_test(p)
+        #ss_and_shape_test(p)
+        map_test(p)

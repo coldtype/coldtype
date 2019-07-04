@@ -96,7 +96,7 @@ class DATPen(RecordingPen):
         return self._pathop(otherPen=otherPen, operation=PathOp.INTERSECTION)
     
     def removeOverlap(self):
-        return self._pathop()
+        return self._pathop(otherPen=DATPen(), operation=PathOp.UNION)
     
     def translate(self, x, y):
         return self.transform((1, 0, 0, 1, x, y))

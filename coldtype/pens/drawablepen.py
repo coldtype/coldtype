@@ -40,6 +40,8 @@ def normalize_color(v):
         elif isinstance(v, str):
             if v == "random":
                 return Color.from_rgb(random(), random(), random())
+            elif v == "none":
+                return Color.from_rgb(0,0,0,0)
             else:
                 return Color.from_html(v)
         else:
@@ -48,6 +50,8 @@ def normalize_color(v):
             elif len(v) == 2:
                 if v[0] == "random":
                     return Color.from_rgb(random(), random(), random(), v[1])
+                elif isinstance(v[0], str):
+                    return Color.from_html(v[0]).with_alpha(v[1])
                 else:
                     print("v", v)
                     return Color.from_rgb(v[0], v[0], v[0], v[1])
