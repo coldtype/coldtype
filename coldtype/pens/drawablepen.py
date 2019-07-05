@@ -53,7 +53,6 @@ def normalize_color(v):
                 elif isinstance(v[0], str):
                     return Color.from_html(v[0]).with_alpha(v[1])
                 else:
-                    print("v", v)
                     return Color.from_rgb(v[0], v[0], v[0], v[1])
             else:
                 return Color.from_rgb(*v)

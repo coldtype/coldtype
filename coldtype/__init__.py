@@ -22,7 +22,6 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
 from coldtype.beziers import CurveCutter, raise_quadratic, simple_quadratic
-from coldtype.svg import SVGContext, flipped_svg_pen
 from coldtype.pens.datpen import DATPen, DATPenSet, Gradient
 from coldtype.geometry import Rect, Point
 
@@ -646,30 +645,35 @@ if __name__ == "__main__":
 
     def map_test(preview):
         f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
-        f, v = ["¬/Cheee_Variable.ttf", dict(yest=1, grvt=0.5, temp=0.2, scale=True)]
-        f, v = ["≈/MapRomanVariable-VF.ttf", dict(wdth=0, scale=True)]
+        f, v = ["¬/Cheee_Variable.ttf", dict(yest=1, grvt=0.95, temp=0.4, scale=True)]
+        #f, v = ["≈/MapRomanVariable-VF.ttf", dict(wdth=0, scale=True)]
 
-        rect = Rect(0, 0, 500, 500)
-        ss = StyledString("California",
-            font=f,
-            variations=v,
-            fontSize=80,
-            tracking=4,
-            baselineShift=-19,
-            )
-        r = rect.inset(50, 0).take(180, "centery")
-        rp = simple_quadratic(r.p("SW"), r.p("C").offset(100, -200), r.p("NE"))
-        ss.addPath(rp, fit=True)
-        #ss.addPath(rp, fit=True)
-        dp1 = ss.asDAT().addAttrs(fill=Gradient.Horizontal(r, "royalblue", "skyblue"), stroke=dict(color="black", weight=0.1))
+        rect = Rect(0, 0, 1000, 1000)
+        def make_ss(shift):
+            return StyledString("California",
+                font=f,
+                variations=v,
+                fontSize=170,
+                tracking=-10,
+                baselineShift=shift)
+        ss1 = make_ss(-19)
+        ss2 = make_ss(-32)
+        ss3 = make_ss(-8)
+        r = rect.inset(50, 30).offset(200, 0)
+        rp = simple_quadratic(r.p("NW"), r.p("W").offset(0, -100), r.p("S").offset(100, 0))
+        ss1.addPath(rp, fit=True)
+        ss2.addPath(rp, fit=True)
+        ss3.addPath(rp, fit=True)
+        dp1 = ss1.asDAT().addAttrs(fill=Gradient.Horizontal(r, "orange", "deeppink"), stroke=dict(color="white", weight=2))
         dp1.removeOverlap()
-        dp2 = DATPen(fill=("deeppink", 0.5)).record(dp1)
-        #svg.addPath(rp, stroke="#eee", strokeWidth=1, fill="none")
-        #svg.addGlyph(ss.asGlyph(removeOverlap=True, atomized=True), fill="deeppink", stroke="black", strokeWidth=1)
-        preview.send(SVGPen.Composite([dp2, dp1], rect), rect)
+        dp2 = ss2.asDAT().addAttrs(fill=("black", 0.5), stroke=("white", 0.3))
+        dp2.removeOverlap()
+        dp3 = ss3.asDAT().addAttrs(fill=("deeppink", 0.5), stroke=("white", 0.3))
+        dp3.removeOverlap()
+        preview.send(SVGPen.Composite([DATPen(fill=Gradient.Vertical(rect, "darkorchid", "royalblue")).rect(rect), dp2, dp1], rect), rect)
     
     def ss_bounds_test(font, preview):
-        f = f"/Users/robstenson/Type/fonts/fonts/{font}.ttf"
+        f = f"≈/{font}.ttf"
         r = Rect((0, 0, 700, 120))
         ss = StyledString("ABC", font=f, fontSize=100, variations=dict(wght=0, wdth=1, scale=True), features=dict(ss01=True))
         dp = ss.asDAT()
@@ -685,30 +689,26 @@ if __name__ == "__main__":
     def ss_and_shape_test(preview):
         r = Rect((0, 0, 500, 500))
         f, v = ["≈/VulfSansItalicVariable.ttf", dict(wght=1, scale=True)]
-        ss1 = StyledString("yo! ", font=f, variations=v, fontSize=80)
-        f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
-        ss2 = StyledString("ABC", font=f, variations=v, fontSize=120)
-        grid = r.inset(5, 5).grid(4, 4)
-        dp1 = DATPen(fill=None, stroke=dict(color=("random", 0.5), weight=10)).rect(grid)
+        ss1 = StyledString("Yoy! ", font=f, variations=v, fontSize=80)
+        f, v = ["¬/Fit-Variable.ttf", dict(wdth=0, scale=True)]
+        ss2 = StyledString("ABC", font=f, variations=v, fontSize=200)
+        grid = r.inset(0, 0).grid(10, 10)
+        dp1 = DATPen(fill=None, stroke=dict(color=("skyblue", 0.5), weight=1)).rect(grid)
         oval = DATPen()
-        #oval.oval(Rect(0, 0, 50, 50))
-        oval.polygon(3, Rect(0, 0, 50, 50))
-        #oval.rotate(85)
-        oval.addFrame(Rect(0, 0, 50, 50).expand(4, "minx"))
-        oval.typographic = False
-        dps = DATPenSet(ss1.asDAT(frame=True), ss2.asDAT(frame=True), oval)
+        #oval.polygon(15, Rect(0, 0, 50, 50)).addAttrs(fill="random")
+        oval.polygon(3, Rect(0, 0, 50, 50)).addAttrs(fill="random")
+        oval.addFrame(Rect(0, 0, 50, 50).expand(40, "minx"))
+        oval.typographic = True
+        dps = DATPenSet(ss1.asDAT(frame=True).addAttrs(fill="darkorchid"), ss2.asDAT(frame=True), oval)
         #dps = DATPenSet(DATPen().rect(Rect((0, 0, 100, 200))), DATPen().oval(Rect((0, 0, 500, 200))))
-        for p in dps.pens:
-            print(p.frame)
         #dps.align(grid)
-        dps.align(r)
-        preview.send(SVGPen.Composite(dps.pens, r), r)
+        dps.align(r, x="minx", y="maxy", typographicBaseline=True)
+        preview.send(SVGPen.Composite(dps.pens + [dp1], r), r)
 
     with previewer() as p:
-        #sss_fit_test(p)
         #ss_bounds_test("ObviouslyVariable", p)
         #ss_bounds_test("MutatorSans", p)
         #ss_bounds_test("VinilaVariable", p)
         #ss_bounds_test("Compressa-MICRO-GX-Rg", p)
-        #ss_and_shape_test(p)
-        map_test(p)
+        ss_and_shape_test(p)
+        #map_test(p)
