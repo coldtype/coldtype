@@ -21,8 +21,10 @@ class PreviewConnection():
     def __exit__(self, type, value, traceback):
         self.ws.close()
     
-    def send(self, content, rect=Rect((0, 0, 1000, 1000))):
-        if isinstance(rect, Rect):
+    def send(self, content, rect=Rect((0, 0, 1000, 1000)), full=False):
+        if full:
+            html = content
+        elif isinstance(rect, Rect):
             html = f"""<div class="page" style="width:{rect.w}px;height:{rect.h}px">{content}</div>"""
         else:
             html = f"""<div class="page" style="width:{rect}px">{content}</div>"""

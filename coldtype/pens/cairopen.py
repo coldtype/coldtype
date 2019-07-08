@@ -30,9 +30,6 @@ class CairoPen(DrawablePenMixin, BasePen):
             dat.replay(tp)
             self.applyDATAttribute(attr)
             self.ctx.restore()
-    
-    def _moveTo(self, p):
-        self.code.append("{:s}.startNewSubPath({:.02f}f, {:.02f}f);".format(self.p, *p))
 
     def _moveTo(self, p):
         self.ctx.move_to(p[0], p[1])

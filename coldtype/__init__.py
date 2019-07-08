@@ -244,7 +244,7 @@ class StyledString():
             try:
                 axis = self.axes[k]
             except KeyError:
-                print("Invalid axis", self.fontFile, k)
+                #print("Invalid axis", self.fontFile, k)
                 continue
                 #raise Exception("Invalid axis", self.fontFile, k)
             if v == "min":
@@ -684,14 +684,20 @@ if __name__ == "__main__":
         for f in ss._frames:
             dpf.rect(f.frame)
         dpf.translate(20, 20)
+        if "HVAR" in ss.ttfont:
+            #print(ss.ttfont["HVAR"], font)
+            pass
+        else:
+            print(">>>>>>>>>>>>>>>>>>>> NO HVAR", font)
         preview.send(SVGPen.Composite([dp, dpf], r), r)
     
     def ss_and_shape_test(preview):
         r = Rect((0, 0, 500, 500))
         f, v = ["≈/VulfSansItalicVariable.ttf", dict(wght=1, scale=True)]
+        f, v = ["≈/Nonplus-Black.otf", dict()]
         ss1 = StyledString("Yoy! ", font=f, variations=v, fontSize=80)
-        f, v = ["¬/Fit-Variable.ttf", dict(wdth=0, scale=True)]
-        ss2 = StyledString("ABC", font=f, variations=v, fontSize=200)
+        f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.1, scale=True)]
+        ss2 = StyledString("ABC", font=f, variations=v, fontSize=120)
         grid = r.inset(0, 0).grid(10, 10)
         dp1 = DATPen(fill=None, stroke=dict(color=("skyblue", 0.5), weight=1)).rect(grid)
         oval = DATPen()
@@ -702,13 +708,19 @@ if __name__ == "__main__":
         dps = DATPenSet(ss1.asDAT(frame=True).addAttrs(fill="darkorchid"), ss2.asDAT(frame=True), oval)
         #dps = DATPenSet(DATPen().rect(Rect((0, 0, 100, 200))), DATPen().oval(Rect((0, 0, 500, 200))))
         #dps.align(grid)
-        dps.align(r, x="minx", y="maxy", typographicBaseline=True)
+        dps.align(r, x="centerx", y="centery", typographicBaseline=True)
         preview.send(SVGPen.Composite(dps.pens + [dp1], r), r)
 
     with previewer() as p:
-        #ss_bounds_test("ObviouslyVariable", p)
-        #ss_bounds_test("MutatorSans", p)
-        #ss_bounds_test("VinilaVariable", p)
-        #ss_bounds_test("Compressa-MICRO-GX-Rg", p)
+        if False:
+            ss_bounds_test("ObviouslyVariable", p)
+            ss_bounds_test("MutatorSans", p)
+            ss_bounds_test("VinilaVariable#2", p)
+            ss_bounds_test("Compressa-MICRO-GX-Rg#1", p)
+            ss_bounds_test("BildVariableV2-VF", p)
+            ss_bounds_test("BruphyGX#5", p)
+            ss_bounds_test("Fit-Variable", p)
+            ss_bounds_test("MapRomanVariable-VF", p)
+            ss_bounds_test("VulfSansItalicVariable", p)
         ss_and_shape_test(p)
         #map_test(p)
