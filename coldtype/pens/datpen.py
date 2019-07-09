@@ -6,7 +6,7 @@ from fontTools.misc.transform import Transform
 from pathops import Path, OpBuilder, PathOp
 from fontPens.flattenPen import FlattenPen
 from grapefruit import Color
-from random import random
+from random import random, randint
 
 
 if __name__ == "__main__":
@@ -164,12 +164,47 @@ class DATPen(RecordingPen):
         glyph.draw(self)
         return self
 
-    def flatten(self):
+    def flatten(self, length=10):
+        if length == 0:
+            return self
         dp = DATPen()
-        fp = FlattenPen(dp, approximateSegmentLength=4, segmentLines=True)
+        fp = FlattenPen(dp, approximateSegmentLength=length, segmentLines=True)
         self.replay(fp)
         self.value = dp.value
         return self
+    
+    def roughen(self, length=10, amplitude=10, threshold=10):
+        self.flatten(length=length)
+        randomized = []
+        for t, pts in self.value:
+            if t == "lineTo":
+                jx = randint(0, amplitude) - amplitude/2
+                jy = randint(0, amplitude) - amplitude/2
+                randomized.append([t, [(x+jx, y+jy) for x, y in pts]])
+            else:
+                randomized.append([t, pts])
+        self.value = randomized
+        return self
+        mod_value = []
+        for t, vals in recorder.value:
+            amp = randint(0, amplitude)
+            if t == "lineTo" and len(vals) > 0:
+                x, y = vals[0]
+                jx = floor(x + randint(0, amp) - amp/2)
+                jy = floor(y + randint(0, amp) - amp/2)
+                vals = [(jx, jy)]
+                mod_value.append([t, vals])
+            else:
+                mod_value.append([t, vals])
+
+        recorder.value = mod_value
+
+        r2 = RecordingPen()
+        tpen = ThresholdPen(r2, threshold=threshold)
+        recorder.replay(tpen)
+
+        r2.replay(bpr)
+        return bp.intersection(bpr)
     
     def outline(self, offset=1):
         op = OutlinePen(None, offset=offset, optimizeCurve=True)
@@ -335,9 +370,17 @@ if __name__ == "__main__":
     from coldtype.viewer import viewer
     from coldtype.pens.svgpen import SVGPen
     from grapefruit import Color
+
+    from coldtype import StyledString
     
     with viewer() as v:
         r = Rect((0, 0, 500, 500))
+        ss1 = StyledString("Hello", "≈/Nonplus-Black.otf", fontSize=200, varyFontSize=True)
+        ss1.fit(r.w)
+        dp1 = ss1.asDAT().align(r)
+        dp1.roughen(length=20, amplitude=4)
+        dp1.removeOverlap()
+        dp1.addAttrs(fill=Gradient.Horizontal(r, ("random", 0.75), ("random", 0.75)))
         dt1 = DATPen(fill=Gradient.Vertical(r, ("random", 0.5), ("random", 0.5)), stroke=dict(color=("random", 0.5), weight=10))
         dt1.oval(r.inset(100, 100))
         dt2 = DATPen(fill=Gradient.Vertical(r, ("random", 0.5), ("random", 0.5)))
@@ -345,4 +388,4 @@ if __name__ == "__main__":
         dt2.align(r)
         dt3 = DATPen(fill=Gradient.Vertical(r, ("random", 0.2), ("random", 0.2))).polygon(8, r)
         dt3.rotate(120)
-        v.send(SVGPen.Composite([dt1, dt2, dt3], r), r)
+        v.send(SVGPen.Composite([dt1, dt2, dt3, dp1], r), r)
