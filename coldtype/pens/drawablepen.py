@@ -72,3 +72,6 @@ class Gradient():
     
     def Horizontal(rect, a, b):
         return Gradient([a, rect.point("E")], [b, rect.point("W")])
+    
+    def Random(rect, opacity=0.5):
+        return Gradient([("random", opacity), rect.point("SE")], [("random", opacity), rect.point("NW")])

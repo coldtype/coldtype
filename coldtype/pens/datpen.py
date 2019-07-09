@@ -1,15 +1,14 @@
 import math
+from enum import Enum
 from fontTools.pens.filterPen import ContourFilterPen
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
-from pathops import Path, OpBuilder, PathOp
 from fontPens.flattenPen import FlattenPen
 from grapefruit import Color
 from random import random, randint
 from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
-
 
 if __name__ == "__main__":
     import os
@@ -17,14 +16,47 @@ if __name__ == "__main__":
     dirname = os.path.realpath(os.path.dirname(__file__))
     sys.path.append(f"{dirname}/../..")
 
+USE_SKIA_PATHOPS = False
+
+if USE_SKIA_PATHOPS:
+    from pathops import Path, OpBuilder, PathOp
+else:
+    from booleanOperations.booleanGlyph import BooleanGlyph
+
+
 from coldtype.geometry import Rect, Edge, txt_to_edge
 from coldtype.pens.drawablepen import Gradient, normalize_color
-
 
 try:
     from coldtype.pens.outlinepen import OutlinePen
 except:
     pass
+
+
+class BooleanOp(Enum):
+    Difference = 0
+    Union = 1
+    XOR = 2
+    ReverseDifference = 3
+    Intersection = 4
+
+    def Skia(x):
+        return [
+            PathOp.DIFFERENCE,
+            PathOp.UNION,
+            PathOp.XOR,
+            PathOp.REVERSE_DIFFERENCE,
+            PathOp.INTERSECTION,
+        ][x.value]
+    
+    def BooleanGlyphMethod(x):
+        return [
+            "difference",
+            "union",
+            "xor",
+            "reverseDifference",
+            "intersection",
+        ][x.value]
 
 
 class SmoothPointsPen(ContourFilterPen):
@@ -35,36 +67,30 @@ class SmoothPointsPen(ContourFilterPen):
     def filterContour(self, contour):
         nc = []
 
-        def split(pts):
+        def split_line(pts):
+            p0, p1 = pts
+            nc.append(["lineTo", [p1]])
+
+        def split_curve(pts):
             p0, p1, p2, p3 = pts
             length_arc = calcCubicArcLength(p0, p1, p2, p3)
             if length_arc <= self.length:
-                nc.append([t, pts[1:]])
+                nc.append(["curveTo", pts[1:]])
             else:
                 d = self.length / length_arc
                 b = (p0, p1, p2, p3)
                 a, b = splitCubicAtT(*b, d)
-                nc.append([t, a[1:]])
-                #nc.append([t, b[1:]])
-                split(b)
+                nc.append(["curveTo", a[1:]])
+                split_curve(b)
 
         for i, (t, pts) in enumerate(contour):
-            if t == "curveTo":
+            if t == "lineTo":
+                p0 = contour[i-1][-1][-1]
+                split_line((p0, pts[0]))
+            elif t == "curveTo":
                 p1, p2, p3 = pts
                 p0 = contour[i-1][-1][-1]
-                split((p0, p1, p2, p3))
-                #length_arc = calcCubicArcLength(p0, p1, p2, p3)
-                #if length_arc <= self.length:
-                #    nc.append([t, pts])
-                #else:
-                #    d = self.length / length_arc
-                #    b = (p0, p1, p2, p3)
-                #    for x in range(1):
-                #        a, b = splitCubicAtT(*b, d)
-                #        nc.append([t, a[1:]])
-                #        nc.append([t, b[1:]])
-                #        length_arc = calcCubicArcLength(*b)
-                    
+                split_curve((p0, p1, p2, p3))
             else:
                 nc.append([t, pts])
         return nc
@@ -78,6 +104,12 @@ class DATPen(RecordingPen):
         self.addAttrs(**kwargs)
         self.frame = None
         self.typographic = False
+    
+    def copy(self):
+        dp = DATPen()
+        self.replay(dp)
+        dp.addAttrs(**self.attrs)
+        return dp
     
     def addAttrs(self, **kwargs):
         for k, v in kwargs.items():
@@ -109,39 +141,51 @@ class DATPen(RecordingPen):
         self.value = op.value
         return self
     
-    def _pathop(self, otherPen=None, operation=PathOp.XOR):
-        p1 = Path()
-        self.replay(p1.getPen())
-        if otherPen:
-            p2 = Path()
-            otherPen.replay(p2.getPen())
-        builder = OpBuilder(fix_winding=False, keep_starting_points=False)
-        builder.add(p1, PathOp.UNION)
-        if otherPen:
-            builder.add(p2, operation)
-        result = builder.resolve()
-        d0 = DATPen()
-        result.draw(d0)
-        self.value = d0.value
-        return self
+    def _pathop(self, otherPen=None, operation=BooleanOp.XOR):
+        if USE_SKIA_PATHOPS:
+            p1 = Path()
+            self.replay(p1.getPen())
+            if otherPen:
+                p2 = Path()
+                otherPen.replay(p2.getPen())
+            builder = OpBuilder(fix_winding=True, keep_starting_points=True)
+            builder.add(p1, PathOp.UNION)
+            if otherPen:
+                builder.add(p2, BooleanOp.Skia(operation))
+            result = builder.resolve()
+            d0 = DATPen()
+            result.draw(d0)
+            self.value = d0.value
+            return self
+        else:
+            bg2 = BooleanGlyph()
+            if otherPen:
+                otherPen.replay(bg2.getPen())
+            bg = BooleanGlyph()
+            self.replay(bg.getPen())
+            bg = bg._booleanMath(BooleanOp.BooleanGlyphMethod(operation), bg2)
+            dp = DATPen()
+            bg.draw(dp)
+            self.value = dp.value
+            return self
     
     def difference(self, otherPen):
-        return self._pathop(otherPen=otherPen, operation=PathOp.DIFFERENCE)
+        return self._pathop(otherPen=otherPen, operation=BooleanOp.Difference)
     
     def union(self, otherPen):
-        return self._pathop(otherPen=otherPen, operation=PathOp.UNION)
+        return self._pathop(otherPen=otherPen, operation=BooleanOp.Union)
     
     def xor(self, otherPen):
-        return self._pathop(otherPen=otherPen, operation=PathOp.XOR)
+        return self._pathop(otherPen=otherPen, operation=BooleanOp.XOR)
     
     def reverseDifference(self, otherPen):
-        return self._pathop(otherPen=otherPen, operation=PathOp.REVERSE_DIFFERENCE)
+        return self._pathop(otherPen=otherPen, operation=BooleanOp.ReverseDifference)
     
     def intersection(self, otherPen):
-        return self._pathop(otherPen=otherPen, operation=PathOp.INTERSECTION)
+        return self._pathop(otherPen=otherPen, operation=BooleanOp.Intersection)
     
     def removeOverlap(self):
-        return self._pathop(otherPen=DATPen(), operation=PathOp.UNION)
+        return self._pathop(otherPen=DATPen(), operation=BooleanOp.Union)
     
     def translate(self, x, y):
         return self.transform((1, 0, 0, 1, x, y))
@@ -171,6 +215,7 @@ class DATPen(RecordingPen):
         y = txt_to_edge(y)
         
         if self.frame and not bounds:
+            print("using frame", self.frame)
             b = self.frame
         else:
             b = self.bounds()
@@ -225,8 +270,7 @@ class DATPen(RecordingPen):
         self.value = rp.value
         return self
     
-    def roughen(self, length=10, amplitude=10, threshold=10):
-        #self.flatten(length=length)
+    def roughen(self, amplitude=10, threshold=10):
         randomized = []
         for t, pts in self.value:
             if t == "lineTo" or t == "curveTo":
@@ -375,34 +419,58 @@ class DATPen(RecordingPen):
         c = rect.center()
         one_segment = math.pi * 2 / sides
         points = [(math.sin(one_segment * i) * radius, math.cos(one_segment * i) * radius) for i in range(sides)]
-        self.moveTo(points[0])
+        dp = DATPen()
+        points.reverse()
+        dp.moveTo(points[0])
         for p in points[1:]:
-            self.lineTo(p)
-        self.closePath()
-        self.align(rect)
+            dp.lineTo(p)
+        dp.closePath()
+        dp.align(rect)
+        self.record(dp)
         return self
     
-    def skeleton(self, scale=1):
+    def skeleton(self, scale=1, returnSet=False):
         dp = DATPen()
-        for t, pts in self.value:
+        moveTo = DATPen(fill=("random", 0.5))
+        lineTo = DATPen(fill=("random", 0.5))
+        curveTo_on = DATPen(fill=("random", 0.5))
+        curveTo_off = DATPen(fill=("random", 0.25))
+        curveTo_bars = DATPen(fill=None, stroke=("random", 0.5))
+        for idx, (t, pts) in enumerate(self.value):
             if t == "moveTo":
-                r = 12*scale
+                r = 14*scale
                 x, y = pts[0]
-                dp.rect(Rect((x-r/2, y-r/2, r, r)))
+                moveTo.polygon(7, Rect((x-r/2, y-r/2, r, r)))
             elif t == "curveTo":
                 r = 6*scale
                 x, y = pts[-1]
-                dp.oval(Rect((x-r/2, y-r/2, r, r)))
+                curveTo_on.oval(Rect((x-r/2, y-r/2, r, r)))
                 r = 4*scale
                 x, y = pts[1]
-                dp.oval(Rect((x-r/2, y-r/2, r, r)))
+                curveTo_off.oval(Rect((x-r/2, y-r/2, r, r)))
                 x, y = pts[0]
-                dp.oval(Rect((x-r/2, y-r/2, r, r)))
+                curveTo_off.oval(Rect((x-r/2, y-r/2, r, r)))
+                p0 = self.value[idx-1][-1][-1]
+                curveTo_bars.line((p0, pts[0]))
+                curveTo_bars.line((pts[1], pts[2]))
+                #print(p0)
             elif t == "lineTo":
                 r = 6*scale
                 x, y = pts[0]
-                dp.rect(Rect((x-r/2, y-r/2, r, r)))
-        return dp
+                lineTo.rect(Rect((x-r/2, y-r/2, r, r)))
+        
+        all_pens = [moveTo, lineTo, curveTo_on, curveTo_off, curveTo_bars]
+        if returnSet:
+            return all_pens
+        else:
+            for _dp in all_pens:
+                dp.record(_dp)
+            self.value = dp.value
+            return self
+    
+    def Grid(rect, x=20, y=None, opacity=0.3):
+        grid = rect.inset(0, 0).grid(x, y or x)
+        return DATPen(fill=None, stroke=dict(color=("random", opacity), weight=1)).rect(grid)
 
 
 class DATPenSet():
@@ -449,28 +517,34 @@ if __name__ == "__main__":
     
     with viewer() as v:
         r = Rect((0, 0, 500, 500))
-        ss1 = StyledString("Hello", "≈/Nonplus-Black.otf", fontSize=200, varyFontSize=True)
+        ss1 = StyledString("Yoy", "≈/Nonplus-Black.otf", fontSize=200, varyFontSize=True)
+        ss1 = StyledString("LOSSY", "≈/HalunkeV0.2-Regular.otf", fontSize=300, varyFontSize=True, tracking=-20)
         #ss1.fit(r.w)
-        dp1 = ss1.asDAT().align(r)
+        ss2 = StyledString("Ghz", "≈/Nostrav0.9-Stream.otf", fontSize=120, tracking=0)
+        dp1 = ss1.asDAT(frame=True).align(r)
+        dp2 = ss2.asDAT(frame=True).align(r)
         #dp1.addSmoothPoints()
-        #dp1.roughen()
-        #dp1.roughen(length=20, amplitude=4)
+        #dp1.flatten(length=1)
+        #dp1.roughen(amplitude=100)
         dp1.removeOverlap()
-        dp2 = DATPen(fill=None, stroke=("random", 0.5)).record(dp1)
-        #dp1 = dp1.skeleton(scale=3)
-        dp1.addAttrs(fill=Gradient.Horizontal(r, ("random", 0.75), ("random", 0.75)))
-        #dp1.addAttrs(fill=("random", 0.15), stroke=("random", 0.8))
-        dt1 = DATPen(fill=Gradient.Vertical(r, ("random", 0.5), ("random", 0.5)), stroke=dict(color=("random", 0.5), weight=10))
+        dp1.addAttrs(fill=Gradient.Random(r))
+        dp2.addAttrs(fill=Gradient.Random(r))
+        dp2.rotate(25)
+
+        dt1 = DATPen(fill=Gradient.Vertical(r, ("random", 0.5), ("random", 0.5)))
         dt1.oval(r.inset(100, 100))
         dt2 = DATPen(fill=Gradient.Vertical(r, ("random", 0.5), ("random", 0.5)))
         dt2.rect(r.inset(100, 100))
         dt2.align(r)
         dt3 = DATPen(fill=Gradient.Vertical(r, ("random", 0.2), ("random", 0.2))).polygon(8, r)
         dt3.rotate(120)
+
         v.send(SVGPen.Composite([
-            #dt1,
-            #dt2,
-            #dt3,
+            DATPen.Grid(r, opacity=0.1),
+            #dt1, dt2, dt3,
+            #dp1.copy().addAttrs(fill=Gradient.Random(r)).translate(-30, 0),
+            #dp1.copy().addAttrs(fill=Gradient.Random(r)).translate(30, 0),
             dp1,
-            #dp2,
+            dp2,
+            #*dp2.copy().skeleton(returnSet=True),
             ], r), r)
