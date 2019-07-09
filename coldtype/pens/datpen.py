@@ -1,4 +1,5 @@
 import math
+from fontTools.pens.filterPen import ContourFilterPen
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.transformPen import TransformPen
@@ -7,6 +8,7 @@ from pathops import Path, OpBuilder, PathOp
 from fontPens.flattenPen import FlattenPen
 from grapefruit import Color
 from random import random, randint
+from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
 
 
 if __name__ == "__main__":
@@ -23,6 +25,49 @@ try:
     from coldtype.pens.outlinepen import OutlinePen
 except:
     pass
+
+
+class SmoothPointsPen(ContourFilterPen):
+    def __init__(self, outPen, length=80):
+        super().__init__(outPen)
+        self.length = length
+
+    def filterContour(self, contour):
+        nc = []
+
+        def split(pts):
+            p0, p1, p2, p3 = pts
+            length_arc = calcCubicArcLength(p0, p1, p2, p3)
+            if length_arc <= self.length:
+                nc.append([t, pts[1:]])
+            else:
+                d = self.length / length_arc
+                b = (p0, p1, p2, p3)
+                a, b = splitCubicAtT(*b, d)
+                nc.append([t, a[1:]])
+                #nc.append([t, b[1:]])
+                split(b)
+
+        for i, (t, pts) in enumerate(contour):
+            if t == "curveTo":
+                p1, p2, p3 = pts
+                p0 = contour[i-1][-1][-1]
+                split((p0, p1, p2, p3))
+                #length_arc = calcCubicArcLength(p0, p1, p2, p3)
+                #if length_arc <= self.length:
+                #    nc.append([t, pts])
+                #else:
+                #    d = self.length / length_arc
+                #    b = (p0, p1, p2, p3)
+                #    for x in range(1):
+                #        a, b = splitCubicAtT(*b, d)
+                #        nc.append([t, a[1:]])
+                #        nc.append([t, b[1:]])
+                #        length_arc = calcCubicArcLength(*b)
+                    
+            else:
+                nc.append([t, pts])
+        return nc
 
 
 class DATPen(RecordingPen):
@@ -173,11 +218,18 @@ class DATPen(RecordingPen):
         self.value = dp.value
         return self
     
+    def addSmoothPoints(self, length=100):
+        rp = RecordingPen()
+        fp = SmoothPointsPen(rp)
+        self.replay(fp)
+        self.value = rp.value
+        return self
+    
     def roughen(self, length=10, amplitude=10, threshold=10):
-        self.flatten(length=length)
+        #self.flatten(length=length)
         randomized = []
         for t, pts in self.value:
-            if t == "lineTo":
+            if t == "lineTo" or t == "curveTo":
                 jx = randint(0, amplitude) - amplitude/2
                 jy = randint(0, amplitude) - amplitude/2
                 randomized.append([t, [(x+jx, y+jy) for x, y in pts]])
@@ -329,6 +381,28 @@ class DATPen(RecordingPen):
         self.closePath()
         self.align(rect)
         return self
+    
+    def skeleton(self, scale=1):
+        dp = DATPen()
+        for t, pts in self.value:
+            if t == "moveTo":
+                r = 12*scale
+                x, y = pts[0]
+                dp.rect(Rect((x-r/2, y-r/2, r, r)))
+            elif t == "curveTo":
+                r = 6*scale
+                x, y = pts[-1]
+                dp.oval(Rect((x-r/2, y-r/2, r, r)))
+                r = 4*scale
+                x, y = pts[1]
+                dp.oval(Rect((x-r/2, y-r/2, r, r)))
+                x, y = pts[0]
+                dp.oval(Rect((x-r/2, y-r/2, r, r)))
+            elif t == "lineTo":
+                r = 6*scale
+                x, y = pts[0]
+                dp.rect(Rect((x-r/2, y-r/2, r, r)))
+        return dp
 
 
 class DATPenSet():
@@ -376,11 +450,16 @@ if __name__ == "__main__":
     with viewer() as v:
         r = Rect((0, 0, 500, 500))
         ss1 = StyledString("Hello", "≈/Nonplus-Black.otf", fontSize=200, varyFontSize=True)
-        ss1.fit(r.w)
+        #ss1.fit(r.w)
         dp1 = ss1.asDAT().align(r)
-        dp1.roughen(length=20, amplitude=4)
+        #dp1.addSmoothPoints()
+        #dp1.roughen()
+        #dp1.roughen(length=20, amplitude=4)
         dp1.removeOverlap()
+        dp2 = DATPen(fill=None, stroke=("random", 0.5)).record(dp1)
+        #dp1 = dp1.skeleton(scale=3)
         dp1.addAttrs(fill=Gradient.Horizontal(r, ("random", 0.75), ("random", 0.75)))
+        #dp1.addAttrs(fill=("random", 0.15), stroke=("random", 0.8))
         dt1 = DATPen(fill=Gradient.Vertical(r, ("random", 0.5), ("random", 0.5)), stroke=dict(color=("random", 0.5), weight=10))
         dt1.oval(r.inset(100, 100))
         dt2 = DATPen(fill=Gradient.Vertical(r, ("random", 0.5), ("random", 0.5)))
@@ -388,4 +467,10 @@ if __name__ == "__main__":
         dt2.align(r)
         dt3 = DATPen(fill=Gradient.Vertical(r, ("random", 0.2), ("random", 0.2))).polygon(8, r)
         dt3.rotate(120)
-        v.send(SVGPen.Composite([dt1, dt2, dt3, dp1], r), r)
+        v.send(SVGPen.Composite([
+            #dt1,
+            #dt2,
+            #dt3,
+            dp1,
+            #dp2,
+            ], r), r)
