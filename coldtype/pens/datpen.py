@@ -215,7 +215,6 @@ class DATPen(RecordingPen):
         y = txt_to_edge(y)
         
         if self.frame and not bounds:
-            print("using frame", self.frame)
             b = self.frame
         else:
             b = self.bounds()
@@ -514,37 +513,48 @@ if __name__ == "__main__":
     from grapefruit import Color
 
     from coldtype import StyledString
+
+    from random import seed
+    #seed(104)
     
     with viewer() as v:
         r = Rect((0, 0, 500, 500))
-        ss1 = StyledString("Yoy", "≈/Nonplus-Black.otf", fontSize=200, varyFontSize=True)
-        ss1 = StyledString("LOSSY", "≈/HalunkeV0.2-Regular.otf", fontSize=300, varyFontSize=True, tracking=-20)
+        ss1 = StyledString("cold", "≈/Nonplus-Black.otf", fontSize=200)
+        #ss1 = StyledString("HELLO", "≈/HalunkeV0.2-Regular.otf", fontSize=300)
         #ss1.fit(r.w)
-        ss2 = StyledString("Ghz", "≈/Nostrav0.9-Stream.otf", fontSize=120, tracking=0)
+        ss2 = StyledString("type", "≈/Nostrav0.9-Stream.otf", fontSize=110, tracking=0)
+        #ss1 = StyledString("Three Gems Tea", "≈/Export_Regular.otf", fontSize=50)
         dp1 = ss1.asDAT(frame=True).align(r)
         dp2 = ss2.asDAT(frame=True).align(r)
+        #dp1.addAttrs(fill=(0))
         #dp1.addSmoothPoints()
-        #dp1.flatten(length=1)
+        #dp1.flatten(length=500)
         #dp1.roughen(amplitude=100)
         dp1.removeOverlap()
-        dp1.addAttrs(fill=Gradient.Random(r))
+        dp1.addAttrs(fill=None, stroke=dict(weight=2, color=Gradient.Random(r, 0.9)))
         dp2.addAttrs(fill=Gradient.Random(r))
-        dp2.rotate(25)
+        dp2.rotate(5)
+        dp2.translate(10, 0)
 
-        dt1 = DATPen(fill=Gradient.Vertical(r, ("random", 0.5), ("random", 0.5)))
+        dt1 = DATPen(fill=Gradient.Random(r))
         dt1.oval(r.inset(100, 100))
-        dt2 = DATPen(fill=Gradient.Vertical(r, ("random", 0.5), ("random", 0.5)))
+        dt2 = DATPen(fill=Gradient.Random(r))
         dt2.rect(r.inset(100, 100))
         dt2.align(r)
-        dt3 = DATPen(fill=Gradient.Vertical(r, ("random", 0.2), ("random", 0.2))).polygon(8, r)
-        dt3.rotate(120)
+        dt3 = DATPen(fill=Gradient.Random(r, 0.2)).polygon(8, r)
+        dt3.rotate(random()*100-50)
 
-        v.send(SVGPen.Composite([
-            DATPen.Grid(r, opacity=0.1),
+        svg = SVGPen.Composite([
+            DATPen(fill=Gradient.Random(r)).rect(r),
+            #DATPen.Grid(r, opacity=0.1),
             #dt1, dt2, dt3,
             #dp1.copy().addAttrs(fill=Gradient.Random(r)).translate(-30, 0),
             #dp1.copy().addAttrs(fill=Gradient.Random(r)).translate(30, 0),
+            #dp1,
+            *dp1.copy().skeleton(returnSet=True),
+            dp2.copy().translate(-4, 4).addAttrs(fill=Gradient.Random(r, 0.9)),
             dp1,
-            dp2,
-            #*dp2.copy().skeleton(returnSet=True),
-            ], r), r)
+            dp2.intersection(dp1),
+            ], r)
+        
+        v.send(svg, r)

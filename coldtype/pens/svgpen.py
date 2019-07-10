@@ -31,8 +31,6 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         if color:
             if isinstance(color, Gradient):
                 self.path.set("fill", f"url('#{self.gradient(color)}')")
-            elif isinstance(color, str):
-                self.path.set("fill", color)
             elif isinstance(color, Color):
                 self.path.set("fill", self.rgba(color))
         else:
@@ -40,7 +38,13 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
     
     def stroke(self, weight=1, color=None):
         self.path.set("stroke-width", str(weight))
-        self.path.set("stroke", self.rgba(color))
+        if color:
+            if isinstance(color, Gradient):
+                self.path.set("stroke", f"url('#{self.gradient(color)}')")
+            elif isinstance(color, Color):
+                self.path.set("stroke", self.rgba(color))
+        else:
+            self.path.set("stroke", "transparent")
     
     def rgba(self, color):
         r, g, b = color.ints
