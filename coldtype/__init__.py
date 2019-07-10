@@ -158,9 +158,9 @@ class StyledString():
     def __init__(self,
             text="",
             font=None,
+            fontSize=12,
             fontFile=None,
             ttFont=None,
-            fontSize=12,
             tracking=0,
             trackingLimit=0,
             space=None,
@@ -535,6 +535,8 @@ class StyledString():
                 tp = TransformPen(rp2, (1, 0, 0, 1, xoff, yoff))
                 frp.replay(tp)
                 # transform
+                if frame:
+                    rp2.addFrame(f.frame)
                 pens.append(rp2)
             return pens
             #return [self.roundPen(rp, rounding)]
@@ -676,7 +678,7 @@ if __name__ == "__main__":
         #f = f"≈/{font}.ttf"
         f = font
         r = Rect((0, 0, 700, 120))
-        ss = StyledString("a_a", font=f, fontSize=100, variations=dict(wght=1, wdth=1,  scale=True), features=dict(ss01=True))
+        ss = StyledString("ABC", font=f, fontSize=100, variations=dict(wght=1, wdth=1,  scale=True), features=dict(ss01=True))
         dp = ss.asDAT()
         dp.translate(20, 20)
         #r = svg.rect.inset(50, 0).take(180, "centery")
@@ -712,12 +714,22 @@ if __name__ == "__main__":
         dps.align(r, x="centerx", y="centery", typographicBaseline=True)
         preview.send(SVGPen.Composite(dps.pens + [dp1], r), r)
 
+    def rotalic_test(preview):
+        r = Rect(0, 0, 500, 500)
+        ss = StyledString("Side", "≈/Vinila-VF-HVAR-table.ttf", 200, variations=dict(wdth=0.5, wght=0.7, scale=True), rect=r)
+        dps = ss.asDAT(frame=True, atomized=True)
+        print(dps)
+        for dp in dps:
+            dp.rotate(-15)
+        #dp.align(r)
+        preview.send(SVGPen.Composite(dps, r), r)
+
     with previewer() as p:
-        if True:
+        if False:
             ss_bounds_test("≈/ObviouslyVariable.ttf", p)
             #ss_bounds_test("≈/MutatorSans.ttf", p)
-            ss_bounds_test("~/Downloads/Vinila_Variable.ttf", p)
-            ss_bounds_test("~/Downloads/Vinila-VF-HVAR-table.ttf", p)
+            ss_bounds_test("≈/VinilaVariable.ttf", p)
+            ss_bounds_test("≈/Vinila-VF-HVAR-table.ttf", p)
             #ss_bounds_test("≈/Compressa-MICRO-GX-Rg.ttf", p)
             #ss_bounds_test("≈/BildVariableV2-VF.ttf", p)
             #ss_bounds_test("≈/BruphyGX.ttf", p)
@@ -726,3 +738,4 @@ if __name__ == "__main__":
             #ss_bounds_test("≈/VulfSansItalicVariable.ttf", p)
         #ss_and_shape_test(p)
         #map_test(p)
+        rotalic_test(p)
