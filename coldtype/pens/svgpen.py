@@ -2,10 +2,11 @@ from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 
-import os
-import sys
-dirname = os.path.realpath(os.path.dirname(__file__))
-sys.path.append(f"{dirname}/../..")
+if __name__ == "__main__":    
+    import os
+    import sys
+    dirname = os.path.realpath(os.path.dirname(__file__))
+    sys.path.append(f"{dirname}/../..")
 
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
@@ -154,7 +155,7 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath("."))
     from coldtype.pens.datpen import DATPen
     from coldtype.viewer import previewer
-    from coldtype.svg import read_svg_to_pen    
+    from coldtype.svg import read_svg_to_pen
 
     with previewer() as p:
         r = Rect((0, 0, 1000, 1000))
