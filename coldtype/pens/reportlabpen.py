@@ -1,4 +1,7 @@
 from fontTools.pens.reportLabPen import ReportLabPen as FTReportLabPen
+from reportlab.graphics import renderPM, renderPDF
+from reportlab.lib.colors import HexColor
+from reportlab.graphics.shapes import Group, Drawing, scale
 
 if __name__ == "__main__":    
     import os
@@ -19,7 +22,7 @@ class ReportLabPen(DrawablePenMixin, FTReportLabPen):
             self.applyDATAttribute(attr)
     
     def fill(self, color):
-        self.path.setFillColorRGB(color.rgb)
+        self.path.fillColor = HexColor(color.html)
 
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath("."))
@@ -28,22 +31,14 @@ if __name__ == "__main__":
 
     with previewer() as p:
         r = Rect((0, 0, 1000, 1000))
-        dp1 = DATPen(fill="royalblue")
+        dp1 = DATPen(fill="random")
         dp1.oval(r.inset(200, 200))
-        
         rp = ReportLabPen(dp1)
-
         #p.send(SVGPen.Composite([dp1, dp], r), rect=r)
-
-        from reportlab.graphics import renderPM
-        from reportlab.graphics.shapes import Group, Drawing, scale
-
-        # Everything is wrapped in a group to allow transformations.
         g = Group(rp.path)
-        g.translate(0, 200)
-        g.scale(0.3, 0.3)
-
+        #g.translate(0, 200)
+        #g.scale(0.3, 0.3)
         d = Drawing(r.w, r.h)
-        d.add(g)
+        d.add(rp.path)
 
-        renderPM.drawToFile(d, "test.png", fmt="PNG")
+        renderPDF.drawToFile(d, "test.pdf")

@@ -673,9 +673,10 @@ if __name__ == "__main__":
         preview.send(SVGPen.Composite([DATPen(fill=Gradient.Vertical(rect, "darkorchid", "royalblue")).rect(rect), dp2, dp1], rect), rect)
     
     def ss_bounds_test(font, preview):
-        f = f"≈/{font}.ttf"
+        #f = f"≈/{font}.ttf"
+        f = font
         r = Rect((0, 0, 700, 120))
-        ss = StyledString("ABC", font=f, fontSize=100, variations=dict(wght=0, wdth=1, scale=True), features=dict(ss01=True))
+        ss = StyledString("a_a", font=f, fontSize=100, variations=dict(wght=1, wdth=1,  scale=True), features=dict(ss01=True))
         dp = ss.asDAT()
         dp.translate(20, 20)
         #r = svg.rect.inset(50, 0).take(180, "centery")
@@ -712,15 +713,16 @@ if __name__ == "__main__":
         preview.send(SVGPen.Composite(dps.pens + [dp1], r), r)
 
     with previewer() as p:
-        if False:
-            ss_bounds_test("ObviouslyVariable", p)
-            ss_bounds_test("MutatorSans", p)
-            ss_bounds_test("VinilaVariable#2", p)
-            ss_bounds_test("Compressa-MICRO-GX-Rg#1", p)
-            ss_bounds_test("BildVariableV2-VF", p)
-            ss_bounds_test("BruphyGX#5", p)
-            ss_bounds_test("Fit-Variable", p)
-            ss_bounds_test("MapRomanVariable-VF", p)
-            ss_bounds_test("VulfSansItalicVariable", p)
-        ss_and_shape_test(p)
+        if True:
+            ss_bounds_test("≈/ObviouslyVariable.ttf", p)
+            #ss_bounds_test("≈/MutatorSans.ttf", p)
+            ss_bounds_test("~/Downloads/Vinila_Variable.ttf", p)
+            ss_bounds_test("~/Downloads/Vinila-VF-HVAR-table.ttf", p)
+            #ss_bounds_test("≈/Compressa-MICRO-GX-Rg.ttf", p)
+            #ss_bounds_test("≈/BildVariableV2-VF.ttf", p)
+            #ss_bounds_test("≈/BruphyGX.ttf", p)
+            #ss_bounds_test("≈/Fit-Variable.ttf", p)
+            #ss_bounds_test("≈/MapRomanVariable-VF.ttf", p)
+            #ss_bounds_test("≈/VulfSansItalicVariable.ttf", p)
+        #ss_and_shape_test(p)
         #map_test(p)
