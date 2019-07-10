@@ -393,18 +393,23 @@ class DATPen(RecordingPen):
         l, b, w, h = rect
         r, t = l + w, b + h
         K = 4 * (math.sqrt(2)-1) / 3
+        circle = hr == 0.5 and vr == 0.5
         if hr <= 0.5:
             hr = w * hr
         if vr <= 0.5:
             vr = h * vr
         self.moveTo((l + hr, b))
-        self.lineTo((r - hr, b))
+        if not circle:
+            self.lineTo((r - hr, b))
         self.curveTo((r+hr*(K-1), b), (r, b+vr*(1-K)), (r, b+vr))
-        self.lineTo((r, t-vr))
+        if not circle:
+            self.lineTo((r, t-vr))
         self.curveTo((r, t-vr*(1-K)), (r-hr*(1-K), t), (r-hr, t))
-        self.lineTo((l+hr, t))
+        if not circle:
+            self.lineTo((l+hr, t))
         self.curveTo((l+hr*(1-K), t), (l, t-vr*(1-K)), (l, t-vr))
-        self.lineTo((l, b+vr))
+        if not circle:
+            self.lineTo((l, b+vr))
         self.curveTo((l, b+vr*(1-K)), (l+hr*(1-K), b), (l+hr, b))
         self.closePath()
         return self
@@ -518,16 +523,6 @@ if __name__ == "__main__":
     
     with viewer() as v:
         if True:
-            r = Rect(0, 0, 500, 500)
-            ss1 = StyledString("Mid", "≈/Vinila-VF-HVAR-table.ttf", 100, variations=dict(wdth=1, wght=1, scale=True))
-            ss2 = StyledString("Side", "≈/Vinila-VF-HVAR-table.ttf", 100, variations=dict(wdth=0.5, wght=0.7, scale=True))
-            ss1_ = ss1.asDAT(frame=True)
-            ss2_ = [p.rotate(-15) for p in ss2.asDAT(frame=True, atomized=True)]
-            dps = DATPenSet([] + ss2_)
-            dps.align(r)
-            v.send(SVGPen.Composite(dps.pens, r), r)
-
-        if False:
             r = Rect((0, 0, 500, 500))
             ss1 = StyledString("cold", "≈/Nonplus-Black.otf", fontSize=200)
             #ss1 = StyledString("HELLO", "≈/HalunkeV0.2-Regular.otf", fontSize=300)
