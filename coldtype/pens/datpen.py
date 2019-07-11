@@ -439,12 +439,12 @@ class DATPen(RecordingPen):
         lineTo = DATPen(fill=("random", 0.5))
         curveTo_on = DATPen(fill=("random", 0.5))
         curveTo_off = DATPen(fill=("random", 0.25))
-        curveTo_bars = DATPen(fill=None, stroke=("random", 0.5))
+        curveTo_bars = DATPen(fill=None, stroke=dict(color=("random", 0.5), weight=1*scale))
         for idx, (t, pts) in enumerate(self.value):
             if t == "moveTo":
-                r = 14*scale
+                r = 12*scale
                 x, y = pts[0]
-                moveTo.polygon(7, Rect((x-r/2, y-r/2, r, r)))
+                moveTo.rect(Rect((x-r/2, y-r/2, r, r)))
             elif t == "curveTo":
                 r = 6*scale
                 x, y = pts[-1]
@@ -514,6 +514,7 @@ class DATPenSet():
 if __name__ == "__main__":
     from coldtype.viewer import viewer
     from coldtype.pens.svgpen import SVGPen
+    from coldtype.pens.reportlabpen import ReportLabPen
     from grapefruit import Color
 
     from coldtype import StyledString
@@ -523,11 +524,11 @@ if __name__ == "__main__":
     
     with viewer() as v:
         if True:
-            r = Rect((0, 0, 500, 500))
-            ss1 = StyledString("cold", "≈/Nonplus-Black.otf", fontSize=200)
+            r = Rect((0, 0, 1920, 1080))
+            ss1 = StyledString("cold", "≈/Nonplus-Black.otf", fontSize=600)
             #ss1 = StyledString("HELLO", "≈/HalunkeV0.2-Regular.otf", fontSize=300)
             #ss1.fit(r.w)
-            ss2 = StyledString("type", "≈/Nostrav0.9-Stream.otf", fontSize=110, tracking=0)
+            ss2 = StyledString("type", "≈/Nostrav0.9-Stream.otf", fontSize=310, tracking=0)
             #ss1 = StyledString("Three Gems Tea", "≈/Export_Regular.otf", fontSize=50)
             dp1 = ss1.asDAT(frame=True).align(r)
             dp2 = ss2.asDAT(frame=True).align(r)
@@ -536,30 +537,34 @@ if __name__ == "__main__":
             #dp1.flatten(length=500)
             #dp1.roughen(amplitude=100)
             dp1.removeOverlap()
-            dp1.addAttrs(fill=None, stroke=dict(weight=2, color=Gradient.Random(r, 0.9)))
+            dp1.addAttrs(fill="random")
             dp2.addAttrs(fill=Gradient.Random(r))
             dp2.rotate(5)
             dp2.translate(10, 0)
 
             dt1 = DATPen(fill=Gradient.Random(r))
             dt1.oval(r.inset(100, 100))
-            dt2 = DATPen(fill=Gradient.Random(r))
+            dt2 = DATPen(fill="random")
             dt2.rect(r.inset(100, 100))
             dt2.align(r)
             dt3 = DATPen(fill=Gradient.Random(r, 0.2)).polygon(8, r)
             dt3.rotate(random()*100-50)
 
-            svg = SVGPen.Composite([
+            pens = [
                 DATPen(fill=Gradient.Random(r)).rect(r),
                 #DATPen.Grid(r, opacity=0.1),
                 #dt1, dt2, dt3,
                 #dp1.copy().addAttrs(fill=Gradient.Random(r)).translate(-30, 0),
                 #dp1.copy().addAttrs(fill=Gradient.Random(r)).translate(30, 0),
                 #dp1,
-                *dp1.copy().skeleton(returnSet=True),
+                
                 dp2.copy().translate(-4, 4).addAttrs(fill=Gradient.Random(r, 0.9)),
                 dp1,
                 dp2.intersection(dp1),
-                ], r)
-            
+                *dp1.copy().skeleton(returnSet=True, scale=10),
+            ]
+
+            svg = SVGPen.Composite(pens, r)
             v.send(svg, r)
+
+            ReportLabPen.Composite(pens, r, "test.pdf")
