@@ -737,5 +737,5 @@ if __name__ == "__main__":
             #ss_bounds_test("≈/MapRomanVariable-VF.ttf", p)
             #ss_bounds_test("≈/VulfSansItalicVariable.ttf", p)
         #ss_and_shape_test(p)
-        #map_test(p)
-        rotalic_test(p)
+        map_test(p)
+        #rotalic_test(p)

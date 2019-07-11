@@ -10,6 +10,11 @@ from grapefruit import Color
 from random import random, randint
 from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
 
+try:
+    from noise import pnoise1
+except:
+    pass
+
 if __name__ == "__main__":
     import os
     import sys
@@ -271,11 +276,17 @@ class DATPen(RecordingPen):
     
     def roughen(self, amplitude=10, threshold=10):
         randomized = []
+        _x = 0
+        _y = 0
         for t, pts in self.value:
             if t == "lineTo" or t == "curveTo":
+                jx = pnoise1(_x) * amplitude # should actually be 1-d on the tangent!
+                jy = pnoise1(_y) * amplitude
                 jx = randint(0, amplitude) - amplitude/2
                 jy = randint(0, amplitude) - amplitude/2
                 randomized.append([t, [(x+jx, y+jy) for x, y in pts]])
+                _x += 0.2
+                _y += 0.3
             else:
                 randomized.append([t, pts])
         self.value = randomized
@@ -320,11 +331,10 @@ class DATPen(RecordingPen):
         self.value = dp.value
         return self
     
-    def catmull(self, points):
+    def catmull(self, points, close=False):
         p0 = points[0]
         p1, p2, p3 = points[:3]
         pts = [p0]
-
         i = 1
         while i < len(points):
             pts.append([
@@ -335,7 +345,6 @@ class DATPen(RecordingPen):
                 p2[0],
                 p2[1]
             ])
-
             p0 = p1
             p1 = p2
             p2 = p3
@@ -343,13 +352,12 @@ class DATPen(RecordingPen):
                 p3 = points[i + 2]
             except:
                 p3 = p3
-
             i += 1
-
         self.moveTo(pts[0])
         for p in pts[1:]:
             self.curveTo((p[0], p[1]), (p[2], p[3]), (p[4], p[5]))
-        #self.closePath()
+        if close:
+            self.closePath()
     
     def pattern(self, rect, clip=False):
         dp_copy = DATPen()
@@ -432,6 +440,26 @@ class DATPen(RecordingPen):
         dp.align(rect)
         self.record(dp)
         return self
+
+    def skeletonPoints(self):
+        all_points = []
+        points = []
+        for idx, (t, pts) in enumerate(self.value):
+            if t == "moveTo":
+                points.append(("moveTo", pts))
+            elif t == "curveTo":
+                p0 = self.value[idx-1][-1][-1]
+                points.append(("curveTo", [p0, *pts]))
+            elif t == "lineTo":
+                p0 = self.value[idx-1][-1][-1]
+                points.append(("lineTo", [p0, *pts]))
+            elif t == "closePath":
+                all_points.append(points)
+                points = []
+                #points.append(("closePath", [None]))
+        if len(points) > 0:
+            all_points.append(points)
+        return all_points
     
     def skeleton(self, scale=1, returnSet=False):
         dp = DATPen()
@@ -519,17 +547,14 @@ if __name__ == "__main__":
 
     from coldtype import StyledString
 
-    from random import seed
+    from random import seed, shuffle
     #seed(104)
     
     with viewer() as v:
-        if True:
+        if False:
             r = Rect((0, 0, 1920, 1080))
             ss1 = StyledString("cold", "≈/Nonplus-Black.otf", fontSize=600)
-            #ss1 = StyledString("HELLO", "≈/HalunkeV0.2-Regular.otf", fontSize=300)
-            #ss1.fit(r.w)
             ss2 = StyledString("type", "≈/Nostrav0.9-Stream.otf", fontSize=310, tracking=0)
-            #ss1 = StyledString("Three Gems Tea", "≈/Export_Regular.otf", fontSize=50)
             dp1 = ss1.asDAT(frame=True).align(r)
             dp2 = ss2.asDAT(frame=True).align(r)
             #dp1.addAttrs(fill=(0))
@@ -551,13 +576,12 @@ if __name__ == "__main__":
             dt3.rotate(random()*100-50)
 
             pens = [
-                DATPen(fill=Gradient.Random(r)).rect(r),
-                #DATPen.Grid(r, opacity=0.1),
+                #DATPen(fill=Gradient.Random(r)).rect(r),
+                DATPen.Grid(r, opacity=0.1),
                 #dt1, dt2, dt3,
                 #dp1.copy().addAttrs(fill=Gradient.Random(r)).translate(-30, 0),
                 #dp1.copy().addAttrs(fill=Gradient.Random(r)).translate(30, 0),
                 #dp1,
-                
                 dp2.copy().translate(-4, 4).addAttrs(fill=Gradient.Random(r, 0.9)),
                 dp1,
                 dp2.intersection(dp1),
@@ -567,4 +591,42 @@ if __name__ == "__main__":
             svg = SVGPen.Composite(pens, r)
             v.send(svg, r)
 
-            ReportLabPen.Composite(pens, r, "test.pdf")
+            #ReportLabPen.Composite(pens, r, "test.pdf")
+    
+        if True:
+            seed(100)
+            r = Rect((0, 0, 1080, 1080))
+            ss1 = StyledString("Rob", "≈/Nonplus-Black.otf", fontSize=400)
+            dp1 = ss1.asDAT(frame=True)
+            dp1.align(r)
+            dp1.removeOverlap()
+            dp1.flatten(length=10)
+            dp1.roughen(amplitude=1)
+            
+            #shuffle(_points)
+            #points = [p for pl in _points for p in pl]
+            #print(len(_points))
+            
+            dp2 = DATPen()
+            dp2.addAttrs(fill=None, stroke=dict(color=(0.8, 0, 0.7), weight=4))
+            for pts in dp1.skeletonPoints():
+                _pts = [p[-1][-1] for p in pts]
+                #s = randint(0, len(_pts) - 10)
+                #copy = _pts[s:8]
+                #shuffle(copy)
+                #_pts[s:15] = copy # overwrite the original
+                #shuffle(_pts)
+                #print(".............")
+                #print(_pts)
+                dp2.catmull(_pts, close=True)
+
+            dp3 = dp2.copy().addAttrs(fill=0, stroke=None)
+
+            pens = [
+                #dp1,
+                dp2,
+                #dp3,
+                #dp2.skeleton()
+            ]
+            svg = SVGPen.Composite(pens, r)
+            v.send(svg, r)
