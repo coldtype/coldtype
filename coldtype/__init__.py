@@ -154,6 +154,11 @@ class FreetypeReader():
         pen.curveTo((a.x, a.y), (b.x, b.y), (c.x, c.y))
 
 
+_prefixes = [
+    ["¬", "~/Library/Fonts"],
+    ["≈", "~/Type/fonts/fonts"],
+]
+
 class StyledString():
     def __init__(self,
             text="",
@@ -176,8 +181,14 @@ class StyledString():
             align="C",
             rect=None,
             fill=None):
+        
+        global _prefixes
+        ff = (font or fontFile)
+        for prefix, expansion in _prefixes:
+            ff = ff.replace(prefix, expansion)
+        self.fontFile = os.path.expanduser(ff)
+
         self.text = text
-        self.fontFile = os.path.expanduser((font or fontFile).replace("¬", "~/Library/Fonts").replace("≈", "~/Type/fonts/fonts"))
         self.ttfont = ttFont or TTFont(self.fontFile)
         self.fontdata = get_cached_font(self.fontFile)
         self.upem = hb.Face(self.fontdata).upem
@@ -222,6 +233,10 @@ class StyledString():
         else:
             self.ch = 1000 # alternative?
     
+    def RegisterShorthandPrefix(prefix, expansion):
+        global _prefixes
+        _prefixes.append([prefix, expansion])
+
     def carbonCopy(self, newText, **kwargs):
         copy_kwargs = dict(fontFile=self.fontFile, ttFont=self.ttfont, fontSize=self.fontSize, tracking=self.tracking, trackingLimit=self.trackingLimit, space=self.space, baselineShift=self.baselineShift, xShift=self.xShift, leftMargin=self.leftMargin, rightMargin=self.rightMargin, variations=self.variations, variationLimits=self.variationLimits, increments=self.increments, features=self.features, align=self.align, rect=self.rect, fill=self.fill)
         mixed_kwargs = {**copy_kwargs, **kwargs}
@@ -239,7 +254,7 @@ class StyledString():
             scale = variations["scale"]
             del variations["scale"]
         else:
-            scale = False
+            scale = True
         for k, v in variations.items():
             try:
                 axis = self.axes[k]

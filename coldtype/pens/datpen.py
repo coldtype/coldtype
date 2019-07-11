@@ -594,14 +594,17 @@ if __name__ == "__main__":
             #ReportLabPen.Composite(pens, r, "test.pdf")
     
         if True:
-            seed(100)
+            #seed(100)
             r = Rect((0, 0, 1080, 1080))
-            ss1 = StyledString("Rob", "≈/Nonplus-Black.otf", fontSize=400)
+            f = "≈/Nonplus-Black.otf"
+            f = "≈/Bahati0.1-Regular.otf"
+            f = "≈/Taters-Baked-v0.1.otf"
+            ss1 = StyledString("Trem", f, fontSize=400)
             dp1 = ss1.asDAT(frame=True)
             dp1.align(r)
             dp1.removeOverlap()
-            dp1.flatten(length=10)
-            dp1.roughen(amplitude=1)
+            dp1.flatten(length=5)
+            dp1.roughen(amplitude=3)
             
             #shuffle(_points)
             #points = [p for pl in _points for p in pl]
