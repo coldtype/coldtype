@@ -63,6 +63,10 @@ class BooleanOp(Enum):
             "intersection",
         ][x.value]
 
+class OpenPathPen(ContourFilterPen):
+    def filterContour(self, contour):
+        return contour[:-1]
+
 
 class SmoothPointsPen(ContourFilterPen):
     def __init__(self, outPen, length=80):
@@ -593,7 +597,7 @@ if __name__ == "__main__":
 
             #ReportLabPen.Composite(pens, r, "test.pdf")
     
-        if True:
+        if False:
             #seed(100)
             r = Rect((0, 0, 1080, 1080))
             f = "≈/Nonplus-Black.otf"
@@ -603,8 +607,8 @@ if __name__ == "__main__":
             dp1 = ss1.asDAT(frame=True)
             dp1.align(r)
             dp1.removeOverlap()
-            dp1.flatten(length=5)
-            dp1.roughen(amplitude=3)
+            dp1.flatten(length=10)
+            dp1.roughen(amplitude=30)
             
             #shuffle(_points)
             #points = [p for pl in _points for p in pl]
@@ -630,6 +634,22 @@ if __name__ == "__main__":
                 dp2,
                 #dp3,
                 #dp2.skeleton()
+            ]
+            svg = SVGPen.Composite(pens, r)
+            v.send(svg, r)
+        
+        if True:
+            from defcon import Font
+            r = Rect(0,0,500,500)
+            f = Font(os.path.expanduser("~/Type/drawings/GhzGong/GhzGong.ufo"))
+            ghz = f["goodhertz.gordy"]
+            #ghz = f["a"]
+            dp1 = DATPen(fill=None, stroke="random")
+            op = OpenPathPen(dp1)
+            ghz.draw(op)
+            dp1.flatten()
+            pens = [
+                dp1,
             ]
             svg = SVGPen.Composite(pens, r)
             v.send(svg, r)
