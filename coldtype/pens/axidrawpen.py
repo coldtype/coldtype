@@ -57,40 +57,76 @@ class AxiDrawPen(BasePen):
 
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath("."))
-    from coldtype.pens.datpen import DATPen, OpenPathPen
+    from coldtype.viewer import viewer
+    from coldtype.pens.datpen import DATPen, OpenPathPen, DATPenSet
+    from coldtype.pens.svgpen import SVGPen
     from coldtype import StyledString
+    from coldtype.ufo import UFOStringSetter
 
     #from defcon import Font
     #f = Font(os.path.expanduser("~/Type/drawings/GhzGong/GhzGong.ufo"))
     
-    r = Rect(0, 0, 1000, 500)
-    ss = StyledString("BALLPOINT", "≈/infini-regular.otf", 200)
+    r = Rect(0, 0, 300, 100)
+    ss = StyledString("Hello", "≈/Taters-Baked-v0.1.otf", 100)
     dp1 = ss.asDAT()
     dp1.removeOverlap()
-    #dp1 = DATPen() 
-    #ghz = f["goodhertz.gordy.copy_1"]
-    #ghz = f["G"]
-    #dp0 = DATPen()
-    #op = OpenPathPen(dp0)
-    #ghz.draw(op)
-    #dp1 = DATPen()
-    #dp0.scale(0.5)
-    #dp1.record(dp0)
-    #dp1.rect(r.inset(10, 10))
-    #dp1.oval(r.inset(100, 100))
-    #dp1.align(r)
-    dp1.translate(50, 50)
-    #dp1.translate(1, 1)
-    dp1.flatten(length=1)
-    #dp1.roughen()
-    scale = 0.005
-    dp1.scale(scale)
-    ap = AxiDrawPen(dp1, r.h*scale)
-    dpb = dp1.bounds()
-    print(">>>>>>", dpb)
-    if dpb.x >= 0 and dpb.y >= 0 and dpb.w <= 11 and dpb.h <= 6:
-        print("Drawing!")
-        ap.draw()
+    dp1.translate(30, 20)
+    #dp1.flatten(length=10)
+
+    dp2 = DATPen()
+    dp2.rect(r.take(50, "maxy"))
+    #for _r in r.inset(-50, -200).subdivide(15, "miny"):
+    #    dp2.rect(_r.take(14, "centery"))
+    
+    #60 -80
+    def draw_frame(offset):
+        dp3 = DATPen()
+        dp3.record(dp2)
+        dp3.translate(0, offset)
+        #dp2.translate(0, 50)
+        dp3.rotate(5)
+        dp3 = DATPen().record(dp1).intersection(dp3)
+        dp3.flatten(length=1)
+        dp3.rect(Rect(10, 10, 10, 10))
+        dp3.rect(r.take(10, "maxx").take(10, "maxy").offset(-10, -10))
+        return dp3
+
+    #dp1.translate(100, 0)
+    
+    if False:
+        dp1.roughen(amplitude=20)
+        points = dp1.skeletonPoints()
+        dp1 = DATPen() #.catmull(dp1.skeletonPoints(), close=True)
+        for pts in points:
+            _pts = [p[-1][-1] for p in pts]
+            dp1.catmull(_pts, close=True)
+        dp1.flatten(length=2)
+    
+    if False:
+        scale = 0.005
+        op = DATPen()
+        for x in range(0, 3):
+            op.record(draw_frame(-40).translate(x*r.w, 0))
+        op.scale(scale)
+        ap = AxiDrawPen(op, r.h*scale)
+        dpb = op.bounds()
+        print(">>>>>>", dpb)
+        if dpb.x >= 0 and dpb.y >= 0 and dpb.w <= 11 and dpb.h <= 6:
+            print("Drawing!")
+            ap.draw()
+        else:
+            print("Too big!")
+        #print(bp.splines)
     else:
-        print("Too big!")
-    #print(bp.splines)
+        with viewer() as v:
+            #dp1.addAttrs(fill=None, stroke=0)
+            #dp2.addAttrs(fill=None, stroke="random")
+            #dp2.intersection(dp1)
+            op = DATPen()
+            #pens = [draw_frame()]
+            pens = [draw_frame(x).addAttrs(fill=None, stroke="random") for x in range(-60, 90, 10)]
+            dpp = DATPenSet(pens)
+            dpp.align()
+            #for x in range(0, 3):
+            #    op.record(draw_frame(-40).translate(x*r.w, 0))
+            v.send(SVGPen.Composite(pens, Rect(0, 0, 2000, 100)), Rect(0, 0, 2000, 100))

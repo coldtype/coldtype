@@ -21,7 +21,7 @@ if __name__ == "__main__":
     dirname = os.path.realpath(os.path.dirname(__file__))
     sys.path.append(f"{dirname}/../..")
 
-USE_SKIA_PATHOPS = False
+USE_SKIA_PATHOPS = True
 
 if USE_SKIA_PATHOPS:
     from pathops import Path, OpBuilder, PathOp
@@ -133,8 +133,10 @@ class DATPen(RecordingPen):
                 self.attrs[k] = v
         return self
     
-    def addFrame(self, frame):
+    def addFrame(self, frame, typographic=False):
         self.frame = frame
+        if typographic:
+            self.typographic = True
         return self
     
     def getFrame(self):
@@ -148,6 +150,8 @@ class DATPen(RecordingPen):
         tp = TransformPen(op, transform)
         self.replay(tp)
         self.value = op.value
+        if True and self.frame:
+            self.frame = self.frame.transform(transform)
         return self
     
     def _pathop(self, otherPen=None, operation=BooleanOp.XOR):
@@ -197,12 +201,19 @@ class DATPen(RecordingPen):
         return self._pathop(otherPen=DATPen(), operation=BooleanOp.Union)
     
     def translate(self, x, y):
-        return self.transform((1, 0, 0, 1, x, y))
+        return self.transform(Transform(1, 0, 0, 1, x, y))
     
     def scale(self, scaleX, scaleY=None, center=None):
         # TODO centering
         t = Transform().scale(scaleX, scaleY or scaleX)
         return self.transform(t)
+    
+    def scaleToRect(self, rect):
+        bounds = self.bounds()
+        h = rect.w / bounds.w
+        v = rect.h / bounds.h
+        scale = h if h < v else v
+        return self.scale(scale)
     
     def rotate(self, degrees, point=None):
         t = Transform()
@@ -597,7 +608,7 @@ if __name__ == "__main__":
 
             #ReportLabPen.Composite(pens, r, "test.pdf")
     
-        if False:
+        if True:
             #seed(100)
             r = Rect((0, 0, 1080, 1080))
             f = "≈/Nonplus-Black.otf"
@@ -634,22 +645,6 @@ if __name__ == "__main__":
                 dp2,
                 #dp3,
                 #dp2.skeleton()
-            ]
-            svg = SVGPen.Composite(pens, r)
-            v.send(svg, r)
-        
-        if True:
-            from defcon import Font
-            r = Rect(0,0,500,500)
-            f = Font(os.path.expanduser("~/Type/drawings/GhzGong/GhzGong.ufo"))
-            ghz = f["goodhertz.gordy"]
-            #ghz = f["a"]
-            dp1 = DATPen(fill=None, stroke="random")
-            op = OpenPathPen(dp1)
-            ghz.draw(op)
-            dp1.flatten()
-            pens = [
-                dp1,
             ]
             svg = SVGPen.Composite(pens, r)
             v.send(svg, r)

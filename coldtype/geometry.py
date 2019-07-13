@@ -9,6 +9,8 @@ YOYO = "ma"
 
 MINYISMAXY = False
 
+from fontTools.misc.transform import Transform
+
 
 class Edge(Enum):
     MaxY = 1
@@ -349,6 +351,10 @@ class Rect():
             r.h = h
             r.y -= h/2
         return r
+    
+    def FromExtents(extents):
+        nw, ne, se, sw = extents
+        return Rect(sw[0], sw[1], ne[0] - sw[0], ne[1] - sw[1])
 
     def page():
         if db:
@@ -396,6 +402,12 @@ class Rect():
         amounts = [val for pair in zip([unit] * count, leadings)
                    for val in pair][:-1]
         return [Rect(x) for x in subdivide(self.rect(), amounts, edge)][::2]
+    
+    def transform(self, t):
+        pts = ["NW", "NE", "SE", "SW"]
+        print(t)
+        x1, x2, x3, x4 = [t.transformPoint(self.point(pt)) for pt in pts]
+        return Rect.FromExtents([x1, x2, x3, x4])
 
     def scale(self, s, x_edge=Edge.CenterX, y_edge=Edge.CenterY):
         x_edge = txt_to_edge(x_edge)
@@ -493,4 +505,8 @@ class Rect():
             return Point((px, py))
 
 if __name__ == "__main__":
-    print(Rect(0, 0, 100, 100).inset(20, 20).expand(20, "minx"))
+    #print(Rect(0, 0, 100, 100).inset(20, 20).expand(20, "minx"))
+
+    r = Rect(0, 0, 100, 100)
+    t = Transform().scale(0.5, 0.5)
+    print(r.transform(t))
