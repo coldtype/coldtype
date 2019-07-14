@@ -455,6 +455,16 @@ class DATPen(RecordingPen):
         dp.align(rect)
         self.record(dp)
         return self
+    
+    def points(self):
+        contours = []
+        for contour in self.skeletonPoints():
+            _c = []
+            for step, pts in contour:
+                for pt in pts:
+                    _c.append(pt)
+            contours.append(_c)
+        return contours
 
     def skeletonPoints(self):
         all_points = []
@@ -530,6 +540,12 @@ class DATPenSet():
                 self.pens.append(p)
             else:
                 self.addPens(p)
+    
+    def asPen(self):
+        dp = DATPen()
+        for p in self.pens:
+            dp.record(p)
+        return dp
 
     def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, typographicBaseline=True):
         # split up the space according to the bounds of the individual pens

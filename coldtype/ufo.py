@@ -1,7 +1,7 @@
 import os
 from fontTools.ufoLib import UFOReader
 from fontTools.ufoLib.glifLib import Glyph
-from collections import OrderedDict
+
 
 if __name__ == "__main__":
     import sys
@@ -28,16 +28,16 @@ class UFOStringSetter():
             names = glyphNames.split(" ")
         else: # iterable
             names = glyphNames
-        od = OrderedDict()
+        od = []
         for name in names:
-            od[name] = self.getGlyph(name)
+            od.append(self.getGlyph(name))
         return od
     
     def getLine(self, string, atomized=False, typographic=True):
         glyphs = self.getGlyphs(string)
         pens = []
         offset = 0
-        for name, glyph in glyphs.items():
+        for glyph in glyphs:
             dp = DATPen()
             op = OpenPathPen(dp)
             glyph.draw(op)
