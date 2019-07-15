@@ -405,7 +405,6 @@ class Rect():
     
     def transform(self, t):
         pts = ["NW", "NE", "SE", "SW"]
-        print(t)
         x1, x2, x3, x4 = [t.transformPoint(self.point(pt)) for pt in pts]
         return Rect.FromExtents([x1, x2, x3, x4])
 
