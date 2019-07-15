@@ -17,6 +17,7 @@ from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.ttLib import TTFont
 import unicodedata
 import uharfbuzz as hb
+from itertools import groupby
 
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath(dirname + "/.."))
@@ -154,6 +155,75 @@ class FreetypeReader():
         pen.curveTo((a.x, a.y), (b.x, b.y), (c.x, c.y))
 
 
+def between(c, a, b):
+    return ord(a) <= ord(c) <= ord(b)
+
+
+LATIN = lambda c: between(c, '\u0000', '\u024F')
+KATAKANA = lambda c: between(c, '\u30A0', '\u30FF')
+HIRAGANA = lambda c: between(c, '\u3040', '\u309F')
+CJK = lambda c: between(c, '\u4E00', '\u9FFF')
+
+class Setter():
+    def __init__(self, text, primaryStyle, **languageSpecificStyles):
+        self.text = text
+        self.primary = primaryStyle
+        self.others = languageSpecificStyles
+        self.strings = []
+        self.tag()
+    
+    def tag(self):
+        if len(self.others) > 0:
+            tagged = []
+            for c in self.text:
+                if LATIN(c) and c != " ":
+                    tagged.append(["latin", c])
+                else:
+                    tagged.append(["other", c])
+            
+            strings = []
+            for k, g in groupby(tagged, lambda e: e[0]):
+                txt = "".join([g[1] for g in list(g)])
+                if k == "other":
+                    strings.append(StyledString(txt, **self.primary.attributes))
+                else:
+                    strings.append(StyledString(txt, **self.others["latin"].attributes))
+            
+            self.strings = strings
+        else:
+            self.strings = [StyledString(self.text, **self.primary.attributes)]
+    
+    def width(self):
+        return sum([s.width() for s in self.strings])
+
+    def fit(self, width):
+        current_width = self.width()
+        tries = 0
+        if current_width > width: # need to shrink
+            while tries < 1000 and current_width > width:
+                adjusted = False
+                for s in self.strings:
+                    adjusted = s.shrink() or adjusted
+                if adjusted:
+                    tries += 1
+                    current_width = self.width()
+                else:
+                    print(">>> Was not adjusted")
+                    return
+        elif current_width < width: # need to expand
+            pass
+        else:
+            return
+
+    def asDAT(self):
+        return DATPenSet([s.asDAT(frame=True) for s in self.strings])
+
+
+class Style():
+    def __init__(self, font=None, fontSize=12, **kwargs):
+        self.attributes = {**dict(font=font, fontSize=fontSize), **kwargs}
+
+
 _prefixes = [
     ["¬", "~/Library/Fonts"],
     ["≈", "~/Type/fonts/fonts"],
@@ -225,6 +295,7 @@ class StyledString():
                 self.variations[axis.axisTag] = axis.defaultValue
                 if axis.axisTag == "wdth": # the only reasonable default
                     self.variationLimits[axis.axisTag] = axis.minValue
+
         self.addVariations(variations)
         
         os2 = self.ttfont["OS/2"]
@@ -392,35 +463,45 @@ class StyledString():
     def scale(self):
         return self.fontSize / self.upem
     
+    def shrink(self):
+        adjusted = False
+        if self.tracking > 0:
+            self.tracking -= self.increments.get("tracking", 0.25)
+            adjusted = True
+        else:
+            for k, v in self.variationLimits.items():
+                if self.variations[k] > self.variationLimits[k]:
+                    self.variations[k] -= self.increments.get(k, 1)
+                    adjusted = True
+                    break
+        if not adjusted and self.tracking > self.trackingLimit:
+            self.tracking -= self.increments.get("tracking", 0.25)
+            adjusted = True
+        if not adjusted and self.varyFontSize:
+            self.fontSize -= 1
+            adjusted = True
+        if not adjusted and "hwid" not in self.features:
+            #print("HWID'ing")
+            self.features["hwid"] = True
+            adjusted = True
+        return adjusted
+    
     def fit(self, width):
-        _vars = self.variations
         current_width = self.width()
         self.tries = 0
         if current_width > width: # need to shrink
             while self.tries < 1000 and current_width > width:
-                adjusted = False
-                if self.tracking > 0:
-                    self.tracking -= self.increments.get("tracking", 0.25)
-                    adjusted = True
+                adjusted = self.shrink()
+                if adjusted:
+                    self.tries += 1
+                    current_width = self.width()
                 else:
-                    for k, v in self.variationLimits.items():
-                        if self.variations[k] > self.variationLimits[k]:
-                            self.variations[k] -= self.increments.get(k, 1)
-                            adjusted = True
-                            break
-                if not adjusted and self.tracking > self.trackingLimit:
-                    self.tracking -= self.increments.get("tracking", 0.25)
-                    adjusted = True
-                if not adjusted and self.varyFontSize:
-                    self.fontSize -= 1
-                    adjusted = True
-                self.tries += 1
-                current_width = self.width()
+                    #print(">>> Was not adjusted")
+                    return
         elif current_width < width: # need to expand
             pass
         else:
-            return
-        
+            return        
         #print("Fitting", self.text, self.tries, "fits:", current_width <= width)
         #if current_width > width:
         #    print("DOES NOT FIT", self.tries, self.text)
@@ -739,6 +820,21 @@ if __name__ == "__main__":
         #dp.align(r)
         preview.send(SVGPen.Composite(dps, r), r)
 
+    def multilang_test(p):
+        r = Rect((0, 0, 800, 500))
+        s = Setter(
+            #"الملخبط",
+            "Ali الملخبط Boba",
+            Style("≈/GretaArabicCondensedAR-Heavy.otf", 100),
+            latin=Style("≈/ObviouslyVariable.ttf", 100, variations=dict(wdth=1, wght=1))
+            )
+        for st in s.strings:
+            print(st.text)
+        s.fit(400)
+        dps = s.asDAT()
+        dps.align(r)
+        p.send(SVGPen.Composite(dps.pens, r), r)
+
     with previewer() as p:
         if False:
             ss_bounds_test("≈/ObviouslyVariable.ttf", p)
@@ -752,5 +848,6 @@ if __name__ == "__main__":
             #ss_bounds_test("≈/MapRomanVariable-VF.ttf", p)
             #ss_bounds_test("≈/VulfSansItalicVariable.ttf", p)
         #ss_and_shape_test(p)
-        map_test(p)
+        #map_test(p)
         #rotalic_test(p)
+        multilang_test(p)
