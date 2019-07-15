@@ -49,7 +49,7 @@ class AxiDrawPen(BasePen):
         if self.last_moveTo:
             self.ad.lineto(*self.last_moveTo)
 
-    def draw(self, scale=0.005, dry=True):
+    def draw(self, scale=0.01, dry=True):
         if dry:
             with viewer() as v:
                 dp = DATPen().record(self.dat).addAttrs(fill=None, stroke=0)
@@ -153,103 +153,39 @@ if __name__ == "__main__":
             return [(pt1, pt2)]
     
     def fill_test():
-        from fontPens.marginPen import MarginPen
-        from fontTools.pens.pointInsidePen import PointInsidePen
-        r = Rect(0, 0, 300, 300)
-        ss1 = StyledString("Digital", "≈/Taters-Baked-v0.1.otf", 70)
-        ss0 = StyledString("Analog", "≈/Nonplus-Black.otf", 70)
-        ss2 = StyledString("to", "≈/ObviouslyVariable.ttf", 30, variations=dict(wdth=1, wght=1, slnt=1), features=dict(ss06=True))
-        dp00 = ss1.asDAT()
-        dp00.flatten(length=20)
-        dp00.align(r)
-        dp00.translate(0, 60)
-        dp0 = ss0.asDAT()
-        dp0.align(r)
-        dp0.translate(0, -60)
-        dp0.flatten(length=1)
-        dp0.removeOverlap()
-
-        dp000 = ss2.asDAT()
-        dp000.align(r)
-        dp000.flatten(length=1)
-
-        dp = DATPen()
-
-        import pyclipper
+        def frame(t):
+            r = Rect(0, 0, 210, 210)
+            ss1 = StyledString("Digital", "≈/Taters-Baked-v0.1.otf", 50)
+            ss0 = StyledString("Analog", "≈/Nonplus-Black.otf", 50)
+            ss2 = StyledString("to", "≈/ObviouslyVariable.ttf", 50, variations=dict(wdth=1, wght=t, slnt=0), features=dict(ss06=True))
+            dp00 = ss1.asDAT()
+            dp00.flatten(length=20)
+            dp00.align(r)
+            dp00.translate(0, 50)
+            dp0 = ss0.asDAT()
+            dp0.align(r)
+            dp0.translate(0, -50)
+            dp0.flatten(length=1)
+            dp000 = ss2.asDAT()
+            dp000.align(r)
+            dp000.translate(0, 2)
+            dp000.flatten(length=1)
+            dp = DATPen()
+            dp.record(dp000)
+            dp.record(dp00)
+            dp.record(dp0)
+            dp.removeOverlap()
+            dp.rect(r.inset(4, 4))
+            return dp
         
-        if False:
-            for y in range(0, 100, 6):
-                mp = MarginPen(dict(), y, isHorizontal=True)
-                dp0.replay(mp)
-                intersections = mp.getAll()
-                pairs = zip(intersections[::2], intersections[1::2])
-                for x1, x2 in pairs:
-                    dp.line([(x1, y), (x2, y)])
-        elif False:
-            dp1 = DATPen()
-            for p in range(0, 4):
-                dp1 = DATPen()
-                dp1.line([
-                    (0, randint(r.y, r.h)),
-                    (r.w, randint(r.y, r.h))
-                    #(0, 100),
-                    #(500, 100)
-                    ])
-
-                pc = pyclipper.Pyclipper()
-
-                for contour in dp0.points():
-                    pc.AddPath(contour, pyclipper.PT_SUBJECT, True)
-                
-                for contour in dp1.points():
-                    pc.AddPath(contour, pyclipper.PT_SUBJECT, False)
-                
-                solution = pc.Execute2(pyclipper.CT_UNION, pyclipper.PFT_NONZERO, pyclipper.PFT_NONZERO)
-
-                allSolutionPoints = []
-                for contour in pyclipper.OpenPathsFromPolyTree(solution)[:]:
-                    print(">>>")
-                    for x, y in contour:
-                        print(contour)
-                        if (x,y) in allSolutionPoints:
-                            print("nope")
-                        else:
-                            allSolutionPoints.append((x, y))
-                
-                pairs = zip(allSolutionPoints[1::2], allSolutionPoints[2::2])
-                #print(list(pairs))
-                #for idx, p1 in enumerate(allSolutionPoints[1::2]):
-                #    print(p1)
-                #    p2 = allSolutionPoints[idx+1]
-                for p1 in list(allSolutionPoints)[1:-1]:
-                    #dp.line([p1, p2])
-                    dp.rect(Rect(p1[0], p1[1], 1, 1))
-            
-            #for contour in pyclipper.ClosedPathsFromPolyTree(solution):
-            #    for x, y in contour:
-            #        allSolutionPoints.add((x, y))
-            
-            #for pts in dp0.skeletonPoints():
-            #    print(pts[1])
-            #dp2 = dp1.intersection(dp0)
-            #dp1.replay(dp)
-            #for y in range(0, 100, 6):
-            #    #mp = MarginPen(dict(), y, isHorizontal=True)
-            #    dp0.replay(mp)
-            #    intersections = mp.getAll()
-            #    pairs = zip(intersections[::2], intersections[1::2])
-            #    for x1, x2 in pairs:
-            #        dp.line([(x1, y), (x2, y)])
-        else:
-            dp000.replay(dp)
-            dp00.replay(dp)
-            dp0.replay(dp)
-            #dp.flatten(30)
-        
-        #dp0.replay(dp)
-        #dp.rect(r.inset(10, 10))
-        #dp.flatten(length=1)
-        ap = AxiDrawPen(dp, r)
+        dps = DATPenSet()
+        length = 20
+        for i in range(0, length):
+            dps.pens.append(frame(i/length))
+        print(dps)
+        r = Rect(0, 0, 1100, 850)
+        dps.align(r.grid(4, 5))
+        ap = AxiDrawPen(dps.asPen(), r)
         ap.draw(dry=0)
     
     #taters_frames()
