@@ -150,7 +150,7 @@ class DATPen(RecordingPen):
         tp = TransformPen(op, transform)
         self.replay(tp)
         self.value = op.value
-        if True and self.frame:
+        if False and self.frame:
             self.frame = self.frame.transform(transform)
         return self
     

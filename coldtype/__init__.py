@@ -225,6 +225,7 @@ class StyledString():
                 self.variations[axis.axisTag] = axis.defaultValue
                 if axis.axisTag == "wdth": # the only reasonable default
                     self.variationLimits[axis.axisTag] = axis.minValue
+
         self.addVariations(variations)
         
         os2 = self.ttfont["OS/2"]
@@ -414,6 +415,11 @@ class StyledString():
                 if not adjusted and self.varyFontSize:
                     self.fontSize -= 1
                     adjusted = True
+                if not adjusted and "hwid" not in self.features:
+                    #print("HWID'ing")
+                    self.features["hwid"] = True
+                    adjusted = True
+                    
                 self.tries += 1
                 current_width = self.width()
         elif current_width < width: # need to expand
