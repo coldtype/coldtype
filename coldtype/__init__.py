@@ -165,15 +165,15 @@ HIRAGANA = lambda c: between(c, '\u3040', '\u309F')
 CJK = lambda c: between(c, '\u4E00', '\u9FFF')
 
 class Setter():
-    def __init__(self, text, primaryStyle, **languageSpecificStyles):
+    def __init__(self, text, primaryStyle, fallbackStyle):
         self.text = text
         self.primary = primaryStyle
-        self.others = languageSpecificStyles
+        self.fallback = fallbackStyle
         self.strings = []
         self.tag()
     
     def tag(self):
-        if len(self.others) > 0:
+        if self.fallback:
             tagged = []
             for c in self.text:
                 if LATIN(c) and c != " ":
@@ -187,7 +187,7 @@ class Setter():
                 if k == "other":
                     strings.append(StyledString(txt, **self.primary.attributes))
                 else:
-                    strings.append(StyledString(txt, **self.others["latin"].attributes))
+                    strings.append(StyledString(txt, **self.fallback.attributes))
             
             self.strings = strings
         else:
@@ -215,7 +215,7 @@ class Setter():
         else:
             return
 
-    def asDAT(self):
+    def asDATPenSet(self):
         return DATPenSet([s.asDAT(frame=True) for s in self.strings])
 
 
@@ -821,17 +821,17 @@ if __name__ == "__main__":
         preview.send(SVGPen.Composite(dps, r), r)
 
     def multilang_test(p):
-        r = Rect((0, 0, 800, 500))
+        r = Rect((0, 0, 500, 500))
         s = Setter(
             #"الملخبط",
             "Ali الملخبط Boba",
             Style("≈/GretaArabicCondensedAR-Heavy.otf", 100),
-            latin=Style("≈/ObviouslyVariable.ttf", 100, variations=dict(wdth=1, wght=1))
+            Style("≈/ObviouslyVariable.ttf", 100, variations=dict(wdth=1, wght=1))
             )
         for st in s.strings:
             print(st.text)
         s.fit(400)
-        dps = s.asDAT()
+        dps = s.asDATPenSet()
         dps.align(r)
         p.send(SVGPen.Composite(dps.pens, r), r)
 
