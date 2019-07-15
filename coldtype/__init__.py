@@ -165,10 +165,10 @@ HIRAGANA = lambda c: between(c, '\u3040', '\u309F')
 CJK = lambda c: between(c, '\u4E00', '\u9FFF')
 
 class Setter():
-    def __init__(self, text, primaryStyle, fallbackStyle):
+    def __init__(self, text, primary, fallback=None):
         self.text = text
-        self.primary = primaryStyle
-        self.fallback = fallbackStyle
+        self.primary = primary
+        self.fallback = fallback
         self.strings = []
         self.tag()
     
