@@ -84,7 +84,7 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath("."))
     from coldtype.viewer import viewer
     from coldtype.pens.datpen import DATPen, OpenPathPen, DATPenSet
-    from coldtype import StyledString
+    from coldtype import Slug, Style
     from coldtype.ufo import UFOStringSetter
     from random import random, randint
     
@@ -155,9 +155,9 @@ if __name__ == "__main__":
     def fill_test():
         def frame(t):
             r = Rect(0, 0, 210, 210)
-            ss1 = StyledString("Digital", "≈/Taters-Baked-v0.1.otf", 50)
-            ss0 = StyledString("Analog", "≈/Nonplus-Black.otf", 50)
-            ss2 = StyledString("to", "≈/ObviouslyVariable.ttf", 50, variations=dict(wdth=1, wght=t, slnt=0), features=dict(ss06=True))
+            ss1 = Slug("Digital", Style("≈/Taters-Baked-v0.1.otf", 55))
+            ss0 = Slug("Analog", Style("≈/Nonplus-Black.otf", 45))
+            ss2 = Slug("to", Style("≈/ObviouslyVariable.ttf", 50, variations=dict(wdth=1, wght=t, slnt=0), features=dict(ss06=True)))
             dp00 = ss1.asDAT()
             dp00.flatten(length=20)
             dp00.align(r)
@@ -168,7 +168,7 @@ if __name__ == "__main__":
             dp0.flatten(length=1)
             dp000 = ss2.asDAT()
             dp000.align(r)
-            dp000.translate(0, 2)
+            dp000.translate(0, 0)
             dp000.flatten(length=1)
             dp = DATPen()
             dp.record(dp000)
@@ -182,12 +182,18 @@ if __name__ == "__main__":
         length = 20
         for i in range(0, length):
             dps.pens.append(frame(i/length))
-        print(dps)
         r = Rect(0, 0, 1100, 850)
-        dps.align(r.grid(4, 5))
+        dps.align(r.inset(30, 20).grid(4, 5))
         ap = AxiDrawPen(dps.asPen(), r)
         ap.draw(dry=0)
+    
+    def bounds_test():
+        r = Rect(0, 0, 1100, 850)
+        dp = DATPen().rect(r.inset(10, 10))
+        ap = AxiDrawPen(dp, r)
+        ap.draw(dry=1)
     
     #taters_frames()
     #ghz_test()
     fill_test()
+    #bounds_test()

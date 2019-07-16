@@ -568,6 +568,8 @@ class DATPenSet():
 
         for idx, p in enumerate(self.pens):
             p.align(_r[idx], x, y)
+        
+        return self
 
 
 if __name__ == "__main__":
@@ -576,7 +578,7 @@ if __name__ == "__main__":
     from coldtype.pens.reportlabpen import ReportLabPen
     from grapefruit import Color
 
-    from coldtype import StyledString
+    from coldtype import StyledString, Style, Slug
 
     from random import seed, shuffle
     #seed(104)
@@ -584,8 +586,8 @@ if __name__ == "__main__":
     with viewer() as v:
         if False:
             r = Rect((0, 0, 1920, 1080))
-            ss1 = StyledString("cold", "≈/Nonplus-Black.otf", fontSize=600)
-            ss2 = StyledString("type", "≈/Nostrav0.9-Stream.otf", fontSize=310, tracking=0)
+            ss1 = StyledString("cold", Style("≈/Nonplus-Black.otf", fontSize=600))
+            ss2 = StyledString("type", Style("≈/Nostrav0.9-Stream.otf", fontSize=310, tracking=0))
             dp1 = ss1.asDAT(frame=True).align(r)
             dp2 = ss2.asDAT(frame=True).align(r)
             #dp1.addAttrs(fill=(0))
@@ -630,12 +632,12 @@ if __name__ == "__main__":
             f = "≈/Nonplus-Black.otf"
             f = "≈/Bahati0.1-Regular.otf"
             f = "≈/Taters-Baked-v0.1.otf"
-            ss1 = StyledString("Trem", f, fontSize=400)
-            dp1 = ss1.asDAT(frame=True)
+            ss1 = Slug("Trem", Style(f, fontSize=400))
+            dp1 = ss1.asDAT()
             dp1.align(r)
             dp1.removeOverlap()
             dp1.flatten(length=10)
-            dp1.roughen(amplitude=30)
+            dp1.roughen(amplitude=3)
             
             #shuffle(_points)
             #points = [p for pl in _points for p in pl]

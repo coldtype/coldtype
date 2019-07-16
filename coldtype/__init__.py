@@ -128,8 +128,8 @@ class FreetypeReader():
         return
     
     def drawTTOutlineToPen(self, pen):
-        glyph_name = self.ttfont.getGlyphName(self.glyph_id)
-        g = self.ttfont.getGlyphSet()[glyph_name]
+        glyph_name = self.style.ttfont.getGlyphName(self.glyph_id)
+        g = self.style.ttfont.getGlyphSet()[glyph_name]
         try:
             g.draw(pen)
         except TypeError:
@@ -164,7 +164,47 @@ KATAKANA = lambda c: between(c, '\u30A0', '\u30FF')
 HIRAGANA = lambda c: between(c, '\u3040', '\u309F')
 CJK = lambda c: between(c, '\u4E00', '\u9FFF')
 
-class Setter():
+class Lockup():
+    def __init__(self, slugs):
+        self.slugs = slugs
+    
+    def width(self):
+        return sum([s.width() for s in self.slugs])
+    
+    def shrink(self):
+        adjusted = False
+        for s in self.slugs:
+            adjusted = s.shrink() or adjusted
+        return adjusted
+
+    def fit(self, width):
+        current_width = self.width()
+        tries = 0
+        if current_width > width: # need to shrink
+            while tries < 1000 and current_width > width:
+                adjusted = self.shrink()
+                for s in self.slugs:
+                    adjusted = s.shrink() or adjusted
+                if adjusted:
+                    tries += 1
+                    current_width = self.width()
+                else:
+                    print(">>> Was not adjusted")
+                    return
+        elif current_width < width: # need to expand
+            pass
+        else:
+            return
+    
+    def asDATPenSet(self):
+        pens = []
+        for s in self.slugs:
+            dps = s.asDATPenSet()
+            pens.extend(dps.pens)
+        return DATPenSet(pens)
+
+
+class Slug():
     def __init__(self, text, primary, fallback=None):
         self.text = text
         self.primary = primary
@@ -185,25 +225,29 @@ class Setter():
             for k, g in groupby(tagged, lambda e: e[0]):
                 txt = "".join([g[1] for g in list(g)])
                 if k == "other":
-                    strings.append(StyledString(txt, **self.primary.attributes))
+                    strings.append(StyledString(txt, self.primary))
                 else:
-                    strings.append(StyledString(txt, **self.fallback.attributes))
+                    strings.append(StyledString(txt, self.fallback))
             
             self.strings = strings
         else:
-            self.strings = [StyledString(self.text, **self.primary.attributes)]
+            self.strings = [StyledString(self.text, self.primary)]
     
     def width(self):
         return sum([s.width() for s in self.strings])
+    
+    def shrink(self):
+        adjusted = False
+        for s in self.strings:
+            adjusted = s.shrink() or adjusted
+        return adjusted
 
     def fit(self, width):
         current_width = self.width()
         tries = 0
         if current_width > width: # need to shrink
             while tries < 1000 and current_width > width:
-                adjusted = False
-                for s in self.strings:
-                    adjusted = s.shrink() or adjusted
+                adjusted = self.shrink()
                 if adjusted:
                     tries += 1
                     current_width = self.width()
@@ -215,13 +259,11 @@ class Setter():
         else:
             return
 
-    def asDATPenSet(self):
-        return DATPenSet([s.asDAT(frame=True) for s in self.strings])
-
-
-class Style():
-    def __init__(self, font=None, fontSize=12, **kwargs):
-        self.attributes = {**dict(font=font, fontSize=fontSize), **kwargs}
+    def asDATPenSet(self, **kwargs):
+        return DATPenSet([s.asDAT(frame=True, **kwargs) for s in self.strings])
+    
+    def asDAT(self, **kwargs):
+        return self.asDATPenSet(**kwargs).asPen()
 
 
 _prefixes = [
@@ -229,12 +271,15 @@ _prefixes = [
     ["≈", "~/Type/fonts/fonts"],
 ]
 
-class StyledString():
+
+class Style():
+    def RegisterShorthandPrefix(prefix, expansion):
+        global _prefixes
+        _prefixes.append([prefix, expansion])
+
     def __init__(self,
-            text="",
             font=None,
             fontSize=12,
-            fontFile=None,
             ttFont=None,
             tracking=0,
             trackingLimit=0,
@@ -248,17 +293,15 @@ class StyledString():
             increments=dict(),
             features=dict(),
             varyFontSize=False,
-            align="C",
-            rect=None,
-            fill=None):
+            fill=None # que?
+            ):
         
         global _prefixes
-        ff = (font or fontFile)
+        ff = font
         for prefix, expansion in _prefixes:
             ff = ff.replace(prefix, expansion)
+        
         self.fontFile = os.path.expanduser(ff)
-
-        self.text = text
         self.ttfont = ttFont or TTFont(self.fontFile)
         self.fontdata = get_cached_font(self.fontFile)
         self.upem = hb.Face(self.fontdata).upem
@@ -272,15 +315,10 @@ class StyledString():
         self.features = {**dict(kern=True, liga=True), **features}
         self.path = None
         self.offset = (0, 0)
-        self.rect = None
         self.increments = increments
         self.space = space
-        self.align = align
-        self.rect = rect
         self.fill = fill # should normalize?
-        # internal state
-        self._placed = False
-        # variations
+
         self.axes = OrderedDict()
         self.variations = dict()
         self.variationLimits = dict()
@@ -304,16 +342,6 @@ class StyledString():
         else:
             self.ch = 1000 # alternative?
     
-    def RegisterShorthandPrefix(prefix, expansion):
-        global _prefixes
-        _prefixes.append([prefix, expansion])
-
-    def carbonCopy(self, newText, **kwargs):
-        copy_kwargs = dict(fontFile=self.fontFile, ttFont=self.ttfont, fontSize=self.fontSize, tracking=self.tracking, trackingLimit=self.trackingLimit, space=self.space, baselineShift=self.baselineShift, xShift=self.xShift, leftMargin=self.leftMargin, rightMargin=self.rightMargin, variations=self.variations, variationLimits=self.variationLimits, increments=self.increments, features=self.features, align=self.align, rect=self.rect, fill=self.fill)
-        mixed_kwargs = {**copy_kwargs, **kwargs}
-        nss = StyledString(newText, **mixed_kwargs)
-        return nss
-
     def addVariations(self, variations, limits=dict()):
         for k, v in self.normalizeVariations(variations).items():
             self.variations[k] = v
@@ -352,6 +380,23 @@ class StyledString():
                 else:
                     variations[k] = v
         return variations
+
+
+class StyledString():
+    def __init__(self, text, style):
+        self.text = text
+        self.style = style
+        
+        self.path = None
+        self.offset = (0, 0)
+        self.rect = None
+        self._placed = False
+
+        # these will change based on fitting, so we make copies
+        self.fontSize = self.style.fontSize
+        self.tracking = self.style.tracking
+        self.features = self.style.features.copy()
+        self.variations = self.style.variations.copy()
     
     def vowelMark(self, u):
         return "KASRA" in u or "FATHA" in u or "DAMMA" in u or "TATWEEL" in u or "SUKUN" in u
@@ -360,10 +405,10 @@ class StyledString():
     def trackFrames(self, frames, glyph_names):
         t = self.tracking*1/self.scale()
         t = self.tracking
-        x_off = self.leftMargin
+        x_off = self.style.leftMargin
         has_kashida = False
         try:
-            self.ttfont.getGlyphID("uni0640")
+            self.style.ttfont.getGlyphID("uni0640")
             has_kashida = True
         except KeyError:
             has_kashida = False
@@ -373,8 +418,8 @@ class StyledString():
                 gn = glyph_names[idx]
                 f.frame = f.frame.offset(x_off, 0)
                 x_off += t
-                if self.space and gn.lower() == "space":
-                    x_off += self.space
+                if self.style.space and gn.lower() == "space":
+                    x_off += self.style.space
         else:
             for idx, frame in enumerate(frames):
                 frame.frame = frame.frame.offset(x_off, 0)
@@ -393,7 +438,7 @@ class StyledString():
                 except IndexError:
                     pass
         
-        frames[-1].frame.w += self.rightMargin
+        frames[-1].frame.w += self.style.rightMargin
         return frames
     
     def adjustFramesForPath(self, frames):
@@ -403,9 +448,9 @@ class StyledString():
             self.originalWidth = 0
             for idx, f in enumerate(frames):
                 try:
-                    bs = self.baselineShift[idx]
+                    bs = self.style.baselineShift[idx]
                 except:
-                    bs = self.baselineShift
+                    bs = self.style.baselineShift
                 
                 ow = f.frame.x+f.frame.w/2
                 self.originalWidth = ow
@@ -421,30 +466,30 @@ class StyledString():
         else:
             for idx, f in enumerate(frames):
                 try:
-                    bs = self.baselineShift[idx]
+                    bs = self.style.baselineShift[idx]
                 except:
-                    bs = self.baselineShift
+                    bs = self.style.baselineShift
                 f.frame.y += bs
-                if self.xShift:
+                if self.style.xShift:
                     try:
-                        f.frame.x += self.xShift[idx]
+                        f.frame.x += self.style.xShift[idx]
                     except:
                         pass
         return frames[0:self.limit]
     
     def getGlyphNames(self, txt):
-        frames = Harfbuzz.GetFrames(self.fontdata, text=txt, axes=self.variations, features=self.features, height=self.ch)
+        frames = Harfbuzz.GetFrames(self.style.fontdata, text=txt, axes=self.variations, features=self.features, height=self.style.ch)
         glyph_names = []
         for f in frames:
-            glyph_names.append(self.ttfont.getGlyphName(f.gid))
+            glyph_names.append(self.style.ttfont.getGlyphName(f.gid))
         return glyph_names
     
     def getGlyphFrames(self):
-        frames = Harfbuzz.GetFrames(self.fontdata, text=self.text, axes=self.variations, features=self.features, height=self.ch)
+        frames = Harfbuzz.GetFrames(self.style.fontdata, text=self.text, axes=self.variations, features=self.features, height=self.style.ch)
         glyph_names = []
         for f in frames:
             f.frame = f.frame.scale(self.scale())
-            glyph_name = self.ttfont.getGlyphName(f.gid)
+            glyph_name = self.style.ttfont.getGlyphName(f.gid)
             code = glyph_name.replace("uni", "")
             try:
                 glyph_names.append(unicodedata.name(chr(int(code, 16))))
@@ -461,7 +506,7 @@ class StyledString():
             return fw
     
     def scale(self):
-        return self.fontSize / self.upem
+        return self.fontSize / self.style.upem
     
     def shrink(self):
         adjusted = False
@@ -469,15 +514,15 @@ class StyledString():
             self.tracking -= self.increments.get("tracking", 0.25)
             adjusted = True
         else:
-            for k, v in self.variationLimits.items():
-                if self.variations[k] > self.variationLimits[k]:
-                    self.variations[k] -= self.increments.get(k, 1)
+            for k, v in self.style.variationLimits.items():
+                if self.variations[k] > self.style.variationLimits[k]:
+                    self.variations[k] -= self.style.increments.get(k, 1)
                     adjusted = True
                     break
-        if not adjusted and self.tracking > self.trackingLimit:
-            self.tracking -= self.increments.get("tracking", 0.25)
+        if not adjusted and self.tracking > self.style.trackingLimit:
+            self.tracking -= self.style.increments.get("tracking", 0.25)
             adjusted = True
-        if not adjusted and self.varyFontSize:
+        if not adjusted and self.style.varyFontSize:
             self.fontSize -= 1
             adjusted = True
         if not adjusted and "hwid" not in self.features:
@@ -534,7 +579,7 @@ class StyledString():
             return None
     
     def drawToPen(self, out_pen, frames, index=None, useTTFont=False):
-        fr = FreetypeReader(self.fontFile, ttfont=self.ttfont)
+        fr = FreetypeReader(self.style.fontFile, ttfont=self.style.ttfont)
         fr.setVariations(self.variations)
 
         for idx, frame in enumerate(frames):
@@ -561,8 +606,8 @@ class StyledString():
         cbp = ControlBoundsPen(None)
         rp.replay(cbp)
         mnx, mny, mxx, mxy = cbp.bounds
-        os2 = self.ttfont["OS/2"]
-        ch = self.ch * self.scale()
+        os2 = self.style.ttfont["OS/2"]
+        ch = self.style.ch * self.scale()
         #if hasattr(os2, "sCapHeight"):
         #    ch = os2.sCapHeight * self.scale()
         #else:
@@ -615,7 +660,7 @@ class StyledString():
             rp = self.alignedPen(rp)
         
         if frame:
-            rp.addFrame(Rect((0, 0, self.width(), self.ch*self.scale())))
+            rp.addFrame(Rect((0, 0, self.width(), self.style.ch*self.scale())))
             rp.typographic = True
 
         if hasattr(self, "_final_offset"):
@@ -749,11 +794,11 @@ if __name__ == "__main__":
         rect = Rect(0, 0, 1000, 1000)
         def make_ss(shift):
             return StyledString("California",
-                font=f,
+                Style(font=f,
                 variations=v,
                 fontSize=170,
                 tracking=-10,
-                baselineShift=shift)
+                baselineShift=shift))
         ss1 = make_ss(-19)
         ss2 = make_ss(-32)
         ss3 = make_ss(-8)
@@ -794,9 +839,9 @@ if __name__ == "__main__":
         r = Rect((0, 0, 500, 500))
         f, v = ["≈/VulfSansItalicVariable.ttf", dict(wght=1, scale=True)]
         f, v = ["≈/Nonplus-Black.otf", dict()]
-        ss1 = StyledString("Yoy! ", font=f, variations=v, fontSize=80)
+        ss1 = StyledString("Yoy! ", Style(font=f, variations=v, fontSize=80))
         f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.1, scale=True)]
-        ss2 = StyledString("ABC", font=f, variations=v, fontSize=120)
+        ss2 = StyledString("ABC", Style(font=f, variations=v, fontSize=120))
         grid = r.inset(0, 0).grid(10, 10)
         dp1 = DATPen(fill=None, stroke=dict(color=("skyblue", 0.5), weight=1)).rect(grid)
         oval = DATPen()
@@ -812,26 +857,24 @@ if __name__ == "__main__":
 
     def rotalic_test(preview):
         r = Rect(0, 0, 500, 500)
-        ss = StyledString("Side", "≈/Vinila-VF-HVAR-table.ttf", 200, variations=dict(wdth=0.5, wght=0.7, scale=True), rect=r)
-        dps = ss.asDAT(frame=True, atomized=True)
-        print(dps)
-        for dp in dps:
+        s = Slug("Side", Style("≈/Vinila-VF-HVAR-table.ttf", 200, variations=dict(wdth=0.5, wght=0.7, scale=True)))
+        dps = s.asDATPenSet(atomized=True)
+        for dp in dps.pens:
             dp.rotate(-15)
-        #dp.align(r)
-        preview.send(SVGPen.Composite(dps, r), r)
+        dps.align(r)
+        preview.send(SVGPen.Composite(dps.pens, r), r)
 
     def multilang_test(p):
+        ss = Lockup([
+            Slug(
+                #"الملخبط",
+                "Ali الملخبط Boba",
+                Style("≈/GretaArabicCondensedAR-Heavy.otf", 100),
+                Style("≈/ObviouslyVariable.ttf", 100, variations=dict(wdth=1, wght=1))
+            )])
         r = Rect((0, 0, 500, 500))
-        s = Setter(
-            #"الملخبط",
-            "Ali الملخبط Boba",
-            Style("≈/GretaArabicCondensedAR-Heavy.otf", 100),
-            Style("≈/ObviouslyVariable.ttf", 100, variations=dict(wdth=1, wght=1))
-            )
-        for st in s.strings:
-            print(st.text)
-        s.fit(400)
-        dps = s.asDATPenSet()
+        ss.fit(r.w - 20)
+        dps = ss.asDATPenSet()
         dps.align(r)
         p.send(SVGPen.Composite(dps.pens, r), r)
 
@@ -847,7 +890,7 @@ if __name__ == "__main__":
             #ss_bounds_test("≈/Fit-Variable.ttf", p)
             #ss_bounds_test("≈/MapRomanVariable-VF.ttf", p)
             #ss_bounds_test("≈/VulfSansItalicVariable.ttf", p)
-        #ss_and_shape_test(p)
+        ss_and_shape_test(p)
         #map_test(p)
         #rotalic_test(p)
         multilang_test(p)
