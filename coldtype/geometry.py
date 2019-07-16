@@ -10,7 +10,7 @@ YOYO = "ma"
 MINYISMAXY = False
 
 from fontTools.misc.transform import Transform
-
+from fontTools.misc.arrayTools import unionRect
 
 class Edge(Enum):
     MaxY = 1
@@ -356,6 +356,13 @@ class Rect():
         nw, ne, se, sw = extents
         return Rect(sw[0], sw[1], ne[0] - sw[0], ne[1] - sw[1])
 
+    def FromMnMnMxMx(extents):
+        xmin, ymin, xmax, ymax = extents
+        return Rect(xmin, ymin, xmax - xmin, ymax - ymin)
+
+    def mnmnmxmx(self):
+        return (self.x, self.y, self.x + self.w, self.y + self.h)
+
     def page():
         if db:
             return Rect((0, 0, db.width(), db.height()))
@@ -412,6 +419,9 @@ class Rect():
         x_edge = txt_to_edge(x_edge)
         y_edge = txt_to_edge(y_edge)
         return Rect(scale(self.rect(), s, x_edge, y_edge))
+    
+    def union(self, otherRect):
+        return Rect.FromMnMnMxMx(unionRect(self.mnmnmxmx(), otherRect.mnmnmxmx()))
 
     def take(self, amount, edge, forcePixel=False):
         edge = txt_to_edge(edge)
@@ -505,7 +515,8 @@ class Rect():
 
 if __name__ == "__main__":
     #print(Rect(0, 0, 100, 100).inset(20, 20).expand(20, "minx"))
+    #r = Rect(0, 0, 100, 100)
+    #t = Transform().scale(0.5, 0.5)
+    #print(r.transform(t))
 
-    r = Rect(0, 0, 100, 100)
-    t = Transform().scale(0.5, 0.5)
-    print(r.transform(t))
+    print(Rect(100, 0, 500, 500).union(Rect(400, 400, 300, 300)))

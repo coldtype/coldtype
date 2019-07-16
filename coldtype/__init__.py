@@ -22,8 +22,9 @@ from itertools import groupby
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
-from coldtype.beziers import CurveCutter, raise_quadratic, simple_quadratic
+from coldtype.beziers import CurveCutter, raise_quadratic
 from coldtype.pens.datpen import DATPen, DATPenSet, Gradient
+from coldtype.pens.drawablepen import normalize_color
 from coldtype.geometry import Rect, Point
 
 try:
@@ -196,11 +197,15 @@ class Lockup():
         else:
             return
     
-    def asDATPenSet(self):
+    def asPenSet(self):
+        # should make things contiguous
         pens = []
+        x_off = 0
         for s in self.slugs:
-            dps = s.asDATPenSet()
+            dps = s.asPenSet()
+            dps.translate(x_off, 0)
             pens.extend(dps.pens)
+            x_off += dps.frameUnion().w
         return DATPenSet(pens)
 
 
@@ -259,11 +264,11 @@ class Slug():
         else:
             return
 
-    def asDATPenSet(self, **kwargs):
-        return DATPenSet([s.asDAT(frame=True, **kwargs) for s in self.strings])
+    def asPenSet(self):
+        return DATPenSet([s.asPenSet(frame=True) for s in self.strings])
     
-    def asDAT(self, **kwargs):
-        return self.asDATPenSet(**kwargs).asPen()
+    def asPen(self):
+        return DATPenSet([s.asPen() for s in self.strings]).asPen()
 
 
 _prefixes = [
@@ -293,7 +298,9 @@ class Style():
             increments=dict(),
             features=dict(),
             varyFontSize=False,
-            fill=None # que?
+            fill=(0, 0.5, 1),
+            stroke=None,
+            strokeWidth=1,
             ):
         
         global _prefixes
@@ -317,7 +324,10 @@ class Style():
         self.offset = (0, 0)
         self.increments = increments
         self.space = space
-        self.fill = fill # should normalize?
+
+        self.fill = normalize_color(fill)
+        self.stroke = normalize_color(stroke)
+        self.strokeWidth = strokeWidth
 
         self.axes = OrderedDict()
         self.variations = dict()
@@ -389,8 +399,6 @@ class StyledString():
         
         self.path = None
         self.offset = (0, 0)
-        self.rect = None
-        self._placed = False
 
         # these will change based on fitting, so we make copies
         self.fontSize = self.style.fontSize
@@ -398,45 +406,23 @@ class StyledString():
         self.features = self.style.features.copy()
         self.variations = self.style.variations.copy()
     
-    def vowelMark(self, u):
-        return "KASRA" in u or "FATHA" in u or "DAMMA" in u or "TATWEEL" in u or "SUKUN" in u
-    
     # look away
     def trackFrames(self, frames, glyph_names):
-        t = self.tracking*1/self.scale()
         t = self.tracking
         x_off = self.style.leftMargin
-        has_kashida = False
-        try:
-            self.style.ttfont.getGlyphID("uni0640")
-            has_kashida = True
-        except KeyError:
-            has_kashida = False
+        # has_kashida = False
+        # try:
+        #     self.style.ttfont.getGlyphID("uni0640")
+        #     has_kashida = True
+        # except KeyError:
+        #     has_kashida = False
         
-        if not has_kashida:
-            for idx, f in enumerate(frames):
-                gn = glyph_names[idx]
-                f.frame = f.frame.offset(x_off, 0)
-                x_off += t
-                if self.style.space and gn.lower() == "space":
-                    x_off += self.style.space
-        else:
-            for idx, frame in enumerate(frames):
-                frame.frame = frame.frame.offset(x_off, 0)
-                try:
-                    u = glyph_names[idx]
-                    if self.vowelMark(u):
-                        continue
-                    u_1 = glyph_names[idx+1]
-                    if self.vowelMark(u_1):
-                        u_1 = glyph_names[idx+2]
-                    if "MEDIAL" in u_1 or "INITIAL" in u_1:
-                        f = 1.6
-                        if "MEEM" in u_1 or "LAM" in u_1:
-                            f = 2.7
-                        x_off += t*f
-                except IndexError:
-                    pass
+        for idx, f in enumerate(frames):
+            gn = glyph_names[idx]
+            f.frame = f.frame.offset(x_off, 0)
+            x_off += t
+            if self.style.space and gn.lower() == "space":
+                x_off += self.style.space
         
         frames[-1].frame.w += self.style.rightMargin
         return frames
@@ -551,18 +537,6 @@ class StyledString():
         #if current_width > width:
         #    print("DOES NOT FIT", self.tries, self.text)
     
-    def place(self, rect, fit=True):
-        if isinstance(rect, Rect):
-            self.rect = rect
-        else:
-            self.rect = Rect(rect)
-        if fit:
-            self.fit(self.rect.w)
-        x = self.rect.w/2 - self.width()/2
-        self.offset = (0, 0)
-        self._placed = True
-        #self.offset = rect.offset(0, rect.h/2 - ch/2).xy()
-    
     def addPath(self, path, fit=False):
         self.path = path
         self.cutter = CurveCutter(path)
@@ -602,182 +576,29 @@ class StyledString():
             else:
                 fr.drawOutlineToPen(tp, raiseCubics=True)
     
-    def alignedPen(self, rp):
-        cbp = ControlBoundsPen(None)
-        rp.replay(cbp)
-        mnx, mny, mxx, mxy = cbp.bounds
-        os2 = self.style.ttfont["OS/2"]
-        ch = self.style.ch * self.scale()
-        #if hasattr(os2, "sCapHeight"):
-        #    ch = os2.sCapHeight * self.scale()
-        #else:
-        #    ch = mxy - mny
-        y = self.align[0]
-        x = self.align[1] if len(self.align) > 1 else "C"
-        w = mxx-mnx
+    def _emptyPenWithAttrs(self):
+        return DATPen(fill=self.style.fill, stroke=dict(color=self.style.stroke, weight=self.style.strokeWidth))
 
-        if x == "C":
-            xoff = -mnx + self.rect.x + self.rect.w/2 - w/2
-        elif x == "W":
-            xoff = self.rect.x
-        elif x == "E":
-            xoff = -mnx + self.rect.x + self.rect.w - w
-        
-        if y == "C":
-            yoff = self.rect.y + self.rect.h/2 - ch/2
-        elif y == "N":
-            yoff = self.rect.y + self.rect.h - ch
-        elif y == "S":
-            yoff = self.rect.y
-        
-        diff = self.rect.w - (mxx-mnx)
-        rp2 = DATPen()
-        tp = TransformPen(rp2, (1, 0, 0, 1, xoff, yoff))
-        rp.replay(tp)
-        self._final_offset = (xoff, yoff)
-        return rp2
-    
-    def roundPen(self, pen, rounding):
-        if rounding is None:
-            return pen
-        else:
-            rounded = []
-            for t, pts in pen.value:
-                rounded.append(
-                    (t,
-                    [(round(x, rounding), round(y, rounding)) for x, y in pts]))
-            pen.value = rounded
-            return pen
-
-    def asRecording(self, rounding=None, atomized=False, frame=False):
-        if self.rect and not self._placed: # wack
-            self.place(self.rect)
-
-        rp = DATPen()
+    def asPenSet(self, frame=True):
         self._frames = self.getGlyphFrames()
-        self.drawToPen(rp, self._frames)
-        if self.rect and self.align != "SW":
-            rp = self.alignedPen(rp)
-        
+        pens = []
+        for idx, f in enumerate(self._frames):
+            #print(f.frame)
+            dp_atom = self._emptyPenWithAttrs()
+            self.drawToPen(dp_atom, self._frames, index=idx)
+            if frame:
+                dp_atom.addFrame(f.frame)
+            pens.append(dp_atom)
+        return DATPenSet(pens)
+
+    def asPen(self, frame=True):
+        dp = self._emptyPenWithAttrs()
+        self._frames = self.getGlyphFrames()
+        self.drawToPen(dp, self._frames)
         if frame:
-            rp.addFrame(Rect((0, 0, self.width(), self.style.ch*self.scale())))
-            rp.typographic = True
-
-        if hasattr(self, "_final_offset"):
-            xoff, yoff = self._final_offset
-        else:
-            xoff, yoff = 0, 0
-        if atomized:
-            pens = []
-            for idx, f in enumerate(self._frames):
-                frp = DATPen()
-                self.drawToPen(frp, self._frames, index=idx)
-                rp2 = DATPen()
-                tp = TransformPen(rp2, (1, 0, 0, 1, xoff, yoff))
-                frp.replay(tp)
-                # transform
-                if frame:
-                    rp2.addFrame(f.frame)
-                pens.append(rp2)
-            return pens
-            #return [self.roundPen(rp, rounding)]
-        else:
-            return self.roundPen(rp, rounding)
-        
-    def asDAT(self, **kwargs):
-        return self.asRecording(**kwargs)
-
-    def asGlyph(self, removeOverlap=False, atomized=False):
-        def process(recording):
-            bg = BooleanGlyph()
-            recording.replay(bg.getPen())
-            if removeOverlap:
-                bg = bg.removeOverlap()
-            return bg
-        
-        if atomized:
-            return [process(rec) for rec in self.asRecording(atomized=True)]
-        else:
-            return process(self.asRecording())
-
-
-class StyledStringSetter():
-    def __init__(self, strings, rect=None):
-        self.strings = strings
-        self.rect = rect
-        if self.rect:
-            self.align(rect=self.rect)
-    
-    def append(self, string):
-        self.strings.append(string)
-    
-    def transform(self, pen, transform):
-        op = DATPen()
-        tp = TransformPen(op, transform)
-        pen.replay(tp)
-        return op
-    
-    def asRecording(self):
-        rp = DATPen()
-        for pen in self.pens:
-            pen.replay(rp)
-        return rp
-    
-    def asDAT(self):
-        return self.asRecording()
-    
-    def align(self, align="CC", rect=None):
-        last_x = 0
-        contiguous_pens = []
-        contiguous_offsets = []
-        for s in self.strings:
-            r = s.asRecording()
-            contiguous_offsets.append(last_x)
-            contiguous_pens.append(self.transform(r, (1, 0, 0, 1, last_x, 0)))
-            x, _, w, _ = s._frames[-1].frame
-            last_x += x + w
-        
-        if rect is None:
-            self.pens = contiguous_pens
-            return contiguous_pens
-        else:
-            # draw everything into the boundspen
-            cbp = ControlBoundsPen(None)
-            ch = 0
-            for idx, s in enumerate(self.strings):
-                os2 = s.ttfont["OS/2"]
-                ch = max(ch, s.ch * s.scale())
-                contiguous_pens[idx].replay(cbp)
-
-            mnx, mny, mxx, mxy = cbp.bounds
-            # ch = mxy - mny
-            y = align[0]
-            x = align[1] if len(align) > 1 else "C"
-            w = mxx-mnx
-
-            if x == "C":
-                xoff = -mnx + rect.x + rect.w/2 - w/2
-            elif x == "W":
-                xoff = rect.x
-            elif x == "E":
-                xoff = -mnx + rect.x + rect.w - w
-            
-            if y == "C":
-                yoff = rect.y + rect.h/2 - ch/2
-            elif y == "N":
-                yoff = rect.y + rect.h - ch
-            elif y == "S":
-                yoff = rect.y
-            
-            diff = rect.w - (mxx-mnx) # for performance-testing
-
-            offset = (xoff, yoff)
-            aligned_pens = []
-            for idx, s in enumerate(self.strings):
-                s.offset = (contiguous_offsets[idx] + xoff, yoff)
-                aligned_pens.append(self.transform(contiguous_pens[idx], (1, 0, 0, 1, xoff, yoff)))
-            self.pens = aligned_pens
-            return aligned_pens
+            dp.addFrame(Rect((0, 0, self.width(), self.style.ch*self.scale())))
+            dp.typographic = True
+        return dp
 
 
 if __name__ == "__main__":
@@ -807,11 +628,11 @@ if __name__ == "__main__":
         ss1.addPath(rp, fit=True)
         ss2.addPath(rp, fit=True)
         ss3.addPath(rp, fit=True)
-        dp1 = ss1.asDAT().addAttrs(fill=Gradient.Horizontal(r, "orange", "deeppink"), stroke=dict(color="white", weight=2))
+        dp1 = ss1.asPen().addAttrs(fill=Gradient.Horizontal(r, "orange", "deeppink"), stroke=dict(color="white", weight=2))
         dp1.removeOverlap()
-        dp2 = ss2.asDAT().addAttrs(fill=("black", 0.5), stroke=("white", 0.3))
+        dp2 = ss2.asPen().addAttrs(fill=("black", 0.5), stroke=("white", 0.3))
         dp2.removeOverlap()
-        dp3 = ss3.asDAT().addAttrs(fill=("deeppink", 0.5), stroke=("white", 0.3))
+        dp3 = ss3.asPen().addAttrs(fill=("deeppink", 0.5), stroke=("white", 0.3))
         dp3.removeOverlap()
         preview.send(SVGPen.Composite([DATPen(fill=Gradient.Vertical(rect, "darkorchid", "royalblue")).rect(rect), dp2, dp1], rect), rect)
     
@@ -820,7 +641,7 @@ if __name__ == "__main__":
         f = font
         r = Rect((0, 0, 700, 120))
         ss = StyledString("ABC", font=f, fontSize=100, variations=dict(wght=1, wdth=1,  scale=True), features=dict(ss01=True))
-        dp = ss.asDAT()
+        dp = ss.asPen()
         dp.translate(20, 20)
         #r = svg.rect.inset(50, 0).take(180, "centery")
         #dp.align(r)
@@ -849,7 +670,7 @@ if __name__ == "__main__":
         oval.polygon(3, Rect(0, 0, 50, 50)).addAttrs(fill="random")
         oval.addFrame(Rect(0, 0, 50, 50).expand(40, "minx"))
         oval.typographic = True
-        dps = DATPenSet(ss1.asDAT(frame=True).addAttrs(fill="darkorchid"), ss2.asDAT(frame=True), oval)
+        dps = DATPenSet(ss1.asPen(frame=True).addAttrs(fill="darkorchid"), ss2.asPen(frame=True), oval)
         #dps = DATPenSet(DATPen().rect(Rect((0, 0, 100, 200))), DATPen().oval(Rect((0, 0, 500, 200))))
         #dps.align(grid)
         dps.align(r, x="centerx", y="centery", typographicBaseline=True)
@@ -858,7 +679,7 @@ if __name__ == "__main__":
     def rotalic_test(preview):
         r = Rect(0, 0, 500, 500)
         s = Slug("Side", Style("≈/Vinila-VF-HVAR-table.ttf", 200, variations=dict(wdth=0.5, wght=0.7, scale=True)))
-        dps = s.asDATPenSet(atomized=True)
+        dps = s.asPenSet(atomized=True)
         for dp in dps.pens:
             dp.rotate(-15)
         dps.align(r)
@@ -874,9 +695,22 @@ if __name__ == "__main__":
             )])
         r = Rect((0, 0, 500, 500))
         ss.fit(r.w - 20)
-        dps = ss.asDATPenSet()
+        dps = ss.asPenSet()
         dps.align(r)
         p.send(SVGPen.Composite(dps.pens, r), r)
+    
+    def tracking_test(p):
+        r = Rect(0, 0, 500, 200)
+        s1 = Slug("ABC", Style("≈/VulfSans-Black.otf", 100, tracking=50, fill=("random", 0.2), strokeWidth=2, stroke=("random", 0.5)))
+        s2 = Slug("xyz", Style("≈/VulfSans-Black.otf", 100, fill=("random", 0.1), strokeWidth=2, stroke=("random", 0.5)))
+        ps1 = s1.asPenSet()
+        ps1.align(r)
+        ps2 = s2.asPenSet()
+        ps2.align(r)
+        frames = []
+        #for pen in ps1.pens:
+        #    frames.append(DATPen(fill=("random", 0.5)).rect(pen.frame))
+        p.send(SVGPen.Composite(frames + ps1.pens + ps2.pens + [DATPen.Grid(r, x=6, y=8)], r), r)
 
     with previewer() as p:
         if False:
@@ -890,7 +724,8 @@ if __name__ == "__main__":
             #ss_bounds_test("≈/Fit-Variable.ttf", p)
             #ss_bounds_test("≈/MapRomanVariable-VF.ttf", p)
             #ss_bounds_test("≈/VulfSansItalicVariable.ttf", p)
-        ss_and_shape_test(p)
+        #ss_and_shape_test(p)
         #map_test(p)
         #rotalic_test(p)
-        multilang_test(p)
+        #multilang_test(p)
+        tracking_test(p)

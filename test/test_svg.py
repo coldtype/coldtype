@@ -1,11 +1,10 @@
 import math
 from test_preamble import *
-from coldtype import StyledString, StyledStringSetter
-from coldtype.svg import SVGContext
-from coldtype.pens import OutlinePen
-from coldtype.beziers import simple_quadratic
+from coldtype import StyledString, Slug, Style, Lockup
+from coldtype.pens.svgpen import SVGPen
+from coldtype.pens.outlinepen import OutlinePen
 from coldtype.utils import transformpen
-from coldtype.pens.datpen import DATPen
+from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.viewer import previewer
 from coldtype.geometry import Rect, Point
 from random import randint
@@ -45,74 +44,56 @@ def multilang_test(preview):
     preview.send(svg.toSVG())
 
 def no_glyph_sub_test(preview):
-    r = Rect((0, 0, 1000, 1000))
+    r = Rect((0, 0, 500, 500))
     t = str(randint(0, 9))
     f, v = "¬/TweakDisplay-VF.ttf", dict(DIST=0.5, scale=True)
     #f, v = "¬/Eckmannpsych-Variable.ttf", dict(opsz=500)
-    sss = StyledStringSetter([
-        StyledString("e", font=f, fontSize=500, variations=v, features=dict(ss01=True)),
-        StyledString("π", "¬/VulfMonoRegular.otf", fontSize=500),
+    lck = Lockup([
+        Slug("e", Style(f, 200, variations=v, features=dict(ss01=True))),
+        Slug("π", Style("¬/VulfMonoRegular.otf", 200)),
     ])
-    sss.align(rect=r)
-    preview.send(wrap_svg_paths(pen_to_svg(sss.asRecording(), r), r))
+    ps = lck.asPenSet().align(r)
+    preview.send(SVGPen.Composite(ps.pens + ps.frameSet().pens, r), r)
 
 def outline_test(preview):
-    svg = SVGContext(1000, 1000)
-    t = "ABC"
-    f, v = ["¬/Cheee_Variable.ttf", dict(grvt=0.8, yest=1, temp=0, scale=True)]
-    ss = StyledString(t, font=f, fontSize=300, variations=v, tracking=-40)
-    ss.place(svg.rect)
-    rp = ss.asRecording()
-    svg.addPath(rp, fill="hotpink")
-    svg.addPath(OutlinePen.Record(ss.asRecording(), offset=4))
-    preview.send(svg.toSVG())
-
-def rendering_test(preview):
-    svg = SVGContext(1000, 200)
-    f = "¬/GTHaptikLight.otf"
-    f = "¬/Gooper0.2-BlackItalic.otf"
-    f = "¬/SourceSerifPro-BlackIt.ttf"
-    ss = StyledString("MONO BELOW".upper(), font=f, fontSize=32, tracking=3, rect=svg.rect)
-    svg.addPath(ss.asRecording(rounding=3), fill="black")
-    preview.send(svg.toSVG())
-    import drawBot as db
-    db.newDrawing()
-    db.size(svg.rect.w, svg.rect.h)
-    fs = ss.formattedString()
-    bp = db.BezierPath()
-    bp.text(fs, ss._final_offset)
-    db.drawPath(bp)
-    #db.text(fs, (100, 100))
-    db.saveImage(dirname + "/scratch.svg")
-    with open(dirname + "/scratch.svg", "r") as f:
-        preview.send(f.read())
-    db.endDrawing()
+    r = Rect(0, 0, 500, 500)
+    ss = Slug("Yoy!", Style(font="≈/VulfSans-Black.otf", fontSize=300, tracking=-70, xShift=[0,-10,0,30], fill=(1, 0, 0.5, 0.5)))
+    dps = ss.asPenSet()
+    #dps.align(r)
+    #dps.fromZero(r)
+    #dps.align(r)
+    #up = DATPen(fill=("random", 0.5)).rect(u)
+    dps.align(r)
+    preview.send(SVGPen.Composite(dps.frameSet().pens + dps.pens + [DATPen.Grid(r)], r), r)
 
 def glyph_test(preview):
-    svg = SVGContext(1000, 300)
-    ss = StyledString("Hello World", font="¬/CoFo_Peshka_Variable_V0.1.ttf", fontSize=100, tracking=-20, rect=svg.rect)
-    svg.addGlyphs(reversed(ss.asGlyph(removeOverlap=True, atomized=True)), fill="deeppink", stroke="black", strokeWidth=4)
-    preview.send(svg.toSVG())
+    r = Rect(0, 0, 1000, 300)
+    st = Style("≈/CoFo_Peshka_Variable_V0.1.ttf", 100,
+            tracking=-20, variations=dict(wdth=1), fill=(1, 0.5, 0), stroke=(0), strokeWidth=4)
+    s = Slug("Hello World", st)
+    #s.strings[0].addPath(DATPen().quadratic(r.inset(50, 10).point("SW"), r.point("N"), r.point("E")))
+    ps = s.asPenSet().removeOverlap()
+    ps.align(r)
+    preview.send(SVGPen.Composite(list(reversed(ps.pens)) + ps.frameSet().pens, r), r)
 
 def map_test(preview):
-    f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
-    f, v = ["¬/MapRomanVariable-VF.ttf", dict(wdth=1, scale=True)]
-    svg = SVGContext(500, 500)
-    ss = StyledString("CALIFIA",
-        font=f,
+    f, v = ["≈/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
+    f, v = ["≈/MapRomanVariable-VF.ttf", dict(wdth=1, scale=True)]
+    ss = Slug("CALIFIA",
+        Style(font=f,
         variations=v,
         fontSize=40,
         tracking=20,
         #tracking=21,
         #trackingLimit=21,
-        baselineShift=0,
-        )
-    r = svg.rect.inset(50, 0).take(180, "centery")
-    rp = simple_quadratic(r.p("SW"), r.p("C").offset(-100, 200), r.p("NE"))
-    ss.addPath(rp, fit=True)
-    svg.addPath(rp, stroke="#eee", strokeWidth=1, fill="none")
-    svg.addGlyph(ss.asGlyph(removeOverlap=True, atomized=False), fill="black")
-    preview.send(svg.toSVG())
+        baselineShift=20,
+        ))
+    rect = Rect(0,0,500,500)
+    r = rect.inset(50, 0).take(180, "centery")
+    dp = DATPen(fill=None, stroke="random").quadratic(r.p("SW"), r.p("C").offset(-100, 200), r.p("NE"))
+    ss.strings[0].addPath(dp, fit=True)
+    preview.send(SVGPen.Composite([ss.asPen(), dp], rect), rect)
+
 
 def pathops_test(p):
     r = Rect((0, 0, 500, 500))
@@ -164,11 +145,10 @@ def catmull_test(pv):
 with previewer() as p:
     #graff_test(p)
     #multilang_test(p)
-    #no_glyph_sub_test(p)
+    no_glyph_sub_test(p)
     #outline_test(p)
-    #rendering_test(p)
     #glyph_test(p)
-    #map_test(p)
+    map_test(p)
     #pathops_test(p)
     #pattern_test(p)
-    catmull_test(p)
+    #catmull_test(p)

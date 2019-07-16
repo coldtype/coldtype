@@ -29,7 +29,8 @@ else:
     from booleanOperations.booleanGlyph import BooleanGlyph
 
 
-from coldtype.geometry import Rect, Edge, txt_to_edge
+from coldtype.geometry import Rect, Edge, Point, txt_to_edge
+from coldtype.beziers import raise_quadratic
 from coldtype.pens.drawablepen import Gradient, normalize_color
 
 try:
@@ -139,8 +140,8 @@ class DATPen(RecordingPen):
             self.typographic = True
         return self
     
-    def getFrame(self):
-        if self.frame:
+    def getFrame(self, boundsOnly=False):
+        if self.frame and not boundsOnly:
             return self.frame
         else:
             return self.bounds()
@@ -150,7 +151,7 @@ class DATPen(RecordingPen):
         tp = TransformPen(op, transform)
         self.replay(tp)
         self.value = op.value
-        if False and self.frame:
+        if True and self.frame:
             self.frame = self.frame.transform(transform)
         return self
     
@@ -225,9 +226,10 @@ class DATPen(RecordingPen):
         return self.transform(t)
 
     def bounds(self):
-        cbp = ControlBoundsPen(None)
+        cbp = BoundsPen(None)
         self.replay(cbp)
         mnx, mny, mxx, mxy = cbp.bounds
+        print(mnx, mny, mxx, mxy)
         return Rect((mnx, mny, mxx - mnx, mxy - mny))
     
     def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, bounds=False):
@@ -456,6 +458,14 @@ class DATPen(RecordingPen):
         self.record(dp)
         return self
     
+    def quadratic(self, a, b, c):
+        a, b, c = [p.xy() if isinstance(p, Point) else p for p in [a, b, c]]
+        dp = DATPen()
+        dp.moveTo(a)
+        dp.curveTo(*raise_quadratic(a, b, c))
+        self.record(dp)
+        return self
+    
     def points(self):
         contours = []
         for contour in self.skeletonPoints():
@@ -525,7 +535,7 @@ class DATPen(RecordingPen):
             return self
     
     def Grid(rect, x=20, y=None, opacity=0.3):
-        grid = rect.inset(0, 0).grid(x, y or x)
+        grid = rect.inset(0, 0).grid(y or x, x)
         return DATPen(fill=None, stroke=dict(color=("random", opacity), weight=1)).rect(grid)
 
 
@@ -535,41 +545,72 @@ class DATPenSet():
         self.addPens(pens)
     
     def addPens(self, pens):
-        for p in pens:
-            if hasattr(p, "value"):
-                self.pens.append(p)
-            else:
-                self.addPens(p)
+        if isinstance(pens, DATPenSet):
+            self.addPens(pens.pens)
+        else:
+            for p in pens:
+                if hasattr(p, "value"):
+                    self.pens.append(p)
+                else:
+                    self.addPens(p)
+    
+    def addPen(self, pen):
+        self.pens.append(pen)
+    
+    def frameUnion(self, boundsOnly=False):
+        union = self.pens[0].getFrame(boundsOnly=boundsOnly)
+        for p in self.pens[1:]:
+            union = union.union(p.getFrame(boundsOnly=boundsOnly))
+        return union
     
     def asPen(self):
         dp = DATPen()
         for p in self.pens:
             dp.record(p)
+        if len(self.pens) == 1:
+            dp.addAttrs(**self.pens[0].attrs)
+        dp.addFrame(self.frameUnion())
         return dp
+    
+    def removeOverlap(self):
+        for p in self.pens:
+            p.removeOverlap()
+        return self
+    
+    def translate(self, x, y):
+        for p in self.pens:
+            p.translate(x, y)
+        return self
+    
+    def frameSet(self):
+        dps = DATPenSet()
+        for p in self.pens:
+            if p.frame:
+                dps.addPen(DATPen(fill=("random", 0.5)).rect(p.frame))
+        return dps
+    
+    def distribute(self, rects, x=Edge.CenterX, y=Edge.CenterY):
+        for idx, p in enumerate(self.pens):
+            p.align(rects[idx], x, y)
 
     def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, typographicBaseline=True):
-        # split up the space according to the bounds of the individual pens
-        # then call the align method of each one individually
-        frames = []
-        for p in self.pens:
-            frames.append(p.getFrame())
-        w = sum([f.w for f in frames])
-        
-        if isinstance(rect, Rect):
-            _r = rect.take(w, x).subdivide([f.w for f in frames], Edge.MinX)
-        else:
-            _r = rect
-        
+        union = self.frameUnion()
+        offset = rect.take(union.w, "centerx").take(union.h, "centery")
         if typographicBaseline:
-            mxh = max([f.h for f in frames])
             for p in self.pens:
                 if p.typographic:
-                    p.frame.h = mxh
-
+                    p.frame.h = union.h
         for idx, p in enumerate(self.pens):
-            p.align(_r[idx], x, y)
-        
+            p.translate(offset.x, offset.y)
         return self
+    
+    def fromZero(self, rect):
+        union = self.frameUnion(boundsOnly=True)
+        offset = rect.take(union.w, "centerx").x
+        for idx, p in enumerate(self.pens):
+            p.translate(-union.x, 0)
+        return self
+
 
 
 if __name__ == "__main__":
@@ -584,16 +625,16 @@ if __name__ == "__main__":
     #seed(104)
     
     with viewer() as v:
-        if False:
+        if True:
             r = Rect((0, 0, 1920, 1080))
             ss1 = StyledString("cold", Style("≈/Nonplus-Black.otf", fontSize=600))
             ss2 = StyledString("type", Style("≈/Nostrav0.9-Stream.otf", fontSize=310, tracking=0))
-            dp1 = ss1.asDAT(frame=True).align(r)
-            dp2 = ss2.asDAT(frame=True).align(r)
+            dp1 = ss1.asPen().align(r)
+            dp2 = ss2.asPen().align(r)
             #dp1.addAttrs(fill=(0))
             #dp1.addSmoothPoints()
             #dp1.flatten(length=500)
-            #dp1.roughen(amplitude=100)
+            dp1.roughen(amplitude=10)
             dp1.removeOverlap()
             dp1.addAttrs(fill="random")
             dp2.addAttrs(fill=Gradient.Random(r))
@@ -626,14 +667,14 @@ if __name__ == "__main__":
 
             #ReportLabPen.Composite(pens, r, "test.pdf")
     
-        if True:
+        if False:
             #seed(100)
             r = Rect((0, 0, 1080, 1080))
             f = "≈/Nonplus-Black.otf"
             f = "≈/Bahati0.1-Regular.otf"
             f = "≈/Taters-Baked-v0.1.otf"
             ss1 = Slug("Trem", Style(f, fontSize=400))
-            dp1 = ss1.asDAT()
+            dp1 = ss1.strings[0].asPen()
             dp1.align(r)
             dp1.removeOverlap()
             dp1.flatten(length=10)

@@ -12,14 +12,6 @@ def raise_quadratic(start, a, b):
     return [c1, c2, c3]
 
 
-def simple_quadratic(a, b, c):
-    a, b, c = [p.xy() if isinstance(p, Point) else p for p in [a, b, c]]
-    rp = RecordingPen()
-    rp.moveTo(a)
-    rp.curveTo(*raise_quadratic(a, b, c))
-    return rp
-
-
 class CurveCutter():
     def __init__(self, g, inc=0.0015):
         if isinstance(g, RecordingPen):
