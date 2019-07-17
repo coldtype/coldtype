@@ -262,21 +262,28 @@ class Slug(FittableMixin):
             adjusted = s.shrink() or adjusted
         return adjusted
 
-    def asPenSet(self):
+    def asPenSet(self, atomized=True):
         pens = []
         x_off = 0
         for s in self.strings:
             #x_off += s.margin[0]
-            dps = s.asPenSet(frame=True)
-            dps.translate(x_off, 0)
-            pens.extend(dps.pens)
-            x_off += dps.getFrame().w
+            if atomized:
+                dps = s.asPenSet(frame=True)
+                dps.translate(x_off, 0)
+                pens.extend(dps.pens)
+                x_off += dps.getFrame().w
+            else:
+                dp = s.asPen(frame=True)
+                dp.translate(x_off, 0)
+                pens.append(dp)
+                x_off += dp.getFrame().w
+            #x_off += dps.getFrame().w
             #x_off += s.margin[1]
         return DATPenSet(pens)
         #return DATPenSet([s.asPenSet(frame=True) for s in self.strings])
     
     def asPen(self):
-        return DATPenSet([s.asPen() for s in self.strings]).asPen()
+        return self.asPenSet(atomized=False).asPen()
     
     def penset(self):
         return self.asPenSet()
@@ -312,7 +319,7 @@ class Style():
             varyFontSize=False,
             fill=(0, 0.5, 1),
             stroke=None,
-            strokeWidth=1,
+            strokeWidth=0,
             **kwargs):
         
         global _prefixes
@@ -544,7 +551,11 @@ class StyledString(FittableMixin):
                 fr.drawOutlineToPen(tp, raiseCubics=True)
     
     def _emptyPenWithAttrs(self):
-        return DATPen(fill=self.style.fill, stroke=dict(color=self.style.stroke, weight=self.style.strokeWidth))
+        attrs = dict(fill=self.style.fill)
+        if self.style.stroke:
+            attrs["stroke"] = dict(color=self.style.stroke, weight=self.style.strokeWidth)
+        dp = DATPen(**attrs, text=self.textContent())
+        return dp
 
     def asPenSet(self, frame=True):
         self._frames = self.getGlyphFrames()
@@ -597,12 +608,13 @@ if __name__ == "__main__":
     def ss_and_shape_test(preview):
         r = Rect((0, 0, 500, 120))
         f, v = ["≈/Nonplus-Black.otf", dict()]
-        ss1 = StyledString("Yoy! ", Style(font=f, variations=v, fontSize=80))
+        ss1 = Slug("Yoy! ", Style(font=f, variations=v, fontSize=80))
         f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.1, scale=True)]
         ps2 = Slug("ABC", Style(font=f, variations=v, fontSize=72)).asPenSet().rotate(-10)
         oval = DATPen().polygon(3, Rect(0, 0, 50, 50)).addAttrs(fill="random")
+        ss1_p = ss1.asPen().addAttrs(fill="darkorchid")
         dps = DATPenSet(
-            ss1.asPen().addAttrs(fill="darkorchid"),
+            ss1_p,
             ps2,
             oval
             )
@@ -616,18 +628,21 @@ if __name__ == "__main__":
         preview.send(SVGPen.Composite(ps.pens + ps.frameSet().pens, r), r)
 
     def multilang_test(p):
-        ss = Lockup([
-            Slug(
-                #"الملخبط",
-                "Ali الملخبط Boba",
-                Style("≈/GretaArabicCondensedAR-Heavy.otf", 100),
-                Style("≈/ObviouslyVariable.ttf", 80, wdth=1, wght=0.7)
-            )])
+        ss = Slug(
+            #"الملخبط",
+            "Ali الملخبط Boba",
+            Style("≈/GretaArabicCondensedAR-Heavy.otf", 100),
+            Style("≈/ObviouslyVariable.ttf", 80, wdth=1, wght=0.7)
+            )
         r = Rect((0, 0, 600, 140))
         ss.fit(r.w - 200)
-        dps = ss.asPenSet()
+        dps = ss.asPen().addAttrs(fill=0)
         dps.align(r, x="maxx", y="miny")
-        p.send(SVGPen.Composite(dps.pens + [DATPen.Grid(r, y=4)], r), r)
+        g = DATPen.Grid(r, y=4)
+        p.send(SVGPen.Composite([
+            dps,
+            #g
+            ], r), r)
     
     def tracking_test(p):
         r = Rect(0, 0, 500, 100)
@@ -649,8 +664,8 @@ if __name__ == "__main__":
             ss_bounds_test("≈/Vinila-VF-HVAR-table.ttf", p)
             #ss_bounds_test("≈/Compressa-MICRO-GX-Rg.ttf", p)
             #ss_bounds_test("≈/BruphyGX.ttf", p)
-        ss_and_shape_test(p)
+        #ss_and_shape_test(p)
         #map_test(p)
         #rotalic_test(p)
-        #multilang_test(p)
+        multilang_test(p)
         #tracking_test(p)

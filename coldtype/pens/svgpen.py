@@ -45,6 +45,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
             elif isinstance(color, Color):
                 self.path.set("stroke", self.rgba(color))
         else:
+            self.path.set("stroke-width", 0)
             self.path.set("stroke", "transparent")
     
     def rgba(self, color):

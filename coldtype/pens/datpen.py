@@ -119,6 +119,7 @@ class SmoothPointsPen(ContourFilterPen):
 class DATPen(RecordingPen):
     def __init__(self, **kwargs):
         super().__init__()
+        self._text = kwargs.get("text", "NOTEXT")
         self.attrs = {}
         self.addAttrs(fill=(1, 0, 0.5))
         self.addAttrs(**kwargs)
@@ -132,6 +133,7 @@ class DATPen(RecordingPen):
         return dp
     
     def addAttrs(self, **kwargs):
+        #print(">>>>", self._text, kwargs)
         for k, v in kwargs.items():
             if k == "fill":
                 self.attrs[k] = normalize_color(v)
