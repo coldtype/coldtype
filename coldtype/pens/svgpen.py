@@ -146,8 +146,13 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
             docroot.set("style", f"left:{rect.x}px;bottom:{rect.y}px;")
         for pen in pens:
             if pen:
-                sp = SVGPen(pen, rect.h)
-                docroot.append(sp.asSVG())
+                if hasattr(pen, "pens"):
+                    for p in pen.pens:
+                        sp = SVGPen(p, rect.h)
+                        docroot.append(sp.asSVG())
+                else:
+                    sp = SVGPen(pen, rect.h)
+                    docroot.append(sp.asSVG())
         return etree.tostring(docroot, pretty_print=True).decode("utf-8").replace("image-href", "xlink:href")
 
 

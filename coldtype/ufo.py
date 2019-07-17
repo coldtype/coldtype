@@ -33,14 +33,17 @@ class UFOStringSetter():
             od.append(self.getGlyph(name))
         return od
     
-    def getLine(self, string, atomized=False, typographic=True):
+    def getLine(self, string, atomized=False, typographic=True, leavePathsOpen=False):
         glyphs = self.getGlyphs(string)
         pens = []
         offset = 0
         for glyph in glyphs:
             dp = DATPen()
-            op = OpenPathPen(dp)
-            glyph.draw(op)
+            if leavePathsOpen:
+                op = OpenPathPen(dp)
+                glyph.draw(op)
+            else:
+                glyph.draw(dp)
             dp.translate(offset, 0)
             if typographic:
                 dp.addFrame(Rect(offset, 0, glyph.width, self.info.get("capHeight", 750)), typographic=typographic)

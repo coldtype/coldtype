@@ -11,37 +11,17 @@ from random import randint
 from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.misc.transform import Transform
 
-
-def graff_test(preview):
-    txt = "ABC{:02d}".format(randint(0, 100))
-    #txt = "Graphics"
-    #txt = "2019"
-    #txt = "NYC"
-    svg = SVGContext(1000, 1000)
-    f, v = ["¬/Beastly-12Point.otf", dict()]
-    f, v = ["¬/ObviouslyVariable.ttf", dict(wdth=.5, wght=1, slnt=1, scale=True)]
-    #f, v = ["¬/Cheee_Variable.ttf", dict(grvt=0.3, yest=1, scale=True)]
-    f, v = ["¬/Fit-Variable.ttf", dict(wdth=1, scale=True)]
-    f, v = ["¬/CoFo_Peshka_Variable_V0.1.ttf", dict(wdth=1, wght=1, scale=True)]
-    ss = StyledString(txt, font=f, fontSize=500, variations=v, tracking=-30)
-    ss.place(svg.rect.inset(140, 0))
-    svg.addOval(svg.rect.take(ss.ch*ss.scale(), "centery"), fill="deeppink", stroke="seagreen", strokeWidth=20)
-    for g in reversed(ss.asGlyph(removeOverlap=True, atomized=True)):
-        svg.addGlyph(g, fill="royalblue", stroke="black", strokeWidth=10)
-    preview.send(svg.toSVG())
-
 def multilang_test(preview):
-    svg = SVGContext(1000, 1000)
-    sss = StyledStringSetter([
-        StyledString("Hello, ", font="¬/OhnoBlazeface12point.otf", fontSize=100, rightMargin=-100, fill="deeppink"),
-        StyledString(str(randint(2, 9)) + " worlds", font="¬/OhnoBlazeface24point.otf", fontSize=100, baselineShift=100, fill="seagreen"),
-        StyledString(".", font="¬/OhnoBlazeface72point.otf", fontSize=100, leftMargin=-40, baselineShift=0, fill="black"),
-        ])
+    r = Rect(0, 0, 700, 300)
     
-    sss.align(rect=svg.rect)
-    for s in sss.strings:
-        svg.addPath(s.asRecording(), fill=s.fill)
-    preview.send(svg.toSVG())
+    s1 = Slug("Hello, ", Style("¬/OhnoBlazeface12point.otf", 100, fill="deeppink", tracking=-10), margin=[0, -100])
+    s2 = Slug(str(randint(2, 9)) + " worlds", Style("¬/OhnoBlazeface24point.otf", 100, baselineShift=100, fill="seagreen"))
+    s3 = Slug(".", Style("¬/OhnoBlazeface72point.otf", 100, baselineShift=80, fill="black"), margin=[0, 0])
+
+    lck = Lockup([s1,s2,s3])
+    ps = lck.asPenSet()
+    ps.align(r)
+    preview.send(SVGPen.Composite(ps.pens + ps.frameSet().pens, r), r)
 
 def no_glyph_sub_test(preview):
     r = Rect((0, 0, 500, 500))
@@ -86,13 +66,15 @@ def map_test(preview):
         tracking=20,
         #tracking=21,
         #trackingLimit=21,
-        baselineShift=20,
+        baselineShift=0,
         ))
     rect = Rect(0,0,500,500)
     r = rect.inset(50, 0).take(180, "centery")
     dp = DATPen(fill=None, stroke="random").quadratic(r.p("SW"), r.p("C").offset(-100, 200), r.p("NE"))
-    ss.strings[0].addPath(dp, fit=True)
-    preview.send(SVGPen.Composite([ss.asPen(), dp], rect), rect)
+    #ss.strings[0].addPath(dp, fit=True)
+    ps = ss.asPenSet()
+    ps.distributeOnPath(dp)
+    preview.send(SVGPen.Composite(ps.pens + ps.frameSet().pens + [dp], rect), rect)
 
 
 def pathops_test(p):
@@ -143,9 +125,8 @@ def catmull_test(pv):
     pv.send(svg.toSVG())
 
 with previewer() as p:
-    #graff_test(p)
     #multilang_test(p)
-    no_glyph_sub_test(p)
+    #no_glyph_sub_test(p)
     #outline_test(p)
     #glyph_test(p)
     map_test(p)

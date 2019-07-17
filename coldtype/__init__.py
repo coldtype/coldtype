@@ -156,27 +156,9 @@ class FreetypeReader():
         pen.curveTo((a.x, a.y), (b.x, b.y), (c.x, c.y))
 
 
-def between(c, a, b):
-    return ord(a) <= ord(c) <= ord(b)
-
-
-LATIN = lambda c: between(c, '\u0000', '\u024F')
-KATAKANA = lambda c: between(c, '\u30A0', '\u30FF')
-HIRAGANA = lambda c: between(c, '\u3040', '\u309F')
-CJK = lambda c: between(c, '\u4E00', '\u9FFF')
-
-class Lockup():
-    def __init__(self, slugs):
-        self.slugs = slugs
-    
-    def width(self):
-        return sum([s.width() for s in self.slugs])
-    
-    def shrink(self):
-        adjusted = False
-        for s in self.slugs:
-            adjusted = s.shrink() or adjusted
-        return adjusted
+class FittableMixin():
+    def textContent(self):
+        print("textContent() not overwritten")
 
     def fit(self, width):
         current_width = self.width()
@@ -184,36 +166,62 @@ class Lockup():
         if current_width > width: # need to shrink
             while tries < 1000 and current_width > width:
                 adjusted = self.shrink()
-                for s in self.slugs:
-                    adjusted = s.shrink() or adjusted
+                #for s in self.slugs:
+                #    adjusted = s.shrink() or adjusted
                 if adjusted:
                     tries += 1
                     current_width = self.width()
                 else:
-                    print(">>> Was not adjusted")
-                    return
+                    print(">>> TOO BIG :::", self.textContent())
+                    return self
         elif current_width < width: # need to expand
             pass
-        else:
-            return
+        return self
+
+
+class Lockup(FittableMixin):
+    def __init__(self, slugs):
+        self.slugs = slugs
     
+    def width(self):
+        return sum([s.width() for s in self.slugs])
+    
+    def textContent(self):
+        return "/".join([s.textContent() for s in self.slugs])
+
+    def shrink(self):
+        adjusted = False
+        for s in self.slugs:
+            adjusted = s.shrink() or adjusted
+        return adjusted
+
     def asPenSet(self):
-        # should make things contiguous
         pens = []
         x_off = 0
         for s in self.slugs:
+            x_off += s.margin[0]
             dps = s.asPenSet()
             dps.translate(x_off, 0)
             pens.extend(dps.pens)
-            x_off += dps.frameUnion().w
+            x_off += dps.getFrame().w
+            x_off += s.margin[1]
         return DATPenSet(pens)
 
 
-class Slug():
-    def __init__(self, text, primary, fallback=None):
+def between(c, a, b):
+    return ord(a) <= ord(c) <= ord(b)
+
+LATIN = lambda c: between(c, '\u0000', '\u024F')
+KATAKANA = lambda c: between(c, '\u30A0', '\u30FF')
+HIRAGANA = lambda c: between(c, '\u3040', '\u309F')
+CJK = lambda c: between(c, '\u4E00', '\u9FFF')
+
+class Slug(FittableMixin):
+    def __init__(self, text, primary, fallback=None, margin=[0, 0]):
         self.text = text
         self.primary = primary
         self.fallback = fallback
+        self.margin = margin
         self.strings = []
         self.tag()
     
@@ -241,31 +249,27 @@ class Slug():
     def width(self):
         return sum([s.width() for s in self.strings])
     
+    def textContent(self):
+        return "-".join([s.textContent() for s in self.strings])
+
     def shrink(self):
         adjusted = False
         for s in self.strings:
             adjusted = s.shrink() or adjusted
         return adjusted
 
-    def fit(self, width):
-        current_width = self.width()
-        tries = 0
-        if current_width > width: # need to shrink
-            while tries < 1000 and current_width > width:
-                adjusted = self.shrink()
-                if adjusted:
-                    tries += 1
-                    current_width = self.width()
-                else:
-                    print(">>> Was not adjusted")
-                    return
-        elif current_width < width: # need to expand
-            pass
-        else:
-            return
-
     def asPenSet(self):
-        return DATPenSet([s.asPenSet(frame=True) for s in self.strings])
+        pens = []
+        x_off = 0
+        for s in self.strings:
+            #x_off += s.margin[0]
+            dps = s.asPenSet(frame=True)
+            dps.translate(x_off, 0)
+            pens.extend(dps.pens)
+            x_off += dps.getFrame().w
+            #x_off += s.margin[1]
+        return DATPenSet(pens)
+        #return DATPenSet([s.asPenSet(frame=True) for s in self.strings])
     
     def asPen(self):
         return DATPenSet([s.asPen() for s in self.strings]).asPen()
@@ -291,8 +295,6 @@ class Style():
             space=None,
             baselineShift=0,
             xShift=None,
-            leftMargin=0,
-            rightMargin=0,
             variations=dict(),
             variationLimits=dict(),
             increments=dict(),
@@ -301,7 +303,7 @@ class Style():
             fill=(0, 0.5, 1),
             stroke=None,
             strokeWidth=1,
-            ):
+            **kwargs):
         
         global _prefixes
         ff = font
@@ -317,10 +319,9 @@ class Style():
         self.trackingLimit = trackingLimit
         self.baselineShift = baselineShift
         self.xShift = xShift
-        self.leftMargin = leftMargin
-        self.rightMargin = rightMargin
+
+        # TODO should be able to pass in as kwarg
         self.features = {**dict(kern=True, liga=True), **features}
-        self.path = None
         self.offset = (0, 0)
         self.increments = increments
         self.space = space
@@ -329,6 +330,7 @@ class Style():
         self.stroke = normalize_color(stroke)
         self.strokeWidth = strokeWidth
 
+        unnormalized_variations = variations.copy()
         self.axes = OrderedDict()
         self.variations = dict()
         self.variationLimits = dict()
@@ -343,14 +345,21 @@ class Style():
                 self.variations[axis.axisTag] = axis.defaultValue
                 if axis.axisTag == "wdth": # the only reasonable default
                     self.variationLimits[axis.axisTag] = axis.minValue
+                if axis.axisTag in kwargs and axis.axisTag not in variations:
+                    unnormalized_variations[axis.axisTag] = kwargs[axis.axisTag]
 
-        self.addVariations(variations)
+        self.addVariations(unnormalized_variations)
         
         os2 = self.ttfont["OS/2"]
         if hasattr(os2, "sCapHeight"):
             self.ch = os2.sCapHeight
         else:
             self.ch = 1000 # alternative?
+    
+    def mod(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+        return self
     
     def addVariations(self, variations, limits=dict()):
         for k, v in self.normalizeVariations(variations).items():
@@ -392,14 +401,11 @@ class Style():
         return variations
 
 
-class StyledString():
+class StyledString(FittableMixin):
     def __init__(self, text, style):
         self.text = text
         self.style = style
-        
-        self.path = None
         self.offset = (0, 0)
-
         # these will change based on fitting, so we make copies
         self.fontSize = self.style.fontSize
         self.tracking = self.style.tracking
@@ -409,7 +415,7 @@ class StyledString():
     # look away
     def trackFrames(self, frames, glyph_names):
         t = self.tracking
-        x_off = self.style.leftMargin
+        x_off = 0
         # has_kashida = False
         # try:
         #     self.style.ttfont.getGlyphID("uni0640")
@@ -424,44 +430,23 @@ class StyledString():
             if self.style.space and gn.lower() == "space":
                 x_off += self.style.space
         
-        frames[-1].frame.w += self.style.rightMargin
+        #frames[-1].frame.w += self.style.rightMargin
+        #print(frames[-1].frame.w)
         return frames
     
     def adjustFramesForPath(self, frames):
-        self.limit = len(frames)
-        if self.path:
-            self.tangents = []
-            self.originalWidth = 0
-            for idx, f in enumerate(frames):
+        for idx, f in enumerate(frames):
+            try:
+                bs = self.style.baselineShift[idx]
+            except:
+                bs = self.style.baselineShift
+            f.frame.y += bs
+            if self.style.xShift:
                 try:
-                    bs = self.style.baselineShift[idx]
+                    f.frame.x += self.style.xShift[idx]
                 except:
-                    bs = self.style.baselineShift
-                
-                ow = f.frame.x+f.frame.w/2
-                self.originalWidth = ow
-                if ow > self.cutter.length:
-                    self.limit = min(idx, self.limit)
-                else:
-                    p, t = self.cutter.subsegmentPoint(end=ow)
-                    x_shift = bs * math.cos(math.radians(t))
-                    y_shift = bs * math.sin(math.radians(t))
-                    f.frame.x = p[0] + x_shift
-                    f.frame.y = f.frame.y + p[1] + y_shift
-                    self.tangents.append(t)
-        else:
-            for idx, f in enumerate(frames):
-                try:
-                    bs = self.style.baselineShift[idx]
-                except:
-                    bs = self.style.baselineShift
-                f.frame.y += bs
-                if self.style.xShift:
-                    try:
-                        f.frame.x += self.style.xShift[idx]
-                    except:
-                        pass
-        return frames[0:self.limit]
+                    pass
+        return frames
     
     def getGlyphNames(self, txt):
         frames = Harfbuzz.GetFrames(self.style.fontdata, text=txt, axes=self.variations, features=self.features, height=self.style.ch)
@@ -494,10 +479,13 @@ class StyledString():
     def scale(self):
         return self.fontSize / self.style.upem
     
+    def textContent(self):
+        return self.text
+
     def shrink(self):
         adjusted = False
         if self.tracking > 0:
-            self.tracking -= self.increments.get("tracking", 0.25)
+            self.tracking -= self.style.increments.get("tracking", 0.25)
             adjusted = True
         else:
             for k, v in self.style.variationLimits.items():
@@ -516,32 +504,6 @@ class StyledString():
             self.features["hwid"] = True
             adjusted = True
         return adjusted
-    
-    def fit(self, width):
-        current_width = self.width()
-        self.tries = 0
-        if current_width > width: # need to shrink
-            while self.tries < 1000 and current_width > width:
-                adjusted = self.shrink()
-                if adjusted:
-                    self.tries += 1
-                    current_width = self.width()
-                else:
-                    #print(">>> Was not adjusted")
-                    return
-        elif current_width < width: # need to expand
-            pass
-        else:
-            return        
-        #print("Fitting", self.text, self.tries, "fits:", current_width <= width)
-        #if current_width > width:
-        #    print("DOES NOT FIT", self.tries, self.text)
-    
-    def addPath(self, path, fit=False):
-        self.path = path
-        self.cutter = CurveCutter(path)
-        if fit:
-            self.fit(self.cutter.length)
     
     def formattedString(self):
         if _drawBot:
@@ -564,11 +526,6 @@ class StyledString():
             t = Transform()
             t = t.scale(s)
             t = t.translate(frame.frame.x/self.scale(), frame.frame.y/self.scale())
-            if self.path:
-                tangent = self.tangents[idx]
-                t = t.rotate(math.radians(tangent-90))
-                t = t.translate(-frame.frame.w*0.5/self.scale())
-            #print(self.offset)
             t = t.translate(self.offset[0]/self.scale(), self.offset[1]/self.scale())
             tp = TransformPen(out_pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
             if useTTFont:
@@ -606,35 +563,6 @@ if __name__ == "__main__":
     from coldtype.viewer import previewer
     from random import randint
     from coldtype.pens.svgpen import SVGPen
-
-    def map_test(preview):
-        f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
-        f, v = ["¬/Cheee_Variable.ttf", dict(yest=1, grvt=0.95, temp=0.4, scale=True)]
-        #f, v = ["≈/MapRomanVariable-VF.ttf", dict(wdth=0, scale=True)]
-
-        rect = Rect(0, 0, 1000, 1000)
-        def make_ss(shift):
-            return StyledString("California",
-                Style(font=f,
-                variations=v,
-                fontSize=170,
-                tracking=-10,
-                baselineShift=shift))
-        ss1 = make_ss(-19)
-        ss2 = make_ss(-32)
-        ss3 = make_ss(-8)
-        r = rect.inset(50, 30).offset(200, 0)
-        rp = simple_quadratic(r.p("NW"), r.p("W").offset(0, -100), r.p("S").offset(100, 0))
-        ss1.addPath(rp, fit=True)
-        ss2.addPath(rp, fit=True)
-        ss3.addPath(rp, fit=True)
-        dp1 = ss1.asPen().addAttrs(fill=Gradient.Horizontal(r, "orange", "deeppink"), stroke=dict(color="white", weight=2))
-        dp1.removeOverlap()
-        dp2 = ss2.asPen().addAttrs(fill=("black", 0.5), stroke=("white", 0.3))
-        dp2.removeOverlap()
-        dp3 = ss3.asPen().addAttrs(fill=("deeppink", 0.5), stroke=("white", 0.3))
-        dp3.removeOverlap()
-        preview.send(SVGPen.Composite([DATPen(fill=Gradient.Vertical(rect, "darkorchid", "royalblue")).rect(rect), dp2, dp1], rect), rect)
     
     def ss_bounds_test(font, preview):
         #f = f"≈/{font}.ttf"
@@ -657,33 +585,25 @@ if __name__ == "__main__":
         preview.send(SVGPen.Composite([dp, dpf], r), r)
     
     def ss_and_shape_test(preview):
-        r = Rect((0, 0, 500, 500))
-        f, v = ["≈/VulfSansItalicVariable.ttf", dict(wght=1, scale=True)]
+        r = Rect((0, 0, 500, 120))
         f, v = ["≈/Nonplus-Black.otf", dict()]
         ss1 = StyledString("Yoy! ", Style(font=f, variations=v, fontSize=80))
         f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.1, scale=True)]
-        ss2 = StyledString("ABC", Style(font=f, variations=v, fontSize=120))
-        grid = r.inset(0, 0).grid(10, 10)
-        dp1 = DATPen(fill=None, stroke=dict(color=("skyblue", 0.5), weight=1)).rect(grid)
-        oval = DATPen()
-        #oval.polygon(15, Rect(0, 0, 50, 50)).addAttrs(fill="random")
-        oval.polygon(3, Rect(0, 0, 50, 50)).addAttrs(fill="random")
-        oval.addFrame(Rect(0, 0, 50, 50).expand(40, "minx"))
-        oval.typographic = True
-        dps = DATPenSet(ss1.asPen(frame=True).addAttrs(fill="darkorchid"), ss2.asPen(frame=True), oval)
-        #dps = DATPenSet(DATPen().rect(Rect((0, 0, 100, 200))), DATPen().oval(Rect((0, 0, 500, 200))))
-        #dps.align(grid)
-        dps.align(r, x="centerx", y="centery", typographicBaseline=True)
-        preview.send(SVGPen.Composite(dps.pens + [dp1], r), r)
+        ps2 = Slug("ABC", Style(font=f, variations=v, fontSize=72)).asPenSet().rotate(-10)
+        oval = DATPen().polygon(3, Rect(0, 0, 50, 50)).addAttrs(fill="random")
+        dps = DATPenSet(
+            ss1.asPen().addAttrs(fill="darkorchid"),
+            ps2,
+            oval
+            )
+        dps.distribute()
+        dps.align(r)
+        preview.send(SVGPen.Composite(dps.pens + [DATPen.Grid(r, y=4)], r), r)
 
     def rotalic_test(preview):
-        r = Rect(0, 0, 500, 500)
-        s = Slug("Side", Style("≈/Vinila-VF-HVAR-table.ttf", 200, variations=dict(wdth=0.5, wght=0.7, scale=True)))
-        dps = s.asPenSet(atomized=True)
-        for dp in dps.pens:
-            dp.rotate(-15)
-        dps.align(r)
-        preview.send(SVGPen.Composite(dps.pens, r), r)
+        r = Rect(0, 0, 500, 200)
+        ps = Slug("Side", Style("≈/Vinila-VF-HVAR-table.ttf", 200, variations=dict(wdth=0.5, wght=0.7, scale=True))).asPenSet().rotate(-15).align(r)
+        preview.send(SVGPen.Composite(ps.pens + ps.frameSet().pens, r), r)
 
     def multilang_test(p):
         ss = Lockup([
@@ -691,26 +611,25 @@ if __name__ == "__main__":
                 #"الملخبط",
                 "Ali الملخبط Boba",
                 Style("≈/GretaArabicCondensedAR-Heavy.otf", 100),
-                Style("≈/ObviouslyVariable.ttf", 100, variations=dict(wdth=1, wght=1))
+                Style("≈/ObviouslyVariable.ttf", 80, wdth=1, wght=0.7)
             )])
-        r = Rect((0, 0, 500, 500))
-        ss.fit(r.w - 20)
+        r = Rect((0, 0, 600, 140))
+        ss.fit(r.w - 200)
         dps = ss.asPenSet()
-        dps.align(r)
-        p.send(SVGPen.Composite(dps.pens, r), r)
+        dps.align(r, x="maxx", y="miny")
+        p.send(SVGPen.Composite(dps.pens + [DATPen.Grid(r, y=4)], r), r)
     
     def tracking_test(p):
-        r = Rect(0, 0, 500, 200)
-        s1 = Slug("ABC", Style("≈/VulfSans-Black.otf", 100, tracking=50, fill=("random", 0.2), strokeWidth=2, stroke=("random", 0.5)))
-        s2 = Slug("xyz", Style("≈/VulfSans-Black.otf", 100, fill=("random", 0.1), strokeWidth=2, stroke=("random", 0.5)))
+        r = Rect(0, 0, 500, 100)
+        s1 = Slug("ABC", Style("≈/VulfSans-Black.otf", 100, tracking=50, fill=("random", 0.2), strokeWidth=2, stroke=("random", 0.75)))
+        s2 = Slug("xyz", Style("≈/VulfSans-Black.otf", 100, fill=("random", 0.1), strokeWidth=2, stroke=("random", 0.75)))
         ps1 = s1.asPenSet()
         ps1.align(r)
         ps2 = s2.asPenSet()
         ps2.align(r)
         frames = []
-        #for pen in ps1.pens:
-        #    frames.append(DATPen(fill=("random", 0.5)).rect(pen.frame))
-        p.send(SVGPen.Composite(frames + ps1.pens + ps2.pens + [DATPen.Grid(r, x=6, y=8)], r), r)
+        p.send(SVGPen.Composite(
+            frames + ps1.pens + ps2.pens + [DATPen.Grid(r, x=6, y=4)], r), r)
 
     with previewer() as p:
         if False:
@@ -719,13 +638,9 @@ if __name__ == "__main__":
             ss_bounds_test("≈/VinilaVariable.ttf", p)
             ss_bounds_test("≈/Vinila-VF-HVAR-table.ttf", p)
             #ss_bounds_test("≈/Compressa-MICRO-GX-Rg.ttf", p)
-            #ss_bounds_test("≈/BildVariableV2-VF.ttf", p)
             #ss_bounds_test("≈/BruphyGX.ttf", p)
-            #ss_bounds_test("≈/Fit-Variable.ttf", p)
-            #ss_bounds_test("≈/MapRomanVariable-VF.ttf", p)
-            #ss_bounds_test("≈/VulfSansItalicVariable.ttf", p)
-        #ss_and_shape_test(p)
+        ss_and_shape_test(p)
         #map_test(p)
         #rotalic_test(p)
         #multilang_test(p)
-        tracking_test(p)
+        #tracking_test(p)

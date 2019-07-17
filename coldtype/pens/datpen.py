@@ -30,7 +30,7 @@ else:
 
 
 from coldtype.geometry import Rect, Edge, Point, txt_to_edge
-from coldtype.beziers import raise_quadratic
+from coldtype.beziers import raise_quadratic, CurveCutter
 from coldtype.pens.drawablepen import Gradient, normalize_color
 
 try:
@@ -68,6 +68,16 @@ class OpenPathPen(ContourFilterPen):
     def filterContour(self, contour):
         return contour[:-1]
 
+class ExplodingPen(ContourFilterPen):
+    def __init__(self, outPen):
+        self.pens = []
+        super().__init__(outPen)
+
+    def filterContour(self, contour):
+        dp = DATPen()
+        dp.value = contour
+        self.pens.append(dp)
+        return contour
 
 class SmoothPointsPen(ContourFilterPen):
     def __init__(self, outPen, length=80):
@@ -130,6 +140,13 @@ class DATPen(RecordingPen):
                     self.attrs[k] = dict(color=normalize_color(v))
                 else:
                     self.attrs[k] = dict(weight=v.get("weight", 1), color=normalize_color(v.get("color", 0)))
+            elif k == "strokeWidth":
+                if "stroke" in self.attrs:
+                    self.attrs["stroke"]["weight"] = v
+                    if self.attrs["stroke"]["color"].alpha == 0:
+                        self.attrs["stroke"]["color"] = normalize_color((1, 0, 0.5))
+                else:
+                    self.attrs["stroke"] = dict(color=normalize_color((1, 0, 0.5)), weight=v)
             else:
                 self.attrs[k] = v
         return self
@@ -146,12 +163,15 @@ class DATPen(RecordingPen):
         else:
             return self.bounds()
     
-    def transform(self, transform):
+    def updateFrameHeight(self, h):
+        self.frame.h = h
+    
+    def transform(self, transform, transformFrame=True):
         op = RecordingPen()
         tp = TransformPen(op, transform)
         self.replay(tp)
         self.value = op.value
-        if True and self.frame:
+        if transformFrame and self.frame:
             self.frame = self.frame.transform(transform)
         return self
     
@@ -223,13 +243,12 @@ class DATPen(RecordingPen):
         t = t.translate(point.x, point.y)
         t = t.rotate(math.radians(degrees))
         t = t.translate(-point.x, -point.y)
-        return self.transform(t)
+        return self.transform(t, transformFrame=False)
 
     def bounds(self):
         cbp = BoundsPen(None)
         self.replay(cbp)
         mnx, mny, mxx, mxy = cbp.bounds
-        print(mnx, mny, mxx, mxy)
         return Rect((mnx, mny, mxx - mnx, mxy - mny))
     
     def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, bounds=False):
@@ -241,6 +260,7 @@ class DATPen(RecordingPen):
         else:
             b = self.bounds()
 
+        xoff = 0
         if x == Edge.CenterX:
             xoff = -b.x + rect.x + rect.w/2 - b.w/2
         elif x == Edge.MinX:
@@ -248,6 +268,7 @@ class DATPen(RecordingPen):
         elif x == Edge.MaxX:
             xoff = -b.x + rect.x + rect.w - b.w
         
+        yoff = 0
         if y == Edge.CenterY:
             yoff = -b.y + rect.y + rect.h/2 - b.h/2
         elif y == Edge.MaxY:
@@ -290,6 +311,15 @@ class DATPen(RecordingPen):
         self.replay(fp)
         self.value = rp.value
         return self
+    
+    def smooth(self):
+        dp = DATPen()
+        for pts in self.skeletonPoints():
+            _pts = [p[-1][-1] for p in pts]
+            dp.catmull(_pts, close=True)
+        self.value = dp.value
+        return self
+
     
     def roughen(self, amplitude=10, threshold=10):
         randomized = []
@@ -466,6 +496,12 @@ class DATPen(RecordingPen):
         self.record(dp)
         return self
     
+    def explode(self):
+        dp = RecordingPen()
+        ep = ExplodingPen(dp)
+        self.replay(ep)
+        return DATPenSet(ep.pens)
+    
     def points(self):
         contours = []
         for contour in self.skeletonPoints():
@@ -543,10 +579,11 @@ class DATPenSet():
     def __init__(self, *pens):
         self.pens = []
         self.addPens(pens)
+        self.typographic = True
     
     def addPens(self, pens):
         if isinstance(pens, DATPenSet):
-            self.addPens(pens.pens)
+            self.addPen(pens)
         else:
             for p in pens:
                 if hasattr(p, "value"):
@@ -557,11 +594,18 @@ class DATPenSet():
     def addPen(self, pen):
         self.pens.append(pen)
     
-    def frameUnion(self, boundsOnly=False):
+    def getFrame(self, boundsOnly=False):
         union = self.pens[0].getFrame(boundsOnly=boundsOnly)
         for p in self.pens[1:]:
             union = union.union(p.getFrame(boundsOnly=boundsOnly))
         return union
+    
+    def updateFrameHeight(self, h):
+        for p in self.pens:
+            p.updateFrameHeight(h)
+    
+    def replay(self, pen):
+        self.asPen().replay(pen)
     
     def asPen(self):
         dp = DATPen()
@@ -569,7 +613,7 @@ class DATPenSet():
             dp.record(p)
         if len(self.pens) == 1:
             dp.addAttrs(**self.pens[0].attrs)
-        dp.addFrame(self.frameUnion())
+        dp.addFrame(self.getFrame())
         return dp
     
     def removeOverlap(self):
@@ -582,30 +626,68 @@ class DATPenSet():
             p.translate(x, y)
         return self
     
-    def frameSet(self):
+    def rotate(self, degrees):
+        for p in self.pens:
+            p.rotate(degrees)
+        return self
+    
+    def frameSet(self, boundsOnly=False):
         dps = DATPenSet()
         for p in self.pens:
             if p.frame:
-                dps.addPen(DATPen(fill=("random", 0.5)).rect(p.frame))
+                dp = DATPen(fill=("random", 0.25)).rect(p.getFrame(boundsOnly=boundsOnly))
+                dps.addPen(dp)
         return dps
     
-    def distribute(self, rects, x=Edge.CenterX, y=Edge.CenterY):
+    def alignToRects(self, rects, x=Edge.CenterX, y=Edge.CenterY):
         for idx, p in enumerate(self.pens):
             p.align(rects[idx], x, y)
+    
+    def distribute(self):
+        x_off = 0
+        for p in self.pens:
+            frame = p.getFrame()
+            #x_off += s.margin[0]
+            p.translate(x_off, 0)
+            x_off += frame.w
+            #x_off += s.margin[1]
+        return self
+        
+    def distributeOnPath(self, path):
+        cutter = CurveCutter(path)
+        limit = len(self.pens)
+        for idx, p in enumerate(self.pens):
+            f = p.getFrame()
+            bs = f.y
+            ow = f.x + f.w / 2
+            if ow > cutter.length:
+                limit = min(idx, limit)
+            else:
+                _p, tangent = cutter.subsegmentPoint(end=ow)
+                x_shift = bs * math.cos(math.radians(tangent))
+                y_shift = bs * math.sin(math.radians(tangent))
+                t = Transform()
+                t = t.translate(_p[0] + x_shift - f.x, _p[1] + y_shift - f.y)
+                t = t.translate(f.x, f.y)
+                t = t.rotate(math.radians(tangent-90))
+                t = t.translate(-f.x, -f.y)
+                t = t.translate(-f.w*0.5)
+                p.transform(t)
+        return self
 
     def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, typographicBaseline=True):
-        union = self.frameUnion()
-        offset = rect.take(union.w, "centerx").take(union.h, "centery")
+        union = self.getFrame()
+        offset = rect.take(union.w, x).take(union.h, y)
         if typographicBaseline:
             for p in self.pens:
                 if p.typographic:
-                    p.frame.h = union.h
+                    p.updateFrameHeight(union.h)
         for idx, p in enumerate(self.pens):
             p.translate(offset.x, offset.y)
         return self
     
     def fromZero(self, rect):
-        union = self.frameUnion(boundsOnly=True)
+        union = self.getFrame(boundsOnly=True)
         offset = rect.take(union.w, "centerx").x
         for idx, p in enumerate(self.pens):
             p.translate(-union.x, 0)
@@ -625,7 +707,7 @@ if __name__ == "__main__":
     #seed(104)
     
     with viewer() as v:
-        if True:
+        def gradient_test():
             r = Rect((0, 0, 1920, 1080))
             ss1 = StyledString("cold", Style("≈/Nonplus-Black.otf", fontSize=600))
             ss2 = StyledString("type", Style("≈/Nostrav0.9-Stream.otf", fontSize=310, tracking=0))
@@ -667,43 +749,41 @@ if __name__ == "__main__":
 
             #ReportLabPen.Composite(pens, r, "test.pdf")
     
-        if False:
+        def roughen_test():
             #seed(100)
-            r = Rect((0, 0, 1080, 1080))
-            f = "≈/Nonplus-Black.otf"
-            f = "≈/Bahati0.1-Regular.otf"
+            r = Rect((0, 0, 500, 300))
             f = "≈/Taters-Baked-v0.1.otf"
-            ss1 = Slug("Trem", Style(f, fontSize=400))
+            ss1 = Slug("Trem", Style(f, fontSize=200))
             dp1 = ss1.strings[0].asPen()
             dp1.align(r)
             dp1.removeOverlap()
-            dp1.flatten(length=10)
+            dp1.flatten(length=5)
             dp1.roughen(amplitude=3)
-            
-            #shuffle(_points)
-            #points = [p for pl in _points for p in pl]
-            #print(len(_points))
-            
-            dp2 = DATPen()
-            dp2.addAttrs(fill=None, stroke=dict(color=(0.8, 0, 0.7), weight=4))
-            for pts in dp1.skeletonPoints():
-                _pts = [p[-1][-1] for p in pts]
-                #s = randint(0, len(_pts) - 10)
-                #copy = _pts[s:8]
-                #shuffle(copy)
-                #_pts[s:15] = copy # overwrite the original
-                #shuffle(_pts)
-                #print(".............")
-                #print(_pts)
-                dp2.catmull(_pts, close=True)
+            dp1.smooth()
+            dp1.removeOverlap()
+            dp1.addAttrs(fill=None, strokeWidth=5)
 
-            dp3 = dp2.copy().addAttrs(fill=0, stroke=None)
-
-            pens = [
-                #dp1,
-                dp2,
-                #dp3,
-                #dp2.skeleton()
-            ]
+            pens = [dp1]
             svg = SVGPen.Composite(pens, r)
             v.send(svg, r)
+        
+        def map_test():
+            f, _v = ["≈/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
+            f, _v = ["≈/MapRomanVariable-VF.ttf", dict(wdth=1, scale=True)]
+            ss = Slug("California",
+                Style(font=f,
+                variations=_v,
+                fontSize=40,
+                tracking=20,
+                baselineShift=0,
+                fill=0,
+                ))
+            rect = Rect(0,0,500,500)
+            r = rect.inset(50, 0).take(180, "centery")
+            dp = DATPen(fill=None, stroke="random").quadratic(r.p("SW"), r.p("C").offset(0, 300), r.p("NE"))
+            ps = ss.asPenSet()
+            ps.distributeOnPath(dp)
+            v.send(SVGPen.Composite(ps.pens + ps.frameSet(boundsOnly=True).pens + [dp], rect), rect)
+        
+        roughen_test()
+        map_test()
