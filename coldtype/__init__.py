@@ -206,6 +206,9 @@ class Lockup(FittableMixin):
             x_off += dps.getFrame().w
             x_off += s.margin[1]
         return DATPenSet(pens)
+    
+    def penset(self):
+        return self.asPenSet()
 
 
 def between(c, a, b):
@@ -215,6 +218,7 @@ LATIN = lambda c: between(c, '\u0000', '\u024F')
 KATAKANA = lambda c: between(c, '\u30A0', '\u30FF')
 HIRAGANA = lambda c: between(c, '\u3040', '\u309F')
 CJK = lambda c: between(c, '\u4E00', '\u9FFF')
+
 
 class Slug(FittableMixin):
     def __init__(self, text, primary, fallback=None, margin=[0, 0]):
@@ -273,6 +277,12 @@ class Slug(FittableMixin):
     
     def asPen(self):
         return DATPenSet([s.asPen() for s in self.strings]).asPen()
+    
+    def penset(self):
+        return self.asPenSet()
+
+    def pen(self):
+        return self.asPen()
 
 
 _prefixes = [
