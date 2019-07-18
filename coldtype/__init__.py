@@ -345,7 +345,7 @@ class Style():
 
         # TODO should be able to pass in as kwarg
         self.features = {**dict(kern=True, liga=True), **features}
-        self.offset = (0, 0)
+
         self.increments = increments
         self.space = space
 
@@ -428,7 +428,7 @@ class StyledString(FittableMixin):
     def __init__(self, text, style):
         self.text = text
         self.style = style
-        self.offset = (0, 0)
+        
         # these will change based on fitting, so we make copies
         self.fontSize = self.style.fontSize
         self.tracking = self.style.tracking
@@ -549,7 +549,6 @@ class StyledString(FittableMixin):
             t = Transform()
             t = t.scale(s)
             t = t.translate(frame.frame.x/self.scale(), frame.frame.y/self.scale())
-            t = t.translate(self.offset[0]/self.scale(), self.offset[1]/self.scale())
             tp = TransformPen(out_pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
             if useTTFont:
                 fr.drawTTOutlineToPen(tp)
