@@ -116,7 +116,33 @@ class SmoothPointsPen(ContourFilterPen):
         return nc
 
 
-class DATPen(RecordingPen):
+class AlignableMixin():
+    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False):
+        x = txt_to_edge(x)
+        y = txt_to_edge(y)
+        b = self.getFrame(th=th, tv=tv)
+
+        xoff = 0
+        if x == Edge.CenterX:
+            xoff = -b.x + rect.x + rect.w/2 - b.w/2
+        elif x == Edge.MinX:
+            xoff = rect.x
+        elif x == Edge.MaxX:
+            xoff = -b.x + rect.x + rect.w - b.w
+        
+        yoff = 0
+        if y == Edge.CenterY:
+            yoff = -b.y + rect.y + rect.h/2 - b.h/2
+        elif y == Edge.MaxY:
+            yoff = rect.y + rect.h - b.h
+        elif y == Edge.MinY:
+            yoff = rect.y
+        
+        diff = rect.w - b.w
+        return self.translate(xoff, yoff)
+
+
+class DATPen(RecordingPen, AlignableMixin):
     def __init__(self, **kwargs):
         super().__init__()
         self._text = kwargs.get("text", "NOTEXT")
@@ -159,9 +185,19 @@ class DATPen(RecordingPen):
             self.typographic = True
         return self
     
-    def getFrame(self, bounds=False):
-        if self.frame and not bounds:
-            return self.frame
+    def getFrame(self, th=False, tv=False):
+        if self.frame:
+            if (th or tv) and len(self.value) > 0:
+                f = self.frame
+                b = self.bounds()
+                if th and tv:
+                    return b
+                elif th:
+                    return Rect(b.x, f.y, b.w, f.h)
+                else:
+                    return Rect(f.x, b.y, f.w, b.h)
+            else:
+                return self.frame
         else:
             return self.bounds()
     
@@ -241,7 +277,7 @@ class DATPen(RecordingPen):
     def rotate(self, degrees, point=None):
         t = Transform()
         if not point:
-            point = self.bounds().point("C")
+            point = self.bounds().point("C") # maybe should be getFrame()?
         t = t.translate(point.x, point.y)
         t = t.rotate(math.radians(degrees))
         t = t.translate(-point.x, -point.y)
@@ -252,30 +288,6 @@ class DATPen(RecordingPen):
         self.replay(cbp)
         mnx, mny, mxx, mxy = cbp.bounds
         return Rect((mnx, mny, mxx - mnx, mxy - mny))
-    
-    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, bounds=False):
-        x = txt_to_edge(x)
-        y = txt_to_edge(y)
-        b = self.getFrame(bounds=bounds)
-
-        xoff = 0
-        if x == Edge.CenterX:
-            xoff = -b.x + rect.x + rect.w/2 - b.w/2
-        elif x == Edge.MinX:
-            xoff = rect.x
-        elif x == Edge.MaxX:
-            xoff = -b.x + rect.x + rect.w - b.w
-        
-        yoff = 0
-        if y == Edge.CenterY:
-            yoff = -b.y + rect.y + rect.h/2 - b.h/2
-        elif y == Edge.MaxY:
-            yoff = rect.y + rect.h - b.h
-        elif y == Edge.MinY:
-            yoff = rect.y
-        
-        diff = rect.w - b.w
-        return self.translate(xoff, yoff)
 
     def round(self, rounding):
         rounded = []
@@ -573,7 +585,7 @@ class DATPen(RecordingPen):
         return DATPen(fill=None, stroke=dict(color=("random", opacity), weight=1)).rect(grid)
 
 
-class DATPenSet():
+class DATPenSet(AlignableMixin):
     def __init__(self, *pens):
         self.pens = []
         self.addPens(pens)
@@ -592,10 +604,10 @@ class DATPenSet():
     def addPen(self, pen):
         self.pens.append(pen)
     
-    def getFrame(self, bounds=False):
-        union = self.pens[0].getFrame(bounds=bounds)
+    def getFrame(self, th=False, tv=False):
+        union = self.pens[0].getFrame(th=th, tv=tv)
         for p in self.pens[1:]:
-            union = union.union(p.getFrame(bounds=bounds))
+            union = union.union(p.getFrame(th=th, tv=tv))
         return union
     
     def updateFrameHeight(self, h):
@@ -629,11 +641,11 @@ class DATPenSet():
             p.rotate(degrees)
         return self
     
-    def frameSet(self, bounds=False):
+    def frameSet(self, th=False, tv=False):
         dps = DATPenSet()
         for p in self.pens:
             if p.frame:
-                dp = DATPen(fill=("random", 0.25)).rect(p.getFrame(bounds=bounds))
+                dp = DATPen(fill=("random", 0.25)).rect(p.getFrame(th=th, tv=tv))
                 dps.addPen(dp)
         return dps
     
@@ -671,24 +683,6 @@ class DATPenSet():
                 t = t.translate(-f.x, -f.y)
                 t = t.translate(-f.w*0.5)
                 p.transform(t)
-        return self
-
-    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, typographicBaseline=True, bounds=False):
-        union = self.getFrame(bounds=bounds)
-        offset = rect.take(union.w, x).take(union.h, y)
-        if typographicBaseline:
-            for p in self.pens:
-                if p.typographic:
-                    p.updateFrameHeight(union.h)
-        for idx, p in enumerate(self.pens):
-            p.translate(offset.x, offset.y)
-        return self
-    
-    def fromZero(self, rect):
-        union = self.getFrame(bounds=True)
-        offset = rect.take(union.w, "centerx").x
-        for idx, p in enumerate(self.pens):
-            p.translate(-union.x, 0)
         return self
 
 
@@ -781,17 +775,23 @@ if __name__ == "__main__":
             dp = DATPen(fill=None, stroke="random").quadratic(r.p("SW"), r.p("C").offset(0, 300), r.p("NE"))
             ps = ss.asPenSet()
             ps.distributeOnPath(dp)
-            v.send(SVGPen.Composite(ps.pens + ps.frameSet(bounds=True).pens + [dp], rect), rect)
+            v.send(SVGPen.Composite(ps.pens + ps.frameSet(th=True, tv=True).pens + [dp], rect), rect)
         
         def align_test():
             r = Rect(0,0,500,300)
-            p = Slug("Blob", Style("≈/RageItalicStd.otf", 300, fill=(0, 0.5))).pen().align(r, bounds=True)
-            ps = Slug("Blob", Style("≈/RageItalicStd.otf", 300, fill=("random", 0.5))).pens().align(r, bounds=True)
+            p = Slug("B ay", Style("≈/RageItalicStd.otf", 300, fill=(0, 0.5))).pen().align(r)
+            ps = Slug("B ay", Style("≈/RageItalicStd.otf", 300, fill=("random", 0.5))).pens().align(r)
+
+            #print(p.getFrame(th=True))
+            #print(ps.getFrame(th=True))
+
             v.send(SVGPen.Composite(
                 #ps.frameSet().pens +
+                [DATPen.Grid(r)] +
                 [p] +
                 ps.pens + 
-                [DATPen.Grid(r)], r), r)
+                #[ps] + 
+                [], r), r)
 
 
         #roughen_test()

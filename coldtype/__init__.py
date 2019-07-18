@@ -631,7 +631,10 @@ if __name__ == "__main__":
     def rotalic_test(preview):
         r = Rect(0, 0, 500, 200)
         ps = Slug("Side", Style("≈/Vinila-VF-HVAR-table.ttf", 200, variations=dict(wdth=0.5, wght=0.7, scale=True))).asPenSet().rotate(-15).align(r)
-        preview.send(SVGPen.Composite(ps.pens + ps.frameSet().pens, r), r)
+        preview.send(SVGPen.Composite(
+            [DATPen.Grid(r)] + 
+            ps.pens + 
+            ps.frameSet().pens, r), r)
 
     def multilang_test(p):
         ss = Slug(
@@ -641,13 +644,13 @@ if __name__ == "__main__":
             Style("≈/ObviouslyVariable.ttf", 80, wdth=1, wght=0.7)
             )
         r = Rect((0, 0, 600, 140))
-        ss.fit(r.w - 200)
+        ss.fit(r.w - 100)
         dps = ss.asPen().addAttrs(fill=0)
-        dps.align(r, x="maxx", y="miny")
+        dps.align(r, x="centerx", y="centery")
         g = DATPen.Grid(r, y=4)
         p.send(SVGPen.Composite([
             dps,
-            #g
+            g
             ], r), r)
     
     def tracking_test(p):
@@ -670,8 +673,7 @@ if __name__ == "__main__":
             ss_bounds_test("≈/Vinila-VF-HVAR-table.ttf", p)
             #ss_bounds_test("≈/Compressa-MICRO-GX-Rg.ttf", p)
             #ss_bounds_test("≈/BruphyGX.ttf", p)
-        #ss_and_shape_test(p)
-        #map_test(p)
-        #rotalic_test(p)
+        ss_and_shape_test(p)
+        rotalic_test(p)
         multilang_test(p)
-        #tracking_test(p)
+        tracking_test(p)
