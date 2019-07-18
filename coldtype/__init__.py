@@ -172,7 +172,7 @@ class FittableMixin():
                     tries += 1
                     current_width = self.width()
                 else:
-                    print(">>> TOO BIG :::", self.textContent())
+                    #print(">>> TOO BIG :::", self.textContent())
                     return self
         elif current_width < width: # need to expand
             pass
