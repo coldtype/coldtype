@@ -185,6 +185,10 @@ class DATPen(RecordingPen, AlignableMixin):
             self.typographic = True
         return self
     
+    def frameSet(self, th=False, tv=False):
+        if self.frame:
+            return DATPen(fill=("random", 0.25)).rect(self.getFrame(th=th, tv=tv))
+    
     def getFrame(self, th=False, tv=False):
         if self.frame:
             if (th or tv) and len(self.value) > 0:
@@ -645,8 +649,7 @@ class DATPenSet(AlignableMixin):
         dps = DATPenSet()
         for p in self.pens:
             if p.frame:
-                dp = DATPen(fill=("random", 0.25)).rect(p.getFrame(th=th, tv=tv))
-                dps.addPen(dp)
+                dps.addPen(p.frameSet(th=th, tv=tv))
         return dps
     
     def alignToRects(self, rects, x=Edge.CenterX, y=Edge.CenterY):
@@ -779,19 +782,15 @@ if __name__ == "__main__":
         
         def align_test():
             r = Rect(0,0,500,300)
-            p = Slug("B ay", Style("≈/RageItalicStd.otf", 300, fill=(0, 0.5))).pen().align(r)
-            ps = Slug("B ay", Style("≈/RageItalicStd.otf", 300, fill=("random", 0.5))).pens().align(r)
+            p = Slug("B ay", Style("≈/RageItalicStd.otf", 300, fill=("random", 0.5))).pen().align(r)
+            ps = Slug("B ay", Style("≈/RageItalicStd.otf", 300, fill=None, stroke=(0), strokeWidth=4)).pen().align(r)
 
-            #print(p.getFrame(th=True))
-            #print(ps.getFrame(th=True))
-
-            v.send(SVGPen.Composite(
-                #ps.frameSet().pens +
-                [DATPen.Grid(r)] +
-                [p] +
-                ps.pens + 
-                #[ps] + 
-                [], r), r)
+            v.send(SVGPen.Composite([
+                DATPen.Grid(r),
+                p,
+                ps,
+                ps.frameSet()
+            ], r), r)
 
 
         #roughen_test()

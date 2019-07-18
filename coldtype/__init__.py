@@ -664,6 +664,9 @@ if __name__ == "__main__":
         p.send(SVGPen.Composite(
             frames + ps1.pens + ps2.pens + [DATPen.Grid(r, x=6, y=4)], r), r)
 
+    def emoji_test(p):
+        pass
+
     with previewer() as p:
         if False:
             ss_bounds_test("≈/ObviouslyVariable.ttf", p)
