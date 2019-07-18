@@ -209,6 +209,9 @@ class Lockup(FittableMixin):
     
     def penset(self):
         return self.asPenSet()
+    
+    def pens(self):
+        return self.asPenSet()
 
 
 def between(c, a, b):
@@ -286,6 +289,9 @@ class Slug(FittableMixin):
         return self.asPenSet(atomized=False).asPen()
     
     def penset(self):
+        return self.asPenSet()
+    
+    def pens(self):
         return self.asPenSet()
 
     def pen(self):

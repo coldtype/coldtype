@@ -159,8 +159,8 @@ class DATPen(RecordingPen):
             self.typographic = True
         return self
     
-    def getFrame(self, boundsOnly=False):
-        if self.frame and not boundsOnly:
+    def getFrame(self, bounds=False):
+        if self.frame and not bounds:
             return self.frame
         else:
             return self.bounds()
@@ -256,11 +256,7 @@ class DATPen(RecordingPen):
     def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, bounds=False):
         x = txt_to_edge(x)
         y = txt_to_edge(y)
-        
-        if self.frame and not bounds:
-            b = self.frame
-        else:
-            b = self.bounds()
+        b = self.getFrame(bounds=bounds)
 
         xoff = 0
         if x == Edge.CenterX:
@@ -596,10 +592,10 @@ class DATPenSet():
     def addPen(self, pen):
         self.pens.append(pen)
     
-    def getFrame(self, boundsOnly=False):
-        union = self.pens[0].getFrame(boundsOnly=boundsOnly)
+    def getFrame(self, bounds=False):
+        union = self.pens[0].getFrame(bounds=bounds)
         for p in self.pens[1:]:
-            union = union.union(p.getFrame(boundsOnly=boundsOnly))
+            union = union.union(p.getFrame(bounds=bounds))
         return union
     
     def updateFrameHeight(self, h):
@@ -633,11 +629,11 @@ class DATPenSet():
             p.rotate(degrees)
         return self
     
-    def frameSet(self, boundsOnly=False):
+    def frameSet(self, bounds=False):
         dps = DATPenSet()
         for p in self.pens:
             if p.frame:
-                dp = DATPen(fill=("random", 0.25)).rect(p.getFrame(boundsOnly=boundsOnly))
+                dp = DATPen(fill=("random", 0.25)).rect(p.getFrame(bounds=bounds))
                 dps.addPen(dp)
         return dps
     
@@ -677,8 +673,8 @@ class DATPenSet():
                 p.transform(t)
         return self
 
-    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, typographicBaseline=True):
-        union = self.getFrame()
+    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, typographicBaseline=True, bounds=False):
+        union = self.getFrame(bounds=bounds)
         offset = rect.take(union.w, x).take(union.h, y)
         if typographicBaseline:
             for p in self.pens:
@@ -689,7 +685,7 @@ class DATPenSet():
         return self
     
     def fromZero(self, rect):
-        union = self.getFrame(boundsOnly=True)
+        union = self.getFrame(bounds=True)
         offset = rect.take(union.w, "centerx").x
         for idx, p in enumerate(self.pens):
             p.translate(-union.x, 0)
@@ -785,7 +781,19 @@ if __name__ == "__main__":
             dp = DATPen(fill=None, stroke="random").quadratic(r.p("SW"), r.p("C").offset(0, 300), r.p("NE"))
             ps = ss.asPenSet()
             ps.distributeOnPath(dp)
-            v.send(SVGPen.Composite(ps.pens + ps.frameSet(boundsOnly=True).pens + [dp], rect), rect)
+            v.send(SVGPen.Composite(ps.pens + ps.frameSet(bounds=True).pens + [dp], rect), rect)
         
-        roughen_test()
-        map_test()
+        def align_test():
+            r = Rect(0,0,500,300)
+            p = Slug("Blob", Style("≈/RageItalicStd.otf", 300, fill=(0, 0.5))).pen().align(r, bounds=True)
+            ps = Slug("Blob", Style("≈/RageItalicStd.otf", 300, fill=("random", 0.5))).pens().align(r, bounds=True)
+            v.send(SVGPen.Composite(
+                #ps.frameSet().pens +
+                [p] +
+                ps.pens + 
+                [DATPen.Grid(r)], r), r)
+
+
+        #roughen_test()
+        #map_test()
+        align_test()

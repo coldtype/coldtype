@@ -26,7 +26,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         self.dat = dat
         self.h = h
         tp = TransformPen(self, (1, 0, 0, -1, 0, h))
-        dat.replay(tp)
+        dat.round(2).replay(tp)
     
     def fill(self, color):
         if color:
