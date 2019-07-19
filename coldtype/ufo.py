@@ -11,17 +11,12 @@ if __name__ == "__main__":
 from coldtype.pens.datpen import DATPen, OpenPathPen
 from coldtype.geometry import Rect
 
-
-class UFOStringSetter():
-    def __init__(self, path):
-        self.path = os.path.expanduser(path)
-        self.ufo = UFOReader(self.path)
-        info = {}
-        self.info = self.ufo._readInfo(False)
-        self.glyphSet = self.ufo.getGlyphSet() # send in minimal options here?
-    
+class GlyphStoreSetter():
     def getGlyph(self, glyphName):
-        return self.glyphSet[glyphName]
+        pass
+    
+    def drawGlyphToPen(self, glyph, pen):
+        pass
     
     def getGlyphs(self, glyphNames):
         if isinstance(glyphNames, str):
@@ -41,13 +36,14 @@ class UFOStringSetter():
             dp = DATPen()
             if leavePathsOpen:
                 op = OpenPathPen(dp)
-                glyph.draw(op)
+                self.drawGlyphToPen(glyph, op)
             else:
-                glyph.draw(dp)
+                self.drawGlyphToPen(glyph, dp)
             dp.translate(offset, 0)
+            w = self.getGlyphWidth(glyph)
             if typographic:
-                dp.addFrame(Rect(offset, 0, glyph.width, self.info.get("capHeight", 750)), typographic=typographic)
-            offset += glyph.width
+                dp.addFrame(Rect(offset, 0, w, self.capHeight), typographic=typographic)
+            offset += w
             pens.append(dp)
         if atomized:
             return pens
@@ -62,6 +58,25 @@ class UFOStringSetter():
             return dp
 
 
+class UFOStringSetter(GlyphStoreSetter):
+    def __init__(self, path):
+        self.path = os.path.expanduser(path)
+        self.ufo = UFOReader(self.path)
+        info = {}
+        self.info = self.ufo._readInfo(False)
+        self.capHeight = self.info.get("capHeight", 750)
+        self.glyphSet = self.ufo.getGlyphSet() # send in minimal options here?
+    
+    def getGlyph(self, glyphName):
+        return self.glyphSet[glyphName]
+    
+    def getGlyphWidth(self, glyph):
+        return glyph.width
+    
+    def drawGlyphToPen(self, glyph, pen):
+        glyph.draw(pen)
+
+
 if __name__ == "__main__":
     from coldtype.viewer import viewer
     from coldtype.pens.svgpen import SVGPen
@@ -69,7 +84,7 @@ if __name__ == "__main__":
         r = Rect(0, 0, 500, 500)
         uss = UFOStringSetter("~/Type/drawings/GhzGong/GhzGong.ufo")
         #pens = uss.getLine("G o_o d h e_r t_z")
-        dp = uss.getLine("goodhertz.gordy.copy_1")
+        dp = uss.getLine("goodhertz.gordy.copy_1", leavePathsOpen=False)
         #dp = uss.getLine("G o_o d")
         dp.addAttrs(fill=None, stroke="random")
         #dp.frame = None

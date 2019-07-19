@@ -29,6 +29,17 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         tp = TransformPen(self, (1, 0, 0, -1, 0, h))
         dat.round(2).replay(tp)
     
+    def _endPath(self):
+        """
+        >>> pen = SVGPathPen(None)
+        >>> pen.endPath()
+        >>> pen._commands
+        ['Z']
+        """
+        #self._closePath()
+        self._lastCommand = None
+        self._lastX = self._lastY = None
+    
     def fill(self, color):
         if color:
             if isinstance(color, Gradient):
