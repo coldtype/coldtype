@@ -326,6 +326,8 @@ class Style():
             fill=(0, 0.5, 1),
             stroke=None,
             strokeWidth=0,
+            palette=0,
+            capHeight=None,
             **kwargs):
         
         global _prefixes
@@ -334,7 +336,10 @@ class Style():
             ff = ff.replace(prefix, expansion)
         
         self.fontFile = os.path.expanduser(ff)
-        self.ttfont = ttFont or TTFont(self.fontFile)
+        try:
+            self.ttfont = ttFont or TTFont(self.fontFile)
+        except:
+            self.ttfont = None
         self.fontdata = get_cached_font(self.fontFile)
         self.upem = hb.Face(self.fontdata).upem
         self.fontSize = fontSize
@@ -342,6 +347,7 @@ class Style():
         self.trackingLimit = trackingLimit
         self.baselineShift = baselineShift
         self.xShift = xShift
+        self.palette = palette
 
         # TODO should be able to pass in as kwarg
         self.features = {**dict(kern=True, liga=True), **features}
@@ -360,7 +366,7 @@ class Style():
         self.varyFontSize = varyFontSize
         try:
             fvar = self.ttfont['fvar']
-        except KeyError:
+        except:
             fvar = None
         if fvar:
             for axis in fvar.axes:
@@ -373,12 +379,14 @@ class Style():
 
         self.addVariations(unnormalized_variations)
         
-        os2 = self.ttfont["OS/2"]
-        if hasattr(os2, "sCapHeight"):
-            self.ch = os2.sCapHeight
+        if capHeight:
+            self.capHeight = capHeight
         else:
-            self.ch = 1000 # alternative?
-    
+            try:
+                self.capHeight = self.ttfont["OS/2"].sCapHeight
+            except:
+                self.capHeight = 1000 # alternative?
+
     def mod(self, **kwargs):
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -435,35 +443,19 @@ class StyledString(FittableMixin):
         self.features = self.style.features.copy()
         self.variations = self.style.variations.copy()
     
-    # look away
     def trackFrames(self, frames, glyph_names):
         t = self.tracking
         x_off = 0
-        # has_kashida = False
-        # try:
-        #     self.style.ttfont.getGlyphID("uni0640")
-        #     has_kashida = True
-        # except KeyError:
-        #     has_kashida = False
-        
         for idx, f in enumerate(frames):
             gn = glyph_names[idx]
             f.frame = f.frame.offset(x_off, 0)
             x_off += t
             if self.style.space and gn.lower() == "space":
                 x_off += self.style.space
-        
-        #frames[-1].frame.w += self.style.rightMargin
-        #print(frames[-1].frame.w)
         return frames
     
     def adjustFramesForPath(self, frames):
         for idx, f in enumerate(frames):
-            try:
-                bs = self.style.baselineShift[idx]
-            except:
-                bs = self.style.baselineShift
-            f.frame.y += bs
             if self.style.xShift:
                 try:
                     f.frame.x += self.style.xShift[idx]
@@ -472,14 +464,14 @@ class StyledString(FittableMixin):
         return frames
     
     def getGlyphNames(self, txt):
-        frames = Harfbuzz.GetFrames(self.style.fontdata, text=txt, axes=self.variations, features=self.features, height=self.style.ch)
+        frames = Harfbuzz.GetFrames(self.style.fontdata, text=txt, axes=self.variations, features=self.features, height=self.style.capHeight)
         glyph_names = []
         for f in frames:
             glyph_names.append(self.style.ttfont.getGlyphName(f.gid))
         return glyph_names
     
     def getGlyphFrames(self):
-        frames = Harfbuzz.GetFrames(self.style.fontdata, text=self.text, axes=self.variations, features=self.features, height=self.style.ch)
+        frames = Harfbuzz.GetFrames(self.style.fontdata, text=self.text, axes=self.variations, features=self.features, height=self.style.capHeight)
         glyph_names = []
         for f in frames:
             f.frame = f.frame.scale(self.scale())
@@ -537,23 +529,54 @@ class StyledString(FittableMixin):
             print("No DrawBot available")
             return None
     
-    def drawToPen(self, out_pen, frames, index=None, useTTFont=False):
+    def drawFrameToPen(self, fr, idx, pen, frame, gid, useTTFont=False):
+        fr.setGlyph(gid)
+        s = self.scale()
+        t = Transform()
+        try:
+            bs = self.style.baselineShift[idx]
+        except:
+            bs = self.style.baselineShift
+        
+        t = t.scale(s)
+        t = t.translate(frame.frame.x/self.scale(), frame.frame.y/self.scale())
+        t = t.translate(0, bs)
+        tp = TransformPen(pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
+        if useTTFont:
+            fr.drawTTOutlineToPen(tp)
+        else:
+            fr.drawOutlineToPen(tp, raiseCubics=True)
+    
+    def drawToPen(self, pen, frames, index=None, useTTFont=False):
         fr = FreetypeReader(self.style.fontFile, ttfont=self.style.ttfont)
         fr.setVariations(self.variations)
+
+        if "COLR" in self.style.ttfont:
+            colr = self.style.ttfont["COLR"]
+            cpal = self.style.ttfont["CPAL"]
+        else:
+            colr = None
+            cpal = None
 
         for idx, frame in enumerate(frames):
             if index is not None and idx != index:
                 continue
-            fr.setGlyph(frame.gid)
-            s = self.scale()
-            t = Transform()
-            t = t.scale(s)
-            t = t.translate(frame.frame.x/self.scale(), frame.frame.y/self.scale())
-            tp = TransformPen(out_pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
-            if useTTFont:
-                fr.drawTTOutlineToPen(tp)
+            if colr and cpal:
+                layers = colr[self.style.ttfont.getGlyphName(frame.gid)]
+                dps = DATPenSet()
+                for layer in layers:
+                    gid = self.style.ttfont.getGlyphID(layer.name)
+                    dp = DATPen()
+                    self.drawFrameToPen(fr, idx, dp, frame, gid, useTTFont=useTTFont)
+                    dp.addAttrs(fill=cpal.palettes[self.style.palette][layer.colorID])
+                    if len(dp.value) > 0:
+                        dps.addPen(dp)
+                dps.replay(pen)
+                return dps
             else:
-                fr.drawOutlineToPen(tp, raiseCubics=True)
+                self.drawFrameToPen(fr, idx, pen, frame, frame.gid, useTTFont=useTTFont)
+            
+            
     
     def _emptyPenWithAttrs(self):
         attrs = dict(fill=self.style.fill)
@@ -566,9 +589,10 @@ class StyledString(FittableMixin):
         self._frames = self.getGlyphFrames()
         pens = []
         for idx, f in enumerate(self._frames):
-            #print(f.frame)
             dp_atom = self._emptyPenWithAttrs()
-            self.drawToPen(dp_atom, self._frames, index=idx)
+            dps = self.drawToPen(dp_atom, self._frames, index=idx)
+            if dps:
+                dp_atom = dps
             if frame:
                 dp_atom.addFrame(f.frame)
             pens.append(dp_atom)
@@ -579,7 +603,7 @@ class StyledString(FittableMixin):
         self._frames = self.getGlyphFrames()
         self.drawToPen(dp, self._frames)
         if frame:
-            dp.addFrame(Rect((0, 0, self.width(), self.style.ch*self.scale())))
+            dp.addFrame(Rect((0, 0, self.width(), self.style.capHeight*self.scale())))
             dp.typographic = True
         return dp
 
@@ -613,11 +637,12 @@ if __name__ == "__main__":
     def ss_and_shape_test(preview):
         r = Rect((0, 0, 500, 120))
         f, v = ["≈/Nonplus-Black.otf", dict()]
-        ss1 = Slug("Yoy! ", Style(font=f, variations=v, fontSize=80))
+        ss1 = Slug("Yoy! ", Style(font=f, variations=v, fontSize=80, baselineShift=50))
         f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.1, scale=True)]
         ps2 = Slug("ABC", Style(font=f, variations=v, fontSize=72)).asPenSet().rotate(-10)
         oval = DATPen().polygon(3, Rect(0, 0, 50, 50)).addAttrs(fill="random")
-        ss1_p = ss1.asPen().addAttrs(fill="darkorchid")
+        ss1_p = ss1.pen().addAttrs(fill="darkorchid")
+        print(ss1_p.frame)
         dps = DATPenSet(
             ss1_p,
             ps2,
@@ -664,8 +689,28 @@ if __name__ == "__main__":
         p.send(SVGPen.Composite(
             frames + ps1.pens + ps2.pens + [DATPen.Grid(r, x=6, y=4)], r), r)
 
+    def color_font_test(p):
+        r = Rect(0,0,300,300)
+        f = "≈/PappardelleParty-VF.ttf"
+        t = "Yoy"
+        ps = Slug(t, Style(f, 300, palette=0, baselineShift=[0, 20, 40])).pens().flatten().align(r, tv=0).flatten()
+        p.send(SVGPen.Composite([
+            ps.frameSet(),
+            ps,
+            ], r), r)
+
     def emoji_test(p):
-        pass
+        r = Rect(0,0,500,200)
+        #f = "≈/TwitterColorEmoji-SVGinOT-OSX.ttf"
+        #f = "~/Type/typeworld/hershey-text/hershey-text/svg_fonts/HersheySans1.svg"
+        f = "≈/TwemojiMozilla.ttf"
+        t = "🍕💽🖥️"
+        ps = Slug(t, Style(f, 100, tracking=20, capHeight=500, baselineShift=55)).pens().align(r, tv=0).flatten()
+        #print(ps.pens[1].frame)
+        p.send(SVGPen.Composite([
+            ps,
+            ps.frameSet()
+            ], r), r)
 
     with previewer() as p:
         if False:
@@ -675,7 +720,10 @@ if __name__ == "__main__":
             ss_bounds_test("≈/Vinila-VF-HVAR-table.ttf", p)
             #ss_bounds_test("≈/Compressa-MICRO-GX-Rg.ttf", p)
             #ss_bounds_test("≈/BruphyGX.ttf", p)
-        ss_and_shape_test(p)
-        rotalic_test(p)
-        multilang_test(p)
-        tracking_test(p)
+        
+        #ss_and_shape_test(p)
+        #rotalic_test(p)
+        #multilang_test(p)
+        #tracking_test(p)
+        #color_font_test(p)
+        emoji_test(p)

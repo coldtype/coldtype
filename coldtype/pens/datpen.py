@@ -179,6 +179,10 @@ class DATPen(RecordingPen, AlignableMixin):
                 self.attrs[k] = v
         return self
     
+    def clearFrame(self):
+        self.frame = None
+        return self
+    
     def addFrame(self, frame, typographic=False):
         self.frame = frame
         if typographic:
@@ -600,13 +604,25 @@ class DATPenSet(AlignableMixin):
             self.addPen(pens)
         else:
             for p in pens:
-                if hasattr(p, "value"):
-                    self.pens.append(p)
-                else:
-                    self.addPens(p)
+                if p:
+                    if hasattr(p, "value"):
+                        self.pens.append(p)
+                    else:
+                        self.addPens(p)
     
     def addPen(self, pen):
-        self.pens.append(pen)
+        if pen:
+            self.pens.append(pen)
+    
+    def clearFrames(self):
+        for p in self.pens:
+            p.clearFrame()
+        return self
+    
+    def addFrame(self, frame, typographic=False):
+        for p in self.pens:
+            p.addFrame(frame, typographic=typographic)
+        return self
     
     def getFrame(self, th=False, tv=False):
         union = self.pens[0].getFrame(th=th, tv=tv)
@@ -644,6 +660,20 @@ class DATPenSet(AlignableMixin):
         for p in self.pens:
             p.rotate(degrees)
         return self
+    
+    def round(self, rounding):
+        for p in self.pens:
+            p.round(rounding)
+        return self
+    
+    def flatten(self):
+        pens = []
+        for p in self.pens:
+            if isinstance(p, DATPenSet):
+                pens.extend(p.flatten().pens)
+            else:
+                pens.append(p)
+        return DATPenSet(pens)
     
     def frameSet(self, th=False, tv=False):
         dps = DATPenSet()

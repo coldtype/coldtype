@@ -10,6 +10,7 @@ if __name__ == "__main__":
 
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
+from coldtype.pens.datpen import DATPen, DATPenSet
 
 import math
 from grapefruit import Color
@@ -145,6 +146,8 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         docroot.set("height", str(rect.h))
         if offset:
             docroot.set("style", f"left:{rect.x}px;bottom:{rect.y}px;")
+        if isinstance(pens, DATPenSet):
+            pens = pens.pens
         for pen in pens:
             if pen:
                 if hasattr(pen, "pens"):
@@ -159,7 +162,6 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
 
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath("."))
-    from coldtype.pens.datpen import DATPen
     from coldtype.viewer import previewer
     from coldtype.svg import read_svg_to_pen
 

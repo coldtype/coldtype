@@ -1,6 +1,7 @@
 # Mixin for attribute-application
 from grapefruit import Color
 from random import random
+from fontTools.ttLib.tables.C_P_A_L_ import Color as FTCPALColor
 
 
 class DrawablePenMixin(object):
@@ -41,6 +42,9 @@ def color_var(*rgba):
 
 #print(color_var(0.5, -1))
 
+def hex_to_tuple(h):
+    return tuple([c/255 for c in (palette.red, palette.green, palette.blue, palette.alpha)])
+
 
 def normalize_color(v):
         if v is None:
@@ -51,6 +55,8 @@ def normalize_color(v):
             return v
         elif isinstance(v, float) or isinstance(v, int):
             return Color.from_rgb(v, v, v)
+        elif isinstance(v, FTCPALColor):
+            return Color.from_rgb(v.red/255, v.green/255, v.blue/255, v.alpha/255)
         elif isinstance(v, str):
             if v == "random" or v == -1:
                 return Color.from_rgb(random(), random(), random())
