@@ -699,6 +699,13 @@ if __name__ == "__main__":
             ps,
             ], r), r)
 
+    def hoi_test(p):
+        r = Rect(0,0,300,300)
+        f = "≈/SpaceMonoHOI_2_cubic.ttf"
+        st = Style(f, 100, wght=1, slnt=1, ital=0.65, ITA2=0.65, ITA3=0.65, MONO=1)
+        ps = Slug("Ran", st).pen().align(r).attr(fill="random")
+        p.send(SVGPen.Composite([ps], r), r)
+
     def emoji_test(p):
         r = Rect(0,0,500,200)
         #f = "≈/TwitterColorEmoji-SVGinOT-OSX.ttf"
@@ -726,4 +733,5 @@ if __name__ == "__main__":
         #multilang_test(p)
         #tracking_test(p)
         #color_font_test(p)
-        emoji_test(p)
+        #emoji_test(p)
+        hoi_test(p)

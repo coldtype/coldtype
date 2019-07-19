@@ -158,6 +158,9 @@ class DATPen(RecordingPen, AlignableMixin):
         dp.addAttrs(**self.attrs)
         return dp
     
+    def attr(self, **kwargs):
+        return self.addAttrs(**kwargs)
+    
     def addAttrs(self, **kwargs):
         #print(">>>>", self._text, kwargs)
         for k, v in kwargs.items():
