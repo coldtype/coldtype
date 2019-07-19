@@ -51,13 +51,12 @@ if __name__ == "__main__":
     from coldtype.pens.svgpen import SVGPen
     from random import randint
 
-    hs1 = "~/Type/typeworld/hershey-text/hershey-text/svg_fonts/EMSFelix.svg"
+    hs1 = "~/Type/typeworld/hershey-text/hershey-text/svg_fonts/HersheyGothEnglish.svg"
     sf = SVGFileSetter(hs1)
 
     with previewer() as p:
         r = Rect(0,0,1000,500)
-        dp = sf.getLine("T h r e e G e m s T e a", leavePathsOpen=False).scale(0.1).attr(fill=None, stroke=0, strokeWidth=1).align(r)
-        print(dp.value)
+        dp = sf.getLine("G o o d h e r t z", leavePathsOpen=False).scale(0.2).attr(fill=None, stroke=0, strokeWidth=1).align(r)
         #dp = hs1f.getGlyph("B").attr(fill=None, stroke=0).scale(0.25).align(r)
         #dp.value = dp.value[:-1]
         #dp = DATPen()
