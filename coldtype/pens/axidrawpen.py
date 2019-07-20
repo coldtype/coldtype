@@ -3,13 +3,15 @@ import sys
 import time
 
 dirname = os.path.realpath(os.path.dirname(__file__))
-sys.path.append(f"{dirname}/../..")
+if __name__ == "__main__":
+    sys.path.append(f"{dirname}/../..")
 
 from fontTools.pens.basePen import BasePen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.svgpen import SVGPen
+from coldtype.pens.datpen import DATPen
 from coldtype.viewer import viewer
 
 import math
@@ -83,7 +85,7 @@ class AxiDrawPen(BasePen):
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath("."))
     from coldtype.viewer import viewer
-    from coldtype.pens.datpen import DATPen, OpenPathPen, DATPenSet
+    from coldtype.pens.datpen import DATPenSet
     from coldtype import Slug, Style
     from coldtype.ufo import UFOStringSetter
     from random import random, randint

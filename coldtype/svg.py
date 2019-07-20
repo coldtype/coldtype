@@ -49,16 +49,19 @@ if __name__ == "__main__":
     from bs4 import BeautifulSoup
     from coldtype.viewer import previewer
     from coldtype.pens.svgpen import SVGPen
+    from coldtype.pens.axidrawpen import AxiDrawPen
     from random import randint
 
-    hs1 = "~/Type/typeworld/hershey-text/hershey-text/svg_fonts/HersheyGothEnglish.svg"
+    hs1 = "~/Type/typeworld/hershey-text/hershey-text/svg_fonts/HersheyScript1.svg"
     sf = SVGFileSetter(hs1)
 
-    with previewer() as p:
-        r = Rect(0,0,1000,500)
-        dp = sf.getLine("G o o d h e r t z", leavePathsOpen=False).scale(0.2).attr(fill=None, stroke=0, strokeWidth=1).align(r)
+    #with previewer() as p:
+    r = Rect(0,0,1100,850)
+    dp = sf.getLine("G o o d h e r t z", leavePathsOpen=False).scale(0.2).attr(fill=None, stroke=0, strokeWidth=1).align(r)
         #dp = hs1f.getGlyph("B").attr(fill=None, stroke=0).scale(0.25).align(r)
         #dp.value = dp.value[:-1]
         #dp = DATPen()
         #dp.rect(r.inset(100, 100))
-        p.send(SVGPen.Composite([dp], r), r)
+        #p.send(SVGPen.Composite([dp], r), r)
+    ap = AxiDrawPen(dp, r)
+    ap.draw(dry=0)

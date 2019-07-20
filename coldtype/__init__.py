@@ -2,6 +2,7 @@ import math
 import sys
 import os
 import re
+import copy
 
 name = "coldtype"
 dirname = os.path.dirname(__file__)
@@ -328,6 +329,8 @@ class Style():
             strokeWidth=0,
             palette=0,
             capHeight=None,
+            data={},
+            latin=None, # temp
             **kwargs):
         
         global _prefixes
@@ -348,6 +351,9 @@ class Style():
         self.baselineShift = baselineShift
         self.xShift = xShift
         self.palette = palette
+
+        self.data = data
+        self.latin = latin
 
         # TODO should be able to pass in as kwarg
         self.features = {**dict(kern=True, liga=True), **features}
@@ -387,10 +393,33 @@ class Style():
             except:
                 self.capHeight = 1000 # alternative?
 
+    # def copy(self, **kwargs):
+    #     return font=None,
+    #         fontSize=12,
+    #         ttFont=None,
+    #         tracking=0,
+    #         trackingLimit=0,
+    #         space=None,
+    #         baselineShift=0,
+    #         xShift=None,
+    #         variations=self.unnormalized_variations,
+    #         variationLimits=self.variationLimits,
+    #         increments=dict(),
+    #         features=dict(),
+    #         varyFontSize=False,
+    #         fill=(0, 0.5, 1),
+    #         stroke=None,
+    #         strokeWidth=0,
+    #         palette=0,
+    #         capHeight=None,
+    #         data={},
+    #         latin=None,
+
     def mod(self, **kwargs):
+        ns = copy.deepcopy(self)
         for k, v in kwargs.items():
-            setattr(self, k, v)
-        return self
+            setattr(ns, k, v)
+        return ns
     
     def addVariations(self, variations, limits=dict()):
         for k, v in self.normalizeVariations(variations).items():
@@ -562,15 +591,19 @@ class StyledString(FittableMixin):
             if index is not None and idx != index:
                 continue
             if colr and cpal:
-                layers = colr[self.style.ttfont.getGlyphName(frame.gid)]
+                gn = self.style.ttfont.getGlyphName(frame.gid)
+                layers = colr[gn]
                 dps = DATPenSet()
-                for layer in layers:
-                    gid = self.style.ttfont.getGlyphID(layer.name)
-                    dp = DATPen()
-                    self.drawFrameToPen(fr, idx, dp, frame, gid, useTTFont=useTTFont)
-                    dp.addAttrs(fill=cpal.palettes[self.style.palette][layer.colorID])
-                    if len(dp.value) > 0:
-                        dps.addPen(dp)
+                if layers:
+                    for layer in layers:
+                        gid = self.style.ttfont.getGlyphID(layer.name)
+                        dp = DATPen()
+                        self.drawFrameToPen(fr, idx, dp, frame, gid, useTTFont=useTTFont)
+                        dp.addAttrs(fill=cpal.palettes[self.style.palette][layer.colorID])
+                        if len(dp.value) > 0:
+                            dps.addPen(dp)
+                else:
+                    print("No layers found for ", gn)
                 dps.replay(pen)
                 return dps
             else:
@@ -661,11 +694,12 @@ if __name__ == "__main__":
             ps.frameSet().pens, r), r)
 
     def multilang_test(p):
+        obv = Style("≈/ObviouslyVariable.ttf", 80, wdth=1, wght=0.7)
         ss = Slug(
             #"الملخبط",
             "Ali الملخبط Boba",
             Style("≈/GretaArabicCondensedAR-Heavy.otf", 100),
-            Style("≈/ObviouslyVariable.ttf", 80, wdth=1, wght=0.7)
+            obv.mod(tracking=-2)
             )
         r = Rect((0, 0, 600, 140))
         ss.fit(r.w - 100)
@@ -676,10 +710,18 @@ if __name__ == "__main__":
             dps,
             g
             ], r), r)
+        
+    def sans_test(p):
+        r = Rect(0, 0, 800, 200)
+        s1 = Slug("three gems tea", Style("≈/VulfSans-Medium.otf", 100, tracking=0, fill=0))
+        ps1 = s1.asPenSet()
+        ps1.align(r)
+        p.send(SVGPen.Composite(
+            ps1.pens, r), r)
     
     def tracking_test(p):
         r = Rect(0, 0, 500, 100)
-        s1 = Slug("ABC", Style("≈/VulfSans-Black.otf", 100, tracking=50, fill=("random", 0.2), strokeWidth=2, stroke=("random", 0.75)))
+        s1 = Slug("ABC", Style("≈/VulfSans-Medium.otf", 100, tracking=0, fill=("random", 0.2), strokeWidth=2, stroke=("random", 0.75)))
         s2 = Slug("xyz", Style("≈/VulfSans-Black.otf", 100, fill=("random", 0.1), strokeWidth=2, stroke=("random", 0.75)))
         ps1 = s1.asPenSet()
         ps1.align(r)
@@ -711,7 +753,7 @@ if __name__ == "__main__":
         #f = "≈/TwitterColorEmoji-SVGinOT-OSX.ttf"
         #f = "~/Type/typeworld/hershey-text/hershey-text/svg_fonts/HersheySans1.svg"
         f = "≈/TwemojiMozilla.ttf"
-        t = "🍕💽🖥️"
+        t = "🍕💽 🖥️"
         ps = Slug(t, Style(f, 100, tracking=20, capHeight=500, baselineShift=55)).pens().align(r, tv=0).flatten()
         #print(ps.pens[1].frame)
         p.send(SVGPen.Composite([
@@ -730,8 +772,9 @@ if __name__ == "__main__":
         
         #ss_and_shape_test(p)
         #rotalic_test(p)
-        #multilang_test(p)
+        multilang_test(p)
+        sans_test(p)
         #tracking_test(p)
         #color_font_test(p)
-        #emoji_test(p)
-        hoi_test(p)
+        emoji_test(p)
+        #hoi_test(p)

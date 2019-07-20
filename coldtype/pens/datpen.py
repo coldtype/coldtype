@@ -628,10 +628,13 @@ class DATPenSet(AlignableMixin):
         return self
     
     def getFrame(self, th=False, tv=False):
-        union = self.pens[0].getFrame(th=th, tv=tv)
-        for p in self.pens[1:]:
-            union = union.union(p.getFrame(th=th, tv=tv))
-        return union
+        try:
+            union = self.pens[0].getFrame(th=th, tv=tv)
+            for p in self.pens[1:]:
+                union = union.union(p.getFrame(th=th, tv=tv))
+            return union
+        except:
+            return Rect(0,0,0,0)
     
     def updateFrameHeight(self, h):
         for p in self.pens:
@@ -652,6 +655,11 @@ class DATPenSet(AlignableMixin):
     def removeOverlap(self):
         for p in self.pens:
             p.removeOverlap()
+        return self
+    
+    def transform(self, t):
+        for p in self.pens:
+            p.transform(t)
         return self
     
     def translate(self, x, y):
