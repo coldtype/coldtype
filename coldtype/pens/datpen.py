@@ -151,6 +151,14 @@ class DATPen(RecordingPen, AlignableMixin):
         self.addAttrs(**kwargs)
         self.frame = None
         self.typographic = False
+        self._tag = "Unknown"
+    
+    def tag(self, tag):
+        self._tag = tag
+        return self
+    
+    def getTag(self):
+        return self._tag
     
     def copy(self):
         dp = DATPen()
@@ -823,7 +831,7 @@ if __name__ == "__main__":
         
         def align_test():
             r = Rect(0,0,500,300)
-            p = Slug("B ay", Style("≈/RageItalicStd.otf", 300, fill=("random", 0.5))).pen().align(r)
+            p = Slug("B ay", Style("≈/RageItalicStd.otf", 300, fill=("random", 0.5))).pen().align(r).tag("hello")
             ps = Slug("B ay", Style("≈/RageItalicStd.otf", 300, fill=None, stroke=(0), strokeWidth=4)).pen().align(r)
 
             v.send(SVGPen.Composite([

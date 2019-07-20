@@ -67,7 +67,7 @@ class AxiDrawPen(BasePen):
                 return False
             ad = axidraw.AxiDraw()
             ad.interactive()
-            ad.options.speed_pendown = 110
+            ad.options.speed_pendown = 70
             ad.options.speed_penup = 110
 
             ad.connect()
