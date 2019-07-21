@@ -2,6 +2,7 @@
 from grapefruit import Color
 from random import random
 from fontTools.ttLib.tables.C_P_A_L_ import Color as FTCPALColor
+from coldtype.pens.datpen import DATPen, DATPenSet
 
 
 class DrawablePenMixin(object):
@@ -27,6 +28,18 @@ class DrawablePenMixin(object):
             self.stroke(**v)
         elif k == "image":
             self.image(**v)
+    
+    def FindPens(pens):
+        if isinstance(pens, DATPenSet):
+            pens = pens.pens
+        for pen in pens:
+            if pen:
+                if hasattr(pen, "pens"):
+                    for p in pen.pens:
+                        if p:
+                            yield p
+                else:
+                    yield pen
 
 
 def color_var(*rgba):
@@ -40,43 +53,42 @@ def color_var(*rgba):
     elif len(c) == 4:
         return Color.from_rgb(c[0], c[1], c[2], c[3])
 
-#print(color_var(0.5, -1))
 
 def hex_to_tuple(h):
     return tuple([c/255 for c in (palette.red, palette.green, palette.blue, palette.alpha)])
 
 
 def normalize_color(v):
-        if v is None:
+    if v is None:
+        return Color.from_rgb(0,0,0,0)
+    elif isinstance(v, Color):
+        return v
+    elif isinstance(v, Gradient):
+        return v
+    elif isinstance(v, float) or isinstance(v, int):
+        return Color.from_rgb(v, v, v)
+    elif isinstance(v, FTCPALColor):
+        return Color.from_rgb(v.red/255, v.green/255, v.blue/255, v.alpha/255)
+    elif isinstance(v, str):
+        if v == "random" or v == -1:
+            return Color.from_rgb(random(), random(), random())
+        elif v == "none":
             return Color.from_rgb(0,0,0,0)
-        elif isinstance(v, Color):
-            return v
-        elif isinstance(v, Gradient):
-            return v
-        elif isinstance(v, float) or isinstance(v, int):
-            return Color.from_rgb(v, v, v)
-        elif isinstance(v, FTCPALColor):
-            return Color.from_rgb(v.red/255, v.green/255, v.blue/255, v.alpha/255)
-        elif isinstance(v, str):
-            if v == "random" or v == -1:
-                return Color.from_rgb(random(), random(), random())
-            elif v == "none":
-                return Color.from_rgb(0,0,0,0)
-            else:
-                return Color.from_html(v)
         else:
-            #return color_var(*v)
-            if len(v) == 1:
-                return Color.from_rgb(v[0], v[0], v[0])
-            elif len(v) == 2:
-                if v[0] == "random" or v[0] == -1:
-                    return Color.from_rgb(random(), random(), random(), v[1])
-                elif isinstance(v[0], str):
-                    return Color.from_html(v[0]).with_alpha(v[1])
-                else:
-                    return Color.from_rgb(v[0], v[0], v[0], v[1])
+            return Color.from_html(v)
+    else:
+        #return color_var(*v)
+        if len(v) == 1:
+            return Color.from_rgb(v[0], v[0], v[0])
+        elif len(v) == 2:
+            if v[0] == "random" or v[0] == -1:
+                return Color.from_rgb(random(), random(), random(), v[1])
+            elif isinstance(v[0], str):
+                return Color.from_html(v[0]).with_alpha(v[1])
             else:
-                return Color.from_rgb(*v)
+                return Color.from_rgb(v[0], v[0], v[0], v[1])
+        else:
+            return Color.from_rgb(*v)
 
 
 class Gradient():

@@ -157,17 +157,22 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         docroot.set("height", str(rect.h))
         if offset:
             docroot.set("style", f"left:{rect.x}px;bottom:{rect.y}px;")
-        if isinstance(pens, DATPenSet):
-            pens = pens.pens
-        for pen in pens:
-            if pen:
-                if hasattr(pen, "pens"):
-                    for p in pen.pens:
-                        sp = SVGPen(p, rect.h)
-                        docroot.append(sp.asSVG())
-                else:
-                    sp = SVGPen(pen, rect.h)
-                    docroot.append(sp.asSVG())
+        
+        for pen in SVGPen.FindPens(pens):
+            sp = SVGPen(p, rect.h)
+            docroot.append(sp.asSVG())
+        
+        #if isinstance(pens, DATPenSet):
+        #    pens = pens.pens
+        #for pen in pens:
+        #    if pen:
+        #        if hasattr(pen, "pens"):
+        #            for p in pen.pens:
+        #                sp = SVGPen(p, rect.h)
+        #                docroot.append(sp.asSVG())
+        #        else:
+        #            sp = SVGPen(pen, rect.h)
+        #            docroot.append(sp.asSVG())
         return etree.tostring(docroot, pretty_print=True).decode("utf-8").replace("image-href", "xlink:href")
 
 

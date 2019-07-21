@@ -609,6 +609,14 @@ class DATPenSet(AlignableMixin):
         self.pens = []
         self.addPens(pens)
         self.typographic = True
+        self._tag = "Unknown"
+    
+    def tag(self, tag):
+        self._tag = tag
+        return self
+    
+    def getTag(self):
+        return self._tag
     
     def addPens(self, pens):
         if isinstance(pens, DATPenSet):
