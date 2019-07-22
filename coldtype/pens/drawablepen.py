@@ -6,7 +6,7 @@ if __name__ == "__main__":
     sys.path.append(f"{dirname}/../..")
 
 from coldtype.pens.datpen import DATPen, DATPenSet
-
+from coldtype.color import Gradient
 
 class DrawablePenMixin(object):
     def fill(self, el, color):

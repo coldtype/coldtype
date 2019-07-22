@@ -850,6 +850,7 @@ if __name__ == "__main__":
             ], r), r)
 
 
+        gradient_test()
         #roughen_test()
         map_test()
         align_test()

@@ -711,7 +711,7 @@ if __name__ == "__main__":
     def tracking_test(p):
         r = Rect(0, 0, 500, 100)
         s1 = Slug("ABC", Style("≈/VulfSans-Medium.otf", 100, tracking=0, fill=("random", 0.2), strokeWidth=2, stroke=("random", 0.75)))
-        s2 = Slug("xyz", Style("≈/VulfSans-Black.otf", 100, fill=("random", 0.1), strokeWidth=2, stroke=("random", 0.75)))
+        s2 = Slug("xyz", Style("≈/VulfSans-Black.otf", 100, baselineShift=200, fill=("random", 0.1), strokeWidth=2, stroke=("random", 0.75)))
         ps1 = s1.asPenSet()
         ps1.align(r)
         ps2 = s2.asPenSet()
@@ -749,6 +749,13 @@ if __name__ == "__main__":
             ps,
             ps.frameSet()
             ], r), r)
+    
+    def conic_test(p):
+        r = Rect(0, 0, 1000, 1000)
+        ps = Slug("x", Style("≈/VulfMonoLightItalicVariable.ttf", 1000)).pen().align(r)
+        c = SVGPen.Composite([ps, *ps.copy().skeleton(returnSet=True)], r)
+        print(c)
+        p.send(c, r)
 
     with previewer() as p:
         if False:
@@ -761,8 +768,9 @@ if __name__ == "__main__":
         
         #ss_and_shape_test(p)
         #rotalic_test(p)
-        multilang_test(p)
-        #tracking_test(p)
+        #multilang_test(p)
+        tracking_test(p)
         #color_font_test(p)
         #emoji_test(p)
         #hoi_test(p)
+        #conic_test(p)
