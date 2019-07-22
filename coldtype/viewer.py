@@ -21,7 +21,7 @@ class PreviewConnection():
     def __exit__(self, type, value, traceback):
         self.ws.close()
     
-    def send(self, content, rect=Rect((0, 0, 1000, 1000)), full=False):
+    def send(self, content, rect=Rect(0, 0, 500, 500), full=False):
         if full:
             html = content
         elif isinstance(rect, Rect):

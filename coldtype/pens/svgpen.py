@@ -9,7 +9,8 @@ if __name__ == "__main__":
     sys.path.append(f"{dirname}/../..")
 
 from coldtype.geometry import Rect, Edge, Point
-from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
+from coldtype.color import Gradient
+from coldtype.pens.drawablepen import DrawablePenMixin
 from coldtype.pens.datpen import DATPen, DATPenSet
 
 import math
@@ -159,20 +160,9 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
             docroot.set("style", f"left:{rect.x}px;bottom:{rect.y}px;")
         
         for pen in SVGPen.FindPens(pens):
-            sp = SVGPen(p, rect.h)
+            sp = SVGPen(pen, rect.h)
             docroot.append(sp.asSVG())
         
-        #if isinstance(pens, DATPenSet):
-        #    pens = pens.pens
-        #for pen in pens:
-        #    if pen:
-        #        if hasattr(pen, "pens"):
-        #            for p in pen.pens:
-        #                sp = SVGPen(p, rect.h)
-        #                docroot.append(sp.asSVG())
-        #        else:
-        #            sp = SVGPen(pen, rect.h)
-        #            docroot.append(sp.asSVG())
         return etree.tostring(docroot, pretty_print=True).decode("utf-8").replace("image-href", "xlink:href")
 
 

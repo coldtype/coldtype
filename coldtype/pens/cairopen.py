@@ -60,9 +60,8 @@ class CairoPen(DrawablePenMixin, BasePen):
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(rect.w), int(rect.h))
         ctx = cairo.Context(surface)
         ctx.scale(1, 1)
-        for pen in pens:
-            if pen:
-                CairoPen(pen, rect.h, ctx)
+        for pen in CairoPen.FindPens(pens):
+            CairoPen(pen, rect.h, ctx)
         if save:
             surface.write_to_png(image_path)
         else:

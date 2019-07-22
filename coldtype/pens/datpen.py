@@ -31,7 +31,7 @@ else:
 
 from coldtype.geometry import Rect, Edge, Point, txt_to_edge
 from coldtype.beziers import raise_quadratic, CurveCutter
-from coldtype.pens.drawablepen import Gradient, normalize_color
+from coldtype.color import Gradient, normalize_color
 
 try:
     from coldtype.pens.outlinepen import OutlinePen
@@ -839,8 +839,8 @@ if __name__ == "__main__":
         
         def align_test():
             r = Rect(0,0,500,300)
-            p = Slug("B ay", Style("≈/RageItalicStd.otf", 300, fill=("random", 0.5))).pen().align(r).tag("hello")
-            ps = Slug("B ay", Style("≈/RageItalicStd.otf", 300, fill=None, stroke=(0), strokeWidth=4)).pen().align(r)
+            p = Slug("Bay", Style("≈/RageItalicStd.otf", 300, fill=Gradient.Random(r))).pen().align(r).tag("hello")
+            ps = Slug("Bay", Style("≈/RageItalicStd.otf", 300, fill=None, stroke=(0), strokeWidth=4)).pen().align(r)
 
             v.send(SVGPen.Composite([
                 DATPen.Grid(r),
@@ -851,5 +851,5 @@ if __name__ == "__main__":
 
 
         #roughen_test()
-        #map_test()
+        map_test()
         align_test()

@@ -24,8 +24,8 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
 from coldtype.beziers import CurveCutter, raise_quadratic
-from coldtype.pens.datpen import DATPen, DATPenSet, Gradient
-from coldtype.pens.drawablepen import normalize_color
+from coldtype.color import normalize_color
+from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.geometry import Rect, Point
 
 try:
@@ -642,7 +642,7 @@ class StyledString(FittableMixin):
 
 
 if __name__ == "__main__":
-    from grapefruit import Color
+    from coldtype.color import Gradient
     from coldtype.viewer import previewer
     from random import randint
     from coldtype.pens.svgpen import SVGPen
@@ -703,21 +703,10 @@ if __name__ == "__main__":
             )
         r = Rect((0, 0, 600, 140))
         ss.fit(r.w - 100)
-        dps = ss.asPen().addAttrs(fill=0)
-        dps.align(r, x="centerx", y="centery")
+        dp = ss.pen().attr(fill=Gradient.Random(r))
+        dp.align(r, x="maxx", y="miny")
         g = DATPen.Grid(r, y=4)
-        p.send(SVGPen.Composite([
-            dps,
-            g
-            ], r), r)
-        
-    def sans_test(p):
-        r = Rect(0, 0, 800, 200)
-        s1 = Slug("three gems tea", Style("≈/VulfSans-Medium.otf", 100, tracking=0, fill=0))
-        ps1 = s1.asPenSet()
-        ps1.align(r)
-        p.send(SVGPen.Composite(
-            ps1.pens, r), r)
+        p.send(SVGPen.Composite([dp, g], r), r)
     
     def tracking_test(p):
         r = Rect(0, 0, 500, 100)
@@ -773,8 +762,7 @@ if __name__ == "__main__":
         #ss_and_shape_test(p)
         #rotalic_test(p)
         multilang_test(p)
-        sans_test(p)
         #tracking_test(p)
         #color_font_test(p)
-        emoji_test(p)
+        #emoji_test(p)
         #hoi_test(p)

@@ -11,7 +11,8 @@ if __name__ == "__main__":
     sys.path.append(f"{dirname}/../..")
 
 from coldtype.geometry import Rect, Edge, Point
-from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
+from coldtype.pens.drawablepen import DrawablePenMixin
+from coldtype.color import Gradient
 
 class ReportLabPen(DrawablePenMixin, FTReportLabPen):
     def __init__(self, dat):
@@ -63,7 +64,7 @@ class ReportLabPen(DrawablePenMixin, FTReportLabPen):
     
     def Composite(pens, rect, path):
         c = canvas.Canvas(path, pagesize=(rect.w, rect.h))
-        for pen in pens:  
+        for pen in ReportLabPen.FindPens(pens):  
             ReportLabPen(pen).draw(c)
         c.save()
         return c
