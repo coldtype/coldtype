@@ -567,9 +567,10 @@ class StyledString(FittableMixin):
         except:
             bs = self.style.baselineShift
         
+        t = t.translate(0, bs)
         t = t.scale(s)
         t = t.translate(frame.frame.x/self.scale(), frame.frame.y/self.scale())
-        t = t.translate(0, bs)
+        #t = t.translate(0, bs)
         tp = TransformPen(pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
         if useTTFont:
             fr.drawTTOutlineToPen(tp)
@@ -670,7 +671,7 @@ if __name__ == "__main__":
     def ss_and_shape_test(preview):
         r = Rect((0, 0, 500, 120))
         f, v = ["≈/Nonplus-Black.otf", dict()]
-        ss1 = Slug("Yoy! ", Style(font=f, variations=v, fontSize=80, baselineShift=50))
+        ss1 = Slug("Yoy! ", Style(font=f, variations=v, fontSize=80, baselineShift=5))
         f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.1, scale=True)]
         ps2 = Slug("ABC", Style(font=f, variations=v, fontSize=72)).asPenSet().rotate(-10)
         oval = DATPen().polygon(3, Rect(0, 0, 50, 50)).addAttrs(fill="random")
@@ -711,7 +712,7 @@ if __name__ == "__main__":
     def tracking_test(p):
         r = Rect(0, 0, 500, 100)
         s1 = Slug("ABC", Style("≈/VulfSans-Medium.otf", 100, tracking=0, fill=("random", 0.2), strokeWidth=2, stroke=("random", 0.75)))
-        s2 = Slug("xyz", Style("≈/VulfSans-Black.otf", 100, baselineShift=200, fill=("random", 0.1), strokeWidth=2, stroke=("random", 0.75)))
+        s2 = Slug("xyz", Style("≈/VulfSans-Black.otf", 100, baselineShift=0, fill=("random", 0.1), strokeWidth=2, stroke=("random", 0.75)))
         ps1 = s1.asPenSet()
         ps1.align(r)
         ps2 = s2.asPenSet()
@@ -724,7 +725,7 @@ if __name__ == "__main__":
         r = Rect(0,0,300,300)
         f = "≈/PappardelleParty-VF.ttf"
         t = "Yoy"
-        ps = Slug(t, Style(f, 300, palette=0, baselineShift=[0, 20, 40])).pens().flatten().align(r, tv=0).flatten()
+        ps = Slug(t, Style(f, 300, palette=0, baselineShift=[0, 2, 4])).pens().flatten().align(r, tv=0).flatten()
         p.send(SVGPen.Composite([
             ps.frameSet(),
             ps,
