@@ -127,9 +127,9 @@ def catmull_test(pv):
 with previewer() as p:
     #multilang_test(p)
     #no_glyph_sub_test(p)
-    #outline_test(p)
+    outline_test(p)
     #glyph_test(p)
-    map_test(p)
+    #map_test(p)
     #pathops_test(p)
     #pattern_test(p)
     #catmull_test(p)
