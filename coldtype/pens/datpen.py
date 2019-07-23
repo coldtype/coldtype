@@ -1,6 +1,7 @@
 import math
 from enum import Enum
 from fontTools.pens.filterPen import ContourFilterPen
+from fontTools.pens.reverseContourPen import ReverseContourPen
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.pointPen import SegmentToPointPen, PointToSegmentPen, AbstractPointPen  
@@ -221,6 +222,13 @@ class DATPen(RecordingPen, AlignableMixin):
     
     def updateFrameHeight(self, h):
         self.frame.h = h
+    
+    def reverse(self):
+        dp = DATPen()
+        rp = ReverseContourPen(dp)
+        self.replay(rp)
+        self.value = dp.value
+        return self
     
     def transform(self, transform, transformFrame=True):
         op = RecordingPen()
@@ -885,8 +893,15 @@ if __name__ == "__main__":
             print(len(ps.value))
             v.send(c, r)
 
+        def reverse_test():
+            r = Rect(0, 0, 500, 500)
+            ps = Slug("wow", Style("≈/Nonplus-Black.otf", 200, tracking=-20, fill=("random", 0.5))).pens().align(r)
+            ps.pens[1].reverse()
+            v.send(SVGPen.Composite(ps.asPen(), r), r)
+
         #gradient_test()
         #roughen_test()
-        map_test()
+        #map_test()
         #align_test()
         #conic_test()
+        reverse_test()
