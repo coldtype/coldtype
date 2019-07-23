@@ -67,7 +67,7 @@ class AxiDrawPen(BasePen):
                 return False
             ad = axidraw.AxiDraw()
             ad.interactive()
-            ad.options.speed_pendown = 70
+            ad.options.speed_pendown = 110
             ad.options.speed_penup = 110
 
             ad.connect()
@@ -92,16 +92,14 @@ if __name__ == "__main__":
     from string import ascii_lowercase, ascii_uppercase
  
     def text_test():
-        def frame(c, r):
-            p = Slug(c, Style("≈/HalunkeV0.2-Regular.otf", 300)).pen()
-            p.align(r).rotate(-45) #.flatten()
-            return p
-        
-        time.sleep(1)
+        uss = UFOStringSetter("~/Type/typeworld/hershey_ufos_open_paths/Hershey-SimplexCartographicScript.ufo")
+
         r = Rect(0, 0, 500, 500)
-        for c in ascii_uppercase:
-            time.sleep(2)
-            ap = AxiDrawPen(frame(c, r), r)
-            ap.draw(dry=1)
+        p = uss.getLine("Digitalizations").scale(0.05).align(r).rotate(0)
+        
+        #for c in ascii_uppercase[0:1]:
+            #time.sleep(2)
+        ap = AxiDrawPen(p, r)
+        ap.draw(dry=1)
     
     text_test()

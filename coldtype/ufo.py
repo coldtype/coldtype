@@ -8,7 +8,7 @@ if __name__ == "__main__":
     dirname = os.path.realpath(os.path.dirname(__file__))
     sys.path.append(f"{dirname}/..")
 
-from coldtype.pens.datpen import DATPen, OpenPathPen
+from coldtype.pens.datpen import DATPen
 from coldtype.geometry import Rect
 
 class GlyphStoreSetter():
@@ -20,25 +20,23 @@ class GlyphStoreSetter():
     
     def getGlyphs(self, glyphNames):
         if isinstance(glyphNames, str):
-            names = glyphNames.split(" ")
+            names = glyphNames
         else: # iterable
             names = glyphNames
         od = []
         for name in names:
+            if name == " ":
+                name = "space"
             od.append(self.getGlyph(name))
         return od
     
-    def getLine(self, string, atomized=False, typographic=True, leavePathsOpen=False):
+    def getLine(self, string, atomized=False, typographic=True):
         glyphs = self.getGlyphs(string)
         pens = []
         offset = 0
         for glyph in glyphs:
             dp = DATPen()
-            if leavePathsOpen:
-                op = OpenPathPen(dp)
-                self.drawGlyphToPen(glyph, op)
-            else:
-                self.drawGlyphToPen(glyph, dp)
+            self.drawGlyphToPen(glyph, dp)
             dp.translate(offset, 0)
             w = self.getGlyphWidth(glyph)
             if typographic:
@@ -84,7 +82,7 @@ if __name__ == "__main__":
         r = Rect(0, 0, 500, 500)
         uss = UFOStringSetter("~/Type/drawings/GhzGong/GhzGong.ufo")
         #pens = uss.getLine("G o_o d h e_r t_z")
-        dp = uss.getLine("goodhertz.gordy.copy_1", leavePathsOpen=False)
+        dp = uss.getLine("goodhertz.gordy.copy_1")
         #dp = uss.getLine("G o_o d")
         dp.addAttrs(fill=None, stroke="random")
         #dp.frame = None

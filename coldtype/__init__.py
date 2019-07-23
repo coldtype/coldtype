@@ -15,6 +15,7 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
+from fontTools.ufoLib import UFOReader
 from fontTools.ttLib import TTFont
 import unicodedata
 import uharfbuzz as hb
@@ -30,6 +31,7 @@ from coldtype.geometry import Rect, Point
 
 try:
     # relies on undeclared dependencies
+    from defcon import Font
     from coldtype.pens import OutlinePen
 except:
     pass
@@ -51,8 +53,8 @@ def get_cached_font(font_path):
 
 
 class HarfbuzzFrame():
-    def __init__(self, info, position, frame):
-        self.gid = info.codepoint
+    def __init__(self, gid, info, position, frame):
+        self.gid = gid #info.codepoint
         self.info = info
         self.position = position
         self.frame = frame
@@ -85,20 +87,35 @@ class Harfbuzz():
             x_advance = pos.x_advance
             x_offset = pos.x_offset
             y_offset = pos.y_offset
-            frames.append(HarfbuzzFrame(info, pos, Rect((x+x_offset, y_offset, x_advance, height)))) # 100?
+            frames.append(HarfbuzzFrame(gid, info, pos, Rect((x+x_offset, y_offset, x_advance, height)))) # 100?
             x += x_advance
         return frames
 
 
-class FreetypeReader():
-    def __init__(self, font_path, ttfont):
-        self.fontPath = font_path
-        self.font = freetype.Face(font_path)
-        self.font.set_char_size(1000)
-        #self.scale = scale
-        self.ttfont = ttfont
+class FontShapeReader():
+    def __init__(self, style):
+        self.style = style
+
+    def setVariations(self, axes):
+        pass
+    
+    def drawOutlineToPen(self, glyph_id, pen):
+        pass
+
+
+class UFOShapeReader(FontShapeReader):
+    def drawOutlineToPen(self, glyph_id, pen):
+        #print("drawing", glyph_id)
+        self.style.glyphSet[glyph_id].draw(pen)
+
+
+class FreetypeReader(FontShapeReader):
+    def __init__(self, style):
+        super().__init__(style)
+        self.font = freetype.Face(style.fontFile)
+        self.font.set_char_size(1000) # configurable?
         try:
-            self.axesOrder = [a.axisTag for a in self.ttfont['fvar'].axes]
+            self.axesOrder = [a.axisTag for a in style.ttfont['fvar'].axes]
         except:
             self.axesOrder = []
     
@@ -120,7 +137,8 @@ class FreetypeReader():
         else:
             self.font.load_char(glyph_id, flags)
 
-    def drawOutlineToPen(self, pen, raiseCubics=True):
+    def drawOutlineToPen(self, glyph_id, pen):
+        self.setGlyph(glyph_id)
         outline = self.font.glyph.outline
         rp = DATPen()
         self.font.glyph.outline.decompose(rp, move_to=FreetypeReader.moveTo, line_to=FreetypeReader.lineTo, conic_to=FreetypeReader.conicTo, cubic_to=FreetypeReader.cubicTo)
@@ -151,7 +169,7 @@ class FreetypeReader():
         else:
             start = pen.value[-1][-1][-1]
             pen.curveTo(*raise_quadratic(start, (a.x, a.y), (b.x, b.y)))
-            #pen.lineTo(c3)
+            #pen.lineTo((b.x, b.y))
 
     def cubicTo(a, b, c, pen):
         pen.curveTo((a.x, a.y), (b.x, b.y), (c.x, c.y))
@@ -339,12 +357,39 @@ class Style():
             ff = ff.replace(prefix, expansion)
         
         self.fontFile = os.path.expanduser(ff)
-        try:
-            self.ttfont = ttFont or TTFont(self.fontFile)
-        except:
+        
+        self.format = os.path.splitext(self.fontFile)[1][1:]
+        self.ufo = self.format == "ufo"
+
+        if self.ufo:
             self.ttfont = None
-        self.fontdata = get_cached_font(self.fontFile)
-        self.upem = hb.Face(self.fontdata).upem
+            self.fontdata = None
+            if False:
+                self.font = UFOReader(self.fontFile)
+                self.glyphSet = self.font.getGlyphSet() # send in minimal options here?
+                info = self.font._readInfo(False)
+                self.upem = info.get("upem", 1000)
+                self.capHeight = info.get("capHeight", 750)
+            else:
+                self.font = Font(self.fontFile)
+                self.glyphSet = self.font
+                self.upem = self.font.info.unitsPerEm
+                self.capHeight = self.font.info.capHeight
+        else:
+            try:
+                self.ttfont = ttFont or TTFont(self.fontFile) # could cache this?
+            except:
+                self.ttfont = None
+            self.fontdata = get_cached_font(self.fontFile)
+            self.upem = hb.Face(self.fontdata).upem
+            try:
+                self.capHeight = self.ttfont["OS/2"].sCapHeight
+            except:
+                self.capHeight = 1000 # alternative?
+        
+        if capHeight: # override whatever the font says
+            self.capHeight = capHeight
+
         self.fontSize = fontSize
         self.tracking = tracking
         self.trackingLimit = trackingLimit
@@ -370,50 +415,22 @@ class Style():
         self.variations = dict()
         self.variationLimits = dict()
         self.varyFontSize = varyFontSize
-        try:
-            fvar = self.ttfont['fvar']
-        except:
-            fvar = None
-        if fvar:
-            for axis in fvar.axes:
-                self.axes[axis.axisTag] = axis
-                self.variations[axis.axisTag] = axis.defaultValue
-                if axis.axisTag == "wdth": # the only reasonable default
-                    self.variationLimits[axis.axisTag] = axis.minValue
-                if axis.axisTag in kwargs and axis.axisTag not in variations:
-                    unnormalized_variations[axis.axisTag] = kwargs[axis.axisTag]
-
-        self.addVariations(unnormalized_variations)
         
-        if capHeight:
-            self.capHeight = capHeight
-        else:
+        if not self.ufo:
             try:
-                self.capHeight = self.ttfont["OS/2"].sCapHeight
+                fvar = self.ttfont['fvar']
             except:
-                self.capHeight = 1000 # alternative?
+                fvar = None
+            if fvar:
+                for axis in fvar.axes:
+                    self.axes[axis.axisTag] = axis
+                    self.variations[axis.axisTag] = axis.defaultValue
+                    if axis.axisTag == "wdth": # the only reasonable default
+                        self.variationLimits[axis.axisTag] = axis.minValue
+                    if axis.axisTag in kwargs and axis.axisTag not in variations:
+                        unnormalized_variations[axis.axisTag] = kwargs[axis.axisTag]
 
-    # def copy(self, **kwargs):
-    #     return font=None,
-    #         fontSize=12,
-    #         ttFont=None,
-    #         tracking=0,
-    #         trackingLimit=0,
-    #         space=None,
-    #         baselineShift=0,
-    #         xShift=None,
-    #         variations=self.unnormalized_variations,
-    #         variationLimits=self.variationLimits,
-    #         increments=dict(),
-    #         features=dict(),
-    #         varyFontSize=False,
-    #         fill=(0, 0.5, 1),
-    #         stroke=None,
-    #         strokeWidth=0,
-    #         palette=0,
-    #         capHeight=None,
-    #         data={},
-    #         latin=None,
+            self.addVariations(unnormalized_variations)
 
     def mod(self, **kwargs):
         ns = copy.deepcopy(self)
@@ -473,6 +490,7 @@ class StyledString(FittableMixin):
         self.variations = self.style.variations.copy()
     
     def trackFrames(self, frames, glyph_names):
+        #print(frames, glyph_names)
         t = self.tracking
         x_off = 0
         for idx, f in enumerate(frames):
@@ -492,33 +510,65 @@ class StyledString(FittableMixin):
                     pass
         return frames
     
-    def getGlyphNames(self, txt):
-        frames = Harfbuzz.GetFrames(self.style.fontdata, text=txt, axes=self.variations, features=self.features, height=self.style.capHeight)
-        glyph_names = []
-        for f in frames:
-            glyph_names.append(self.style.ttfont.getGlyphName(f.gid))
-        return glyph_names
+    # def getGlyphNames(self, txt):
+    #     frames = Harfbuzz.GetFrames(self.style.fontdata, text=txt, axes=self.variations, features=self.features, height=self.style.capHeight)
+    #     glyph_names = []
+    #     for f in frames:
+    #         glyph_names.append(self.style.ttfont.getGlyphName(f.gid))
+    #     return glyph_names
     
     def getGlyphFrames(self):
-        frames = Harfbuzz.GetFrames(self.style.fontdata, text=self.text, axes=self.variations, features=self.features, height=self.style.capHeight)
+        frames = []
         glyph_names = []
+
+        if self.style.ufo:
+            glyph_names = []
+            current = None
+            for t in self.text:
+                glyph = None
+                if t == "{":
+                    current = ""
+                elif t == "}":
+                    glyph = current
+                    current = None
+                elif current is not None:
+                    current += t
+                elif t == ",":
+                    glyph = "comma"
+                elif t == " ":
+                    glyph = "space"
+                elif t == ".":
+                    glyph = "period"
+                else:
+                    glyph = t  
+                if glyph:
+                    glyph_names.append(glyph)
+            
+            x_off = 0
+            for g in glyph_names:
+                glif = self.style.glyphSet[g]
+                w = glif.width
+                r = Rect(x_off, 0, w, self.style.capHeight)
+                x_off += w
+                frames.append(HarfbuzzFrame(g, dict(), Point((0, 0)), r))
+        else:
+            frames = Harfbuzz.GetFrames(self.style.fontdata, text=self.text, axes=self.variations, features=self.features, height=self.style.capHeight)
+            glyph_names = []
+            for f in frames:
+                glyph_name = self.style.ttfont.getGlyphName(f.gid)
+                code = glyph_name.replace("uni", "")
+                try:
+                    glyph_names.append(unicodedata.name(chr(int(code, 16))))
+                except:
+                    glyph_names.append(code)
+        
         for f in frames:
             f.frame = f.frame.scale(self.scale())
-            glyph_name = self.style.ttfont.getGlyphName(f.gid)
-            code = glyph_name.replace("uni", "")
-            try:
-                glyph_names.append(unicodedata.name(chr(int(code, 16))))
-            except:
-                glyph_names.append(code)
-        self.glyphNames = glyph_names
+
         return self.adjustFramesForPath(self.trackFrames(frames, glyph_names))
     
     def width(self): # size?
-        fw = self.getGlyphFrames()[-1].frame.point("SE").x
-        if hasattr(self, "originalWidth"):
-            return max(fw, self.originalWidth)
-        else:
-            return fw
+        return self.getGlyphFrames()[-1].frame.point("SE").x
     
     def scale(self):
         return self.fontSize / self.style.upem
@@ -559,7 +609,6 @@ class StyledString(FittableMixin):
             return None
     
     def drawFrameToPen(self, fr, idx, pen, frame, gid, useTTFont=False):
-        fr.setGlyph(gid)
         s = self.scale()
         t = Transform()
         try:
@@ -573,15 +622,19 @@ class StyledString(FittableMixin):
         #t = t.translate(0, bs)
         tp = TransformPen(pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
         if useTTFont:
-            fr.drawTTOutlineToPen(tp)
+            fr.drawTTOutlineToPen(gid, tp)
         else:
-            fr.drawOutlineToPen(tp, raiseCubics=True)
+            fr.drawOutlineToPen(gid, tp)
     
     def drawToPen(self, pen, frames, index=None, useTTFont=False):
-        fr = FreetypeReader(self.style.fontFile, ttfont=self.style.ttfont)
-        fr.setVariations(self.variations)
+        if self.style.ufo:
+            shape_reader = UFOShapeReader(self.style)
+        else:
+            shape_reader = FreetypeReader(self.style)
+        
+        shape_reader.setVariations(self.variations)
 
-        if "COLR" in self.style.ttfont:
+        if self.style.ttfont and "COLR" in self.style.ttfont:
             colr = self.style.ttfont["COLR"]
             cpal = self.style.ttfont["CPAL"]
         else:
@@ -599,7 +652,7 @@ class StyledString(FittableMixin):
                     for layer in layers:
                         gid = self.style.ttfont.getGlyphID(layer.name)
                         dp = DATPen()
-                        self.drawFrameToPen(fr, idx, dp, frame, gid, useTTFont=useTTFont)
+                        self.drawFrameToPen(shape_reader, idx, dp, frame, gid, useTTFont=useTTFont)
                         dp.addAttrs(fill=cpal.palettes[self.style.palette][layer.colorID])
                         if len(dp.value) > 0:
                             dps.addPen(dp)
@@ -608,7 +661,7 @@ class StyledString(FittableMixin):
                 dps.replay(pen)
                 return dps
             else:
-                self.drawFrameToPen(fr, idx, pen, frame, frame.gid, useTTFont=useTTFont)
+                self.drawFrameToPen(shape_reader, idx, pen, frame, frame.gid, useTTFont=useTTFont)
             
             
     
@@ -751,12 +804,12 @@ if __name__ == "__main__":
             ps.frameSet()
             ], r), r)
     
-    def conic_test(p):
-        r = Rect(0, 0, 1000, 1000)
-        ps = Slug("x", Style("≈/VulfMonoLightItalicVariable.ttf", 1000)).pen().align(r)
-        c = SVGPen.Composite([ps, *ps.copy().skeleton(returnSet=True)], r)
-        print(c)
-        p.send(c, r)
+    def ufo_test(p):
+        r = Rect(0, 0, 500, 200)
+        f = "~/Type/typeworld/hershey_ufos_open_paths/Hershey-TriplexItalic.ufo"
+        style = Style(f, 100, tracking=-10, varyFontSize=True)
+        slug = Slug("Hello, world.", style).fit(r.w)
+        p.send(SVGPen.Composite(slug.pen().align(r).attr(fill=None, stroke="random", strokeWidth=1), r), r)
 
     with previewer() as p:
         if False:
@@ -769,9 +822,9 @@ if __name__ == "__main__":
         
         #ss_and_shape_test(p)
         #rotalic_test(p)
-        #multilang_test(p)
-        tracking_test(p)
+        multilang_test(p)
+        #tracking_test(p)
         #color_font_test(p)
         #emoji_test(p)
         #hoi_test(p)
-        #conic_test(p)
+        ufo_test(p)

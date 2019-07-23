@@ -3,6 +3,7 @@ from enum import Enum
 from fontTools.pens.filterPen import ContourFilterPen
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.pens.recordingPen import RecordingPen
+from fontTools.pens.pointPen import SegmentToPointPen, PointToSegmentPen, AbstractPointPen  
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontPens.flattenPen import FlattenPen
@@ -64,9 +65,6 @@ class BooleanOp(Enum):
             "intersection",
         ][x.value]
 
-class OpenPathPen(ContourFilterPen):
-    def filterContour(self, contour):
-        return contour[:-1]
 
 class ExplodingPen(ContourFilterPen):
     def __init__(self, outPen):
@@ -78,6 +76,7 @@ class ExplodingPen(ContourFilterPen):
         dp.value = contour
         self.pens.append(dp)
         return contour
+
 
 class SmoothPointsPen(ContourFilterPen):
     def __init__(self, outPen, length=80):
@@ -317,6 +316,34 @@ class DATPen(RecordingPen, AlignableMixin):
         self.value = rounded
         return self
 
+    def simplify(self):
+        import numpy as np
+        last = None
+        times = 0
+        nv = []
+        for idx, (t, pts) in enumerate(self.value):
+            if last == t and t == "qCurveTo":
+                print("hello")
+                continue
+                p0 = np.array(self.value[idx-2][-1][-1])
+                p1, p2, p3 = [np.array(p) for p in self.value[idx-1][-1]]
+                q0 = np.array(self.value[idx-1][-1][-1])
+                q1, q2, q3 = [np.array(p) for p in pts]
+                r0 = p0
+                kp = 2
+                kq = 2
+                r1 = p0 + kp * (p1 - p0)
+                r2 = q3 + kq * (q2 - q3)
+                r3 = q3
+                nv.pop()
+                nv.append([t, [r1.tolist(), r2.tolist(), r3.tolist()]])
+                times += 1
+            else:
+                nv.append([t, pts])
+            last = t
+        #self.value = nv
+        return self
+
     def record(self, pen):
         pen.replay(self)
         return self
@@ -348,7 +375,6 @@ class DATPen(RecordingPen, AlignableMixin):
             dp.catmull(_pts, close=True)
         self.value = dp.value
         return self
-
     
     def roughen(self, amplitude=10, threshold=10):
         randomized = []
@@ -849,8 +875,18 @@ if __name__ == "__main__":
                 ps.frameSet()
             ], r), r)
 
+        def conic_test():
+            r = Rect(0, 0, 800, 800)
+            ps = Slug("x", Style("≈/VulfMonoLightItalicVariable.ttf", 1000)).pen().align(r)
+            ps.removeOverlap()
+            dp = DATPen()
+            #ps.simplify()
+            c = SVGPen.Composite([ps], r)
+            print(len(ps.value))
+            v.send(c, r)
 
-        gradient_test()
+        #gradient_test()
         #roughen_test()
         map_test()
-        align_test()
+        #align_test()
+        #conic_test()
