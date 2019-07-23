@@ -809,7 +809,7 @@ if __name__ == "__main__":
         f = "~/Type/typeworld/hershey_ufos_open_paths/Hershey-TriplexItalic.ufo"
         style = Style(f, 100, tracking=-10, varyFontSize=True)
         slug = Slug("Hello, world.", style).fit(r.w)
-        p.send(SVGPen.Composite(slug.pen().align(r).attr(fill=None, stroke="random", strokeWidth=1), r), r)
+        p.send(SVGPen.Composite(slug.pen().align(r).attr(fill=None, stroke=(1, 0, 0.5), strokeWidth=1), r), r)
 
     with previewer() as p:
         if False:

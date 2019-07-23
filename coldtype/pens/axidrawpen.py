@@ -92,14 +92,26 @@ if __name__ == "__main__":
     from string import ascii_lowercase, ascii_uppercase
  
     def text_test():
-        uss = UFOStringSetter("~/Type/typeworld/hershey_ufos_open_paths/Hershey-SimplexCartographicScript.ufo")
-
-        r = Rect(0, 0, 500, 500)
-        p = uss.getLine("Digitalizations").scale(0.05).align(r).rotate(0)
+        ff = "~/Type/typeworld/hershey_ufos_open_paths/Hershey-{:s}.ufo"
+        r = Rect(0, 0, 1100, 850)
+        strings = [
+            ["The virtuosity of the cathode ray printer", "SimplexCartographicSans"],
+            ["has been explored further", "SimplexCartographicScript"],
+            ["with a number of", "DuplexPrincipalSans"],
+            ["calligraphic", "TriplexItalic"],
+            ["digitalizations.", "TriplexGothicGerman"],
+        ]
+        rl = r.inset(0, 200)
+        p = DATPen()
+        #rows = r.inset(0, 100).subdivide(len(strings), "maxy")
+        for idx, (s, f) in enumerate(strings):
+            s = Slug(s, Style(ff.format(f), 100, varyFontSize=1)).fit(500)
+            rt, rl = rl.divide(s.strings[0].fontSize + 10, "maxy")
+            s.pen().align(rt).replay(p)
         
         #for c in ascii_uppercase[0:1]:
             #time.sleep(2)
         ap = AxiDrawPen(p, r)
-        ap.draw(dry=1)
+        ap.draw(dry=0)
     
     text_test()

@@ -15,7 +15,6 @@ if __name__ == "__main__":
     sys.path.append(f"{dirname}/..")
 
 from coldtype.geometry import Rect
-from coldtype.ufo import GlyphStoreSetter
 from coldtype.pens.datpen import DATPen
 
 
@@ -28,21 +27,6 @@ def read_svg_to_pen(file, gid, r=Rect((0, 0, 0, 100))):
         for path in soup.find(id=gid).find_all("path"):
             parse_path(path.get("d"), tp)
         return dp
-
-class SVGFileSetter(GlyphStoreSetter):
-    def __init__(self, file):
-        with open(os.path.expanduser(hs1), "r") as f:
-            self.soup = BeautifulSoup(f.read(), features="lxml")
-            self.capHeight = 750 # not
-    
-    def getGlyph(self, glyphName):
-        return self.soup.find("glyph", {"glyph-name": glyphName})
-    
-    def getGlyphWidth(self, glyph):
-        return float(glyph.get("horiz-adv-x"))
-    
-    def drawGlyphToPen(self, glyph, pen):
-        parse_path(glyph.get("d"), pen)
 
 
 if __name__ == "__main__":
