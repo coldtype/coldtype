@@ -699,10 +699,11 @@ class DATPenSet(AlignableMixin):
     
     def pen(self):
         dp = DATPen()
-        for p in self.pens:
+        fps = self.flatten()
+        for p in fps.pens:
             dp.record(p)
-        if len(self.pens) == 1:
-            dp.addAttrs(**self.pens[0].attrs)
+        if len(fps.pens) > 0:
+            dp.addAttrs(**fps.pens[0].attrs)
         dp.addFrame(self.getFrame())
         return dp
     
@@ -738,7 +739,10 @@ class DATPenSet(AlignableMixin):
                 pens.extend(p.flatten().pens)
             else:
                 pens.append(p)
-        return DATPenSet(pens)
+        dps = DATPenSet(pens)
+        if self.layered:
+            dps.layered = True
+        return dps
     
     def frameSet(self, th=False, tv=False):
         dps = DATPenSet()

@@ -279,23 +279,25 @@ class Slug(FittableMixin):
         return adjusted
 
     def pens(self, atomized=True):
-        pens = []
+        pens = DATPenSet()
         x_off = 0
         for s in self.strings:
             #x_off += s.margin[0]
             if atomized:
                 dps = s.pens(frame=True)
+                if dps.layered:
+                    pens.layered = True
                 dps.translate(x_off, 0)
-                pens.extend(dps.pens)
+                pens.pens.extend(dps.pens)
                 x_off += dps.getFrame().w
             else:
                 dp = s.pen(frame=True)
                 dp.translate(x_off, 0)
-                pens.append(dp)
+                pens.pens.append(dp)
                 x_off += dp.getFrame().w
             #x_off += dps.getFrame().w
             #x_off += s.margin[1]
-        return DATPenSet(pens)
+        return pens
         #return DATPenSet([s.pens(frame=True) for s in self.strings])
     
     def pen(self):
@@ -372,14 +374,14 @@ class Style():
             except:
                 self.capHeight = 1000 # alternative?
         
-        if capHeight: # override whatever the font says
-            self.capHeight = capHeight
+        if kwargs.get("ch", capHeight): # override whatever the font says
+            self.capHeight = kwargs.get("ch", capHeight)
 
         self.fontSize = fontSize
-        self.tracking = tracking
-        self.trackingLimit = trackingLimit
-        self.baselineShift = baselineShift
-        self.xShift = xShift
+        self.tracking = kwargs.get("t", tracking)
+        self.trackingLimit = kwargs.get("tl", trackingLimit)
+        self.baselineShift = kwargs.get("bs", baselineShift)
+        self.xShift = kwargs.get("xs", xShift)
         self.palette = palette
 
         self.data = data
@@ -657,16 +659,18 @@ class StyledString(FittableMixin):
 
     def pens(self, frame=True):
         self._frames = self.getGlyphFrames()
-        pens = []
+        pens = DATPenSet()
         for idx, f in enumerate(self._frames):
             dp_atom = self._emptyPenWithAttrs()
             dps = self.drawToPen(dp_atom, self._frames, index=idx)
             if dps:
+                if dps.layered:
+                    pens.layered = True
                 dp_atom = dps
             if frame:
                 dp_atom.addFrame(f.frame)
-            pens.append(dp_atom)
-        return DATPenSet(pens)
+            pens.addPen(dp_atom)
+        return pens
 
     def pen(self, frame=True):
         dp = self._emptyPenWithAttrs()
@@ -777,17 +781,18 @@ if __name__ == "__main__":
     def emoji_test(p):
         r = Rect(0,0,500,200)
         f = "≈/TwemojiMozilla.ttf"
-        t = "🍕💽 🖥️"
-        ps = Slug(t, Style(f, 100, tracking=20, capHeight=500, baselineShift=11)).pens().align(r, tv=0).flatten()
+        t = "🍕💽 🖥"
+        ps = Slug(t, Style(f, 100, t=20, ch=500, bs=11)).pens().align(r, tv=0).flatten()
+        print("Layered", ps.layered)
         p.send(SVGPen.Composite([
-            ps.frameSet(),
+            #ps.frameSet(),
             ps,
             ], r), r)
     
     def ufo_test(p):
         r = Rect(0, 0, 500, 200)
         f = "~/Type/typeworld/hershey_ufos_open_paths/Hershey-TriplexItalic.ufo"
-        style = Style(f, 100, tracking=-10, varyFontSize=True)
+        style = Style(f, 100, t=-10, varyFontSize=True)
         slug = Slug("Hello, world.", style).fit(r.w)
         p.send(SVGPen.Composite(slug.pen().align(r).attr(fill=None, stroke=(1, 0, 0.5), strokeWidth=1), r), r)
 
@@ -800,11 +805,11 @@ if __name__ == "__main__":
             #ss_bounds_test("≈/Compressa-MICRO-GX-Rg.ttf", p)
             #ss_bounds_test("≈/BruphyGX.ttf", p)
         
-        ss_and_shape_test(p)
-        rotalic_test(p)
-        multilang_test(p)
-        tracking_test(p)
-        color_font_test(p)
+        #ss_and_shape_test(p)
+        #rotalic_test(p)
+        #multilang_test(p)
+        #tracking_test(p)
+        #color_font_test(p)
         emoji_test(p)
         #hoi_test(p)
         ufo_test(p)
