@@ -401,26 +401,6 @@ class DATPen(RecordingPen, AlignableMixin):
                 randomized.append([t, pts])
         self.value = randomized
         return self
-        mod_value = []
-        for t, vals in recorder.value:
-            amp = randint(0, amplitude)
-            if t == "lineTo" and len(vals) > 0:
-                x, y = vals[0]
-                jx = floor(x + randint(0, amp) - amp/2)
-                jy = floor(y + randint(0, amp) - amp/2)
-                vals = [(jx, jy)]
-                mod_value.append([t, vals])
-            else:
-                mod_value.append([t, vals])
-
-        recorder.value = mod_value
-
-        r2 = RecordingPen()
-        tpen = ThresholdPen(r2, threshold=threshold)
-        recorder.replay(tpen)
-
-        r2.replay(bpr)
-        return bp.intersection(bpr)
     
     def outline(self, offset=1):
         op = OutlinePen(None, offset=offset, optimizeCurve=True)
@@ -559,6 +539,29 @@ class DATPen(RecordingPen, AlignableMixin):
         self.record(dp)
         return self
     
+    def sine(self, r, periods):
+        dp = DATPen()
+        pw = r.w / periods
+        p1 = r.point("SW")
+        end = r.point("SE")
+        dp.moveTo(p1)
+        done = False
+        up = True
+        while not done:
+            h = r.h if up else -r.h
+            c1 = p1.offset(pw/2, 0)
+            c2 = p1.offset(pw/2, h)
+            p2 = p1.offset(pw, h)
+            dp.curveTo(c1, c2, p2)
+            p1 = p2
+            if p1.x >= end.x:
+                done = True
+            else:
+                done = False
+            up = not up
+        self.record(dp)
+        return self
+    
     def explode(self):
         dp = RecordingPen()
         ep = ExplodingPen(dp)
@@ -643,6 +646,7 @@ class DATPenSet(AlignableMixin):
         self.pens = []
         self.addPens(pens)
         self.typographic = True
+        self.layered = False
         self._tag = "Unknown"
     
     def tag(self, tag):
@@ -691,9 +695,9 @@ class DATPenSet(AlignableMixin):
             p.updateFrameHeight(h)
     
     def replay(self, pen):
-        self.asPen().replay(pen)
+        self.pen().replay(pen)
     
-    def asPen(self):
+    def pen(self):
         dp = DATPen()
         for p in self.pens:
             dp.record(p)
@@ -899,9 +903,15 @@ if __name__ == "__main__":
             ps.pens[1].reverse()
             v.send(SVGPen.Composite(ps.asPen(), r), r)
 
+        def sine_test():
+            r = Rect(0, 0, 500, 500)
+            dp = DATPen(fill=None, stroke=0).sine(r.take(100, "centery"), 10)
+            v.send(SVGPen.Composite([dp], r), r)
+
         #gradient_test()
         #roughen_test()
         #map_test()
         #align_test()
         #conic_test()
-        reverse_test()
+        #reverse_test()
+        sine_test()

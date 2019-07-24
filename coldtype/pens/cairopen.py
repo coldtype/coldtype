@@ -57,9 +57,9 @@ class CairoPen(DrawablePenMixin, BasePen):
         self.ctx.stroke()
     
     def Composite(pens, rect, image_path, save=True):
-        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(rect.w), int(rect.h))
+        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(rect.w*2), int(rect.h*2))
         ctx = cairo.Context(surface)
-        ctx.scale(1, 1)
+        ctx.scale(2, 2)
         for pen in CairoPen.FindPens(pens):
             CairoPen(pen, rect.h, ctx)
         if save:

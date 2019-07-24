@@ -354,7 +354,7 @@ class Rect():
     
     def FromExtents(extents):
         nw, ne, se, sw = extents
-        return Rect(sw[0], sw[1], ne[0] - sw[0], ne[1] - sw[1])
+        return Rect(sw[0], sw[1], abs(ne[0] - sw[0]), abs(ne[1] - sw[1]))
 
     def FromMnMnMxMx(extents):
         xmin, ymin, xmax, ymax = extents
@@ -414,6 +414,15 @@ class Rect():
         pts = ["NW", "NE", "SE", "SW"]
         x1, x2, x3, x4 = [t.transformPoint(self.point(pt)) for pt in pts]
         return Rect.FromExtents([x1, x2, x3, x4])
+    
+    def rotate(self, degrees, point=None):
+        t = Transform()
+        if not point:
+            point = self.point("C")
+        t = t.translate(point.x, point.y)
+        t = t.rotate(math.radians(degrees))
+        t = t.translate(-point.x, -point.y)
+        return self.transform(t)
 
     def scale(self, s, x_edge=Edge.CenterX, y_edge=Edge.CenterY):
         x_edge = txt_to_edge(x_edge)

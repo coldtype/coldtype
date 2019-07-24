@@ -51,7 +51,7 @@ class AxiDrawPen(BasePen):
         if self.last_moveTo:
             self.ad.lineto(*self.last_moveTo)
 
-    def draw(self, scale=0.01, dry=True):
+    def draw(self, scale=0.01, dry=True, cm=False):
         if dry:
             with viewer() as v:
                 dp = DATPen().record(self.dat).addAttrs(fill=None, stroke=0)
@@ -60,13 +60,17 @@ class AxiDrawPen(BasePen):
             self.dat.scale(scale)
             self.page = self.page.scale(scale)
             b = self.dat.bounds()
-            if b.x >= 0 and b.y >= 0 and b.w <= 11 and b.h <= 8.5:
+            limits = Rect(0, 0, 11, 8.5)
+            if cm:
+                limits = limits.scale(2.54)
+            if b.x >= 0 and b.y >= 0 and b.w <= limits.w and b.h <= limits.h:
                 print("Drawing!")
             else:
                 print("Too big!", b)
                 return False
             ad = axidraw.AxiDraw()
             ad.interactive()
+            ad.options.units = 1 if cm else 0
             ad.options.speed_pendown = 110
             ad.options.speed_penup = 110
 

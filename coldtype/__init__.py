@@ -214,23 +214,17 @@ class Lockup(FittableMixin):
             adjusted = s.shrink() or adjusted
         return adjusted
 
-    def asPenSet(self):
+    def pens(self):
         pens = []
         x_off = 0
         for s in self.slugs:
             x_off += s.margin[0]
-            dps = s.asPenSet()
+            dps = s.pens()
             dps.translate(x_off, 0)
             pens.extend(dps.pens)
             x_off += dps.getFrame().w
             x_off += s.margin[1]
         return DATPenSet(pens)
-    
-    def penset(self):
-        return self.asPenSet()
-    
-    def pens(self):
-        return self.asPenSet()
 
 
 def between(c, a, b):
@@ -284,37 +278,28 @@ class Slug(FittableMixin):
             adjusted = s.shrink() or adjusted
         return adjusted
 
-    def asPenSet(self, atomized=True):
+    def pens(self, atomized=True):
         pens = []
         x_off = 0
         for s in self.strings:
             #x_off += s.margin[0]
             if atomized:
-                dps = s.asPenSet(frame=True)
+                dps = s.pens(frame=True)
                 dps.translate(x_off, 0)
                 pens.extend(dps.pens)
                 x_off += dps.getFrame().w
             else:
-                dp = s.asPen(frame=True)
+                dp = s.pen(frame=True)
                 dp.translate(x_off, 0)
                 pens.append(dp)
                 x_off += dp.getFrame().w
             #x_off += dps.getFrame().w
             #x_off += s.margin[1]
         return DATPenSet(pens)
-        #return DATPenSet([s.asPenSet(frame=True) for s in self.strings])
+        #return DATPenSet([s.pens(frame=True) for s in self.strings])
     
-    def asPen(self):
-        return self.asPenSet(atomized=False).asPen()
-    
-    def penset(self):
-        return self.asPenSet()
-    
-    def pens(self):
-        return self.asPenSet()
-
     def pen(self):
-        return self.asPen()
+        return self.pens(atomized=False).pen()
 
 
 _prefixes = [
@@ -490,7 +475,6 @@ class StyledString(FittableMixin):
         self.variations = self.style.variations.copy()
     
     def trackFrames(self, frames, glyph_names):
-        #print(frames, glyph_names)
         t = self.tracking
         x_off = 0
         for idx, f in enumerate(frames):
@@ -648,6 +632,7 @@ class StyledString(FittableMixin):
                 gn = self.style.ttfont.getGlyphName(frame.gid)
                 layers = colr[gn]
                 dps = DATPenSet()
+                dps.layered = True
                 if layers:
                     for layer in layers:
                         gid = self.style.ttfont.getGlyphID(layer.name)
@@ -659,11 +644,9 @@ class StyledString(FittableMixin):
                 else:
                     print("No layers found for ", gn)
                 dps.replay(pen)
-                return dps
+                return dps # TODO weird to return in a for-loop isn't it?
             else:
                 self.drawFrameToPen(shape_reader, idx, pen, frame, frame.gid, useTTFont=useTTFont)
-            
-            
     
     def _emptyPenWithAttrs(self):
         attrs = dict(fill=self.style.fill)
@@ -672,7 +655,7 @@ class StyledString(FittableMixin):
         dp = DATPen(**attrs, text=self.textContent())
         return dp
 
-    def asPenSet(self, frame=True):
+    def pens(self, frame=True):
         self._frames = self.getGlyphFrames()
         pens = []
         for idx, f in enumerate(self._frames):
@@ -685,7 +668,7 @@ class StyledString(FittableMixin):
             pens.append(dp_atom)
         return DATPenSet(pens)
 
-    def asPen(self, frame=True):
+    def pen(self, frame=True):
         dp = self._emptyPenWithAttrs()
         self._frames = self.getGlyphFrames()
         self.drawToPen(dp, self._frames)
@@ -706,7 +689,7 @@ if __name__ == "__main__":
         f = font
         r = Rect((0, 0, 700, 120))
         ss = StyledString("ABC", font=f, fontSize=100, variations=dict(wght=1, wdth=1,  scale=True), features=dict(ss01=True))
-        dp = ss.asPen()
+        dp = ss.pen()
         dp.translate(20, 20)
         #r = svg.rect.inset(50, 0).take(180, "centery")
         #dp.align(r)
@@ -726,7 +709,7 @@ if __name__ == "__main__":
         f, v = ["≈/Nonplus-Black.otf", dict()]
         ss1 = Slug("Yoy! ", Style(font=f, variations=v, fontSize=80, baselineShift=5))
         f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.1, scale=True)]
-        ps2 = Slug("ABC", Style(font=f, variations=v, fontSize=72)).asPenSet().rotate(-10)
+        ps2 = Slug("ABC", Style(font=f, variations=v, fontSize=72)).pens().rotate(-10)
         oval = DATPen().polygon(3, Rect(0, 0, 50, 50)).addAttrs(fill="random")
         ss1_p = ss1.pen().addAttrs(fill="darkorchid")
         print(ss1_p.frame)
@@ -741,7 +724,7 @@ if __name__ == "__main__":
 
     def rotalic_test(preview):
         r = Rect(0, 0, 500, 200)
-        ps = Slug("Side", Style("≈/Vinila-VF-HVAR-table.ttf", 200, variations=dict(wdth=0.5, wght=0.7, scale=True))).asPenSet().rotate(-15).align(r)
+        ps = Slug("Side", Style("≈/Vinila-VF-HVAR-table.ttf", 200, variations=dict(wdth=0.5, wght=0.7, scale=True))).pens().rotate(-15).align(r)
         preview.send(SVGPen.Composite(
             [DATPen.Grid(r)] + 
             ps.pens + 
@@ -766,9 +749,9 @@ if __name__ == "__main__":
         r = Rect(0, 0, 500, 100)
         s1 = Slug("ABC", Style("≈/VulfSans-Medium.otf", 100, tracking=0, fill=("random", 0.2), strokeWidth=2, stroke=("random", 0.75)))
         s2 = Slug("xyz", Style("≈/VulfSans-Black.otf", 100, baselineShift=0, fill=("random", 0.1), strokeWidth=2, stroke=("random", 0.75)))
-        ps1 = s1.asPenSet()
+        ps1 = s1.pens()
         ps1.align(r)
-        ps2 = s2.asPenSet()
+        ps2 = s2.pens()
         ps2.align(r)
         frames = []
         p.send(SVGPen.Composite(
@@ -793,15 +776,12 @@ if __name__ == "__main__":
 
     def emoji_test(p):
         r = Rect(0,0,500,200)
-        #f = "≈/TwitterColorEmoji-SVGinOT-OSX.ttf"
-        #f = "~/Type/typeworld/hershey-text/hershey-text/svg_fonts/HersheySans1.svg"
         f = "≈/TwemojiMozilla.ttf"
         t = "🍕💽 🖥️"
-        ps = Slug(t, Style(f, 100, tracking=20, capHeight=500, baselineShift=55)).pens().align(r, tv=0).flatten()
-        #print(ps.pens[1].frame)
+        ps = Slug(t, Style(f, 100, tracking=20, capHeight=500, baselineShift=11)).pens().align(r, tv=0).flatten()
         p.send(SVGPen.Composite([
+            ps.frameSet(),
             ps,
-            ps.frameSet()
             ], r), r)
     
     def ufo_test(p):
@@ -820,11 +800,11 @@ if __name__ == "__main__":
             #ss_bounds_test("≈/Compressa-MICRO-GX-Rg.ttf", p)
             #ss_bounds_test("≈/BruphyGX.ttf", p)
         
-        #ss_and_shape_test(p)
-        #rotalic_test(p)
+        ss_and_shape_test(p)
+        rotalic_test(p)
         multilang_test(p)
-        #tracking_test(p)
-        #color_font_test(p)
-        #emoji_test(p)
+        tracking_test(p)
+        color_font_test(p)
+        emoji_test(p)
         #hoi_test(p)
         ufo_test(p)
