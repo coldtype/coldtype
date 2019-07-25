@@ -11,6 +11,7 @@ from fontPens.flattenPen import FlattenPen
 from grapefruit import Color
 from random import random, randint
 from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
+from collections import OrderedDict
 
 try:
     from noise import pnoise1
@@ -145,10 +146,11 @@ class AlignableMixin():
 class DATPen(RecordingPen, AlignableMixin):
     def __init__(self, **kwargs):
         super().__init__()
-        self._text = kwargs.get("text", "NOTEXT")
-        self.attrs = {}
-        self.addAttrs(fill=(1, 0, 0.5))
-        self.addAttrs(**kwargs)
+        #self._text = kwargs.get("text", "NOTEXT")
+        self.attrs = OrderedDict()
+        self.attr("default", **kwargs)
+        if kwargs.get("fill") == None and kwargs.get("stroke") == None:
+            self.attr("default", fill=(1, 0, 0.5))
         self.frame = None
         self.typographic = False
         self._tag = "Unknown"
@@ -163,31 +165,35 @@ class DATPen(RecordingPen, AlignableMixin):
     def copy(self):
         dp = DATPen()
         self.replay(dp)
-        dp.addAttrs(**self.attrs)
+        for attrs in self.attrs:
+            dp.attr(**attrs)
         return dp
     
-    def attr(self, **kwargs):
-        return self.addAttrs(**kwargs)
-    
-    def addAttrs(self, **kwargs):
-        #print(">>>>", self._text, kwargs)
+    def attr(self, tag="default", **kwargs):
+        attrs = {}
+        if tag and self.attrs.get(tag):
+            attrs = self.attrs[tag]
+        else:
+            self.attrs[tag] = attrs
         for k, v in kwargs.items():
             if k == "fill":
-                self.attrs[k] = normalize_color(v)
+                attrs[k] = normalize_color(v)
             elif k == "stroke":
                 if not isinstance(v, dict):
-                    self.attrs[k] = dict(color=normalize_color(v))
+                    attrs[k] = dict(color=normalize_color(v))
                 else:
-                    self.attrs[k] = dict(weight=v.get("weight", 1), color=normalize_color(v.get("color", 0)))
+                    attrs[k] = dict(weight=v.get("weight", 1), color=normalize_color(v.get("color", 0)))
             elif k == "strokeWidth":
-                if "stroke" in self.attrs:
-                    self.attrs["stroke"]["weight"] = v
-                    if self.attrs["stroke"]["color"].alpha == 0:
-                        self.attrs["stroke"]["color"] = normalize_color((1, 0, 0.5))
+                if "stroke" in attrs:
+                    attrs["stroke"]["weight"] = v
+                    if attrs["stroke"]["color"].alpha == 0:
+                        attrs["stroke"]["color"] = normalize_color((1, 0, 0.5))
                 else:
-                    self.attrs["stroke"] = dict(color=normalize_color((1, 0, 0.5)), weight=v)
+                    attrs["stroke"] = dict(color=normalize_color((1, 0, 0.5)), weight=v)
             else:
-                self.attrs[k] = v
+                attrs[k] = v
+        if "default" in attrs:
+            print("hello")
         return self
     
     def clearFrame(self):
@@ -703,7 +709,9 @@ class DATPenSet(AlignableMixin):
         for p in fps.pens:
             dp.record(p)
         if len(fps.pens) > 0:
-            dp.addAttrs(**fps.pens[0].attrs)
+            for k, attrs in fps.pens[0].attrs.items():
+                print(k, attrs)
+                dp.attr(tag=k, **attrs)
         dp.addFrame(self.getFrame())
         return dp
     
@@ -832,7 +840,7 @@ if __name__ == "__main__":
                 #dp1.copy().addAttrs(fill=Gradient.Random(r)).translate(-30, 0),
                 #dp1.copy().addAttrs(fill=Gradient.Random(r)).translate(30, 0),
                 #dp1,
-                dp2.copy().translate(-4, 4).addAttrs(fill=Gradient.Random(r, 0.9)),
+                dp2.copy().translate(-4, 4).attr(fill=Gradient.Random(r, 0.9)),
                 dp1,
                 dp2.intersection(dp1),
                 *dp1.copy().skeleton(returnSet=True, scale=10),
@@ -855,7 +863,7 @@ if __name__ == "__main__":
             dp1.roughen(amplitude=3)
             dp1.smooth()
             dp1.removeOverlap()
-            dp1.addAttrs(fill=None, strokeWidth=5)
+            dp1.attr(fill=None, strokeWidth=5)
 
             pens = [dp1]
             svg = SVGPen.Composite(pens, r)
@@ -874,8 +882,8 @@ if __name__ == "__main__":
                 ))
             rect = Rect(0,0,500,500)
             r = rect.inset(50, 0).take(180, "centery")
-            dp = DATPen(fill=None, stroke="random").quadratic(r.p("SW"), r.p("C").offset(0, 300), r.p("NE"))
-            ps = ss.asPenSet()
+            dp = DATPen(fill=None, stroke=("random", 0.3), strokeWidth=10).quadratic(r.p("SW"), r.p("C").offset(0, 300), r.p("NE"))
+            ps = ss.pens()
             ps.distributeOnPath(dp)
             v.send(SVGPen.Composite(ps.pens + ps.frameSet(th=True, tv=True).pens + [dp], rect), rect)
         
@@ -903,9 +911,9 @@ if __name__ == "__main__":
 
         def reverse_test():
             r = Rect(0, 0, 500, 500)
-            ps = Slug("wow", Style("≈/Nonplus-Black.otf", 200, tracking=-20, fill=("random", 0.5))).pens().align(r)
+            ps = Slug("wow", Style("≈/Nonplus-Black.otf", 200, t=-20, fill=("random", 0.2), stroke="random", strokeWidth=2)).pens().align(r)
             ps.pens[1].reverse()
-            v.send(SVGPen.Composite(ps.asPen(), r), r)
+            v.send(SVGPen.Composite(ps.pen(), r), r)
 
         def sine_test():
             r = Rect(0, 0, 500, 500)
@@ -914,8 +922,8 @@ if __name__ == "__main__":
 
         #gradient_test()
         #roughen_test()
-        #map_test()
+        map_test()
         #align_test()
         #conic_test()
         #reverse_test()
-        sine_test()
+        #sine_test()

@@ -395,7 +395,11 @@ class Style():
 
         self.fill = normalize_color(fill)
         self.stroke = normalize_color(stroke)
-        self.strokeWidth = strokeWidth
+        if stroke and strokeWidth == 0:
+            self.strokeWidth = 1
+        else:
+            self.strokeWidth = strokeWidth
+
 
         unnormalized_variations = variations.copy()
         self.axes = OrderedDict()
@@ -654,7 +658,7 @@ class StyledString(FittableMixin):
         attrs = dict(fill=self.style.fill)
         if self.style.stroke:
             attrs["stroke"] = dict(color=self.style.stroke, weight=self.style.strokeWidth)
-        dp = DATPen(**attrs, text=self.textContent())
+        dp = DATPen(**attrs)
         return dp
 
     def pens(self, frame=True):

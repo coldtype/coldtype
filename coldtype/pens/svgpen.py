@@ -136,9 +136,9 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         self.defs.append(pattern)
         self.path.set("fill", f"url(#pattern-{hsh})")
     
-    def asSVG(self):
+    def asSVG(self, style=None):
         self.path = etree.Element("path")
-        for attr in self.dat.attrs.items():
+        for attr in self.dat.attrs["default"].items():
             self.applyDATAttribute(attr)
         self.path.set("d", self.getCommands())
         g = etree.Element("g")
@@ -173,12 +173,12 @@ if __name__ == "__main__":
 
     with previewer() as p:
         r = Rect((0, 0, 1000, 1000))
-        dp1 = DATPen(fill="royalblue")
+        dp1 = DATPen(fill="darkorchid")
         dp1.oval(r.inset(200, 200))
         path = os.path.expanduser("~/Type/grafprojects/vulfsans/alternate_vulfs.svg")
         dp = read_svg_to_pen(path, "lombardic-vulf")
         dp.scale(1.5)
         dp.align(r)
         dp.translate(-6, 0)
-        dp.addAttrs(fill=Color.from_rgb(1, 1, 1))
+        dp.attr(fill=Color.from_rgb(1, 1, 1))
         p.send(SVGPen.Composite([dp1, dp], r), rect=r)
