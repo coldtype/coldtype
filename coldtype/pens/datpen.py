@@ -813,8 +813,8 @@ if __name__ == "__main__":
             r = Rect((0, 0, 1920, 1080))
             ss1 = StyledString("cold", Style("≈/Nonplus-Black.otf", fontSize=600))
             ss2 = StyledString("type", Style("≈/Nostrav0.9-Stream.otf", fontSize=310, tracking=0))
-            dp1 = ss1.asPen().align(r)
-            dp2 = ss2.asPen().align(r)
+            dp1 = ss1.pen().align(r)
+            dp2 = ss2.pen().align(r)
             #dp1.addAttrs(fill=(0))
             #dp1.addSmoothPoints()
             #dp1.flatten(length=500)
@@ -855,15 +855,14 @@ if __name__ == "__main__":
             #seed(100)
             r = Rect((0, 0, 500, 300))
             f = "≈/Taters-Baked-v0.1.otf"
-            ss1 = Slug("Trem", Style(f, fontSize=200))
-            dp1 = ss1.strings[0].asPen()
-            dp1.align(r)
+            f = "≈/Oaks0.1.otf"
+            dp1 = Slug("o", Style(f, fontSize=300, ch="x")).pen().align(r)
             dp1.removeOverlap()
-            dp1.flatten(length=5)
-            dp1.roughen(amplitude=3)
+            dp1.flatten(length=10)
+            dp1.roughen(amplitude=10)
             dp1.smooth()
-            dp1.removeOverlap()
-            dp1.attr(fill=None, strokeWidth=5)
+            #dp1.removeOverlap()
+            dp1.attr(fill=None, strokeWidth=1)
 
             pens = [dp1]
             svg = SVGPen.Composite(pens, r)
@@ -872,14 +871,7 @@ if __name__ == "__main__":
         def map_test():
             f, _v = ["≈/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
             f, _v = ["≈/MapRomanVariable-VF.ttf", dict(wdth=1, scale=True)]
-            ss = Slug("California",
-                Style(font=f,
-                variations=_v,
-                fontSize=40,
-                tracking=20,
-                baselineShift=0,
-                fill=0,
-                ))
+            ss = Slug("California", Style(f, 40, t=20, **_v, fill=0))
             rect = Rect(0,0,500,500)
             r = rect.inset(50, 0).take(180, "centery")
             dp = DATPen(fill=None, stroke=("random", 0.3), strokeWidth=10).quadratic(r.p("SW"), r.p("C").offset(0, 300), r.p("NE"))
@@ -921,8 +913,8 @@ if __name__ == "__main__":
             v.send(SVGPen.Composite([dp], r), r)
 
         #gradient_test()
-        #roughen_test()
-        map_test()
+        roughen_test()
+        #map_test()
         #align_test()
         #conic_test()
         #reverse_test()

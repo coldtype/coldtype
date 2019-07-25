@@ -337,6 +337,12 @@ class Style():
             data={},
             latin=None, # temp
             **kwargs):
+        """
+        tracking (t)
+        trackingLimit (tl)
+        baselineShift (bs)
+        capHeight (ch) — A number in font-space; not specified, read from font; specified as 'x', capHeight is set to xHeight as read from font
+        """
         
         global _prefixes
         ff = font
@@ -348,20 +354,15 @@ class Style():
         self.format = os.path.splitext(self.fontFile)[1][1:]
         self.ufo = self.format == "ufo"
 
+        capHeight = kwargs.get("ch", capHeight)
+
         if self.ufo:
             self.ttfont = None
             self.fontdata = None
-            if False:
-                self.font = UFOReader(self.fontFile)
-                self.glyphSet = self.font.getGlyphSet() # send in minimal options here?
-                info = self.font._readInfo(False)
-                self.upem = info.get("upem", 1000)
-                self.capHeight = info.get("capHeight", 750)
-            else:
-                self.font = Font(self.fontFile)
-                self.glyphSet = self.font
-                self.upem = self.font.info.unitsPerEm
-                self.capHeight = self.font.info.capHeight
+            self.font = Font(self.fontFile)
+            self.glyphSet = self.font
+            self.upem = self.font.info.unitsPerEm
+            self.capHeight = self.font.info.capHeight
         else:
             try:
                 self.ttfont = ttFont or TTFont(self.fontFile) # could cache this?
@@ -370,12 +371,17 @@ class Style():
             self.fontdata = get_cached_font(self.fontFile)
             self.upem = hb.Face(self.fontdata).upem
             try:
-                self.capHeight = self.ttfont["OS/2"].sCapHeight
+                os2 = self.ttfont["OS/2"]
+                self.capHeight = os2.sCapHeight
+                self.xHeight = os2.sxHeight
+                if capHeight == "x":
+                    self.capHeight = self.xHeight
             except:
                 self.capHeight = 1000 # alternative?
         
-        if kwargs.get("ch", capHeight): # override whatever the font says
-            self.capHeight = kwargs.get("ch", capHeight)
+        if capHeight: # override whatever the font says
+            if capHeight != "x":
+                self.capHeight = capHeight
 
         self.fontSize = fontSize
         self.tracking = kwargs.get("t", tracking)
@@ -789,8 +795,8 @@ if __name__ == "__main__":
         ps = Slug(t, Style(f, 100, t=20, ch=500, bs=11)).pens().align(r, tv=0).flatten()
         print("Layered", ps.layered)
         p.send(SVGPen.Composite([
-            #ps.frameSet(),
             ps,
+            ps.frameSet(),
             ], r), r)
     
     def ufo_test(p):
@@ -816,4 +822,4 @@ if __name__ == "__main__":
         #color_font_test(p)
         emoji_test(p)
         #hoi_test(p)
-        ufo_test(p)
+        #ufo_test(p)
