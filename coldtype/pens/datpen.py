@@ -148,9 +148,8 @@ class DATPen(RecordingPen, AlignableMixin):
         super().__init__()
         #self._text = kwargs.get("text", "NOTEXT")
         self.attrs = OrderedDict()
+        self.attr("default", fill=(1, 0, 0.5))
         self.attr("default", **kwargs)
-        if kwargs.get("fill") == None and kwargs.get("stroke") == None:
-            self.attr("default", fill=(1, 0, 0.5))
         self.frame = None
         self.typographic = False
         self._tag = "Unknown"
@@ -710,7 +709,6 @@ class DATPenSet(AlignableMixin):
             dp.record(p)
         if len(fps.pens) > 0:
             for k, attrs in fps.pens[0].attrs.items():
-                print(k, attrs)
                 dp.attr(tag=k, **attrs)
         dp.addFrame(self.getFrame())
         return dp
