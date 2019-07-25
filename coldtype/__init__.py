@@ -650,7 +650,7 @@ class StyledString(FittableMixin):
                         gid = self.style.ttfont.getGlyphID(layer.name)
                         dp = DATPen()
                         self.drawFrameToPen(shape_reader, idx, dp, frame, gid, useTTFont=useTTFont)
-                        dp.addAttrs(fill=cpal.palettes[self.style.palette][layer.colorID])
+                        dp.attr(fill=cpal.palettes[self.style.palette][layer.colorID])
                         if len(dp.value) > 0:
                             dps.addPen(dp)
                 else:
@@ -724,8 +724,8 @@ if __name__ == "__main__":
         ss1 = Slug("Yoy! ", Style(font=f, variations=v, fontSize=80, baselineShift=5))
         f, v = ["¬/Fit-Variable.ttf", dict(wdth=0.1, scale=True)]
         ps2 = Slug("ABC", Style(font=f, variations=v, fontSize=72)).pens().rotate(-10)
-        oval = DATPen().polygon(3, Rect(0, 0, 50, 50)).addAttrs(fill="random")
-        ss1_p = ss1.pen().addAttrs(fill="darkorchid")
+        oval = DATPen().polygon(3, Rect(0, 0, 50, 50)).attr(fill="random")
+        ss1_p = ss1.pen().attr(fill="darkorchid")
         print(ss1_p.frame)
         dps = DATPenSet(
             ss1_p,
@@ -815,11 +815,11 @@ if __name__ == "__main__":
             #ss_bounds_test("≈/Compressa-MICRO-GX-Rg.ttf", p)
             #ss_bounds_test("≈/BruphyGX.ttf", p)
         
-        #ss_and_shape_test(p)
-        #rotalic_test(p)
-        #multilang_test(p)
-        #tracking_test(p)
-        #color_font_test(p)
+        ss_and_shape_test(p)
+        rotalic_test(p)
+        multilang_test(p)
+        tracking_test(p)
+        color_font_test(p)
         emoji_test(p)
         #hoi_test(p)
-        #ufo_test(p)
+        ufo_test(p)
