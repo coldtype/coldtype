@@ -168,7 +168,10 @@ class DATPen(RecordingPen, AlignableMixin):
             dp.attr(**attrs)
         return dp
     
-    def attr(self, tag="default", **kwargs):
+    def attr(self, tag="default", prop=None, **kwargs):
+        if len(kwargs.items()) == 0: # getting, not setting
+            return self.attrs.get(tag)
+        
         attrs = {}
         if tag and self.attrs.get(tag):
             attrs = self.attrs[tag]

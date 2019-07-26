@@ -139,11 +139,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
     
     def asSVG(self, style=None):
         self.path = etree.Element("path")
-        if style and style in self.dat.attrs:
-            attrs = self.dat.attrs[style]
-        else:
-            attrs = self.dat.attrs["default"]
-        for attr in attrs.items():
+        for attr in self.findStyledAttrs(style):
             self.applyDATAttribute(attr)
         self.path.set("d", self.getCommands())
         g = etree.Element("g")
@@ -178,7 +174,7 @@ if __name__ == "__main__":
 
     with previewer() as p:
         r = Rect((0, 0, 1000, 1000))
-        dp1 = DATPen(fill="darkorchid")
+        dp1 = DATPen(fill="darkorchid").attr("blue", fill="royalblue")
         dp1.oval(r.inset(200, 200))
         path = os.path.expanduser("~/Type/grafprojects/vulfsans/alternate_vulfs.svg")
         dp = read_svg_to_pen(path, "lombardic-vulf")
@@ -186,4 +182,4 @@ if __name__ == "__main__":
         dp.align(r)
         dp.translate(-6, 0)
         dp.attr(fill=Color.from_rgb(1, 1, 1))
-        p.send(SVGPen.Composite([dp1, dp], r), rect=r)
+        p.send(SVGPen.Composite([dp1, dp], r, style="default"), rect=r)
