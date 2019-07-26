@@ -189,6 +189,10 @@ class DATPen(RecordingPen, AlignableMixin):
                         attrs["stroke"]["color"] = normalize_color((1, 0, 0.5))
                 else:
                     attrs["stroke"] = dict(color=normalize_color((1, 0, 0.5)), weight=v)
+            elif k == "shadow":
+                if "color" in v:
+                    v["color"] = normalize_color(v["color"])
+                attrs[k] = v
             else:
                 attrs[k] = v
         if "default" in attrs:

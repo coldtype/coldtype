@@ -74,7 +74,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         r.set("height", str(fr.h))
         return r
     
-    def shadow(self, clip=None, radius=10, alpha=0.3):
+    def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
         hsh = {hash(self.getCommands())}
         f = etree.Element("filter")
         f.set("x", "0")
@@ -89,6 +89,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         fe.set("dy", "0")
         fe.set("stdDeviation", str(radius))
         #fe.set("slope", str(alpha))
+        fe.set("flood-color", self.rgba(color))
         fe.set("flood-opacity", str(alpha))
         f.append(fe)
         self.defs.append(f)
@@ -138,7 +139,11 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
     
     def asSVG(self, style=None):
         self.path = etree.Element("path")
-        for attr in self.dat.attrs["default"].items():
+        if style and style in self.dat.attrs:
+            attrs = self.dat.attrs[style]
+        else:
+            attrs = self.dat.attrs["default"]
+        for attr in attrs.items():
             self.applyDATAttribute(attr)
         self.path.set("d", self.getCommands())
         g = etree.Element("g")
@@ -151,7 +156,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
             g.append(u)
         return g
     
-    def Composite(pens, rect, offset=False):
+    def Composite(pens, rect, offset=False, style=None):
         docroot = etree.Element("svg")
         docroot.set("xmlns", "http://www.w3.org/2000/svg")
         docroot.set("width", str(rect.w))
@@ -161,7 +166,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         
         for pen in SVGPen.FindPens(pens):
             sp = SVGPen(pen, rect.h)
-            docroot.append(sp.asSVG())
+            docroot.append(sp.asSVG(style=style))
         
         return etree.tostring(docroot, pretty_print=True).decode("utf-8").replace("image-href", "xlink:href")
 

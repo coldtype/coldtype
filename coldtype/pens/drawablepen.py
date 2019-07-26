@@ -6,7 +6,7 @@ if __name__ == "__main__":
     sys.path.append(f"{dirname}/../..")
 
 from coldtype.pens.datpen import DATPen, DATPenSet
-from coldtype.color import Gradient
+from coldtype.color import Gradient, Color
 
 class DrawablePenMixin(object):
     def fill(self, el, color):
@@ -15,7 +15,7 @@ class DrawablePenMixin(object):
     def stroke(self, el, weight=1, color=None):
         raise Exception("Pen does not implement stroke function")
 
-    def shadow(self, el, clip=None, radius=10, alpha=0.3):
+    def shadow(self, el, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
         raise Exception("Pen does not implement shadow function")
 
     def image(self, el, src=None, opacity=None, rect=None):
