@@ -359,6 +359,19 @@ class Rect():
     def FromMnMnMxMx(extents):
         xmin, ymin, xmax, ymax = extents
         return Rect(xmin, ymin, xmax - xmin, ymax - ymin)
+    
+    def FromPoints(*points):
+        xmin, ymin, xmax, ymax = None, None, None, None
+        for p in points:
+            if xmin is None or p[0] < xmin:
+                xmin = p[0]
+            if ymin is None or p[1] < ymin:
+                ymin = p[1]
+            if xmax is None or p[0] > xmax:
+                xmax = p[0]
+            if ymax is None or p[1] > ymax:
+                ymax = p[1]
+        return Rect.FromMnMnMxMx([xmin, ymin, xmax, ymax])
 
     def mnmnmxmx(self):
         return (self.x, self.y, self.x + self.w, self.y + self.h)

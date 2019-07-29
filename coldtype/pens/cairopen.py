@@ -1,7 +1,6 @@
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
-from grapefruit import Color
 
 try:
     import cairo
@@ -16,6 +15,7 @@ if __name__ == "__main__":
 
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin
+from coldtype.color import Color, Gradient
 
 
 class CairoPen(DrawablePenMixin, BasePen):
@@ -48,13 +48,24 @@ class CairoPen(DrawablePenMixin, BasePen):
         self.ctx.close_path()
     
     def fill(self, color=None):
-        self.ctx.set_source_rgba(color.red, color.green, color.blue, color.alpha)
-        self.ctx.fill()
+        if color:
+            if isinstance(color, Gradient):
+                self.gradient(color)
+            else:
+                self.ctx.set_source_rgba(color.red, color.green, color.blue, color.alpha)
+            self.ctx.fill()
     
     def stroke(self, weight=1, color=None):
         self.ctx.set_source_rgba(color.red, color.green, color.blue, color.alpha)
         self.ctx.set_line_width(weight)
         self.ctx.stroke()
+    
+    def gradient(self, gradient):
+        pat = cairo.LinearGradient(*[p for s in reversed(gradient.stops) for p in s[1]])
+        for idx, stop in enumerate(gradient.stops):
+            c = stop[0]
+            pat.add_color_stop_rgba(idx, c.red, c.green, c.blue, c.alpha)
+        self.ctx.set_source(pat)
     
     def Composite(pens, rect, image_path, save=True, style=None):
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(rect.w*2), int(rect.h*2))
@@ -68,20 +79,19 @@ class CairoPen(DrawablePenMixin, BasePen):
             print("Should write to base64 and return — not yet supported")
 
 if __name__ == "__main__":
-    import os
-    import sys
-    dirname = os.path.realpath(os.path.dirname(__file__))
-    sys.path.insert(0, os.path.realpath("."))
     from coldtype.pens.datpen import DATPen
+    from coldtype.pens.svgpen import SVGPen
     from coldtype.viewer import viewer
     from random import random
     
     r = Rect((0, 0, 500, 500))
     p = os.path.realpath(f"{dirname}/../../test/artifacts/cairopen_test2.png")
-    dp = DATPen(fill="random", stroke=dict(weight=20, color="random"))
+    
+    dp = DATPen(fill=Gradient.Random(r), stroke=dict(weight=20, color="royalblue"))
     dp.attr("dark", fill="black", stroke="hotpink", strokeWidth=20)
     dp.oval(r.inset(100, 100))
-    CairoPen.Composite([dp], r, p, style="default")
     
     with viewer() as pv:
-        pv.send(f"<img style='background:white' src='file:///{p}?q={random()}' width={r.w/2}/>", r.scale(0.5))
+        pv.send(SVGPen.Composite([dp], r), r)
+        CairoPen.Composite([dp], r, p, style="default")
+        pv.send(p, r, image=True)

@@ -4,7 +4,8 @@ from fontTools.pens.filterPen import ContourFilterPen
 from fontTools.pens.reverseContourPen import ReverseContourPen
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.pens.recordingPen import RecordingPen
-from fontTools.pens.pointPen import SegmentToPointPen, PointToSegmentPen, AbstractPointPen  
+from fontTools.pens.pointPen import SegmentToPointPen, PointToSegmentPen, AbstractPointPen
+from fontTools.svgLib.path.parser import parse_path
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontPens.flattenPen import FlattenPen
@@ -164,8 +165,8 @@ class DATPen(RecordingPen, AlignableMixin):
     def copy(self):
         dp = DATPen()
         self.replay(dp)
-        for attrs in self.attrs:
-            dp.attr(**attrs)
+        for tag, attrs in self.attrs.items():
+            dp.attr(tag, **attrs)
         return dp
     
     def attr(self, tag="default", prop=None, **kwargs):
@@ -574,6 +575,15 @@ class DATPen(RecordingPen, AlignableMixin):
         self.record(dp)
         return self
     
+    def svg(self, file, gid, rect=Rect(0, 0, 0, 100)):
+        from bs4 import BeautifulSoup
+        with open(file, "r") as f:
+            soup = BeautifulSoup(f.read(), features="lxml")
+            tp = TransformPen(self, (1, 0, 0, -1, 0, rect.h))
+            for path in soup.find(id=gid).find_all("path"):
+                parse_path(path.get("d"), tp)
+        return self
+    
     def explode(self):
         dp = RecordingPen()
         ep = ExplodingPen(dp)
@@ -815,46 +825,20 @@ if __name__ == "__main__":
     
     with viewer() as v:
         def gradient_test():
-            r = Rect((0, 0, 1920, 1080))
-            ss1 = StyledString("cold", Style("≈/Nonplus-Black.otf", fontSize=600))
-            ss2 = StyledString("type", Style("≈/Nostrav0.9-Stream.otf", fontSize=310, tracking=0))
-            dp1 = ss1.pen().align(r)
-            dp2 = ss2.pen().align(r)
-            #dp1.addAttrs(fill=(0))
-            #dp1.addSmoothPoints()
-            #dp1.flatten(length=500)
-            dp1.roughen(amplitude=10)
-            dp1.removeOverlap()
-            dp1.addAttrs(fill="random")
-            dp2.addAttrs(fill=Gradient.Random(r))
-            dp2.rotate(5)
-            dp2.translate(10, 0)
-
-            dt1 = DATPen(fill=Gradient.Random(r))
-            dt1.oval(r.inset(100, 100))
-            dt2 = DATPen(fill="random")
-            dt2.rect(r.inset(100, 100))
-            dt2.align(r)
-            dt3 = DATPen(fill=Gradient.Random(r, 0.2)).polygon(8, r)
-            dt3.rotate(random()*100-50)
-
+            r = Rect((0, 0, 500, 200))
+            dp1 = StyledString("cold", Style("≈/Nonplus-Black.otf", 200)).pen().align(r)
+            dp2 = StyledString("type", Style("≈/Nostrav0.9-Stream.otf", 110)).pen().align(r)
+            dp1.removeOverlap().attr(fill="random")
+            dp2.attr(fill=Gradient.Random(r)).rotate(5).translate(10, 0)
             pens = [
-                #DATPen(fill=Gradient.Random(r)).rect(r),
                 DATPen.Grid(r, opacity=0.1),
-                #dt1, dt2, dt3,
-                #dp1.copy().addAttrs(fill=Gradient.Random(r)).translate(-30, 0),
-                #dp1.copy().addAttrs(fill=Gradient.Random(r)).translate(30, 0),
-                #dp1,
                 dp2.copy().translate(-4, 4).attr(fill=Gradient.Random(r, 0.9)),
-                dp1,
+                dp1.attr(fill=None, stroke="random"),
                 dp2.intersection(dp1),
-                *dp1.copy().skeleton(returnSet=True, scale=10),
+                *dp1.copy().skeleton(returnSet=True, scale=2),
             ]
-
             svg = SVGPen.Composite(pens, r)
             v.send(svg, r)
-
-            #ReportLabPen.Composite(pens, r, "test.pdf")
     
         def roughen_test():
             #seed(100)
@@ -918,8 +902,8 @@ if __name__ == "__main__":
             v.send(SVGPen.Composite([dp], r), r)
 
         #gradient_test()
-        roughen_test()
-        #map_test()
+        #roughen_test()
+        map_test()
         #align_test()
         #conic_test()
         #reverse_test()

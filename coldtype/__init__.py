@@ -589,9 +589,10 @@ class StyledString(FittableMixin):
         if not adjusted and self.style.varyFontSize:
             self.fontSize -= 1
             adjusted = True
-        if not adjusted and "hwid" not in self.features:
+        if True and not adjusted and "hwid" not in self.features:
             #print("HWID'ing")
             self.features["hwid"] = True
+            self.tracking = self.style.tracking # reset to widest
             adjusted = True
         return adjusted
     
@@ -815,11 +816,13 @@ if __name__ == "__main__":
             #ss_bounds_test("≈/Compressa-MICRO-GX-Rg.ttf", p)
             #ss_bounds_test("≈/BruphyGX.ttf", p)
         
-        ss_and_shape_test(p)
-        rotalic_test(p)
+        #ss_and_shape_test(p)
+        #rotalic_test(p)
         multilang_test(p)
-        tracking_test(p)
-        color_font_test(p)
-        emoji_test(p)
+        #tracking_test(p)
+        #color_font_test(p)
+        #emoji_test(p)
         #hoi_test(p)
-        ufo_test(p)
+        #ufo_test(p)
+
+        

@@ -1,4 +1,5 @@
 from websocket import create_connection
+from random import random
 
 import sys, os
 dirname = os.path.realpath(os.path.dirname(__file__))
@@ -21,13 +22,13 @@ class PreviewConnection():
     def __exit__(self, type, value, traceback):
         self.ws.close()
     
-    def send(self, content, rect=Rect(0, 0, 500, 500), full=False):
+    def send(self, content, rect=Rect(0, 0, 500, 500), full=False, image=False):
         if full:
             html = content
-        elif isinstance(rect, Rect):
-            html = f"""<div class="page" style="width:{rect.w}px;height:{rect.h}px">{content}</div>"""
+        elif image:
+            html = f"""<div class="page" style="width:{rect.w/2}px;height:{rect.h/2}px"><img style='background:white' src='file:///{content}?q={random()}' width={rect.w/2}/></div>"""
         else:
-            html = f"""<div class="page" style="width:{rect}px">{content}</div>"""
+            html = f"""<div class="page" style="width:{rect.w}px;height:{rect.h}px">{content}</div>"""
         self.ws.send(html)
 
 

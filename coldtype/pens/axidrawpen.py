@@ -54,7 +54,7 @@ class AxiDrawPen(BasePen):
     def draw(self, scale=0.01, dry=True, cm=False):
         if dry:
             with viewer() as v:
-                dp = DATPen().record(self.dat).addAttrs(fill=None, stroke=0)
+                dp = DATPen().record(self.dat).attr(fill=None, stroke=0)
                 v.send(SVGPen.Composite([dp], self.page), self.page)
         else:
             self.dat.scale(scale)
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     from coldtype.viewer import viewer
     from coldtype.pens.datpen import DATPenSet
     from coldtype import Slug, Style
-    from coldtype.ufo import UFOStringSetter
+    #from coldtype.ufo import UFOStringSetter
     from random import random, randint
     from string import ascii_lowercase, ascii_uppercase
  
@@ -99,17 +99,17 @@ if __name__ == "__main__":
         ff = "~/Type/typeworld/hershey_ufos_open_paths/Hershey-{:s}.ufo"
         r = Rect(0, 0, 1100, 850)
         strings = [
-            ["The virtuosity of the cathode ray printer", "SimplexCartographicSans"],
-            ["has been explored further", "SimplexCartographicScript"],
-            ["with a number of", "DuplexPrincipalSans"],
-            ["calligraphic", "TriplexItalic"],
-            ["digitalizations.", "TriplexGothicGerman"],
+            #["The virtuosity of the cathode ray printer", "SimplexCartographicSans"],
+            #["has been explored further", "SimplexCartographicScript"],
+            #["with a number of", "DuplexPrincipalSans"],
+            ["Butts", "TriplexGothicItalian"],
+            #["digitalizations.", "TriplexGothicGerman"],
         ]
         rl = r.inset(0, 200)
         p = DATPen()
         #rows = r.inset(0, 100).subdivide(len(strings), "maxy")
         for idx, (s, f) in enumerate(strings):
-            s = Slug(s, Style(ff.format(f), 100, varyFontSize=1)).fit(500)
+            s = Slug(s, Style(ff.format(f), 200, varyFontSize=1)).fit(500)
             rt, rl = rl.divide(s.strings[0].fontSize + 10, "maxy")
             s.pen().align(rt).replay(p)
         
