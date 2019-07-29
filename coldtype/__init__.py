@@ -198,12 +198,53 @@ class FittableMixin():
         return self
 
 
+class GrafStyle():
+    def __init__(self, leading=10):
+        self.leading = leading
+
+
+class Graf():
+    def __init__(self, lines, container, style=GrafStyle()):
+        self.container = container
+        self.style = style
+        self.lines = lines
+    
+    def lineRects(self):
+        # which came first, the height or the width???
+        rects = []
+        leadings = []
+        box = self.container.getFrame()
+        leftover = box
+        for l in self.lines:
+            box, leftover = leftover.divide(l.height(), "maxy")
+            leading, leftover = leftover.divide(self.style.leading, "maxy")
+            leadings.append(leading)
+            rects.append(box)
+        return rects
+
+    def fit(self):
+        rects = self.lineRects()
+        for idx, l in enumerate(self.lines):
+            l.fit(rects[idx].w)
+    
+    def pens(self):
+        rects = self.lineRects()
+        pens = DATPenSet()
+        for idx, l in enumerate(self.lines):
+            x, y, _, _ = rects[idx]
+            pens.pens.append(l.pens().translate(x, y))
+        return pens
+
+
 class Lockup(FittableMixin):
     def __init__(self, slugs):
         self.slugs = slugs
     
     def width(self):
         return sum([s.width() for s in self.slugs])
+    
+    def height(self):
+        return max([s.height() for s in self.slugs])
     
     def textContent(self):
         return "/".join([s.textContent() for s in self.slugs])
@@ -225,6 +266,15 @@ class Lockup(FittableMixin):
             x_off += dps.getFrame().w
             x_off += s.margin[1]
         return DATPenSet(pens)
+    
+    def TextToLines(text, primary, fallback=None):
+        lines = []
+        for line in text.split("\n"):
+            lines.append(Lockup([Slug(line, primary, fallback)]))
+        return lines
+    
+    def SlugsToLines(slugs):
+        return [Lockup([slug]) for slug in slugs]
 
 
 def between(c, a, b):
@@ -268,6 +318,9 @@ class Slug(FittableMixin):
     
     def width(self):
         return sum([s.width() for s in self.strings])
+    
+    def height(self):
+        return max([s.style.capHeight*s.scale() for s in self.strings])
     
     def textContent(self):
         return "-".join([s.textContent() for s in self.strings])
@@ -806,6 +859,14 @@ if __name__ == "__main__":
         style = Style(f, 100, t=-10, varyFontSize=True)
         slug = Slug("Hello, world.", style).fit(r.w)
         p.send(SVGPen.Composite(slug.pen().align(r).attr(fill=None, stroke=(1, 0, 0.5), strokeWidth=1), r), r)
+    
+    def multiline_test(p):
+        r = Rect(0, 0, 200, 200)
+        f = "≈/ObviouslyVariable.ttf"
+        style = Style(f, 50, wdth=1, wght=1, slnt=1, fill=0)
+        graf = Graf(Lockup.TextToLines("Hello\nWorld\nYoyoyo\nMa", style), DATPen().rect(r.take(150, "centerx")))
+        graf.fit()
+        p.send(SVGPen.Composite(graf.pens().align(r), r), r)
 
     with previewer() as p:
         if False:
@@ -818,11 +879,10 @@ if __name__ == "__main__":
         
         #ss_and_shape_test(p)
         #rotalic_test(p)
-        multilang_test(p)
+        #multilang_test(p)
         #tracking_test(p)
         #color_font_test(p)
         #emoji_test(p)
         #hoi_test(p)
         #ufo_test(p)
-
-        
+        multiline_test(p)
