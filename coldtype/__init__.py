@@ -64,7 +64,7 @@ class HarfbuzzFrame():
 
 
 class Harfbuzz():
-    def GetFrames(fontdata, text="", axes=dict(), features=dict(kern=True, liga=True), height=1000):
+    def GetFrames(fontdata, text="", axes=dict(), features=dict(kern=True, liga=True), height=1000, lang=None):
         face = hb.Face(fontdata)
         font = hb.Font(face)
         font.scale = (face.upem, face.upem)
@@ -73,6 +73,8 @@ class Harfbuzz():
             font.set_variations(axes)
         
         buf = hb.Buffer()
+        if lang:
+            buf.language = lang
         buf.add_str(text)
         buf.guess_segment_properties()
         hb.shape(font, buf, features)
@@ -221,18 +223,25 @@ class Graf():
             leadings.append(leading)
             rects.append(box)
         return rects
+    
+    def width(self):
+        return max([l.width() for l in self.lines])
 
     def fit(self):
         rects = self.lineRects()
         for idx, l in enumerate(self.lines):
             l.fit(rects[idx].w)
+        return self
     
     def pens(self):
         rects = self.lineRects()
         pens = DATPenSet()
         for idx, l in enumerate(self.lines):
-            x, y, _, _ = rects[idx]
-            pens.pens.append(l.pens().translate(x, y))
+            r = rects[idx]
+            dps = l.pens().translate(r.x, r.y)
+            dps.container = r
+            dps.align(dps.container, y=None)
+            pens.pens.append(dps)
         return pens
 
 
@@ -389,6 +398,7 @@ class Style():
             capHeight=None,
             data={},
             latin=None, # temp
+            lang=None,
             **kwargs):
         """
         tracking (t)
@@ -442,12 +452,18 @@ class Style():
         self.baselineShift = kwargs.get("bs", baselineShift)
         self.xShift = kwargs.get("xs", xShift)
         self.palette = palette
-
+        self.lang = lang
         self.data = data
         self.latin = latin
 
         # TODO should be able to pass in as kwarg
-        self.features = {**dict(kern=True, liga=True), **features}
+        found_features = features.copy()
+        for k, v in kwargs.items():
+            if k.startswith("ss") and len(k) == 4:
+                found_features[k] = v
+            if k in ["dlig", "swsh", "onum", "tnum"]:
+                found_features[k] = v
+        self.features = {**dict(kern=True, liga=True), **found_features}
 
         self.increments = increments
         self.space = space
@@ -458,7 +474,6 @@ class Style():
             self.strokeWidth = 1
         else:
             self.strokeWidth = strokeWidth
-
 
         unnormalized_variations = variations.copy()
         self.axes = OrderedDict()
@@ -601,7 +616,7 @@ class StyledString(FittableMixin):
                 x_off += w
                 frames.append(HarfbuzzFrame(g, dict(), Point((0, 0)), r))
         else:
-            frames = Harfbuzz.GetFrames(self.style.fontdata, text=self.text, axes=self.variations, features=self.features, height=self.style.capHeight)
+            frames = Harfbuzz.GetFrames(self.style.fontdata, text=self.text, axes=self.variations, features=self.features, height=self.style.capHeight, lang=self.style.lang)
             glyph_names = []
             for f in frames:
                 glyph_name = self.style.ttfont.getGlyphName(f.gid)
@@ -861,12 +876,27 @@ if __name__ == "__main__":
         p.send(SVGPen.Composite(slug.pen().align(r).attr(fill=None, stroke=(1, 0, 0.5), strokeWidth=1), r), r)
     
     def multiline_test(p):
-        r = Rect(0, 0, 200, 200)
+        r = Rect(0, 0, 300, 300)
         f = "≈/ObviouslyVariable.ttf"
         style = Style(f, 50, wdth=1, wght=1, slnt=1, fill=0)
-        graf = Graf(Lockup.TextToLines("Hello\nWorld\nYoyoyo\nMa", style), DATPen().rect(r.take(150, "centerx")))
+        graf = Graf(Lockup.TextToLines("Hello\n—\nYoyoyo\nMa", style), DATPen().rect(r.take(100, "centerx")))
         graf.fit()
         p.send(SVGPen.Composite(graf.pens().align(r), r), r)
+    
+    def multiline_fit_test(p):
+        r = Rect(0, 0, 300, 300)
+        f = "≈/Vinila-VF-HVAR-table.ttf"
+        style = Style(f, 50, wdth=1, wght=1, fill=0, ss01=True)
+        graf = Graf(Lockup.TextToLines("T\nI\nE\nM\nP\nO", style), DATPen().rect(r.take(30, "centerx")))
+        graf.fit()
+        p.send(SVGPen.Composite(graf.pens().align(r), r), r)
+    
+    def language_hb_test(p):
+        r = Rect(0, 0, 300, 100)
+        f = "¬/SourceSerifPro-Black.ttf"
+        style = Style(f, 50, wdth=1, wght=1, ss01=True)
+        dp1 = Slug("ríjks б", style.mod(lang="nl")).pen().align(r)
+        p.send(SVGPen.Composite(dp1, r), r)
 
     with previewer() as p:
         if False:
@@ -886,3 +916,5 @@ if __name__ == "__main__":
         #hoi_test(p)
         #ufo_test(p)
         multiline_test(p)
+        #multiline_fit_test(p)
+        language_hb_test(p)

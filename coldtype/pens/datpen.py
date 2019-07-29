@@ -125,20 +125,22 @@ class AlignableMixin():
         b = self.getFrame(th=th, tv=tv)
 
         xoff = 0
-        if x == Edge.CenterX:
-            xoff = -b.x + rect.x + rect.w/2 - b.w/2
-        elif x == Edge.MinX:
-            xoff = rect.x
-        elif x == Edge.MaxX:
-            xoff = -b.x + rect.x + rect.w - b.w
+        if x != None:
+            if x == Edge.CenterX:
+                xoff = -b.x + rect.x + rect.w/2 - b.w/2
+            elif x == Edge.MinX:
+                xoff = rect.x
+            elif x == Edge.MaxX:
+                xoff = -b.x + rect.x + rect.w - b.w
         
         yoff = 0
-        if y == Edge.CenterY:
-            yoff = -b.y + rect.y + rect.h/2 - b.h/2
-        elif y == Edge.MaxY:
-            yoff = rect.y + rect.h - b.h
-        elif y == Edge.MinY:
-            yoff = rect.y
+        if y != None:
+            if y == Edge.CenterY:
+                yoff = -b.y + rect.y + rect.h/2 - b.h/2
+            elif y == Edge.MaxY:
+                yoff = rect.y + rect.h - b.h
+            elif y == Edge.MinY:
+                yoff = rect.y
         
         diff = rect.w - b.w
         return self.translate(xoff, yoff)
@@ -670,6 +672,7 @@ class DATPenSet(AlignableMixin):
         self.typographic = True
         self.layered = False
         self._tag = "Unknown"
+        self.container = None
     
     def tag(self, tag):
         self._tag = tag
