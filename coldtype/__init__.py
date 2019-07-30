@@ -10,6 +10,7 @@ dirname = os.path.dirname(__file__)
 from collections import OrderedDict
 import freetype
 from freetype.raw import *
+from fontTools.ttLib.tables import otTables
 from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.svgPathPen import SVGPathPen
@@ -20,6 +21,7 @@ from fontTools.ttLib import TTFont
 import unicodedata
 import uharfbuzz as hb
 from itertools import groupby
+from pprint import pprint
 
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath(dirname + "/.."))
@@ -541,6 +543,43 @@ class Style():
                 else:
                     variations[k] = v
         return variations
+    
+    def listFeatures(self):
+        font = self.ttfont
+        all_features = OrderedDict()
+        tag = "GSUB"
+        if not tag in font: return
+        table = font[tag].table
+        if not table.ScriptList or not table.FeatureList: return
+        featureRecords = table.FeatureList.FeatureRecord
+        for script in table.ScriptList.ScriptRecord:
+            _script = {}
+            if not script.Script: continue
+            # script.scriptTag
+            languages = list(script.Script.LangSysRecord)
+            if script.Script.DefaultLangSys:
+                defaultlangsys = otTables.LangSysRecord()
+                defaultlangsys.LangSysTag = "default"
+                defaultlangsys.LangSys = script.Script.DefaultLangSys
+                languages.insert(0, defaultlangsys)
+            for langsys in languages:
+                # langsys.LangSysTag
+                if not langsys.LangSys:
+                    continue
+                features = [featureRecords[index] for index in langsys.LangSys.FeatureIndex]
+                for feature in features:
+                    # feature.FeatureTag
+                    if feature.FeatureTag not in all_features:
+                        try:
+                            name = font["name"].getName(feature.Feature.FeatureParams.UINameID, 3, 1).toUnicode()
+                        except:
+                            name = True
+                        all_features[feature.FeatureTag] = name
+        return all_features
+    
+    def stylisticSets(self):
+        all_features = self.listFeatures()
+        return [(k, v) for (k, v) in all_features.items() if k.startswith("ss")]
 
 
 class StyledString(FittableMixin):
@@ -848,10 +887,12 @@ if __name__ == "__main__":
             frames + ps1.pens + ps2.pens + [DATPen.Grid(r, x=6, y=4)], r), r)
 
     def color_font_test(p):
-        r = Rect(0,0,300,300)
+        r = Rect(0,0,600,300)
         f = "≈/PappardelleParty-VF.ttf"
-        t = "Yoy"
-        ps = Slug(t, Style(f, 300, palette=0, baselineShift=[0, 2, 4])).pens().flatten().align(r, tv=0).flatten()
+        t = "XYZ/yoyoma"
+        st = Style(f, 300, palette=5, ss09=1)
+        pprint(st.stylisticSets())
+        ps = Slug(t, st).pens().align(r, tv=0).flatten()
         p.send(SVGPen.Composite([
             ps.frameSet(),
             ps,
@@ -894,6 +935,7 @@ if __name__ == "__main__":
         r = Rect(0, 0, 300, 300)
         f = "≈/Vinila-VF-HVAR-table.ttf"
         style = Style(f, 50, wdth=1, wght=1, fill=0, ss01=True)
+        pprint(style.stylisticSets())
         graf = Graf(Lockup.TextToLines("T\nI\nE\nM\nP\nO", style), DATPen().rect(r.take(30, "centerx")))
         graf.fit()
         p.send(SVGPen.Composite(graf.pens().align(r), r), r)
@@ -916,7 +958,7 @@ if __name__ == "__main__":
         
         #ss_and_shape_test(p)
         #rotalic_test(p)
-        multilang_test(p)
+        #multilang_test(p)
         #tracking_test(p)
         #color_font_test(p)
         #emoji_test(p)

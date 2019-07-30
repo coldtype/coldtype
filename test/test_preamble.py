@@ -4,7 +4,7 @@ dirname = os.path.dirname(__file__)
 sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
 from coldtype.geometry import Rect, Point
-from coldtype import StyledString
+from coldtype import Slug, Style, Graf
 from coldtype.viewer import previewer
 from coldtype.pens.datpen import DATPen
 from coldtype.pens.svgpen import SVGPen
