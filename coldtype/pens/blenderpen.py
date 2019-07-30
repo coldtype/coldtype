@@ -8,6 +8,7 @@ from fontTools.pens.basePen import BasePen
 
 import math
 try:
+    import bpy
     from mathutils import Vector, Matrix
 except:
     pass
@@ -25,8 +26,12 @@ class BlenderPen(BasePen):
         self.splines = []
         self.dat = dat
         dat.replay(self)
+        if self._spline and len(self._spline) > 0 and self._spline not in self.splines:
+            self.splines.append(self._spline)
     
     def _moveTo(self, p):
+        if self._spline and len(self._spline) > 0 and self._spline not in self.splines:
+            self.splines.append(self._spline)
         self._spline = []
         self._spline.append(["BEZIER", "start", [p, p, p]])
 
@@ -41,17 +46,19 @@ class BlenderPen(BasePen):
         print("NOT SUPPORTED")
 
     def _closePath(self):
-        if self._spline:
+        if self._spline and len(self._spline) > 0 and self._spline not in self.splines:
             self.splines.append(self._spline)
+            self.spline = None
+        self.spline = None
 
-    def drawOnBezierCurve(self, bez):
+    def drawOnBezierCurve(self, bez, cyclic=True):
         for spline in reversed(bez.splines): # clear existing splines
             bez.splines.remove(spline)
 
-        for spline_data in reversed(self.splines):
+        for spline_data in self.splines:
             bez.splines.new('BEZIER')
             spline = bez.splines[-1]
-            spline.use_cyclic_u = True
+            spline.use_cyclic_u = cyclic
             for i, (t, style, pts) in enumerate(spline_data):
                 l, c, r = pts
                 if i > 0:

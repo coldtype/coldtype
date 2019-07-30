@@ -907,11 +907,19 @@ if __name__ == "__main__":
             r = Rect(0, 0, 500, 500)
             dp = DATPen(fill=None, stroke=0).sine(r.take(100, "centery"), 10)
             v.send(SVGPen.Composite([dp], r), r)
+        
+        def outline_test():
+            r = Rect(0, 0, 500, 500)
+            ri = r.inset(100, 100)
+            dp = DATPen(fill=None, stroke=0).line([ri.point("SW"), ri.point("NE")]).line([ri.point("NW"), ri.point("SE")])
+            dp.outline().removeOverlap()
+            v.send(SVGPen.Composite([dp], r), r)
 
         #gradient_test()
         #roughen_test()
-        map_test()
+        #map_test()
         #align_test()
         #conic_test()
         #reverse_test()
         #sine_test()
+        outline_test()
