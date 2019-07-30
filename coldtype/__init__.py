@@ -747,6 +747,8 @@ class StyledString(FittableMixin):
                     pens.layered = True
                 dp_atom = dps
             if frame:
+                if f.frame.y < 0:
+                    f.frame.y = 0
                 dp_atom.addFrame(f.frame)
             pens.addPen(dp_atom)
         return pens
@@ -815,18 +817,23 @@ if __name__ == "__main__":
 
     def multilang_test(p):
         obv = Style("≈/ObviouslyVariable.ttf", 80, wdth=1, wght=0.7)
+        r = Rect((0, 0, 600, 140))
         ss = Slug(
             #"الملخبط",
-            "Ali الملخبط Boba",
-            Style("≈/GretaArabicCondensedAR-Heavy.otf", 100),
-            obv.mod(tracking=-2)
-            )
-        r = Rect((0, 0, 600, 140))
+            #"Ali الملخبط Boba",
+            #"الكروسفِيد",
+            "مستوَى التخفيف",
+            Style("≈/GretaArabicCondensedAR-Light.otf", 100, fill=Gradient.Random(r)),
+            obv.mod(tracking=-2))
         ss.fit(r.w - 100)
-        dp = ss.pen().attr(fill=Gradient.Random(r))
-        dp.align(r, x="maxx", y="miny")
+        dps = ss.pens()
+        dps.align(r)
         g = DATPen.Grid(r, y=4)
-        p.send(SVGPen.Composite([dp, g], r), r)
+        p.send(SVGPen.Composite([
+            g,
+            dps.frameSet().attr(fill=None, stroke=0),
+            dps
+            ], r), r)
     
     def tracking_test(p):
         r = Rect(0, 0, 500, 100)
@@ -909,12 +916,12 @@ if __name__ == "__main__":
         
         #ss_and_shape_test(p)
         #rotalic_test(p)
-        #multilang_test(p)
+        multilang_test(p)
         #tracking_test(p)
         #color_font_test(p)
         #emoji_test(p)
         #hoi_test(p)
         #ufo_test(p)
-        multiline_test(p)
+        #multiline_test(p)
         #multiline_fit_test(p)
-        language_hb_test(p)
+        #language_hb_test(p)
