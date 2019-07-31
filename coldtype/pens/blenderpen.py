@@ -68,6 +68,41 @@ class BlenderPen(BasePen):
                 pt.handle_left = b3d_vector(l)
                 pt.handle_right = b3d_vector(r)
 
+
+class BPH():
+    def FindCollectionForItem(item):
+        collections = item.users_collection
+        if len(collections) > 0:
+            return collections[0]
+        return bpy.context.scene.collection
+
+    def Collection(name):
+        if name not in bpy.data.collections:
+            coll = bpy.data.collections.new(name)
+            bpy.context.scene.collection.children.link(coll)
+        return bpy.data.collections.get(name)
+
+    def Bezier(coll, name):
+        if name not in bpy.context.scene.objects:
+            bpy.ops.curve.primitive_bezier_curve_add()
+            bpy.context.scene.objects["BezierCurve"].name = name
+            bc = bpy.context.scene.objects[name]
+            bc.data.name = name
+            bc.data.dimensions = "2D"
+            bc.data.fill_mode = "BOTH"
+            bc.data.extrude = 0.1
+            mat = bpy.data.materials.new("Material")
+            mat.use_nodes = True
+            #dv = mat.node_tree.nodes["Principled BSDF"].inputs[0].default_value
+            bc.data.materials.append(mat)
+        bc = bpy.context.scene.objects[name]
+        bc_coll = BPH.FindCollectionForItem(bc)
+        if bc_coll != coll:
+            coll.objects.link(bc)
+            bc_coll.objects.unlink(bc)
+        return bc
+
+
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath("."))
     from coldtype.pens.datpen import DATPen

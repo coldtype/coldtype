@@ -786,8 +786,9 @@ class StyledString(FittableMixin):
                     pens.layered = True
                 dp_atom = dps
             if frame:
-                if f.frame.y < 0:
-                    f.frame.y = 0
+                f.frame.y = 0
+                #if f.frame.y < 0:
+                #    f.frame.y = 0
                 dp_atom.addFrame(f.frame)
             pens.addPen(dp_atom)
         return pens
@@ -861,7 +862,8 @@ if __name__ == "__main__":
             #"الملخبط",
             #"Ali الملخبط Boba",
             #"الكروسفِيد",
-            "مستوَى التخفيف",
+            #"مستوَى التخفيف",
+            "اللٌُوفَاي",
             Style("≈/GretaArabicCondensedAR-Light.otf", 100, fill=Gradient.Random(r)),
             obv.mod(tracking=-2))
         ss.fit(r.w - 100)
@@ -958,7 +960,7 @@ if __name__ == "__main__":
         
         #ss_and_shape_test(p)
         #rotalic_test(p)
-        #multilang_test(p)
+        multilang_test(p)
         #tracking_test(p)
         #color_font_test(p)
         #emoji_test(p)
