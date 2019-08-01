@@ -278,6 +278,9 @@ class Lockup(FittableMixin):
             x_off += s.margin[1]
         return DATPenSet(pens)
     
+    def pen(self):
+        return self.pens().pen()
+    
     def TextToLines(text, primary, fallback=None):
         lines = []
         for line in text.split("\n"):

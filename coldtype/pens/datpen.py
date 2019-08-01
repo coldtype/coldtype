@@ -149,13 +149,14 @@ class AlignableMixin():
 class DATPen(RecordingPen, AlignableMixin):
     def __init__(self, **kwargs):
         super().__init__()
-        #self._text = kwargs.get("text", "NOTEXT")
-        self.attrs = OrderedDict()
-        self.attr("default", fill=(1, 0, 0.5))
+        self.clearAttrs()
         self.attr("default", **kwargs)
         self.frame = None
         self.typographic = False
         self._tag = "Unknown"
+    
+    def pen(self):
+        return self
     
     def tag(self, tag):
         self._tag = tag
@@ -171,6 +172,11 @@ class DATPen(RecordingPen, AlignableMixin):
             dp.attr(tag, **attrs)
         return dp
     
+    def clearAttrs(self):
+        self.attrs = OrderedDict()
+        self.attr("default", fill=(1, 0, 0.5))
+        return self
+
     def attr(self, tag="default", **kwargs):
         if len(kwargs.items()) == 0: # getting, not setting
             return self.attrs.get(tag)
