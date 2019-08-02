@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 dirname = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(f"{dirname}/../..")
 
@@ -35,10 +36,15 @@ class BPH():
         return bpy.data.collections.get(name)
 
     def Bezier(coll, name, deleteExisting=False):
+        print("Bezier", name, deleteExisting, name in bpy.context.scene.objects)
         if deleteExisting and name in bpy.context.scene.objects:
             obj = bpy.context.scene.objects[name]
-            obj.select_set(True)
-            bpy.ops.object.delete()
+            bpy.data.objects.remove(obj, do_unlink=True)
+            #bpy.context.view_layer.objects.active = None
+            #obj.select_set(True)
+            #bpy.context.view_layer.objects.active = obj
+            #print(">>>>>>", obj.users)
+            #bpy.ops.object.delete()
 
         if name not in bpy.context.scene.objects:
             bpy.ops.curve.primitive_bezier_curve_add()
@@ -48,7 +54,7 @@ class BPH():
             bc.data.dimensions = "2D"
             bc.data.fill_mode = "BOTH"
             bc.data.extrude = 0.1
-            mat = bpy.data.materials.new("Material")
+            mat = bpy.data.materials.new(f"Material_{name}")
             mat.use_nodes = True
             #dv = mat.node_tree.nodes["Principled BSDF"].inputs[0].default_value
             bc.data.materials.append(mat)
@@ -109,9 +115,11 @@ class BlenderPen(DrawablePenMixin, BasePen):
             self.spline = None
         self.spline = None
     
+    def materials(self):
+        return self.bez.data.materials
+
     def bsdf(self):
-        nt = self.bez.data.materials[0].node_tree
-        return nt.nodes["Principled BSDF"]
+        return self.materials()[0].node_tree.nodes["Principled BSDF"]
     
     def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
         pass
@@ -158,6 +166,14 @@ class BlenderPen(DrawablePenMixin, BasePen):
     
     def transmission(self, amount=1):
         self.bsdf().inputs[15].default_value = amount
+        return self
+    
+    def image(self, path):
+        mat = self.materials()[0]
+        bsdf = self.bsdf()
+        imgtex = mat.node_tree.nodes.new("ShaderNodeTexImage")
+        imgtex.image = bpy.data.images.load(path)
+        mat.node_tree.links.new(bsdf.inputs["Base Color"], imgtex.outputs["Color"])
         return self
     
     def convertToMesh(self):
