@@ -154,9 +154,13 @@ class DATPen(RecordingPen, AlignableMixin):
         self.frame = None
         self.typographic = False
         self._tag = "Unknown"
+        self.container = None
     
     def pen(self):
         return self
+    
+    #def pens(self):
+    #    return DATPenSet([pen])
     
     def tag(self, tag):
         self._tag = tag
@@ -164,6 +168,10 @@ class DATPen(RecordingPen, AlignableMixin):
     
     def getTag(self):
         return self._tag
+
+    def contain(self, rect):
+        self.container = rect
+        return self
     
     def copy(self):
         dp = DATPen()
@@ -683,6 +691,10 @@ class DATPenSet(AlignableMixin):
     
     def getTag(self):
         return self._tag
+    
+    def contain(self, rect):
+        self.container = rect
+        return self
     
     def addPens(self, pens):
         if isinstance(pens, DATPenSet):

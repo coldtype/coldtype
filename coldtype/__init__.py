@@ -203,15 +203,22 @@ class FittableMixin():
 
 
 class GrafStyle():
-    def __init__(self, leading=10, x="centerx"):
-        self.leading = leading
+    def __init__(self, leading=10, x="centerx", xp=0, **kwargs):
+        self.leading = kwargs.get("l", leading)
         self.x = x
+        self.xp = xp
 
 
 class Graf():
-    def __init__(self, lines, container, style=GrafStyle()):
-        self.container = container
-        self.style = style
+    def __init__(self, lines, container, style=None, **kwargs):
+        if isinstance(container, Rect):
+            self.container = DATPen().rect(container)
+        else:
+            self.container = container
+        if style and isinstance(style, GrafStyle):
+            self.style = style
+        else:
+            self.style = GrafStyle(**kwargs)
         self.lines = lines
     
     def lineRects(self):
@@ -233,7 +240,7 @@ class Graf():
     def fit(self):
         rects = self.lineRects()
         for idx, l in enumerate(self.lines):
-            l.fit(rects[idx].w)
+            l.fit(rects[idx].w - self.style.xp)
         return self
     
     def pens(self):
@@ -246,6 +253,9 @@ class Graf():
             dps.align(dps.container, x=self.style.x, y=None)
             pens.pens.append(dps)
         return pens
+    
+    def fpa(self, rect=None):
+        return self.fit().pens().align(rect or self.container.getFrame())
 
 
 class Lockup(FittableMixin):
@@ -290,6 +300,10 @@ class Lockup(FittableMixin):
     
     def SlugsToLines(slugs):
         return [Lockup([slug]) for slug in slugs]
+
+
+def T2L(text, primary, fallback=None):
+    return Lockup.TextToLines(text, primary, fallback)
 
 
 def between(c, a, b):
