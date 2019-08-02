@@ -203,8 +203,9 @@ class FittableMixin():
 
 
 class GrafStyle():
-    def __init__(self, leading=10):
+    def __init__(self, leading=10, x="centerx"):
         self.leading = leading
+        self.x = x
 
 
 class Graf():
@@ -242,7 +243,7 @@ class Graf():
             r = rects[idx]
             dps = l.pens().translate(r.x, r.y)
             dps.container = r
-            dps.align(dps.container, y=None)
+            dps.align(dps.container, x=self.style.x, y=None)
             pens.pens.append(dps)
         return pens
 
@@ -588,8 +589,10 @@ class Style():
 class StyledString(FittableMixin):
     def __init__(self, text, style):
         self.text = text
+        self.setStyle(style)
+    
+    def setStyle(self, style):
         self.style = style
-        
         # these will change based on fitting, so we make copies
         self.fontSize = self.style.fontSize
         self.tracking = self.style.tracking
@@ -866,9 +869,10 @@ if __name__ == "__main__":
             #"Ali الملخبط Boba",
             #"الكروسفِيد",
             #"مستوَى التخفيف",
-            "اللٌُوفَاي",
-            Style("≈/GretaArabicCondensedAR-Light.otf", 100, fill=Gradient.Random(r)),
-            obv.mod(tracking=-2))
+            #"اللٌُوفَاي",
+            "+ الضغط",
+            Style("≈/GretaArabicCondensedAR-Light.otf", 100, fill=Gradient.Random(r)), obv.mod(tracking=-2)
+            )
         ss.fit(r.w - 100)
         dps = ss.pens()
         dps.align(r)

@@ -207,8 +207,6 @@ class DATPen(RecordingPen, AlignableMixin):
                 attrs[k] = v
             else:
                 attrs[k] = v
-        if "default" in attrs:
-            print("hello")
         return self
     
     def clearFrame(self):

@@ -34,7 +34,12 @@ class BPH():
                 bpy.context.scene.collection.children.link(coll)
         return bpy.data.collections.get(name)
 
-    def Bezier(coll, name):
+    def Bezier(coll, name, deleteExisting=False):
+        if deleteExisting and name in bpy.context.scene.objects:
+            obj = bpy.context.scene.objects[name]
+            obj.select_set(True)
+            bpy.ops.object.delete()
+
         if name not in bpy.context.scene.objects:
             bpy.ops.curve.primitive_bezier_curve_add()
             bpy.context.scene.objects["BezierCurve"].name = name
@@ -52,6 +57,7 @@ class BPH():
         if bc_coll != coll:
             coll.objects.link(bc)
             bc_coll.objects.unlink(bc)
+        bc.select_set(False)
         return bc
     
     def Vector(pt, z=0):
@@ -154,8 +160,23 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.bsdf().inputs[15].default_value = amount
         return self
     
-    def draw(self, collection, style=None, scale=0.01, cyclic=True):
-        self.bez = BPH.Bezier(collection, self.tag)
+    def convertToMesh(self):
+        self.bez.select_set(True)
+        bpy.ops.object.convert(target="MESH")
+        self.bez.select_set(False)
+        return self
+    
+    def rotate(self, x=None, y=None, z=None):
+        if x is not None:
+            self.bez.rotation_euler[0] = math.radians(x)
+        if y is not None:
+            self.bez.rotation_euler[1] = math.radians(y)
+        if z is not None:
+            self.bez.rotation_euler[2] = math.radians(z)
+        return self
+    
+    def draw(self, collection, style=None, scale=0.01, cyclic=True, deleteExisting=False):
+        self.bez = BPH.Bezier(collection, self.tag, deleteExisting=deleteExisting)
         self.bez.data.fill_mode = "BOTH"
         self.record(self.dat.copy().removeOverlap().scale(scale))
         self.drawOnBezierCurve(self.bez.data, cyclic=cyclic)
