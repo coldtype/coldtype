@@ -36,15 +36,10 @@ class BPH():
         return bpy.data.collections.get(name)
 
     def Bezier(coll, name, deleteExisting=False):
-        print("Bezier", name, deleteExisting, name in bpy.context.scene.objects)
+        print(">Bezier", name, deleteExisting, name in bpy.context.scene.objects)
         if deleteExisting and name in bpy.context.scene.objects:
             obj = bpy.context.scene.objects[name]
             bpy.data.objects.remove(obj, do_unlink=True)
-            #bpy.context.view_layer.objects.active = None
-            #obj.select_set(True)
-            #bpy.context.view_layer.objects.active = obj
-            #print(">>>>>>", obj.users)
-            #bpy.ops.object.delete()
 
         if name not in bpy.context.scene.objects:
             bpy.ops.curve.primitive_bezier_curve_add()
@@ -56,7 +51,6 @@ class BPH():
             bc.data.extrude = 0.1
             mat = bpy.data.materials.new(f"Material_{name}")
             mat.use_nodes = True
-            #dv = mat.node_tree.nodes["Principled BSDF"].inputs[0].default_value
             bc.data.materials.append(mat)
         bc = bpy.context.scene.objects[name]
         bc_coll = BPH.FindCollectionForItem(bc)
@@ -65,6 +59,29 @@ class BPH():
             bc_coll.objects.unlink(bc)
         bc.select_set(False)
         return bc
+    
+    def Plane(coll, name, deleteExisting=False):
+        print(">Plane", name, deleteExisting, name in bpy.context.scene.objects)
+        if deleteExisting and name in bpy.context.scene.objects:
+            obj = bpy.context.scene.objects[name]
+            bpy.data.objects.remove(obj, do_unlink=True)
+
+        if name not in bpy.context.scene.objects:
+            bpy.ops.mesh.primitive_plane_add()
+            plane = bpy.context.active_object
+            plane.name = name
+            plane.data.name = name
+            mat = bpy.data.materials.new(f"Material_{name}")
+            mat.use_nodes = True
+            plane.data.materials.append(mat)
+        else:
+            plane = bpy.context.scene.objects[name]
+        p_coll = BPH.FindCollectionForItem(plane)
+        if p_coll != coll:
+            coll.objects.link(plane)
+            p_coll.objects.unlink(plane)
+        plane.select_set(False)
+        return plane
     
     def Vector(pt, z=0):
         x, y = pt
