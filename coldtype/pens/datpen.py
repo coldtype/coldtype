@@ -180,6 +180,9 @@ class DATPen(RecordingPen, AlignableMixin):
             dp.attr(tag, **attrs)
         return dp
     
+    def cast(self, _class, *args):
+        return _class(self, *args)
+    
     def clearAttrs(self):
         self.attrs = OrderedDict()
         self.attr("default", fill=(1, 0, 0.5))

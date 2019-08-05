@@ -35,20 +35,26 @@ class BPH():
                 bpy.context.scene.collection.children.link(coll)
         return bpy.data.collections.get(name)
 
-    def Bezier(coll, name, deleteExisting=False):
-        print(">Bezier", name, deleteExisting, name in bpy.context.scene.objects)
+    def Primitive(_type, coll, name, deleteExisting=False):
+        print(">Primitive", name, deleteExisting, name in bpy.context.scene.objects)
         if deleteExisting and name in bpy.context.scene.objects:
             obj = bpy.context.scene.objects[name]
             bpy.data.objects.remove(obj, do_unlink=True)
 
         if name not in bpy.context.scene.objects:
-            bpy.ops.curve.primitive_bezier_curve_add()
-            bpy.context.scene.objects["BezierCurve"].name = name
-            bc = bpy.context.scene.objects[name]
+            if _type == "Bezier":
+                bpy.ops.curve.primitive_bezier_curve_add()
+            elif _type == "Plane":
+                bpy.ops.mesh.primitive_plane_add()
+            #bpy.context.scene.objects["BezierCurve"].name = name
+            #bc = bpy.context.scene.objects[name]
+            bc = bpy.context.active_object
+            bc.name = name
             bc.data.name = name
-            bc.data.dimensions = "2D"
-            bc.data.fill_mode = "BOTH"
-            bc.data.extrude = 0.1
+            if _type == "Bezier":
+                bc.data.dimensions = "2D"
+                bc.data.fill_mode = "BOTH"
+                bc.data.extrude = 0.1
             mat = bpy.data.materials.new(f"Material_{name}")
             mat.use_nodes = True
             bc.data.materials.append(mat)
@@ -60,28 +66,28 @@ class BPH():
         bc.select_set(False)
         return bc
     
-    def Plane(coll, name, deleteExisting=False):
-        print(">Plane", name, deleteExisting, name in bpy.context.scene.objects)
-        if deleteExisting and name in bpy.context.scene.objects:
-            obj = bpy.context.scene.objects[name]
-            bpy.data.objects.remove(obj, do_unlink=True)
+    # def Plane(coll, name, deleteExisting=False):
+    #     print(">Plane", name, deleteExisting, name in bpy.context.scene.objects)
+    #     if deleteExisting and name in bpy.context.scene.objects:
+    #         obj = bpy.context.scene.objects[name]
+    #         bpy.data.objects.remove(obj, do_unlink=True)
 
-        if name not in bpy.context.scene.objects:
-            bpy.ops.mesh.primitive_plane_add()
-            plane = bpy.context.active_object
-            plane.name = name
-            plane.data.name = name
-            mat = bpy.data.materials.new(f"Material_{name}")
-            mat.use_nodes = True
-            plane.data.materials.append(mat)
-        else:
-            plane = bpy.context.scene.objects[name]
-        p_coll = BPH.FindCollectionForItem(plane)
-        if p_coll != coll:
-            coll.objects.link(plane)
-            p_coll.objects.unlink(plane)
-        plane.select_set(False)
-        return plane
+    #     if name not in bpy.context.scene.objects:
+    #         bpy.ops.mesh.primitive_plane_add()
+    #         plane = bpy.context.active_object
+    #         plane.name = name
+    #         plane.data.name = name
+    #         mat = bpy.data.materials.new(f"Material_{name}")
+    #         mat.use_nodes = True
+    #         plane.data.materials.append(mat)
+    #     else:
+    #         plane = bpy.context.scene.objects[name]
+    #     p_coll = BPH.FindCollectionForItem(plane)
+    #     if p_coll != coll:
+    #         coll.objects.link(plane)
+    #         p_coll.objects.unlink(plane)
+    #     plane.select_set(False)
+    #     return plane
     
     def Vector(pt, z=0):
         x, y = pt
@@ -209,7 +215,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
         return self
     
     def draw(self, collection, style=None, scale=0.01, cyclic=True, deleteExisting=False):
-        self.bez = BPH.Bezier(collection, self.tag, deleteExisting=deleteExisting)
+        self.bez = BPH.Primitive("Bezier", collection, self.tag, deleteExisting=deleteExisting)
         self.bez.data.fill_mode = "BOTH"
         self.record(self.dat.copy().removeOverlap().scale(scale))
         self.drawOnBezierCurve(self.bez.data, cyclic=cyclic)
@@ -240,6 +246,7 @@ if __name__ == "__main__":
     from coldtype.pens.datpen import DATPen
 
     dp1 = DATPen()
-    dp1.oval(Rect(0, 0, 500, 500).inset(200, 200))
-    bp = BlenderPen(dp1)
-    print(bp.splines)
+    bp = dp1.oval(Rect(0, 0, 500, 500).inset(200, 200)).cast(BlenderPen)
+    print(bp)
+    #bp = BlenderPen(dp1)
+    #print(bp.splines)
