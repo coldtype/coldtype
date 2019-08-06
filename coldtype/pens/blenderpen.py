@@ -35,19 +35,20 @@ class BPH():
                 bpy.context.scene.collection.children.link(coll)
         return bpy.data.collections.get(name)
 
-    def Primitive(_type, coll, name, deleteExisting=False):
-        print(">Primitive", name, deleteExisting, name in bpy.context.scene.objects)
-        if deleteExisting and name in bpy.context.scene.objects:
+    def Primitive(_type, coll, name, dn=False, container=None):
+        print(">Primitive", name, dn, name in bpy.context.scene.objects)
+        created = False
+        
+        if dn and name in bpy.context.scene.objects:
             obj = bpy.context.scene.objects[name]
             bpy.data.objects.remove(obj, do_unlink=True)
 
         if name not in bpy.context.scene.objects:
+            created = True
             if _type == "Bezier":
                 bpy.ops.curve.primitive_bezier_curve_add()
             elif _type == "Plane":
                 bpy.ops.mesh.primitive_plane_add()
-            #bpy.context.scene.objects["BezierCurve"].name = name
-            #bc = bpy.context.scene.objects[name]
             bc = bpy.context.active_object
             bc.name = name
             bc.data.name = name
@@ -55,39 +56,26 @@ class BPH():
                 bc.data.dimensions = "2D"
                 bc.data.fill_mode = "BOTH"
                 bc.data.extrude = 0.1
+            elif _type == "Plane":
+                if container:
+                    bc.scale[0] = container.w/2
+                    bc.scale[1] = container.h/2
+                    bc.location[0] = container.x + container.w/2
+                    bc.location[1] = container.y + container.h/2
+                    bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
+                    bpy.ops.object.transform_apply()
             mat = bpy.data.materials.new(f"Material_{name}")
             mat.use_nodes = True
             bc.data.materials.append(mat)
+        
         bc = bpy.context.scene.objects[name]
         bc_coll = BPH.FindCollectionForItem(bc)
         if bc_coll != coll:
             coll.objects.link(bc)
             bc_coll.objects.unlink(bc)
         bc.select_set(False)
-        return bc
-    
-    # def Plane(coll, name, deleteExisting=False):
-    #     print(">Plane", name, deleteExisting, name in bpy.context.scene.objects)
-    #     if deleteExisting and name in bpy.context.scene.objects:
-    #         obj = bpy.context.scene.objects[name]
-    #         bpy.data.objects.remove(obj, do_unlink=True)
 
-    #     if name not in bpy.context.scene.objects:
-    #         bpy.ops.mesh.primitive_plane_add()
-    #         plane = bpy.context.active_object
-    #         plane.name = name
-    #         plane.data.name = name
-    #         mat = bpy.data.materials.new(f"Material_{name}")
-    #         mat.use_nodes = True
-    #         plane.data.materials.append(mat)
-    #     else:
-    #         plane = bpy.context.scene.objects[name]
-    #     p_coll = BPH.FindCollectionForItem(plane)
-    #     if p_coll != coll:
-    #         coll.objects.link(plane)
-    #         p_coll.objects.unlink(plane)
-    #     plane.select_set(False)
-    #     return plane
+        return bc, created
     
     def Vector(pt, z=0):
         x, y = pt
@@ -205,6 +193,25 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.bez.select_set(False)
         return self
     
+    def solidify(self, thickness=1):
+        bpy.context.view_layer.objects.active = None
+        bpy.context.view_layer.objects.active = self.bez
+        self.bez.select_set(True)
+        bpy.ops.object.modifier_add(type="SOLIDIFY")
+        self.bez.modifiers["Solidify"].thickness = thickness
+        self.bez.select_set(False)
+        bpy.context.view_layer.objects.active = None
+        return self
+    
+    def applyModifier(self):
+        bpy.context.view_layer.objects.active = None
+        bpy.context.view_layer.objects.active = self.bez
+        self.bez.select_set(True)
+        bpy.ops.object.modifier_apply(apply_as="DATA")
+        self.bez.select_set(False)
+        bpy.context.view_layer.objects.active = None
+        return self
+    
     def rotate(self, x=None, y=None, z=None):
         if x is not None:
             self.bez.rotation_euler[0] = math.radians(x)
@@ -214,11 +221,23 @@ class BlenderPen(DrawablePenMixin, BasePen):
             self.bez.rotation_euler[2] = math.radians(z)
         return self
     
-    def draw(self, collection, style=None, scale=0.01, cyclic=True, deleteExisting=False):
-        self.bez = BPH.Primitive("Bezier", collection, self.tag, deleteExisting=deleteExisting)
-        self.bez.data.fill_mode = "BOTH"
-        self.record(self.dat.copy().removeOverlap().scale(scale))
-        self.drawOnBezierCurve(self.bez.data, cyclic=cyclic)
+    def locate(self, x=None, y=None, z=None):
+        if x is not None:
+            self.bez.location[0] = x
+        if y is not None:
+            self.bez.location[1] = y
+        if z is not None:
+            self.bez.location[2] = z
+        return self
+    
+    def draw(self, collection, style=None, scale=0.01, cyclic=True, dn=False, plane=False):
+        if plane:
+            self.bez, self.created = BPH.Primitive("Plane", collection, self.tag, dn=dn, container=self.dat.getFrame().scale(scale))
+        else:
+            self.bez, self.created = BPH.Primitive("Bezier", collection, self.tag, dn=dn)
+            self.bez.data.fill_mode = "BOTH"
+            self.record(self.dat.copy().removeOverlap().scale(scale))
+            self.drawOnBezierCurve(self.bez.data, cyclic=cyclic)
         for attr in self.findStyledAttrs(style):
             self.applyDATAttribute(attr)
         return self

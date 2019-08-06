@@ -34,6 +34,7 @@ from coldtype.geometry import Rect, Point
 try:
     # relies on undeclared dependencies
     from defcon import Font
+    import glyphsLib
     from coldtype.pens import OutlinePen
 except:
     pass
@@ -403,6 +404,7 @@ class Style():
             ttFont=None,
             tracking=0,
             trackingLimit=0,
+            kern=dict(), # custom kerning
             space=None,
             baselineShift=0,
             xShift=None,
@@ -421,6 +423,7 @@ class Style():
             lang=None,
             **kwargs):
         """
+        kern (k) — a dict of glyphName->[left,right] values in font-space
         tracking (t)
         trackingLimit (tl)
         baselineShift (bs)
@@ -437,12 +440,18 @@ class Style():
         self.format = os.path.splitext(self.fontFile)[1][1:]
         self.ufo = self.format == "ufo"
 
+        if self.ufo:
+            ufo = Font(self.fontFile)
+        if self.format == "glyphs":
+            ufo = glyphsLib.load_to_ufos(self.fontFile)[0]
+            self.ufo = True
+
         capHeight = kwargs.get("ch", capHeight)
 
         if self.ufo:
             self.ttfont = None
             self.fontdata = None
-            self.font = Font(self.fontFile)
+            self.font = ufo
             self.glyphSet = self.font
             self.upem = self.font.info.unitsPerEm
             self.capHeight = self.font.info.capHeight
@@ -468,6 +477,7 @@ class Style():
 
         self.fontSize = fontSize
         self.tracking = kwargs.get("t", tracking)
+        self.kern = kwargs.get("k", kern)
         self.trackingLimit = kwargs.get("tl", trackingLimit)
         self.baselineShift = kwargs.get("bs", baselineShift)
         self.xShift = kwargs.get("xs", xShift)
@@ -624,8 +634,8 @@ class StyledString(FittableMixin):
                 x_off += self.style.space
         return frames
     
-    def adjustFramesForPath(self, frames):
-        for idx, f in enumerate(frames):
+    def adjustFramesForPath(self, frames, glyph_names):
+        for idx, f in enumerate(frames):    
             if self.style.xShift:
                 try:
                     f.frame.x += self.style.xShift[idx]
@@ -676,6 +686,18 @@ class StyledString(FittableMixin):
                 frames.append(HarfbuzzFrame(g, dict(), Point((0, 0)), r))
         else:
             frames = Harfbuzz.GetFrames(self.style.fontdata, text=self.text, axes=self.variations, features=self.features, height=self.style.capHeight, lang=self.style.lang)
+
+"""
+gn = glyph_names[idx]
+            f.frame.x += kern_right
+            kern_right = 0
+            if gn in self.style.kern:
+                left, right = self.style.kern.get(gn)
+                f.frame.x += left
+                f.frame.w += right
+                kern_right = right
+"""
+
             glyph_names = []
             for f in frames:
                 glyph_name = self.style.ttfont.getGlyphName(f.gid)
@@ -688,7 +710,7 @@ class StyledString(FittableMixin):
         for f in frames:
             f.frame = f.frame.scale(self.scale())
 
-        return self.adjustFramesForPath(self.trackFrames(frames, glyph_names))
+        return self.adjustFramesForPath(self.trackFrames(frames, glyph_names), glyph_names)
     
     def width(self): # size?
         return self.getGlyphFrames()[-1].frame.point("SE").x
@@ -946,6 +968,13 @@ if __name__ == "__main__":
         slug = Slug("Hello, world.", style).fit(r.w)
         p.send(SVGPen.Composite(slug.pen().align(r).attr(fill=None, stroke=(1, 0, 0.5), strokeWidth=1), r), r)
     
+    def glyphs_test(p):
+        r = Rect(0, 0, 500, 200)
+        f = "~/Type/grafprojects/obviouslytown/graff.glyphs"
+        style = Style(f, 200, t=-10, varyFontSize=True)
+        slug = Slug("F", style).fit(r.w)
+        p.send(SVGPen.Composite(slug.pen().align(r).removeOverlap().attr(fill=None, stroke=(1, 0, 0.5), strokeWidth=1), r), r)
+    
     def multiline_test(p):
         r = Rect(0, 0, 300, 300)
         f = "≈/ObviouslyVariable.ttf"
@@ -969,6 +998,13 @@ if __name__ == "__main__":
         style = Style(f, 50, wdth=1, wght=1, ss01=True)
         dp1 = Slug("ríjks б", style.mod(lang="nl")).pen().align(r)
         p.send(SVGPen.Composite(dp1, r), r)
+    
+    def custom_kern_test(p):
+        f = "≈/VulfMonoLightItalicVariable.ttf"
+        r = Rect(0, 0, 300, 100)
+        style = Style(f, 50, wdth=0, kern=dict(eacute=[0, -20]))
+        dp1 = Slug("stéréo", style).pen().align(r)
+        p.send(SVGPen.Composite(dp1, r), r)
 
     with previewer() as p:
         if False:
@@ -981,12 +1017,14 @@ if __name__ == "__main__":
         
         #ss_and_shape_test(p)
         #rotalic_test(p)
-        multilang_test(p)
+        #multilang_test(p)
         #tracking_test(p)
         #color_font_test(p)
         #emoji_test(p)
         #hoi_test(p)
         #ufo_test(p)
+        #glyphs_test(p)
         #multiline_test(p)
         #multiline_fit_test(p)
         #language_hb_test(p)
+        custom_kern_test(p)
