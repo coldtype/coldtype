@@ -13,6 +13,7 @@ from grapefruit import Color
 from random import random, randint
 from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
 from collections import OrderedDict
+from numbers import Number
 
 try:
     from noise import pnoise1
@@ -495,13 +496,15 @@ class DATPen(RecordingPen, AlignableMixin):
             return self.intersection(clip_box)
         return self
     
-    def rect(self, rect):
+    def rect(self, rect, *args):
         if isinstance(rect, Rect):
             self.moveTo(rect.point("SW").xy())
             self.lineTo(rect.point("SE").xy())
             self.lineTo(rect.point("NE").xy())
             self.lineTo(rect.point("NW").xy())
             self.closePath()
+        elif isinstance(rect, Number):
+            return self.rect(Rect(rect, args[0], args[1], args[2]))
         elif isinstance(rect[0], Rect):
             for r in rect:
                 self.rect(r)
@@ -896,8 +899,8 @@ if __name__ == "__main__":
         
         def align_test():
             r = Rect(0,0,500,300)
-            p = Slug("Bay", Style("≈/RageItalicStd.otf", 300, fill=Gradient.Random(r))).pen().align(r).tag("hello")
-            ps = Slug("Bay", Style("≈/RageItalicStd.otf", 300, fill=None, stroke=(0), strokeWidth=4)).pen().align(r)
+            p = Slug("Bay", Style("≈/RageItalicStd.otf", 300, fill=Gradient.Random(r))).pen().align(r)
+            ps = Slug("Bay", Style("≈/RageItalicStd.otf", 300, fill=None, stroke=(0), strokeWidth=2)).pen().align(r)
 
             v.send(SVGPen.Composite([
                 DATPen.Grid(r),
@@ -931,14 +934,14 @@ if __name__ == "__main__":
             r = Rect(0, 0, 500, 500)
             ri = r.inset(100, 100)
             dp = DATPen(fill=None, stroke=0).line([ri.point("SW"), ri.point("NE")]).line([ri.point("NW"), ri.point("SE")])
-            dp.outline().removeOverlap()
+            dp.outline(10).removeOverlap()
             v.send(SVGPen.Composite([dp], r), r)
 
         #gradient_test()
         #roughen_test()
         #map_test()
-        #align_test()
+        align_test()
         #conic_test()
         #reverse_test()
         #sine_test()
-        outline_test()
+        #outline_test()

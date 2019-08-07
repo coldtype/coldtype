@@ -2,6 +2,7 @@
 .vscode
 env
 test/artifacts/*
+test/*.blend1
 build
 dist
 coldtype.egg-info

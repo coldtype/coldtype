@@ -197,7 +197,8 @@ class BlenderPen(DrawablePenMixin, BasePen):
         bpy.context.view_layer.objects.active = None
         bpy.context.view_layer.objects.active = self.bez
         self.bez.select_set(True)
-        bpy.ops.object.modifier_add(type="SOLIDIFY")
+        if "Solidify" not in self.bez.modifiers:
+            bpy.ops.object.modifier_add(type="SOLIDIFY")
         self.bez.modifiers["Solidify"].thickness = thickness
         self.bez.select_set(False)
         bpy.context.view_layer.objects.active = None
