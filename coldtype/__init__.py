@@ -48,6 +48,7 @@ except:
 
 _FONT_CACHE = dict()
 
+
 def get_cached_font(font_path):
     if font_path not in _FONT_CACHE:
         with open(font_path, 'rb') as fontfile:
@@ -56,43 +57,84 @@ def get_cached_font(font_path):
 
 
 class HarfbuzzFrame():
-    def __init__(self, gid, info, position, frame):
+    def __init__(self, gid, info, position, frame, glyphName):
         self.gid = gid #info.codepoint
         self.info = info
         self.position = position
         self.frame = frame
+        self.glyphName = glyphName
 
     def __repr__(self):
         return f"HarfbuzzFrame: gid{self.gid}@{self.frame}"
 
 
 class Harfbuzz():
-    def GetFrames(fontdata, text="", axes=dict(), features=dict(kern=True, liga=True), height=1000, lang=None):
-        face = hb.Face(fontdata)
-        font = hb.Font(face)
-        font.scale = (face.upem, face.upem)
+    def __init__(self,
+                 fontdata,
+                 text="",
+                 height=1000,
+                 lang=None,
+                 ttfont=None,
+                 kern=dict()):
+        self.face = hb.Face(fontdata)
+        self.ttfont = ttfont
+        self.kern = kern
+        self.lang = lang
+        self.height = height
+        self.text = text
+    
+    def buffer(self, axes=dict(), features=dict()):
+        font = hb.Font(self.face)
+        font.scale = (self.face.upem, self.face.upem)
         hb.ot_font_set_funcs(font) # necessary?
         if len(axes.items()) > 0:
             font.set_variations(axes)
         
         buf = hb.Buffer()
-        if lang:
-            buf.language = lang
-        buf.add_str(text)
+        if self.lang:
+            buf.language = self.lang
+        buf.add_str(self.text)
         buf.guess_segment_properties()
         hb.shape(font, buf, features)
-        
+        return buf
+    
+    def glyphs(self, axes=dict(), features=dict()):
+        buf = self.buffer(axes, features)
+        glyphs = []
+        for info in buf.glyph_infos:
+            gid = info.codepoint
+            cluster = info.cluster
+            gn = self.ttfont.getGlyphName(gid) if self.ttfont else None
+            code = gn.replace("uni", "")
+            try:
+                glyph_name = unicodedata.name(chr(int(code, 16)))
+            except:
+                glyph_name = code
+            glyphs.append([gid, glyph_name])
+        return glyphs
+    
+    def frames(self, axes=dict(), features=dict(), glyphs=[]):
+        buf = self.buffer(axes, features)
         infos = buf.glyph_infos
         positions = buf.glyph_positions
         frames = []
         x = 0
-        for info, pos in zip(infos, positions):
+        for idx, (info, pos) in enumerate(zip(infos, positions)):
             gid = info.codepoint
+            if gid != glyphs[idx][0]:
+                print(">>>>>>>>", self.text)
+                print(gid, glyphs[idx][0])
+                #raise Exception("HELLO WORLD")
             cluster = info.cluster
             x_advance = pos.x_advance
             x_offset = pos.x_offset
             y_offset = pos.y_offset
-            frames.append(HarfbuzzFrame(gid, info, pos, Rect((x+x_offset, y_offset, x_advance, height)))) # 100?
+            gn = glyphs[idx][1]
+            if gn in self.kern:
+                l, r = self.kern.get(gn)
+                x_offset += l
+                x_advance += r
+            frames.append(HarfbuzzFrame(gid, info, pos, Rect(x+x_offset, y_offset, x_advance, self.height), gn)) # 100?
             x += x_advance
         return frames
 
@@ -614,6 +656,18 @@ class StyledString(FittableMixin):
     def __init__(self, text, style):
         self.text = text
         self.setStyle(style)
+        
+        self.hb = Harfbuzz(self.style.fontdata,
+            text=self.text,
+            height=self.style.capHeight,
+            lang=self.style.lang,
+            ttfont=self.style.ttfont,
+            kern=self.style.kern)
+        
+        if self.style.ufo:
+            pass
+        else:
+            self.glyphs = self.hb.glyphs(self.variations, self.features)
     
     def setStyle(self, style):
         self.style = style
@@ -623,18 +677,17 @@ class StyledString(FittableMixin):
         self.features = self.style.features.copy()
         self.variations = self.style.variations.copy()
     
-    def trackFrames(self, frames, glyph_names):
+    def trackFrames(self, frames):
         t = self.tracking
         x_off = 0
         for idx, f in enumerate(frames):
-            gn = glyph_names[idx]
             f.frame = f.frame.offset(x_off, 0)
             x_off += t
-            if self.style.space and gn.lower() == "space":
+            if self.style.space and f.glyphName.lower() == "space":
                 x_off += self.style.space
         return frames
     
-    def adjustFramesForPath(self, frames, glyph_names):
+    def adjustFramesForPath(self, frames):
         for idx, f in enumerate(frames):    
             if self.style.xShift:
                 try:
@@ -683,34 +736,23 @@ class StyledString(FittableMixin):
                 w = glif.width
                 r = Rect(x_off, 0, w, self.style.capHeight)
                 x_off += w
-                frames.append(HarfbuzzFrame(g, dict(), Point((0, 0)), r))
+                frames.append(HarfbuzzFrame(g, dict(), Point((0, 0)), r, g))
         else:
-            frames = Harfbuzz.GetFrames(self.style.fontdata, text=self.text, axes=self.variations, features=self.features, height=self.style.capHeight, lang=self.style.lang)
+            frames = self.hb.frames(self.variations, self.features, self.glyphs)
 
-"""
-gn = glyph_names[idx]
-            f.frame.x += kern_right
-            kern_right = 0
-            if gn in self.style.kern:
-                left, right = self.style.kern.get(gn)
-                f.frame.x += left
-                f.frame.w += right
-                kern_right = right
-"""
-
-            glyph_names = []
-            for f in frames:
-                glyph_name = self.style.ttfont.getGlyphName(f.gid)
-                code = glyph_name.replace("uni", "")
-                try:
-                    glyph_names.append(unicodedata.name(chr(int(code, 16))))
-                except:
-                    glyph_names.append(code)
+            #glyph_names = []
+            #for f in frames:
+            #    glyph_name = self.style.ttfont.getGlyphName(f.gid)
+            #    code = glyph_name.replace("uni", "")
+            #    try:
+            #        glyph_names.append(unicodedata.name(chr(int(code, 16))))
+            #    except:
+            #        glyph_names.append(code)
         
         for f in frames:
             f.frame = f.frame.scale(self.scale())
 
-        return self.adjustFramesForPath(self.trackFrames(frames, glyph_names), glyph_names)
+        return self.adjustFramesForPath(self.trackFrames(frames))
     
     def width(self): # size?
         return self.getGlyphFrames()[-1].frame.point("SE").x
@@ -742,6 +784,7 @@ gn = glyph_names[idx]
             #print("HWID'ing")
             self.features["hwid"] = True
             self.tracking = self.style.tracking # reset to widest
+            self.glyphs = self.hb.glyphs(self.variations, self.features)
             adjusted = True
         return adjusted
     
@@ -935,11 +978,11 @@ if __name__ == "__main__":
         r = Rect(0,0,600,300)
         f = "≈/PappardelleParty-VF.ttf"
         t = "XYZ/yoyoma"
-        st = Style(f, 300, palette=5, ss09=1)
+        st = Style(f, 300, palette=0, ss09=1)
         pprint(st.stylisticSets())
         ps = Slug(t, st).pens().align(r, tv=0).flatten()
         p.send(SVGPen.Composite([
-            ps.frameSet(),
+            #ps.frameSet(),
             ps,
             ], r), r)
 
@@ -1002,8 +1045,15 @@ if __name__ == "__main__":
     def custom_kern_test(p):
         f = "≈/VulfMonoLightItalicVariable.ttf"
         r = Rect(0, 0, 300, 100)
-        style = Style(f, 50, wdth=0, kern=dict(eacute=[0, -20]))
-        dp1 = Slug("stéréo", style).pen().align(r)
+        style = Style(f, 50, wdth=0.2, kern=dict(eacute=[0, -300]))
+        dp1 = Slug("stéréo", style).pen().attr(fill="random").align(r)
+        p.send(SVGPen.Composite(dp1, r), r)
+    
+    def hwid_test(p):
+        f = "≈/HeiseiMaruGothicStdW8.otf"
+        r = Rect(0, 0, 300, 100)
+        style = Style(f, 30, wdth=0.2, kern=dict(eacute=[0, -300]))
+        dp1 = Slug("イージーオペレーションディザー", style).fit(r.w).pen().align(r)
         p.send(SVGPen.Composite(dp1, r), r)
 
     with previewer() as p:
@@ -1024,7 +1074,8 @@ if __name__ == "__main__":
         #hoi_test(p)
         #ufo_test(p)
         #glyphs_test(p)
-        #multiline_test(p)
+        multiline_test(p)
+        hwid_test(p)
         #multiline_fit_test(p)
         #language_hb_test(p)
-        custom_kern_test(p)
+        #custom_kern_test(p)
