@@ -20,6 +20,23 @@ except:
 
 
 class BPH():
+    def Clear():
+        for block in bpy.data.meshes:
+            if block.users == 0:
+                bpy.data.meshes.remove(block)
+
+        for block in bpy.data.materials:
+            if block.users == 0:
+                bpy.data.materials.remove(block)
+
+        for block in bpy.data.textures:
+            if block.users == 0:
+                bpy.data.textures.remove(block)
+
+        for block in bpy.data.images:
+            if block.users == 0:
+                bpy.data.images.remove(block)
+
     def FindCollectionForItem(item):
         collections = item.users_collection
         if len(collections) > 0:
@@ -182,9 +199,12 @@ class BlenderPen(DrawablePenMixin, BasePen):
     def image(self, path):
         mat = self.materials()[0]
         bsdf = self.bsdf()
-        imgtex = mat.node_tree.nodes.new("ShaderNodeTexImage")
+        if "Image Texture" in mat.node_tree.nodes:
+            imgtex = mat.node_tree.nodes["Image Texture"]
+        else:
+            imgtex = mat.node_tree.nodes.new("ShaderNodeTexImage")
+            mat.node_tree.links.new(bsdf.inputs["Base Color"], imgtex.outputs["Color"])
         imgtex.image = bpy.data.images.load(path)
-        mat.node_tree.links.new(bsdf.inputs["Base Color"], imgtex.outputs["Color"])
         return self
     
     def convertToMesh(self):

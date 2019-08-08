@@ -805,7 +805,16 @@ class StyledString(FittableMixin):
         except:
             bs = self.style.baselineShift
         
-        t = t.translate(0, bs)
+        if callable(bs):
+            t = t.translate(0, bs(idx))
+        else:
+            try:
+                t = t.translate(0, bs[idx])
+            except:
+                try:
+                    t = t.translate(0, bs)
+                except:
+                    pass
         t = t.scale(s)
         t = t.translate(frame.frame.x/self.scale(), frame.frame.y/self.scale())
         #t = t.translate(0, bs)
@@ -1052,7 +1061,7 @@ if __name__ == "__main__":
     def hwid_test(p):
         f = "≈/HeiseiMaruGothicStdW8.otf"
         r = Rect(0, 0, 300, 100)
-        style = Style(f, 30, wdth=0.2, kern=dict(eacute=[0, -300]))
+        style = Style(f, 30, wdth=0.2, kern=dict(eacute=[0, -300]), bs=lambda i: randint(-20, 20))
         dp1 = Slug("イージーオペレーションディザー", style).fit(r.w).pen().align(r)
         p.send(SVGPen.Composite(dp1, r), r)
 
@@ -1074,7 +1083,7 @@ if __name__ == "__main__":
         #hoi_test(p)
         #ufo_test(p)
         #glyphs_test(p)
-        multiline_test(p)
+        #multiline_test(p)
         hwid_test(p)
         #multiline_fit_test(p)
         #language_hb_test(p)
