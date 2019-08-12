@@ -415,21 +415,24 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def roughen(self, amplitude=10, threshold=10):
-        randomized = []
-        _x = 0
-        _y = 0
-        for t, pts in self.value:
-            if t == "lineTo" or t == "curveTo":
-                jx = pnoise1(_x) * amplitude # should actually be 1-d on the tangent!
-                jy = pnoise1(_y) * amplitude
-                jx = randint(0, amplitude) - amplitude/2
-                jy = randint(0, amplitude) - amplitude/2
-                randomized.append([t, [(x+jx, y+jy) for x, y in pts]])
-                _x += 0.2
-                _y += 0.3
-            else:
-                randomized.append([t, pts])
-        self.value = randomized
+        try:
+            randomized = []
+            _x = 0
+            _y = 0
+            for t, pts in self.value:
+                if t == "lineTo" or t == "curveTo":
+                    jx = pnoise1(_x) * amplitude # should actually be 1-d on the tangent!
+                    jy = pnoise1(_y) * amplitude
+                    jx = randint(0, amplitude) - amplitude/2
+                    jy = randint(0, amplitude) - amplitude/2
+                    randomized.append([t, [(x+jx, y+jy) for x, y in pts]])
+                    _x += 0.2
+                    _y += 0.3
+                else:
+                    randomized.append([t, pts])
+            self.value = randomized
+        except:
+            pass
         return self
     
     def outline(self, offset=1):
@@ -563,10 +566,13 @@ class DATPen(RecordingPen, AlignableMixin):
         self.record(dp)
         return self
     
-    def quadratic(self, a, b, c):
+    def quadratic(self, a, b, c, lineTo=False):
         a, b, c = [p.xy() if isinstance(p, Point) else p for p in [a, b, c]]
         dp = DATPen()
-        dp.moveTo(a)
+        if lineTo:
+            dp.lineTo(a)
+        else:
+            dp.moveTo(a)
         dp.curveTo(*raise_quadratic(a, b, c))
         self.record(dp)
         return self

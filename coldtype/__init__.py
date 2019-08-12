@@ -170,7 +170,8 @@ class FreetypeReader(FontShapeReader):
         if len(self.axesOrder) > 0:
             coords = []
             for name in self.axesOrder:
-                coord = FT_Fixed(int(axes[name]) << 16)
+                #coord = FT_Fixed(int(axes[name]) << 16)
+                coord = FT_Fixed(int(axes[name] * (2**16)))
                 coords.append(coord)
             ft_coords = (FT_Fixed * len(coords))(*coords)
             freetype.FT_Set_Var_Design_Coordinates(self.font._FT_Face, len(ft_coords), ft_coords)
@@ -601,7 +602,7 @@ class Style():
             elif v == "default":
                 variations[k] = axis.defaultValue
             elif scale and v <= 1.0:
-                variations[k] = int((axis.maxValue-axis.minValue)*v + axis.minValue)
+                variations[k] = float((axis.maxValue-axis.minValue)*v + axis.minValue)
             else:
                 if v < axis.minValue or v > axis.maxValue:
                     variations[k] = max(axis.minValue, min(axis.maxValue, v))
@@ -1064,6 +1065,17 @@ if __name__ == "__main__":
         style = Style(f, 30, wdth=0.2, kern=dict(eacute=[0, -300]), bs=lambda i: randint(-20, 20))
         dp1 = Slug("イージーオペレーションディザー", style).fit(r.w).pen().align(r)
         p.send(SVGPen.Composite(dp1, r), r)
+    
+    def interp_test(p):
+        f = "≈/ObviouslyVariable.ttf"
+        r = Rect(0, 0, 700, 300)
+        dps = DATPenSet()
+        l = 30
+        for x in range(l):
+            style = Style(f, 272, wdth=x/l, wght=0, slnt=1, fill=(0, 0.2))
+            dp = Slug("HELLO", style).pen().align(r).removeOverlap()
+            dps.addPen(dp)
+        p.send(SVGPen.Composite(dps, r), r)
 
     with previewer() as p:
         if False:
@@ -1084,7 +1096,8 @@ if __name__ == "__main__":
         #ufo_test(p)
         #glyphs_test(p)
         #multiline_test(p)
-        hwid_test(p)
+        #hwid_test(p)
         #multiline_fit_test(p)
         #language_hb_test(p)
         #custom_kern_test(p)
+        interp_test(p)
