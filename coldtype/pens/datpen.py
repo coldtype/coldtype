@@ -761,6 +761,9 @@ class DATPenSet(AlignableMixin):
         return dp
     
     def attr(self, k="default", **kwargs):
+        if len(kwargs.items()) == 0: # getting, not setting
+            return self.pens[0].attrs.get(k)
+        
         for p in self.pens:
             p.attr(k, **kwargs)
         return self
