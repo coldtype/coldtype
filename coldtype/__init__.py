@@ -703,33 +703,55 @@ class StyledString(FittableMixin):
     #     for f in frames:
     #         glyph_names.append(self.style.ttfont.getGlyphName(f.gid))
     #     return glyph_names
+
+    def TextToGuessedGlyphNames(text):
+        glyph_names = []
+        current = None
+        for t in text:
+            glyph = None
+            if t == "{":
+                current = ""
+            elif t == "}":
+                glyph = current
+                current = None
+            elif current is not None:
+                current += t
+            elif t == ",":
+                glyph = "comma"
+            elif t == " ":
+                glyph = "space"
+            elif t == ".":
+                glyph = "period"
+            elif t == "1":
+                glyph = "one"
+            elif t == "2":
+                glyph = "two"
+            elif t == "3":
+                glyph = "three"
+            elif t == "4":
+                glyph = "four"
+            elif t == "5":
+                glyph = "five"
+            elif t == "6":
+                glyph = "six"
+            elif t == "7":
+                glyph = "seven"
+            elif t == "8":
+                glyph = "eight"
+            elif t == "9":
+                glyph = "nine"
+            else:
+                glyph = t  
+            if glyph:
+                glyph_names.append(glyph)
+        return glyph_names
     
     def getGlyphFrames(self):
         frames = []
         glyph_names = []
 
         if self.style.ufo:
-            glyph_names = []
-            current = None
-            for t in self.text:
-                glyph = None
-                if t == "{":
-                    current = ""
-                elif t == "}":
-                    glyph = current
-                    current = None
-                elif current is not None:
-                    current += t
-                elif t == ",":
-                    glyph = "comma"
-                elif t == " ":
-                    glyph = "space"
-                elif t == ".":
-                    glyph = "period"
-                else:
-                    glyph = t  
-                if glyph:
-                    glyph_names.append(glyph)
+            glyph_names = StyledString.TextToGuessedGlyphNames(self.text)
             
             x_off = 0
             for g in glyph_names:
@@ -1076,6 +1098,28 @@ if __name__ == "__main__":
             dp = Slug("HELLO", style).pen().align(r).removeOverlap()
             dps.addPen(dp)
         p.send(SVGPen.Composite(dps, r), r)
+    
+    def cache_width_test(p):
+        #from itertools import chain
+        #from fontTools.unicode import Unicode
+        f = "~/Goodhertz/plugin-builder/configs/builder/design/GhzNumbersCompressed.ufo"
+        r = Rect(0, 0, 300, 100)
+        style = Style(f, 30)
+        #glyphs = []
+        #lookup = {}
+        #for g in sorted(style.font, key=lambda g: g.name):
+        #    lookup[g.name] = g.width
+        #print(lookup)
+        #print(style.font)
+        #ttf = style.ttfont
+        #print(style.ttfont["cmap"].tables)
+        #chars = chain.from_iterable([y + (Unicode[y[0]],) for y in x.cmap.items()] for x in ttf["cmap"].tables)
+        #for _, c, _ in sorted(set(chars)):
+        #    print(c)
+        gn = StyledString.TextToGuessedGlyphNames("1.23{uniE801}")
+        print(gn)
+        dp1 = Slug("1.23{uniE801}", style).fit(r.w).pen().align(r)
+        p.send(SVGPen.Composite(dp1, r), r)
 
     with previewer() as p:
         if False:
@@ -1086,7 +1130,7 @@ if __name__ == "__main__":
             #ss_bounds_test("≈/Compressa-MICRO-GX-Rg.ttf", p)
             #ss_bounds_test("≈/BruphyGX.ttf", p)
         
-        #ss_and_shape_test(p)
+        ss_and_shape_test(p)
         #rotalic_test(p)
         #multilang_test(p)
         #tracking_test(p)
@@ -1095,9 +1139,10 @@ if __name__ == "__main__":
         #hoi_test(p)
         #ufo_test(p)
         #glyphs_test(p)
-        #multiline_test(p)
+        multiline_test(p)
         #hwid_test(p)
         #multiline_fit_test(p)
         #language_hb_test(p)
-        #custom_kern_test(p)
-        interp_test(p)
+        custom_kern_test(p)
+        #interp_test(p)
+        #cache_width_test(p)
