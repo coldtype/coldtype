@@ -30,6 +30,7 @@ from coldtype.beziers import CurveCutter, raise_quadratic
 from coldtype.color import normalize_color
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.geometry import Rect, Point
+from coldtype.shaper import segment
 
 try:
     # relies on undeclared dependencies
@@ -370,22 +371,8 @@ class Slug(FittableMixin):
     
     def tag(self):
         if self.fallback:
-            tagged = []
-            for c in self.text:
-                if LATIN(c) and c != " ":
-                    tagged.append(["latin", c])
-                else:
-                    tagged.append(["other", c])
-            
-            strings = []
-            for k, g in groupby(tagged, lambda e: e[0]):
-                txt = "".join([g[1] for g in list(g)])
-                if k == "other":
-                    strings.append(StyledString(txt, self.primary))
-                else:
-                    strings.append(StyledString(txt, self.fallback))
-            
-            self.strings = strings
+            segments = segment(self.text, "LATIN")
+            self.strings = [StyledString(s[1], self.fallback if "LATIN" in s[0] else self.primary) for s in segments]
         else:
             self.strings = [StyledString(self.text, self.primary)]
     
@@ -973,19 +960,24 @@ if __name__ == "__main__":
             ps.frameSet().pens, r), r)
 
     def multilang_test(p):
-        obv = Style("≈/ObviouslyVariable.ttf", 80, wdth=1, wght=0.7)
+        obv = Style("≈/ObviouslyVariable.ttf", 80, wdth=1, wght=0.7, fill=(1, 0, 0.5))
         r = Rect((0, 0, 600, 140))
-        ss = Slug(
-            #"الملخبط",
-            #"Ali الملخبط Boba",
-            #"الكروسفِيد",
-            #"مستوَى التخفيف",
-            #"اللٌُوفَاي",
-            "+ الضغط",
-            Style("≈/GretaArabicCondensedAR-Light.otf", 100, fill=Gradient.Random(r)), obv.mod(tracking=-2)
-            )
-        ss.fit(r.w - 100)
-        dps = ss.pens()
+        _s = [
+            "(رطب (ما قبل",
+            "(جاف + رطب (ما قبل",
+            "+بوابة",
+            "A الملخبط",
+            "Ali الملخبط Boba",
+            "الكروسفِيد",
+            "مستوَى التخفيف",
+            "اللٌُوفَاي",
+        ]
+        style = Style("≈/GretaArabicCondensedAR-Heavy.otf",
+                100,
+                lang="ar",
+                fill=Gradient.Random(r))
+        lck = Slug(_s[0], style, obv).fit(r.w - 100)
+        dps = lck.pens()
         dps.align(r)
         g = DATPen.Grid(r, y=4)
         p.send(SVGPen.Composite([
@@ -1130,19 +1122,19 @@ if __name__ == "__main__":
             #ss_bounds_test("≈/Compressa-MICRO-GX-Rg.ttf", p)
             #ss_bounds_test("≈/BruphyGX.ttf", p)
         
-        ss_and_shape_test(p)
+        #ss_and_shape_test(p)
         #rotalic_test(p)
-        #multilang_test(p)
+        multilang_test(p)
         #tracking_test(p)
         #color_font_test(p)
         #emoji_test(p)
         #hoi_test(p)
         #ufo_test(p)
         #glyphs_test(p)
-        multiline_test(p)
+        #multiline_test(p)
         #hwid_test(p)
         #multiline_fit_test(p)
         #language_hb_test(p)
-        custom_kern_test(p)
+        #custom_kern_test(p)
         #interp_test(p)
         #cache_width_test(p)
