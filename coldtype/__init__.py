@@ -351,15 +351,6 @@ def T2L(text, primary, fallback=None):
     return Lockup.TextToLines(text, primary, fallback)
 
 
-def between(c, a, b):
-    return ord(a) <= ord(c) <= ord(b)
-
-LATIN = lambda c: between(c, '\u0000', '\u024F')
-KATAKANA = lambda c: between(c, '\u30A0', '\u30FF')
-HIRAGANA = lambda c: between(c, '\u3040', '\u309F')
-CJK = lambda c: between(c, '\u4E00', '\u9FFF')
-
-
 class Slug(FittableMixin):
     def __init__(self, text, primary, fallback=None, margin=[0, 0]):
         self.text = text
@@ -451,6 +442,7 @@ class Style():
             data={},
             latin=None, # temp
             lang=None,
+            filter=None,
             **kwargs):
         """
         kern (k) — a dict of glyphName->[left,right] values in font-space
@@ -513,6 +505,7 @@ class Style():
         self.xShift = kwargs.get("xs", xShift)
         self.palette = palette
         self.lang = lang
+        self.filter = filter
         self.data = data
         self.latin = latin
 
@@ -739,7 +732,6 @@ class StyledString(FittableMixin):
 
         if self.style.ufo:
             glyph_names = StyledString.TextToGuessedGlyphNames(self.text)
-            
             x_off = 0
             for g in glyph_names:
                 glif = self.style.glyphSet[g]
@@ -749,15 +741,6 @@ class StyledString(FittableMixin):
                 frames.append(HarfbuzzFrame(g, dict(), Point((0, 0)), r, g))
         else:
             frames = self.hb.frames(self.variations, self.features, self.glyphs)
-
-            #glyph_names = []
-            #for f in frames:
-            #    glyph_name = self.style.ttfont.getGlyphName(f.gid)
-            #    code = glyph_name.replace("uni", "")
-            #    try:
-            #        glyph_names.append(unicodedata.name(chr(int(code, 16))))
-            #    except:
-            #        glyph_names.append(code)
         
         for f in frames:
             f.frame = f.frame.scale(self.scale())
@@ -829,10 +812,18 @@ class StyledString(FittableMixin):
         t = t.translate(frame.frame.x/self.scale(), frame.frame.y/self.scale())
         #t = t.translate(0, bs)
         tp = TransformPen(pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
+        
+        dp = DATPen()
         if useTTFont:
-            fr.drawTTOutlineToPen(gid, tp)
+            fr.drawTTOutlineToPen(gid, dp)
         else:
-            fr.drawOutlineToPen(gid, tp)
+            fr.drawOutlineToPen(gid, dp)
+        
+        # apply full-scale filtering before transform-down
+        if self.style.filter:
+            dp = self.style.filter(frame.frame, dp)
+        
+        dp.replay(tp)
     
     def drawToPen(self, pen, frames, index=None, useTTFont=False):
         if self.style.ufo:

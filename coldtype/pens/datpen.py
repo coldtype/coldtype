@@ -9,6 +9,7 @@ from fontTools.svgLib.path.parser import parse_path
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontPens.flattenPen import FlattenPen
+from fontPens.marginPen import MarginPen
 from grapefruit import Color
 from random import random, randint
 from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
@@ -414,6 +415,25 @@ class DATPen(RecordingPen, AlignableMixin):
         self.value = dp.value
         return self
     
+    def scanlines(self, rect, sample=40, width=20, threshold=10):
+        dp = DATPen()
+        #print(">>>", rect)
+        for y in range(min(-300, rect.y), max(1000, rect.h), sample): # 500 should be calc'ed from box right?
+            mp = MarginPen(None, y, isHorizontal=True)
+            self.replay(mp)
+            xs = mp.getAll()
+            if len(xs) > 1:
+                for i in range(0, len(xs), 2):
+                    try:
+                        x1 = xs[i]
+                        x2 = xs[i+1]
+                        if abs(x2 - x1) > threshold:
+                            dp.line([(x1, y), (x2, y)])
+                    except:
+                        pass
+        self.value = dp.value
+        return self.outline(width)
+    
     def roughen(self, amplitude=10, threshold=10):
         try:
             randomized = []
@@ -436,7 +456,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def outline(self, offset=1):
-        op = OutlinePen(None, offset=offset, optimizeCurve=True)
+        op = OutlinePen(None, offset=offset, optimizeCurve=True, cap="square")
         self.replay(op)
         op.drawSettings(drawInner=True, drawOuter=True)
         g = op.getGlyph()
@@ -895,6 +915,17 @@ if __name__ == "__main__":
             svg = SVGPen.Composite(pens, r)
             v.send(svg, r)
         
+        def scanlines_test():
+            r = Rect((0, 0, 500, 300))
+            f = "≈/Taters-Baked-v0.1.otf"
+            f = "≈/Vinila-VF-HVAR-table.ttf"
+            #f = "≈/Oaks0.1.otf"
+            #f = "≈/RageItalicStd.otf"
+            #f = "≈/MapRomanVariable-VF.ttf"
+            dp1 = Slug("Pixels", Style(f, fontSize=100, ch="x", fill=0, wdth=1, wght=1, slnt=1, filter=lambda r, p: p.removeOverlap().scanlines(r, sample=40, width=20))).pen().align(r)
+            dp1.removeOverlap()
+            v.send(SVGPen.Composite(dp1, r), r)
+        
         def map_test():
             f, _v = ["≈/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
             f, _v = ["≈/MapRomanVariable-VF.ttf", dict(wdth=1, scale=True)]
@@ -949,8 +980,9 @@ if __name__ == "__main__":
         #gradient_test()
         #roughen_test()
         #map_test()
-        align_test()
+        #align_test()
         #conic_test()
         #reverse_test()
         #sine_test()
         #outline_test()
+        scanlines_test()
