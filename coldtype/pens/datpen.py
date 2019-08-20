@@ -5,6 +5,7 @@ from fontTools.pens.reverseContourPen import ReverseContourPen
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.pointPen import SegmentToPointPen, PointToSegmentPen, AbstractPointPen
+from fontTools.pens.pointInsidePen import PointInsidePen
 from fontTools.svgLib.path.parser import parse_path
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
@@ -412,6 +413,24 @@ class DATPen(RecordingPen, AlignableMixin):
         for pts in self.skeletonPoints():
             _pts = [p[-1][-1] for p in pts]
             dp.catmull(_pts, close=True)
+        self.value = dp.value
+        return self
+    
+    def pixellate(self, rect, increment=50, inset=0):
+        x = -200
+        y = -200
+        dp = DATPen()
+        while x < 1000:
+            while y < 1000:
+                #print(x, y)
+                pen = PointInsidePen(None, (x, y))
+                self.replay(pen)
+                isInside = pen.getResult()
+                if isInside:
+                    dp.rect(Rect(x, y, increment, increment).inset(inset))
+                y += increment
+            x += increment
+            y = -200
         self.value = dp.value
         return self
     
@@ -915,6 +934,17 @@ if __name__ == "__main__":
             svg = SVGPen.Composite(pens, r)
             v.send(svg, r)
         
+        def pixellate_test():
+            r = Rect((0, 0, 500, 300))
+            f = "≈/Taters-Baked-v0.1.otf"
+            f = "≈/Vinila-VF-HVAR-table.ttf"
+            #f = "≈/Oaks0.1.otf"
+            #f = "≈/RageItalicStd.otf"
+            #f = "≈/MapRomanVariable-VF.ttf"
+            dp1 = Slug("Pixels", Style(f, fontSize=100, ch="x", fill=0, wdth=1, wght=1, slnt=1, filter=lambda r, p: p.pixellate(r, inset=4))).pen().align(r)
+            dp1.removeOverlap()
+            v.send(SVGPen.Composite(dp1, r), r)
+        
         def scanlines_test():
             r = Rect((0, 0, 500, 300))
             f = "≈/Taters-Baked-v0.1.otf"
@@ -985,4 +1015,4 @@ if __name__ == "__main__":
         #reverse_test()
         #sine_test()
         #outline_test()
-        scanlines_test()
+        pixellate_test()
