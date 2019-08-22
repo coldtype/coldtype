@@ -19,7 +19,10 @@ def segment(txt, mode="LATIN", includeNames=False):
     current_mode = mode
     runs = [[mode]]
     for i, c in enumerate(txt):
-        n = unicodedata.name(c)
+        try:
+            n = unicodedata.name(c)
+        except ValueError:
+            n = "PRIVATE"
         for m in modes:
             if m in n:
                 if current_mode != m:
