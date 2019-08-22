@@ -45,7 +45,10 @@ def segment(txt, mode="LATIN", includeNames=False):
         if txt:
             found_modes = set()
             for c in txt:
-                n = unicodedata.name(c)
+                try:
+                    n = unicodedata.name(c)
+                except ValueError:
+                    n = "PRIVATE"
                 for m in modes:
                     if m in n:
                         found_modes.add(m)
