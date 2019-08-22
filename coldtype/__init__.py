@@ -720,8 +720,10 @@ class StyledString(FittableMixin):
                 glyph = "eight"
             elif t == "9":
                 glyph = "nine"
-            else:
-                glyph = t  
+            elif re.match(r"[A-Za-z]", t):
+                glyph = t
+            else: # convert unicode literals to uni*-style
+                glyph = hex(ord(t)).upper().replace("0X", "uni")
             if glyph:
                 glyph_names.append(glyph)
         return glyph_names
@@ -1021,10 +1023,10 @@ if __name__ == "__main__":
     
     def ufo_test(p):
         r = Rect(0, 0, 500, 200)
-        f = "~/Type/typeworld/hershey_ufos_open_paths/Hershey-TriplexItalic.ufo"
-        style = Style(f, 100, t=-10, varyFontSize=True)
-        slug = Slug("Hello, world.", style).fit(r.w)
-        p.send(SVGPen.Composite(slug.pen().align(r).attr(fill=None, stroke=(1, 0, 0.5), strokeWidth=1), r), r)
+        f = "~/Goodhertz/plugin-builder/configs/builder/design/GhzNumbersCompressed.ufo"
+        style = Style(f, 100)
+        slug = Slug("Off 1.2\ue800", style).fit(r.w)
+        p.send(SVGPen.Composite(slug.pen().align(r), r), r)
     
     def glyphs_test(p):
         r = Rect(0, 0, 500, 200)
@@ -1115,12 +1117,12 @@ if __name__ == "__main__":
         
         #ss_and_shape_test(p)
         #rotalic_test(p)
-        multilang_test(p)
+        #multilang_test(p)
         #tracking_test(p)
         #color_font_test(p)
         #emoji_test(p)
         #hoi_test(p)
-        #ufo_test(p)
+        ufo_test(p)
         #glyphs_test(p)
         #multiline_test(p)
         #hwid_test(p)
