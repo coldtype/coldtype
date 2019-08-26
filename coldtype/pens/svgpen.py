@@ -19,6 +19,8 @@ import textwrap
 from collections import OrderedDict
 from lxml import etree
 
+from random import randint
+
 
 class SVGPen(DrawablePenMixin, SVGPathPen):
     def __init__(self, dat, h):
@@ -75,7 +77,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         return r
     
     def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
-        hsh = {hash(self.getCommands())}
+        hsh = str(hash(self.getCommands())) + str(randint(0, 1000000))
         f = etree.Element("filter")
         f.set("x", "0")
         f.set("y", "0")
@@ -105,7 +107,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
 
     def gradient(self, gradient):
         lg = etree.Element("linearGradient")
-        lg.set("id", f"gradient-{hash(self.getCommands())}")
+        lg.set("id", f"gradient-{hash(self.getCommands())}-{randint(0, 100000)}")
         if gradient.stops[1][1].x == gradient.stops[0][1].x:
             lg.set("gradientTransform", "rotate(90)")
         s1 = etree.Element("stop", offset="0%")
@@ -118,7 +120,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         return lg.get("id")
     
     def image(self, src=None, opacity=None, rect=None):
-        hsh = {hash(self.getCommands())}
+        hsh = str(hash(self.getCommands())) + str(randint(0, 100000))
         img = etree.Element("image")
         img.set("x", str(rect.x or 0))
         img.set("y", str(rect.y or 0))

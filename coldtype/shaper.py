@@ -60,5 +60,6 @@ if __name__ == "__main__":
     s = "ABC (جاف + رطب (ما قبل"
     s = "(رطب (ما قبل"
     #s = "Ali الملخبط Boba"
+    s = "وصل الإستيرِوﬂLim/Satلل"
     runs = segment(s, "LATIN")
     pprint(runs)
