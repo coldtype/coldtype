@@ -10,7 +10,7 @@ from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 
 import math
-from grapefruit import Color
+from coldtype.color import Color
 import textwrap
 from collections import OrderedDict
 from lxml import etree

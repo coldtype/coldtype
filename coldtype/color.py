@@ -3,6 +3,11 @@ from random import random
 from fontTools.ttLib.tables.C_P_A_L_ import Color as FTCPALColor
 
 
+def lighten_max(color, maxLightness=0.55):
+    h, s, l = color.hsl
+    return Color.from_hsl(h, s, max(maxLightness, l))
+
+
 def color_var(*rgba):
     c = [random() if x == -1 or x == "random" or x == "rand" or x == "R" else x for x in rgba]
     if len(c) == 1:

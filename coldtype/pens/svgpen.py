@@ -14,7 +14,7 @@ from coldtype.pens.drawablepen import DrawablePenMixin
 from coldtype.pens.datpen import DATPen, DATPenSet
 
 import math
-from grapefruit import Color
+from coldtype.color import Color
 import textwrap
 from collections import OrderedDict
 from lxml import etree

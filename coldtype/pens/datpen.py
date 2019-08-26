@@ -11,7 +11,6 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontPens.flattenPen import FlattenPen
 from fontPens.marginPen import MarginPen
-from grapefruit import Color
 from random import random, randint
 from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
 from collections import OrderedDict
@@ -38,7 +37,7 @@ else:
 
 from coldtype.geometry import Rect, Edge, Point, txt_to_edge
 from coldtype.beziers import raise_quadratic, CurveCutter
-from coldtype.color import Gradient, normalize_color
+from coldtype.color import Gradient, normalize_color, Color
 
 try:
     from coldtype.pens.outlinepen import OutlinePen
@@ -893,7 +892,7 @@ if __name__ == "__main__":
     from coldtype.viewer import viewer
     from coldtype.pens.svgpen import SVGPen
     from coldtype.pens.reportlabpen import ReportLabPen
-    from grapefruit import Color
+    from coldtype.color import Color
 
     from coldtype import StyledString, Style, Slug
 

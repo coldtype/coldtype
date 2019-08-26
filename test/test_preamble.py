@@ -8,7 +8,7 @@ from coldtype import Slug, Style, Graf
 from coldtype.viewer import previewer
 from coldtype.pens.datpen import DATPen
 from coldtype.pens.svgpen import SVGPen
-from grapefruit import Color
+from coldtype.color import Color
 
 
 def save_artifact(filename, content=None):
