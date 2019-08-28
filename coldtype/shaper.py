@@ -12,7 +12,8 @@ CJK = lambda c: between(c, '\u4E00', '\u9FFF')
 modes = [
     "LATIN",
     "ARABIC",
-    "SPACE"
+    "SPACE",
+    "CJK",
 ]
 
 def segment(txt, mode="LATIN", includeNames=False):
