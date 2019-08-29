@@ -1120,7 +1120,7 @@ if __name__ == "__main__":
     def family_test(p):
         f = ["≈/Konsole0.2-Wide.otf", "≈/Konsole0.2-Regular.otf", "≈/Konsole0.2-Compact.otf"]
         r = Rect(0, 0, 300, 100)
-        style = Style(f, 60)
+        style = Style(f, 60, fill=(1, 0, 0.5))
         dp1 = Slug("Hello world", style).fit(r.w).pen().align(r)
         p.send(SVGPen.Composite(dp1, r), r)
     
