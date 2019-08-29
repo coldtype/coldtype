@@ -451,13 +451,15 @@ class Style():
         baselineShift (bs)
         capHeight (ch) — A number in font-space; not specified, read from font; specified as 'x', capHeight is set to xHeight as read from font
         """
-        
-        global _prefixes
-        ff = font
-        for prefix, expansion in _prefixes:
-            ff = ff.replace(prefix, expansion)
-        
-        self.fontFile = os.path.expanduser(ff)
+
+        self.next = None
+
+        if isinstance(font, str):
+            self.fontFile = self.normalizeFontPath(font)
+        else:
+            self.fontFile = self.normalizeFontPath(font[0])
+            if len(font) > 1:
+                self.next = Style(font=font[1:], fontSize=fontSize, ttFont=ttFont, tracking=tracking, trackingLimit=trackingLimit, kern=kern, space=space, baselineShift=baselineShift,xShift=xShift, variations=variations, variationLimits=variationLimits, increments=increments, features=features, varyFontSize=varyFontSize, fill=fill,stroke=stroke, strokeWidth=strokeWidth, palette=palette, capHeight=capHeight, data=data, latin=latin, lang=lang, filter=filter, **kwargs)
         
         self.format = os.path.splitext(self.fontFile)[1][1:]
         self.ufo = self.format == "ufo"
@@ -549,6 +551,13 @@ class Style():
                         unnormalized_variations[axis.axisTag] = kwargs[axis.axisTag]
 
             self.addVariations(unnormalized_variations)
+        
+    def normalizeFontPath(self, font):
+        global _prefixes
+        ff = font
+        for prefix, expansion in _prefixes:
+            ff = ff.replace(prefix, expansion)
+        return os.path.expanduser(ff) 
 
     def mod(self, **kwargs):
         ns = copy.deepcopy(self)
@@ -638,13 +647,6 @@ class StyledString(FittableMixin):
         self.text = text
         self.setStyle(style)
         
-        self.hb = Harfbuzz(self.style.fontdata,
-            text=self.text,
-            height=self.style.capHeight,
-            lang=self.style.lang,
-            ttfont=self.style.ttfont,
-            kern=self.style.kern)
-        
         if self.style.ufo:
             pass
         else:
@@ -657,6 +659,13 @@ class StyledString(FittableMixin):
         self.tracking = self.style.tracking
         self.features = self.style.features.copy()
         self.variations = self.style.variations.copy()
+
+        self.hb = Harfbuzz(self.style.fontdata,
+            text=self.text,
+            height=self.style.capHeight,
+            lang=self.style.lang,
+            ttfont=self.style.ttfont,
+            kern=self.style.kern)
     
     def trackFrames(self, frames):
         t = self.tracking
@@ -775,8 +784,10 @@ class StyledString(FittableMixin):
         if not adjusted and self.style.varyFontSize:
             self.fontSize -= 1
             adjusted = True
+        if not adjusted and self.style.next:
+            self.setStyle(self.style.next)
+            adjusted = True
         if True and not adjusted and "hwid" not in self.features:
-            #print("HWID'ing")
             self.features["hwid"] = True
             self.tracking = self.style.tracking # reset to widest
             self.glyphs = self.hb.glyphs(self.variations, self.features)
@@ -1106,6 +1117,13 @@ if __name__ == "__main__":
             dps.addPen(dp)
         p.send(SVGPen.Composite(dps, r), r)
     
+    def family_test(p):
+        f = ["≈/Konsole0.2-Wide.otf", "≈/Konsole0.2-Regular.otf", "≈/Konsole0.2-Compact.otf"]
+        r = Rect(0, 0, 300, 100)
+        style = Style(f, 60)
+        dp1 = Slug("Hello world", style).fit(r.w).pen().align(r)
+        p.send(SVGPen.Composite(dp1, r), r)
+    
     def cache_width_test(p):
         #from itertools import chain
         #from fontTools.unicode import Unicode
@@ -1140,7 +1158,7 @@ if __name__ == "__main__":
         #ss_and_shape_test(p)
         #rotalic_test(p)
         #multilang_test(p)
-        cjk_multilang_test(p)
+        #cjk_multilang_test(p)
         #tracking_test(p)
         #color_font_test(p)
         #emoji_test(p)
@@ -1154,3 +1172,4 @@ if __name__ == "__main__":
         #custom_kern_test(p)
         #interp_test(p)
         #cache_width_test(p)
+        family_test(p)
