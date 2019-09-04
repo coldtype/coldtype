@@ -18,8 +18,9 @@ from lxml import etree
 
 
 class DrawBotPen(DrawablePenMixin):
-    def __init__(self, dat):
+    def __init__(self, dat, rect=None):
         super().__init__()
+        self.rect = rect
         self.dat = dat
         self.bp = db.BezierPath()
         self.dat.replay(self.bp)
@@ -68,7 +69,12 @@ class DrawBotPen(DrawablePenMixin):
             bp = db.BezierPath()
             cp.replay(bp)
             db.clipPath(bp)
-        db.shadow((0, 0), radius, list(color.with_alpha(alpha)))
+        #elif self.rect:
+        #    cp = DATPen(fill=None).rect(self.rect).xor(self.dat)
+        #    bp = db.BezierPath()
+        #    cp.replay(bp)
+        #    db.clipPath(bp)
+        db.shadow((0, 0), radius*3, list(color.with_alpha(alpha)))
 
     def gradient(self, gradient):
         stops = gradient.stops
@@ -81,19 +87,6 @@ class DrawBotPen(DrawablePenMixin):
                 self.applyDATAttribute(attr)
             db.drawPath(self.bp)
     
-    def Page(pens, rect):
-        db.newPage(rect.w, rect.h)
-        for pen in pens:
-            if pen:
-                if hasattr(pen, "pens"):
-                    for p in pen.pens:
-                        DrawBotPen(p).draw()
-                else:
-                    DrawBotPen(pen).draw()
-    
-    def Save(save_to):
-        db.saveImage(save_to)
-    
     def Composite(pens, rect, save_to, paginate=False, scale=2):
         rect = rect.scale(scale)
         if not paginate:
@@ -101,8 +94,7 @@ class DrawBotPen(DrawablePenMixin):
         for pen in DrawBotPen.FindPens(pens):
             if paginate:
                 db.newPage(rect.w, rect.h)
-            DrawBotPen(pen).draw(scale=scale)
-        
+            DrawBotPen(pen, rect).draw(scale=scale)
         db.saveImage(save_to)
 
 
@@ -122,7 +114,9 @@ if __name__ == "__main__":
         
         dp1 = DATPen(fill=("random", 0.25), stroke=("random", 0.5), strokeWidth=30)
         dp1.oval(r.inset(30, 30))
-        dp2 = DATPen(fill=Gradient.Random(r.inset(100, 100)), shadow=dict(clip=r.take(150, "centery"), alpha=0.6, radius=100))
+        dp2 = DATPen(fill=Gradient.Random(r.inset(100, 100)), shadow=dict(
+            #clip=r.take(150, "centery"),
+            alpha=0.6, radius=100))
         dp2.oval(r.inset(100, 100))
         dp3 = DATPen(fill=None, image=dict(src=p0, opacity=0.3, rect=Rect(0, 0, 53, 53))).rect(r)
 
