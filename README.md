@@ -19,3 +19,8 @@ export LDFLAGS="-L/usr/local/opt/libffi/lib"
 ```
 
 Then you can `pip install pycairo` again — hopefully it works!
+
+# DrawBot
+
+- `pip3 install PyObjC`
+- `cd` into a drawBot clone and `python setup.py install`

@@ -28,11 +28,18 @@ class CairoPen(DrawablePenMixin, BasePen):
         self.ctx = ctx
         self._value = []
         tp = TransformPen(self, (1, 0, 0, -1, 0, h))
-        for attr in self.findStyledAttrs(style):
-            self.ctx.save()
-            dat.replay(tp)
-            self.applyDATAttribute(attr)
-            self.ctx.restore()
+        
+        attrs = list(self.findStyledAttrs(style))
+        methods = [a[0] for a in attrs]
+
+        if True or "shadow" not in methods:
+            for attr in attrs:
+                method, *args = attr
+                self.ctx.save()
+                if method in ["fill", "stroke"]:
+                    dat.replay(tp)
+                self.applyDATAttribute(attr)
+                self.ctx.restore()
 
     def _moveTo(self, p):
         self.ctx.move_to(p[0], p[1])
@@ -79,7 +86,10 @@ class CairoPen(DrawablePenMixin, BasePen):
         image_surface = cairo.ImageSurface.create_from_png(src)
         pattern = cairo.SurfacePattern(image_surface)
         pattern.set_extend(cairo.Extend.REPEAT)
-        self.ctx.scale(0.5, 0.5)
+        if rect:
+            self.ctx.scale(rect.h/self.h/2, rect.h/self.h/2)
+        else:
+            self.ctx.scale(0.5, 0.5)
         #self.ctx.translate(left, top)
         self.ctx.set_source(pattern)
         #self.ctx.set_source_surface(pattern)

@@ -6,6 +6,7 @@ if __name__ == "__main__":
     dirname = os.path.realpath(os.path.dirname(__file__))
     sys.path.append(f"{dirname}/../..")
 
+from coldtype.pens.datpen import DATPen
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 
@@ -26,7 +27,7 @@ class DrawBotPen(DrawablePenMixin):
     def fill(self, color):
         if color:
             if isinstance(color, Gradient):
-                pass
+                self.gradient(color)
             elif isinstance(color, Color):
                 db.fill(color.red, color.green, color.blue, color.alpha)
         else:
@@ -41,10 +42,42 @@ class DrawBotPen(DrawablePenMixin):
                 db.stroke(color.red, color.green, color.blue, color.alpha)
         else:
             db.stroke(None)
+        
+    def image(self, src=None, opacity=None, rect=None):
+        bounds = self.dat.bounds()
+        img_w, img_h = db.imageSize(src)
+        x = bounds.x
+        y = bounds.y
+        x_count = bounds.w / rect.w
+        y_count = bounds.h / rect.h
+        while x <= bounds.w:
+            while y <= bounds.h:
+                with db.savedState():
+                    r = Rect(x, y, rect.w, rect.h)
+                    #db.fill(1, 0, 0.5, 0.05)
+                    #db.oval(*r)
+                    db.scale(rect.w/img_w, center=r.point("SW"))
+                    db.image(src, (r.x, r.y), alpha=opacity)
+                y += rect.h
+            y = 0
+            x += rect.w
     
-    def draw(self):
+    def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
+        if clip:
+            cp = DATPen(fill=None).rect(clip)
+            bp = db.BezierPath()
+            cp.replay(bp)
+            db.clipPath(bp)
+        db.shadow((0, 0), radius, list(color.with_alpha(alpha)))
+
+    def gradient(self, gradient):
+        stops = gradient.stops
+        db.linearGradient(stops[0][1], stops[1][1], [list(s[0]) for s in stops], [0, 1])
+    
+    def draw(self, scale=2, style=None):
         with db.savedState():
-            for attr in self.dat.attrs.items():
+            db.scale(scale)
+            for attr in self.findStyledAttrs(style):
                 self.applyDATAttribute(attr)
             db.drawPath(self.bp)
     
@@ -61,18 +94,15 @@ class DrawBotPen(DrawablePenMixin):
     def Save(save_to):
         db.saveImage(save_to)
     
-    def Composite(pens, rect, save_to, paginate=False):
+    def Composite(pens, rect, save_to, paginate=False, scale=2):
+        rect = rect.scale(scale)
         if not paginate:
             db.newPage(rect.w, rect.h)
-        for pen in pens:
+        for pen in DrawBotPen.FindPens(pens):
             if paginate:
                 db.newPage(rect.w, rect.h)
-            if pen:
-                if hasattr(pen, "pens"):
-                    for p in pen.pens:
-                        DrawBotPen(p).draw()
-                else:
-                    DrawBotPen(pen).draw()
+            DrawBotPen(pen).draw(scale=scale)
+        
         db.saveImage(save_to)
 
 
@@ -81,16 +111,21 @@ if __name__ == "__main__":
     from coldtype.pens.datpen import DATPen
     from coldtype.viewer import previewer
 
-    with previewer() as p:
+    with previewer() as pv:
         r = Rect((0, 0, 500, 500))
-        dp1 = DATPen(fill="random")
-        dp1.oval(r.inset(100, 100))
-        p = os.path.realpath(f"{dirname}/../../test/artifacts/drawbot_test2.pdf")
-        #p.send(SVGPen.Composite([dp1, dp], r), rect=r)
-        DrawBotPen.Page([dp1], r)
+
+        r0 = Rect(0, 0, 250, 250)
+        dp0 = DATPen(fill="random").rect(r0.inset(100, 100)).rotate(45)
+        p0 = os.path.realpath(f"{dirname}/../../test/artifacts/drawbot_test3_pattern.png")
+        DrawBotPen.Composite([dp0], r0, p0, scale=2)
+        pv.send(p0, r0, image=True)
         
-        dp1 = DATPen(fill="random")
-        dp1.oval(r.inset(100, 100))
-        DrawBotPen.Page([dp1], r)
-        
-        DrawBotPen.Save(p)
+        dp1 = DATPen(fill=("random", 0.25), stroke=("random", 0.5), strokeWidth=30)
+        dp1.oval(r.inset(30, 30))
+        dp2 = DATPen(fill=Gradient.Random(r.inset(100, 100)), shadow=dict(clip=r.take(150, "centery"), alpha=0.6, radius=100))
+        dp2.oval(r.inset(100, 100))
+        dp3 = DATPen(fill=None, image=dict(src=p0, opacity=0.3, rect=Rect(0, 0, 53, 53))).rect(r)
+
+        p = os.path.realpath(f"{dirname}/../../test/artifacts/drawbot_test2.png")
+        DrawBotPen.Composite([dp3, dp1, dp2], r, p, scale=2)
+        pv.send(p, r, image=True)
