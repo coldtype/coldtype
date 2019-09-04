@@ -126,6 +126,12 @@ if __name__ == "__main__":
         dp2.oval(r.inset(100, 100))
         dp3 = DATPen(fill=None, image=dict(src=p0, opacity=0.3, rect=Rect(0, 0, 53, 53))).rect(r)
 
+        dp5 = DATPen(fill=None, stroke=("random", 0.5), strokeWidth=30).rect(r.inset(100, 100)).rotate(45)
+
         p = os.path.realpath(f"{dirname}/../../test/artifacts/drawbot_test2.png")
+        p2 = os.path.realpath(f"{dirname}/../../test/artifacts/drawbot_test5.png")
+
         DrawBotPen.Composite([dp3, dp1, dp2], r, p, scale=2)
-        pv.send(p, r, image=True)
+        DrawBotPen.Composite([dp5], r, p2, scale=2)
+
+        pv.send([p, p2], r, image=True)

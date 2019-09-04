@@ -26,7 +26,14 @@ class PreviewConnection():
         if full:
             html = content
         elif image:
-            html = f"""<div class="page" style="width:{rect.w}px;height:{rect.h}px"><img style='background:white' src='file:///{content}?q={random()}' width={rect.w}/></div>"""
+            if isinstance(content, str):
+                images = [content]
+            else:
+                images = content
+            imgs = ""
+            for img in images:
+                imgs += f"""<img style='background:transparent;position:absolute;top:0px;left:0px;' src='file:///{img}?q={random()}' width={rect.w}/>"""
+            html = f"""<div class="page" style="position:relative;width:{rect.w}px;height:{rect.h}px">{imgs}</div>"""
         else:
             html = f"""<div class="page" style="width:{rect.w}px;height:{rect.h}px">{content}</div>"""
         self.ws.send(html)
