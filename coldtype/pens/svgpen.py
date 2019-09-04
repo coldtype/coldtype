@@ -18,6 +18,7 @@ from coldtype.color import Color
 import textwrap
 from collections import OrderedDict
 from lxml import etree
+import base64
 
 from random import randint
 
@@ -120,6 +121,8 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         return lg.get("id")
     
     def image(self, src=None, opacity=None, rect=None):
+        if True:
+            src = base64.b64encode(open(src, "rb").read()).decode('utf-8')
         hsh = str(hash(self.getCommands())) + str(randint(0, 100000))
         img = etree.Element("image")
         img.set("x", str(rect.x or 0))

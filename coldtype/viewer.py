@@ -26,7 +26,7 @@ class PreviewConnection():
         if full:
             html = content
         elif image:
-            html = f"""<div class="page" style="width:{rect.w/2}px;height:{rect.h/2}px"><img style='background:white' src='file:///{content}?q={random()}' width={rect.w/2}/></div>"""
+            html = f"""<div class="page" style="width:{rect.w}px;height:{rect.h}px"><img style='background:white' src='file:///{content}?q={random()}' width={rect.w}/></div>"""
         else:
             html = f"""<div class="page" style="width:{rect.w}px;height:{rect.h}px">{content}</div>"""
         self.ws.send(html)
