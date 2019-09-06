@@ -88,6 +88,7 @@ class DrawBotPen(DrawablePenMixin):
             db.drawPath(self.bp)
     
     def Composite(pens, rect, save_to, paginate=False, scale=2):
+        db.newDrawing()
         rect = rect.scale(scale)
         if not paginate:
             db.newPage(rect.w, rect.h)
@@ -96,6 +97,7 @@ class DrawBotPen(DrawablePenMixin):
                 db.newPage(rect.w, rect.h)
             DrawBotPen(pen, rect).draw(scale=scale)
         db.saveImage(save_to)
+        db.endDrawing()
 
 
 if __name__ == "__main__":

@@ -22,7 +22,7 @@ class PreviewConnection():
     def __exit__(self, type, value, traceback):
         self.ws.close()
     
-    def send(self, content, rect=Rect(0, 0, 500, 500), full=False, image=False):
+    def send(self, content, rect=Rect(0, 0, 500, 500), full=False, image=False, pdf=False, bg="transparent"):
         if full:
             html = content
         elif image:
@@ -32,10 +32,19 @@ class PreviewConnection():
                 images = content
             imgs = ""
             for img in images:
-                imgs += f"""<img style='background:transparent;position:absolute;top:0px;left:0px;' src='file:///{img}?q={random()}' width={rect.w}/>"""
+                imgs += f"""<img style='background:{bg};position:absolute;top:0px;left:0px;' src='file:///{img}?q={random()}' width={rect.w}/>"""
             html = f"""<div class="page" style="position:relative;width:{rect.w}px;height:{rect.h}px">{imgs}</div>"""
+        elif pdf:
+            if isinstance(content, str):
+                pdfs = [content]
+            else:
+                pdfs = content
+            pdf_html = ""
+            for pdf in pdfs:
+                pdf_html += f"""<iframe style='background:{bg};position:absolute;top:0px;left:0px;' src='file:///{pdf}?q={random()}' width="{rect.w}" height="{rect.h}"/>"""
+            html = f"""<div class="page" style="position:relative;width:{rect.w}px;height:{rect.h}px">{pdf_html}</div>"""
         else:
-            html = f"""<div class="page" style="width:{rect.w}px;height:{rect.h}px">{content}</div>"""
+            html = f"""<div class="page" style="width:{rect.w}px;height:{rect.h}px;background:{bg}">{content}</div>"""
         self.ws.send(html)
 
 
