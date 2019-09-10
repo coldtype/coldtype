@@ -790,7 +790,7 @@ class StyledString(FittableMixin):
         if not adjusted and self.style.next:
             self.setStyle(self.style.next)
             adjusted = True
-        if True and not adjusted and "hwid" not in self.features:
+        if True and not adjusted and "hwid" not in self.features and not self.style.ufo:
             self.features["hwid"] = True
             self.tracking = self.style.tracking # reset to widest
             self.glyphs = self.hb.glyphs(self.variations, self.features)
