@@ -746,6 +746,9 @@ class StyledString(FittableMixin):
             x_off = 0
             for g in glyph_names:
                 glif = self.style.glyphSet[g]
+                if glif.bounds == None:
+                    g = ".notdef"
+                    glif = self.style.glyphSet[".notdef"]
                 w = glif.width
                 r = Rect(x_off, 0, w, self.style.capHeight)
                 x_off += w
@@ -1063,10 +1066,10 @@ if __name__ == "__main__":
     
     def glyphs_test(p):
         r = Rect(0, 0, 500, 200)
-        f = "~/Type/grafprojects/obviouslytown/graff.glyphs"
+        f = "~/Downloads/vulf_compressor/vulf_compressor.glyphs"
         style = Style(f, 200, t=-10, varyFontSize=True)
-        slug = Slug("F", style).fit(r.w)
-        p.send(SVGPen.Composite(slug.pen().align(r).removeOverlap().attr(fill=None, stroke=(1, 0, 0.5), strokeWidth=1), r), r)
+        slug = Slug("ABC一低保真度", style).fit(r.w)
+        p.send(SVGPen.Composite(slug.pen().align(r).removeOverlap().attr(fill="random"), r), r)
     
     def multiline_test(p):
         r = Rect(0, 0, 300, 300)
@@ -1164,7 +1167,7 @@ if __name__ == "__main__":
         #emoji_test(p)
         #hoi_test(p)
         #ufo_test(p)
-        #glyphs_test(p)
+        glyphs_test(p)
         #multiline_test(p)
         #hwid_test(p)
         #multiline_fit_test(p)
@@ -1172,4 +1175,4 @@ if __name__ == "__main__":
         #custom_kern_test(p)
         #interp_test(p)
         #cache_width_test(p)
-        family_test(p)
+        #family_test(p)
