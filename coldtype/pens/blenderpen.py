@@ -5,7 +5,7 @@ dirname = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(f"{dirname}/../..")
 
 from coldtype.geometry import Rect, Edge, Point
-from coldtype.color import Gradient, Color
+from coldtype.color import Gradient, Color, normalize_color
 from coldtype.beziers import CurveCutter, raise_quadratic
 from coldtype.pens.drawablepen import DrawablePenMixin
 from fontTools.pens.basePen import BasePen
@@ -53,7 +53,7 @@ class BPH():
         return bpy.data.collections.get(name)
 
     def Primitive(_type, coll, name, dn=False, container=None):
-        print(">Primitive", name, dn, name in bpy.context.scene.objects)
+        #print(">Primitive", name, dn, name in bpy.context.scene.objects)
         created = False
         
         if dn and name in bpy.context.scene.objects:
@@ -151,29 +151,32 @@ class BlenderPen(DrawablePenMixin, BasePen):
     
     def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
         pass
+
+    def setColorValue(self, value, color):
+        value[0] = color.red
+        value[1] = color.green
+        value[2] = color.blue
+        value[3] = 1
+        if color.alpha != 1:
+            self.transmission(1)
+            #value[0] = 1
+            #value[1] = 1
+            #value[2] = 1
+            #value[3] = 1
     
     def fill(self, color):
         if color:
             if isinstance(color, Gradient):
                 self.fill(color.stops[0][0])
             else:
-                print("FILL>>>>>", self.tag, color)
+                #print("FILL>>>>>", self.tag, color)
                 bsdf = self.bsdf()
                 dv = bsdf.inputs[0].default_value
-                dv[0] = color.red
-                dv[1] = color.green
-                dv[2] = color.blue
-                dv[3] = 1 #color.alpha
-                if color.alpha == 0:
-                    dv[0] = 1
-                    dv[1] = 1
-                    dv[2] = 1
-                    dv[3] = 1
-
+                self.setColorValue(dv, color)
     
     def stroke(self, weight=1, color=None):
         if weight and color and color.alpha > 0:
-            print("STROKE>>>", self.tag, weight, color)
+            #print("STROKE>>>", self.tag, weight, color)
             self.bez.data.fill_mode = "NONE"
             if isinstance(color, Gradient):
                 pass
@@ -194,6 +197,15 @@ class BlenderPen(DrawablePenMixin, BasePen):
     
     def transmission(self, amount=1):
         self.bsdf().inputs[15].default_value = amount
+        return self
+    
+    def subsurface(self, amount=0.01):
+        self.bsdf().inputs[1].default_value = amount
+        return self
+
+    def emission(self, color=None):
+        if color:
+            self.setColorValue(self.bsdf().inputs[17].default_value, normalize_color(color))
         return self
     
     def image(self, path):
