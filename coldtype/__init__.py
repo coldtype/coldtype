@@ -443,6 +443,7 @@ class Style():
             latin=None, # temp
             lang=None,
             filter=None,
+            preventHwid=False,
             **kwargs):
         """
         kern (k) — a dict of glyphName->[left,right] values in font-space
@@ -510,6 +511,7 @@ class Style():
         self.filter = filter
         self.data = data
         self.latin = latin
+        self.preventHwid = preventHwid
 
         # TODO should be able to pass in as kwarg
         found_features = features.copy()
@@ -790,7 +792,7 @@ class StyledString(FittableMixin):
         if not adjusted and self.style.next:
             self.setStyle(self.style.next)
             adjusted = True
-        if True and not adjusted and "hwid" not in self.features and not self.style.ufo:
+        if not adjusted and self.style.preventHwid == False and "hwid" not in self.features and not self.style.ufo:
             self.features["hwid"] = True
             self.tracking = self.style.tracking # reset to widest
             self.glyphs = self.hb.glyphs(self.variations, self.features)
@@ -978,12 +980,13 @@ if __name__ == "__main__":
             "الكروسفِيد",
             "مستوَى التخفيف",
             "اللٌُوفَاي",
+            "9رقمي: سنوات ال0",
         ]
         style = Style("≈/GretaArabicCondensedAR-Heavy.otf",
                 100,
                 lang="ar",
                 fill=Gradient.Random(r))
-        lck = Slug(_s[0], style, obv).fit(r.w - 100)
+        lck = Slug(_s[-1], style, obv).fit(r.w - 100)
         dps = lck.pens()
         dps.align(r)
         g = DATPen.Grid(r, y=4)
@@ -1160,14 +1163,14 @@ if __name__ == "__main__":
         
         #ss_and_shape_test(p)
         #rotalic_test(p)
-        #multilang_test(p)
+        multilang_test(p)
         #cjk_multilang_test(p)
         #tracking_test(p)
         #color_font_test(p)
         #emoji_test(p)
         #hoi_test(p)
         #ufo_test(p)
-        glyphs_test(p)
+        #glyphs_test(p)
         #multiline_test(p)
         #hwid_test(p)
         #multiline_fit_test(p)
