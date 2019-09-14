@@ -9,7 +9,7 @@ if __name__ == "__main__":
     sys.path.append(f"{dirname}/../..")
 
 from coldtype.geometry import Rect, Edge, Point
-from coldtype.color import Gradient
+from coldtype.color import Gradient, Color
 from coldtype.pens.drawablepen import DrawablePenMixin
 from coldtype.pens.datpen import DATPen, DATPenSet
 
@@ -175,12 +175,10 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath("."))
     from coldtype.viewer import previewer
-    from coldtype.svg import read_svg_to_pen
+    #from coldtype.svg import read_svg_to_pen
 
     with previewer() as p:
-        r = Rect((0, 0, 500, 200))
-        dp1 = DATPen(fill="darkorchid").attr("blue", fill="royalblue")
-        dp1.oval(r.inset(200, 200))
-        path = os.path.expanduser("~/Sites/funklet.com/_fonts/funklet.svg")
-        dp = DATPen(fill=(0, 0.5, 1)).svg(path, "funklet").scale(1).align(r).removeOverlap().rotate(-20)
-        p.send(SVGPen.Composite([dp], r, style="default"), rect=r)
+        r = Rect((0, 0, 500, 500))
+        dp1 = DATPen(fill="darkorchid").oval(r.inset(20, 20))
+        dp2 = DATPen(fill=Color.from_html("hotpink").with_alpha(0.5)).rect(r.inset(50, 50))
+        p.send(SVGPen.Composite([dp1, dp2], r), rect=r)

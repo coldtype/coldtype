@@ -23,7 +23,9 @@ Install Python, 3.6.8 (the latest 3.6 series) is probably your best bet https://
 Now you should see `(env)` prepended to your terminal prompt. If that’s the case, continue with this invocation:
 - `pip install -r requirements.txt`
 
-There’s a chance you might be all set now, but probably not, as the coldtype library (a submodule) uses a bleeding-edge version of the freetype-py wrapper, which dynamically loads `libfreetype.6.dylib`, which you may or may not have. So if you see an error about that, just contact Rob.
+### Freetype
+
+There’s a chance you might be all set now, but probably not, as the coldtype library (a submodule) uses a bleeding-edge version of the freetype-py wrapper, which dynamically loads `libfreetype.6.dylib`, which you may or may not have. The easiest way to install it on a Mac is with homebrew, using the command `brew install freetype`, though if you’d rather not, let me (Rob) know and I can send you a pre-built freetype binary.
 
 # Previewing
 
