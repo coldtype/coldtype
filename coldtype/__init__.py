@@ -443,6 +443,7 @@ class Style():
             latin=None, # temp
             lang=None,
             filter=None,
+            preventHwid=False,
             **kwargs):
         """
         kern (k) — a dict of glyphName->[left,right] values in font-space
@@ -510,6 +511,7 @@ class Style():
         self.filter = filter
         self.data = data
         self.latin = latin
+        self.preventHwid = preventHwid
 
         # TODO should be able to pass in as kwarg
         found_features = features.copy()
@@ -790,7 +792,7 @@ class StyledString(FittableMixin):
         if not adjusted and self.style.next:
             self.setStyle(self.style.next)
             adjusted = True
-        if True and not adjusted and "hwid" not in self.features and not self.style.ufo:
+        if not adjusted and self.style.preventHwid == False and "hwid" not in self.features and not self.style.ufo:
             self.features["hwid"] = True
             self.tracking = self.style.tracking # reset to widest
             self.glyphs = self.hb.glyphs(self.variations, self.features)
@@ -978,7 +980,7 @@ if __name__ == "__main__":
             "الكروسفِيد",
             "مستوَى التخفيف",
             "اللٌُوفَاي",
-            "رقمي: سنوات ال90",
+            "9رقمي: سنوات ال0",
         ]
         style = Style("≈/GretaArabicCondensedAR-Heavy.otf",
                 100,
