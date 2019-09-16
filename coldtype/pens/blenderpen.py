@@ -204,7 +204,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
         return self
 
     def emission(self, color=None):
-        if color:
+        if color is not None:
             self.setColorValue(self.bsdf().inputs[17].default_value, normalize_color(color))
         return self
     

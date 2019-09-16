@@ -1,3 +1,4 @@
+import re
 import unicodedata
 from itertools import groupby
 
@@ -13,7 +14,7 @@ modes = [
     "LATIN",
     "ARABIC",
     "SPACE",
-    "CJK",
+    "CJK"
 ]
 
 def segment(txt, mode="LATIN", includeNames=False):
@@ -54,6 +55,12 @@ def segment(txt, mode="LATIN", includeNames=False):
                     if m in n:
                         found_modes.add(m)
             grouped_runs.append((found_modes, txt))
+    
+    # reverse number ranges in arabic
+    for idx, (cats, line) in enumerate(grouped_runs):
+        if "ARABIC" in cats:
+            grouped_runs[idx] = (cats, re.sub("[0-9]+", lambda m: m.group()[::-1], line))
+
     return grouped_runs
 
 if __name__ == "__main__":

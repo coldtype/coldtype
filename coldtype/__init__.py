@@ -978,12 +978,13 @@ if __name__ == "__main__":
             "الكروسفِيد",
             "مستوَى التخفيف",
             "اللٌُوفَاي",
+            "رقمي: سنوات ال90",
         ]
         style = Style("≈/GretaArabicCondensedAR-Heavy.otf",
                 100,
                 lang="ar",
                 fill=Gradient.Random(r))
-        lck = Slug(_s[0], style, obv).fit(r.w - 100)
+        lck = Slug(_s[-1], style, obv).fit(r.w - 100)
         dps = lck.pens()
         dps.align(r)
         g = DATPen.Grid(r, y=4)
@@ -992,8 +993,6 @@ if __name__ == "__main__":
             dps.frameSet().attr(fill=None, stroke=0),
             dps
             ], r), r)
-    
-    #TypeUse.Param: Style("ƒ/HiraginoSansGBW3.ttf", 14, t=5, tl=-1, latin=latins[TypeUse.Param])
 
     def cjk_multilang_test(p):
         obv = Style("≈/ObviouslyVariable.ttf", 80, wdth=1, wght=0.7, fill=(1, 0, 0.5))
@@ -1160,14 +1159,14 @@ if __name__ == "__main__":
         
         #ss_and_shape_test(p)
         #rotalic_test(p)
-        #multilang_test(p)
+        multilang_test(p)
         #cjk_multilang_test(p)
         #tracking_test(p)
         #color_font_test(p)
         #emoji_test(p)
         #hoi_test(p)
         #ufo_test(p)
-        glyphs_test(p)
+        #glyphs_test(p)
         #multiline_test(p)
         #hwid_test(p)
         #multiline_fit_test(p)
