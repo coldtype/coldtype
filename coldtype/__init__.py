@@ -518,7 +518,7 @@ class Style():
         for k, v in kwargs.items():
             if k.startswith("ss") and len(k) == 4:
                 found_features[k] = v
-            if k in ["dlig", "swsh", "onum", "tnum"]:
+            if k in ["dlig", "swsh", "onum", "tnum", "palt"]:
                 found_features[k] = v
         self.features = {**dict(kern=True, liga=True), **found_features}
 
