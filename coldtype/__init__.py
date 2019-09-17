@@ -749,8 +749,12 @@ class StyledString(FittableMixin):
             glyph_names = StyledString.TextToGuessedGlyphNames(self.text)
             x_off = 0
             for g in glyph_names:
-                glif = self.style.glyphSet[g]
-                if glif.bounds == None and "space" not in g:
+                try:
+                    glif = self.style.glyphSet[g]
+                    if glif.bounds == None and "space" not in g:
+                        g = ".notdef"
+                        glif = self.style.glyphSet[".notdef"]
+                except:
                     g = ".notdef"
                     glif = self.style.glyphSet[".notdef"]
                 w = glif.width
