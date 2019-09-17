@@ -731,6 +731,8 @@ class StyledString(FittableMixin):
                 glyph = "eight"
             elif t == "9":
                 glyph = "nine"
+            elif t == "’":
+                glyph = "quoteright"
             elif re.match(r"[A-Za-z]", t):
                 glyph = t
             else: # convert unicode literals to uni*-style
@@ -748,7 +750,7 @@ class StyledString(FittableMixin):
             x_off = 0
             for g in glyph_names:
                 glif = self.style.glyphSet[g]
-                if glif.bounds == None:
+                if glif.bounds == None and "space" not in g:
                     g = ".notdef"
                     glif = self.style.glyphSet[".notdef"]
                 w = glif.width
