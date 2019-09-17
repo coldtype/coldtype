@@ -455,21 +455,32 @@ class Style():
 
         self.next = None
 
-        if isinstance(font, str):
-            self.fontFile = self.normalizeFontPath(font)
-        else:
-            self.fontFile = self.normalizeFontPath(font[0])
-            if len(font) > 1:
-                self.next = Style(font=font[1:], fontSize=fontSize, ttFont=ttFont, tracking=tracking, trackingLimit=trackingLimit, kern=kern, space=space, baselineShift=baselineShift,xShift=xShift, variations=variations, variationLimits=variationLimits, increments=increments, features=features, varyFontSize=varyFontSize, fill=fill,stroke=stroke, strokeWidth=strokeWidth, palette=palette, capHeight=capHeight, data=data, latin=latin, lang=lang, filter=filter, **kwargs)
-        
-        self.format = os.path.splitext(self.fontFile)[1][1:]
-        self.ufo = self.format == "ufo"
+        try:
+            # Load a font directly from a font-authoring in-memory object
+            if isinstance(font, Font): # defcon
+                self.fontFile = "<in-memory>.ufo"
+                self.ufo = True
+                self.format = "ufo"
+                ufo = font
+            else:
+                raise Exception("Not in-memory")
+        except:
+            # Load a font from a file
+            if isinstance(font, str):
+                self.fontFile = self.normalizeFontPath(font)
+            else:
+                self.fontFile = self.normalizeFontPath(font[0])
+                if len(font) > 1:
+                    self.next = Style(font=font[1:], fontSize=fontSize, ttFont=ttFont, tracking=tracking, trackingLimit=trackingLimit, kern=kern, space=space, baselineShift=baselineShift,xShift=xShift, variations=variations, variationLimits=variationLimits, increments=increments, features=features, varyFontSize=varyFontSize, fill=fill,stroke=stroke, strokeWidth=strokeWidth, palette=palette, capHeight=capHeight, data=data, latin=latin, lang=lang, filter=filter, preventHwid=preventHwid, **kwargs)
+            
+            self.format = os.path.splitext(self.fontFile)[1][1:]
+            self.ufo = self.format == "ufo"
 
-        if self.ufo:
-            ufo = Font(self.fontFile)
-        if self.format == "glyphs":
-            ufo = glyphsLib.load_to_ufos(self.fontFile)[0]
-            self.ufo = True
+            if self.ufo:
+                ufo = Font(self.fontFile)
+            if self.format == "glyphs":
+                ufo = glyphsLib.load_to_ufos(self.fontFile)[0]
+                self.ufo = True
 
         capHeight = kwargs.get("ch", capHeight)
 
