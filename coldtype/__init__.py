@@ -332,6 +332,7 @@ class Lockup(FittableMixin):
             pens.extend(dps.pens)
             x_off += dps.getFrame().w
             x_off += s.margin[1]
+            x_off += s.strings[-1].tracking
         return DATPenSet(pens)
     
     def pen(self):
@@ -1145,6 +1146,28 @@ if __name__ == "__main__":
         dp1 = Slug("Hello world", style).fit(r.w).pen().align(r)
         p.send(SVGPen.Composite(dp1, r), r)
     
+    def layered_font_test(p):
+        r = Rect(0, 0, 1000, 100)
+        
+        def layered_slugs(txt):
+            return [
+                Slug(txt, Style("≈/CaslonAntique-Shaded-Fill.otf", 60, fill=(1, 0, 0), t=-20)),
+                Slug(txt, Style("≈/CaslonAntique-Shaded-Shadow.otf", 60, fill=(0, 0, 1), t=-20))
+            ]
+        
+        s1, s2 = layered_slugs("Hello wor")
+        s3, s4 = layered_slugs("ld")
+        #dp1 = s1.pen().align(r, th=0)
+        #dp2 = s2.pen().align(r, th=0)
+
+        lck = Lockup([s1, s3])
+        lck2 = Lockup([s2, s4])
+        
+        p.send(SVGPen.Composite([
+            lck2.pens().align(r, th=0),
+            lck.pens().align(r, th=0)
+            ], r), r)
+    
     def cache_width_test(p):
         #from itertools import chain
         #from fontTools.unicode import Unicode
@@ -1178,7 +1201,7 @@ if __name__ == "__main__":
         
         #ss_and_shape_test(p)
         #rotalic_test(p)
-        multilang_test(p)
+        #multilang_test(p)
         #cjk_multilang_test(p)
         #tracking_test(p)
         #color_font_test(p)
@@ -1194,3 +1217,4 @@ if __name__ == "__main__":
         #interp_test(p)
         #cache_width_test(p)
         #family_test(p)
+        layered_font_test(p)
