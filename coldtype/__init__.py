@@ -122,10 +122,10 @@ class Harfbuzz():
         x = 0
         for idx, (info, pos) in enumerate(zip(infos, positions)):
             gid = info.codepoint
-            if gid != glyphs[idx][0]:
-                print(">>>>>>>>", self.text)
-                print(gid, glyphs[idx][0])
-                #raise Exception("HELLO WORLD")
+            #if gid != glyphs[idx][0]:
+            #    print(">>>>>>>>", self.text)
+            #    print(gid, glyphs[idx][0])
+            #    #raise Exception("HELLO WORLD")
             cluster = info.cluster
             x_advance = pos.x_advance
             x_offset = pos.x_offset
@@ -967,7 +967,7 @@ if __name__ == "__main__":
         ps2 = Slug("ABC", Style(font=f, variations=v, fontSize=72)).pens().rotate(-10)
         oval = DATPen().polygon(3, Rect(0, 0, 50, 50)).attr(fill="random")
         ss1_p = ss1.pen().attr(fill="darkorchid")
-        print(ss1_p.frame)
+        #print(ss1_p.frame)
         dps = DATPenSet(
             ss1_p,
             ps2,
