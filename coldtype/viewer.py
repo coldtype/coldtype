@@ -6,6 +6,7 @@ dirname = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(f"{dirname}/..")
 
 from coldtype.geometry import Rect
+from coldtype.color import normalize_color
 
 WEBSOCKET_PORT = 8008
 WEBSOCKET_ADDR = f"ws://localhost:{WEBSOCKET_PORT}"
@@ -22,7 +23,8 @@ class PreviewConnection():
     def __exit__(self, type, value, traceback):
         self.ws.close()
     
-    def send(self, content, rect=Rect(0, 0, 500, 500), full=False, image=False, pdf=False, bg="transparent"):
+    def send(self, content, rect=Rect(0, 0, 500, 500), full=False, image=False, pdf=False, bg=(0, 0, 0, 0)):
+        bg = normalize_color(bg).html
         if full:
             html = content
         elif image:

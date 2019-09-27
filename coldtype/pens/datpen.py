@@ -472,7 +472,7 @@ class DATPen(RecordingPen, AlignableMixin):
         except:
             pass
         return self
-    
+
     def outline(self, offset=1):
         op = OutlinePen(None, offset=offset, optimizeCurve=True, cap="square")
         self.replay(op)
@@ -652,6 +652,25 @@ class DATPen(RecordingPen, AlignableMixin):
         ep = ExplodingPen(dp)
         self.replay(ep)
         return DATPenSet(ep.pens)
+    
+    def segregate(self):
+        dp_open = DATPen()
+        dp_closed = DATPen()
+        for pen in self.explode().pens:
+            if pen.value[-1][0] == "closePath":
+                dp_closed.record(pen)
+            else:
+                dp_open.record(pen)
+        return dp_open, dp_closed
+    
+    def subsegment(self, start=0, end=1):
+        cc = CurveCutter(self)
+        start = 0
+        end = end * cc.calcCurveLength()
+        pv = cc.subsegment(start, end)
+        self.value = pv
+        return self
+
     
     def points(self):
         contours = []
@@ -1005,6 +1024,19 @@ if __name__ == "__main__":
             dp = DATPen(fill=None, stroke=0).line([ri.point("SW"), ri.point("NE")]).line([ri.point("NW"), ri.point("SE")])
             dp.outline(10).removeOverlap()
             v.send(SVGPen.Composite([dp], r), r)
+        
+        def separate_path_types_test():
+            value = [('moveTo', [(40.0, 171.6)]), ('curveTo', [(42.8, 172.8), (43.6, 183.2), (38.8, 183.2)]), ('curveTo', [(30.0, 183.2), (32.0, 168.4), (40.0, 171.6)]), ('closePath', []), ('moveTo', [(65.2, 186.8)]), ('curveTo', [(59.2, 186.8), (57.2, 173.6), (65.2, 176.0)]), ('curveTo', [(70.8, 177.6), (69.2, 186.8), (65.2, 186.8)]), ('closePath', []), ('moveTo', [(28.0, 188.8)]), ('curveTo', [(32.4, 192.4), (38.0, 193.6), (43.6, 194.4)]), ('endPath', []), ('moveTo', [(62.4, 197.2)]), ('curveTo', [(70.4, 194.4), (76.8, 192.8), (80.0, 188.0)]), ('endPath', []), ('moveTo', [(35.2, 149.6)]), ('curveTo', [(46.8, 149.6), (74.0, 154.0), (86.4, 163.2)]), ('endPath', [])]
+
+            r = Rect(0, 0, 500, 500)
+            
+            dp = DATPen(fill=None, stroke=0, strokeWidth=2)
+            dp.value = value
+            dp.align(r)
+            o, c = dp.segregate()
+            o.attr(fill=None, stroke=0, strokeWidth=2)
+            o.subsegment(0, 1)
+            v.send(SVGPen.Composite([o, c], r), r)
 
         #gradient_test()
         #roughen_test()
@@ -1014,4 +1046,5 @@ if __name__ == "__main__":
         #reverse_test()
         #sine_test()
         #outline_test()
-        pixellate_test()
+        #pixellate_test()
+        separate_path_types_test()

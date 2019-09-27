@@ -445,6 +445,7 @@ class Style():
             lang=None,
             filter=None,
             preventHwid=False,
+            layer=None,
             **kwargs):
         """
         kern (k) — a dict of glyphName->[left,right] values in font-space
@@ -472,10 +473,11 @@ class Style():
             else:
                 self.fontFile = self.normalizeFontPath(font[0])
                 if len(font) > 1:
-                    self.next = Style(font=font[1:], fontSize=fontSize, ttFont=ttFont, tracking=tracking, trackingLimit=trackingLimit, kern=kern, space=space, baselineShift=baselineShift,xShift=xShift, variations=variations, variationLimits=variationLimits, increments=increments, features=features, varyFontSize=varyFontSize, fill=fill,stroke=stroke, strokeWidth=strokeWidth, palette=palette, capHeight=capHeight, data=data, latin=latin, lang=lang, filter=filter, preventHwid=preventHwid, **kwargs)
+                    self.next = Style(font=font[1:], fontSize=fontSize, ttFont=ttFont, tracking=tracking, trackingLimit=trackingLimit, kern=kern, space=space, baselineShift=baselineShift,xShift=xShift, variations=variations, variationLimits=variationLimits, increments=increments, features=features, varyFontSize=varyFontSize, fill=fill,stroke=stroke, strokeWidth=strokeWidth, palette=palette, capHeight=capHeight, data=data, latin=latin, lang=lang, filter=filter, preventHwid=preventHwid, layer=layer, **kwargs)
             
             self.format = os.path.splitext(self.fontFile)[1][1:]
             self.ufo = self.format == "ufo"
+            self.layer = layer
 
             if self.ufo:
                 ufo = Font(self.fontFile)
@@ -490,6 +492,8 @@ class Style():
             self.fontdata = None
             self.font = ufo
             self.glyphSet = self.font
+            if self.layer:
+                self.glyphSet = self.font.layers[self.layer]
             self.upem = self.font.info.unitsPerEm
             self.capHeight = self.font.info.capHeight
         else:
@@ -1078,10 +1082,10 @@ if __name__ == "__main__":
     
     def ufo_test(p):
         r = Rect(0, 0, 500, 200)
-        f = "~/Goodhertz/plugin-builder/configs/builder/design/GhzNumbersCompressed.ufo"
-        style = Style(f, 100)
-        slug = Slug("Off 1.2\ue800", style).fit(r.w)
-        p.send(SVGPen.Composite(slug.pen().align(r), r), r)
+        f = "~/Type/grafprojects/scratch2/megalodon.ufo"
+        style = Style(f, 300, layer="person", fill=None, stroke=0, strokeWidth=1)
+        slug = Slug("{megalodon}", style).fit(r.w)
+        p.send(SVGPen.Composite(slug.pen().align(r, th=0), r), r)
     
     def glyphs_test(p):
         r = Rect(0, 0, 500, 200)
@@ -1207,7 +1211,7 @@ if __name__ == "__main__":
         #color_font_test(p)
         #emoji_test(p)
         #hoi_test(p)
-        #ufo_test(p)
+        ufo_test(p)
         #glyphs_test(p)
         #multiline_test(p)
         #hwid_test(p)
@@ -1217,4 +1221,4 @@ if __name__ == "__main__":
         #interp_test(p)
         #cache_width_test(p)
         #family_test(p)
-        layered_font_test(p)
+        #layered_font_test(p)
