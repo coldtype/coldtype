@@ -304,8 +304,9 @@ class Graf():
 
 
 class Lockup(FittableMixin):
-    def __init__(self, slugs):
+    def __init__(self, slugs, preserveLetters=True):
         self.slugs = slugs
+        self.preserveLetters = preserveLetters
     
     def width(self):
         return sum([s.width() for s in self.slugs])
@@ -327,9 +328,14 @@ class Lockup(FittableMixin):
         x_off = 0
         for s in self.slugs:
             x_off += s.margin[0]
-            dps = s.pens()
-            dps.translate(x_off, 0)
-            pens.extend(dps.pens)
+            if self.preserveLetters:
+                dps = s.pens()
+                dps.translate(x_off, 0)
+                pens.extend(dps.pens)
+            else:
+                dps = s.pen()
+                dps.translate(x_off, 0)
+                pens.append(dps)
             x_off += dps.getFrame().w
             x_off += s.margin[1]
             x_off += s.strings[-1].tracking
