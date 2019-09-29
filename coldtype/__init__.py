@@ -304,9 +304,10 @@ class Graf():
 
 
 class Lockup(FittableMixin):
-    def __init__(self, slugs, preserveLetters=True):
+    def __init__(self, slugs, preserveLetters=True, nestSlugs=True):
         self.slugs = slugs
         self.preserveLetters = preserveLetters
+        self.nestSlugs = nestSlugs
     
     def width(self):
         return sum([s.width() for s in self.slugs])
@@ -331,7 +332,10 @@ class Lockup(FittableMixin):
             if self.preserveLetters:
                 dps = s.pens()
                 dps.translate(x_off, 0)
-                pens.extend(dps.pens)
+                if self.nestSlugs:
+                    pens.append(dps)
+                else:
+                    pens.extend(dps.pens)
             else:
                 dps = s.pen()
                 dps.translate(x_off, 0)
@@ -931,6 +935,7 @@ class StyledString(FittableMixin):
                 #if f.frame.y < 0:
                 #    f.frame.y = 0
                 dp_atom.addFrame(f.frame)
+                dp_atom.glyphName = f.glyphName
             pens.addPen(dp_atom)
         return pens
 
@@ -1106,7 +1111,7 @@ if __name__ == "__main__":
         style = Style(f, 50, wdth=1, wght=1, slnt=1, fill=0)
         graf = Graf(Lockup.TextToLines("Hello\n—\nYoyoyo\nMa", style), DATPen().rect(r.take(100, "centerx")))
         graf.fit()
-        p.send(SVGPen.Composite(graf.pens().align(r), r), r)
+        p.send(SVGPen.Composite(graf.pens().align(r), r), r, bg=1)
     
     def multiline_fit_test(p):
         r = Rect(0, 0, 300, 300)
@@ -1217,9 +1222,9 @@ if __name__ == "__main__":
         #color_font_test(p)
         #emoji_test(p)
         #hoi_test(p)
-        ufo_test(p)
+        #ufo_test(p)
         #glyphs_test(p)
-        #multiline_test(p)
+        multiline_test(p)
         #hwid_test(p)
         #multiline_fit_test(p)
         #language_hb_test(p)

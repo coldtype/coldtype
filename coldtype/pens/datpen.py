@@ -157,6 +157,7 @@ class DATPen(RecordingPen, AlignableMixin):
         self.typographic = False
         self._tag = "Unknown"
         self.container = None
+        self.glyphName = None
     
     def pen(self):
         return self
@@ -341,10 +342,13 @@ class DATPen(RecordingPen, AlignableMixin):
         return self.transform(t, transformFrame=False)
 
     def bounds(self):
-        cbp = BoundsPen(None)
-        self.replay(cbp)
-        mnx, mny, mxx, mxy = cbp.bounds
-        return Rect((mnx, mny, mxx - mnx, mxy - mny))
+        try:
+            cbp = BoundsPen(None)
+            self.replay(cbp)
+            mnx, mny, mxx, mxy = cbp.bounds
+            return Rect((mnx, mny, mxx - mnx, mxy - mny))
+        except:
+            return Rect(0, 0, 0, 0)
 
     def round(self, rounding):
         rounded = []
@@ -790,13 +794,17 @@ class DATPenSet(AlignableMixin):
             p.addFrame(frame, typographic=typographic)
         return self
     
-    def getFrame(self, th=False, tv=False):
+    def getFrame(self, th=False, tv=False, includeBlanks=True):
         try:
             union = self.pens[0].getFrame(th=th, tv=tv)
             for p in self.pens[1:]:
-                union = union.union(p.getFrame(th=th, tv=tv))
+                if not includeBlanks and isinstance(p, DATPen) and len(p.value) == 0:
+                    print(p.glyphName, len(p.value))
+                else:
+                    union = union.union(p.getFrame(th=th, tv=tv))
             return union
-        except:
+        except Exception as e:
+            print("EXCEPTION>>>>>>>>>>>>>>>>>>>>>>>>>>", e)
             return Rect(0,0,0,0)
     
     def updateFrameHeight(self, h):
