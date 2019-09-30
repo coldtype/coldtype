@@ -1159,7 +1159,7 @@ if __name__ == "__main__":
         r = Rect(0, 0, 300, 100)
         style = Style(f, 60, fill=(1, 0, 0.5))
         dp1 = Slug("Hello world", style).fit(r.w).pen().align(r)
-        p.send(SVGPen.Composite(dp1, r), r)
+        p.send(SVGPen.Composite(dp1, r), r, bg=1)
     
     def layered_font_test(p):
         r = Rect(0, 0, 1000, 100)
@@ -1224,12 +1224,12 @@ if __name__ == "__main__":
         #hoi_test(p)
         #ufo_test(p)
         #glyphs_test(p)
-        multiline_test(p)
+        #multiline_test(p)
         #hwid_test(p)
         #multiline_fit_test(p)
         #language_hb_test(p)
         #custom_kern_test(p)
         #interp_test(p)
         #cache_width_test(p)
-        #family_test(p)
+        family_test(p)
         #layered_font_test(p)

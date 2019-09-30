@@ -223,6 +223,9 @@ class DATPen(RecordingPen, AlignableMixin):
                 attrs[k] = v
         return self
     
+    def removeBlanks(self):
+        return len(self.value) == 0
+    
     def clearFrame(self):
         self.frame = None
         return self
@@ -784,6 +787,14 @@ class DATPenSet(AlignableMixin):
         if pen:
             self.pens.append(pen)
     
+    def removeBlanks(self):
+        nonblank_pens = []
+        for pen in self.pens:
+            if not pen.removeBlanks():
+                nonblank_pens.append(pen)
+        self.pens = nonblank_pens
+        return self
+    
     def clearFrames(self):
         for p in self.pens:
             p.clearFrame()
@@ -794,14 +805,11 @@ class DATPenSet(AlignableMixin):
             p.addFrame(frame, typographic=typographic)
         return self
     
-    def getFrame(self, th=False, tv=False, includeBlanks=True):
+    def getFrame(self, th=False, tv=False):
         try:
             union = self.pens[0].getFrame(th=th, tv=tv)
             for p in self.pens[1:]:
-                if not includeBlanks and isinstance(p, DATPen) and len(p.value) == 0:
-                    print(p.glyphName, len(p.value))
-                else:
-                    union = union.union(p.getFrame(th=th, tv=tv))
+                union = union.union(p.getFrame(th=th, tv=tv))
             return union
         except Exception as e:
             print("EXCEPTION>>>>>>>>>>>>>>>>>>>>>>>>>>", e)
