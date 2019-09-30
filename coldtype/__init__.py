@@ -1120,7 +1120,7 @@ if __name__ == "__main__":
         pprint(style.stylisticSets())
         graf = Graf(Lockup.TextToLines("T\nI\nE\nM\nP\nO", style), DATPen().rect(r.take(30, "centerx")))
         graf.fit()
-        p.send(SVGPen.Composite(graf.pens().align(r), r), r)
+        p.send(SVGPen.Composite(graf.pens().align(r), r), r, bg=1)
     
     def language_hb_test(p):
         r = Rect(0, 0, 300, 100)
@@ -1152,10 +1152,10 @@ if __name__ == "__main__":
             style = Style(f, 272, wdth=x/l, wght=0, slnt=1, fill=(0, 0.2))
             dp = Slug("HELLO", style).pen().align(r).removeOverlap()
             dps.addPen(dp)
-        p.send(SVGPen.Composite(dps, r), r)
+        p.send(SVGPen.Composite(dps, r), r, bg=1)
     
     def family_test(p):
-        f = ["≈/Konsole0.2-Wide.otf", "≈/Konsole0.2-Regular.otf", "≈/Konsole0.2-Compact.otf"]
+        f = ["≈/Konsole/Konsole0.2-Wide.otf", "≈/Konsole/Konsole0.2-Regular.otf", "≈/Konsole/Konsole0.2-Compact.otf"]
         r = Rect(0, 0, 300, 100)
         style = Style(f, 60, fill=(1, 0, 0.5))
         dp1 = Slug("Hello world", style).fit(r.w).pen().align(r)
@@ -1170,7 +1170,7 @@ if __name__ == "__main__":
                 Slug(txt, Style("≈/CaslonAntique-Shaded-Shadow.otf", 60, fill=(0, 0, 1), t=-20))
             ]
         
-        s1, s2 = layered_slugs("Hello wor")
+        s1, s2 = layered_slugs("Hello-----wor")
         s3, s4 = layered_slugs("ld")
         #dp1 = s1.pen().align(r, th=0)
         #dp2 = s2.pen().align(r, th=0)
@@ -1231,5 +1231,5 @@ if __name__ == "__main__":
         #custom_kern_test(p)
         #interp_test(p)
         #cache_width_test(p)
-        family_test(p)
-        #layered_font_test(p)
+        #family_test(p)
+        layered_font_test(p)
