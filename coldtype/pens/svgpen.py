@@ -157,11 +157,15 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
             g.append(u)
         return g
     
-    def Composite(pens, rect, offset=False, style=None):
+    def Composite(pens, rect, offset=False, style=None, viewBox=False):
         docroot = etree.Element("svg")
         docroot.set("xmlns", "http://www.w3.org/2000/svg")
-        docroot.set("width", str(rect.w))
-        docroot.set("height", str(rect.h))
+        if not viewBox:
+            docroot.set("width", str(rect.w))
+            docroot.set("height", str(rect.h))
+        else:
+            docroot.set("viewBox", f"0 0 {rect.w} {rect.h}")
+            docroot.set("width", "100%")
         if offset:
             docroot.set("style", f"left:{rect.x}px;bottom:{rect.y}px;")
         
