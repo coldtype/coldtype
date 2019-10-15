@@ -954,6 +954,12 @@ if __name__ == "__main__":
     from coldtype.viewer import previewer
     from random import randint
     from coldtype.pens.svgpen import SVGPen
+
+    def basic_test(preview):
+        r = Rect((0, 0, 500, 200))
+        p1 = Slug("Coldtype!", Style("/Library/Fonts/Zapfino.ttf", 48, fill="random")).pen().align(r)
+        p2 = DATPen().rect(r).attr(fill=1)
+        preview.send(SVGPen.Composite([p2, p1], r), r)
     
     def ss_bounds_test(font, preview):
         #f = f"≈/{font}.ttf"
@@ -1232,4 +1238,5 @@ if __name__ == "__main__":
         #interp_test(p)
         #cache_width_test(p)
         #family_test(p)
-        layered_font_test(p)
+        #layered_font_test(p)
+        basic_test(p)
