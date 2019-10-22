@@ -44,9 +44,13 @@ class DrawBotPen(DrawablePenMixin):
         else:
             db.stroke(None)
         
-    def image(self, src=None, opacity=None, rect=None):
+    def image(self, src=None, opacity=None, rect=None, rotate=0):
         bounds = self.dat.bounds()
-        img_w, img_h = db.imageSize(src)
+        try:
+            img_w, img_h = db.imageSize(src)
+        except:
+            print("DrawBotPen: No image")
+            return
         x = bounds.x
         y = bounds.y
         x_count = bounds.w / rect.w
@@ -58,6 +62,7 @@ class DrawBotPen(DrawablePenMixin):
                     #db.fill(1, 0, 0.5, 0.05)
                     #db.oval(*r)
                     db.scale(rect.w/img_w, center=r.point("SW"))
+                    db.rotate(rotate)
                     db.image(src, (r.x, r.y), alpha=opacity)
                 y += rect.h
             y = 0
