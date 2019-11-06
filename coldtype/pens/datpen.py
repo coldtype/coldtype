@@ -191,9 +191,9 @@ class DATPen(RecordingPen, AlignableMixin):
         self.attr("default", fill=(1, 0, 0.5))
         return self
 
-    def attr(self, tag="default", **kwargs):
-        if len(kwargs.items()) == 0: # getting, not setting
-            return self.attrs.get(tag)
+    def attr(self, tag="default", field=None, **kwargs):
+        if field: # getting, not setting
+            return self.attrs.get(tag).get(field)
         
         attrs = {}
         if tag and self.attrs.get(tag):
@@ -772,6 +772,12 @@ class DATPenSet(AlignableMixin):
         self.container = rect
         return self
     
+    def copy(self):
+        dps = DATPenSet()
+        for p in self.pens:
+            dps.addPen(p.copy())
+        return dps
+    
     def addPens(self, pens):
         if isinstance(pens, DATPenSet):
             self.addPen(pens)
@@ -833,12 +839,12 @@ class DATPenSet(AlignableMixin):
         dp.addFrame(self.getFrame())
         return dp
     
-    def attr(self, k="default", **kwargs):
-        if len(kwargs.items()) == 0: # getting, not setting
-            return self.pens[0].attrs.get(k)
+    def attr(self, key="default", field=None, **kwargs):
+        if field: # getting, not setting
+            return self.pens[0].attr(key=key, field=field)
         
         for p in self.pens:
-            p.attr(k, **kwargs)
+            p.attr(key, **kwargs)
         return self
     
     def removeOverlap(self):
