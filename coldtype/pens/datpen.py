@@ -325,7 +325,14 @@ class DATPen(RecordingPen, AlignableMixin):
     
     def scale(self, scaleX, scaleY=None, center=None):
         # TODO centering
-        t = Transform().scale(scaleX, scaleY or scaleX)
+        #if not point:
+        point = self.bounds().point("C") # maybe should be getFrame()?
+        t = Transform()
+        t = t.translate(point.x, point.y)
+        #t = t.rotate(math.radians(degrees))
+        t = t.scale(scaleX, scaleY or scaleX)
+        t = t.translate(-point.x, -point.y)
+        #t = Transform().scale(scaleX, scaleY or scaleX)
         return self.transform(t)
     
     def scaleToRect(self, rect):
@@ -865,6 +872,11 @@ class DATPenSet(AlignableMixin):
     def rotate(self, degrees):
         for p in self.pens:
             p.rotate(degrees)
+        return self
+    
+    def scale(self, scaleX, scaleY=None, center=None):
+        for p in self.pens:
+            p.scale(scaleX, scaleY=scaleY, center=center)
         return self
     
     def round(self, rounding):
