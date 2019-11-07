@@ -456,6 +456,8 @@ class Style():
             filter=None,
             preventHwid=False,
             layer=None,
+            printAxes=False,
+            printFeatures=False,
             **kwargs):
         """
         kern (k) — a dict of glyphName->[left,right] values in font-space
@@ -541,6 +543,8 @@ class Style():
 
         # TODO should be able to pass in as kwarg
         found_features = features.copy()
+        if printFeatures:
+            print("Coldtype >>>", self.fontFile, "<FEATURES>", found_features)
         for k, v in kwargs.items():
             if k.startswith("ss") and len(k) == 4:
                 found_features[k] = v
@@ -571,6 +575,8 @@ class Style():
                 fvar = None
             if fvar:
                 for axis in fvar.axes:
+                    if printAxes:
+                        print("Coldtype >>>", self.fontFile, axis.axisTag, axis.minValue, axis.maxValue)
                     self.axes[axis.axisTag] = axis
                     self.variations[axis.axisTag] = axis.defaultValue
                     if axis.axisTag == "wdth": # the only reasonable default
@@ -619,7 +625,7 @@ class Style():
             elif v == "default":
                 variations[k] = axis.defaultValue
             elif scale and v <= 1.0:
-                variations[k] = float((axis.maxValue-axis.minValue)*v + axis.minValue)
+                variations[k] = float(abs(axis.maxValue-axis.minValue)*v + axis.minValue)
             else:
                 if v < axis.minValue or v > axis.maxValue:
                     variations[k] = max(axis.minValue, min(axis.maxValue, v))
@@ -1210,6 +1216,13 @@ if __name__ == "__main__":
         print(gn)
         dp1 = Slug("1.23{uniE801}", style).fit(r.w).pen().align(r)
         p.send(SVGPen.Composite(dp1, r), r)
+    
+    def slnt_test(p):
+        f = "≈/RoslindaleVariableItalicBeta-VF.ttf"
+        r = Rect((0, 0, 500, 300))
+        p1 = Slug("Coldtype", Style(f, 100, slnt=1, fill=0)).pen().align(r)
+        p2 = DATPen().rect(r).attr(fill=1)
+        p.send(SVGPen.Composite([p2, p1], r), r)
 
     with previewer() as p:
         if False:
@@ -1239,4 +1252,5 @@ if __name__ == "__main__":
         #cache_width_test(p)
         #family_test(p)
         #layered_font_test(p)
-        basic_test(p)
+        #basic_test(p)
+        slnt_test(p)
