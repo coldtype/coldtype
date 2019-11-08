@@ -13,61 +13,80 @@ WEBSOCKET_PORT = 8008
 WEBSOCKET_ADDR = f"ws://localhost:{WEBSOCKET_PORT}"
 
 
-def send(ws, content, rect=Rect(0, 0, 500, 500), full=False, image=False, pdf=False, bg=(0, 0, 0, 0)):
-    bg = normalize_color(bg).html
-    if full:
-        html = content
-    elif image:
-        if isinstance(content, str):
-            images = [content]
-        else:
-            images = content
-        imgs = ""
-        for img in images:
-            imgs += f"""<img style='background:{bg};position:absolute;top:0px;left:0px;' src='file:///{img}?q={random()}' width={rect.w}/>"""
-        html = f"""<div class="page" style="position:relative;width:{rect.w}px;height:{rect.h}px">{imgs}</div>"""
-    elif pdf:
-        if isinstance(content, str):
-            pdfs = [content]
-        else:
-            pdfs = content
-        pdf_html = ""
-        for pdf in pdfs:
-            pdf_html += f"""<iframe style='background:{bg};position:absolute;top:0px;left:0px;' src='file:///{pdf}?q={random()}' width="{rect.w}" height="{rect.h}"/>"""
-        html = f"""<div class="page" style="position:relative;width:{rect.w}px;height:{rect.h}px">{pdf_html}</div>"""
-    else:
-        html = f"""<div class="page" style="width:{rect.w}px;height:{rect.h}px;background:{bg}">{content}</div>"""
-    ws.send(html)
-
-
 class PersistentPreview():
-    def __init__(self, receiver=None):
-        self.ws = create_connection(WEBSOCKET_ADDR, class_=receiver)
+    def __init__(self):
+        self.ws = create_connection(WEBSOCKET_ADDR)
     
     def clear(self):
         self.ws.send("CLEAR")
     
-    def send(self, content, rect=Rect(0, 0, 500, 500), full=False, image=False, pdf=False, bg=(0, 0, 0, 0)):
-        send(self.ws, content, rect=rect, full=full, image=image, pdf=pdf, bg=bg)
-    
     def close(self):
         self.ws.close()
+    
+    def send(self,
+             content,
+             rect=None,
+             full=False,
+             image=False,
+             pdf=False,
+             bg=(1, 1, 1),
+             max_width=5000
+        ):
+        bg = normalize_color(bg).html
+        def wrap(content):
+            if rect:
+                w = rect.w
+                h = rect.h
+                if max_width < w:
+                    w = max_width
+                    h = rect.h * (max_width / rect.w)
+                return f"""
+                <div class="page" style="width:{w}px;height:{h}px;background:{bg};">{content}</div>\
+                """
+            else:
+                return f"""
+                <div class="plain">{content}</div>
+                """
+        
+        if full:
+            html = content
+        elif image:
+            if isinstance(content, str):
+                images = [content]
+            else:
+                images = content
+            imgs = ""
+            for img in images:
+                imgs += f"""<img style='position:absolute;top:0px;left:0px;' src='file:///{img}?q={random()}' width={rect.w}/>"""
+            html = wrap(imgs)
+        elif pdf:
+            if isinstance(content, str):
+                pdfs = [content]
+            else:
+                pdfs = content
+            pdf_html = ""
+            for pdf in pdfs:
+                pdf_html += f"""<iframe style='position:absolute;top:0px;left:0px;' src='file:///{pdf}?q={random()}' width="{rect.w}" height="{rect.h}"/>"""
+            html = wrap(pdf_html)
+        else:
+            html = wrap(content)
+        self.ws.send(html)
 
 
 class PreviewConnection():
     def __init__(self):
-        self.ws = None
+        self.pp = None
 
     def __enter__(self):
-        self.ws = create_connection(WEBSOCKET_ADDR)
-        self.ws.send("CLEAR")
+        self.pp = PersistentPreview()
+        self.pp.clear()
         return self
 
     def __exit__(self, type, value, traceback):
-        self.ws.close()
+        self.pp.close()
     
-    def send(self, content, rect=Rect(0, 0, 500, 500), full=False, image=False, pdf=False, bg=(0, 0, 0, 0)):
-        send(self.ws, content, rect=rect, full=full, image=image, pdf=pdf, bg=bg)
+    def send(self, *args, **kwargs):
+        self.pp.send(*args, **kwargs)
 
 
 
