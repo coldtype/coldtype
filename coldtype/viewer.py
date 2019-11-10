@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from websocket import create_connection, WebSocket
 from random import random
 

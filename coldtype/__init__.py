@@ -1252,5 +1252,5 @@ if __name__ == "__main__":
         #cache_width_test(p)
         #family_test(p)
         #layered_font_test(p)
-        #basic_test(p)
-        slnt_test(p)
+        basic_test(p)
+        #slnt_test(p)
