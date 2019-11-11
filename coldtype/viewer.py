@@ -37,7 +37,7 @@ class PersistentPreview():
 
         norm_bg = normalize_color(bg)
         rgba = f"rgba({round(norm_bg.red*255)}, {round(norm_bg.green*255)}, {round(norm_bg.blue*255)}, {norm_bg.alpha})"
-        print(rgba)
+        
         def wrap(content):
             if rect:
                 w = rect.w
