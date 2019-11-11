@@ -487,10 +487,10 @@ class DATPen(RecordingPen, AlignableMixin):
             pass
         return self
 
-    def outline(self, offset=1):
+    def outline(self, offset=1, drawInner=True, drawOuter=True):
         op = OutlinePen(None, offset=offset, optimizeCurve=True, cap="square")
         self.replay(op)
-        op.drawSettings(drawInner=True, drawOuter=True)
+        op.drawSettings(drawInner=drawInner, drawOuter=drawOuter)
         g = op.getGlyph()
         p = DATPen()
         g.draw(p)
