@@ -31,10 +31,13 @@ class PersistentPreview():
              full=False,
              image=False,
              pdf=False,
-             bg=(1, 1, 1),
+             bg=(1, 1, 1, 0),
              max_width=5000
         ):
-        bg = normalize_color(bg).html
+
+        norm_bg = normalize_color(bg)
+        rgba = f"rgba({round(norm_bg.red*255)}, {round(norm_bg.green*255)}, {round(norm_bg.blue*255)}, {norm_bg.alpha})"
+        print(rgba)
         def wrap(content):
             if rect:
                 w = rect.w
@@ -43,11 +46,11 @@ class PersistentPreview():
                     w = max_width
                     h = rect.h * (max_width / rect.w)
                 return f"""
-                <div class="page" style="width:{w}px;height:{h}px;background:{bg};">{content}</div>\
+                <div class="page" style="width:{w}px;height:{h}px;background:{rgba};">{content}</div>\
                 """
             else:
                 return f"""
-                <div class="plain">{content}</div>
+                <div class="plain" style="background:{rgba};">{content}</div>
                 """
         
         if full:
