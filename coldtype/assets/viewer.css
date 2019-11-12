@@ -41,6 +41,10 @@ body {
     left: 0px;
 }
 
+.plain svg {
+    display: block;
+}
+
 button {
     font-size: 24px;
     padding: 5px 20px 8px;

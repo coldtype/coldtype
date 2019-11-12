@@ -324,15 +324,13 @@ class DATPen(RecordingPen, AlignableMixin):
         return self.transform(Transform(1, 0, 0, 1, x, y))
     
     def scale(self, scaleX, scaleY=None, center=None):
-        # TODO centering
-        #if not point:
-        point = self.bounds().point("C") # maybe should be getFrame()?
         t = Transform()
-        t = t.translate(point.x, point.y)
-        #t = t.rotate(math.radians(degrees))
+        if center != False:
+            point = self.bounds().point("C") # maybe should be getFrame()?
+            t = t.translate(point.x, point.y)
         t = t.scale(scaleX, scaleY or scaleX)
-        t = t.translate(-point.x, -point.y)
-        #t = Transform().scale(scaleX, scaleY or scaleX)
+        if center != False:
+            t = t.translate(-point.x, -point.y)
         return self.transform(t)
     
     def scaleToRect(self, rect):
@@ -799,6 +797,10 @@ class DATPenSet(AlignableMixin):
     def addPen(self, pen):
         if pen:
             self.pens.append(pen)
+        
+    def reversePens(self):
+        self.pens = reversed(self.pens)
+        return self
     
     def removeBlanks(self):
         nonblank_pens = []
@@ -917,13 +919,13 @@ class DATPenSet(AlignableMixin):
             #x_off += s.margin[1]
         return self
         
-    def distributeOnPath(self, path):
+    def distributeOnPath(self, path, offset=0):
         cutter = CurveCutter(path)
         limit = len(self.pens)
         for idx, p in enumerate(self.pens):
             f = p.getFrame()
             bs = f.y
-            ow = f.x + f.w / 2
+            ow = offset + f.x + f.w / 2
             if ow > cutter.length:
                 limit = min(idx, limit)
             else:
@@ -937,6 +939,9 @@ class DATPenSet(AlignableMixin):
                 t = t.translate(-f.x, -f.y)
                 t = t.translate(-f.w*0.5)
                 p.transform(t)
+
+        if limit < len(self.pens):
+            self.pens = self.pens[0:limit]
         return self
 
 

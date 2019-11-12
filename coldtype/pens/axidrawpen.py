@@ -57,7 +57,7 @@ class AxiDrawPen(BasePen):
                 dp = DATPen().record(self.dat).attr(fill=None, stroke=0)
                 v.send(SVGPen.Composite([dp], self.page), self.page)
         else:
-            self.dat.scale(scale)
+            self.dat.scale(scale, center=False)
             self.page = self.page.scale(scale)
             b = self.dat.bounds()
             limits = Rect(0, 0, 11, 8.5)
@@ -71,14 +71,13 @@ class AxiDrawPen(BasePen):
             ad = axidraw.AxiDraw()
             ad.interactive()
             ad.options.units = 1 if cm else 0
-            ad.options.speed_pendown = 110
-            ad.options.speed_penup = 110
+            ad.options.speed_pendown = 50
+            ad.options.speed_penup = 50
 
             ad.connect()
             ad.penup()
             self.ad = ad
             tp = TransformPen(self, (1, 0, 0, -1, 0, self.page.h))
-
             self.dat.replay(tp)
             time.sleep(MOVE_DELAY)
             ad.penup()
@@ -102,7 +101,7 @@ if __name__ == "__main__":
             #["The virtuosity of the cathode ray printer", "SimplexCartographicSans"],
             #["has been explored further", "SimplexCartographicScript"],
             #["with a number of", "DuplexPrincipalSans"],
-            ["Butts", "TriplexGothicItalian"],
+            ["A", "TriplexGothicItalian"],
             #["digitalizations.", "TriplexGothicGerman"],
         ]
         rl = r.inset(0, 200)
