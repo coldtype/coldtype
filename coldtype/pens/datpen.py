@@ -799,7 +799,7 @@ class DATPenSet(AlignableMixin):
             self.pens.append(pen)
         
     def reversePens(self):
-        self.pens = reversed(self.pens)
+        self.pens = list(reversed(self.pens))
         return self
     
     def removeBlanks(self):
