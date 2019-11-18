@@ -43,6 +43,9 @@ except:
 try:
     from booleanOperations.booleanGlyph import BooleanGlyph
     import drawBot as _drawBot
+    import CoreText
+    import AppKit
+    import Quartz
 except:
     _drawBot = None
 
@@ -458,6 +461,7 @@ class Style():
             layer=None,
             printAxes=False,
             printFeatures=False,
+            db=False,
             **kwargs):
         """
         kern (k) — a dict of glyphName->[left,right] values in font-space
@@ -489,6 +493,7 @@ class Style():
             
             self.format = os.path.splitext(self.fontFile)[1][1:]
             self.ufo = self.format == "ufo"
+            self.db = db
             self.layer = layer
 
             if self.ufo:
@@ -676,6 +681,28 @@ class Style():
         return [(k, v) for (k, v) in all_features.items() if k.startswith("ss")]
 
 
+def offset(x, y, ox, oy):
+    return (x + ox, y + oy)
+
+def TransliterateCGPathToBezierPath(data, b):
+    bp = data["bp"]
+    o = data["offset"]
+    op = lambda i: offset(*b.points[i], *o)
+    
+    if b.type == Quartz.kCGPathElementMoveToPoint:
+        bp.moveTo(op(0))
+    elif b.type == Quartz.kCGPathElementAddLineToPoint:
+        bp.lineTo(op(0))
+    elif b.type == Quartz.kCGPathElementAddCurveToPoint:
+        bp.curveTo(op(0), op(1), op(2))
+    elif b.type == Quartz.kCGPathElementAddQuadCurveToPoint:
+        bp.qCurveTo(op(0), op(1))
+    elif b.type == Quartz.kCGPathElementCloseSubpath:
+        bp.closePath()
+    else:
+        print(b.type)
+
+
 class StyledString(FittableMixin):
     def __init__(self, text, style):
         self.text = text
@@ -793,6 +820,46 @@ class StyledString(FittableMixin):
                 r = Rect(x_off, 0, w, self.style.capHeight)
                 x_off += w
                 frames.append(HarfbuzzFrame(g, dict(), Point((0, 0)), r, g))
+        elif self.style.db > 0:
+            # make a formatted string
+            fs = self.formattedString()
+            attr_string = fs.getNSObject()
+            path = CoreText.CGPathCreateMutable()
+            CoreText.CGPathAddRect(path, None, CoreText.CGRectMake(0, 0, 1000000, 1100))
+            setter = CoreText.CTFramesetterCreateWithAttributedString(attr_string)
+            frame = CoreText.CTFramesetterCreateFrame(setter, (0, 0), path, None)
+            ctLines = CoreText.CTFrameGetLines(frame)
+            origins = CoreText.CTFrameGetLineOrigins(frame, (0, len(ctLines)), None)
+            
+            self.ct_glyphs = []
+            ct_frames = []
+            
+            for i, (originX, originY) in enumerate(origins[0:1]): # can only display one 'line' of text
+                ctLine = ctLines[i]
+                ctRuns = CoreText.CTLineGetGlyphRuns(ctLine)
+                for ctRun in ctRuns:
+                    attributes = CoreText.CTRunGetAttributes(ctRun) # can be done once out of loop
+                    font = attributes.get(AppKit.NSFontAttributeName) # can be done once out of loop
+                    baselineShift = attributes.get(AppKit.NSBaselineOffsetAttributeName, 0)
+                    glyphCount = CoreText.CTRunGetGlyphCount(ctRun)
+                    last_adv = (0, 0)
+                    for i in range(glyphCount):
+                        glyph = CoreText.CTRunGetGlyphs(ctRun, (i, 1), None)[0]
+                        ax, ay = CoreText.CTRunGetPositions(ctRun, (i, 1), None)[0]
+                        frame = Rect(ax, ay, 200, 200)
+                        ct_frames.append([glyph, frame])
+                        glyph_path = CoreText.CTFontCreatePathForGlyph(font, glyph, None)
+                        if glyph_path:
+                            dp = DATPen()
+                            Quartz.CGPathApply(glyph_path, dict(offset=(0, 0), bp=dp), TransliterateCGPathToBezierPath)
+                            self.ct_glyphs.append(dp)
+                            last_adv = (ax, ay)
+            
+            for idx, (gid, r) in enumerate(ct_frames):
+                glyph = self.glyphs[idx]
+                if glyph[0] != gid:
+                    raise Exception("Non-matching shaping")
+                frames.append(HarfbuzzFrame(gid, dict(), Point((0, 0)), r, glyph[1]))
         else:
             frames = self.hb.frames(self.variations, self.features, self.glyphs)
         
@@ -837,11 +904,11 @@ class StyledString(FittableMixin):
             adjusted = True
         return adjusted
     
-    def formattedString(self):
+    def formattedString(self, fs=1000):
         if _drawBot:
             feas = dict(self.features)
             del feas["kern"]
-            return _drawBot.FormattedString(self.text, font=self.fontFile, fontSize=self.fontSize, lineHeight=self.fontSize+2, tracking=self.tracking, fontVariations=self.variations, openTypeFeatures=feas)
+            return _drawBot.FormattedString(self.text, font=self.style.fontFile, fontSize=fs, lineHeight=fs+2, fontVariations=self.variations, openTypeFeatures=feas)
         else:
             print("No DrawBot available")
             return None
@@ -870,7 +937,9 @@ class StyledString(FittableMixin):
         tp = TransformPen(pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
         
         dp = DATPen()
-        if useTTFont:
+        if self.style.db > 1 and self.ct_glyphs:
+            dp.record(self.ct_glyphs[idx])
+        elif useTTFont:
             fr.drawTTOutlineToPen(gid, dp)
         else:
             fr.drawOutlineToPen(gid, dp)
@@ -1223,6 +1292,13 @@ if __name__ == "__main__":
         p1 = Slug("Coldtype", Style(f, 100, slnt=1, fill=0)).pen().align(r)
         p2 = DATPen().rect(r).attr(fill=1)
         p.send(SVGPen.Composite([p2, p1], r), r)
+    
+    def db_fmt_test(p):
+        f = "≈/ClaretteGX.ttf"
+        r = Rect((0, 0, 500, 300))
+        p1 = Slug("A"*5, Style(f, 100, fill=0, wdth=1, ital=0, ss01=True, db=1)).pen().align(r)
+        p2 = DATPen().rect(r).attr(fill=1)
+        p.send(SVGPen.Composite([p2, p1], r, viewBox=True), max_width=500)
 
     with previewer() as p:
         if False:
@@ -1252,5 +1328,6 @@ if __name__ == "__main__":
         #cache_width_test(p)
         #family_test(p)
         #layered_font_test(p)
-        basic_test(p)
+        #basic_test(p)
         #slnt_test(p)
+        db_fmt_test(p)
