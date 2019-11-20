@@ -919,8 +919,11 @@ class DATPenSet(AlignableMixin):
             #x_off += s.margin[1]
         return self
         
-    def distributeOnPath(self, path, offset=0):
-        cutter = CurveCutter(path)
+    def distributeOnPath(self, path, offset=0, cc=None):
+        if cc:
+            cutter = cc
+        else:
+            cutter = CurveCutter(path)
         limit = len(self.pens)
         for idx, p in enumerate(self.pens):
             f = p.getFrame()

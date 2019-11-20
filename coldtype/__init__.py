@@ -22,6 +22,7 @@ import unicodedata
 import uharfbuzz as hb
 from itertools import groupby
 from pprint import pprint
+from pathlib import Path
 
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath(dirname + "/.."))
@@ -486,6 +487,8 @@ class Style():
             # Load a font from a file
             if isinstance(font, str):
                 self.fontFile = self.normalizeFontPath(font)
+            elif isinstance(font, Path):
+                self.fontFile = str(font)
             else:
                 self.fontFile = self.normalizeFontPath(font[0])
                 if len(font) > 1:
