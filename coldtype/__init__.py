@@ -80,10 +80,12 @@ class Harfbuzz():
                  height=1000,
                  lang=None,
                  ttfont=None,
-                 kern=dict()):
+                 kern=dict(),
+                 kern_pairs=dict()):
         self.face = hb.Face(fontdata)
         self.ttfont = ttfont
         self.kern = kern
+        self.kern_pairs = kern_pairs
         self.lang = lang
         self.height = height
         self.text = text
@@ -124,7 +126,9 @@ class Harfbuzz():
         positions = buf.glyph_positions
         frames = []
         x = 0
+        last_gn = None
         for idx, (info, pos) in enumerate(zip(infos, positions)):
+            kern_shift = 0
             gid = info.codepoint
             #if gid != glyphs[idx][0]:
             #    print(">>>>>>>>", self.text)
@@ -139,8 +143,16 @@ class Harfbuzz():
                 l, r = self.kern.get(gn)
                 x_offset += l
                 x_advance += r
+            if self.kern_pairs:
+                for chars, (l, adv) in self.kern_pairs.items():
+                    a, b = chars
+                    if gn == b and last_gn == a:
+                        x_offset += l
+                        x_advance += adv
+                        kern_shift = l
             frames.append(HarfbuzzFrame(gid, info, pos, Rect(x+x_offset, y_offset, x_advance, self.height), gn)) # 100?
-            x += x_advance
+            x += x_advance + kern_shift
+            last_gn = gn
         return frames
 
 
@@ -441,6 +453,7 @@ class Style():
             tracking=0,
             trackingLimit=0,
             kern=dict(), # custom kerning
+            kern_pairs=dict(),
             space=None,
             baselineShift=0,
             xShift=None,
@@ -539,6 +552,7 @@ class Style():
         self.fontSize = fontSize
         self.tracking = kwargs.get("t", tracking)
         self.kern = kwargs.get("k", kern)
+        self.kern_pairs = kern_pairs
         self.trackingLimit = kwargs.get("tl", trackingLimit)
         self.baselineShift = kwargs.get("bs", baselineShift)
         self.xShift = kwargs.get("xs", xShift)
@@ -729,7 +743,8 @@ class StyledString(FittableMixin):
             height=self.style.capHeight,
             lang=self.style.lang,
             ttfont=self.style.ttfont,
-            kern=self.style.kern)
+            kern=self.style.kern,
+            kern_pairs=self.style.kern_pairs)
     
     def trackFrames(self, frames):
         t = self.tracking
