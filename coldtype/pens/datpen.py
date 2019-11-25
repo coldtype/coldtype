@@ -797,6 +797,23 @@ class DATPenSet(AlignableMixin):
     def addPen(self, pen):
         if pen:
             self.pens.append(pen)
+    
+    def interleave(self, style_fn, direction=-1, recursive=True):
+        pens = []
+        for p in self.pens:
+            if recursive and isinstance(p, DATPenSet):
+                _p = p.interleave(style_fn, direction=direction, recursive=True)
+                pens.append(_p)
+            else:
+                np = style_fn(p.copy())
+                if direction < 0:
+                    pens.append(np)
+                pens.append(p)
+                if direction > 0:
+                    pens.append(np)
+
+        self.pens = pens
+        return self
         
     def reversePens(self):
         self.pens = list(reversed(self.pens))
@@ -955,7 +972,7 @@ if __name__ == "__main__":
     from coldtype.pens.reportlabpen import ReportLabPen
     from coldtype.color import Color
 
-    from coldtype import StyledString, Style, Slug
+    from coldtype import StyledString, Style, Slug, Graf, Lockup
 
     from random import seed, shuffle
     #seed(104)
@@ -1079,6 +1096,16 @@ if __name__ == "__main__":
             o.attr(fill=None, stroke=0, strokeWidth=2)
             o.subsegment(0, 1)
             v.send(SVGPen.Composite([o, c], r), r)
+        
+        def interleave_test():
+            r = Rect(0, 0, 500, 500)
+            ri = r.inset(100, 100)
+            l1 = Lockup([Slug("Hello".upper(), Style("≈/MARTIN-Regular.otf", 150, t=-10, reverse=True))], preserveLetters=True)
+            l2 = Lockup([Slug("World".upper(), Style("≈/MARTIN-Regular.otf", 150, t=-20, reverse=True))], preserveLetters=True)
+            g = Graf([l1, l2], r)
+            dps = g.pens().align(r)
+            dps.interleave(lambda p: p.attr(fill=None, stroke=1, strokeWidth=5))
+            v.send(SVGPen.Composite([dps], r), r)
 
         #gradient_test()
         #roughen_test()
@@ -1089,4 +1116,5 @@ if __name__ == "__main__":
         #sine_test()
         #outline_test()
         #pixellate_test()
-        separate_path_types_test()
+        #separate_path_types_test()
+        interleave_test()

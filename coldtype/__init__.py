@@ -290,8 +290,12 @@ class Graf():
         leftover = box
         for l in self.lines:
             box, leftover = leftover.divide(l.height(), "maxy")
-            leading, leftover = leftover.divide(self.style.leading, "maxy")
-            leadings.append(leading)
+            if self.style.leading < 0:
+                # need to add pixels back to leftover
+                leftover.h += abs(self.style.leading)
+            else:
+                leading, leftover = leftover.divide(self.style.leading, "maxy")
+                leadings.append(leading)
             rects.append(box)
         return rects
     
@@ -476,6 +480,8 @@ class Style():
             printAxes=False,
             printFeatures=False,
             db=False,
+            reverse=False,
+            removeOverlap=False,
             **kwargs):
         """
         kern (k) — a dict of glyphName->[left,right] values in font-space
@@ -511,6 +517,8 @@ class Style():
             self.ufo = self.format == "ufo"
             self.db = db
             self.layer = layer
+            self.reverse = reverse
+            self.removeOverlap = removeOverlap
 
             if self.ufo:
                 ufo = Font(self.fontFile)
@@ -897,7 +905,7 @@ class StyledString(FittableMixin):
 
     def shrink(self):
         adjusted = False
-        if self.tracking > 0:
+        if self.tracking > 0 and self.tracking > self.style.trackingLimit:
             self.tracking -= self.style.increments.get("tracking", 0.25)
             adjusted = True
         else:
@@ -1029,7 +1037,11 @@ class StyledString(FittableMixin):
                 #    f.frame.y = 0
                 dp_atom.addFrame(f.frame)
                 dp_atom.glyphName = f.glyphName
+                if self.style.removeOverlap:
+                    dp_atom.removeOverlap()
             pens.addPen(dp_atom)
+        if self.style.reverse:
+            pens.reversePens()
         return pens
 
     def pen(self, frame=True):
