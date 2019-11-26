@@ -105,26 +105,13 @@ def get_frames_folders(anm):
 
 
 def render_iconset():
+    # inspired by https://retifrav.github.io/blog/2018/10/09/macos-convert-png-to-icns/
     global filepath
     anm = reload_animation()
     layers = read_layers(anm)
     frames_folder, all_layers_folder = get_frames_folders(anm)
     iconset = filepath.parent.joinpath(filepath.stem + ".iconset")
     iconset.mkdir(parents=True, exist_ok=True)
-    
-    # icon_path_original = iconset.joinpath("icon_512x512@2x.png")
-    # aframe = AnimationFrame(0, anm, icon_path_original, layers)
-    # result = anm.render(aframe)
-    # if not result:
-    #     result = []
-    # if isinstance(result, dict):
-    #     pens = []
-    #     for layer_name, layer_pens in result.items():
-    #         pens.extend(layer_pens)
-    #     result = pens
-    # DrawBotPen.Composite(result, anm.rect, icon_path_original, scale=1)
-
-
 
     d = 1024
     while d >= 16:
@@ -138,11 +125,15 @@ def render_iconset():
             elif x == 2:
                 fn = f"icon_{int(d/2)}x{int(d/2)}@2x.png"
             call(["sips", "-z", str(d), str(d), str(aframe.filepath), "--out", str(iconset.joinpath(fn))])
-            #call(["sips", "-z", str(d), str(d), str(icon_path_original)])
-            #print(d)
         d = int(d/2)
+    
+    call(["iconutil", "-c", "icns", str(iconset)])
 
-def render_frame(anm, layers, folder, layers_folder, doneness, i, flatten=False, manual=False):
+
+def render_frame(anm,
+        layers, folder, layers_folder, doneness, i,
+        flatten=False,
+        manual=False):
     frame_start_time = time.time()
     if i < 0:
         return
