@@ -1,10 +1,24 @@
+@font-face {
+    font-family: 'CovikSansMonoWeb';
+    src: url('Covik_Sans_Mono-Black.woff2?t=3') format('woff2');
+    font-weight: 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'CovikSansMonoWeb';
+    src: url('Covik_Sans_Mono-Black_Italic.woff2') format('woff2');
+    font-weight: 900;
+    font-style: italic;
+}
+
 body {
     background: #eee;
-    font-family: monospace;
+    font-family: CovikSansMonoWeb, monospace;
 }
 
 #container {
-    margin-top: 20px;
+    /* margin-top: 20px; */
 }
 
 .plain {
@@ -34,19 +48,19 @@ body {
 button {
     font-size: 24px;
     padding: 5px 20px 8px;
-    font-family: monospace;
+    font-family: CovikSansMonoWeb, monospace;
     font-style: italic;
     text-transform: uppercase;
     font-weight: 900;
     background: whitesmoke;
     border: none;
     color: rgba(255,255,255,0.8);
-    background: #333;
+    background: #777;
     box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
 
 pre {
-    font-family: monospace;
+    font-family: CovikSansMonoWeb, monospace;
     background: royalblue;
     border: 3px solid dodgerblue;
     padding: 20px;

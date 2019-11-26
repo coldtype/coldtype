@@ -101,7 +101,7 @@ class DrawBotPen(DrawablePenMixin):
             if paginate:
                 db.newPage(rect.w, rect.h)
             DrawBotPen(pen, rect).draw(scale=scale)
-        db.saveImage(save_to)
+        db.saveImage(str(save_to))
         db.endDrawing()
 
 

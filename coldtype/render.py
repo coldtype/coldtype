@@ -19,7 +19,7 @@ from coldtype import DATPen, DATPenSet, StyledString, Style, Lockup, T2L, Slug, 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, call
 from runpy import run_path
 import threading
 import traceback
@@ -45,6 +45,7 @@ parser.add_argument("-a", "--all", action="store_true", default=False)
 parser.add_argument("-w", "--watch", action="store_true", default=False)
 parser.add_argument("-l", "--layers", type=str, default=None)
 parser.add_argument("-r", "--rasterizer", type=str, default="drawbot")
+parser.add_argument("-i", "--icns", action="store_true", default=False)
 args = parser.parse_args()
 
 filepath = None
@@ -90,21 +91,80 @@ def read_layers(anm):
     return layers
 
 
-def render_subslice(anm, layers, folder, layers_folder, frames):
-    lf = len(frames)
-    for idx, i in enumerate(frames):
-        doneness =  idx / lf * 100
-        frame_start_time = time.time()
-        if i < 0 or i >= anm.timeline.duration:
-            return
-        frame_path = folder.joinpath("{:s}_{:04d}.png".format(filepath.stem, i))
-        aframe = AnimationFrame(i, anm, frame_path, layers or [])
-        result = anm.render(aframe)
-        if layers:
-            if not result:
-                result = {}
-            if not isinstance(result, dict):
-                raise LayerException("When rendering layers, render func must return dict")
+def get_frames_folders(anm):
+    frames_folder = filepath.parent.joinpath(f"{filepath.stem}_frames")
+    frames_folder.mkdir(exist_ok=True)
+    all_layers_folder = None
+    if anm.layers:
+        all_layers_folder = filepath.parent.joinpath(f"{filepath.stem}_layers")
+        all_layers_folder.mkdir(exist_ok=True)
+        for layer_name in anm.layers:
+            layer_frames_folder = all_layers_folder.joinpath(f"{filepath.stem}_{layer_name}_frames")
+            layer_frames_folder.mkdir(exist_ok=True)
+    return frames_folder, all_layers_folder
+
+
+def render_iconset():
+    global filepath
+    anm = reload_animation()
+    layers = read_layers(anm)
+    frames_folder, all_layers_folder = get_frames_folders(anm)
+    iconset = filepath.parent.joinpath(filepath.stem + ".iconset")
+    iconset.mkdir(parents=True, exist_ok=True)
+    
+    # icon_path_original = iconset.joinpath("icon_512x512@2x.png")
+    # aframe = AnimationFrame(0, anm, icon_path_original, layers)
+    # result = anm.render(aframe)
+    # if not result:
+    #     result = []
+    # if isinstance(result, dict):
+    #     pens = []
+    #     for layer_name, layer_pens in result.items():
+    #         pens.extend(layer_pens)
+    #     result = pens
+    # DrawBotPen.Composite(result, anm.rect, icon_path_original, scale=1)
+
+
+
+    d = 1024
+    while d >= 16:
+        aframe = render_frame(anm, layers, frames_folder, None, 0, d, flatten=True, manual=True)
+        print(aframe.filepath)
+        for x in [1, 2]:
+            if x == 2 and d == 16:
+                continue
+            if x == 1:
+                fn = f"icon_{d}x{d}.png"
+            elif x == 2:
+                fn = f"icon_{int(d/2)}x{int(d/2)}@2x.png"
+            call(["sips", "-z", str(d), str(d), str(aframe.filepath), "--out", str(iconset.joinpath(fn))])
+            #call(["sips", "-z", str(d), str(d), str(icon_path_original)])
+            #print(d)
+        d = int(d/2)
+
+def render_frame(anm, layers, folder, layers_folder, doneness, i, flatten=False, manual=False):
+    frame_start_time = time.time()
+    if i < 0:
+        return
+    if not manual and i >= anm.timeline.duration:
+        return
+    frame_path = folder.joinpath("{:s}_{:04d}.png".format(filepath.stem, i))
+    aframe = AnimationFrame(i, anm, frame_path, layers or [])
+    result = anm.render(aframe)
+    rendered = False
+    if layers:
+        if not result:
+            result = {}
+        if not isinstance(result, dict):
+            raise LayerException("When rendering layers, render func must return dict")
+
+        if flatten:
+            rendered = False
+            for layer_name, layer_pens in result.items():
+                pens.extend(layer_pens)
+            result = pens
+        else:
+            rendered = True        
             for layer_name in layers:
                 layer_pens = result.get(layer_name, [])
                 layer_frames_folder = layers_folder.joinpath(f"{filepath.stem}_{layer_name}_frames")
@@ -113,15 +173,23 @@ def render_subslice(anm, layers, folder, layers_folder, frames):
                 DrawBotPen.Composite(layer_pens, anm.rect, str(layer_frame_path), scale=1)
                 elapsed = time.time() - frame_start_time
                 print(layer_frame_path.name, "({:0.2f}s) [{:04.1f}%]".format(elapsed, doneness))
+    if not rendered:
+        if not result:
+            result = []
+        if args.rasterizer == "drawbot":
+            DrawBotPen.Composite(result, anm.rect, str(frame_path), scale=1)
         else:
-            if not result:
-                result = []
-            if args.rasterizer == "drawbot":
-                DrawBotPen.Composite(result, anm.rect, str(frame_path), scale=1)
-            else:
-                CairoPen.Composite(result, anm.rect, str(frame_path))#, scale=1)
-            elapsed = time.time() - frame_start_time
-            print(aframe.filepath.name, "({:0.2f}s) [{:04.1f}%]".format(elapsed, doneness))        
+            CairoPen.Composite(result, anm.rect, str(frame_path))#, scale=1)
+        elapsed = time.time() - frame_start_time
+        print(aframe.filepath.name, "({:0.2f}s) [{:04.1f}%]".format(elapsed, doneness))
+    return aframe
+
+
+def render_subslice(anm, layers, folder, layers_folder, frames):
+    lf = len(frames)
+    for idx, i in enumerate(frames):
+        doneness =  idx / lf * 100
+        render_frame(anm, layers, folder, layers_folder, doneness, i)
 
 
 def render_slice(frames):
@@ -131,18 +199,9 @@ def render_slice(frames):
     layers_arg = ",".join(layers or [])
 
     start = time.time()
-    frames_folder = filepath.parent.joinpath(f"{filepath.stem}_frames")
-    frames_folder.mkdir(exist_ok=True)
-    all_layers_folder = None
+    frames_folder, all_layers_folder = get_frames_folders(anm)
     
-    if anm.layers:
-        all_layers_folder = filepath.parent.joinpath(f"{filepath.stem}_layers")
-        all_layers_folder.mkdir(exist_ok=True)
-        for layer_name in anm.layers:
-            layer_frames_folder = all_layers_folder.joinpath(f"{filepath.stem}_{layer_name}_frames")
-            layer_frames_folder.mkdir(exist_ok=True)
-    
-    if args.is_subprocess or args.prevent_sub_slicing:
+    if args.is_subprocess or args.prevent_sub_slicing or len(frames) < 10:
         render_subslice(anm, layers, frames_folder, all_layers_folder, frames)
     else:
         group = math.floor(len(frames) / 8)
@@ -201,11 +260,11 @@ def render_slice(frames):
 def preview_storyboard():
     layers = read_layers(anm)
     with viewer() as vwr:
-        buttons = """
-        <button onclick="websocket.send('rw')">rw</button>
-        <button onclick="websocket.send('all')">all</button>
-        """
-        vwr.send(buttons)
+        #buttons = """
+        #<button onclick="websocket.send('rw')">rw</button>
+        #<button onclick="websocket.send('all')">all</button>
+        #"""
+        #vwr.send(buttons)
         for frame in anm.timeline.storyboard:
             print(">>> PREVIEW", frame)
             aframe = AnimationFrame(frame, anm, None, layers)
@@ -222,6 +281,7 @@ def preview_storyboard():
             except Exception as e:
                 print(traceback.format_exc())
                 vwr.send(f"<pre>{traceback.format_exc()}</pre>", None)
+
 
 def render(frames_fn=None):
     anm = reload_animation()
@@ -273,7 +333,7 @@ def watch_changes():
     observer2.schedule(handler, path=str(rand_file), recursive=True)
     observer.start()
     observer2.start()
-    websocket.enableTrace(True) # necessary?
+    #websocket.enableTrace(True) # necessary?
     # https://github.com/websocket-client/websocket-client#examples
     ws = websocket.WebSocketApp(WEBSOCKET_ADDR, on_message=on_message)
     ws.run_forever()
@@ -287,7 +347,9 @@ def read_slice(slice_str):
     return list(range(*sl.indices(100000)))
 
 
-if args.watch:
+if args.icns:
+    render_iconset()
+elif args.watch:
     watch_changes()
 elif args.renderworkareas:
     render(workarea_frames)

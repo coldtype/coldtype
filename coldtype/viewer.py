@@ -11,7 +11,7 @@ from coldtype.geometry import Rect
 from coldtype.color import normalize_color
 
 
-WEBSOCKET_PORT = 8008
+WEBSOCKET_PORT = 8007
 WEBSOCKET_ADDR = f"ws://localhost:{WEBSOCKET_PORT}"
 
 

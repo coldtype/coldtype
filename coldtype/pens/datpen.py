@@ -806,11 +806,13 @@ class DATPenSet(AlignableMixin):
                 pens.append(_p)
             else:
                 np = style_fn(p.copy())
+                if isinstance(np, DATPen) or isinstance(np, DATPenSet):
+                    np = [np]
                 if direction < 0:
-                    pens.append(np)
+                    pens.extend(np)
                 pens.append(p)
                 if direction > 0:
-                    pens.append(np)
+                    pens.extend(np)
 
         self.pens = pens
         return self

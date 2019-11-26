@@ -324,9 +324,17 @@ class Rect():
 
     def __init__(self, *rect):
         if isinstance(rect[0], int) or isinstance(rect[0], float):
-            x, y, w, h = rect
+            try:
+                x, y, w, h = rect
+            except:
+                w, h = rect
+                x, y = 0, 0
         else:
-            x, y, w, h = rect[0]
+            try:
+                x, y, w, h = rect[0]
+            except:
+                w, h = rect[0]
+                x, y = 0, 0
         self.x = x
         self.y = y
         self.w = w

@@ -4,8 +4,6 @@ from random import random
 import mido
 import re
 
-print("THIS ANIMATION")
-
 VIDEO_OFFSET = 86313 # why is this?
 
 
@@ -130,7 +128,7 @@ class Clip():
 
 
 class Timeline():
-    def __init__(self, fps, duration, storyboard=[0], workareas=None):
+    def __init__(self, duration, fps=30, storyboard=[0], workareas=None):
         self.fps = fps
         self.duration = duration
         self.storyboard = storyboard
@@ -156,7 +154,7 @@ class AnimationFrame():
 class Animation():
     def __init__(self, render, rect, timeline=None, bg=0, layers=None):
         self.render = render
-        self.rect = rect
+        self.rect = Rect(rect)
         self.r = self.rect
         self.cache = {}
         self.layers = layers
@@ -192,8 +190,10 @@ class Animation():
                     self.clipGroupsByTrack.append(gcs)
         elif isinstance(timeline, Timeline):
             self.timeline = timeline
+        elif timeline:
+            self.timeline = Timeline(timeline, 30)
         else:
-            self.timeline = Timeline(30, 1)
+            self.timeline = Timeline(1, 30)
         
         self.t = self.timeline # alias
         self.bg = normalize_color(bg)
