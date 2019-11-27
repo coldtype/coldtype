@@ -1,5 +1,6 @@
 const { app, BrowserWindow } = require('electron');
 const WebSocket = require('ws');
+const path = require("path");
 
 const port = 8007;
 const wss = new WebSocket.Server({ port: port });
@@ -15,22 +16,24 @@ wss.on("connection", function connection(ws) {
     });
 });
 
+console.log(path.join(__dirname, 'appicon.icns'));
+
 function createWindow () {
   let win = new BrowserWindow({
     width: 200,
     height: 250,
     x: 0,
     y: 0,
-    icon: __dirname + 'appicon.icns',
+    icon: path.join(__dirname, 'appicon.icns'),
     webPreferences: {
       nodeIntegration: true
     }
   });
   win.loadFile('index.html');
   // https://discuss.atom.io/t/set-browserwindow-always-on-top-even-other-app-is-in-fullscreen/34215/4
-  app.dock.hide();
-  win.setAlwaysOnTop(true, "floating", 1);
-  win.setVisibleOnAllWorkspaces(true);
+  //app.dock.hide();
+  //win.setAlwaysOnTop(true, "floating", 1);
+  //win.setVisibleOnAllWorkspaces(true);
 }
 
 app.on('ready', createWindow);

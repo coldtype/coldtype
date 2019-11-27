@@ -6,11 +6,11 @@ def render(f):
         st = Style("≈/ObviouslyVariable.ttf", 800, slnt=1, wght=0.85, wdth=0.5, fill=1, reverse=1, t=-50, ss01=1, removeOverlap=1)
         pen = Slug("C", st).pen().align(f.a.r)
         return [
-            DATPen(fill=(0)).oval(f.a.r.inset(0)),
+            DATPen(fill=(0)).oval(f.a.r.inset(10)),
             pen,
         ]
     else:
-        st = Style("≈/ObviouslyVariable.ttf", 400, slnt=1, wght=1, wdth=0.5, fill=1, reverse=1, t=-50, ss01=1, removeOverlap=1, kern=dict(E=(-120, 0)))
+        st = Style("≈/ObviouslyVariable.ttf", 400, slnt=1, wght=1, wdth=0.5, fill=1, reverse=1, t=-50, ss01=1, removeOverlap=1, kern=dict(Y=(-30, 0), E=(-190, 0)))
         graf = Graf([Slug("Cold".upper(), st), Slug("type".upper(), st)], f.a.r.inset(150), leading=-30)
         pens = graf.fit().pens().reversePens().align(f.a.r)\
             .interleave(lambda p: [p.attr(stroke=0, strokeWidth=30), p.copy().attr(fill=(0, 0.3))])
@@ -18,7 +18,7 @@ def render(f):
         pens.pens[1].translate(-40, 20)
         outline = pens.copy().pen().removeOverlap()
         return [
-            DATPen(fill=(0)).oval(f.a.r.inset(0)),
+            DATPen(fill=(0)).oval(f.a.r.inset(10)),
             pens,
         ]
 
