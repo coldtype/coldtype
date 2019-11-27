@@ -1,10 +1,36 @@
+if __name__ == "__main__":
+    import sys, pathlib
+    sys.path.insert(0, str(pathlib.Path(__file__).parent.parent.parent))
+
 from coldtype import *
 from enum import Enum
 from random import random
+import json
 import mido
 import re
 
+import easing_functions as ef
+
 VIDEO_OFFSET = 86313 # why is this?
+
+eases = dict(
+    qei=ef.QuadEaseIn,
+    qeo=ef.QuadEaseOut,
+    qeio=ef.QuadEaseInOut,
+    eei=ef.ExponentialEaseIn,
+    eeo=ef.ExponentialEaseOut,
+    eeio=ef.ExponentialEaseInOut,
+    sei=ef.SineEaseIn,
+    seo=ef.SineEaseOut,
+    seio=ef.SineEaseInOut)
+
+
+def ease(style, x):
+    e = eases.get(style)
+    if e:
+        return e().ease(x)
+    else:
+        raise Exception("No easing function with that mnemonic")
 
 
 def to_frames(seconds, fps):
@@ -34,7 +60,7 @@ class ClipFlags(Enum):
 
 
 class Clip():
-    def __init__(self, clip, fps=None, markers=[], idx=None):
+    def __init__(self, clip, fps=None, markers=[], idx=None, track=0):
         self.idx = idx
         self.clip = clip
         self.styles = []
@@ -42,6 +68,7 @@ class Clip():
         self.joined = False
         self.joinPrev = None
         self.joinNext = None
+        self.track = track
 
         if isinstance(clip, dict):
             try:
@@ -130,7 +157,7 @@ class Clip():
 class Timeline():
     def __init__(self, duration, fps=30, storyboard=[0], workareas=None):
         self.fps = fps
-        self.duration = duration
+        self.duration = round(duration)
         self.storyboard = storyboard
         if len(self.storyboard) == 0:
             self.storyboard.append(0)
@@ -139,6 +166,9 @@ class Timeline():
             self.workareas = workareas
         else:
             self.workareas = [range(0, self.duration+1)]
+    
+    def __str__(self):
+        return "<Timeline:{:04d}f@{:02.2f}fps>".format(self.duration, self.fps)
 
 
 class AnimationFrame():
@@ -177,16 +207,16 @@ class Animation():
                         ))
                 self.jsonfile = timeline
                 self.timeline = Timeline(
-                    fps,
                     duration,
+                    fps,
                     storyboard=storyboard,
                     workareas=workareas
                 )
                 self.clipGroupsByTrack = []
-                for track in jsondata.get("tracks"):
+                for tidx, track in enumerate(jsondata.get("tracks")):
                     markers = [Marker(fps, m) for m in track.get("markers")]
                     clips = track.get("clips")
-                    gcs = grouped_clips([Clip(c, fps=fps, markers=markers) for c in clips])
+                    gcs = grouped_clips([Clip(c, fps=fps, markers=markers, track=tidx) for c in clips])
                     self.clipGroupsByTrack.append(gcs)
         elif isinstance(timeline, Timeline):
             self.timeline = timeline
@@ -208,6 +238,9 @@ class Animation():
         else:
             return i / self.timeline.duration
     
+    def prg(self, i, c=False):
+        return self.progress(i, cyclic=c)
+    
     def trackClipGroupForFrame(self, track_idx, frame_idx, styles=None):
         groups = self.clipGroupsByTrack[track_idx]
         for group in groups:
@@ -219,6 +252,7 @@ class Animation():
                         style_groups.append(self.trackClipGroupForFrame(style, frame_idx))
                 return group.position(frame_idx, style_groups)
 
+group_pens_cache = {}
 
 class ClipGroup():
     def __init__(self, index, clips):
@@ -226,6 +260,7 @@ class ClipGroup():
         self.clips = clips
         self.start = clips[0].start
         self.end = clips[-1].end
+        self.track = clips[0].track
 
         for idx, clip in enumerate(clips):
             clip.idx = idx
@@ -333,6 +368,47 @@ class ClipGroup():
         return txt
         #return "|".join([(c.text + "/") if c.eol else c.text for c in self.clips])
     
+    def ClearCache():
+        global group_pens_cache
+        group_pens_cache = {}
+    
+    def pens(self, render_clip_fn, rect, graf_style, fit=None):
+        global group_pens_cache
+        
+        if group_pens_cache.get(self.track, dict()).get(self.index):
+            return group_pens_cache[self.track][self.index]
+        
+        group_pens = []
+        lines = []
+        for idx, _line in enumerate(self.lines()):
+            slugs = []
+            for clip in _line:
+                slugs.append(render_clip_fn(clip))
+            lines.append(slugs)
+        lockups = []
+        for line in lines:
+            lockup = Lockup(line, preserveLetters=True, nestSlugs=True)
+            if fit:
+                lockup.fit(fit)
+            lockups.append(lockup)
+        graf = Graf(lockups, rect, graf_style)
+        pens = graf.pens().align(rect)
+        for pens in pens.pens:
+            for pen in pens.pens:
+                pen.removeOverlap()
+            group_pens.append(pens)
+        track_cache = group_pens_cache.get(self.track, dict())
+        track_cache[self.index] = group_pens
+        group_pens_cache[self.track] = track_cache
+        return group_pens
+    
+    def iterate_pens(self, pens):
+        for idx, line in enumerate(self.lines()):
+            _pens = pens[idx]
+            for cidx, clip in enumerate(line):
+                p = _pens.pens[cidx].copy()
+                yield idx, clip, p
+    
     def __repr__(self):
         return "<ClipGroup {:04d}-{:04d} \"{:s}\">".format(self.start, self.end, self.text())
     
@@ -389,3 +465,6 @@ def midi_to_frames(f, fps, bpm=120, length=None, loop_length=None):
                 looped.append((note, int(round(start+offset*l*length)), int(round(end+offset*l*length))))
         events.extend(looped)
     return events
+
+if __name__ == "__main__":
+    print(ease("qeio", 0.25))

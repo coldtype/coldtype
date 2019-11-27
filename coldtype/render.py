@@ -215,7 +215,7 @@ def render_slice(frames):
             print(subslice[:1])
             sargs = [
                 "python",
-                "coldtype/render.py",
+                __file__,
                 args.file,
                 "-s", f"{subslice[0]}:{subslice[-1]+1}",
                 "-isp",
@@ -297,7 +297,7 @@ def all_frames(anm):
 class Handler(FileSystemEventHandler):
     def on_modified(self, event):
         p = event.src_path
-        if p.endswith("f13.txt") or p.endswith(".py"):
+        if p.endswith("f13.txt") or p.endswith(".py"): #or p.endswith("Auto-Save"):
             print(event)
             render()
         elif p.endswith("f14.txt"):
