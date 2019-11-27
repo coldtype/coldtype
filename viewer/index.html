@@ -14,42 +14,59 @@
 
     <script language="javascript" type="text/javascript">
 
-        const WS_URL = "ws://localhost:8007"
-        var websocket = new WebSocket(WS_URL);
-        websocket.onopen = function (evt) { onOpen(evt) };
-        websocket.onclose = function (evt) { onClose(evt) };
-        websocket.onmessage = function (evt) { onMessage(evt) };
-        websocket.onerror = function (evt) { onError(evt) };
+        var lastTime = (new Date()).getTime();
+        var connected = false;
 
-        function onOpen(evt) {
-            console.log("connected\n");
-        }
+        setInterval(function() {
+            connectToWebsocket();
+        }, 2000);
 
-        function onClose(evt) {
-            console.log("disconnected\n");
-        }
+        connectToWebsocket();
 
-        function onMessage(evt) {
-            let container = document.querySelector("#container");
-            if (evt.data == "CLEAR") {
-                container.innerHTML = "";
-            } else {
-                container.innerHTML = container.innerHTML + evt.data;
+        function connectToWebsocket() {
+            if (connected) {
+                return;
             }
-        }
+            console.log("attempting to connect");
+            const WS_URL = "ws://localhost:8007"
+            var websocket = new WebSocket(WS_URL);
+            websocket.onopen = function (evt) { onOpen(evt) };
+            websocket.onclose = function (evt) { onClose(evt) };
+            websocket.onmessage = function (evt) { onMessage(evt) };
+            websocket.onerror = function (evt) { onError(evt) };
 
-        function onError(evt) {
-            console.log('error: ' + evt.data + '\n');
-            websocket.close();
-        }
+            function onOpen(evt) {
+                console.log("connected\n");
+                connected = true;
+            }
 
-        function doSend(message) {
-            console.log("sent: " + message + '\n');
-            websocket.send(message);
-        }
+            function onClose(evt) {
+                console.log("disconnected\n");
+                connected = false;
+            }
 
-        function doDisconnect() {
-            websocket.close();
+            function onMessage(evt) {
+                let container = document.querySelector("#container");
+                if (evt.data == "CLEAR") {
+                    container.innerHTML = "";
+                } else {
+                    container.innerHTML = container.innerHTML + evt.data;
+                }
+            }
+
+            function onError(evt) {
+                console.log('error: ' + evt.data + '\n');
+                //websocket.close();
+            }
+
+            function doSend(message) {
+                console.log("sent: " + message + '\n');
+                websocket.send(message);
+            }
+
+            function doDisconnect() {
+                websocket.close();
+            }
         }
 
     </script>
