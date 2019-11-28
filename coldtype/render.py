@@ -209,8 +209,14 @@ def render_slice(frames):
         for r in running_renderers:
             if r:
                 r.terminate()
+        
         running_renderers = []
         completed_renderers = []
+
+        if 0 not in frames:
+            # need to do this to trigger a filesystem-change detection in premiere
+            render_subslice(anm, layers, frames_folder, all_layers_folder, [0, anm.timeline.duration-1])
+
         for subslice in subslices:
             print(subslice[:1])
             sargs = [
