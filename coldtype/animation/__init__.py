@@ -69,6 +69,7 @@ class Clip():
         self.joinPrev = None
         self.joinNext = None
         self.track = track
+        self.group = None
 
         if isinstance(clip, dict):
             try:
@@ -216,7 +217,7 @@ class Animation():
                 for tidx, track in enumerate(jsondata.get("tracks")):
                     markers = [Marker(fps, m) for m in track.get("markers")]
                     clips = track.get("clips")
-                    gcs = grouped_clips([Clip(c, fps=fps, markers=markers, track=tidx) for c in clips])
+                    gcs = self.groupedClips([Clip(c, fps=fps, markers=markers, track=tidx) for c in clips])
                     self.clipGroupsByTrack.append(gcs)
         elif isinstance(timeline, Timeline):
             self.timeline = timeline
@@ -227,6 +228,25 @@ class Animation():
         
         self.t = self.timeline # alias
         self.bg = normalize_color(bg)
+    
+    def groupedClips(self, tcs):
+        groups = []
+        group = []
+        last_clip = None
+        for idx, tc in enumerate(tcs):
+            if tc.type == ClipType.ClearScreen:
+                if len(group) > 0:
+                    groups.append(ClipGroup(self, len(groups), group))
+                group = []
+            elif tc.type == ClipType.JoinPrev:
+                if last_clip:
+                    last_clip.addJoin(tc, +1)
+                    tc.addJoin(last_clip, -1)
+            group.append(tc)
+            last_clip = tc
+        if len(group) > 0:
+            groups.append(ClipGroup(self, len(groups), group))
+        return groups
     
     def progress(self, i, cyclic=False):
         if cyclic:
@@ -255,15 +275,17 @@ class Animation():
 group_pens_cache = {}
 
 class ClipGroup():
-    def __init__(self, index, clips):
+    def __init__(self, animation, index, clips):
         self.index = index
         self.clips = clips
         self.start = clips[0].start
         self.end = clips[-1].end
         self.track = clips[0].track
+        self.animation = animation
 
         for idx, clip in enumerate(clips):
             clip.idx = idx
+            clip.group = self
     
     def styles(self):
         all_styles = set()
@@ -372,11 +394,12 @@ class ClipGroup():
         global group_pens_cache
         group_pens_cache = {}
     
-    def pens(self, render_clip_fn, rect, graf_style, fit=None):
+    def pens(self, render_clip_fn, rect, graf_style, fit=None, cache=True):
         global group_pens_cache
         
-        if group_pens_cache.get(self.track, dict()).get(self.index):
-            return group_pens_cache[self.track][self.index]
+        if cache:
+            if group_pens_cache.get(self.track, dict()).get(self.index):
+                return group_pens_cache[self.track][self.index]
         
         group_pens = []
         lines = []
@@ -416,27 +439,9 @@ class ClipGroup():
         return self.text()
 
 
-def grouped_clips(tcs):
-    groups = []
-    group = []
-    last_clip = None
-    for idx, tc in enumerate(tcs):
-        if tc.type == ClipType.ClearScreen:
-            if len(group) > 0:
-                groups.append(ClipGroup(len(groups), group))
-            group = []
-        elif tc.type == ClipType.JoinPrev:
-            if last_clip:
-                last_clip.addJoin(tc, +1)
-                tc.addJoin(last_clip, -1)
-        group.append(tc)
-        last_clip = tc
-    if len(group) > 0:
-        groups.append(ClipGroup(len(groups), group))
-    return groups
-
 def s_to_f(s, fps):
     return math.floor(s*fps)
+
 
 def midi_to_frames(f, fps, bpm=120, length=None, loop_length=None):
     mid = mido.MidiFile(f)
@@ -465,6 +470,9 @@ def midi_to_frames(f, fps, bpm=120, length=None, loop_length=None):
                 looped.append((note, int(round(start+offset*l*length)), int(round(end+offset*l*length))))
         events.extend(looped)
     return events
+
+def sibling(root, file):
+    return Path(root).parent.joinpath(file)
 
 if __name__ == "__main__":
     print(ease("qeio", 0.25))

@@ -507,7 +507,7 @@ class Style():
             if isinstance(font, str):
                 self.fontFile = self.normalizeFontPath(font)
             elif isinstance(font, Path):
-                self.fontFile = str(font)
+                self.fontFile = self.normalizeFontPath(str(font))
             else:
                 self.fontFile = self.normalizeFontPath(font[0])
                 if len(font) > 1:
