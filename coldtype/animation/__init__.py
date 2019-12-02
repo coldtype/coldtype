@@ -183,12 +183,13 @@ class AnimationFrame():
         return f"<AnimationFrame {self.i}>"
 
 class Animation():
-    def __init__(self, render, rect, timeline=None, bg=0, layers=None):
+    def __init__(self, render, rect=Rect(0, 0, 1920, 1080), timeline=None, bg=0, layers=None, watches=[]):
         self.render = render
         self.rect = Rect(rect)
         self.r = self.rect
         self.cache = {}
         self.layers = layers
+        self.watches = [str(w.expanduser().resolve()) for w in watches]
 
         if isinstance(timeline, Path):
             if str(timeline).endswith(".json"):

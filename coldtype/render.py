@@ -69,12 +69,14 @@ def reload_animation():
         with viewer() as vwr:
             vwr.send(f"<pre>{traceback.format_exc()}</pre>", None)
         return None
-    try:
+    if "animation" in program:
         anm = program["animation"]
-        return anm
-    except KeyError:
-        print(">>> no animation found <<<")
+    elif "render" in program:
+        anm = Animation(program["render"])
+    else:
+        print(">>> no animation or render function found <<<")
         return None
+    return anm
 
 filepath = pathlib.Path(args.file).expanduser().resolve()
 anm = None
@@ -302,9 +304,13 @@ def all_frames(anm):
 
 class Handler(FileSystemEventHandler):
     def on_modified(self, event):
+        global anm
         p = event.src_path
-        if p.endswith("f13.txt") or p.endswith(".py"): #or p.endswith("Auto-Save"):
-            print(event)
+        if p in anm.watches:
+            print("save>>>", os.path.basename(p))
+            render()
+        elif p.endswith("f13.txt") or p.endswith(".py"): #or p.endswith("Auto-Save"):
+            print("save>>>", os.path.basename(p))
             render()
         elif p.endswith("f14.txt"):
             render(workarea_frames)

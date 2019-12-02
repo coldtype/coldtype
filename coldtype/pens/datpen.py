@@ -159,6 +159,9 @@ class DATPen(RecordingPen, AlignableMixin):
         self.container = None
         self.glyphName = None
     
+    def __str__(self):
+        return f"<DP(typo:int({self.typographic})({self.glyphName}))>"
+    
     def pen(self):
         return self
     
@@ -222,6 +225,24 @@ class DATPen(RecordingPen, AlignableMixin):
             else:
                 attrs[k] = v
         return self
+    
+    def fill(self, value):
+        return self.attr(fill=value)
+    
+    def f(self, *value):
+        return self.attr(fill=value)
+    
+    def stroke(self, value, width=1):
+        return self.attr(stroke=value, strokeWidth=width)
+    
+    def s(self, value, width=1):
+        return self.attr(stroke=value, strokeWidth=width)
+    
+    def strokeWidth(self, value):
+        return self.attr(strokeWidth=value)
+    
+    def sw(self, value):
+        return self.attr(strokeWidth=value)
     
     def removeBlanks(self):
         return len(self.value) == 0
@@ -682,7 +703,6 @@ class DATPen(RecordingPen, AlignableMixin):
         pv = cc.subsegment(start, end)
         self.value = pv
         return self
-
     
     def points(self):
         contours = []
@@ -693,6 +713,25 @@ class DATPen(RecordingPen, AlignableMixin):
                     _c.append(pt)
             contours.append(_c)
         return contours
+    
+    def flatpoints(self):
+        points = []
+        for contour in self.skeletonPoints():
+            for step, pts in contour:
+                for pt in pts:
+                    if len(points) == 0 or points[-1] != pt:
+                        points.append(pt)
+        return points
+    
+    def lines(self):
+        ls = []
+        pts = self.flatpoints()
+        for idx, pt in enumerate(pts):
+            if idx > 0:
+                ls.append([pts[idx-1], pts[idx]])
+        if len(ls) > 1:
+            ls.append([pts[-1], pts[0]])
+        return ls
 
     def skeletonPoints(self):
         all_points = []
@@ -875,6 +914,24 @@ class DATPenSet(AlignableMixin):
             p.attr(key, **kwargs)
         return self
     
+    def fill(self, value):
+        return self.attr(fill=value)
+    
+    def f(self, *value):
+        return self.attr(fill=value)
+    
+    def stroke(self, value, width=1):
+        return self.attr(stroke=value, strokeWidth=width)
+    
+    def s(self, value, width=1):
+        return self.attr(stroke=value, strokeWidth=width)
+    
+    def strokeWidth(self, value):
+        return self.attr(strokeWidth=value)
+    
+    def sw(self, value):
+        return self.attr(strokeWidth=value)
+    
     def removeOverlap(self):
         for p in self.pens:
             p.removeOverlap()
@@ -903,6 +960,11 @@ class DATPenSet(AlignableMixin):
     def round(self, rounding):
         for p in self.pens:
             p.round(rounding)
+        return self
+    
+    def mmap(self, fn):
+        for p in self.pens:
+            fn(p)
         return self
     
     def flatten(self):
