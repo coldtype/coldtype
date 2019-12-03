@@ -622,6 +622,14 @@ class DATPen(RecordingPen, AlignableMixin):
         self.roundedRect(rect, 0.5, 0.5)
         return self
     
+    def trapezoid(self, points, close=True):
+        self.moveTo(points[0])
+        for pt in points[1:]:
+            self.lineTo(pt)
+        if close:
+            self.closePath()
+        return self
+    
     def polygon(self, sides, rect):
         radius = rect.square().w / 2
         c = rect.center()
@@ -967,11 +975,11 @@ class DATPenSet(AlignableMixin):
             fn(p)
         return self
     
-    def flatten(self):
+    def flatten(self, levels=100):
         pens = []
         for p in self.pens:
-            if isinstance(p, DATPenSet):
-                pens.extend(p.flatten().pens)
+            if isinstance(p, DATPenSet) and levels > 0:
+                pens.extend(p.flatten(levels=levels-1).pens)
             else:
                 pens.append(p)
         dps = DATPenSet(pens)

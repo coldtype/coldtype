@@ -491,7 +491,11 @@ class Style():
         capHeight (ch) — A number in font-space; not specified, read from font; specified as 'x', capHeight is set to xHeight as read from font
         """
 
+        self.db = db
         self.next = None
+        self.layer = layer
+        self.reverse = reverse
+        self.removeOverlap = removeOverlap
 
         try:
             # Load a font directly from a font-authoring in-memory object
@@ -515,10 +519,6 @@ class Style():
             
             self.format = os.path.splitext(self.fontFile)[1][1:]
             self.ufo = self.format == "ufo"
-            self.db = db
-            self.layer = layer
-            self.reverse = reverse
-            self.removeOverlap = removeOverlap
 
             if self.ufo:
                 ufo = Font(self.fontFile)
