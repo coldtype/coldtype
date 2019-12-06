@@ -1,20 +1,17 @@
 from coldtype.animation import *
 from coldtype.color import Gradient
+from random import randint
 
 varfont = "ç/MutatorSans.ttf"
 
 def basic_test(f):
-    return [
-        DATPen().oval(f.a.r).f(0, 0.1),
-        Slug("COLDTYPE", Style(varfont, 300, wdth=0, wght=1)).pen().f(1, 0, 0.5).align(f.a.r),
-    ]
+    return Slug("COLDTYPE", Style(varfont, 300, wdth=0, wght=1)).pen().f(1, 0, 0.5).align(f.a.r)
 
 def combine_slugs_test(f):
     ss1 = Slug("OY ", Style(varfont, fontSize=280)).pen().f("darkorchid", 0.3)
     ps2 = Slug("ABC ", Style(varfont, wght=1, fontSize=230)).pens().rotate(-10)
     shape = DATPen().polygon(3, Rect(0, 0, 150, 150)).f("random")
-    dps = DATPenSet(ss1, ps2, shape).distribute().align(f.a.r)
-    return dps
+    return DATPenSet(ss1, ps2, shape).distribute().align(f.a.r)
 
 def multilang_test(f):
     obv = Style("ç/NotoSans-Black.ttf", 180, fill=(1, 0, 0.5))
@@ -92,6 +89,25 @@ def text_on_curve_test(f):
     ps.distributeOnPath(dp)
     return [ps, ps.frameSet(th=True, tv=True), dp]
 
+def pathops_test(f):
+    square = DATPen().rect(f.a.r.inset(200).square()).translate(-100, -100)
+    circle = DATPen().oval(f.a.r.inset(200).square()).translate(100, 100)
+    return square.intersection(circle)
+
+def catmull_test(f):
+    dp = DATPen()
+    points = []
+    last_pt = (0, 0)
+    for x in range(0, 10):
+        too_close = True
+        while too_close:
+            pt = (randint(0, f.a.r.w), randint(0, f.a.r.h))
+            if abs(last_pt[0] - pt[0]) > 100 and abs(last_pt[1] - pt[1]) > 100:
+                too_close = False
+            last_pt = pt
+        points.append(last_pt)
+    return dp.catmull(points).endPath().f(None).s("random").sw(20)
+
 tests = [
     basic_test,
     combine_slugs_test,
@@ -108,6 +124,8 @@ tests = [
     roughen_test,
     pixellate_test,
     text_on_curve_test,
+    pathops_test,
+    catmull_test,
 ]
 
 def render(f):
@@ -119,7 +137,8 @@ def render(f):
         DATPenSet(res)
     ]
 
-current_tests = [tests.index(layering_test)]
-current_tests = list(range(0, len(tests)))
+current_tests = [tests.index(catmull_test)]
+#current_tests = list(range(0, len(tests)))
+
 timeline = Timeline(100, storyboard=current_tests)
 animation = Animation(render, Rect(1920, 1080), timeline, bg=(1, 0))

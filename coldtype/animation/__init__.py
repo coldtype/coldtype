@@ -15,6 +15,7 @@ from random import random
 from defcon import Font
 import json
 import mido
+import math
 import re
 
 import easing_functions as ef
@@ -41,6 +42,8 @@ eases = dict(
 
 
 def ease(style, x):
+    if style == "linear":
+        return x
     e = eases.get(style)
     if e:
         return e().ease(x)

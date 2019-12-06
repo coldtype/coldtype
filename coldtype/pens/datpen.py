@@ -21,12 +21,6 @@ try:
 except:
     pass
 
-if __name__ == "__main__":
-    import os
-    import sys
-    dirname = os.path.realpath(os.path.dirname(__file__))
-    sys.path.append(f"{dirname}/../..")
-
 USE_SKIA_PATHOPS = True
 
 if USE_SKIA_PATHOPS:
@@ -166,6 +160,30 @@ class DATPen(RecordingPen, AlignableMixin):
     
     def __str__(self):
         return f"<DP(typo:int({self.typographic})({self.glyphName}))>"
+    
+    def moveTo(self, p0):
+        super().moveTo(p0)
+        return self
+
+    def lineTo(self, p1):
+        super().lineTo(p1)
+        return self
+
+    def qCurveTo(self, *points):
+        super().qCurveTo(*points)
+        return self
+
+    def curveTo(self, *points):
+        super().curveTo(*points)
+        return self
+
+    def closePath(self):
+        super().closePath()
+        return self
+
+    def endPath(self):
+        super().endPath()
+        return self
     
     def pen(self):
         return self
@@ -549,6 +567,7 @@ class DATPen(RecordingPen, AlignableMixin):
             self.curveTo((p[0], p[1]), (p[2], p[3]), (p[4], p[5]))
         if close:
             self.closePath()
+        return self
     
     def pattern(self, rect, clip=False):
         dp_copy = DATPen()
