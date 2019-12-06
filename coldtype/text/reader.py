@@ -253,6 +253,7 @@ class FittableMixin():
 _prefixes = [
     ["¬", "~/Library/Fonts"],
     ["≈", "~/Type/fonts/fonts"],
+    ["ç", str(Path(__file__).parent.parent.parent.joinpath("assets").resolve())]
 ]
 
 

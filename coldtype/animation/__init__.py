@@ -1,8 +1,15 @@
-if __name__ == "__main__":
-    import sys, pathlib
-    sys.path.insert(0, str(pathlib.Path(__file__).parent.parent.parent))
+import sys
+from pathlib import Path
 
-from coldtype import *
+if __name__ == "__main__":
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+#from coldtype import *
+
+from coldtype.color import normalize_color
+from coldtype.geometry import Rect
+from coldtype.text import Slug, Style, Lockup, Graf
+
 from enum import Enum
 from random import random
 from defcon import Font
