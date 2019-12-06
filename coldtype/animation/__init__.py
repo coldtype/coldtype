@@ -5,6 +5,7 @@ if __name__ == "__main__":
 from coldtype import *
 from enum import Enum
 from random import random
+from defcon import Font
 import json
 import mido
 import re
@@ -12,6 +13,8 @@ import re
 import easing_functions as ef
 
 VIDEO_OFFSET = 86313 # why is this?
+
+easer_ufo = Font(str(Path(__file__).parent.joinpath("easers.ufo")))
 
 eases = dict(
     qei=ef.QuadEaseIn,
@@ -22,7 +25,12 @@ eases = dict(
     eeio=ef.ExponentialEaseInOut,
     sei=ef.SineEaseIn,
     seo=ef.SineEaseOut,
-    seio=ef.SineEaseInOut)
+    seio=ef.SineEaseInOut,
+    beo=ef.BounceEaseOut,
+    beio=ef.BounceEaseInOut,
+    eleo=ef.ElasticEaseOut,
+    elei=ef.ElasticEaseIn,
+    )
 
 
 def ease(style, x):
@@ -30,7 +38,38 @@ def ease(style, x):
     if e:
         return e().ease(x)
     else:
-        raise Exception("No easing function with that mnemonic")
+        if style in easer_ufo:
+            p, tangent = DATPen().glyph(easer_ufo[style]).point_t(t=x)
+            return p[1]/1000
+        else:
+            raise Exception("No easing function with that mnemonic")
+
+
+def loop(t, times=1, easefn="qeio"):
+    lt = t*times*2
+    ltf = math.floor(lt)
+    ltc = math.ceil(lt)
+    if ltc % 2 != 0: # looping back
+        lt = 1 - (ltc - lt)
+    else: # looping forward
+        lt = ltc - lt
+    
+    easer = easefn
+    try:
+        iter(easefn) # is-iterable
+        if len(easefn) > ltf:
+            easer = easefn[ltf]
+        elif len(easefn) == 2:
+            easer = easefn[ltf % 2]
+        elif len(easefn) == 1:
+            easer = easefn[0]
+    except TypeError:
+        pass
+    
+    if isinstance(easer, str):
+        return ease(easer, lt)
+    else:
+        return easer(lt)
 
 
 def to_frames(seconds, fps):
@@ -476,4 +515,5 @@ def sibling(root, file):
     return Path(root).parent.joinpath(file)
 
 if __name__ == "__main__":
-    print(ease("qeio", 0.25))
+    print("qeio", ease("qeio", 0.25))
+    print("b1o", ease("b1o", 1))

@@ -475,6 +475,7 @@ class Style():
             latin=None, # temp
             lang=None,
             filter=None,
+            layerer=None,
             preventHwid=False,
             layer=None,
             printAxes=False,
@@ -494,6 +495,7 @@ class Style():
         self.db = db
         self.next = None
         self.layer = layer
+        self.layerer = layerer
         self.reverse = reverse
         self.removeOverlap = removeOverlap
 
@@ -818,6 +820,8 @@ class StyledString(FittableMixin):
                 glyph = "nine"
             elif t == "’":
                 glyph = "quoteright"
+            elif t == "!":
+                glyph = "exclam"
             elif re.match(r"[A-Za-z]", t):
                 glyph = t
             else: # convert unicode literals to uni*-style
@@ -939,7 +943,7 @@ class StyledString(FittableMixin):
             print("No DrawBot available")
             return None
     
-    def drawFrameToPen(self, fr, idx, pen, frame, gid, useTTFont=False):
+    def scalePenToStyle(self, idx, in_pen, frame):
         s = self.scale()
         t = Transform()
         try:
@@ -960,21 +964,23 @@ class StyledString(FittableMixin):
         t = t.scale(s)
         t = t.translate(frame.frame.x/self.scale(), frame.frame.y/self.scale())
         #t = t.translate(0, bs)
-        tp = TransformPen(pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
-        
+        out_pen = DATPen()
+        tp = TransformPen(out_pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
+        in_pen.replay(tp)
+        return out_pen
+    
+    def drawFrameToPen(self, reader, idx, frame, gid, useTTFont=False):
         dp = DATPen()
         if self.style.db > 1 and self.ct_glyphs:
             dp.record(self.ct_glyphs[idx])
         elif useTTFont:
-            fr.drawTTOutlineToPen(gid, dp)
+            reader.drawTTOutlineToPen(gid, dp)
         else:
-            fr.drawOutlineToPen(gid, dp)
-        
+            reader.drawOutlineToPen(gid, dp)
         # apply full-scale filtering before transform-down
         if self.style.filter:
             dp = self.style.filter(frame.frame, dp)
-        
-        dp.replay(tp)
+        return dp
     
     def drawToPen(self, pen, frames, index=None, useTTFont=False):
         if self.style.ufo:
@@ -1012,7 +1018,23 @@ class StyledString(FittableMixin):
                 dps.replay(pen)
                 return dps # TODO weird to return in a for-loop isn't it?
             else:
-                self.drawFrameToPen(shape_reader, idx, pen, frame, frame.gid, useTTFont=useTTFont)
+                if self.style.layerer:
+                    try:
+                        gn = self.style.ttfont.getGlyphName(frame.gid)
+                    except:
+                        gn = frame.gid
+                    pen.value = self.drawFrameToPen(shape_reader, idx, frame, frame.gid, useTTFont=useTTFont).value
+                    dps = DATPenSet()
+                    dps.layered = True
+                    dps.addPen(pen)
+                    self.style.layerer(self, gn, pen, dps)
+                    for p in dps.pens:
+                        p.value = self.scalePenToStyle(idx, p, frame).value
+                    return dps
+                else:
+                    dp = self.drawFrameToPen(shape_reader, idx, frame, frame.gid, useTTFont=useTTFont)
+                    dp = self.scalePenToStyle(idx, dp, frame)
+                    dp.replay(pen)
     
     def _emptyPenWithAttrs(self):
         attrs = dict(fill=self.style.fill)
@@ -1040,6 +1062,7 @@ class StyledString(FittableMixin):
                 if self.style.removeOverlap:
                     dp_atom.removeOverlap()
             pens.addPen(dp_atom)
+                
         if self.style.reverse:
             pens.reversePens()
         return pens

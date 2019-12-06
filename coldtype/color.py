@@ -45,7 +45,10 @@ def normalize_color(v):
     else:
         #return color_var(*v)
         if len(v) == 1:
-            return Color.from_rgb(v[0], v[0], v[0])
+            if v[0] == "random":
+                return Color.from_rgb(random(), random(), random(), 1)
+            else:
+                return Color.from_rgb(v[0], v[0], v[0])
         elif len(v) == 2:
             if v[0] == "random" or v[0] == -1:
                 return Color.from_rgb(random(), random(), random(), v[1])

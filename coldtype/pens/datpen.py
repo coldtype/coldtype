@@ -146,6 +146,11 @@ class AlignableMixin():
         
         diff = rect.w - b.w
         return self.translate(xoff, yoff)
+    
+    def filmjitter(self, doneness, base=0, speed=(10, 20), scale=(2, 3), octaves=16):
+        nx = pnoise1(doneness*speed[0], base=base, octaves=octaves)
+        ny = pnoise1(doneness*speed[1], base=base+10, octaves=octaves)
+        return self.translate(nx * scale[0], ny * scale[1])
 
 
 class DATPen(RecordingPen, AlignableMixin):
@@ -712,6 +717,13 @@ class DATPen(RecordingPen, AlignableMixin):
         self.value = pv
         return self
     
+    def point_t(self, t=0.5):
+        cc = CurveCutter(self)
+        start = 0
+        tv = t * cc.calcCurveLength()
+        p, tangent = cc.subsegmentPoint(start=0, end=tv)
+        return p, tangent
+    
     def points(self):
         contours = []
         for contour in self.skeletonPoints():
@@ -812,6 +824,9 @@ class DATPenSet(AlignableMixin):
         self.layered = False
         self._tag = "Unknown"
         self.container = None
+    
+    def __str__(self):
+        return f"<DPS:pens:{len(self.pens)}>"
     
     def tag(self, tag):
         self._tag = tag

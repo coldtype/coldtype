@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="b1o" format="2">
+  <advance width="1000"/>
+  <outline>
+    <contour>
+      <point x="0" y="0" type="move"/>
+      <point x="106" y="244"/>
+      <point x="213" y="701"/>
+      <point x="261" y="1000" type="curve"/>
+      <point x="424" y="448"/>
+      <point x="589" y="571"/>
+      <point x="704" y="1000" type="curve"/>
+      <point x="763" y="713"/>
+      <point x="963" y="778"/>
+      <point x="1000" y="1000" type="curve"/>
+    </contour>
+  </outline>
+</glyph>
