@@ -138,7 +138,7 @@ def render(f):
     ]
 
 current_tests = [tests.index(catmull_test)]
-#current_tests = list(range(0, len(tests)))
+current_tests = list(range(0, len(tests)))
 
 timeline = Timeline(100, storyboard=current_tests)
 animation = Animation(render, Rect(1920, 1080), timeline, bg=(1, 0))
