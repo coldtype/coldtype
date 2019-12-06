@@ -1133,8 +1133,8 @@ if __name__ == "__main__":
         
         def align_test():
             r = Rect(0,0,500,300)
-            p = Slug("Bay", Style("≈/RageItalicStd.otf", 300, fill=Gradient.Random(r))).pen().align(r)
-            ps = Slug("Bay", Style("≈/RageItalicStd.otf", 300, fill=None, stroke=(0), strokeWidth=2)).pen().align(r)
+            p = Slug("Bay", Style("≈/RageItalicStd.otf", 300, fill=Gradient.Random(r), removeOverlap=1)).pen().align(r, tv=0, th=1)
+            ps = Slug("Bay", Style("≈/RageItalicStd.otf", 300, fill=None, stroke=(0), strokeWidth=2)).pen().align(r, tv=0, th=0)
 
             v.send(SVGPen.Composite([
                 DATPen.Grid(r),
@@ -1204,4 +1204,4 @@ if __name__ == "__main__":
         #outline_test()
         #pixellate_test()
         #separate_path_types_test()
-        interleave_test()
+        #interleave_test()
