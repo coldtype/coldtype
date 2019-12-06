@@ -7,8 +7,6 @@ import copy
 name = "coldtype"
 dirname = os.path.dirname(__file__)
 
-
-from itertools import groupby
 from pprint import pprint
 from pathlib import Path
 
