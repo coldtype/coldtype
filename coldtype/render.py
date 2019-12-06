@@ -7,6 +7,7 @@ dirname = os.path.dirname(__file__)
 if __name__ == "__main__":
     sys.path.insert(0, os.path.realpath(dirname + "/.."))
 
+import coldtype
 from coldtype.geometry import Rect
 from coldtype.color import Color, normalize_color
 from coldtype.animation import *
@@ -14,7 +15,7 @@ from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.cairopen import CairoPen
 from coldtype.pens.drawbotpen import DrawBotPen
 from coldtype.viewer import WebSocket, PersistentPreview, WEBSOCKET_ADDR, viewer
-from coldtype import DATPen, DATPenSet, StyledString, Style, Lockup, T2L, Slug, Graf, GrafStyle
+#from coldtype import DATPen, DATPenSet, StyledString, Style, Lockup, T2L, Slug, Graf, GrafStyle
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
@@ -34,6 +35,8 @@ import argparse
 import re
 from pathlib import Path
 
+import importlib
+
 parser = argparse.ArgumentParser(prog="animation", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("file", type=str)
 parser.add_argument("-s", "--slice", type=str, default=None)
@@ -46,6 +49,7 @@ parser.add_argument("-w", "--watch", action="store_true", default=False)
 parser.add_argument("-l", "--layers", type=str, default=None)
 parser.add_argument("-r", "--rasterizer", type=str, default="drawbot")
 parser.add_argument("-i", "--icns", action="store_true", default=False)
+parser.add_argument("-arc", "--always-reload-coldtype", action="store_true", default=False)
 args = parser.parse_args()
 
 filepath = None
@@ -59,6 +63,9 @@ class LayerException(Exception):
 
 
 def reload_animation():
+    if args.always_reload_coldtype:
+        print("RELOADING COLDTYPE")
+        importlib.reload(coldtype)
     global filepath
     global anm
     try:

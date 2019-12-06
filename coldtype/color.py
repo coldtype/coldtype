@@ -43,12 +43,19 @@ def normalize_color(v):
         else:
             return Color.from_html(v)
     else:
-        #return color_var(*v)
         if len(v) == 1:
             if v[0] == "random":
                 return Color.from_rgb(random(), random(), random(), 1)
+            if v[0] == None:
+                return Color.from_rgb(0,0,0,0)
+            elif isinstance(v[0], str):
+                return Color.from_html(v[0])
             else:
-                return Color.from_rgb(v[0], v[0], v[0])
+                try:
+                    iter(v[0])
+                    return normalize_color(v[0])
+                except TypeError:
+                    return Color.from_rgb(v[0], v[0], v[0])
         elif len(v) == 2:
             if v[0] == "random" or v[0] == -1:
                 return Color.from_rgb(random(), random(), random(), v[1])
@@ -57,7 +64,8 @@ def normalize_color(v):
             else:
                 return Color.from_rgb(v[0], v[0], v[0], v[1])
         else:
-            return Color.from_rgb(*v)
+            vs = [random() if _v == "random" else _v for _v in v]
+            return Color.from_rgb(*vs)
 
 
 class Gradient():

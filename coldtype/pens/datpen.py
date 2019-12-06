@@ -231,20 +231,11 @@ class DATPen(RecordingPen, AlignableMixin):
                 attrs[k] = v
         return self
     
-    def fill(self, value):
-        return self.attr(fill=value)
-    
     def f(self, *value):
         return self.attr(fill=value)
     
-    def stroke(self, value, width=1):
-        return self.attr(stroke=value, strokeWidth=width)
-    
-    def s(self, value, width=1):
-        return self.attr(stroke=value, strokeWidth=width)
-    
-    def strokeWidth(self, value):
-        return self.attr(strokeWidth=value)
+    def s(self, *value):
+        return self.attr(stroke=value)
     
     def sw(self, value):
         return self.attr(strokeWidth=value)
@@ -508,6 +499,7 @@ class DATPen(RecordingPen, AlignableMixin):
                     randomized.append([t, pts])
             self.value = randomized
         except:
+            print("noise not installed")
             pass
         return self
 
@@ -811,9 +803,18 @@ class DATPen(RecordingPen, AlignableMixin):
             self.value = dp.value
             return self
     
-    def Grid(rect, x=20, y=None, opacity=0.3):
+    def gridlines(self, rect, x=20, y=None):
+        for _x in rect.subdivide(x, "minx"):
+            if _x.x > 0:
+                self.line([_x.point("NW"), _x.point("SW")])
+        for _y in rect.subdivide(y or x, "miny"):
+            if _y.y > 0:
+                self.line([_y.point("SW"), _y.point("SE")])
+        return self.f(None).s(0, 0.1).sw(3)
+
+    def Grid(rect, x=20, y=None):
         grid = rect.inset(0, 0).grid(y or x, x)
-        return DATPen(fill=None, stroke=dict(color=("random", opacity), weight=1)).rect(grid)
+        return DATPen(fill=None, stroke=0.5, strokeWidth=1).rect(grid)
 
 
 class DATPenSet(AlignableMixin):
@@ -908,7 +909,7 @@ class DATPenSet(AlignableMixin):
                 union = union.union(p.getFrame(th=th, tv=tv))
             return union
         except Exception as e:
-            print("EXCEPTION>>>>>>>>>>>>>>>>>>>>>>>>>>", e)
+            #print("EXCEPTION>>>>>>>>>>>>>>>>>>>>>>>>>>", e)
             return Rect(0,0,0,0)
     
     def updateFrameHeight(self, h):
@@ -937,20 +938,11 @@ class DATPenSet(AlignableMixin):
             p.attr(key, **kwargs)
         return self
     
-    def fill(self, value):
-        return self.attr(fill=value)
-    
     def f(self, *value):
         return self.attr(fill=value)
     
-    def stroke(self, value, width=1):
-        return self.attr(stroke=value, strokeWidth=width)
-    
-    def s(self, value, width=1):
-        return self.attr(stroke=value, strokeWidth=width)
-    
-    def strokeWidth(self, value):
-        return self.attr(strokeWidth=value)
+    def s(self, *value):
+        return self.attr(stroke=value)
     
     def sw(self, value):
         return self.attr(strokeWidth=value)
@@ -1050,158 +1042,3 @@ class DATPenSet(AlignableMixin):
         if limit < len(self.pens):
             self.pens = self.pens[0:limit]
         return self
-
-
-
-if __name__ == "__main__":
-    from coldtype.viewer import viewer
-    from coldtype.pens.svgpen import SVGPen
-    from coldtype.pens.reportlabpen import ReportLabPen
-    from coldtype.color import Color
-
-    from coldtype import StyledString, Style, Slug, Graf, Lockup
-
-    from random import seed, shuffle
-    #seed(104)
-    
-    with viewer() as v:
-        def gradient_test():
-            r = Rect((0, 0, 500, 200))
-            dp1 = StyledString("cold", Style("≈/Nonplus-Black.otf", 200)).pen().align(r)
-            dp2 = StyledString("type", Style("≈/Nostrav0.9-Stream.otf", 110)).pen().align(r)
-            dp1.removeOverlap().attr(fill="random")
-            dp2.attr(fill=Gradient.Random(r)).rotate(5).translate(10, 0)
-            pens = [
-                DATPen.Grid(r, opacity=0.1),
-                dp2.copy().translate(-4, 4).attr(fill=Gradient.Random(r, 0.9)),
-                dp1.attr(fill=None, stroke="random"),
-                dp2.intersection(dp1),
-                *dp1.copy().skeleton(returnSet=True, scale=2),
-            ]
-            svg = SVGPen.Composite(pens, r)
-            v.send(svg, r)
-    
-        def roughen_test():
-            #seed(100)
-            r = Rect((0, 0, 500, 300))
-            f = "≈/Taters-Baked-v0.1.otf"
-            f = "≈/Oaks0.1.otf"
-            dp1 = Slug("o", Style(f, fontSize=300, ch="x")).pen().align(r)
-            dp1.removeOverlap()
-            dp1.flatten(length=10)
-            dp1.roughen(amplitude=10)
-            dp1.smooth()
-            #dp1.removeOverlap()
-            dp1.attr(fill=None, strokeWidth=1)
-
-            pens = [dp1]
-            svg = SVGPen.Composite(pens, r)
-            v.send(svg, r)
-        
-        def pixellate_test():
-            r = Rect((0, 0, 500, 300))
-            f = "≈/Taters-Baked-v0.1.otf"
-            f = "≈/Vinila-VF-HVAR-table.ttf"
-            #f = "≈/Oaks0.1.otf"
-            #f = "≈/RageItalicStd.otf"
-            #f = "≈/MapRomanVariable-VF.ttf"
-            dp1 = Slug("Pixels", Style(f, fontSize=100, ch="x", fill=0, wdth=1, wght=1, slnt=1, filter=lambda r, p: p.pixellate(r, inset=4))).pen().align(r)
-            dp1.removeOverlap()
-            v.send(SVGPen.Composite(dp1, r), r)
-        
-        def scanlines_test():
-            r = Rect((0, 0, 500, 300))
-            f = "≈/Taters-Baked-v0.1.otf"
-            f = "≈/Vinila-VF-HVAR-table.ttf"
-            #f = "≈/Oaks0.1.otf"
-            #f = "≈/RageItalicStd.otf"
-            #f = "≈/MapRomanVariable-VF.ttf"
-            dp1 = Slug("Pixels", Style(f, fontSize=100, ch="x", fill=0, wdth=1, wght=1, slnt=1, filter=lambda r, p: p.removeOverlap().scanlines(r, sample=40, width=20))).pen().align(r)
-            dp1.removeOverlap()
-            v.send(SVGPen.Composite(dp1, r), r)
-        
-        def map_test():
-            f, _v = ["≈/Fit-Variable.ttf", dict(wdth=0.2, scale=True)]
-            f, _v = ["≈/MapRomanVariable-VF.ttf", dict(wdth=1, scale=True)]
-            ss = Slug("California", Style(f, 40, t=20, **_v, fill=0))
-            rect = Rect(0,0,500,500)
-            r = rect.inset(50, 0).take(180, "centery")
-            dp = DATPen(fill=None, stroke=("random", 0.3), strokeWidth=10).quadratic(r.p("SW"), r.p("C").offset(0, 300), r.p("NE"))
-            ps = ss.pens()
-            ps.distributeOnPath(dp)
-            v.send(SVGPen.Composite(ps.pens + ps.frameSet(th=True, tv=True).pens + [dp], rect), rect)
-        
-        def align_test():
-            r = Rect(0,0,500,300)
-            p = Slug("Bay", Style("≈/RageItalicStd.otf", 300, fill=Gradient.Random(r), removeOverlap=1)).pen().align(r, tv=0, th=1)
-            ps = Slug("Bay", Style("≈/RageItalicStd.otf", 300, fill=None, stroke=(0), strokeWidth=2)).pen().align(r, tv=0, th=0)
-
-            v.send(SVGPen.Composite([
-                DATPen.Grid(r),
-                p,
-                ps,
-                ps.frameSet()
-            ], r), r)
-
-        def conic_test():
-            r = Rect(0, 0, 800, 800)
-            ps = Slug("x", Style("≈/VulfMonoLightItalicVariable.ttf", 1000)).pen().align(r)
-            ps.removeOverlap()
-            dp = DATPen()
-            #ps.simplify()
-            c = SVGPen.Composite([ps], r)
-            print(len(ps.value))
-            v.send(c, r)
-
-        def reverse_test():
-            r = Rect(0, 0, 500, 500)
-            ps = Slug("wow", Style("≈/Nonplus-Black.otf", 200, t=-20, fill=("random", 0.2), stroke="random", strokeWidth=2)).pens().align(r)
-            ps.pens[1].reverse()
-            v.send(SVGPen.Composite(ps.pen(), r), r)
-
-        def sine_test():
-            r = Rect(0, 0, 500, 500)
-            dp = DATPen(fill=None, stroke=0).sine(r.take(100, "centery"), 10)
-            v.send(SVGPen.Composite([dp], r), r)
-        
-        def outline_test():
-            r = Rect(0, 0, 500, 500)
-            ri = r.inset(100, 100)
-            dp = DATPen(fill=None, stroke=0).line([ri.point("SW"), ri.point("NE")]).line([ri.point("NW"), ri.point("SE")])
-            dp.outline(10).removeOverlap()
-            v.send(SVGPen.Composite([dp], r), r)
-        
-        def separate_path_types_test():
-            value = [('moveTo', [(40.0, 171.6)]), ('curveTo', [(42.8, 172.8), (43.6, 183.2), (38.8, 183.2)]), ('curveTo', [(30.0, 183.2), (32.0, 168.4), (40.0, 171.6)]), ('closePath', []), ('moveTo', [(65.2, 186.8)]), ('curveTo', [(59.2, 186.8), (57.2, 173.6), (65.2, 176.0)]), ('curveTo', [(70.8, 177.6), (69.2, 186.8), (65.2, 186.8)]), ('closePath', []), ('moveTo', [(28.0, 188.8)]), ('curveTo', [(32.4, 192.4), (38.0, 193.6), (43.6, 194.4)]), ('endPath', []), ('moveTo', [(62.4, 197.2)]), ('curveTo', [(70.4, 194.4), (76.8, 192.8), (80.0, 188.0)]), ('endPath', []), ('moveTo', [(35.2, 149.6)]), ('curveTo', [(46.8, 149.6), (74.0, 154.0), (86.4, 163.2)]), ('endPath', [])]
-
-            r = Rect(0, 0, 500, 500)
-            
-            dp = DATPen(fill=None, stroke=0, strokeWidth=2)
-            dp.value = value
-            dp.align(r)
-            o, c = dp.segregate()
-            o.attr(fill=None, stroke=0, strokeWidth=2)
-            o.subsegment(0, 1)
-            v.send(SVGPen.Composite([o, c], r), r)
-        
-        def interleave_test():
-            r = Rect(0, 0, 500, 500)
-            ri = r.inset(100, 100)
-            l1 = Lockup([Slug("Hello".upper(), Style("≈/MARTIN-Regular.otf", 150, t=-10, reverse=True))], preserveLetters=True)
-            l2 = Lockup([Slug("World".upper(), Style("≈/MARTIN-Regular.otf", 150, t=-20, reverse=True))], preserveLetters=True)
-            g = Graf([l1, l2], r)
-            dps = g.pens().align(r)
-            dps.interleave(lambda p: p.attr(fill=None, stroke=1, strokeWidth=5))
-            v.send(SVGPen.Composite([dps], r), r)
-
-        #gradient_test()
-        #roughen_test()
-        #map_test()
-        #align_test()
-        #conic_test()
-        #reverse_test()
-        #sine_test()
-        #outline_test()
-        #pixellate_test()
-        #separate_path_types_test()
-        #interleave_test()

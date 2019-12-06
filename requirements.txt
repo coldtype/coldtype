@@ -18,3 +18,4 @@ glyphsLib==4.1.0
 watchdog==0.9.0
 mido==1.2.9
 easing-functions==1.0.3
+noise==1.2.2

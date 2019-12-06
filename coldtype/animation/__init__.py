@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
 from coldtype.color import normalize_color
 from coldtype.geometry import Rect
-from coldtype.text import Slug, Style, Lockup, Graf
+from coldtype.text import *
 
 from enum import Enum
 from random import random
