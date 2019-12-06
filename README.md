@@ -30,7 +30,7 @@ There’s a chance you might be all set now, but probably not, as the coldtype l
 Activate the virtualenv (if it’s not already activated):
 - `source env/bin/activate`
 
-Open up the `coldtype-viewer` application, which should launch and say "Welcome to Coldtype".
+Open up the `coldtype-viewer` application (available as a separate download), which should launch and say "Welcome to Coldtype".
 
 Now you should be able to run the `coldtype/__init__.py` file and see it attempt to render some stuff, ala `python coldtype/__init__.py`
 
