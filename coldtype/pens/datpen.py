@@ -15,6 +15,7 @@ from random import random, randint
 from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
 from collections import OrderedDict
 from numbers import Number
+from defcon import Glyph
 
 try:
     from noise import pnoise1
@@ -437,6 +438,17 @@ class DATPen(RecordingPen, AlignableMixin):
     def glyph(self, glyph):
         glyph.draw(self)
         return self
+    
+    def to_glyph(self, name=None):
+        """Be sure to call endPath or closePath on your pen or this call will silently do nothing"""
+        bounds = self.bounds()
+        glyph = Glyph()
+        glyph.name = name
+        glyph.width = bounds.w
+        sp = glyph.getPen()
+        self.replay(sp)
+        print(glyph._contours)
+        return glyph
 
     def flatten(self, length=10):
         if length == 0:

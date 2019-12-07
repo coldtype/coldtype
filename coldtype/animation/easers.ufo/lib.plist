@@ -31,7 +31,24 @@
     <integer>1</integer>
     <key>public.glyphOrder</key>
     <array>
-      <string>b1o</string>
+      <string>cei</string>
+      <string>ceo</string>
+      <string>ceio</string>
+      <string>qei</string>
+      <string>qeo</string>
+      <string>qeio</string>
+      <string>eei</string>
+      <string>eeo</string>
+      <string>exp_io</string>
+      <string>sei</string>
+      <string>seo</string>
+      <string>seio</string>
+      <string>bounce_i</string>
+      <string>beo</string>
+      <string>beio</string>
+      <string>eleo</string>
+      <string>elei</string>
+      <string>elieo</string>
     </array>
   </dict>
 </plist>

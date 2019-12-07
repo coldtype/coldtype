@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from fontTools.misc.bezierTools import splitCubic, splitLine
 
 if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -25,6 +26,9 @@ VIDEO_OFFSET = 86313 # why is this?
 easer_ufo = Font(str(Path(__file__).parent.joinpath("easers.ufo")))
 
 eases = dict(
+    cei=ef.CubicEaseIn,
+    ceo=ef.CubicEaseOut,
+    ceio=ef.CubicEaseInOut,
     qei=ef.QuadEaseIn,
     qeo=ef.QuadEaseOut,
     qeio=ef.QuadEaseInOut,
@@ -34,11 +38,31 @@ eases = dict(
     sei=ef.SineEaseIn,
     seo=ef.SineEaseOut,
     seio=ef.SineEaseInOut,
+    bei=ef.BounceEaseIn,
     beo=ef.BounceEaseOut,
     beio=ef.BounceEaseInOut,
     eleo=ef.ElasticEaseOut,
     elei=ef.ElasticEaseIn,
+    elieo=ef.ElasticEaseInOut,
     )
+
+
+def curve_y(curve, x):
+    x1000 = x*1000
+    for idx, (action, pts) in enumerate(curve.value):
+        if action in ["moveTo", "endPath", "closePath"]:
+            continue
+        last_action, last_pts = curve.value[idx-1]
+        if action == "curveTo":
+            a = last_pts[-1]
+            b, c, d = pts
+            if x1000 == a[0]:
+                return a[1]/1000
+            elif x1000 == d[0]:
+                return d[1]/1000
+            elif x1000 > a[0] and x1000 < d[0]:
+                e, f = splitCubic(a, b, c, d, x1000, isHorizontal=False)
+                return e[-1][1]/1000
 
 
 def ease(style, x):
@@ -49,13 +73,15 @@ def ease(style, x):
         return e().ease(x)
     else:
         if style in easer_ufo:
-            p, tangent = DATPen().glyph(easer_ufo[style]).point_t(t=x)
-            return p[1]/1000
+            return curve_y(DATPen().glyph(easer_ufo[style]), x)
+            #p, tangent = .point_t(t=x)
+            #print(style, eases.get("eeio")().ease(x), p[1]/1000)
+            #return p[1]/1000
         else:
             raise Exception("No easing function with that mnemonic")
 
 
-def loop(t, times=1, easefn="qeio"):
+def loop(t, times=1, easefn="linear", return_count=False):
     lt = t*times*2
     ltf = math.floor(lt)
     ltc = math.ceil(lt)
@@ -65,21 +91,28 @@ def loop(t, times=1, easefn="qeio"):
         lt = ltc - lt
     
     easer = easefn
-    try:
-        iter(easefn) # is-iterable
-        if len(easefn) > ltf:
-            easer = easefn[ltf]
-        elif len(easefn) == 2:
-            easer = easefn[ltf % 2]
-        elif len(easefn) == 1:
-            easer = easefn[0]
-    except TypeError:
-        pass
+    if not isinstance(easer, str):
+        try:
+            iter(easefn) # is-iterable
+            if len(easefn) > ltf:
+                easer = easefn[ltf]
+            elif len(easefn) == 2:
+                easer = easefn[ltf % 2]
+            elif len(easefn) == 1:
+                easer = easefn[0]
+        except TypeError:
+            pass
     
+    eased = 0
     if isinstance(easer, str):
-        return ease(easer, lt)
+        eased = ease(easer, lt)
     else:
-        return easer(lt)
+        eased = easer(lt)
+    
+    if return_count:
+        return eased, ltf
+    else:
+        return eased
 
 
 def to_frames(seconds, fps):
