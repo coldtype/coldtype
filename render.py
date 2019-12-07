@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 
-import sys
-import os
-
-dirname = os.path.dirname(__file__)
-if __name__ == "__main__":
-    sys.path.insert(0, os.path.realpath(dirname + "/.."))
+import sys, os, re, json, math
+from pathlib import Path
 
 import coldtype
 from coldtype.geometry import Rect
@@ -21,20 +17,14 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 from subprocess import Popen, PIPE, call
+from random import random, randint, seed
 from runpy import run_path
 import threading
 import traceback
 import websocket
 import time
 
-from random import random, randint, seed
-import math
-import json
-import pathlib
 import argparse
-import re
-from pathlib import Path
-
 import importlib
 
 parser = argparse.ArgumentParser(prog="animation", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -85,7 +75,7 @@ def reload_animation():
         return None
     return anm
 
-filepath = pathlib.Path(args.file).expanduser().resolve()
+filepath = Path(args.file).expanduser().resolve()
 anm = None
 reload_animation()
 
@@ -100,17 +90,13 @@ def read_layers(anm):
     return layers
 
 
-def get_frames_folders(anm):
-    frames_folder = filepath.parent.joinpath(f"{filepath.stem}_frames")
-    frames_folder.mkdir(exist_ok=True)
-    all_layers_folder = None
-    if anm.layers:
-        all_layers_folder = filepath.parent.joinpath(f"{filepath.stem}_layers")
-        all_layers_folder.mkdir(exist_ok=True)
-        for layer_name in anm.layers:
-            layer_frames_folder = all_layers_folder.joinpath(f"{filepath.stem}_{layer_name}_frames")
-            layer_frames_folder.mkdir(exist_ok=True)
-    return frames_folder, all_layers_folder
+def get_frames_folder(anm):
+    layers_folder = filepath.parent.joinpath(f"{filepath.stem}_layers")
+    layers_folder.mkdir(exist_ok=True)
+    for layer_name in anm.layers:
+        layer_frames_folder = layers_folder.joinpath(f"{filepath.stem}_{layer_name}_frames")
+        layer_frames_folder.mkdir(exist_ok=True)
+    return layers_folder
 
 
 def render_iconset():
@@ -118,14 +104,14 @@ def render_iconset():
     global filepath
     anm = reload_animation()
     layers = read_layers(anm)
-    frames_folder, all_layers_folder = get_frames_folders(anm)
+    layers_folder = get_frames_folder(anm)
     iconset = filepath.parent.joinpath(filepath.stem + ".iconset")
     iconset.mkdir(parents=True, exist_ok=True)
 
     d = 1024
     while d >= 16:
-        aframe = render_frame(anm, layers, frames_folder, None, 0, d, flatten=True, manual=True)
-        print(aframe.filepath)
+        aframe = render_frame(anm, layers, layers_folder, 0, d, manual=True)
+        print(aframe.filepaths["main"])
         for x in [1, 2]:
             if x == 2 and d == 16:
                 continue
@@ -133,7 +119,7 @@ def render_iconset():
                 fn = f"icon_{d}x{d}.png"
             elif x == 2:
                 fn = f"icon_{int(d/2)}x{int(d/2)}@2x.png"
-            call(["sips", "-z", str(d), str(d), str(aframe.filepath), "--out", str(iconset.joinpath(fn))])
+            call(["sips", "-z", str(d), str(d), str(aframe.filepaths["main"]), "--out", str(iconset.joinpath(fn))])
         d = int(d/2)
     
     call(["iconutil", "-c", "icns", str(iconset)])
@@ -142,11 +128,10 @@ def render_iconset():
 def render_frame(
         anm,
         layers,
-        folder,
         layers_folder,
         doneness,
         i,
-        flatten=False,
+        #flatten=False,
         manual=False
     ):
     frame_start_time = time.time()
@@ -154,48 +139,54 @@ def render_frame(
         return
     if not manual and i >= anm.timeline.duration:
         return
-    frame_path = folder.joinpath("{:s}_{:04d}.png".format(filepath.stem, i))
-    aframe = AnimationFrame(i, anm, frame_path, layers or [])
+    #frame_path = folder.joinpath("{:s}_{:04d}.png".format(filepath.stem, i))
+    aframe = AnimationFrame(i, anm, None, layers or [])
     result = anm.render(aframe)
     rendered = False
-    if layers:
-        if not result:
-            result = {}
-        if not isinstance(result, dict):
-            raise LayerException("When rendering layers, render func must return dict")
+    
+    if not result:
+        result = {}
+    if not isinstance(result, dict):
+        result = {"main": result}
+        #raise LayerException("When rendering layers, render func must return dict")
 
-        if flatten:
-            rendered = False
-            for layer_name, layer_pens in result.items():
-                pens.extend(layer_pens)
-            result = pens
-        else:
-            rendered = True        
-            for layer_name in layers:
-                layer_pens = result.get(layer_name, [])
-                layer_frames_folder = layers_folder.joinpath(f"{filepath.stem}_{layer_name}_frames")
-                layer_file = "{:s}_{:s}_{:04d}.png".format(filepath.stem, layer_name, i)
-                layer_frame_path = layer_frames_folder.joinpath(layer_file)
-                DrawBotPen.Composite(layer_pens, anm.rect, str(layer_frame_path), scale=1)
-                elapsed = time.time() - frame_start_time
-                print(layer_frame_path.name, "({:0.2f}s) [{:04.1f}%]".format(elapsed, doneness))
-    if not rendered:
-        if not result:
-            result = []
-        if args.rasterizer == "drawbot":
-            DrawBotPen.Composite(result, anm.rect, str(frame_path), scale=1)
-        else:
-            CairoPen.Composite(result, anm.rect, str(frame_path))#, scale=1)
-        elapsed = time.time() - frame_start_time
-        print(aframe.filepath.name, "({:0.2f}s) [{:04.1f}%]".format(elapsed, doneness))
+    #if flatten:
+    #    rendered = False
+    #    for layer_name, layer_pens in result.items():
+    #        pens.extend(layer_pens)
+    #    result = pens
+
+    if True:
+        rendered = True        
+        for layer_name in layers:
+            layer_pens = result.get(layer_name, [])
+            if isinstance(layer_pens, DATPen) or isinstance(layer_pens, DATPenSet):
+                layer_pens = [layer_pens]
+            layer_frames_folder = layers_folder.joinpath(f"{filepath.stem}_{layer_name}_frames")
+            layer_file = "{:s}_{:s}_{:04d}.png".format(filepath.stem, layer_name, i)
+            layer_frame_path = layer_frames_folder.joinpath(layer_file)
+            aframe.filepaths[layer_name] = layer_frame_path
+            DrawBotPen.Composite(layer_pens, anm.rect, str(layer_frame_path), scale=1)
+            elapsed = time.time() - frame_start_time
+            print(layer_frame_path.name, "({:0.2f}s) [{:04.1f}%]".format(elapsed, doneness))
+    
+    # if not rendered:
+    #     if not result:
+    #         result = []
+    #     if args.rasterizer == "drawbot":
+    #         DrawBotPen.Composite(result, anm.rect, str(frame_path), scale=1)
+    #     else:
+    #         CairoPen.Composite(result, anm.rect, str(frame_path))#, scale=1)
+    #     elapsed = time.time() - frame_start_time
+    #     print(aframe.filepath.name, "({:0.2f}s) [{:04.1f}%]".format(elapsed, doneness))
     return aframe
 
 
-def render_subslice(anm, layers, folder, layers_folder, frames):
+def render_subslice(anm, layers, layers_folder, frames):
     lf = len(frames)
     for idx, i in enumerate(frames):
         doneness =  idx / lf * 100
-        render_frame(anm, layers, folder, layers_folder, doneness, i)
+        render_frame(anm, layers, layers_folder, doneness, i)
 
 
 def render_slice(frames):
@@ -205,10 +196,10 @@ def render_slice(frames):
     layers_arg = ",".join(layers or [])
 
     start = time.time()
-    frames_folder, all_layers_folder = get_frames_folders(anm)
+    layers_folder = get_frames_folder(anm)
     
     if args.is_subprocess or args.prevent_sub_slicing or len(frames) < 10:
-        render_subslice(anm, layers, frames_folder, all_layers_folder, frames)
+        render_subslice(anm, layers, layers_folder, frames)
     else:
         group = math.floor(len(frames) / 8)
         threads = []
@@ -230,7 +221,7 @@ def render_slice(frames):
 
         if 0 not in frames:
             # need to do this to trigger a filesystem-change detection in premiere
-            render_subslice(anm, layers, frames_folder, all_layers_folder, [0, anm.timeline.duration-1])
+            render_subslice(anm, layers, layers_folder, [0, anm.timeline.duration-1])
 
         for subslice in subslices:
             print(subslice[:1])

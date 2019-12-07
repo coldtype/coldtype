@@ -257,12 +257,13 @@ class AnimationFrame():
         self.a = animation
         self.filepath = filepath
         self.layers = layers
+        self.filepaths = {}
 
     def __repr__(self):
         return f"<AnimationFrame {self.i}>"
 
 class Animation():
-    def __init__(self, render, rect=Rect(0, 0, 1920, 1080), timeline=None, bg=0, layers=None, watches=[]):
+    def __init__(self, render, rect=Rect(0, 0, 1920, 1080), timeline=None, bg=0, layers=["main"], watches=[]):
         self.render = render
         self.rect = Rect(rect)
         self.r = self.rect

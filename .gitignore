@@ -9,3 +9,4 @@ coldtype.egg-info
 __pycache__
 coldtype/scratch.svg
 *_frames
+*_layers
