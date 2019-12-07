@@ -22,17 +22,17 @@ body {
 }
 
 .plain {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     text-align: center;
 }
 
 .page {
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     background: white;
     display: block;
     position: relative;
     margin: auto auto;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .page svg {

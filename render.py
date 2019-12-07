@@ -139,8 +139,8 @@ def render_frame(
         return
     if not manual and i >= anm.timeline.duration:
         return
-    #frame_path = folder.joinpath("{:s}_{:04d}.png".format(filepath.stem, i))
-    aframe = AnimationFrame(i, anm, None, layers or [])
+    
+    aframe = AnimationFrame(i, anm, layers)
     result = anm.render(aframe)
     rendered = False
     
@@ -148,37 +148,23 @@ def render_frame(
         result = {}
     if not isinstance(result, dict):
         result = {"main": result}
-        #raise LayerException("When rendering layers, render func must return dict")
 
-    #if flatten:
-    #    rendered = False
-    #    for layer_name, layer_pens in result.items():
-    #        pens.extend(layer_pens)
-    #    result = pens
-
-    if True:
-        rendered = True        
-        for layer_name in layers:
-            layer_pens = result.get(layer_name, [])
-            if isinstance(layer_pens, DATPen) or isinstance(layer_pens, DATPenSet):
-                layer_pens = [layer_pens]
-            layer_frames_folder = layers_folder.joinpath(f"{filepath.stem}_{layer_name}_frames")
-            layer_file = "{:s}_{:s}_{:04d}.png".format(filepath.stem, layer_name, i)
-            layer_frame_path = layer_frames_folder.joinpath(layer_file)
-            aframe.filepaths[layer_name] = layer_frame_path
+    rendered = True        
+    for layer_name in layers:
+        layer_pens = result.get(layer_name, [])
+        if isinstance(layer_pens, DATPen) or isinstance(layer_pens, DATPenSet):
+            layer_pens = [layer_pens]
+        layer_frames_folder = layers_folder.joinpath(f"{filepath.stem}_{layer_name}_frames")
+        layer_file = "{:s}_{:s}_{:04d}.png".format(filepath.stem, layer_name, i)
+        layer_frame_path = layer_frames_folder.joinpath(layer_file)
+        aframe.filepaths[layer_name] = layer_frame_path
+        if args.rasterizer == "drawbot":
             DrawBotPen.Composite(layer_pens, anm.rect, str(layer_frame_path), scale=1)
-            elapsed = time.time() - frame_start_time
-            print(layer_frame_path.name, "({:0.2f}s) [{:04.1f}%]".format(elapsed, doneness))
+        else:
+            CairoPen.Composite(layer_pens, anm.rect, str(layer_frame_path))#, scale=1)
+        elapsed = time.time() - frame_start_time
+        print(layer_frame_path.name, "({:0.2f}s) [{:04.1f}%]".format(elapsed, doneness))
     
-    # if not rendered:
-    #     if not result:
-    #         result = []
-    #     if args.rasterizer == "drawbot":
-    #         DrawBotPen.Composite(result, anm.rect, str(frame_path), scale=1)
-    #     else:
-    #         CairoPen.Composite(result, anm.rect, str(frame_path))#, scale=1)
-    #     elapsed = time.time() - frame_start_time
-    #     print(aframe.filepath.name, "({:0.2f}s) [{:04.1f}%]".format(elapsed, doneness))
     return aframe
 
 
@@ -270,7 +256,7 @@ def preview_storyboard():
         #vwr.send(buttons)
         for frame in anm.timeline.storyboard:
             print(">>> PREVIEW", frame)
-            aframe = AnimationFrame(frame, anm, None, layers)
+            aframe = AnimationFrame(frame, anm, layers)
             try:
                 result = anm.render(aframe)
                 if not result:

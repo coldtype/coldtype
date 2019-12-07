@@ -252,10 +252,9 @@ class Timeline():
 
 
 class AnimationFrame():
-    def __init__(self, index, animation, filepath, layers):
+    def __init__(self, index, animation, layers):
         self.i = index
         self.a = animation
-        self.filepath = filepath
         self.layers = layers
         self.filepaths = {}
 
