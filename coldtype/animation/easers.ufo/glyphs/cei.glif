@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="cei" format="2">
+  <advance width="1000"/>
+  <outline>
+    <contour>
+      <point x="0" y="0" type="move"/>
+      <point x="252" y="0"/>
+      <point x="415" y="28"/>
+      <point x="567" y="184" type="curve" smooth="yes"/>
+      <point x="752" y="374"/>
+      <point x="887" y="663"/>
+      <point x="1000" y="1000" type="curve"/>
+    </contour>
+  </outline>
+</glyph>

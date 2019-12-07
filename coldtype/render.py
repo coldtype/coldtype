@@ -139,10 +139,16 @@ def render_iconset():
     call(["iconutil", "-c", "icns", str(iconset)])
 
 
-def render_frame(anm,
-        layers, folder, layers_folder, doneness, i,
+def render_frame(
+        anm,
+        layers,
+        folder,
+        layers_folder,
+        doneness,
+        i,
         flatten=False,
-        manual=False):
+        manual=False
+    ):
     frame_start_time = time.time()
     if i < 0:
         return

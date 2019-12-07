@@ -74,9 +74,6 @@ def ease(style, x):
     else:
         if style in easer_ufo:
             return curve_y(DATPen().glyph(easer_ufo[style]), x)
-            #p, tangent = .point_t(t=x)
-            #print(style, eases.get("eeio")().ease(x), p[1]/1000)
-            #return p[1]/1000
         else:
             raise Exception("No easing function with that mnemonic")
 
