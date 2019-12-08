@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<script src="./ext.js"></script>
+	<script src="./lib/CSInterface.js"></script>
+	<script src="./lib/jquery-1.9.1.js"></script>
+	<!--<script src="./lib/Vulcan.js"></script>-->
+	<link id="ppstyle" href="css/style.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript">
+		$(document).ready(function () {
+			//$("#btn_PPRO6").on("click", function() {
+			//	evalScript('$._PPP_.exportFCPXML()');
+			//});
+		});
+	</script>
+</head>
+<body onLoad="onLoaded()" style="background:#222">
+	<a href="javascript:history.go(0)">Refresh</a>
+	<!--<button id="btn_PPRO6">Export FCP XML</button>&nbsp;<input type="text" value="where-to"/>-->
+</body>
+<script>
+	document.body.onbeforeunload = function () {
+		
+	};
+
+	connectToWebsocket();
+
+	var connected = false;
+
+	function connectToWebsocket() {
+		if (connected) {
+			return;
+		}
+		const WS_URL = "ws://localhost:8007"
+		var websocket = new WebSocket(WS_URL);
+		websocket.onopen = function (evt) { onOpen(evt) };
+		websocket.onclose = function (evt) { onClose(evt) };
+		websocket.onmessage = function (evt) { onMessage(evt) };
+		websocket.onerror = function (evt) { onError(evt) };
+
+		function onOpen(evt) {
+			connected = true;
+		}
+
+		function onClose(evt) {
+			connected = false;
+		}
+
+		function onMessage(evt) {
+			try {
+				var data = JSON.parse(evt.data);
+				if (data["rendered"]) {
+					var prefix = data["prefix"];
+					var csInterface = new CSInterface();
+					csInterface.evalScript('$._generic_.refreshAnimations(null, "'+data['prefix']+'", '+data['fps']+')');
+				}
+			} catch(e) {
+				// nothing to do
+			}
+		}
+
+		function onError(evt) {
+			websocket.close();
+		}
+
+		function doSend(message) {
+			websocket.send(message);
+		}
+
+		function doDisconnect() {
+			websocket.close();
+		}
+	}
+
+	if (true) {
+		setTimeout(function() {
+			var csInterface = new CSInterface();
+			csInterface.evalScript('$._generic_.refreshAnimations(null, "test_animation", 23.976)');
+		}, 1000);
+	}
+</script>
+</html>
