@@ -73,6 +73,7 @@ def reload_animation():
     else:
         print(">>> no animation or render function found <<<")
         return None
+    anm.sourcefile = filepath
     return anm
 
 filepath = Path(args.file).expanduser().resolve()
@@ -279,7 +280,8 @@ def render(frames_fn=None):
         if frames_fn:
             frames = frames_fn(anm)
             render_slice(frames)
-
+            with viewer() as vwr:
+                vwr.send(json.dumps(dict(rendered=True, prefix=anm.sourcefile.stem, fps=anm.timeline.fps)), full=True)
 
 def workarea_frames(anm):
     frames = []

@@ -34,7 +34,6 @@ class PersistentPreview():
              bg=(1, 1, 1, 0),
              max_width=5000
         ):
-
         norm_bg = normalize_color(bg)
         rgba = f"rgba({round(norm_bg.red*255)}, {round(norm_bg.green*255)}, {round(norm_bg.blue*255)}, {norm_bg.alpha})"
         

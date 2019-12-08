@@ -269,6 +269,7 @@ class Animation():
         self.cache = {}
         self.layers = layers
         self.watches = [str(w.expanduser().resolve()) for w in watches]
+        self.sourcefile = None
 
         if isinstance(timeline, Path):
             if str(timeline).endswith(".json"):
