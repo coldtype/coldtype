@@ -62,7 +62,10 @@ def curve_y(curve, x):
                 return d[1]/1000
             elif x1000 > a[0] and x1000 < d[0]:
                 e, f = splitCubic(a, b, c, d, x1000, isHorizontal=False)
-                return e[-1][1]/1000
+                ez, ea, eb, ec = e
+                tangent = math.degrees(math.atan2(ec[1] - eb[1], ec[0] - eb[0]) + math.pi*.5)
+                print(tangent)
+                return ec[1]/1000
 
 
 def ease(style, x):
