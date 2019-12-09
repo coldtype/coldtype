@@ -33,11 +33,11 @@
     <array>
       <string>cei</string>
       <string>ceo</string>
-      <string>ceio</string>
+      <string>cubic_io</string>
       <string>qei</string>
       <string>qeo</string>
       <string>qeio</string>
-      <string>eei</string>
+      <string>exp_i</string>
       <string>eeo</string>
       <string>exp_io</string>
       <string>sei</string>
@@ -49,6 +49,10 @@
       <string>eleo</string>
       <string>elei</string>
       <string>elieo</string>
+      <string>bei</string>
+      <string>ceio</string>
+      <string>eeio</string>
+      <string>exp_io.2</string>
     </array>
   </dict>
 </plist>

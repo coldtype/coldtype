@@ -14,6 +14,8 @@
     <string>ceio.glif</string>
     <key>ceo</key>
     <string>ceo.glif</string>
+    <key>cubic_io</key>
+    <string>cubic_io.glif</string>
     <key>eei</key>
     <string>eei.glif</string>
     <key>eeio</key>
@@ -26,6 +28,8 @@
     <string>eleo.glif</string>
     <key>elieo</key>
     <string>elieo.glif</string>
+    <key>exp_i</key>
+    <string>exp_i.glif</string>
     <key>qei</key>
     <string>qei.glif</string>
     <key>qeio</key>

@@ -47,72 +47,52 @@ eases = dict(
     )
 
 
-def curve_y(curve, x):
+def curve_pos_and_speed(curve, x):
     x1000 = x*1000
     for idx, (action, pts) in enumerate(curve.value):
         if action in ["moveTo", "endPath", "closePath"]:
             continue
         last_action, last_pts = curve.value[idx-1]
         if action == "curveTo":
+            o = -1
             a = last_pts[-1]
             b, c, d = pts
             if x1000 == a[0]:
-                return a[1]/1000
+                o = a[1]/1000
+                eb = a
+                ec = b
             elif x1000 == d[0]:
-                return d[1]/1000
+                o = d[1]/1000
+                eb = c
+                ec = d
             elif x1000 > a[0] and x1000 < d[0]:
                 e, f = splitCubic(a, b, c, d, x1000, isHorizontal=False)
                 ez, ea, eb, ec = e
-                tangent = math.degrees(math.atan2(ec[1] - eb[1], ec[0] - eb[0]) + math.pi*.5)
-                print(tangent)
-                return ec[1]/1000
+                o = ec[1]/1000
+            else:
+                continue
+            tangent = math.degrees(math.atan2(ec[1] - eb[1], ec[0] - eb[0]) + math.pi*.5)
+            #print(o, tangent)
+            if tangent >= 90:
+                t = (tangent - 90)/90
+            else:
+                t = tangent/90
+            if o != -1:
+                return o, t
+    raise Exception("No curve value found!")
 
 
 def ease(style, x):
     if style == "linear":
-        return x
+        return x, 0.5
     e = eases.get(style)
     if e:
-        return e().ease(x)
+        return e().ease(x), 0.5
     else:
         if style in easer_ufo:
-            return curve_y(DATPen().glyph(easer_ufo[style]), x)
+            return curve_pos_and_speed(DATPen().glyph(easer_ufo[style]), x)
         else:
             raise Exception("No easing function with that mnemonic")
-
-
-def loop(t, times=1, easefn="linear", return_count=False):
-    lt = t*times*2
-    ltf = math.floor(lt)
-    ltc = math.ceil(lt)
-    if ltc % 2 != 0: # looping back
-        lt = 1 - (ltc - lt)
-    else: # looping forward
-        lt = ltc - lt
-    
-    easer = easefn
-    if not isinstance(easer, str):
-        try:
-            iter(easefn) # is-iterable
-            if len(easefn) > ltf:
-                easer = easefn[ltf]
-            elif len(easefn) == 2:
-                easer = easefn[ltf % 2]
-            elif len(easefn) == 1:
-                easer = easefn[0]
-        except TypeError:
-            pass
-    
-    eased = 0
-    if isinstance(easer, str):
-        eased = ease(easer, lt)
-    else:
-        eased = easer(lt)
-    
-    if return_count:
-        return eased, ltf
-    else:
-        return eased
 
 
 def to_frames(seconds, fps):
@@ -264,6 +244,31 @@ class AnimationFrame():
     def __repr__(self):
         return f"<AnimationFrame {self.i}>"
 
+
+class AnimationTime():
+    def __init__(self, t, loop_t, loop, easefn):
+        self.t = t
+        self.loop_t = loop_t
+        self.loop = loop
+        self.loop_phase = int(loop%2 != 0)
+        self.e, self.s = self.ease(easefn)
+    
+    def ease(self, easefn):
+        easer = easefn
+        if not isinstance(easer, str):
+            try:
+                iter(easefn) # is-iterable
+                if len(easefn) > self.loop:
+                    easer = easefn[self.loop]
+                elif len(easefn) == 2:
+                    easer = easefn[self.loop % 2]
+                elif len(easefn) == 1:
+                    easer = easefn[0]
+            except TypeError:
+                pass
+        return ease(easer, self.loop_t)
+
+
 class Animation():
     def __init__(self, render, rect=Rect(0, 0, 1920, 1080), timeline=None, bg=0, layers=["main"], watches=[]):
         self.render = render
@@ -331,19 +336,31 @@ class Animation():
         if len(group) > 0:
             groups.append(ClipGroup(self, len(groups), group))
         return groups
+        
+    def _loop(self, t, times=1, cyclic=True):
+        lt = t*times*2
+        ltf = math.floor(lt)
+        ltc = math.ceil(lt)
+        if False:
+            if ltc % 2 != 0: # looping back
+                lt = 1 - (ltc - lt)
+            else: # looping forward
+                lt = ltc - lt
+        lt = lt - ltf
+        if cyclic and ltf%2 == 1:
+            lt = 1 - lt
+        return lt, ltf
     
-    def progress(self, i, cyclic=False):
-        if cyclic:
-            a = (i / (self.timeline.duration/2))
-            if a < 1:
-                return a
-            else:
-                return 2 - a
+    def progress(self, i, loops=0, cyclic=True, easefn="linear"):
+        t = i / self.timeline.duration
+        if loops == 0:
+            return AnimationTime(t, t, 0, easefn)
         else:
-            return i / self.timeline.duration
+            loop_t, loop_index = self._loop(t, times=loops, cyclic=cyclic)
+            return AnimationTime(t, loop_t, loop_index, easefn)
     
-    def prg(self, i, c=False):
-        return self.progress(i, cyclic=c)
+    #def prg(self, i, c=False):
+    #    return self.progress(i, cyclic=c)
     
     def trackClipGroupForFrame(self, track_idx, frame_idx, styles=None):
         groups = self.clipGroupsByTrack[track_idx]

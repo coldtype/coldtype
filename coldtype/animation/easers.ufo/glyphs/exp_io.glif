@@ -12,16 +12,4 @@
       <point x="1000" y="1000" type="curve" smooth="yes"/>
     </contour>
   </outline>
-  <lib>
-    <dict>
-      <key>com.typemytype.robofont.trailingOffCurves</key>
-      <dict>
-        <key>9JLzwCDOxm</key>
-        <array>
-          <integer>1137</integer>
-          <integer>1000</integer>
-        </array>
-      </dict>
-    </dict>
-  </lib>
 </glyph>

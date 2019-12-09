@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="exp_io.2" format="2">
+  <advance width="1000"/>
+  <outline>
+    <contour identifier="9JLzwCDOxm">
+      <point x="0" y="0" type="move"/>
+      <point x="269" y="0"/>
+      <point x="348" y="29"/>
+      <point x="363" y="501" type="curve" smooth="yes"/>
+      <point x="378" y="966"/>
+      <point x="478" y="1000"/>
+      <point x="1000" y="1000" type="curve"/>
+    </contour>
+  </outline>
+</glyph>

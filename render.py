@@ -4,6 +4,7 @@ import sys, os, re, json, math
 from pathlib import Path
 
 import coldtype
+import coldtype.animation
 from coldtype.geometry import Rect
 from coldtype.color import Color, normalize_color
 from coldtype.animation import *
@@ -30,7 +31,7 @@ import importlib
 parser = argparse.ArgumentParser(prog="animation", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("file", type=str)
 parser.add_argument("-s", "--slice", type=str, default=None)
-parser.add_argument("-pss", "--prevent-sub-slicing", action="store_true", default=False)
+parser.add_argument("-dss", "--do-sub-slicing", action="store_true", default=False)
 parser.add_argument("-isp", "--is-subprocess", action="store_true", default=False)
 parser.add_argument("-ns", "--no-sound", action="store_true", default=False)
 parser.add_argument("-rw", "--renderworkareas", action="store_true", default=False)
@@ -56,8 +57,8 @@ class LayerException(Exception):
 
 def reload_animation():
     if args.always_reload_coldtype:
-        print("RELOADING COLDTYPE")
         importlib.reload(coldtype)
+        importlib.reload(coldtype.animation)
     global filepath
     global anm
     try:
@@ -186,7 +187,7 @@ def render_slice(frames):
     start = time.time()
     layers_folder = get_frames_folder(anm)
     
-    if args.is_subprocess or args.prevent_sub_slicing or len(frames) < 10:
+    if not args.do_sub_slicing:
         render_subslice(anm, layers, layers_folder, frames)
     else:
         group = math.floor(len(frames) / 8)
@@ -256,7 +257,7 @@ def preview_storyboard():
     for frame in anm.timeline.storyboard:
         try:
             print(">>> PREVIEW", frame)
-            aframe, result = render_frame(anm, layers, layers_folder, 0, frame, manual=True, write_to_disk=args.write_storyboard_images)
+            aframe, result = render_frame(anm, layers, layers_folder, 0, frame, write_to_disk=args.write_storyboard_images)
             pens = []
             for layer_name, layer_pens in result.items():
                 pens.extend(layer_pens)
@@ -313,24 +314,28 @@ def on_message(ws, message):
         render(all_frames)
 
 def watch_changes():
-    rand_file = Path("~/signals").expanduser().resolve()
+    to_watch = [
+        filepath.parent,
+        Path("~/signals").expanduser().resolve(), # could easily be in coldtype directory?
+    ]
+    if args.always_reload_coldtype:
+        to_watch.append(Path(__file__).parent.joinpath("coldtype/animation"))
     render()
     handler = Handler()
-    observer = Observer()
-    observer2 = Observer()
     print("... watching ...")
-    observer.schedule(handler, path=str(filepath.parent), recursive=True)
-    observer2.schedule(handler, path=str(rand_file), recursive=True)
-    observer.start()
-    observer2.start()
+    observers = []
+    for w in to_watch:
+        o = Observer()
+        o.schedule(handler, path=str(w), recursive=True)
+        o.start()
+        observers.append(o)
     #websocket.enableTrace(True) # necessary?
     # https://github.com/websocket-client/websocket-client#examples
     ws = websocket.WebSocketApp(WEBSOCKET_ADDR, on_message=on_message)
     ws.run_forever()
-    observer.stop()
-    observer.join()
-    observer2.stop()
-    observer2.join()
+    for o in observers:
+        o.stop()
+        o.join()
 
 
 def read_slice(slice_str):

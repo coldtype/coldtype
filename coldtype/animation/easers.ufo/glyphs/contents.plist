@@ -10,12 +10,10 @@
     <string>bounce_i.glif</string>
     <key>cei</key>
     <string>cei.glif</string>
-    <key>ceio</key>
-    <string>ceio.glif</string>
     <key>ceo</key>
     <string>ceo.glif</string>
-    <key>eei</key>
-    <string>eei.glif</string>
+    <key>cubic_io</key>
+    <string>cubic_io.glif</string>
     <key>eeo</key>
     <string>eeo.glif</string>
     <key>elei</key>
@@ -24,8 +22,12 @@
     <string>eleo.glif</string>
     <key>elieo</key>
     <string>elieo.glif</string>
+    <key>exp_i</key>
+    <string>exp_i.glif</string>
     <key>exp_io</key>
     <string>exp_io.glif</string>
+    <key>exp_io.2</key>
+    <string>exp_io.2.glif</string>
     <key>qei</key>
     <string>qei.glif</string>
     <key>qeio</key>
