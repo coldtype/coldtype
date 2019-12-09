@@ -10,7 +10,7 @@ from coldtype.animation import *
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.cairopen import CairoPen
 from coldtype.pens.drawbotpen import DrawBotPen
-from coldtype.viewer import WebSocket, PersistentPreview, WEBSOCKET_ADDR, viewer
+from coldtype.viewer import WebSocket, PersistentPreview, WEBSOCKET_ADDR
 #from coldtype import DATPen, DATPenSet, StyledString, Style, Lockup, T2L, Slug, Graf, GrafStyle
 
 from watchdog.events import FileSystemEventHandler
@@ -40,11 +40,13 @@ parser.add_argument("-l", "--layers", type=str, default=None)
 parser.add_argument("-r", "--rasterizer", type=str, default="drawbot")
 parser.add_argument("-i", "--icns", action="store_true", default=False)
 parser.add_argument("-arc", "--always-reload-coldtype", action="store_true", default=False)
+parser.add_argument("-wsi", "--write-storyboard-images", action="store_true", default=False)
 args = parser.parse_args()
 
 filepath = None
 anm = None
 program = None
+preview = PersistentPreview()
 
 running_renderers = []
 
@@ -63,8 +65,7 @@ def reload_animation():
     except Exception as e:
         print(">>> CAUGHT")
         print(traceback.format_exc())
-        with viewer() as vwr:
-            vwr.send(f"<pre>{traceback.format_exc()}</pre>", None)
+        preview.send(f"<pre>{traceback.format_exc()}</pre>", None)
         return None
     if "animation" in program:
         anm = program["animation"]
@@ -111,7 +112,7 @@ def render_iconset():
 
     d = 1024
     while d >= 16:
-        aframe = render_frame(anm, layers, layers_folder, 0, d, manual=True)
+        aframe, result = render_frame(anm, layers, layers_folder, 0, d, manual=True)
         print(aframe.filepaths["main"])
         for x in [1, 2]:
             if x == 2 and d == 16:
@@ -133,24 +134,23 @@ def render_frame(
         doneness,
         i,
         #flatten=False,
-        manual=False
+        manual=False,
+        write_to_disk=True,
     ):
     frame_start_time = time.time()
     if i < 0:
-        return
+        return None, None
     if not manual and i >= anm.timeline.duration:
-        return
+        return None, None
     
     aframe = AnimationFrame(i, anm, layers)
     result = anm.render(aframe)
-    rendered = False
     
     if not result:
         result = {}
     if not isinstance(result, dict):
         result = {"main": result}
-
-    rendered = True        
+    
     for layer_name in layers:
         layer_pens = result.get(layer_name, [])
         if isinstance(layer_pens, DATPen) or isinstance(layer_pens, DATPenSet):
@@ -159,14 +159,15 @@ def render_frame(
         layer_file = "{:s}_{:s}_{:04d}.png".format(filepath.stem, layer_name, i)
         layer_frame_path = layer_frames_folder.joinpath(layer_file)
         aframe.filepaths[layer_name] = layer_frame_path
-        if args.rasterizer == "drawbot":
-            DrawBotPen.Composite(layer_pens, anm.rect, str(layer_frame_path), scale=1)
-        else:
-            CairoPen.Composite(layer_pens, anm.rect, str(layer_frame_path))#, scale=1)
-        elapsed = time.time() - frame_start_time
-        print(layer_frame_path.name, "({:0.2f}s) [{:04.1f}%]".format(elapsed, doneness))
+        if write_to_disk:
+            if args.rasterizer == "drawbot":
+                DrawBotPen.Composite(layer_pens, anm.rect, str(layer_frame_path), scale=1)
+            else:
+                CairoPen.Composite(layer_pens, anm.rect, str(layer_frame_path))#, scale=1)
+            elapsed = time.time() - frame_start_time
+            print(layer_frame_path.name, "({:0.2f}s) [{:04.1f}%]".format(elapsed, doneness))
     
-    return aframe
+    return aframe, result
 
 
 def render_subslice(anm, layers, layers_folder, frames):
@@ -249,39 +250,33 @@ def render_slice(frames):
 
 def preview_storyboard():
     layers = read_layers(anm)
-    with viewer() as vwr:
-        #buttons = """
-        #<button onclick="websocket.send('rw')">rw</button>
-        #<button onclick="websocket.send('all')">all</button>
-        #"""
-        #vwr.send(buttons)
-        for frame in anm.timeline.storyboard:
+    layers_folder = get_frames_folder(anm)
+    preview.clear()
+
+    for frame in anm.timeline.storyboard:
+        try:
             print(">>> PREVIEW", frame)
-            aframe = AnimationFrame(frame, anm, layers)
-            try:
-                result = anm.render(aframe)
-                if not result:
-                    result = []
-                if isinstance(result, dict):
-                    pens = []
-                    for layer_name, layer_pens in result.items():
-                        pens.extend(layer_pens)
-                    result = pens
-                vwr.send(SVGPen.Composite(result, anm.rect, viewBox=True), bg=anm.bg, max_width=800)
-            except Exception as e:
-                print(traceback.format_exc())
-                vwr.send(f"<pre>{traceback.format_exc()}</pre>", None)
+            aframe, result = render_frame(anm, layers, layers_folder, 0, frame, manual=True, write_to_disk=args.write_storyboard_images)
+            pens = []
+            for layer_name, layer_pens in result.items():
+                pens.extend(layer_pens)
+            preview.send(SVGPen.Composite(pens, anm.rect, viewBox=True), bg=anm.bg, max_width=800)
+        except Exception as e:
+            print(traceback.format_exc())
+            preview.send(f"<pre>{traceback.format_exc()}</pre>", None)
 
 
 def render(frames_fn=None):
+    rendered_frames = False
     anm = reload_animation()
     if anm:
         preview_storyboard()
         if frames_fn:
+            rendered_frames = True
             frames = frames_fn(anm)
             render_slice(frames)
-            with viewer() as vwr:
-                vwr.send(json.dumps(dict(rendered=True, prefix=anm.sourcefile.stem, fps=anm.timeline.fps)), full=True)
+        if rendered_frames or args.write_storyboard_images:
+            preview.send(json.dumps(dict(rendered=True, prefix=anm.sourcefile.stem, fps=anm.timeline.fps)), full=True)
 
 def workarea_frames(anm):
     frames = []
@@ -337,6 +332,7 @@ def watch_changes():
     observer2.stop()
     observer2.join()
 
+
 def read_slice(slice_str):
     sl = slice(*map(lambda x: int(x.strip()) if x.strip() else None, slice_str.split(':')))
     return list(range(*sl.indices(100000)))
@@ -355,6 +351,7 @@ elif args.slice:
 else:
     render()
 
+preview.close()
 for r in running_renderers:
     if r:
         r.terminate()
