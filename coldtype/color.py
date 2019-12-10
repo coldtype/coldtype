@@ -50,6 +50,8 @@ def normalize_color(v):
                 return Color.from_rgb(0,0,0,0)
             elif isinstance(v[0], str):
                 return Color.from_html(v[0])
+            elif isinstance(v[0], Gradient):
+                return v[0]
             else:
                 try:
                     iter(v[0])

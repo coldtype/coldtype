@@ -2,24 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
-    <key>bei</key>
-    <string>bei.glif</string>
     <key>beio</key>
     <string>beio.glif</string>
     <key>beo</key>
     <string>beo.glif</string>
     <key>cei</key>
     <string>cei.glif</string>
-    <key>ceio</key>
-    <string>ceio.glif</string>
     <key>ceo</key>
     <string>ceo.glif</string>
     <key>cubic_io</key>
     <string>cubic_io.glif</string>
-    <key>eei</key>
-    <string>eei.glif</string>
-    <key>eeio</key>
-    <string>eeio.glif</string>
     <key>eeo</key>
     <string>eeo.glif</string>
     <key>elei</key>

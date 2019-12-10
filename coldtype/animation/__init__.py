@@ -539,41 +539,31 @@ def s_to_f(s, fps):
     return math.floor(s*fps)
 
 
-def midi_to_frames(f, fps, bpm=120, length=None, loop_length=None, track=-1):
-    mid = mido.MidiFile(str(f))
-    time = 0
-    cumulative_time = 0
-    events = []
-    open_notes = {}
-    for i, _track in enumerate(mid.tracks):
-        for msg in _track:
-            try:
-                msg.note
-                print(_track.name, msg.note)
-                if track == -1 or _track.name == track:
-                    delta_s = mido.tick2second(msg.time, mid.ticks_per_beat, mido.bpm2tempo(bpm))
-                    cumulative_time += delta_s
-                    if msg.type == "note_on":
-                        open_notes[msg.note] = cumulative_time
-                    elif msg.type == "note_off":
-                        o = open_notes.get(msg.note)
-                        open_notes[msg.note] = None
-                        events.append((msg.note, s_to_f(o, fps), s_to_f(cumulative_time, fps)))
-            except:
-                pass
-    
-    if length and loop_length:
-        looped = []
-        loop_count = math.floor(loop_length / length)
-        bps = bpm / 60
-        offset = bps * fps
-        for l in range(1, round(loop_count)):
-            for (note, start, end) in events:
-                looped.append((note, int(round(start+offset*l*length)), int(round(end+offset*l*length))))
-        events.extend(looped)
-    return events
+class MidiNote():
+    def __init__(self, note, on, off, fps, rounded):
+        self.fps = fps
+        self.note = note
+        self.on_seconds = on
+        self.off_seconds = off
+        self.rounded = rounded
+        self.on = self.onf(rounded=rounded)
+        self.off = self.offf(rounded=rounded)
 
-def read_midi(f, fps, bpm=120):
+    def s_to_f(self, value, rounded=True, fps=None):
+        _fps = fps or self.fps
+        if rounded:
+            return math.floor(value*_fps)
+        else:
+            return value*_fps
+    
+    def onf(self, rounded=True, fps=None):
+        return self.s_to_f(self.on_seconds, rounded=rounded, fps=fps)
+    
+    def offf(self, rounded=True, fps=None):
+        return self.s_to_f(self.off_seconds, rounded=rounded, fps=fps)
+
+
+def read_midi(f, fps, bpm=120, rounded=True):
     mid = mido.MidiFile(str(f))
     events = {}
     open_notes = {}
@@ -593,7 +583,8 @@ def read_midi(f, fps, bpm=120):
                     o = open_notes.get(track.name).get(msg.note)
                     if o:
                         open_notes[track.name][msg.note] = None
-                        events[track.name].append((msg.note, s_to_f(o, fps), s_to_f(cumulative_time, fps)))
+                        events[track.name].append(MidiNote(msg.note, o, cumulative_time, fps, rounded))
+                        #events[track.name].append((msg.note, s_to_f(o, fps), s_to_f(cumulative_time, fps)))
     return events
 
 def sibling(root, file):

@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="qei.2" format="2">
+  <advance width="1000"/>
+  <outline>
+    <contour>
+      <point x="0" y="0" type="move"/>
+      <point x="472" y="470"/>
+      <point x="187.98955757735632" y="187.98955757735632"/>
+      <point x="1000" y="1000" type="curve"/>
+    </contour>
+  </outline>
+</glyph>

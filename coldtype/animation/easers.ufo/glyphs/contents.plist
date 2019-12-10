@@ -24,12 +24,16 @@
     <string>elieo.glif</string>
     <key>exp_i</key>
     <string>exp_i.glif</string>
+    <key>exp_i.2</key>
+    <string>exp_i.2.glif</string>
     <key>exp_io</key>
     <string>exp_io.glif</string>
     <key>exp_io.2</key>
     <string>exp_io.2.glif</string>
     <key>qei</key>
     <string>qei.glif</string>
+    <key>qei.2</key>
+    <string>qei.2.glif</string>
     <key>qeio</key>
     <string>qeio.glif</string>
     <key>qeo</key>

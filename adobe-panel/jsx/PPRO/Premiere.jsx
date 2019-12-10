@@ -97,6 +97,16 @@ $._PPP_={
 	},
 	refreshAnimations: function(root, prefix, fps) {
         //alert(app.project.rootItem.children);
+		if (true) {
+			app.enableQE();
+
+			var MediaType_VIDEO = "228CDA18-3625-4d2d-951E-348879E4ED93"; // Magical constants from Premiere Pro's internal automation.
+			var MediaType_AUDIO = "80B8E3D5-6DCA-4195-AEFB-CB5F407AB009";
+			var MediaType_ANY = "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF";
+			qe.project.deletePreviewFiles(MediaType_ANY);
+			//$._PPP_.updateEventPanel("All video and audio preview files deleted.");
+		}
+
         if (!root) {
             root = app.project.rootItem;
         }
