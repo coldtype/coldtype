@@ -110,11 +110,14 @@ $._PPP_={
                     currentItem.refreshMedia();
                     updatedItems.push(currentItem.name);
                     //pi.changeMediaPath(mp, false);
+					var mp = currentItem.getMediaPath();
+					currentItem.changeMediaPath(mp);
+					currentItem.setOverrideFrameRate(fps);
                 }
                 //currentItem.refreshMedia();
 			}
         }
-        //$._PPP_.updateEventPanel("refreshed >>> " + updatedItems.join("/"));
+        $._PPP_.updateEventPanel("refreshed >>> " + updatedItems.join("/"));
 	},
 	registerProjectChangedFxn: function () {
 		var success	= app.bind("onProjectChanged", $._PPP_.persistTimelineToJSON);

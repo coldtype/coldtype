@@ -2,11 +2,6 @@ import sys
 from pathlib import Path
 from fontTools.misc.bezierTools import splitCubic, splitLine
 
-if __name__ == "__main__":
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
-#from coldtype import *
-
 from coldtype.color import normalize_color
 from coldtype.geometry import Rect
 from coldtype.text import *
@@ -544,22 +539,28 @@ def s_to_f(s, fps):
     return math.floor(s*fps)
 
 
-def midi_to_frames(f, fps, bpm=120, length=None, loop_length=None):
-    mid = mido.MidiFile(f)
+def midi_to_frames(f, fps, bpm=120, length=None, loop_length=None, track=-1):
+    mid = mido.MidiFile(str(f))
     time = 0
     cumulative_time = 0
     events = []
     open_notes = {}
-    for i, track in enumerate(mid.tracks):
-        for msg in track:
-            delta_s = mido.tick2second(msg.time, mid.ticks_per_beat, mido.bpm2tempo(bpm))
-            cumulative_time += delta_s
-            if msg.type == "note_on":
-                open_notes[msg.note] = cumulative_time
-            elif msg.type == "note_off":
-                o = open_notes.get(msg.note)
-                open_notes[msg.note] = None
-                events.append((msg.note, s_to_f(o, fps), s_to_f(cumulative_time, fps)))
+    for i, _track in enumerate(mid.tracks):
+        for msg in _track:
+            try:
+                msg.note
+                print(_track.name, msg.note)
+                if track == -1 or _track.name == track:
+                    delta_s = mido.tick2second(msg.time, mid.ticks_per_beat, mido.bpm2tempo(bpm))
+                    cumulative_time += delta_s
+                    if msg.type == "note_on":
+                        open_notes[msg.note] = cumulative_time
+                    elif msg.type == "note_off":
+                        o = open_notes.get(msg.note)
+                        open_notes[msg.note] = None
+                        events.append((msg.note, s_to_f(o, fps), s_to_f(cumulative_time, fps)))
+            except:
+                pass
     
     if length and loop_length:
         looped = []
@@ -572,9 +573,28 @@ def midi_to_frames(f, fps, bpm=120, length=None, loop_length=None):
         events.extend(looped)
     return events
 
+def read_midi(f, fps, bpm=120):
+    mid = mido.MidiFile(str(f))
+    events = {}
+    open_notes = {}
+    for i, track in enumerate(mid.tracks):
+        time = 0
+        cumulative_time = 0
+        events[track.name] = []
+        open_notes[track.name] = {}
+        for idx, msg in enumerate(track):
+            if hasattr(msg, "note"):
+                msg.note
+                delta_s = mido.tick2second(msg.time, mid.ticks_per_beat, mido.bpm2tempo(bpm))
+                cumulative_time += delta_s
+                if msg.type == "note_on" and msg.velocity > 0:
+                    open_notes[track.name][msg.note] = cumulative_time
+                elif msg.type == "note_off" or msg.type == "note_on" and msg.velocity <= 0:
+                    o = open_notes.get(track.name).get(msg.note)
+                    if o:
+                        open_notes[track.name][msg.note] = None
+                        events[track.name].append((msg.note, s_to_f(o, fps), s_to_f(cumulative_time, fps)))
+    return events
+
 def sibling(root, file):
     return Path(root).parent.joinpath(file)
-
-if __name__ == "__main__":
-    print("qeio", ease("qeio", 0.25))
-    print("b1o", ease("b1o", 1))

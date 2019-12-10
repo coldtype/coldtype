@@ -156,6 +156,7 @@ def render_frame(
         layer_pens = result.get(layer_name, [])
         if isinstance(layer_pens, DATPen) or isinstance(layer_pens, DATPenSet):
             layer_pens = [layer_pens]
+            result[layer_name] = layer_pens
         layer_frames_folder = layers_folder.joinpath(f"{filepath.stem}_{layer_name}_frames")
         layer_file = "{:s}_{:s}_{:04d}.png".format(filepath.stem, layer_name, i)
         layer_frame_path = layer_frames_folder.joinpath(layer_file)
