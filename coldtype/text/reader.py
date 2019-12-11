@@ -295,6 +295,7 @@ class Style():
             db=False,
             reverse=False,
             removeOverlap=False,
+            rotate=0,
             **kwargs):
         """
         kern (k) — a dict of glyphName->[left,right] values in font-space
@@ -310,6 +311,7 @@ class Style():
         self.layerer = layerer
         self.reverse = reverse
         self.removeOverlap = removeOverlap
+        self.rotate = rotate
 
         try:
             # Load a font directly from a font-authoring in-memory object
@@ -779,6 +781,8 @@ class StyledString(FittableMixin):
         out_pen = DATPen()
         tp = TransformPen(out_pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
         in_pen.replay(tp)
+        if self.style.rotate:
+            out_pen.rotate(self.style.rotate)
         return out_pen
     
     def drawFrameToPen(self, reader, idx, frame, gid, useTTFont=False):
