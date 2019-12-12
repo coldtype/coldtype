@@ -243,6 +243,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
         copy_0_move, copy_0_data = copy.value[0]
         copy.value[0] = ("lineTo", copy_0_data)
         self.value = self.value[:-1] + copy.value
+        if times > 1:
+            self.repeat(times-1)
         return self
     
     def transform(self, transform, transformFrame=True):

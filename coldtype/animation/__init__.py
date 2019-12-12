@@ -558,6 +558,14 @@ class MidiTrack():
             return v
         else:
             return 0
+    
+    def countToFrame(self, note_number, frame, preverb=0):
+        count = 0
+        for note in self.notes:
+            if note.note == note_number:
+                if frame >= (note.on-preverb):
+                    count += 1
+        return count
 
 class MidiNote():
     def __init__(self, note, on, off, fps, rounded):

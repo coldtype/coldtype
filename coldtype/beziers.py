@@ -11,6 +11,31 @@ def raise_quadratic(start, a, b):
     c3 = (b[0], b[1])
     return [c1, c2, c3]
 
+__length_cache = {}
+__split_cache = {}
+
+def splitCubicAtT_cached(a, b, c, d, t):
+    global __split_cache
+    abcdt = (a, b, c, d, t)
+    sc = __split_cache.get(abcdt)
+    if sc:
+        return sc
+    else:
+        s = splitCubicAtT(a, b, c, d, t)
+        __split_cache[abcdt] = s
+        return s
+
+def calcCubicArcLength_cached(a, b, c, d):
+    #return calcCubicArcLength(a, b, c, d)
+    global __length_cache
+    abcd = (a, b, c, d)
+    lc = __length_cache.get(abcd)
+    if lc:
+        return lc
+    else:
+        l = calcCubicArcLength(a, b, c, d)
+        __length_cache[abcd] = l
+        return l
 
 class CurveCutter():
     def __init__(self, g, inc=0.0015):
@@ -28,12 +53,13 @@ class CurveCutter():
             if t == "curveTo":
                 p1, p2, p3 = pts
                 p0 = self.pen.value[i-1][-1][-1]
-                length += calcCubicArcLength(p0, p1, p2, p3)
+                length += calcCubicArcLength_cached(p0, p1, p2, p3)
             elif t == "lineTo":
                 pass # todo
         return length
 
     def subsegment(self, start=None, end=None):
+        global __cut_cache
         inc = self.inc
         length = self.length
         ended = False
@@ -43,15 +69,15 @@ class CurveCutter():
             if t == "curveTo":
                 p1, p2, p3 = pts
                 p0 = self.pen.value[i-1][-1][-1]
-                length_arc = calcCubicArcLength(p0, p1, p2, p3)
+                length_arc = calcCubicArcLength_cached(p0, p1, p2, p3)
                 if _length + length_arc < end:
                     _length += length_arc
                 else:
                     t = inc
                     tries = 0
                     while not ended:
-                        a, b = splitCubicAtT(p0, p1, p2, p3, t)
-                        length_a = calcCubicArcLength(*a)
+                        a, b = splitCubicAtT_cached(p0, p1, p2, p3, t)
+                        length_a = calcCubicArcLength_cached(*a)
                         if _length + length_a > end:
                             ended = True
                             out.append(("curveTo", a[1:]))
