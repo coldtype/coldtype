@@ -855,26 +855,6 @@ class DATPenSet(DATPenLikeObject):
                         self.append(p)
                     else:
                         self.extend(p)
-    
-    def interleave(self, style_fn, direction=-1, recursive=True):
-        """Provide a callback-lambda to interleave new DATPens between the existing ones; useful for stroke-ing glyphs, since the stroked glyphs can be placed behind the primary filled glyphs."""
-        pens = []
-        for p in self.pens:
-            if recursive and isinstance(p, DATPenSet):
-                _p = p.interleave(style_fn, direction=direction, recursive=True)
-                pens.append(_p)
-            else:
-                np = style_fn(p.copy())
-                if isinstance(np, DATPen) or isinstance(np, DATPenSet):
-                    np = [np]
-                if direction < 0:
-                    pens.extend(np)
-                pens.append(p)
-                if direction > 0:
-                    pens.extend(np)
-
-        self.pens = pens
-        return self
         
     def reversePens(self):
         """Reverse the order of the pens; useful for overlapping glyphs from the left-to-right rather than right-to-left (as is common in OpenType applications)"""
@@ -926,7 +906,6 @@ class DATPenSet(DATPenLikeObject):
     def attr(self, key="default", field=None, **kwargs):
         if field: # getting, not setting
             return self.pens[0].attr(key=key, field=field)
-        
         for p in self.pens:
             p.attr(key, **kwargs)
         return self
@@ -1025,4 +1004,24 @@ class DATPenSet(DATPenLikeObject):
 
         if limit < len(self.pens):
             self.pens = self.pens[0:limit]
+        return self
+    
+    def interleave(self, style_fn, direction=-1, recursive=True):
+        """Provide a callback-lambda to interleave new DATPens between the existing ones; useful for stroke-ing glyphs, since the stroked glyphs can be placed behind the primary filled glyphs."""
+        pens = []
+        for p in self.pens:
+            if recursive and isinstance(p, DATPenSet):
+                _p = p.interleave(style_fn, direction=direction, recursive=True)
+                pens.append(_p)
+            else:
+                np = style_fn(p.copy())
+                if isinstance(np, DATPen) or isinstance(np, DATPenSet):
+                    np = [np]
+                if direction < 0:
+                    pens.extend(np)
+                pens.append(p)
+                if direction > 0:
+                    pens.extend(np)
+
+        self.pens = pens
         return self

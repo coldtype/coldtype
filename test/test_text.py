@@ -52,9 +52,9 @@ def interp_test(f):
 
 def layering_test(f):
     def layerer(ss, gn, dp, dps):
-        dps.pens[0].f(1, 0, 0.5)
-        dps.pens.insert(0, dp.copy().f(0).translate(70, -70))
-        dps.pens.insert(0, dp.copy().f(0, 1, 0).translate(-70, 70))
+        dps[0].f(1, 0, 0.5)
+        dps.insert(0, dp.copy().f(0).translate(70, -70))
+        dps.insert(0, dp.copy().f(0, 1, 0).translate(-70, 70))
     return Slug("HELLO", Style(varfont, 300, wdth=1, wght=1, t=-100, reverse=1, layerer=layerer)).pens().align(f.a.r)
 
 def interleaving_test(f):
@@ -137,8 +137,8 @@ def render(f):
         DATPenSet(res)
     ]
 
-current_tests = [tests.index(basic_test)]
+current_tests = [tests.index(layering_test)]
 current_tests = list(range(0, len(tests)))
 
-timeline = Timeline(len(current_tests), storyboard=current_tests)
+timeline = Timeline(len(tests), storyboard=current_tests)
 animation = Animation(render, Rect(1920, 1080), timeline, bg=(1, 0))
