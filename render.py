@@ -93,12 +93,14 @@ def read_layers(anm):
     return layers
 
 
-def get_frames_folder(anm):
+def get_frames_folder(anm, mkdir=True):
     layers_folder = filepath.parent.joinpath(f"{filepath.stem}_layers")
-    layers_folder.mkdir(exist_ok=True)
+    if mkdir:
+        layers_folder.mkdir(exist_ok=True)
     for layer_name in anm.layers:
         layer_frames_folder = layers_folder.joinpath(f"{filepath.stem}_{layer_name}_frames")
-        layer_frames_folder.mkdir(exist_ok=True)
+        if mkdir:
+            layer_frames_folder.mkdir(exist_ok=True)
     return layers_folder
 
 
@@ -252,7 +254,7 @@ def render_slice(frames):
 
 def preview_storyboard():
     layers = read_layers(anm)
-    layers_folder = get_frames_folder(anm)
+    layers_folder = get_frames_folder(anm, mkdir=False)
     preview.clear()
 
     for frame in anm.timeline.storyboard:
