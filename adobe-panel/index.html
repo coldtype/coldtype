@@ -18,6 +18,9 @@
 <body onLoad="onLoaded()" style="background:#222">
 	<a href="javascript:history.go(0)">Refresh</a>
 	<!--<button id="btn_PPRO6">Export FCP XML</button>&nbsp;<input type="text" value="where-to"/>-->
+	<div id="container">
+        <div class="plain">welcome</div>
+    </div>
 </body>
 <script>
 	document.body.onbeforeunload = function () {
@@ -56,7 +59,12 @@
 					csInterface.evalScript('$._generic_.refreshAnimations(null, "'+data['prefix']+'", '+data['fps']+')');
 				}
 			} catch(e) {
-				// nothing to do
+				let container = document.querySelector("#container");
+                if (evt.data == "CLEAR") {
+                    container.innerHTML = "";
+                } else {
+                    container.innerHTML = container.innerHTML + evt.data;
+                }
 			}
 		}
 

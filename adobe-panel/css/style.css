@@ -13,7 +13,8 @@
 **************************************************************************/
 
 * {
-	font-family: "LucidaGrande", sans-serif;
+	font-family: monospace, sans-serif;
+	color: #aaa;
 }
 
 p {
@@ -22,38 +23,18 @@ p {
 
 a {
 	color: #555;
-	font-size: 14px;
+	font-size: 10px;
 	text-decoration: none;
-	font-family: "Hobeaux";
+	margin-bottom: 10px;
+	display: block;
+	text-align: center;
 }
 
-button {
-	font-family: "Hobeaux";
-	font-size: 14px;
-	border: none;
-	background: none;
-	color: hotpink;
+#container {
+    /* margin-top: 20px; */
 }
 
-input[type=text] {
-	font-size: 14px;
-	font-family: "Hobeaux";
-	background: none;
-	border: none;
-	color: skyblue;
-}
-
-#content {
-	margin-right: auto;
-	margin-left: auto;
-	vertical-align: middle;
-	width: 100%;
-}
-
-#content ul {
-	padding: 0px;
-}
-
-#content ul li {
-	margin: 3px 0px 3px 0px;
+.plain {
+    margin-bottom: 10px;
+    text-align: center;
 }
