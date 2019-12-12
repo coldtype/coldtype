@@ -5,7 +5,7 @@ from random import randint
 varfont = "ç/MutatorSans.ttf"
 
 def basic_test(f):
-    return Slug("COLDTYPE", Style(varfont, 300, wdth=0, wght=1)).pen().f(1, 0, 0.5).align(f.a.r)
+    return Slug("COLDTYPE", Style(varfont, 300, wdth=0, wght=1)).pens().f(1, 0, 0.5).align(f.a.r)
 
 def combine_slugs_test(f):
     ss1 = Slug("OY ", Style(varfont, fontSize=280)).pen().f("darkorchid", 0.3)
@@ -47,7 +47,7 @@ def interp_test(f):
     dps = DATPenSet()
     for x in range(l):
         style = Style(varfont, 350, wdth=x/l, wght=0, fill=(0, 0.2))
-        dps.addPen(Slug("HELLO", style).pen().align(f.a.r).removeOverlap())
+        dps.append(Slug("HELLO", style).pen().align(f.a.r).removeOverlap())
     return dps
 
 def layering_test(f):
@@ -137,7 +137,7 @@ def render(f):
         DATPenSet(res)
     ]
 
-current_tests = [tests.index(catmull_test)]
+current_tests = [tests.index(basic_test)]
 current_tests = list(range(0, len(tests)))
 
 timeline = Timeline(100, storyboard=current_tests)

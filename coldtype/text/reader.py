@@ -829,7 +829,7 @@ class StyledString(FittableMixin):
                         dp = self.scalePenToStyle(idx, dp, frame)
                         dp.attr(fill=cpal.palettes[self.style.palette][layer.colorID])
                         if len(dp.value) > 0:
-                            dps.addPen(dp)
+                            dps.append(dp)
                 else:
                     print("No layers found for ", gn)
                 dps.replay(pen)
@@ -843,7 +843,7 @@ class StyledString(FittableMixin):
                     pen.value = self.drawFrameToPen(shape_reader, idx, frame, frame.gid, useTTFont=useTTFont).value
                     dps = DATPenSet()
                     dps.layered = True
-                    dps.addPen(pen)
+                    dps.append(pen)
                     self.style.layerer(self, gn, pen, dps)
                     for p in dps.pens:
                         p.value = self.scalePenToStyle(idx, p, frame).value
@@ -878,7 +878,7 @@ class StyledString(FittableMixin):
                 dp_atom.glyphName = f.glyphName
                 if self.style.removeOverlap:
                     dp_atom.removeOverlap()
-            pens.addPen(dp_atom)
+            pens.append(dp_atom)
                 
         if self.style.reverse:
             pens.reversePens()

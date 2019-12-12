@@ -1,19 +1,17 @@
 import math
 from enum import Enum
-from fontTools.pens.filterPen import ContourFilterPen
-from fontTools.pens.reverseContourPen import ReverseContourPen
+
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
-from fontTools.pens.recordingPen import RecordingPen
-from fontTools.pens.pointPen import SegmentToPointPen, PointToSegmentPen, AbstractPointPen
+from fontTools.pens.reverseContourPen import ReverseContourPen
 from fontTools.pens.pointInsidePen import PointInsidePen
-from fontTools.svgLib.path.parser import parse_path
+from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.transformPen import TransformPen
+from fontTools.svgLib.path.parser import parse_path
 from fontTools.misc.transform import Transform
 from fontPens.flattenPen import FlattenPen
 from fontPens.marginPen import MarginPen
-from random import random, randint
-from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
 from collections import OrderedDict
+from random import random, randint
 from numbers import Number
 from defcon import Glyph
 
@@ -22,17 +20,11 @@ try:
 except:
     pass
 
-USE_SKIA_PATHOPS = True
-
-if USE_SKIA_PATHOPS:
-    from pathops import Path, OpBuilder, PathOp
-else:
-    from booleanOperations.booleanGlyph import BooleanGlyph
-
 
 from coldtype.geometry import Rect, Edge, Point, txt_to_edge
 from coldtype.beziers import raise_quadratic, CurveCutter
 from coldtype.color import Gradient, normalize_color, Color
+from coldtype.pens.misc import ExplodingPen, SmoothPointsPen, BooleanOp, calculate_pathop
 
 try:
     from coldtype.pens.outlinepen import OutlinePen
@@ -40,82 +32,7 @@ except:
     pass
 
 
-class BooleanOp(Enum):
-    Difference = 0
-    Union = 1
-    XOR = 2
-    ReverseDifference = 3
-    Intersection = 4
-
-    def Skia(x):
-        return [
-            PathOp.DIFFERENCE,
-            PathOp.UNION,
-            PathOp.XOR,
-            PathOp.REVERSE_DIFFERENCE,
-            PathOp.INTERSECTION,
-        ][x.value]
-    
-    def BooleanGlyphMethod(x):
-        return [
-            "difference",
-            "union",
-            "xor",
-            "reverseDifference",
-            "intersection",
-        ][x.value]
-
-
-class ExplodingPen(ContourFilterPen):
-    def __init__(self, outPen):
-        self.pens = []
-        super().__init__(outPen)
-
-    def filterContour(self, contour):
-        dp = DATPen()
-        dp.value = contour
-        self.pens.append(dp)
-        return contour
-
-
-class SmoothPointsPen(ContourFilterPen):
-    def __init__(self, outPen, length=80):
-        super().__init__(outPen)
-        self.length = length
-
-    def filterContour(self, contour):
-        nc = []
-
-        def split_line(pts):
-            p0, p1 = pts
-            nc.append(["lineTo", [p1]])
-
-        def split_curve(pts):
-            p0, p1, p2, p3 = pts
-            length_arc = calcCubicArcLength(p0, p1, p2, p3)
-            if length_arc <= self.length:
-                nc.append(["curveTo", pts[1:]])
-            else:
-                d = self.length / length_arc
-                b = (p0, p1, p2, p3)
-                a, b = splitCubicAtT(*b, d)
-                nc.append(["curveTo", a[1:]])
-                split_curve(b)
-
-        for i, (t, pts) in enumerate(contour):
-            if t == "lineTo":
-                p0 = contour[i-1][-1][-1]
-                split_line((p0, pts[0]))
-            elif t == "curveTo":
-                p1, p2, p3 = pts
-                p0 = contour[i-1][-1][-1]
-                split_curve((p0, p1, p2, p3))
-            else:
-                nc.append([t, pts])
-        return nc
-
-
-class AlignableMixin():
+class DATPenLikeObject():
     def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False):
         x = txt_to_edge(x)
         y = txt_to_edge(y)
@@ -142,13 +59,78 @@ class AlignableMixin():
         diff = rect.w - b.w
         return self.translate(xoff, yoff)
     
+    def pen(self):
+        """Return a single-pen representation of this pen(set)."""
+        return self
+
+    def cast(self, _class, *args):
+        """Quickly cast to a (different) subclass."""
+        return _class(self, *args)
+
+    def copy(self):
+        """Make a totally fresh copy; useful given the DATPen’s general reliance on mutable state."""
+        dp = DATPen()
+        self.replay(dp)
+        for tag, attrs in self.attrs.items():
+            dp.attr(tag, **attrs)
+        return dp
+
+    def tag(self, tag):
+        """For conveniently marking a DATPen(Set) w/o having to put it into some other data structure."""
+        self._tag = tag
+        return self
+    
+    def getTag(self):
+        """Retrieve the tag (could probably be a real property)"""
+        return self._tag
+    
+    def contain(self, rect):
+        """For conveniently marking an arbitrary `Rect` container."""
+        self.container = rect
+        return self
+
+    def f(self, *value):
+        """Set a (f)ill"""
+        return self.attr(fill=value)
+    
+    def s(self, *value):
+        """Set a (s)troke"""
+        return self.attr(stroke=value)
+    
+    def sw(self, value):
+        """Set a (s)troke (w)idth"""
+        return self.attr(strokeWidth=value)
+    
+    def removeBlanks(self):
+        """If this is blank, `return True` (for recursive calls from DATPenSet)."""
+        return len(self.value) == 0
+    
+    def clearFrame(self):
+        """Remove the DATPen frame."""
+        self.frame = None
+        return self
+    
+    def addFrame(self, frame, typographic=False):
+        """Add a new frame to the DATPen, replacing any old frame."""
+        self.frame = frame
+        if typographic:
+            self.typographic = True
+        return self
+    
+    def frameSet(self, th=False, tv=False):
+        """Return a new DATPen representation of the frame of this DATPen."""
+        return DATPen(fill=("random", 0.25)).rect(self.getFrame(th=th, tv=tv))
+    
     def filmjitter(self, doneness, base=0, speed=(10, 20), scale=(2, 3), octaves=16):
+        """
+        An easy way to make something move in a way reminiscent of misregistered film
+        """
         nx = pnoise1(doneness*speed[0], base=base, octaves=octaves)
         ny = pnoise1(doneness*speed[1], base=base+10, octaves=octaves)
         return self.translate(nx * scale[0], ny * scale[1])
 
 
-class DATPen(RecordingPen, AlignableMixin):
+class DATPen(RecordingPen, DATPenLikeObject):
     def __init__(self, **kwargs):
         super().__init__()
         self.clearAttrs()
@@ -163,62 +145,43 @@ class DATPen(RecordingPen, AlignableMixin):
         return f"<DP(typo:int({self.typographic})({self.glyphName}))>"
     
     def moveTo(self, p0):
+        """The standard `RecordingPen.moveTo`, but returns self for chainability."""
         super().moveTo(p0)
         return self
 
     def lineTo(self, p1):
+        """The standard `RecordingPen.lineTo`, but returns self for chainability."""
         super().lineTo(p1)
         return self
 
     def qCurveTo(self, *points):
+        """The standard `RecordingPen.qCurveTo`, but returns self for chainability."""
         super().qCurveTo(*points)
         return self
 
     def curveTo(self, *points):
+        """The standard `RecordingPen.curveTo`, but returns self for chainability."""
         super().curveTo(*points)
         return self
 
     def closePath(self):
+        """The standard `RecordingPen.closePath`, but returns self for chainability."""
         super().closePath()
         return self
 
     def endPath(self):
+        """The standard `RecordingPen.endPath`, but returns self for chainability."""
         super().endPath()
         return self
     
-    def pen(self):
-        return self
-    
-    #def pens(self):
-    #    return DATPenSet([pen])
-    
-    def tag(self, tag):
-        self._tag = tag
-        return self
-    
-    def getTag(self):
-        return self._tag
-
-    def contain(self, rect):
-        self.container = rect
-        return self
-    
-    def copy(self):
-        dp = DATPen()
-        self.replay(dp)
-        for tag, attrs in self.attrs.items():
-            dp.attr(tag, **attrs)
-        return dp
-    
-    def cast(self, _class, *args):
-        return _class(self, *args)
-    
     def clearAttrs(self):
+        """Remove all styling."""
         self.attrs = OrderedDict()
         self.attr("default", fill=(1, 0, 0.5))
         return self
 
     def attr(self, tag="default", field=None, **kwargs):
+        """Set a style attribute on the pen."""
         if field: # getting, not setting
             return self.attrs.get(tag).get(field)
         
@@ -250,32 +213,8 @@ class DATPen(RecordingPen, AlignableMixin):
                 attrs[k] = v
         return self
     
-    def f(self, *value):
-        return self.attr(fill=value)
-    
-    def s(self, *value):
-        return self.attr(stroke=value)
-    
-    def sw(self, value):
-        return self.attr(strokeWidth=value)
-    
-    def removeBlanks(self):
-        return len(self.value) == 0
-    
-    def clearFrame(self):
-        self.frame = None
-        return self
-    
-    def addFrame(self, frame, typographic=False):
-        self.frame = frame
-        if typographic:
-            self.typographic = True
-        return self
-    
-    def frameSet(self, th=False, tv=False):
-        return DATPen(fill=("random", 0.25)).rect(self.getFrame(th=th, tv=tv))
-    
     def getFrame(self, th=False, tv=False):
+        """For internal use; creates a frame based on calculated bounds."""
         if self.frame:
             if (th or tv) and len(self.value) > 0:
                 f = self.frame
@@ -291,10 +230,8 @@ class DATPen(RecordingPen, AlignableMixin):
         else:
             return self.bounds()
     
-    def updateFrameHeight(self, h):
-        self.frame.h = h
-    
     def reverse(self):
+        """Reverse the winding direction of the pen."""
         dp = DATPen()
         rp = ReverseContourPen(dp)
         self.replay(rp)
@@ -302,6 +239,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def transform(self, transform, transformFrame=True):
+        """Perform an arbitrary transformation on the pen, using the fontTools `Transform` class."""
         op = RecordingPen()
         tp = TransformPen(op, transform)
         self.replay(tp)
@@ -311,55 +249,39 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def _pathop(self, otherPen=None, operation=BooleanOp.XOR):
-        if USE_SKIA_PATHOPS:
-            p1 = Path()
-            self.replay(p1.getPen())
-            if otherPen:
-                p2 = Path()
-                otherPen.replay(p2.getPen())
-            builder = OpBuilder(fix_winding=True, keep_starting_points=True)
-            builder.add(p1, PathOp.UNION)
-            if otherPen:
-                builder.add(p2, BooleanOp.Skia(operation))
-            result = builder.resolve()
-            d0 = DATPen()
-            result.draw(d0)
-            self.value = d0.value
-            return self
-        else:
-            bg2 = BooleanGlyph()
-            if otherPen:
-                otherPen.replay(bg2.getPen())
-            bg = BooleanGlyph()
-            self.replay(bg.getPen())
-            bg = bg._booleanMath(BooleanOp.BooleanGlyphMethod(operation), bg2)
-            dp = DATPen()
-            bg.draw(dp)
-            self.value = dp.value
-            return self
+        self.value = calculate_pathop(self, otherPen, operation)
+        return self
     
     def difference(self, otherPen):
+        """Calculate and return the difference of this shape and another."""
         return self._pathop(otherPen=otherPen, operation=BooleanOp.Difference)
     
     def union(self, otherPen):
+        """Calculate and return the union of this shape and another."""
         return self._pathop(otherPen=otherPen, operation=BooleanOp.Union)
     
     def xor(self, otherPen):
+        """Calculate and return the XOR of this shape and another."""
         return self._pathop(otherPen=otherPen, operation=BooleanOp.XOR)
     
     def reverseDifference(self, otherPen):
+        """Calculate and return the reverseDifference of this shape and another."""
         return self._pathop(otherPen=otherPen, operation=BooleanOp.ReverseDifference)
     
     def intersection(self, otherPen):
+        """Calculate and return the intersection of this shape and another."""
         return self._pathop(otherPen=otherPen, operation=BooleanOp.Intersection)
     
     def removeOverlap(self):
+        """Remove overlaps within this shape and return itself."""
         return self._pathop(otherPen=DATPen(), operation=BooleanOp.Union)
     
     def translate(self, x, y):
+        """Translate this shape by `x` and `y` (pixel values)."""
         return self.transform(Transform(1, 0, 0, 1, x, y))
     
     def scale(self, scaleX, scaleY=None, center=None):
+        """Scale this shape by a percentage amount (1-scale)."""
         t = Transform()
         if center != False:
             point = self.bounds().point("C") # maybe should be getFrame()?
@@ -370,6 +292,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self.transform(t)
     
     def scaleToRect(self, rect):
+        """Scale this shape into a `Rect`."""
         bounds = self.bounds()
         h = rect.w / bounds.w
         v = rect.h / bounds.h
@@ -377,6 +300,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self.scale(scale)
     
     def rotate(self, degrees, point=None):
+        """Rotate this shape by a degree (in 360-scale, counterclockwise)."""
         t = Transform()
         if not point:
             point = self.bounds().point("C") # maybe should be getFrame()?
@@ -386,6 +310,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self.transform(t, transformFrame=False)
 
     def bounds(self):
+        """Calculate the bounds of this shape; mostly for internal use."""
         try:
             cbp = BoundsPen(None)
             self.replay(cbp)
@@ -395,6 +320,7 @@ class DATPen(RecordingPen, AlignableMixin):
             return Rect(0, 0, 0, 0)
 
     def round(self, rounding):
+        """Round the values of this pen to integer values."""
         rounded = []
         for t, pts in self.value:
             rounded.append(
@@ -404,6 +330,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
 
     def simplify(self):
+        """DO NOT USE"""
         import numpy as np
         last = None
         times = 0
@@ -432,15 +359,20 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
 
     def record(self, pen):
+        """Play a pen into this pen, meaning that pen will be added to this one’s value."""
         pen.replay(self)
         return self
     
     def glyph(self, glyph):
+        """Play a glyph (like from `defcon`) into this pen."""
         glyph.draw(self)
         return self
     
     def to_glyph(self, name=None):
-        """Be sure to call endPath or closePath on your pen or this call will silently do nothing"""
+        """
+        Create a glyph (like from `defcon`) using this pen’s value.
+        *Warning: be sure to call endPath or closePath on your pen or this call will silently do nothing
+        """
         bounds = self.bounds()
         glyph = Glyph()
         glyph.name = name
@@ -451,6 +383,9 @@ class DATPen(RecordingPen, AlignableMixin):
         return glyph
 
     def flatten(self, length=10):
+        """
+        Runs a fontTools `FlattenPen` on this pen
+        """
         if length == 0:
             return self
         dp = DATPen()
@@ -460,6 +395,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def addSmoothPoints(self, length=100):
+        """WIP"""
         rp = RecordingPen()
         fp = SmoothPointsPen(rp)
         self.replay(fp)
@@ -467,6 +403,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def smooth(self):
+        """Runs a catmull spline on the datpen, useful in combination as flatten+roughen+smooth"""
         dp = DATPen()
         for pts in self.skeletonPoints():
             _pts = [p[-1][-1] for p in pts]
@@ -475,6 +412,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def pixellate(self, rect, increment=50, inset=0):
+        """WIP"""
         x = -200
         y = -200
         dp = DATPen()
@@ -493,6 +431,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def scanlines(self, rect, sample=40, width=20, threshold=10):
+        """WIP"""
         dp = DATPen()
         #print(">>>", rect)
         for y in range(min(-300, rect.y), max(1000, rect.h), sample): # 500 should be calc'ed from box right?
@@ -512,6 +451,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self.outline(width)
     
     def roughen(self, amplitude=10, threshold=10):
+        """Randomizes points in skeleton"""
         try:
             randomized = []
             _x = 0
@@ -534,6 +474,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
 
     def outline(self, offset=1, drawInner=True, drawOuter=True):
+        """AKA expandStroke"""
         op = OutlinePen(None, offset=offset, optimizeCurve=True, cap="square")
         self.replay(op)
         op.drawSettings(drawInner=drawInner, drawOuter=drawOuter)
@@ -544,6 +485,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def dots(self, radius=4):
+        """(Necessary?) Create circles at moveTo commands"""
         dp = DATPen()
         for t, pts in self.value:
             if t == "moveTo":
@@ -553,6 +495,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def catmull(self, points, close=False):
+        """Run a catmull spline through a series of points"""
         p0 = points[0]
         p1, p2, p3 = points[:3]
         pts = [p0]
@@ -582,6 +525,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def pattern(self, rect, clip=False):
+        """WIP — maybe not long for this earth"""
         dp_copy = DATPen()
         dp_copy.value = self.value
 
@@ -599,6 +543,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def rect(self, rect, *args):
+        """Rectangle primitive — `moveTo/lineTo/lineTo/lineTo/closePath`"""
         if isinstance(rect, Rect):
             self.moveTo(rect.point("SW").xy())
             self.lineTo(rect.point("SE").xy())
@@ -614,14 +559,8 @@ class DATPen(RecordingPen, AlignableMixin):
             self.rect(Rect(rect))
         return self
 
-    def line(self, points):
-        self.moveTo(points[0])
-        for p in points[1:]:
-            self.lineTo(p)
-        self.endPath()
-        return self
-    
     def roundedRect(self, rect, hr, vr):
+        """Rounded rectangle primitive"""
         l, b, w, h = rect
         r, t = l + w, b + h
         K = 4 * (math.sqrt(2)-1) / 3
@@ -647,18 +586,28 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def oval(self, rect):
+        """Oval primitive"""
         self.roundedRect(rect, 0.5, 0.5)
         return self
+
+    def line(self, points):
+        """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""
+        self.moveTo(points[0])
+        for p in points[1:]:
+            self.lineTo(p)
+        self.endPath()
+        return self
     
-    def trapezoid(self, points, close=True):
+    def hull(self, points):
+        """Same as `DATPen.line` but calls closePath instead of endPath`"""
         self.moveTo(points[0])
         for pt in points[1:]:
             self.lineTo(pt)
-        if close:
-            self.closePath()
+        self.closePath()
         return self
     
     def polygon(self, sides, rect):
+        """Polygon primitive; WIP"""
         radius = rect.square().w / 2
         c = rect.center()
         one_segment = math.pi * 2 / sides
@@ -674,6 +623,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def quadratic(self, a, b, c, lineTo=False):
+        """WIP"""
         a, b, c = [p.xy() if isinstance(p, Point) else p for p in [a, b, c]]
         dp = DATPen()
         if lineTo:
@@ -685,6 +635,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def sine(self, r, periods):
+        """Sine-wave primitive"""
         dp = DATPen()
         pw = r.w / periods
         p1 = r.point("SW")
@@ -708,6 +659,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def svg(self, file, gid, rect=Rect(0, 0, 0, 100)):
+        """WIP; attempt to read an svg file into the pen"""
         from bs4 import BeautifulSoup
         with open(file, "r") as f:
             soup = BeautifulSoup(f.read(), features="lxml")
@@ -717,12 +669,19 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def explode(self):
+        """Read each contour into its own DATPen; returns a DATPenSet"""
         dp = RecordingPen()
         ep = ExplodingPen(dp)
         self.replay(ep)
-        return DATPenSet(ep.pens)
+        dps = DATPenSet()
+        for p in ep.pens:
+            dp = DATPen()
+            dp.value = p
+            dps.append(dp)
+        return dps
     
-    def segregate(self):
+    def openAndClosed(self):
+        """Explode and then classify group each contour into open/closed pens; (what is this good for?)"""
         dp_open = DATPen()
         dp_closed = DATPen()
         for pen in self.explode().pens:
@@ -733,6 +692,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return dp_open, dp_closed
     
     def subsegment(self, start=0, end=1):
+        """Return a subsegment of the pen based on `t` values `start` and `end`"""
         cc = CurveCutter(self)
         start = 0
         end = end * cc.calcCurveLength()
@@ -741,6 +701,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return self
     
     def point_t(self, t=0.5):
+        """Get point value for time `t`"""
         cc = CurveCutter(self)
         start = 0
         tv = t * cc.calcCurveLength()
@@ -748,6 +709,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return p, tangent
     
     def points(self):
+        """Returns a list of points grouped by contour from the DATPen’s original contours; useful for drawing bezier skeletons; does not modify the DATPen"""
         contours = []
         for contour in self.skeletonPoints():
             _c = []
@@ -758,6 +720,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return contours
     
     def flatpoints(self):
+        """Returns a flat list of points from the DATPen’s original contours; does not modify the DATPen"""
         points = []
         for contour in self.skeletonPoints():
             for step, pts in contour:
@@ -767,6 +730,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return points
     
     def lines(self):
+        """Returns lines connecting point-representation of `flatpoints`"""
         ls = []
         pts = self.flatpoints()
         for idx, pt in enumerate(pts):
@@ -777,6 +741,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return ls
 
     def skeletonPoints(self):
+        """WIP"""
         all_points = []
         points = []
         for idx, (t, pts) in enumerate(self.value):
@@ -797,6 +762,7 @@ class DATPen(RecordingPen, AlignableMixin):
         return all_points
     
     def skeleton(self, scale=1, returnSet=False):
+        """Vector-editing visualization"""
         dp = DATPen()
         moveTo = DATPen(fill=("random", 0.5))
         lineTo = DATPen(fill=("random", 0.5))
@@ -835,6 +801,7 @@ class DATPen(RecordingPen, AlignableMixin):
             return self
     
     def gridlines(self, rect, x=20, y=None):
+        """Construct a grid in the pen using `x` and (optionally) `y` subdivisions"""
         for _x in rect.subdivide(x, "minx"):
             if _x.x > 0:
                 self.line([_x.point("NW"), _x.point("SW")])
@@ -843,15 +810,14 @@ class DATPen(RecordingPen, AlignableMixin):
                 self.line([_y.point("SW"), _y.point("SE")])
         return self.f(None).s(0, 0.1).sw(3)
 
-    def Grid(rect, x=20, y=None):
-        grid = rect.inset(0, 0).grid(y or x, x)
-        return DATPen(fill=None, stroke=0.5, strokeWidth=1).rect(grid)
 
-
-class DATPenSet(AlignableMixin):
+class DATPenSet(DATPenLikeObject):
+    """
+    A set of DATPen’s; behaves like a list
+    """
     def __init__(self, *pens):
         self.pens = []
-        self.addPens(pens)
+        self.extend(pens)
         self.typographic = True
         self.layered = False
         self._tag = "Unknown"
@@ -860,39 +826,38 @@ class DATPenSet(AlignableMixin):
     def __str__(self):
         return f"<DPS:pens:{len(self.pens)}>"
     
-    def tag(self, tag):
-        self._tag = tag
-        return self
-    
-    def getTag(self):
-        return self._tag
-    
-    def contain(self, rect):
-        self.container = rect
-        return self
-    
     def copy(self):
         dps = DATPenSet()
         for p in self.pens:
-            dps.addPen(p.copy())
+            dps.append(p.copy())
         return dps
     
-    def addPens(self, pens):
+    def __getitem__(self, index):
+        return self.pens[index]
+    
+    def insert(self, index, pen):
+        if pen:
+            self.pens.insert(index, pen)
+        return self
+    
+    def append(self, pen):
+        if pen:
+            self.pens.append(pen)
+        return self
+    
+    def extend(self, pens):
         if isinstance(pens, DATPenSet):
-            self.addPen(pens)
+            self.append(pens)
         else:
             for p in pens:
                 if p:
                     if hasattr(p, "value"):
-                        self.pens.append(p)
+                        self.append(p)
                     else:
-                        self.addPens(p)
-    
-    def addPen(self, pen):
-        if pen:
-            self.pens.append(pen)
+                        self.extend(p)
     
     def interleave(self, style_fn, direction=-1, recursive=True):
+        """Provide a callback-lambda to interleave new DATPens between the existing ones; useful for stroke-ing glyphs, since the stroked glyphs can be placed behind the primary filled glyphs."""
         pens = []
         for p in self.pens:
             if recursive and isinstance(p, DATPenSet):
@@ -912,10 +877,12 @@ class DATPenSet(AlignableMixin):
         return self
         
     def reversePens(self):
+        """Reverse the order of the pens; useful for overlapping glyphs from the left-to-right rather than right-to-left (as is common in OpenType applications)"""
         self.pens = list(reversed(self.pens))
         return self
     
     def removeBlanks(self):
+        """Remove blank pens from the set"""
         nonblank_pens = []
         for pen in self.pens:
             if not pen.removeBlanks():
@@ -940,12 +907,7 @@ class DATPenSet(AlignableMixin):
                 union = union.union(p.getFrame(th=th, tv=tv))
             return union
         except Exception as e:
-            #print("EXCEPTION>>>>>>>>>>>>>>>>>>>>>>>>>>", e)
             return Rect(0,0,0,0)
-    
-    def updateFrameHeight(self, h):
-        for p in self.pens:
-            p.updateFrameHeight(h)
     
     def replay(self, pen):
         self.pen().replay(pen)
@@ -968,15 +930,6 @@ class DATPenSet(AlignableMixin):
         for p in self.pens:
             p.attr(key, **kwargs)
         return self
-    
-    def f(self, *value):
-        return self.attr(fill=value)
-    
-    def s(self, *value):
-        return self.attr(stroke=value)
-    
-    def sw(self, value):
-        return self.attr(strokeWidth=value)
     
     def removeOverlap(self):
         for p in self.pens:
@@ -1029,7 +982,7 @@ class DATPenSet(AlignableMixin):
         dps = DATPenSet()
         for p in self.pens:
             if p.frame:
-                dps.addPen(p.frameSet(th=th, tv=tv))
+                dps.append(p.frameSet(th=th, tv=tv))
         return dps
     
     def alignToRects(self, rects, x=Edge.CenterX, y=Edge.CenterY):
