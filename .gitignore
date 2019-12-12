@@ -3,6 +3,7 @@
 env
 test/artifacts/*
 test/*.blend1
+test/test_media
 build
 dist
 coldtype.egg-info
