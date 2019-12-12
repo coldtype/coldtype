@@ -538,6 +538,26 @@ class ClipGroup():
 def s_to_f(s, fps):
     return math.floor(s*fps)
 
+class MidiTrack():
+    def __init__(self, notes):
+        self.notes = notes
+    
+    def noteForFrame(self, note_number, frame, preverb=0, reverb=0):
+        for note in reversed(self.notes):
+            if note.note == note_number:
+                if frame >= (note.on-preverb) and frame < (note.off+reverb):
+                    return note
+    
+    def valueForFrame(self, note_number, frame, preverb=0, reverb=0):
+        note = self.noteForFrame(note_number, frame, preverb=preverb, reverb=reverb)
+        if note:
+            v = 1 - ((frame - note.on) / (note.duration+reverb))
+            if v > 1:
+                v = 2 + ((frame - note.on - preverb) / preverb)
+                print(v)
+            return v
+        else:
+            return 0
 
 class MidiNote():
     def __init__(self, note, on, off, fps, rounded):
@@ -548,6 +568,7 @@ class MidiNote():
         self.rounded = rounded
         self.on = self.onf(rounded=rounded)
         self.off = self.offf(rounded=rounded)
+        self.duration = self.off - self.on
 
     def s_to_f(self, value, rounded=True, fps=None):
         _fps = fps or self.fps
@@ -563,7 +584,7 @@ class MidiNote():
         return self.s_to_f(self.off_seconds, rounded=rounded, fps=fps)
 
 
-def read_midi(f, fps, bpm=120, rounded=True):
+def read_midi(f, fps=30, bpm=120, rounded=True):
     mid = mido.MidiFile(str(f))
     events = {}
     open_notes = {}
@@ -574,18 +595,18 @@ def read_midi(f, fps, bpm=120, rounded=True):
         open_notes[track.name] = {}
         for idx, msg in enumerate(track):
             if hasattr(msg, "note"):
-                msg.note
                 delta_s = mido.tick2second(msg.time, mid.ticks_per_beat, mido.bpm2tempo(bpm))
                 cumulative_time += delta_s
+                o = open_notes.get(track.name).get(msg.note)
+                if o != None:
+                    open_notes[track.name][msg.note] = None
+                    events[track.name].append(MidiNote(msg.note, o, cumulative_time, fps, rounded))
                 if msg.type == "note_on" and msg.velocity > 0:
                     open_notes[track.name][msg.note] = cumulative_time
-                elif msg.type == "note_off" or msg.type == "note_on" and msg.velocity <= 0:
-                    o = open_notes.get(track.name).get(msg.note)
-                    if o:
-                        open_notes[track.name][msg.note] = None
-                        events[track.name].append(MidiNote(msg.note, o, cumulative_time, fps, rounded))
-                        #events[track.name].append((msg.note, s_to_f(o, fps), s_to_f(cumulative_time, fps)))
-    return events
+    if len(mid.tracks) == 1:
+        return MidiTrack(events[list(events.keys())[0]])
+    else:
+        return events
 
 def sibling(root, file):
     return Path(root).parent.joinpath(file)

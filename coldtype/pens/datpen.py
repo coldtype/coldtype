@@ -238,6 +238,13 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = dp.value
         return self
     
+    def repeat(self, times=1):
+        copy = self.copy()
+        copy_0_move, copy_0_data = copy.value[0]
+        copy.value[0] = ("lineTo", copy_0_data)
+        self.value = self.value[:-1] + copy.value
+        return self
+    
     def transform(self, transform, transformFrame=True):
         """Perform an arbitrary transformation on the pen, using the fontTools `Transform` class."""
         op = RecordingPen()
