@@ -73,6 +73,7 @@ class DATPenLikeObject():
         self.replay(dp)
         for tag, attrs in self.attrs.items():
             dp.attr(tag, **attrs)
+        dp.glyphName = self.glyphName
         return dp
 
     def tag(self, tag):

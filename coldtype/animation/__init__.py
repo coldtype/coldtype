@@ -542,14 +542,23 @@ class MidiTrack():
     def __init__(self, notes):
         self.notes = notes
     
-    def noteForFrame(self, note_number, frame, preverb=0, reverb=0):
+    def noteForFrame(self, note_numbers, frame, preverb=0, reverb=0):
+        if isinstance(note_numbers, int):
+            note_numbers = [note_numbers]
         for note in reversed(self.notes):
-            if note.note == note_number:
-                if frame >= (note.on-preverb) and frame < (note.off+reverb):
-                    return note
+            valid = False
+            if callable(note_numbers):
+                if note_numbers(note.note):
+                    valid = True
+            else:
+                if note_numbers == "*" or note.note in note_numbers:
+                    valid = True
+            
+            if valid and frame >= (note.on-preverb) and frame < (note.off+reverb):
+                return note
     
-    def valueForFrame(self, note_number, frame, preverb=0, reverb=0):
-        note = self.noteForFrame(note_number, frame, preverb=preverb, reverb=reverb)
+    def valueForFrame(self, note_numbers, frame, preverb=0, reverb=0):
+        note = self.noteForFrame(note_numbers, frame, preverb=preverb, reverb=reverb)
         if note:
             v = 1 - ((frame - note.on) / (note.duration+reverb))
             if v > 1:
