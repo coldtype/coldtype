@@ -950,8 +950,8 @@ class DATPenSet(DATPenLikeObject):
         return self
     
     def mmap(self, fn):
-        for p in self.pens:
-            fn(p)
+        for idx, p in enumerate(self.pens):
+            fn(idx, p)
         return self
     
     def flatten(self, levels=100):
