@@ -213,10 +213,11 @@ class Clip():
 
 
 class Timeline():
-    def __init__(self, duration, fps=30, storyboard=[0], workareas=None):
+    def __init__(self, duration, fps=30, storyboard=[0], workareas=None, data=None):
         self.fps = fps
         self.duration = round(duration)
         self.storyboard = storyboard
+        self.data = data
         if len(self.storyboard) == 0:
             self.storyboard.append(0)
         self.storyboard.sort()
@@ -227,6 +228,25 @@ class Timeline():
     
     def __str__(self):
         return "<Timeline:{:04d}f@{:02.2f}fps>".format(self.duration, self.fps)
+    
+    def FromPremiereJSON(json_file):
+        json_file_path = str(json_file)
+        jsondata = json.loads(timeline.read_text())
+        meta = jsondata.get("metadata")
+        fps = 1 / meta.get("frameRate")
+        duration = int(round(int(meta.get("duration"))/int(meta.get("timebase"))))
+        storyboard = []
+        tof = lambda s: int(round(float(s)*fps))
+        for m in jsondata.get("storyboard"):
+            storyboard.append(tof(m.get("start")))
+        workareas = []
+        workareas.append(range(max(0, tof(meta.get("inPoint"))), tof(meta.get("outPoint"))+1))
+        return Timeline(
+            duration,
+            fps,
+            storyboard=storyboard,
+            workareas=workareas,
+            data=jsondata)
 
 
 class AnimationFrame():
@@ -274,37 +294,15 @@ class Animation():
         self.watches = [str(w.expanduser().resolve()) for w in watches]
         self.sourcefile = None
 
-        if isinstance(timeline, Path):
-            if str(timeline).endswith(".json"):
-                jsondata = json.loads(timeline.read_text())
-                meta = jsondata.get("metadata")
-                fps = 1 / meta.get("frameRate")
-                duration = int(round(int(meta.get("duration"))/int(meta.get("timebase"))))
-                storyboard = []
-                tof = lambda s: int(round(float(s)*fps))
-                for m in jsondata.get("storyboard"):
-                    storyboard.append(tof(m.get("start")))
-                workareas = []
-                workareas.append(
-                    range(
-                        max(0, tof(meta.get("inPoint"))),
-                        tof(meta.get("outPoint"))+1
-                        ))
-                self.jsonfile = timeline
-                self.timeline = Timeline(
-                    duration,
-                    fps,
-                    storyboard=storyboard,
-                    workareas=workareas
-                )
+        if isinstance(timeline, Timeline):
+            self.timeline = timeline
+            if self.timeline.data:
                 self.clipGroupsByTrack = []
-                for tidx, track in enumerate(jsondata.get("tracks")):
+                for tidx, track in enumerate(self.timeline.data.get("tracks")):
                     markers = [Marker(fps, m) for m in track.get("markers")]
                     clips = track.get("clips")
                     gcs = self.groupedClips([Clip(c, fps=fps, markers=markers, track=tidx) for c in clips])
                     self.clipGroupsByTrack.append(gcs)
-        elif isinstance(timeline, Timeline):
-            self.timeline = timeline
         elif timeline:
             self.timeline = Timeline(timeline, 30)
         else:

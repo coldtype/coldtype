@@ -254,7 +254,7 @@ def render_slice(frames):
 
 def preview_storyboard():
     layers = read_layers(anm)
-    layers_folder = get_frames_folder(anm, mkdir=False)
+    layers_folder = get_frames_folder(anm, mkdir=args.write_storyboard_images)
     preview.clear()
 
     for frame in anm.timeline.storyboard:
