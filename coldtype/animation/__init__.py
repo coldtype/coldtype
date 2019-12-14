@@ -229,9 +229,11 @@ class Timeline():
     def __str__(self):
         return "<Timeline:{:04d}f@{:02.2f}fps>".format(self.duration, self.fps)
     
+
+    
     def FromPremiereJSON(json_file):
         json_file_path = str(json_file)
-        jsondata = json.loads(timeline.read_text())
+        jsondata = json.loads(json_file.read_text())
         meta = jsondata.get("metadata")
         fps = 1 / meta.get("frameRate")
         duration = int(round(int(meta.get("duration"))/int(meta.get("timebase"))))
@@ -241,6 +243,14 @@ class Timeline():
             storyboard.append(tof(m.get("start")))
         workareas = []
         workareas.append(range(max(0, tof(meta.get("inPoint"))), tof(meta.get("outPoint"))+1))
+
+        self.clipGroupsByTrack = []
+        for tidx, track in enumerate(self.timeline.data.get("tracks")):
+            markers = [Marker(fps, m) for m in track.get("markers")]
+            clips = track.get("clips")
+            gcs = self.groupedClips([Clip(c, fps=fps, markers=markers, track=tidx) for c in clips])
+            self.clipGroupsByTrack.append(gcs)
+
         return Timeline(
             duration,
             fps,
