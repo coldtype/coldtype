@@ -538,9 +538,30 @@ class ClipGroup():
 def s_to_f(s, fps):
     return math.floor(s*fps)
 
+
+class MidiFile():
+    def __init__(self, tracks):
+        self.tracks = tracks
+        all_notes = []
+        for t in tracks:
+            for note in t.notes:
+                all_notes.append(note.note)
+        self.min = min(all_notes)
+        self.max = max(all_notes)
+
+    def __getitem__(self, item):
+        if isinstance(item, str):
+            for t in self.tracks:
+                if t.name == item:
+                    return t
+        else:
+            return self.tracks[item]
+
+
 class MidiTrack():
-    def __init__(self, notes):
+    def __init__(self, notes, name=None):
         self.notes = notes
+        self.name = name
     
     def noteForFrame(self, note_numbers, frame, preverb=0, reverb=0):
         if isinstance(note_numbers, int):
@@ -623,7 +644,10 @@ def read_midi(f, fps=30, bpm=120, rounded=True):
     if len(mid.tracks) == 1:
         return MidiTrack(events[list(events.keys())[0]])
     else:
-        return events
+        tracks = []
+        for track_name, es in events.items():
+            tracks.append(MidiTrack(es, name=track_name))
+        return MidiFile(tracks)
 
 def sibling(root, file):
     return Path(root).parent.joinpath(file)
