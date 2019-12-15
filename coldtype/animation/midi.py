@@ -1,7 +1,8 @@
-import mido
-import math
+import mido, math
+from pathlib import Path
 
 from coldtype.animation.timeline import Timeline
+
 
 class MidiNote():
     def __init__(self, note, on, off, fps, rounded):
@@ -28,65 +29,62 @@ class MidiNote():
         return self.s_to_f(self.off_seconds, rounded=rounded, fps=fps)
 
 
+class MidiNoteValue():
+    def __init__(self, note, value, count):
+        self.note = note
+        self.value = value
+        self.count = count
+    
+    def __str__(self):
+        return "<MidiNoteValue={:0.3f};note:{:04d};count:{:04d}>".format(self.value, self.note.note if self.note else -1, self.count)
+
+
 class MidiTrack():
     def __init__(self, notes, name=None):
         self.notes = notes
         self.name = name
     
-    def noteForFrame(self, note_numbers, frame, preverb=0, reverb=0):
+    def valueForFrame(self, note_numbers, frame, preverb=0, reverb=0):
         if isinstance(note_numbers, int):
             note_numbers = [note_numbers]
-        for note in reversed(self.notes):
-            valid = False
-            if callable(note_numbers):
-                if note_numbers(note.note):
-                    valid = True
-            else:
-                if note_numbers == "*" or note.note in note_numbers:
-                    valid = True
-            
-            if valid and frame >= (note.on-preverb) and frame < (note.off+reverb):
-                return note
-    
-    def valueForFrame(self, note_numbers, frame, preverb=0, reverb=0):
-        note = self.noteForFrame(note_numbers, frame, preverb=preverb, reverb=reverb)
-        if note:
-            v = 1 - ((frame - note.on) / (note.duration+reverb))
-            if v > 1:
-                v = 2 + ((frame - note.on - preverb) / preverb)
-                print(v)
-            return v
+        
+        if callable(note_numbers):
+            note_fn = note_numbers
+        elif note_numbers == "*":
+            note_fn = lambda n: True
         else:
-            return 0
-    
-    def countToFrame(self, note_number, frame, preverb=0):
+            note_fn = lambda n: n in note_numbers
+        
         count = 0
+        notes_on = []
+
         for note in self.notes:
-            if note.note == note_number:
-                if frame >= (note.on-preverb):
+            if note.on-preverb > frame:
+                continue
+            elif note_fn(note.note):
+                if frame >= note.on:
                     count += 1
-        return count
+                if frame >= (note.on-preverb) and frame < (note.off+reverb):
+                    notes_on.append(note)
+        
+        if len(notes_on) > 0:
+            values = []
+            for note in notes_on:
+                v = 1 - ((frame - note.on) / (note.duration+reverb))
+                if v > 1:
+                    v = 2 + ((frame - note.on - preverb) / preverb)
+                values.append(v)
+            return MidiNoteValue(notes_on[-1], max(values), count)
+        else:
+            return MidiNoteValue(None, 0, count)
 
 
 class MidiTimeline(Timeline):
     __name__ = "Midi"
 
-    def __init__(self, tracks):
-        self.tracks = tracks
-        all_notes = []
-        for t in tracks:
-            for note in t.notes:
-                all_notes.append(note.note)
-        self.min = min(all_notes)
-        self.max = max(all_notes)
-        duration = 100
-        fps = 30
-        storyboard = [0] # possible, just an arg?
-        #workareas = [] # possible, just an arg?
-        super().__init__(duration, fps=fps, storyboard=storyboard)
-
-    def ReadFromFile(f, fps=30, bpm=120, rounded=True):
-        mid = mido.MidiFile(str(f))
+    def __init__(self, path, fps=30, bpm=120, rounded=True, storyboard=[0], workareas=[]):
+        midi_path = path if isinstance(path, Path) else Path(path).expanduser()
+        mid = mido.MidiFile(str(midi_path))
         events = {}
         open_notes = {}
         for i, track in enumerate(mid.tracks):
@@ -107,7 +105,17 @@ class MidiTimeline(Timeline):
         tracks = []
         for track_name, es in events.items():
             tracks.append(MidiTrack(es, name=track_name))
-        return MidiTimeline(tracks)
+
+        all_notes = []
+        for t in tracks:
+            for note in t.notes:
+                all_notes.append(note)
+        
+        self.min = min([n.note for n in all_notes])
+        self.max = max([n.note for n in all_notes])
+        
+        duration = all_notes[-1].off
+        super().__init__(duration, fps, storyboard, workareas, tracks)
     
-    def ReadFromFiles(root, filesnames):
+    def BuildTracksFromFiles(root, filesnames):
         pass

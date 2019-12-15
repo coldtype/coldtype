@@ -1,8 +1,9 @@
-import re
-import json
+import re, json, math
+from pathlib import Path
 from enum import Enum
 
 from coldtype.animation.timeline import Timeline
+
 
 VIDEO_OFFSET = 86313 # why is this?
 
@@ -126,7 +127,7 @@ class Clip():
             return txt
     
     def __repr__(self):
-        return "<TC:({:s}/{:04d}/{:04d}\"{:s}\")>".format([" -1", "NOW", " +1"][self.position+1], self.start, self.end, self.text)
+        return "<Clip:({:s}/{:04d}/{:04d}\"{:s}\")>".format([" -1", "NOW", " +1"][self.position+1], self.start, self.end, self.text)
 
 
 group_pens_cache = {}
@@ -296,34 +297,58 @@ class ClipGroup():
 
 
 class ClipTrack():
-    pass
+    def __init__(self, clips):
+        self.clips = clips
+        self.clip_groups = self.groupedClips(clips)
+    
+    def groupedClips(self, clips):
+        groups = []
+        group = []
+        last_clip = None
+        for idx, clip in enumerate(clips):
+            if clip.type == ClipType.ClearScreen:
+                if len(group) > 0:
+                    groups.append(ClipGroup(self, len(groups), group))
+                group = []
+            elif clip.type == ClipType.JoinPrev:
+                if last_clip:
+                    last_clip.addJoin(clip, +1)
+                    clip.addJoin(last_clip, -1)
+            group.append(clip)
+            last_clip = clip
+        if len(group) > 0:
+            groups.append(ClipGroup(self, len(groups), group))
+        return groups
 
 
 class PremiereTimeline(Timeline):
     __name__ = "Premiere"
 
-    def groupedClips(self, tcs):
-        groups = []
-        group = []
-        last_clip = None
-        for idx, tc in enumerate(tcs):
-            if tc.type == ClipType.ClearScreen:
-                if len(group) > 0:
-                    groups.append(ClipGroup(self, len(groups), group))
-                group = []
-            elif tc.type == ClipType.JoinPrev:
-                if last_clip:
-                    last_clip.addJoin(tc, +1)
-                    tc.addJoin(last_clip, -1)
-            group.append(tc)
-            last_clip = tc
-        if len(group) > 0:
-            groups.append(ClipGroup(self, len(groups), group))
-        return groups
+    def __init__(self, path):
+        json_path = path if isinstance(path, Path) else Path(path).expanduser()
+        jsondata = json.loads(json_path.read_text())
+        meta = jsondata.get("metadata")
+        
+        fps = 1 / meta.get("frameRate")
+        duration = int(round(int(meta.get("duration"))/int(meta.get("timebase"))))
+        
+        storyboard = []
+        tof = lambda s: int(round(float(s)*fps))
+        for m in jsondata.get("storyboard"):
+            storyboard.append(tof(m.get("start")))
+        
+        workareas = []
+        workareas.append(range(max(0, tof(meta.get("inPoint"))), tof(meta.get("outPoint"))+1))
+
+        tracks = []
+        for tidx, track in enumerate(jsondata.get("tracks")):
+            markers = [Marker(fps, m) for m in track.get("markers")]
+            tracks.append(ClipTrack([Clip(c, fps=fps, markers=markers, track=tidx) for c in track.get("clips")]))
+        
+        super().__init__(duration, fps, storyboard, workareas, tracks)
     
     def trackClipGroupForFrame(self, track_idx, frame_idx, styles=None):
-        groups = self.clipGroupsByTrack[track_idx]
-        for group in groups:
+        for group in self[track_idx].clip_groups:
             if group.start <= frame_idx and group.end > frame_idx:
                 style_groups = None
                 if styles:
@@ -331,31 +356,3 @@ class PremiereTimeline(Timeline):
                     for style in styles:
                         style_groups.append(self.trackClipGroupForFrame(style, frame_idx))
                 return group.position(frame_idx, style_groups)
-    
-    def ReadFromFile(json_file):
-        json_file_path = str(json_file)
-        jsondata = json.loads(json_file.read_text())
-        meta = jsondata.get("metadata")
-        fps = 1 / meta.get("frameRate")
-        duration = int(round(int(meta.get("duration"))/int(meta.get("timebase"))))
-        storyboard = []
-        tof = lambda s: int(round(float(s)*fps))
-        for m in jsondata.get("storyboard"):
-            storyboard.append(tof(m.get("start")))
-        workareas = []
-        workareas.append(range(max(0, tof(meta.get("inPoint"))), tof(meta.get("outPoint"))+1))
-        
-        timeline = PremiereTimeline(
-            duration,
-            fps,
-            storyboard=storyboard,
-            workareas=workareas)
-
-        timeline.clipGroupsByTrack = []
-        for tidx, track in enumerate(jsondata.get("tracks")):
-            markers = [Marker(fps, m) for m in track.get("markers")]
-            clips = track.get("clips")
-            gcs = timeline.groupedClips([Clip(c, fps=fps, markers=markers, track=tidx) for c in clips])
-            timeline.clipGroupsByTrack.append(gcs)
-        
-        return timeline

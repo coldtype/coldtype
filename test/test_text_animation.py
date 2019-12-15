@@ -5,6 +5,6 @@ def render(f):
     print(cg.currentWord())
     return []
 
-timeline = PremiereTimeline.ReadFromFile(sibling(__file__, "test_timeline.json"))
+timeline = PremiereTimeline(sibling(__file__, "test_timeline.json"))
 print(timeline)
 animation = Animation(render, (1920, 1080), timeline, bg=0)
