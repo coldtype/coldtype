@@ -309,8 +309,8 @@ class Style():
         self.next = None
         self.layer = layer
         self.layerer = layerer
-        self.reverse = reverse
-        self.removeOverlap = removeOverlap
+        self.reverse = kwargs.get("r", reverse)
+        self.removeOverlap = kwargs.get("ro", removeOverlap)
         self.rotate = rotate
 
         try:
@@ -712,11 +712,14 @@ class StyledString(FittableMixin):
 
         return self.adjustFramesForPath(self.trackFrames(frames))
     
+    def scale(self):
+        return self.fontSize / self.style.upem
+    
     def width(self): # size?
         return self.getGlyphFrames()[-1].frame.point("SE").x
     
-    def scale(self):
-        return self.fontSize / self.style.upem
+    def height(self):
+        return self.style.capHeight*self.scale()
     
     def textContent(self):
         return self.text

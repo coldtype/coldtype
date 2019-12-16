@@ -22,6 +22,7 @@ class Graf():
             self.style = style
         else:
             self.style = GrafStyle(**kwargs)
+        self.lines = []
         self.lines = lines
     
     def lineRects(self):
@@ -144,7 +145,7 @@ class Slug(FittableMixin):
         return sum([s.width() for s in self.strings])
     
     def height(self):
-        return max([s.style.capHeight*s.scale() for s in self.strings])
+        return max([s.height() for s in self.strings])
     
     def textContent(self):
         return "-".join([s.textContent() for s in self.strings])
