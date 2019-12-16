@@ -40,13 +40,21 @@ class MidiNoteValue():
 
 
 class MidiTrack():
-    def __init__(self, notes, name=None):
+    def __init__(self, notes, name=None, note_names=[]):
         self.notes = notes
         self.name = name
+        self.note_names = note_names
+
+    def allNotes(self):
+        return set([n.note for n in self.notes])
     
     def valueForFrame(self, note_numbers, frame, preverb=0, reverb=0):
-        if isinstance(note_numbers, int):
+        if isinstance(note_numbers, int) or (isinstance(note_numbers, str) and note_numbers != "*"):
             note_numbers = [note_numbers]
+        
+        if not isinstance(note_numbers, str):
+            for idx, nn in enumerate(note_numbers):
+                note_numbers[idx] = self.note_names.get(nn, 0) if isinstance(nn, str) else nn
         
         if callable(note_numbers):
             note_fn = note_numbers
@@ -82,7 +90,9 @@ class MidiTrack():
 class MidiTimeline(Timeline):
     __name__ = "Midi"
 
-    def __init__(self, path, fps=30, bpm=120, rounded=True, storyboard=[0], workareas=[]):
+    def __init__(self, path, fps=30, bpm=120, rounded=True, storyboard=[0], workareas=[], note_names=[]):
+        note_names_reversed = {v:k for (k,v) in note_names.items()}
+
         midi_path = path if isinstance(path, Path) else Path(path).expanduser()
         mid = mido.MidiFile(str(midi_path))
         events = {}
@@ -104,13 +114,14 @@ class MidiTimeline(Timeline):
                         open_notes[track.name][msg.note] = cumulative_time
         tracks = []
         for track_name, es in events.items():
-            tracks.append(MidiTrack(es, name=track_name))
+            tracks.append(MidiTrack(es, name=track_name, note_names=note_names_reversed))
 
         all_notes = []
         for t in tracks:
             for note in t.notes:
                 all_notes.append(note)
         
+        self.note_names = note_names
         self.min = min([n.note for n in all_notes])
         self.max = max([n.note for n in all_notes])
         
