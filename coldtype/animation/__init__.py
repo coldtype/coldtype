@@ -7,7 +7,7 @@ from coldtype.text import *
 
 from coldtype.animation.easing import ease
 from coldtype.animation.timeline import Timeline
-from coldtype.animation.premiere import PremiereTimeline
+from coldtype.animation.premiere import PremiereTimeline, ClipGroup, ClipFlags, ClipType
 from coldtype.animation.midi import MidiTimeline, MidiTrack, MidiNote
 
 from random import random

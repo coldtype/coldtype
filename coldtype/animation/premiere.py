@@ -3,6 +3,7 @@ from pathlib import Path
 from enum import Enum
 
 from coldtype.animation.timeline import Timeline
+from coldtype.text import Lockup, Graf, GrafStyle
 
 
 VIDEO_OFFSET = 86313 # why is this?
