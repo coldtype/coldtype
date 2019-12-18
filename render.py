@@ -38,6 +38,8 @@ parser.add_argument("-rw", "--renderworkareas", action="store_true", default=Fal
 parser.add_argument("-a", "--all", action="store_true", default=False)
 parser.add_argument("-w", "--watch", action="store_true", default=False)
 parser.add_argument("-l", "--layers", type=str, default=None)
+parser.add_argument("-f", "--format", type=str, default="png")
+parser.add_argument("-cfn", "--custom-filename", type=str, default=None)
 parser.add_argument("-r", "--rasterizer", type=str, default="drawbot")
 parser.add_argument("-i", "--icns", action="store_true", default=False)
 parser.add_argument("-arc", "--always-reload-coldtype", action="store_true", default=False)
@@ -166,7 +168,10 @@ def render_frame(
             layer_pens = [layer_pens]
             result[layer_name] = layer_pens
         layer_frames_folder = layers_folder.joinpath(f"{filepath.stem}_{layer_name}_frames")
-        layer_file = "{:s}_{:s}_{:04d}.png".format(filepath.stem, layer_name, i)
+        if args.custom_filename:
+            layer_file = "{:s}.{}".format(args.custom_filename, args.format)
+        else:
+            layer_file = "{:s}_{:s}_{:04d}.{}".format(filepath.stem, layer_name, i, args.format)
         layer_frame_path = layer_frames_folder.joinpath(layer_file)
         aframe.filepaths[layer_name] = layer_frame_path
         if write_to_disk:

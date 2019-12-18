@@ -37,10 +37,13 @@ class MidiNoteValue():
     
     def __str__(self):
         return "<MidiNoteValue={:0.3f};note:{:04d};count:{:04d}>".format(self.value, self.note.note if self.note else -1, self.count)
+    
+    def valid(self):
+        return self.note and self.note.note >= 0
 
 
 class MidiTrack():
-    def __init__(self, notes, name=None, note_names=[]):
+    def __init__(self, notes, name=None, note_names={}):
         self.notes = notes
         self.name = name
         self.note_names = note_names
@@ -90,7 +93,7 @@ class MidiTrack():
 class MidiTimeline(Timeline):
     __name__ = "Midi"
 
-    def __init__(self, path, fps=30, bpm=120, rounded=True, storyboard=[0], workareas=[], note_names=[]):
+    def __init__(self, path, fps=30, bpm=120, rounded=True, storyboard=[0], workareas=[], note_names={}):
         note_names_reversed = {v:k for (k,v) in note_names.items()}
 
         midi_path = path if isinstance(path, Path) else Path(path).expanduser()

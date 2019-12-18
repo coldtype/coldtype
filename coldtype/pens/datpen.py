@@ -678,8 +678,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 parse_path(path.get("d"), tp)
         return self
     
-    def explode(self):
-        """Read each contour into its own DATPen; returns a DATPenSet"""
+    def explode(self, into_set=False):
+        """Read each contour into its own DATPen (or DATPenSet if `into_set` is True); returns a DATPenSet"""
         dp = RecordingPen()
         ep = ExplodingPen(dp)
         self.replay(ep)
@@ -687,7 +687,11 @@ class DATPen(RecordingPen, DATPenLikeObject):
         for p in ep.pens:
             dp = DATPen()
             dp.value = p
-            dps.append(dp)
+            dp.attrs = self.attrs.copy()
+            if into_set:
+                dps.append(DATPenSet([dp]))
+            else:
+                dps.append(dp)
         return dps
     
     def openAndClosed(self):
@@ -836,6 +840,9 @@ class DATPenSet(DATPenLikeObject):
     def __str__(self):
         return f"<DPS:pens:{len(self.pens)}>"
     
+    def __len__(self):
+        return len(self.pens)
+    
     def copy(self):
         dps = DATPenSet()
         for p in self.pens:
@@ -948,6 +955,11 @@ class DATPenSet(DATPenLikeObject):
     def round(self, rounding):
         for p in self.pens:
             p.round(rounding)
+        return self
+    
+    def map(self, fn):
+        for idx, p in enumerate(self.pens):
+            self.pens[idx] = fn(idx, p)
         return self
     
     def mmap(self, fn):
