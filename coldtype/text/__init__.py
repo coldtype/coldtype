@@ -1,1 +1,1 @@
-from coldtype.text.composer import Style, StyledString, Slug, Lockup, Graf, GrafStyle, T2L, DATPen, DATPenSet
+from coldtype.text.composer import Style, StyledString, Slug, Lockup, Graf, GrafStyle, T2L, DATPen, DATPenSet, Furniture

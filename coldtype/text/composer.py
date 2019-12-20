@@ -4,6 +4,23 @@ from coldtype.geometry import Rect, Point
 from coldtype.text.shaper import segment
 from coldtype.text.reader import Style, StyledString, FittableMixin
 
+class Furniture():
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+    
+    def width(self):
+        return width
+    
+    def height(self):
+        return height
+    
+    def fit(self):
+        pass
+
+    def pens(self):
+        return []
+
 
 class GrafStyle():
     def __init__(self, leading=10, x="centerx", xp=0, **kwargs):
@@ -22,7 +39,6 @@ class Graf():
             self.style = style
         else:
             self.style = GrafStyle(**kwargs)
-        self.lines = []
         self.lines = lines
     
     def lineRects(self):

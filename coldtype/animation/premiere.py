@@ -1,9 +1,10 @@
 import re, json, math
 from pathlib import Path
 from enum import Enum
+import copy
 
 from coldtype.animation.timeline import Timeline
-from coldtype.text import Lockup, Graf, GrafStyle
+from coldtype.text import Lockup, Graf, GrafStyle, Furniture
 
 
 VIDEO_OFFSET = 86313 # why is this?
@@ -26,6 +27,7 @@ class Marker():
 class ClipType(Enum):
     ClearScreen = "ClearScreen"
     NewLine = "NewLine"
+    GrafBreak = "GrafBreak"
     Isolated = "Isolated"
     JoinPrev = "JoinPrev"
 
@@ -73,6 +75,9 @@ class Clip():
             elif self.text.startswith("≈"):
                 self.text = self.text[1:]
                 self.type = ClipType.NewLine
+            elif self.text.startswith("¶"):
+                self.text = self.text[1:]
+                self.type = ClipType.GrafBreak
             elif self.text.startswith("+"):
                 self.text = self.text[1:]
                 self.type = ClipType.JoinPrev
@@ -160,6 +165,14 @@ class ClipGroup():
             if clip.type == ClipType.NewLine:
                 lines.append(line)
                 line = [clip]
+            elif clip.type == ClipType.GrafBreak:
+                lines.append(line)
+                cclip = copy.deepcopy(clip)
+                cclip.text = "¶"
+                lines.append([cclip])
+                #lines.append([Furniture(100, 100)])
+                line = [clip]
+                # add a graf mark
             else:
                 line.append(clip)
         if len(line) > 0:

@@ -61,7 +61,9 @@ def reload_animation():
     if args.always_reload_coldtype:
         try:
             importlib.reload(coldtype)
+            importlib.reload(coldtype.text.composer)
             importlib.reload(coldtype.animation)
+            importlib.reload(coldtype.animation.premiere)
         except Exception as e:
             print(">>> CAUGHT COLDTYPE")
             print(traceback.format_exc())
@@ -333,7 +335,7 @@ def watch_changes():
         Path("~/signals").expanduser().resolve(), # could easily be in coldtype directory?
     ]
     if args.always_reload_coldtype:
-        to_watch.append(Path(__file__).parent.joinpath("coldtype/animation"))
+        to_watch.append(Path(__file__).parent.joinpath("coldtype"))
     render()
     handler = Handler()
     print("... watching ...")

@@ -37,7 +37,7 @@ $._PPP_={
 				outFile.open("w", "TEXT", "????");
 
 				var data = {};
-				data.metadata = { "inPoint": ip.seconds, "outPoint": op.seconds, "duration": duration, "timebase": seq.timebase, "frameRate": fps.seconds };
+				data.metadata = { "inPoint": ip.seconds, "outPoint": op.seconds, "duration": duration, "timebase": seq.timebase, "frameRate": fps.seconds, "cti": seq.getPlayerPosition().seconds };
 				
 				data.storyboard = [];
 
