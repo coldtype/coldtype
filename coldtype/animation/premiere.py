@@ -354,6 +354,9 @@ class PremiereTimeline(Timeline):
         workareas = []
         workareas.append(range(max(0, tof(meta.get("inPoint"))), tof(meta.get("outPoint"))+1))
 
+        cti = tof(meta.get("cti"))
+        self.cti = cti
+
         tracks = []
         for tidx, track in enumerate(jsondata.get("tracks")):
             markers = [Marker(fps, m) for m in track.get("markers")]

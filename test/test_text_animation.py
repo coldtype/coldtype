@@ -3,8 +3,8 @@ from coldtype.animation import *
 def render(f):
     cg = f.a.t.trackClipGroupForFrame(0, f.i, styles=[1])
     print(cg.currentWord())
-    return []
+    return Slug(cg.currentWord()[0].ftext().upper(), Style("≈/ObviouslyVariable.ttf", 200, fill=1)).pen().align(f.a.r)
 
 timeline = PremiereTimeline(sibling(__file__, "test_timeline.json"))
-print(timeline)
-animation = Animation(render, (1920, 1080), timeline, bg=0)
+print(timeline.trackClipGroupForFrame(0, timeline.cti))
+animation = Animation(render, (1920, 1080), timeline, bg=0.3)

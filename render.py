@@ -60,10 +60,11 @@ class LayerException(Exception):
 def reload_animation():
     if args.always_reload_coldtype:
         try:
-            importlib.reload(coldtype)
-            importlib.reload(coldtype.text.composer)
-            importlib.reload(coldtype.animation)
             importlib.reload(coldtype.animation.premiere)
+            #importlib.reload(coldtype.text.composer)
+            importlib.reload(coldtype.animation)
+            importlib.reload(coldtype)
+            
         except Exception as e:
             print(">>> CAUGHT COLDTYPE")
             print(traceback.format_exc())
