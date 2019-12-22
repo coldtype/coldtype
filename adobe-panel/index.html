@@ -64,7 +64,9 @@
 					var action = data["action"];
 					var csInterface = new CSInterface();
 					csInterface.evalScript('$._generic_.serializeAnimation(null, "'+data['prefix']+'")');
-					doSend(JSON.stringify({serialization: true, prefix: prefix, action: action}));
+					setTimeout(function() {
+						doSend(JSON.stringify({serialization: true, prefix: prefix, action: action}));
+					}, 0);
 				} else if (data["workarea_update"]) {
 					var prefix = data["prefix"];
 					var csInterface = new CSInterface();
@@ -76,7 +78,7 @@
                 if (evt.data == "CLEAR") {
                     container.innerHTML = "";
                 } else {
-                    container.innerHTML = container.innerHTML + evt.data;
+                    //container.innerHTML = container.innerHTML + evt.data;
                 }
 			}
 		}

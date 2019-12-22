@@ -25,6 +25,12 @@ import traceback
 import websocket
 import time
 
+from inspect import getframeinfo, stack
+
+def debuginfo():
+    caller = getframeinfo(stack()[2][0])
+    print(">>>>> %s:%d" % (caller.filename, caller.lineno))
+
 import argparse
 import importlib
 
@@ -47,6 +53,7 @@ parser.add_argument("-r", "--rasterizer", type=str, default="drawbot")
 parser.add_argument("-i", "--icns", action="store_true", default=False)
 parser.add_argument("-arc", "--always-reload-coldtype", action="store_true", default=False)
 parser.add_argument("-wsi", "--write-storyboard-images", action="store_true", default=False)
+parser.add_argument("-rfa", '--read-from-adobe', action='store_true', default=False)
 args = parser.parse_args()
 
 filepath = None
@@ -290,6 +297,7 @@ def preview_storyboard():
 
 
 def render(frames_fn=None):
+    #debuginfo()
     rendered_frames = False
     anm = reload_animation()
     if anm:
@@ -298,7 +306,13 @@ def render(frames_fn=None):
             rendered_frames = True
             frames = frames_fn(anm)
             render_slice(frames)
-        if rendered_frames or args.write_storyboard_images:
+        if not rendered_frames and args.write_storyboard_images:
+            # always need to render 0 to trigger cache-bust in adobe products
+            layers = read_layers(anm)
+            layers_folder = get_frames_folder(anm)
+            render_frame(anm, layers, layers_folder, 0, 0)
+            rendered_frames = True
+        if rendered_frames:
             preview.send(json.dumps(dict(rendered=True, prefix=anm.sourcefile.stem, fps=anm.timeline.fps)), full=True)
 
 def workarea_frames(anm):
@@ -316,33 +330,51 @@ class Handler(FileSystemEventHandler):
     def on_modified(self, event):
         global anm
         p = event.src_path
-        if p in anm.watches:
+        external_timeline = args.read_from_adobe and hasattr(anm.timeline, "currentWorkarea")
+
+        def request_serialization(action):
+            preview.send(json.dumps(dict(serialization_request=True, prefix=anm.sourcefile.stem, action=action)), full=True)
+
+        if p in anm.watches or p.endswith("render-storyboard.txt") or p.endswith(".py"): #or p.endswith("Auto-Save"):
             print("save>>>", os.path.basename(p))
-            render()
-        elif p.endswith("render-storyboard.txt") or p.endswith(".py"): #or p.endswith("Auto-Save"):
-            print("save>>>", os.path.basename(p))
-            render()
+            if external_timeline:
+                request_serialization("render_storyboard")
+            else:
+                render()
         elif p.endswith("render-workarea.txt"):
-            render(workarea_frames)
+            if external_timeline:
+                request_serialization("render_workarea")
+            else:
+                render(workarea_frames)
         elif p.endswith("render-all.txt"):
-            render(all_frames)
+            if external_timeline:
+                request_serialization("render_all")
+            else:
+                render(all_frames)
         elif p.endswith("select-workarea.txt"):
-            preview.send(json.dumps(dict(serialization_request=True, prefix=anm.sourcefile.stem, action="select_workarea")), full=True)
+            request_serialization("select_workarea")
         else:
             pass
 
 def on_message(ws, message):
     try:
         jdata = json.loads(message)
-        if jdata.get("action") == "select_workarea":
-            anm = reload_animation()
-            if hasattr(anm.timeline, "currentWorkarea"):
+        action = jdata.get("action")
+        if jdata.get("serialization"):
+            if action == "select_workarea":
+                anm = reload_animation()
                 cw = anm.timeline.currentWorkarea()
                 if cw:
                     start, end = cw
                     preview.send(json.dumps(dict(workarea_update=True, prefix=anm.sourcefile.stem, fps=anm.timeline.fps, start=start, end=end)), full=True)
                 else:
                     print("No CTI/trackGroups found")
+            elif action == "render_workarea":
+                render(workarea_frames)
+            elif action == "render_all":
+                render(all_frames)
+            else:
+                render()
     except:
         if message == "rw":
             render(workarea_frames)

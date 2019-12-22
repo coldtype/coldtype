@@ -345,17 +345,19 @@ class PremiereTimeline(Timeline):
         
         fps = 1 / meta.get("frameRate")
         duration = int(round(int(meta.get("duration"))/int(meta.get("timebase"))))
-        
-        storyboard = []
+
         tof = lambda s: int(round(float(s)*fps))
+        
+        cti = tof(meta.get("cti"))
+        self.cti = cti
+
+        storyboard = []
+        storyboard.append(self.cti)
         for m in jsondata.get("storyboard"):
             storyboard.append(tof(m.get("start")))
         
         workareas = []
         workareas.append(range(max(0, tof(meta.get("inPoint"))), tof(meta.get("outPoint"))+1))
-
-        cti = tof(meta.get("cti"))
-        self.cti = cti
 
         tracks = []
         for tidx, track in enumerate(jsondata.get("tracks")):
