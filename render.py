@@ -208,6 +208,8 @@ def render_slice(frames):
     layers_folder = get_frames_folder(anm)
     
     if not args.do_sub_slicing:
+        if 0 not in frames:
+            frames.insert(0, 0)
         render_subslice(anm, layers, layers_folder, frames)
     else:
         group = math.floor(len(frames) / 8)
@@ -347,7 +349,8 @@ def on_message(ws, message):
         elif message == "all":
             render(all_frames)
         else:
-            print(">>>>>>>>>>>>>>>>>>>>>>>>>>", message)
+            pass
+            #print(">>>>>>>>>>>>>>>>>>>>>>>>>>", message)
 
 def watch_changes():
     to_watch = [
