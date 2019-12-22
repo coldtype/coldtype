@@ -373,3 +373,8 @@ class PremiereTimeline(Timeline):
                     for style in styles:
                         style_groups.append(self.trackClipGroupForFrame(style, frame_idx))
                 return group.position(frame_idx, style_groups)
+    
+    def currentWorkarea(self):
+        cg = self.trackClipGroupForFrame(0, self.cti)
+        if cg:
+            return [cg.start, cg.end]

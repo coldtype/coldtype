@@ -44,6 +44,7 @@
 
 		function onOpen(evt) {
 			connected = true;
+			doSend("hello from adobe");
 		}
 
 		function onClose(evt) {
@@ -53,17 +54,29 @@
 		function onMessage(evt) {
 			try {
 				var data = JSON.parse(evt.data);
+				console.log(data);
 				if (data["rendered"]) {
 					var prefix = data["prefix"];
 					var csInterface = new CSInterface();
 					csInterface.evalScript('$._generic_.refreshAnimations(null, "'+data['prefix']+'", '+data['fps']+')');
+				} else if (data["serialization_request"]) {
+					var prefix = data["prefix"];
+					var action = data["action"];
+					var csInterface = new CSInterface();
+					csInterface.evalScript('$._generic_.serializeAnimation(null, "'+data['prefix']+'")');
+					doSend(JSON.stringify({serialization: true, prefix: prefix, action: action}));
+				} else if (data["workarea_update"]) {
+					var prefix = data["prefix"];
+					var csInterface = new CSInterface();
+					csInterface.evalScript('$._generic_.updateWorkarea(null, "'+data['prefix']+'",  '+data['start']+', '+data['end']+')');
 				}
 			} catch(e) {
+				console.log("ELSE", evt);
 				let container = document.querySelector("#container");
                 if (evt.data == "CLEAR") {
                     container.innerHTML = "";
                 } else {
-                    //container.innerHTML = container.innerHTML + evt.data;
+                    container.innerHTML = container.innerHTML + evt.data;
                 }
 			}
 		}

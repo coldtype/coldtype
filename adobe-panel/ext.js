@@ -1,17 +1,7 @@
 
 function onLoaded() {
 	var csInterface = new CSInterface();
-	var locale	 	= csInterface.hostEnvironment.appUILocale;
 	var appName = loadJSX();
-
-	// // register for messages
-	// VulcanInterface.addMessageListener(
-	//     VulcanMessage.TYPE_PREFIX + "com.DVA.message.sendtext",
-	//     function(message) {
-	//         var str = VulcanInterface.getPayload(message);
-	//         // You just received the text of every Text layer in the current AE comp.
-	//     }
-	// );
 
 	csInterface.evalScript('$._generic_ = {}');
 
@@ -19,11 +9,14 @@ function onLoaded() {
 		csInterface.evalScript('$._PPP_.keepPanelLoaded()');
 		csInterface.evalScript('$._PPP_.registerProjectChangedFxn()');
 		csInterface.evalScript('$._generic_.refreshAnimations = $._PPP_.refreshAnimations');
+		csInterface.evalScript('$._generic_.updateWorkarea = $._PPP_.updateWorkarea');
+		csInterface.evalScript('$._generic_.serializeAnimation = $._PPP_.persistTimelineToJSON');
 	}
 
 	if (appName == "AEFT") {
 		csInterface.evalScript('$._AE_.keepPanelLoaded()');
 		csInterface.evalScript('$._generic_.refreshAnimations = $._AE_.refreshAnimations');
+		csInterface.evalScript('$._generic_.updateWorkarea = $._AE_.updateWorkarea');
 	}
 }
 

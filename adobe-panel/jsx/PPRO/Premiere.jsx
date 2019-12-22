@@ -95,6 +95,13 @@ $._PPP_={
 			}
 		}
 	},
+	updateWorkarea: function(root, prefix, start, end) {
+		var seq = app.project.activeSequence;
+		if (seq) {
+			seq.setInPoint(start/29.97);
+			seq.setOutPoint(end/29.97);
+		}
+	},
 	refreshAnimations: function(root, prefix, fps) {
         //alert(app.project.rootItem.children);
 		if (true) {

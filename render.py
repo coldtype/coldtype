@@ -28,6 +28,9 @@ import time
 import argparse
 import importlib
 
+SIGNAL_DIR = Path("~/coldtype-signals").expanduser().resolve()
+SIGNAL_DIR.mkdir(exist_ok=True)
+
 parser = argparse.ArgumentParser(prog="animation", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("file", type=str)
 parser.add_argument("-s", "--slice", type=str, default=None)
@@ -314,26 +317,42 @@ class Handler(FileSystemEventHandler):
         if p in anm.watches:
             print("save>>>", os.path.basename(p))
             render()
-        elif p.endswith("f13.txt") or p.endswith(".py"): #or p.endswith("Auto-Save"):
+        elif p.endswith("render-storyboard.txt") or p.endswith(".py"): #or p.endswith("Auto-Save"):
             print("save>>>", os.path.basename(p))
             render()
-        elif p.endswith("f14.txt"):
+        elif p.endswith("render-workarea.txt"):
             render(workarea_frames)
-        elif p.endswith("f15.txt"):
+        elif p.endswith("render-all.txt"):
             render(all_frames)
+        elif p.endswith("select-workarea.txt"):
+            preview.send(json.dumps(dict(serialization_request=True, prefix=anm.sourcefile.stem, action="select_workarea")), full=True)
         else:
             pass
 
 def on_message(ws, message):
-    if message == "rw":
-        render(workarea_frames)
-    elif message == "all":
-        render(all_frames)
+    try:
+        jdata = json.loads(message)
+        if jdata.get("action") == "select_workarea":
+            anm = reload_animation()
+            if hasattr(anm.timeline, "currentWorkarea"):
+                cw = anm.timeline.currentWorkarea()
+                if cw:
+                    start, end = cw
+                    preview.send(json.dumps(dict(workarea_update=True, prefix=anm.sourcefile.stem, fps=anm.timeline.fps, start=start, end=end)), full=True)
+                else:
+                    print("No CTI/trackGroups found")
+    except:
+        if message == "rw":
+            render(workarea_frames)
+        elif message == "all":
+            render(all_frames)
+        else:
+            print(">>>>>>>>>>>>>>>>>>>>>>>>>>", message)
 
 def watch_changes():
     to_watch = [
         filepath.parent,
-        Path("~/signals").expanduser().resolve(), # could easily be in coldtype directory?
+        SIGNAL_DIR,
     ]
     if args.always_reload_coldtype:
         to_watch.append(Path(__file__).parent.joinpath("coldtype"))
