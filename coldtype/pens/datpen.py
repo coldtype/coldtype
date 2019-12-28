@@ -239,6 +239,26 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = dp.value
         return self
     
+    def map(self, fn):
+        for idx, v in enumerate(self.value):
+            move, pts = v
+            self.value[idx] = (move, fn(idx, pts))
+        return self
+    
+    def map_points(self, fn):
+        idx = 0
+        for cidx, c in enumerate(self.value):
+            move, pts = c
+            pts = list(pts)
+            for pidx, p in enumerate(pts):
+                x, y = p
+                result = fn(idx, x, y)
+                if result:
+                    pts[pidx] = result
+                idx += 1
+            self.value[cidx] = (move, pts)
+        return self
+    
     def repeat(self, times=1):
         copy = self.copy()
         copy_0_move, copy_0_data = copy.value[0]
