@@ -1,5 +1,6 @@
 import math
 from enum import Enum
+from copy import deepcopy
 
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.pens.reverseContourPen import ReverseContourPen
@@ -707,7 +708,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         for p in ep.pens:
             dp = DATPen()
             dp.value = p
-            dp.attrs = self.attrs.copy()
+            dp.attrs = deepcopy(self.attrs)
             if into_set:
                 dps.append(DATPenSet([dp]))
             else:
@@ -871,6 +872,9 @@ class DATPenSet(DATPenLikeObject):
     
     def __getitem__(self, index):
         return self.pens[index]
+    
+    def __setitem__(self, index, pen):
+        self.pens[index] = pen
     
     def insert(self, index, pen):
         if pen:

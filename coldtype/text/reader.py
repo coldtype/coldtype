@@ -799,7 +799,9 @@ class StyledString(FittableMixin):
         # apply full-scale filtering before transform-down
         if self.style.filter:
             gn = self.style.ttfont.getGlyphName(frame.gid)
-            dp = self.style.filter(idx, frame.frame, gn, dp)
+            result = self.style.filter(idx, frame.frame, gn, dp)
+            if result:
+                dp = result
         return dp
     
     def drawToPen(self, pen, frames, index=None, useTTFont=False):

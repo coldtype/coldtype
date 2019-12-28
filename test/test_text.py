@@ -116,8 +116,14 @@ def map_points_test(f):
             return x+200, y
         elif idx in [7, 6]:
             return x+50, y
-    e = StyledString("E", Style("ç/MutatorSans.ttf", 500, ro=1, wdth=1, wght=1)).pen().align(f.a.r).map_points(point_mapper)
+    e = StyledString("E", Style(varfont, 500, ro=1, wdth=1, wght=1)).pen().align(f.a.r).map_points(point_mapper)
     return e, pt_labels.f(0, 0.5)
+
+def explode_test(f):
+    o_o, o_i = StyledString("O", Style(varfont, 500, wdth=1, wght=1)).pen().align(f.a.r, tv=1).explode()
+    o_i.f(1, 0, 0.5).rotate(90).translate(20, 0)
+    o_o.f("random", 0.5)
+    return o_o, o_i
 
 tests = [
     basic_test,
@@ -138,6 +144,7 @@ tests = [
     pathops_test,
     catmull_test,
     map_points_test,
+    explode_test,
 ]
 
 def render(f):
@@ -149,7 +156,7 @@ def render(f):
         DATPenSet(res)
     ]
 
-current_tests = [tests.index(map_points_test)]
+current_tests = [tests.index(explode_test)]
 #current_tests = list(range(0, len(tests)))
 
 timeline = Timeline(len(tests), storyboard=current_tests)
