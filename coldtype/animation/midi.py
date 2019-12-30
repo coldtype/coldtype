@@ -44,14 +44,14 @@ class MidiNoteValue():
 
 class MidiTrack():
     def __init__(self, notes, name=None, note_names={}):
-        self.notes = notes
+        self.notes = sorted(notes, key=lambda n: n.on)
         self.name = name
         self.note_names = note_names
 
     def allNotes(self):
         return set([n.note for n in self.notes])
     
-    def valueForFrame(self, note_numbers, frame, preverb=0, reverb=0):
+    def valueForFrame(self, note_numbers, frame, preverb=0, reverb=0, accumulate=0):
         if isinstance(note_numbers, int) or (isinstance(note_numbers, str) and note_numbers != "*"):
             note_numbers = [note_numbers]
         
@@ -85,7 +85,13 @@ class MidiTrack():
                 if v > 1:
                     v = 2 + ((frame - note.on - preverb) / preverb)
                 values.append(v)
-            return MidiNoteValue(notes_on[-1], max(values), count)
+            if accumulate:
+                all_values = []
+                for i, note in enumerate(notes_on):
+                    all_values.append(MidiNoteValue(note, values[i], 1))
+                return all_values
+            else:
+                return MidiNoteValue(notes_on[-1], max(values), count)
         else:
             return MidiNoteValue(None, 0, count)
 

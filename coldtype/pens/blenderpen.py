@@ -53,7 +53,6 @@ class BPH():
         return bpy.data.collections.get(name)
 
     def Primitive(_type, coll, name, dn=False, container=None):
-        #print(">Primitive", name, dn, name in bpy.context.scene.objects)
         created = False
         
         if dn and name in bpy.context.scene.objects:
@@ -269,7 +268,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
         else:
             self.bez, self.created = BPH.Primitive("Bezier", collection, self.tag, dn=dn)
             self.bez.data.fill_mode = "BOTH"
-            self.record(self.dat.copy().removeOverlap().scale(scale))
+            self.record(self.dat.copy().removeOverlap().scale(scale, center=False))
             self.drawOnBezierCurve(self.bez.data, cyclic=cyclic)
         for attr in self.findStyledAttrs(style):
             self.applyDATAttribute(attr)
@@ -291,14 +290,3 @@ class BlenderPen(DrawablePenMixin, BasePen):
                 pt.co = BPH.Vector(c)
                 pt.handle_left = BPH.Vector(l)
                 pt.handle_right = BPH.Vector(r)
-
-
-if __name__ == "__main__":
-    sys.path.insert(0, os.path.realpath("."))
-    from coldtype.pens.datpen import DATPen
-
-    dp1 = DATPen()
-    bp = dp1.oval(Rect(0, 0, 500, 500).inset(200, 200)).cast(BlenderPen)
-    print(bp)
-    #bp = BlenderPen(dp1)
-    #print(bp.splines)
