@@ -30,13 +30,14 @@ class MidiNote():
 
 
 class MidiNoteValue():
-    def __init__(self, note, value, count):
+    def __init__(self, note, value, svalue, count):
         self.note = note
         self.value = value
+        self.svalue = svalue
         self.count = count
     
     def __str__(self):
-        return "<MidiNoteValue={:0.3f};note:{:04d};count:{:04d}>".format(self.value, self.note.note if self.note else -1, self.count)
+        return "<MidiNoteValue={:0.3f}/{:0.3f};note:{:04d};count:{:04d}>".format(self.value, self.svalue, self.note.note if self.note else -1, self.count)
     
     def valid(self):
         return self.note and self.note.note >= 0
@@ -80,20 +81,33 @@ class MidiTrack():
         
         if len(notes_on) > 0:
             values = []
+            svalues = []
             for note in notes_on:
                 v = 1 - ((frame - note.on) / (note.duration+reverb))
+                if frame > note.off:
+                    if reverb > 0:
+                        sv = 1 - ((frame - note.off) / reverb)
+                    else:
+                        sv = 0
+                else:
+                    sv = 1
                 if v > 1:
                     v = 2 + ((frame - note.on - preverb) / preverb)
+                    sv = v
                 values.append(v)
+                svalues.append(sv)
             if accumulate:
                 all_values = []
                 for i, note in enumerate(notes_on):
-                    all_values.append(MidiNoteValue(note, values[i], 1))
+                    all_values.append(MidiNoteValue(note, values[i], svalues[i], 1))
                 return all_values
             else:
-                return MidiNoteValue(notes_on[-1], max(values), count)
+                return MidiNoteValue(notes_on[-1], max(values), max(svalues), count)
         else:
-            return MidiNoteValue(None, 0, count)
+            if accumulate:
+                return []
+            else:
+                return MidiNoteValue(None, 0, 0, count)
 
 
 class MidiTimeline(Timeline):
@@ -133,6 +147,7 @@ class MidiTimeline(Timeline):
         self.note_names = note_names
         self.min = min([n.note for n in all_notes])
         self.max = max([n.note for n in all_notes])
+        self.spread = self.max - self.min
         
         duration = all_notes[-1].off
         super().__init__(duration, fps, storyboard, workareas, tracks)
