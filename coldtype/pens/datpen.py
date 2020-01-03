@@ -852,6 +852,13 @@ class DATPenSet(DATPenLikeObject):
     def __getitem__(self, index):
         return self.pens[index]
     
+    def indexed_subset(self, indices):
+        dps = DATPenSet()
+        for idx, p in enumerate(self.pens):
+            if idx in indices:
+                dps.append(p.copy())
+        return dps
+    
     def insert(self, index, pen):
         if pen:
             self.pens.insert(index, pen)
