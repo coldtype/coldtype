@@ -338,7 +338,7 @@ class ClipTrack():
 class PremiereTimeline(Timeline):
     __name__ = "Premiere"
 
-    def __init__(self, path):
+    def __init__(self, path, storyboard=None):
         json_path = path if isinstance(path, Path) else Path(path).expanduser()
         jsondata = json.loads(json_path.read_text())
         meta = jsondata.get("metadata")
@@ -351,10 +351,15 @@ class PremiereTimeline(Timeline):
         cti = tof(meta.get("cti"))
         self.cti = cti
 
-        storyboard = []
-        storyboard.append(self.cti)
+        _storyboard = []
+        _storyboard.append(self.cti)
         for m in jsondata.get("storyboard"):
-            storyboard.append(tof(m.get("start")))
+            f = tof(m.get("start"))
+            if f not in _storyboard:
+                _storyboard.append(f)
+        
+        if storyboard:
+            _storyboard = storyboard
         
         workareas = []
         workareas.append(range(max(0, tof(meta.get("inPoint"))), tof(meta.get("outPoint"))+1))
@@ -364,7 +369,7 @@ class PremiereTimeline(Timeline):
             markers = [Marker(fps, m) for m in track.get("markers")]
             tracks.append(ClipTrack([Clip(c, fps=fps, markers=markers, track=tidx) for c in track.get("clips")]))
         
-        super().__init__(duration, fps, storyboard, workareas, tracks)
+        super().__init__(duration, fps, _storyboard, workareas, tracks)
     
     def trackClipGroupForFrame(self, track_idx, frame_idx, styles=None):
         for group in self[track_idx].clip_groups:

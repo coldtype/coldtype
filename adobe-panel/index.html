@@ -70,7 +70,7 @@
 				} else if (data["workarea_update"]) {
 					var prefix = data["prefix"];
 					var csInterface = new CSInterface();
-					csInterface.evalScript('$._generic_.updateWorkarea(null, "'+data['prefix']+'",  '+data['start']+', '+data['end']+')');
+					csInterface.evalScript('$._generic_.updateWorkarea(null, "'+data['prefix']+'",  '+data['start']+', '+data['end']+', '+data['fps']+')');
 				}
 			} catch(e) {
 				console.log("ELSE", evt);

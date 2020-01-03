@@ -1,5 +1,6 @@
 import math
 from enum import Enum
+from copy import deepcopy
 
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.pens.reverseContourPen import ReverseContourPen
@@ -237,6 +238,26 @@ class DATPen(RecordingPen, DATPenLikeObject):
         rp = ReverseContourPen(dp)
         self.replay(rp)
         self.value = dp.value
+        return self
+    
+    def map(self, fn):
+        for idx, v in enumerate(self.value):
+            move, pts = v
+            self.value[idx] = (move, fn(idx, pts))
+        return self
+    
+    def map_points(self, fn):
+        idx = 0
+        for cidx, c in enumerate(self.value):
+            move, pts = c
+            pts = list(pts)
+            for pidx, p in enumerate(pts):
+                x, y = p
+                result = fn(idx, x, y)
+                if result:
+                    pts[pidx] = result
+                idx += 1
+            self.value[cidx] = (move, pts)
         return self
     
     def repeat(self, times=1):
@@ -687,7 +708,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         for p in ep.pens:
             dp = DATPen()
             dp.value = p
-            dp.attrs = self.attrs.copy()
+            dp.attrs = deepcopy(self.attrs)
             if into_set:
                 dps.append(DATPenSet([dp]))
             else:
@@ -858,6 +879,9 @@ class DATPenSet(DATPenLikeObject):
             if idx in indices:
                 dps.append(p.copy())
         return dps
+    
+    def __setitem__(self, index, pen):
+        self.pens[index] = pen
     
     def insert(self, index, pen):
         if pen:

@@ -108,6 +108,23 @@ def catmull_test(f):
         points.append(last_pt)
     return dp.catmull(points).endPath().f(None).s("random").sw(20)
 
+def map_points_test(f):
+    pt_labels = DATPenSet()
+    def point_mapper(idx, x, y):
+        pt_labels.append(StyledString(str(idx), Style("ç/NotoSans-Black.ttf", 20, wght=1, wdth=0)).pen().translate(x, y))
+        if idx in [12, 11]:
+            return x+200, y
+        elif idx in [7, 6]:
+            return x+50, y
+    e = StyledString("E", Style(varfont, 500, ro=1, wdth=1, wght=1)).pen().align(f.a.r).map_points(point_mapper)
+    return e, pt_labels.f(0, 0.5)
+
+def explode_test(f):
+    o_o, o_i = StyledString("O", Style(varfont, 500, wdth=1, wght=1)).pen().align(f.a.r, tv=1).explode()
+    o_i.f(1, 0, 0.5).rotate(90).translate(20, 0)
+    o_o.f("random", 0.5)
+    return o_o, o_i
+
 tests = [
     basic_test,
     combine_slugs_test,
@@ -126,6 +143,8 @@ tests = [
     text_on_curve_test,
     pathops_test,
     catmull_test,
+    map_points_test,
+    explode_test,
 ]
 
 def render(f):
@@ -137,8 +156,8 @@ def render(f):
         DATPenSet(res)
     ]
 
-current_tests = [tests.index(layering_test)]
-current_tests = list(range(0, len(tests)))
+current_tests = [tests.index(explode_test)]
+#current_tests = list(range(0, len(tests)))
 
 timeline = Timeline(len(tests), storyboard=current_tests)
 animation = Animation(render, Rect(1920, 1080), timeline, bg=(1, 0))
