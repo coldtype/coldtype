@@ -998,6 +998,14 @@ class DATPenSet(DATPenLikeObject):
             fn(idx, p)
         return self
     
+    def filter(self, fn):
+        dps = DATPenSet()
+        for idx, p in enumerate(self.pens):
+            if fn(idx, p):
+                dps.append(p)
+        self.pens = dps.pens
+        return self
+    
     def flatten(self, levels=100):
         pens = []
         for p in self.pens:
@@ -1062,12 +1070,15 @@ class DATPenSet(DATPenLikeObject):
     def interleave(self, style_fn, direction=-1, recursive=True):
         """Provide a callback-lambda to interleave new DATPens between the existing ones; useful for stroke-ing glyphs, since the stroked glyphs can be placed behind the primary filled glyphs."""
         pens = []
-        for p in self.pens:
+        for idx, p in enumerate(self.pens):
             if recursive and isinstance(p, DATPenSet):
                 _p = p.interleave(style_fn, direction=direction, recursive=True)
                 pens.append(_p)
             else:
-                np = style_fn(p.copy())
+                try:
+                    np = style_fn(idx, p.copy())
+                except TypeError:
+                    np = style_fn(p.copy())
                 if isinstance(np, DATPen) or isinstance(np, DATPenSet):
                     np = [np]
                 if direction < 0:
