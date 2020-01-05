@@ -68,9 +68,12 @@
 						doSend(JSON.stringify({serialization: true, prefix: prefix, action: action}));
 					}, 0);
 				} else if (data["workarea_update"]) {
-					var prefix = data["prefix"];
 					var csInterface = new CSInterface();
 					csInterface.evalScript('$._generic_.updateWorkarea(null, "'+data['prefix']+'",  '+data['start']+', '+data['end']+', '+data['fps']+')');
+					csInterface.evalScript('$._generic_.serializeAnimation(null, "'+data['prefix']+'")');
+				} else if (data["edit_action"]) {
+					var csInterface = new CSInterface();
+					csInterface.evalScript('$._generic_.editAction(null, "'+data['prefix']+'",  "'+data['action']+'");');
 				}
 			} catch(e) {
 				console.log("ELSE", evt);

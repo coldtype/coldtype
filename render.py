@@ -335,6 +335,9 @@ class Handler(FileSystemEventHandler):
 
         def request_serialization(action):
             preview.send(json.dumps(dict(serialization_request=True, prefix=anm.sourcefile.stem, action=action)), full=True)
+        
+        def send_edit_action(action):
+            preview.send(json.dumps(dict(edit_action=True, prefix=anm.sourcefile.stem, action=action)), full=True)
 
         if p in anm.watches or p.endswith("render-storyboard.txt") or p.endswith(".py"): #or p.endswith("Auto-Save"):
             print("save>>>", os.path.basename(p))
@@ -354,6 +357,14 @@ class Handler(FileSystemEventHandler):
                 render(all_frames)
         elif p.endswith("select-workarea.txt"):
             request_serialization("select_workarea")
+        elif p.endswith("split-word-at-playhead.txt"):
+            send_edit_action("split_word_at_playhead")
+        elif p.endswith("newline.txt"):
+            send_edit_action("newline")
+        elif p.endswith("newsection.txt"):
+            send_edit_action("newsection")
+        elif p.endswith("capitalize.txt"):
+            send_edit_action("capitalize")
         else:
             pass
 

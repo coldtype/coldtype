@@ -11,6 +11,7 @@ function onLoaded() {
 		csInterface.evalScript('$._generic_.refreshAnimations = $._PPP_.refreshAnimations');
 		csInterface.evalScript('$._generic_.updateWorkarea = $._PPP_.updateWorkarea');
 		csInterface.evalScript('$._generic_.serializeAnimation = $._PPP_.persistTimelineToJSON');
+		csInterface.evalScript('$._generic_.editAction = $._PPP_.editAction');
 	}
 
 	if (appName == "AEFT") {
