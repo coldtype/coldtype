@@ -190,6 +190,8 @@ class ClipGroup():
                         for style_clip in style.clips:
                             if clip.start >= style_clip.start and clip.end <= style_clip.end:
                                 clip.styles.append(style_clip.ftext().strip())
+                            elif style_clip.start >= clip.start and style_clip.end <= clip.end:
+                                clip.styles.append(style_clip.ftext().strip())
             if clip.start > idx:
                 clip.position = 1
             elif clip.start <= idx and clip.end > idx:
