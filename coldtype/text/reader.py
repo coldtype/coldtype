@@ -133,7 +133,13 @@ class Harfbuzz():
                 x_offset += l
                 x_advance += r
             if self.kern_pairs:
-                for chars, (l, adv) in self.kern_pairs.items():
+                for chars, kp in self.kern_pairs.items():
+                    try:
+                        l = kp[0]
+                        adv = kp[1]
+                    except TypeError:
+                        l = kp
+                        adv = 0
                     a, b = chars
                     if gn == b and last_gn == a:
                         x_offset += l
@@ -270,8 +276,11 @@ class Style():
             ttFont=None,
             tracking=0,
             trackingLimit=0,
-            kern=dict(), # custom kerning
+            trackingMode=0,
+            kern=dict(), # custom kerning TODO actually more of a side-bearing adjustment
             kern_pairs=dict(),
+            overlap_pairs=dict(),
+            overlap_outline=3,
             space=None,
             baselineShift=0,
             xShift=None,
@@ -379,8 +388,13 @@ class Style():
         self.tracking = kwargs.get("t", tracking)
         self.kern = kwargs.get("k", kern)
         self.kern_pairs = kern_pairs
+        self.overlap_pairs = overlap_pairs
+        self.overlap_outline = overlap_outline
+        self.trackingMode = trackingMode
         self.trackingLimit = kwargs.get("tl", trackingLimit)
         self.baselineShift = kwargs.get("bs", baselineShift)
+        self.increments = increments
+        self.space = space
         self.xShift = kwargs.get("xs", xShift)
         self.palette = palette
         self.lang = lang
@@ -388,6 +402,12 @@ class Style():
         self.data = data
         self.latin = latin
         self.preventHwid = preventHwid
+
+        if kwargs.get("tu"):
+            self.trackingMode = 1
+            self.tracking = kwargs.get("tu")
+            if not self.increments.get("tracking"):
+                self.increments["tracking"] = 5 # TODO good?
 
         # TODO should be able to pass in as kwarg
         found_features = features.copy()
@@ -399,9 +419,6 @@ class Style():
             if k in ["dlig", "swsh", "onum", "tnum", "palt"]:
                 found_features[k] = v
         self.features = {**dict(kern=True, liga=True), **found_features}
-
-        self.increments = increments
-        self.space = space
 
         self.fill = normalize_color(fill)
         self.stroke = normalize_color(stroke)
@@ -611,13 +628,6 @@ class StyledString(FittableMixin):
                 except:
                     pass
         return frames
-    
-    # def getGlyphNames(self, txt):
-    #     frames = Harfbuzz.GetFrames(self.style.fontdata, text=txt, axes=self.variations, features=self.features, height=self.style.capHeight)
-    #     glyph_names = []
-    #     for f in frames:
-    #         glyph_names.append(self.style.ttfont.getGlyphName(f.gid))
-    #     return glyph_names
 
     def TextToGuessedGlyphNames(text):
         glyph_names = []
@@ -730,10 +740,16 @@ class StyledString(FittableMixin):
         else:
             frames = self.hb.frames(self.variations, self.features, self.glyphs)
         
+        if self.style.trackingMode == 1:
+            frames = self.trackFrames(frames)
+
         for f in frames:
             f.frame = f.frame.scale(self.scale())
 
-        return self.adjustFramesForPath(self.trackFrames(frames))
+        if self.style.trackingMode == 0:
+            frames = self.trackFrames(frames)
+
+        return self.adjustFramesForPath(frames)
     
     def scale(self):
         return self.fontSize / self.style.upem
@@ -911,6 +927,10 @@ class StyledString(FittableMixin):
                 
         if self.style.reverse:
             pens.reversePens()
+        
+        if self.style.kern_pairs:
+            overlap_pairs = {pair:value[2] for (pair, value) in self.style.kern_pairs.items() if not isinstance(value, int) and len(value) > 2}
+            pens.overlapPairs(overlap_pairs, outline=self.style.overlap_outline)
         return pens
 
     def pen(self, frame=True):

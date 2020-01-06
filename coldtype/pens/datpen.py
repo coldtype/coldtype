@@ -1131,7 +1131,9 @@ class DATPenSet(DATPenLikeObject):
                         self.addOverlaps(idx, idx+1, which, outline)
                 except IndexError:
                     pass
+        return self
     
     def overlapPairs(self, pairs, outline=3):
         for pair, which in pairs.items():
             self.overlapPair(pair[0], pair[1], which, outline=outline)
+        return self
