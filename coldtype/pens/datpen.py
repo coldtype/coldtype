@@ -1094,3 +1094,44 @@ class DATPenSet(DATPenLikeObject):
 
         self.pens = pens
         return self
+    
+    def addOverlaps(self, idx1, idx2, which, outline=3, scale=1, xray=0):
+        c1 = self[idx1]
+        c2 = self[idx2]
+        c2_upscale = c2.copy().scale(scale)
+        c2_upscale.record(c2_upscale.copy().outline(outline+1).reverse()).removeOverlap()
+        
+        overlaps = c1.copy().intersection(c2_upscale).explode().indexed_subset(which)
+        if outline and outline > 0:
+            all_outlined = c1.copy().f(0).outline(outline).intersection(c2).explode()
+
+        for ol in overlaps:
+            olb = ol.bounds().inset(0)
+            if outline and outline > 0:
+                for idx, ool in enumerate(all_outlined):
+                    oolb = ool.bounds().inset(0)
+                    if oolb.intersects(olb):
+                        self.append(ool.tag(f"overlap_outline_{idx1}"))#.f(1, 0, 0.5))
+                        if xray and False:
+                            self.append(DATPen().f(0, 0.5, 1, 0.2).rect(olb))
+                            self.append(DATPen().f(0.5, 0, 1, 0.2).rect(oolb))
+                    else:
+                        if xray and False:
+                            self.append(DATPen().f(None).s(0, 0.5, 1, 0.2).rect(olb))
+                            self.append(DATPen().f(None).s(0.5, 0, 1, 0.2).rect(oolb))
+            self.append(ol.tag(f"overlap_{idx1}"))#.f(1, 0, 0.5, 0.5))
+            #self.append(overlaps.copy().f(0, 1, 0, 0.1))
+
+    def overlapPair(self, gn1, gn2, which, outline=3):
+        for idx, dp in enumerate(self):
+            if dp.glyphName == gn2:
+                try:
+                    next_dp = self[idx+1]
+                    if next_dp.glyphName == gn1:
+                        self.addOverlaps(idx, idx+1, which, outline)
+                except IndexError:
+                    pass
+    
+    def overlapPairs(self, pairs, outline=3):
+        for pair, which in pairs.items():
+            self.overlapPair(pair[0], pair[1], which, outline=outline)

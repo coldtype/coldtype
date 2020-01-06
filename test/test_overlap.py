@@ -1,61 +1,5 @@
 from coldtype.animation import *
 
-def is_inside(rect, otherRect):
-    x, y, w, h = rect
-    ox, oy, ow, oh = otherRect
-    if w <= ow and h <= oh and x >= ox and y >= oy and (x+w) < (ox+ow) and (y+h) < (oy+oh):
-        return True
-    else:
-        return False
-
-def similarity(rect, other_rect):
-    for q in range(0, 4):
-        d = abs(rect[q]-other_rect[q])
-        if d > 30:
-            return False
-    return True
-
-def intersects(rect, other):
-    #return is_inside(rect.inset(-20), other)
-    return not (rect.point("NE").x < other.point("SW").x or rect.point("SW").x > other.point("NE").x or rect.point("NE").y < other.point("SW").y or rect.point("SW").y > other.point("NE").y)
-
-def add_overlaps(dps, idx1, idx2, which, outline=3, scale=1, xray=0):
-    c1 = dps[idx1]
-    c2 = dps[idx2]
-    c2_upscale = c2.copy().scale(scale)
-    c2_upscale.record(c2_upscale.copy().outline(outline+1).reverse()).removeOverlap()
-    
-    overlaps = c1.copy().intersection(c2_upscale).explode().indexed_subset(which)
-    if outline and outline > 0:
-        all_outlined = c1.copy().f(0).outline(outline).intersection(c2).explode()
-
-    for ol in overlaps:
-        olb = ol.bounds().inset(0)
-        if outline and outline > 0:
-            for idx, ool in enumerate(all_outlined):
-                oolb = ool.bounds().inset(0)
-                if intersects(oolb, olb):
-                    dps.append(ool.tag(f"overlap_outline_{idx1}"))#.f(1, 0, 0.5))
-                    if xray and False:
-                        dps.append(DATPen().f(0, 0.5, 1, 0.2).rect(olb))
-                        dps.append(DATPen().f(0.5, 0, 1, 0.2).rect(oolb))
-                else:
-                    if xray and False:
-                        dps.append(DATPen().f(None).s(0, 0.5, 1, 0.2).rect(olb))
-                        dps.append(DATPen().f(None).s(0.5, 0, 1, 0.2).rect(oolb))
-        dps.append(ol.tag(f"overlap_{idx1}"))#.f(1, 0, 0.5, 0.5))
-        #dps.append(overlaps.copy().f(0, 1, 0, 0.1))
-
-def overlap_pair(dps, gn1, gn2, which, outline=3):
-    for idx, dp in enumerate(dps):
-        if dp.glyphName == gn2:
-            try:
-                next_dp = dps[idx+1]
-                if next_dp.glyphName == gn1:
-                    add_overlaps(dps, idx, idx+1, which, outline)
-            except IndexError:
-                pass
-
 def render(f):
     if False:
         dp = StyledString("e", Style("≈/Triptych-Italick.otf", 300, wdth=0.5, wght=0.55, fill=1)).pen().align(f.a.r)
@@ -112,15 +56,14 @@ def render(f):
         overlap_pair(dps, "r", "l", [1])
         overlap_pair(dps, "l", "a", [1])
     elif font == "meek":
-        overlap_pair(dps, "e", "r", [0]),
-        #overlap_pair(dps, "l", "a", [0])
-        overlap_pair(dps, "a", "p", [1])
-        overlap_pair(dps, "O", "V", [0])
-        overlap_pair(dps, "V", "E", [1, 2])
-        overlap_pair(dps, "E", "R", [1])
-        overlap_pair(dps, "R", "L", [0])
-        overlap_pair(dps, "L", "A", [0])
-        overlap_pair(dps, "A", "P", [0])
+        dps.overlapPairs({
+            ("O", "V"): [0],
+            ("V", "E"): [1, 2],
+            ("E", "R"): [1],
+            ("R", "L"): [0],
+            ("L", "A"): [0],
+            ("A", "P"): [0],
+        })
 
     dps.filter(lambda idx, p: p.getTag().startswith("overlap_outline")).mmap(lambda idx, p: p.f(0))
     dps.interleave(lambda idx, p: p.f(0).outline(3).reverse().tag(f"original_outline_{idx}") if p.glyphName else p)

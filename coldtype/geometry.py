@@ -542,6 +542,9 @@ class Rect():
                 py = self.y + self.h/2
 
             return Point((px, py))
+    
+    def intersects(self, other):
+        return not (self.point("NE").x < other.point("SW").x or self.point("SW").x > other.point("NE").x or self.point("NE").y < other.point("SW").y or self.point("SW").y > other.point("NE").y)
 
 if __name__ == "__main__":
     #print(Rect(0, 0, 100, 100).inset(20, 20).expand(20, "minx"))
