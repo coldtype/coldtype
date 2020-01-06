@@ -1003,7 +1003,12 @@ class DATPenSet(DATPenLikeObject):
         for idx, p in enumerate(self.pens):
             if fn(idx, p):
                 dps.append(p)
-        self.pens = dps.pens
+        #self.pens = dps.pens
+        #return self
+        return dps
+    
+    def mfilter(self, fn):
+        self.pens = self.filter(fn)
         return self
     
     def flatten(self, levels=100):
