@@ -60,6 +60,8 @@ class DATPenLikeObject():
         diff = rect.w - b.w
         return self.translate(xoff, yoff)
     
+    å = align
+    
     def pen(self):
         """Return a single-pen representation of this pen(set)."""
         return self
@@ -95,13 +97,19 @@ class DATPenLikeObject():
         """Set a (f)ill"""
         return self.attr(fill=value)
     
+    fill = f
+    
     def s(self, *value):
         """Set a (s)troke"""
         return self.attr(stroke=value)
     
+    stroke = s
+    
     def sw(self, value):
         """Set a (s)troke (w)idth"""
         return self.attr(strokeWidth=value)
+    
+    strokeWidth = sw
     
     def removeBlanks(self):
         """If this is blank, `return True` (for recursive calls from DATPenSet)."""
