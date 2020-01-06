@@ -26,6 +26,8 @@ from coldtype.color import normalize_color
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.geometry import Rect, Point
 
+import Levenshtein
+
 from defcon import Font
 import glyphsLib
 
@@ -437,7 +439,28 @@ class Style():
         ff = font
         for prefix, expansion in _prefixes:
             ff = ff.replace(prefix, expansion)
-        return os.path.expanduser(ff) 
+        literal = Path(ff).expanduser()
+        if literal.exists() and not literal.is_dir():
+            return str(literal)
+        else:
+            fonts = list(literal.parent.glob("**/*.ttf"))
+            fonts.extend(list(literal.parent.glob("**/*.otf")))
+            matches = []
+            match_terms = literal.name.split(" ")
+            for font in fonts:
+                if font.is_dir():
+                    continue
+                if all([mt in font.name for mt in match_terms]):
+                    matches.append(font)
+            if matches:
+                matches.sort()
+                matches.reverse()
+                distances = [Levenshtein.distance(m.name, literal.name) for m in matches]
+                match = matches[distances.index(min(distances))]
+                print(">>>>> FONTMATCH:", literal.name, "<to>", match.name)
+                return str(match)
+            else:
+                raise Exception("NO FONT FOUND FOR", literal.name)
 
     def mod(self, **kwargs):
         ns = copy.deepcopy(self)
