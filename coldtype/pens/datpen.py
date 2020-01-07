@@ -998,7 +998,9 @@ class DATPenSet(DATPenLikeObject):
     
     def map(self, fn):
         for idx, p in enumerate(self.pens):
-            self.pens[idx] = fn(idx, p)
+            result = fn(idx, p)
+            if result:
+                self.pens[idx] = result
         return self
     
     def mmap(self, fn):
