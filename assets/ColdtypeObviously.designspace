@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<designspace format="4.0">
+  <axes>
+    <axis tag="wdth" name="width" minimum="0" maximum="1000" default="1000"/>
+  </axes>
+  <sources>
+    <source filename="ColdtypeObviously_BlackItalic.ufo" familyname="Coldtype Obviously" stylename="Black Italic">
+      <location>
+        <dimension name="width" xvalue="1000"/>
+      </location>
+    </source>
+    <source filename="ColdtypeObviously_CompressedBlackItalic.ufo" familyname="Coldtype Obviously" stylename="Compressed Black Italic">
+      <location>
+        <dimension name="width" xvalue="0"/>
+      </location>
+    </source>
+  </sources>
+  <instances>
+    <instance familyname="Coldtype Obviously" stylename="Style_1" filename="instances/Coldtype Obviously-Style_1.ufo">
+      <location>
+        <dimension name="width" xvalue="1000"/>
+      </location>
+      <kerning/>
+      <info/>
+    </instance>
+  </instances>
+</designspace>

@@ -59,7 +59,7 @@ class HarfbuzzFrame():
         self.glyphName = glyphName
 
     def __repr__(self):
-        return f"HarfbuzzFrame: gid{self.gid}@{self.frame}"
+        return f"HarfbuzzFrame:({self.glyphName}>>>{self.frame}(gid{self.gid})"
 
 
 class Harfbuzz():
@@ -68,13 +68,9 @@ class Harfbuzz():
                  text="",
                  height=1000,
                  lang=None,
-                 ttfont=None,
-                 kern=dict(),
-                 kern_pairs=dict()):
+                 ttfont=None):
         self.face = hb.Face(fontdata)
         self.ttfont = ttfont
-        self.kern = kern
-        self.kern_pairs = kern_pairs
         self.lang = lang
         self.height = height
         self.text = text
@@ -128,23 +124,6 @@ class Harfbuzz():
             x_offset = pos.x_offset
             y_offset = pos.y_offset
             gn = glyphs[idx][1]
-            if gn in self.kern:
-                l, r = self.kern.get(gn)
-                x_offset += l
-                x_advance += r
-            if self.kern_pairs:
-                for chars, kp in self.kern_pairs.items():
-                    try:
-                        l = kp[0]
-                        adv = kp[1]
-                    except TypeError:
-                        l = kp
-                        adv = 0
-                    a, b = chars
-                    if gn == b and last_gn == a:
-                        x_offset += l
-                        x_advance += adv
-                        kern_shift = l
             frames.append(HarfbuzzFrame(gid, info, pos, Rect(x+x_offset, y_offset, x_advance, self.height), gn)) # 100?
             x += x_advance + kern_shift
             last_gn = gn
@@ -240,6 +219,8 @@ class FittableMixin():
         print("textContent() not overwritten")
 
     def fit(self, width):
+        if isinstance(width, Rect):
+            width = width.w
         current_width = self.width()
         tries = 0
         if current_width > width: # need to shrink
@@ -263,6 +244,35 @@ _prefixes = [
     ["≈", "~/Type/fonts/fonts"],
     ["ç", str(Path(__file__).parent.parent.parent.joinpath("assets").resolve())]
 ]
+
+def normalize_font_path(font):
+    global _prefixes
+    ff = font
+    for prefix, expansion in _prefixes:
+        ff = ff.replace(prefix, expansion)
+    literal = Path(ff).expanduser()
+    ufo = literal.suffix == ".ufo"
+    if literal.exists() and (not literal.is_dir() or ufo):
+        return str(literal)
+    else:
+        fonts = list(literal.parent.glob("**/*.ttf"))
+        fonts.extend(list(literal.parent.glob("**/*.otf")))
+        matches = []
+        match_terms = literal.name.split(" ")
+        for font in fonts:
+            if font.is_dir():
+                continue
+            if all([mt in font.name for mt in match_terms]):
+                matches.append(font)
+        if matches:
+            matches.sort()
+            matches.reverse()
+            distances = [Levenshtein.distance(m.name, literal.name) for m in matches]
+            match = matches[distances.index(min(distances))]
+            print(">>>>> FONTMATCH:", literal.name, "<to>", match.name)
+            return str(match)
+        else:
+            raise Exception("NO FONT FOUND FOR", literal)
 
 
 class Style():
@@ -324,34 +334,31 @@ class Style():
         self.removeOverlap = kwargs.get("ro", removeOverlap)
         self.rotate = rotate
 
-        try:
-            # Load a font directly from a font-authoring in-memory object
-            if isinstance(font, Font): # defcon
-                self.fontFile = "<in-memory>.ufo"
-                self.ufo = True
-                self.format = "ufo"
-                ufo = font
-            else:
-                raise Exception("Not in-memory")
-        except:
-            # Load a font from a file
-            if isinstance(font, str):
-                self.fontFile = self.normalizeFontPath(font)
-            elif isinstance(font, Path):
-                self.fontFile = self.normalizeFontPath(str(font))
-            else:
-                self.fontFile = self.normalizeFontPath(font[0])
-                if len(font) > 1:
-                    self.next = Style(font=font[1:], fontSize=fontSize, ttFont=ttFont, tracking=tracking, trackingLimit=trackingLimit, kern=kern, space=space, baselineShift=baselineShift,xShift=xShift, variations=variations, variationLimits=variationLimits, increments=increments, features=features, varyFontSize=varyFontSize, fill=fill,stroke=stroke, strokeWidth=strokeWidth, palette=palette, capHeight=capHeight, data=data, latin=latin, lang=lang, filter=filter, preventHwid=preventHwid, layer=layer, **kwargs)
-            
+        self.format = None
+        # Load a font from a file
+        if isinstance(font, Font):
+            self.fontFile = "<in-memory>.ufo"
+            self.ufo = True
+            self.format = "ufo"
+            ufo = font
+        elif isinstance(font, str):
+            self.fontFile = normalize_font_path(font)
+        elif isinstance(font, Path):
+            self.fontFile = normalize_font_path(str(font))
+        else:
+            self.fontFile = normalize_font_path(font[0])
+            if len(font) > 1:
+                self.next = Style(font=font[1:], fontSize=fontSize, ttFont=ttFont, tracking=tracking, trackingLimit=trackingLimit, kern=kern, space=space, baselineShift=baselineShift,xShift=xShift, variations=variations, variationLimits=variationLimits, increments=increments, features=features, varyFontSize=varyFontSize, fill=fill,stroke=stroke, strokeWidth=strokeWidth, palette=palette, capHeight=capHeight, data=data, latin=latin, lang=lang, filter=filter, preventHwid=preventHwid, layer=layer, **kwargs)
+        
+        if not self.format:
             self.format = os.path.splitext(self.fontFile)[1][1:]
             self.ufo = self.format == "ufo"
 
-            if self.ufo:
-                ufo = Font(self.fontFile)
-            if self.format == "glyphs":
-                ufo = glyphsLib.load_to_ufos(self.fontFile)[0]
-                self.ufo = True
+        if self.ufo:
+            ufo = Font(self.fontFile)
+        if self.format == "glyphs":
+            ufo = glyphsLib.load_to_ufos(self.fontFile)[0]
+            self.ufo = True
 
         capHeight = kwargs.get("ch", capHeight)
 
@@ -450,34 +457,6 @@ class Style():
                         unnormalized_variations[axis.axisTag] = kwargs[axis.axisTag]
 
             self.addVariations(unnormalized_variations)
-        
-    def normalizeFontPath(self, font):
-        global _prefixes
-        ff = font
-        for prefix, expansion in _prefixes:
-            ff = ff.replace(prefix, expansion)
-        literal = Path(ff).expanduser()
-        if literal.exists() and not literal.is_dir():
-            return str(literal)
-        else:
-            fonts = list(literal.parent.glob("**/*.ttf"))
-            fonts.extend(list(literal.parent.glob("**/*.otf")))
-            matches = []
-            match_terms = literal.name.split(" ")
-            for font in fonts:
-                if font.is_dir():
-                    continue
-                if all([mt in font.name for mt in match_terms]):
-                    matches.append(font)
-            if matches:
-                matches.sort()
-                matches.reverse()
-                distances = [Levenshtein.distance(m.name, literal.name) for m in matches]
-                match = matches[distances.index(min(distances))]
-                print(">>>>> FONTMATCH:", literal.name, "<to>", match.name)
-                return str(match)
-            else:
-                raise Exception("NO FONT FOUND FOR", literal.name)
 
     def mod(self, **kwargs):
         ns = copy.deepcopy(self)
@@ -606,9 +585,7 @@ class StyledString(FittableMixin):
             text=self.text,
             height=self.style.capHeight,
             lang=self.style.lang,
-            ttfont=self.style.ttfont,
-            kern=self.style.kern,
-            kern_pairs=self.style.kern_pairs)
+            ttfont=self.style.ttfont)
     
     def trackFrames(self, frames):
         t = self.tracking
@@ -739,6 +716,25 @@ class StyledString(FittableMixin):
                 frames.append(HarfbuzzFrame(gid, dict(), Point((0, 0)), r, glyph[1]))
         else:
             frames = self.hb.frames(self.variations, self.features, self.glyphs)
+
+        if self.style.kern_pairs:
+            last_gn = None
+            for idx, frame in enumerate(frames):
+                gn = frame.glyphName
+                for chars, kp in self.style.kern_pairs.items():
+                    try:
+                        l = kp[0]
+                        adv = kp[1]
+                    except TypeError:
+                        l = kp
+                        adv = 0
+                    a, b = chars
+                    if gn == b and last_gn == a:
+                        kern_shift = l
+                        if kern_shift != 0:
+                            for frame in frames[idx:]:
+                                frame.frame.x += kern_shift
+                last_gn = gn
         
         if self.style.trackingMode == 1:
             frames = self.trackFrames(frames)
