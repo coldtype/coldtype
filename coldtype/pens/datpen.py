@@ -1109,7 +1109,8 @@ class DATPenSet(DATPenLikeObject):
         c1 = self[idx1]
         c2 = self[idx2]
         c2_upscale = c2.copy().scale(scale)
-        c2_upscale.record(c2_upscale.copy().outline(outline+1).reverse()).removeOverlap()
+        if outline != None:
+            c2_upscale.record(c2_upscale.copy().outline(outline+1).reverse()).removeOverlap()
         
         overlaps = c1.copy().intersection(c2_upscale).explode().indexed_subset(which)
         if outline and outline > 0:
