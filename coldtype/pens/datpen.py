@@ -628,6 +628,28 @@ class DATPen(RecordingPen, DATPenLikeObject):
         """Oval primitive"""
         self.roundedRect(rect, 0.5, 0.5)
         return self
+    
+    def circle(self, r, ext):
+        qr = r.w/4
+        n, e, s, w = r.cardinals()
+        return self.moveTo(n).curveTo(n.offset(-qr-ext, 0), w.offset(0, qr+ext), w).curveTo(w.offset(0, -qr-ext), s.offset(-qr-ext, 0), s).curveTo(s.offset(qr+ext, 0), e.offset(0, -qr-ext), e).curveTo(e.offset(0, qr+ext), n.offset(qr+ext, 0), n).closePath()
+    
+    def semicircle(self, r, center, ext):
+        n, e, s, w = r.cardinals()
+        ne, se, sw, nw = r.intercardinals()
+        # if center == "minx":
+        #     pts = sw, e, nw
+        # elif center == "maxx":
+        #     pts = ne, w, se
+        # elif center == "maxy":
+        #     pts = nw, s, ne
+        # elif center == "miny":
+        #     pts = se, n, sw
+        # p1, p2, p3 = pts
+        if "minx":
+            return self.moveTo(sw).curveTo(sw.offset(r.w/2+ext, 0), e.offset(0, -(r.h/2+ext)), e).curveTo(e.offset(0, r.h/2+ext), nw.offset(r.w/2+ext, 0), nw).closePath()
+        else:
+            raise Exception("Not implemented")
 
     def line(self, points):
         """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""
