@@ -30,11 +30,12 @@ class MidiNote():
 
 
 class MidiNoteValue():
-    def __init__(self, note, value, svalue, count):
+    def __init__(self, note, value, svalue, count, index):
         self.note = note
         self.value = value
         self.svalue = svalue
         self.count = count
+        self.index = index
     
     def __str__(self):
         return "<MidiNoteValue={:0.3f}/{:0.3f};note:{:04d};count:{:04d}>".format(self.value, self.svalue, self.note.note if self.note else -1, self.count)
@@ -69,8 +70,9 @@ class MidiTrack():
         
         count = 0
         notes_on = []
+        note_indices = []
 
-        for note in self.notes:
+        for idx, note in enumerate(self.notes):
             if note.on-preverb > frame:
                 continue
             elif note_fn(note.note):
@@ -78,6 +80,7 @@ class MidiTrack():
                     count += 1
                 if frame >= (note.on-preverb) and frame < (note.off+reverb):
                     notes_on.append(note)
+                    note_indices.append(idx)
         
         if len(notes_on) > 0:
             values = []
@@ -99,7 +102,7 @@ class MidiTrack():
             if accumulate:
                 all_values = []
                 for i, note in enumerate(notes_on):
-                    all_values.append(MidiNoteValue(note, values[i], svalues[i], 1))
+                    all_values.append(MidiNoteValue(note, values[i], svalues[i], 1, note_indices[i]))
                 return all_values
             else:
                 return MidiNoteValue(notes_on[-1], max(values), max(svalues), count)

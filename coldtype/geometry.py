@@ -506,6 +506,12 @@ class Rect():
     
     def p(self, s):
         return self.point(s)
+    
+    def cardinals(self):
+        return self.point("N"), self.point("E"), self.point("S"), self.point("W")
+    
+    def intercardinals(self):
+        return self.point("NE"), self.point("SE"), self.point("SW"), self.point("NW")
 
     def point(self, eh, ev=Edge.MinX):
         ev = txt_to_edge(ev)

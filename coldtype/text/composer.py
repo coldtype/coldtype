@@ -23,10 +23,11 @@ class Furniture():
 
 
 class GrafStyle():
-    def __init__(self, leading=10, x="centerx", xp=0, **kwargs):
+    def __init__(self, leading=10, x="centerx", xp=0, width=0, **kwargs):
         self.leading = kwargs.get("l", leading)
         self.x = x
         self.xp = xp
+        self.width = width
 
 
 class Graf():
@@ -59,7 +60,10 @@ class Graf():
         return rects
     
     def width(self):
-        return max([l.width() for l in self.lines])
+        if self.style.width > 0:
+            return self.style.width
+        else:
+            return max([l.width() for l in self.lines])
 
     def fit(self):
         rects = self.lineRects()

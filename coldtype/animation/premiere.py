@@ -4,7 +4,7 @@ from enum import Enum
 import copy
 
 from coldtype.animation.timeline import Timeline
-from coldtype.text import Lockup, Graf, GrafStyle, Furniture
+from coldtype.text import Lockup, Graf, GrafStyle, Furniture, DATPen, DATPenSet
 
 
 VIDEO_OFFSET = 86313 # why is this?
@@ -274,7 +274,7 @@ class ClipGroup():
             if group_pens_cache.get(self.track, dict()).get(self.index):
                 return group_pens_cache[self.track][self.index]
         
-        group_pens = []
+        group_pens = DATPenSet()
         lines = []
         for idx, _line in enumerate(self.lines()):
             slugs = []
@@ -288,7 +288,7 @@ class ClipGroup():
                 lockup.fit(fit)
             lockups.append(lockup)
         graf = Graf(lockups, rect, graf_style)
-        pens = graf.pens().align(rect)
+        pens = graf.pens()#.align(rect, x=graf_style.x)
         for pens in pens.pens:
             for pen in pens.pens:
                 pen.removeOverlap()
@@ -298,11 +298,14 @@ class ClipGroup():
         group_pens_cache[self.track] = track_cache
         return group_pens
     
-    def iterate_pens(self, pens):
+    def iterate_pens(self, pens, copy=True):
         for idx, line in enumerate(self.lines()):
             _pens = pens[idx]
             for cidx, clip in enumerate(line):
-                p = _pens.pens[cidx].copy()
+                if copy:
+                    p = _pens.pens[cidx].copy()
+                else:
+                    p = _pens.pens[cidx]
                 yield idx, clip, p
     
     def __repr__(self):
