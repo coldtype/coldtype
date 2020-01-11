@@ -57,7 +57,7 @@ class MidiTrack():
         if isinstance(note_numbers, int) or (isinstance(note_numbers, str) and note_numbers != "*"):
             note_numbers = [note_numbers]
         
-        if not isinstance(note_numbers, str):
+        if not isinstance(note_numbers, str) and not callable(note_numbers):
             for idx, nn in enumerate(note_numbers):
                 note_numbers[idx] = self.note_names.get(nn, 0) if isinstance(nn, str) else nn
         
@@ -105,12 +105,12 @@ class MidiTrack():
                     all_values.append(MidiNoteValue(note, values[i], svalues[i], 1, note_indices[i]))
                 return all_values
             else:
-                return MidiNoteValue(notes_on[-1], max(values), max(svalues), count)
+                return MidiNoteValue(notes_on[-1], max(values), max(svalues), count, note_indices[-1])
         else:
             if accumulate:
                 return []
             else:
-                return MidiNoteValue(None, 0, 0, count)
+                return MidiNoteValue(None, 0, 0, count, -1)
 
 
 class MidiTimeline(Timeline):

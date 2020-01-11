@@ -712,7 +712,7 @@ class StyledString(FittableMixin):
             for idx, (gid, r) in enumerate(ct_frames):
                 glyph = self.glyphs[idx]
                 if glyph[0] != gid:
-                    raise Exception("Non-matching shaping")
+                    print("Non-matching shaping")
                 frames.append(HarfbuzzFrame(gid, dict(), Point((0, 0)), r, glyph[1]))
         else:
             frames = self.hb.frames(self.variations, self.features, self.glyphs)

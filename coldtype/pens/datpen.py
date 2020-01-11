@@ -637,6 +637,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def semicircle(self, r, center, ext):
         n, e, s, w = r.cardinals()
         ne, se, sw, nw = r.intercardinals()
+        qe = r.h/2+ext
         # if center == "minx":
         #     pts = sw, e, nw
         # elif center == "maxx":
@@ -646,8 +647,12 @@ class DATPen(RecordingPen, DATPenLikeObject):
         # elif center == "miny":
         #     pts = se, n, sw
         # p1, p2, p3 = pts
-        if "minx":
+        if center == "minx":
             return self.moveTo(sw).curveTo(sw.offset(r.w/2+ext, 0), e.offset(0, -(r.h/2+ext)), e).curveTo(e.offset(0, r.h/2+ext), nw.offset(r.w/2+ext, 0), nw).closePath()
+        elif center == "miny":
+            return self.moveTo(sw).lineTo(se).curveTo(se.offset(0, qe), n.offset(qe, 0), n).curveTo(n.offset(-qe, 0), sw.offset(0, qe), sw).closePath()
+        elif center == "maxy":
+            return self.moveTo(ne).lineTo(nw).curveTo(nw.offset(0, -qe), s.offset(-qe, 0), s).curveTo(s.offset(qe, 0), ne.offset(0, -qe), ne).closePath()
         else:
             raise Exception("Not implemented")
 
