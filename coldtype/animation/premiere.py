@@ -144,6 +144,7 @@ class ClipGroup():
         self.clips = clips
         self.start = clips[0].start
         self.end = clips[-1].end
+        self.duration = self.end - self.start
         self.track = clips[0].track
         self.timeline = timeline
 
@@ -288,7 +289,7 @@ class ClipGroup():
                 lockup.fit(fit)
             lockups.append(lockup)
         graf = Graf(lockups, rect, graf_style)
-        pens = graf.pens()#.align(rect, x=graf_style.x)
+        pens = graf.pens().align(rect, x=graf_style.x)
         for pens in pens.pens:
             for pen in pens.pens:
                 pen.removeOverlap()

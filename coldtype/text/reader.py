@@ -224,7 +224,7 @@ class FittableMixin():
         current_width = self.width()
         tries = 0
         if current_width > width: # need to shrink
-            while tries < 1000 and current_width > width:
+            while tries < 100000 and current_width > width:
                 adjusted = self.shrink()
                 #for s in self.slugs:
                 #    adjusted = s.shrink() or adjusted
@@ -775,6 +775,7 @@ class StyledString(FittableMixin):
             adjusted = True
         if not adjusted and self.style.varyFontSize:
             self.fontSize -= 1
+            self.tracking = self.style.tracking
             adjusted = True
         if not adjusted and self.style.next:
             self.setStyle(self.style.next)

@@ -125,6 +125,12 @@ def explode_test(f):
     o_o.f("random", 0.5)
     return o_o, o_i
 
+def varfit_test(f):
+    s = Style("≈/OhnoFatfaceVariable.ttf", 500, wdth=1, opsz=0.65, t=100, tl=-100)
+    ss = StyledString("HELLO WORLD", s).fit(1000)
+    ssp = ss.pen().align(f.a.r)
+    return DATPen().rect(f.a.r.take(1000, "centerx")).f(0.5, 0, 1, 0.3), ssp.skew(0.1, 0)
+
 tests = [
     basic_test,
     combine_slugs_test,
@@ -145,6 +151,7 @@ tests = [
     catmull_test,
     map_points_test,
     explode_test,
+    varfit_test,
 ]
 
 def render(f):
@@ -156,8 +163,9 @@ def render(f):
         DATPenSet(res)
     ]
 
-current_tests = [tests.index(explode_test)]
+#current_tests = [tests.index(explode_test)]
 #current_tests = list(range(0, len(tests)))
+current_tests = [tests.index(varfit_test)]
 
 timeline = Timeline(len(tests), storyboard=current_tests)
 animation = Animation(render, Rect(1920, 1080), timeline, bg=(1, 0))

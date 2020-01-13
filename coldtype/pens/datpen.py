@@ -338,6 +338,16 @@ class DATPen(RecordingPen, DATPenLikeObject):
         scale = h if h < v else v
         return self.scale(scale)
     
+    def skew(self, x=0, y=0, unalign=True):
+        t = Transform()
+        if unalign != False:
+            point = self.bounds().point("SW") # maybe should be getFrame()?
+            t = t.translate(point.x, point.y)
+        t = t.skew(x, y)
+        if unalign != False:
+            t = t.translate(-point.x, -point.y)
+        return self.transform(t)
+    
     def rotate(self, degrees, point=None):
         """Rotate this shape by a degree (in 360-scale, counterclockwise)."""
         t = Transform()
@@ -1016,6 +1026,11 @@ class DATPenSet(DATPenLikeObject):
     def scale(self, scaleX, scaleY=None, center=None):
         for p in self.pens:
             p.scale(scaleX, scaleY=scaleY, center=center)
+        return self
+    
+    def skew(self, x=0, y=0):
+        for p in self.pens:
+            p.skew(x, y)
         return self
     
     def round(self, rounding):

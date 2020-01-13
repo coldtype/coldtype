@@ -1,1 +1,2 @@
-
+- send random slices to each core
+- change clip.idx to clip.index
