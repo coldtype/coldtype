@@ -1,4 +1,8 @@
-# Coldtype
+![Coldtype]( viewer/appicon_layers/appicon_main_frames/appicon_main_1024.png)
+
+---
+
+# What is Coldtype?
 
 # Prerequisites
 
