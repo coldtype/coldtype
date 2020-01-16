@@ -1,4 +1,4 @@
-![Coldtype]( viewer/appicon_layers/appicon_main_frames/appicon_main_1024.png)
+<img src="/goodhertz/coldtype/raw/timeline_cleanup/viewer/appicon_layers/appicon_main_frames/appicon_main_1024.png" alt="Coldtype" style="max-width:256px">
 
 ---
 
