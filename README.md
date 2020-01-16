@@ -4,7 +4,60 @@
 
 # What is Coldtype?
 
-# Prerequisites
+Setting type with code may not be a common practice, but it is a good practice, or at least I enjoy doing it, so this is a library I wrote to make it easier to do, specifically in the context of creating frame-wise animations.
+
+## What is Coldtype for?
+
+- Quickly setting complex display typography in time and space
+
+## What is Coldtype _not_?
+
+- Coldtype is not good for setting large amounts of text in a single frame, because Coldtype has no line-breaking algorithms
+- Which means Coldtype is probably bad for print (you should use DrawBot for that)
+
+## How does Coldtype work?
+
+Coldtype is a Python library a fairly minimal glue that relies, primarily, on three excellent libraries:
+
+- fontTools
+- harfbuzz (+freetype)
+- skia-pathops
+
+For output, Coldtype can be used with Cairo cross-platform, or DrawBot on macOS.
+
+(On Mac, the Harfbuzz and FreeType modules can be substituted with DrawBot for type-shaping).
+
+## What does a Coldtype program look like?
+
+```python
+from coldtype.animation import *
+
+def render(frame):
+    return StyledString("Hello, world".upper(), Style("ç/MutatorSans.ttf", 100, wdth=0.25, wght=0.25)).pens().align(f.a.r)
+
+animation = Animation(render)
+```
+
+You can then run this with the `render.py` program included in coldtype, ala:
+
+`./render.py examples/simple.py -w`
+
+## What does COLDTYPE stand for?
+
+(C)oncise,
+(O)bscure,
+(L)ine-Oriented
+(D)SL for
+(T)
+(Y)pographic
+(P)rogramming
+(E)verywhere
+
+---
+
+# Installation
+
+## Prerequisites
 
 - Git
 - Python >= 3.6
@@ -12,7 +65,7 @@
 - The `coldtype-viewer` app, [available here](https://github.com/goodhertz/coldtype/releases)
 - freetype (`brew install freetype` or something else)
 
-# Setup/Test
+## Setup/Test
 
 - Open the `coldtype-viewer` app (just a normal OSX app)
 - `cd` into the directory
