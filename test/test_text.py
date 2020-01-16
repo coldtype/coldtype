@@ -79,7 +79,7 @@ def roughen_test(f):
 
 def pixellate_test(f):
     """Currently not great"""
-    return StyledString("TXT", Style(varfont, 750, wdth=0, wght=1, filter=lambda fr, p: p.pixellate(f.a.r, inset=10))).pen().align(f.a.r, tv=1)
+    return StyledString("TXT", Style(varfont, 750, wdth=0, wght=1, filter=lambda idx, gn, fr, p: p.pixellate(f.a.r, inset=10))).pen().align(f.a.r, tv=1)
 
 def text_on_curve_test(f):
     ss = Slug("California".upper(), Style(varfont, 390, t=20, fill=0))
@@ -125,22 +125,32 @@ def explode_test(f):
     o_o.f("random", 0.5)
     return o_o, o_i
 
+def varfit_simple_test(f):
+    fw = 800
+    ss = StyledString("HELLO WORLD", Style(varfont, 300, wdth=1, wght=0.25, t=50, tl=-100, varyFontSize=0, r=1, ro=1)).fit(fw).pens().align(f.a.r).f(0)
+    return DATPen().f("random", 0.5).rect(f.a.r.take(fw, "centerx")), ss, ss.interleave(lambda p: p.s(1).sw(5))
+
+text = """AAA
+SALT PEANUTS IS THE NAME OF THIS SONG
+CCC"""
+
 def varfit_test(f):
-    s = Style("≈/OhnoFatfaceVariable.ttf", 200, wdth=1, opsz=0.65, t=200, tl=-10, varyFontSize=1, fill=1, r=1, ro=1)
-    ss = Graf(Slug.LineSlugs("HELLO WORLD\njust trying to fit in\n& another line\nAND another long one, full of\ncharacters".upper(), s), f.a.r.take(1000, "centerx")).fit()
-    ssp = ss.pens().align(f.a.r)
+    s = Style(varfont, 300, wdth=1, wght=0, t=200, tl=-10, varyFontSize=1, fill=1, r=1, ro=1)
+    #ss = Graf(Slug.LineSlugs(.upper(), s), f.a.r.take(1000, "centerx"), leading=10).fit()
+    #ssp = ss.pens().align(f.a.r)
+    sss = []
+    for line in text.upper().split("\n"):
+        sss.append(StyledString(line, s))
+    ssp = Graf(sss, f.a.r.take(1000, "centerx"), leading=10).fit().pens().align(f.a.r)
     return DATPen().rect(f.a.r.take(1000, "centerx")).f(0.5, 0, 1, 0.3), ssp.interleave(lambda p: p.s(0).sw(5))
 
 def align_test(f):
     r = f.a.r.take(1000, "centerx")
     s = Style("ç/NotoSans-Black.ttf", 100)
-    g = Graf(Slug.LineSlugs("HELLO THERE,\nWORLD", s), r.inset(0, 0), leading=10).pens().f(0).align(f.a.r)#.mmap(lambda idx, p: p.xAlignToFrame("maxx"))
-
-    #g = g[1]
-    g[0].xAlignToFrame("maxx")
-    #g.align(f.a.r, x="maxx")
-    
-    return DATPen().rect(r).f(0.5, 0, 1, 0.3), DATPen().rect(g.getFrame(th=0)).f("random", 0.63), g
+    g = Graf(Slug.LineSlugs("HEADLINES\nUSED TO\nDO THIS", s), r.inset(0, 0), leading=10).pens().f(0).align(f.a.r)
+    g[1].xAlignToFrame("centerx")
+    g[2].xAlignToFrame("maxx")
+    return DATPen().rect(r).f(0.5, 0, 1, 0.3), DATPen().rect(g[1].getFrame(th=0)).f("random", 0.63), g
 
 tests = [
     basic_test,
@@ -162,6 +172,7 @@ tests = [
     catmull_test,
     map_points_test,
     explode_test,
+    varfit_simple_test,
     varfit_test,
     align_test,
 ]
@@ -175,7 +186,7 @@ def render(f):
         DATPenSet(res)
     ]
 
-current_tests = [tests.index(align_test)]
+current_tests = [tests.index(varfit_test)]
 #current_tests = list(range(0, len(tests)))
 
 timeline = Timeline(len(tests), storyboard=current_tests)

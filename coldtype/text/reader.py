@@ -229,8 +229,6 @@ class FittableMixin():
         if current_width > width: # need to shrink
             while tries < 100000 and current_width > width:
                 adjusted = self.shrink()
-                #for s in self.slugs:
-                #    adjusted = s.shrink() or adjusted
                 if adjusted:
                     tries += 1
                     current_width = self.width()
@@ -239,6 +237,7 @@ class FittableMixin():
                     return self
         elif current_width < width: # need to expand
             pass
+        print(">>>>>>>>>>>>>>>>>> FINAL TRIES", tries)
         return self
 
 
@@ -763,6 +762,67 @@ class StyledString(FittableMixin):
     
     def textContent(self):
         return self.text
+    
+    def fit(self, width):
+        if isinstance(width, Rect):
+            width = width.w
+        if False:
+            current_width = self.width()
+            tries = 0
+            if current_width > width: # need to shrink
+                while tries < 100000 and current_width > width:
+                    adjusted = self.shrink(tries)
+                    if adjusted:
+                        tries += 1
+                        current_width = self.width()
+                    else:
+                        #print(">>> TOO BIG :::", self.textContent())
+                        return self
+            elif current_width < width: # need to expand
+                pass
+        
+
+        willfit = False
+
+        while not willfit:
+            self.tracking = 0
+            self.reset()
+            w = self.width()
+            if w == width:
+                willfit = True
+            elif w < width:
+                self.tracking = self.style.tracking
+                super().fit(width)
+                willfit = True
+            else:
+                self.variations["wdth"] = self.style.variationLimits["wdth"]
+                w = self.width()
+                if w == width:
+                    willfit = True
+                elif w < width:
+                    self.variations["wdth"] = self.style.variations["wdth"]
+                    super().fit(width)
+                    willfit = True
+                else:
+                    self.tracking = self.style.trackingLimit
+                    w = self.width()
+                    if w == width:
+                        willfit = True
+                    elif w < width:
+                        self.tracking = 0
+                        super().fit(width)
+                        willfit = True
+                    else:
+                        if self.style.varyFontSize:
+                            self.tracking = 0
+                            self.variations["wdth"] = self.style.variations["wdth"]
+                            self.fontSize = self.fontSize - 1
+                            self.reset()
+                        else:
+                            print("HERE")
+                            super().fit(width)
+                            willfit = True
+        return self
 
     def shrink(self):
         adjusted = False
@@ -792,6 +852,9 @@ class StyledString(FittableMixin):
             self.glyphs = self.hb.glyphs(self.variations, self.features)
             adjusted = True
         return adjusted
+    
+    def reset(self):
+        self.glyphs = self.hb.glyphs(self.variations, self.features)
     
     def formattedString(self, fs=1000):
         if _drawBot:
