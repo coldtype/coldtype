@@ -1,20 +1,6 @@
-@font-face {
-    font-family: 'CovikSansMonoWeb';
-    src: url('Covik_Sans_Mono-Black.woff2?t=3') format('woff2');
-    font-weight: 900;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'CovikSansMonoWeb';
-    src: url('Covik_Sans_Mono-Black_Italic.woff2') format('woff2');
-    font-weight: 900;
-    font-style: italic;
-}
-
 body {
     background: #eee;
-    font-family: CovikSansMonoWeb, monospace;
+    font-family: monospace;
 }
 
 #container {
