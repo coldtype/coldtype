@@ -113,7 +113,10 @@ class Lockup(FittableMixin):
         pens = []
         x_off = 0
         for s in self.slugs:
-            x_off += s.margin[0]
+            try:
+                x_off += s.margin[0]
+            except:
+                pass
             if self.preserveLetters:
                 dps = s.pens()
                 dps.translate(x_off, 0)
@@ -126,8 +129,11 @@ class Lockup(FittableMixin):
                 dps.translate(x_off, 0)
                 pens.append(dps)
             x_off += dps.getFrame().w
-            x_off += s.margin[1]
-            x_off += s.strings[-1].tracking
+            try:
+                x_off += s.margin[1]
+                x_off += s.strings[-1].tracking
+            except:
+                pass
         return DATPenSet(pens)
     
     def pen(self):

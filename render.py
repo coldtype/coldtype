@@ -289,7 +289,7 @@ def preview_storyboard():
     for frame in anm.timeline.storyboard:
         try:
             print(">>> PREVIEW", frame)
-            aframe, result = render_frame(anm, layers, layers_folder, 0, frame, write_to_disk=args.write_storyboard_images)
+            aframe, result = render_frame(anm, layers, layers_folder, 0, frame, write_to_disk=args.write_storyboard_images, manual=1)
             pens = []
             for layer_name, layer_pens in result.items():
                 pens.extend(layer_pens)

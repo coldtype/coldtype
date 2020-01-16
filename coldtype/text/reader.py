@@ -237,7 +237,7 @@ class FittableMixin():
                     return self
         elif current_width < width: # need to expand
             pass
-        print(">>>>>>>>>>>>>>>>>> FINAL TRIES", tries)
+        #print(">>>>>>>>>>>>>>>>>> FINAL TRIES", tries)
         return self
 
 
@@ -763,65 +763,60 @@ class StyledString(FittableMixin):
     def textContent(self):
         return self.text
     
-    def fit(self, width):
-        if isinstance(width, Rect):
-            width = width.w
-        if False:
-            current_width = self.width()
-            tries = 0
-            if current_width > width: # need to shrink
-                while tries < 100000 and current_width > width:
-                    adjusted = self.shrink(tries)
-                    if adjusted:
-                        tries += 1
-                        current_width = self.width()
-                    else:
-                        #print(">>> TOO BIG :::", self.textContent())
-                        return self
-            elif current_width < width: # need to expand
-                pass
+    def fitField(self, field, value):
+        if field == "tracking":
+            self.tracking = value
+        elif field == "wdth":
+            self.variations["wdth"] = value
+        elif field == "fontSize":
+            self.fontSize = value
+    
+    def binaryFit(self, width, field, minv, maxv, tries):
+        midv = (maxv-minv)*0.5+minv
+        self.fitField(field, maxv)
+        maxw = self.width()
+        self.fitField(field, midv)
+        midw = self.width()
+        self.fitField(field, minv)
+        minw = self.width()
+        if abs(maxw - midw) < 0.5:
+            #print(self.text, ">>>", tries)
+            return
+        if width > midw:
+            self.binaryFit(width, field, midv, maxv, tries+1)
+        else:
+            self.binaryFit(width, field, minv, midv, tries+1)
         
-
-        willfit = False
-
-        while not willfit:
+        #return super().fit(width)
+    
+    def testWidth(self, width, field, minv, maxv):
+        self.reset()
+        w = self.width()
+        if w == width:
+            print("VERY RARE")
+            return True
+        elif w < width: # too small, which means we know it'll fit based on this property
+            self.binaryFit(width, field, minv, maxv, 0)
+            return True
+        else: # too big, so we maintain current value & let the caller know
+            return False
+    
+    def fit(self, width):
+        continuing = True
+        if self.style.tracking > 0:
             self.tracking = 0
-            self.reset()
-            w = self.width()
-            if w == width:
-                willfit = True
-            elif w < width:
-                self.tracking = self.style.tracking
-                super().fit(width)
-                willfit = True
-            else:
-                self.variations["wdth"] = self.style.variationLimits["wdth"]
-                w = self.width()
-                if w == width:
-                    willfit = True
-                elif w < width:
-                    self.variations["wdth"] = self.style.variations["wdth"]
-                    super().fit(width)
-                    willfit = True
-                else:
-                    self.tracking = self.style.trackingLimit
-                    w = self.width()
-                    if w == width:
-                        willfit = True
-                    elif w < width:
-                        self.tracking = 0
-                        super().fit(width)
-                        willfit = True
-                    else:
-                        if self.style.varyFontSize:
-                            self.tracking = 0
-                            self.variations["wdth"] = self.style.variations["wdth"]
-                            self.fontSize = self.fontSize - 1
-                            self.reset()
-                        else:
-                            print("HERE")
-                            super().fit(width)
-                            willfit = True
+            if self.testWidth(width, "tracking", 0, self.style.tracking):
+                continuing = False
+        if continuing:
+            minwdth = self.style.variationLimits["wdth"]
+            currentwdth = self.style.variations["wdth"]
+            self.variations["wdth"] = minwdth
+            if not self.testWidth(width, "wdth", minwdth, currentwdth):
+                self.tracking = self.style.trackingLimit
+                if not self.testWidth(width, "tracking", self.style.trackingLimit, 0):
+                    self.fontSize = 10
+                    if not self.testWidth(width, "fontSize", 10, self.style.fontSize):
+                        print("CANT FIT IT >>>", self.text)
         return self
 
     def shrink(self):

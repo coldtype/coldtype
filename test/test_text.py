@@ -130,9 +130,11 @@ def varfit_simple_test(f):
     ss = StyledString("HELLO WORLD", Style(varfont, 300, wdth=1, wght=0.25, t=50, tl=-100, varyFontSize=0, r=1, ro=1)).fit(fw).pens().align(f.a.r).f(0)
     return DATPen().f("random", 0.5).rect(f.a.r.take(fw, "centerx")), ss, ss.interleave(lambda p: p.s(1).sw(5))
 
-text = """AAA
-SALT PEANUTS IS THE NAME OF THIS SONG
-CCC"""
+text = """ABRACADABRA
+SALT PEANUTS
+VARIABILITY
+AND A LONGER LINE, TO TEST TRACKING
+AND A SHORTER LINE"""
 
 def varfit_test(f):
     s = Style(varfont, 300, wdth=1, wght=0, t=200, tl=-10, varyFontSize=1, fill=1, r=1, ro=1)
@@ -142,7 +144,10 @@ def varfit_test(f):
     for line in text.upper().split("\n"):
         sss.append(StyledString(line, s))
     ssp = Graf(sss, f.a.r.take(1000, "centerx"), leading=10).fit().pens().align(f.a.r)
-    return DATPen().rect(f.a.r.take(1000, "centerx")).f(0.5, 0, 1, 0.3), ssp.interleave(lambda p: p.s(0).sw(5))
+    return [
+        #DATPen().rect(f.a.r.take(1000, "centerx")).f(0.5, 0, 1, 0.3),
+        ssp.interleave(lambda p: p.s(0).sw(5))
+    ]
 
 def align_test(f):
     r = f.a.r.take(1000, "centerx")
