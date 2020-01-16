@@ -207,13 +207,17 @@ def offset(rect, dx, dy):
 
 
 def expand(rect, amount, edge):
+    x, y, w, h = rect
     if edge == Edge.MinX:
-        x, y, w, h = rect
         w += amount
         x -= amount
     elif edge == Edge.MaxX:
-        x, y, w, h = rect
         w += amount
+    elif edge == Edge.MinY:
+        y -= amount
+        h += amount
+    elif edge == Edge.MaxY:
+        h += amount
     return [x, y, w, h]
 
 

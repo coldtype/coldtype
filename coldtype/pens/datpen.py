@@ -34,7 +34,7 @@ except:
 
 
 class DATPenLikeObject():
-    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False):
+    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
         x = txt_to_edge(x)
         y = txt_to_edge(y)
         b = self.getFrame(th=th, tv=tv)
@@ -58,9 +58,15 @@ class DATPenLikeObject():
                 yoff = rect.y
         
         diff = rect.w - b.w
-        return self.translate(xoff, yoff)
+        return self.translate(xoff, yoff, transformFrame=transformFrame)
     
     å = align
+
+    def xAlignToFrame(self, x=Edge.CenterX, th=0):
+        if self.frame:
+            return self.align(self.getFrame(th=th, tv=0), x=x, transformFrame=0, th=1)
+        else:
+            raise Exception("No Frame")
     
     def pen(self):
         """Return a single-pen representation of this pen(set)."""
@@ -130,6 +136,49 @@ class DATPenLikeObject():
     def frameSet(self, th=False, tv=False):
         """Return a new DATPen representation of the frame of this DATPen."""
         return DATPen(fill=("random", 0.25)).rect(self.getFrame(th=th, tv=tv))
+    
+    def translate(self, x, y, transformFrame=True):
+        """Translate this shape by `x` and `y` (pixel values)."""
+        return self.transform(Transform(1, 0, 0, 1, x, y), transformFrame=transformFrame)
+    
+    def scale(self, scaleX, scaleY=None, center=None):
+        """Scale this shape by a percentage amount (1-scale)."""
+        t = Transform()
+        if center != False:
+            point = self.bounds().point("C") # maybe should be getFrame()?
+            t = t.translate(point.x, point.y)
+        t = t.scale(scaleX, scaleY or scaleX)
+        if center != False:
+            t = t.translate(-point.x, -point.y)
+        return self.transform(t)
+    
+    def scaleToRect(self, rect):
+        """Scale this shape into a `Rect`."""
+        bounds = self.bounds()
+        h = rect.w / bounds.w
+        v = rect.h / bounds.h
+        scale = h if h < v else v
+        return self.scale(scale)
+    
+    def skew(self, x=0, y=0, unalign=True):
+        t = Transform()
+        if unalign != False:
+            point = self.bounds().point("SW") # maybe should be getFrame()?
+            t = t.translate(point.x, point.y)
+        t = t.skew(x, y)
+        if unalign != False:
+            t = t.translate(-point.x, -point.y)
+        return self.transform(t)
+    
+    def rotate(self, degrees, point=None):
+        """Rotate this shape by a degree (in 360-scale, counterclockwise)."""
+        t = Transform()
+        if not point:
+            point = self.bounds().point("C") # maybe should be getFrame()?
+        t = t.translate(point.x, point.y)
+        t = t.rotate(math.radians(degrees))
+        t = t.translate(-point.x, -point.y)
+        return self.transform(t, transformFrame=False)
     
     def filmjitter(self, doneness, base=0, speed=(10, 20), scale=(2, 3), octaves=16):
         """
@@ -314,49 +363,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def removeOverlap(self):
         """Remove overlaps within this shape and return itself."""
         return self._pathop(otherPen=DATPen(), operation=BooleanOp.Union)
-    
-    def translate(self, x, y):
-        """Translate this shape by `x` and `y` (pixel values)."""
-        return self.transform(Transform(1, 0, 0, 1, x, y))
-    
-    def scale(self, scaleX, scaleY=None, center=None):
-        """Scale this shape by a percentage amount (1-scale)."""
-        t = Transform()
-        if center != False:
-            point = self.bounds().point("C") # maybe should be getFrame()?
-            t = t.translate(point.x, point.y)
-        t = t.scale(scaleX, scaleY or scaleX)
-        if center != False:
-            t = t.translate(-point.x, -point.y)
-        return self.transform(t)
-    
-    def scaleToRect(self, rect):
-        """Scale this shape into a `Rect`."""
-        bounds = self.bounds()
-        h = rect.w / bounds.w
-        v = rect.h / bounds.h
-        scale = h if h < v else v
-        return self.scale(scale)
-    
-    def skew(self, x=0, y=0, unalign=True):
-        t = Transform()
-        if unalign != False:
-            point = self.bounds().point("SW") # maybe should be getFrame()?
-            t = t.translate(point.x, point.y)
-        t = t.skew(x, y)
-        if unalign != False:
-            t = t.translate(-point.x, -point.y)
-        return self.transform(t)
-    
-    def rotate(self, degrees, point=None):
-        """Rotate this shape by a degree (in 360-scale, counterclockwise)."""
-        t = Transform()
-        if not point:
-            point = self.bounds().point("C") # maybe should be getFrame()?
-        t = t.translate(point.x, point.y)
-        t = t.rotate(math.radians(degrees))
-        t = t.translate(-point.x, -point.y)
-        return self.transform(t, transformFrame=False)
 
     def bounds(self):
         """Calculate the bounds of this shape; mostly for internal use."""
@@ -902,6 +908,7 @@ class DATPenSet(DATPenLikeObject):
         self.layered = False
         self._tag = "Unknown"
         self.container = None
+        self.frame = None
     
     def __str__(self):
         return f"<DPS:pens:{len(self.pens)}>"
@@ -968,19 +975,29 @@ class DATPenSet(DATPenLikeObject):
             p.clearFrame()
         return self
     
-    def addFrame(self, frame, typographic=False):
-        for p in self.pens:
-            p.addFrame(frame, typographic=typographic)
+    def addFrame(self, frame, typographic=False, passthru=False):
+        if passthru:
+            for p in self.pens:
+                p.addFrame(frame, typographic=typographic)
+        else:
+            self.frame = frame
+            self.typographic = typographic
         return self
     
     def getFrame(self, th=False, tv=False):
-        try:
-            union = self.pens[0].getFrame(th=th, tv=tv)
-            for p in self.pens[1:]:
-                union = union.union(p.getFrame(th=th, tv=tv))
-            return union
-        except Exception as e:
-            return Rect(0,0,0,0)
+        if self.frame and (th == False and tv == False):
+            return self.frame
+        else:
+            try:
+                union = self.pens[0].getFrame(th=th, tv=tv)
+                for p in self.pens[1:]:
+                    union = union.union(p.getFrame(th=th, tv=tv))
+                return union
+            except Exception as e:
+                return Rect(0,0,0,0)
+    
+    def bounds(self):
+        return self.getFrame()
     
     def replay(self, pen):
         self.pen().replay(pen)
@@ -1008,30 +1025,33 @@ class DATPenSet(DATPenLikeObject):
             p.removeOverlap()
         return self
     
-    def transform(self, t):
+    def transform(self, transform, transformFrame=True):
         for p in self.pens:
-            p.transform(t)
+            p.transform(transform)
+        if transformFrame and self.frame:
+            self.frame = self.frame.transform(transform)
         return self
     
-    def translate(self, x, y):
-        for p in self.pens:
-            p.translate(x, y)
-        return self
+    # def translate(self, x, y, transformFrame=True):
+    #     for p in self.pens:
+    #         p.translate(x, y, transformFrame=transformFrame)
+        
+    #     return self
     
-    def rotate(self, degrees):
-        for p in self.pens:
-            p.rotate(degrees)
-        return self
+    # def rotate(self, degrees):
+    #     for p in self.pens:
+    #         p.rotate(degrees)
+    #     return self
     
-    def scale(self, scaleX, scaleY=None, center=None):
-        for p in self.pens:
-            p.scale(scaleX, scaleY=scaleY, center=center)
-        return self
+    # def scale(self, scaleX, scaleY=None, center=None):
+    #     for p in self.pens:
+    #         p.scale(scaleX, scaleY=scaleY, center=center)
+    #     return self
     
-    def skew(self, x=0, y=0):
-        for p in self.pens:
-            p.skew(x, y)
-        return self
+    # def skew(self, x=0, y=0):
+    #     for p in self.pens:
+    #         p.skew(x, y)
+    #     return self
     
     def round(self, rounding):
         for p in self.pens:
@@ -1082,9 +1102,12 @@ class DATPenSet(DATPenLikeObject):
                 dps.append(p.frameSet(th=th, tv=tv))
         return dps
     
-    def alignToRects(self, rects, x=Edge.CenterX, y=Edge.CenterY):
+    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=False, tv=False, transformFrame=True):
+        return super().align(rect, x, y, th, tv, transformFrame)
+    
+    def alignToRects(self, rects, x=Edge.CenterX, y=Edge.CenterY, th=1, tv=1):
         for idx, p in enumerate(self.pens):
-            p.align(rects[idx], x, y)
+            p.align(rects[idx], x, y, th=th, tv=tv)
     
     def distribute(self):
         x_off = 0

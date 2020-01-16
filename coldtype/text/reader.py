@@ -26,7 +26,10 @@ from coldtype.color import normalize_color
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.geometry import Rect, Point
 
-import Levenshtein
+try:
+    import Levenshtein
+except ImportError:
+    Levenshtein = None
 
 from defcon import Font
 import glyphsLib
@@ -254,7 +257,7 @@ def normalize_font_path(font):
     ufo = literal.suffix == ".ufo"
     if literal.exists() and (not literal.is_dir() or ufo):
         return str(literal)
-    else:
+    elif Levenshtein:
         fonts = list(literal.parent.glob("**/*.ttf"))
         fonts.extend(list(literal.parent.glob("**/*.otf")))
         matches = []
@@ -273,6 +276,8 @@ def normalize_font_path(font):
             return str(match)
         else:
             raise Exception("NO FONT FOUND FOR", literal)
+    else:
+        raise Exception("FONT LITERAL NOT FOUND")
 
 
 class Style():
@@ -761,17 +766,18 @@ class StyledString(FittableMixin):
 
     def shrink(self):
         adjusted = False
+        default_step = 1
         if self.tracking > 0 and self.tracking > self.style.trackingLimit:
-            self.tracking -= self.style.increments.get("tracking", 0.25)
+            self.tracking -= self.style.increments.get("tracking", default_step)
             adjusted = True
         else:
             for k, v in self.style.variationLimits.items():
                 if self.variations[k] > self.style.variationLimits[k]:
-                    self.variations[k] -= self.style.increments.get(k, 1)
+                    self.variations[k] -= self.style.increments.get(k, default_step)
                     adjusted = True
                     break
         if not adjusted and self.tracking > self.style.trackingLimit:
-            self.tracking -= self.style.increments.get("tracking", 0.25)
+            self.tracking -= self.style.increments.get("tracking", default_step)
             adjusted = True
         if not adjusted and self.style.varyFontSize:
             self.fontSize -= 1

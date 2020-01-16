@@ -126,10 +126,21 @@ def explode_test(f):
     return o_o, o_i
 
 def varfit_test(f):
-    s = Style("≈/OhnoFatfaceVariable.ttf", 500, wdth=1, opsz=0.65, t=100, tl=-100)
-    ss = StyledString("HELLO WORLD", s).fit(1000)
-    ssp = ss.pen().align(f.a.r)
-    return DATPen().rect(f.a.r.take(1000, "centerx")).f(0.5, 0, 1, 0.3), ssp.skew(0.1, 0)
+    s = Style("≈/OhnoFatfaceVariable.ttf", 200, wdth=1, opsz=0.65, t=200, tl=-10, varyFontSize=1, fill=1, r=1, ro=1)
+    ss = Graf(Slug.LineSlugs("HELLO WORLD\njust trying to fit in\n& another line\nAND another long one, full of\ncharacters".upper(), s), f.a.r.take(1000, "centerx")).fit()
+    ssp = ss.pens().align(f.a.r)
+    return DATPen().rect(f.a.r.take(1000, "centerx")).f(0.5, 0, 1, 0.3), ssp.interleave(lambda p: p.s(0).sw(5))
+
+def align_test(f):
+    r = f.a.r.take(1000, "centerx")
+    s = Style("ç/NotoSans-Black.ttf", 100)
+    g = Graf(Slug.LineSlugs("HELLO THERE,\nWORLD", s), r.inset(0, 0), leading=10).pens().f(0).align(f.a.r)#.mmap(lambda idx, p: p.xAlignToFrame("maxx"))
+
+    #g = g[1]
+    g[0].xAlignToFrame("maxx")
+    #g.align(f.a.r, x="maxx")
+    
+    return DATPen().rect(r).f(0.5, 0, 1, 0.3), DATPen().rect(g.getFrame(th=0)).f("random", 0.63), g
 
 tests = [
     basic_test,
@@ -152,6 +163,7 @@ tests = [
     map_points_test,
     explode_test,
     varfit_test,
+    align_test,
 ]
 
 def render(f):
@@ -163,9 +175,8 @@ def render(f):
         DATPenSet(res)
     ]
 
-#current_tests = [tests.index(explode_test)]
+current_tests = [tests.index(align_test)]
 #current_tests = list(range(0, len(tests)))
-current_tests = [tests.index(varfit_test)]
 
 timeline = Timeline(len(tests), storyboard=current_tests)
 animation = Animation(render, Rect(1920, 1080), timeline, bg=(1, 0))

@@ -71,15 +71,17 @@ class Graf():
             l.fit(rects[idx].w - self.style.xp)
         return self
     
-    def pens(self):
+    def pens(self, align=False):
         rects = self.lineRects()
         pens = DATPenSet()
         for idx, l in enumerate(self.lines):
             r = rects[idx]
-            dps = l.pens().translate(r.x, r.y)
-            dps.container = r
-            dps.align(dps.container, x=self.style.x, y=None)
-            pens.pens.append(dps)
+            dps = l.pens().translate(r.x, r.y) # r.x
+            dps.addFrame(Rect(r.x, r.y, r.w, r.h))
+            #if align:
+            #    dps.container = Rect(0, r.y, r.w, r.h)
+            #    dps.align(dps.container, x=self.style.x, y=None)
+            pens.append(dps)
         return pens
     
     def fpa(self, rect=None):
@@ -186,12 +188,12 @@ class Slug(FittableMixin):
                 if dps.layered:
                     pens.layered = True
                 dps.translate(x_off, 0)
-                pens.pens.extend(dps.pens)
+                pens.extend(dps.pens)
                 x_off += dps.getFrame().w
             else:
                 dp = s.pen(frame=True)
                 dp.translate(x_off, 0)
-                pens.pens.append(dp)
+                pens.append(dp)
                 x_off += dp.getFrame().w
             #x_off += dps.getFrame().w
             #x_off += s.margin[1]
@@ -200,3 +202,9 @@ class Slug(FittableMixin):
     
     def pen(self):
         return self.pens(atomized=False).pen()
+    
+    def LineSlugs(text, primary, fallback=None):
+        lines = []
+        for line in text.split("\n"):
+            lines.append(Slug(line, primary, fallback))
+        return lines

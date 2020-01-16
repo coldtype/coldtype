@@ -72,7 +72,9 @@ def reload_animation():
         try:
             importlib.reload(coldtype.animation.premiere)
             importlib.reload(coldtype.pens.datpen)
-            #importlib.reload(coldtype.text.reader)
+            importlib.reload(coldtype.text.reader)
+            importlib.reload(coldtype.text.composer)
+            importlib.reload(coldtype.text)
             importlib.reload(coldtype.animation)
             importlib.reload(coldtype)
             
