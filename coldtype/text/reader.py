@@ -802,7 +802,12 @@ class StyledString(FittableMixin):
             return False
     
     def fit(self, width):
+        if isinstance(width, Rect):
+            width = width.w
+
         continuing = True
+        failed = False
+
         if self.style.tracking > 0:
             self.tracking = 0
             if self.testWidth(width, "tracking", 0, self.style.tracking):
@@ -814,9 +819,14 @@ class StyledString(FittableMixin):
             if not self.testWidth(width, "wdth", minwdth, currentwdth):
                 self.tracking = self.style.trackingLimit
                 if not self.testWidth(width, "tracking", self.style.trackingLimit, 0):
-                    self.fontSize = 10
-                    if not self.testWidth(width, "fontSize", 10, self.style.fontSize):
-                        print("CANT FIT IT >>>", self.text)
+                    if self.style.varyFontSize:
+                        self.fontSize = 10
+                        if not self.testWidth(width, "fontSize", 10, self.style.fontSize):
+                            failed = True
+                    else:
+                        failed = True
+        if failed:
+            print("CANT FIT IT >>>", self.text)
         return self
 
     def shrink(self):
@@ -980,6 +990,7 @@ class StyledString(FittableMixin):
                 f.frame.y = 0
                 #if f.frame.y < 0:
                 #    f.frame.y = 0
+                dp_atom.typographic = True
                 dp_atom.addFrame(f.frame)
                 dp_atom.glyphName = f.glyphName
                 if self.style.removeOverlap:

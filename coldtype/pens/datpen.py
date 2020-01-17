@@ -160,6 +160,22 @@ class DATPenLikeObject():
         scale = h if h < v else v
         return self.scale(scale)
     
+    def trackToRect(self, rect):
+        total_width = 0
+        for p in self:
+            if p.typographic:
+                total_width += p.getFrame().w
+        leftover_w = rect.w - total_width
+        tracking_value = leftover_w / (len(self)-1)
+        xoffset = rect.x - self[0].getFrame().x
+        for idx, p in enumerate(self):
+            if idx == 0:
+                p.translate(xoffset, 0)
+            else:
+                p.translate(xoffset+tracking_value*idx, 0)
+        #self[0].translate(-tracking_value, 0)
+        return self
+    
     def skew(self, x=0, y=0, unalign=True):
         t = Transform()
         if unalign != False:

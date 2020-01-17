@@ -58,7 +58,7 @@ class AnimationTime():
 class Animation():
     def __init__(self, 
             render,
-            rect=Rect(0, 0, 1920, 1080),
+            rect=Rect(0, 0, 1080, 1080),
             timeline=None,
             bg=0,
             layers=["main"],

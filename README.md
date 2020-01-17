@@ -4,26 +4,36 @@
 
 # What is Coldtype?
 
-Setting type with code may not be a common practice, but it is a good practice, or at least I enjoy doing it, so this is a library I wrote to make it easier to do, specifically in the context of creating frame-wise animations.
+Setting type with code may not be a common practice, but it is a good practice, or at least I enjoy doing it, so this is a library I wrote to make it easier to do, specifically in the context of constrained typographical situations, like frame-wise animations or user interfaces for audio applications.
 
 ## What is Coldtype for?
 
-- Quickly setting complex display typography in time and space
+- Quickly setting complex display typography in constrained time and spaces
+
+((( image here of text-editor & viewer side-by-side, ala drawbot)))
 
 ## What is Coldtype _not_?
 
 - Coldtype is not good for setting large amounts of text in a single frame, because Coldtype has no line-breaking algorithms
 - Which means Coldtype is probably bad for print (you should use DrawBot for that)
+- Coldtype is not good at most things that normal type-setting software is good at. Generally-speaking, the goal of this library is to give you exactly what you want, rather than a "best guess." For example:
+    - Coldtype does not implement fallback support (expect to see some `.notdef`s)
+
+## Is Coldtype stable enough to use?
+
+Great question. At the moment, it is definitely not very stable. It is, more than anything else, a collection of programming patterns that I’ve found very useful in quickly developing typographic animations. These animations are usually things I write once and then never read or edit, unless it’s to steal an idea from myself many months later, in which case, what I’m taking is a general idea and probably not the exact code. This makes Coldtype very different from... every programming library I’ve ever used, because most libraries are meant for general use in projects that must be maintained and revisited for months and years. Programming an animation isn't a lot like that — once it’s done, it’s done (released).
 
 ## How does Coldtype work?
 
 Coldtype is a Python library a fairly minimal glue that relies, primarily, on three excellent libraries:
 
-- fontTools
-- harfbuzz (+freetype)
-- skia-pathops
+- [fontTools](https://github.com/fonttools/fonttools)
+- [harfbuzz](https://github.com/harfbuzz/harfbuzz) (via [uharfbuzz](https://github.com/harfbuzz/uharfbuzz)) (+freetype, via [freetype-py](https://pypi.org/project/freetype-py/))
+- [skia-pathops](https://github.com/fonttools/skia-pathops)
 
-For output, Coldtype can be used with Cairo cross-platform, or DrawBot on macOS.
+The central graphic element of Coldtype (the `DATPen`) is a wrapper around `fontTool`’s `RecordingPen`, and the central typesetting element (`StyledString`) is, for most applications, a thin layer on top of harfbuzz, although it is also possible to set type directly from `.ufo` files and `.glyphs` files. 
+
+For rasterization/output, Coldtype can be used with Cairo cross-platform, or DrawBot on macOS.
 
 (On Mac, the Harfbuzz and FreeType modules can be substituted with DrawBot for type-shaping).
 
@@ -38,11 +48,48 @@ def render(frame):
 animation = Animation(render)
 ```
 
-You can then run this with the `render.py` program included in coldtype, ala:
+You can then run this with the `render.py` program included in coldtype, e.g.:
 
 `./render.py examples/simple.py -w`
 
+## What are some projects Coldtype has been used on?
+
+- Goodhertz plugin interfaces
+- Vulf Sans
+- Obviouslytown
+- Rob’s instagram
+- Goodhertz’ instagram
+
+## Programming philosophy
+
+- Chained mutation/transformation
+    - "Chaining" in this context refers to the programming style favored by libraries like jQuery, which allows you to call multiple methods on a single line, all of which mutate the state of an object and return the object itself in each mutating call. For example:
+        - `DATPen().rect(Rect(500, 500)).translate(100, 100).rotate(45)` creates a `DATPen` object, then adds a rectangle bezier to it, then translates it, then rotates it, all in a single line. In normal circumstances, programming like this is called "spaghetti" code because it's long and hard to follow, or something like that. In this case, its brevity is its benefit
+- Does not use classic "drawing"-style APIs/graphic state, though the data model of Coldtype can be (and is meant to be) serialized to any number of canvas/drawing APIs, and can be extended to any API that implements `fill`/`stroke` and `moveTo`/`lineTo`/`curveTo`
+
+## How is this different from DrawBot?
+
+- Use whatever text editor you want
+- Cross-platform
+- Does not rely on Apple’s CoreText engine or the mostly deprecated APIs that DrawBot uses to interact with it
+- Really only a small subset of what DrawBot, by leveraging CoreText and CoreImage, can do (which is a good thing to me, because I only ever used DrawBot for typography anyway)
+- Little-to-no image support (some, but it is primitive)
+
+## Why is an audio software company releasing a typography library?
+
+Because (__A__) I love fonts and (__B__) audio software interfaces use fonts (and have some unique design constraints for typography).
+
+## Why “coldtype”?
+
+Coldtype refers to the short-lived era of early digital typesetting (extending roughly from the late 1940s to the widespread adoption of personal computing in the early 1990s), during which time computers were used to control various analog photographic processes for setting type, technologies no known, usually, as "phototype," but sometimes also known as "coldtype," to distinguish it from hot-metal type, which was the previous standard. (And it was hot — Linotype machines were known to squirt molten lead out at the operator.)
+
+Phototype/coldtype was a hybrid moment in typographic history, and a fascinating one — all 500 years of metal-type-based assumptions were upended, as letters now did not need to live on a rectangular metal body, meaning they could get really close together.
+
+Also originally I thought it was a funny name because I wanted to make a very fast typesetting library using Harfbuzz, and when computers run quickly and efficiently, they remain cold. Of course, I know regularly use all 8 cores of my computer when I use render 1000s of frames at once using coldtype, which gets the fans going, so really it's more like warmtype.
+
 ## What does COLDTYPE stand for?
+
+Nothing, but I came up with this for fun:
 
 (C)oncise,
 (O)bscure,
