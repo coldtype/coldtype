@@ -160,14 +160,31 @@ class DATPenLikeObject():
         scale = h if h < v else v
         return self.scale(scale)
     
-    def trackToRect(self, rect):
+    def trackToRect(self, rect, pullToEdges=False):
+        if len(self) == 1:
+            return self.align(rect)
         total_width = 0
-        for p in self:
-            if p.typographic:
-                total_width += p.getFrame().w
+        start_x = self[0].getFrame(th=pullToEdges).x
+        end_x = self[-1].getFrame(th=pullToEdges).point("SE").x
+        # TODO easy to knock out apostrophes here based on a callback, last "actual" frame
+        total_width = end_x - start_x
+        #for idx, p in enumerate(self):
+        #    f = p.getFrame()
+        #    w = f.w
+        #    if pullToEdges:
+        #        if idx == 0:
+        #            d = p.bounds().point("SW").x - f.point("SW").x
+        #            w -= d
+        #        elif idx == len(self)-1:
+        #            d = p.bounds().point("SE").x - f.point("SE").x
+        #            w += d
+        #    total_width += w
         leftover_w = rect.w - total_width
         tracking_value = leftover_w / (len(self)-1)
-        xoffset = rect.x - self[0].getFrame().x
+        if pullToEdges:
+            xoffset = rect.x - self[0].bounds().x
+        else:
+            xoffset = rect.x - self[0].getFrame().x
         for idx, p in enumerate(self):
             if idx == 0:
                 p.translate(xoffset, 0)
@@ -305,6 +322,16 @@ class DATPen(RecordingPen, DATPenLikeObject):
         else:
             return self.bounds()
     
+    def bounds(self):
+        """Calculate the bounds of this shape; mostly for internal use."""
+        try:
+            cbp = BoundsPen(None)
+            self.replay(cbp)
+            mnx, mny, mxx, mxy = cbp.bounds
+            return Rect((mnx, mny, mxx - mnx, mxy - mny))
+        except:
+            return Rect(0, 0, 0, 0)
+    
     def reverse(self):
         """Reverse the winding direction of the pen."""
         dp = DATPen()
@@ -379,16 +406,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def removeOverlap(self):
         """Remove overlaps within this shape and return itself."""
         return self._pathop(otherPen=DATPen(), operation=BooleanOp.Union)
-
-    def bounds(self):
-        """Calculate the bounds of this shape; mostly for internal use."""
-        try:
-            cbp = BoundsPen(None)
-            self.replay(cbp)
-            mnx, mny, mxx, mxy = cbp.bounds
-            return Rect((mnx, mny, mxx - mnx, mxy - mny))
-        except:
-            return Rect(0, 0, 0, 0)
 
     def round(self, rounding):
         """Round the values of this pen to integer values."""

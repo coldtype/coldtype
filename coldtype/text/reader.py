@@ -287,6 +287,7 @@ class Style():
     def __init__(self,
             font=None,
             fontSize=12,
+            fitHeight=None,
             ttFont=None,
             tracking=0,
             trackingLimit=0,
@@ -395,7 +396,10 @@ class Style():
             if capHeight != "x":
                 self.capHeight = capHeight
 
-        self.fontSize = fontSize
+        if fitHeight:
+            self.fontSize = (fitHeight/self.capHeight)*1000
+        else:
+            self.fontSize = fontSize
         self.tracking = kwargs.get("t", tracking)
         self.kern = kwargs.get("k", kern)
         self.kern_pairs = kern_pairs
@@ -822,8 +826,10 @@ class StyledString(FittableMixin):
                     if self.style.varyFontSize:
                         self.fontSize = 10
                         if not self.testWidth(width, "fontSize", 10, self.style.fontSize):
+                            self.variations["wdth"] = minwdth
                             failed = True
                     else:
+                        self.variations["wdth"] = minwdth
                         failed = True
         if failed:
             print("CANT FIT IT >>>", self.text)

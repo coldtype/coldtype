@@ -55,7 +55,7 @@ def perc_to_pix(rect, amount, edge):
     perc(entage) to pix(els) — where the percentage is a decimal between 0 and 1 — cannot be 0 or 1
     """
     x, y, w, h = rect
-    if amount < 1.0:
+    if amount <= 1.0:
         d = h if edge == Edge.MinY or edge == Edge.MaxY or edge == Edge.CenterY else w
         if amount < 0:
             return d + amount
