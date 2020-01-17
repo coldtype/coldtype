@@ -2,9 +2,15 @@
 
 ---
 
-_Hello! Not sure how you got here unless I gave you the link personally — if I didn’t, you’re welcome to look around, but know that this is alpha-quality software that’s mostly undocumented._
+🌋 _Hello! Not sure how you got here unless I gave you the link personally — if I didn’t, you’re welcome to look around, but know that this is alpha-quality software that’s mostly undocumented._ 🌋
 
-# What is Coldtype?
+__⚠️ Our (Goodhertz’) intention is to ultimately make this library a proper, useable, open-source project, but for the moment — though it is publicly viewable — we are not publicizing it and it is under active development. ⚠️__
+
+---
+
+# Coldtype
+
+## What is Coldtype?
 
 Setting type with code may not be a common practice, but it is a good practice, or at least I* enjoy doing it, so this is a library I wrote to make it easier to do, specifically in the context of constrained typographical situations, like frame-wise animations or user interfaces for audio applications.
 
@@ -78,10 +84,6 @@ animation = Animation(render, timeline=timeline)
 ```
 
 ## What are some projects Coldtype has been used on?
-
-<iframe src="https://player.vimeo.com/video/377148622?portrait=0" width="640" height="480" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
-
-<iframe src="https://player.vimeo.com/video/354292807?title=0&portrait=0" width="640" height="480" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
 
 _As well as_:
 
