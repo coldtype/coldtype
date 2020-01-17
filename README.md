@@ -2,7 +2,7 @@
 
 ---
 
-Hello! Not sure how you got here unless you 
+_Hello! Not sure how you got here unless I gave you the link personally — if I didn’t, you’re welcome to look around, but know that this is alpha-quality software that’s mostly undocumented._
 
 # What is Coldtype?
 
@@ -85,6 +85,8 @@ animation = Animation(render, timeline=timeline)
 
 _As well as_:
 
+- [Lyric videos](https://vimeo.com/377148622)
+- [3d type specimens](https://vimeo.com/354292807)
 - [All Goodhertz plugin interfaces](https://goodhertz.co)
 - [All recent posts on the Goodhertz instagram](https://www.instagram.com/goodhertz/)
 - And [all recent posts on Rob’s instagram](https://www.instagram.com/robrushstenson/)
