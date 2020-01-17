@@ -971,6 +971,7 @@ class DATPenSet(DATPenLikeObject):
                         self.append(p)
                     else:
                         self.extend(p)
+        return self
         
     def reversePens(self):
         """Reverse the order of the pens; useful for overlapping glyphs from the left-to-right rather than right-to-left (as is common in OpenType applications)"""
