@@ -134,10 +134,11 @@ Also originally I thought it was a funny name because I wanted to make a very fa
 
 ## Setup/Test
 
-- Open the `coldtype-viewer` app (just a normal OSX app)
 - `cd` into the directory
+- To set up the virtual environment, `virtualenv env`
 - `source env/bin/activate`
 - `pip install -r requirements.txt`
+- Open the `coldtype-viewer` app (just a normal OSX app, you can open it by double-clicking)
 - `./render.py test/test_animation.py`
 
 
@@ -147,7 +148,7 @@ Also originally I thought it was a funny name because I wanted to make a very fa
 
 - `pip install git+https://github.com/typemytype/drawbot`
 
-### Cairo (don’t do this is you don’t have to)
+### Cairo (don’t do this is you don’t have to, which, if you’re on a mac, you don’t have to)
 
 - `brew install cairo pkg-config`
 - `pip install pycairo`
@@ -165,7 +166,7 @@ Then you can `pip install pycairo` again — hopefully it works!
 
 ### Python >= 3.6
 
-Install Python, 3.6.8 (the latest 3.6 series) is probably your best bet https://www.python.org/downloads/release/python-368/
+If you don't already have a python >= 3.6, install the latest Python from https://www.python.org/
 
 ### Git
 
