@@ -18,14 +18,14 @@ Setting type with code may not be a common practice, but it is a good practice, 
 
 ## What is Coldtype for?
 
-- Quickly setting complex display typography in constrained time and space
+- Quickly & precisely setting complex display typography in constrained time and space.
 
 ((( image here of text-editor & viewer side-by-side, ala drawbot)))
 
 ## What is Coldtype _not_?
 
 - Coldtype is not good for setting large amounts of text in a single frame, because Coldtype has no line-breaking algorithms
-- Which means Coldtype is probably bad for print (you should use DrawBot for that)
+- Which means Coldtype is probably bad for most print applications (you should use DrawBot for that)
 - Coldtype is not good at most things that normal type-setting software is good at. Generally-speaking, the goal of this library is to give you exactly what you want, rather than a "best guess." For example:
     - Coldtype does not implement fallback support (expect to see some `.notdef`s)
 

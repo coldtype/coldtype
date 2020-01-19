@@ -180,7 +180,7 @@ def render_frame(
     
     for layer_name in layers:
         layer_pens = result.get(layer_name, [])
-        if isinstance(layer_pens, DATPen) or isinstance(layer_pens, DATPenSet):
+        if hasattr(layer_pens, "filmjitter"):
             layer_pens = [layer_pens]
             result[layer_name] = layer_pens
         layer_frames_folder = layers_folder.joinpath(f"{filepath.stem}_{layer_name}_frames")

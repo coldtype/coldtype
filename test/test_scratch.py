@@ -44,5 +44,8 @@ def render(f):
         #m
     ]
 
-timeline = Timeline(100, storyboard=[0, 25, 50])
-animation = Animation(render, timeline=timeline)
+def render2(f):
+    return StyledString("ABC", Style("≈/Beastly-12Point.otf", 100)).pens().f(1).align(f.a.r)
+
+timeline = Timeline(100, storyboard=[0])
+animation = Animation(render2, timeline=timeline)

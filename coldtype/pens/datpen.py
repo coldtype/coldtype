@@ -168,17 +168,6 @@ class DATPenLikeObject():
         end_x = self[-1].getFrame(th=pullToEdges).point("SE").x
         # TODO easy to knock out apostrophes here based on a callback, last "actual" frame
         total_width = end_x - start_x
-        #for idx, p in enumerate(self):
-        #    f = p.getFrame()
-        #    w = f.w
-        #    if pullToEdges:
-        #        if idx == 0:
-        #            d = p.bounds().point("SW").x - f.point("SW").x
-        #            w -= d
-        #        elif idx == len(self)-1:
-        #            d = p.bounds().point("SE").x - f.point("SE").x
-        #            w += d
-        #    total_width += w
         leftover_w = rect.w - total_width
         tracking_value = leftover_w / (len(self)-1)
         if pullToEdges:
@@ -770,6 +759,34 @@ class DATPen(RecordingPen, DATPenLikeObject):
             else:
                 done = False
             up = not up
+        self.record(dp)
+        return self
+    
+    def standingwave(self, r, periods, direction=1):
+        """Standing-wave primitive"""
+        dp = DATPen()
+        pw = r.w / periods
+
+        blocks = r.subdivide(periods, "minx")
+        for idx, block in enumerate(blocks):
+            n, e, s, w = block.take(1, "centery").cardinals()
+            if idx == 0:
+                dp.moveTo(w)
+            if direction == 1:
+                if idx%2 == 0:
+                    dp.lineTo(n)
+                else:
+                    dp.lineTo(s)
+            else:
+                if idx%2 == 0:
+                    dp.lineTo(s)
+                else:
+                    dp.lineTo(n)
+            if idx == len(blocks) - 1:
+                dp.lineTo(e)
+        dp.endPath().smooth()
+        dp.value = dp.value[:-1]
+        dp.endPath()
         self.record(dp)
         return self
     
