@@ -4,7 +4,7 @@ from enum import Enum
 import copy
 
 from coldtype.animation.timeline import Timeline
-from coldtype.text import Lockup, Graf, GrafStyle, Furniture, DATPen, DATPenSet
+from coldtype.text import StyledString, Lockup, Graf, GrafStyle, Furniture, DATPen, DATPenSet
 
 
 VIDEO_OFFSET = 86313 # why is this?
@@ -268,6 +268,85 @@ class ClipGroup():
         global group_pens_cache
         group_pens_cache = {}
     
+    def pens2(self, render_clip_fn, rect, graf_style, fit=None):
+        group_pens = DATPenSet()
+        lines = []
+        groupings = []
+        for idx, _line in enumerate(self.lines()):
+            slugs = []
+            texts = []
+            styles = []
+            style_names = []
+            for clip in _line:
+                try:
+                    text, style_name, style = render_clip_fn(clip)
+                    texts.append([text, clip.idx, style_name, style])
+                except Exception as e:
+                    print(e)
+                    raise Exception("pen2 render_clip must return text, style_name, & style")
+            
+            grouped_texts = []
+            idx = 0
+            done = False
+            while not done:
+                style_name = texts[idx][2]
+                grouped_text = [texts[idx]]
+                style_same = True
+                while style_same:
+                    idx += 1
+                    try:
+                        next_style_name = texts[idx][2]
+                        if next_style_name == style_name:
+                            style_same = True
+                            grouped_text.append(texts[idx])
+                        else:
+                            style_same = False
+                            grouped_texts.append(grouped_text)
+                    except IndexError:
+                        done = True
+                        style_same = False
+                        grouped_texts.append(grouped_text)
+            
+            for gt in grouped_texts:
+                full_text = "".join([t[0] for t in gt])
+                slugs.append(StyledString(full_text, gt[0][3]))
+            groupings.append(grouped_texts)
+            lines.append(slugs)
+        
+        lockups = []
+        for line in lines:
+            lockup = Lockup(line, preserveLetters=True, nestSlugs=True)
+            if fit:
+                lockup.fit(fit)
+            lockups.append(lockup)
+        graf = Graf(lockups, rect, graf_style)
+        pens = graf.pens()#.align(rect, x="minx")
+        
+        re_grouped = DATPenSet()
+        for idx, line in enumerate(lines):
+            #print(pens, idx, line[0].text)
+            line_dps = pens[idx]
+            re_grouped_line = DATPenSet()
+            for gidx, gt in enumerate(groupings[idx]):
+                group_dps = line_dps[gidx]
+                tidx = 0
+                for (text, cidx, style_name, style) in gt:
+                    clip_dps = DATPenSet(group_dps[tidx:tidx+len(text)])
+                    #print([dp.glyphName for dp in clip_dps])
+                    re_grouped_line.append(clip_dps)
+                    tidx += len(text)
+            re_grouped.append(re_grouped_line)
+        
+        pens = re_grouped
+        for pens in pens.pens:
+            for pen in pens.pens:
+                pen.removeOverlap()
+            group_pens.append(pens)
+        track_cache = group_pens_cache.get(self.track, dict())
+        track_cache[self.index] = group_pens
+        group_pens_cache[self.track] = track_cache
+        return group_pens
+    
     def pens(self, render_clip_fn, rect, graf_style, fit=None, cache=True):
         global group_pens_cache
         
@@ -280,7 +359,11 @@ class ClipGroup():
         for idx, _line in enumerate(self.lines()):
             slugs = []
             for clip in _line:
-                slugs.append(render_clip_fn(clip))
+                result = render_clip_fn(clip)
+                if result:
+                    slugs.append(result)
+                else:
+                    raise Exception("render_clip must return something")
             lines.append(slugs)
         lockups = []
         for line in lines:
