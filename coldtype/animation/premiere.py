@@ -152,6 +152,9 @@ class ClipGroup():
             clip.idx = idx
             clip.group = self
     
+    def prg(self, i):
+        return (i-self.start)/self.duration
+    
     def styles(self):
         all_styles = set()
         for clip in self.clips:
@@ -268,7 +271,7 @@ class ClipGroup():
         global group_pens_cache
         group_pens_cache = {}
     
-    def pens2(self, render_clip_fn, rect, graf_style, fit=None):
+    def pens2(self, f, render_clip_fn, rect, graf_style, fit=None):
         group_pens = DATPenSet()
         lines = []
         groupings = []
@@ -279,7 +282,7 @@ class ClipGroup():
             style_names = []
             for clip in _line:
                 try:
-                    text, style_name, style = render_clip_fn(clip)
+                    text, style_name, style = render_clip_fn(f, clip)
                     texts.append([text, clip.idx, style_name, style])
                 except Exception as e:
                     print(e)
@@ -333,8 +336,10 @@ class ClipGroup():
                 for (text, cidx, style_name, style) in gt:
                     clip_dps = DATPenSet(group_dps[tidx:tidx+len(text)])
                     #print([dp.glyphName for dp in clip_dps])
+                    clip_dps.tag = style_name
                     re_grouped_line.append(clip_dps)
                     tidx += len(text)
+            re_grouped_line.addFrame(line_dps.getFrame())
             re_grouped.append(re_grouped_line)
         
         pens = re_grouped

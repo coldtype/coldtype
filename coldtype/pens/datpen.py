@@ -367,6 +367,28 @@ class DATPen(RecordingPen, DATPenLikeObject):
             self.repeat(times-1)
         return self
     
+    def nonlinear_transform(self, fn):
+        for idx, (move, pts) in enumerate(self.value):
+            if len(pts) > 0:
+                _pts = []
+                for _pt in pts:
+                    x, y = _pt
+                    _pts.append(fn(x, y))
+                self.value[idx] = (move, _pts)
+        return self
+    
+    def bend(self, curve):
+        cc = CurveCutter(curve)
+        ccl = cc.length
+        dpf = self.getFrame()
+        dpl = self.bounds().point("SE").x
+        xf = ccl/dpl
+        def bender(x, y):
+            p, tangent = cc.subsegmentPoint(end=x*xf)
+            px, py = p
+            return (px, y+py-dpf.h*0.5)
+        return self.nonlinear_transform(bender)
+    
     def transform(self, transform, transformFrame=True):
         """Perform an arbitrary transformation on the pen, using the fontTools `Transform` class."""
         op = RecordingPen()
@@ -1140,24 +1162,25 @@ class DATPenSet(DATPenLikeObject):
         return dps
     
     def pfilter(self, fn):
-        valid = False
         to_keep = []
         for idx, p in enumerate(self.pens):
             if hasattr(p, "pens"):
-                p.pfilter(fn)
+                if p.pfilter(fn):
+                    to_keep.append(p)
             else:
-                valid = True
                 if fn(idx, p):
                     to_keep.append(p)
-        if valid:
+        if len(to_keep) > 0:
             self.pens = to_keep
+        else:
+            return False
         return self
     
     def mfilter(self, fn):
         self.pens = self.filter(fn)
         return self
     
-    def flatten(self, levels=100):
+    def flatten(self, levels=100, onself=False):
         pens = []
         for p in self.pens:
             if isinstance(p, DATPenSet) and levels > 0:
@@ -1167,7 +1190,11 @@ class DATPenSet(DATPenLikeObject):
         dps = DATPenSet(pens)
         if self.layered:
             dps.layered = True
-        return dps
+        if onself:
+            self.pens = dps.pens
+            return self
+        else:
+            return dps
     
     def frameSet(self, th=False, tv=False):
         dps = DATPenSet()
@@ -1193,7 +1220,7 @@ class DATPenSet(DATPenLikeObject):
             #x_off += s.margin[1]
         return self
         
-    def distributeOnPath(self, path, offset=0, cc=None):
+    def distributeOnPath(self, path, offset=0, cc=None, notfound=None):
         if cc:
             cutter = cc
         else:
@@ -1203,6 +1230,9 @@ class DATPenSet(DATPenLikeObject):
             f = p.getFrame()
             bs = f.y
             ow = offset + f.x + f.w / 2
+            #if ow < 0:
+            #    if notfound:
+            #        notfound(p)
             if ow > cutter.length:
                 limit = min(idx, limit)
             else:

@@ -30,7 +30,7 @@ class DrawBotPen(DrawablePenMixin):
             if isinstance(color, Gradient):
                 self.gradient(color)
             elif isinstance(color, Color):
-                db.fill(color.red, color.green, color.blue, color.alpha)
+                db.fill(color.r, color.g, color.b, color.a)
         else:
             db.fill(None)
     
@@ -40,7 +40,7 @@ class DrawBotPen(DrawablePenMixin):
             if isinstance(color, Gradient):
                 pass # possible?
             elif isinstance(color, Color):
-                db.stroke(color.red, color.green, color.blue, color.alpha)
+                db.stroke(color.r, color.g, color.b, color.a)
         else:
             db.stroke(None)
         

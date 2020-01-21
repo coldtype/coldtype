@@ -31,6 +31,34 @@ def hsl_to_rgb(h, s=0, l=0):
     return (r, g, b)
 
 
+def rgb_to_hsl(r, g=None, b=None):
+    minVal = min(r, g, b)
+    maxVal = max(r, g, b)
+
+    l = (maxVal + minVal) / 2.0
+    if minVal == maxVal:
+        return (0.0, 0.0, l)
+
+    d = maxVal - minVal
+
+    if l < 0.5:
+        s = d / (maxVal + minVal)
+    else:
+        s = d / (2.0 - maxVal - minVal)
+
+    dr, dg, db = [(maxVal-val) / d for val in (r, g, b)]
+
+    if r == maxVal:
+        h = db - dg
+    elif g == maxVal:
+        h = 2.0 + dr - db
+    else:
+        h = 4.0 + dg - dr
+
+    h = (h*60.0) % 360.0
+    return (h, s, l)
+
+
 class Color:
     def __init__(self, *values):
         r, g, b = [float(v) for v in values[:3]]
@@ -41,11 +69,15 @@ class Color:
             self.a = float(values[3])
         else:
             self.a = 1
+        h, s, l = rgb_to_hsl(r, g, b)
+        self.h = h
+        self.s = s
+        self.l = l
 
     def with_alpha(self, alpha):
         self.a = alpha
         return self
-    
+
     def ints(self):
         return [self.r*255, self.g*255, self.b*255, self.a]
 
@@ -65,7 +97,7 @@ class Color:
         else:
             raise ValueError("input #%s is not in #RRGGBB format" % html)
         return Color(*[(int(n, 16) / 255.0) for n in rgb], a)
-    
+
     def from_hsl(h, s, l, a=1):
         r, g, b = hsl_to_rgb(h, s, l)
         return Color(r, g, b, a)
