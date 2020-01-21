@@ -460,14 +460,21 @@ class PremiereTimeline(Timeline):
         
         super().__init__(duration, fps, _storyboard, workareas, tracks)
     
-    def trackClipGroupForFrame(self, track_idx, frame_idx, styles=None):
-        for group in self[track_idx].clip_groups:
-            if group.start <= frame_idx and group.end > frame_idx:
+    def trackClipGroupForFrame(self, track_idx, frame_idx, styles=None, check_end=True):
+        for gidx, group in enumerate(self[track_idx].clip_groups):
+            if not check_end:
+                end_good = False
+                try:
+                    next_group = self[track_idx].clip_groups[gidx+1]
+                    end_good = next_group.start > frame_idx
+                except IndexError:
+                    end_good = True
+            if group.start <= frame_idx and ((check_end and group.end > frame_idx) or (not check_end and end_good)):
                 style_groups = None
                 if styles:
                     style_groups = []
                     for style in styles:
-                        style_groups.append(self.trackClipGroupForFrame(style, frame_idx))
+                        style_groups.append(self.trackClipGroupForFrame(style, frame_idx, check_end=False))
                 return group.position(frame_idx, style_groups)
     
     def currentWorkarea(self):
