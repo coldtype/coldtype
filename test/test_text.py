@@ -9,6 +9,7 @@ def basic_test(f):
 
 def combine_slugs_test(f):
     ss1 = Slug("OY ", Style(varfont, fontSize=280)).pen().f("darkorchid", 0.3)
+    print(ss1.f())
     ps2 = Slug("ABC ", Style(varfont, wght=1, fontSize=230)).pens().rotate(-10)
     shape = DATPen().polygon(3, Rect(0, 0, 150, 150)).f("random")
     return DATPenSet(ss1, ps2, shape).distribute().align(f.a.r)
@@ -191,8 +192,8 @@ def render(f):
         DATPenSet(res)
     ]
 
-current_tests = [tests.index(varfit_test)]
-#current_tests = list(range(0, len(tests)))
+#current_tests = [tests.index(combine_slugs_test)]
+current_tests = list(range(0, len(tests)))
 
 timeline = Timeline(len(tests), storyboard=current_tests)
 animation = Animation(render, Rect(1920, 1080), timeline, bg=(1, 0))

@@ -65,8 +65,8 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
             self.path.set("stroke", "transparent")
     
     def rgba(self, color):
-        r, g, b = color.ints
-        return f"rgba({r}, {g}, {b}, {color.alpha})"
+        r, g, b, a = color.ints()
+        return f"rgba({r}, {g}, {b}, {a})"
     
     def rect(self, rect):
         r = etree.Element("rect")

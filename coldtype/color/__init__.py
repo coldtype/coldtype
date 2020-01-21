@@ -1,6 +1,6 @@
-from grapefruit import Color
 from random import random
 from fontTools.ttLib.tables.C_P_A_L_ import Color as FTCPALColor
+from coldtype.color.color import Color
 
 
 def lighten_max(color, maxLightness=0.55):
@@ -21,7 +21,7 @@ def color_var(*rgba):
 
 
 def hex_to_tuple(h):
-    return tuple([c/255 for c in (palette.red, palette.green, palette.blue, palette.alpha)])
+    return tuple([c/255 for c in (palette.r, palette.g, palette.b, palette.a)])
 
 
 def normalize_color(v):
@@ -60,7 +60,7 @@ def normalize_color(v):
                     return Color.from_rgb(v[0], v[0], v[0])
         elif len(v) == 2:
             if v[0] == "random" or v[0] == -1:
-                return Color.from_rgb(random(), random(), random(), v[1])
+                return Color.from_rgb(random(), random(), random(), float(v[1]))
             elif isinstance(v[0], str):
                 return Color.from_html(v[0]).with_alpha(v[1])
             else:

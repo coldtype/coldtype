@@ -100,20 +100,29 @@ class DATPenLikeObject():
         return self
 
     def f(self, *value):
-        """Set a (f)ill"""
-        return self.attr(fill=value)
+        """Get/set a (f)ill"""
+        if value:
+            return self.attr(fill=value)
+        else:
+            return self.attr(field="fill")
     
     fill = f
     
     def s(self, *value):
-        """Set a (s)troke"""
-        return self.attr(stroke=value)
+        """Get/set a (s)troke"""
+        if value:
+            return self.attr(stroke=value)
+        else:
+            return self.attr(field="stroke")
     
     stroke = s
     
     def sw(self, value):
-        """Set a (s)troke (w)idth"""
-        return self.attr(strokeWidth=value)
+        """Get/set a (s)troke (w)idth"""
+        if value:
+            return self.attr(strokeWidth=value)
+        else:
+            return self.attr(field="strokeWidth")
     
     strokeWidth = sw
     
@@ -282,7 +291,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
             elif k == "strokeWidth":
                 if "stroke" in attrs:
                     attrs["stroke"]["weight"] = v
-                    if attrs["stroke"]["color"].alpha == 0:
+                    if attrs["stroke"]["color"].a == 0:
                         attrs["stroke"]["color"] = normalize_color((1, 0, 0.5))
                 else:
                     attrs["stroke"] = dict(color=normalize_color((1, 0, 0.5)), weight=v)
@@ -1129,6 +1138,20 @@ class DATPenSet(DATPenLikeObject):
         #self.pens = dps.pens
         #return self
         return dps
+    
+    def pfilter(self, fn):
+        valid = False
+        to_keep = []
+        for idx, p in enumerate(self.pens):
+            if hasattr(p, "pens"):
+                p.pfilter(fn)
+            else:
+                valid = True
+                if fn(idx, p):
+                    to_keep.append(p)
+        if valid:
+            self.pens = to_keep
+        return self
     
     def mfilter(self, fn):
         self.pens = self.filter(fn)
