@@ -1161,6 +1161,14 @@ class DATPenSet(DATPenLikeObject):
         #return self
         return dps
     
+    def pmap(self, fn):
+        for idx, p in enumerate(self.pens):
+            if hasattr(p, "pens"):
+                p.pmap(fn)
+            else:
+                fn(idx, p)
+        return self
+    
     def pfilter(self, fn):
         to_keep = []
         for idx, p in enumerate(self.pens):

@@ -427,6 +427,12 @@ class ClipTrack():
         if len(group) > 0:
             groups.append(ClipGroup(self, len(groups), group))
         return groups
+    
+    def current(self, fi):
+        for idx, clip in enumerate(self.clips):
+            clip:Clip
+            if clip.start <= fi and fi < clip.end:
+                return clip
 
 
 class PremiereTimeline(Timeline):
