@@ -990,6 +990,7 @@ class DATPenSet(DATPenLikeObject):
         self._tag = "Unknown"
         self.container = None
         self.frame = None
+        self.data = {}
     
     def __str__(self):
         return f"<DPS:pens:{len(self.pens)}>"
@@ -1188,10 +1189,17 @@ class DATPenSet(DATPenLikeObject):
         self.pens = self.filter(fn)
         return self
     
+    def flattenonce(self):
+        pens = []
+        for idx, p in enumerate(self.pens):
+            pens.extend(p)
+        self.pens = pens
+        return self
+    
     def flatten(self, levels=100, onself=False):
         pens = []
-        for p in self.pens:
-            if isinstance(p, DATPenSet) and levels > 0:
+        for idx, p in enumerate(self.pens):
+            if hasattr(p, "pens") and levels > 0:
                 pens.extend(p.flatten(levels=levels-1).pens)
             else:
                 pens.append(p)

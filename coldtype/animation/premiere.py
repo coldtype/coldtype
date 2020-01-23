@@ -4,6 +4,7 @@ from enum import Enum
 import copy
 
 from coldtype.animation.timeline import Timeline
+from coldtype.animation.easing import ease
 from coldtype.text import StyledString, Lockup, Graf, GrafStyle, Furniture, DATPen, DATPenSet
 
 
@@ -131,6 +132,17 @@ class Clip():
             return " " + txt
         else:
             return txt
+    
+    def fadeIn(self, fi, easefn="linear"):
+        if ClipFlags.FadeIn in self.flags:
+            fade = self.flags[ClipFlags.FadeIn]
+            fv = (fi-self.start)/fade
+            if fv >= 1:
+                return 1
+            else:
+                a, _ = ease(easefn, fv)
+                return a
+        return -1
     
     def __repr__(self):
         return "<Clip:({:s}/{:04d}/{:04d}\"{:s}\")>".format([" -1", "NOW", " +1"][self.position+1], self.start, self.end, self.text)
@@ -278,8 +290,6 @@ class ClipGroup():
         for idx, _line in enumerate(self.lines()):
             slugs = []
             texts = []
-            styles = []
-            style_names = []
             for clip in _line:
                 try:
                     text, style_name, style = render_clip_fn(f, clip)
@@ -333,11 +343,21 @@ class ClipGroup():
             for gidx, gt in enumerate(groupings[idx]):
                 group_dps = line_dps[gidx]
                 tidx = 0
+                last_clip_dps = None
                 for (text, cidx, style_name, style) in gt:
+                    clip:Clip = self.clips[cidx]
                     clip_dps = DATPenSet(group_dps[tidx:tidx+len(text)])
-                    #print([dp.glyphName for dp in clip_dps])
                     clip_dps.tag = style_name
-                    re_grouped_line.append(clip_dps)
+                    clip_dps.data["clip"] = self.clips[cidx]
+                    if clip.type == ClipType.JoinPrev and last_clip_dps:
+                        grouped_clip_dps = DATPenSet()
+                        grouped_clip_dps.append(last_clip_dps)
+                        grouped_clip_dps.append(clip_dps)
+                        re_grouped_line[-1] = grouped_clip_dps
+                        last_clip_dps = grouped_clip_dps
+                    else:
+                        re_grouped_line.append(clip_dps)
+                        last_clip_dps = clip_dps
                     tidx += len(text)
             re_grouped_line.addFrame(line_dps.getFrame())
             re_grouped.append(re_grouped_line)
@@ -347,9 +367,11 @@ class ClipGroup():
             for pen in pens.pens:
                 pen.removeOverlap()
             group_pens.append(pens)
-        track_cache = group_pens_cache.get(self.track, dict())
-        track_cache[self.index] = group_pens
-        group_pens_cache[self.track] = track_cache
+        
+        for clip, pen in self.iterate_clip_pens(group_pens):
+           if clip.position == 1 or clip.text == "¶":
+               pen.f(0)
+        
         return group_pens
     
     def pens(self, render_clip_fn, rect, graf_style, fit=None, cache=True):
@@ -386,6 +408,14 @@ class ClipGroup():
         track_cache[self.index] = group_pens
         group_pens_cache[self.track] = track_cache
         return group_pens
+    
+    def iterate_clip_pens(self, pens):
+        for pen in pens:
+            if hasattr(pen, "data"):
+                if pen.data.get("clip"):
+                    yield pen.data.get("clip"), pen
+                else:
+                    yield from self.iterate_clip_pens(pen)
     
     def iterate_pens(self, pens, copy=True):
         for idx, line in enumerate(self.lines()):
