@@ -47,6 +47,7 @@ parser.add_argument("-rw", "--renderworkareas", action="store_true", default=Fal
 parser.add_argument("-a", "--all", action="store_true", default=False)
 parser.add_argument("-w", "--watch", action="store_true", default=False)
 parser.add_argument("-l", "--layers", type=str, default=None)
+parser.add_argument("-pl", "--preview-layers", type=str, default=None)
 parser.add_argument("-f", "--format", type=str, default="png")
 parser.add_argument("-cfn", "--custom-filename", type=str, default=None)
 parser.add_argument("-r", "--rasterizer", type=str, default="drawbot")
@@ -58,6 +59,7 @@ args = parser.parse_args()
 
 filepath = None
 anm = None
+original_layers = None
 program = None
 preview = PersistentPreview()
 
@@ -65,6 +67,37 @@ running_renderers = []
 
 class LayerException(Exception):
     pass
+
+
+def read_layers(anm):
+    layers = anm.layers
+    if args.layers:
+        layers = [l.strip() for l in args.layers.split(",")]
+        for l in layers:
+            if not anm.layers or l not in anm.layers:
+                raise LayerException(f"(render) No layer named {l}")
+    return layers
+
+
+def read_preview_layers(anm):
+    global original_layers
+    render_layers = read_layers(anm)
+
+    additional_preview_layers = []
+    if args.preview_layers:
+        players = [l.strip() for l in args.preview_layers.split(",")]
+        for l in players:
+            if l not in original_layers:
+                raise LayerException(f"(preview) No layer named {l}")
+            elif l not in render_layers:
+                additional_preview_layers.append(l)
+    
+    preview_layers = []
+    for l in original_layers:
+        if l in render_layers or l in additional_preview_layers:
+            preview_layers.append(l)
+
+    return preview_layers
 
 
 def reload_animation():
@@ -100,21 +133,14 @@ def reload_animation():
         print(">>> no animation or render function found <<<")
         return None
     anm.sourcefile = filepath
+    global original_layers
+    original_layers = anm.layers.copy()
+    anm.layers = read_layers(anm)
     return anm
 
 filepath = Path(args.file).expanduser().resolve()
 anm = None
 reload_animation()
-
-
-def read_layers(anm):
-    layers = anm.layers
-    if args.layers:
-        layers = [l.strip() for l in args.layers.split(",")]
-        for l in layers:
-            if not anm.layers or l not in anm.layers:
-                raise LayerException(f"No layer named {l}")
-    return layers
 
 
 def get_frames_folder(anm, mkdir=True):
@@ -283,14 +309,17 @@ def render_slice(frames):
 
 def preview_storyboard():
     layers = read_layers(anm)
+    preview_layers = read_preview_layers(anm)
     layers_folder = get_frames_folder(anm, mkdir=args.write_storyboard_images)
     preview.clear()
+
+    anm.layers = preview_layers
 
     for frame in anm.timeline.storyboard:
         try:
             print("------------------------------------------------------------")
             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> PREVIEW {:04d}".format(frame))
-            aframe, result = render_frame(anm, layers, layers_folder, 0, frame, write_to_disk=args.write_storyboard_images, manual=1)
+            aframe, result = render_frame(anm, preview_layers, layers_folder, 0, frame, write_to_disk=args.write_storyboard_images, manual=1)
             pens = []
             for layer_name, layer_pens in result.items():
                 pens.extend(layer_pens)
@@ -298,6 +327,8 @@ def preview_storyboard():
         except Exception as e:
             print(traceback.format_exc())
             preview.send(f"<pre>{traceback.format_exc()}</pre>", None)
+    
+    anm.layers = layers
 
 
 def render(frames_fn=None):
