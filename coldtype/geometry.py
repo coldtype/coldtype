@@ -1,3 +1,5 @@
+from fontTools.misc.arrayTools import unionRect
+from fontTools.misc.transform import Transform
 from enum import Enum
 import math
 try:
@@ -9,8 +11,29 @@ YOYO = "ma"
 
 MINYISMAXY = False
 
-from fontTools.misc.transform import Transform
-from fontTools.misc.arrayTools import unionRect
+
+COMMON_PAPER_SIZES = {
+    'Letter': (612, 792),
+    'Tabloid': (792, 1224),
+    'Ledger': (1224, 792),
+    'Legal': (612, 1008),
+    'A0': (2384, 3371),
+    'A1': (1685, 2384),
+    'A2': (1190, 1684),
+    'A3': (842, 1190),
+    'A4': (595, 842),
+    'A4Small': (595, 842),
+    'A5': (420, 595),
+    'B4': (729, 1032),
+    'B5': (516, 729),
+    'Folio': (612, 936),
+    'Quarto': (610, 780),
+    '10x14': (720, 1008),
+}
+
+for key, (w, h) in list(COMMON_PAPER_SIZES.items()):
+    COMMON_PAPER_SIZES["%sLandscape" % key] = (h, w)
+
 
 class Edge(Enum):
     MaxY = 1
@@ -296,10 +319,10 @@ class Point():
 
     def xy(self):
         return self.x, self.y
-    
+
     def flip(self, frame):
         return Point((self.x, frame.h - self.y))
-    
+
     def flipSelf(self, frame):
         x, y = self.flip(frame)
         self.x = x
@@ -327,7 +350,10 @@ class Rect():
         return Rect((x - w/2, y - h/2, w, h))
 
     def __init__(self, *rect):
-        if isinstance(rect[0], int) or isinstance(rect[0], float):
+        if isinstance(rect[0], str):
+            x, y = 0, 0
+            w, h = COMMON_PAPER_SIZES[rect[0]]
+        elif isinstance(rect[0], int) or isinstance(rect[0], float):
             try:
                 x, y, w, h = rect
             except:
@@ -363,7 +389,7 @@ class Rect():
             r.h = h
             r.y -= h/2
         return r
-    
+
     def FromExtents(extents):
         nw, ne, se, sw = extents
         return Rect(sw[0], sw[1], abs(ne[0] - sw[0]), abs(ne[1] - sw[1]))
@@ -371,7 +397,7 @@ class Rect():
     def FromMnMnMxMx(extents):
         xmin, ymin, xmax, ymax = extents
         return Rect(xmin, ymin, xmax - xmin, ymax - ymin)
-    
+
     def FromPoints(*points):
         xmin, ymin, xmax, ymax = None, None, None, None
         for p in points:
@@ -434,12 +460,12 @@ class Rect():
         amounts = [val for pair in zip([unit] * count, leadings)
                    for val in pair][:-1]
         return [Rect(x) for x in subdivide(self.rect(), amounts, edge)][::2]
-    
+
     def transform(self, t):
         pts = ["NW", "NE", "SE", "SW"]
         x1, x2, x3, x4 = [t.transformPoint(self.point(pt)) for pt in pts]
         return Rect.FromExtents([x1, x2, x3, x4])
-    
+
     def rotate(self, degrees, point=None):
         t = Transform()
         if not point:
@@ -453,7 +479,7 @@ class Rect():
         x_edge = txt_to_edge(x_edge)
         y_edge = txt_to_edge(y_edge)
         return Rect(scale(self.rect(), s, x_edge, y_edge))
-    
+
     def union(self, otherRect):
         return Rect.FromMnMnMxMx(unionRect(self.mnmnmxmx(), otherRect.mnmnmxmx()))
 
@@ -482,7 +508,7 @@ class Rect():
         if dy == None:
             dy = dx
         return Rect(offset(self.rect(), dx, dy))
-    
+
     def zero(self):
         return Rect((0, 0, self.w, self.h))
 
@@ -504,16 +530,16 @@ class Rect():
 
     def center(self):
         return Point(centerpoint(self.rect()))
-    
+
     def flip(self, h):
         return Rect([self.x, h - self.h - self.y, self.w, self.h])
-    
+
     def p(self, s):
         return self.point(s)
-    
+
     def cardinals(self):
         return self.point("N"), self.point("E"), self.point("S"), self.point("W")
-    
+
     def intercardinals(self):
         return self.point("NE"), self.point("SE"), self.point("SW"), self.point("NW")
 
@@ -552,14 +578,15 @@ class Rect():
                 py = self.y + self.h/2
 
             return Point((px, py))
-    
+
     def intersects(self, other):
         return not (self.point("NE").x < other.point("SW").x or self.point("SW").x > other.point("NE").x or self.point("NE").y < other.point("SW").y or self.point("SW").y > other.point("NE").y)
+
 
 if __name__ == "__main__":
     #print(Rect(0, 0, 100, 100).inset(20, 20).expand(20, "minx"))
     #r = Rect(0, 0, 100, 100)
     #t = Transform().scale(0.5, 0.5)
-    #print(r.transform(t))
+    # print(r.transform(t))
 
     print(Rect(100, 0, 500, 500).union(Rect(400, 400, 300, 300)))

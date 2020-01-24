@@ -2,6 +2,8 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
 
+from pathlib import Path
+
 try:
     import cairo
 except:
@@ -67,11 +69,11 @@ class CairoPen(DrawablePenMixin, BasePen):
             if isinstance(color, Gradient):
                 self.gradient(color)
             else:
-                self.ctx.set_source_rgba(color.red, color.green, color.blue, color.alpha)
+                self.ctx.set_source_rgba(color.r, color.g, color.b, color.a)
             self.ctx.fill()
     
     def stroke(self, weight=1, color=None):
-        self.ctx.set_source_rgba(color.red, color.green, color.blue, color.alpha)
+        self.ctx.set_source_rgba(color.r, color.g, color.b, color.a)
         self.ctx.set_line_width(weight)
         self.ctx.stroke()
     
@@ -79,7 +81,7 @@ class CairoPen(DrawablePenMixin, BasePen):
         pat = cairo.LinearGradient(*[p for s in reversed(gradient.stops) for p in s[1]])
         for idx, stop in enumerate(gradient.stops):
             c = stop[0]
-            pat.add_color_stop_rgba(idx, c.red, c.green, c.blue, c.alpha)
+            pat.add_color_stop_rgba(idx, c.r, c.g, c.b, c.a)
         self.ctx.set_source(pat)
     
     def image(self, src=None, opacity=None, rect=None):
@@ -94,21 +96,31 @@ class CairoPen(DrawablePenMixin, BasePen):
         self.ctx.set_source(pattern)
         #self.ctx.set_source_surface(pattern)
         self.ctx.paint_with_alpha(opacity)
-        pass
     
     def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(1,0,0,1)):
         pass
     
     def Composite(pens, rect, image_path, save=True, style=None):
-        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(rect.w*2), int(rect.h*2))
-        ctx = cairo.Context(surface)
-        ctx.scale(2, 2)
-        for pen in CairoPen.FindPens(pens):
-            CairoPen(pen, rect.h, ctx, style=style)
-        if save:
-            surface.write_to_png(image_path)
+        ip = Path(image_path)
+        if ip.suffix == ".png":
+            surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(rect.w*2), int(rect.h*2))
+            ctx = cairo.Context(surface)
+            ctx.scale(2, 2)
+            for pen in CairoPen.FindPens(pens):
+                CairoPen(pen, rect.h, ctx, style=style)
+            if save:
+                surface.write_to_png(image_path)
+            else:
+                print("Should write to base64 and return — not yet supported")
+        elif ip.suffix == ".pdf":
+            surface = cairo.PDFSurface(str(ip), int(rect.w), int(rect.h))
+            print(surface)
+            ctx = cairo.Context(surface)
+            #ctx.scale(2, 2)
+            for pen in CairoPen.FindPens(pens):
+                CairoPen(pen, rect.h, ctx, style=style)
         else:
-            print("Should write to base64 and return — not yet supported")
+            raise Exception(f"CairoPen cannot print to format {ip.suffix}")
 
 if __name__ == "__main__":
     from coldtype.pens.datpen import DATPen

@@ -3,6 +3,7 @@ from pathlib import Path
 from enum import Enum
 import copy
 
+from coldtype.animation.time import AnimationTime
 from coldtype.animation.timeline import Timeline
 from coldtype.animation.easing import ease
 from coldtype.text import StyledString, Lockup, Graf, GrafStyle, Furniture, DATPen, DATPenSet
@@ -133,9 +134,12 @@ class Clip():
         else:
             return txt
     
-    def fadeIn(self, fi, easefn="linear"):
-        if ClipFlags.FadeIn in self.flags:
-            fade = self.flags[ClipFlags.FadeIn]
+    def fadeIn(self, fi, easefn="seio", fade_length=None):
+        if ClipFlags.FadeIn in self.flags or fade_length:
+            if fade_length:
+                fade = fade_length
+            else:
+                fade = self.flags[ClipFlags.FadeIn]
             fv = (fi-self.start)/fade
             if fv >= 1:
                 return 1
@@ -143,6 +147,28 @@ class Clip():
                 a, _ = ease(easefn, fv)
                 return a
         return -1
+
+    def _loop(self, t, times=1, cyclic=True):
+        lt = t*times*2
+        ltf = math.floor(lt)
+        ltc = math.ceil(lt)
+        if False:
+            if ltc % 2 != 0: # looping back
+                lt = 1 - (ltc - lt)
+            else: # looping forward
+                lt = ltc - lt
+        lt = lt - ltf
+        if cyclic and ltf%2 == 1:
+            lt = 1 - lt
+        return lt, ltf
+    
+    def progress(self, i, loops=0, cyclic=True, easefn="linear"):
+        t = (i-self.start) / self.duration
+        if loops == 0:
+            return AnimationTime(t, t, 0, easefn)
+        else:
+            loop_t, loop_index = self._loop(t, times=loops, cyclic=cyclic)
+            return AnimationTime(t, loop_t, loop_index, easefn)
     
     def __repr__(self):
         return "<Clip:({:s}/{:04d}/{:04d}\"{:s}\")>".format([" -1", "NOW", " +1"][self.position+1], self.start, self.end, self.text)

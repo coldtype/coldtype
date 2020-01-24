@@ -367,6 +367,16 @@ class DATPen(RecordingPen, DATPenLikeObject):
             self.repeat(times-1)
         return self
     
+    def repeatx(self, times=1):
+        w = self.getFrame(th=1).point("SE").x
+        copy = self.copy().translate(w, 0)
+        copy_0_move, copy_0_data = copy.value[0]
+        copy.value[0] = ("lineTo", copy_0_data)
+        self.value = self.value[:-1] + copy.value
+        if times > 1:
+            self.repeatx(times-1)
+        return self
+    
     def nonlinear_transform(self, fn):
         for idx, (move, pts) in enumerate(self.value):
             if len(pts) > 0:
@@ -1266,6 +1276,12 @@ class DATPenSet(DATPenLikeObject):
         if limit < len(self.pens):
             self.pens = self.pens[0:limit]
         return self
+    
+    def understroke(self, s=0, sw=5, outline=False):
+        if not outline:
+            return self.interleave(lambda idx, p: p.s(s).sw(sw))
+        else:
+            return self.interleave(lambda idx, p: p.f(s).outline(sw*2))
     
     def interleave(self, style_fn, direction=-1, recursive=True):
         """Provide a callback-lambda to interleave new DATPens between the existing ones; useful for stroke-ing glyphs, since the stroked glyphs can be placed behind the primary filled glyphs."""

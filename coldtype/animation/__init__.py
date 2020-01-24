@@ -7,6 +7,7 @@ from coldtype.text import *
 
 from coldtype.animation.easing import ease
 from coldtype.animation.timeline import Timeline
+from coldtype.animation.time import AnimationTime
 from coldtype.animation.premiere import PremiereTimeline, ClipGroup, ClipFlags, ClipType
 from coldtype.animation.midi import MidiTimeline, MidiTrack, MidiNote
 
@@ -31,30 +32,6 @@ class AnimationFrame():
         return f"<AnimationFrame {self.i}>"
 
 
-class AnimationTime():
-    def __init__(self, t, loop_t, loop, easefn):
-        self.t = t
-        self.loop_t = loop_t
-        self.loop = loop
-        self.loop_phase = int(loop%2 != 0)
-        self.e, self.s = self.ease(easefn)
-    
-    def ease(self, easefn):
-        easer = easefn
-        if not isinstance(easer, str):
-            try:
-                iter(easefn) # is-iterable
-                if len(easefn) > self.loop:
-                    easer = easefn[self.loop]
-                elif len(easefn) == 2:
-                    easer = easefn[self.loop % 2]
-                elif len(easefn) == 1:
-                    easer = easefn[0]
-            except TypeError:
-                pass
-        return ease(easer, self.loop_t)
-
-
 class Animation():
     def __init__(self, 
             render,
@@ -62,7 +39,9 @@ class Animation():
             timeline=None,
             bg=0,
             layers=["main"],
-            watches=[]
+            watches=[],
+            format=None,
+            filename=None,
         ):
         self.render = render
         self.rect = Rect(rect)
@@ -71,6 +50,8 @@ class Animation():
         self.layers = layers
         self.watches = [str(w.expanduser().resolve()) for w in watches]
         self.sourcefile = None
+        self.format = format
+        self.filename = filename
 
         if hasattr(timeline, "storyboard"):
             self.timeline = timeline

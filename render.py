@@ -136,6 +136,9 @@ def reload_animation():
     global original_layers
     original_layers = anm.layers.copy()
     anm.layers = read_layers(anm)
+
+    if not anm.format and args.format:
+        anm.format = args.format
     return anm
 
 filepath = Path(args.file).expanduser().resolve()
@@ -210,10 +213,12 @@ def render_frame(
             layer_pens = [layer_pens]
             result[layer_name] = layer_pens
         layer_frames_folder = layers_folder.joinpath(f"{filepath.stem}_{layer_name}_frames")
-        if args.custom_filename:
-            layer_file = "{:s}.{}".format(args.custom_filename, args.format)
+        if anm.filename:
+            layer_file = "{:s}.{}".format(anm.filename(aframe), anm.format)
+        elif args.custom_filename:
+            layer_file = "{:s}.{}".format(args.custom_filename, anm.format)
         else:
-            layer_file = "{:s}_{:s}_{:04d}.{}".format(filepath.stem, layer_name, i, args.format)
+            layer_file = "{:s}_{:s}_{:04d}.{}".format(filepath.stem, layer_name, i, anm.format)
         layer_frame_path = layer_frames_folder.joinpath(layer_file)
         aframe.filepaths[layer_name] = layer_frame_path
         if write_to_disk:
