@@ -366,15 +366,24 @@ class ClipGroup():
             #print(pens, idx, line[0].text)
             line_dps = pens[idx]
             re_grouped_line = DATPenSet()
+            position = 1
+            line_text = ""
             for gidx, gt in enumerate(groupings[idx]):
                 group_dps = line_dps[gidx]
                 tidx = 0
                 last_clip_dps = None
                 for (text, cidx, style_name, style) in gt:
                     clip:Clip = self.clips[cidx]
+                    if clip.position == 0:
+                        position = 0
+                    elif clip.position == -1:
+                        position = -1
+                    line_text += clip.ftext()
                     clip_dps = DATPenSet(group_dps[tidx:tidx+len(text)])
                     clip_dps.tag = style_name
                     clip_dps.data["clip"] = self.clips[cidx]
+                    clip_dps.data["line_index"] = idx
+                    clip_dps.data["line"] = re_grouped_line
                     if clip.type == ClipType.JoinPrev and last_clip_dps:
                         grouped_clip_dps = DATPenSet()
                         grouped_clip_dps.append(last_clip_dps)
@@ -385,6 +394,9 @@ class ClipGroup():
                         re_grouped_line.append(clip_dps)
                         last_clip_dps = clip_dps
                     tidx += len(text)
+            re_grouped_line.data["line_index"] = idx
+            re_grouped_line.data["position"] = position
+            re_grouped_line.data["line_text"] = line_text
             re_grouped_line.addFrame(line_dps.getFrame())
             re_grouped.append(re_grouped_line)
         

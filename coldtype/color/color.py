@@ -80,6 +80,9 @@ class Color:
 
     def ints(self):
         return [self.r*255, self.g*255, self.b*255, self.a]
+    
+    def __getitem__(self, index):
+        return [self.r, self.g, self.b, self.a][index]
 
     def from_rgb(r, g, b, a=1):
         return Color(r, g, b, a)

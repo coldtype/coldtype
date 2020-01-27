@@ -24,7 +24,7 @@ def sibling(root, file):
 class AnimationFrame():
     def __init__(self, index, animation, layers):
         self.i = index
-        self.a = animation
+        self.a:Animation = animation
         self.layers = layers
         self.filepaths = {}
 
@@ -44,7 +44,7 @@ class Animation():
             filename=None,
         ):
         self.render = render
-        self.rect = Rect(rect)
+        self.rect:Rect = Rect(rect)
         self.r = self.rect
         self.cache = {}
         self.layers = layers

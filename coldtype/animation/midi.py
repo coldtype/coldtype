@@ -53,7 +53,7 @@ class MidiTrack():
     def allNotes(self):
         return set([n.note for n in self.notes])
     
-    def valueForFrame(self, note_numbers, frame, preverb=0, reverb=0, accumulate=0):
+    def valueForFrame(self, note_numbers, frame, preverb=0, reverb=0, accumulate=0, all=0):
         if isinstance(note_numbers, int) or (isinstance(note_numbers, str) and note_numbers != "*"):
             note_numbers = [note_numbers]
         
@@ -76,7 +76,7 @@ class MidiTrack():
             if note.on-preverb > frame:
                 continue
             elif note_fn(note.note):
-                if frame >= note.on:
+                if frame >= (note.on-preverb):
                     count += 1
                 if frame >= (note.on-preverb) and frame < (note.off+reverb):
                     notes_on.append(note)

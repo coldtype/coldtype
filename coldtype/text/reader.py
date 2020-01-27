@@ -982,7 +982,7 @@ class StyledString(FittableMixin):
         dp = DATPen(**attrs)
         return dp
 
-    def pens(self, frame=True):
+    def pens(self, frame=True) -> DATPenSet:
         self._frames = self.getGlyphFrames()
         pens = DATPenSet()
         for idx, f in enumerate(self._frames):
@@ -1011,7 +1011,7 @@ class StyledString(FittableMixin):
             pens.overlapPairs(overlap_pairs, outline=self.style.overlap_outline)
         return pens
 
-    def pen(self, frame=True):
+    def pen(self, frame=True) -> DATPen:
         dp = self._emptyPenWithAttrs()
         self._frames = self.getGlyphFrames()
         self.drawToPen(dp, self._frames)

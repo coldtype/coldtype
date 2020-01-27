@@ -83,6 +83,10 @@ class DATPenLikeObject():
         for tag, attrs in self.attrs.items():
             dp.attr(tag, **attrs)
         dp.glyphName = self.glyphName
+        #dp.data = self.data
+        #if self.typographic:
+        #    dp.frame = self.frame
+        #    dp.typographic = True
         return dp
 
     def tag(self, tag):
@@ -230,6 +234,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self._tag = "Unknown"
         self.container = None
         self.glyphName = None
+        self.data = {}
     
     def __str__(self):
         return f"<DP(typo:int({self.typographic})({self.glyphName}))>"
