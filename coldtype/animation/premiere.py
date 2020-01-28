@@ -225,15 +225,17 @@ class ClipGroup():
         for clip in self.clips:
             clip.joined = False
         for clip in self.clips:
+            clip:Clip
             clip.styles = []
-            if styles:
-                for style in styles:
-                    if style:
-                        for style_clip in style.clips:
-                            if clip.start >= style_clip.start and clip.end <= style_clip.end:
-                                clip.styles.append(style_clip.ftext().strip())
-                            elif style_clip.start >= clip.start and style_clip.end <= clip.end:
-                                clip.styles.append(style_clip.ftext().strip())
+            if False:
+                if styles:
+                    for style in styles:
+                        if style:
+                            for style_clip in style.clips:
+                                if clip.start >= style_clip.start and clip.end <= style_clip.end:
+                                    clip.styles.append(style_clip.ftext().strip())
+                                elif style_clip.start >= clip.start and style_clip.end <= clip.end:
+                                    clip.styles.append(style_clip.ftext().strip())
             if clip.start > idx:
                 clip.position = 1
             elif clip.start <= idx and clip.end > idx:
@@ -251,6 +253,18 @@ class ClipGroup():
                     pass
             else:
                 clip.position = -1
+            
+            if True:
+                for style in styles:
+                    style:ClipTrack
+                    if clip.position == -1:
+                        sc = style.current(clip.end-1)
+                    elif clip.position == 0:
+                        sc = style.current(idx)
+                    else:
+                        sc = style.current(clip.start)
+                    if sc:
+                        clip.styles.append(sc.ftext().strip())
         return self
     
     def currentSyllable(self):
@@ -501,6 +515,9 @@ class ClipTrack():
             clip:Clip
             if clip.start <= fi and fi < clip.end:
                 return clip
+    
+    def __repr__(self):
+        return "<ClipTrack {:s}>".format("/".join([c.ftext() for c in self.clips[:3]]))
 
 
 class PremiereTimeline(Timeline):
@@ -539,8 +556,9 @@ class PremiereTimeline(Timeline):
         
         super().__init__(duration, fps, _storyboard, workareas, tracks)
     
-    def trackClipGroupForFrame(self, track_idx, frame_idx, styles=None, check_end=True):
+    def trackClipGroupForFrame(self, track_idx, frame_idx, styles=[], check_end=True):
         for gidx, group in enumerate(self[track_idx].clip_groups):
+            group:ClipGroup
             if not check_end:
                 end_good = False
                 try:
@@ -549,12 +567,15 @@ class PremiereTimeline(Timeline):
                 except IndexError:
                     end_good = True
             if group.start <= frame_idx and ((check_end and group.end > frame_idx) or (not check_end and end_good)):
-                style_groups = None
-                if styles:
-                    style_groups = []
-                    for style in styles:
-                        style_groups.append(self.trackClipGroupForFrame(style, frame_idx, check_end=False))
-                return group.position(frame_idx, style_groups)
+                if True:
+                    style_tracks = [self[sidx] for sidx in styles]
+                if False:
+                    style_groups = None
+                    if styles:
+                        style_groups = []
+                        for style in styles:
+                            style_groups.append(self.trackClipGroupForFrame(style, frame_idx, check_end=False))
+                return group.position(frame_idx, style_tracks)
     
     def currentWorkarea(self):
         cg = self.trackClipGroupForFrame(0, self.cti)

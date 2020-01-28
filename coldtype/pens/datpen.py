@@ -985,10 +985,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def gridlines(self, rect, x=20, y=None):
         """Construct a grid in the pen using `x` and (optionally) `y` subdivisions"""
         for _x in rect.subdivide(x, "minx"):
-            if _x.x > 0:
+            if _x.x > 0 and _x.x > rect.x:
                 self.line([_x.point("NW"), _x.point("SW")])
         for _y in rect.subdivide(y or x, "miny"):
-            if _y.y > 0:
+            if _y.y > 0 and _y.y > rect.y:
                 self.line([_y.point("SW"), _y.point("SE")])
         return self.f(None).s(0, 0.1).sw(3)
 

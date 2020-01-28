@@ -278,7 +278,7 @@ def render_slice(frames):
         for subslice in subslices:
             print(subslice[:1])
             sargs = [
-                "python",
+                sys.executable,
                 __file__,
                 args.file,
                 "-s", f"{subslice[0]}:{subslice[-1]+1}",
@@ -436,12 +436,15 @@ def on_message(ws, message):
             #print(">>>>>>>>>>>>>>>>>>>>>>>>>>", message)
 
 def watch_changes():
-    to_watch = [
+    global anm
+    to_watch = set([
         filepath.parent,
         SIGNAL_DIR,
-    ]
+    ])
+    for w in anm.watches:
+        to_watch.add(w.parent)
     if args.always_reload_coldtype:
-        to_watch.append(Path(__file__).parent.joinpath("coldtype"))
+        to_watch.add(Path(__file__).parent.joinpath("coldtype"))
     render()
     handler = Handler()
     print("... watching ...")

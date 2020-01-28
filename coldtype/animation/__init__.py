@@ -48,7 +48,7 @@ class Animation():
         self.r = self.rect
         self.cache = {}
         self.layers = layers
-        self.watches = [str(w.expanduser().resolve()) for w in watches]
+        self.watches = [w.expanduser().resolve() for w in watches]
         self.sourcefile = None
         self.format = format
         self.filename = filename
