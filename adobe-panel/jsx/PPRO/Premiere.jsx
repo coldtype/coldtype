@@ -96,7 +96,6 @@ $._PPP_={
 		}
 	},
 	updateWorkarea: function(root, prefix, start, end, fps) {
-		alert("hello!");
 		var seq = app.project.activeSequence;
 		if (seq) {
 			seq.setInPoint(start/fps);
