@@ -1,153 +1,3 @@
-let karabiner = {
-  "description": "coldtype-signals/f<>.txt",
-  "manipulators": [
-      {
-          "from": {
-              "key_code": "f19",
-              "modifiers": {
-                  "optional": [
-                      "any"
-                  ]
-              }
-          },
-          "to": [
-              {
-                  "shell_command": "echo '$RANDOM' > ~/coldtype-signals/render-all.txt"
-              }
-          ],
-          "type": "basic"
-      },
-      {
-          "from": {
-              "key_code": "f18",
-              "modifiers": {
-                  "optional": [
-                      "any"
-                  ]
-              }
-          },
-          "to": [
-              {
-                  "shell_command": "echo '$RANDOM' > ~/coldtype-signals/render-workarea.txt"
-              }
-          ],
-          "type": "basic"
-      },
-      {
-          "from": {
-              "key_code": "f17",
-              "modifiers": {
-                  "optional": [
-                      "any"
-                  ]
-              }
-          },
-          "to": [
-              {
-                  "shell_command": "echo '$RANDOM' > ~/coldtype-signals/render-storyboard.txt"
-              }
-          ],
-          "type": "basic"
-      },
-      {
-          "from": {
-              "key_code": "f16",
-              "modifiers": {
-                  "optional": [
-                      "any"
-                  ]
-              }
-          },
-          "to": [
-              {
-                  "shell_command": "echo '$RANDOM' > ~/coldtype-signals/select-workarea.txt"
-              }
-          ],
-          "type": "basic"
-      },
-      {
-          "from": {
-              "key_code": "f15",
-              "modifiers": {
-                  "optional": [
-                      "any"
-                  ]
-              }
-          },
-          "to": [
-              {
-                  "shell_command": "echo '$RANDOM' > ~/coldtype-signals/split-word-at-playhead.txt"
-              }
-          ],
-          "type": "basic"
-      },
-      {
-          "from": {
-              "key_code": "f14",
-              "modifiers": {
-                  "mandatory": [
-                      "left_command"
-                  ]
-              }
-          },
-          "to": [
-              {
-                  "shell_command": "echo '$RANDOM' > ~/coldtype-signals/capitalize.txt"
-              }
-          ],
-          "type": "basic"
-      },
-      {
-          "from": {
-              "key_code": "f14",
-              "modifiers": {
-                  "optional": [
-                      "any"
-                  ]
-              }
-          },
-          "to": [
-              {
-                  "shell_command": "echo '$RANDOM' > ~/coldtype-signals/newline.txt"
-              }
-          ],
-          "type": "basic"
-      },
-      {
-          "from": {
-              "key_code": "f13",
-              "modifiers": {
-                  "optional": [
-                      "any"
-                  ]
-              }
-          },
-          "to": [
-              {
-                  "shell_command": "echo '$RANDOM' > ~/coldtype-signals/newsection.txt"
-              }
-          ],
-          "type": "basic"
-      },
-      {
-          "from": {
-              "key_code": "backslash",
-              "modifiers": {
-                  "mandatory": [
-                      "left_command"
-                  ]
-              }
-          },
-          "to": [
-              {
-                  "shell_command": "echo '$RANDOM' > ~/signals/f13.txt"
-              }
-          ],
-          "type": "basic"
-      }
-  ]
-}
-
 const { app, BrowserWindow, globalShortcut } = require('electron');
 const WebSocket = require('ws');
 const path = require("path");
@@ -155,13 +5,13 @@ const util = require("util");
 const Store = require('electron-store');
 
 const actions = [
-  ["renderStoryboard", "F17"],
-  ["renderWorkarea", "F18"],
-  ["renderAll", "F19"],
-  ["selectWorkarea", "F16"],
+  ["render_storyboard", "F17"],
+  ["render_workarea", "F18"],
+  ["render_all", "F19"],
+  ["select_workarea", "F16"],
   ["newsection", "F13"],
   ["newline", "F14"],
-  ["splitWordAtPlayhead", "F15"],
+  ["split_word_at_playhead", "F15"],
   ["capitalize", "CommandOrControl+F14"],
   ["echo", "F9"],
 ]
@@ -184,14 +34,19 @@ const wss = new WebSocket.Server({ port: port });
 let ws = null;
 
 // https://github.com/websockets/ws#server-broadcast
+
+function broadcast(data) {
+  wss.clients.forEach(function each(client) {
+    if (client.readyState === WebSocket.OPEN) {
+        client.send(data);
+    }
+  });
+}
+
 wss.on("connection", function connection(_ws) {
   ws = _ws;
   ws.on("message", function incoming(data) {
-      wss.clients.forEach(function each(client) {
-          if (client !== ws && client.readyState === WebSocket.OPEN) {
-              client.send(data);
-          }
-      });
+    broadcast(data);
   });
 });
 
@@ -200,7 +55,7 @@ console.log(path.join(__dirname, 'appicon.icns'));
 function createWindow () {
   let win = new BrowserWindow({
     width: 200,
-    height: 250,
+    height: 550,
     x: 0,
     y: 0,
     icon: path.join(__dirname, 'appicon.icns'),
@@ -208,19 +63,13 @@ function createWindow () {
       nodeIntegration: true
     }
   });
+
   win.loadFile('index.html');
+
   // https://discuss.atom.io/t/set-browserwindow-always-on-top-even-other-app-is-in-fullscreen/34215/4
-  //app.dock.hide();
-  //win.setAlwaysOnTop(true, "floating", 1);
-  //win.setVisibleOnAllWorkspaces(true);
-
-  //const ret = globalShortcut.register('F13', () => {
-  //  console.log('F13 is pressed');
-  //})
-
-  //if (!ret) {
-  //  console.log('registration failed')
-  //}
+  app.dock.hide();
+  win.setAlwaysOnTop(true, "floating", 1);
+  win.setVisibleOnAllWorkspaces(true);
 
   // to make sure the file exists
   store.set("echo", "F9");
@@ -230,7 +79,7 @@ function createWindow () {
     let shortcut = store.get(action);
     console.log("registering", action, shortcut);
     const ret = globalShortcut.register(shortcut, () => {
-      ws.send(JSON.stringify({"shortcut":action}));
+      broadcast(JSON.stringify({"trigger_from_app": true, "action": action}));
     })
     if (!ret) {
       console.log("failed to register", action, shortcut);

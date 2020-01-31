@@ -34,9 +34,6 @@ def debuginfo():
 import argparse
 import importlib
 
-SIGNAL_DIR = Path("~/coldtype-signals").expanduser().resolve()
-SIGNAL_DIR.mkdir(exist_ok=True)
-
 parser = argparse.ArgumentParser(prog="animation", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("file", type=str)
 parser.add_argument("-s", "--slice", type=str, default=None)
@@ -372,46 +369,55 @@ class Handler(FileSystemEventHandler):
         p = event.src_path
         external_timeline = args.read_from_adobe and hasattr(anm.timeline, "currentWorkarea")
 
-        def request_serialization(action):
-            preview.send(json.dumps(dict(serialization_request=True, prefix=anm.sourcefile.stem, action=action)), full=True)
+        #def request_serialization(action):
+        #    preview.send(json.dumps(dict(serialization_request=True, prefix=anm.sourcefile.stem, action=action)), full=True)
         
-        def send_edit_action(action):
-            preview.send(json.dumps(dict(edit_action=True, prefix=anm.sourcefile.stem, action=action)), full=True)
+        #def send_edit_action(action):
+        #    preview.send(json.dumps(dict(edit_action=True, prefix=anm.sourcefile.stem, action=action)), full=True)
 
-        if p in anm.watches or p.endswith("render-storyboard.txt") or p.endswith(".py"): #or p.endswith("Auto-Save"):
+        if p in anm.watches or p.endswith(".py"):
             print("save>>>", os.path.basename(p))
-            if external_timeline:
-                request_serialization("render_storyboard")
-            else:
-                render()
-        elif p.endswith("render-workarea.txt"):
-            if external_timeline:
-                request_serialization("render_workarea")
-            else:
-                render(workarea_frames)
-        elif p.endswith("render-all.txt"):
-            if external_timeline:
-                request_serialization("render_all")
-            else:
-                render(all_frames)
-        elif p.endswith("select-workarea.txt"):
-            request_serialization("select_workarea")
-        elif p.endswith("split-word-at-playhead.txt"):
-            send_edit_action("split_word_at_playhead")
-        elif p.endswith("newline.txt"):
-            send_edit_action("newline")
-        elif p.endswith("newsection.txt"):
-            send_edit_action("newsection")
-        elif p.endswith("capitalize.txt"):
-            send_edit_action("capitalize")
+            #if external_timeline:
+            #    request_serialization("render_storyboard")
+            #else:
+            render()
+        #elif p.endswith("render-workarea.txt"):
+        #    if external_timeline:
+        #        request_serialization("render_workarea")
+        #    else:
+        #        render(workarea_frames)
+        #elif p.endswith("render-all.txt"):
+        #    if external_timeline:
+        #        request_serialization("render_all")
+        #    else:
+        #        render(all_frames)
+        #elif p.endswith("select-workarea.txt"):
+        #    request_serialization("select_workarea")
+        #elif p.endswith("split-word-at-playhead.txt"):
+        #    send_edit_action("split_word_at_playhead")
+        #elif p.endswith("newline.txt"):
+        #    send_edit_action("newline")
+        #elif p.endswith("newsection.txt"):
+        #    send_edit_action("newsection")
+        #elif p.endswith("capitalize.txt"):
+        #    send_edit_action("capitalize")
         else:
             pass
+
+def request_serialization(action):
+    global anm
+    preview.send(json.dumps(dict(serialization_request=True, prefix=anm.sourcefile.stem, action=action)), full=True)
+
+def send_edit_action(action):
+    global anm
+    preview.send(json.dumps(dict(edit_action=True, prefix=anm.sourcefile.stem, action=action)), full=True)
 
 def on_message(ws, message):
     try:
         jdata = json.loads(message)
         action = jdata.get("action")
         if jdata.get("serialization"):
+            print("yes here")
             if action == "select_workarea":
                 anm = reload_animation()
                 cw = anm.timeline.currentWorkarea()
@@ -426,6 +432,31 @@ def on_message(ws, message):
                 render(all_frames)
             else:
                 render()
+        elif jdata.get("trigger_from_app"):
+            if action in [
+                "render_storyboard",
+                "render_workarea",
+                "render_all"
+            ]:
+                if action == "render_storyboard":
+                    render()
+                elif action == "render_workarea":
+                    render(workarea_frames)
+                elif action == "render_all":
+                    render(all_frames)
+            elif action in [
+                "select_workarea",
+                "newsection",
+                "newline",
+                "split_word_at_playhead",
+                "capitalize",
+            ]:
+                if action == "select_workarea":
+                    request_serialization(action)
+                else:
+                    send_edit_action(action)
+
+            print("TRIGGER>>>>>>>>>>>", action)
     except:
         if message == "rw":
             render(workarea_frames)
@@ -439,7 +470,6 @@ def watch_changes():
     global anm
     to_watch = set([
         filepath.parent,
-        SIGNAL_DIR,
     ])
     for w in anm.watches:
         to_watch.add(w.parent)
