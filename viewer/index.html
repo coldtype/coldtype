@@ -3,13 +3,54 @@
     <meta charset="utf-8" />
     <title>Coldtype Viewer</title>
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';"/>
-    <link rel="stylesheet" type="text/css" href="./assets/viewer.css"/>
+    <style type="text/css">
+        body {
+            background: #eee;
+            font-family: monospace;
+        }
+        .plain {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .page {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            background: white;
+            display: block;
+            position: relative;
+            margin: auto auto;
+            margin-bottom: 10px;
+        }
+        .page svg {
+            position: absolute;
+            bottom: 0px;
+            left: 0px;
+        }
+        .plain svg {
+            display: block;
+        }
+        pre {
+            font-family: monospace;
+            background: royalblue;
+            border: 3px solid dodgerblue;
+            padding: 20px;
+            color: white;
+            margin: 0;
+            text-align: left;
+        }
+        h3 {
+            color: #555;
+            text-align: center;
+            font-style: italic;
+            background: whitesmoke;
+            margin: 0;
+            padding: 10px 10px 13px;
+            border: 1px solid white;
+        }
+    </style>
 </head>
 <body>
     <div id="container">
-        <div class="plain"><h3>Welcome to Coldtype</h3></div>
-        <!--<div class="plain"><button>Hello</button></div>-->
-        <!--<div class="plain"><pre>(A Viewer)</pre></div>-->
+        <div class="plain"><h3>Coldtype</h3></div>
     </div>
 
     <script language="javascript" type="text/javascript">
