@@ -147,8 +147,31 @@ class Clip():
                 a, _ = ease(easefn, fv)
                 return a
         return -1
+    
+    def io(self, fi, length, ei="eei", eo="eei", negative=False):
+        to_end = self.end - fi
+        to_start = fi - self.start
+        easefn = None
+        in_end = False
+        if to_end < length:
+            in_end = True
+            v = 1-to_end/length
+            easefn = eo
+        elif to_start < length:
+            v = 1-to_start/length
+            easefn = ei
+        else:
+            v = 0
+        if v == 0:
+            return 0
+        else:
+            a, _ = ease(easefn, v)
+            if negative and in_end:
+                return -a
+            else:
+                return a
 
-    def _loop(self, t, times=1, cyclic=True):
+    def _loop(self, t, times=1, cyclic=True, negative=False):
         lt = t*times*2
         ltf = math.floor(lt)
         ltc = math.ceil(lt)
@@ -159,15 +182,18 @@ class Clip():
                 lt = ltc - lt
         lt = lt - ltf
         if cyclic and ltf%2 == 1:
-            lt = 1 - lt
+            if negative:
+                lt = -lt
+            else:
+                lt = 1 - lt
         return lt, ltf
     
-    def progress(self, i, loops=0, cyclic=True, easefn="linear"):
+    def progress(self, i, loops=0, cyclic=True, negative=False, easefn="linear"):
         t = (i-self.start) / self.duration
         if loops == 0:
             return AnimationTime(t, t, 0, easefn)
         else:
-            loop_t, loop_index = self._loop(t, times=loops, cyclic=cyclic)
+            loop_t, loop_index = self._loop(t, times=loops, cyclic=cyclic, negative=negative)
             return AnimationTime(t, loop_t, loop_index, easefn)
     
     def __repr__(self):

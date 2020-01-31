@@ -24,6 +24,11 @@ actions.map(function(p) {
   }
 });
 
+schema.always_on_top = {
+  type: "boolean",
+  default: false,
+}
+
 //const schema = schema;
 //console.log(util.inspect(schema, {showHidden:false, depth:null}));
 
@@ -67,9 +72,12 @@ function createWindow () {
   win.loadFile('index.html');
 
   // https://discuss.atom.io/t/set-browserwindow-always-on-top-even-other-app-is-in-fullscreen/34215/4
-  app.dock.hide();
-  win.setAlwaysOnTop(true, "floating", 1);
-  win.setVisibleOnAllWorkspaces(true);
+
+  if (store.get("always_on_top")) {
+    app.dock.hide();
+    win.setAlwaysOnTop(true, "floating", 1);
+    win.setVisibleOnAllWorkspaces(true);
+  }
 
   // to make sure the file exists
   store.set("echo", "F9");
