@@ -1013,6 +1013,17 @@ class DATPenSet(DATPenLikeObject):
     def __len__(self):
         return len(self.pens)
     
+    def print_tree(self, depth=0):
+        print("  "*depth, self)
+        for pen in self.pens:
+            if hasattr(pen, "pens"):
+                #print("  "*depth, pen)
+                pen.print_tree(depth=depth+1)
+                #print("  "*depth, "/"+str(pen))
+            else:
+                print("  "*(depth+1), pen)
+        print("  "*depth + "/"+str(self))
+    
     def copy(self):
         dps = DATPenSet()
         for p in self.pens:
