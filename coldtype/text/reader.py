@@ -303,6 +303,7 @@ class Style():
             variationLimits=dict(),
             increments=dict(),
             features=dict(),
+            liga=True,
             varyFontSize=False,
             fill=(0, 0.5, 1),
             stroke=None,
@@ -433,7 +434,10 @@ class Style():
                 found_features[k] = v
             if k in ["dlig", "swsh", "onum", "tnum", "palt"]:
                 found_features[k] = v
-        self.features = {**dict(kern=True, liga=True), **found_features}
+            if k in ["slig"]:
+                if k == 0:
+                    found_features[k] = 0
+        self.features = {**dict(kern=True, liga=liga), **found_features}
 
         self.fill = normalize_color(fill)
         self.stroke = normalize_color(stroke)

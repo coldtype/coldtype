@@ -86,11 +86,25 @@ class DrawBotPen(DrawablePenMixin):
         db.linearGradient(stops[0][1], stops[1][1], [list(s[0]) for s in stops], [0, 1])
     
     def draw(self, scale=2, style=None):
+        blur = self.dat.data.get("blur")
+
         with db.savedState():
-            db.scale(scale)
-            for attr in self.findStyledAttrs(style):
-                self.applyDATAttribute(attr)
-            db.drawPath(self.bp)
+            if blur and blur > 0:
+                im = db.ImageObject()
+                with im:
+                    db.size(self.rect.w, self.rect.h)
+                    db.scale(scale)
+                    for attr in self.findStyledAttrs(style):
+                        self.applyDATAttribute(attr)
+                    db.drawPath(self.bp)
+                im.gaussianBlur(radius=blur)
+                x, y = im.offset()
+                db.image(im, (x, y))
+            else:
+                db.scale(scale)
+                for attr in self.findStyledAttrs(style):
+                    self.applyDATAttribute(attr)
+                db.drawPath(self.bp)
     
     def Composite(pens, rect, save_to, paginate=False, scale=2):
         db.newDrawing()
