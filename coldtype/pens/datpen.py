@@ -222,6 +222,17 @@ class DATPenLikeObject():
         nx = pnoise1(doneness*speed[0], base=base, octaves=octaves)
         ny = pnoise1(doneness*speed[1], base=base+10, octaves=octaves)
         return self.translate(nx * scale[0], ny * scale[1])
+    
+    def walk(self, callback, depth=0):
+        is_dps = hasattr(self, "pens")
+        if is_dps:
+            callback(self, -1, dict(depth=depth))
+            for pen in self.pens:
+                pen.walk(callback, depth=depth+1)
+            callback(self, 1, dict(depth=depth))
+        else:
+            callback(self, 0, dict(depth=depth))
+            
 
 
 class DATPen(RecordingPen, DATPenLikeObject):
@@ -238,6 +249,11 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     def __str__(self):
         return f"<DP(typo:int({self.typographic})({self.glyphName}))>"
+    
+    def ups(self):
+        dps = DATPenSet()
+        dps.append(self.copy())
+        return dps
     
     def moveTo(self, p0):
         """The standard `RecordingPen.moveTo`, but returns self for chainability."""
@@ -1141,27 +1157,6 @@ class DATPenSet(DATPenLikeObject):
             self.frame = self.frame.transform(transform)
         return self
     
-    # def translate(self, x, y, transformFrame=True):
-    #     for p in self.pens:
-    #         p.translate(x, y, transformFrame=transformFrame)
-        
-    #     return self
-    
-    # def rotate(self, degrees):
-    #     for p in self.pens:
-    #         p.rotate(degrees)
-    #     return self
-    
-    # def scale(self, scaleX, scaleY=None, center=None):
-    #     for p in self.pens:
-    #         p.scale(scaleX, scaleY=scaleY, center=center)
-    #     return self
-    
-    # def skew(self, x=0, y=0):
-    #     for p in self.pens:
-    #         p.skew(x, y)
-    #     return self
-    
     def round(self, rounding):
         for p in self.pens:
             p.round(rounding)
@@ -1293,11 +1288,18 @@ class DATPenSet(DATPenLikeObject):
             self.pens = self.pens[0:limit]
         return self
     
-    def understroke(self, s=0, sw=5, outline=False):
+    def understroke(self, s=0, sw=5, outline=False, dofill=0):
         if not outline:
             return self.interleave(lambda idx, p: p.s(s).sw(sw))
         else:
-            return self.interleave(lambda idx, p: p.f(s).outline(sw*2))
+            def mod(idx, p):
+                if dofill:
+                    pf = p.copy()
+                p.f(s).outline(sw*2)
+                if dofill:
+                    p.reverse().record(pf)
+                return p
+            return self.interleave(mod)
     
     def interleave(self, style_fn, direction=-1, recursive=True):
         """Provide a callback-lambda to interleave new DATPens between the existing ones; useful for stroke-ing glyphs, since the stroked glyphs can be placed behind the primary filled glyphs."""

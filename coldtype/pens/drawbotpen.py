@@ -86,27 +86,13 @@ class DrawBotPen(DrawablePenMixin):
         db.linearGradient(stops[0][1], stops[1][1], [list(s[0]) for s in stops], [0, 1])
     
     def draw(self, scale=2, style=None):
-        blur = self.dat.data.get("blur")
-
         with db.savedState():
-            if blur and blur > 0:
-                im = db.ImageObject()
-                with im:
-                    db.size(self.rect.w, self.rect.h)
-                    db.scale(scale)
-                    for attr in self.findStyledAttrs(style):
-                        self.applyDATAttribute(attr)
-                    db.drawPath(self.bp)
-                im.gaussianBlur(radius=blur)
-                x, y = im.offset()
-                db.image(im, (x, y))
-            else:
-                db.scale(scale)
-                for attr in self.findStyledAttrs(style):
-                    self.applyDATAttribute(attr)
-                db.drawPath(self.bp)
+            db.scale(scale)
+            for attr in self.findStyledAttrs(style):
+                self.applyDATAttribute(attr)
+            db.drawPath(self.bp)
     
-    def Composite(pens, rect, save_to, paginate=False, scale=2):
+    def Composite1(pens, rect, save_to, paginate=False, scale=2):
         db.newDrawing()
         rect = rect.scale(scale)
         if not paginate:
@@ -115,6 +101,37 @@ class DrawBotPen(DrawablePenMixin):
             if paginate:
                 db.newPage(rect.w, rect.h)
             DrawBotPen(pen, rect).draw(scale=scale)
+        db.saveImage(str(save_to))
+        db.endDrawing()
+    
+    def Composite(pens, rect, save_to, scale=2):
+        db.newDrawing()
+        rect = rect.scale(scale)
+        db.newPage(rect.w, rect.h)
+
+        def draw(pen, state, data):
+            if state == 0:
+                DrawBotPen(pen, rect).draw(scale=scale)
+            elif state == -1:
+                imgf = pen.data.get("imgf")
+                if imgf:
+                    im = db.ImageObject()
+                    im.lockFocus()
+                    db.size(rect.w, rect.h)
+                    db.scale(scale)
+                    pen.data["im"] = im
+            elif state == 1:
+                imgf = pen.data.get("imgf")
+                im = pen.data.get("im")
+                if imgf and im:
+                    im.unlockFocus()
+                    imgf(im)
+                    x, y = im.offset()
+                    db.image(im, (x, y))
+        
+        for dps in pens:
+            dps.walk(draw)
+        
         db.saveImage(str(save_to))
         db.endDrawing()
 
