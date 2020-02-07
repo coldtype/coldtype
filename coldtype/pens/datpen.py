@@ -158,7 +158,7 @@ class DATPenLikeObject():
         """Scale this shape by a percentage amount (1-scale)."""
         t = Transform()
         if center != False:
-            point = self.bounds().point("C") # maybe should be getFrame()?
+            point = self.bounds().point("C") if center == None else center # maybe should be getFrame()?
             t = t.translate(point.x, point.y)
         t = t.scale(scaleX, scaleY or scaleX)
         if center != False:

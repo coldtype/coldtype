@@ -117,7 +117,8 @@ class DrawBotPen(DrawablePenMixin):
                 if imgf:
                     im = db.ImageObject()
                     im.lockFocus()
-                    db.size(rect.w, rect.h)
+                    db.size(rect.w+300, rect.h+300)
+                    db.translate(150, 150)
                     db.scale(scale)
                     pen.data["im"] = im
             elif state == 1:
@@ -127,6 +128,7 @@ class DrawBotPen(DrawablePenMixin):
                     im.unlockFocus()
                     imgf(im)
                     x, y = im.offset()
+                    db.translate(-150, -150)
                     db.image(im, (x, y))
         
         for dps in pens:
