@@ -1,6 +1,7 @@
 from coldtype import *
 from coldtype.color import Gradient
 from random import randint
+from functools import partial
 
 varfont = "ç/MutatorSans.ttf"
 
@@ -183,8 +184,8 @@ all_tests = [
     align_test,
 ]
 
-def render(r):
-    res = tests[f.i](r)
+def render(r, i):
+    res = tests[i](r)
     return [
         DATPen().rect(r).f(1),
         DATPen().gridlines(r, y=12).s((1, 0, 0.5, 0.2)).sw(5),
@@ -194,3 +195,9 @@ def render(r):
 
 #tests = [tests.index(combine_slugs_test)]
 tests = all_tests
+
+page = Rect(1920, 1080)
+renders = [
+    partial(render, page, 0),
+    partial(render, page, 5),
+]

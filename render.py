@@ -16,6 +16,7 @@ from coldtype.viewer import WebSocket, PersistentPreview, WEBSOCKET_ADDR
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 import websocket
+import traceback
 
 from subprocess import Popen, PIPE, call
 
@@ -38,7 +39,14 @@ def reload_file():
 
 
 def reload_and_render():
-    program = reload_file()
+    try:
+        program = reload_file()
+    except Exception as e:
+        print(">>> CAUGHT COLDTYPE")
+        print(traceback.format_exc())
+        preview.send(f"<pre>{traceback.format_exc()}</pre>", None)
+        return None
+    
     page = program["page"]
     renders = program["renders"]
     preview.clear()
