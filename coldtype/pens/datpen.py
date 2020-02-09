@@ -312,8 +312,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
             elif k == "strokeWidth":
                 if "stroke" in attrs:
                     attrs["stroke"]["weight"] = v
-                    if attrs["stroke"]["color"].a == 0:
-                        attrs["stroke"]["color"] = normalize_color((1, 0, 0.5))
+                    #if attrs["stroke"]["color"].a == 0:
+                    #    attrs["stroke"]["color"] = normalize_color((1, 0, 0.5))
                 else:
                     attrs["stroke"] = dict(color=normalize_color((1, 0, 0.5)), weight=v)
             elif k == "shadow":
@@ -1018,13 +1018,13 @@ class DATPenSet(DATPenLikeObject):
         self.extend(pens)
         self.typographic = True
         self.layered = False
-        self._tag = "Unknown"
+        self._tag = "?"
         self.container = None
         self.frame = None
         self.data = {}
     
     def __str__(self):
-        return f"<DPS:pens:{len(self.pens)}>"
+        return f"<DPS:pens:{len(self.pens)}:({self._tag})>"
     
     def __len__(self):
         return len(self.pens)

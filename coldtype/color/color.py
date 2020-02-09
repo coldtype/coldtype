@@ -73,6 +73,9 @@ class Color:
         self.h = h
         self.s = s
         self.l = l
+    
+    def __str__(self):
+        return "<Color:rgb({:.1f},{:.1f},{:.1f})/a={:.1f}>".format(self.r, self.g, self.b, self.a)
 
     def with_alpha(self, alpha):
         self.a = alpha
