@@ -66,7 +66,7 @@ function createWindow () {
   // to make sure the file exists
   store.set("config", "test");
 
-  let shortcuts = store.get("keyboard_shortcuts");
+  let shortcuts = store.get("keyboard_shortcuts", []);
 
   shortcuts.map(function(shortcut_spec) {
     let action = shortcut_spec[0];
