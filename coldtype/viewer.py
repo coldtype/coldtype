@@ -7,6 +7,8 @@ import sys, os
 dirname = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(f"{dirname}/..")
 
+import json
+
 from coldtype.geometry import Rect
 from coldtype.color import normalize_color
 
@@ -20,7 +22,7 @@ class PersistentPreview():
         self.ws = create_connection(WEBSOCKET_ADDR)
     
     def clear(self):
-        self.ws.send("CLEAR")
+        self.ws.send(json.dumps(dict(clear=True)))
     
     def close(self):
         self.ws.close()
@@ -44,13 +46,14 @@ class PersistentPreview():
                 if max_width < w:
                     w = max_width
                     h = rect.h * (max_width / rect.w)
-                return f"""
+                html = f"""
                 <div class="page" style="width:{w}px;height:{h}px;background:{rgba};">{content}</div>\
                 """
             else:
-                return f"""
+                html = f"""
                 <div class="plain" style="background:{rgba};">{content}</div>
                 """
+            return json.dumps(dict(html=html))
         
         if full:
             html = content

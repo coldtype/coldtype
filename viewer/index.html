@@ -47,10 +47,13 @@
 
             function onMessage(evt) {
                 let container = document.querySelector("#container");
-                if (evt.data == "CLEAR") {
+                let jdata = JSON.parse(evt.data);
+                if (jdata.clear) {
                     container.innerHTML = "";
+                } else if (jdata.html) {
+                    container.innerHTML = container.innerHTML + jdata.html;
                 } else {
-                    container.innerHTML = container.innerHTML + evt.data;
+                    container.innerHTML = container.innerHTML + "<pre>" + evt.data + "</pre>";
                 }
             }
 
