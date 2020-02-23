@@ -615,6 +615,7 @@ class StyledString(FittableMixin):
                 try:
                     f.frame.x += self.style.xShift[idx]
                 except:
+                    f.frame.x += self.style.xShift
                     pass
         return frames
 

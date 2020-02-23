@@ -1139,7 +1139,7 @@ class DATPenSet(DATPenLikeObject):
         return dp
     
     def attr(self, key="default", field=None, **kwargs):
-        if field: # getting, not setting
+        if field: # getting, not setting, kind of weird to return the first value?
             return self.pens[0].attr(key=key, field=field)
         for p in self.pens:
             p.attr(key, **kwargs)
