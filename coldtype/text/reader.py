@@ -340,6 +340,8 @@ class Style():
         self.removeOverlap = kwargs.get("ro", removeOverlap)
         self.rotate = rotate
 
+        ufo = None
+
         self.format = None
         # Load a font from a file
         if isinstance(font, Font):
@@ -360,7 +362,7 @@ class Style():
             self.format = os.path.splitext(self.fontFile)[1][1:]
             self.ufo = self.format == "ufo"
 
-        if self.ufo:
+        if self.ufo and not ufo:
             ufo = Font(self.fontFile)
         if self.format == "glyphs":
             ufo = glyphsLib.load_to_ufos(self.fontFile)[0]
