@@ -44,7 +44,7 @@ class DATPenLikeObject():
             if x == Edge.CenterX:
                 xoff = -b.x + rect.x + rect.w/2 - b.w/2
             elif x == Edge.MinX:
-                xoff = rect.x
+                xoff = -(b.x-rect.x)
             elif x == Edge.MaxX:
                 xoff = -b.x + rect.x + rect.w - b.w
         
@@ -53,9 +53,9 @@ class DATPenLikeObject():
             if y == Edge.CenterY:
                 yoff = -b.y + rect.y + rect.h/2 - b.h/2
             elif y == Edge.MaxY:
-                yoff = rect.y + rect.h - b.h
+                yoff = (rect.y + rect.h) - (b.h + b.y)
             elif y == Edge.MinY:
-                yoff = rect.y
+                yoff = -(b.y-rect.y)
         
         diff = rect.w - b.w
         return self.translate(xoff, yoff, transformFrame=transformFrame)
