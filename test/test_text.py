@@ -160,7 +160,7 @@ def align_test(r):
     return DATPen().rect(r).f(0.5, 0, 1, 0.3), DATPen().rect(g[1].getFrame(th=0)).f("random", 0.63), g
 
 def gx_test(r):
-    return StyledString("Hello", Style("≈/Konsole0.5GX.ttf", 500, wdth=1)).pens().align(r)
+    return StyledString("Hello", Style("≈/VinilaVariable.ttf", 500, wdth=1)).pens().align(r)
 
 all_tests = [
     basic_test,
