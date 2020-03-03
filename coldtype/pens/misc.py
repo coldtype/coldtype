@@ -4,10 +4,11 @@ from fontTools.pens.recordingPen import RecordingPen
 
 USE_SKIA_PATHOPS = True
 
-if USE_SKIA_PATHOPS:
-    from pathops import Path, OpBuilder, PathOp
-else:
+from pathops import Path, OpBuilder, PathOp
+try:
     from booleanOperations.booleanGlyph import BooleanGlyph
+except:
+    pass
 
 class BooleanOp(Enum):
     Difference = 0
