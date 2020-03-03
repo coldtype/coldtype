@@ -1059,6 +1059,9 @@ class DATPenSet(DATPenLikeObject):
     def __setitem__(self, index, pen):
         self.pens[index] = pen
     
+    def __iadd__(self, item):
+        return self.append(item)
+    
     def insert(self, index, pen):
         if pen:
             self.pens.insert(index, pen)

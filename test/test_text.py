@@ -159,6 +159,9 @@ def align_test(r):
     g[2].xAlignToFrame("maxx")
     return DATPen().rect(r).f(0.5, 0, 1, 0.3), DATPen().rect(g[1].getFrame(th=0)).f("random", 0.63), g
 
+def gx_test(r):
+    return StyledString("Hello", Style("≈/Konsole0.5GX.ttf", 500, wdth=1)).pens().align(r)
+
 all_tests = [
     basic_test,
     combine_slugs_test,
@@ -182,6 +185,7 @@ all_tests = [
     varfit_simple_test,
     varfit_test,
     align_test,
+    gx_test
 ]
 
 def render(r, i):
@@ -193,11 +197,10 @@ def render(r, i):
         DATPenSet(res)
     ]
 
-#tests = [tests.index(combine_slugs_test)]
 tests = all_tests
 
 page = Rect(1920, 1080)
 renders = [
-    partial(render, page, 0),
-    partial(render, page, 5),
+    #partial(render, page, 0),
+    partial(render, page, -1),
 ]
