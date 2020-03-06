@@ -160,7 +160,8 @@ def align_test(r):
     return DATPen().rect(r).f(0.5, 0, 1, 0.3), DATPen().rect(g[1].getFrame(th=0)).f("random", 0.63), g
 
 def gx_test(r):
-    return StyledString("Hello", Style("≈/VinilaVariable.ttf", 500, wdth=1)).pens().align(r)
+    wdth = 1
+    return [StyledString("Hello", Style("≈/Vinila-VF-HVAR-table.ttf", 500, wdth=wdth)).pen().align(r), StyledString("Hello", Style("≈/VinilaVariable.ttf", 500, wdth=wdth)).pen().align(r).translate(10, 10).f("random", 0.5)]
 
 all_tests = [
     basic_test,

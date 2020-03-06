@@ -471,6 +471,18 @@ class Style():
                         unnormalized_variations[axis.axisTag] = kwargs[axis.axisTag]
 
             self.addVariations(unnormalized_variations)
+    
+    def __eq__(self, other):
+        if not self.fontFile == other.fontFile:
+            return False
+        elif not self.fontSize == other.fontSize:
+            return False
+        
+        for key, value in self.variations.items():
+            if self.variations[key] != other.variations[key]:
+                return False
+        
+        return True
 
     def mod(self, **kwargs):
         ns = copy.deepcopy(self)

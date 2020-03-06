@@ -17,6 +17,11 @@ from collections import OrderedDict
 from lxml import etree
 
 
+def get_image_rect(src):
+    w, h = db.imageSize(str(src))
+    return Rect(0, 0, w, h)
+
+
 class DrawBotPen(DrawablePenMixin):
     def __init__(self, dat, rect=None):
         super().__init__()
@@ -44,8 +49,11 @@ class DrawBotPen(DrawablePenMixin):
         else:
             db.stroke(None)
         
-    def image(self, src=None, opacity=None, rect=None, rotate=0):
+    def image(self, src=None, opacity=1, rect=None, rotate=0, repeating=False, scale=True):
         bounds = self.dat.bounds()
+        src = str(src)
+        if not rect:
+            rect = bounds
         try:
             img_w, img_h = db.imageSize(src)
         except:
@@ -53,15 +61,29 @@ class DrawBotPen(DrawablePenMixin):
             return
         x = bounds.x
         y = bounds.y
-        x_count = bounds.w / rect.w
-        y_count = bounds.h / rect.h
-        while x <= bounds.w:
-            while y <= bounds.h:
+        if repeating:
+            x_count = bounds.w / rect.w
+            y_count = bounds.h / rect.h
+        else:
+            x_count = 1
+            y_count = 1
+        _x = 0
+        _y = 0
+        while x <= (bounds.w+bounds.x) and _x < x_count:
+            _x += 1
+            while y <= (bounds.h+bounds.y) and _y < y_count:
+                _y += 1
                 with db.savedState():
                     r = Rect(x, y, rect.w, rect.h)
                     #db.fill(1, 0, 0.5, 0.05)
                     #db.oval(*r)
-                    db.scale(rect.w/img_w, center=r.point("SW"))
+                    if scale == True:
+                        db.scale(rect.w/img_w, center=r.point("SW"))
+                    elif scale:
+                        try:
+                            db.scale(scale[0], scale[1], center=r.point("SW"))
+                        except TypeError:
+                            db.scale(scale, center=r.point("SW"))
                     db.rotate(rotate)
                     db.image(src, (r.x, r.y), alpha=opacity)
                 y += rect.h
