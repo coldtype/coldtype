@@ -111,6 +111,15 @@ class Color:
     def lighter(self, level):
         return Color.from_hsl(self.h, self.s, min(self.l + level, 1), self.a)
     
+    def desaturate(self, level):
+        return Color.from_hsl(self.h, max(self.s - level, 0), self.l, self.a)
+    
+    def saturate(self, level):
+        return Color.from_hsl(self.h, min(self.s + level, 1), self.l, self.a)
+    
+    def darker(self, level):
+        return Color.from_hsl(self.h, self.s, max(self.l - level, 0), self.a)
+
     def from_hsl(h, s, l, a=1):
         r, g, b = hsl_to_rgb(h, s, l)
         return Color(r, g, b, a)
