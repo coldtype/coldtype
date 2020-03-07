@@ -79,8 +79,7 @@ class Color:
         return "<Color:rgb({:.1f},{:.1f},{:.1f})/a={:.1f}>".format(self.r, self.g, self.b, self.a)
 
     def with_alpha(self, alpha):
-        self.a = alpha
-        return self
+        return Color(self.r, self.g, self.b, alpha)
 
     def ints(self):
         return [self.r*255, self.g*255, self.b*255, self.a]
@@ -123,3 +122,6 @@ class Color:
     def from_hsl(h, s, l, a=1):
         r, g, b = hsl_to_rgb(h, s, l)
         return Color(r, g, b, a)
+    
+    def rgba(self):
+        return self.r, self.g, self.b, self.a
