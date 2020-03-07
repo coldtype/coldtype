@@ -4,8 +4,7 @@ from coldtype.color.color import Color
 
 
 def lighten_max(color, maxLightness=0.55):
-    h, s, l = color.hsl
-    return Color.from_hsl(h, s, max(maxLightness, l))
+    return Color.from_hsl(color.h, color.s, max(maxLightness, color.l))
 
 
 def color_var(*rgba):

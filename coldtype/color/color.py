@@ -73,6 +73,7 @@ class Color:
         self.h = h
         self.s = s
         self.l = l
+        self.html = self.to_html()
     
     def __str__(self):
         return "<Color:rgb({:.1f},{:.1f},{:.1f})/a={:.1f}>".format(self.r, self.g, self.b, self.a)
@@ -103,7 +104,13 @@ class Color:
         else:
             raise ValueError("input #%s is not in #RRGGBB format" % html)
         return Color(*[(int(n, 16) / 255.0) for n in rgb], a)
-
+    
+    def to_html(self):
+        return '#%02x%02x%02x' % tuple((min(round(v*255), 255) for v in (self.r, self.g, self.b)))
+    
+    def lighter(self, level):
+        return Color.from_hsl(self.h, self.s, min(self.l + level, 1), self.a)
+    
     def from_hsl(h, s, l, a=1):
         r, g, b = hsl_to_rgb(h, s, l)
         return Color(r, g, b, a)
