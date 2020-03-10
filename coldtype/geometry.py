@@ -135,7 +135,7 @@ def divide(rect, amount, edge, forcePixel=False):
         return [x, y, w, lh], [x, y + lh, w, amount], [x, y + lh + amount, w, lh]
 
 
-def subdivide(rect, count, edge):
+def subdivide(rect, count, edge, forcePixel=False):
     """
     Like `divide`, but here you specify the number of equal pieces you want
     (like columns or rows), and then what edge to start at, i.e.
@@ -150,7 +150,7 @@ def subdivide(rect, count, edge):
         i = len(amounts) + 1
         a = 0
         while i > 1:
-            s, r = divide(r, amounts[a], edge)
+            s, r = divide(r, amounts[a], edge, forcePixel=forcePixel)
             subs.append(s)
             i -= 1
             a += 1
@@ -159,7 +159,7 @@ def subdivide(rect, count, edge):
     else:
         i = count
         while i > 1:
-            s, r = divide(r, 1/i, edge)
+            s, r = divide(r, 1/i, edge, forcePixel=forcePixel)
             subs.append(s)
             i -= 1
         subs.append(r)
@@ -452,14 +452,14 @@ class Rect():
         edge = txt_to_edge(edge)
         return [Rect(x) for x in subdivide(self.rect(), amount, edge)]
 
-    def subdivide_with_leadings(self, count, leadings, edge):
+    def subdivide_with_leadings(self, count, leadings, edge, forcePixel=True):
         edge = txt_to_edge(edge)
         leadings = leadings + [0]
         full = self.w if edge == Edge.MinX or edge == Edge.MaxX else self.h
         unit = (full - sum(leadings)) / count
         amounts = [val for pair in zip([unit] * count, leadings)
                    for val in pair][:-1]
-        return [Rect(x) for x in subdivide(self.rect(), amounts, edge)][::2]
+        return [Rect(x) for x in subdivide(self.rect(), amounts, edge, forcePixel=forcePixel)][::2]
 
     def transform(self, t):
         pts = ["NW", "NE", "SE", "SW"]
