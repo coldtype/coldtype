@@ -482,6 +482,9 @@ class Style():
             if self.variations[key] != other.variations[key]:
                 return False
         
+        if self.fill != other.fill:
+            return False
+        
         return True
 
     def mod(self, **kwargs):
