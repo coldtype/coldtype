@@ -75,6 +75,12 @@ class Color:
         self.l = l
         self.html = self.to_html()
     
+    def __eq__(self, other):
+        if isinstance(other, Color):
+            return self.r == other.r and self.g == other.g and self.b == other.b and self.a == other.a
+        else:
+            return False
+    
     def __str__(self):
         return "<Color:rgb({:.1f},{:.1f},{:.1f})/a={:.1f}>".format(self.r, self.g, self.b, self.a)
 
