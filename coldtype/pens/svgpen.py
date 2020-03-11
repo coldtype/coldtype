@@ -211,8 +211,10 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         else:
             self.path.set("fill", "transparent")
     
-    def stroke(self, weight=1, color=None):
+    def stroke(self, weight=1, color=None, dash=None):
         self.path.set("stroke-width", str(weight))
+        if dash:
+            self.path.set("stroke-dasharray", " ".join([str(x) for x in dash]))
         if color:
             if isinstance(color, Gradient):
                 self.path.set("stroke", f"url('#{self.gradient(color)}')")
@@ -302,8 +304,8 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
     
     def asSVG(self, style=None):
         self.path = etree.Element("path")
-        for attr in self.findStyledAttrs(style):
-            self.applyDATAttribute(attr)
+        for attrs, attr in self.findStyledAttrs(style):
+            self.applyDATAttribute(attrs, attr)
         self.path.set("d", self.getCommands())
         g = etree.Element("g")
         defs = etree.Element("defs")

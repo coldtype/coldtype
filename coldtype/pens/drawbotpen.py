@@ -39,8 +39,10 @@ class DrawBotPen(DrawablePenMixin):
         else:
             db.fill(None)
     
-    def stroke(self, weight=1, color=None):
+    def stroke(self, weight=1, color=None, dash=None):
         db.strokeWidth(weight)
+        if dash:
+            db.lineDash(dash)
         if color:
             if isinstance(color, Gradient):
                 pass # possible?
@@ -110,8 +112,8 @@ class DrawBotPen(DrawablePenMixin):
     def draw(self, scale=2, style=None):
         with db.savedState():
             db.scale(scale)
-            for attr in self.findStyledAttrs(style):
-                self.applyDATAttribute(attr)
+            for attrs, attr in self.findStyledAttrs(style):
+                self.applyDATAttribute(attrs, attr)
             db.drawPath(self.bp)
     
     def Composite1(pens, rect, save_to, paginate=False, scale=2):

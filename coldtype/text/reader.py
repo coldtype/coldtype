@@ -839,8 +839,8 @@ class StyledString(FittableMixin):
             if self.testWidth(width, "tracking", 0, self.style.tracking):
                 continuing = False
         if continuing:
-            minwdth = self.style.variationLimits["wdth"]
-            currentwdth = self.style.variations["wdth"]
+            minwdth = self.style.variationLimits.get("wdth", 1)
+            currentwdth = self.style.variations.get("wdth", 1)
             self.variations["wdth"] = minwdth
             if not self.testWidth(width, "wdth", minwdth, currentwdth):
                 self.tracking = self.style.trackingLimit

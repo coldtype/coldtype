@@ -12,7 +12,7 @@ class DrawablePenMixin(object):
     def fill(self, el, color):
         raise Exception("Pen does not implement fill function")
     
-    def stroke(self, el, weight=1, color=None):
+    def stroke(self, el, weight=1, color=None, dash=None):
         raise Exception("Pen does not implement stroke function")
 
     def shadow(self, el, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
@@ -21,14 +21,14 @@ class DrawablePenMixin(object):
     def image(self, el, src=None, opacity=None, rect=None):
         raise Exception("Pen does not implement image function")
 
-    def applyDATAttribute(self, attribute):
+    def applyDATAttribute(self, attrs, attribute):
         k, v = attribute
         if k == "shadow":
             self.shadow(**v)
         elif k == "fill":
             self.fill(v)
         elif k == "stroke":
-            self.stroke(**v)
+            self.stroke(**v, dash=attrs.get("dash"))
         elif k == "image":
             self.image(**v)
     
@@ -38,7 +38,7 @@ class DrawablePenMixin(object):
         else:
             attrs = self.dat.attrs["default"]
         for attr in attrs.items():
-            yield attr
+            yield attrs, attr
 
     def FindPens(pens):
         if isinstance(pens, DATPen):
