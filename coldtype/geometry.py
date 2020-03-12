@@ -59,6 +59,10 @@ def txt_to_edge(txt):
             return Edge.CenterY
         elif txt == "centerx":
             return Edge.CenterX
+        elif txt == "midx":
+            return Edge.CenterX
+        elif txt == "midy":
+            return Edge.CenterY
         else:
             return None
     else:
