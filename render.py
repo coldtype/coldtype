@@ -67,10 +67,7 @@ class Handler(FileSystemEventHandler):
 
 
 def on_message(ws, message):
-    try:
-        print(">>>ws", message.strip()[:10])
-    except:
-        pass
+    pass
 
 
 def watch_changes():

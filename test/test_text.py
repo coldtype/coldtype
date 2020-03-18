@@ -201,7 +201,6 @@ def render(r, i):
 tests = all_tests
 
 page = Rect(1920, 1080)
-renders = [
-    #partial(render, page, 0),
-    partial(render, page, -1),
-]
+renders = []
+for idx, _ in enumerate(tests):
+    renders.append(partial(render, page, idx))
