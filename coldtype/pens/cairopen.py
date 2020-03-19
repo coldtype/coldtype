@@ -1,7 +1,6 @@
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
-
 from pathlib import Path
 
 try:
@@ -9,11 +8,6 @@ try:
 except:
     pass
 
-if __name__ == "__main__":
-    import sys
-    import os
-    dirname = os.path.realpath(os.path.dirname(__file__))
-    sys.path.append(f"{dirname}/../..")
 
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin
@@ -121,30 +115,3 @@ class CairoPen(DrawablePenMixin, BasePen):
                 CairoPen(pen, rect.h, ctx, style=style)
         else:
             raise Exception(f"CairoPen cannot print to format {ip.suffix}")
-
-if __name__ == "__main__":
-    from coldtype.pens.datpen import DATPen
-    from coldtype.pens.svgpen import SVGPen
-    from coldtype.viewer import viewer
-    from random import random
-    
-    r1 = Rect((0, 0, 50, 50))
-    p1 = os.path.realpath(f"{dirname}/../../test/artifacts/cairopen_test3.png")
-
-    dp = DATPen(fill=(1, 0, 0.5)).oval(r1.inset(10, 10))
-    CairoPen.Composite([dp], r1, p1, style="default")
-
-    r = Rect((0, 0, 500, 500))
-    p2 = os.path.realpath(f"{dirname}/../../test/artifacts/cairopen_test2.png")
-    
-    dp = DATPen(fill=Gradient.Random(r), stroke=dict(weight=20, color="royalblue"))
-    dp.attr("dark", fill="black", stroke="hotpink", strokeWidth=20)
-    dp.oval(r.inset(100, 100))
-    dp2 = DATPen(fill=None, image=dict(src=p1, opacity=0.3, rect=r1)).rect(r)
-
-    CairoPen.Composite([dp, dp2], r, p2, style="default")
-    
-    with viewer() as pv:
-        pv.send(SVGPen.Composite([dp, dp2], r), r)
-        pv.send(p1, r1, image=True)
-        pv.send(p2, r, image=True)

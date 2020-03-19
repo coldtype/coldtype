@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from websocket import create_connection, WebSocket
 from random import random
 
@@ -96,35 +94,8 @@ class PreviewConnection():
         self.pp.send(*args, **kwargs)
 
 
-
 def previewer():
     return PreviewConnection()
 
 def viewer():
     return PreviewConnection()
-
-
-if __name__ == "__main__":
-    from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
-
-    clients = []
-
-    class SimpleChat(WebSocket):
-        def handleMessage(self):
-            for client in clients:
-                if client != self:
-                    # self.address[0]
-                    client.sendMessage(self.data)
-
-        def handleConnected(self):
-            print(self.address, 'connected')
-            clients.append(self)
-
-        def handleClose(self):
-            clients.remove(self)
-            print(self.address, 'closed')
-
-
-    server = SimpleWebSocketServer('', WEBSOCKET_PORT, SimpleChat)
-    print(">>> Listening on", WEBSOCKET_PORT)
-    server.serveforever()

@@ -1,20 +1,7 @@
 import drawBot as db
-
-if __name__ == "__main__":    
-    import os
-    import sys
-    dirname = os.path.realpath(os.path.dirname(__file__))
-    sys.path.append(f"{dirname}/../..")
-
 from coldtype.pens.datpen import DATPen
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
-
-import math
-from coldtype.color import Color
-import textwrap
-from collections import OrderedDict
-from lxml import etree
 
 
 def get_image_rect(src):
@@ -160,36 +147,3 @@ class DrawBotPen(DrawablePenMixin):
         
         db.saveImage(str(save_to))
         db.endDrawing()
-
-
-if __name__ == "__main__":
-    sys.path.insert(0, os.path.realpath("."))
-    from coldtype.pens.datpen import DATPen
-    from coldtype.viewer import previewer
-
-    with previewer() as pv:
-        r = Rect((0, 0, 500, 500))
-
-        r0 = Rect(0, 0, 250, 250)
-        dp0 = DATPen(fill="random").rect(r0.inset(100, 100)).rotate(45)
-        p0 = os.path.realpath(f"{dirname}/../../test/artifacts/drawbot_test3_pattern.png")
-        DrawBotPen.Composite([dp0], r0, p0, scale=2)
-        pv.send(p0, r0, image=True)
-        
-        dp1 = DATPen(fill=("random", 0.25), stroke=("random", 0.5), strokeWidth=30)
-        dp1.oval(r.inset(30, 30))
-        dp2 = DATPen(fill=Gradient.Random(r.inset(100, 100)), shadow=dict(
-            #clip=r.take(150, "centery"),
-            alpha=0.6, radius=100))
-        dp2.oval(r.inset(100, 100))
-        dp3 = DATPen(fill=None, image=dict(src=p0, opacity=0.3, rect=Rect(0, 0, 53, 53))).rect(r)
-
-        dp5 = DATPen(fill=None, stroke=("random", 0.5), strokeWidth=30).rect(r.inset(100, 100)).rotate(45)
-
-        p = os.path.realpath(f"{dirname}/../../test/artifacts/drawbot_test2.png")
-        p2 = os.path.realpath(f"{dirname}/../../test/artifacts/drawbot_test5.png")
-
-        DrawBotPen.Composite([dp3, dp1, dp2], r, p, scale=2)
-        DrawBotPen.Composite([dp5], r, p2, scale=2)
-
-        pv.send([p, p2], r, image=True)

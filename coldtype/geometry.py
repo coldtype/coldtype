@@ -585,12 +585,3 @@ class Rect():
 
     def intersects(self, other):
         return not (self.point("NE").x < other.point("SW").x or self.point("SW").x > other.point("NE").x or self.point("NE").y < other.point("SW").y or self.point("SW").y > other.point("NE").y)
-
-
-if __name__ == "__main__":
-    #print(Rect(0, 0, 100, 100).inset(20, 20).expand(20, "minx"))
-    #r = Rect(0, 0, 100, 100)
-    #t = Transform().scale(0.5, 0.5)
-    # print(r.transform(t))
-
-    print(Rect(100, 0, 500, 500).union(Rect(400, 400, 300, 300)))

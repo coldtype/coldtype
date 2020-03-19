@@ -1,9 +1,4 @@
 # Mixin for attribute-application
-if __name__ == "__main__":    
-    import os
-    import sys
-    dirname = os.path.realpath(os.path.dirname(__file__))
-    sys.path.append(f"{dirname}/../..")
 
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.color import Gradient, Color

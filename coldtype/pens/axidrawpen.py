@@ -3,8 +3,6 @@ import sys
 import time
 
 dirname = os.path.realpath(os.path.dirname(__file__))
-if __name__ == "__main__":
-    sys.path.append(f"{dirname}/../..")
 
 from fontTools.pens.basePen import BasePen
 from fontTools.pens.transformPen import TransformPen
@@ -83,38 +81,3 @@ class AxiDrawPen(BasePen):
             ad.penup()
             ad.moveto(0,0)
             ad.disconnect()
-
-
-if __name__ == "__main__":
-    sys.path.insert(0, os.path.realpath("."))
-    from coldtype.viewer import viewer
-    from coldtype.pens.datpen import DATPenSet
-    from coldtype import Slug, Style
-    #from coldtype.ufo import UFOStringSetter
-    from random import random, randint
-    from string import ascii_lowercase, ascii_uppercase
- 
-    def text_test():
-        ff = "~/Type/typeworld/hershey_ufos_open_paths/Hershey-{:s}.ufo"
-        r = Rect(0, 0, 1100, 850)
-        strings = [
-            #["The virtuosity of the cathode ray printer", "SimplexCartographicSans"],
-            #["has been explored further", "SimplexCartographicScript"],
-            #["with a number of", "DuplexPrincipalSans"],
-            ["A", "TriplexGothicItalian"],
-            #["digitalizations.", "TriplexGothicGerman"],
-        ]
-        rl = r.inset(0, 200)
-        p = DATPen()
-        #rows = r.inset(0, 100).subdivide(len(strings), "maxy")
-        for idx, (s, f) in enumerate(strings):
-            s = Slug(s, Style(ff.format(f), 200, varyFontSize=1)).fit(500)
-            rt, rl = rl.divide(s.strings[0].fontSize + 10, "maxy")
-            s.pen().align(rt).replay(p)
-        
-        #for c in ascii_uppercase[0:1]:
-            #time.sleep(2)
-        ap = AxiDrawPen(p, r)
-        ap.draw(dry=0)
-    
-    text_test()

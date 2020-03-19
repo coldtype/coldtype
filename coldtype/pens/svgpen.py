@@ -334,15 +334,3 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
             docroot.append(sp.asSVG(style=style))
         
         return etree.tostring(docroot, pretty_print=True).decode("utf-8").replace("image-href", "xlink:href")
-
-
-if __name__ == "__main__":
-    sys.path.insert(0, os.path.realpath("."))
-    from coldtype.viewer import previewer
-    #from coldtype.svg import read_svg_to_pen
-
-    with previewer() as p:
-        r = Rect((0, 0, 500, 500))
-        dp1 = DATPen(fill="darkorchid").oval(r.inset(20, 20))
-        dp2 = DATPen(fill=Color.from_html("hotpink").with_alpha(0.5)).rect(r.inset(50, 50))
-        p.send(SVGPen.Composite([dp1, dp2], r), rect=r)
