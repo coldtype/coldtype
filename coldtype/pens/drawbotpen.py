@@ -2,6 +2,7 @@ import drawBot as db
 from coldtype.pens.datpen import DATPen
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
+from coldtype.color import Color
 
 
 def get_image_rect(src):
