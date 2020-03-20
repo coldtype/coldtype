@@ -5,7 +5,7 @@ lxml==4.3.3
 pytz==2019.1
 six==1.12.0
 unicodedata2==12.0.0
-git+https://github.com/rougier/freetype-py
+freetype-py
 fontPens==0.2.4
 uharfbuzz==0.6.0
 booleanOperations==0.8.2

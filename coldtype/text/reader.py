@@ -26,6 +26,9 @@ from coldtype.color import normalize_color
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.geometry import Rect, Point
 
+from fontgoggles.font import getOpener
+from fontgoggles.font.baseFont import BaseFont
+
 try:
     import Levenshtein
 except ImportError:
@@ -168,6 +171,7 @@ class FreetypeReader(FontShapeReader):
                 coord = FT_Fixed(int(axes[name] * (2**16)))
                 coords.append(coord)
             ft_coords = (FT_Fixed * len(coords))(*coords)
+            
             freetype.FT_Set_Var_Design_Coordinates(self.font._FT_Face, len(ft_coords), ft_coords)
     
     def setGlyph(self, glyph_id):
@@ -279,6 +283,15 @@ def normalize_font_path(font):
         raise Exception("FONT LITERAL NOT FOUND")
 
 
+class FontGoggle():
+    # TODO support glyphs?
+    def __init__(self, path):
+        #ufo = glyphsLib.load_to_ufos(self.fontFile)[0]
+        self.path = Path(normalize_font_path(path))
+        numFonts, opener, getSortInfo = getOpener(self.path)
+        self.font:BaseFont = opener(self.path, 0)
+        self.font._syncLoad()
+
 class Style():
     def RegisterShorthandPrefix(prefix, expansion):
         global _prefixes
@@ -288,7 +301,6 @@ class Style():
             font=None,
             fontSize=12,
             fitHeight=None,
-            ttFont=None,
             tracking=0,
             trackingLimit=0,
             trackingMode=0,
@@ -317,9 +329,6 @@ class Style():
             layerer=None,
             preventHwid=False,
             layer=None,
-            printAxes=False,
-            printFeatures=False,
-            db=False,
             reverse=False,
             removeOverlap=False,
             rotate=0,
@@ -332,7 +341,8 @@ class Style():
         capHeight (ch) — A number in font-space; not specified, read from font; specified as 'x', capHeight is set to xHeight as read from font
         """
 
-        self.db = db
+        self.font = font
+
         self.next = None
         self.layer = layer
         self.layerer = layerer
@@ -340,61 +350,19 @@ class Style():
         self.removeOverlap = kwargs.get("ro", removeOverlap)
         self.rotate = rotate
 
-        ufo = None
-
-        self.format = None
-        # Load a font from a file
-        if isinstance(font, Font):
-            self.fontFile = "<in-memory>.ufo"
-            self.ufo = True
-            self.format = "ufo"
-            ufo = font
-        elif isinstance(font, str):
-            self.fontFile = normalize_font_path(font)
-        elif isinstance(font, Path):
-            self.fontFile = normalize_font_path(str(font))
-        else:
-            self.fontFile = normalize_font_path(font[0])
-            if len(font) > 1:
-                self.next = Style(font=font[1:], fontSize=fontSize, ttFont=ttFont, tracking=tracking, trackingLimit=trackingLimit, kern=kern, space=space, baselineShift=baselineShift,xShift=xShift, variations=variations, variationLimits=variationLimits, increments=increments, features=features, varyFontSize=varyFontSize, fill=fill,stroke=stroke, strokeWidth=strokeWidth, palette=palette, capHeight=capHeight, data=data, latin=latin, lang=lang, filter=filter, preventHwid=preventHwid, layer=layer, **kwargs)
+        #self.goggle = FontGoggle(self.fontFile)
+        #glyph_run = self.goggle.font.getGlyphRun("S", features=dict(ss01=True), cocoa=False)
+        #print(list(glyph_run)[0].glyphDrawing.layers[0][0].value)
         
-        if not self.format:
-            self.format = os.path.splitext(self.fontFile)[1][1:]
-            self.ufo = self.format == "ufo"
+        try:
+            os2 = self.font.font.ttFont["OS/2"]
+            self.capHeight = os2.sCapHeight
+            #self.xHeight = os2.sxHeight
+            if capHeight == "x":
+                self.capHeight = self.xHeight
+        except:
+            self.capHeight = 1000 # alternative?
 
-        if self.ufo and not ufo:
-            ufo = Font(self.fontFile)
-        if self.format == "glyphs":
-            ufo = glyphsLib.load_to_ufos(self.fontFile)[0]
-            self.ufo = True
-
-        capHeight = kwargs.get("ch", capHeight)
-
-        if self.ufo:
-            self.ttfont = None
-            self.fontdata = None
-            self.font = ufo
-            self.glyphSet = self.font
-            if self.layer:
-                self.glyphSet = self.font.layers[self.layer]
-            self.upem = self.font.info.unitsPerEm
-            self.capHeight = self.font.info.capHeight
-        else:
-            try:
-                self.ttfont = ttFont or TTFont(self.fontFile) # could cache this?
-            except:
-                self.ttfont = None
-            self.fontdata = get_cached_font(self.fontFile)
-            self.upem = hb.Face(self.fontdata).upem
-            try:
-                os2 = self.ttfont["OS/2"]
-                self.capHeight = os2.sCapHeight
-                self.xHeight = os2.sxHeight
-                if capHeight == "x":
-                    self.capHeight = self.xHeight
-            except:
-                self.capHeight = 1000 # alternative?
-        
         if capHeight: # override whatever the font says
             if capHeight != "x":
                 self.capHeight = capHeight
@@ -403,6 +371,7 @@ class Style():
             self.fontSize = (fitHeight/self.capHeight)*1000
         else:
             self.fontSize = fontSize
+
         self.tracking = kwargs.get("t", tracking)
         self.kern = kwargs.get("k", kern)
         self.kern_pairs = kern_pairs
@@ -427,10 +396,7 @@ class Style():
             if not self.increments.get("tracking"):
                 self.increments["tracking"] = 5 # TODO good?
 
-        # TODO should be able to pass in as kwarg
         found_features = features.copy()
-        if printFeatures:
-            print("Coldtype >>>", self.fontFile, "<FEATURES>", found_features)
         for k, v in kwargs.items():
             if k.startswith("ss") and len(k) == 4:
                 found_features[k] = v
@@ -454,15 +420,13 @@ class Style():
         self.variationLimits = dict()
         self.varyFontSize = varyFontSize
         
-        if not self.ufo:
+        if self.font.font.ttFont:
             try:
-                fvar = self.ttfont['fvar']
+                fvar = self.font.font.ttFont['fvar']
             except:
                 fvar = None
             if fvar:
                 for axis in fvar.axes:
-                    if printAxes:
-                        print("Coldtype >>>", self.fontFile, axis.axisTag, axis.minValue, axis.maxValue)
                     self.axes[axis.axisTag] = axis
                     self.variations[axis.axisTag] = axis.defaultValue
                     if axis.axisTag == "wdth": # the only reasonable default
@@ -531,43 +495,6 @@ class Style():
                 else:
                     variations[k] = v
         return variations
-    
-    def listFeatures(self):
-        font = self.ttfont
-        all_features = OrderedDict()
-        tag = "GSUB"
-        if not tag in font: return
-        table = font[tag].table
-        if not table.ScriptList or not table.FeatureList: return
-        featureRecords = table.FeatureList.FeatureRecord
-        for script in table.ScriptList.ScriptRecord:
-            _script = {}
-            if not script.Script: continue
-            # script.scriptTag
-            languages = list(script.Script.LangSysRecord)
-            if script.Script.DefaultLangSys:
-                defaultlangsys = otTables.LangSysRecord()
-                defaultlangsys.LangSysTag = "default"
-                defaultlangsys.LangSys = script.Script.DefaultLangSys
-                languages.insert(0, defaultlangsys)
-            for langsys in languages:
-                # langsys.LangSysTag
-                if not langsys.LangSys:
-                    continue
-                features = [featureRecords[index] for index in langsys.LangSys.FeatureIndex]
-                for feature in features:
-                    # feature.FeatureTag
-                    if feature.FeatureTag not in all_features:
-                        try:
-                            name = font["name"].getName(feature.Feature.FeatureParams.UINameID, 3, 1).toUnicode()
-                        except:
-                            name = True
-                        all_features[feature.FeatureTag] = name
-        return all_features
-    
-    def stylisticSets(self):
-        all_features = self.listFeatures()
-        return [(k, v) for (k, v) in all_features.items() if k.startswith("ss")]
 
 
 def offset(x, y, ox, oy):
