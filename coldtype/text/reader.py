@@ -341,7 +341,7 @@ class Style():
         capHeight (ch) — A number in font-space; not specified, read from font; specified as 'x', capHeight is set to xHeight as read from font
         """
 
-        self.font = font
+        self.font:FontGoggle = font
 
         self.next = None
         self.layer = layer
@@ -522,28 +522,22 @@ def TransliterateCGPathToBezierPath(data, b):
 class StyledString(FittableMixin):
     def __init__(self, text, style):
         self.text = text
-        self.setStyle(style)
-        
-        if self.style.ufo:
-            pass
-        else:
-            self.glyphs = self.hb.glyphs(self.variations, self.features)
-    
-    def setStyle(self, style):
         self.style = style
+
         # these will change based on fitting, so we make copies
         self.fontSize = self.style.fontSize
         self.tracking = self.style.tracking
         self.features = self.style.features.copy()
         self.variations = self.style.variations.copy()
-
-        self.hb = Harfbuzz(self.style.fontdata,
-            text=self.text,
-            height=self.style.capHeight,
-            lang=self.style.lang,
-            ttfont=self.style.ttfont)
+        
+        self.style = style
+        self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations, cocoa=False)
+        x = 0
+        for glyph in self.glyphs:
+            glyph.frame = Rect(x+glyph.dx, glyph.dy, glyph.ax, self.style.capHeight)
+            x += glyph.ax
     
-    def trackFrames(self, frames):
+    def trackFrames(self):
         t = self.tracking
         x_off = 0
         for idx, f in enumerate(frames):
@@ -562,122 +556,12 @@ class StyledString(FittableMixin):
                     f.frame.x += self.style.xShift
                     pass
         return frames
-
-    def TextToGuessedGlyphNames(text):
-        glyph_names = []
-        current = None
-        for t in text:
-            glyph = None
-            if t == "{":
-                current = ""
-            elif t == "}":
-                glyph = current
-                current = None
-            elif current is not None:
-                current += t
-            elif t == ",":
-                glyph = "comma"
-            elif t == " ":
-                glyph = "space"
-            elif t == ".":
-                glyph = "period"
-            elif t == "1":
-                glyph = "one"
-            elif t == "2":
-                glyph = "two"
-            elif t == "3":
-                glyph = "three"
-            elif t == "4":
-                glyph = "four"
-            elif t == "5":
-                glyph = "five"
-            elif t == "6":
-                glyph = "six"
-            elif t == "7":
-                glyph = "seven"
-            elif t == "8":
-                glyph = "eight"
-            elif t == "9":
-                glyph = "nine"
-            elif t == "’":
-                glyph = "quoteright"
-            elif t == "!":
-                glyph = "exclam"
-            elif re.match(r"[A-Za-z]", t):
-                glyph = t
-            else: # convert unicode literals to uni*-style
-                glyph = hex(ord(t)).upper().replace("0X", "uni")
-            if glyph:
-                glyph_names.append(glyph)
-        return glyph_names
     
     def getGlyphFrames(self):
-        frames = []
-        glyph_names = []
-
-        if self.style.ufo:
-            glyph_names = StyledString.TextToGuessedGlyphNames(self.text)
-            x_off = 0
-            for g in glyph_names:
-                try:
-                    glif = self.style.glyphSet[g]
-                    if glif.bounds == None and "space" not in g:
-                        g = ".notdef"
-                        glif = self.style.glyphSet[".notdef"]
-                except:
-                    g = ".notdef"
-                    glif = self.style.glyphSet[".notdef"]
-                w = glif.width
-                r = Rect(x_off, 0, w, self.style.capHeight)
-                x_off += w
-                frames.append(HarfbuzzFrame(g, dict(), Point((0, 0)), r, g))
-        elif self.style.db > 0:
-            # make a formatted string
-            fs = self.formattedString()
-            attr_string = fs.getNSObject()
-            path = CoreText.CGPathCreateMutable()
-            CoreText.CGPathAddRect(path, None, CoreText.CGRectMake(0, 0, 1000000, 1100))
-            setter = CoreText.CTFramesetterCreateWithAttributedString(attr_string)
-            frame = CoreText.CTFramesetterCreateFrame(setter, (0, 0), path, None)
-            ctLines = CoreText.CTFrameGetLines(frame)
-            origins = CoreText.CTFrameGetLineOrigins(frame, (0, len(ctLines)), None)
-            
-            self.ct_glyphs = []
-            ct_frames = []
-            
-            for i, (originX, originY) in enumerate(origins[0:1]): # can only display one 'line' of text
-                ctLine = ctLines[i]
-                ctRuns = CoreText.CTLineGetGlyphRuns(ctLine)
-                for ctRun in ctRuns:
-                    attributes = CoreText.CTRunGetAttributes(ctRun) # can be done once out of loop
-                    font = attributes.get(AppKit.NSFontAttributeName) # can be done once out of loop
-                    baselineShift = attributes.get(AppKit.NSBaselineOffsetAttributeName, 0)
-                    glyphCount = CoreText.CTRunGetGlyphCount(ctRun)
-                    last_adv = (0, 0)
-                    for i in range(glyphCount):
-                        glyph = CoreText.CTRunGetGlyphs(ctRun, (i, 1), None)[0]
-                        ax, ay = CoreText.CTRunGetPositions(ctRun, (i, 1), None)[0]
-                        frame = Rect(ax, ay, 200, 200)
-                        ct_frames.append([glyph, frame])
-                        glyph_path = CoreText.CTFontCreatePathForGlyph(font, glyph, None)
-                        if glyph_path:
-                            dp = DATPen()
-                            Quartz.CGPathApply(glyph_path, dict(offset=(0, 0), bp=dp), TransliterateCGPathToBezierPath)
-                            self.ct_glyphs.append(dp)
-                            last_adv = (ax, ay)
-            
-            for idx, (gid, r) in enumerate(ct_frames):
-                glyph = self.glyphs[idx]
-                if glyph[0] != gid:
-                    print("Non-matching shaping")
-                frames.append(HarfbuzzFrame(gid, dict(), Point((0, 0)), r, glyph[1]))
-        else:
-            frames = self.hb.frames(self.variations, self.features, self.glyphs)
-
         if self.style.kern_pairs:
             last_gn = None
-            for idx, frame in enumerate(frames):
-                gn = frame.glyphName
+            for idx, glyph in enumerate(self.glyphs):
+                gn = glyph.name
                 for chars, kp in self.style.kern_pairs.items():
                     try:
                         l = kp[0]
@@ -689,20 +573,20 @@ class StyledString(FittableMixin):
                     if gn == b and last_gn == a:
                         kern_shift = l
                         if kern_shift != 0:
-                            for frame in frames[idx:]:
-                                frame.frame.x += kern_shift
+                            for glyph in self.glyphs[idx:]:
+                                glyph.frame.x += kern_shift
                 last_gn = gn
         
         if self.style.trackingMode == 1:
-            frames = self.trackFrames(frames)
+            self.trackFrames()
 
-        for f in frames:
-            f.frame = f.frame.scale(self.scale())
+        for glyph in self.glyphs:
+            glyph.frame = glyph.frame.scale(self.scale())
 
         if self.style.trackingMode == 0:
-            frames = self.trackFrames(frames)
+            self.trackFrames()
 
-        return self.adjustFramesForPath(frames)
+        return self.adjustFramesForPath()
     
     def scale(self):
         return self.fontSize / self.style.upem
