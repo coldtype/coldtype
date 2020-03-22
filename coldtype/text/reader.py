@@ -418,8 +418,7 @@ class StyledString(FittableMixin):
         return self.fontSize / self.style.font.font.shaper.face.upem
     
     def width(self): # size?
-        w = self.glyphs[-1].frame.point("SE").x
-        print(w)
+        w = self.glyphs[-1].frame.point("SE").x # TODO need to scale?
         return w
         return self.getGlyphFrames()[-1].frame.point("SE").x
     
@@ -455,7 +454,7 @@ class StyledString(FittableMixin):
         #return super().fit(width)
     
     def testWidth(self, width, field, minv, maxv):
-        self.reset()
+        self.resetGlyphRun()
         w = self.width()
         if w == width:
             print("VERY RARE")
@@ -525,9 +524,6 @@ class StyledString(FittableMixin):
             #self.glyphs = self.hb.glyphs(self.variations, self.features)
             adjusted = True
         return adjusted
-    
-    def reset(self):
-        self.glyphs = self.hb.glyphs(self.variations, self.features)
     
     def scalePenToStyle(self, glyph, in_pen):
         s = self.scale()
