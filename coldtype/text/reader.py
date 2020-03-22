@@ -46,180 +46,6 @@ except:
     _drawBot = None
 
 
-_FONT_CACHE = dict()
-
-
-def get_cached_font(font_path):
-    if font_path not in _FONT_CACHE:
-        with open(font_path, 'rb') as fontfile:
-            _FONT_CACHE[font_path] = fontfile.read()
-    return _FONT_CACHE[font_path]
-
-
-class HarfbuzzFrame():
-    def __init__(self, gid, info, position, frame, glyphName):
-        self.gid = gid #info.codepoint
-        self.info = info
-        self.position = position
-        self.frame = frame
-        self.glyphName = glyphName
-
-    def __repr__(self):
-        return f"HarfbuzzFrame:({self.glyphName}>>>{self.frame}(gid{self.gid})"
-
-
-class Harfbuzz():
-    def __init__(self,
-                 fontdata,
-                 text="",
-                 height=1000,
-                 lang=None,
-                 ttfont=None):
-        self.face = hb.Face(fontdata)
-        self.ttfont = ttfont
-        self.lang = lang
-        self.height = height
-        self.text = text
-    
-    def buffer(self, axes=dict(), features=dict()):
-        font = hb.Font(self.face)
-        font.scale = (self.face.upem, self.face.upem)
-        hb.ot_font_set_funcs(font) # necessary?
-        if len(axes.items()) > 0:
-            font.set_variations(axes)
-        
-        buf = hb.Buffer()
-        if self.lang:
-            buf.language = self.lang
-        buf.add_str(self.text)
-        buf.guess_segment_properties()
-        hb.shape(font, buf, features)
-        return buf
-    
-    def glyphs(self, axes=dict(), features=dict()):
-        buf = self.buffer(axes, features)
-        glyphs = []
-        for info in buf.glyph_infos:
-            gid = info.codepoint
-            cluster = info.cluster
-            gn = self.ttfont.getGlyphName(gid) if self.ttfont else None
-            code = gn.replace("uni", "")
-            try:
-                glyph_name = unicodedata.name(chr(int(code, 16)))
-            except:
-                glyph_name = code
-            glyphs.append([gid, glyph_name])
-        return glyphs
-    
-    def frames(self, axes=dict(), features=dict(), glyphs=[]):
-        buf = self.buffer(axes, features)
-        infos = buf.glyph_infos
-        positions = buf.glyph_positions
-        frames = []
-        x = 0
-        last_gn = None
-        for idx, (info, pos) in enumerate(zip(infos, positions)):
-            kern_shift = 0
-            gid = info.codepoint
-            #if gid != glyphs[idx][0]:
-            #    print(">>>>>>>>", self.text)
-            #    print(gid, glyphs[idx][0])
-            #    #raise Exception("HELLO WORLD")
-            cluster = info.cluster
-            x_advance = pos.x_advance
-            x_offset = pos.x_offset
-            y_offset = pos.y_offset
-            gn = glyphs[idx][1]
-            frames.append(HarfbuzzFrame(gid, info, pos, Rect(x+x_offset, y_offset, x_advance, self.height), gn)) # 100?
-            x += x_advance + kern_shift
-            last_gn = gn
-        return frames
-
-
-class FontShapeReader():
-    def __init__(self, style):
-        self.style = style
-
-    def setVariations(self, axes):
-        pass
-    
-    def drawOutlineToPen(self, glyph_id, pen):
-        pass
-
-
-class UFOShapeReader(FontShapeReader):
-    def drawOutlineToPen(self, glyph_id, pen):
-        #print("drawing", glyph_id)
-        self.style.glyphSet[glyph_id].draw(pen)
-
-
-class FreetypeReader(FontShapeReader):
-    def __init__(self, style):
-        super().__init__(style)
-        self.font = freetype.Face(style.fontFile)
-        self.font.set_char_size(1000) # configurable?
-        try:
-            self.axesOrder = [a.axisTag for a in style.ttfont['fvar'].axes]
-        except:
-            self.axesOrder = []
-    
-    def setVariations(self, axes=dict()):
-        if len(self.axesOrder) > 0:
-            coords = []
-            for name in self.axesOrder:
-                #coord = FT_Fixed(int(axes[name]) << 16)
-                coord = FT_Fixed(int(axes[name] * (2**16)))
-                coords.append(coord)
-            ft_coords = (FT_Fixed * len(coords))(*coords)
-            
-            freetype.FT_Set_Var_Design_Coordinates(self.font._FT_Face, len(ft_coords), ft_coords)
-    
-    def setGlyph(self, glyph_id):
-        self.glyph_id = glyph_id
-        flags = freetype.FT_LOAD_DEFAULT #| freetype.FT_LOAD_NO_HINTING | freetype.FT_LOAD_NO_BITMAP
-        flags = freetype.FT_LOAD_DEFAULT | freetype.FT_LOAD_NO_SCALE
-        if isinstance(glyph_id, int):
-            self.font.load_glyph(glyph_id, flags)
-        else:
-            self.font.load_char(glyph_id, flags)
-
-    def drawOutlineToPen(self, glyph_id, pen):
-        self.setGlyph(glyph_id)
-        outline = self.font.glyph.outline
-        rp = DATPen()
-        self.font.glyph.outline.decompose(rp, move_to=FreetypeReader.moveTo, line_to=FreetypeReader.lineTo, conic_to=FreetypeReader.conicTo, cubic_to=FreetypeReader.cubicTo)
-        if len(rp.value) > 0:
-            rp.closePath()
-        rp.replay(pen)
-        return
-    
-    def drawTTOutlineToPen(self, pen):
-        glyph_name = self.style.ttfont.getGlyphName(self.glyph_id)
-        g = self.style.ttfont.getGlyphSet()[glyph_name]
-        try:
-            g.draw(pen)
-        except TypeError:
-            print("could not draw TT outline")
-            
-    def moveTo(a, pen):
-        if len(pen.value) > 0:
-            pen.closePath()
-        pen.moveTo((a.x, a.y))
-
-    def lineTo(a, pen):
-        pen.lineTo((a.x, a.y))
-
-    def conicTo(a, b, pen):
-        if False:
-            pen.qCurveTo((a.x, a.y), (b.x, b.y))
-        else:
-            start = pen.value[-1][-1][-1]
-            pen.curveTo(*raise_quadratic(start, (a.x, a.y), (b.x, b.y)))
-            #pen.lineTo((b.x, b.y))
-
-    def cubicTo(a, b, c, pen):
-        pen.curveTo((a.x, a.y), (b.x, b.y), (c.x, c.y))
-
 
 class FittableMixin():
     def textContent(self):
@@ -349,10 +175,6 @@ class Style():
         self.reverse = kwargs.get("r", reverse)
         self.removeOverlap = kwargs.get("ro", removeOverlap)
         self.rotate = rotate
-
-        #self.goggle = FontGoggle(self.fontFile)
-        #glyph_run = self.goggle.font.getGlyphRun("S", features=dict(ss01=True), cocoa=False)
-        #print(list(glyph_run)[0].glyphDrawing.layers[0][0].value)
         
         try:
             os2 = self.font.font.ttFont["OS/2"]
@@ -531,7 +353,7 @@ class StyledString(FittableMixin):
         self.variations = self.style.variations.copy()
         
         self.style = style
-        self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations, cocoa=False)
+        self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations)
         x = 0
         for glyph in self.glyphs:
             glyph.frame = Rect(x+glyph.dx, glyph.dy, glyph.ax, self.style.capHeight)
@@ -540,22 +362,20 @@ class StyledString(FittableMixin):
     def trackFrames(self):
         t = self.tracking
         x_off = 0
-        for idx, f in enumerate(frames):
-            f.frame = f.frame.offset(x_off, 0)
+        for idx, g in enumerate(self.glyphs):
+            g.frame = g.frame.offset(x_off, 0)
             x_off += t
-            if self.style.space and f.glyphName.lower() == "space":
+            if self.style.space and g.name.lower() == "space":
                 x_off += self.style.space
-        return frames
     
-    def adjustFramesForPath(self, frames):
-        for idx, f in enumerate(frames):    
+    def adjustFramesForPath(self):
+        for idx, g in enumerate(self.glyphs):    
             if self.style.xShift:
                 try:
-                    f.frame.x += self.style.xShift[idx]
+                    g.frame.x += self.style.xShift[idx]
                 except:
-                    f.frame.x += self.style.xShift
+                    g.frame.x += self.style.xShift
                     pass
-        return frames
     
     def getGlyphFrames(self):
         if self.style.kern_pairs:
@@ -586,10 +406,10 @@ class StyledString(FittableMixin):
         if self.style.trackingMode == 0:
             self.trackFrames()
 
-        return self.adjustFramesForPath()
+        self.adjustFramesForPath()
     
     def scale(self):
-        return self.fontSize / self.style.upem
+        return self.fontSize / self.style.font.font.shaper.face.upem
     
     def width(self): # size?
         return self.getGlyphFrames()[-1].frame.point("SE").x
@@ -709,7 +529,7 @@ class StyledString(FittableMixin):
             print("No DrawBot available")
             return None
     
-    def scalePenToStyle(self, idx, in_pen, frame):
+    def scalePenToStyle(self, glyph, in_pen):
         s = self.scale()
         t = Transform()
         try:
@@ -728,7 +548,7 @@ class StyledString(FittableMixin):
                 except:
                     pass
         t = t.scale(s)
-        t = t.translate(frame.frame.x/self.scale(), frame.frame.y/self.scale())
+        t = t.translate(glyph.frame.x/self.scale(), glyph.frame.y/self.scale())
         #t = t.translate(0, bs)
         out_pen = DATPen()
         tp = TransformPen(out_pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
@@ -754,12 +574,12 @@ class StyledString(FittableMixin):
         return dp
     
     def drawToPen(self, pen, frames, index=None, useTTFont=False):
-        if self.style.ufo:
-            shape_reader = UFOShapeReader(self.style)
-        else:
-            shape_reader = FreetypeReader(self.style)
-        
-        shape_reader.setVariations(self.variations)
+        #if self.style.ufo:
+        #    shape_reader = UFOShapeReader(self.style)
+        #else:
+        #    shape_reader = FreetypeReader(self.style)
+        #
+        #shape_reader.setVariations(self.variations)
 
         if self.style.ttfont and "COLR" in self.style.ttfont:
             colr = self.style.ttfont["COLR"]
@@ -816,24 +636,31 @@ class StyledString(FittableMixin):
         return dp
 
     def pens(self, frame=True) -> DATPenSet:
-        self._frames = self.getGlyphFrames()
+        self.style.font.font.addGlyphDrawings(self.glyphs, cocoa=False)
+        self.getGlyphFrames()
         pens = DATPenSet()
-        for idx, f in enumerate(self._frames):
+        for idx, g in enumerate(self.glyphs):
             dp_atom = self._emptyPenWithAttrs()
-            dps = self.drawToPen(dp_atom, self._frames, index=idx)
-            if dps:
-                if dps.layered:
-                    pens.layered = True
-                dp_atom = dps
-            if frame:
-                f.frame.y = 0
-                #if f.frame.y < 0:
-                #    f.frame.y = 0
-                dp_atom.typographic = True
-                dp_atom.addFrame(f.frame)
-                dp_atom.glyphName = f.glyphName
-                if self.style.removeOverlap:
-                    dp_atom.removeOverlap()
+            rp = g.glyphDrawing.layers[0][0]
+            dp_atom.value = self.scalePenToStyle(g, g.glyphDrawing.layers[0][0]).value
+            dp_atom.typographic = True
+            dp_atom.glyphName = g.name
+            
+            if False:
+                dps = self.drawToPen(dp_atom, self._frames, index=idx)
+                if dps:
+                    if dps.layered:
+                        pens.layered = True
+                    dp_atom = dps
+                if frame:
+                    f.frame.y = 0
+                    #if f.frame.y < 0:
+                    #    f.frame.y = 0
+                    dp_atom.typographic = True
+                    dp_atom.addFrame(f.frame)
+                    dp_atom.glyphName = f.glyphName
+                    if self.style.removeOverlap:
+                        dp_atom.removeOverlap()
             pens.append(dp_atom)
                 
         if self.style.reverse:
