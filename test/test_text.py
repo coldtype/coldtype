@@ -198,7 +198,7 @@ def render(r, i):
         DATPenSet(res)
     ]
 
-tests = [varfit_simple_test]
+tests = [varfit_test]
 
 page = Rect(1920, 1080)
 renders = []
