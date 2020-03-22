@@ -7,6 +7,7 @@ import argparse
 import importlib
 from runpy import run_path
 
+import coldtype
 from coldtype.geometry import Rect
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.cairopen import CairoPen
@@ -34,6 +35,8 @@ preview.clear()
 
 
 def reload_file():
+    importlib.reload(coldtype.text.reader)
+    importlib.reload(coldtype)
     program = run_path(str(filepath))
     return program
 
@@ -72,7 +75,7 @@ def on_message(ws, message):
 
 def watch_changes():
     to_watch = set([
-        filepath.parent,
+        filepath.parent.parent,
     ])
     handler = Handler()
     print("... watching ...")

@@ -129,8 +129,8 @@ def explode_test(r):
 
 def varfit_simple_test(r):
     fw = 800
-    ss = StyledString("HELLO WORLD", Style(varfont, 300, wdth=1, wght=0.25, t=50, tl=-100, varyFontSize=0, r=1, ro=1)).fit(fw).pens().align(r).f(0)
-    return DATPen().f("random", 0.5).rect(r.take(fw, "centerx")), ss, ss.interleave(lambda p: p.s(1).sw(5))
+    ss = StyledString("HELLO WORLD", Style(varfont, 300, wdth=1, wght=0.25, t=50, tl=-100, r=1, ro=1)).fit(fw).pens().align(r).f(0).understroke(s=1)
+    return DATPen().f("random", 0.5).rect(r.take(fw, "centerx")), ss
 
 text = """ABRACADABRA
 SALT PEANUTS

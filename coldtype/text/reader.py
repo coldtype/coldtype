@@ -167,10 +167,10 @@ class Style():
         capHeight (ch) — A number in font-space; not specified, read from font; specified as 'x', capHeight is set to xHeight as read from font
         """
 
-        if isinstance(font, FontGoggle):
-            self.font:FontGoggle = font
-        else:
+        if isinstance(font, str):
             self.font:FontGoggle = FontGoggle(font)
+        else:
+            self.font:FontGoggle = font
 
         self.next = None
         self.layer = layer
@@ -325,24 +325,6 @@ class Style():
 def offset(x, y, ox, oy):
     return (x + ox, y + oy)
 
-def TransliterateCGPathToBezierPath(data, b):
-    bp = data["bp"]
-    o = data["offset"]
-    op = lambda i: offset(*b.points[i], *o)
-    
-    if b.type == Quartz.kCGPathElementMoveToPoint:
-        bp.moveTo(op(0))
-    elif b.type == Quartz.kCGPathElementAddLineToPoint:
-        bp.lineTo(op(0))
-    elif b.type == Quartz.kCGPathElementAddCurveToPoint:
-        bp.curveTo(op(0), op(1), op(2))
-    elif b.type == Quartz.kCGPathElementAddQuadCurveToPoint:
-        bp.qCurveTo(op(0), op(1))
-    elif b.type == Quartz.kCGPathElementCloseSubpath:
-        bp.closePath()
-    else:
-        print(b.type)
-
 
 class StyledString(FittableMixin):
     def __init__(self, text, style):
@@ -364,6 +346,7 @@ class StyledString(FittableMixin):
         for glyph in self.glyphs:
             glyph.frame = Rect(x+glyph.dx, glyph.dy, glyph.ax, self.style.capHeight)
             x += glyph.ax
+        self.getGlyphFrames()
     
     def trackFrames(self):
         t = self.tracking
@@ -419,6 +402,7 @@ class StyledString(FittableMixin):
     
     def width(self): # size?
         w = self.glyphs[-1].frame.point("SE").x # TODO need to scale?
+        #return w * self.scale()
         return w
         return self.getGlyphFrames()[-1].frame.point("SE").x
     
@@ -439,10 +423,13 @@ class StyledString(FittableMixin):
     def binaryFit(self, width, field, minv, maxv, tries):
         midv = (maxv-minv)*0.5+minv
         self.fitField(field, maxv)
+        self.resetGlyphRun()
         maxw = self.width()
         self.fitField(field, midv)
+        self.resetGlyphRun()
         midw = self.width()
         self.fitField(field, minv)
+        self.resetGlyphRun()
         minw = self.width()
         if abs(maxw - midw) < 0.5:
             #print(self.text, ">>>", tries)
@@ -562,7 +549,7 @@ class StyledString(FittableMixin):
 
     def pens(self, frame=True) -> DATPenSet:
         self.style.font.font.addGlyphDrawings(self.glyphs, cocoa=False)
-        self.getGlyphFrames()
+        
         pens = DATPenSet()
         for idx, g in enumerate(self.glyphs):
             dp_atom = self._emptyPenWithAttrs()
