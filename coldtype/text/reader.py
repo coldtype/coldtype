@@ -167,7 +167,10 @@ class Style():
         capHeight (ch) — A number in font-space; not specified, read from font; specified as 'x', capHeight is set to xHeight as read from font
         """
 
-        self.font:FontGoggle = font
+        if isinstance(font, FontGoggle):
+            self.font:FontGoggle = font
+        else:
+            self.font:FontGoggle = FontGoggle(font)
 
         self.next = None
         self.layer = layer
@@ -351,8 +354,11 @@ class StyledString(FittableMixin):
         self.tracking = self.style.tracking
         self.features = self.style.features.copy()
         self.variations = self.style.variations.copy()
-        
         self.style = style
+
+        self.resetGlyphRun()
+    
+    def resetGlyphRun(self):
         self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations)
         x = 0
         for glyph in self.glyphs:
@@ -412,6 +418,9 @@ class StyledString(FittableMixin):
         return self.fontSize / self.style.font.font.shaper.face.upem
     
     def width(self): # size?
+        w = self.glyphs[-1].frame.point("SE").x
+        print(w)
+        return w
         return self.getGlyphFrames()[-1].frame.point("SE").x
     
     def height(self):
@@ -443,7 +452,6 @@ class StyledString(FittableMixin):
             self.binaryFit(width, field, midv, maxv, tries+1)
         else:
             self.binaryFit(width, field, minv, midv, tries+1)
-        
         #return super().fit(width)
     
     def testWidth(self, width, field, minv, maxv):
@@ -510,24 +518,16 @@ class StyledString(FittableMixin):
         if not adjusted and self.style.next:
             self.setStyle(self.style.next)
             adjusted = True
-        if not adjusted and self.style.preventHwid == False and "hwid" not in self.features and not self.style.ufo:
+        if not adjusted and self.style.preventHwid == False and "hwid" not in self.features:
             self.features["hwid"] = True
             self.tracking = self.style.tracking # reset to widest
-            self.glyphs = self.hb.glyphs(self.variations, self.features)
+            self.resetGlyphRun()
+            #self.glyphs = self.hb.glyphs(self.variations, self.features)
             adjusted = True
         return adjusted
     
     def reset(self):
         self.glyphs = self.hb.glyphs(self.variations, self.features)
-    
-    def formattedString(self, fs=1000):
-        if _drawBot:
-            feas = dict(self.features)
-            del feas["kern"]
-            return _drawBot.FormattedString(self.text, font=self.style.fontFile, fontSize=fs, lineHeight=fs+2, fontVariations=self.variations, openTypeFeatures=feas)
-        else:
-            print("No DrawBot available")
-            return None
     
     def scalePenToStyle(self, glyph, in_pen):
         s = self.scale()
@@ -557,77 +557,6 @@ class StyledString(FittableMixin):
             out_pen.rotate(self.style.rotate)
         return out_pen
     
-    def drawFrameToPen(self, reader, idx, frame, gid, useTTFont=False):
-        dp = DATPen()
-        if self.style.db > 1 and self.ct_glyphs:
-            dp.record(self.ct_glyphs[idx])
-        elif useTTFont:
-            reader.drawTTOutlineToPen(gid, dp)
-        else:
-            reader.drawOutlineToPen(gid, dp)
-        # apply full-scale filtering before transform-down
-        if self.style.filter:
-            gn = self.style.ttfont.getGlyphName(frame.gid)
-            result = self.style.filter(idx, frame.frame, gn, dp)
-            if result:
-                dp = result
-        return dp
-    
-    def drawToPen(self, pen, frames, index=None, useTTFont=False):
-        #if self.style.ufo:
-        #    shape_reader = UFOShapeReader(self.style)
-        #else:
-        #    shape_reader = FreetypeReader(self.style)
-        #
-        #shape_reader.setVariations(self.variations)
-
-        if self.style.ttfont and "COLR" in self.style.ttfont:
-            colr = self.style.ttfont["COLR"]
-            cpal = self.style.ttfont["CPAL"]
-        else:
-            colr = None
-            cpal = None
-
-        for idx, frame in enumerate(frames):
-            if index is not None and idx != index:
-                continue
-            if colr and cpal:
-                gn = self.style.ttfont.getGlyphName(frame.gid)
-                layers = colr[gn]
-                dps = DATPenSet()
-                dps.layered = True
-                if layers:
-                    for layer in layers:
-                        gid = self.style.ttfont.getGlyphID(layer.name)
-                        #dp = DATPen()
-                        dp = self.drawFrameToPen(shape_reader, idx, frame, gid, useTTFont=useTTFont)
-                        dp = self.scalePenToStyle(idx, dp, frame)
-                        dp.attr(fill=cpal.palettes[self.style.palette][layer.colorID])
-                        if len(dp.value) > 0:
-                            dps.append(dp)
-                else:
-                    print("No layers found for ", gn)
-                dps.replay(pen)
-                return dps # TODO weird to return in a for-loop isn't it?
-            else:
-                if self.style.layerer:
-                    try:
-                        gn = self.style.ttfont.getGlyphName(frame.gid)
-                    except:
-                        gn = frame.gid
-                    pen.value = self.drawFrameToPen(shape_reader, idx, frame, frame.gid, useTTFont=useTTFont).value
-                    dps = DATPenSet()
-                    dps.layered = True
-                    dps.append(pen)
-                    self.style.layerer(self, gn, pen, dps)
-                    for p in dps.pens:
-                        p.value = self.scalePenToStyle(idx, p, frame).value
-                    return dps
-                else:
-                    dp = self.drawFrameToPen(shape_reader, idx, frame, frame.gid, useTTFont=useTTFont)
-                    dp = self.scalePenToStyle(idx, dp, frame)
-                    dp.replay(pen)
-    
     def _emptyPenWithAttrs(self):
         attrs = dict(fill=self.style.fill)
         if self.style.stroke:
@@ -642,25 +571,14 @@ class StyledString(FittableMixin):
         for idx, g in enumerate(self.glyphs):
             dp_atom = self._emptyPenWithAttrs()
             rp = g.glyphDrawing.layers[0][0]
+            # TODO unpack all the layers information for layered fonts
+            # dps.layered = True if that’s the case
             dp_atom.value = self.scalePenToStyle(g, g.glyphDrawing.layers[0][0]).value
             dp_atom.typographic = True
+            dp_atom.addFrame(g.frame)
             dp_atom.glyphName = g.name
-            
-            if False:
-                dps = self.drawToPen(dp_atom, self._frames, index=idx)
-                if dps:
-                    if dps.layered:
-                        pens.layered = True
-                    dp_atom = dps
-                if frame:
-                    f.frame.y = 0
-                    #if f.frame.y < 0:
-                    #    f.frame.y = 0
-                    dp_atom.typographic = True
-                    dp_atom.addFrame(f.frame)
-                    dp_atom.glyphName = f.glyphName
-                    if self.style.removeOverlap:
-                        dp_atom.removeOverlap()
+            if self.style.removeOverlap:
+                dp_atom.removeOverlap()
             pens.append(dp_atom)
                 
         if self.style.reverse:
@@ -672,10 +590,4 @@ class StyledString(FittableMixin):
         return pens
 
     def pen(self, frame=True) -> DATPen:
-        dp = self._emptyPenWithAttrs()
-        self._frames = self.getGlyphFrames()
-        self.drawToPen(dp, self._frames)
-        if frame:
-            dp.addFrame(Rect((0, 0, self.width(), self.style.capHeight*self.scale())))
-            dp.typographic = True
-        return dp
+        return self.pens(frame=frame).pen()

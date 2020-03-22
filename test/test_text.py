@@ -3,7 +3,7 @@ from coldtype.color import Gradient
 from random import randint
 from functools import partial
 
-varfont = "ç/MutatorSans.ttf"
+varfont = FontGoggle("ç/MutatorSans.ttf")
 
 def basic_test(r):
     return Slug("COLDTYPE", Style(varfont, 300, wdth=0, wght=1)).pens().f(1, 0, 0.5).align(r)
@@ -20,7 +20,7 @@ def multilang_test(r):
     r = r
     _s = ["(جاف + رطب (ما قبل", "+بوابة", "Left الملخبط Right", "9رقمي: سنوات ال0"]
     style = Style("ç/NotoSansArabic-Black.ttf", 200, lang="ar", fill=Gradient.Random(r))
-    dps = Slug(_s[-1], style, obv).fit(r.w - 100).pens().align(r)
+    dps = Slug(_s[0], style, obv).fit(r.w - 100).pens().align(r)
     return [dps.frameSet().attr(fill=None, stroke=0), dps]
 
 def cjk_multilang_test(r):
@@ -198,7 +198,7 @@ def render(r, i):
         DATPenSet(res)
     ]
 
-tests = all_tests
+tests = all_tests[3:4]
 
 page = Rect(1920, 1080)
 renders = []
