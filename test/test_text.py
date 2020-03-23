@@ -163,6 +163,9 @@ def gx_test(r):
     wdth = 1
     return [StyledString("Hello", Style("≈/Vinila-VF-HVAR-table.ttf", 500, wdth=wdth)).pen().align(r), StyledString("Hello", Style("≈/VinilaVariable.ttf", 500, wdth=wdth)).pen().align(r).translate(10, 10).f("random", 0.5)]
 
+def ufo_test(r):
+    return StyledString("Hello", Style("≈/Hershey-TriplexGothicGerman.ufo", 500)).pens().align(page).f(None).s(0)
+
 all_tests = [
     basic_test,
     combine_slugs_test,
@@ -198,7 +201,7 @@ def render(r, i):
         DATPenSet(res)
     ]
 
-tests = [varfit_test]
+tests = [ufo_test]
 
 page = Rect(1920, 1080)
 renders = []
