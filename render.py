@@ -62,7 +62,7 @@ async def reload_and_render():
             await v.load()
     try:
         for render in renders:
-            result = render()
+            result = await render()
             preview.send(SVGPen.Composite(result, page, viewBox=True), bg=1, max_width=800)
     except:
         show_error()

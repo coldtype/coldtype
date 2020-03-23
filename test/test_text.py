@@ -4,6 +4,14 @@ from random import randint
 from functools import partial
 
 varfont = FontGoggle("ç/MutatorSans.ttf")
+coldtype_obvs_ufo = FontGoggle("ç/ColdtypeObviously_CompressedBlackItalic.ufo")
+twemoji = FontGoggle("ç/TwemojiMozilla.ttf")
+
+try:
+    vinila_hvar = FontGoggle("≈/Vinila-VF-HVAR-table.ttf")
+    vinila_no_hvar = FontGoggle("≈/VinilaVariable.ttf")
+except:
+    pass
 
 def basic_test(r):
     return Slug("COLDTYPE", Style(varfont, 300, wdth=0, wght=1)).pens().f(1, 0, 0.5).align(r)
@@ -30,7 +38,7 @@ def cjk_multilang_test(r):
     return [dps.frameSet().attr(fill=None, stroke=0), dps]
 
 def emoji_test(r):
-    ps = Slug("🍕💽 🖥", Style("ç/TwemojiMozilla.ttf", 350, t=20, ch=500, bs=11)).pens().align(r, tv=1).flatten()
+    ps = Slug("🍕💽 🖥", Style(twemoji, 350, t=20, ch=500, bs=11)).pens().align(r, tv=1).flatten()
     return [ps, ps.frameSet()]
 
 def multiline_test(r):
@@ -159,12 +167,12 @@ def align_test(r):
     g[2].xAlignToFrame("maxx")
     return DATPen().rect(r).f(0.5, 0, 1, 0.3), DATPen().rect(g[1].getFrame(th=0)).f("random", 0.63), g
 
-def gx_test(r):
+def gx_hvar_test(r):
     wdth = 1
-    return [StyledString("Hello", Style("≈/Vinila-VF-HVAR-table.ttf", 500, wdth=wdth)).pen().align(r), StyledString("Hello", Style("≈/VinilaVariable.ttf", 500, wdth=wdth)).pen().align(r).translate(10, 10).f("random", 0.5)]
+    return [StyledString("Hello", Style(vinila_hvar, 500, wdth=wdth)).pen().align(r), StyledString("Hello", Style(vinila_no_hvar, 500, wdth=wdth)).pen().align(r).translate(10, 10).f("random", 0.5)]
 
 def ufo_test(r):
-    return StyledString("Hello", Style("≈/Hershey-TriplexGothicGerman.ufo", 500)).pens().align(page).f(None).s(0)
+    return StyledString("COLDTYPE", Style(coldtype_obvs_ufo, 900, tu=0, ro=1)).pens().align(page).f("random", 0.5).s("random")
 
 all_tests = [
     basic_test,
@@ -189,7 +197,8 @@ all_tests = [
     varfit_simple_test,
     varfit_test,
     align_test,
-    gx_test
+    gx_hvar_test,
+    ufo_test,
 ]
 
 def render(r, i):
@@ -201,7 +210,7 @@ def render(r, i):
         DATPenSet(res)
     ]
 
-tests = [ufo_test]
+tests = [emoji_test]
 
 page = Rect(1920, 1080)
 renders = []
