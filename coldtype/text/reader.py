@@ -158,6 +158,7 @@ class Style():
             reverse=False,
             removeOverlap=False,
             rotate=0,
+            sv=False,
             **kwargs):
         """
         kern (k) — a dict of glyphName->[left,right] values in font-space
@@ -178,6 +179,7 @@ class Style():
         self.reverse = kwargs.get("r", reverse)
         self.removeOverlap = kwargs.get("ro", removeOverlap)
         self.rotate = rotate
+        self.sv = sv # scale-variations
         
         try:
             os2 = self.font.font.ttFont["OS/2"]
@@ -289,11 +291,7 @@ class Style():
             self.variationLimits[k] = v
     
     def normalizeVariations(self, variations):
-        if variations.get("scale") != None:
-            scale = variations["scale"]
-            del variations["scale"]
-        else:
-            scale = True
+        scale = self.sv
         for k, v in variations.items():
             try:
                 axis = self.axes[k]
