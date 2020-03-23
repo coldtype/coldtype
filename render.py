@@ -42,14 +42,16 @@ def reload_file():
     program = run_path(str(filepath))
     return program
 
+def show_error():
+    print(">>> CAUGHT COLDTYPE")
+    print(traceback.format_exc())
+    preview.send(f"<pre>{traceback.format_exc()}</pre>", None)
 
 async def reload_and_render():
     try:
         program = reload_file()
     except Exception as e:
-        print(">>> CAUGHT COLDTYPE")
-        print(traceback.format_exc())
-        preview.send(f"<pre>{traceback.format_exc()}</pre>", None)
+        show_error()
         return None
     
     page = program["page"]
@@ -58,9 +60,12 @@ async def reload_and_render():
     for k, v in program.items():
         if isinstance(v, coldtype.text.reader.FontGoggle):
             await v.load()
-    for render in renders:
-        result = render()
-        preview.send(SVGPen.Composite(result, page, viewBox=True), bg=1, max_width=800)
+    try:
+        for render in renders:
+            result = render()
+            preview.send(SVGPen.Composite(result, page, viewBox=True), bg=1, max_width=800)
+    except:
+        show_error()
     return program
 
 

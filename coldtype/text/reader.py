@@ -30,7 +30,8 @@ from fontgoggles.font import getOpener
 from fontgoggles.font.baseFont import BaseFont
 
 import asyncio
-import janus
+import traceback
+
 
 try:
     import Levenshtein
@@ -165,7 +166,7 @@ class Style():
             reverse=False,
             removeOverlap=False,
             rotate=0,
-            sv=False,
+            sv=True,
             **kwargs):
         """
         kern (k) — a dict of glyphName->[left,right] values in font-space
@@ -346,6 +347,7 @@ class StyledString(FittableMixin):
         self.resetGlyphRun()
     
     def resetGlyphRun(self):
+        #print(traceback.print_stack(None, 5))
         self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations)
         x = 0
         for glyph in self.glyphs:
