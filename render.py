@@ -7,19 +7,21 @@ import argparse
 import importlib
 from runpy import run_path
 
+import asyncio
+import signal
+import websockets
+from watchgod import awatch, Change
+
 import coldtype
+from coldtype import FontGoggle
 from coldtype.geometry import Rect
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.cairopen import CairoPen
 from coldtype.pens.drawbotpen import DrawBotPen
-from coldtype.viewer import WebSocket, PersistentPreview, WEBSOCKET_ADDR
+from coldtype.viewer import PersistentPreview, WEBSOCKET_ADDR
 
-from watchdog.events import FileSystemEventHandler
-from watchdog.observers import Observer
-import websocket
 import traceback
-
-from subprocess import Popen, PIPE, call
+from subprocess import call
 
 
 parser = argparse.ArgumentParser(prog="coldtype-render", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -35,13 +37,13 @@ preview.clear()
 
 
 def reload_file():
-    importlib.reload(coldtype.text.reader)
-    importlib.reload(coldtype)
+    #importlib.reload(coldtype.text.reader)
+    #importlib.reload(coldtype)
     program = run_path(str(filepath))
     return program
 
 
-def reload_and_render():
+async def reload_and_render():
     try:
         program = reload_file()
     except Exception as e:
@@ -53,45 +55,13 @@ def reload_and_render():
     page = program["page"]
     renders = program["renders"]
     preview.clear()
+    for k, v in program.items():
+        if isinstance(v, coldtype.text.reader.FontGoggle):
+            await v.load()
     for render in renders:
         result = render()
         preview.send(SVGPen.Composite(result, page, viewBox=True), bg=1, max_width=800)
     return program
-
-
-class Handler(FileSystemEventHandler):
-    def on_modified(self, event):
-        p = event.src_path
-        if p.endswith(".py"):
-            print("save>>>", os.path.basename(p))
-            reload_and_render()
-        else:
-            pass
-
-
-def on_message(ws, message):
-    pass
-
-
-def watch_changes():
-    to_watch = set([
-        filepath.parent.parent,
-    ])
-    handler = Handler()
-    print("... watching ...")
-    observers = []
-    for w in to_watch:
-        o = Observer()
-        o.schedule(handler, path=str(w), recursive=True)
-        o.start()
-        observers.append(o)
-    #websocket.enableTrace(True) # necessary?
-    # https://github.com/websocket-client/websocket-client#examples
-    ws = websocket.WebSocketApp(WEBSOCKET_ADDR, on_message=on_message)
-    ws.run_forever()
-    for o in observers:
-        o.stop()
-        o.join()
 
 
 def render_iconset():
@@ -122,11 +92,42 @@ def render_iconset():
     
     call(["iconutil", "-c", "icns", str(iconset)])
 
+async def consumer(message):
+    try:
+        if json.loads(message).get("action") == "render_storyboard":
+            await reload_and_render()
+    except:
+        pass
+
+async def listen_to_ws():
+    async with websockets.connect(WEBSOCKET_ADDR) as websocket:
+        async for message in websocket:
+            await consumer(message)
+
+async def watch_file_changes():
+   async for changes in awatch(filepath.parent):
+       for change, path in changes:
+           if change == Change.modified:
+               print(change, path)
+               await reload_and_render()
+
+def on_exit(frame, signal):
+    print("<EXIT>")
+    preview.close()
+    asyncio.get_event_loop().stop()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, on_exit)
+
+async def main():
+    await asyncio.gather(
+        listen_to_ws(),
+        watch_file_changes(),
+    )
+
 if args.icns:
     render_iconset()
 else:
-    reload_and_render()
+    asyncio.get_event_loop().run_until_complete(reload_and_render())
     if args.watch:
-        watch_changes()
-
-preview.close()
+        asyncio.run(main())

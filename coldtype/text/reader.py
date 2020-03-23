@@ -115,23 +115,15 @@ def normalize_font_path(font):
 class FontGoggle():
     # TODO support glyphs?
     def __init__(self, path):
-        print(path)
         #ufo = glyphsLib.load_to_ufos(self.fontFile)[0]
         self.path = Path(normalize_font_path(path))
         numFonts, opener, getSortInfo = getOpener(self.path)
         self.font:BaseFont = opener(self.path, 0)
-
-        if hasattr(self.font, "_syncLoad"):
-            self.font._syncLoad()
-        else:
-            async def async_coro(async_q):
-                await self.font.load(None)
-                #async_q.task_done()
-            loop = asyncio.get_event_loop()
-            queue = janus.Queue(loop=loop)
-            loop.run_until_complete(async_coro(queue.async_q))
-
         self.font.cocoa = False
+    
+    async def load(self):
+        await self.font.load(None)
+        print(">>> loaded", self.path.name)
 
 class Style():
     def RegisterShorthandPrefix(prefix, expansion):
