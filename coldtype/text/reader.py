@@ -189,14 +189,12 @@ class Style():
         self.rotate = rotate
         self.sv = sv # scale-variations
         
-        try:
-            os2 = self.font.font.ttFont["OS/2"]
-            self.capHeight = os2.sCapHeight
-            #self.xHeight = os2.sxHeight
-            if capHeight == "x":
-                self.capHeight = self.xHeight
-        except:
-            self.capHeight = 1000 # alternative?
+        if "OS/2" in self.font.font.ttFont:
+            self.capHeight = self.font.font.ttFont["OS/2"].sCapHeight
+        elif hasattr(self.font.font, "info"):
+            self.capHeight = self.font.font.info.capHeight
+        elif hasattr(self.font.font, "defaultInfo"):
+            self.capHeight = self.font.font.defaultInfo.capHeight
 
         if capHeight: # override whatever the font says
             if capHeight != "x":
