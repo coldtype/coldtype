@@ -11,8 +11,8 @@ def mod_o(idx, dp):
         return o_outer.record(o_counter.translate(20, 0))
 
 def render_icon(size):
-    fill = normalize_color((0.3, 0.1, 0.5))
-    grade = Gradient.Horizontal(page, (0.75, 0.1, 0.3), fill)
+    fill = normalize_color((0.3, 0.1, 0.85))
+    grade = Gradient.Horizontal(page, (0.95, 0.1, 0.3), fill)
     outline = 15
     oval = DATPen().f(grade).oval(page.inset(15))
     if size <= 128:

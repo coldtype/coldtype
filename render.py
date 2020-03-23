@@ -69,9 +69,9 @@ async def reload_and_render():
     return program
 
 
-def render_iconset():
+async def render_iconset():
     # inspired by https://retifrav.github.io/blog/2018/10/09/macos-convert-png-to-icns/
-    program = reload_and_render()
+    program = await reload_and_render()
     page = program["page"]
     render_fn = program["render_icon"]
     
@@ -131,7 +131,7 @@ async def main():
     )
 
 if args.icns:
-    render_iconset()
+    asyncio.get_event_loop().run_until_complete(render_iconset())
 else:
     asyncio.get_event_loop().run_until_complete(reload_and_render())
     if args.watch:
