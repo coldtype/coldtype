@@ -345,8 +345,8 @@ class StyledString(FittableMixin):
         self.resetGlyphRun()
     
     def resetGlyphRun(self):
-        #print(traceback.print_stack(None, 5))
-        self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations)
+        self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, 
+        varLocation=self.variations)
         x = 0
         for glyph in self.glyphs:
             glyph.frame = Rect(x+glyph.dx, glyph.dy, glyph.ax, self.style.capHeight)
@@ -553,22 +553,29 @@ class StyledString(FittableMixin):
         return dp
 
     def pens(self, frame=True) -> DATPenSet:
-        self.style.font.font.addGlyphDrawings(self.glyphs)
+        self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
         
         pens = DATPenSet()
         for idx, g in enumerate(self.glyphs):
             dp_atom = self._emptyPenWithAttrs()
-            rp = g.glyphDrawing.layers[0][0]
-            # TODO unpack all the layers information for layered fonts
-            # dps.layered = True if that’s the case
-            dp_atom.value = self.scalePenToStyle(g, g.glyphDrawing.layers[0][0]).value
-            dp_atom.typographic = True
-            dp_atom.addFrame(g.frame)
-            dp_atom.glyphName = g.name
-            if self.style.removeOverlap:
-                dp_atom.removeOverlap()
+            if len(g.glyphDrawing.layers) == 1:
+                dp_atom.value = self.scalePenToStyle(g, g.glyphDrawing.layers[0][0]).value
+                dp_atom.typographic = True
+                dp_atom.addFrame(g.frame)
+                dp_atom.glyphName = g.name
+                if self.style.removeOverlap:
+                    dp_atom.removeOverlap()
+            else:
+                dp_atom = DATPenSet()
+                dp_atom.layered = True
+                for layer in g.glyphDrawing.layers:
+                    dp_layer = self._emptyPenWithAttrs()
+                    #dp_layer.value = layer[0].value
+                    dp_layer.value = self.scalePenToStyle(g, layer[0]).value
+                    dp_layer.f(self.style.font.font.colorPalettes[0][layer[1]])
+                    dp_atom += dp_layer
             pens.append(dp_atom)
-                
+
         if self.style.reverse:
             pens.reversePens()
         

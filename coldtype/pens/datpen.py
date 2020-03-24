@@ -462,9 +462,14 @@ class DATPen(RecordingPen, DATPenLikeObject):
         """Round the values of this pen to integer values."""
         rounded = []
         for t, pts in self.value:
-            rounded.append(
-                (t,
-                [(round(x, rounding), round(y, rounding)) for x, y in pts]))
+            _rounded = []
+            for p in pts:
+                if p:
+                    x, y = p
+                    _rounded.append((round(x, rounding), round(y, rounding)))
+                else:
+                    _rounded.append(p)
+            rounded.append((t, _rounded))
         self.value = rounded
         return self
 

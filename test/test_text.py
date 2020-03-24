@@ -5,13 +5,14 @@ from functools import partial
 
 varfont = FontGoggle("ç/MutatorSans.ttf")
 coldtype_obvs_ufo = FontGoggle("ç/ColdtypeObviously_CompressedBlackItalic.ufo")
-twemoji = FontGoggle("ç/TwemojiMozilla.ttf")
 
 try:
     vinila_hvar = FontGoggle("≈/Vinila-VF-HVAR-table.ttf")
     vinila_no_hvar = FontGoggle("≈/VinilaVariable.ttf")
 except:
     pass
+
+page = Rect(1920, 1080)
 
 def basic_test(r):
     return Slug("COLDTYPE", Style(varfont, 300, wdth=0, wght=1)).pens().f(1, 0, 0.5).align(r)
@@ -37,9 +38,15 @@ def cjk_multilang_test(r):
     dps = Slug("BPM同步", style, obv).fit(r.w-100).pens().align(r)
     return [dps.frameSet().attr(fill=None, stroke=0), dps]
 
-def emoji_test(r):
-    ps = Slug("🍕💽 🖥", Style(twemoji, 350, t=20, ch=500, bs=11)).pens().align(r, tv=1).flatten()
-    return [ps, ps.frameSet()]
+async def emoji_test():
+    twemoji = FontGoggle("ç/TwemojiMozilla.ttf")
+    await twemoji.load()
+    ps = StyledString("🍕💽🖥", Style(twemoji, 350, t=20, ch=500, bs=11)).pens().align(page, tv=1)#.flatten()
+    #return [ps, ps.frameSet()]
+    #def print_pval(idx, p):
+    #    print(idx, len(p.value))
+    #print(ps.pmap(print_pval))
+    return ps, ps.frameSet()
 
 def multiline_test(r):
     style = Style(varfont, 300, wdth=1, wght=1, fill=0)
@@ -210,9 +217,12 @@ def render(r, i):
         DATPenSet(res)
     ]
 
-tests = [emoji_test]
+renders = [
+    emoji_test
+]
 
-page = Rect(1920, 1080)
-renders = []
-for idx, _ in enumerate(tests):
-    renders.append(partial(render, page, idx))
+#tests = [emoji_test]
+#
+#renders = []
+#for idx, _ in enumerate(tests):
+#    renders.append(partial(render, page, idx))

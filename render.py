@@ -57,9 +57,9 @@ async def reload_and_render():
     page = program["page"]
     renders = program["renders"]
     preview.clear()
-    for k, v in program.items():
-        if isinstance(v, coldtype.text.reader.FontGoggle):
-            await v.load()
+    #for k, v in program.items():
+    #    if isinstance(v, coldtype.text.reader.FontGoggle):
+    #        await v.load()
     try:
         for render in renders:
             result = await render()
