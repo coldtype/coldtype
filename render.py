@@ -13,7 +13,7 @@ import websockets
 from watchgod import awatch, Change
 
 import coldtype
-from coldtype import FontGoggle
+from coldtype import Font
 from coldtype.geometry import Rect
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.cairopen import CairoPen
@@ -58,7 +58,7 @@ async def reload_and_render():
     renders = program["renders"]
     preview.clear()
     #for k, v in program.items():
-    #    if isinstance(v, coldtype.text.reader.FontGoggle):
+    #    if isinstance(v, coldtype.text.reader.Font):
     #        await v.load()
     try:
         for render in renders:

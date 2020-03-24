@@ -3,12 +3,12 @@ from coldtype.color import Gradient
 from random import randint
 from functools import partial
 
-varfont = FontGoggle("ç/MutatorSans.ttf")
-coldtype_obvs_ufo = FontGoggle("ç/ColdtypeObviously_CompressedBlackItalic.ufo")
+varfont = Font("ç/MutatorSans.ttf")
+coldtype_obvs_ufo = Font("ç/ColdtypeObviously_CompressedBlackItalic.ufo")
 
 try:
-    vinila_hvar = FontGoggle("≈/Vinila-VF-HVAR-table.ttf")
-    vinila_no_hvar = FontGoggle("≈/VinilaVariable.ttf")
+    vinila_hvar = Font("≈/Vinila-VF-HVAR-table.ttf")
+    vinila_no_hvar = Font("≈/VinilaVariable.ttf")
 except:
     pass
 
@@ -39,15 +39,19 @@ def cjk_multilang_test(r):
     return [dps.frameSet().attr(fill=None, stroke=0), dps]
 
 async def emoji_test():
-    twemoji = FontGoggle("ç/TwemojiMozilla.ttf")
+    twemoji = Font("ç/TwemojiMozilla.ttf")
     await twemoji.load()
     ps = StyledString("🍕💽🖥", Style(twemoji, 350, t=20, ch=500, bs=11)).pens().align(page, tv=1)
+    print(ps[0].frame)
     return ps, ps.frameSet()
+    #print(fs[0].bounds())
+    #return ps, ps.frameSet()
 
 async def color_font_test():
-    bungee = FontGoggle("≈/PappardelleParty-VF.ttf")
+    bungee = Font("≈/PappardelleParty-VF.ttf")
     await bungee.load()
     ps = StyledString("COLDTYPE!", Style(bungee, 550, palette=5)).pens().align(page)
+    print(ps[0].frame)
     return ps, ps.frameSet()
 
 def multiline_test(r):

@@ -38,9 +38,6 @@ try:
 except ImportError:
     Levenshtein = None
 
-from defcon import Font
-import glyphsLib
-
 try:
     import drawBot as _drawBot
     import CoreText
@@ -113,7 +110,7 @@ def normalize_font_path(font):
         raise Exception("FONT LITERAL NOT FOUND")
 
 
-class FontGoggle():
+class Font():
     # TODO support glyphs?
     def __init__(self, path):
         #ufo = glyphsLib.load_to_ufos(self.fontFile)[0]
@@ -177,9 +174,9 @@ class Style():
         """
 
         if isinstance(font, str):
-            self.font:FontGoggle = FontGoggle(font)
+            self.font:Font = Font(font)
         else:
-            self.font:FontGoggle = font
+            self.font:Font = font
 
         self.next = None
         self.layer = layer
@@ -190,7 +187,10 @@ class Style():
         self.sv = sv # scale-variations
         
         if "OS/2" in self.font.font.ttFont:
+            os2 = self.font.font.ttFont["OS/2"]
             self.capHeight = self.font.font.ttFont["OS/2"].sCapHeight
+            if self.capHeight == 0:
+                self.capHeight = os2.sTypoAscender
         elif hasattr(self.font.font, "info"):
             self.capHeight = self.font.font.info.capHeight
         elif hasattr(self.font.font, "defaultInfo"):

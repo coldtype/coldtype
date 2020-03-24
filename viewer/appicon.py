@@ -2,7 +2,7 @@ from coldtype import *
 from coldtype.color import Gradient, normalize_color
 from functools import partial
 
-co = FontGoggle("ç/ColdtypeObviously.designspace")
+co = Font("ç/ColdtypeObviously.designspace")
 
 def mod_o(idx, dp):
     if dp.glyphName == "O":

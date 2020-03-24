@@ -1242,6 +1242,8 @@ class DATPenSet(DATPenLikeObject):
             return dps
     
     def frameSet(self, th=False, tv=False):
+        if self.frame:
+            return super().frameSet(th=th, tv=tv)
         dps = DATPenSet()
         for p in self.pens:
             if p.frame:
