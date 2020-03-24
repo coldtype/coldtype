@@ -6,6 +6,10 @@ from subprocess import call
 
 
 class DefaultRenderer(Renderer):
+    async def on_start(self):
+        if self.args.icns:
+            await self.render_iconset()
+
     async def render_iconset(self):
         # inspired by https://retifrav.github.io/blog/2018/10/09/macos-convert-png-to-icns/
         page = self.program["page"]
@@ -33,13 +37,7 @@ class DefaultRenderer(Renderer):
         
         call(["iconutil", "-c", "icns", str(iconset)])
 
-    async def on_start(self):
-        if self.args.icns:
-            await self.render_iconset()
-
 
 parser = Renderer.Argparser()
 parser.add_argument("-i", "--icns", action="store_true", default=False)
-
-r = DefaultRenderer(parser)
-r.main()
+DefaultRenderer(parser).main()
