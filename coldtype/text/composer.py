@@ -2,7 +2,7 @@ from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.geometry import Rect, Point
 
 from coldtype.text.shaper import segment
-from coldtype.text.reader import Style, StyledString, FittableMixin
+from coldtype.text.reader import Style, StyledString, FittableMixin, Font
 
 class Furniture():
     def __init__(self, width, height):

@@ -188,9 +188,9 @@ class Style():
         
         if "OS/2" in self.font.font.ttFont:
             os2 = self.font.font.ttFont["OS/2"]
-            self.capHeight = self.font.font.ttFont["OS/2"].sCapHeight
+            self.capHeight = os2.sCapHeight if hasattr(os2, "sCapHeight") else 0
             if self.capHeight == 0:
-                self.capHeight = os2.sTypoAscender
+                self.capHeight = os2.sTypoAscender if hasattr(os2, "sTypoAscender") else 750
         elif hasattr(self.font.font, "info"):
             self.capHeight = self.font.font.info.capHeight
         elif hasattr(self.font.font, "defaultInfo"):

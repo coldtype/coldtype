@@ -44,7 +44,7 @@ class Renderer():
         print(traceback.format_exc())
         self.preview.send(f"<pre>{traceback.format_exc()}</pre>", None)
 
-    async def reload(self):
+    async def reload(self, trigger):
         try:
             self.program = run_path(str(self.filepath))
             for k, v in self.program.items():
@@ -54,32 +54,36 @@ class Renderer():
             self.program = None
             self.show_error()
 
-    async def render(self):
-        if not self.program:
-            self.preview.send("<pre>No program loaded!</pre>")
-        else:
-            page = self.program["page"]
-            renders = self.program["renders"]
-            self.preview.clear()
-            try:
-                for render in renders:
-                    if inspect.iscoroutinefunction(render):
-                        result = await render()
-                    else:
-                        result = render()
-                    self.preview.send(SVGPen.Composite(result, page, viewBox=True), bg=1, max_width=800)
-            except:
-                self.show_error()
+    async def render(self, trigger):
+        page = self.program["page"]
+        renders = self.program["renders"]
+        try:
+            for render in renders:
+                if inspect.iscoroutinefunction(render):
+                    result = await render()
+                else:
+                    result = render()
+                self.preview.send(SVGPen.Composite(result, page, viewBox=True), bg=1, max_width=800)
+        except:
+            self.show_error()
     
-    async def reload_and_render(self):
-        await self.reload()
-        await self.render()
+    async def reload_and_render(self, trigger):
+        self.preview.clear()
+        try:
+            await self.reload(trigger)
+            if self.program:
+                await self.render(trigger)
+            else:
+                self.preview.send("<pre>No program loaded!</pre>")
+        except:
+            self.show_error()
 
     def main(self):
         asyncio.run(self.start())
 
     async def start(self):
-        await self.reload_and_render()
+        await self.before_start()
+        await self.reload_and_render("initial")
         await self.on_start()
         if self.args.watch:
             await asyncio.gather(
@@ -89,6 +93,9 @@ class Renderer():
         else:
             self.on_exit(None, None)
     
+    async def before_start(self):
+        pass
+
     async def on_start(self):
         pass
     
@@ -98,7 +105,7 @@ class Renderer():
     
     async def on_action(self, action, message):
         if action == "render_storyboard":
-            await self.reload_and_render()
+            await self.reload_and_render(action)
     
     async def process_ws_message(self, message):
         jdata = json.loads(message)
@@ -114,8 +121,7 @@ class Renderer():
             for change, path in changes:
                 if change == Change.modified:
                     print(change, path)
-                    await self.reload()
-                    await self.render()
+                    await self.reload_and_render("resave")
 
     def on_exit(self, frame, signal):
         print("<EXIT RENDERER>")
