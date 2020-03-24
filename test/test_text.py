@@ -41,11 +41,13 @@ def cjk_multilang_test(r):
 async def emoji_test():
     twemoji = FontGoggle("ç/TwemojiMozilla.ttf")
     await twemoji.load()
-    ps = StyledString("🍕💽🖥", Style(twemoji, 350, t=20, ch=500, bs=11)).pens().align(page, tv=1)#.flatten()
-    #return [ps, ps.frameSet()]
-    #def print_pval(idx, p):
-    #    print(idx, len(p.value))
-    #print(ps.pmap(print_pval))
+    ps = StyledString("🍕💽🖥", Style(twemoji, 350, t=20, ch=500, bs=11)).pens().align(page, tv=1)
+    return ps, ps.frameSet()
+
+async def color_font_test():
+    bungee = FontGoggle("≈/PappardelleParty-VF.ttf")
+    await bungee.load()
+    ps = StyledString("COLDTYPE!", Style(bungee, 550, palette=5)).pens().align(page)
     return ps, ps.frameSet()
 
 def multiline_test(r):
@@ -218,7 +220,7 @@ def render(r, i):
     ]
 
 renders = [
-    emoji_test
+    color_font_test
 ]
 
 #tests = [emoji_test]

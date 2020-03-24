@@ -233,7 +233,7 @@ class Style():
         for k, v in kwargs.items():
             if k.startswith("ss") and len(k) == 4:
                 found_features[k] = v
-            if k in ["dlig", "swsh", "onum", "tnum", "palt"]:
+            if k in ["dlig", "swsh", "onum", "tnum", "palt", "salt"]:
                 found_features[k] = v
             if k in ["slig"]:
                 if k == 0:
@@ -572,8 +572,10 @@ class StyledString(FittableMixin):
                     dp_layer = self._emptyPenWithAttrs()
                     #dp_layer.value = layer[0].value
                     dp_layer.value = self.scalePenToStyle(g, layer[0]).value
-                    dp_layer.f(self.style.font.font.colorPalettes[0][layer[1]])
+                    dp_layer.f(self.style.font.font.colorPalettes[self.style.palette][layer[1]])
                     dp_atom += dp_layer
+                dp_atom.addFrame(g.frame, typographic=True)
+                dp_atom.glyphName = g.name
             pens.append(dp_atom)
 
         if self.style.reverse:
