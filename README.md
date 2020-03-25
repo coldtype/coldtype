@@ -14,25 +14,21 @@ __⚠️ Our (Goodhertz’) intention is to ultimately make this library a prope
 
 __A cross-platform library to help you precisely & programmatically do high-quality display typography.__
 
-Yes, there are lots of ways to set type with code. Most ways — HTML/CSS/JS, Processing — are great for 90% of what most people want to do with Latin-based writing systems. Then the road runs out and you can’t do anything else.
+Yes, there are lots of ways to set type with code. Most ways — HTML/CSS/JS, Processing, etc. — are great for 90% of what most people want to do with Latin-based writing systems. Then the road runs out and you can’t do anything else.
 
 Coldtype is a poorly-built but extremely powerful offroad vehicle that lets you keep driving where there are no roads. Like many powerful vehicles, it is not user-friendly. It has no doors (please climb in through the window), and the steering wheel is not very intuitive, also it’s a stick-shift, and you should probably be a mechanic (aka programmer) if you’re going to drive it alone out into the desert. (I apologize for how macho this metaphor is getting — I can’t really think of a better one.)
 
 ### What about DrawBot?
 
-If you’ve heard of [DrawBot](http://www.drawbot.com/) — another offroad vehicle that lets you drive where you want — you may be wondering how Coldtype is different. The answer is that Coldtype provides a very different programming idiom, one based around creating and modifying structured data that can be rendered. DrawBot, like most “creative coding” platforms, is based around rendering directly with drawing fuctions.[^1]
+If you’ve heard of [DrawBot](http://www.drawbot.com/) — another offroad vehicle that lets you drive where you want — you may be wondering how Coldtype is different. The answer is that Coldtype provides a very different programming idiom, one based around creating and modifying structured data that can be rendered. DrawBot, like most “creative coding” platforms, is based around rendering partial results directly with drawing fuctions, rather than building up structured data to be rendered in a single pass. (I should point out that I love DrawBot very deeply and that Coldtype would not exist without DrawBot, mostly because using DrawBot was my first time driving in the typographical offroad. That said, Coldtype mostly exists as a response to things I found awkward about programming animations and interfaces with DrawBot.)
 
 ### What about Adobe products?
 
-I’ve learned over the last few years to deeply distrust any _Type Tool_ in an Adobe product. Yes, those are good — like HTML+CSS — for doing simple Latin-based typography. Then they are very bad. You can think of Adobe products as a train that you get on and you can fall asleep in a nice seat and they still get you where you want to go, except when you wake up and realize you wanted to go somewhere the train doesn't go and then you’re like... _dang, do I have to walk?_ (Walking in this metaphor is when you right click and hit _Convert to Outlines_.)
-
-[1]: I should point out that I love DrawBot very deeply and that Coldtype would not exist without DrawBot, mostly because using DrawBot was my first time driving in the typographical offroad. That said, Coldtype mostly exists as a response to things I found awkward about programming animations and interfaces with DrawBot.
+I’ve learned over the last few years to deeply distrust any _Type Tool_ in an Adobe product or elsewhere. Yes, those are good — like HTML+CSS — for doing simple Latin-based typography. Then they are very bad. You can think of Adobe products as a train that you get on and you can fall asleep in a nice seat and they still get you where you want to go, except when you wake up and realize you wanted to go somewhere the train doesn't go and then you’re like... _dang, do I have to walk?_ (Walking in this metaphor is when you right click and hit _Convert to Outlines_.)
 
 I realize now this metaphor has made me seem very pro-automobile, which... yes I do live in Los Angeles but I work from home, so I’m kind of ambivalent about cars.
 
 But I’m not ambivalent about typesetting with code, so let’s get into it!
-
-((( image here of text-editor & viewer side-by-side, ala drawbot)))
 
 ## What does a Coldtype program look like?
 
