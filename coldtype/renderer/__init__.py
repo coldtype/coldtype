@@ -37,7 +37,7 @@ class Renderer():
         self.preview.clear()
         self.program = None
 
-        signal.signal(signal.SIGINT, self.on_exit)
+        signal.signal(signal.SIGINT, self.on_exit_signal)
 
     def show_error(self):
         print(">>> CAUGHT COLDTYPE RENDER")
@@ -91,7 +91,7 @@ class Renderer():
                 self.watch_file_changes(),
             )
         else:
-            self.on_exit(None, None)
+            self.on_exit(0)
     
     async def before_start(self):
         pass
@@ -119,12 +119,15 @@ class Renderer():
     async def watch_file_changes(self):
         async for changes in awatch(self.watchees[0]):
             for change, path in changes:
-                if change == Change.modified:
-                    print(change, path)
+                if change == Change.modified and path.endswith(".py"):
+                    print(">>>>>>>>", change, path)
                     await self.reload_and_render("resave")
 
-    def on_exit(self, frame, signal):
-        print("<EXIT RENDERER>")
+    def on_exit_signal(self, frame, signal):
+        self.on_exit(0)
+
+    def on_exit(self, exit_code):
+        print(f"<EXIT RENDERER ({exit_code})>")
         self.preview.close()
         asyncio.get_event_loop().stop()
-        sys.exit(0)
+        sys.exit(exit_code)
