@@ -270,7 +270,7 @@ class Style():
             self.addVariations(unnormalized_variations)
     
     def __eq__(self, other):
-        if not self.fontFile == other.fontFile:
+        if not self.font == other.font:
             return False
         elif not self.fontSize == other.fontSize:
             return False

@@ -29,12 +29,12 @@ class CairoPen(DrawablePenMixin, BasePen):
         methods = [a[0] for a in attrs]
 
         if True or "shadow" not in methods:
-            for attr in attrs:
+            for attrs, attr in self.findStyledAttrs(style):
                 method, *args = attr
                 self.ctx.save()
                 if method in ["fill", "stroke"]:
                     dat.replay(tp)
-                self.applyDATAttribute(attr)
+                self.applyDATAttribute(attrs, attr)
                 self.ctx.restore()
 
     def _moveTo(self, p):
@@ -66,7 +66,7 @@ class CairoPen(DrawablePenMixin, BasePen):
                 self.ctx.set_source_rgba(color.r, color.g, color.b, color.a)
             self.ctx.fill()
     
-    def stroke(self, weight=1, color=None):
+    def stroke(self, weight=1, color=None, dash=None):
         self.ctx.set_source_rgba(color.r, color.g, color.b, color.a)
         self.ctx.set_line_width(weight)
         self.ctx.stroke()
