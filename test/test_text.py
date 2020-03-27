@@ -24,12 +24,14 @@ def combine_slugs_test(r):
     shape = DATPen().polygon(3, Rect(0, 0, 150, 150)).f("random")
     return DATPenSet(ss1, ps2, shape).distribute().align(r)
 
-def multilang_test(r):
-    obv = Style("ç/NotoSans-Black.ttf", 180, fill=(1, 0, 0.5))
-    r = r
+async def multilang_test():
+    #latin_font = await Font.Preload("ç/NotoSans-Black.ttf")
+    arabic_font = await Font.Preload("ç/NotoSansArabic-Black.ttf")
+    #obv = Style(latin_font, 180, fill=(1, 0, 0.5))
     _s = ["(جاف + رطب (ما قبل", "+بوابة", "Left الملخبط Right", "9رقمي: سنوات ال0"]
-    style = Style("ç/NotoSansArabic-Black.ttf", 200, lang="ar", fill=Gradient.Random(r))
-    dps = Slug(_s[0], style, obv).fit(r.w - 100).pens().align(r)
+    style = Style(arabic_font, 200, lang="ar", fill=Gradient.Random(page))
+    print(_s[2])
+    dps = StyledString(_s[2], style).pens().align(page) #.fit(page.w - 100).pens().align(page)
     return [dps.frameSet().attr(fill=None, stroke=0), dps]
 
 def cjk_multilang_test(r):
@@ -224,7 +226,7 @@ def render(r, i):
     ]
 
 renders = [
-    color_font_test
+    multilang_test
 ]
 
 #tests = [emoji_test]

@@ -28,6 +28,7 @@ from coldtype.geometry import Rect, Point
 
 from fontgoggles.font import getOpener
 from fontgoggles.font.baseFont import BaseFont
+from fontgoggles.misc.textInfo import TextInfo
 
 import asyncio
 import traceback
@@ -122,6 +123,11 @@ class Font():
     async def load(self):
         await self.font.load(None)
         print(">>> loaded", self.path.name)
+    
+    async def Preload(path):
+        font = Font(path)
+        await font.load()
+        return font
 
 class Style():
     def RegisterShorthandPrefix(prefix, expansion):
@@ -332,6 +338,7 @@ def offset(x, y, ox, oy):
 
 class StyledString(FittableMixin):
     def __init__(self, text, style):
+        self.text_info = TextInfo(text)
         self.text = text
         self.style = style
 
@@ -345,8 +352,19 @@ class StyledString(FittableMixin):
         self.resetGlyphRun()
     
     def resetGlyphRun(self):
-        self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, 
-        varLocation=self.variations)
+        uniListData = []
+        print("-------------")
+        for segmentText, segmentScript, segmentBiDiLevel, firstCluster in self.text_info._segments:
+            for index, char in enumerate(segmentText, firstCluster):
+                uniListData.append(
+                    dict(index=index, char=char, unicode=f"U+{ord(char):04X}",
+                         unicodeName=unicodedata.name(char, "?"), script=segmentScript,
+                         bidiLevel=segmentBiDiLevel, dir=["LTR", "RTL"][segmentBiDiLevel % 2])
+                )
+        print(uniListData)
+
+        self.glyphs = self.style.font.font.getGlyphRunFromTextInfo(self.text_info, addDrawings=False, features=self.features, varLocation=self.variations)
+        #self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations)
         x = 0
         for glyph in self.glyphs:
             glyph.frame = Rect(x+glyph.dx, glyph.dy, glyph.ax, self.style.capHeight)
