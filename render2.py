@@ -1,14 +1,39 @@
 #!/usr/bin/env python
 
 from coldtype.renderer import Renderer
-from coldtype.pens.drawbotpen import DrawBotPen
 from subprocess import call
 
+from coldtype.pens.svgpen import SVGPen
+try:
+    from coldtype.pens.drawbotpen import DrawBotPen
+except:
+    # Todo attempt to import CairoPen instead
+    pass
+
+
+parser = Renderer.Argparser()
+parser.add_argument("-i", "--icns", action="store_true", default=False)
+parser.add_argument("-s", "--svg-icons", action="store_true", default=False)
 
 class DefaultRenderer(Renderer):
     async def on_start(self):
         if self.args.icns:
             await self.render_iconset()
+        elif self.args.svg_icons:
+            await self.render_svg_icons()
+    
+    async def render_svg_icons(self):
+        page = self.program["page"]
+        icon_output = self.filepath.parent / (self.filepath.stem + "_svg_icons")
+        icon_output.mkdir(parents=True, exist_ok=True)
+
+        for k, v in self.program.items():
+            if hasattr(v, "renderable"):
+                icon_path = icon_output / (v.__name__ + ".svg")
+                print(icon_path)
+                result = v()
+                svg = SVGPen.Composite(result, page, viewBox=True)
+                icon_path.write_text(svg)
 
     async def render_iconset(self):
         # inspired by https://retifrav.github.io/blog/2018/10/09/macos-convert-png-to-icns/
@@ -38,6 +63,4 @@ class DefaultRenderer(Renderer):
         call(["iconutil", "-c", "icns", str(iconset)])
 
 
-parser = Renderer.Argparser()
-parser.add_argument("-i", "--icns", action="store_true", default=False)
 DefaultRenderer(parser).main()
