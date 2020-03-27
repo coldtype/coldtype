@@ -2,6 +2,7 @@
 
 from coldtype.renderer import Renderer
 from subprocess import call
+from pathlib import Path
 
 from coldtype.pens.svgpen import SVGPen
 try:
@@ -24,12 +25,18 @@ class DefaultRenderer(Renderer):
     
     async def render_svg_icons(self):
         page = self.program["page"]
-        icon_output = self.filepath.parent / (self.filepath.stem + "_svg_icons")
+        render_data = self.program["render_data"]
+
+        if render_data.get("output_dir"):
+            icon_output = render_data["output_dir"]
+        else:
+            icon_output = self.filepath.parent / (self.filepath.stem + "_svg_icons")
         icon_output.mkdir(parents=True, exist_ok=True)
 
         for k, v in self.program.items():
             if hasattr(v, "renderable"):
-                icon_path = icon_output / (v.__name__ + ".svg")
+                prefix = render_data.get("output_prefix", "")
+                icon_path = icon_output / (prefix + v.__name__ + ".svg")
                 print(icon_path)
                 result = v()
                 svg = SVGPen.Composite(result, page, viewBox=True)
