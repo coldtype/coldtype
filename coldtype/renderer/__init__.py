@@ -57,13 +57,14 @@ class Renderer():
     async def render(self, trigger):
         page = self.program["page"]
         renders = self.program["renders"]
+        render_data = self.program.get("render_data", {})
         try:
             for render in renders:
                 if inspect.iscoroutinefunction(render):
                     result = await render()
                 else:
                     result = render()
-                self.preview.send(SVGPen.Composite(result, page, viewBox=True), bg=1, max_width=800)
+                self.preview.send(SVGPen.Composite(result, page, viewBox=True), bg=render_data.get("bg", 1), max_width=800)
         except:
             self.show_error()
     

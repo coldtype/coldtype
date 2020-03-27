@@ -354,14 +354,15 @@ class StyledString(FittableMixin):
     def resetGlyphRun(self):
         uniListData = []
         print("-------------")
-        for segmentText, segmentScript, segmentBiDiLevel, firstCluster in self.text_info._segments:
-            for index, char in enumerate(segmentText, firstCluster):
-                uniListData.append(
-                    dict(index=index, char=char, unicode=f"U+{ord(char):04X}",
-                         unicodeName=unicodedata.name(char, "?"), script=segmentScript,
-                         bidiLevel=segmentBiDiLevel, dir=["LTR", "RTL"][segmentBiDiLevel % 2])
-                )
-        print(uniListData)
+        if False:
+            for segmentText, segmentScript, segmentBiDiLevel, firstCluster in self.text_info._segments:
+                for index, char in enumerate(segmentText, firstCluster):
+                    uniListData.append(
+                        dict(index=index, char=char, unicode=f"U+{ord(char):04X}",
+                            unicodeName=unicodedata.name(char, "?"), script=segmentScript,
+                            bidiLevel=segmentBiDiLevel, dir=["LTR", "RTL"][segmentBiDiLevel % 2])
+                    )
+            print(uniListData)
 
         self.glyphs = self.style.font.font.getGlyphRunFromTextInfo(self.text_info, addDrawings=False, features=self.features, varLocation=self.variations)
         #self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations)
