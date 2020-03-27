@@ -9,9 +9,13 @@ from runpy import run_path
 
 from coldtype.geometry import Rect
 from coldtype.pens.svgpen import SVGPen
-from coldtype.pens.cairopen import CairoPen
-from coldtype.pens.drawbotpen import DrawBotPen
 from coldtype.viewer import WebSocket, PersistentPreview, WEBSOCKET_ADDR
+
+try:
+    from coldtype.pens.cairopen import CairoPen
+    from coldtype.pens.drawbotpen import DrawBotPen
+except:
+    pass
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
