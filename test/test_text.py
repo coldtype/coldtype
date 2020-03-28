@@ -25,14 +25,18 @@ def combine_slugs_test(r):
     return DATPenSet(ss1, ps2, shape).distribute().align(r)
 
 async def multilang_test():
-    #latin_font = await Font.Preload("ç/NotoSans-Black.ttf")
+    latin_font = await Font.Preload("ç/NotoSans-Black.ttf")
     arabic_font = await Font.Preload("ç/NotoSansArabic-Black.ttf")
-    #obv = Style(latin_font, 180, fill=(1, 0, 0.5))
-    _s = ["(جاف + رطب (ما قبل", "+بوابة", "Left الملخبط Right", "9رقمي: سنوات ال0"]
-    style = Style(arabic_font, 200, lang="ar", fill=Gradient.Random(page))
-    print(_s[2])
-    dps = StyledString(_s[2], style).pens().align(page) #.fit(page.w - 100).pens().align(page)
-    return [dps.frameSet().attr(fill=None, stroke=0), dps]
+    latin_style = Style(latin_font, 180, fill=(1, 0, 0.5))
+    arabic_style = Style(arabic_font, 200, lang="ar", fill=Gradient.Random(page))
+
+    _s = ["(جاف + رطب (ما قبل", "+بوابة", "Left الملخبط Right", "9رقمي: سنوات ال 0", "ميد/سايد"]
+    
+    segs = SegmentedString(_s[-1], dict(Arab=arabic_style, Latn=latin_style))
+    ss = Lockup(segs.styled_strings).pens().align(page)
+    return ss
+    #dps = StyledString(_s[2], style).pens().align(page) #.fit(page.w - 100).pens().align(page)
+    #return [dps.frameSet().attr(fill=None, stroke=0), dps]
 
 def cjk_multilang_test(r):
     obv = Style(varfont, 300, wdth=1, wght=0, fill=(1, 0, 0.5))

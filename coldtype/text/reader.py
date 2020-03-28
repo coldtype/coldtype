@@ -352,18 +352,6 @@ class StyledString(FittableMixin):
         self.resetGlyphRun()
     
     def resetGlyphRun(self):
-        uniListData = []
-        print("-------------")
-        if False:
-            for segmentText, segmentScript, segmentBiDiLevel, firstCluster in self.text_info._segments:
-                for index, char in enumerate(segmentText, firstCluster):
-                    uniListData.append(
-                        dict(index=index, char=char, unicode=f"U+{ord(char):04X}",
-                            unicodeName=unicodedata.name(char, "?"), script=segmentScript,
-                            bidiLevel=segmentBiDiLevel, dir=["LTR", "RTL"][segmentBiDiLevel % 2])
-                    )
-            print(uniListData)
-
         self.glyphs = self.style.font.font.getGlyphRunFromTextInfo(self.text_info, addDrawings=False, features=self.features, varLocation=self.variations)
         #self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations)
         x = 0
@@ -607,3 +595,23 @@ class StyledString(FittableMixin):
 
     def pen(self, frame=True) -> DATPen:
         return self.pens(frame=frame).pen()
+
+class SegmentedString():
+    def __init__(self, text, styles):
+        self.text_info = TextInfo(text)
+        self.styled_strings = []
+        print("-------------")
+        if True:
+            for segmentText, segmentScript, segmentBiDiLevel, firstCluster in self.text_info._segments:
+                print(segmentText, segmentScript, segmentBiDiLevel)
+                self.styled_strings.append(StyledString(segmentText, styles[segmentScript]))
+                #clusterData = []
+
+                #for index, char in enumerate(segmentText, firstCluster):
+                #    clusterData.append(
+                #        dict(index=index, char=char, unicode=f"U+{ord(char):04X}",
+                #            unicodeName=unicodedata.name(char, "?"), script=segmentScript,
+                #            bidiLevel=segmentBiDiLevel, dir=["LTR", "RTL"][segmentBiDiLevel % 2])
+                #    )
+            #from pprint import pprint
+            #pprint(uniListData)
