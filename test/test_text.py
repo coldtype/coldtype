@@ -26,13 +26,16 @@ def combine_slugs_test(r):
 
 async def multilang_test():
     latin_font = await Font.Preload("ç/NotoSans-Black.ttf")
-    arabic_font = await Font.Preload("ç/NotoSansArabic-Black.ttf")
+    arabic_font = await Font.Preload("≈/GretaArabicCompressedAR-Heavy.otf")
     latin_style = Style(latin_font, 180, fill=(1, 0, 0.5))
-    arabic_style = Style(arabic_font, 200, lang="ar", fill=Gradient.Random(page))
+    arabic_style = Style(arabic_font, 350, lang="ar", fill=Gradient.Random(page))
 
     _s = ["(جاف + رطب (ما قبل", "+بوابة", "Left الملخبط Right", "9رقمي: سنوات ال 0", "ميد/سايد"]
+
+    #for c in _s[3]:
+    #    print(c)
     
-    segs = SegmentedString(_s[-1], dict(Arab=arabic_style, Latn=latin_style))
+    segs = SegmentedString(_s[2], dict(Arab=arabic_style, Latn=latin_style))
     ss = Lockup(segs.styled_strings).pens().align(page)
     return ss
     #dps = StyledString(_s[2], style).pens().align(page) #.fit(page.w - 100).pens().align(page)

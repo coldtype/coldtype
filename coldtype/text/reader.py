@@ -600,18 +600,19 @@ class SegmentedString():
     def __init__(self, text, styles):
         self.text_info = TextInfo(text)
         self.styled_strings = []
+        uniListData = []
         print("-------------")
         if True:
             for segmentText, segmentScript, segmentBiDiLevel, firstCluster in self.text_info._segments:
                 print(segmentText, segmentScript, segmentBiDiLevel)
                 self.styled_strings.append(StyledString(segmentText, styles[segmentScript]))
-                #clusterData = []
-
-                #for index, char in enumerate(segmentText, firstCluster):
-                #    clusterData.append(
-                #        dict(index=index, char=char, unicode=f"U+{ord(char):04X}",
-                #            unicodeName=unicodedata.name(char, "?"), script=segmentScript,
-                #            bidiLevel=segmentBiDiLevel, dir=["LTR", "RTL"][segmentBiDiLevel % 2])
-                #    )
-            #from pprint import pprint
-            #pprint(uniListData)
+                clusterData = []
+                for index, char in enumerate(segmentText, firstCluster):
+                   clusterData.append(
+                       dict(index=index, char=char, unicode=f"U+{ord(char):04X}",
+                           unicodeName=unicodedata.name(char, "?"), script=segmentScript,
+                           bidiLevel=segmentBiDiLevel, dir=["LTR", "RTL"][segmentBiDiLevel % 2])
+                   )
+                uniListData.append(clusterData)
+            from pprint import pprint
+            pprint(uniListData)
