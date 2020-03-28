@@ -617,9 +617,9 @@ class DATPen(RecordingPen, DATPenLikeObject):
             pass
         return self
 
-    def outline(self, offset=1, drawInner=True, drawOuter=True):
+    def outline(self, offset=1, drawInner=True, drawOuter=True, cap="square"):
         """AKA expandStroke"""
-        op = OutlinePen(None, offset=offset, optimizeCurve=True, cap="square")
+        op = OutlinePen(None, offset=offset, optimizeCurve=True, cap=cap)
         self.replay(op)
         op.drawSettings(drawInner=drawInner, drawOuter=drawOuter)
         g = op.getGlyph()
