@@ -4,7 +4,8 @@ from pathlib import Path
 import asyncio
 import signal
 import websockets
-from watchgod import awatch, Change
+
+from coldtype.renderer.watchdog import AsyncWatchdog
 
 import traceback
 from subprocess import call
@@ -32,10 +33,12 @@ class Renderer():
     def __init__(self, parser):
         self.args = parser.parse_args()
         self.filepath = Path(self.args.file).expanduser().resolve()
-        self.watchees = [self.filepath.parent]
         self.preview = PersistentPreview()
         self.preview.clear()
         self.program = None
+
+        self.watchees = [self.filepath]
+        self.observers = []
 
         signal.signal(signal.SIGINT, self.on_exit_signal)
 
@@ -48,8 +51,13 @@ class Renderer():
         try:
             self.program = run_path(str(self.filepath))
             for k, v in self.program.items():
-               if isinstance(v, coldtype.text.reader.Font):
-                   await v.load()
+                if isinstance(v, coldtype.text.reader.Font):
+                    await v.load()
+                    if v.path not in self.watchees:
+                        self.watchees.append(v.path)
+                    for ext in v.font.getExternalFiles():
+                        if ext not in self.watchees:
+                            self.watchees.append(ext)
         except Exception as e:
             self.program = None
             self.show_error()
@@ -69,6 +77,7 @@ class Renderer():
             self.show_error()
     
     async def reload_and_render(self, trigger):
+        wl = len(self.watchees)
         self.preview.clear()
         try:
             await self.reload(trigger)
@@ -78,6 +87,12 @@ class Renderer():
                 self.preview.send("<pre>No program loaded!</pre>")
         except:
             self.show_error()
+    
+        if wl < len(self.watchees) and len(self.observers) > 0:
+            from pprint import pprint
+            pprint(self.watchees)
+            self.stop_watching_file_changes()
+            self.watch_file_changes()
 
     def main(self):
         asyncio.run(self.start())
@@ -87,10 +102,8 @@ class Renderer():
         await self.reload_and_render("initial")
         await self.on_start()
         if self.args.watch:
-            await asyncio.gather(
-                self.listen_to_ws(),
-                self.watch_file_changes(),
-            )
+            self.watch_file_changes()
+            await asyncio.gather(self.listen_to_ws())
         else:
             self.on_exit(0)
     
@@ -116,19 +129,32 @@ class Renderer():
         async with websockets.connect(WEBSOCKET_ADDR) as websocket:
             async for message in websocket:
                 await self.process_ws_message(message)
+    
+    async def on_modified(self, event):
+        if Path(event.src_path) in self.watchees:
+            print(f">>>>>>>> resave ({Path(event.src_path).name})")
+            await self.reload_and_render("resave")
 
-    async def watch_file_changes(self):
-        async for changes in awatch(self.watchees[0]):
-            for change, path in changes:
-                if change == Change.modified and path.endswith(".py"):
-                    print(">>>>>>>>", change, path)
-                    await self.reload_and_render("resave")
+    def watch_file_changes(self):
+        self.observers = []
+        dirs = set([w.parent for w in self.watchees])
+        for d in dirs:
+            o = AsyncWatchdog(str(d), on_modified=self.on_modified, recursive=False)
+            o.start()
+            self.observers.append(o)
+        print("... watching ...")
+    
+    def stop_watching_file_changes(self):
+        for o in self.observers:
+            o.stop()
+            #o.join()
 
     def on_exit_signal(self, frame, signal):
         self.on_exit(0)
 
     def on_exit(self, exit_code):
         print(f"<EXIT RENDERER ({exit_code})>")
+        self.stop_watching_file_changes()
         self.preview.close()
         asyncio.get_event_loop().stop()
         sys.exit(exit_code)
