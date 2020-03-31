@@ -61,10 +61,21 @@ class Renderer():
         except Exception as e:
             self.program = None
             self.show_error()
+    
+    def renderables(self):
+        _rs = []
+        for k, v in self.program.items():
+            if hasattr(v, "renderable"):
+                _rs.append(v)
+        return _rs
 
     async def render(self, trigger):
         page = self.program["page"]
-        renders = self.program["renders"]
+        renders = self.program.get("renders")
+        if renders and len(renders) > 0:
+            renders = renders
+        else:
+            renders = self.renderables()
         render_data = self.program.get("render_data", {})
         try:
             for render in renders:

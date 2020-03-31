@@ -28,7 +28,19 @@ from coldtype.geometry import Rect, Point
 
 from fontgoggles.font import getOpener
 from fontgoggles.font.baseFont import BaseFont
+from fontgoggles.font.otfFont import OTFFont
 from fontgoggles.misc.textInfo import TextInfo
+
+# SOME DUCT TAPE FOR SYNC COMPATIBILITY
+import inspect
+import textwrap
+import io
+from fontgoggles.misc.ftFont import FTFont
+from fontgoggles.misc.hbShape import HBShape
+
+unasync = inspect.getsource(OTFFont.load).replace("async def load", "def _syncLoad")
+exec(textwrap.dedent(unasync))
+OTFFont._syncLoad = _syncLoad
 
 import asyncio
 import traceback
@@ -181,6 +193,11 @@ class Style():
 
         if isinstance(font, str):
             self.font:Font = Font(font)
+            if isinstance(self.font.font, OTFFont):
+                self.font.font._syncLoad(None)
+            else:
+                print("Editable font formats cannot be loaded synchronously")
+
         else:
             self.font:Font = font
 
