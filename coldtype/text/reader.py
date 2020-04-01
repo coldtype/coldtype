@@ -497,8 +497,8 @@ class StyledString(FittableMixin):
             currentwdth = self.style.variations.get("wdth", 1)
             self.variations["wdth"] = minwdth
             if not self.testWidth(width, "wdth", minwdth, currentwdth):
-                self.tracking = self.style.trackingLimit
-                if not self.testWidth(width, "tracking", self.style.trackingLimit, 0):
+                #self.tracking = self.style.trackingLimit
+                if not self.testWidth(width, "tracking", self.style.trackingLimit, min(self.style.tracking, 0)):
                     if self.style.varyFontSize:
                         self.fontSize = 10
                         if not self.testWidth(width, "fontSize", 10, self.style.fontSize):
@@ -508,7 +508,7 @@ class StyledString(FittableMixin):
                         self.variations["wdth"] = minwdth
                         failed = True
         if failed:
-            print("CANT FIT IT >>>", self.text)
+            print("FAILED TO FIT >>>", self.text, self.width(), width)
         return self
 
     def shrink(self):

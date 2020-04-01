@@ -14,6 +14,7 @@ import argparse
 import importlib
 import inspect
 import json
+from enum import Enum
 
 import coldtype
 from coldtype.geometry import Rect
@@ -23,11 +24,18 @@ from coldtype.pens.drawbotpen import DrawBotPen
 from coldtype.viewer import PersistentPreview, WEBSOCKET_ADDR
 
 
+class Watchable(Enum):
+    Source = "Source"
+    Font = "Font"
+    Library = "Library"
+
+
 class Renderer():
     def Argparser(name="coldtype-render"):
         parser = argparse.ArgumentParser(prog="coldtype-render", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
         parser.add_argument("file", type=str)
         parser.add_argument("-w", "--watch", action="store_true", default=False)
+        parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False)
         return parser
 
     def __init__(self, parser):
@@ -37,10 +45,25 @@ class Renderer():
         self.preview.clear()
         self.program = None
 
-        self.watchees = [self.filepath]
+        self.watchees = [[Watchable.Source, self.filepath]]
         self.observers = []
 
+        self.reloadables = [
+            coldtype.pens.datpen,
+            coldtype.text.reader,
+            coldtype.text.composer,
+            coldtype.text,
+            coldtype
+        ]
+
+        if self.args.reload_libraries:
+            for r in self.reloadables:
+                self.watchees.append([Watchable.Library, Path(r.__file__)])
+
         signal.signal(signal.SIGINT, self.on_exit_signal)
+
+    def watchee_paths(self):
+        return [w[1] for w in self.watchees]
 
     def show_error(self):
         print(">>> CAUGHT COLDTYPE RENDER")
@@ -53,11 +76,11 @@ class Renderer():
             for k, v in self.program.items():
                 if isinstance(v, coldtype.text.reader.Font):
                     await v.load()
-                    if v.path not in self.watchees:
-                        self.watchees.append(v.path)
+                    if v.path not in self.watchee_paths():
+                        self.watchees.append([Watchable.Font, v.path])
                     for ext in v.font.getExternalFiles():
-                        if ext not in self.watchees:
-                            self.watchees.append(ext)
+                        if ext not in self.watchee_paths():
+                            self.watchees.append([Watchable.Font, ext])
         except Exception as e:
             self.program = None
             self.show_error()
@@ -87,9 +110,19 @@ class Renderer():
         except:
             self.show_error()
     
-    async def reload_and_render(self, trigger):
+    async def reload_and_render(self, trigger, watchable=None):
         wl = len(self.watchees)
         self.preview.clear()
+
+        if self.args.reload_libraries and watchable == Watchable.Library:
+            # TODO limit this to what actually changed?
+            print("> reloading reloadables...")
+            try:
+                for m in self.reloadables:
+                    importlib.reload(m)
+            except:
+                self.show_error()
+
         try:
             await self.reload(trigger)
             if self.program:
@@ -142,13 +175,15 @@ class Renderer():
                 await self.process_ws_message(message)
     
     async def on_modified(self, event):
-        if Path(event.src_path) in self.watchees:
-            print(f">>>>>>>> resave ({Path(event.src_path).name})")
-            await self.reload_and_render("resave")
+        path = Path(event.src_path)
+        if path in self.watchee_paths():
+            idx = self.watchee_paths().index(path)
+            print(f">>> resave ...{event.src_path[-25:]}")
+            await self.reload_and_render("resave", self.watchees[idx][0])
 
     def watch_file_changes(self):
         self.observers = []
-        dirs = set([w.parent for w in self.watchees])
+        dirs = set([w[1].parent for w in self.watchees])
         for d in dirs:
             o = AsyncWatchdog(str(d), on_modified=self.on_modified, recursive=False)
             o.start()
