@@ -66,7 +66,7 @@ def normalize_color(v):
                 c = Color.from_rgb(v[0], v[0], v[0], v[1])
                 return c
         else:
-            if hasattr(v[0], "imag"):
+            if isinstance(v[0], complex):
                 return Color.from_hsl(v[0].imag, *v[1:])
             else:
                 vs = [random() if _v == "random" else _v for _v in v]

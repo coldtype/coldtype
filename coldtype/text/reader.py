@@ -182,6 +182,7 @@ class Style():
             removeOverlap=False,
             rotate=0,
             sv=True,
+            narrower=None,
             **kwargs):
         """
         kern (k) — a dict of glyphName->[left,right] values in font-space
@@ -201,7 +202,7 @@ class Style():
         else:
             self.font:Font = font
 
-        self.next = None
+        self.narrower = narrower
         self.layer = layer
         self.layerer = layerer
         self.reverse = kwargs.get("r", reverse)
@@ -357,16 +358,17 @@ class StyledString(FittableMixin):
     def __init__(self, text, style):
         self.text_info = TextInfo(text)
         self.text = text
-        self.style = style
+        self.setStyle(style)
 
+        self.resetGlyphRun()
+    
+    def setStyle(self, style):
+        self.style = style
         # these will change based on fitting, so we make copies
         self.fontSize = self.style.fontSize
         self.tracking = self.style.tracking
         self.features = self.style.features.copy()
         self.variations = self.style.variations.copy()
-        self.style = style
-
-        self.resetGlyphRun()
     
     def resetGlyphRun(self):
         self.glyphs = self.style.font.font.getGlyphRunFromTextInfo(self.text_info, addDrawings=False, features=self.features, varLocation=self.variations)
@@ -481,7 +483,7 @@ class StyledString(FittableMixin):
         else: # too big, so we maintain current value & let the caller know
             return False
     
-    def fit(self, width):
+    def _fit(self, width):
         if isinstance(width, Rect):
             width = width.w
 
@@ -530,8 +532,8 @@ class StyledString(FittableMixin):
             self.fontSize -= 1
             self.tracking = self.style.tracking
             adjusted = True
-        if not adjusted and self.style.next:
-            self.setStyle(self.style.next)
+        if not adjusted and self.style.narrower:
+            self.setStyle(self.style.narrower)
             adjusted = True
         if not adjusted and self.style.preventHwid == False and "hwid" not in self.features:
             self.features["hwid"] = True
@@ -613,23 +615,46 @@ class StyledString(FittableMixin):
     def pen(self, frame=True) -> DATPen:
         return self.pens(frame=frame).pen()
 
-class SegmentedString():
+class SegmentedString(FittableMixin):
     def __init__(self, text, styles):
         self.text_info = TextInfo(text)
-        self.styled_strings = []
-        uniListData = []
-        print("-------------")
-        if True:
-            for segmentText, segmentScript, segmentBiDiLevel, firstCluster in self.text_info._segments:
-                print(segmentText, segmentScript, segmentBiDiLevel)
-                self.styled_strings.append(StyledString(segmentText, styles[segmentScript]))
-                clusterData = []
-                for index, char in enumerate(segmentText, firstCluster):
-                   clusterData.append(
-                       dict(index=index, char=char, unicode=f"U+{ord(char):04X}",
-                           unicodeName=unicodedata.name(char, "?"), script=segmentScript,
-                           bidiLevel=segmentBiDiLevel, dir=["LTR", "RTL"][segmentBiDiLevel % 2])
-                   )
-                uniListData.append(clusterData)
-            from pprint import pprint
-            pprint(uniListData)
+        self.strings = []
+        self.segment_data = []
+        for segmentText, segmentScript, segmentBiDiLevel, firstCluster in self.text_info._segments:
+            self.strings.append(StyledString(segmentText, styles[segmentScript]))
+            cluster_data = []
+            for index, char in enumerate(segmentText, firstCluster):
+                cluster_data.append(
+                    dict(index=index, char=char, unicode=f"U+{ord(char):04X}",
+                        unicodeName=unicodedata.name(char, "?"), script=segmentScript,
+                        bidiLevel=segmentBiDiLevel, dir=["LTR", "RTL"][segmentBiDiLevel % 2])
+                )
+            self.segment_data.append(cluster_data)
+    
+    def width(self):
+        return sum([s.width() for s in self.strings])
+    
+    def height(self):
+        return max([s.height() for s in self.strings])
+    
+    def textContent(self):
+        return "-".join([s.textContent() for s in self.strings])
+
+    def shrink(self):
+        adjusted = False
+        for s in self.strings:
+            adjusted = s.shrink() or adjusted
+        return adjusted
+
+    def pens(self):
+        pens = DATPenSet()
+        x_off = 0
+        for s in self.strings:
+            dps = s.pens(frame=True)
+            if dps.layered:
+                pens.layered = True
+            dps.translate(x_off, 0)
+            pens.extend(dps.pens)
+            x_off += dps.getFrame().w
+        return pens
+        #return DATPenSet([s.pens(frame=True) for s in self.strings])

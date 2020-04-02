@@ -49,9 +49,9 @@ class Renderer():
         self.observers = []
 
         self.reloadables = [
-            coldtype.pens.datpen,
+            #coldtype.pens.datpen,
             coldtype.text.reader,
-            coldtype.text.composer,
+            #coldtype.text.composer,
             coldtype.text,
             coldtype
         ]

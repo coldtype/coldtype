@@ -153,7 +153,7 @@ def T2L(text, primary, fallback=None):
     return Lockup.TextToLines(text, primary, fallback)
 
 
-class Slug(FittableMixin):
+class Slug(SegmentedString):
     def __init__(self, text, primary, fallback=None, margin=[0, 0]):
         self.text = text
         self.primary = primary

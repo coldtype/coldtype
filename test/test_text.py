@@ -2,6 +2,7 @@ from coldtype import *
 from coldtype.color import Gradient
 from random import randint
 from functools import partial
+from pprint import pprint
 
 varfont = Font("ç/MutatorSans.ttf")
 coldtype_obvs_ufo = Font("ç/ColdtypeObviously_CompressedBlackItalic.ufo")
@@ -196,6 +197,15 @@ def gx_hvar_test(r):
 def ufo_test(r):
     return StyledString("COLDTYPE", Style(coldtype_obvs_ufo, 900, tu=0, ro=1)).pens().align(page).f("random", 0.5).s("random")
 
+def family_wdth_test():
+    arab = Style("≈/GretaArabicCondensedAR-Light.otf", 100, narrower=Style("≈/GretaArabicCompressedAR-Light.otf", 100))
+    latn = Style("≈/ObviouslyVariable.ttf", 100, wdth=1)
+    ss = SegmentedString("Left الملخبط Right", dict(Arab=arab, Latn=latn))
+    ss.fit(2000)
+    pprint(ss.segment_data)
+    return ss.pens().align(page)
+
+
 all_tests = [
     basic_test,
     combine_slugs_test,
@@ -233,7 +243,7 @@ def render(r, i):
     ]
 
 renders = [
-    multilang_test
+    family_wdth_test
 ]
 
 #tests = [emoji_test]
