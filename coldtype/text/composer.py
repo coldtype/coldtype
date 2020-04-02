@@ -154,60 +154,23 @@ def T2L(text, primary, fallback=None):
 
 
 class Slug(SegmentedString):
-    def __init__(self, text, primary, fallback=None, margin=[0, 0]):
+    def __init__(self, text, styles):
         self.text = text
-        self.primary = primary
-        self.fallback = fallback
-        self.margin = margin
+        self.styles = styles
         self.strings = []
         self.tag()
     
     def tag(self):
-        if self.fallback:
+        latn = self.styles.pop("Latn")
+        styles = list(self.styles.values())
+        if latn:
             segments = segment(self.text, "LATIN")
-            self.strings = [StyledString(s[1], self.fallback if "LATIN" in s[0] else self.primary) for s in segments]
+            self.strings = [StyledString(s[1], latn if "LATIN" in s[0] else styles[0]) for s in segments]
         else:
-            self.strings = [StyledString(self.text, self.primary)]
-    
-    def width(self):
-        return sum([s.width() for s in self.strings])
-    
-    def height(self):
-        return max([s.height() for s in self.strings])
-    
-    def textContent(self):
-        return "-".join([s.textContent() for s in self.strings])
-
-    def shrink(self):
-        adjusted = False
-        for s in self.strings:
-            adjusted = s.shrink() or adjusted
-        return adjusted
-
-    def pens(self, atomized=True):
-        pens = DATPenSet()
-        x_off = 0
-        for s in self.strings:
-            #x_off += s.margin[0]
-            if atomized:
-                dps = s.pens(frame=True)
-                if dps.layered:
-                    pens.layered = True
-                dps.translate(x_off, 0)
-                pens.extend(dps.pens)
-                x_off += dps.getFrame().w
-            else:
-                dp = s.pen(frame=True)
-                dp.translate(x_off, 0)
-                pens.append(dp)
-                x_off += dp.getFrame().w
-            #x_off += dps.getFrame().w
-            #x_off += s.margin[1]
-        return pens
-        #return DATPenSet([s.pens(frame=True) for s in self.strings])
+            self.strings = [StyledString(self.text, styles[0])]
     
     def pen(self):
-        return self.pens(atomized=False).pen()
+        return self.pens().pen()
     
     def LineSlugs(text, primary, fallback=None):
         lines = []

@@ -200,9 +200,9 @@ def ufo_test(r):
 def family_wdth_test():
     arab = Style("≈/GretaArabicCondensedAR-Light.otf", 100, narrower=Style("≈/GretaArabicCompressedAR-Light.otf", 100))
     latn = Style("≈/ObviouslyVariable.ttf", 100, wdth=1)
-    ss = SegmentedString("Left الملخبط Right", dict(Arab=arab, Latn=latn))
+    ss = Slug("Left الملخبط Right", dict(Arab=arab, Latn=latn))
     ss.fit(2000)
-    pprint(ss.segment_data)
+    #pprint(ss.segment_data)
     return ss.pens().align(page)
 
 
