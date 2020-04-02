@@ -205,6 +205,11 @@ def family_wdth_test():
     #pprint(ss.segment_data)
     return ss.pens().align(page)
 
+def mod_test():
+    s = Style(coldtype_obvs_ufo, 900, tu=0, ro=1, fill=(1, 0, 0))
+    s2 = s.mod(fill=(0, 1, 0))
+    return StyledString("COLDTYPE", s2).pens().align(page)
+
 
 all_tests = [
     basic_test,
@@ -243,7 +248,7 @@ def render(r, i):
     ]
 
 renders = [
-    family_wdth_test
+    mod_test
 ]
 
 #tests = [emoji_test]

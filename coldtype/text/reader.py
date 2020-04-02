@@ -309,7 +309,8 @@ class Style():
         return True
 
     def mod(self, **kwargs):
-        ns = copy.deepcopy(self)
+        ns = Style(self.font, self.fontSize)
+        ns.__dict__ = self.__dict__.copy()
         for k, v in kwargs.items():
             setattr(ns, k, v)
         return ns
