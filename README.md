@@ -10,7 +10,7 @@ __⚠️ Our (Goodhertz’) intention is to ultimately make this library a prope
 
 __A cross-platform library to help you precisely & programmatically do high-quality display typography.__
 
-Yes, there are lots of ways to set type with code. Most ways — HTML/CSS/JS, Processing — are great for 90% of what most people want to do with Latin-based writing systems. Then the road runs out and you can’t do anything else.
+Yes, there are lots of ways to set type with code. Most ways — HTML/CSS/JS, Processing, etc. — are great for 90% of what most people want to do with Latin-based writing systems. Then the road runs out and you can’t do anything else.
 
 Coldtype is a poorly-built but extremely powerful offroad vehicle that lets you keep driving where there are no roads. Like many powerful vehicles, it is not user-friendly. It has no doors (please climb in through the window), and the steering wheel is not very intuitive, also it’s a stick-shift, and you should probably be a mechanic (aka programmer) if you’re going to drive it alone out into the desert. (I apologize for how macho this metaphor is getting — I can’t really think of a better one.)
 
@@ -27,8 +27,6 @@ I’ve learned over the last few years to deeply distrust any _Type Tool_ in an 
 I realize now this metaphor has made me seem very pro-automobile, which... yes I do live in Los Angeles but I work from home, so I’m kind of ambivalent about cars.
 
 But I’m not ambivalent about typesetting with code, so let’s get into it!
-
-((( image here of text-editor & viewer side-by-side, ala drawbot)))
 
 ## What does a Coldtype program look like?
 

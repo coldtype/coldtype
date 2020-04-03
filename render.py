@@ -16,10 +16,24 @@ import coldtype
 from coldtype import Font
 from coldtype.geometry import Rect
 from coldtype.pens.svgpen import SVGPen
+<<<<<<< HEAD
 from coldtype.pens.cairopen import CairoPen
 from coldtype.pens.drawbotpen import DrawBotPen
 from coldtype.viewer import PersistentPreview, WEBSOCKET_ADDR
 
+=======
+from coldtype.viewer import WebSocket, PersistentPreview, WEBSOCKET_ADDR
+
+try:
+    from coldtype.pens.cairopen import CairoPen
+    from coldtype.pens.drawbotpen import DrawBotPen
+except:
+    pass
+
+from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
+import websocket
+>>>>>>> master
 import traceback
 from subprocess import call
 

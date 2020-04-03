@@ -17,6 +17,7 @@ from numbers import Number
 from defcon import Glyph
 
 try:
+    import noise
     from noise import pnoise1
 except:
     pass
@@ -31,6 +32,13 @@ try:
     from coldtype.pens.outlinepen import OutlinePen
 except:
     pass
+
+
+def warp_fn(xa=0, ya=0, xs=300, ys=300, speed=5, base=0, octaves=1, mult=50):
+    def warp(x, y):
+        pn = noise.pnoise3((x+xa)/xs, (y+ya)/ys, speed, octaves=octaves, base=base)
+        return x+pn*mult, y+pn*mult
+    return warp
 
 
 class DATPenLikeObject():
@@ -1164,6 +1172,9 @@ class DATPenSet(DATPenLikeObject):
         if transformFrame and self.frame:
             self.frame = self.frame.transform(transform)
         return self
+
+    #def nlt(self, fn, flatten=0):
+    #    return self.pmap(lambda idx, p: p.nonlinear_transform(fn))
     
     def round(self, rounding):
         for p in self.pens:

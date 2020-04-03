@@ -211,6 +211,9 @@ def mod_test():
     return StyledString("COLDTYPE", s2).pens().align(page)
 
 
+def ufo_test(r):
+    return StyledString("Hello", Style("≈/Hershey-TriplexGothicGerman.ufo", 500)).pens().align(page).f(None).s(0)
+
 all_tests = [
     basic_test,
     combine_slugs_test,
