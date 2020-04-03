@@ -1,11 +1,18 @@
-[build-system]
-requires = ["flit_core >=2,<3"]
-build-backend = "flit_core.buildapi"
+[tool.poetry]
+name = "coldtype"
+version = "0.0.1"
+description = ""
+authors = ["Rob Stenson <rob@goodhertz.com>"]
 
-[tool.flit.metadata]
-module = "coldtype"
-author = "Rob Stenson — Goodhertz, Inc."
-author-email = "rob@goodhertz.com"
-home-page = "https://goodhertz.co/~rob"
-classifiers = ["License :: OSI Approved :: MIT License"]
+[tool.poetry.dependencies]
+python = ">=3.6.8"
+fontTools = "^4.7.0"
+unicodedata2 = "^13.0.0"
+freetype-py = "^2.1.0"
+fontPens = "^0.2.4"
+skia-pathops = "^0.4.0"
+websockets = "^8.1"
+watchdog = "^0.10.2"
 
+[tool.poetry.dev-dependencies]
+pytest = "^3.4"
