@@ -6,6 +6,7 @@ import copy
 from pathlib import Path
 
 name = "coldtype"
+__version__ = "0.0.1"
 
 from coldtype.text import *
 from coldtype.text.reader import Font
