@@ -38,6 +38,9 @@ class Renderer():
         for narg in nargs:
             parser.add_argument(narg[0], nargs="?", default=narg[1])
         parser.add_argument("-w", "--watch", action="store_true", default=False)
+        parser.add_argument("-s", "--scale", type=float, default=1.0)
+        parser.add_argument("-r", "--rasterizer", type=str, default="drawbot")
+        parser.add_argument("-sv", "--save-renders", action="store_true", default=False)
         parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False)
         return parser
 
@@ -118,8 +121,20 @@ class Renderer():
                 else:
                     result = render()
                 self.preview.send(SVGPen.Composite(result, page, viewBox=True), bg=render_data.get("bg", 1), max_width=800)
+                if self.args.save_renders:
+                    output_path = self.filepath.parent / f"{self.filepath.stem}_{render.__name__}.png"
+                    self.rasterize(result, page, output_path)
         except:
             self.show_error()
+    
+    def rasterize(self, content, frame, path):
+        scale = int(self.args.scale)
+        if self.args.rasterizer == "drawbot":
+            DrawBotPen.Composite(content, frame, str(path), scale=scale)
+        elif self.args.rasterizer == "svg":
+            path.write_text(SVGPen.Composite(content, frame, viewBox=True))
+        else:
+            CairoPen.Composite(content, frame, str(path), scale=scale)
     
     async def reload_and_render(self, trigger, watchable=None):
         wl = len(self.watchees)
@@ -182,8 +197,11 @@ class Renderer():
             await self.reload_and_render(action)
     
     async def process_ws_message(self, message):
-        jdata = json.loads(message)
-        await self.on_message(jdata, jdata.get("action"))
+        try:
+            jdata = json.loads(message)
+            await self.on_message(jdata, jdata.get("action"))
+        except:
+            print("Malformed message", message)
 
     async def listen_to_ws(self):
         async with websockets.connect(WEBSOCKET_ADDR) as websocket:

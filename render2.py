@@ -14,7 +14,7 @@ except:
 
 parser = Renderer.Argparser()
 parser.add_argument("-i", "--icns", action="store_true", default=False)
-parser.add_argument("-s", "--svg-icons", action="store_true", default=False)
+parser.add_argument("-si", "--svg-icons", action="store_true", default=False)
 
 class DefaultRenderer(Renderer):
     async def on_start(self):
