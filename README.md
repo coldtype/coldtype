@@ -1,7 +1,3 @@
-<img src="viewer/appicon_layers/appicon_main_frames/appicon_main_1024.png" alt="Coldtype" width=175>
-
----
-
 🌋 _Hello! Not sure how you got here unless I gave you the link personally — if I didn’t, you’re welcome to look around, but know that this is alpha-quality software that’s mostly undocumented._ 🌋
 
 __⚠️ Our (Goodhertz’) intention is to ultimately make this library a proper, useable, open-source project, but for the moment — though it is publicly viewable — we are not publicizing it and it is under active development. ⚠️__
@@ -20,13 +16,13 @@ Coldtype is a poorly-built but extremely powerful offroad vehicle that lets you 
 
 ### What about DrawBot?
 
-If you’ve heard of [DrawBot](http://www.drawbot.com/) — another offroad vehicle that lets you drive where you want — you may be wondering how Coldtype is different. The answer is that Coldtype provides a very different programming idiom, one based around creating and modifying structured data that can be rendered. DrawBot, like most “creative coding” platforms, is based around rendering directly with drawing fuctions.[^1]
+If you’ve heard of [DrawBot](http://www.drawbot.com/) — another offroad vehicle that lets you drive where you want — you may be wondering how Coldtype is different. The answer is that Coldtype provides a very different programming idiom, one based around creating and modifying structured data that can be rendered. DrawBot, like most “creative coding” platforms, is based around rendering directly with drawing fuctions.
+
+(I should point out that I love DrawBot very deeply and that Coldtype would not exist without DrawBot, mostly because using DrawBot was my first time driving in the typographical offroad. That said, Coldtype mostly exists as a response to things I found awkward about programming animations and interfaces with DrawBot.)
 
 ### What about Adobe products?
 
-I’ve learned over the last few years to deeply distrust any _Type Tool_ in an Adobe product. Yes, those are good — like HTML+CSS — for doing simple Latin-based typography. Then they are very bad. You can think of Adobe products as a train that you get on and you can fall asleep in a nice seat and they still get you where you want to go, except when you wake up and realize you wanted to go somewhere the train doesn't go and then you’re like... _dang, do I have to walk?_ (Walking in this metaphor is when you right click and hit _Convert to Outlines_.)
-
-[1]: I should point out that I love DrawBot very deeply and that Coldtype would not exist without DrawBot, mostly because using DrawBot was my first time driving in the typographical offroad. That said, Coldtype mostly exists as a response to things I found awkward about programming animations and interfaces with DrawBot.
+I’ve learned over the last few years to deeply distrust any _Type Tool_ in an Adobe product (or anywhere else). Yes, those can be very good — like HTML+CSS — for doing simple Latin-based typography. But then, all of a sudden, they are very bad. You can think of Adobe products as a train that you get on and you can fall asleep in a nice seat and they still get you where you want to go, except when you wake up and realize you wanted to go somewhere the train doesn't go and then you’re like... _dang, do I have to walk?_ (Walking in this metaphor is when you right click and hit _Convert to Outlines_.)
 
 I realize now this metaphor has made me seem very pro-automobile, which... yes I do live in Los Angeles but I work from home, so I’m kind of ambivalent about cars.
 
@@ -59,13 +55,11 @@ The `-w` flag means the process will hang and monitor the file for changes. So i
 
 ## How does Coldtype work?
 
-Coldtype is, more than anything else, a small Python library that glues together three other excellent libraries:
+Coldtype is, more than anything else, a programmatic frontend to high-quality typesetting code, provided — in this latest iteration of Coldtype — by the excellent FontGoggles repository. (This was not always the case, but FontGoggles provides a much better version of some Harfbuzz+Freetype code that )
 
-- [fontTools](https://github.com/fonttools/fonttools)
-- [harfbuzz](https://github.com/harfbuzz/harfbuzz) (via [uharfbuzz](https://github.com/harfbuzz/uharfbuzz)) (+freetype, via [freetype-py](https://pypi.org/project/freetype-py/))
-- [skia-pathops](https://github.com/fonttools/skia-pathops)
+Coldtype also provides a set of idioms for holding and manipulating typographic data.
 
-The central graphic element of Coldtype (the `DATPen`) is a wrapper around `fontTool`’s `RecordingPen`, and the central typesetting element (`StyledString`) is, for most applications, a thin layer on top of harfbuzz, although it is also possible to set type directly from `.ufo` files and `.glyphs` files.
+The central graphic element of Coldtype (the `DATPen`) is a wrapper around `fontTool`’s `RecordingPen`, and the central typesetting element (`StyledString`) provides access to a rich set of styling options.
 
 For rasterization/output, Coldtype can be used with Cairo cross-platform, or DrawBot on macOS.
 
