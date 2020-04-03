@@ -1,0 +1,11 @@
+[build-system]
+requires = ["flit_core >=2,<3"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "coldtype"
+author = "Rob Stenson — Goodhertz, Inc."
+author-email = "rob@goodhertz.com"
+home-page = "https://goodhertz.co/~rob"
+classifiers = ["License :: OSI Approved :: MIT License"]
+
