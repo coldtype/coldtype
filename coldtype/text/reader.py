@@ -144,7 +144,7 @@ class Font():
 class Style():
     def RegisterShorthandPrefix(prefix, expansion):
         global _prefixes
-        _prefixes.append([prefix, expansion])
+        _prefixes.append([prefix, str(expansion)])
 
     def __init__(self,
             font=None,
