@@ -1,4 +1,7 @@
-import drawBot as db
+try:
+    import drawBot as db
+except:
+    pass
 from coldtype.pens.datpen import DATPen
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient

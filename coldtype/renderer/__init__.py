@@ -31,21 +31,25 @@ class Watchable(Enum):
 
 
 class Renderer():
-    def Argparser(name="coldtype-render"):
+    def Argparser(name="coldtype-render", file=True, nargs=[]):
         parser = argparse.ArgumentParser(prog="coldtype-render", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-        parser.add_argument("file", type=str)
+        if file:
+            parser.add_argument("file", type=str)
+        for narg in nargs:
+            parser.add_argument(narg[0], nargs="?", default=narg[1])
         parser.add_argument("-w", "--watch", action="store_true", default=False)
         parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False)
         return parser
 
     def __init__(self, parser):
         self.args = parser.parse_args()
-        self.filepath = Path(self.args.file).expanduser().resolve()
+        self.watchees = []
+        self.reset_filepath(self.args.file if hasattr(self.args, "file") else None)
+        
         self.preview = PersistentPreview()
         self.preview.clear()
         self.program = None
 
-        self.watchees = [[Watchable.Source, self.filepath]]
         self.observers = []
 
         self.reloadables = [
@@ -61,6 +65,13 @@ class Renderer():
                 self.watchees.append([Watchable.Library, Path(r.__file__)])
 
         signal.signal(signal.SIGINT, self.on_exit_signal)
+    
+    def reset_filepath(self, filepath):
+        if filepath:
+            self.filepath = Path(filepath).expanduser().resolve()
+            self.watchees = [[Watchable.Source, self.filepath]]
+        else:
+            self.filepath = None
 
     def watchee_paths(self):
         return [w[1] for w in self.watchees]
@@ -142,14 +153,19 @@ class Renderer():
         asyncio.run(self.start())
 
     async def start(self):
-        await self.before_start()
-        await self.reload_and_render("initial")
-        await self.on_start()
-        if self.args.watch:
-            self.watch_file_changes()
-            await asyncio.gather(self.listen_to_ws())
-        else:
+        should_halt = await self.before_start()
+        if should_halt:
             self.on_exit(0)
+        else:
+            await self.reload_and_render("initial")
+            exit_code = await self.on_start()
+            if not exit_code:
+                exit_code = 0
+            if self.args.watch:
+                self.watch_file_changes()
+                await asyncio.gather(self.listen_to_ws())
+            else:
+                self.on_exit(exit_code)
     
     async def before_start(self):
         pass
