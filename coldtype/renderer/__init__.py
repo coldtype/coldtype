@@ -233,7 +233,8 @@ class Renderer():
         self.on_exit(0)
 
     def on_exit(self, exit_code):
-        print(f"<EXIT RENDERER ({exit_code})>")
+        if self.args.watch:
+            print(f"<EXIT RENDERER ({exit_code})>")
         self.stop_watching_file_changes()
         self.preview.close()
         asyncio.get_event_loop().stop()
