@@ -43,6 +43,23 @@ version = "0.4.3"
 
 [[package]]
 category = "main"
+description = "A set of flexible objects for representing UFO data."
+name = "defcon"
+optional = false
+python-versions = "*"
+version = "0.6.0"
+
+[package.dependencies]
+[package.dependencies.fonttools]
+extras = ["ufo", "unicode"]
+version = ">=3.31.0"
+
+[package.extras]
+lxml = ["fonttools (>=3.31.0)"]
+pens = ["fontPens (>=0.1.0)"]
+
+[[package]]
+category = "main"
 description = "A collection of classes implementing the pen protocol for manipulating glyphs."
 name = "fontpens"
 optional = false
@@ -241,7 +258,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "07387c9fc8064c956d4e212f27bf58ec70b9d096827060ec459886937aff4a23"
+content-hash = "24a7946ec4ed1faa4514137bd683993d15e088cb5af110df145cd6459e7d7bda"
 python-versions = ">=3.6.8"
 
 [metadata.files]
@@ -260,6 +277,10 @@ booleanoperations = [
 colorama = [
     {file = "colorama-0.4.3-py2.py3-none-any.whl", hash = "sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff"},
     {file = "colorama-0.4.3.tar.gz", hash = "sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1"},
+]
+defcon = [
+    {file = "defcon-0.6.0-py2.py3-none-any.whl", hash = "sha256:e057303d188f1a0961a0c70eebdedceac7fe11e6cd30421324bb7ee33cfcd614"},
+    {file = "defcon-0.6.0.zip", hash = "sha256:52e461961b4b68ae6883f8a14a0d82f2d09f2de7a526b95c7d1b195c10ca745f"},
 ]
 fontpens = [
     {file = "fontPens-0.2.4-py2.py3-none-any.whl", hash = "sha256:cdef727e49b54ac6228f8fa087ee539258f7b0a6f0accb63cbf31d4bfc437ce7"},
