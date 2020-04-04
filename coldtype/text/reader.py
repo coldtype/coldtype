@@ -208,29 +208,7 @@ class Style():
         self.reverse = kwargs.get("r", reverse)
         self.removeOverlap = kwargs.get("ro", removeOverlap)
         self.rotate = rotate
-<<<<<<< HEAD
         self.sv = sv # scale-variations
-=======
-        self.sv = sv
-
-        ufo = None
-
-        self.format = None
-        # Load a font from a file
-        if isinstance(font, Font):
-            self.fontFile = "<in-memory>.ufo"
-            self.ufo = True
-            self.format = "ufo"
-            ufo = font
-        elif isinstance(font, str):
-            self.fontFile = normalize_font_path(font)
-        elif isinstance(font, Path):
-            self.fontFile = normalize_font_path(str(font))
-        else:
-            self.fontFile = normalize_font_path(font[0])
-            if len(font) > 1:
-                self.next = Style(font=font[1:], fontSize=fontSize, ttFont=ttFont, tracking=tracking, trackingLimit=trackingLimit, kern=kern, space=space, baselineShift=baselineShift,xShift=xShift, variations=variations, variationLimits=variationLimits, increments=increments, features=features, varyFontSize=varyFontSize, fill=fill,stroke=stroke, strokeWidth=strokeWidth, palette=palette, capHeight=capHeight, data=data, latin=latin, lang=lang, filter=filter, preventHwid=preventHwid, layer=layer, **kwargs)
->>>>>>> master
         
         if "OS/2" in self.font.font.ttFont:
             os2 = self.font.font.ttFont["OS/2"]

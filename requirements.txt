@@ -1,19 +1,20 @@
-appdirs==1.4.3
-fonttools==3.42.0
-fs==2.4.5
-lxml==4.3.3
-pytz==2019.1
-six==1.12.0
-unicodedata2==12.0.0
-freetype-py
+# path manipulation
 fontPens==0.2.4
-uharfbuzz==0.8.0
 booleanOperations==0.8.2
 defcon==0.6.0
+noise==1.2.2
 skia-pathops==0.2.0.post2
+
+# render.py
 websocket-client==0.56.0
 SimpleWebSocketServer==0.1.1
-glyphsLib==4.1.0
-noise==1.2.2
-watchdog==0.9.0
 websockets==8.1
+watchdog==0.9.0
+
+# fontgoggles
+fonttools[woff,unicode,type1,lxml,ufo]==4.6.0
+freetype-py==2.1.0.post1
+uharfbuzz==0.9.0
+python-bidi==0.4.2
+ufo2ft==2.13.0
+unicodedata2==13.0.0.post2
