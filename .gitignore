@@ -1,6 +1,7 @@
 .DS_Store
 .vscode
 env
+venv
 test/artifacts/*
 test/*.blend1
 test/test_media
