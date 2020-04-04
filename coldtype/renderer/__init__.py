@@ -122,7 +122,8 @@ class Renderer():
                     result = render()
                 self.preview.send(SVGPen.Composite(result, page, viewBox=True), bg=render_data.get("bg", 1), max_width=800)
                 if self.args.save_renders:
-                    output_path = self.filepath.parent / f"{self.filepath.stem}_{render.__name__}.png"
+                    output_path = self.filepath.parent / "renders" / f"{self.filepath.stem}_{render.__name__}.png"
+                    output_path.parent.mkdir(exist_ok=True)
                     self.rasterize(result, page, output_path)
         except:
             self.show_error()

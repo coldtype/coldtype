@@ -35,14 +35,13 @@ First, make sure to have the Coldtype desktop app open on your computer, and als
 Next, here’s some example code:
 
 ```python
-from coldtype import Rect, StyledString, Style
+from coldtype import *
 
 page = Rect(1920, 1080)
 
-def render():
+@renderable
+async def render():
     return StyledString("COLDTYPE", Style("ç/MutatorSans.ttf", 300, fill="random")).pens().align(page)
-
-renders = [render]
 ```
 
 You can run this with the `render.py` program included in the coldtype repository, e.g.:
@@ -114,22 +113,19 @@ Here is free-associated list of things that I think define the general vibe of p
 
 # Installation
 
-## Prerequisites
-
-- Git
-- Python >= 3.6
-- `virtualenv`
-- The Coldtype app, [available here](https://github.com/goodhertz/coldtype/releases)
-- freetype (`brew install freetype` or something else)
-
 ## Setup/Test
 
 - `cd` into the directory
-- To set up the virtual environment, `virtualenv env`
+- `python3.8 -m venv venv --prompt=coldtype`
 - `source env/bin/activate`
+
+Now you should see `(coldtype)` prepended to your terminal prompt. If that’s the case, continue with this invocation:
+
 - `pip install -r requirements.txt`
 - Open the Coldtype app (just a normal desktop app, you can open it by double-clicking)
-- `./render.py example/example.py`
+
+- `./render.py example/example.py -w`
+- `ctrl+c` to exit
 
 
 # Other Stuff, Optional
@@ -150,29 +146,4 @@ export PKG_CONFIG_PATH="/usr/local/opt/libffi/lib/pkgconfig"
 export LDFLAGS="-L/usr/local/opt/libffi/lib"
 ```
 
-Then you can `pip install pycairo` again — hopefully it works!
-
-# Notes on Prereqs
-
-### Python >= 3.6
-
-If you don't already have a python >= 3.6, install the latest Python from https://www.python.org/
-
-### Git
-
-- __Git__
-    - If you’re using Windows, when you install [git](https://git-scm.com/download/win), under "Adjusting your PATH" options choose "Use Git and optional Unix tools from the Windows Command Prompt" (this lets you use git inside git bash and inside windows console).
-
-### Virtualenv
-
-- `which virtualenv` to see if you already have it — if you don’t, continue, working inside the `configs` directory...
-- `python3.6 -m pip install virtualenv`
-- `virtualenv env`
-- `source env/bin/activate`
-
-Now you should see `(env)` prepended to your terminal prompt. If that’s the case, continue with this invocation:
-- `pip install -r requirements.txt`
-
-### Freetype
-
-There’s a chance you might be all set now, but probably not, as the coldtype library (a submodule) uses a bleeding-edge version of the freetype-py wrapper, which dynamically loads `libfreetype.6.dylib`, which you may or may not have. The easiest way to install it on a Mac is with homebrew, using the command `brew install freetype`, though if you’d rather not, let me (Rob) know and I can send you a pre-built freetype binary.
+Then with a re-loaded bash you can `pip install pycairo` again — hopefully it works!
