@@ -3,6 +3,9 @@ name = "coldtype"
 version = "0.0.1"
 description = ""
 authors = ["Rob Stenson <rob@goodhertz.com>"]
+packages = [
+    { include = "coldtype" }
+]
 
 [tool.poetry.dependencies]
 python = ">=3.6.8"
