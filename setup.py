@@ -19,7 +19,7 @@ setuptools.setup(
         "coldtype.color",
         "coldtype.pens",
         "coldtype.renderer",
-        "coldtype.text"
+        "coldtype.text",
 
     ],
     classifiers=[
