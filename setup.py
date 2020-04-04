@@ -20,8 +20,12 @@ setuptools.setup(
         "coldtype.pens",
         "coldtype.renderer",
         "coldtype.text",
-
     ],
+    entry_points={
+        'console_scripts': [
+            'coldtype = coldtype.renderer:main'
+        ],
+    },
     install_requires=[
         "fontPens",
         "defcon",

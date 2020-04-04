@@ -240,3 +240,9 @@ class Renderer():
         self.preview.close()
         asyncio.get_event_loop().stop()
         sys.exit(exit_code)
+
+def main():
+    Renderer(Renderer.Argparser()).main()
+
+if __name__ == "__main__":
+    main()
