@@ -18,3 +18,6 @@ python-bidi==0.4.2
 ufo2ft==2.13.0
 unicodedata2==13.0.0.post2
 numpy==1.18.2
+
+# goodhertz-fontgoggles
+git+https://github.com/goodhertz/fontgoggles
