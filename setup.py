@@ -13,7 +13,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/goodhertz/coldtype",
-    package_dir="coldtype",
+    #package_dir={"": "coldtype"},
     packages=[
         "coldtype",
         "coldtype.color",
@@ -21,6 +21,22 @@ setuptools.setup(
         "coldtype.renderer",
         "coldtype.text",
 
+    ],
+    install_requires=[
+        "fontPens",
+        "defcon",
+        "noise",
+        "skia-pathops",
+        "websocket-client",
+        "websockets",
+        "watchdog",
+        "fonttools[woff,unicode,type1,lxml,ufo]",
+        "freetype-py",
+        "uharfbuzz",
+        "python-bidi",
+        "ufo2ft",
+        #"unicodedata2",
+        "numpy",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
