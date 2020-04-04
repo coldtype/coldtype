@@ -13,6 +13,9 @@ fontPens = "^0.2.4"
 skia-pathops = "^0.4.0"
 websockets = "^8.1"
 watchdog = "^0.10.2"
+uharfbuzz = "^0.9.1"
+booleanOperations = "^0.9.0"
+noise = "^1.2.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.4"
