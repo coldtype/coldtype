@@ -52,6 +52,7 @@ class Renderer():
         self.preview = PersistentPreview()
         self.preview.clear()
         self.program = None
+        self.websocket = None
 
         self.observers = []
 
@@ -206,6 +207,7 @@ class Renderer():
 
     async def listen_to_ws(self):
         async with websockets.connect(WEBSOCKET_ADDR) as websocket:
+            self.websocket = websocket
             async for message in websocket:
                 await self.process_ws_message(message)
     

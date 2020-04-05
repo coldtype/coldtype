@@ -1,12 +1,6 @@
-from websocket import create_connection, WebSocket
-from random import random
-
-import sys, os
-dirname = os.path.realpath(os.path.dirname(__file__))
-sys.path.append(f"{dirname}/..")
-
 import json
-
+from random import random
+from websocket import create_connection, WebSocket
 from coldtype.geometry import Rect
 from coldtype.color import normalize_color
 
@@ -76,26 +70,3 @@ class PersistentPreview():
         else:
             html = wrap(content)
         self.ws.send(html)
-
-
-class PreviewConnection():
-    def __init__(self):
-        self.pp = None
-
-    def __enter__(self):
-        self.pp = PersistentPreview()
-        self.pp.clear()
-        return self
-
-    def __exit__(self, type, value, traceback):
-        self.pp.close()
-    
-    def send(self, *args, **kwargs):
-        self.pp.send(*args, **kwargs)
-
-
-def previewer():
-    return PreviewConnection()
-
-def viewer():
-    return PreviewConnection()
