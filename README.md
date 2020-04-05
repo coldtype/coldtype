@@ -4,6 +4,8 @@ __⚠️ Our (Goodhertz’) intention is to ultimately make this library a prope
 
 ---
 
+![coldtype](https://github.com/goodhertz/coldtype/blob/master/examples/renders/example_coldtype.png)
+
 # Coldtype
 
 ## Installation
