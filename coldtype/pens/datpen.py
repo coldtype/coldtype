@@ -1261,7 +1261,7 @@ class DATPenSet(DATPenLikeObject):
                 dps.append(p.frameSet(th=th, tv=tv))
         return dps
     
-    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=False, tv=False, transformFrame=True):
+    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
         return super().align(rect, x, y, th, tv, transformFrame)
     
     def alignToRects(self, rects, x=Edge.CenterX, y=Edge.CenterY, th=1, tv=1):

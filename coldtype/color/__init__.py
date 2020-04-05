@@ -23,6 +23,21 @@ def hex_to_tuple(h):
     return tuple([c/255 for c in (palette.r, palette.g, palette.b, palette.a)])
 
 
+def find_random(v):
+    if isinstance(v, str):
+        if v == "random":
+            return random()
+        elif v.startswith("r"):
+            v = v[1:]
+            if "-" in v:
+                limits = [float(x.strip()) for x in v.split("-")]
+                return random() * (limits[1]-limits[0]) + limits[0]
+            elif "," in v:
+                options = [float(x.strip()) for x in v.split(",")]
+                return options[randint(0, len(options))]
+    return float(v)
+
+
 def normalize_color(v):
     if v is None:
         return Color.from_rgb(0,0,0,0)
@@ -67,7 +82,13 @@ def normalize_color(v):
                 return c
         else:
             if isinstance(v[0], complex):
-                return Color.from_hsl(v[0].imag, *v[1:])
+                vs = [find_random(x) for x in v]
+                return Color.from_hsl(v[0].imag, *vs[1:])
+            if isinstance(v[0], str) and v[0].startswith("h"):
+                v = list(v)
+                v[0] = v[0][1:]
+                vs = [find_random(x) for x in v]
+                return Color.from_hsl(vs[0]*360, *vs[1:])
             else:
                 vs = [random() if _v == "random" else _v for _v in v]
                 return Color.from_rgb(*vs)

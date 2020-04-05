@@ -542,6 +542,7 @@ class StyledString(FittableMixin):
             self.resetGlyphRun()
             #self.glyphs = self.hb.glyphs(self.variations, self.features)
             adjusted = True
+        self.resetGlyphRun()
         return adjusted
     
     def scalePenToStyle(self, glyph, in_pen):

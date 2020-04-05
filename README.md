@@ -6,6 +6,18 @@ __⚠️ Our (Goodhertz’) intention is to ultimately make this library a prope
 
 # Coldtype
 
+## Installation
+
+### In a virtual environment
+
+If you’re using a version of Python >= 3.7, you should be able to add `coldtype` to your virtual environment with this command:
+
+> `pip install git+https://github.com/goodhertz/coldtype`
+
+To test that you have a working installation, try this command with your virtual env activated:
+
+> `coldtype -h`
+
 ## What is Coldtype?
 
 __A cross-platform library to help you precisely & programmatically do high-quality display typography.__
@@ -22,33 +34,35 @@ If you’ve heard of [DrawBot](http://www.drawbot.com/) — another offroad vehi
 
 ### What about Adobe products?
 
-I’ve learned over the last few years to deeply distrust any _Type Tool_ in an Adobe product (or anywhere else). Yes, those can be very good — like HTML+CSS — for doing simple Latin-based typography. But then, all of a sudden, they are very bad. You can think of Adobe products as a train that you get on and you can fall asleep in a nice seat and they still get you where you want to go, except when you wake up and realize you wanted to go somewhere the train doesn't go and then you’re like... _dang, do I have to walk?_ (Walking in this metaphor is when you right click and hit _Convert to Outlines_.)
+I’ve learned over the last few years to deeply distrust any _Type Tool_ in an Adobe product (or anywhere else). Yes, those can be very good — like HTML+CSS — for doing simple Latin-based typography for static designs. But then, all of a sudden, they are very bad. You can think of Adobe products as a train that you get on and you can fall asleep in a nice seat and the train will get you where you want to go, except when you wake up and realize you wanted to go somewhere the train doesn't go and then you’re like... _dang, do I have to walk?_ (Walking in this metaphor is when you right click and hit _Convert to Outlines_.)
 
-I realize now this metaphor has made me seem very pro-automobile, which... yes I do live in Los Angeles but I work from home, so I’m kind of ambivalent about cars.
+Walking can be a lot of fun, and you get to see a lot. But sometimes you want to get there faster or go farther. Yes, I realize now this metaphor has made me seem very pro-automobile, which... yes I do live in Los Angeles but I work from home, so I’m kind of ambivalent about cars.
 
 But I’m not ambivalent about typesetting with code, so let’s get into it!
 
 ## What does a Coldtype program look like?
 
-First, make sure to have the Coldtype desktop app open on your computer, and also have the coldtype virtualenv activated on the command line.
+First, make sure to have the Coldtype desktop app open on your computer, and also have a virtual environment activated on the command line, with coldtype installed (as described at the top of this readme).
 
-Next, here’s some example code:
+Now, some example code:
 
 ```python
 from coldtype import *
 
-page = Rect(1920, 1080)
-
-@renderable
-async def render():
-    return StyledString("COLDTYPE", Style("ç/MutatorSans.ttf", 300, fill="random")).pens().align(page)
+@renderable(rect=(1350, 500))
+async def render(r):
+    return StyledString("COLDTYPE", Style("ç/MutatorSans.ttf", 300, wght=1, tu=-250, r=1)).pens().align(r, tv=1).f("random").understroke()
 ```
 
-You can run this with the `render.py` program included in the coldtype repository, e.g.:
+You can run this with the `coldtype` command-line tool, e.g.:
 
-`./render.py examples/example.py -w`
+`coldtype examples/example.py -w`
 
 The `-w` flag means the process will hang and monitor the file for changes. So if you edit the file and hit save, the changes (or errors) will show up in thd Coldtype app automatically.
+
+### Some thoughts about that code
+
+You may look at that code and think to yourself: _wtf_. Yes, that is an appropriate reaction. Conventional wisdom in the programming world is that, when balancing the readability and writeability of code, the scales should be tipped towards _readable_. Here the scales are tipped the other way, because coldtype is meant as a **design idiom** for Python. The output of a coldtype program is not a piece of software that you’ll have to maintain for years to come; the output is a video, or an image, or something like that — an artifact. You may want to read a coldtype program again one day, but only for the purpose of plagiarizing your past self.
 
 ## How does Coldtype work?
 
@@ -111,19 +125,6 @@ Here is free-associated list of things that I think define the general vibe of p
 
 ---
 
-# Installation
-
-## In a virtual environment
-
-If you’re using a version of Python >= 3.7, you should be able to add `coldtype` to your virtual environment with these two commands:
-
-- `pip install git+https://github.com/goodhertz/coldtype`
-- `pip install git+https://github.com/goodhertz/fontgoggles`
-
-To test that you have a working installation, try this command with your virtual env activated:
-
-- `coldtype`
-
 ## Working on Coldtype
 
 - `cd` into the `coldtype` directory
@@ -135,7 +136,7 @@ Now you should see `(coldtype)` prepended to your terminal prompt. If that’s t
 - `pip install -r requirements.txt`
 - Open the Coldtype app (just a normal desktop app, you can open it by double-clicking)
 
-- `./render.py example/example.py -w`
+- `coldtype example/example.py -w`
 - `ctrl+c` to exit
 
 
