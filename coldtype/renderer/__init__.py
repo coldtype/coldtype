@@ -31,17 +31,24 @@ class Watchable(Enum):
 
 
 class Renderer():
-    def Argparser(name="coldtype-render", file=True, nargs=[]):
+    def Argparser(name="coldtype", file=True, nargs=[]):
         parser = argparse.ArgumentParser(prog="coldtype-render", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        
         if file:
-            parser.add_argument("file", type=str)
+            parser.add_argument("file", type=str, help="The source file for a coldtype render")
         for narg in nargs:
             parser.add_argument(narg[0], nargs="?", default=narg[1])
-        parser.add_argument("-w", "--watch", action="store_true", default=False)
-        parser.add_argument("-s", "--scale", type=float, default=1.0)
-        parser.add_argument("-r", "--rasterizer", type=str, default="drawbot")
-        parser.add_argument("-sv", "--save-renders", action="store_true", default=False)
-        parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False)
+        
+        parser.add_argument("-w", "--watch", action="store_true", default=False, help="Watch for changes to source files")
+        
+        parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?")
+
+        parser.add_argument("-r", "--rasterizer", type=str, default="drawbot", choices=["drawbot", "cairo", "svg"], help="Which rasterization engine should coldtype use to create artifacts?")
+        
+        parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at?")
+        
+        parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False, help=argparse.SUPPRESS)
+        
         return parser
 
     def __init__(self, parser):

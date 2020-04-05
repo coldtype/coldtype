@@ -113,9 +113,20 @@ Here is free-associated list of things that I think define the general vibe of p
 
 # Installation
 
-## Setup/Test
+## In a virtual environment
 
-- `cd` into the directory
+If you’re using a version of Python >= 3.7, you should be able to add `coldtype` to your virtual environment with these two commands:
+
+- `pip install git+https://github.com/goodhertz/coldtype`
+- `pip install git+https://github.com/goodhertz/fontgoggles`
+
+To test that you have a working installation, try this command with your virtual env activated:
+
+- `coldtype`
+
+## Working on Coldtype
+
+- `cd` into the `coldtype` directory
 - `python3.8 -m venv venv --prompt=coldtype`
 - `source env/bin/activate`
 
