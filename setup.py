@@ -41,6 +41,7 @@ setuptools.setup(
         "ufo2ft",
         #"unicodedata2",
         "numpy",
+        "fontgoggles @ http://github.com/goodhertz/fontgoggles/archive/master.zip"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
