@@ -17,6 +17,7 @@ import json
 from enum import Enum
 
 import coldtype
+from coldtype import renderable
 from coldtype.geometry import Rect
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.cairopen import CairoPen
@@ -32,7 +33,7 @@ class Watchable(Enum):
 
 class Renderer():
     def Argparser(name="coldtype", file=True, nargs=[]):
-        parser = argparse.ArgumentParser(prog="coldtype-render", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        parser = argparse.ArgumentParser(prog=name, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
         
         if file:
             parser.add_argument("file", type=str, help="The source file for a coldtype render")
@@ -110,12 +111,12 @@ class Renderer():
     def renderables(self):
         _rs = []
         for k, v in self.program.items():
-            if hasattr(v, "renderable"):
+            if isinstance(v, renderable):
                 _rs.append(v)
         return _rs
 
     async def render(self, trigger):
-        page = self.program["page"]
+        page = self.program.get("page", None)
         renders = self.program.get("renders")
         if renders and len(renders) > 0:
             renders = renders
@@ -124,15 +125,22 @@ class Renderer():
         render_data = self.program.get("render_data", {})
         try:
             for render in renders:
-                if inspect.iscoroutinefunction(render):
-                    result = await render()
+                rect = page
+                render_fn = render
+                if isinstance(render, renderable):
+                    rect = render.rect
+                    render_fn = render.func
+                
+                if inspect.iscoroutinefunction(render_fn):
+                    result = await render_fn(rect)
                 else:
-                    result = render()
-                self.preview.send(SVGPen.Composite(result, page, viewBox=True), bg=render_data.get("bg", 1), max_width=800)
+                    result = render_fn(rect)
+                
+                self.preview.send(SVGPen.Composite(result, rect, viewBox=True), bg=render_data.get("bg", 1), max_width=800)
                 if self.args.save_renders:
-                    output_path = self.filepath.parent / "renders" / f"{self.filepath.stem}_{render.__name__}.png"
+                    output_path = self.filepath.parent / "renders" / f"{self.filepath.stem}_{render_fn.__name__}.png"
                     output_path.parent.mkdir(exist_ok=True)
-                    self.rasterize(result, page, output_path)
+                    self.rasterize(result, rect, output_path)
         except:
             self.show_error()
     

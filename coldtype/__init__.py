@@ -18,6 +18,16 @@ from defcon import Font as DefconFont
 def raw_ufo(path):
     return DefconFont(normalize_font_path(path))
 
-def renderable(func):
-    func.renderable = True
-    return func
+class renderable():
+    def __init__(self, rect=(1080, 1080)):
+        self.rect = Rect(rect)
+    
+    def __call__(self, func):
+        self.func = func
+        return self
+
+# def renderable(func):
+#     #print(">>>>>>>>>>>>", args, kwargs)
+#     func.renderable = True
+#     #func.renderable_rect = Rect(rect)
+#     return func
