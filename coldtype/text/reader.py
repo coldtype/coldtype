@@ -153,7 +153,6 @@ class Style():
             tracking=0,
             trackingLimit=0,
             trackingMode=0,
-            kern=dict(), # custom kerning TODO actually more of a side-bearing adjustment
             kern_pairs=dict(),
             overlap_pairs=dict(),
             overlap_outline=3,
@@ -185,7 +184,7 @@ class Style():
             narrower=None,
             **kwargs):
         """
-        kern (k) — a dict of glyphName->[left,right] values in font-space
+        kern_pairs (kp) — a dict of glyphName->[left,right] values in font-space
         tracking (t)
         trackingLimit (tl)
         baselineShift (bs)
@@ -230,8 +229,7 @@ class Style():
             self.fontSize = fontSize
 
         self.tracking = kwargs.get("t", tracking)
-        self.kern = kwargs.get("k", kern)
-        self.kern_pairs = kern_pairs
+        self.kern_pairs = kwargs.get("kp", kern_pairs)
         self.overlap_pairs = overlap_pairs
         self.overlap_outline = overlap_outline
         self.trackingMode = trackingMode

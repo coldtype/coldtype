@@ -35,7 +35,10 @@ def find_random(v):
             elif "," in v:
                 options = [float(x.strip()) for x in v.split(",")]
                 return options[randint(0, len(options))]
-    return float(v)
+    try:
+        return float(v)
+    except:
+        return v
 
 
 def normalize_color(v):
@@ -83,7 +86,7 @@ def normalize_color(v):
         else:
             if isinstance(v[0], complex):
                 vs = [find_random(x) for x in v]
-                return Color.from_hsl(v[0].imag, *vs[1:])
+                return Color.from_hsl(v[0].imag*360, *vs[1:])
             if isinstance(v[0], str) and v[0].startswith("h"):
                 v = list(v)
                 v[0] = v[0][1:]

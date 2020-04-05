@@ -24,13 +24,13 @@ __A cross-platform library to help you precisely & programmatically do high-qual
 
 Yes, there are lots of ways to set type with code. Most ways — HTML/CSS/JS, Processing, etc. — are great for 90% of what most people want to do with Latin-based writing systems. Then the road runs out and you can’t do anything else.
 
-Coldtype is a poorly-built but extremely powerful offroad vehicle that lets you keep driving where there are no roads. Like many powerful vehicles, it is not user-friendly. It has no doors (please climb in through the window), and the steering wheel is not very intuitive, also it’s a stick-shift, and you should probably be a mechanic (aka programmer) if you’re going to drive it alone out into the desert. (I apologize for how macho this metaphor is getting — I can’t really think of a better one.)
+Coldtype is an offroad vehicle that lets you keep driving where there are no roads. Like many vehicles built for specialized use, it is not user-friendly. It has no doors (please climb in through the window), and the steering wheel is not very intuitive, also it’s a stick-shift, and you should probably be a mechanic programmer if you’re going to drive it alone out into the desert. (I apologize for how automotive this metaphor is getting.)
 
 ### What about DrawBot?
 
-If you’ve heard of [DrawBot](http://www.drawbot.com/) — another offroad vehicle that lets you drive where you want — you may be wondering how Coldtype is different. The answer is that Coldtype provides a very different programming idiom, one based around creating and modifying structured data that can be rendered. DrawBot, like most “creative coding” platforms, is based around rendering directly with drawing fuctions.
+If you’ve heard of [DrawBot](http://www.drawbot.com/) — another offroad vehicle that lets you drive where you want — you may be wondering how Coldtype is different. The answer is that Coldtype provides a very different programming idiom, one based around creating and modifying structured data that can be rendered. DrawBot, like most “creative coding” platforms, is based around using drawing functions to render directly to a “canvas.”
 
-(I should point out that I love DrawBot very deeply and that Coldtype would not exist without DrawBot, mostly because using DrawBot was my first time driving in the typographical offroad. That said, Coldtype mostly exists as a response to things I found awkward about programming animations and interfaces with DrawBot.)
+(I should point out that I love DrawBot and that Coldtype would not exist without DrawBot, mostly because using DrawBot was my first time driving in the typographical offroad. That said, Coldtype mostly exists as a response to things I found awkward about programming animations with DrawBot.)
 
 ### What about Adobe products?
 
@@ -42,7 +42,7 @@ But I’m not ambivalent about typesetting with code, so let’s get into it!
 
 ## What does a Coldtype program look like?
 
-First, make sure to have the Coldtype desktop app open on your computer, and also have a virtual environment activated on the command line, with coldtype installed (as described at the top of this readme).
+First, make sure to have the Coldtype desktop app open on your computer, and also have a virtual environment activated on the command line, with coldtype installed (as described above).
 
 Now, some example code:
 
@@ -62,7 +62,7 @@ The `-w` flag means the process will hang and monitor the file for changes. So i
 
 ### Some thoughts about that code
 
-You may look at that code and think to yourself: _wtf_. Yes, that is an appropriate reaction. Conventional wisdom in the programming world is that, when balancing the readability and writeability of code, the scales should be tipped towards _readable_. Here the scales are tipped the other way, because coldtype is meant as a **design idiom** for Python. The output of a coldtype program is not a piece of software that you’ll have to maintain for years to come; the output is a video, or an image, or something like that — an artifact. You may want to read a coldtype program again one day, but only for the purpose of plagiarizing your past self.
+You may look at that code and think to yourself: _wtf_. Yes, that is an appropriate reaction. Conventional wisdom in the programming world is that, when balancing the readability and writeability of code, the scales should be tipped towards _readable_. Here the scales are tipped the other way, because coldtype is meant as a **design idiom** for Python. The output of a coldtype program is not a piece of software that you’ll have to maintain for years to come; the output is a video, or an image, or something like that — an artifact. You may want to read a coldtype program again one day, but only for the purpose of learning or plagiarizing your past self.
 
 ## How does Coldtype work?
 
