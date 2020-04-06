@@ -1,6 +1,8 @@
 from coldtype import *
 from coldtype.animation import *
 
-@animation()
+font = Font("≈/LautsprecherDJR-Regular.otf")
+
+@animation(rect=(1920, 1080), storyboard=[0,3])
 def render(f):
-    return DATPen().oval(f.a.r.inset(50)).f("random")
+    return StyledString(str(f.i), Style(font, 1000)).pen().f("random").align(f.a.r)

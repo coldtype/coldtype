@@ -46,7 +46,11 @@ class Renderer():
 
         parser.add_argument("-r", "--rasterizer", type=str, default="drawbot", choices=["drawbot", "cairo", "svg"], help="Which rasterization engine should coldtype use to create artifacts?")
         
-        parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at?")
+        parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)")
+
+        parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially")
+
+        parser.add_argument("-fmt", "--format", type=str, default="png", help="What image format should be saved to disk?")
         
         parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False, help=argparse.SUPPRESS)
         
@@ -131,13 +135,16 @@ class Renderer():
                     rect = render.rect
                     args = [render.rect]
                     render_fn = render.func
-                    suffices = [render.__name__]
+                    suffices = [render.func.__name__]
                     folder = ""
                 elif isinstance(render, animation):
                     rect = render.rect
                     args = []
                     suffices = []
-                    for x in render.storyboard:
+                    frames = render.storyboard
+                    if trigger == "render_all":
+                        frames = list(range(0, render.duration))
+                    for x in frames:
                         args.append(Frame(x, render))
                         suffices.append("{:04d}".format(x))
                     render_fn = render.func
@@ -157,12 +164,18 @@ class Renderer():
                     for arg in args:
                         results.append(render_fn(arg))
                 
+                did_render = False
                 for idx, result in enumerate(results):
-                    self.preview.send(SVGPen.Composite(result, rect, viewBox=True), bg=render_data.get("bg", 1), max_width=800)
-                    if self.args.save_renders:
-                        output_path = self.filepath.parent / "renders" / f"{folder}{self.filepath.stem}_{suffices[idx]}.png"
+                    if trigger in ["initial", "render_storyboard", "resave"]:
+                        self.preview.send(SVGPen.Composite(result, rect, viewBox=True), bg=render_data.get("bg", 1), max_width=800)
+                    if self.args.save_renders or trigger in ["render_all"]:
+                        did_render = True
+                        output_path = self.filepath.parent / "renders" / f"{folder}{self.filepath.stem}_{suffices[idx]}.{self.args.format}"
                         output_path.parent.mkdir(exist_ok=True, parents=True)
                         self.rasterize(result, rect, output_path)
+                        print(">>> saved...", output_path.name)
+                if did_render:
+                    print(">>> DONE!")
         except:
             self.show_error()
     
@@ -211,7 +224,7 @@ class Renderer():
         if should_halt:
             self.on_exit(0)
         else:
-            await self.reload_and_render("initial")
+            await self.reload_and_render("render_all" if self.args.all else "initial")
             exit_code = await self.on_start()
             if not exit_code:
                 exit_code = 0
@@ -233,6 +246,8 @@ class Renderer():
     
     async def on_action(self, action, message):
         if action == "render_storyboard":
+            await self.reload_and_render(action)
+        elif action == "render_all":
             await self.reload_and_render(action)
     
     async def process_ws_message(self, message):
