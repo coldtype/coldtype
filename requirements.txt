@@ -4,6 +4,9 @@ defcon==0.6.0
 noise==1.2.2
 skia-pathops==0.2.0.post2
 
+# animation
+easing-functions==1.0.3
+
 # render.py
 websocket-client==0.56.0
 websockets==8.1

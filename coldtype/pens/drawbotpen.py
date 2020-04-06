@@ -146,6 +146,8 @@ class DrawBotPen(DrawablePenMixin):
                     db.translate(-150, -150)
                     db.image(im, (x, y))
         
+        if isinstance(pens, DATPen):
+            pens = [pens]
         for dps in pens:
             dps.walk(draw)
         

@@ -23,7 +23,7 @@ from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.cairopen import CairoPen
 from coldtype.pens.drawbotpen import DrawBotPen
 from coldtype.viewer import PersistentPreview, WEBSOCKET_ADDR
-
+from coldtype.animation import animation, Frame
 
 class Watchable(Enum):
     Source = "Source"
@@ -113,6 +113,8 @@ class Renderer():
         for k, v in self.program.items():
             if isinstance(v, renderable):
                 _rs.append(v)
+            elif isinstance(v, animation):
+                _rs.append(v)
         return _rs
 
     async def render(self, trigger):
@@ -125,22 +127,42 @@ class Renderer():
         render_data = self.program.get("render_data", {})
         try:
             for render in renders:
-                rect = page
-                render_fn = render
                 if isinstance(render, renderable):
                     rect = render.rect
+                    args = [render.rect]
                     render_fn = render.func
-                
-                if inspect.iscoroutinefunction(render_fn):
-                    result = await render_fn(rect)
+                    suffices = [render.__name__]
+                    folder = ""
+                elif isinstance(render, animation):
+                    rect = render.rect
+                    args = []
+                    suffices = []
+                    for x in render.storyboard:
+                        args.append(Frame(x, render))
+                        suffices.append("{:04d}".format(x))
+                    render_fn = render.func
+                    folder = f"{self.filepath.stem}/{render_fn.__name__}/"
                 else:
-                    result = render_fn(rect)
+                    rect = page
+                    args = [rect]
+                    render_fn = render
+                    suffices = [render.__name__]
+                    folder = ""
                 
-                self.preview.send(SVGPen.Composite(result, rect, viewBox=True), bg=render_data.get("bg", 1), max_width=800)
-                if self.args.save_renders:
-                    output_path = self.filepath.parent / "renders" / f"{self.filepath.stem}_{render_fn.__name__}.png"
-                    output_path.parent.mkdir(exist_ok=True)
-                    self.rasterize(result, rect, output_path)
+                results = []
+                if inspect.iscoroutinefunction(render_fn):
+                    for arg in args:
+                        results.append(await render_fn(arg))
+                else:
+                    for arg in args:
+                        results.append(render_fn(arg))
+                
+                for idx, result in enumerate(results):
+                    self.preview.send(SVGPen.Composite(result, rect, viewBox=True), bg=render_data.get("bg", 1), max_width=800)
+                    if self.args.save_renders:
+                        output_path = self.filepath.parent / "renders" / f"{folder}{self.filepath.stem}_{suffices[idx]}.png"
+                        output_path.parent.mkdir(exist_ok=True, parents=True)
+                        self.rasterize(result, rect, output_path)
         except:
             self.show_error()
     

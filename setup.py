@@ -34,6 +34,7 @@ setuptools.setup(
         "websocket-client",
         "websockets",
         "watchdog",
+        "easing-functions",
         "fonttools[woff,unicode,type1,lxml,ufo]",
         "freetype-py",
         "uharfbuzz",

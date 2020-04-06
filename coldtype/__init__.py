@@ -25,9 +25,3 @@ class renderable():
     def __call__(self, func):
         self.func = func
         return self
-
-# def renderable(func):
-#     #print(">>>>>>>>>>>>", args, kwargs)
-#     func.renderable = True
-#     #func.renderable_rect = Rect(rect)
-#     return func
