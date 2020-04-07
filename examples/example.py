@@ -3,7 +3,7 @@ from coldtype.pens.datpen import warp_fn
 
 font = Font("ç/ColdtypeObviously.designspace")
 
-@renderable(rect=(1200, 300))
+@renderable(rect=(1500, 300))
 def coldtype(r):
     kp = kern_pairs={("L","D"):-5, ("T","Y"):-20, ("Y","P"):10,("P","E"):-100}
     style = Style(font, 650, fill="random", wdth=1, tu=-50, r=1, ro=1, kp=kp)
