@@ -20,7 +20,7 @@ class RenderPass():
 
 
 class renderable():
-    def __init__(self, rect=(1080, 1080), bg=0.1, hide=False, fmt="png"):
+    def __init__(self, rect=(1080, 1080), bg="whitesmoke", hide=False, fmt="png"):
         self.hide = hide
         self.rect = Rect(rect)
         self.bg = normalize_color(bg)

@@ -32,6 +32,8 @@ Coldtype is an offroad vehicle that lets you keep driving where there are no roa
 
 If you’ve heard of [DrawBot](http://www.drawbot.com/) — another offroad vehicle that lets you drive where you want — you may be wondering how Coldtype is different. The answer is that Coldtype provides a very different programming idiom, one based around creating and modifying structured data that can be rendered. DrawBot, like most “creative coding” platforms, is based around using drawing functions to render directly to a “canvas.”
 
+Also Coldtype works on Windows (and Linux, theoretically).
+
 (I should point out that I love DrawBot and that Coldtype would not exist without DrawBot, mostly because using DrawBot was my first time driving in the typographical offroad. That said, Coldtype mostly exists as a response to things I found awkward about programming animations with DrawBot.)
 
 ### What about Adobe products?
