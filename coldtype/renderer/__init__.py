@@ -220,7 +220,7 @@ class Renderer():
         except KeyboardInterrupt:
             print("INTERRUPT")
             self.on_exit(0)
-        print(">", self.exit_code)
+        print("exit>", self.exit_code)
         sys.exit(self.exit_code)
 
     async def start(self):
