@@ -11,13 +11,18 @@ WEBSOCKET_ADDR = f"ws://localhost:{WEBSOCKET_PORT}"
 
 class PersistentPreview():
     def __init__(self):
-        self.ws = create_connection(WEBSOCKET_ADDR)
+        try:
+            self.ws = create_connection(WEBSOCKET_ADDR)
+        except:
+            self.ws = None
     
     def clear(self):
-        self.ws.send(json.dumps(dict(clear=True)))
+        if self.ws:
+            self.ws.send(json.dumps(dict(clear=True)))
     
     def close(self):
-        self.ws.close()
+        if self.ws:
+            self.ws.close()
     
     def send(self,
              content,
@@ -28,6 +33,10 @@ class PersistentPreview():
              bg=(1, 1, 1, 0),
              max_width=5000
         ):
+        if not self.ws:
+            print(content)
+            return
+
         norm_bg = normalize_color(bg)
         rgba = f"rgba({round(norm_bg.r*255)}, {round(norm_bg.g*255)}, {round(norm_bg.b*255)}, {norm_bg.a})"
         
