@@ -272,7 +272,8 @@ class Renderer():
         self.exit_code = exit_code
 
 def main():
-    Renderer(Renderer.Argparser()).main()
+    pargs, parser = Renderer.Argparser()
+    Renderer(parser).main()
 
 if __name__ == "__main__":
     main()
