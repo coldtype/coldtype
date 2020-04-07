@@ -25,7 +25,7 @@ def hex_to_tuple(h):
 
 def find_random(v):
     if isinstance(v, str):
-        if v == "random":
+        if v == "random" or v == "r":
             return random()
         elif v.startswith("r"):
             v = v[1:]
