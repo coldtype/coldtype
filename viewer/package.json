@@ -4,7 +4,9 @@
   "description": "an electron app for viewing things via websocket",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
   "author": "Rob Stenson, Goodhertz, Inc.",
   "license": "ISC",
@@ -15,5 +17,14 @@
   "dependencies": {
     "electron-store": "^5.1.0",
     "ws": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.goodhertz.coldtype",
+    "mac": {
+      "icon": "appicon.icns"
+    },
+    "win": {
+      "icon": "appicon.ico"
+    }
   }
 }
