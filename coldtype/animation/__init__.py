@@ -3,17 +3,6 @@ from coldtype.geometry import Rect
 from coldtype.animation.easing import ease
 
 
-class animation():
-    def __init__(self, rect=(1080, 1080), duration=30, storyboard=[0]):
-        self.rect = Rect(rect)
-        self.r = self.rect
-        self.duration = duration
-        self.storyboard = storyboard
-    
-    def __call__(self, func):
-        self.func = func
-        return self
-
 class Frame():
     def __init__(self, i, animation):
         self.i = i
@@ -25,8 +14,7 @@ class Timing():
         self.loop_t = loop_t
         self.loop = loop
         self.loop_phase = int(loop%2 != 0)
-        self.e = self.ease(easefn)
-        self.s = 0.5
+        self.e, self.s = self.ease(easefn)
     
     def ease(self, easefn):
         easer = easefn
@@ -174,3 +162,16 @@ class Loop(Timeable):
             i = self.duration + i
         is_transition, timeable = self.current(i)
         return is_transition, i, timeable
+
+class animation(Timeable):
+    def __init__(self, rect=(1080, 1080), duration=10, storyboard=[0]):
+        self.rect = Rect(rect)
+        self.r = self.rect
+        self.start = 0
+        self.end = duration
+        self.duration = duration
+        self.storyboard = storyboard
+    
+    def __call__(self, func):
+        self.func = func
+        return self

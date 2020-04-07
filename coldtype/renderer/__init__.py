@@ -94,6 +94,9 @@ class Renderer():
         print(">>> CAUGHT COLDTYPE RENDER")
         print(traceback.format_exc())
         self.preview.send(f"<pre>{traceback.format_exc()}</pre>", None)
+    
+    def show_message(self, message):
+        self.preview.send(f"<pre style='background:hsla(150, 50%, 50%)'>{message}</pre>")
 
     async def reload(self, trigger):
         try:
@@ -173,7 +176,7 @@ class Renderer():
                         self.rasterize(result, rect, output_path)
                         print(">>> saved...", output_path.name)
                 if did_render:
-                    print(">>> DONE!")
+                    self.show_message("Done!")
         except:
             self.show_error()
     

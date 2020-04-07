@@ -64,10 +64,10 @@ def curve_pos_and_speed(curve, x):
 
 def ease(style, x):
     if style == "linear":
-        return x
+        return x, 0.5
     e = eases.get(style)
     if e:
-        return e().ease(x)
+        return e().ease(x), 0.5
     elif False:
         if style in easer_ufo:
             return curve_pos_and_speed(DATPen().glyph(easer_ufo[style]), x)
