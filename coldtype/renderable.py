@@ -1,4 +1,5 @@
 import inspect
+import platform
 from subprocess import run
 
 from coldtype.geometry import Rect
@@ -66,16 +67,26 @@ class iconset(renderable):
         iconset = filepath.parent / f"{filepath.stem}.iconset"
         iconset.mkdir(parents=True, exist_ok=True)
 
-        for png in output_folder.glob("*.png"):
-            d = int(png.stem.split("_")[1])
-            for x in [1, 2]:
-                if x == 2 and d == 16:
-                    continue
-                elif x == 1:
-                    fn = f"icon_{d}x{d}.png"
-                elif x == 2:
-                    fn = f"icon_{int(d/2)}x{int(d/2)}@2x.png"
-                print(fn)
-            run(["sips", "-z", str(d), str(d), str(png), "--out", str(iconset / fn)])
+        system = platform.system()
         
-        run(["iconutil", "-c", "icns", str(iconset)])
+        if system == "Darwin":
+            for png in output_folder.glob("*.png"):
+                d = int(png.stem.split("_")[1])
+                for x in [1, 2]:
+                    if x == 2 and d == 16:
+                        continue
+                    elif x == 1:
+                        fn = f"icon_{d}x{d}.png"
+                    elif x == 2:
+                        fn = f"icon_{int(d/2)}x{int(d/2)}@2x.png"
+                    print(fn)
+                run(["sips", "-z", str(d), str(d), str(png), "--out", str(iconset / fn)])
+            run(["iconutil", "-c", "icns", str(iconset)])
+        
+        if True: # can be done windows or mac
+            from PIL import Image
+            output = filepath.parent / f"{filepath.stem}.ico"
+            largest = list(output_folder.glob("*_1024.png"))[0]
+            img = Image.open(str(largest))
+            icon_sizes = [(x, x) for x in self.valid_sizes]
+            img.save(str(output), sizes=icon_sizes)

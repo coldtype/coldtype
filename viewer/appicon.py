@@ -1,4 +1,5 @@
 from coldtype import *
+from coldtype.renderable import iconset
 from coldtype.color import Gradient, normalize_color
 from functools import partial
 
@@ -12,7 +13,7 @@ def mod_o(idx, dp):
 
 @iconset(rect=(1024, 1024), sizes=(128, 1024))
 def appicon(r, size):
-    grade = Gradient.Horizontal(r, (0.6j, 0.5, 0.35), (0.5j, 0.85, 0.45))
+    grade = Gradient.Horizontal(r, (0.95, 0.1, 0.3), (0.3, 0.1, 0.85))
     outline = 15
     oval = DATPen().f(grade).oval(r.inset(15))
     if size <= 128:
