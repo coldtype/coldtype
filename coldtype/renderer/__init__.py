@@ -41,11 +41,19 @@ class Renderer():
         
         pargs = dict(
             watch=parser.add_argument("-w", "--watch", action="store_true", default=False, help="Watch for changes to source files"),
+            
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
+            
             rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default="drawbot", choices=["drawbot", "cairo", "svg"], help="Which rasterization engine should coldtype use to create artifacts?"),
+            
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
+            
             all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
+            
             format=parser.add_argument("-fmt", "--format", type=str, default=None, help="What image format should be saved to disk?"),
+
+            file_prefix=parser.add_argument("-fp", "--file-prefix", type=str, default="", help="Should the output files be prefixed with something? If so, put it here."),
+            
             reload_libraries=parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False, help=argparse.SUPPRESS))
         return pargs, parser
 
@@ -129,7 +137,7 @@ class Renderer():
                         self.preview.send(SVGPen.Composite(result, render.rect, viewBox=True), bg=render.bg, max_width=800)
                     if self.args.save_renders or trigger in ["render_all"]:
                         did_render = True
-                        output_path = output_folder / f"{self.filepath.stem}_{rp.suffix}.{self.args.format or render.fmt}"
+                        output_path = output_folder / f"{self.args.file_prefix}{self.filepath.stem}_{rp.suffix}.{self.args.format or render.fmt}"
                         rp.output_path = output_path
                         output_path.parent.mkdir(exist_ok=True, parents=True)
                         self.rasterize(result, render.rect, output_path)

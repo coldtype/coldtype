@@ -4,7 +4,7 @@ __⚠️ Our (Goodhertz’) intention is to ultimately make this library a prope
 
 ---
 
-![coldtype](https://github.com/goodhertz/coldtype/blob/master/examples/renders/example_coldtype.svg)
+![coldtype](https://github.com/goodhertz/coldtype/blob/master/examples/renders/example_coldtype.png)
 
 # Coldtype
 
@@ -19,6 +19,8 @@ If you’re using a version of Python >= 3.7, you should be able to add `coldtyp
 To test that you have a working installation, try this command with your virtual env activated:
 
 > `coldtype -h`
+
+You’ll also need the Coldtype app, which is a cross-platform app that displays SVG previews of coldtype programs, via websockets.
 
 ## What is Coldtype?
 
