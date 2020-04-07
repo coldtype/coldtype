@@ -16,7 +16,7 @@ import json
 from enum import Enum
 
 import coldtype
-from coldtype import renderable, icon
+from coldtype import renderable
 from coldtype.geometry import Rect
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.cairopen import CairoPen
@@ -45,7 +45,7 @@ class Renderer():
             rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default="drawbot", choices=["drawbot", "cairo", "svg"], help="Which rasterization engine should coldtype use to create artifacts?"),
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
             all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
-            format=parser.add_argument("-fmt", "--format", type=str, default="png", help="What image format should be saved to disk?"),
+            format=parser.add_argument("-fmt", "--format", type=str, default=None, help="What image format should be saved to disk?"),
             reload_libraries=parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False, help=argparse.SUPPRESS))
         return pargs, parser
 
@@ -107,34 +107,35 @@ class Renderer():
             self.program = None
             self.show_error()
     
-    def renderables(self):
+    def renderables(self, trigger):
         _rs = []
         for k, v in self.program.items():
-            if isinstance(v, animation):
-                _rs.append(v)
-            elif isinstance(v, icon):
-                _rs.append(v)
-            elif isinstance(v, renderable):
-                _rs.append(v)
+            if isinstance(v, renderable):
+                if v.hide and trigger != "render_all":
+                    continue
+                else:
+                    _rs.append(v)
         return _rs
 
     async def render(self, trigger):
-        renders = self.renderables()
+        renders = self.renderables(trigger)
         try:
             for render in renders:
-                passes = render.passes(trigger)
-                results = [await rp.run() for rp in passes]
+                output_folder = self.filepath.parent / "renders" / render.folder()
                 did_render = False
-                for idx, (suffix, result) in enumerate(results):
+                for rp in render.passes(trigger):
+                    result = await rp.run()
                     if trigger in ["initial", "render_storyboard", "resave"]:
                         self.preview.send(SVGPen.Composite(result, render.rect, viewBox=True), bg=render.bg, max_width=800)
                     if self.args.save_renders or trigger in ["render_all"]:
                         did_render = True
-                        output_path = self.filepath.parent / "renders" / render.folder() / f"{self.filepath.stem}_{suffix}.{self.args.format}"
+                        output_path = output_folder / f"{self.filepath.stem}_{rp.suffix}.{self.args.format or render.fmt}"
+                        rp.output_path = output_path
                         output_path.parent.mkdir(exist_ok=True, parents=True)
                         self.rasterize(result, render.rect, output_path)
                         print(">>> saved...", output_path.name)
                 if did_render:
+                    render.package(self.filepath, output_folder)
                     self.show_message("Done!")
         except:
             self.show_error()
