@@ -16,10 +16,11 @@ setuptools.setup(
     #package_dir={"": "coldtype"},
     packages=[
         "coldtype",
+        "coldtype.animation",
         "coldtype.color",
         "coldtype.pens",
         "coldtype.renderer",
-        "coldtype.text",
+        "coldtype.text"
     ],
     entry_points={
         'console_scripts': [
