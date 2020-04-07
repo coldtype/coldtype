@@ -2,7 +2,6 @@ import sys, os
 from pathlib import Path
 
 import asyncio
-import signal
 import websockets
 
 from coldtype.renderer.watchdog import AsyncWatchdog
@@ -79,8 +78,6 @@ class Renderer():
         if self.args.reload_libraries:
             for r in self.reloadables:
                 self.watchees.append([Watchable.Library, Path(r.__file__)])
-
-        signal.signal(signal.SIGINT, self.on_exit_signal)
     
     def reset_filepath(self, filepath):
         if filepath:
@@ -217,7 +214,12 @@ class Renderer():
             self.watch_file_changes()
 
     def main(self):
-        asyncio.run(self.start())
+        try:
+            asyncio.get_event_loop().run_until_complete(self.start())
+        except KeyboardInterrupt:
+            print("INTERRUPT")
+            self.on_exit(0)
+        sys.exit(self.exit_code)
 
     async def start(self):
         should_halt = await self.before_start()
@@ -229,6 +231,7 @@ class Renderer():
             if not exit_code:
                 exit_code = 0
             if self.args.watch:
+                loop = asyncio.get_running_loop()
                 self.watch_file_changes()
                 await asyncio.gather(self.listen_to_ws())
             else:
@@ -282,18 +285,13 @@ class Renderer():
     def stop_watching_file_changes(self):
         for o in self.observers:
             o.stop()
-            #o.join()
-
-    def on_exit_signal(self, frame, signal):
-        self.on_exit(0)
 
     def on_exit(self, exit_code):
         if self.args.watch:
             print(f"<EXIT RENDERER ({exit_code})>")
         self.stop_watching_file_changes()
         self.preview.close()
-        asyncio.get_event_loop().stop()
-        sys.exit(exit_code)
+        self.exit_code = exit_code
 
 def main():
     Renderer(Renderer.Argparser()).main()
