@@ -53,6 +53,8 @@ class Renderer():
             format=parser.add_argument("-fmt", "--format", type=str, default=None, help="What image format should be saved to disk?"),
 
             file_prefix=parser.add_argument("-fp", "--file-prefix", type=str, default="", help="Should the output files be prefixed with something? If so, put it here."),
+
+            output_folder=parser.add_argument("-of", "--output-folder", type=str, default=None, help="If you don’t want to render to the default output location, specify that here."),
             
             reload_libraries=parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False, help=argparse.SUPPRESS))
         return pargs, parser
@@ -129,7 +131,10 @@ class Renderer():
         renders = self.renderables(trigger)
         try:
             for render in renders:
-                output_folder = self.filepath.parent / "renders" / render.folder()
+                if self.args.output_folder:
+                    output_folder = Path(self.args.output_folder).expanduser().resolve()
+                else:
+                    output_folder = self.filepath.parent / "renders" / render.folder()
                 did_render = False
                 for rp in render.passes(trigger):
                     result = await rp.run()
