@@ -12,10 +12,6 @@ except:
     pass
 
 
-parser = Renderer.Argparser()
-parser.add_argument("-i", "--icns", action="store_true", default=False)
-parser.add_argument("-si", "--svg-icons", action="store_true", default=False)
-
 class DefaultRenderer(Renderer):
     async def on_start(self):
         if self.args.icns:
@@ -69,5 +65,9 @@ class DefaultRenderer(Renderer):
         
         call(["iconutil", "-c", "icns", str(iconset)])
 
+if __name__ == "__main__":    
+    pargs, parser = Renderer.Argparser()
+    parser.add_argument("-i", "--icns", action="store_true", default=False)
+    parser.add_argument("-si", "--svg-icons", action="store_true", default=False)
 
-DefaultRenderer(parser).main()
+    DefaultRenderer(parser).main()

@@ -39,21 +39,15 @@ class Renderer():
         for narg in nargs:
             parser.add_argument(narg[0], nargs="?", default=narg[1])
         
-        parser.add_argument("-w", "--watch", action="store_true", default=False, help="Watch for changes to source files")
-        
-        parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?")
-
-        parser.add_argument("-r", "--rasterizer", type=str, default="drawbot", choices=["drawbot", "cairo", "svg"], help="Which rasterization engine should coldtype use to create artifacts?")
-        
-        parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)")
-
-        parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially")
-
-        parser.add_argument("-fmt", "--format", type=str, default="png", help="What image format should be saved to disk?")
-        
-        parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False, help=argparse.SUPPRESS)
-        
-        return parser
+        pargs = dict(
+            watch=parser.add_argument("-w", "--watch", action="store_true", default=False, help="Watch for changes to source files"),
+            save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
+            rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default="drawbot", choices=["drawbot", "cairo", "svg"], help="Which rasterization engine should coldtype use to create artifacts?"),
+            scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
+            all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
+            format=parser.add_argument("-fmt", "--format", type=str, default="png", help="What image format should be saved to disk?"),
+            reload_libraries=parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False, help=argparse.SUPPRESS))
+        return pargs, parser
 
     def __init__(self, parser):
         self.args = parser.parse_args()
