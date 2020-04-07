@@ -1,6 +1,6 @@
 🌋 _Hello! Not sure how you got here unless I gave you the link personally — if I didn’t, you’re welcome to look around, but know that this is alpha-quality software that’s mostly undocumented._ 🌋
 
-__⚠️ Our (Goodhertz’) intention is to ultimately make this library a proper, useable, open-source project, but for the moment — though it is publicly viewable — we are not publicizing it and it is under active development. ⚠️__
+__⚠️ Our intention is to ultimately make this library a proper, useable, open-source project, but for the moment — though it is publicly viewable — we are not publicizing it and it is under active development. ⚠️__
 
 ---
 
@@ -21,6 +21,13 @@ To test that you have a working installation, try this command with your virtual
 > `coldtype -h`
 
 You’ll also need the Coldtype app, which is a cross-platform app that displays SVG previews of coldtype programs, via websockets.
+
+- Mac app: https://install.goodhertz.co/coldtype/alpha-0.0.1/coldtype-0.0.1.dmg
+- Windows app: https://install.goodhertz.co/coldtype/alpha-0.0.1/coldtype.exe
+
+Though it’s not strictly necessary to have this app open at all times, it’s just something I leave open on my computer, so whenever I want to see the visual output of a coldtype program, it’s ready to go.
+
+N.B. This app isn’t signed or anything, we should work on that.
 
 ## What is Coldtype?
 

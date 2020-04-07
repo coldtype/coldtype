@@ -1,9 +1,5 @@
 ```
-$ npm install --save-dev electron
-$ npm install
-$ npm start
-```
-_or_
-```
-$ ./build.sh
+yarn add electron-builder --dev
+yarn install
+yarn dist
 ```
