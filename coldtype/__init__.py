@@ -13,15 +13,8 @@ from coldtype.text.reader import Font
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.geometry import Rect
 from coldtype.color import Color, Gradient, normalize_color
+from coldtype.renderable import renderable, icon
 from defcon import Font as DefconFont
 
 def raw_ufo(path):
     return DefconFont(normalize_font_path(path))
-
-class renderable():
-    def __init__(self, rect=(1080, 1080)):
-        self.rect = Rect(rect)
-    
-    def __call__(self, func):
-        self.func = func
-        return self

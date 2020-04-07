@@ -1,6 +1,7 @@
 import math
 from coldtype.geometry import Rect
 from coldtype.animation.easing import ease
+from coldtype.renderable import renderable, RenderPass
 
 
 class Frame():
@@ -163,8 +164,10 @@ class Loop(Timeable):
         is_transition, timeable = self.current(i)
         return is_transition, i, timeable
 
-class animation(Timeable):
-    def __init__(self, rect=(1080, 1080), duration=10, storyboard=[0]):
+
+class animation(renderable, Timeable):
+    def __init__(self, rect=(1080, 1080), duration=10, storyboard=[0], **kwargs):
+        super().__init__(**kwargs)
         self.rect = Rect(rect)
         self.r = self.rect
         self.start = 0
@@ -175,3 +178,12 @@ class animation(Timeable):
     def __call__(self, func):
         self.func = func
         return self
+    
+    def folder(self):
+        return self.func.__name__ # TODO necessary?
+    
+    def passes(self, mode):
+        frames = self.storyboard
+        if mode == "all":
+            frames = list(range(0, self.duration))
+        return [RenderPass(self.func, "{:04d}".format(i), [Frame(i, self)]) for i in frames]

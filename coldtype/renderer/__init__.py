@@ -16,7 +16,7 @@ import json
 from enum import Enum
 
 import coldtype
-from coldtype import renderable
+from coldtype import renderable, icon
 from coldtype.geometry import Rect
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.cairopen import CairoPen
@@ -110,64 +110,29 @@ class Renderer():
     def renderables(self):
         _rs = []
         for k, v in self.program.items():
-            if isinstance(v, renderable):
+            if isinstance(v, animation):
                 _rs.append(v)
-            elif isinstance(v, animation):
+            elif isinstance(v, icon):
+                _rs.append(v)
+            elif isinstance(v, renderable):
                 _rs.append(v)
         return _rs
 
     async def render(self, trigger):
-        page = self.program.get("page", None)
-        renders = self.program.get("renders")
-        if renders and len(renders) > 0:
-            renders = renders
-        else:
-            renders = self.renderables()
-        render_data = self.program.get("render_data", {})
+        renders = self.renderables()
         try:
             for render in renders:
-                if isinstance(render, renderable):
-                    rect = render.rect
-                    args = [render.rect]
-                    render_fn = render.func
-                    suffices = [render.func.__name__]
-                    folder = ""
-                elif isinstance(render, animation):
-                    rect = render.rect
-                    args = []
-                    suffices = []
-                    frames = render.storyboard
-                    if trigger == "render_all":
-                        frames = list(range(0, render.duration))
-                    for x in frames:
-                        args.append(Frame(x, render))
-                        suffices.append("{:04d}".format(x))
-                    render_fn = render.func
-                    folder = f"{self.filepath.stem}/{render_fn.__name__}/"
-                else:
-                    rect = page
-                    args = [rect]
-                    render_fn = render
-                    suffices = [render.__name__]
-                    folder = ""
-                
-                results = []
-                if inspect.iscoroutinefunction(render_fn):
-                    for arg in args:
-                        results.append(await render_fn(arg))
-                else:
-                    for arg in args:
-                        results.append(render_fn(arg))
-                
+                passes = render.passes(trigger)
+                results = [await rp.run() for rp in passes]
                 did_render = False
-                for idx, result in enumerate(results):
+                for idx, (suffix, result) in enumerate(results):
                     if trigger in ["initial", "render_storyboard", "resave"]:
-                        self.preview.send(SVGPen.Composite(result, rect, viewBox=True), bg=render_data.get("bg", 1), max_width=800)
+                        self.preview.send(SVGPen.Composite(result, render.rect, viewBox=True), bg=render.bg, max_width=800)
                     if self.args.save_renders or trigger in ["render_all"]:
                         did_render = True
-                        output_path = self.filepath.parent / "renders" / f"{folder}{self.filepath.stem}_{suffices[idx]}.{self.args.format}"
+                        output_path = self.filepath.parent / "renders" / render.folder() / f"{self.filepath.stem}_{suffix}.{self.args.format}"
                         output_path.parent.mkdir(exist_ok=True, parents=True)
-                        self.rasterize(result, rect, output_path)
+                        self.rasterize(result, render.rect, output_path)
                         print(">>> saved...", output_path.name)
                 if did_render:
                     self.show_message("Done!")
