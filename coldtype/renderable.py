@@ -62,6 +62,7 @@ class iconset(renderable):
         return [RenderPass(self.func, str(size), [self.rect, size]) for size in sizes]
     
     def package(self, filepath, output_folder):
+        # inspired by https://retifrav.github.io/blog/2018/10/09/macos-convert-png-to-icns/
         iconset = filepath.parent / f"{filepath.stem}.iconset"
         iconset.mkdir(parents=True, exist_ok=True)
 
