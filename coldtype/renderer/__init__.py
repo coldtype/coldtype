@@ -195,25 +195,24 @@ class Renderer():
             asyncio.get_event_loop().run_until_complete(self.start())
         except KeyboardInterrupt:
             print("INTERRUPT")
-            self.on_exit(0)
+            self.on_exit()
         print("exit>", self.exit_code)
         sys.exit(self.exit_code)
 
     async def start(self):
         should_halt = await self.before_start()
         if should_halt:
-            self.on_exit(0)
+            print("SHOULD HALT")
+            self.on_exit()
         else:
             await self.reload_and_render("render_all" if self.args.all else "initial")
-            exit_code = await self.on_start()
-            if not exit_code:
-                exit_code = 0
+            await self.on_start()
             if self.args.watch:
                 loop = asyncio.get_running_loop()
                 self.watch_file_changes()
                 await asyncio.gather(self.listen_to_ws())
             else:
-                self.on_exit(exit_code)
+                self.on_exit()
     
     async def before_start(self):
         pass
@@ -264,12 +263,11 @@ class Renderer():
         for o in self.observers:
             o.stop()
 
-    def on_exit(self, exit_code):
-        if self.args.watch:
-            print(f"<EXIT RENDERER ({exit_code})>")
+    def on_exit(self):
+        #if self.args.watch:
+        #    print(f"<EXIT RENDERER ({exit_code})>")
         self.stop_watching_file_changes()
         self.preview.close()
-        self.exit_code = exit_code
 
 def main():
     pargs, parser = Renderer.Argparser()
