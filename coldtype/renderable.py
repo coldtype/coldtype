@@ -4,6 +4,8 @@ from subprocess import run
 
 from coldtype.geometry import Rect
 from coldtype.color import normalize_color
+from coldtype.animation import Timeable, Frame
+from coldtype.animation.timeline import Timeline
 
 
 class RenderPass():
@@ -90,3 +92,30 @@ class iconset(renderable):
             img = Image.open(str(largest))
             icon_sizes = [(x, x) for x in self.valid_sizes]
             img.save(str(output), sizes=icon_sizes)
+
+
+class animation(renderable, Timeable):
+    def __init__(self, rect=(1080, 1080), duration=10, storyboard=[0], timeline:Timeline=None, **kwargs):
+        super().__init__(**kwargs)
+        self.rect = Rect(rect)
+        self.r = self.rect
+        self.start = 0
+        self.end = duration
+        self.duration = duration
+        self.storyboard = storyboard
+        if timeline:
+            self.timeline = timeline
+            self.t = timeline
+            self.start = timeline.start
+            self.end = timeline.end
+            self.duration = timeline.duration
+            self.storyboard = timeline.storyboard
+    
+    def folder(self):
+        return self.func.__name__ # TODO necessary?
+    
+    def passes(self, mode):
+        frames = self.storyboard
+        if mode == "all":
+            frames = list(range(0, self.duration))
+        return [RenderPass(self.func, "{:04d}".format(i), [Frame(i, self)]) for i in frames]

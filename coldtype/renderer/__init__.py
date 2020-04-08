@@ -22,7 +22,6 @@ from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.cairopen import CairoPen
 from coldtype.pens.drawbotpen import DrawBotPen
 from coldtype.viewer import PersistentPreview, WEBSOCKET_ADDR
-from coldtype.animation import animation, Frame
 
 class Watchable(Enum):
     Source = "Source"
