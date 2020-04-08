@@ -23,11 +23,21 @@ class RenderPass():
 
 
 class renderable():
-    def __init__(self, rect=(1080, 1080), bg="whitesmoke", hide=False, fmt="png"):
+    def __init__(self, rect=(1080, 1080), bg="whitesmoke", hide=False, fmt="png", rasterizer=None):
         self.hide = hide
         self.rect = Rect(rect)
         self.bg = normalize_color(bg)
         self.fmt = fmt
+        self.rasterizer = rasterizer
+        if not rasterizer:
+            if self.fmt == "svg":
+                self.rasterizer = "svg"
+            else:
+                system = platform.system()
+                if system == "Darwin":
+                    self.rasterizer = "drawbot"
+                else:
+                    self.rasterizer = "cairo"
     
     def __call__(self, func):
         self.func = func

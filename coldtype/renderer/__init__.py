@@ -63,7 +63,7 @@ class Renderer():
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
             
-            rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default="drawbot", choices=["drawbot", "cairo", "svg"], help="Which rasterization engine should coldtype use to create artifacts?"),
+            rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default=None, choices=["drawbot", "cairo", "svg"], help="Which rasterization engine should coldtype use to create artifacts?"),
             
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
             
@@ -173,7 +173,7 @@ class Renderer():
                         output_path = output_folder / f"{self.args.file_prefix}{self.filepath.stem}_{rp.suffix}.{self.args.format or render.fmt}"
                         rp.output_path = output_path
                         output_path.parent.mkdir(exist_ok=True, parents=True)
-                        self.rasterize(result, render.rect, output_path)
+                        self.rasterize(result, render, output_path)
                         print(">>> saved...", output_path.name)
                 if did_render:
                     render.package(self.filepath, output_folder)
@@ -181,14 +181,18 @@ class Renderer():
         except:
             self.show_error()
     
-    def rasterize(self, content, frame, path):
+    def rasterize(self, content, render, path):
         scale = int(self.args.scale)
-        if self.args.rasterizer == "drawbot":
-            DrawBotPen.Composite(content, frame, str(path), scale=scale)
-        elif self.args.rasterizer == "svg":
-            path.write_text(SVGPen.Composite(content, frame, viewBox=True))
+        rasterizer = self.args.rasterizer or render.rasterizer
+        
+        if rasterizer == "drawbot":
+            DrawBotPen.Composite(content, render.rect, str(path), scale=scale)
+        elif rasterizer == "svg":
+            path.write_text(SVGPen.Composite(content, render.rect, viewBox=True))
+        elif rasterizer == "cairo":
+            CairoPen.Composite(content, render.rect, str(path), scale=scale)
         else:
-            CairoPen.Composite(content, frame, str(path), scale=scale)
+            raise Exception(f"rasterizer ({rasterizer}) not supported")
     
     async def reload_and_render(self, trigger, watchable=None):
         wl = len(self.watchees)
