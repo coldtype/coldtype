@@ -73,6 +73,8 @@ class Renderer():
             file_prefix=parser.add_argument("-fp", "--file-prefix", type=str, default="", help="Should the output files be prefixed with something? If so, put it here."),
 
             output_folder=parser.add_argument("-of", "--output-folder", type=str, default=None, help="If you don’t want to render to the default output location, specify that here."),
+
+            monitor_lines=parser.add_argument("-ml", "--monitor-lines", action="store_true", default=False, help=argparse.SUPPRESS),
             
             reload_libraries=parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False, help=argparse.SUPPRESS))
         return pargs, parser
@@ -87,6 +89,7 @@ class Renderer():
         self.program = None
         self.websocket = None
         self.exit_code = 0
+        self.line_number = -1
 
         self.observers = []
 
@@ -103,6 +106,7 @@ class Renderer():
                 self.watchees.append([Watchable.Library, Path(r.__file__)])
     
     def reset_filepath(self, filepath):
+        self.line_number = -1
         if filepath:
             self.filepath = Path(filepath).expanduser().resolve()
             self.watchees = [[Watchable.Source, self.filepath]]
@@ -122,7 +126,6 @@ class Renderer():
 
     async def reload(self, trigger):
         try:
-            print(">>>", file_and_line_to_def(self.filepath, 6))
             self.program = run_path(str(self.filepath))
             for k, v in self.program.items():
                 if isinstance(v, coldtype.text.reader.Font):
@@ -140,10 +143,12 @@ class Renderer():
         _rs = []
         for k, v in self.program.items():
             if isinstance(v, renderable):
-                if v.hide and trigger != "render_all":
-                    continue
-                else:
-                    _rs.append(v)
+                _rs.append(v)
+        if self.args.monitor_lines and trigger != "render_all":
+            func_name = file_and_line_to_def(self.filepath, self.line_number)
+            matches = [r for r in _rs if r.func.__name__ == func_name]
+            if len(matches) > 0:
+                return matches
         return _rs
 
     async def render(self, trigger):
@@ -257,8 +262,8 @@ class Renderer():
                 await self.on_message(jdata, jdata.get("action"))
             elif jdata.get("metadata") and jdata.get("path"):
                 path = Path(jdata.get("path"))
-                if path in self.watchee_paths():
-                    print(path.name, jdata.get("line_number"))
+                if self.args.monitor_lines and path == self.filepath:
+                    self.line_number = jdata.get("line_number")
         except:
             print("Malformed message", message)
 
