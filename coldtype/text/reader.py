@@ -134,7 +134,7 @@ class Font():
     
     async def load(self):
         await self.font.load(None)
-        print(">>> loaded", self.path.name)
+        #print(">>> loaded", self.path.name)
     
     async def Preload(path):
         font = Font(path)

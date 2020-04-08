@@ -162,7 +162,7 @@ class Renderer():
                 if self.args.output_folder:
                     output_folder = Path(self.args.output_folder).expanduser().resolve()
                 elif render.dst:
-                    output_folder = render.dst
+                    output_folder = render.dst / render.folder(self.filepath)
                 else:
                     output_folder = self.filepath.parent / "renders" / render.folder(self.filepath)
                 did_render = False

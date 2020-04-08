@@ -82,7 +82,7 @@ class iconset(renderable):
     
     def package(self, filepath, output_folder):
         # inspired by https://retifrav.github.io/blog/2018/10/09/macos-convert-png-to-icns/
-        iconset = filepath.parent / f"{filepath.stem}.iconset"
+        iconset = output_folder.parent / f"{filepath.stem}.iconset"
         iconset.mkdir(parents=True, exist_ok=True)
 
         system = platform.system()
@@ -103,7 +103,7 @@ class iconset(renderable):
         
         if True: # can be done windows or mac
             from PIL import Image
-            output = filepath.parent / f"{filepath.stem}.ico"
+            output = output_folder.parent / f"{filepath.stem}.ico"
             largest = list(output_folder.glob("*_1024.png"))[0]
             img = Image.open(str(largest))
             icon_sizes = [(x, x) for x in self.valid_sizes]
