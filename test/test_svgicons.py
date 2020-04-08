@@ -1,7 +1,7 @@
 from coldtype import *
 from functools import partial
 
-testicon = partial(svgicon, prefix="svgicon")
+testicon = partial(svgicon, prefix="svgicon", custom_folder="icons")
 
 @testicon()
 def circle(r):

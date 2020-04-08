@@ -408,7 +408,10 @@ class StyledString(FittableMixin):
                     except TypeError:
                         l = kp
                         adv = 0
-                    a, b = chars
+                    if isinstance(chars, str):
+                        a, b = chars.split("/")
+                    else:
+                        a, b = chars
                     if gn == b and last_gn == a:
                         kern_shift = l
                         if kern_shift != 0:

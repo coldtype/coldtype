@@ -24,13 +24,14 @@ class RenderPass():
 
 
 class renderable():
-    def __init__(self, rect=(1080, 1080), bg="whitesmoke", hide=False, fmt="png", rasterizer=None, prefix=None, dst=None):
+    def __init__(self, rect=(1080, 1080), bg="whitesmoke", hide=False, fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None):
         self.hide = hide
         self.rect = Rect(rect)
         self.bg = normalize_color(bg)
         self.fmt = fmt
         self.prefix = prefix
         self.dst = Path(dst).expanduser().resolve() if dst else None
+        self.custom_folder = custom_folder
         self.rasterizer = rasterizer
         if not rasterizer:
             if self.fmt == "svg":

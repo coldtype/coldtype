@@ -76,6 +76,8 @@ class Renderer():
             output_folder=parser.add_argument("-of", "--output-folder", type=str, default=None, help="If you don’t want to render to the default output location, specify that here."),
 
             monitor_lines=parser.add_argument("-ml", "--monitor-lines", action="store_true", default=False, help=argparse.SUPPRESS),
+
+            filter_functions=parser.add_argument("-ff", "--filter-functions", type=str, default=None, help="Names of functions to render"),
             
             reload_libraries=parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False, help=argparse.SUPPRESS))
         return pargs, parser
@@ -147,6 +149,9 @@ class Renderer():
         for k, v in self.program.items():
             if isinstance(v, renderable):
                 _rs.append(v)
+        if self.args.filter_functions:
+            function_names = [f.strip() for f in self.args.filter_functions.split(",")]
+            _rs = [r for r in _rs if r.func.__name__ in function_names]
         if self.args.monitor_lines and trigger != "render_all":
             func_name = file_and_line_to_def(self.filepath, self.line_number)
             matches = [r for r in _rs if r.func.__name__ == func_name]
@@ -162,15 +167,15 @@ class Renderer():
                 if self.args.output_folder:
                     output_folder = Path(self.args.output_folder).expanduser().resolve()
                 elif render.dst:
-                    output_folder = render.dst / render.folder(self.filepath)
+                    output_folder = render.dst / (render.custom_folder or render.folder(self.filepath))
                 else:
-                    output_folder = self.filepath.parent / "renders" / render.folder(self.filepath)
+                    output_folder = self.filepath.parent / "renders" / (render.custom_folder or render.folder(self.filepath))
                 did_render = False
                 for rp in render.passes(trigger):
                     result = await rp.run()
                     if trigger in ["initial", "render_storyboard", "resave"]:
                         self.preview.send(SVGPen.Composite(result, render.rect, viewBox=True), bg=render.bg, max_width=800)
-                    if self.args.save_renders or trigger in ["render_all"]:
+                    if self.args.save_renders or trigger in ["render_all", "render_workarea"]:
                         did_render = True
                         prefix = self.args.file_prefix or render.prefix or self.filepath.stem
                         output_path = output_folder / f"{prefix}_{rp.suffix}.{self.args.format or render.fmt}"
@@ -263,6 +268,8 @@ class Renderer():
         if action == "render_storyboard":
             await self.reload_and_render(action)
         elif action == "render_all":
+            await self.reload_and_render(action)
+        elif action == "render_workarea":
             await self.reload_and_render(action)
         elif action in ["step_storyboard_forward", "step_storyboard_backward"]:
             increment = 1 if action == "step_storyboard_forward" else -1
