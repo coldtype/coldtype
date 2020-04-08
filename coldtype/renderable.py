@@ -116,6 +116,6 @@ class animation(renderable, Timeable):
     
     def passes(self, mode):
         frames = self.storyboard
-        if mode == "all":
+        if mode == "render_all":
             frames = list(range(0, self.duration))
         return [RenderPass(self.func, "{:04d}".format(i), [Frame(i, self)]) for i in frames]
