@@ -52,11 +52,11 @@
                     container.innerHTML = "";
                 } else if (jdata.html) {
                     container.innerHTML = container.innerHTML + jdata.html;
-                } else if (jdata.metadata) {
-                    console.log("metadata>>>", jdata);
                 } else {
-                    container.innerHTML = container.innerHTML + "<pre>" + evt.data + "</pre>";
-                }
+                    console.log(">>>", jdata);
+                } //else {
+                //    container.innerHTML = container.innerHTML + "<pre>" + evt.data + "</pre>";
+                //}
             }
 
             function onError(evt) {

@@ -17,6 +17,7 @@ import ast
 from enum import Enum
 
 import coldtype
+from coldtype.helpers import *
 from coldtype import renderable
 from coldtype.geometry import Rect
 from coldtype.pens.svgpen import SVGPen
@@ -89,7 +90,9 @@ class Renderer():
         self.program = None
         self.websocket = None
         self.exit_code = 0
+
         self.line_number = -1
+        self.last_renders = []
 
         self.observers = []
 
@@ -153,6 +156,7 @@ class Renderer():
 
     async def render(self, trigger):
         renders = self.renderables(trigger)
+        self.last_renders = renders
         try:
             for render in renders:
                 if self.args.output_folder:
@@ -253,6 +257,15 @@ class Renderer():
             await self.reload_and_render(action)
         elif action == "render_all":
             await self.reload_and_render(action)
+        elif action in ["step_storyboard_forward", "step_storyboard_backward"]:
+            increment = 1 if action == "step_storyboard_forward" else -1
+            for render in self.last_renders:
+                if hasattr(render, "storyboard"):
+                    for idx, fidx in enumerate(render.storyboard):
+                        nidx = (fidx + increment) % render.duration
+                        render.storyboard[idx] = nidx
+                    self.preview.clear()
+                    await self.render("render_storyboard")
     
     async def process_ws_message(self, message):
         try:
