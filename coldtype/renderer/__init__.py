@@ -13,6 +13,7 @@ import argparse
 import importlib
 import inspect
 import json
+import ast
 from enum import Enum
 
 import coldtype
@@ -23,10 +24,28 @@ from coldtype.pens.cairopen import CairoPen
 from coldtype.pens.drawbotpen import DrawBotPen
 from coldtype.viewer import PersistentPreview, WEBSOCKET_ADDR
 
+
 class Watchable(Enum):
     Source = "Source"
     Font = "Font"
     Library = "Library"
+
+
+def file_and_line_to_def(filepath, lineno):
+    # https://julien.danjou.info/finding-definitions-from-a-source-file-and-a-line-number-in-python/
+    candidate = None
+    for item in ast.walk(ast.parse(filepath.read_text())):
+        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            if item.lineno > lineno:
+                continue
+            if candidate:
+                distance = lineno - item.lineno
+                if distance < (lineno - candidate.lineno):
+                    candidate = item
+            else:
+                candidate = item
+    if candidate:
+        return candidate.name
 
 
 class Renderer():
@@ -103,6 +122,7 @@ class Renderer():
 
     async def reload(self, trigger):
         try:
+            print(">>>", file_and_line_to_def(self.filepath, 6))
             self.program = run_path(str(self.filepath))
             for k, v in self.program.items():
                 if isinstance(v, coldtype.text.reader.Font):
