@@ -1,6 +1,7 @@
 import inspect
 import platform
 from subprocess import run
+from pathlib import Path
 
 from coldtype.geometry import Rect
 from coldtype.color import normalize_color
@@ -23,11 +24,13 @@ class RenderPass():
 
 
 class renderable():
-    def __init__(self, rect=(1080, 1080), bg="whitesmoke", hide=False, fmt="png", rasterizer=None):
+    def __init__(self, rect=(1080, 1080), bg="whitesmoke", hide=False, fmt="png", rasterizer=None, prefix=None, dst=None):
         self.hide = hide
         self.rect = Rect(rect)
         self.bg = normalize_color(bg)
         self.fmt = fmt
+        self.prefix = prefix
+        self.dst = Path(dst).expanduser().resolve() if dst else None
         self.rasterizer = rasterizer
         if not rasterizer:
             if self.fmt == "svg":
@@ -48,7 +51,7 @@ class renderable():
     
     def passes(self, mode):
         return [RenderPass(self.func, self.func.__name__, [self.rect])]
-    
+
     def package(self, filepath, output_folder):
         pass
 

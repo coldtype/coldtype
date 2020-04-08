@@ -161,6 +161,8 @@ class Renderer():
             for render in renders:
                 if self.args.output_folder:
                     output_folder = Path(self.args.output_folder).expanduser().resolve()
+                elif render.dst:
+                    output_folder = render.dst
                 else:
                     output_folder = self.filepath.parent / "renders" / render.folder(self.filepath)
                 did_render = False
@@ -170,11 +172,12 @@ class Renderer():
                         self.preview.send(SVGPen.Composite(result, render.rect, viewBox=True), bg=render.bg, max_width=800)
                     if self.args.save_renders or trigger in ["render_all"]:
                         did_render = True
-                        output_path = output_folder / f"{self.args.file_prefix}{self.filepath.stem}_{rp.suffix}.{self.args.format or render.fmt}"
+                        prefix = self.args.file_prefix or render.prefix or self.filepath.stem
+                        output_path = output_folder / f"{prefix}_{rp.suffix}.{self.args.format or render.fmt}"
                         rp.output_path = output_path
                         output_path.parent.mkdir(exist_ok=True, parents=True)
                         self.rasterize(result, render, output_path)
-                        print(">>> saved...", output_path.name)
+                        print(">>> saved...", "~/" + str(output_path.relative_to(Path.home())))
                 if did_render:
                     render.package(self.filepath, output_folder)
                     self.show_message("Done!")
@@ -184,7 +187,7 @@ class Renderer():
     def rasterize(self, content, render, path):
         scale = int(self.args.scale)
         rasterizer = self.args.rasterizer or render.rasterizer
-        
+
         if rasterizer == "drawbot":
             DrawBotPen.Composite(content, render.rect, str(path), scale=scale)
         elif rasterizer == "svg":
