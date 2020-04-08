@@ -232,7 +232,13 @@ class Renderer():
     async def process_ws_message(self, message):
         try:
             jdata = json.loads(message)
-            await self.on_message(jdata, jdata.get("action"))
+            action = jdata.get("action")
+            if action:
+                await self.on_message(jdata, jdata.get("action"))
+            elif jdata.get("metadata") and jdata.get("path"):
+                path = Path(jdata.get("path"))
+                if path in self.watchee_paths():
+                    print(path.name, jdata.get("line_number"))
         except:
             print("Malformed message", message)
 

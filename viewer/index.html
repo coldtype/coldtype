@@ -27,7 +27,7 @@
             if (connected) {
                 return;
             }
-            console.log("attempting to connect");
+            console.log("attempting to connect...");
             const WS_URL = "ws://localhost:8007"
             var websocket = new WebSocket(WS_URL);
             websocket.onopen = function (evt) { onOpen(evt) };
@@ -52,6 +52,8 @@
                     container.innerHTML = "";
                 } else if (jdata.html) {
                     container.innerHTML = container.innerHTML + jdata.html;
+                } else if (jdata.metadata) {
+                    console.log("metadata>>>", jdata);
                 } else {
                     container.innerHTML = container.innerHTML + "<pre>" + evt.data + "</pre>";
                 }

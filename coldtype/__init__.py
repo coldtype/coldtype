@@ -1,20 +1,18 @@
-import math
-import sys
-import os
-import re
-import copy
+import math, sys, os, re
 from pathlib import Path
-
-name = "coldtype"
-__version__ = "0.0.1"
+from defcon import Font as DefconFont
 
 from coldtype.text import *
 from coldtype.text.reader import Font
 from coldtype.pens.datpen import DATPen, DATPenSet
-from coldtype.geometry import Rect
-from coldtype.color import Color, Gradient, normalize_color
+from coldtype.geometry import *
+from coldtype.color import *
 from coldtype.renderable import *
-from defcon import Font as DefconFont
+from coldtype.helpers import *
+from coldtype.animation import *
+
+name = "coldtype"
+__version__ = "0.0.1"
 
 def raw_ufo(path):
     return DefconFont(normalize_font_path(path))
