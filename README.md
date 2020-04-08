@@ -8,6 +8,8 @@ __⚠️ Our intention is to ultimately make this library a proper, useable, ope
 
 # Coldtype
 
+_Hello and welcome to `coldtype`, an odd little library for programmatic typography, written by [Rob Stenson](https://robstenson.com), who is me, for use on Goodhertz projects and also other stuff._
+
 ## Installation
 
 ### In a virtual environment
