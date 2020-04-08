@@ -33,7 +33,7 @@ class renderable():
         self.func = func
         return self
     
-    def folder(self):
+    def folder(self, filepath):
         return ""
     
     def passes(self, mode):
@@ -46,6 +46,9 @@ class renderable():
 class svgicon(renderable):
     def __init__(self, **kwargs):
         super().__init__(fmt="svg", **kwargs)
+    
+    def folder(self, filepath):
+        return filepath.stem
 
 
 class iconset(renderable):
@@ -55,8 +58,8 @@ class iconset(renderable):
         super().__init__(**kwargs)
         self.sizes = sizes
     
-    def folder(self):
-        return f"{self.func.__name__}_source"
+    def folder(self, filepath):
+        return f"{filepath.stem}_source"
     
     def passes(self, mode):
         sizes = self.sizes
@@ -111,8 +114,8 @@ class animation(renderable, Timeable):
             self.duration = timeline.duration
             self.storyboard = timeline.storyboard
     
-    def folder(self):
-        return self.func.__name__ # TODO necessary?
+    def folder(self, filepath):
+        return filepath.stem # TODO necessary?
     
     def passes(self, mode):
         frames = self.storyboard

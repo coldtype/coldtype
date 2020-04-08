@@ -162,7 +162,7 @@ class Renderer():
                 if self.args.output_folder:
                     output_folder = Path(self.args.output_folder).expanduser().resolve()
                 else:
-                    output_folder = self.filepath.parent / "renders" / render.folder()
+                    output_folder = self.filepath.parent / "renders" / render.folder(self.filepath)
                 did_render = False
                 for rp in render.passes(trigger):
                     result = await rp.run()

@@ -1,5 +1,4 @@
 from coldtype import *
-from coldtype.renderable import svgicon
 
 @svgicon()
 def circle(r):
