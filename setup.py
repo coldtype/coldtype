@@ -27,6 +27,11 @@ setuptools.setup(
             'coldtype = coldtype.renderer:main'
         ],
     },
+    extras_require=[
+        "drawbot": [
+            "drawbot @ http://github.com/typemytype/drawbot/archive/master.zip"
+        ]
+    ]
     install_requires=[
         "fontPens",
         "defcon",

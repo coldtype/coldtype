@@ -164,6 +164,10 @@ class Renderer():
         self.last_renders = renders
         try:
             for render in renders:
+                for watch in render.watch:
+                    if watch not in self.watchee_paths():
+                        self.watchees.append([Watchable.Font, watch])
+
                 if self.args.output_folder:
                     output_folder = Path(self.args.output_folder).expanduser().resolve()
                 elif render.dst:
@@ -223,8 +227,9 @@ class Renderer():
                 self.preview.send("<pre>No program loaded!</pre>")
         except:
             self.show_error()
-    
+
         if wl < len(self.watchees) and len(self.observers) > 0:
+            print("hello")
             from pprint import pprint
             pprint(self.watchees)
             self.stop_watching_file_changes()

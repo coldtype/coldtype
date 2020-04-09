@@ -582,7 +582,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def scanlines(self, rect, sample=40, width=20, threshold=10):
         """WIP"""
         dp = DATPen()
-        #print(">>>", rect)
         for y in range(min(-300, rect.y), max(1000, rect.h), sample): # 500 should be calc'ed from box right?
             mp = MarginPen(None, y, isHorizontal=True)
             self.replay(mp)
@@ -733,7 +732,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
 
     def roundedRect(self, rect, hr, vr):
         """Rounded rectangle primitive"""
-        l, b, w, h = rect
+        l, b, w, h = Rect(rect)
         r, t = l + w, b + h
         K = 4 * (math.sqrt(2)-1) / 3
         circle = hr == 0.5 and vr == 0.5
@@ -1046,7 +1045,7 @@ class DATPenSet(DATPenLikeObject):
     """
     A set of DATPen’s; behaves like a list
     """
-    def __init__(self, pens):
+    def __init__(self, pens=[]):
         self.pens = []
         self.typographic = True
         self.layered = False
@@ -1290,14 +1289,21 @@ class DATPenSet(DATPenLikeObject):
         for idx, p in enumerate(self.pens):
             p.align(rects[idx], x, y, th=th, tv=tv)
     
-    def distribute(self):
+    def distribute(self, absolute=False):
         x_off = 0
         for p in self.pens:
             frame = p.getFrame()
-            #x_off += s.margin[0]
+            if frame.x < 0:
+                #x_off += -frame.x
+                p.translate(-frame.x, 0)
             p.translate(x_off, 0)
             x_off += frame.w
-            #x_off += s.margin[1]
+        return self
+    
+    def track(self, t):
+        for idx, p in enumerate(self.pens):
+            frame = p.getFrame()
+            p.translate(t*idx, 0)
         return self
         
     def distributeOnPath(self, path, offset=0, cc=None, notfound=None):
