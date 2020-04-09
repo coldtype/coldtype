@@ -23,7 +23,7 @@ def combine_slugs_test(r):
     print(ss1.f())
     ps2 = Slug("ABC ", Style(varfont, wght=1, fontSize=230)).pens().rotate(-10)
     shape = DATPen().polygon(3, Rect(0, 0, 150, 150)).f("random")
-    return DATPenSet(ss1, ps2, shape).distribute().align(r)
+    return DATPenSet([ss1, ps2, shape]).distribute().align(r)
 
 async def multilang_test():
     latin_font = await Font.Preload("ç/NotoSans-Black.ttf")

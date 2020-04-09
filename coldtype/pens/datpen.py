@@ -28,10 +28,8 @@ from coldtype.beziers import raise_quadratic, CurveCutter
 from coldtype.color import Gradient, normalize_color, Color
 from coldtype.pens.misc import ExplodingPen, SmoothPointsPen, BooleanOp, calculate_pathop
 
-try:
-    from coldtype.pens.outlinepen import OutlinePen
-except:
-    pass
+from coldtype.pens.outlinepen import OutlinePen
+from coldtype.pens.translationpen import TranslationPen, polarCoord
 
 
 def warp_fn(xa=0, ya=0, xs=300, ys=300, speed=5, base=0, octaves=1, mult=50):
@@ -240,7 +238,6 @@ class DATPenLikeObject():
             callback(self, 1, dict(depth=depth))
         else:
             callback(self, 0, dict(depth=depth))
-            
 
 
 class DATPen(RecordingPen, DATPenLikeObject):
@@ -636,6 +633,26 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = p.value
         return self
     
+    def project(self, angle, width):
+        offset = polarCoord((0, 0), math.radians(angle), width)
+        self.translate(offset[0], offset[1])
+        return self
+
+    def castshadow(self, angle=-45, width=100, ro=1, fill=1):
+        out = DATPen()
+        tp = TranslationPen(out, frontAngle=angle, frontWidth=width)
+        self.replay(tp)
+        if fill:
+            out.record(self.copy().project(angle, width))
+        if ro:
+            out.removeOverlap()
+        self.value = out.value
+        return self
+
+    def grow(self, outline=10):
+        out = self.copy().outline(outline)
+        return self.record(out.reverse())
+    
     def dots(self, radius=4):
         """(Necessary?) Create circles at moveTo commands"""
         dp = DATPen()
@@ -703,7 +720,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
             self.lineTo(rect.point("NW").xy())
             self.closePath()
         elif isinstance(rect, Number):
-            return self.rect(Rect(rect, args[0], args[1], args[2]))
+            if len(args) == 1:
+                return self.rect(Rect(rect, args[0]))
+            else:
+                return self.rect(Rect(rect, args[0], args[1], args[2]))
         elif isinstance(rect[0], Rect):
             for r in rect:
                 self.rect(r)
@@ -1026,15 +1046,17 @@ class DATPenSet(DATPenLikeObject):
     """
     A set of DATPen’s; behaves like a list
     """
-    def __init__(self, *pens):
+    def __init__(self, pens):
         self.pens = []
-        self.extend(pens)
         self.typographic = True
         self.layered = False
         self._tag = "?"
         self.container = None
         self.frame = None
         self.data = {}
+
+        for pen in pens:
+            self += pen
     
     def __str__(self):
         return f"<DPS:pens:{len(self.pens)}:({self._tag})>"
