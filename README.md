@@ -10,6 +10,22 @@ __⚠️ Our intention is to ultimately make this library a proper, useable, ope
 
 _Hello and welcome to `coldtype`, an odd little library for programmatic typography, written by [Rob Stenson](https://robstenson.com), who is me, for use on Goodhertz projects and also other stuff._
 
+## An example
+
+```python
+from coldtype import *
+
+@renderable(rect=Rect(1080, 1080))
+def render(r):
+    style = Style("ç/MutatorSans.ttf", 250, wdth=0, wght=1, tu=-350, r=1, ro=1)
+    return StyledString("COLDTYPE", style).pens().align(r).f("hr", 0.8, 0.7).understroke()
+```
+
+![Screenshot of app](https://github.com/goodhertz/coldtype/blob/master/examples/drawbotesque.png)
+
+_A DrawBot-like programming experience, using VS Code and the Coldtype viewing app_
+
+
 ## Installation
 
 ### In a virtual environment
