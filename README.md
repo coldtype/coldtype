@@ -23,7 +23,7 @@ def render(r):
 
 ![Screenshot of app](https://github.com/goodhertz/coldtype/blob/master/examples/drawbotesque.png)
 
-_A DrawBot-like programming experience, using VS Code and the Coldtype viewing app_
+_A DrawBot-like programming experience, using VS Code and the Coldtype viewing app (when you save the file in VS Code, the hanging process (as seen in the terminal) re-renders `simple.py` to SVG and sends the result via a websocket to the Coldtype viewing app, which renders it with a standard Chromium-based webview._
 
 
 ## Installation
@@ -49,25 +49,25 @@ N.B. This app isn’t signed or anything, we should work on that.
 
 ## What is Coldtype?
 
-__A cross-platform library to help you precisely & programmatically do high-quality display typography.__
+__A cross-platform library to help you precisely & programmatically do high-quality display typography with Python.__
 
 Yes, there are lots of ways to set type with code. Most ways — HTML/CSS/JS, Processing, etc. — are great for 90% of what most people want to do with Latin-based writing systems. Then the road runs out and you can’t do anything else.
 
-Coldtype is an offroad vehicle that lets you keep driving where there are no roads. Like many vehicles built for specialized use, it is not user-friendly. It has no doors (please climb in through the window), and the steering wheel is not very intuitive, also it’s a stick-shift, and you should probably be a mechanic programmer if you’re going to drive it alone out into the desert. (I apologize for how automotive this metaphor is getting.)
+Coldtype is an offroad vehicle that lets you keep driving where there are no roads. Like many vehicles built for specialized use, it is not user-friendly. It has no doors (please climb in through the window), and the steering wheel is not very intuitive, also it’s a stick-shift, and you should probably know how to code (or be willing to learn) if you’re going to drive it alone out into the desert. (I apologize for how automotive this metaphor is getting.)
 
 ### What about DrawBot?
 
-If you’ve heard of [DrawBot](http://www.drawbot.com/) — another offroad vehicle that lets you drive where you want — you may be wondering how Coldtype is different. The answer is that Coldtype provides a very different programming idiom, one based around creating and modifying structured data that can be rendered. DrawBot, like most “creative coding” platforms, is based around using drawing functions to render directly to a “canvas.”
+If you’ve heard of [DrawBot](http://www.drawbot.com/) — another offroad vehicle that lets you drive where you want — you may be wondering how Coldtype is different. The answer is that Coldtype provides a very different programming idiom, one based around creating and modifying structured data that can be rendered, rather than — as is common in most “creative coding” platforms (including DrawBot) — providing a metaphorical canvas that you render to directly.
 
 Also Coldtype works on Windows (and Linux, theoretically).
 
-(I should point out that I love DrawBot and that Coldtype would not exist without DrawBot, mostly because using DrawBot was my first time driving in the typographical offroad. That said, Coldtype mostly exists as a response to things I found awkward about programming animations with DrawBot.)
+(I should point out that I love DrawBot and that Coldtype would not exist without DrawBot, mostly because using DrawBot was my first time driving in the typographical offroad. That said, Coldtype mostly exists as a response to things I found awkward when programming animations with DrawBot.)
 
 ### What about Adobe products?
 
-I’ve learned over the last few years to deeply distrust any _Type Tool_ in an Adobe product (or anywhere else). Yes, those can be very good — like HTML+CSS — for doing simple Latin-based typography for static designs. But then, all of a sudden, they are very bad. You can think of Adobe products as a train that you get on and you can fall asleep in a nice seat and the train will get you where you want to go, except when you wake up and realize you wanted to go somewhere the train doesn't go and then you’re like... _dang, do I have to walk?_ (Walking in this metaphor is when you right click and hit _Convert to Outlines_.)
+I’ve learned over the last few years to distrust any _Type Tool_ in an Adobe product (or anywhere else). Yes, those can be very good — like HTML+CSS — for doing simple Latin-based typography for static designs. But then, all of a sudden, they are very bad. You can think of Adobe products as a train that you get on and you can fall asleep in a nice seat and the train will get you where you want to go, except when you wake up and realize you wanted to go somewhere the train doesn't go and then you’re like... _dang, do I have to walk?_ (Walking in this metaphor is when you right click and hit _Convert to Outlines_.)
 
-Walking can be a lot of fun, and you get to see a lot. But sometimes you want to get there faster or go farther. Yes, I realize now this metaphor has made me seem very pro-automobile, which... yes I do live in Los Angeles but I work from home, so I’m kind of ambivalent about cars.
+Walking can be a lot of fun, and you get to see a lot. But sometimes you want to get there faster or you want to go farther. Yes, I realize now this metaphor has made me seem very pro-automobile, which... yes I do live in Los Angeles but I work from home, so I’m kind of ambivalent about cars.
 
 But I’m not ambivalent about typesetting with code, so let’s get into it!
 
@@ -129,7 +129,7 @@ _As well as_:
 
 ## Programming philosophy
 
-Here is free-associated list of things that I think define the general vibe of programming in Coldtype (a work-in-progress)
+Here is a free-associated list of things that I think define the general vibe of programming in Coldtype (a work-in-progress)
 
 - Chained mutation/transformation
     - "Chaining" in this context refers to the programming style favored by libraries like jQuery, which allows you to call multiple methods on a single line, all of which mutate the state of an object and return the object itself in each mutating call. For example:
@@ -152,7 +152,7 @@ Here is free-associated list of things that I think define the general vibe of p
 - Cross-platform
 - Does not rely on Apple’s CoreText engine or the mostly deprecated APIs that DrawBot uses to interact with it
 - Really only a small subset of what DrawBot, by leveraging CoreText and CoreImage, can do (which is a good thing to me, because I only ever used DrawBot for typography anyway)
-- Little-to-no image support (some, but it is v primitive)
+- Little-to-no image support (some, but it is vvv primitive)
 
 ---
 
@@ -164,7 +164,7 @@ Here is free-associated list of things that I think define the general vibe of p
 
 Now you should see `(coldtype)` prepended to your terminal prompt. If that’s the case, continue with this invocation:
 
-- `pip install -r requirements.txt`
+- `pip install -e .`
 - Open the Coldtype app (just a normal desktop app, you can open it by double-clicking)
 
 - `coldtype example/example.py -w`
