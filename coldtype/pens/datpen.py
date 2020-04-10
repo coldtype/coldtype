@@ -1061,8 +1061,11 @@ class DATPenSet(DATPenLikeObject):
         self.frame = None
         self.data = {}
 
-        for pen in pens:
-            self += pen
+        if isinstance(pens, DATPen):
+            self += pens
+        else:
+            for pen in pens:
+                self += pen
     
     def __str__(self):
         return f"<DPS:pens:{len(self.pens)}:({self._tag})>"
@@ -1343,6 +1346,13 @@ class DATPenSet(DATPenLikeObject):
         if limit < len(self.pens):
             self.pens = self.pens[0:limit]
         return self
+    
+    def implode(self):
+        # TODO preserve frame from some of this?
+        dp = DATPen()
+        for p in self:
+            dp.record(p)
+        return dp
     
     def understroke(self, s=0, sw=5, outline=False, dofill=0):
         if not outline:
