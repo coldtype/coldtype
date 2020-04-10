@@ -44,7 +44,7 @@ class DATPenLikeObject():
         x = txt_to_edge(x)
         y = txt_to_edge(y)
         b = self.getFrame(th=th, tv=tv)
-
+        
         xoff = 0
         if x != None:
             if x == Edge.CenterX:

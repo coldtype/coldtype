@@ -54,3 +54,10 @@ async def test_stroke_ufo(r):
 @test()
 def test_kern_pairs(r):
     return StyledString("CLD", Style(co, 300, rotate=-10, kp={"C/L":20, "L/D":45})).pens().align(r).f("hr", 0.65, 0.65)
+
+
+@test()
+def test_language(r):
+    """Should have an accent over the j"""
+    style = Style("ç/SourceSerifPro-Black.ttf", 350, wdth=1, wght=1, ss01=True)
+    return Slug("ríjks б", style.mod(lang="nl")).pen().align(r)

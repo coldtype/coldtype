@@ -10,18 +10,14 @@ import freetype
 from freetype.raw import *
 
 import unicodedata
-import uharfbuzz as hb
 
-from fontTools.ttLib.tables import otTables
 from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
-from fontTools.ufoLib import UFOReader
-from fontTools.ttLib import TTFont
+from fontTools.ttLib.ttFont import TTFont
 
-from coldtype.beziers import raise_quadratic
 from coldtype.color import normalize_color
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.geometry import Rect, Point
@@ -45,19 +41,7 @@ OTFFont._syncLoad = _syncLoad
 import asyncio
 import traceback
 
-
-try:
-    import Levenshtein
-except ImportError:
-    Levenshtein = None
-
-try:
-    import drawBot as _drawBot
-    import CoreText
-    import AppKit
-    import Quartz
-except:
-    _drawBot = None
+Levenshtein = None
 
 
 
@@ -310,7 +294,10 @@ class Style():
         ns = Style(self.font, self.fontSize)
         ns.__dict__ = self.__dict__.copy()
         for k, v in kwargs.items():
-            setattr(ns, k, v)
+            if isinstance(v, dict):
+                setattr(ns, k, v.copy())
+            else:
+                setattr(ns, k, v)
         return ns
     
     def addVariations(self, variations, limits=dict()):
@@ -358,7 +345,6 @@ class StyledString(FittableMixin):
         self.text_info = TextInfo(text)
         self.text = text
         self.setStyle(style)
-
         self.resetGlyphRun()
     
     def setStyle(self, style):
@@ -516,6 +502,7 @@ class StyledString(FittableMixin):
         return self
 
     def shrink(self):
+        #print(self.text, self.variations)
         adjusted = False
         default_step = 1
         if self.tracking > 0 and self.tracking > self.style.trackingLimit:
@@ -582,6 +569,7 @@ class StyledString(FittableMixin):
         return dp
 
     def pens(self, frame=True) -> DATPenSet:
+        self.resetGlyphRun()
         self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
         
         pens = DATPenSet()
