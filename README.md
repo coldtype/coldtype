@@ -119,13 +119,17 @@ Also originally I thought it was a funny name because I wanted to make a very fa
 
 ## What are some projects Coldtype has been used on?
 
-_As well as_:
-
 - [Lyric videos](https://vimeo.com/377148622)
 - [3d type specimens](https://vimeo.com/354292807)
 - [All Goodhertz plugin interfaces](https://goodhertz.co)
 - [All recent posts on the Goodhertz instagram](https://www.instagram.com/goodhertz/)
 - And [all recent posts on Rob’s instagram](https://www.instagram.com/robrushstenson/)
+
+## Weirdnesses
+
+- __0-1 variation axes value__ — By default, all font variation values (axis values) are scaled to a 0-1 range. I’ve found I almost never want to set a font variation value in the scale set by the font itself, mostly because I’m almost always mapping a 0-1 time (or amplitude) value to the axis. If you’d like to not "(s)cale (v)arations," set `sv=False` when constructing a `Style` object.
+
+- __Extensive use of acronyms__ — Because designing-in-code can be typing-intensive, there are a ton of acronym-based methods and dict keys, i.e. `.f("hr",0.5,0.5)` for setting the fill color on a `DATPen` to a random hue with 0.5 saturation and 0.5 lightness.
 
 ## Programming philosophy
 

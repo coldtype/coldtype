@@ -31,3 +31,8 @@ def test_catmull(r):
             last_pt = pt
         points.append(last_pt)
     return dp.catmull(points).endPath().f(None).s("random").sw(20)
+
+
+@test()
+def test_semicircles(r):
+    return DATPen().semicircle(r.square(), "mxx", 10)
