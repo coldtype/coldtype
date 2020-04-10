@@ -60,4 +60,4 @@ def test_kern_pairs(r):
 def test_language(r):
     """Should have an accent over the j"""
     style = Style("ç/SourceSerifPro-Black.ttf", 350, wdth=1, wght=1, ss01=True)
-    return Slug("ríjks б", style.mod(lang="nl")).pen().align(r)
+    return StyledString("ríjks", style.mod(lang="NLD")).pen().align(r)

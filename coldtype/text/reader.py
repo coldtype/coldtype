@@ -345,6 +345,8 @@ class StyledString(FittableMixin):
         self.text_info = TextInfo(text)
         self.text = text
         self.setStyle(style)
+        if self.style.lang:
+            self.text_info.languageOverride = self.style.lang
         self.resetGlyphRun()
     
     def setStyle(self, style):
