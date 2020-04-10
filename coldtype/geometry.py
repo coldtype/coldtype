@@ -47,21 +47,21 @@ class Edge(Enum):
 def txt_to_edge(txt):
     if isinstance(txt, str):
         txt = txt.lower()
-        if txt == "maxy":
+        if txt == "maxy" or txt == "mxy":
             return Edge.MaxY
-        elif txt == "maxx":
+        elif txt == "maxx" or txt == "mxx":
             return Edge.MaxX
-        elif txt == "miny":
+        elif txt == "miny" or txt == "mny":
             return Edge.MinY
-        elif txt == "minx":
+        elif txt == "minx" or txt == "mnx":
             return Edge.MinX
         elif txt == "centery":
             return Edge.CenterY
         elif txt == "centerx":
             return Edge.CenterX
-        elif txt == "midx":
+        elif txt == "midx" or txt == "mdx":
             return Edge.CenterX
-        elif txt == "midy":
+        elif txt == "midy" or txt == "mdy":
             return Edge.CenterY
         else:
             return None
@@ -490,6 +490,8 @@ class Rect():
     def take(self, amount, edge, forcePixel=False):
         edge = txt_to_edge(edge)
         return Rect(take(self.rect(), amount, edge, forcePixel=forcePixel))
+    
+    t = take
 
     def takeOpposite(self, amount, edge, forcePixel=False):
         edge = txt_to_edge(edge)

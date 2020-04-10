@@ -1041,6 +1041,13 @@ class DATPen(RecordingPen, DATPenLikeObject):
         return self.f(None).s(0, 0.1).sw(3)
 
 
+def DPR(r):
+    return DATPen().rect(r)
+
+def DPO(r):
+    return DATPen().oval(r)
+
+
 class DATPenSet(DATPenLikeObject):
     """
     A set of DATPen’s; behaves like a list
@@ -1416,3 +1423,6 @@ class DATPenSet(DATPenLikeObject):
         for pair, which in pairs.items():
             self.overlapPair(pair[0], pair[1], which, outline=outline)
         return self
+    
+    def Glyphs(ufo, glyphNames):
+        return DATPenSet([DATPen().glyph(ufo.layers["public.default"][gn]) for gn in glyphNames]).distribute()

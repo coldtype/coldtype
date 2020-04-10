@@ -10,21 +10,25 @@ from coldtype.animation.timeline import Timeline
 
 
 class RenderPass():
-    def __init__(self, fn, suffix, args):
-        self.fn = fn
+    def __init__(self, render, suffix, args):
+        self.render = render
+        self.fn = self.render.func
         self.args = args
         self.suffix = suffix
         self.path = None
     
     async def run(self):
         if inspect.iscoroutinefunction(self.fn):
-            return await self.fn(*self.args)
+            result = await self.fn(*self.args)
         else:
-            return self.fn(*self.args)
+            result = self.fn(*self.args)
+        if self.render.postfn:
+            result = self.render.postfn(self.render, result)
+        return result
 
 
 class renderable():
-    def __init__(self, rect=(1080, 1080), bg="whitesmoke", hide=False, fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, watch=[]):
+    def __init__(self, rect=(1080, 1080), bg="whitesmoke", hide=False, fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[]):
         self.hide = hide
         self.rect = Rect(rect)
         self.bg = normalize_color(bg)
@@ -32,6 +36,7 @@ class renderable():
         self.prefix = prefix
         self.dst = Path(dst).expanduser().resolve() if dst else None
         self.custom_folder = custom_folder
+        self.postfn = postfn
         self.watch = [Path(w).expanduser().resolve() for w in watch]
         self.rasterizer = rasterizer
         if not rasterizer:
@@ -52,7 +57,7 @@ class renderable():
         return ""
     
     def passes(self, mode):
-        return [RenderPass(self.func, self.func.__name__, [self.rect])]
+        return [RenderPass(self, self.func.__name__, [self.rect])]
 
     def package(self, filepath, output_folder):
         pass
@@ -64,6 +69,18 @@ class svgicon(renderable):
     
     def folder(self, filepath):
         return filepath.stem
+
+
+class glyph(renderable):
+    def __init__(self, glyphName, width=500, **kwargs):
+        r = kwargs.get("rect", Rect(1000, 1000))
+        self.width = width
+        self.body = r.take(750, "mdy").take(self.width, "mdx")
+        self.glyphName = glyphName
+        super().__init__(rect=r, **kwargs)
+    
+    def passes(self, mode):
+        return [RenderPass(self, self.glyphName, [])]
 
 
 class iconset(renderable):
@@ -80,7 +97,7 @@ class iconset(renderable):
         sizes = self.sizes
         if mode == "render_all":
             sizes = self.valid_sizes
-        return [RenderPass(self.func, str(size), [self.rect, size]) for size in sizes]
+        return [RenderPass(self, str(size), [self.rect, size]) for size in sizes]
     
     def package(self, filepath, output_folder):
         # inspired by https://retifrav.github.io/blog/2018/10/09/macos-convert-png-to-icns/
@@ -136,4 +153,4 @@ class animation(renderable, Timeable):
         frames = self.storyboard
         if mode == "render_all":
             frames = list(range(0, self.duration))
-        return [RenderPass(self.func, "{:04d}".format(i), [Frame(i, self)]) for i in frames]
+        return [RenderPass(self, "{:04d}".format(i), [Frame(i, self)]) for i in frames]
