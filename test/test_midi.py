@@ -1,8 +1,9 @@
 from coldtype.test import *
 from coldtype.animation.midi import *
 
+
 reader = MidiReader(Path("assets/loop.mid").resolve(), bpm=120)
-print(reader[0].allNotes())
+
 
 @animation(duration=60, storyboard=[0, 50])
 def test_midi_read(f):
