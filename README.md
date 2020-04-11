@@ -119,6 +119,8 @@ Also originally I thought it was a funny name because I wanted to make a very fa
 
 ## What are some projects Coldtype has been used on?
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/b2_CJ_nx-l4?start=21" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 - [Lyric videos](https://vimeo.com/377148622)
 - [3d type specimens](https://vimeo.com/354292807)
 - [All Goodhertz plugin interfaces](https://goodhertz.co)
