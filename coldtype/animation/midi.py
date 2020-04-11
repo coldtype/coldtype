@@ -31,15 +31,16 @@ class MidiNote():
 
 
 class MidiNoteValue():
-    def __init__(self, note, value, svalue, count, index):
+    def __init__(self, note, value, svalue, count, index, position):
         self.note = note
         self.value = value
         self.svalue = svalue
         self.count = count
         self.index = index
+        self.position = position
     
     def __repr__(self):
-        return "<MidiNoteValue={:0.3f}/{:0.3f};note:{:04d};count:{:04d}>".format(self.value, self.svalue, self.note.note if self.note else -1, self.count)
+        return "<MidiNoteValue={:0.3f}({:02d});note:{:04d};count:{:04d}>".format(self.value, self.position, self.note.note if self.note else -1, self.count)
     
     def valid(self):
         return self.note and self.note.note >= 0
@@ -49,15 +50,16 @@ class MidiNoteValue():
 
 
 class MidiTrack():
-    def __init__(self, notes, name=None, note_names={}):
+    def __init__(self, notes, duration=1, name=None, note_names={}):
         self.notes = sorted(notes, key=lambda n: n.on)
         self.name = name
         self.note_names = note_names
+        self.duration = duration
 
     def all_notes(self):
         return set([n.note for n in self.notes])
     
-    def fv(self, frame, note_numbers, reverb=[0,0], accumulate=0, all=0):
+    def fv(self, frame, note_numbers, reverb=[0,5], duration=0, accumulate=0, all=0):
         pre, post = reverb
 
         if isinstance(note_numbers, int) or (isinstance(note_numbers, str) and note_numbers != "*"):
@@ -76,23 +78,76 @@ class MidiTrack():
         
         count = 0
         notes_on = []
-        note_indices = []
 
         for idx, note in enumerate(self.notes):
-            if note.on-pre > frame:
-                continue
-            elif note_fn(note.note):
-                if frame >= (note.on-pre):
+            if note_fn(note.note) and note.note:
+                note_off = note.off
+                if duration > -1:
+                    note_off = note.on + duration
+                pre_start = (note.on - pre)
+                post_end = (note_off + post)
+                pre_start_wrapped = pre_start % self.duration
+                post_end_wrapped = post_end % self.duration
+                #print(">>>", frame, "/", note.note, note.on, note.off, "/", pre_start, post_end)
+                
+                if frame >= pre_start: # correct?
                     count += 1
-                if frame >= (note.on-pre) and frame < (note.off+post):
-                    notes_on.append(note)
-                    note_indices.append(idx)
+                
+                value = 0
+                pos = 0
+                fi = frame
+                
+                if frame >= note.on and frame <= note_off: # truly on
+                    pos = 0
+                    value = 1
+                else:
+                    if post_end > self.duration and frame < pre_start:
+                        fi = frame + self.duration
+                    
+                    if fi < note.on and fi >= pre_start:
+                        pos = 1
+                        value = (frame - pre_start) / pre
+                    elif fi > note_off and fi < post_end:
+                        pos = -1
+                        value = (post_end - fi) / post
+
+                if value > 0:
+                    notes_on.append(MidiNoteValue(note, value, -1, count, idx, pos))
+                    #notes_on.append([pos, value, idx, note])
+                else:
+                    pass
+        
+        print(note_numbers, notes_on)
+
+        if accumulate:
+            return notes_on
+        else:
+            if len(notes_on) == 0:
+                return MidiNoteValue(note.note, 0, 0, count, -1, 0)
+            else:
+                return max(notes_on, key=lambda n: n.value)
+        
+        return None
+            
+        # if False:
+        #     if note.on-pre > frame:
+        #         #print("throwing out", note.note, pre_start, post_end)
+        #         continue
+        #     elif note_fn(note.note):
+        #         pre_start = note.on - pre
+        #         post_end = note.off + post
+        #         #print(note.note, pre_start, post_end)
+        #         if frame >= pre_start:
+        #             count += 1
+        #         if frame >= pre_start and frame < post_end:
+        #             notes_on.append([False, idx, note])
         
         if len(notes_on) > 0:
             values = []
             svalues = []
-            for note in notes_on:
+            for value, nidx, note in notes_on:
                 v = 1 - ((frame - note.on) / (note.duration+post))
+                print("NO", note.note, frame, note.on, note.off)
                 if frame > note.off:
                     if post > 0:
                         sv = 1 - ((frame - note.off) / post)
@@ -107,11 +162,12 @@ class MidiTrack():
                 svalues.append(sv)
             if accumulate:
                 all_values = []
-                for i, note in enumerate(notes_on):
-                    all_values.append(MidiNoteValue(note, values[i], svalues[i], 1, note_indices[i]))
+                for i, (value, nidx, note) in enumerate(notes_on):
+                    all_values.append(MidiNoteValue(note, values[i], svalues[i], 1, nidx))
                 return all_values
             else:
-                return MidiNoteValue(notes_on[-1], max(values), max(svalues), count, note_indices[-1])
+                _, nidx, note = notes_on[-1]
+                return MidiNoteValue(note, max(values), max(svalues), count, nidx)
         else:
             if accumulate:
                 return []
@@ -120,7 +176,7 @@ class MidiTrack():
 
 
 class MidiReader():
-    def __init__(self, path, fps=30, bpm=120, rounded=True, note_names={}):
+    def __init__(self, path, duration=None, fps=30, bpm=120, rounded=True, note_names={}):
         note_names_reversed = {v:k for (k,v) in note_names.items()}
         midi_path = path if isinstance(path, Path) else Path(path).expanduser()
         mid = mido.MidiFile(str(midi_path))
@@ -141,25 +197,27 @@ class MidiReader():
                         events[track.name].append(MidiNote(msg.note, o, cumulative_time, fps, rounded))
                     if msg.type == "note_on" and msg.velocity > 0:
                         open_notes[track.name][msg.note] = cumulative_time
+
+        self.note_names = note_names
+        self.midi_file = mid
+        self.fps = fps
+        self.start = 0
+        self.end = 0
+        self.duration = duration or all_notes[-1].off
+        
         tracks = []
         for track_name, es in events.items():
-            tracks.append(MidiTrack(es, name=track_name, note_names=note_names_reversed))
+            tracks.append(MidiTrack(es, duration=self.duration, name=track_name, note_names=note_names_reversed))
 
         all_notes = []
         for t in tracks:
             for note in t.notes:
                 all_notes.append(note)
-        
-        self.note_names = note_names
+            
         self.min = min([n.note for n in all_notes])
         self.max = max([n.note for n in all_notes])
         self.spread = self.max - self.min
-        self.midi_file = mid
-        self.fps = fps
         self.tracks = tracks
-        self.start = 0
-        self.end = 0
-        self.duration = all_notes[-1].off
     
     def __getitem__(self, item):
         if isinstance(item, str):
