@@ -17,8 +17,8 @@ def test_midi_read(f):
     #print(cowbell)
 
     style = Style(co, 500, tu=-150, r=1, ro=1)
-    cold_pens = StyledString("COLD", style.mod(wdth=1-snare)).pens()
-    type_pens = StyledString("TYPE", style.mod(tu=-150-50*hat, rotate=-15*hat)).pens()
+    cold_pens = StyledString("COLD", style.mod(wdth=1-snare*0.5)).pens()
+    type_pens = StyledString("TYPE", style.mod(tu=-150-50*hat, rotate=-5*hat)).pens()
 
     one_kick = hat_count < 3
     cold_pens.f(0.6j if one_kick else 0.75j, 0.75, 0.5)
@@ -33,7 +33,7 @@ def test_midi_read(f):
     type_pens.map(mod_p)
 
     r = f.a.r.inset(0, 150)
-    return [
+    return DATPenSet([
         cold_pens.align(r, y="maxy").understroke(sw=10),
-        type_pens.align(r, y="miny").understroke(sw=10)
-    ]
+        type_pens.align(r, y="miny").understroke(sw=10).translate(-15, 0)
+    ]).rotate(5)

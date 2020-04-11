@@ -86,9 +86,6 @@ class MidiTrack():
                     note_off = note.on + duration
                 pre_start = (note.on - pre)
                 post_end = (note_off + post)
-                pre_start_wrapped = pre_start % self.duration
-                post_end_wrapped = post_end % self.duration
-                #print(">>>", frame, "/", note.note, note.on, note.off, "/", pre_start, post_end)
                 
                 if frame >= pre_start: # correct?
                     count += 1
@@ -113,11 +110,8 @@ class MidiTrack():
 
                 if value > 0:
                     notes_on.append(MidiNoteValue(note, value, -1, count, idx, pos))
-                    #notes_on.append([pos, value, idx, note])
                 else:
                     pass
-        
-        print(note_numbers, notes_on)
 
         if accumulate:
             return notes_on
@@ -126,53 +120,6 @@ class MidiTrack():
                 return MidiNoteValue(note.note, 0, 0, count, -1, 0)
             else:
                 return max(notes_on, key=lambda n: n.value)
-        
-        return None
-            
-        # if False:
-        #     if note.on-pre > frame:
-        #         #print("throwing out", note.note, pre_start, post_end)
-        #         continue
-        #     elif note_fn(note.note):
-        #         pre_start = note.on - pre
-        #         post_end = note.off + post
-        #         #print(note.note, pre_start, post_end)
-        #         if frame >= pre_start:
-        #             count += 1
-        #         if frame >= pre_start and frame < post_end:
-        #             notes_on.append([False, idx, note])
-        
-        if len(notes_on) > 0:
-            values = []
-            svalues = []
-            for value, nidx, note in notes_on:
-                v = 1 - ((frame - note.on) / (note.duration+post))
-                print("NO", note.note, frame, note.on, note.off)
-                if frame > note.off:
-                    if post > 0:
-                        sv = 1 - ((frame - note.off) / post)
-                    else:
-                        sv = 0
-                else:
-                    sv = 1
-                if v > 1:
-                    v = 2 + ((frame - note.on - pre) / pre)
-                    sv = v
-                values.append(v)
-                svalues.append(sv)
-            if accumulate:
-                all_values = []
-                for i, (value, nidx, note) in enumerate(notes_on):
-                    all_values.append(MidiNoteValue(note, values[i], svalues[i], 1, nidx))
-                return all_values
-            else:
-                _, nidx, note = notes_on[-1]
-                return MidiNoteValue(note, max(values), max(svalues), count, nidx)
-        else:
-            if accumulate:
-                return []
-            else:
-                return MidiNoteValue(None, 0, 0, count, -1)
 
 
 class MidiReader():
