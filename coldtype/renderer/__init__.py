@@ -285,6 +285,8 @@ class Renderer():
                         render.storyboard[idx] = nidx
                     self.preview.clear()
                     await self.render("render_storyboard")
+        elif action in ["arbitrary_typing"]:
+            print(">>>", message)
     
     async def process_ws_message(self, message):
         try:

@@ -11,7 +11,7 @@
     </div>
     <div id="searchbar">
         <div id="searchbar-inner">
-            <input id="searchdocs" type="text" placeholder="Search documentation here..."/>
+            <input id="searchbar-input" type="text" placeholder="Type here..."/>
         </div>
     </div>
 
@@ -19,6 +19,7 @@
 
         var lastTime = (new Date()).getTime();
         var connected = false;
+        var ws = null;
 
         setInterval(function() {
             connectToWebsocket();
@@ -37,6 +38,7 @@
             websocket.onclose = function (evt) { onClose(evt) };
             websocket.onmessage = function (evt) { onMessage(evt) };
             websocket.onerror = function (evt) { onError(evt) };
+            ws = websocket;
 
             function onOpen(evt) {
                 console.log("connected\n");
@@ -75,6 +77,26 @@
                 websocket.close();
             }
         }
+
+        var input = document.getElementById("searchbar-input");
+        var timer = null;
+        var commands = [];
+
+        input.addEventListener("keydown", function(e) {
+            clearTimeout(timer);
+            if (e.keyCode == 13) {
+                commands.push(input.value);
+                ws.send(JSON.stringify({action:"arbitrary_command", input:input.value}));
+                input.value = "";
+            } else if (e.keyCode == 38) {
+                //console.log(e.keyCode);
+                //input.value = commands
+            } else {
+                timer = setTimeout(function() {
+                    ws.send(JSON.stringify({action:"arbitrary_typing", input:input.value}));
+                }, 250);
+            }
+        });
 
     </script>
 </body>
