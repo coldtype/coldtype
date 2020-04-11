@@ -36,6 +36,7 @@ setuptools.setup(
         "fontPens",
         "defcon",
         "noise",
+        "mido",
         "skia-pathops",
         "websocket-client",
         "websockets",
@@ -46,7 +47,7 @@ setuptools.setup(
         "uharfbuzz",
         "python-bidi",
         "ufo2ft",
-        #"unicodedata2",
+        "unicodedata2",
         "numpy",
         "fontgoggles @ http://github.com/goodhertz/fontgoggles/archive/master.zip"
     ],

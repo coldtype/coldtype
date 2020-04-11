@@ -1346,8 +1346,8 @@ class DATPenSet(DATPenLikeObject):
     
     def implode(self):
         # TODO preserve frame from some of this?
-        dp = DATPen()
-        for p in self:
+        dp = self[0]
+        for p in self[1:]:
             dp.record(p)
         return dp
     
