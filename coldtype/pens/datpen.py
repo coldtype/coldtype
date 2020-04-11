@@ -1130,6 +1130,8 @@ class DATPenSet(DATPenLikeObject):
         self.pens = list(reversed(self.pens))
         return self
     
+    rp = reversePens
+    
     def removeBlanks(self):
         """Remove blank pens from the set"""
         nonblank_pens = []
@@ -1296,21 +1298,29 @@ class DATPenSet(DATPenLikeObject):
         for idx, p in enumerate(self.pens):
             p.align(rects[idx], x, y, th=th, tv=tv)
     
-    def distribute(self, absolute=False):
-        x_off = 0
-        for p in self.pens:
+    def distribute(self, v=False):
+        off = 0
+        for p in self:
             frame = p.getFrame()
-            if frame.x < 0:
-                #x_off += -frame.x
-                p.translate(-frame.x, 0)
-            p.translate(x_off, 0)
-            x_off += frame.w
+            if v:
+                if frame.y < 0:
+                    p.translate(0, -frame.y)
+                p.translate(0, off)
+                off += frame.h
+            else:
+                if frame.x < 0:
+                    p.translate(-frame.x, 0)
+                p.translate(off, 0)
+                off += frame.w
         return self
     
-    def track(self, t):
+    def track(self, t, v=False):
         for idx, p in enumerate(self.pens):
             frame = p.getFrame()
-            p.translate(t*idx, 0)
+            if v:
+                p.translate(0, t*idx)
+            else:
+                p.translate(t*idx, 0)
         return self
         
     def distributeOnPath(self, path, offset=0, cc=None, notfound=None):

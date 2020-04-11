@@ -54,10 +54,12 @@ class MidiTrack():
         self.name = name
         self.note_names = note_names
 
-    def allNotes(self):
+    def all_notes(self):
         return set([n.note for n in self.notes])
     
-    def valueForFrame(self, note_numbers, frame, preverb=0, reverb=0, accumulate=0, all=0):
+    def fv(self, frame, note_numbers, reverb=[0,0], accumulate=0, all=0):
+        pre, post = reverb
+
         if isinstance(note_numbers, int) or (isinstance(note_numbers, str) and note_numbers != "*"):
             note_numbers = [note_numbers]
         
@@ -77,12 +79,12 @@ class MidiTrack():
         note_indices = []
 
         for idx, note in enumerate(self.notes):
-            if note.on-preverb > frame:
+            if note.on-pre > frame:
                 continue
             elif note_fn(note.note):
-                if frame >= (note.on-preverb):
+                if frame >= (note.on-pre):
                     count += 1
-                if frame >= (note.on-preverb) and frame < (note.off+reverb):
+                if frame >= (note.on-pre) and frame < (note.off+post):
                     notes_on.append(note)
                     note_indices.append(idx)
         
@@ -90,16 +92,16 @@ class MidiTrack():
             values = []
             svalues = []
             for note in notes_on:
-                v = 1 - ((frame - note.on) / (note.duration+reverb))
+                v = 1 - ((frame - note.on) / (note.duration+post))
                 if frame > note.off:
-                    if reverb > 0:
-                        sv = 1 - ((frame - note.off) / reverb)
+                    if post > 0:
+                        sv = 1 - ((frame - note.off) / post)
                     else:
                         sv = 0
                 else:
                     sv = 1
                 if v > 1:
-                    v = 2 + ((frame - note.on - preverb) / preverb)
+                    v = 2 + ((frame - note.on - pre) / pre)
                     sv = v
                 values.append(v)
                 svalues.append(sv)

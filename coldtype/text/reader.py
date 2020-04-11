@@ -175,6 +175,9 @@ class Style():
         capHeight (ch) — A number in font-space; not specified, read from font; specified as 'x', capHeight is set to xHeight as read from font
         """
 
+        self.input = locals()
+        self.input["self"] = None
+
         if isinstance(font, str):
             self.font:Font = Font(font)
             if isinstance(self.font.font, OTFFont):
@@ -291,14 +294,11 @@ class Style():
         return True
 
     def mod(self, **kwargs):
-        ns = Style(self.font, self.fontSize)
-        ns.__dict__ = self.__dict__.copy()
-        for k, v in kwargs.items():
-            if isinstance(v, dict):
-                setattr(ns, k, v.copy())
-            else:
-                setattr(ns, k, v)
-        return ns
+        keyed = dict(**self.input, **self.input["kwargs"])
+        del keyed["kwargs"]
+        del keyed["self"]
+        keyed.update(kwargs)
+        return Style(**keyed)
     
     def addVariations(self, variations, limits=dict()):
         for k, v in self.normalizeVariations(variations).items():

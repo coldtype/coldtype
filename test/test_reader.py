@@ -61,3 +61,12 @@ def test_language(r):
     """Should have an accent over the j"""
     style = Style("ç/SourceSerifPro-Black.ttf", 350, wdth=1, wght=1, ss01=True)
     return StyledString("ríjks", style.mod(lang="NLD")).pen().align(r)
+
+
+@test()
+def test_style_mod(r):
+    style = Style(co, 250, wdth=1)
+    out = DATPenSet()
+    out += StyledString("CLDTP", style).pen()
+    out += StyledString("CLDTP", style.mod(wdth=0)).pen()
+    return out.rp().distribute(v=1).track(10, v=1).align(r).f("hr", 0.5, 0.5)
