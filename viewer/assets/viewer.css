@@ -1,10 +1,41 @@
+@font-face {
+    font-family: 'RecMonoCasualItalicWeb';
+    src: url('RecMono-CasualItalic.ttf');
+    font-weight: 500;
+    font-style: normal;
+}
+
 body {
     background: #eee;
-    font-family: monospace;
+    font-family: RecMonoCasualItalicWeb;
 }
 
 #container {
     /* margin-top: 20px; */
+}
+
+#searchbar {
+    position: fixed;
+    bottom: 0px;
+    right: 0px;
+    width: 100%;
+    background: #333;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#searchdocs {
+    background: transparent;
+    color: white;
+    padding: 5px;
+    border: none;
+    font-family: RecMonoCasualItalicWeb, monospace;
+    font-size: 18px;
+    width: 100%;
+    z-index: 1000;
+}
+
+#searchdocs::placeholder {
+    color: rgba(255,255,255,0.5);
 }
 
 .plain {
@@ -31,22 +62,8 @@ body {
     display: block;
 }
 
-button {
-    font-size: 24px;
-    padding: 5px 20px 8px;
-    font-family: CovikSansMonoWeb, monospace;
-    font-style: italic;
-    text-transform: uppercase;
-    font-weight: 900;
-    background: whitesmoke;
-    border: none;
-    color: rgba(255,255,255,0.8);
-    background: #777;
-    box-shadow: 0 0 10px rgba(0,0,0,0.3);
-}
-
 pre {
-    font-family: CovikSansMonoWeb, monospace;
+    font-family: RecMonoCasualItalicWeb, monospace;
     background: royalblue;
     border: 3px solid dodgerblue;
     padding: 20px;

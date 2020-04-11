@@ -43,7 +43,7 @@ console.log(path.join(__dirname, 'appicon.icns'));
 
 function createWindow () {
   let win = new BrowserWindow({
-    width: 200,
+    width: 550,
     height: 550,
     x: 0,
     y: 0,

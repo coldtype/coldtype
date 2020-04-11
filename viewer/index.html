@@ -7,9 +7,12 @@
 </head>
 <body>
     <div id="container">
-        <div class="plain"><h3>Welcome</h3></div>
-        <!--<div class="plain"><button>Hello</button></div>-->
-        <!--<div class="plain"><pre>(A Viewer)</pre></div>-->
+        <div class="plain"><h3>Welcome to Coldtype</h3></div>
+    </div>
+    <div id="searchbar">
+        <div id="searchbar-inner">
+            <input id="searchdocs" type="text" placeholder="Search documentation here..."/>
+        </div>
     </div>
 
     <script language="javascript" type="text/javascript">
@@ -61,7 +64,6 @@
 
             function onError(evt) {
                 console.log('error: ' + evt.data + '\n');
-                //websocket.close();
             }
 
             function doSend(message) {

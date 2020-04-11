@@ -23,7 +23,7 @@ def render(r):
 
 ![Screenshot of app](https://github.com/goodhertz/coldtype/blob/master/examples/drawbotesque.png)
 
-_A DrawBot-like programming experience, using VS Code and the Coldtype viewing app (when you save the file in VS Code, the hanging process (as seen in the terminal) re-renders `simple.py` to SVG and sends the result via a websocket to the Coldtype viewing app, which renders it with a standard Chromium-based webview._
+_A DrawBot-like programming experience, using VS Code and the Coldtype viewing app. (When you save the file in VS Code, the hanging process (as seen in the terminal) re-renders `simple.py` to SVG and sends the result via a websocket to the Coldtype viewing app, which displays the SVG with a standard Chromium-based webview.)_
 
 
 ## Installation
