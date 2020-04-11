@@ -9,12 +9,11 @@ reader = MidiReader(Path("assets/loop.mid").resolve(), bpm=120)
 def test_midi_read(f):
     drums = reader[0]
     kick = drums.fv(f.i, [36], all=1)
-    snare = drums.fv(f.i, [38], [5, 20])
+    snare = drums.fv(f.i, [38], [3, 20])
     hat = drums.fv(f.i, [42], [3, 10])
     cowbell = drums.fv(f.i, [49], [3, 10])
 
     style = Style(co, 500, tu=-150, r=1, ro=1)
-    print(">>>", snare.ease())
     cold_pens = StyledString("COLD", style.mod(wdth=1-snare.ease())).pens()
     type_pens = StyledString("TYPE", style.mod(rotate=15*hat.ease(eo="eei"))).pens()
 
