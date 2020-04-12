@@ -273,12 +273,12 @@ class Renderer():
             await self.on_action(action, message)
     
     async def on_action(self, action, message):
-        if action == "render_storyboard":
-            await self.reload_and_render(action)
-        elif action == "render_all":
-            await self.reload_and_render(action)
-        elif action == "render_workarea":
-            await self.reload_and_render(action)
+        if action in ["render_storyboard", "rs"]:
+            await self.reload_and_render("render_storyboard")
+        elif action in ["render_all", "ra"]:
+            await self.reload_and_render("render_all")
+        elif action in ["render_workarea", "rw"]:
+            await self.reload_and_render("render_workarea")
         elif action in ["step_storyboard_forward", "step_storyboard_backward"]:
             increment = 1 if action == "step_storyboard_forward" else -1
             for render in self.last_renders:
@@ -288,8 +288,12 @@ class Renderer():
                         render.storyboard[idx] = nidx
                     self.preview.clear()
                     await self.render("render_storyboard")
-        elif action in ["arbitrary_typing"]:
-            print(">>>", message)
+        elif action in ["arbitrary_command"]:
+            try:
+                #action, *rest = message.get("input").split
+                await self.on_action(message.get("input"), "{}")
+            except:
+                self.show_error()
     
     async def process_ws_message(self, message):
         try:
