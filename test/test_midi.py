@@ -3,34 +3,26 @@ from coldtype.animation.midi import *
 
 drums = MidiReader(Path("assets/loop2.mid").resolve(), duration=60, bpm=120)[0]
 
-@animation(duration=drums.duration, storyboard=[40], bg=0.1)
+@animation(duration=drums.duration, storyboard=[56], bg=0.1)
 def test_midi_read(f):
-    kick = drums.fv(f.i, [36], [0, 5], all=1)
+    kick = drums.fv(f.i, [36], [12, 12]).ease()
     snare = drums.fv(f.i, [38], [4, 35]).ease()
     hat = drums.fv(f.i, [42], [12, 12]).ease()
     hat_count = drums.fv(f.i, [42], [0, 1]).count
     cowbell = drums.fv(f.i, [48], [0, 50]).ease()
 
-    #snare = 1
-    #hat = 1
-
-    #print(cowbell)
-
     style = Style(co, 500, tu=-150, r=1, ro=1)
     cold_pens = StyledString("COLD", style.mod(wdth=1-snare*0.5)).pens()
-    type_pens = StyledString("TYPE", style.mod(tu=-150-50*hat, rotate=-5*hat)).pens()
+    type_pens = StyledString("TYPE", style.mod(tu=-150-100*kick, rotate=-8*kick)).pens()
 
-    one_kick = hat_count < 3
-    cold_pens.f(0.6j if one_kick else 0.75j, 0.75, 0.5)
-    type_pens.f(0.05j if one_kick else 0.9j, 0.75, 0.5)
-
-    def mod_p(idx, dp):
-        if dp.glyphName == "P":
-            o = dp.explode()
-            o[1].translate(50*cowbell, 0)
-            return o.implode()
+    chord_change = hat_count < 3
+    cold_pens.f(0.6j if chord_change else 0.75j, 0.75, 0.5)
+    type_pens.f(0.05j if chord_change else 0.9j, 0.75, 0.5)
     
-    type_pens.map(mod_p)
+    for o in cold_pens.glyphs_named("O"):
+        o.mod_contour(1, lambda c: c.rotate(hat_count*45))
+    for p in type_pens.glyphs_named("P"):
+        p.mod_contour(1, lambda c: c.translate(50*cowbell, 0))
 
     r = f.a.r.inset(0, 150)
     return DATPenSet([

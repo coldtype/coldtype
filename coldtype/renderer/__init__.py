@@ -366,7 +366,7 @@ class Renderer():
         if path in self.watchee_paths():
             idx = self.watchee_paths().index(path)
             print(f">>> resave: {Path(event.src_path).relative_to(Path.home())}")
-            await self.reload_and_render("resave", self.watchees[idx][0])
+            await self.reload_and_render(Action.Resave, self.watchees[idx][0])
 
     def watch_file_changes(self):
         self.observers = []
