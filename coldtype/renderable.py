@@ -1,5 +1,6 @@
 import inspect
 import platform
+from enum import Enum
 from subprocess import run
 from pathlib import Path
 
@@ -7,6 +8,20 @@ from coldtype.geometry import Rect
 from coldtype.color import normalize_color
 from coldtype.animation import Timeable, Frame
 from coldtype.animation.timeline import Timeline
+
+
+class Action(Enum):
+    Initial = "initial"
+    Resave = "resave"
+    RenderAll = "render_all"
+    RenderWorkarea = "render_workarea"
+    RenderIndices = "render_indices"
+    PreviewStoryboard = "preview_storyboard"
+    PreviewIndices = "preview_indices"
+    PreviewStoryboardNext = "preview_storyboard_next"
+    PreviewStoryboardPrev = "preview_storyboard_prev"
+    ArbitraryTyping = "arbitrary_typing"
+    ArbitraryCommand = "arbitrary_command"
 
 
 class RenderPass():
@@ -56,7 +71,7 @@ class renderable():
     def folder(self, filepath):
         return ""
     
-    def passes(self, mode):
+    def passes(self, action, indices=[]):
         return [RenderPass(self, self.func.__name__, [self.rect])]
 
     def package(self, filepath, output_folder):
@@ -79,7 +94,7 @@ class glyph(renderable):
         self.glyphName = glyphName
         super().__init__(rect=r, **kwargs)
     
-    def passes(self, mode):
+    def passes(self, action, indices=[]):
         return [RenderPass(self, self.glyphName, [])]
 
 
@@ -93,9 +108,9 @@ class iconset(renderable):
     def folder(self, filepath):
         return f"{filepath.stem}_source"
     
-    def passes(self, mode):
+    def passes(self, action, indices=[]): # TODO could use the indices here
         sizes = self.sizes
-        if mode == "render_all":
+        if action == Action.RenderAll:
             sizes = self.valid_sizes
         return [RenderPass(self, str(size), [self.rect, size]) for size in sizes]
     
@@ -149,8 +164,10 @@ class animation(renderable, Timeable):
     def folder(self, filepath):
         return filepath.stem # TODO necessary?
     
-    def passes(self, mode):
+    def passes(self, action, indices=[]):
         frames = self.storyboard
-        if mode == "render_all":
+        if action == Action.RenderAll:
             frames = list(range(0, self.duration))
+        elif action == Action.PreviewIndices:
+            frames = indices
         return [RenderPass(self, "{:04d}".format(i), [Frame(i, self)]) for i in frames]

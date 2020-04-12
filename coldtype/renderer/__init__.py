@@ -1,28 +1,23 @@
-import sys, os
+import sys, os, re
 from pathlib import Path
 
 import asyncio
 import websockets
 
-from coldtype.renderer.watchdog import AsyncWatchdog
-
 import traceback
-from subprocess import call
-from runpy import run_path
-import argparse
-import importlib
-import inspect
-import json
-import ast
 from enum import Enum
+from runpy import run_path
+from subprocess import call
+import argparse, importlib, inspect, json, ast
 
 import coldtype
 from coldtype.helpers import *
-from coldtype import renderable
 from coldtype.geometry import Rect
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.cairopen import CairoPen
 from coldtype.pens.drawbotpen import DrawBotPen
+from coldtype.renderable import renderable, Action
+from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.viewer import PersistentPreview, WEBSOCKET_ADDR
 
 
@@ -83,6 +78,8 @@ class Renderer():
         return pargs, parser
 
     def __init__(self, parser):
+        self.actions = Action
+
         self.args = parser.parse_args()
         self.watchees = []
         self.reset_filepath(self.args.file if hasattr(self.args, "file") else None)
@@ -150,16 +147,16 @@ class Renderer():
             if isinstance(v, renderable):
                 _rs.append(v)
         if self.args.filter_functions:
-            function_names = [f.strip() for f in self.args.filter_functions.split(",")]
+            function_names = [f.strip() for f in self.args.filter_functifons.split(",")]
             _rs = [r for r in _rs if r.func.__name__ in function_names]
-        if self.args.monitor_lines and trigger != "render_all":
+        if self.args.monitor_lines and trigger != Action.RenderAll:
             func_name = file_and_line_to_def(self.filepath, self.line_number)
             matches = [r for r in _rs if r.func.__name__ == func_name]
             if len(matches) > 0:
                 return matches
         return _rs
 
-    async def render(self, trigger):
+    async def render(self, trigger, indices=[]):
         renders = self.renderables(trigger)
         self.last_renders = renders
         try:
@@ -175,12 +172,21 @@ class Renderer():
                 else:
                     output_folder = self.filepath.parent / "renders" / (render.custom_folder or render.folder(self.filepath))
                 did_render = False
-                for rp in render.passes(trigger):
+                for rp in render.passes(trigger, indices):
                     try:
                         result = await rp.run()
-                        if trigger in ["initial", "render_storyboard", "resave"]:
+                        if trigger in [
+                            Action.Initial,
+                            Action.Resave,
+                            Action.PreviewStoryboard,
+                            Action.PreviewIndices,
+                        ]:
                             self.preview.send(SVGPen.Composite(result, render.rect, viewBox=True), bg=render.bg, max_width=800)
-                        if self.args.save_renders or trigger in ["render_all", "render_workarea"]:
+                        
+                        if self.args.save_renders or trigger in [
+                            Action.RenderAll,
+                            Action.RenderWorkarea
+                        ]:
                             did_render = True
                             prefix = self.args.file_prefix or render.prefix or self.filepath.stem
                             output_path = output_folder / f"{prefix}_{rp.suffix}.{self.args.format or render.fmt}"
@@ -253,12 +259,15 @@ class Renderer():
             print("SHOULD HALT")
             self.on_exit()
         else:
-            await self.reload_and_render("render_all" if self.args.all else "initial")
+            await self.reload_and_render(Action.RenderAll if self.args.all else Action.Initial)
             await self.on_start()
             if self.args.watch:
                 loop = asyncio.get_running_loop()
                 self.watch_file_changes()
-                await asyncio.gather(self.listen_to_ws())
+                await asyncio.gather(
+                    self.listen_to_ws(),
+                    self.listen_to_stdin()
+                )
             else:
                 self.on_exit()
     
@@ -270,30 +279,52 @@ class Renderer():
     
     async def on_message(self, message, action):
         if action:
-            await self.on_action(action, message)
+            try:
+                enum_action = self.actions(action)
+                await self.on_action(enum_action, message)
+            except ValueError:
+                print(">>>", action, "is not a known action")
     
-    async def on_action(self, action, message):
-        if action in ["render_storyboard", "rs"]:
-            await self.reload_and_render("render_storyboard")
-        elif action in ["render_all", "ra"]:
-            await self.reload_and_render("render_all")
-        elif action in ["render_workarea", "rw"]:
-            await self.reload_and_render("render_workarea")
-        elif action in ["step_storyboard_forward", "step_storyboard_backward"]:
-            increment = 1 if action == "step_storyboard_forward" else -1
+    def stdin_to_action(self, stdin):
+        action_abbrev, *data = stdin.split(" ")
+        if action_abbrev == "ps":
+            return Action.PreviewStoryboard, None
+        elif action_abbrev == "psn":
+            return Action.PreviewStoryboardNext, None
+        elif action_abbrev == "psp":
+            return Action.PreviewStoryboardPrev, None
+        elif action_abbrev == "ra":
+            return Action.RenderAll, None
+        elif action_abbrev == "rw":
+            return Action.RenderWorkarea, None
+        elif action_abbrev == "pi":
+            return Action.PreviewIndices, [int(i.strip()) for i in data]
+        else:
+            return None, None
+
+    async def on_stdin(self, stdin):
+        action, data = self.stdin_to_action(stdin)
+        if action:
+            if action == Action.PreviewIndices:
+                self.preview.clear()
+                await self.render(action, indices=data)
+            else:
+                await self.on_action(action)
+    
+    async def on_action(self, action, message=None):
+        if action in [Action.PreviewStoryboard, Action.RenderAll, Action.RenderWorkarea]:
+            await self.reload_and_render(action)
+        elif action in [Action.PreviewStoryboardNext, Action.PreviewStoryboardPrev]:
+            increment = 1 if action == Action.PreviewStoryboardNext else -1
             for render in self.last_renders:
                 if hasattr(render, "storyboard"):
                     for idx, fidx in enumerate(render.storyboard):
                         nidx = (fidx + increment) % render.duration
                         render.storyboard[idx] = nidx
                     self.preview.clear()
-                    await self.render("render_storyboard")
-        elif action in ["arbitrary_command"]:
-            try:
-                #action, *rest = message.get("input").split
-                await self.on_action(message.get("input"), "{}")
-            except:
-                self.show_error()
+                    await self.render(Action.PreviewStoryboard)
+        elif action == Action.ArbitraryCommand:
+            await self.on_stdin(message.get("input"))
     
     async def process_ws_message(self, message):
         try:
@@ -313,6 +344,22 @@ class Renderer():
             self.websocket = websocket
             async for message in websocket:
                 await self.process_ws_message(message)
+    
+    async def listen_to_stdin(self):
+        async for line in self.stream_as_generator(sys.stdin):
+            await self.on_stdin(line.decode("utf-8").strip())
+
+    async def stream_as_generator(self, stream):
+        loop = asyncio.get_event_loop()
+        reader = asyncio.StreamReader(loop=loop)
+        reader_protocol = asyncio.StreamReaderProtocol(reader)
+        await loop.connect_read_pipe(lambda: reader_protocol, stream)
+
+        while True:
+            line = await reader.readline()
+            if not line:  # EOF.
+                break
+            yield line
     
     async def on_modified(self, event):
         path = Path(event.src_path)
