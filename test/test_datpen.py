@@ -12,6 +12,16 @@ def test_projection(r):
 
 
 @test()
+def test_shadow(r):
+    f = normalize_color(("hr", 0.65, 0.65))
+    s = StyledString("COLD", Style(co, 300, tu=150, ro=1, r=1)).pens().align(r)
+    return [
+        s.copy().pen().castshadow(-45, 150).f("hr", 0.65, 0.25),
+        s.f(f).s(f).sw(2)
+    ]
+
+
+@test()
 def test_roughen(r):
     return DATPen().oval(r.inset(100)).flatten(20).roughen(20).smooth().f("hr",0.5,0.5)
 

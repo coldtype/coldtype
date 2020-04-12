@@ -11,16 +11,12 @@ def test_fit(r):
 
 
 @test()
-def test_emoji(r):
-    return StyledString("🍕💽🖥", Style("ç/TwemojiMozilla.ttf", 300, t=20, ch=500, bs=11)).pens().align(r)
-
-
-@test()
-def test_color_font(r):
+def test_style_mod(r):
+    style = Style(co, 250, wdth=1)
     out = DATPenSet()
-    for x in reversed(range(0, 6)):
-        out += StyledString("COLDTYPE", Style("≈/PappardelleParty-VF.ttf", 550, palette=x)).pens().translate(x*10, x*10)
-    return out.align(r)
+    out += StyledString("CLDTP", style).pen()
+    out += StyledString("CLDTP", style.mod(wdth=0)).pen()
+    return out.rp().distribute(v=1).track(10, v=1).align(r).f("hr", 0.5, 0.5)
 
 
 @test()
@@ -31,6 +27,11 @@ def test_interp(r):
         style = Style(co, 200, wdth=x/count, ro=1)
         out += StyledString("COLDTYPE", style).pens().f("random", 0.1).s(0, 0.1).sw(2).align(r).translate(0, x).rotate(x*0.5)
     return out
+
+
+@test()
+def test_kern_pairs(r):
+    return StyledString("CLD", Style(co, 300, rotate=-10, kp={"C/L":20, "L/D":45})).pens().align(r).f("hr", 0.65, 0.65)
 
 
 @test()
@@ -52,8 +53,16 @@ async def test_stroke_ufo(r):
 
 
 @test()
-def test_kern_pairs(r):
-    return StyledString("CLD", Style(co, 300, rotate=-10, kp={"C/L":20, "L/D":45})).pens().align(r).f("hr", 0.65, 0.65)
+def test_emoji(r):
+    return StyledString("🍕💽🖥", Style("ç/TwemojiMozilla.ttf", 300, t=20, ch=500, bs=11)).pens().align(r)
+
+
+@test()
+def test_color_font(r):
+    out = DATPenSet()
+    for x in reversed(range(0, 6)):
+        out += StyledString("COLDTYPE", Style("≈/PappardelleParty-VF.ttf", 550, palette=x)).pens().translate(x*10, x*10)
+    return out.align(r)
 
 
 @test()
@@ -61,12 +70,3 @@ def test_language(r):
     """Should have an accent over the j"""
     style = Style("ç/SourceSerifPro-Black.ttf", 350, wdth=1, wght=1, ss01=True)
     return StyledString("ríjks", style.mod(lang="NLD")).pen().align(r)
-
-
-@test()
-def test_style_mod(r):
-    style = Style(co, 250, wdth=1)
-    out = DATPenSet()
-    out += StyledString("CLDTP", style).pen()
-    out += StyledString("CLDTP", style.mod(wdth=0)).pen()
-    return out.rp().distribute(v=1).track(10, v=1).align(r).f("hr", 0.5, 0.5)

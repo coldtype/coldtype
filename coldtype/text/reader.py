@@ -75,6 +75,9 @@ _prefixes = [
     ["ç", str(Path(__file__).parent.parent.parent.joinpath("assets").resolve())]
 ]
 
+class FontNotFoundException(Exception):
+    pass
+
 def normalize_font_path(font):
     global _prefixes
     ff = font
@@ -104,7 +107,7 @@ def normalize_font_path(font):
         else:
             raise Exception("NO FONT FOUND FOR", literal)
     else:
-        raise Exception("FONT LITERAL NOT FOUND")
+        raise FontNotFoundException(literal)
 
 
 class Font():

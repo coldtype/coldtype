@@ -4,6 +4,8 @@ from random import Random
 
 
 co = Font("ç/ColdtypeObviously.designspace")
+mutator = Font("ç/MutatorSans.ttf")
+
 
 def add_grid(render, result):
     return DATPenSet([
@@ -11,4 +13,11 @@ def add_grid(render, result):
         DATPen().gridlines(render.rect).s(0, 0.1)
     ])
 
-test = partial(renderable, rect=(1000, 500), bg=1, postfn=add_grid)
+
+def show_error(r, txt):
+    return StyledString(txt.upper(), Style(mutator, 100)).pen().align(r)
+
+
+class test(renderable):
+    def __init__(self, rect=(1000, 500), bg=1, postfn=add_grid, **kwargs):
+        super().__init__(rect=rect, bg=bg, postfn=postfn, **kwargs)

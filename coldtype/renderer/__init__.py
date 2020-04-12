@@ -176,17 +176,20 @@ class Renderer():
                     output_folder = self.filepath.parent / "renders" / (render.custom_folder or render.folder(self.filepath))
                 did_render = False
                 for rp in render.passes(trigger):
-                    result = await rp.run()
-                    if trigger in ["initial", "render_storyboard", "resave"]:
-                        self.preview.send(SVGPen.Composite(result, render.rect, viewBox=True), bg=render.bg, max_width=800)
-                    if self.args.save_renders or trigger in ["render_all", "render_workarea"]:
-                        did_render = True
-                        prefix = self.args.file_prefix or render.prefix or self.filepath.stem
-                        output_path = output_folder / f"{prefix}_{rp.suffix}.{self.args.format or render.fmt}"
-                        rp.output_path = output_path
-                        output_path.parent.mkdir(exist_ok=True, parents=True)
-                        self.rasterize(result, render, output_path)
-                        print(">>> saved...", "~/" + str(output_path.relative_to(Path.home())))
+                    try:
+                        result = await rp.run()
+                        if trigger in ["initial", "render_storyboard", "resave"]:
+                            self.preview.send(SVGPen.Composite(result, render.rect, viewBox=True), bg=render.bg, max_width=800)
+                        if self.args.save_renders or trigger in ["render_all", "render_workarea"]:
+                            did_render = True
+                            prefix = self.args.file_prefix or render.prefix or self.filepath.stem
+                            output_path = output_folder / f"{prefix}_{rp.suffix}.{self.args.format or render.fmt}"
+                            rp.output_path = output_path
+                            output_path.parent.mkdir(exist_ok=True, parents=True)
+                            self.rasterize(result, render, output_path)
+                            print(">>> saved...", "~/" + str(output_path.relative_to(Path.home())))
+                    except:
+                        self.show_error()
                 if did_render:
                     render.package(self.filepath, output_folder)
                     self.show_message("Done!")

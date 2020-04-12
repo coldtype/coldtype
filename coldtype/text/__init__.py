@@ -1,1 +1,2 @@
-from coldtype.text.composer import Style, StyledString, Slug, Lockup, Graf, GrafStyle, T2L, DATPen, DATPenSet, Font, normalize_font_path, SegmentedString
+from coldtype.text.reader import Style, StyledString, SegmentedString, normalize_font_path, Font, FontNotFoundException
+from coldtype.text.composer import Slug, Lockup, Graf, GrafStyle, T2L

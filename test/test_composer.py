@@ -34,8 +34,11 @@ def test_combine_slugs(r):
     return DATPenSet([s1, line, s2, shape]).distribute().align(r)
 
 
-latin_font = Font("ç/NotoSans-Black.ttf")
-arabic_font = Font("≈/GretaArabicCompressedAR-Heavy.otf")
+try:
+    latin_font = Font("ç/NotoSans-Black.ttf")
+    arabic_font = Font("≈/GretaArabicCompressedAR-Heavy.otf")
+except FontNotFoundException:
+    pass
 
 
 @test()

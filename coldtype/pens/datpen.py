@@ -772,7 +772,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
         ne, se, sw, nw = r.intercardinals()
         qe = r.h/2+ext
         cedge = txt_to_edge(center)
-        print(">>>", cedge)
         if cedge == Edge.MinX:
             return self.moveTo(sw).curveTo(sw.offset(r.w/2+ext, 0), e.offset(0, -(r.h/2+ext)), e).curveTo(e.offset(0, r.h/2+ext), nw.offset(r.w/2+ext, 0), nw).closePath()
         elif cedge == Edge.MaxX:
