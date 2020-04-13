@@ -17,6 +17,12 @@ def test_text_on_a_curve(r):
 
 
 @test()
+def test_track_to_rect(r):
+    text:DATPenSet = StyledString("COLD", Style(co, 300, wdth=0, r=1)).pens().align(r)
+    return text.trackToRect(r.inset(50, 0), r=1)
+
+
+@test()
 def test_map_points(r):
     pt_labels = DATPenSet()
     def point_mapper(idx, x, y):

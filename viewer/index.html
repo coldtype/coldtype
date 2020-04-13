@@ -20,6 +20,7 @@
         var lastTime = (new Date()).getTime();
         var connected = false;
         var ws = null;
+        var shouldClear = false;
 
         setInterval(function() {
             connectToWebsocket();
@@ -54,8 +55,12 @@
                 let container = document.querySelector("#container");
                 let jdata = JSON.parse(evt.data);
                 if (jdata.clear) {
-                    container.innerHTML = "";
+                    shouldClear = true;
                 } else if (jdata.html) {
+                    if (shouldClear) {
+                        container.innerHTML = "";
+                        shouldClear = false;
+                    }
                     container.innerHTML = container.innerHTML + jdata.html;
                 } else {
                     console.log(">>>", jdata);

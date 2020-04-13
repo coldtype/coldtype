@@ -179,26 +179,28 @@ class DATPenLikeObject():
         scale = h if h < v else v
         return self.scale(scale)
     
-    def trackToRect(self, rect, pullToEdges=False):
+    def trackToRect(self, rect, pullToEdges=False, r=0):
         if len(self) == 1:
             return self.align(rect)
         total_width = 0
-        start_x = self[0].getFrame(th=pullToEdges).x
-        end_x = self[-1].getFrame(th=pullToEdges).point("SE").x
+        pens = self.pens
+        if r:
+            pens = list(reversed(pens))
+        start_x = pens[0].getFrame(th=pullToEdges).x
+        end_x = pens[-1].getFrame(th=pullToEdges).point("SE").x
         # TODO easy to knock out apostrophes here based on a callback, last "actual" frame
         total_width = end_x - start_x
         leftover_w = rect.w - total_width
         tracking_value = leftover_w / (len(self)-1)
         if pullToEdges:
-            xoffset = rect.x - self[0].bounds().x
+            xoffset = rect.x - pens[0].bounds().x
         else:
-            xoffset = rect.x - self[0].getFrame().x
-        for idx, p in enumerate(self):
+            xoffset = rect.x - pens[0].getFrame().x
+        for idx, p in enumerate(pens):
             if idx == 0:
                 p.translate(xoffset, 0)
             else:
                 p.translate(xoffset+tracking_value*idx, 0)
-        #self[0].translate(-tracking_value, 0)
         return self
     
     def skew(self, x=0, y=0, unalign=True):

@@ -20,6 +20,15 @@ def test_style_mod(r):
 
 
 @test()
+def test_fit_height(r):
+    style = Style(co, 150, wdth=1)
+    out = DATPenSet()
+    out += StyledString("CLDTP", style).pen()
+    out += StyledString("CLDTP", style.mod(fitHeight=300)).pen()
+    return out.rp().distribute(v=1).track(10, v=1).align(r).f("hr", 0.5, 0.5)
+
+
+@test()
 def test_interp(r):
     count = 30
     out = DATPenSet()

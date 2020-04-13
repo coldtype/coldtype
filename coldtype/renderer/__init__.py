@@ -243,7 +243,6 @@ class Renderer():
     
     async def reload_and_render(self, trigger, watchable=None, indices=None):
         wl = len(self.watchees)
-        self.preview.clear()
 
         if self.args.reload_libraries and watchable == Watchable.Library:
             # TODO limit this to what actually changed?
@@ -257,6 +256,7 @@ class Renderer():
         try:
             await self.reload(trigger)
             if self.program:
+                self.preview.clear()
                 preview_count, render_count = await self.render(trigger, indices=indices)
                 print("render>", preview_count, "/", render_count)
             else:
