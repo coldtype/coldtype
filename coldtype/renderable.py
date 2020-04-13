@@ -178,6 +178,6 @@ class animation(renderable, Timeable):
         frames = self.storyboard
         if action == Action.RenderAll:
             frames = list(range(0, self.duration))
-        elif action == Action.PreviewIndices:
+        elif action in [Action.PreviewIndices, Action.RenderIndices]:
             frames = indices
         return [RenderPass(self, "{:04d}".format(i), [Frame(i, self, layers)]) for i in frames]

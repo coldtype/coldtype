@@ -66,7 +66,9 @@ class Renderer():
             
             format=parser.add_argument("-fmt", "--format", type=str, default=None, help="What image format should be saved to disk?"),
 
-            layers=parser.add_argument("-l", "--layers", type=str, default="", help="comma-separated list of layers to flag as renderable (if None, will flag all layers as renderable)"),
+            layers=parser.add_argument("-l", "--layers", type=str, default=None, help="comma-separated list of layers to flag as renderable (if None, will flag all layers as renderable)"),
+
+            indices=parser.add_argument("-i", "--indices", type=str, default=None),
 
             file_prefix=parser.add_argument("-fp", "--file-prefix", type=str, default="", help="Should the output files be prefixed with something? If so, put it here."),
 
@@ -85,7 +87,7 @@ class Renderer():
         self.args = parser.parse_args()
         self.watchees = []
         self.reset_filepath(self.args.file if hasattr(self.args, "file") else None)
-        self.layers = [l.strip() for l in self.args.layers.split(",") if l]
+        self.layers = [l.strip() for l in self.args.layers.split(",")] if self.args.layers else []
         
         self.preview = PersistentPreview()
         self.preview.clear()
@@ -175,7 +177,8 @@ class Renderer():
                 else:
                     output_folder = self.filepath.parent / "renders" / (render.custom_folder or render.folder(self.filepath))
                 did_render = False
-                for rp in render.passes(trigger, self.layers if len(self.layers) > 0 else render.layers, indices):
+                _layers = self.layers if len(self.layers) > 0 else render.layers
+                for rp in render.passes(trigger, _layers, indices):
                     try:
                         result = await render.run(rp)
                         if trigger in [
@@ -189,7 +192,8 @@ class Renderer():
                         
                         if self.args.save_renders or trigger in [
                             Action.RenderAll,
-                            Action.RenderWorkarea
+                            Action.RenderWorkarea,
+                            Action.RenderIndices,
                         ]:
                             did_render = True
                             prefix = self.args.file_prefix or render.prefix or self.filepath.stem
@@ -199,7 +203,7 @@ class Renderer():
                                     for layer_result in result:
                                         if layer == layer_result.getTag():
                                             layer_folder = render.layer_folder(self.filepath, layer)
-                                            output_path = output_folder / layer_folder / f"{prefix}_{rp.suffix}_{layer}.{fmt}"
+                                            output_path = output_folder / layer_folder / f"{prefix}_{layer}_{rp.suffix}.{fmt}"
                                             output_path.parent.mkdir(exist_ok=True, parents=True)
                                             self.rasterize(layer_result, render, output_path)
                                             print(">>> saved layer...", "~/" + str(output_path.relative_to(Path.home())))
@@ -231,7 +235,7 @@ class Renderer():
         else:
             raise Exception(f"rasterizer ({rasterizer}) not supported")
     
-    async def reload_and_render(self, trigger, watchable=None):
+    async def reload_and_render(self, trigger, watchable=None, indices=None):
         wl = len(self.watchees)
         self.preview.clear()
 
@@ -247,14 +251,13 @@ class Renderer():
         try:
             await self.reload(trigger)
             if self.program:
-                await self.render(trigger)
+                await self.render(trigger, indices=indices)
             else:
                 self.preview.send("<pre>No program loaded!</pre>")
         except:
             self.show_error()
 
         if wl < len(self.watchees) and len(self.observers) > 0:
-            print("hello")
             from pprint import pprint
             pprint(self.watchees)
             self.stop_watching_file_changes()
@@ -275,7 +278,13 @@ class Renderer():
             print("SHOULD HALT")
             self.on_exit()
         else:
-            await self.reload_and_render(Action.RenderAll if self.args.all else Action.Initial)
+            if self.args.all:
+                await self.reload_and_render(Action.RenderAll)
+            elif self.args.indices:
+                indices = [int(x.strip()) for x in self.args.indices.split(",")]
+                await self.reload_and_render(Action.RenderIndices, indices=indices)
+            else:
+                await self.reload_and_render(Action.Initial)
             await self.on_start()
             if self.args.watch:
                 loop = asyncio.get_running_loop()
