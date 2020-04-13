@@ -66,7 +66,7 @@ class renderable():
     def layer_folder(self, filepath, layer):
         return ""
     
-    def passes(self, action, indices=[]):
+    def passes(self, action, layers, indices=[]):
         return [RenderPass(self, self.func.__name__, [self.rect])]
 
     def package(self, filepath, output_folder):
@@ -101,7 +101,7 @@ class glyph(renderable):
         self.glyphName = glyphName
         super().__init__(rect=r, **kwargs)
     
-    def passes(self, action, indices=[]):
+    def passes(self, action, layers, indices=[]):
         return [RenderPass(self, self.glyphName, [])]
 
 
@@ -115,7 +115,7 @@ class iconset(renderable):
     def folder(self, filepath):
         return f"{filepath.stem}_source"
     
-    def passes(self, action, indices=[]): # TODO could use the indices here
+    def passes(self, action, layers, indices=[]): # TODO could use the indices here
         sizes = self.sizes
         if action == Action.RenderAll:
             sizes = self.valid_sizes
@@ -174,10 +174,10 @@ class animation(renderable, Timeable):
     def layer_folder(self, filepath, layer):
         return layer
     
-    def passes(self, action, indices=[]):
+    def passes(self, action, layers, indices=[]):
         frames = self.storyboard
         if action == Action.RenderAll:
             frames = list(range(0, self.duration))
         elif action == Action.PreviewIndices:
             frames = indices
-        return [RenderPass(self, "{:04d}".format(i), [Frame(i, self)]) for i in frames]
+        return [RenderPass(self, "{:04d}".format(i), [Frame(i, self, layers)]) for i in frames]

@@ -4,9 +4,10 @@ from coldtype.animation.easing import ease
 
 
 class Frame():
-    def __init__(self, i, animation):
+    def __init__(self, i, animation, layers):
         self.i = i
         self.a = animation
+        self.layers = layers
 
 class Timing():
     def __init__(self, t, loop_t, loop, easefn):

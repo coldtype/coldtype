@@ -66,6 +66,8 @@ class Renderer():
             
             format=parser.add_argument("-fmt", "--format", type=str, default=None, help="What image format should be saved to disk?"),
 
+            layers=parser.add_argument("-l", "--layers", type=str, default="", help="comma-separated list of layers to flag as renderable (if None, will flag all layers as renderable)"),
+
             file_prefix=parser.add_argument("-fp", "--file-prefix", type=str, default="", help="Should the output files be prefixed with something? If so, put it here."),
 
             output_folder=parser.add_argument("-of", "--output-folder", type=str, default=None, help="If you don’t want to render to the default output location, specify that here."),
@@ -83,6 +85,7 @@ class Renderer():
         self.args = parser.parse_args()
         self.watchees = []
         self.reset_filepath(self.args.file if hasattr(self.args, "file") else None)
+        self.layers = [l.strip() for l in self.args.layers.split(",") if l]
         
         self.preview = PersistentPreview()
         self.preview.clear()
@@ -172,7 +175,7 @@ class Renderer():
                 else:
                     output_folder = self.filepath.parent / "renders" / (render.custom_folder or render.folder(self.filepath))
                 did_render = False
-                for rp in render.passes(trigger, indices):
+                for rp in render.passes(trigger, self.layers if len(self.layers) > 0 else render.layers, indices):
                     try:
                         result = await render.run(rp)
                         if trigger in [
