@@ -2,7 +2,7 @@ from coldtype.test import *
 from coldtype.animation import *
 
 
-#@test(layers=["oval", "rect"])
+@test(layers=["oval", "rect"])
 def test_static_layers(r):
     out = DATPenSet([
         DATPen().oval(r.square()).f("hr",0.5,0.5,0.5).tag("oval"),
