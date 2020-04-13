@@ -10,6 +10,8 @@ from runpy import run_path
 from subprocess import call
 import argparse, importlib, inspect, json, ast
 
+from typing import Tuple
+
 import coldtype
 from coldtype.helpers import *
 from coldtype.geometry import Rect
@@ -82,8 +84,6 @@ class Renderer():
         return pargs, parser
 
     def __init__(self, parser):
-        self.actions = Action
-
         self.args = parser.parse_args()
         self.watchees = []
         self.reset_filepath(self.args.file if hasattr(self.args, "file") else None)
@@ -161,9 +161,11 @@ class Renderer():
                 return matches
         return _rs
 
-    async def render(self, trigger, indices=[]):
+    async def render(self, trigger, indices=[]) -> Tuple[int, int]:
         renders = self.renderables(trigger)
         self.last_renders = renders
+        preview_count = 0
+        render_count = 0
         try:
             for render in renders:
                 for watch in render.watch:
@@ -188,6 +190,7 @@ class Renderer():
                             Action.PreviewIndices,
                         ]:
                             preview_result = await render.runpost(result, rp)
+                            preview_count += 1
                             self.preview.send(SVGPen.Composite(preview_result, render.rect, viewBox=True), bg=render.bg, max_width=800)
                         
                         if self.args.save_renders or trigger in [
@@ -205,9 +208,11 @@ class Renderer():
                                             layer_folder = render.layer_folder(self.filepath, layer)
                                             output_path = output_folder / layer_folder / f"{prefix}_{layer}_{rp.suffix}.{fmt}"
                                             output_path.parent.mkdir(exist_ok=True, parents=True)
+                                            render_count += 1
                                             self.rasterize(layer_result, render, output_path)
                                             print(">>> saved layer...", "~/" + str(output_path.relative_to(Path.home())))
                             else:
+                                render_count += 1
                                 output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
                                 rp.output_path = output_path
                                 output_path.parent.mkdir(exist_ok=True, parents=True)
@@ -221,6 +226,7 @@ class Renderer():
                     self.show_message("Done!")
         except:
             self.show_error()
+        return preview_count, render_count
     
     def rasterize(self, content, render, path):
         scale = int(self.args.scale)
@@ -251,7 +257,8 @@ class Renderer():
         try:
             await self.reload(trigger)
             if self.program:
-                await self.render(trigger, indices=indices)
+                preview_count, render_count = await self.render(trigger, indices=indices)
+                print("render>", preview_count, "/", render_count)
             else:
                 self.preview.send("<pre>No program loaded!</pre>")
         except:
@@ -304,11 +311,20 @@ class Renderer():
     
     async def on_message(self, message, action):
         if action:
-            try:
-                enum_action = self.actions(action)
+            enum_action = self.lookup_action(action)
+            if enum_action:
                 await self.on_action(enum_action, message)
-            except ValueError:
-                print(">>>", action, "is not a known action")
+            else:
+                print(">>> (", action, ") is not a recognized action")
+    
+    def lookup_action(self, action):
+        try:
+            return Action(action)
+        except ValueError:
+            return None
+    
+    def additional_actions(self):
+        return []
     
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
@@ -336,9 +352,10 @@ class Renderer():
             else:
                 await self.on_action(action)
     
-    async def on_action(self, action, message=None):
+    async def on_action(self, action, message=None) -> bool:
         if action in [Action.PreviewStoryboard, Action.RenderAll, Action.RenderWorkarea]:
             await self.reload_and_render(action)
+            return True
         elif action in [Action.PreviewStoryboardNext, Action.PreviewStoryboardPrev]:
             increment = 1 if action == Action.PreviewStoryboardNext else -1
             for render in self.last_renders:
@@ -348,8 +365,12 @@ class Renderer():
                         render.storyboard[idx] = nidx
                     self.preview.clear()
                     await self.render(Action.PreviewStoryboard)
+            return True
         elif action == Action.ArbitraryCommand:
             await self.on_stdin(message.get("input"))
+            return True
+        else:
+            return False
     
     async def process_ws_message(self, message):
         try:
@@ -362,6 +383,7 @@ class Renderer():
                 if self.args.monitor_lines and path == self.filepath:
                     self.line_number = jdata.get("line_number")
         except:
+            self.show_error()
             print("Malformed message", message)
 
     async def listen_to_ws(self):

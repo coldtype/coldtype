@@ -176,10 +176,13 @@ class animation(renderable, Timeable):
     def layer_folder(self, filepath, layer):
         return layer
     
+    def all_frames(self):
+        return list(range(0, self.duration))
+    
     def passes(self, action, layers, indices=[]):
         frames = self.storyboard
         if action == Action.RenderAll:
-            frames = list(range(0, self.duration))
+            frames = self.all_frames()
         elif action in [Action.PreviewIndices, Action.RenderIndices]:
             frames = indices
         elif action in [Action.RenderWorkarea]:
