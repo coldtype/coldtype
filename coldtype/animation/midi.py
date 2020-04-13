@@ -100,10 +100,12 @@ class MidiTrack():
                 else:
                     if post_end > self.duration and frame < pre_start:
                         fi = frame + self.duration
+                    elif pre_start < 0 and frame > post_end:
+                        fi = frame - self.duration
                     
                     if fi < note.on and fi >= pre_start:
                         pos = 1
-                        value = (frame - pre_start) / pre
+                        value = (fi - pre_start) / pre
                     elif fi > note_off and fi < post_end:
                         pos = -1
                         value = (post_end - fi) / post

@@ -906,6 +906,12 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 dps.append(dp)
         return dps
     
+    def mod_contour(self, contour_index, mod_fn):
+        exploded = self.explode()
+        mod_fn(exploded[contour_index])
+        self.value = exploded.implode().value
+        return self
+    
     def openAndClosed(self):
         """Explode and then classify group each contour into open/closed pens; (what is this good for?)"""
         dp_open = DATPen()
@@ -1253,6 +1259,12 @@ class DATPenSet(DATPenLikeObject):
         else:
             return False
         return self
+    
+    def glyphs_named(self, glyph_name):
+        #return self.pfilter(lambda i, p: p.glyphName == glyph_name).pmap(lambda idx, p: mod_fn(p))
+        for p in self:
+            if p.glyphName == glyph_name:
+                yield p
     
     def mfilter(self, fn):
         self.pens = self.filter(fn)
