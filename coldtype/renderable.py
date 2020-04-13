@@ -167,6 +167,8 @@ class animation(renderable, Timeable):
             self.end = timeline.end
             self.duration = timeline.duration
             self.storyboard = timeline.storyboard
+        else:
+            self.timeline = None
     
     def folder(self, filepath):
         return filepath.stem # TODO necessary?
@@ -180,4 +182,9 @@ class animation(renderable, Timeable):
             frames = list(range(0, self.duration))
         elif action in [Action.PreviewIndices, Action.RenderIndices]:
             frames = indices
+        elif action in [Action.RenderWorkarea]:
+            if self.timeline:
+                if hasattr(self.timeline, "find_workarea"):
+                    frames = self.timeline.find_workarea()
+
         return [RenderPass(self, "{:04d}".format(i), [Frame(i, self, layers)]) for i in frames]
