@@ -147,7 +147,7 @@ class Renderer():
             if isinstance(v, renderable):
                 _rs.append(v)
         if self.args.filter_functions:
-            function_names = [f.strip() for f in self.args.filter_functifons.split(",")]
+            function_names = [f.strip() for f in self.args.filter_functions.split(",")]
             _rs = [r for r in _rs if r.func.__name__ in function_names]
         if self.args.monitor_lines and trigger != Action.RenderAll:
             func_name = file_and_line_to_def(self.filepath, self.line_number)
@@ -174,14 +174,15 @@ class Renderer():
                 did_render = False
                 for rp in render.passes(trigger, indices):
                     try:
-                        result = await rp.run()
+                        result = await render.run(rp)
                         if trigger in [
                             Action.Initial,
                             Action.Resave,
                             Action.PreviewStoryboard,
                             Action.PreviewIndices,
                         ]:
-                            self.preview.send(SVGPen.Composite(result, render.rect, viewBox=True), bg=render.bg, max_width=800)
+                            preview_result = await render.runpost(result, rp)
+                            self.preview.send(SVGPen.Composite(preview_result, render.rect, viewBox=True), bg=render.bg, max_width=800)
                         
                         if self.args.save_renders or trigger in [
                             Action.RenderAll,
@@ -189,11 +190,23 @@ class Renderer():
                         ]:
                             did_render = True
                             prefix = self.args.file_prefix or render.prefix or self.filepath.stem
-                            output_path = output_folder / f"{prefix}_{rp.suffix}.{self.args.format or render.fmt}"
-                            rp.output_path = output_path
-                            output_path.parent.mkdir(exist_ok=True, parents=True)
-                            self.rasterize(result, render, output_path)
-                            print(">>> saved...", "~/" + str(output_path.relative_to(Path.home())))
+                            fmt = self.args.format or render.fmt
+                            if len(render.layers) > 0:
+                                for layer in render.layers:
+                                    for layer_result in result:
+                                        if layer == layer_result.getTag():
+                                            layer_folder = render.layer_folder(self.filepath, layer)
+                                            output_path = output_folder / layer_folder / f"{prefix}_{rp.suffix}_{layer}.{fmt}"
+                                            output_path.parent.mkdir(exist_ok=True, parents=True)
+                                            self.rasterize(layer_result, render, output_path)
+                                            print(">>> saved layer...", "~/" + str(output_path.relative_to(Path.home())))
+                            else:
+                                output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
+                                rp.output_path = output_path
+                                output_path.parent.mkdir(exist_ok=True, parents=True)
+                                self.rasterize(result, render, output_path)
+                                # TODO a progress bar?
+                                print(">>> saved...", "~/" + str(output_path.relative_to(Path.home())))
                     except:
                         self.show_error()
                 if did_render:

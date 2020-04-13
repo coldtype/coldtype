@@ -253,7 +253,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.data = {}
     
     def __str__(self):
-        return f"<DP(typo:int({self.typographic})({self.glyphName}))>"
+        return f"<DP(typo:int({self.typographic})({self.glyphName}))/tag:({self._tag})>"
     
     def ups(self):
         dps = DATPenSet()
@@ -1070,7 +1070,7 @@ class DATPenSet(DATPenLikeObject):
                 self += pen
     
     def __str__(self):
-        return f"<DPS:pens:{len(self.pens)}:({self._tag})>"
+        return f"<DPS:pens:{len(self.pens)}:tag({self._tag})>"
     
     def __len__(self):
         return len(self.pens)

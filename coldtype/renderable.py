@@ -31,19 +31,10 @@ class RenderPass():
         self.args = args
         self.suffix = suffix
         self.path = None
-    
-    async def run(self):
-        if inspect.iscoroutinefunction(self.fn):
-            result = await self.fn(*self.args)
-        else:
-            result = self.fn(*self.args)
-        if self.render.postfn:
-            result = self.render.postfn(self.render, result)
-        return result
 
 
 class renderable():
-    def __init__(self, rect=(1080, 1080), bg="whitesmoke", hide=False, fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[]):
+    def __init__(self, rect=(1080, 1080), bg="whitesmoke", hide=False, fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[], layers=[]):
         self.hide = hide
         self.rect = Rect(rect)
         self.bg = normalize_color(bg)
@@ -54,6 +45,7 @@ class renderable():
         self.postfn = postfn
         self.watch = [Path(w).expanduser().resolve() for w in watch]
         self.rasterizer = rasterizer
+        self.layers = layers
         if not rasterizer:
             if self.fmt == "svg":
                 self.rasterizer = "svg"
@@ -71,11 +63,26 @@ class renderable():
     def folder(self, filepath):
         return ""
     
+    def layer_folder(self, filepath, layer):
+        return ""
+    
     def passes(self, action, indices=[]):
         return [RenderPass(self, self.func.__name__, [self.rect])]
 
     def package(self, filepath, output_folder):
         pass
+
+    async def run(self, render_pass):
+        if inspect.iscoroutinefunction(render_pass.fn):
+            return await render_pass.fn(*render_pass.args)
+        else:
+            return render_pass.fn(*render_pass.args)
+    
+    async def runpost(self, result, render_pass):
+        if self.postfn:
+            return self.postfn(self, result)
+        else:
+            return result
 
 
 class svgicon(renderable):
@@ -163,6 +170,9 @@ class animation(renderable, Timeable):
     
     def folder(self, filepath):
         return filepath.stem # TODO necessary?
+    
+    def layer_folder(self, filepath, layer):
+        return layer
     
     def passes(self, action, indices=[]):
         frames = self.storyboard
