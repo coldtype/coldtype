@@ -212,7 +212,7 @@ class Renderer():
                                             output_path.parent.mkdir(exist_ok=True, parents=True)
                                             render_count += 1
                                             self.rasterize(layer_result, render, output_path)
-                                            print(">>> saved layer...", "~/" + str(output_path.relative_to(Path.home())))
+                                            print(">>> saved layer...", str(output_path.relative_to(Path.cwd())))
                             else:
                                 render_count += 1
                                 output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
@@ -220,7 +220,7 @@ class Renderer():
                                 output_path.parent.mkdir(exist_ok=True, parents=True)
                                 self.rasterize(result, render, output_path)
                                 # TODO a progress bar?
-                                print(">>> saved...", "~/" + str(output_path.relative_to(Path.home())))
+                                print(">>> saved...", str(output_path.relative_to(Path.cwd())))
                     except:
                         self.show_error()
                 if did_render:
@@ -414,7 +414,7 @@ class Renderer():
         path = Path(event.src_path)
         if path in self.watchee_paths():
             idx = self.watchee_paths().index(path)
-            print(f">>> resave: {Path(event.src_path).relative_to(Path.home())}")
+            print(f">>> resave: {Path(event.src_path).relative_to(Path.cwd())}")
             await self.reload_and_render(Action.Resave, self.watchees[idx][0])
 
     def watch_file_changes(self):

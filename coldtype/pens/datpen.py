@@ -32,13 +32,6 @@ from coldtype.pens.outlinepen import OutlinePen
 from coldtype.pens.translationpen import TranslationPen, polarCoord
 
 
-def warp_fn(xa=0, ya=0, xs=300, ys=300, speed=5, base=0, octaves=1, mult=50):
-    def warp(x, y):
-        pn = noise.pnoise3((x+xa)/xs, (y+ya)/ys, speed, octaves=octaves, base=base)
-        return x+pn*mult, y+pn*mult
-    return warp
-
-
 class DATPenLikeObject():
     def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
         x = txt_to_edge(x)
@@ -1268,6 +1261,10 @@ class DATPenSet(DATPenLikeObject):
         for p in self:
             if p.glyphName == glyph_name:
                 yield p
+    
+    def ffg(self, glyph_name):
+        """find the first glyph named this name"""
+        return list(self.glyphs_named(glyph_name))[0]
     
     def mfilter(self, fn):
         self.pens = self.filter(fn)

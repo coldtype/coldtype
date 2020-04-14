@@ -87,6 +87,7 @@ class MidiTrack():
                 pre_start = (note.on - pre)
                 post_end = (note_off + post)
                 
+                note_index = count
                 if frame >= pre_start: # correct?
                     count += 1
                 

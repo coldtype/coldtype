@@ -32,12 +32,12 @@ class Graf():
         box = self.container.getFrame()
         leftover = box
         for l in self.lines:
-            box, leftover = leftover.divide(l.height(), "maxy")
+            box, leftover = leftover.divide(l.height(), "maxy", forcePixel=True)
             if self.style.leading < 0:
                 # need to add pixels back to leftover
                 leftover.h += abs(self.style.leading)
             else:
-                leading, leftover = leftover.divide(self.style.leading, "maxy")
+                leading, leftover = leftover.divide(self.style.leading, "maxy", forcePixel=True)
                 leadings.append(leading)
             rects.append(box)
         return rects
