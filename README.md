@@ -4,7 +4,7 @@ __⚠️ Our intention is to ultimately make this library a proper, useable, ope
 
 ---
 
-![coldtype](https://github.com/goodhertz/coldtype/blob/master/examples/renders/example_coldtype.png)
+![An example](https://github.com/goodhertz/coldtype/blob/master/examples/media/808.gif)
 
 # Coldtype
 
