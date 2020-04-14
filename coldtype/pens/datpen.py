@@ -180,6 +180,7 @@ class DATPenLikeObject():
         return self.scale(scale)
     
     def trackToRect(self, rect, pullToEdges=False, r=0):
+        """Distribute pens evenly within a frame"""
         if len(self) == 1:
             return self.align(rect)
         total_width = 0
