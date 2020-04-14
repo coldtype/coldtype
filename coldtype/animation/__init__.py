@@ -9,6 +9,7 @@ class Frame():
         self.a = animation
         self.layers = layers
 
+
 class Timing():
     def __init__(self, t, loop_t, loop, easefn):
         self.t = t
@@ -102,6 +103,8 @@ class Timeable():
         else:
             loop_t, loop_index = self._loop(t, times=loops, cyclic=cyclic, negative=negative)
             return Timing(t, loop_t, loop_index, easefn)
+    
+    prg = progress
 
 
 class Loop(Timeable):
