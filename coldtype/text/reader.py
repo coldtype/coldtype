@@ -564,6 +564,14 @@ class StyledString(FittableMixin):
         in_pen.replay(tp)
         if self.style.rotate:
             out_pen.rotate(self.style.rotate)
+        
+        # TODO this shouldn't be necessary
+        valid_values = []
+        for (move, pts) in out_pen.value:
+            if move != "addComponent":
+                valid_values.append((move, pts))
+        out_pen.value = valid_values
+
         return out_pen
     
     def _emptyPenWithAttrs(self):
