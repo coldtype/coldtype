@@ -84,6 +84,8 @@ class Renderer():
         return pargs, parser
 
     def __init__(self, parser):
+        sys.path.insert(0, os.getcwd())
+
         self.args = parser.parse_args()
         self.watchees = []
         self.reset_filepath(self.args.file if hasattr(self.args, "file") else None)
