@@ -166,7 +166,10 @@ class animation(renderable, Timeable):
             self.start = timeline.start
             self.end = timeline.end
             self.duration = timeline.duration
-            self.storyboard = timeline.storyboard
+            if self.storyboard != [0] and timeline.storyboard == [0]:
+                pass
+            else:
+                self.storyboard = timeline.storyboard
         else:
             self.timeline = None
     
