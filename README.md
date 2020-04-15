@@ -5,7 +5,7 @@ __⚠️ Our intention is to ultimately make this library a proper, useable, ope
 ---
 
 ![An example](https://coldtype.goodhertz.co/media/banner_t.gif)
-> source: [banner.py](https://github.com/goodhertz/coldtype-examples/blob/master/animations/banner.py)
+_source code for this animation:_ [banner.py](https://github.com/goodhertz/coldtype-examples/blob/master/animations/banner.py)
 
 # Coldtype
 
@@ -26,9 +26,13 @@ def render(r):
 
 _A DrawBot-like programming experience, using VS Code and the Coldtype viewing app. (When you save the file in VS Code, the hanging process (as seen in the terminal) re-renders `simple.py` to SVG and sends the result via a websocket to the Coldtype viewing app, which displays the SVG with a standard Chromium-based webview.)_
 
-## Examples
+___
+
+## More Examples
 
 To try out Coldtype and see some examples (like the banner at the top of this README), check out the [coldtype-examples](https://github.com/goodhertz/coldtype-examples) repository, where there are instructions on how to download and setup Coldtype in a python3.8 environment.
+
+___
 
 ## Installation
 
@@ -36,7 +40,9 @@ To try out Coldtype and see some examples (like the banner at the top of this RE
 
 If you’re using a version of Python >= 3.7, you should be able to add `coldtype` to your virtual environment with this command:
 
-> `pip install git+https://github.com/goodhertz/coldtype`
+> `pip install git+https://github.com/goodhertz/coldtype#egg=coldtype[drawbot]`
+
+(The `[drawbot]` bit at the end is optional, and mac-specific, but you’ll probably want it if you’re using a Mac, since Cairo (the alternate rasterizer) is quite hard to install.)
 
 To test that you have a working installation, try this command with your virtual env activated:
 
@@ -49,7 +55,9 @@ You’ll also need the Coldtype app, which is a cross-platform app that displays
 
 Though it’s not strictly necessary to have this app open at all times, it’s just something I leave open on my computer, so whenever I want to see the visual output of a coldtype program, it’s ready to go.
 
-N.B. This app isn’t signed or anything, we should work on that.
+**N.B.** _This app isn’t signed or anything, we should work on that._
+
+___
 
 ## What is Coldtype?
 
@@ -178,6 +186,7 @@ Now you should see `(coldtype)` prepended to your terminal prompt. If that’s t
 - `coldtype example/example.py -w`
 - `ctrl+c` to exit
 
+___
 
 # Other Stuff, Optional
 
