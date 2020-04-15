@@ -8,9 +8,9 @@ states = [
     dict(wdth=0.25, rotate=-180, tu=-800)
 ]
 
-loop = Loop(120, len(states), 5)
+loop = Loop(120, len(states), 8)
 
-@animation(timeline=loop, storyboard=[110])
+@animation(timeline=loop, storyboard=[110], bg=0)
 def render(f):
     state = f.a.t.current_phase(f.i).calc_state(states)
-    return StyledString("COLD", Style(co, 350, fill=0, **state, r=1)).pens().align(f.a.r).f(hsl(f.a.prg(f.i).e, s=0.75)).understroke()
+    return StyledString("COLD", Style(co, 350, fill=0, **state, r=1)).pens().align(f.a.r).f(1).understroke()
