@@ -26,7 +26,7 @@ def test_track_to_rect(r):
 def test_map_points(r):
     pt_labels = DATPenSet()
     def point_mapper(idx, x, y):
-        pt_labels.append(StyledString(str(idx), Style("ç/NotoSans-Black.ttf", 10, wght=1, wdth=0)).pen().translate(x, y))
+        pt_labels.append(StyledString(str(idx), Style("assets/NotoSans-Black.ttf", 10, wght=1, wdth=0)).pen().translate(x, y))
         if idx in [12, 11, 10, 9, 24, 23, 22, 21]:
             return x-100, y
         #elif idx in [7, 6]:

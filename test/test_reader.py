@@ -63,7 +63,7 @@ async def test_stroke_ufo(r):
 
 @test()
 def test_emoji(r):
-    return StyledString("🍕💽🖥", Style("ç/TwemojiMozilla.ttf", 300, t=20, ch=500, bs=11)).pens().align(r)
+    return StyledString("🍕💽🖥", Style("assets/TwemojiMozilla.ttf", 300, t=20, ch=500, bs=11)).pens().align(r)
 
 
 @test()
@@ -77,5 +77,5 @@ def test_color_font(r):
 @test()
 def test_language(r):
     """Should have an accent over the j"""
-    style = Style("ç/SourceSerifPro-Black.ttf", 350, wdth=1, wght=1, ss01=True)
+    style = Style("assets/SourceSerifPro-Black.ttf", 350, wdth=1, wght=1, ss01=True)
     return StyledString("ríjks", style.mod(lang="NLD")).pen().align(r)

@@ -3,8 +3,8 @@ from functools import partial
 from random import Random
 
 
-co = Font("ç/ColdtypeObviously.designspace")
-mutator = Font("ç/MutatorSans.ttf")
+co = Font("assets/ColdtypeObviously.designspace")
+mutator = Font("assets/MutatorSans.ttf")
 
 
 def add_grid(render, result):

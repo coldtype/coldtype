@@ -1,7 +1,7 @@
 from coldtype import *
 from coldtype.pens.datpen import warp_fn
 
-font = Font("ç/ColdtypeObviously.designspace")
+font = Font("assets/ColdtypeObviously.designspace")
 
 @renderable(rect=(1500, 300))
 def coldtype(r):

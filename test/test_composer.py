@@ -1,7 +1,5 @@
 from coldtype.test import *
 
-mutator = Font("ç/MutatorSans.ttf")
-
 text = """SALT PEANUTS
 VARIABLE
 LINEPACKING ALGORITHM
@@ -18,7 +16,7 @@ def test_multiline_fit(r):
 
 @test()
 def test_headline(r):
-    s = Style("ç/SourceSerifPro-Black.ttf", 150)
+    s = Style("assets/SourceSerifPro-Black.ttf", 150)
     g = Graf(Slug.LineSlugs("HEADLINES\nUSED TO\nDO THIS", s), r, leading=10).pens().f(0)
     g[1].xAlignToFrame("mdx")
     g[2].xAlignToFrame("mxx")
@@ -35,7 +33,7 @@ def test_combine_slugs(r):
 
 
 try:
-    latin_font = Font("ç/NotoSans-Black.ttf")
+    latin_font = Font("assets/NotoSans-Black.ttf")
     arabic_font = Font("≈/GretaArabicCompressedAR-Heavy.otf")
 except FontNotFoundException:
     pass
@@ -59,6 +57,6 @@ def test_multidir_seg_string(r):
 @test()
 def test_cjk_multilang(r):
     obv = Style(co, 300, wdth=1, wght=0, fill=("hr",0.5,0.5))
-    style = Style("ç/NotoSansCJKsc-Black.otf", 300, lang="zh", fill=Gradient.Random(r))
+    style = Style("assets/NotoSansCJKsc-Black.otf", 300, lang="zh", fill=Gradient.Random(r))
     dps = Slug("CO同步", style, obv).fit(r.w-100).pens().align(r)
     return [dps.frameSet().attr(fill=None, stroke=0), dps]

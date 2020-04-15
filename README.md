@@ -17,7 +17,7 @@ from coldtype import *
 
 @renderable(rect=Rect(1080, 1080))
 def render(r):
-    style = Style("ç/MutatorSans.ttf", 250, wdth=0, wght=1, tu=-350, r=1, ro=1)
+    style = Style("assets/MutatorSans.ttf", 250, wdth=0, wght=1, tu=-350, r=1, ro=1)
     return StyledString("COLDTYPE", style).pens().align(r).f("hr", 0.8, 0.7).understroke()
 ```
 
@@ -82,7 +82,7 @@ from coldtype import *
 
 @renderable(rect=(1350, 500))
 async def render(r):
-    return StyledString("COLDTYPE", Style("ç/MutatorSans.ttf", 300, wght=1, tu=-250, r=1)).pens().align(r, tv=1).f("random").understroke()
+    return StyledString("COLDTYPE", Style("assets/MutatorSans.ttf", 300, wght=1, tu=-250, r=1)).pens().align(r, tv=1).f("random").understroke()
 ```
 
 You can run this with the `coldtype` command-line tool, e.g.:

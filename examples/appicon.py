@@ -1,6 +1,6 @@
 from coldtype import *
 
-co = Font("ç/ColdtypeObviously.designspace")
+co = Font("assets/ColdtypeObviously.designspace")
 
 def mod_o(idx, dp):
     if dp.glyphName == "O":
