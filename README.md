@@ -21,7 +21,7 @@ def render(r):
     return StyledString("COLDTYPE", style).pens().align(r).f("hr", 0.8, 0.7).understroke()
 ```
 
-![Screenshot of app](https://github.com/goodhertz/coldtype/blob/master/examples/media/drawbotesque.png)
+![Screenshot of app](https://coldtype.goodhertz.co/media/drawbotesque.png)
 
 _A DrawBot-like programming experience, using VS Code and the Coldtype viewing app. (When you save the file in VS Code, the hanging process (as seen in the terminal) re-renders `simple.py` to SVG and sends the result via a websocket to the Coldtype viewing app, which displays the SVG with a standard Chromium-based webview.)_
 
