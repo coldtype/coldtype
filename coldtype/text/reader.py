@@ -41,9 +41,6 @@ OTFFont._syncLoad = _syncLoad
 import asyncio
 import traceback
 
-Levenshtein = None
-
-
 
 class FittableMixin():
     def textContent(self):
@@ -79,32 +76,13 @@ class FontNotFoundException(Exception):
 
 def normalize_font_path(font):
     global _prefixes
-    ff = font
+    ff = str(font)
     for prefix, expansion in _prefixes:
         ff = ff.replace(prefix, expansion)
     literal = Path(ff).expanduser()
     ufo = literal.suffix == ".ufo"
     if literal.exists() and (not literal.is_dir() or ufo):
         return str(literal)
-    elif Levenshtein:
-        fonts = list(literal.parent.glob("**/*.ttf"))
-        fonts.extend(list(literal.parent.glob("**/*.otf")))
-        matches = []
-        match_terms = literal.name.split(" ")
-        for font in fonts:
-            if font.is_dir():
-                continue
-            if all([mt in font.name for mt in match_terms]):
-                matches.append(font)
-        if matches:
-            matches.sort()
-            matches.reverse()
-            distances = [Levenshtein.distance(m.name, literal.name) for m in matches]
-            match = matches[distances.index(min(distances))]
-            print(">>>>> FONTMATCH:", literal.name, "<to>", match.name)
-            return str(match)
-        else:
-            raise Exception("NO FONT FOUND FOR", literal)
     else:
         raise FontNotFoundException(literal)
 

@@ -1,6 +1,5 @@
 import math, sys, os, re
 from pathlib import Path
-from defcon import Font as DefconFont
 
 from coldtype.text import *
 from coldtype.text.reader import Font
@@ -13,6 +12,3 @@ from coldtype.animation import *
 
 name = "coldtype"
 __version__ = "0.0.1"
-
-def raw_ufo(path):
-    return DefconFont(normalize_font_path(path))

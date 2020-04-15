@@ -1,5 +1,8 @@
 from pathlib import Path
 
+from defcon import Font as DefconFont
+from coldtype.text.reader import normalize_font_path
+
 
 def loopidx(lst, idx):
     return lst[idx % len(lst)]
@@ -15,3 +18,6 @@ def interp_dict(v, a, b):
 
 def sibling(root, file):
     return Path(root).parent.joinpath(file)
+
+def raw_ufo(path):
+    return DefconFont(normalize_font_path(path))
