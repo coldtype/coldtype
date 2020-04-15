@@ -4,7 +4,8 @@ __⚠️ Our intention is to ultimately make this library a proper, useable, ope
 
 ---
 
-![An example](https://coldtype.goodhertz.co/media/808.gif)
+![An example](https://coldtype.goodhertz.co/media/banner_t.gif)
+> source: [banner.py](https://github.com/goodhertz/coldtype-examples/blob/master/animations/banner.py)
 
 # Coldtype
 
@@ -25,6 +26,9 @@ def render(r):
 
 _A DrawBot-like programming experience, using VS Code and the Coldtype viewing app. (When you save the file in VS Code, the hanging process (as seen in the terminal) re-renders `simple.py` to SVG and sends the result via a websocket to the Coldtype viewing app, which displays the SVG with a standard Chromium-based webview.)_
 
+## Examples
+
+To try out Coldtype and see some examples (like the banner at the top of this README), check out the [coldtype-examples](https://github.com/goodhertz/coldtype-examples) repository, where there are instructions on how to download and setup Coldtype in a python3.8 environment.
 
 ## Installation
 
