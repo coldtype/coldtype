@@ -6,6 +6,8 @@ from random import Random
 co = Font("assets/ColdtypeObviously.designspace")
 mutator = Font("assets/MutatorSans.ttf")
 
+Style.RegisterShorthandPrefix("≈", "~/Type/fonts/fonts")
+
 
 def add_grid(render, result):
     return DATPenSet([

@@ -68,18 +68,20 @@ class FittableMixin():
 
 _prefixes = [
     ["¬", "~/Library/Fonts"],
-    ["≈", "~/Type/fonts/fonts"]
+    ["", "/Library/Fonts"]
 ]
 
 class FontNotFoundException(Exception):
     pass
 
+def normalize_font_prefix(path_string):
+    for prefix, expansion in _prefixes:
+        path_string = path_string.replace(prefix, expansion)
+    return Path(path_string).expanduser().resolve()
+
 def normalize_font_path(font):
     global _prefixes
-    ff = str(font)
-    for prefix, expansion in _prefixes:
-        ff = ff.replace(prefix, expansion)
-    literal = Path(ff).expanduser()
+    literal = normalize_font_prefix(str(font))
     ufo = literal.suffix == ".ufo"
     if literal.exists() and (not literal.is_dir() or ufo):
         return str(literal)

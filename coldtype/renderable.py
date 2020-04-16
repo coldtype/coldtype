@@ -1,5 +1,5 @@
 import inspect
-import platform
+import platform, re
 from enum import Enum
 from subprocess import run
 from pathlib import Path
@@ -8,6 +8,7 @@ from coldtype.geometry import Rect
 from coldtype.color import normalize_color
 from coldtype.animation import Timeable, Frame
 from coldtype.animation.timeline import Timeline
+from coldtype.text.reader import normalize_font_prefix
 
 
 class Action(Enum):
@@ -103,6 +104,24 @@ class glyph(renderable):
     
     def passes(self, action, layers, indices=[]):
         return [RenderPass(self, self.glyphName, [])]
+
+
+class fontpreview(renderable):
+    def __init__(self, font_dir, font_re, rect=(1200, 150), limit=25, **kwargs):
+        super().__init__(rect=rect, **kwargs)
+        self.dir = normalize_font_prefix(font_dir)
+        self.re = font_re
+        self.matches = []
+        
+        for font in self.dir.iterdir():
+            if re.search(self.re, str(font)):
+                if len(self.matches) < limit:
+                    self.matches.append(font)
+        
+        self.matches.sort()
+    
+    def passes(self, action, layers, indices=[]):
+        return [RenderPass(self, "{:s}".format(m.name), [self.rect, m]) for m in self.matches]
 
 
 class iconset(renderable):
