@@ -67,10 +67,11 @@ pre {
     font-family: RecMonoCasualItalicWeb, monospace;
     background: royalblue;
     border: 3px solid dodgerblue;
-    padding: 20px;
+    padding: 5px;
     color: white;
     margin: 0;
     text-align: left;
+    font-size: 12px;
 }
 
 h3 {

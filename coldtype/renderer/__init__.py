@@ -51,11 +51,13 @@ class Renderer():
         parser = argparse.ArgumentParser(prog=name, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
         
         if file:
-            parser.add_argument("file", type=str, help="The source file for a coldtype render")
+            parser.add_argument("file", type=str, nargs="?", help="The source file for a coldtype render")
         for narg in nargs:
             parser.add_argument(narg[0], nargs="?", default=narg[1])
         
         pargs = dict(
+            version=parser.add_argument("-v", "--version", action="store_true", default=False, help="Display version"),
+
             watch=parser.add_argument("-w", "--watch", action="store_true", default=False, help="Watch for changes to source files"),
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
@@ -185,6 +187,12 @@ class Renderer():
                 for rp in render.passes(trigger, _layers, indices):
                     try:
                         result = await render.run(rp)
+                        try:
+                            if len(result) == 2 and isinstance(result[1], str):
+                                self.show_message(result[1])
+                                result = result[0]
+                        except:
+                            pass
                         if trigger in [
                             Action.Initial,
                             Action.Resave,
@@ -283,9 +291,13 @@ class Renderer():
         sys.exit(self.exit_code)
 
     async def start(self):
-        should_halt = await self.before_start()
+        if self.args.version:
+            print(">>>", coldtype.__version__)
+            should_halt = True
+        else:
+            should_halt = await self.before_start()
+        
         if should_halt:
-            print("SHOULD HALT")
             self.on_exit()
         else:
             if self.args.all:
