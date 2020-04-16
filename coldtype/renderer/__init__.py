@@ -130,8 +130,8 @@ class Renderer():
         print(traceback.format_exc())
         self.preview.send(f"<pre>{traceback.format_exc()}</pre>", None)
     
-    def show_message(self, message):
-        self.preview.send(f"<pre style='background:hsla(150, 50%, 50%)'>{message}</pre>")
+    def show_message(self, message, scale=1):
+        self.preview.send(f"<pre style='background:hsla(150, 50%, 50%);transform:scale({scale})'>{message}</pre>")
 
     async def reload(self, trigger):
         try:
@@ -225,9 +225,10 @@ class Renderer():
                         self.show_error()
                 if did_render:
                     render.package(self.filepath, output_folder)
-                    self.show_message("Done!")
         except:
             self.show_error()
+        if render_count > 0:
+            self.show_message(f"Rendered {render_count}")
         return preview_count, render_count
     
     def rasterize(self, content, render, path):
