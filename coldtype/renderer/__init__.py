@@ -332,15 +332,15 @@ class Renderer():
         action_abbrev, *data = stdin.split(" ")
         if action_abbrev == "ps":
             return Action.PreviewStoryboard, None
-        elif action_abbrev == "psn":
+        elif action_abbrev == "n":
             return Action.PreviewStoryboardNext, None
-        elif action_abbrev == "psp":
+        elif action_abbrev == "p":
             return Action.PreviewStoryboardPrev, None
         elif action_abbrev == "ra":
             return Action.RenderAll, None
         elif action_abbrev == "rw":
             return Action.RenderWorkarea, None
-        elif action_abbrev == "pi":
+        elif action_abbrev == "pf":
             return Action.PreviewIndices, [int(i.strip()) for i in data]
         else:
             return None, None

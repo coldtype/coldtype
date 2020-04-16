@@ -50,11 +50,11 @@ class MidiNoteValue():
 
 
 class MidiTrack():
-    def __init__(self, notes, duration=1, name=None, note_names={}):
+    def __init__(self, notes, name=None, note_names={}):
         self.notes = sorted(notes, key=lambda n: n.on)
         self.name = name
         self.note_names = note_names
-        self.duration = duration
+        self.duration = None
 
     def all_notes(self):
         return set([n.note for n in self.notes])
@@ -153,16 +153,20 @@ class MidiReader():
         self.fps = fps
         self.start = 0
         self.end = 0
-        self.duration = duration or all_notes[-1].off
         
         tracks = []
         for track_name, es in events.items():
-            tracks.append(MidiTrack(es, duration=self.duration, name=track_name, note_names=note_names_reversed))
+            tracks.append(MidiTrack(es, name=track_name, note_names=note_names_reversed))
 
         all_notes = []
         for t in tracks:
             for note in t.notes:
                 all_notes.append(note)
+        
+        self.duration = duration or all_notes[-1].off
+
+        for t in tracks:
+            t.duration = self.duration
             
         self.min = min([n.note for n in all_notes])
         self.max = max([n.note for n in all_notes])
