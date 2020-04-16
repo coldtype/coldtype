@@ -1111,7 +1111,15 @@ class DATPenSet(DATPenLikeObject):
     
     def append(self, pen):
         if pen:
-            self.pens.append(pen)
+            if isinstance(pen, DATPenLikeObject):
+                self.pens.append(pen)
+            else:
+                try:
+                    for p in pen:
+                        if p:
+                            self.pens.append(p)
+                except TypeError:
+                    print(">>> append rejected", pen)
         return self
     
     def extend(self, pens):
