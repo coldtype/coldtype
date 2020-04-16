@@ -3,7 +3,7 @@
 __⚠️ Our intention is to ultimately make this library a proper, useable, open-source project, but for the moment — though it is publicly viewable — we are not publicizing it and it is under active development. ⚠️__
 
 ---
-![An example](https://coldtype.goodhertz.co/media/banner_t.gif)
+![An example](https://coldtype.goodhertz.co/media/banner_2.gif)
 ---
 _source code for this animation:_ [banner.py](https://github.com/goodhertz/coldtype-examples/blob/master/animations/banner.py)
 
