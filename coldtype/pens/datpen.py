@@ -380,6 +380,13 @@ class DATPen(RecordingPen, DATPenLikeObject):
             self.value[cidx] = (move, pts)
         return self
     
+    def nudge(self, lookup):
+        def nudger(i, x, y):
+            if lookup.get(i):
+                nx, ny = lookup.get(i)
+                return (x+nx, y+ny)
+        return self.map_points(nudger)
+    
     def repeat(self, times=1):
         copy = self.copy()
         copy_0_move, copy_0_data = copy.value[0]
@@ -1270,9 +1277,20 @@ class DATPenSet(DATPenLikeObject):
             if p.glyphName == glyph_name:
                 yield p
     
+    def tagged(self, tag):
+        for p in self:
+            if p.getTag() == tag:
+                yield p
+    
     def ffg(self, glyph_name):
         """find the first glyph named this name"""
         return list(self.glyphs_named(glyph_name))[0]
+    
+    def fft(self, tag):
+        try:
+            return list(self.tagged(tag))[0]
+        except:
+            return None
     
     def mfilter(self, fn):
         self.pens = self.filter(fn)
