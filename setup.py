@@ -30,12 +30,14 @@ setuptools.setup(
     extras_require={
         "drawbot": [
             "drawbot @ http://github.com/typemytype/drawbot/archive/master.zip"
+        ],
+        "noise": [
+            "noise"
         ]
     },
     install_requires=[
         "fontPens",
         "defcon",
-        "noise",
         "mido",
         "skia-pathops",
         "websocket-client",
