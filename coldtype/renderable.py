@@ -96,7 +96,8 @@ class svgicon(renderable):
 
 class glyph(renderable):
     def __init__(self, glyphName, width=500, **kwargs):
-        r = kwargs.get("rect", Rect(1000, 1000))
+        r = Rect(kwargs.get("rect", Rect(1000, 1000)))
+        kwargs.pop("rect", None)
         self.width = width
         self.body = r.take(750, "mdy").take(self.width, "mdx")
         self.glyphName = glyphName
