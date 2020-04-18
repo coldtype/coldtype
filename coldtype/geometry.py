@@ -373,6 +373,9 @@ class Rect():
         self.y = y
         self.w = w
         self.h = h
+    
+    def origin(self):
+        return self.x, self.y
 
     def from_obj(obj, w=None, h=None):
         r = Rect((0, 0, 0, 0))

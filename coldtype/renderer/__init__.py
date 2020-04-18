@@ -27,6 +27,7 @@ class Watchable(Enum):
     Source = "Source"
     Font = "Font"
     Library = "Library"
+    Generic = "Generic"
 
 
 def file_and_line_to_def(filepath, lineno):
@@ -146,6 +147,10 @@ class Renderer():
                     for ext in v.font.getExternalFiles():
                         if ext not in self.watchee_paths():
                             self.watchees.append([Watchable.Font, ext])
+                elif isinstance(v, DefconFont):
+                    p = Path(v.path).resolve()
+                    if p not in self.watchee_paths():
+                        self.watchees.append([Watchable.Font, p])
         except Exception as e:
             self.program = None
             self.show_error()

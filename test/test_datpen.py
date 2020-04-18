@@ -45,4 +45,12 @@ def test_catmull(r):
 
 @test()
 def test_semicircles(r):
-    return DATPen().semicircle(r.square(), "mxx", 10)
+    frank = Style("≈/AdobeHandwriting-Frank.otf", 72)
+    sc1 = DATPen().semicircle(r.square(), "mnx", 0.6, 0.4).scale(0.5).translate(-300, 0)
+    sc2 = DATPen().semicircle(r.square(), "mny", 0.6, 0.4).scale(0.5).translate(300, 0)
+    return [
+        sc1,
+        show_points(sc1, frank),
+        sc2,
+        show_points(sc2, frank)
+    ]

@@ -489,7 +489,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
         nv = []
         for idx, (t, pts) in enumerate(self.value):
             if last == t and t == "qCurveTo":
-                print("hello")
                 continue
                 p0 = np.array(self.value[idx-2][-1][-1])
                 p1, p2, p3 = [np.array(p) for p in self.value[idx-1][-1]]
@@ -769,23 +768,30 @@ class DATPen(RecordingPen, DATPenLikeObject):
         n, e, s, w = r.cardinals()
         return self.moveTo(n).curveTo(n.offset(-qr-ext, 0), w.offset(0, qr+ext), w).curveTo(w.offset(0, -qr-ext), s.offset(-qr-ext, 0), s).curveTo(s.offset(qr+ext, 0), e.offset(0, -qr-ext), e).curveTo(e.offset(0, qr+ext), n.offset(qr+ext, 0), n).closePath()
     
-    def semicircle(self, r, center, ext):
-        """Not really a semicircle"""
+    def semicircle(self, r, center, fext=0.5, rext=0.5):
+        """
+        Not really a semicircle
+        `fext` controls extension from the standard on the "flat" edge
+        `rext` controls extension from the standard on the "round" edge
+        """
+        sc = DATPen()
         n, e, s, w = r.cardinals()
         ne, se, sw, nw = r.intercardinals()
-        qe = r.h/2+ext
         cedge = txt_to_edge(center)
-        if cedge == Edge.MinX:
-            return self.moveTo(sw).curveTo(sw.offset(r.w/2+ext, 0), e.offset(0, -(r.h/2+ext)), e).curveTo(e.offset(0, r.h/2+ext), nw.offset(r.w/2+ext, 0), nw).closePath()
-        elif cedge == Edge.MaxX:
-            print("hello")
-            return self.moveTo(se).curveTo(se.offset(-r.w/2+ext, 0), w.offset(0, -(r.h/2+ext)), w).curveTo(w.offset(0, r.h/2+ext), ne.offset(-r.w/2+ext, 0), ne).closePath()
-        elif cedge == Edge.MinY:
-            return self.moveTo(sw).lineTo(se).curveTo(se.offset(0, qe), n.offset(qe, 0), n).curveTo(n.offset(-qe, 0), sw.offset(0, qe), sw).closePath()
-        elif cedge == Edge.MaxY:
-            return self.moveTo(ne).lineTo(nw).curveTo(nw.offset(0, -qe), s.offset(-qe, 0), s).curveTo(s.offset(qe, 0), ne.offset(0, -qe), ne).closePath()
-        else:
-            raise Exception("Not implemented")
+
+        if cedge in [Edge.MinX, Edge.MaxX]:
+            fqe = r.w*fext
+            rqe = r.h*rext
+            sc.moveTo(sw).curveTo(sw.offset(fqe, 0), e.offset(0, -rqe), e).curveTo(e.offset(0, rqe), nw.offset(fqe, 0), nw).closePath()
+            if cedge == Edge.MaxX:
+                sc.rotate(180)
+        elif cedge in [Edge.MinY, Edge.MaxY]:
+            fqe = r.h*fext
+            rqe = r.w*rext
+            sc.moveTo(se).curveTo(se.offset(0, fqe), n.offset(rqe, 0), n).curveTo(n.offset(-rqe, 0), sw.offset(0, fqe), sw).closePath()
+            if cedge == Edge.MaxY:
+                sc.rotate(180)
+        return self.record(sc)
 
     def line(self, points):
         """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""
