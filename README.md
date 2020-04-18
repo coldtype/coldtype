@@ -40,9 +40,9 @@ ___
 
 If you’re using a version of Python >= 3.7, you should be able to add `coldtype` to your virtual environment with this command:
 
-> `pip install git+https://github.com/goodhertz/coldtype#egg=coldtype[drawbot]`
+> `pip install git+https://github.com/goodhertz/coldtype#egg=coldtype[drawbot,renderer]`
 
-(The `[drawbot]` bit at the end is optional, and mac-specific, but you’ll probably want it if you’re using a Mac, since Cairo (the alternate rasterizer) is quite hard to install.)
+(The `[drawbot]` bit at the end is optional, and mac-specific, but you’ll probably want it if you’re using a Mac, since Cairo (the alternate rasterizer) is quite hard to install. The `[renderer]` bit is not optional if you intend on using the `coldtype` command-line tool, but it is optional if you’re using Coldtype just for its typesetting (i.e. if you’re using it Blender).)
 
 To test that you have a working installation, try this command with your virtual env activated:
 
