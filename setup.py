@@ -30,17 +30,19 @@ setuptools.setup(
     extras_require={
         "drawbot": [
             "drawbot @ http://github.com/typemytype/drawbot/archive/master.zip"
+        ],
+        "renderer": [
+            "noise",
+            "websocket-client",
+            "websockets",
+            "watchdog",
         ]
     },
     install_requires=[
         "fontPens",
         "defcon",
         "mido",
-        "noise",
         "skia-pathops",
-        "websocket-client",
-        "websockets",
-        "watchdog",
         "easing-functions",
         "fonttools[woff,unicode,type1,lxml,ufo]",
         "freetype-py",
