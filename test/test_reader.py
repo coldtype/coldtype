@@ -63,7 +63,9 @@ async def test_stroke_ufo(r):
 
 @test()
 def test_emoji(r):
-    return StyledString("🍕💽🖥", Style("assets/TwemojiMozilla.ttf", 300, t=20, ch=500, bs=11)).pens().align(r)
+    emoji = StyledString("🍕💽🖥", Style("assets/TwemojiMozilla.ttf", 300, t=20, ch=500, bs=11)).pens().align(r)
+    print(emoji.layered)
+    return emoji
 
 
 @test()

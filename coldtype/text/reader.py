@@ -80,11 +80,11 @@ def normalize_font_path(font):
 
 class Font():
     # TODO support glyphs?
-    def __init__(self, path):
+    def __init__(self, path, number=0):
         #ufo = glyphsLib.load_to_ufos(self.fontFile)[0]
         self.path = Path(normalize_font_path(path))
         numFonts, opener, getSortInfo = getOpener(self.path)
-        self.font:BaseFont = opener(self.path, 0)
+        self.font:BaseFont = opener(self.path, number)
         self.font.cocoa = False
     
     async def load(self):
