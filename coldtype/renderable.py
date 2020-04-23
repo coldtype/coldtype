@@ -23,6 +23,7 @@ class Action(Enum):
     PreviewStoryboardPrev = "preview_storyboard_prev"
     ArbitraryTyping = "arbitrary_typing"
     ArbitraryCommand = "arbitrary_command"
+    UICallback = "ui_callback"
 
 
 class RenderPass():
@@ -35,7 +36,7 @@ class RenderPass():
 
 
 class renderable():
-    def __init__(self, rect=(1080, 1080), bg="whitesmoke", hide=False, fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[], layers=[]):
+    def __init__(self, rect=(1080, 1080), bg="whitesmoke", hide=False, fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[], layers=[], ui_callback=None):
         self.hide = hide
         self.rect = Rect(rect)
         self.bg = normalize_color(bg)
@@ -44,6 +45,7 @@ class renderable():
         self.dst = Path(dst).expanduser().resolve() if dst else None
         self.custom_folder = custom_folder
         self.postfn = postfn
+        self.ui_callback = ui_callback
         self.watch = [Path(w).expanduser().resolve() for w in watch]
         self.rasterizer = rasterizer
         self.layers = layers

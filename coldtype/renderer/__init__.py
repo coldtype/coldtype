@@ -172,6 +172,8 @@ class Renderer():
 
     async def render(self, trigger, indices=[]) -> Tuple[int, int]:
         renders = self.renderables(trigger)
+        for render in renders:
+            render.preview = self.preview
         self.last_renders = renders
         preview_count = 0
         render_count = 0
@@ -389,6 +391,10 @@ class Renderer():
         elif action == Action.ArbitraryCommand:
             await self.on_stdin(message.get("input"))
             return True
+        elif action == Action.UICallback:
+            for render in self.renderables(action):
+                if render.ui_callback:
+                    render.ui_callback(message)
         else:
             return False
     

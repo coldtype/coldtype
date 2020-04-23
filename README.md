@@ -42,7 +42,7 @@ If you’re using a version of Python >= 3.7, you should be able to add `coldtyp
 
 > `pip install git+https://github.com/goodhertz/coldtype#egg=coldtype[drawbot,renderer]`
 
-(The `[drawbot]` bit at the end is optional, and mac-specific, but you’ll probably want it if you’re using a Mac, since Cairo (the alternate rasterizer) is quite hard to install. The `[renderer]` bit is not optional if you intend on using the `coldtype` command-line tool, but it is optional if you’re using Coldtype just for its typesetting (i.e. if you’re using it Blender).)
+(The `[drawbot]` bit at the end is optional, and mac-specific, but you’ll probably want it if you’re using a Mac, since Cairo (the alternate rasterizer) is quite hard to install. The `[renderer]` bit is not optional if you intend on using the `coldtype` command-line tool, but it is optional if you’re using Coldtype just for its typesetting (i.e. if you’re using it with Blender or another environment that provides code-reloading and rendering).)
 
 To test that you have a working installation, try this command with your virtual env activated:
 
@@ -65,7 +65,7 @@ __A cross-platform library to help you precisely & programmatically do high-qual
 
 Yes, there are lots of ways to set type with code. Most ways — HTML/CSS/JS, Processing, etc. — are great for 90% of what most people want to do with Latin-based writing systems. Then the road runs out and you can’t do anything else.
 
-Coldtype is an offroad vehicle that lets you keep driving where there are no roads. Like many vehicles built for specialized use, it is not user-friendly. It has no doors (please climb in through the window), and the steering wheel is not very intuitive, also it’s a stick-shift, and you should probably know how to code (or be willing to learn) if you’re going to drive it alone out into the desert. (I apologize for how automotive this metaphor is getting.)
+Coldtype is an offroad vehicle that lets you keep driving where there are no roads. Like many vehicles built for specialized use, it is not user-friendly. It has no doors (please climb in through the window), and the steering wheel is not very intuitive, also it’s a stick-shift, and you should probably know how to code (or be willing to learn) if you’re going to drive it alone out into the desert. (I apologize for how automotive this metaphor is getting. Probably should’ve gone with some metaphor about people making custom synthesizers in the 70s.)
 
 ### What about DrawBot?
 

@@ -83,3 +83,10 @@ h3 {
     padding: 10px 10px 13px;
     border: 1px solid white;
 }
+
+#container textarea {
+    width: 50%;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-family: RecMonoCasualItalicWeb;
+}

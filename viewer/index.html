@@ -4,6 +4,8 @@
     <title>Coldtype</title>
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';"/>
     <link rel="stylesheet" type="text/css" href="./assets/viewer.css"/>
+    <script src="./assets/zepto.js"></script>
+    <script src="./assets/lodash.js"></script>
 </head>
 <body>
     <div id="container">
@@ -21,6 +23,15 @@
         var connected = false;
         var ws = null;
         var shouldClear = false;
+
+        function reportTextarea(e) {
+            var $ta = $(e.target);
+            ws.send(JSON.stringify({action:"ui_callback", type:"textarea", value: $ta.val(), id: $ta.attr("id")}));
+        }
+
+        function addListeners() {
+            $("#container textarea").on("keyup", _.debounce(reportTextarea, 250));
+        }
 
         setInterval(function() {
             connectToWebsocket();
@@ -62,6 +73,7 @@
                         shouldClear = false;
                     }
                     container.innerHTML = container.innerHTML + jdata.html;
+                    addListeners();
                 } else {
                     console.log(">>>", jdata);
                 } //else {
@@ -82,6 +94,10 @@
                 websocket.close();
             }
         }
+
+        $('#container').on( 'change keyup keydown paste cut', 'textarea', function() {
+            $(this).height(0).height(this.scrollHeight);
+        }).find( 'textarea' ).change();
 
         var input = document.getElementById("searchbar-input");
         var timer = null;
