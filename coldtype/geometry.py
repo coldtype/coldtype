@@ -2,10 +2,6 @@ from fontTools.misc.arrayTools import unionRect
 from fontTools.misc.transform import Transform
 from enum import Enum
 import math
-try:
-    import drawBot as db
-except ImportError:
-    db = None
 
 YOYO = "ma"
 
@@ -420,13 +416,6 @@ class Rect():
 
     def mnmnmxmx(self):
         return (self.x, self.y, self.x + self.w, self.y + self.h)
-
-    def page():
-        if db:
-            return Rect((0, 0, db.width(), db.height()))
-        else:
-            raise ImportError(
-                "DrawBot was not found, so `page` cannot be called")
 
     def __getitem__(self, key):
         return self.rect()[key]
