@@ -6,7 +6,7 @@ long_description = """
 
 setuptools.setup(
     name="coldtype",
-    version="0.0.1",
+    version="0.0.2",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",
