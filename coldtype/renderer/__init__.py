@@ -82,6 +82,10 @@ class Renderer():
             monitor_lines=parser.add_argument("-ml", "--monitor-lines", action="store_true", default=False, help=argparse.SUPPRESS),
 
             filter_functions=parser.add_argument("-ff", "--filter-functions", type=str, default=None, help="Names of functions to render"),
+
+            show_exit_code=parser.add_argument("-sec", "--show-exit-code", action="store_true", default=False, help=argparse.SUPPRESS),
+
+            show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS),
             
             reload_libraries=parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False, help=argparse.SUPPRESS))
         return pargs, parser
@@ -276,7 +280,8 @@ class Renderer():
             if self.program:
                 self.preview.clear()
                 preview_count, render_count = await self.render(trigger, indices=indices)
-                print("render>", preview_count, "/", render_count)
+                if self.args.show_render_count:
+                    print("render>", preview_count, "/", render_count)
             else:
                 self.preview.send("<pre>No program loaded!</pre>")
         except:
@@ -294,7 +299,8 @@ class Renderer():
         except KeyboardInterrupt:
             print("INTERRUPT")
             self.on_exit()
-        print("exit>", self.exit_code)
+        if self.args.show_exit_code:
+            print("exit>", self.exit_code)
         sys.exit(self.exit_code)
 
     async def start(self):

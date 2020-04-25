@@ -1,15 +1,6 @@
-import math
-import copy
-import re
-import os
-
 from pathlib import Path
 from collections import OrderedDict
-
-import freetype
-from freetype.raw import *
-
-import unicodedata
+import unicodedata, os
 
 from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
@@ -22,13 +13,16 @@ from coldtype.color import normalize_color
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.geometry import Rect, Point
 
-from fontgoggles.font import getOpener
-from fontgoggles.font.baseFont import BaseFont
-from fontgoggles.font.otfFont import OTFFont
-from fontgoggles.misc.textInfo import TextInfo
-
-import asyncio
-import traceback
+try:
+    from fontgoggles.font import getOpener
+    from fontgoggles.font.baseFont import BaseFont
+    from fontgoggles.font.otfFont import OTFFont
+    from fontgoggles.misc.textInfo import TextInfo
+except ModuleNotFoundError:
+    from coldtype.fontgoggles.font import getOpener
+    from coldtype.fontgoggles.font.baseFont import BaseFont
+    from coldtype.fontgoggles.font.otfFont import OTFFont
+    from coldtype.fontgoggles.misc.textInfo import TextInfo
 
 
 class FittableMixin():
@@ -77,6 +71,8 @@ def normalize_font_path(font):
     else:
         raise FontNotFoundException(literal)
 
+def empty_writer(*args):
+    pass
 
 class Font():
     # TODO support glyphs?
@@ -88,7 +84,7 @@ class Font():
         self.font.cocoa = False
     
     async def load(self):
-        await self.font.load(None)
+        await self.font.load(empty_writer)
         #print(">>> loaded", self.path.name)
     
     async def Preload(path):

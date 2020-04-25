@@ -20,7 +20,11 @@ setuptools.setup(
         "coldtype.color",
         "coldtype.pens",
         "coldtype.renderer",
-        "coldtype.text"
+        "coldtype.text",
+        "coldtype.fontgoggles",
+        "coldtype.fontgoggles.compile",
+        "coldtype.fontgoggles.font",
+        "coldtype.fontgoggles.misc",
     ],
     entry_points={
         'console_scripts': [
@@ -51,7 +55,7 @@ setuptools.setup(
         "ufo2ft",
         "unicodedata2",
         "numpy",
-        "fontgoggles @ http://github.com/goodhertz/fontgoggles/archive/master.zip"
+        #"fontgoggles @ http://github.com/goodhertz/fontgoggles/archive/master.zip"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
