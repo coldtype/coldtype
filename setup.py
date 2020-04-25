@@ -36,9 +36,9 @@ setuptools.setup(
         ],
     },
     extras_require={
-        "drawbot": [
-            "drawbot @ http://github.com/typemytype/drawbot/archive/master.zip"
-        ],
+        #"drawbot": [
+        #    "drawbot @ http://github.com/typemytype/drawbot/archive/master.zip"
+        #],
         "renderer": [
             "noise",
             "websocket-client",
