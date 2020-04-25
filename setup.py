@@ -1,7 +1,11 @@
 import setuptools
 
 long_description = """
-### Coldtype
+# Coldtype
+
+### Programmatic display typography
+
+More info at: [coldtype.goodhertz.co](https://coldtype.goodhertz.co)
 """
 
 setuptools.setup(
@@ -32,9 +36,9 @@ setuptools.setup(
         ],
     },
     extras_require={
-        "drawbot": [
-            "drawbot @ http://github.com/typemytype/drawbot/archive/master.zip"
-        ],
+        #"drawbot": [
+        #    "drawbot @ http://github.com/typemytype/drawbot/archive/master.zip"
+        #],
         "renderer": [
             "noise",
             "websocket-client",
