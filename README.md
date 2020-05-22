@@ -5,7 +5,7 @@ __⚠️ Our intention is to ultimately make this library a proper, useable, ope
 ---
 ![An example](https://coldtype.goodhertz.co/media/banner_3.gif)
 ---
-```
+```python
 from coldtype import *
 
 states = [
