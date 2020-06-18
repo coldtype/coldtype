@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.pens.datpen import warp_fn
+from coldtype.warping import warp_fn
 
 font = Font("assets/ColdtypeObviously.designspace")
 

@@ -1,4 +1,5 @@
 from coldtype.animation.easing import ease
+import math
 
 
 class Timing():
