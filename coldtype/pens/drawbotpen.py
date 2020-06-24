@@ -49,7 +49,7 @@ class DrawBotPen(DrawablePenMixin):
             rect = bounds
         try:
             img_w, img_h = db.imageSize(src)
-        except:
+        except ValueError:
             print("DrawBotPen: No image")
             return
         x = bounds.x
