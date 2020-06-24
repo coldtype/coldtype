@@ -64,8 +64,8 @@ ___
 
 If you’re using a version of Python >= 3.7, you should be able to add `coldtype` to your virtual environment with this command:
 
-> `pip install coldtype[renderer]`
-> `pip install git+https://github.com/typemytype/drawbot`
+- `pip install "coldtype[renderer]"`
+- `pip install git+https://github.com/typemytype/drawbot`
 
 The `drawbot` step is optional, and Mac-specific, but you’ll probably want it if you’re using a Mac, since Cairo (the alternate rasterizer) is quite hard to install. The `[renderer]` bit is not optional if you intend on using the `coldtype` command-line tool (as discussed below), but it is optional if you’re using Coldtype just for its typesetting (i.e. if you’re using it with Blender or another environment that provides code-reloading and rendering).
 
