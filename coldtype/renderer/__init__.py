@@ -2,6 +2,7 @@ import sys, os, re
 from pathlib import Path
 
 import asyncio
+import tempfile
 import websockets
 
 import traceback
@@ -157,10 +158,10 @@ class Renderer():
                     db.newDrawing()
             self.program = run_path(str(self.filepath))
             if load_drawbot:
-                db_svg_path = Path("~/Desktop/test.svg").expanduser()
-                db.saveImage(str(db_svg_path))
-                self.preview.clear()
-                self.preview.send(f"<div class='drawbot-render'>{db_svg_path.read_text()}</div>", None)
+                with tempfile.NamedTemporaryFile(suffix=".svg") as tf:
+                    db.saveImage(tf.name)
+                    self.preview.clear()
+                    self.preview.send(f"<div class='drawbot-render'>{tf.read().decode('utf-8')}</div>", None)
                 db.endDrawing()
             for k, v in self.program.items():
                 if isinstance(v, coldtype.text.reader.Font):
