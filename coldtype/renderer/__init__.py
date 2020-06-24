@@ -22,6 +22,11 @@ from coldtype.renderable import renderable, Action
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.viewer import PersistentPreview, WEBSOCKET_ADDR
 
+try:
+    import drawBot as db
+except ImportError:
+    db = None
+
 
 class Watchable(Enum):
     Source = "Source"
@@ -87,7 +92,9 @@ class Renderer():
 
             show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS),
             
-            reload_libraries=parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False, help=argparse.SUPPRESS))
+            reload_libraries=parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False, help=argparse.SUPPRESS),
+
+            drawbot=parser.add_argument("-db", "--drawbot", action="store_true", default=False, help=argparse.SUPPRESS))
         return pargs, parser
 
     def __init__(self, parser):
@@ -142,7 +149,19 @@ class Renderer():
 
     async def reload(self, trigger):
         try:
+            load_drawbot = self.args.drawbot
+            if load_drawbot:
+                if not db:
+                    raise Exception("Cannot run drawbot program without drawBot installed")
+                else:
+                    db.newDrawing()
             self.program = run_path(str(self.filepath))
+            if load_drawbot:
+                db_svg_path = Path("~/Desktop/test.svg").expanduser()
+                db.saveImage(str(db_svg_path))
+                self.preview.clear()
+                self.preview.send(f"<div class='drawbot-render'>{db_svg_path.read_text()}</div>", None)
+                db.endDrawing()
             for k, v in self.program.items():
                 if isinstance(v, coldtype.text.reader.Font):
                     await v.load()

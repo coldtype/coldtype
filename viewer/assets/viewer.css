@@ -63,6 +63,11 @@ body {
     display: block;
 }
 
+.drawbot-render svg {
+    width: 100% !important;
+    height: 100% !important;
+}
+
 pre {
     font-family: RecMonoCasualItalicWeb, monospace;
     background: royalblue;
