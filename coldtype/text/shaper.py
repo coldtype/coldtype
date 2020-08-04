@@ -14,7 +14,8 @@ modes = [
     "LATIN",
     "ARABIC",
     "SPACE",
-    "CJK"
+    "CJK",
+    "KATAKANA"
 ]
 
 def segment(txt, mode="LATIN", includeNames=False):

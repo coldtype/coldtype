@@ -60,3 +60,34 @@ def test_cjk_multilang(r):
     style = Style("assets/NotoSansCJKsc-Black.otf", 300, lang="zh", fill=Gradient.Random(r))
     dps = Slug("CO同步", style, obv).fit(r.w-100).pens().align(r)
     return [dps.frameSet().attr(fill=None, stroke=0), dps]
+
+
+def xa(dps, x=Edge.CenterX, th=0):
+    if dps.frame:
+        return dps.align(dps.getFrame(th=th, tv=0), x=x, transformFrame=0, th=1)
+    else:
+        raise Exception("No Frame")
+
+@test()
+def test_ar_multiline(r):
+    ar = 'Limmmm/Satلل\nوصل الإستيرِو'
+    lines = ar.split("\n")
+    latin = Style(latin_font, 100, fill=("hr", 0.5, 0.5))
+    arabic = Style("≈/GretaArabicCondensedAR-Light.otf", 150, lang="ar", fill=Gradient.Random(r), bs=-1)
+    slugs = [
+        Slug(lines[0], arabic, latin),
+        Slug(lines[1], arabic, latin)
+    ]
+    graf = Graf(slugs, r, leading=30)
+    dps = graf.pens()
+    dps.map(lambda i,p: xa(p.pen()))
+    #xa(dps[0])
+    #xa(dps[1])
+    #dps[0].xAlignToFrame("mdx")
+    #dps[1].xAlignToFrame("mdx")
+    dps.align(r)
+    return [
+        DATPen().rect(dps[0].getFrame()).f("random", 0.2),
+        DATPen().rect(dps[1].getFrame()).f("random", 0.2),
+        dps
+    ]
