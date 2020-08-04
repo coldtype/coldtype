@@ -11,4 +11,4 @@ from coldtype.helpers import *
 from coldtype.animation import *
 
 name = "coldtype"
-__version__ = "0.0.3"
+__version__ = "0.0.5"
