@@ -99,15 +99,16 @@ class renderable():
 
 
 class drawbot_script(renderable):
-    def __init__(self, svg_preview=1, **kwargs):
+    def __init__(self, rect=(1080, 1080), svg_preview=1, **kwargs):
         if not db:
             raise Exception("DrawBot not installed!")
-        super().__init__(**kwargs)
+        super().__init__(rect=rect, **kwargs)
         self.svg_preview = svg_preview
         self.self_rasterizing = True
     
     async def run(self, render_pass):
         db.newDrawing()
+        print(">>>", render_pass.args)
         render_pass.fn(*render_pass.args)
         result = None
         if render_pass.action in [Action.RenderAll] or not self.svg_preview:
@@ -124,7 +125,7 @@ class drawbot_script(renderable):
         if self.svg_preview:
             previewer.send(f"<div class='drawbot-render'>{result}</div>", None)
         else:
-            r = render_pass.args[0]
+            r = self.rect
             previewer.send(str(render_pass.output_path), Rect(0, 0, r.w/2, r.h/2), bg=self.bg, image=True)
 
 
