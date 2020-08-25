@@ -232,7 +232,13 @@ class Renderer():
                         ]:
                             preview_result = await render.runpost(result, rp)
                             preview_count += 1
-                            self.preview.send(SVGPen.Composite(preview_result, render.rect, viewBox=True), bg=render.bg, max_width=800)
+                            render.send_preview(self.preview, preview_result, rp)
+
+                            # if isinstance(preview_result, dict):
+                            #     print(">>>", preview_result)
+                            #     self.preview.send(str(preview_result["path"]), preview_result["rect"], preview_result.get("bg", 0.5), image=True)
+                            # else:
+                            #     self.preview.send(SVGPen.Composite(preview_result, render.rect, viewBox=True), bg=render.bg, max_width=800)
                         
                         if self.args.save_renders or trigger in [
                             Action.RenderAll,

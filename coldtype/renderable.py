@@ -1,5 +1,5 @@
-import inspect
-import platform, re
+import inspect, platform, re, tempfile
+
 from enum import Enum
 from subprocess import run
 from pathlib import Path
@@ -9,6 +9,12 @@ from coldtype.color import normalize_color
 from coldtype.animation import Timeable, Frame
 from coldtype.animation.timeline import Timeline
 from coldtype.text.reader import normalize_font_prefix
+from coldtype.pens.svgpen import SVGPen
+
+try:
+    import drawBot as db
+except ImportError:
+    db = None
 
 
 class Action(Enum):
@@ -86,6 +92,31 @@ class renderable():
             return self.postfn(self, result)
         else:
             return result
+        
+    def send_preview(self, previewer, result, render_pass):
+        previewer.send(SVGPen.Composite(result, self.rect, viewBox=True), bg=self.bg, max_width=800)
+
+
+class drawbot_script(renderable):
+    def __init__(self, **kwargs):
+        if not db:
+            raise Exception("DrawBot not installed!")
+        super().__init__(**kwargs)
+    
+    async def run(self, render_pass):
+        print("RUN DB", render_pass)
+        db.newDrawing()
+        render_pass.fn(*render_pass.args)
+        result = None
+        with tempfile.NamedTemporaryFile(suffix=".svg") as tf:
+            db.saveImage(tf.name)
+            result = tf.read().decode("utf-8")
+            print(result)
+        db.endDrawing()
+        return result
+    
+    def send_preview(self, previewer, result, render_pass):
+        previewer.send(f"<div class='drawbot-render'>{result}</div>", None)
 
 
 class svgicon(renderable):
