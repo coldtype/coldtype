@@ -54,6 +54,7 @@ class renderable():
         self.ui_callback = ui_callback
         self.watch = [Path(w).expanduser().resolve() for w in watch]
         self.rasterizer = rasterizer
+        self.self_rasterizing = False
         self.layers = layers
         if not rasterizer:
             if self.fmt == "svg":
@@ -98,25 +99,33 @@ class renderable():
 
 
 class drawbot_script(renderable):
-    def __init__(self, **kwargs):
+    def __init__(self, svg_preview=1, **kwargs):
         if not db:
             raise Exception("DrawBot not installed!")
         super().__init__(**kwargs)
+        self.svg_preview = svg_preview
+        self.self_rasterizing = True
     
     async def run(self, render_pass):
-        print("RUN DB", render_pass)
         db.newDrawing()
         render_pass.fn(*render_pass.args)
         result = None
-        with tempfile.NamedTemporaryFile(suffix=".svg") as tf:
-            db.saveImage(tf.name)
-            result = tf.read().decode("utf-8")
-            print(result)
+        if render_pass.action in [Action.RenderAll] or not self.svg_preview:
+            db.saveImage(str(render_pass.output_path))
+            result = render_pass.output_path
+        else:
+            with tempfile.NamedTemporaryFile(suffix=".svg") as tf:
+                db.saveImage(tf.name)
+                result = tf.read().decode("utf-8")
         db.endDrawing()
         return result
     
     def send_preview(self, previewer, result, render_pass):
-        previewer.send(f"<div class='drawbot-render'>{result}</div>", None)
+        if self.svg_preview:
+            previewer.send(f"<div class='drawbot-render'>{result}</div>", None)
+        else:
+            r = render_pass.args[0]
+            previewer.send(str(render_pass.output_path), Rect(0, 0, r.w/2, r.h/2), bg=self.bg, image=True)
 
 
 class svgicon(renderable):

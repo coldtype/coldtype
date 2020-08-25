@@ -214,8 +214,14 @@ class Renderer():
                 else:
                     output_folder = self.filepath.parent / "renders" / (render.custom_folder or render.folder(self.filepath))
                 did_render = False
+                prefix = self.args.file_prefix or render.prefix or self.filepath.stem
+                fmt = self.args.format or render.fmt
                 _layers = self.layers if len(self.layers) > 0 else render.layers
                 for rp in render.passes(trigger, _layers, indices):
+                    output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
+                    rp.output_path = output_path
+                    rp.action = trigger
+
                     try:
                         result = await render.run(rp)
                         try:
@@ -246,8 +252,6 @@ class Renderer():
                             Action.RenderIndices,
                         ]:
                             did_render = True
-                            prefix = self.args.file_prefix or render.prefix or self.filepath.stem
-                            fmt = self.args.format or render.fmt
                             if len(render.layers) > 0:
                                 for layer in render.layers:
                                     for layer_result in result:
@@ -260,12 +264,13 @@ class Renderer():
                                             print(">>> saved layer...", str(output_path.relative_to(Path.cwd())))
                             else:
                                 render_count += 1
-                                output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
-                                rp.output_path = output_path
                                 output_path.parent.mkdir(exist_ok=True, parents=True)
-                                self.rasterize(result, render, output_path)
-                                # TODO a progress bar?
-                                print(">>> saved...", str(output_path.relative_to(Path.cwd())))
+                                if render.self_rasterizing:
+                                    print(">>> self-rasterized...", output_path)
+                                else:
+                                    self.rasterize(result, render, output_path)
+                                    # TODO a progress bar?
+                                    print(">>> saved...", str(output_path.relative_to(Path.cwd())))
                     except:
                         self.show_error()
                 if did_render:
@@ -277,6 +282,9 @@ class Renderer():
         return preview_count, render_count
     
     def rasterize(self, content, render, path):
+        if render.self_rasterizing:
+            print("Self rasterizing")
+            return
         scale = int(self.args.scale)
         rasterizer = self.args.rasterizer or render.rasterizer
 
