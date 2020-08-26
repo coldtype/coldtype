@@ -108,7 +108,7 @@ class drawbot_script(renderable):
     
     async def run(self, render_pass):
         db.newDrawing()
-        print(">>>", render_pass.args)
+        db.size(self.rect.w, self.rect.h)
         render_pass.fn(*render_pass.args)
         result = None
         if render_pass.action in [Action.RenderAll] or not self.svg_preview:

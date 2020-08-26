@@ -280,10 +280,9 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         self.defs.append(lg)
         return lg.get("id")
     
-    def image(self, src=None, opacity=None, rect=None, rotate=0):
-        if False:
+    def image(self, src=None, opacity=None, rect=None):
+        if True:
             src = base64.b64encode(open(src, "rb").read()).decode('utf-8')
-            src = f"data:image/png;base64,{src}"
         hsh = str(hash(self.getCommands())) + str(randint(0, 100000))
         img = etree.Element("image")
         img.set("x", str(rect.x or 0))
@@ -291,7 +290,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         img.set("width", str(rect.w or 100))
         img.set("height", str(rect.h or 100))
         img.set("opacity", str(opacity))
-        img.set("image-href", src)
+        img.set("image-href", f"data:image/png;base64,{src}")
         pattern = etree.Element("pattern")
         pattern.set("x", img.get("x"))
         pattern.set("y", img.get("y"))
