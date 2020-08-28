@@ -39,11 +39,8 @@ setuptools.setup(
         #"drawbot": [
         #    "drawbot @ http://github.com/typemytype/drawbot/archive/master.zip"
         #],
-        "renderer": [
+        "noise": [
             "noise",
-            "websocket-client",
-            "websockets",
-            "watchdog",
         ]
     },
     install_requires=[
@@ -59,6 +56,9 @@ setuptools.setup(
         "ufo2ft",
         "unicodedata2",
         "numpy",
+        "websocket-client",
+        "websockets",
+        "watchdog"
         #"fontgoggles @ http://github.com/goodhertz/fontgoggles/archive/master.zip"
     ],
     classifiers=[
