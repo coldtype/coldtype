@@ -1,11 +1,21 @@
 from coldtype import *
 from drawBot import *
 
-@drawbot_script(svg_preview=1)
-def db_script_test(r):
-    fill(1, random(), 0.5)
-    oval(500, 500, 1000, 1000)
+co = Font("assets/ColdtypeObviously.designspace")
 
-    fill(random(), random(), 0.5)
-    fontSize(100)
-    text("Hallo", (250, 250))
+@drawbot_script(rect=(900, 500), svg_preview=1, bg=0)
+def db_script_test(r):
+    ri = r.inset(20, 20)
+
+    fill(*hsl(0.5))
+    oval(*ri.take(0.5, "mxx").square())
+
+    fontSize(19)
+    font("Georgia-Italic")
+    fill(*hsl(0.9, s=0.7, l=0.6))
+    textBox("This code is a mix of DrawBot and Coldtype, meant to demonstrate that Coldtype primitives (like designspace-reading) can be combined with DrawBot primitives like multi-line text support and the Mac Font library.", ri.take(200, "mny").take(250, "mnx"))
+
+    fill(*hsl(0.05, s=0.7, l=0.6))
+    drawPath(StyledString("COLDTYPE", Style(co, 150)).pen().align(ri, "mnx", "mxy").bp())
+
+    saveImage("test/drawbot/saved_from_drawbot_test.pdf")

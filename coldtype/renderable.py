@@ -123,7 +123,7 @@ class drawbot_script(renderable):
     
     def send_preview(self, previewer, result, render_pass):
         if self.svg_preview:
-            previewer.send(f"<div class='drawbot-render'>{result}</div>", None)
+            previewer.send(f"<div class='drawbot-render'>{result}</div>", bg=self.bg, max_width=800)
         else:
             r = self.rect
             previewer.send(str(render_pass.output_path), Rect(0, 0, r.w/2, r.h/2), bg=self.bg, image=True)

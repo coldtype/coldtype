@@ -22,6 +22,11 @@ try:
 except:
     pass
 
+try:
+    import drawBot as db
+except:
+    pass
+
 
 from coldtype.geometry import Rect, Edge, Point, txt_to_edge
 from coldtype.beziers import raise_quadratic, CurveCutter
@@ -1050,6 +1055,15 @@ class DATPen(RecordingPen, DATPenLikeObject):
             if _y.y > 0 and _y.y > rect.y:
                 self.line([_y.point("SW"), _y.point("SE")])
         return self.f(None).s(0, 0.1).sw(3)
+
+    def bp(self):
+        try:
+            bp = db.BezierPath()
+            self.replay(bp)
+            return bp
+        except:
+            print("DrawBot not installed!")
+            return None
 
 
 def DPR(r):
