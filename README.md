@@ -201,7 +201,7 @@ Here is a free-associated list of things that I think define the general vibe of
 
 - `cd` into the `coldtype` directory
 - `python3.8 -m venv venv --prompt=coldtype`
-- `source env/bin/activate`
+- `source venv/bin/activate`
 
 Now you should see `(coldtype)` prepended to your terminal prompt. If that’s the case, continue with this invocation:
 
