@@ -3,12 +3,24 @@ from drawBot import *
 
 co = Font("assets/ColdtypeObviously.designspace")
 
-@drawbot_script(rect=(900, 500), svg_preview=1, bg=0)
+PREVIEW_WITH_SVG = 1
+
+@drawbot_script(rect=(900, 500), svg_preview=PREVIEW_WITH_SVG, bg=0)
 def db_script_test(r):
     ri = r.inset(20, 20)
 
     fill(*hsl(0.5))
     oval(*ri.take(0.5, "mxx").square())
+
+    if not PREVIEW_WITH_SVG: # Doesn't work with SVG output (internal drawBot issue)
+        im = ImageObject()
+        with im:
+            size(500, 500)
+            image("https://static.goodhertz.co/statics/store/img/logos/hertz-color-danico-250-lssy.png", (0, 0))
+            im.photoEffectMono()
+        
+        x, y = im.offset()
+        image(im, (250+x, -10+y))
 
     fontSize(19)
     font("Georgia-Italic")
