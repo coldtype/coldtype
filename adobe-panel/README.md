@@ -1,0 +1,3 @@
+- `defaults write com.adobe.CSXS.9 PlayerDebugMode 1`
+- `cd /Library/Application Support/Adobe/CEP/extensions`
+- `sudo ln -s ~/Goodhertz/coldtype/adobe-panel coldtype`

@@ -1,17 +1,15 @@
 import sys, os, re
 from pathlib import Path
 
-import asyncio
-import tempfile
-import websockets
+import asyncio, tempfile, websockets, traceback
+import argparse, importlib, inspect, json, ast, math
 
-import traceback
+import time as ptime
 from enum import Enum
-from runpy import run_path
-from subprocess import call
-import argparse, importlib, inspect, json, ast
-
 from typing import Tuple
+from random import shuffle
+from runpy import run_path
+from subprocess import call, Popen
 
 import coldtype
 from coldtype.helpers import *
@@ -19,7 +17,7 @@ from coldtype.geometry import Rect
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.cairopen import CairoPen
 from coldtype.pens.drawbotpen import DrawBotPen
-from coldtype.renderable import renderable, Action
+from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.viewer import PersistentPreview, WEBSOCKET_ADDR
 
@@ -34,6 +32,21 @@ class Watchable(Enum):
     Font = "Font"
     Library = "Library"
     Generic = "Generic"
+
+
+class EditAction(Enum):
+    Newline = "newline"
+    Tokenize = "tokenize"
+    TokenizeLine = "tokenize_line"
+    NewSection = "newsection"
+    Capitalize = "capitalize"
+    SelectWorkarea = "select_workarea"
+
+
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
 
 
 def file_and_line_to_def(filepath, lineno):
@@ -74,6 +87,14 @@ class Renderer():
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
             
             all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
+
+            multiplex=parser.add_argument("-mp", "--multiplex", action="store_true", default=False, help="Render in multiple processes"),
+
+            is_subprocess=parser.add_argument("-isp", "--is-subprocess", action="store_true", default=False, help=argparse.SUPPRESS),
+
+            thread_count=parser.add_argument("-tc", "--thread-count", type=int, default=8, help="How many threads when multiplexing?"),
+
+            no_sound=parser.add_argument("-ns", "--no-sound", action="store_true", default=False, help="Don’t make sound"),
             
             format=parser.add_argument("-fmt", "--format", type=str, default=None, help="What image format should be saved to disk?"),
 
@@ -114,6 +135,10 @@ class Renderer():
 
         self.line_number = -1
         self.last_renders = []
+
+        # for multiplex mode
+        self.running_renderers = []
+        self.completed_renderers = []
 
         self.observers = []
 
@@ -179,6 +204,12 @@ class Renderer():
             self.program = None
             self.show_error()
     
+    def animation(self):
+        renderables = self.renderables(Action.PreviewStoryboard)
+        for r in renderables:
+            if isinstance(r, animation):
+                return r
+    
     def renderables(self, trigger):
         _rs = []
         for k, v in self.program.items():
@@ -193,8 +224,8 @@ class Renderer():
             if len(matches) > 0:
                 return matches
         return _rs
-
-    async def render(self, trigger, indices=[]) -> Tuple[int, int]:
+    
+    async def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
         renders = self.renderables(trigger)
         for render in renders:
             render.preview = self.preview
@@ -239,12 +270,6 @@ class Renderer():
                             preview_result = await render.runpost(result, rp)
                             preview_count += 1
                             render.send_preview(self.preview, preview_result, rp)
-
-                            # if isinstance(preview_result, dict):
-                            #     print(">>>", preview_result)
-                            #     self.preview.send(str(preview_result["path"]), preview_result["rect"], preview_result.get("bg", 0.5), image=True)
-                            # else:
-                            #     self.preview.send(SVGPen.Composite(preview_result, render.rect, viewBox=True), bg=render.bg, max_width=800)
                         
                         if self.args.save_renders or trigger in [
                             Action.RenderAll,
@@ -279,7 +304,84 @@ class Renderer():
             self.show_error()
         if render_count > 0:
             self.show_message(f"Rendered {render_count}")
+        
         return preview_count, render_count
+
+    async def render(self, trigger, indices=[]) -> Tuple[int, int]:
+        if self.args.is_subprocess: # is a child process of a multiplexed render
+            if trigger != Action.RenderIndices:
+                raise Exception("Invalid child process render action")
+                return 0, 0
+            else:
+                p, r = await self._single_thread_render(trigger, indices=indices)
+                if not self.args.no_sound:
+                    os.system("afplay /System/Library/Sounds/Pop.aiff")
+                self.exit_code = 5 # mark as child-process
+                return p, r
+        
+        elif self.args.multiplex:
+            if trigger in [Action.RenderAll, Action.RenderWorkarea]:
+                all_frames = self.animation().all_frames()
+                if trigger == Action.RenderAll:
+                    frames = all_frames
+                elif trigger == Action.RenderWorkarea:
+                    timeline = self.animation().timeline
+                    frames = list(timeline.workareas[0])
+                self.render_multiplexed(frames)
+                trigger = Action.RenderIndices
+                indices = [0, all_frames[-1]] # always render first & last from main, to trigger a filesystem-change detection in premiere
+        
+        preview_count, render_count = await self._single_thread_render(trigger, indices)
+        
+        if not self.args.is_subprocess and render_count > 0:
+            self.send_to_external(None, rendered=True)
+
+        return preview_count, render_count
+    
+    def render_multiplexed(self, frames):
+        start = ptime.time()
+        
+        group = math.floor(len(frames) / self.args.thread_count)
+        ordered_frames = list(range(frames[0], frames[0]+len(frames)))
+        shuffle(ordered_frames)
+        subslices = list(chunks(ordered_frames, group))
+        
+        self.reset_renderers()
+        self.running_renderers = []
+        self.completed_renderers = []
+
+        #logfile = filepath.parent.joinpath(f"{filepath.stem}-log.txt")
+        #log = open(logfile, "w")
+
+        for subslice in subslices:
+            print("slice >", len(subslice))
+            sargs = [
+                "coldtype",
+                sys.argv[1],
+                "-i", ",".join([str(s) for s in subslice]),
+                "-isp",
+                "-l", ",".join(self.layers or []),
+                "-s", str(self.args.scale),
+            ]
+            if self.args.no_sound:
+                sargs.append("-ns")
+            #print(sys.argv)
+            #print(sargs)
+            #return
+            renderer = Popen(sargs) #stdout=log)
+            self.running_renderers.append(renderer)
+        
+        while self.running_renderers.count(None) != len(self.running_renderers):
+            for idx, renderer in enumerate(self.running_renderers):
+                if renderer:
+                    retcode = renderer.poll()
+                    if retcode == 5:
+                        self.running_renderers[idx] = None
+            ptime.sleep(.1)
+
+        print("TIME >>>", ptime.time() - start)
+        if not self.args.no_sound:
+            os.system("afplay /System/Library/Sounds/Frog.aiff")
     
     def rasterize(self, content, render, path):
         if render.self_rasterizing:
@@ -378,12 +480,15 @@ class Renderer():
                 await self.on_action(enum_action, message)
             else:
                 print(">>> (", action, ") is not a recognized action")
-    
+
     def lookup_action(self, action):
         try:
             return Action(action)
         except ValueError:
-            return None
+            try:
+                return EditAction(action)
+            except ValueError:
+                return None
     
     def additional_actions(self):
         return []
@@ -413,7 +518,7 @@ class Renderer():
                 await self.render(action, indices=data)
             else:
                 await self.on_action(action)
-    
+
     async def on_action(self, action, message=None) -> bool:
         if action in [Action.PreviewStoryboard, Action.RenderAll, Action.RenderWorkarea]:
             await self.reload_and_render(action)
@@ -435,8 +540,32 @@ class Renderer():
             for render in self.renderables(action):
                 if render.ui_callback:
                     render.ui_callback(message)
+        elif message.get("serialization"):
+            await asyncio.sleep(1)
+            await self.reload(Action.Resave)
+            print(">>>>>>>>>>>", self.animation().timeline.cti)
+            cw = self.animation().timeline.find_workarea()
+            print("WORKAREA", cw)
+            if cw:
+                start, end = cw
+                self.send_to_export(None, workarea_update=True, start=start, end=end)
+            else:
+                print("No CTI/trackGroups found")
+        elif message.get("trigger_from_app"):
+            if action in [EditAction.SelectWorkarea]:
+                self.send_to_external(action, serialization_request=True)
+            else:
+                self.send_to_external(action, edit_action=True)
         else:
             return False
+    
+    def send_to_external(self, action, **kwargs):
+        print("EVENT", action, kwargs)
+        if action:
+            kwargs["action"] = action.value
+        kwargs["prefix"] = self.filepath.stem
+        kwargs["fps"] = self.animation().timeline.fps
+        self.preview.send(json.dumps(kwargs), full=True)
     
     async def process_ws_message(self, message):
         try:
@@ -493,10 +622,16 @@ class Renderer():
     def stop_watching_file_changes(self):
         for o in self.observers:
             o.stop()
+        
+    def reset_renderers(self):
+        for r in self.running_renderers:
+            if r:
+                r.terminate()
 
     def on_exit(self):
         #if self.args.watch:
         #    print(f"<EXIT RENDERER ({exit_code})>")
+        self.reset_renderers()
         self.stop_watching_file_changes()
         self.preview.close()
 

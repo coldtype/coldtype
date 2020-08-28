@@ -21,6 +21,7 @@ setuptools.setup(
     packages=[
         "coldtype",
         "coldtype.animation",
+        "coldtype.animation.nle",
         "coldtype.color",
         "coldtype.pens",
         "coldtype.renderer",
