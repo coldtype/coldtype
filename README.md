@@ -134,9 +134,9 @@ You may look at that code and think to yourself: _wtf_. Yes, that is an appropri
 
 ## How does Coldtype work?
 
-Coldtype is, more than anything else, a programmatic frontend to high-quality typesetting code, provided — in this latest iteration of Coldtype — by the excellent FontGoggles repository. (This was not always the case, but FontGoggles provides a much better version of some Harfbuzz+Freetype code that )
+Coldtype is, more than anything else, a programmatic frontend to high-quality typesetting code, provided — in this latest iteration of Coldtype — by the excellent FontGoggles repository. (This was not always the case, but FontGoggles provides a much better version of some Harfbuzz+Freetype code that previously powered the Coldtype typesetting.)
 
-Coldtype also provides a set of idioms for holding and manipulating typographic data.
+Coldtype also provides a set of idioms for holding onto and manipulating typographic data.
 
 The central graphic element of Coldtype (the `DATPen`) is a wrapper around `fontTool`’s `RecordingPen`, and the central typesetting element (`StyledString`) provides access to a rich set of styling options.
 

@@ -548,7 +548,7 @@ class Renderer():
             print("WORKAREA", cw)
             if cw:
                 start, end = cw
-                self.send_to_export(None, workarea_update=True, start=start, end=end)
+                self.send_to_external(None, workarea_update=True, start=start, end=end)
             else:
                 print("No CTI/trackGroups found")
         elif message.get("trigger_from_app"):
