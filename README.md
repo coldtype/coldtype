@@ -3,6 +3,62 @@
 __⚠️ Our intention is to ultimately make this library a proper, useable, open-source project, but for the moment — though it is publicly viewable — we are not publicizing it and it is under active development. ⚠️__
 
 ---
+
+# Coldtype
+
+_Hello and welcome to `coldtype`, an odd little library for programmatic typography, written by [Rob Stenson](https://robstenson.com), who is me, for use on Goodhertz projects and also other stuff._
+
+## An example
+
+```python
+from coldtype import *
+
+@renderable(rect=Rect(1080, 1080))
+def render(r):
+    style = Style("assets/MutatorSans.ttf", 250, wdth=0, wght=1, tu=-350, r=1, ro=1)
+    return StyledString("COLDTYPE", style).pens().align(r).f("hr", 0.8, 0.7).understroke()
+```
+
+![Screenshot of app](https://coldtype.goodhertz.co/media/drawbotesque.png)
+
+_A DrawBot-like programming experience, using VS Code and the Coldtype viewing app. (When you save the file in VS Code, the hanging process (as seen in the terminal) re-renders `simple.py` to SVG and sends the result via a websocket to the Coldtype viewing app, which displays the SVG with a standard Chromium-based webview.)_
+
+___
+___
+___
+
+# Quickstart
+
+- Install a Python >= 3.8
+- Clone this repository
+- `cd` into the the cloned coldtype repository
+- Create a virtual environment, ala `python3.8 -m venv venv --prompt=coldtype` on the command line
+- Then `source venv/bin/activate` to start your venv
+- Then `pip install -e .` (This adds the `coldtype` command to your virtual environment)
+- Then `pip install git+https://github.com/typemytype/drawbot` if you’re on a Mac (to get DrawBot support — not strictly necessary but if you’re rasterizing anything, it’s very useful)
+- Then `pip install -r requirements.txt`
+
+Now you’ll need the coldtype viewer app before you can run anything.
+
+To build it from source and start it:
+
+- Install [yarn](https://classic.yarnpkg.com/en/docs/install/)
+- cd into the coldtype/viewer directory, aka `cd viewer` if you’re already in the coldtype repo
+- `yarn run start`
+
+Now you can run coldtype scripts:
+
+- Try `coldtype --version`, which should print out the current version of Coldtype. If it doesn’t, the install hasn’t worked properly.
+- To actually see something, try: `coldtype examples/simple.py`
+
+___
+___
+___
+
+# More about Coldtype
+
+## An example
+
 ![An example](https://coldtype.goodhertz.co/media/banner_3.gif)
 ---
 ```python
@@ -27,52 +83,7 @@ def render(f):
 ```
 _source code and instructions for running available here:_ [banner.py](https://github.com/goodhertz/coldtype-examples/blob/master/animations/banner.py)
 
-# Coldtype
-
-_Hello and welcome to `coldtype`, an odd little library for programmatic typography, written by [Rob Stenson](https://robstenson.com), who is me, for use on Goodhertz projects and also other stuff._
-
-## An example
-
-```python
-from coldtype import *
-
-@renderable(rect=Rect(1080, 1080))
-def render(r):
-    style = Style("assets/MutatorSans.ttf", 250, wdth=0, wght=1, tu=-350, r=1, ro=1)
-    return StyledString("COLDTYPE", style).pens().align(r).f("hr", 0.8, 0.7).understroke()
-```
-
-![Screenshot of app](https://coldtype.goodhertz.co/media/drawbotesque.png)
-
-_A DrawBot-like programming experience, using VS Code and the Coldtype viewing app. (When you save the file in VS Code, the hanging process (as seen in the terminal) re-renders `simple.py` to SVG and sends the result via a websocket to the Coldtype viewing app, which displays the SVG with a standard Chromium-based webview.)_
-
-# Quickstart
-
-- Install a Python >= 3.8
-- Clone this repository
-- `cd` into the the cloned coldtype repository
-- Create a virtual environment, ala `python3.8 -m venv venv --prompt=coldtype` on the command line
-- Then `source venv/bin/activate` to start your venv
-- Then `pip install -e .` (This adds the `coldtype` command to your virtual environment)
-- Then `pip install git+https://github.com/typemytype/drawbot` if you’re on a Mac (to get DrawBot support)
-- Then `pip install -r requirements.txt`
-
-Now you’ll need the coldtype viewer app before you can run anything.
-
-To build it from source and start it:
-
-- Install [yarn](https://classic.yarnpkg.com/en/docs/install/)
-- cd into the coldtype/viewer directory, aka `cd viewer` if you’re already in the coldtype repo
-- `yarn run start`
-
-Now you can run coldtype scripts:
-
-- Try `coldtype --version`, which should print out the current version of Coldtype. If it doesn’t, the install hasn’t worked properly.
-- To actually see something, try: `coldtype examples/simple.py`
-
-# Lots of text about Coldtype
-
-## Examples
+## More Examples
 
 To try out Coldtype and see some examples (like the banner at the top of this README), check out the [coldtype-examples](https://github.com/goodhertz/coldtype-examples) repository, where there are instructions on how to download and setup Coldtype in a python3.8 environment.
 

@@ -575,12 +575,14 @@ class Renderer():
             return False
     
     def send_to_external(self, action, **kwargs):
-        print("EVENT", action, kwargs)
-        if action:
-            kwargs["action"] = action.value
-        kwargs["prefix"] = self.filepath.stem
-        kwargs["fps"] = self.animation().timeline.fps
-        self.preview.send(json.dumps(kwargs), full=True)
+        animation = self.animation()
+        if animation:
+            print("EVENT", action, kwargs)
+            if action:
+                kwargs["action"] = action.value
+            kwargs["prefix"] = self.filepath.stem
+            kwargs["fps"] = animation.timeline.fps
+            self.preview.send(json.dumps(kwargs), full=True)
     
     async def process_ws_message(self, message):
         try:
