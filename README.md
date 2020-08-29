@@ -46,13 +46,33 @@ def render(r):
 
 _A DrawBot-like programming experience, using VS Code and the Coldtype viewing app. (When you save the file in VS Code, the hanging process (as seen in the terminal) re-renders `simple.py` to SVG and sends the result via a websocket to the Coldtype viewing app, which displays the SVG with a standard Chromium-based webview.)_
 
-## The Coldtype Viewer App
+# Quickstart
 
-See `viewer/README.md` to build the Electron viewing app.
+- Install a Python >= 3.8
+- Clone this repository
+- `cd` into the the cloned coldtype repository
+- Create a virtual environment, ala `python3.8 -m venv venv --prompt=coldtype` on the command line
+- Then `source venv/bin/activate` to start your venv
+- Then `pip install -e .` (This adds the `coldtype` command to your virtual environment)
+- Then `pip install git+https://github.com/typemytype/drawbot` if you’re on a Mac (to get DrawBot support)
+- Then `pip install -r requirements.txt`
 
-___
+Now you’ll need the coldtype viewer app before you can run anything.
 
-## More Examples
+To build it from source and start it:
+
+- Install [yarn](https://classic.yarnpkg.com/en/docs/install/)
+- cd into the coldtype/viewer directory, aka `cd viewer` if you’re already in the coldtype repo
+- `yarn run start`
+
+Now you can run coldtype scripts:
+
+- Try `coldtype --version`, which should print out the current version of Coldtype. If it doesn’t, the install hasn’t worked properly.
+- To actually see something, try: `coldtype examples/simple.py`
+
+# Lots of text about Coldtype
+
+## Examples
 
 To try out Coldtype and see some examples (like the banner at the top of this README), check out the [coldtype-examples](https://github.com/goodhertz/coldtype-examples) repository, where there are instructions on how to download and setup Coldtype in a python3.8 environment.
 
@@ -64,7 +84,7 @@ ___
 
 If you’re using a version of Python >= 3.7, you should be able to add `coldtype` to your virtual environment with this command:
 
-- `pip install "coldtype[renderer]"`
+- `pip install coldtype`
 - `pip install git+https://github.com/typemytype/drawbot`
 
 The `drawbot` step is optional, and Mac-specific, but you’ll probably want it if you’re using a Mac, since Cairo (the alternate rasterizer) is quite hard to install. The `[renderer]` bit is not optional if you intend on using the `coldtype` command-line tool (as discussed below), but it is optional if you’re using Coldtype just for its typesetting (i.e. if you’re using it with Blender or another environment that provides code-reloading and rendering).

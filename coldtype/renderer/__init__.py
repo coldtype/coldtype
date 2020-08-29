@@ -43,6 +43,17 @@ class EditAction(Enum):
     SelectWorkarea = "select_workarea"
 
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
@@ -119,7 +130,7 @@ class Renderer():
             drawbot=parser.add_argument("-db", "--drawbot", action="store_true", default=False, help=argparse.SUPPRESS))
         return pargs, parser
 
-    def __init__(self, parser):
+    def __init__(self, parser, no_socket_ok=False):
         sys.path.insert(0, os.getcwd())
 
         self.args = parser.parse_args()
@@ -128,6 +139,10 @@ class Renderer():
         self.layers = [l.strip() for l in self.args.layers.split(",")] if self.args.layers else []
         
         self.preview = PersistentPreview()
+        if not no_socket_ok and not self.preview.ws:
+            print(f"\n\n{bcolors.FAIL}! Please start the coldtype viewer app !{bcolors.ENDC}\n\n")
+            raise Exception()
+        
         self.preview.clear()
         self.program = None
         self.websocket = None
