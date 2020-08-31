@@ -33,11 +33,3 @@ class Wavfile():
 
     def amp(self, i):
         return np.average(np.fabs(self.samples_for_frame(i)))
-
-    def freq(self, i):
-        start_sample = math.floor(i * self.samples_per_frame)
-        end_sample = math.floor(start_sample + self.samples_per_frame)
-        #s1 = self.sf[start_sample:end_sample]
-        s1 = self.samples_for_frame(i)
-        freq = freq_from_autocorr(s1, self.sf_fs)
-        return freq

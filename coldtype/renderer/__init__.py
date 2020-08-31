@@ -295,10 +295,14 @@ class Renderer():
                             if len(render.layers) > 0:
                                 for layer in render.layers:
                                     for layer_result in result:
-                                        if layer == layer_result.getTag():
-                                            layer_folder = render.layer_folder(self.filepath, layer)
-                                            output_path = output_folder / layer_folder / f"{prefix}_{layer}_{rp.suffix}.{fmt}"
-                                            output_path.parent.mkdir(exist_ok=True, parents=True)
+                                        layer_tag = layer_result.getTag()
+                                        if layer == layer_tag:
+                                            if layer_tag != "__default__":
+                                                layer_folder = render.layer_folder(self.filepath, layer)
+                                                output_path = output_folder / layer_folder / f"{prefix}_{layer}_{rp.suffix}.{fmt}"
+                                                output_path.parent.mkdir(exist_ok=True, parents=True)
+                                            else:
+                                                output_path = rp.output_path
                                             render_count += 1
                                             self.rasterize(layer_result, render, output_path)
                                             print(">>> saved layer...", str(output_path.relative_to(Path.cwd())))
@@ -576,7 +580,7 @@ class Renderer():
     
     def send_to_external(self, action, **kwargs):
         animation = self.animation()
-        if animation:
+        if animation and animation.timeline:
             print("EVENT", action, kwargs)
             if action:
                 kwargs["action"] = action.value
