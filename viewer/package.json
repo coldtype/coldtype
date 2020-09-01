@@ -6,13 +6,14 @@
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "postinstall": "electron-builder install-app-deps"
   },
   "author": "Rob Stenson, Goodhertz, Inc.",
   "license": "ISC",
   "devDependencies": {
     "electron": "^7.2.4",
-    "electron-packager": "^14.1.1"
+    "electron-builder": "^22.8.0"
   },
   "dependencies": {
     "electron-store": "^5.1.0",
@@ -20,6 +21,7 @@
   },
   "build": {
     "appId": "com.goodhertz.coldtype",
+    "productName": "Coldtype",
     "mac": {
       "icon": "appicon.icns"
     },

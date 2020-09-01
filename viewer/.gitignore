@@ -1,5 +1,5 @@
+dist
 node_modules
 coldtype-darwin*
-package-lock.json
 appicon.iconset
 appicon_source

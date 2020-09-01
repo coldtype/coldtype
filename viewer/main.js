@@ -81,6 +81,8 @@ function createWindow () {
   });
 }
 
+app.name = "Coldtype";
+
 app.on('ready', createWindow);
 
 app.on('will-quit', () => {

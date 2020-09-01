@@ -1,5 +1,4 @@
 ```
-yarn add electron-builder --dev
-yarn install
-yarn dist
+npm install
+npm dist
 ```
