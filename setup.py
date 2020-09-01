@@ -40,9 +40,6 @@ setuptools.setup(
         #"drawbot": [
         #    "drawbot @ http://github.com/typemytype/drawbot/archive/master.zip"
         #],
-        "noise": [
-            "noise",
-        ]
     },
     install_requires=[
         "fontPens",
@@ -59,7 +56,8 @@ setuptools.setup(
         "numpy",
         "websocket-client",
         "websockets",
-        "watchdog"
+        "watchdog",
+        "noise",
         #"fontgoggles @ http://github.com/goodhertz/fontgoggles/archive/master.zip"
     ],
     classifiers=[
