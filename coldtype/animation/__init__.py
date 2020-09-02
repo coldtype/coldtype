@@ -1,6 +1,6 @@
 import math
 from coldtype.helpers import loopidx, interp_dict
-from coldtype.animation.timeable import Timing, Timeable
+from coldtype.animation.timeable import Timing, Timeable, TimeableSet
 from coldtype.animation.timeline import Timeline
 
 

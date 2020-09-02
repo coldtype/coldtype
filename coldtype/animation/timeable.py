@@ -28,11 +28,12 @@ class Timing():
 
 
 class Timeable():
-    def __init__(self, start, end, index=0):
+    def __init__(self, start, end, index=0, name=None):
         self.start = start
         self.end = end
         self.duration = (end-start)
         self.index = index
+        self.name = name
     
     def __repr__(self):
         return f"Timeable({self.start}, {self.end} ({self.duration}))"
@@ -97,3 +98,17 @@ class Timeable():
             return Timing(t, loop_t, loop_index, easefn)
     
     prg = progress
+
+
+class TimeableSet():
+    def __init__(self, timeables):
+        self.timeables = timeables
+    
+    def current(self, frame):
+        for idx, clip in enumerate(self.timeables):
+            t:Timeable
+            if t.start <= frame and frame < t.end:
+                return t
+    
+    def __repr__(self):
+        return "<TimeableSet {:04d}>".format(len(self.timeables))
