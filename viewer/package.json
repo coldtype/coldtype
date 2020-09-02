@@ -1,6 +1,7 @@
 {
   "name": "coldtype",
   "version": "0.0.1",
+  "productName": "Coldtype",
   "description": "an electron app for viewing things via websocket",
   "main": "main.js",
   "scripts": {
@@ -12,8 +13,10 @@
   "author": "Rob Stenson, Goodhertz, Inc.",
   "license": "ISC",
   "devDependencies": {
+    "dotenv": "^8.2.0",
     "electron": "^7.2.4",
-    "electron-builder": "^22.8.0"
+    "electron-builder": "^22.8.0",
+    "electron-notarize": "^1.0.0"
   },
   "dependencies": {
     "electron-store": "^5.1.0",
@@ -22,11 +25,21 @@
   "build": {
     "appId": "com.goodhertz.coldtype",
     "productName": "Coldtype",
+    "afterSign": "notarize.js",
+    "dmg": {
+      "sign": false
+    },
     "mac": {
-      "icon": "appicon.icns"
+      "icon": "appicon.icns",
+      "artifactName": "Coldtype-Installer-${version}.${ext}",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist"
     },
     "win": {
-      "icon": "appicon.ico"
+      "icon": "appicon.ico",
+      "artifactName": "Coldtype-Installer-${version}.${ext}"
     }
   }
 }
