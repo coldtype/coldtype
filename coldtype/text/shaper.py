@@ -13,6 +13,7 @@ CJK = lambda c: between(c, '\u4E00', '\u9FFF')
 modes = [
     "LATIN",
     "ARABIC",
+    "HEBREW",
     "SPACE",
     "CJK",
     "KATAKANA"
@@ -59,7 +60,7 @@ def segment(txt, mode="LATIN", includeNames=False):
     
     # reverse number ranges in arabic
     for idx, (cats, line) in enumerate(grouped_runs):
-        if "ARABIC" in cats:
+        if "ARABIC" in cats or "HEBREW" in cats:
             grouped_runs[idx] = (cats, re.sub("[0-9]+", lambda m: m.group()[::-1], line))
 
     return grouped_runs
