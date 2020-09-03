@@ -101,8 +101,37 @@ class Timeable():
 
 
 class TimeableSet():
-    def __init__(self, timeables):
+    def __init__(self, timeables, name=None, start=-1, end=-1):
         self.timeables = timeables
+        self.name = name
+        self._start = start
+        self._end = end
+    
+    @property
+    def start(self):
+        if self._start > -1:
+            return self._start
+        _start = -1
+        for t in self.timeables:
+            ts = t.start
+            if _start == -1:
+                _start = ts
+            elif ts < _start:
+                _start = ts
+        return _start
+
+    @property
+    def end(self):
+        if self._end > -1:
+            return self._end
+        _end = -1
+        for t in self.timeables:
+            te = t.end
+            if _end == -1:
+                _end = te
+            elif te > _end:
+                _end = te
+        return _end
     
     def current(self, frame):
         for idx, clip in enumerate(self.timeables):
@@ -111,4 +140,4 @@ class TimeableSet():
                 return t
     
     def __repr__(self):
-        return "<TimeableSet {:04d}>".format(len(self.timeables))
+        return "<TimeableSet ({:s}){:04d}>".format(self.name if self.name else "?", len(self.timeables))
