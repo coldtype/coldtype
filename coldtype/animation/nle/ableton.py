@@ -1,10 +1,10 @@
 from coldtype.animation import Timeline, Timeable, TimeableSet
+from coldtype.helpers import sibling
 
 from pathlib import Path
 from functools import partial
-
 from lxml import etree
-import gzip
+import gzip, math
 
 # DeviceChain/MainSequencer/ClipTimeable/ArrangerAutomation/Events/MidiClip/Notes/KeyTracks
 
@@ -17,7 +17,8 @@ def b2f(fpb, t):
 
 
 class AbletonMIDINote(Timeable):
-    pass
+    def __repr__(self):
+        return f"<AbletonMIDINote {self.name},{self.start},{self.end}/>"
 
 
 class AbletonMIDIClip(TimeableSet):
@@ -28,18 +29,14 @@ class AbletonMIDIClip(TimeableSet):
 
         super().__init__([], clip_name, start=b2ff(clip_start), end=b2ff(clip_end))
 
-        notes = {}
-
-        for kt in clip.findall("Notes/KeyTracks/KeyTrack"):
+        for idx, kt in enumerate(clip.findall("Notes/KeyTracks/KeyTrack")):
             midi_key = kt.find("MidiKey").attrib["Value"]
-            notes[midi_key] = []
             for note in kt.find("Notes"):
                 na = dict(note.attrib).copy()
                 if na["IsEnabled"]:
                     nt = clip_start + float(na["Time"])
                     nd = float(na["Duration"])
-                    notes[midi_key].append(na)
-                    #print(midi_key, na)
+                    self.timeables.append(AbletonMIDINote(b2ff(nt), b2ff(nt+nd), idx, midi_key))
 
 
 class AbletonMIDITrack(TimeableSet):
@@ -50,6 +47,13 @@ class AbletonMIDITrack(TimeableSet):
         #automation = []
         #for a in track.xpath("AutomationEnvelopes/Envelopes/AutomationEnvelope/Automation"):
         #    automation.append(a)
+
+    def notes(self):
+        return [int(t.name) for t in self.flat_timeables()]
+    
+    def range(self):
+        ns = self.notes()
+        return min(ns), max(ns)
 
 
 class AbletonReader(Timeline):
@@ -68,21 +72,17 @@ class AbletonReader(Timeline):
         fpb = (60/bpm)*fps
         b2ff = partial(b2f, fpb)
 
-        self.tracks = [AbletonMIDITrack(b2ff, track) for track in lx.findall("LiveSet/Tracks/MidiTrack")]
+        tracks = [AbletonMIDITrack(b2ff, track) for track in lx.findall("LiveSet/Tracks/MidiTrack")]
         
         if duration == -1:
-            duration = max([t.end for t in self.tracks])
+            duration = max([t.end for t in tracks])
 
-        print(bpm, fpb, duration)
+        super().__init__(duration, fps=fps, tracks=tracks)
 
 if __name__ == "<run_path>":
     from coldtype import *
 
-    with gzip.open(str(sibling(__file__, "test_read.prproj")), "rb") as f:
-        lx = etree.fromstring(f.read())
-        save_xml(lx)
-
-    #ar = AbletonReader("~/Audio/loopprojs/test_read Project/test_read2.als")
+    ar = AbletonReader("~/Audio/loopprojs/test_read Project/test_read2.als")
 
     @renderable()
     def ableton(r):

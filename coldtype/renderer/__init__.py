@@ -17,6 +17,7 @@ from coldtype.geometry import Rect
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.cairopen import CairoPen
 from coldtype.pens.drawbotpen import DrawBotPen
+from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.viewer import PersistentPreview, WEBSOCKET_ADDR
@@ -284,7 +285,8 @@ class Renderer():
                         ]:
                             preview_result = await render.runpost(result, rp)
                             preview_count += 1
-                            render.send_preview(self.preview, preview_result, rp)
+                            if preview_result:
+                                render.send_preview(self.preview, preview_result, rp)
                         
                         if self.args.save_renders or trigger in [
                             Action.RenderAll,
@@ -312,7 +314,7 @@ class Renderer():
                                 if render.self_rasterizing:
                                     print(">>> self-rasterized...", output_path)
                                 else:
-                                    self.rasterize(result, render, output_path)
+                                    self.rasterize(result or DATPen(), render, output_path)
                                     # TODO a progress bar?
                                     print(">>> saved...", str(output_path.relative_to(Path.cwd())))
                     except:

@@ -28,12 +28,13 @@ class Timing():
 
 
 class Timeable():
-    def __init__(self, start, end, index=0, name=None):
+    def __init__(self, start, end, index=0, name=None, data={}):
         self.start = start
         self.end = end
         self.duration = (end-start)
         self.index = index
         self.name = name
+        self.data = {}
     
     def __repr__(self):
         return f"Timeable({self.start}, {self.end} ({self.duration}))"
@@ -100,12 +101,38 @@ class Timeable():
     prg = progress
 
 
+class TimeableView():
+    def __init__(self, timeable, value, svalue, count, index, position):
+        self.timeable = timeable
+        self.value = value
+        self.svalue = svalue
+        self.count = count
+        self.index = index
+        self.position = position
+    
+    def ease(self, eo="eei", ei="eei"):
+        return ease(eo, self.value)[0]
+    
+    def __repr__(self):
+        return f"<TimeableView:{self.timeable}/>"
+
+
 class TimeableSet():
-    def __init__(self, timeables, name=None, start=-1, end=-1):
+    def __init__(self, timeables, name=None, start=-1, end=-1, data={}):
         self.timeables = timeables
         self.name = name
         self._start = start
         self._end = end
+        self.data = data
+    
+    def flat_timeables(self):
+        ts = []
+        for t in self.timeables:
+            if isinstance(t, TimeableSet):
+                ts.extend(t.flat_timeables())
+            else:
+                ts.append(t)
+        return ts
     
     @property
     def start(self):
@@ -134,10 +161,63 @@ class TimeableSet():
         return _end
     
     def current(self, frame):
-        for idx, clip in enumerate(self.timeables):
+        for idx, t in enumerate(self.flat_timeables()):
             t:Timeable
             if t.start <= frame and frame < t.end:
                 return t
     
+    def fv(self, frame, filter_fn=None, reverb=[0,5], duration=0, accumulate=0):
+        pre, post = reverb
+        count = 0
+        timeables_on = []
+
+        ts_duration = self.end - self.start
+
+        for idx, t in enumerate(self.flat_timeables()):
+            if filter_fn and not filter_fn(t):
+                continue
+            t_start = t.start
+            t_end = t.end
+            if duration > -1:
+                t_end = t_start + duration
+            pre_start = t_start - pre
+            post_end = t_end + post
+
+            t_index = count
+            if frame >= pre_start: # correct?
+                count += 1
+            
+            value = 0
+            pos = 0
+            fi = frame
+
+            if frame >= t_start and frame <= t_end: # truly on
+                pos = 0
+                value = 1
+            else:
+                if post_end > ts_duration and frame < pre_start:
+                    fi = frame + ts_duration
+                elif pre_start < 0 and frame > post_end:
+                    fi = frame - ts_duration
+                if fi < t_start and fi >= pre_start:
+                    pos = 1
+                    value = (fi - pre_start) / pre
+                elif fi > t_end and fi < post_end:
+                    pos = -1
+                    value = (post_end - fi) / post
+            
+            if value > 0:
+                timeables_on.append(TimeableView(t, value, -1, count, idx, pos))
+            else:
+                pass
+        
+        if accumulate:
+            return timeables_on
+        else:
+            if len(timeables_on) == 0:
+                return TimeableView(None, 0, 0, count, -1, 0)
+            else:
+                return max(timeables_on, key=lambda tv: tv.value)
+
     def __repr__(self):
         return "<TimeableSet ({:s}){:04d}>".format(self.name if self.name else "?", len(self.timeables))
