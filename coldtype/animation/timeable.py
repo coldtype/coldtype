@@ -1,4 +1,5 @@
 from coldtype.animation.easing import ease
+from copy import copy
 import math
 
 
@@ -34,10 +35,19 @@ class Timeable():
         self.duration = (end-start)
         self.index = index
         self.name = name
+        self.feedback = 0
         self.data = {}
     
     def __repr__(self):
         return f"Timeable({self.start}, {self.end} ({self.duration}))"
+    
+    def delay(self, frames_delayed, feedback) -> 'Timeable':
+        t = copy(self)
+        t.start = t.start + frames_delayed
+        t.end = t.end + frames_delayed
+        t.feedback = feedback
+        t.data = {}
+        return t
     
     def now(self, i):
         return self.start <= i < self.end
@@ -159,6 +169,9 @@ class TimeableSet():
             elif te > _end:
                 _end = te
         return _end
+    
+    def __getitem__(self, index):
+        return self.timeables[index]
     
     def current(self, frame):
         for idx, t in enumerate(self.flat_timeables()):

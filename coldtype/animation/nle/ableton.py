@@ -8,7 +8,7 @@ import gzip, math
 
 # DeviceChain/MainSequencer/ClipTimeable/ArrangerAutomation/Events/MidiClip/Notes/KeyTracks
 
-def save_xml(x):
+def save_test_xml(x):
     sibling(__file__, "test_read_ableton.xml").write_text(etree.tostring(x, pretty_print=True).decode())
 
 
@@ -31,12 +31,13 @@ class AbletonMIDIClip(TimeableSet):
 
         for idx, kt in enumerate(clip.findall("Notes/KeyTracks/KeyTrack")):
             midi_key = kt.find("MidiKey").attrib["Value"]
-            for note in kt.find("Notes"):
+            for jdx, note in enumerate(kt.find("Notes")):
                 na = dict(note.attrib).copy()
                 if na["IsEnabled"]:
                     nt = clip_start + float(na["Time"])
                     nd = float(na["Duration"])
-                    self.timeables.append(AbletonMIDINote(b2ff(nt), b2ff(nt+nd), idx, midi_key))
+                    print(jdx)
+                    self.timeables.append(AbletonMIDINote(b2ff(nt), b2ff(nt+nd), jdx, midi_key))
 
 
 class AbletonMIDITrack(TimeableSet):
@@ -64,7 +65,7 @@ class AbletonReader(Timeline):
         lx = None
         with gzip.open(str(als_path), "rb") as f:
             lx = etree.fromstring(f.read())
-            save_xml(lx)
+        self.lx = lx
 
         master_track = lx.find("LiveSet/MasterTrack")
         bpm = float(master_track.find("AutomationEnvelopes/Envelopes/AutomationEnvelope[@Id='1']/Automation/Events/FloatEvent").attrib["Value"])

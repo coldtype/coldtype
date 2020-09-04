@@ -12,7 +12,7 @@ synth_min, synth_max = synth.range()
 
 o = Font("~/Type/fonts/fonts/ObviouslyVariable.ttf")
 
-@animation(Rect(1080, 1080), timeline=ar, storyboard=[29])
+@animation(Rect(1080, 1080), timeline=ar, storyboard=[29], bg=0)
 def ableton(f):
     b, t = f.a.r.divide(300, "mny")
 
@@ -21,7 +21,7 @@ def ableton(f):
         e = n.ease()
         color = hsl(h+0.1*e, s=0.6, l=0.6, a=e*0.95)
         #color = hsl(0, 0, 1, a=e*0.95)
-        style = Style(o, 650+10*e, wdth=0.1+e*0.1, wght=0.5+e*0.5, slnt=e*0.25, ro=1, tu=-30)
+        style = Style(o, 350+10*e, wdth=0.1+e*0.1, wght=0.75+e*0.25, slnt=e*0.25, ro=1, tu=-30)
         _dp = StyledString(s, style).fit(f.a.r.w-100).pen().removeOverlap().align(t).translate(0, -50)
         if stroke:
             _dp.f(None).s(color).sw(10)
