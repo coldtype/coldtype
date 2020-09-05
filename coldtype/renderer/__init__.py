@@ -347,7 +347,12 @@ class Renderer():
                     frames = all_frames
                 elif trigger == Action.RenderWorkarea:
                     timeline = self.animation().timeline
-                    frames = list(timeline.workareas[0])
+                    try:
+                        frames = list(timeline.workareas[0])
+                    except:
+                        frames = all_frames
+                    if len(frames) == 0:
+                        frames = all_frames
                 self.render_multiplexed(frames)
                 trigger = Action.RenderIndices
                 indices = [0, all_frames[-1]] # always render first & last from main, to trigger a filesystem-change detection in premiere
