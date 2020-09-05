@@ -36,7 +36,6 @@ class AbletonMIDIClip(TimeableSet):
                 if na["IsEnabled"]:
                     nt = clip_start + float(na["Time"])
                     nd = float(na["Duration"])
-                    print(jdx)
                     self.timeables.append(AbletonMIDINote(b2ff(nt), b2ff(nt+nd), jdx, midi_key))
 
 
@@ -72,6 +71,7 @@ class AbletonReader(Timeline):
 
         fpb = (60/bpm)*fps
         b2ff = partial(b2f, fpb)
+        self.b2ff = b2ff
 
         tracks = [AbletonMIDITrack(b2ff, track) for track in lx.findall("LiveSet/Tracks/MidiTrack")]
         
