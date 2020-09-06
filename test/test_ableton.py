@@ -1,13 +1,16 @@
 from coldtype import *
-from coldtype.animation.nle.ableton import AbletonReader, AbletonMIDITrack
+from coldtype.animation.nle.ableton import AbletonReader, AbletonMIDITrack, save_test_xml, AbletonAudioTrack
 from coldtype.warping import warp_fn
 from random import randint
 
 from pprint import pprint
 
 ar = AbletonReader("~/Audio/loopprojs/test_read Project/test_read2.als")
+save_test_xml(ar.lx)
+
 drums:AbletonMIDITrack = ar.tracks[0]
-synth:AbletonMIDITrack = ar.tracks[1]
+guitar:AbletonAudioTrack = ar.tracks[1]
+synth:AbletonMIDITrack = ar.tracks[2]
 synth_min, synth_max = synth.range()
 
 o = Font("~/Type/fonts/fonts/ObviouslyVariable.ttf")

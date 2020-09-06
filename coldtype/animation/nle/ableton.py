@@ -56,6 +56,22 @@ class AbletonMIDITrack(TimeableSet):
         return min(ns), max(ns)
 
 
+class AbletonAudioClip(Timeable):
+    def __init__(self, b2ff, clip):
+        clip_name = clip.find("Name").attrib["Value"]
+        clip_start = float(clip.find("CurrentStart").attrib["Value"])
+        clip_end = float(clip.find("CurrentEnd").attrib["Value"])
+        super().__init__(b2ff(clip_start), b2ff(clip_end), name=clip_name)
+
+class AbletonAudioTrack(TimeableSet):
+    def __init__(self, b2ff, track):
+        track_name = track.find("Name/EffectiveName").attrib["Value"]
+        clips = []
+        for clip in track.findall("DeviceChain/MainSequencer/Sample/ArrangerAutomation/Events/AudioClip"):
+            clips.append(AbletonAudioClip(b2ff, clip))
+        super().__init__(clips, name=track_name)
+
+
 class AbletonReader(Timeline):
     def __init__(self, path, duration=-1, fps=30, rounded=True, note_names={}):
         note_names_reversed = {v:k for (k,v) in note_names.items()}
@@ -73,7 +89,17 @@ class AbletonReader(Timeline):
         b2ff = partial(b2f, fpb)
         self.b2ff = b2ff
 
-        tracks = [AbletonMIDITrack(b2ff, track) for track in lx.findall("LiveSet/Tracks/MidiTrack")]
+        self.returns = []
+
+        tracks = []
+        for t in lx.xpath("LiveSet/Tracks/*"):
+            if t.tag == "MidiTrack":
+                tracks.append(AbletonMIDITrack(b2ff, t))
+            elif t.tag == "AudioTrack":
+                tracks.append(AbletonAudioTrack(b2ff, t))
+                pass
+            elif t.tag == "ReturnTrack":
+                self.returns.append(t)
         
         if duration == -1:
             duration = max([t.end for t in tracks])
