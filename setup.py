@@ -49,7 +49,7 @@ setuptools.setup(
         "easing-functions",
         "fonttools[woff,unicode,type1,lxml,ufo]",
         "freetype-py",
-        "uharfbuzz",
+        "uharfbuzz>=0.12.0",
         "python-bidi",
         "ufo2ft",
         "unicodedata2",

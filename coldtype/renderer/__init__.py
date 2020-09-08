@@ -17,6 +17,7 @@ from coldtype.geometry import Rect
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.cairopen import CairoPen
 from coldtype.pens.drawbotpen import DrawBotPen
+from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.viewer import PersistentPreview, WEBSOCKET_ADDR
@@ -284,7 +285,8 @@ class Renderer():
                         ]:
                             preview_result = await render.runpost(result, rp)
                             preview_count += 1
-                            render.send_preview(self.preview, preview_result, rp)
+                            if preview_result:
+                                render.send_preview(self.preview, preview_result, rp)
                         
                         if self.args.save_renders or trigger in [
                             Action.RenderAll,
@@ -300,9 +302,9 @@ class Renderer():
                                             if layer_tag != "__default__":
                                                 layer_folder = render.layer_folder(self.filepath, layer)
                                                 output_path = output_folder / layer_folder / f"{prefix}_{layer}_{rp.suffix}.{fmt}"
-                                                output_path.parent.mkdir(exist_ok=True, parents=True)
                                             else:
                                                 output_path = rp.output_path
+                                            output_path.parent.mkdir(exist_ok=True, parents=True)
                                             render_count += 1
                                             self.rasterize(layer_result, render, output_path)
                                             print(">>> saved layer...", str(output_path.relative_to(Path.cwd())))
@@ -310,9 +312,9 @@ class Renderer():
                                 render_count += 1
                                 output_path.parent.mkdir(exist_ok=True, parents=True)
                                 if render.self_rasterizing:
-                                    print(">>> self-rasterized...", output_path)
+                                    print(">>> self-rasterized...", output_path.relative_to(Path.cwd()))
                                 else:
-                                    self.rasterize(result, render, output_path)
+                                    self.rasterize(result or DATPen(), render, output_path)
                                     # TODO a progress bar?
                                     print(">>> saved...", str(output_path.relative_to(Path.cwd())))
                     except:
@@ -345,7 +347,12 @@ class Renderer():
                     frames = all_frames
                 elif trigger == Action.RenderWorkarea:
                     timeline = self.animation().timeline
-                    frames = list(timeline.workareas[0])
+                    try:
+                        frames = list(timeline.workareas[0])
+                    except:
+                        frames = all_frames
+                    if len(frames) == 0:
+                        frames = all_frames
                 self.render_multiplexed(frames)
                 trigger = Action.RenderIndices
                 indices = [0, all_frames[-1]] # always render first & last from main, to trigger a filesystem-change detection in premiere
