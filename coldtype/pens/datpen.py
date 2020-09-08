@@ -239,6 +239,54 @@ class DATPenLikeObject():
             callback(self, 1, dict(depth=depth))
         else:
             callback(self, 0, dict(depth=depth))
+    
+    def all_pens(self):
+        pens = []
+        if hasattr(self, "pens"):
+            pens = self.flatten().pens
+        if isinstance(pens, DATPen):
+            pens = [self]
+        
+        for pen in pens:
+            if pen:
+                if hasattr(pen, "pens"):
+                    for _p in pen.flatten().pens:
+                        if _p:
+                            yield _p
+                else:
+                    yield pen
+    
+    def _db_drawPath(self):
+        for dp in list(self.all_pens()):
+            with db.savedState():
+                for attr, value in dp.allStyledAttrs().items():
+                    if attr == "fill" and value and value.a > 0:
+                        db.fill(*value)
+                    elif attr == "stroke":
+                        c = value.get("color")
+                        w = value.get("weight")
+                        if c and c.a > 0 and w > 0:
+                            db.strokeWidth(w)
+                            db.stroke(*c)
+                    db.drawPath(dp.bp())
+    
+    def db_drawPath(self, rect=None, filters=[]):
+        try:
+            if rect and len(filters) > 0:
+                im = db.ImageObject()
+                with im:
+                    db.size(*rect.wh())
+                    self._db_drawPath()
+                for filter_name, filter_kwargs in filters:
+                    getattr(im, filter_name)(**filter_kwargs)
+                x, y = im.offset()
+                db.image(im, (x, y))
+            else:
+                self._db_drawPath()
+            return self
+        except ImportError:
+            print("DrawBot not installed!")
+            return self
 
 
 class DATPen(RecordingPen, DATPenLikeObject):
@@ -296,6 +344,13 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.attrs = OrderedDict()
         self.attr("default", fill=(1, 0, 0.5))
         return self
+    
+    def allStyledAttrs(self, style=None):
+        if style and style in self.attrs:
+            attrs = self.attrs[style]
+        else:
+            attrs = self.attrs["default"]
+        return attrs
 
     def attr(self, tag="default", field=None, **kwargs):
         """Set a style attribute on the pen."""

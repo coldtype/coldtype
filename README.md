@@ -150,7 +150,13 @@ from coldtype import *
 
 @renderable(rect=(1350, 500))
 async def render(r):
-    return StyledString("COLDTYPE", Style("assets/MutatorSans.ttf", 300, wght=1, tu=-250, r=1)).pens().align(r, tv=1).f("random").understroke()
+    return (StyledString("COLDTYPE",
+        Style("assets/MutatorSans.ttf",
+            300, wght=1, tu=-250, r=1))
+        .pens()
+        .align(r, tv=1)
+        .f("random")
+        .understroke()
 ```
 
 You can run this with the `coldtype` command-line tool, e.g.:
