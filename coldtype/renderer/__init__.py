@@ -312,7 +312,7 @@ class Renderer():
                                 render_count += 1
                                 output_path.parent.mkdir(exist_ok=True, parents=True)
                                 if render.self_rasterizing:
-                                    print(">>> self-rasterized...", output_path)
+                                    print(">>> self-rasterized...", output_path.relative_to(Path.cwd()))
                                 else:
                                     self.rasterize(result or DATPen(), render, output_path)
                                     # TODO a progress bar?

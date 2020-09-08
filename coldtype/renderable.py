@@ -112,6 +112,7 @@ class drawbot_script(renderable):
         render_pass.fn(*render_pass.args)
         result = None
         if render_pass.action in [Action.RenderAll] or not self.svg_preview:
+            render_pass.output_path.parent.mkdir(exist_ok=True, parents=True)
             db.saveImage(str(render_pass.output_path))
             result = render_pass.output_path
         else:
@@ -258,3 +259,7 @@ class animation(renderable, Timeable):
                 #    frames = self.timeline.find_workarea()
 
         return [RenderPass(self, "{:04d}".format(i), [Frame(i, self, layers)]) for i in frames]
+
+
+class drawbot_animation(drawbot_script, animation):
+    pass
