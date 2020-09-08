@@ -35,6 +35,7 @@ def test_combine_slugs(r):
 try:
     latin_font = Font("assets/NotoSans-Black.ttf")
     arabic_font = Font("≈/GretaArabicCompressedAR-Heavy.otf")
+    hebrew_font = Font("≈/GretaSansCondensedH+L-Medium.otf")
 except FontNotFoundException:
     pass
 
@@ -52,6 +53,13 @@ def test_multidir_seg_string(r):
         seg.align(r).translate(0, 100),
         slug.align(r).translate(0, -100)
     ]
+
+
+@test()
+def test_hebrew(r):
+    hebrew = Style(hebrew_font, 130, fill=hsl(0.5))
+    slug = Slug('קומפרסיה ועוד', hebrew, fallback=Style(latin_font, 130))
+    return slug.pens().align(r)
 
 
 @test()
