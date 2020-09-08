@@ -111,14 +111,17 @@ class Timeable():
     prg = progress
 
 
-class TimeableView():
-    def __init__(self, timeable, value, svalue, count, index, position):
+class TimeableView(Timeable):
+    def __init__(self, timeable, value, svalue, count, index, position, start, end):
         self.timeable = timeable
         self.value = value
         self.svalue = svalue
         self.count = count
         self.index = index
         self.position = position
+        self.start = start
+        self.end = end
+        super().__init__(start, end)
     
     def ease(self, eo="eei", ei="eei"):
         return ease(eo, self.value)[0]
@@ -143,6 +146,10 @@ class TimeableSet():
             else:
                 ts.append(t)
         return ts
+
+    def constrain(self, start, end):
+        self._start = start
+        self._end = end
     
     @property
     def start(self):
@@ -220,7 +227,7 @@ class TimeableSet():
                     value = (post_end - fi) / post
             
             if value > 0:
-                timeables_on.append(TimeableView(t, value, -1, count, idx, pos))
+                timeables_on.append(TimeableView(t, value, -1, count, idx, pos, pre_start, post_end))
             else:
                 pass
         
@@ -228,7 +235,7 @@ class TimeableSet():
             return timeables_on
         else:
             if len(timeables_on) == 0:
-                return TimeableView(None, 0, 0, count, -1, 0)
+                return TimeableView(None, 0, 0, count, -1, 0, 0, 0)
             else:
                 return max(timeables_on, key=lambda tv: tv.value)
 

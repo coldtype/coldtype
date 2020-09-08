@@ -63,8 +63,10 @@ class AbletonAudioClip(Timeable):
         clip_end = float(clip.find("CurrentEnd").attrib["Value"])
         super().__init__(b2ff(clip_start), b2ff(clip_end), name=clip_name)
 
+
 class AbletonAudioTrack(TimeableSet):
     def __init__(self, b2ff, track):
+        self.lx = track
         track_name = track.find("Name/EffectiveName").attrib["Value"]
         clips = []
         for clip in track.findall("DeviceChain/MainSequencer/Sample/ArrangerAutomation/Events/AudioClip"):
@@ -103,6 +105,9 @@ class AbletonReader(Timeline):
         
         if duration == -1:
             duration = max([t.end for t in tracks])
+        
+        for t in tracks:
+            t.constrain(0, duration)
 
         super().__init__(duration, fps=fps, tracks=tracks)
 

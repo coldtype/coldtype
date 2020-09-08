@@ -253,7 +253,8 @@ class animation(renderable, Timeable):
             frames = indices
         elif action in [Action.RenderWorkarea]:
             if self.timeline:
-                if hasattr(self.timeline, "find_workarea"):
-                    frames = self.timeline.find_workarea()
+                frames = list(self.timeline.workareas[0])
+                #if hasattr(self.timeline, "find_workarea"):
+                #    frames = self.timeline.find_workarea()
 
         return [RenderPass(self, "{:04d}".format(i), [Frame(i, self, layers)]) for i in frames]

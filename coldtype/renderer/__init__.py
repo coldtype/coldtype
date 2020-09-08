@@ -302,9 +302,9 @@ class Renderer():
                                             if layer_tag != "__default__":
                                                 layer_folder = render.layer_folder(self.filepath, layer)
                                                 output_path = output_folder / layer_folder / f"{prefix}_{layer}_{rp.suffix}.{fmt}"
-                                                output_path.parent.mkdir(exist_ok=True, parents=True)
                                             else:
                                                 output_path = rp.output_path
+                                            output_path.parent.mkdir(exist_ok=True, parents=True)
                                             render_count += 1
                                             self.rasterize(layer_result, render, output_path)
                                             print(">>> saved layer...", str(output_path.relative_to(Path.cwd())))
