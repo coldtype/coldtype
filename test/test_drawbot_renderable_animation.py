@@ -18,8 +18,8 @@ def db_script_test(f):
     with im:
         size(*r.wh())
         fill(*hsl(0.9, s=1, l=0.6))
-        drawPath(StyledString("COLDTYPE", Style(co, 150)).pen().align(r).rotate(15).translate(0, 10).bp())
-        im.gaussianBlur(radius=50*(0.01+e*0.99))
+        drawPath(StyledString("COLDTYPE", Style(co, 150, tu=100-500*e)).pen().align(r).rotate(15*(1-e)).translate(0, 10).bp())
+        im.gaussianBlur(radius=max(0.0001, 50*e))
     
     x, y = im.offset()
     image(im, (x, y))
