@@ -244,7 +244,7 @@ class DATPenLikeObject():
         pens = []
         if hasattr(self, "pens"):
             pens = self.flatten().pens
-        if isinstance(pens, DATPen):
+        if isinstance(self, DATPen):
             pens = [self]
         
         for pen in pens:

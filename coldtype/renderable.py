@@ -99,7 +99,7 @@ class renderable():
 
 
 class drawbot_script(renderable):
-    def __init__(self, rect=(1080, 1080), svg_preview=1, **kwargs):
+    def __init__(self, rect=(1080, 1080), svg_preview=0, **kwargs):
         if not db:
             raise Exception("DrawBot not installed!")
         super().__init__(rect=rect, **kwargs)
