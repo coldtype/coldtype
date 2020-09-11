@@ -474,6 +474,7 @@ class Renderer():
     def main(self):
         if self.args.memory:
             tracemalloc.start(10)
+            self._last_memory = -1
         try:
             asyncio.get_event_loop().run_until_complete(self.start())
         except KeyboardInterrupt:
@@ -655,7 +656,10 @@ class Renderer():
             idx = self.watchee_paths().index(path)
             print(f">>> resave: {Path(event.src_path).relative_to(Path.cwd())}")
             if self.args.memory and process:
-                print(f">>> pid:{os.getpid()}/mem:{bytesto(process.memory_info().rss)}")
+                memory = bytesto(process.memory_info().rss)
+                diff = memory - self._last_memory
+                self._last_memory = memory
+                print(">>> pid:{:d}/new:{:04.2f}MB/total:{:4.2f}".format(os.getpid(), diff, memory))
             await self.reload_and_render(Action.Resave, self.watchees[idx][0])
 
     def watch_file_changes(self):
