@@ -13,6 +13,7 @@ from coldtype.pens.svgpen import SVGPen
 
 try:
     import drawBot as db
+    import AppKit
 except ImportError:
     db = None
 
@@ -107,19 +108,26 @@ class drawbot_script(renderable):
         self.self_rasterizing = True
     
     async def run(self, render_pass):
-        db.newDrawing()
-        db.size(self.rect.w, self.rect.h)
-        render_pass.fn(*render_pass.args)
-        result = None
-        if render_pass.action in [Action.RenderAll] or not self.svg_preview:
-            render_pass.output_path.parent.mkdir(exist_ok=True, parents=True)
-            db.saveImage(str(render_pass.output_path))
-            result = render_pass.output_path
-        else:
-            with tempfile.NamedTemporaryFile(suffix=".svg") as tf:
-                db.saveImage(tf.name)
-                result = tf.read().decode("utf-8")
-        db.endDrawing()
+        use_pool = True
+        if use_pool:
+            pool = AppKit.NSAutoreleasePool.alloc().init()
+        try:
+            db.newDrawing()
+            db.size(self.rect.w, self.rect.h)
+            render_pass.fn(*render_pass.args)
+            result = None
+            if render_pass.action in [Action.RenderAll] or not self.svg_preview:
+                render_pass.output_path.parent.mkdir(exist_ok=True, parents=True)
+                db.saveImage(str(render_pass.output_path))
+                result = render_pass.output_path
+            else:
+                with tempfile.NamedTemporaryFile(suffix=".svg") as tf:
+                    db.saveImage(tf.name)
+                    result = tf.read().decode("utf-8")
+            db.endDrawing()
+        finally:
+            if use_pool:
+                del pool
         return result
     
     def send_preview(self, previewer, result, render_pass):

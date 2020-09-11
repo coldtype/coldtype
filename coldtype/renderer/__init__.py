@@ -10,6 +10,7 @@ from typing import Tuple
 from random import shuffle
 from runpy import run_path
 from subprocess import call, Popen
+import tracemalloc
 
 import coldtype
 from coldtype.helpers import *
@@ -26,6 +27,12 @@ try:
     import drawBot as db
 except ImportError:
     db = None
+
+try:
+    import psutil
+    process = psutil.Process(os.getpid())
+except ImportError:
+    process = None
 
 
 class Watchable(Enum):
@@ -53,6 +60,13 @@ class bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+
+
+def bytesto(bytes):
+    r = float(bytes)
+    for i in range(2):
+        r = r / 1024
+    return(r)
 
 
 def chunks(lst, n):
@@ -101,6 +115,8 @@ class Renderer():
             all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
 
             multiplex=parser.add_argument("-mp", "--multiplex", action="store_true", default=False, help="Render in multiple processes"),
+
+            memory=parser.add_argument("-m", "--memory", action="store_true", default=False, help="Show statistics about memory usage?"),
 
             is_subprocess=parser.add_argument("-isp", "--is-subprocess", action="store_true", default=False, help=argparse.SUPPRESS),
 
@@ -456,6 +472,8 @@ class Renderer():
             self.watch_file_changes()
 
     def main(self):
+        if self.args.memory:
+            tracemalloc.start(10)
         try:
             asyncio.get_event_loop().run_until_complete(self.start())
         except KeyboardInterrupt:
@@ -636,6 +654,8 @@ class Renderer():
         if path in self.watchee_paths():
             idx = self.watchee_paths().index(path)
             print(f">>> resave: {Path(event.src_path).relative_to(Path.cwd())}")
+            if self.args.memory and process:
+                print(f">>> pid:{os.getpid()}/mem:{bytesto(process.memory_info().rss)}")
             await self.reload_and_render(Action.Resave, self.watchees[idx][0])
 
     def watch_file_changes(self):
@@ -662,6 +682,15 @@ class Renderer():
         self.reset_renderers()
         self.stop_watching_file_changes()
         self.preview.close()
+        if self.args.memory:
+            snapshot = tracemalloc.take_snapshot()
+            top_stats = snapshot.statistics('traceback')
+
+            # pick the biggest memory block
+            stat = top_stats[0]
+            print("%s memory blocks: %.1f KiB" % (stat.count, stat.size / 1024))
+            for line in stat.traceback.format():
+                print(line)
 
 def main():
     pargs, parser = Renderer.Argparser()
