@@ -1,5 +1,5 @@
 import json
-from random import random
+from random import Random
 from websocket import create_connection, WebSocket
 from coldtype.geometry import Rect
 from coldtype.color import normalize_color
@@ -65,7 +65,7 @@ class PersistentPreview():
                 images = content
             imgs = ""
             for img in images:
-                imgs += f"""<img style='position:absolute;top:0px;left:0px;' src='file:///{img}?q={random()}' width={rect.w}/>"""
+                imgs += f"""<img style='position:absolute;top:0px;left:0px;' src='file:///{img}?q={Random().random()}' width={rect.w}/>"""
             html = wrap(imgs)
         elif pdf:
             if isinstance(content, str):
@@ -74,7 +74,7 @@ class PersistentPreview():
                 pdfs = content
             pdf_html = ""
             for pdf in pdfs:
-                pdf_html += f"""<iframe style='position:absolute;top:0px;left:0px;' src='file:///{pdf}?q={random()}' width="{rect.w}" height="{rect.h}"/>"""
+                pdf_html += f"""<iframe style='position:absolute;top:0px;left:0px;' src='file:///{pdf}?q={Random().random()}' width="{rect.w}" height="{rect.h}"/>"""
             html = wrap(pdf_html)
         else:
             html = wrap(content)
