@@ -6,9 +6,8 @@ class Timeline(Timeable):
 
     def __init__(self, duration, fps=30, storyboard=[0], tracks=[]):
         self.fps = fps
-        self.duration = round(duration)
         self.start = 0
-        self.end = self.duration
+        self.end = duration
         self.tracks = tracks
         self.storyboard = storyboard
         if len(self.storyboard) == 0:

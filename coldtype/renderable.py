@@ -231,14 +231,14 @@ class animation(renderable, Timeable):
         self.r = self.rect
         self.start = 0
         self.end = duration
-        self.duration = duration
+        #self.duration = duration
         self.storyboard = storyboard
         if timeline:
             self.timeline = timeline
             self.t = timeline
             self.start = timeline.start
             self.end = timeline.end
-            self.duration = timeline.duration
+            #self.duration = timeline.duration
             if self.storyboard != [0] and timeline.storyboard == [0]:
                 pass
             else:
