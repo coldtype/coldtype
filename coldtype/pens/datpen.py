@@ -259,6 +259,9 @@ class DATPenLikeObject():
     def _db_drawPath(self):
         for dp in list(self.all_pens()):
             with db.savedState():
+                db.fill(None)
+                db.stroke(None)
+                db.strokeWidth(0)
                 for attr, value in dp.allStyledAttrs().items():
                     if attr == "fill" and value and value.a > 0:
                         db.fill(*value)

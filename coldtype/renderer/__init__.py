@@ -282,6 +282,8 @@ class Renderer():
                 _layers = self.layers if len(self.layers) > 0 else render.layers
                 for rp in render.passes(trigger, _layers, indices):
                     output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
+                    if rp.single_layer and rp.single_layer != "__default__":
+                        output_path = output_folder / f"layer_{rp.single_layer}/{prefix}_{rp.single_layer}_{rp.suffix}.{fmt}"
                     rp.output_path = output_path
                     rp.action = trigger
 
@@ -310,7 +312,7 @@ class Renderer():
                             Action.RenderIndices,
                         ]:
                             did_render = True
-                            if len(render.layers) > 0:
+                            if len(render.layers) > 0 and not rp.single_layer:
                                 for layer in render.layers:
                                     for layer_result in result:
                                         layer_tag = layer_result.getTag()

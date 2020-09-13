@@ -40,6 +40,7 @@ class RenderPass():
         self.args = args
         self.suffix = suffix
         self.path = None
+        self.single_layer = None
 
 
 class renderable():
@@ -254,7 +255,7 @@ class animation(renderable, Timeable):
     def all_frames(self):
         return list(range(0, self.duration))
     
-    def passes(self, action, layers, indices=[]):
+    def active_frames(self, action, layers, indices):
         frames = self.storyboard
         if action == Action.RenderAll:
             frames = self.all_frames()
@@ -265,9 +266,26 @@ class animation(renderable, Timeable):
                 frames = list(self.timeline.workareas[0])
                 #if hasattr(self.timeline, "find_workarea"):
                 #    frames = self.timeline.find_workarea()
-
+        return frames
+    
+    def passes(self, action, layers, indices=[]):
+        frames = self.active_frames(action, layers, indices)
         return [RenderPass(self, "{:04d}".format(i), [Frame(i, self, layers)]) for i in frames]
 
 
 class drawbot_animation(drawbot_script, animation):
-    pass
+    def passes(self, action, layers, indices=[]):
+        if action in [
+            Action.RenderAll,
+            Action.RenderIndices,
+            Action.RenderWorkarea]:
+            frames = super().active_frames(action, layers, indices)
+            passes = []
+            for layer in layers:
+                for i in frames:
+                    p = RenderPass(self, "{:04d}".format(i), [Frame(i, self, [layer])])
+                    p.single_layer = layer
+                    passes.append(p)
+            return passes
+        else:
+            return super().passes(action, layers, indices)
