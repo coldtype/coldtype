@@ -276,14 +276,33 @@ class Renderer():
                     output_folder = render.dst / (render.custom_folder or render.folder(self.filepath))
                 else:
                     output_folder = self.filepath.parent / "renders" / (render.custom_folder or render.folder(self.filepath))
+                
                 did_render = False
                 prefix = self.args.file_prefix or render.prefix or self.filepath.stem
                 fmt = self.args.format or render.fmt
                 _layers = self.layers if len(self.layers) > 0 else render.layers
+
+                previewing = (trigger in [
+                    Action.Initial,
+                    Action.Resave,
+                    Action.PreviewStoryboard,
+                    Action.PreviewIndices,
+                ])
+                
+                rendering = (self.args.save_renders or trigger in [
+                    Action.RenderAll,
+                    Action.RenderWorkarea,
+                    Action.RenderIndices,
+                ])
+                
                 for rp in render.passes(trigger, _layers, indices):
                     output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
+                    if previewing:
+                        output_path = output_folder / f"_previews/{prefix}_{rp.suffix}.{fmt}"
+
                     if rp.single_layer and rp.single_layer != "__default__":
                         output_path = output_folder / f"layer_{rp.single_layer}/{prefix}_{rp.single_layer}_{rp.suffix}.{fmt}"
+                    
                     rp.output_path = output_path
                     rp.action = trigger
 
@@ -295,22 +314,13 @@ class Renderer():
                                 result = result[0]
                         except:
                             pass
-                        if trigger in [
-                            Action.Initial,
-                            Action.Resave,
-                            Action.PreviewStoryboard,
-                            Action.PreviewIndices,
-                        ]:
+                        if previewing:
                             preview_result = await render.runpost(result, rp)
                             preview_count += 1
                             if preview_result:
                                 render.send_preview(self.preview, preview_result, rp)
                         
-                        if self.args.save_renders or trigger in [
-                            Action.RenderAll,
-                            Action.RenderWorkarea,
-                            Action.RenderIndices,
-                        ]:
+                        if rendering:
                             did_render = True
                             if len(render.layers) > 0 and not rp.single_layer:
                                 for layer in render.layers:
