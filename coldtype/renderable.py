@@ -31,6 +31,7 @@ class Action(Enum):
     ArbitraryTyping = "arbitrary_typing"
     ArbitraryCommand = "arbitrary_command"
     UICallback = "ui_callback"
+    RestartRenderer = "restart_renderer"
 
 
 class RenderPass():

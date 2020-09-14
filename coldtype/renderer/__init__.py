@@ -1,4 +1,4 @@
-import sys, os, re
+import sys, os, re, signal
 from pathlib import Path
 
 import asyncio, tempfile, websockets, traceback
@@ -517,10 +517,12 @@ class Renderer():
             if self.args.watch:
                 loop = asyncio.get_running_loop()
                 self.watch_file_changes()
-                await asyncio.gather(
-                    self.listen_to_ws(),
-                    self.listen_to_stdin()
-                )
+                try:
+                    await asyncio.gather(
+                        self.listen_to_ws(),
+                        self.listen_to_stdin())
+                except TypeError:
+                    self.on_exit(restart=True)
             else:
                 self.on_exit()
     
@@ -564,6 +566,8 @@ class Renderer():
             return Action.RenderWorkarea, None
         elif action_abbrev == "pf":
             return Action.PreviewIndices, [int(i.strip()) for i in data]
+        elif action_abbrev == "rr":
+            return Action.RestartRenderer, None
         else:
             return None, None
 
@@ -573,6 +577,8 @@ class Renderer():
             if action == Action.PreviewIndices:
                 self.preview.clear()
                 await self.render(action, indices=data)
+            elif action == Action.RestartRenderer:
+                raise TypeError("Huh")
             else:
                 await self.on_action(action)
 
@@ -597,6 +603,8 @@ class Renderer():
             for render in self.renderables(action):
                 if render.ui_callback:
                     render.ui_callback(message)
+        elif action == Action.RestartRenderer:
+            raise TypeError("Huh")
         elif message.get("serialization"):
             await asyncio.sleep(1)
             await self.reload(Action.Resave)
@@ -636,6 +644,8 @@ class Renderer():
                 path = Path(jdata.get("path"))
                 if self.args.monitor_lines and path == self.filepath:
                     self.line_number = jdata.get("line_number")
+        except TypeError:
+            raise TypeError("Huh")
         except:
             self.show_error()
             print("Malformed message", message)
@@ -692,9 +702,10 @@ class Renderer():
             if r:
                 r.terminate()
 
-    def on_exit(self):
+    def on_exit(self, restart=False):
         #if self.args.watch:
         #    print(f"<EXIT RENDERER ({exit_code})>")
+
         self.reset_renderers()
         self.stop_watching_file_changes()
         self.preview.close()
@@ -707,6 +718,11 @@ class Renderer():
             print("%s memory blocks: %.1f KiB" % (stat.count, stat.size / 1024))
             for line in stat.traceback.format():
                 print(line)
+        
+        if restart:
+            print(">>>>>>>>>>>>>>> RESTARTING <<<<<<<<<<<<<<<")
+            os.execl(sys.executable, *(["-m"]+sys.argv))
+
 
 def main():
     pargs, parser = Renderer.Argparser()
