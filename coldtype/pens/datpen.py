@@ -27,6 +27,8 @@ try:
 except:
     pass
 
+import coldtype.pens.drawbot_utils as dbu
+
 
 from coldtype.geometry import Rect, Edge, Point, txt_to_edge
 from coldtype.beziers import raise_quadratic, CurveCutter
@@ -169,13 +171,24 @@ class DATPenLikeObject():
             t = t.translate(-point.x, -point.y)
         return self.transform(t)
     
-    def scaleToRect(self, rect):
+    def scaleToRect(self, rect, preserveAspect=True):
         """Scale this shape into a `Rect`."""
         bounds = self.bounds()
         h = rect.w / bounds.w
         v = rect.h / bounds.h
-        scale = h if h < v else v
-        return self.scale(scale)
+        if preserveAspect:
+            scale = h if h < v else v
+            return self.scale(scale)
+        else:
+            return self.scale(h, v)
+    
+    def scaleToWidth(self, w):
+        """Scale this shape horizontally"""
+        return self.scale(w / self.bounds().w, 1)
+    
+    def scaleToHeight(self, h):
+        """Scale this shape horizontally"""
+        return self.scale(1, h / self.bounds().h)
     
     def trackToRect(self, rect, pullToEdges=False, r=0):
         """Distribute pens evenly within a frame"""
@@ -263,14 +276,10 @@ class DATPenLikeObject():
                 db.stroke(None)
                 db.strokeWidth(0)
                 for attr, value in dp.allStyledAttrs().items():
-                    if attr == "fill" and value and value.a > 0:
-                        db.fill(*value)
+                    if attr == "fill":
+                        dbu.db_fill(value)
                     elif attr == "stroke":
-                        c = value.get("color")
-                        w = value.get("weight")
-                        if c and c.a > 0 and w > 0:
-                            db.strokeWidth(w)
-                            db.stroke(*c)
+                        dbu.db_stroke(value.get("weight", 1), value.get("color"), None)
                     db.drawPath(dp.bp())
     
     def db_drawPath(self, rect=None, filters=[]):
@@ -1262,7 +1271,7 @@ class DATPenSet(DATPenLikeObject):
                 return Rect(0,0,0,0)
     
     def bounds(self):
-        return self.getFrame()
+        return self.getFrame(th=1, tv=1)
     
     def replay(self, pen):
         self.pen().replay(pen)

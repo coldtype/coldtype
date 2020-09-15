@@ -102,10 +102,10 @@ class renderable():
 
 
 class drawbot_script(renderable):
-    def __init__(self, rect=(1080, 1080), svg_preview=0, **kwargs):
+    def __init__(self, rect=(1080, 1080), scale=1, svg_preview=0, **kwargs):
         if not db:
             raise Exception("DrawBot not installed!")
-        super().__init__(rect=rect, **kwargs)
+        super().__init__(rect=Rect(rect).scale(scale), **kwargs)
         self.svg_preview = svg_preview
         self.self_rasterizing = True
     
@@ -264,7 +264,10 @@ class animation(renderable, Timeable):
             frames = indices
         elif action in [Action.RenderWorkarea]:
             if self.timeline:
-                frames = list(self.timeline.workareas[0])
+                try:
+                    frames = list(self.timeline.workareas[0])
+                except:
+                    frames = self.all_frames()
                 #if hasattr(self.timeline, "find_workarea"):
                 #    frames = self.timeline.find_workarea()
         return frames

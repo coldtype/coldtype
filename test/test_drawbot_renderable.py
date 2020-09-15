@@ -3,9 +3,11 @@ from drawBot import *
 
 co = Font("assets/ColdtypeObviously.designspace")
 
-PREVIEW_WITH_SVG = 1
+PREVIEW_WITH_SVG = 0
 
-@drawbot_script(rect=(900, 500), svg_preview=PREVIEW_WITH_SVG, bg=0)
+long_txt = """This code is a mix of DrawBot and Coldtype, meant to demonstrate that Coldtype primitives (like designspace-reading) can be combined with DrawBot primitives like multi-line text support and the Mac Font library."""
+
+@drawbot_script(rect=(900, 500), scale=1, svg_preview=PREVIEW_WITH_SVG, bg=0)
 def db_script_test(r):
     ri = r.inset(20, 20)
 
@@ -25,9 +27,17 @@ def db_script_test(r):
     fontSize(19)
     font("Georgia-Italic")
     fill(*hsl(0.9, s=0.7, l=0.6))
-    textBox("This code is a mix of DrawBot and Coldtype, meant to demonstrate that Coldtype primitives (like designspace-reading) can be combined with DrawBot primitives like multi-line text support and the Mac Font library.", ri.take(200, "mny").take(250, "mnx"))
+    textBox(long_txt, ri.take(200, "mny").take(250, "mnx"))
 
-    fill(*hsl(0.05, s=0.7, l=0.6))
-    drawPath(StyledString("COLDTYPE", Style(co, 150)).pen().align(ri, "mnx", "mxy").bp())
+    (StyledString("COLDTYPE",
+        Style(co, 150, ro=1))
+        .pen()
+        .align(ri, "mnx", "mxy")
+        .f(Gradient.Horizontal(ri,
+            hsl(0.05, s=0.7, l=0.6),
+            hsl(0.15, s=0.7, l=0.6)))
+        .s(0)
+        .sw(3)
+        .db_drawPath())
 
     saveImage("test/drawbot/saved_from_drawbot_test.pdf")

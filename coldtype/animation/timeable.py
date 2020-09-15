@@ -35,7 +35,7 @@ class Timeable():
         self.index = index
         self.name = name
         self.feedback = 0
-        self.data = {}
+        self.data = data
     
     @property
     def duration(self):
@@ -202,7 +202,7 @@ class TimeableSet():
             if t.start <= frame and frame < t.end:
                 return t
     
-    def fv(self, frame, filter_fn=None, reverb=[0,5], duration=0, accumulate=0):
+    def fv(self, frame, filter_fn=None, reverb=[0,5], duration=-1, accumulate=0):
         pre, post = reverb
         count = 0
         timeables_on = []

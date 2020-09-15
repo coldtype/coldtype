@@ -45,7 +45,7 @@ def test_kern_pairs(r):
 
 @test()
 def test_family_narrowing(r):
-    style = Style("≈/NikolaiV0.4-Bold.otf", 200, narrower=Style("≈/NikolaiV0.4Narrow-Bold.otf", 200, narrower=Style("≈/NikolaiV0.4Condensed-Bold.otf", 200)))
+    style = Style("≈/nikolai/Nikolai-Bold.otf", 200, narrower=Style("≈/nikolai/Nikolai-NarrowBold.otf", 200, narrower=Style("≈/nikolai/Nikolai-CondBold.otf", 200)))
     out = DATPenSet()
     rs = r.inset(0, 40).subdivide(3, "mxy")
     out += StyledString("Narrowing", style).pens().align(rs[0])
@@ -56,7 +56,7 @@ def test_family_narrowing(r):
 
 @test()
 async def test_stroke_ufo(r):
-    hershey_gothic = Font("≈/Hershey-TriplexGothicGerman.ufo")
+    hershey_gothic = Font("≈/hershey/Hershey-TriplexGothicGerman.ufo")
     await hershey_gothic.load()
     return StyledString("Grieß".upper(), Style(hershey_gothic, 200, tu=-100)).pens().f(None).s("hr", 0.5, 0.5).sw(3).align(r)
 
