@@ -103,13 +103,14 @@ class Style():
             fitHeight=None,
             tracking=0,
             trackingLimit=0,
-            trackingMode=0,
+            trackingMode=1,
             kern_pairs=dict(),
             overlap_pairs=dict(),
             overlap_outline=3,
             space=None,
             baselineShift=0,
             xShift=None,
+            xmods=None,
             variations=dict(),
             variationLimits=dict(),
             increments=dict(),
@@ -192,6 +193,7 @@ class Style():
         self.increments = increments
         self.space = space
         self.xShift = kwargs.get("xs", xShift)
+        self.xmods = xmods
         self.palette = palette
         self.lang = lang
         self.filter = filter
@@ -200,7 +202,7 @@ class Style():
         self.preventHwid = preventHwid
 
         if kwargs.get("tu"):
-            self.trackingMode = 1
+            self.trackingMode = 1 # this is the default now
             self.tracking = kwargs.get("tu")
             if not self.increments.get("tracking"):
                 self.increments["tracking"] = 5 # TODO good?
@@ -214,6 +216,7 @@ class Style():
             if k in ["slig"]:
                 if k == 0:
                     found_features[k] = 0
+        
         self.features = {**dict(kern=True, liga=liga), **found_features}
 
         self.fill = normalize_color(fill)
@@ -339,6 +342,8 @@ class StyledString(FittableMixin):
         for idx, g in enumerate(self.glyphs):
             g.frame = g.frame.offset(x_off, 0)
             x_off += t
+            if self.style.xmods and g.name in self.style.xmods:
+                x_off += self.style.xmods[g.name][0]#*self.scale()
             if self.style.space and g.name.lower() == "space":
                 x_off += self.style.space
     
@@ -525,7 +530,16 @@ class StyledString(FittableMixin):
         #t = t.translate(0, bs)
         out_pen = DATPen()
         tp = TransformPen(out_pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
-        in_pen.replay(tp)
+        ip = DATPen().record(in_pen)
+        if self.style.xmods and glyph.name in self.style.xmods:
+            w, mod, flat = self.style.xmods[glyph.name]
+            if flat:
+                ip.flatten(flat)
+            if callable(mod):
+                ip.nonlinear_transform(mod)
+            else:
+                ip.nonlinear_transform(lambda x, y: (x if x < mod else x + w, y))
+        ip.replay(tp)
         if self.style.rotate:
             out_pen.rotate(self.style.rotate)
         

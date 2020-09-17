@@ -81,3 +81,8 @@ def test_language(r):
     """Should have an accent over the j"""
     style = Style("assets/SourceSerifPro-Black.ttf", 350, wdth=1, wght=1, ss01=True)
     return StyledString("ríjks", style.mod(lang="NLD")).pen().align(r)
+
+@test()
+def test_xstretch(r):
+    style = Style(co, 500, xmods=dict(A=(100, 200, 0), E=(1500, 150, 0), C=(500, 250, 0)))
+    return StyledString("TYPE", style).pen().align(r).scale(0.5)
