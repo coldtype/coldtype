@@ -13,6 +13,7 @@ from coldtype.pens.svgpen import SVGPen
 
 try:
     import drawBot as db
+    import AppKit
 except ImportError:
     db = None
 
@@ -30,6 +31,7 @@ class Action(Enum):
     ArbitraryTyping = "arbitrary_typing"
     ArbitraryCommand = "arbitrary_command"
     UICallback = "ui_callback"
+    RestartRenderer = "restart_renderer"
 
 
 class RenderPass():
@@ -39,6 +41,7 @@ class RenderPass():
         self.args = args
         self.suffix = suffix
         self.path = None
+        self.single_layer = None
 
 
 class renderable():
@@ -99,27 +102,34 @@ class renderable():
 
 
 class drawbot_script(renderable):
-    def __init__(self, rect=(1080, 1080), svg_preview=0, **kwargs):
+    def __init__(self, rect=(1080, 1080), scale=1, svg_preview=0, **kwargs):
         if not db:
             raise Exception("DrawBot not installed!")
-        super().__init__(rect=rect, **kwargs)
+        super().__init__(rect=Rect(rect).scale(scale), **kwargs)
         self.svg_preview = svg_preview
         self.self_rasterizing = True
     
     async def run(self, render_pass):
-        db.newDrawing()
-        db.size(self.rect.w, self.rect.h)
-        render_pass.fn(*render_pass.args)
-        result = None
-        if render_pass.action in [Action.RenderAll] or not self.svg_preview:
-            render_pass.output_path.parent.mkdir(exist_ok=True, parents=True)
-            db.saveImage(str(render_pass.output_path))
-            result = render_pass.output_path
-        else:
-            with tempfile.NamedTemporaryFile(suffix=".svg") as tf:
-                db.saveImage(tf.name)
-                result = tf.read().decode("utf-8")
-        db.endDrawing()
+        use_pool = True
+        if use_pool:
+            pool = AppKit.NSAutoreleasePool.alloc().init()
+        try:
+            db.newDrawing()
+            db.size(self.rect.w, self.rect.h)
+            render_pass.fn(*render_pass.args)
+            result = None
+            if render_pass.action in [Action.RenderAll] or not self.svg_preview:
+                render_pass.output_path.parent.mkdir(exist_ok=True, parents=True)
+                db.saveImage(str(render_pass.output_path))
+                result = render_pass.output_path
+            else:
+                with tempfile.NamedTemporaryFile(suffix=".svg") as tf:
+                    db.saveImage(tf.name)
+                    result = tf.read().decode("utf-8")
+            db.endDrawing()
+        finally:
+            if use_pool:
+                del pool
         return result
     
     def send_preview(self, previewer, result, render_pass):
@@ -222,14 +232,14 @@ class animation(renderable, Timeable):
         self.r = self.rect
         self.start = 0
         self.end = duration
-        self.duration = duration
+        #self.duration = duration
         self.storyboard = storyboard
         if timeline:
             self.timeline = timeline
             self.t = timeline
             self.start = timeline.start
             self.end = timeline.end
-            self.duration = timeline.duration
+            #self.duration = timeline.duration
             if self.storyboard != [0] and timeline.storyboard == [0]:
                 pass
             else:
@@ -246,7 +256,7 @@ class animation(renderable, Timeable):
     def all_frames(self):
         return list(range(0, self.duration))
     
-    def passes(self, action, layers, indices=[]):
+    def active_frames(self, action, layers, indices):
         frames = self.storyboard
         if action == Action.RenderAll:
             frames = self.all_frames()
@@ -254,12 +264,32 @@ class animation(renderable, Timeable):
             frames = indices
         elif action in [Action.RenderWorkarea]:
             if self.timeline:
-                frames = list(self.timeline.workareas[0])
+                try:
+                    frames = list(self.timeline.workareas[0])
+                except:
+                    frames = self.all_frames()
                 #if hasattr(self.timeline, "find_workarea"):
                 #    frames = self.timeline.find_workarea()
-
+        return frames
+    
+    def passes(self, action, layers, indices=[]):
+        frames = self.active_frames(action, layers, indices)
         return [RenderPass(self, "{:04d}".format(i), [Frame(i, self, layers)]) for i in frames]
 
 
 class drawbot_animation(drawbot_script, animation):
-    pass
+    def passes(self, action, layers, indices=[]):
+        if action in [
+            Action.RenderAll,
+            Action.RenderIndices,
+            Action.RenderWorkarea]:
+            frames = super().active_frames(action, layers, indices)
+            passes = []
+            for layer in layers:
+                for i in frames:
+                    p = RenderPass(self, "{:04d}".format(i), [Frame(i, self, [layer])])
+                    p.single_layer = layer
+                    passes.append(p)
+            return passes
+        else:
+            return super().passes(action, layers, indices)

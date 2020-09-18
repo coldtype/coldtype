@@ -34,8 +34,8 @@ def test_combine_slugs(r):
 
 try:
     latin_font = Font("assets/NotoSans-Black.ttf")
-    arabic_font = Font("≈/GretaArabicCompressedAR-Heavy.otf")
-    hebrew_font = Font("≈/GretaSansCondensedH+L-Medium.otf")
+    arabic_font = Font("≈/_i18n/GretaArabicCompressedAR-Heavy.otf")
+    hebrew_font = Font("≈/_i18n/GretaSansCondensedH+L-Medium.otf")
 except FontNotFoundException:
     pass
 
@@ -81,7 +81,7 @@ def test_ar_multiline(r):
     ar = 'Limmmm/Satلل\nوصل الإستيرِو'
     lines = ar.split("\n")
     latin = Style(latin_font, 100, fill=("hr", 0.5, 0.5))
-    arabic = Style("≈/GretaArabicCondensedAR-Light.otf", 150, lang="ar", fill=Gradient.Random(r), bs=-1)
+    arabic = Style("≈/_i18n/GretaArabicCondensedAR-Light.otf", 150, lang="ar", fill=Gradient.Random(r), bs=-1)
     slugs = [
         Slug(lines[0], arabic, latin),
         Slug(lines[1], arabic, latin)

@@ -42,3 +42,26 @@ def test_explode(r):
     return o.implode().f("hr",0.75,0.35).align(r)
 
 
+@test()
+def test_scaleToRect(r):
+    return DATPenSet([
+        DATPen().oval(r).scaleToRect(r.take(0.5, "mdx").inset(0, 30), False).f(hsl(0.2, a=0.1)),
+        (StyledString("SPACEFILLING",
+            Style(mutator, 50))
+            .pens()
+            .align(r)
+            .f(hsl(0.8))
+            .scaleToRect(r.inset(100, 100), False)),
+        (StyledString("SQUASH",
+            Style(mutator, 50))
+            .pens()
+            .align(r)
+            .f(hsl(0.5))
+            .scaleToWidth(r.w-20)),
+        (StyledString("STRETCH",
+            Style(mutator, 50))
+            .pens()
+            .align(r)
+            .f(hsl(0.3))
+            .scaleToHeight(r.h-50))
+    ])

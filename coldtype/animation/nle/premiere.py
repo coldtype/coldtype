@@ -79,7 +79,7 @@ class Clip(Timeable):
             self.end = to_frames(clip.get("end"), fps)
             self.inpoint = to_frames(clip.get("inPoint"), fps)
             self.outpoint = to_frames(clip.get("outPoint"), fps)
-            self.duration = self.end - self.start
+            #self.duration = self.end - self.start
             self.flags = {}
 
             self.type = ClipType.Isolated
@@ -284,13 +284,13 @@ class ClipGroup(Timeable):
         if len(clips) > 0:
             self.start = clips[0].start
             self.end = clips[-1].end
-            self.duration = self.end - self.start
+            #self.duration = self.end - self.start
             self.track = clips[0].track
             self.valid = True
         else:
             self.start = 0
             self.end = 0
-            self.duration = 0
+            #self.duration = 0
             self.track = None
             self.valid = False
         self.timeline = timeline
@@ -670,7 +670,7 @@ class PremiereTimeline(Timeline):
 
         self.start = 0
         self.end = duration
-        self.duration = duration
+        #self.duration = duration
 
         tof = lambda s: int(round(float(s)*fps))
         

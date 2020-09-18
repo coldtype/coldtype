@@ -1,4 +1,4 @@
-import sys, os, re
+import sys, os, re, signal
 from pathlib import Path
 
 import asyncio, tempfile, websockets, traceback
@@ -10,6 +10,7 @@ from typing import Tuple
 from random import shuffle
 from runpy import run_path
 from subprocess import call, Popen
+import tracemalloc
 
 import coldtype
 from coldtype.helpers import *
@@ -26,6 +27,12 @@ try:
     import drawBot as db
 except ImportError:
     db = None
+
+try:
+    import psutil
+    process = psutil.Process(os.getpid())
+except ImportError:
+    process = None
 
 
 class Watchable(Enum):
@@ -53,6 +60,13 @@ class bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+
+
+def bytesto(bytes):
+    r = float(bytes)
+    for i in range(2):
+        r = r / 1024
+    return(r)
 
 
 def chunks(lst, n):
@@ -101,6 +115,8 @@ class Renderer():
             all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
 
             multiplex=parser.add_argument("-mp", "--multiplex", action="store_true", default=False, help="Render in multiple processes"),
+
+            memory=parser.add_argument("-m", "--memory", action="store_true", default=False, help="Show statistics about memory usage?"),
 
             is_subprocess=parser.add_argument("-isp", "--is-subprocess", action="store_true", default=False, help=argparse.SUPPRESS),
 
@@ -260,12 +276,33 @@ class Renderer():
                     output_folder = render.dst / (render.custom_folder or render.folder(self.filepath))
                 else:
                     output_folder = self.filepath.parent / "renders" / (render.custom_folder or render.folder(self.filepath))
+                
                 did_render = False
                 prefix = self.args.file_prefix or render.prefix or self.filepath.stem
                 fmt = self.args.format or render.fmt
                 _layers = self.layers if len(self.layers) > 0 else render.layers
+
+                previewing = (trigger in [
+                    Action.Initial,
+                    Action.Resave,
+                    Action.PreviewStoryboard,
+                    Action.PreviewIndices,
+                ])
+                
+                rendering = (self.args.save_renders or trigger in [
+                    Action.RenderAll,
+                    Action.RenderWorkarea,
+                    Action.RenderIndices,
+                ])
+                
                 for rp in render.passes(trigger, _layers, indices):
                     output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
+                    if previewing:
+                        output_path = output_folder / f"_previews/{prefix}_{rp.suffix}.{fmt}"
+
+                    if rp.single_layer and rp.single_layer != "__default__":
+                        output_path = output_folder / f"layer_{rp.single_layer}/{prefix}_{rp.single_layer}_{rp.suffix}.{fmt}"
+                    
                     rp.output_path = output_path
                     rp.action = trigger
 
@@ -277,24 +314,15 @@ class Renderer():
                                 result = result[0]
                         except:
                             pass
-                        if trigger in [
-                            Action.Initial,
-                            Action.Resave,
-                            Action.PreviewStoryboard,
-                            Action.PreviewIndices,
-                        ]:
+                        if previewing:
                             preview_result = await render.runpost(result, rp)
                             preview_count += 1
                             if preview_result:
                                 render.send_preview(self.preview, preview_result, rp)
                         
-                        if self.args.save_renders or trigger in [
-                            Action.RenderAll,
-                            Action.RenderWorkarea,
-                            Action.RenderIndices,
-                        ]:
+                        if rendering:
                             did_render = True
-                            if len(render.layers) > 0:
+                            if len(render.layers) > 0 and not rp.single_layer:
                                 for layer in render.layers:
                                     for layer_result in result:
                                         layer_tag = layer_result.getTag()
@@ -456,6 +484,9 @@ class Renderer():
             self.watch_file_changes()
 
     def main(self):
+        if self.args.memory:
+            tracemalloc.start(10)
+            self._last_memory = -1
         try:
             asyncio.get_event_loop().run_until_complete(self.start())
         except KeyboardInterrupt:
@@ -486,10 +517,12 @@ class Renderer():
             if self.args.watch:
                 loop = asyncio.get_running_loop()
                 self.watch_file_changes()
-                await asyncio.gather(
-                    self.listen_to_ws(),
-                    self.listen_to_stdin()
-                )
+                try:
+                    await asyncio.gather(
+                        self.listen_to_ws(),
+                        self.listen_to_stdin())
+                except TypeError:
+                    self.on_exit(restart=True)
             else:
                 self.on_exit()
     
@@ -533,6 +566,8 @@ class Renderer():
             return Action.RenderWorkarea, None
         elif action_abbrev == "pf":
             return Action.PreviewIndices, [int(i.strip()) for i in data]
+        elif action_abbrev == "rr":
+            return Action.RestartRenderer, None
         else:
             return None, None
 
@@ -542,6 +577,8 @@ class Renderer():
             if action == Action.PreviewIndices:
                 self.preview.clear()
                 await self.render(action, indices=data)
+            elif action == Action.RestartRenderer:
+                raise TypeError("Huh")
             else:
                 await self.on_action(action)
 
@@ -566,6 +603,8 @@ class Renderer():
             for render in self.renderables(action):
                 if render.ui_callback:
                     render.ui_callback(message)
+        elif action == Action.RestartRenderer:
+            raise TypeError("Huh")
         elif message.get("serialization"):
             await asyncio.sleep(1)
             await self.reload(Action.Resave)
@@ -605,6 +644,8 @@ class Renderer():
                 path = Path(jdata.get("path"))
                 if self.args.monitor_lines and path == self.filepath:
                     self.line_number = jdata.get("line_number")
+        except TypeError:
+            raise TypeError("Huh")
         except:
             self.show_error()
             print("Malformed message", message)
@@ -636,6 +677,11 @@ class Renderer():
         if path in self.watchee_paths():
             idx = self.watchee_paths().index(path)
             print(f">>> resave: {Path(event.src_path).relative_to(Path.cwd())}")
+            if self.args.memory and process:
+                memory = bytesto(process.memory_info().rss)
+                diff = memory - self._last_memory
+                self._last_memory = memory
+                print(">>> pid:{:d}/new:{:04.2f}MB/total:{:4.2f}".format(os.getpid(), diff, memory))
             await self.reload_and_render(Action.Resave, self.watchees[idx][0])
 
     def watch_file_changes(self):
@@ -656,12 +702,27 @@ class Renderer():
             if r:
                 r.terminate()
 
-    def on_exit(self):
+    def on_exit(self, restart=False):
         #if self.args.watch:
         #    print(f"<EXIT RENDERER ({exit_code})>")
+
         self.reset_renderers()
         self.stop_watching_file_changes()
         self.preview.close()
+        if self.args.memory:
+            snapshot = tracemalloc.take_snapshot()
+            top_stats = snapshot.statistics('traceback')
+
+            # pick the biggest memory block
+            stat = top_stats[0]
+            print("%s memory blocks: %.1f KiB" % (stat.count, stat.size / 1024))
+            for line in stat.traceback.format():
+                print(line)
+        
+        if restart:
+            print(">>>>>>>>>>>>>>> RESTARTING <<<<<<<<<<<<<<<")
+            os.execl(sys.executable, *(["-m"]+sys.argv))
+
 
 def main():
     pargs, parser = Renderer.Argparser()

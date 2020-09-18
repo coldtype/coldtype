@@ -32,11 +32,14 @@ class Timeable():
     def __init__(self, start, end, index=0, name=None, data={}):
         self.start = start
         self.end = end
-        self.duration = (end-start)
         self.index = index
         self.name = name
         self.feedback = 0
-        self.data = {}
+        self.data = data
+    
+    @property
+    def duration(self):
+        return self.end - self.start
     
     def __repr__(self):
         return f"Timeable({self.start}, {self.end} ({self.duration}))"
@@ -49,10 +52,23 @@ class Timeable():
         t.data = {}
         return t
     
+    def retime(self, start=0, end=0, duration=-1):
+        "Relative start/end adjustments, or hard-set duration"
+        self.start = self.start + start
+        self.end = self.end + end
+        if duration > -1:
+            self.end = self.start + duration
+        return self
+    
     def now(self, i):
         return self.start <= i < self.end
 
     def io(self, fi, length, ei="eei", eo="eei", negative=False):
+        try:
+            length_i, length_o = length
+        except:
+            length_i = length
+            length_o = length
         if fi < self.start:
             return 1
         if fi > self.end:
@@ -61,12 +77,12 @@ class Timeable():
         to_start = fi - self.start
         easefn = None
         in_end = False
-        if to_end < length and eo:
+        if to_end < length_o and eo:
             in_end = True
-            v = 1-to_end/length
+            v = 1-to_end/length_o
             easefn = eo
-        elif to_start < length and ei:
-            v = 1-to_start/length
+        elif to_start <= length_i and ei:
+            v = 1-to_start/length_i
             easefn = ei
         else:
             v = 0
@@ -186,7 +202,7 @@ class TimeableSet():
             if t.start <= frame and frame < t.end:
                 return t
     
-    def fv(self, frame, filter_fn=None, reverb=[0,5], duration=0, accumulate=0):
+    def fv(self, frame, filter_fn=None, reverb=[0,5], duration=-1, accumulate=0):
         pre, post = reverb
         count = 0
         timeables_on = []

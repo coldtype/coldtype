@@ -45,7 +45,7 @@ def test_kern_pairs(r):
 
 @test()
 def test_family_narrowing(r):
-    style = Style("≈/NikolaiV0.4-Bold.otf", 200, narrower=Style("≈/NikolaiV0.4Narrow-Bold.otf", 200, narrower=Style("≈/NikolaiV0.4Condensed-Bold.otf", 200)))
+    style = Style("≈/nikolai/Nikolai-Bold.otf", 200, narrower=Style("≈/nikolai/Nikolai-NarrowBold.otf", 200, narrower=Style("≈/nikolai/Nikolai-CondBold.otf", 200)))
     out = DATPenSet()
     rs = r.inset(0, 40).subdivide(3, "mxy")
     out += StyledString("Narrowing", style).pens().align(rs[0])
@@ -56,7 +56,7 @@ def test_family_narrowing(r):
 
 @test()
 async def test_stroke_ufo(r):
-    hershey_gothic = Font("≈/Hershey-TriplexGothicGerman.ufo")
+    hershey_gothic = Font("≈/hershey/Hershey-TriplexGothicGerman.ufo")
     await hershey_gothic.load()
     return StyledString("Grieß".upper(), Style(hershey_gothic, 200, tu=-100)).pens().f(None).s("hr", 0.5, 0.5).sw(3).align(r)
 
@@ -81,3 +81,64 @@ def test_language(r):
     """Should have an accent over the j"""
     style = Style("assets/SourceSerifPro-Black.ttf", 350, wdth=1, wght=1, ss01=True)
     return StyledString("ríjks", style.mod(lang="NLD")).pen().align(r)
+
+@test()
+def test_xstretch(r):
+    st = Style.StretchX(20, debug=1,
+        A=(200, 230),
+        B=(1500, 190),
+        C=(200, 290))
+    style = Style(mutator, 500, mods=st, wght=0.25)
+    return (StyledString("ABC", style)
+        .pen()
+        .align(r)
+        .scale(0.5)
+        .f(hsl(0.2, a=0.1))
+        .s(hsl(0.5))
+        .sw(2))
+
+@test()
+def test_xstretch_slnt(r):
+    st = Style.StretchX(20, debug=1,
+        L=(500, (400, 750/2), -14),
+        O=(1000, (385, 750/2), -14))
+    style = Style(co, 500, mods=st)
+    return (StyledString("LOL", style)
+        .pen()
+        .align(r)
+        .scale(0.5)
+        .f(hsl(0.2, a=0.1))
+        .s(hsl(0.5))
+        .sw(2))
+
+@test()
+def test_ystretch(r):
+    st = Style.StretchY(20, debug=1,
+        E=(500, 258))
+    print(st)
+    style = Style(mutator, 300, mods=st, wght=0.5)
+    return (StyledString("TYPE", style)
+        .pen()
+        .align(r, th=1, tv=1)
+        .f(hsl(0.2, a=0.1))
+        .s(hsl(0.5))
+        .sw(2))
+
+@test()
+def test_ystretch_slnt(r):
+    st = Style.StretchY(20, debug=1,
+        E=(500, (258, 750/2), 25))
+    style = Style(co, 300, mods=st, wght=0.5)
+    return (StyledString("TYPE", style)
+        .pen()
+        .align(r, th=1, tv=1)
+        .f(hsl(0.2, a=0.1))
+        .s(hsl(0.5))
+        .sw(2)
+        #.removeOverlap()
+        )
+
+@test()
+def test_angle(r):
+    x = 300
+    return DATPen().moveTo((x, 300)).dots(radius=10)
