@@ -309,6 +309,7 @@ class Renderer():
                     output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
                     if previewing:
                         output_path = output_folder / f"_previews/{prefix}_{rp.suffix}.{fmt}"
+                        output_path.parent.mkdir(exist_ok=True, parents=True)
 
                     if rp.single_layer and rp.single_layer != "__default__":
                         output_path = output_folder / f"layer_{rp.single_layer}/{prefix}_{rp.single_layer}_{rp.suffix}.{fmt}"
@@ -429,6 +430,7 @@ class Renderer():
                 "coldtype",
                 sys.argv[1],
                 "-i", ",".join([str(s) for s in subslice]),
+                "-r", self.args.rasterizer,
                 "-isp",
                 "-l", ",".join(self.layers or []),
                 "-s", str(self.args.scale),
