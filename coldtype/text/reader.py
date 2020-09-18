@@ -1,6 +1,8 @@
 from pathlib import Path
 from collections import OrderedDict
-import unicodedata, os
+from functools import partial
+
+import unicodedata, os, math
 
 from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
@@ -110,7 +112,7 @@ class Style():
             space=None,
             baselineShift=0,
             xShift=None,
-            xmods=None,
+            mods=None,
             variations=dict(),
             variationLimits=dict(),
             increments=dict(),
@@ -193,7 +195,7 @@ class Style():
         self.increments = increments
         self.space = space
         self.xShift = kwargs.get("xs", xShift)
-        self.xmods = xmods
+        self.mods = mods
         self.palette = palette
         self.lang = lang
         self.filter = filter
@@ -304,6 +306,96 @@ class Style():
                 else:
                     variations[k] = v
         return variations
+    
+    def StretchX(flatten=10, debug=0, **kwargs):
+        d = {}
+        
+        def stretcher(w, xp, i, p):
+            np = (p.flatten(flatten) if flatten else p).nonlinear_transform(lambda x,y: (x if x < xp else x + w, y))
+            if debug:
+                (np.record(DATPen()
+                    .line([(xp, -250), (xp, 1000)])
+                    .outline()))
+            return np
+
+        def is_left(a, b, c):
+            return ((b[0] - a[0])*(c[1] - a[1]) - (b[1] - a[1])*(c[0] - a[0])) > 0
+        
+        def stretcher_slnt(w, xy, angle, i, p):
+            if abs(angle) in [90, 270]:
+                return p
+            x0, y0 = xy
+            ra = math.radians(90+angle)
+            xdsc = x0 + (-250 - y0) / math.tan(ra)
+            xasc = x0 + (1000 - y0) / math.tan(ra)
+
+            np = (p.flatten(flatten) if flatten else p).nonlinear_transform(lambda x,y: (x if is_left((xdsc, -250), (xasc, 1000), (x, y)) else x + w, y))
+            if debug:
+                (np
+                    .record(DATPen()
+                        .line([(xdsc, -250), (xasc, 1000)])
+                        .outline())
+                    .record(DATPen()
+                        .moveTo((x0+50/2, y0+50/2))
+                        .dots(radius=50)))
+            return np
+        
+        for k, v in kwargs.items():
+            if len(v) == 3:
+                d[k] = (v[0], partial(stretcher_slnt, v[0], v[1], v[2]))
+            elif len(v) == 2:
+                d[k] = (v[0], partial(stretcher, v[0], v[1]))
+            elif len(v) == 1:
+                pass
+        return d
+    
+    def StretchY(flatten=10, align="mdy", debug=0, **kwargs):
+        d = {}
+        
+        def stretcher(h, yp, i, p):
+            np = (p.flatten(flatten) if flatten else p).nonlinear_transform(lambda x,y: (x, y if y < yp else y + h))
+            if align == "mdy":
+                np.translate(0, -h/2)
+            elif align == "mxy":
+                np.translate(0, -h)
+            if debug:
+                (np.record(DATPen()
+                    .line([(0, yp), (p.getFrame().point("E").x, yp)])
+                    .outline()))
+            return np
+
+        def is_left(a, b, c):
+            return ((b[0] - a[0])*(c[1] - a[1]) - (b[1] - a[1])*(c[0] - a[0])) > 0
+        
+        def stretcher_slnt(h, xy, angle, i, p):
+            if abs(angle) in [90, 270]:
+                return p
+            x0, y0 = xy
+            ra = math.radians(90+angle)
+            ydsc = y0 + (0 - x0) / math.tan(ra)
+            yasc = y0 + (p.getFrame().point("E").x - x0) / math.tan(ra)
+            p0 = (0, ydsc)
+            p1 = (p.getFrame().point("E").x, yasc)
+
+            np = (p.flatten(flatten) if flatten else p).nonlinear_transform(lambda x,y: (x, y if not is_left(p0, p1, (x, y)) else y + h))
+            if debug:
+                (np
+                    .record(DATPen()
+                        .line([p0, p1])
+                        .outline())
+                    .record(DATPen()
+                        .moveTo((x0+50/2, y0+50/2))
+                        .dots(radius=50)))
+            return np
+        
+        for k, v in kwargs.items():
+            if len(v) == 3:
+                d[k] = (0, partial(stretcher_slnt, v[0], v[1], v[2]))
+            elif len(v) == 2:
+                d[k] = (0, partial(stretcher, v[0], v[1]))
+            elif len(v) == 1:
+                pass
+        return d
 
 
 def offset(x, y, ox, oy):
@@ -342,8 +434,8 @@ class StyledString(FittableMixin):
         for idx, g in enumerate(self.glyphs):
             g.frame = g.frame.offset(x_off, 0)
             x_off += t
-            if self.style.xmods and g.name in self.style.xmods:
-                x_off += self.style.xmods[g.name][0]#*self.scale()
+            if self.style.mods and g.name in self.style.mods:
+                x_off += self.style.mods[g.name][0]
             if self.style.space and g.name.lower() == "space":
                 x_off += self.style.space
     
@@ -531,14 +623,9 @@ class StyledString(FittableMixin):
         out_pen = DATPen()
         tp = TransformPen(out_pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
         ip = DATPen().record(in_pen)
-        if self.style.xmods and glyph.name in self.style.xmods:
-            w, mod, flat = self.style.xmods[glyph.name]
-            if flat:
-                ip.flatten(flat)
-            if callable(mod):
-                ip.nonlinear_transform(mod)
-            else:
-                ip.nonlinear_transform(lambda x, y: (x if x < mod else x + w, y))
+        if self.style.mods and glyph.name in self.style.mods:
+            w, mod = self.style.mods[glyph.name]
+            mod(-1, ip)
         ip.replay(tp)
         if self.style.rotate:
             out_pen.rotate(self.style.rotate)
