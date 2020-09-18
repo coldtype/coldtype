@@ -15,9 +15,14 @@ import tracemalloc
 import coldtype
 from coldtype.helpers import *
 from coldtype.geometry import Rect
+
+# TODO maybe these only need to be loaded
+# conditionally?
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.cairopen import CairoPen
 from coldtype.pens.drawbotpen import DrawBotPen
+from coldtype.pens.skiapen import SkiaPen
+
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
@@ -108,7 +113,7 @@ class Renderer():
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
             
-            rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default=None, choices=["drawbot", "cairo", "svg"], help="Which rasterization engine should coldtype use to create artifacts?"),
+            rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default=None, choices=["drawbot", "cairo", "svg", "skia"], help="Which rasterization engine should coldtype use to create artifacts?"),
             
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
             
@@ -446,6 +451,8 @@ class Renderer():
 
         if rasterizer == "drawbot":
             DrawBotPen.Composite(content, render.rect, str(path), scale=scale)
+        elif rasterizer == "skia":
+            SkiaPen.Composite(content, render.rect, str(path), scale=scale)
         elif rasterizer == "svg":
             path.write_text(SVGPen.Composite(content, render.rect, viewBox=True))
         elif rasterizer == "cairo":
