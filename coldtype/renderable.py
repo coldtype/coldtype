@@ -98,7 +98,11 @@ class renderable():
             return result
         
     def send_preview(self, previewer, result, render_pass):
-        previewer.send(SVGPen.Composite(result, self.rect, viewBox=True), bg=self.bg, max_width=800)
+        if isinstance(result, Path):
+            r = self.rect
+            previewer.send(str(result), Rect(0, 0, r.w/2, r.h/2), bg=self.bg, image=True)
+        else:
+            previewer.send(SVGPen.Composite(result, self.rect, viewBox=True), bg=self.bg, max_width=800)
 
 
 class drawbot_script(renderable):

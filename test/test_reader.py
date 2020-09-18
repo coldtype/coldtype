@@ -137,8 +137,3 @@ def test_ystretch_slnt(r):
         .sw(2)
         #.removeOverlap()
         )
-
-@test()
-def test_angle(r):
-    x = 300
-    return DATPen().moveTo((x, 300)).dots(radius=10)

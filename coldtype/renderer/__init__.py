@@ -114,6 +114,8 @@ class Renderer():
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
             
             rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default=None, choices=["drawbot", "cairo", "svg", "skia"], help="Which rasterization engine should coldtype use to create artifacts?"),
+
+            raster_previews=parser.add_argument("-rp", "--raster-previews", action="store_true", default=False, help="Should rasters be displayed in the Coldtype viewer?"),
             
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
             
@@ -263,6 +265,9 @@ class Renderer():
         return _rs
     
     async def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
+        if not self.args.is_subprocess:
+            start = ptime.time()
+
         renders = self.renderables(trigger)
         for render in renders:
             render.preview = self.preview
@@ -323,6 +328,9 @@ class Renderer():
                             preview_result = await render.runpost(result, rp)
                             preview_count += 1
                             if preview_result:
+                                if self.args.raster_previews:
+                                    self.rasterize(preview_result, render, output_path)
+                                    preview_result = output_path
                                 render.send_preview(self.preview, preview_result, rp)
                         
                         if rendering:
@@ -358,6 +366,9 @@ class Renderer():
             self.show_error()
         if render_count > 0:
             self.show_message(f"Rendered {render_count}")
+        
+        if not self.args.is_subprocess:
+            print("TIME >>>", ptime.time() - start)
         
         return preview_count, render_count
 

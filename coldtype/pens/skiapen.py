@@ -18,29 +18,14 @@ def get_image_rect(src):
     return Rect(0, 0, w, h)
 
 
-class SkiaPen(DrawablePenMixin, BasePen):
-    def __init__(self, dat, rect, canvas, style=None):
+class SkiaPathPen(BasePen):
+    def __init__(self, dat, h):
         super().__init__()
-        self.rect = rect
         self.dat = dat
-        self._value = []
         self.path = skia.Path()
 
-        tp = TransformPen(self, (1, 0, 0, -1, 0, rect.h))
+        tp = TransformPen(self, (1, 0, 0, -1, 0, h))
         dat.replay(tp)
-
-        attrs = list(self.findStyledAttrs(style))
-        methods = [a[0] for a in attrs]
-
-        for attrs, attr in self.findStyledAttrs(style):
-            self.paint = skia.Paint(AntiAlias=True)
-            method, *args = attr
-            # unnecessary if stroke is 0, how to get that information to here?
-            if method == "stroke" and args[0].get("weight") == 0:
-                pass
-            else:
-                self.applyDATAttribute(attrs, attr)
-                canvas.drawPath(self.path, self.paint)
     
     def _moveTo(self, p):
         self.path.moveTo(p[0], p[1])
@@ -56,6 +41,29 @@ class SkiaPen(DrawablePenMixin, BasePen):
 
     def _closePath(self):
         self.path.close()
+
+
+class SkiaPen(DrawablePenMixin, SkiaPathPen):
+    def __init__(self, dat, rect, canvas, style=None):
+        super().__init__(dat, rect.h)
+
+        all_attrs = list(self.findStyledAttrs(style))
+        skia_paint_kwargs = dict(AntiAlias=True)
+        for attrs, attr in all_attrs:
+            method, *args = attr
+            if method == "skp":
+                skia_paint_kwargs = args[0]
+
+        for attrs, attr in all_attrs:
+            self.paint = skia.Paint(**skia_paint_kwargs)
+            method, *args = attr
+            if method == "skp":
+                pass
+            elif method == "stroke" and args[0].get("weight") == 0:
+                pass
+            else:
+                self.applyDATAttribute(attrs, attr)
+                canvas.drawPath(self.path, self.paint)
     
     def fill(self, color):
         if color:

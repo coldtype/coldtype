@@ -215,14 +215,13 @@ class DATPenLikeObject():
                 p.translate(xoffset+tracking_value*idx, 0)
         return self
     
-    def skew(self, x=0, y=0, unalign=True):
+    def skew(self, x=0, y=0, point=None):
         t = Transform()
-        if unalign != False:
-            point = self.bounds().point("SW") # maybe should be getFrame()?
-            t = t.translate(point.x, point.y)
+        if not point:
+            point = self.bounds().point("C") # maybe should be getFrame()?
+        t = t.translate(point.x, point.y)
         t = t.skew(x, y)
-        if unalign != False:
-            t = t.translate(-point.x, -point.y)
+        t = t.translate(-point.x, -point.y)
         return self.transform(t)
     
     def rotate(self, degrees, point=None):
