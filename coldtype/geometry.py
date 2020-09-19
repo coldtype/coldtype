@@ -329,7 +329,7 @@ class Point():
         self.y = y
 
     def __repr__(self):
-        return "<furn-Point" + str(self.xy()) + ">"
+        return "<Point" + str(self.xy()) + ">"
 
     def __getitem__(self, key):
         return self.xy()[key]

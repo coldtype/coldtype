@@ -113,7 +113,7 @@ class Renderer():
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
             
-            rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default=None, choices=["drawbot", "cairo", "svg", "skia"], help="Which rasterization engine should coldtype use to create artifacts?"),
+            rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default="skia", choices=["drawbot", "cairo", "svg", "skia"], help="Which rasterization engine should coldtype use to create artifacts?"),
 
             raster_previews=parser.add_argument("-rp", "--raster-previews", action="store_true", default=False, help="Should rasters be displayed in the Coldtype viewer?"),
             
@@ -459,6 +459,7 @@ class Renderer():
         if render.self_rasterizing:
             print("Self rasterizing")
             return
+        
         scale = int(self.args.scale)
         rasterizer = self.args.rasterizer or render.rasterizer
 

@@ -17,7 +17,6 @@ def get_image_rect(src):
     w, h = db.imageSize(str(src))
     return Rect(0, 0, w, h)
 
-
 class SkiaPathPen(BasePen):
     def __init__(self, dat, h):
         super().__init__()
@@ -66,18 +65,24 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 canvas.drawPath(self.path, self.paint)
     
     def fill(self, color):
+        self.paint.setStyle(skia.Paint.kFill_Style)
         if color:
             if isinstance(color, Gradient):
                 self.gradient(color)
             elif isinstance(color, Color):
-                self.paint.setStyle(skia.Paint.kFill_Style)
-                self.paint.setColor(skia.Color4f(color.r, color.g, color.b, color.a))
+                self.paint.setColor(color.skia())
     
     def stroke(self, weight=1, color=None, dash=None):
+        self.paint.setStyle(skia.Paint.kStroke_Style)
         if color and weight > 0:
-            self.paint.setStyle(skia.Paint.kStroke_Style)
-            self.paint.setColor(skia.Color4f(color.r, color.g, color.b, color.a))
             self.paint.setStrokeWidth(weight)
+            if isinstance(color, Gradient):
+                self.gradient(color)
+            else:
+                self.paint.setColor(color.skia())
+    
+    def gradient(self, gradient):
+        self.paint.setShader(skia.GradientShader.MakeLinear([s[1].xy() for s in gradient.stops], [s[0].skia() for s in gradient.stops]))
     
     def Composite(pens, rect, save_to, scale=2):
         #rect = rect.scale(scale)
