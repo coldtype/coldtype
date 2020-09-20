@@ -26,12 +26,18 @@ from coldtype.pens.skiapen import SkiaPen
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
-from coldtype.viewer import PersistentPreview, WEBSOCKET_ADDR
+from coldtype.viewer import PersistentPreview, WEBSOCKET_ADDR, AbstractPreview
 
 try:
     import drawBot as db
 except ImportError:
     db = None
+
+try:
+    import contextlib, glfw, skia
+    from OpenGL import GL
+except:
+    print("No OpenGL")
 
 try:
     import psutil
@@ -80,6 +86,34 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 
+@contextlib.contextmanager
+def glfw_window(rect):
+    if not glfw.init():
+        raise RuntimeError('glfw.init() failed')
+    glfw.window_hint(glfw.STENCIL_BITS, 8)
+    window = glfw.create_window(int(rect.w), int(rect.h), '', None, None)
+    glfw.make_context_current(window)
+    yield window
+    glfw.terminate()
+
+
+@contextlib.contextmanager
+def skia_surface(window, rect):
+    context = skia.GrDirectContext.MakeGL()
+    backend_render_target = skia.GrBackendRenderTarget(
+        int(rect.w),
+        int(rect.h),
+        0,  # sampleCnt
+        0,  # stencilBits
+        skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
+    surface = skia.Surface.MakeFromBackendRenderTarget(
+        context, backend_render_target, skia.kBottomLeft_GrSurfaceOrigin,
+        skia.kRGBA_8888_ColorType, skia.ColorSpace.MakeSRGB())
+    assert surface is not None
+    yield surface
+    context.abandonContext()
+
+
 def file_and_line_to_def(filepath, lineno):
     # https://julien.danjou.info/finding-definitions-from-a-source-file-and-a-line-number-in-python/
     candidate = None
@@ -116,6 +150,8 @@ class Renderer():
             rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default="skia", choices=["drawbot", "cairo", "svg", "skia"], help="Which rasterization engine should coldtype use to create artifacts?"),
 
             raster_previews=parser.add_argument("-rp", "--raster-previews", action="store_true", default=False, help="Should rasters be displayed in the Coldtype viewer?"),
+
+            glfw=parser.add_argument("-gl", "--glfw", action="store_true", default=False, help="Should this use an internal GL window to show previews?"),
             
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
             
@@ -332,7 +368,23 @@ class Renderer():
                                 if self.args.raster_previews:
                                     self.rasterize(preview_result, render, output_path)
                                     preview_result = output_path
-                                render.send_preview(self.preview, preview_result, rp)
+                                
+                                if self.args.glfw:                                    
+                                    with glfw_window(render.rect.scale(0.5)) as window:
+                                        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+
+                                        with skia_surface(window, render.rect.scale(1)) as surface:
+                                            with surface as canvas:
+                                                render.draw_preview(canvas, preview_result, rp)
+                                                #canvas.drawCircle(100, 100, 40, skia.Paint(Color=skia.ColorGREEN))
+                                            surface.flushAndSubmit()
+                                            glfw.swap_buffers(window)
+
+                                            while (glfw.get_key(window, glfw.KEY_ESCAPE) != glfw.PRESS
+                                                and not glfw.window_should_close(window)):
+                                                glfw.wait_events()
+                                else:
+                                    render.send_preview(self.preview, preview_result, rp)
                         
                         if rendering:
                             did_render = True

@@ -1,7 +1,4 @@
-try:
-    import skia
-except:
-    pass
+import skia
 
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
@@ -12,10 +9,6 @@ from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 from coldtype.color import Color
 
-
-def get_image_rect(src):
-    w, h = db.imageSize(str(src))
-    return Rect(0, 0, w, h)
 
 class SkiaPathPen(BasePen):
     def __init__(self, dat, h):
@@ -88,17 +81,18 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         #rect = rect.scale(scale)
         surface = skia.Surface(rect.w, rect.h)
         with surface as canvas:
-            def draw(pen, state, data):
-                if state == 0:
-                    SkiaPen(pen, rect, canvas)
-            
-            if isinstance(pens, DATPen):
-                pens = [pens]
-            
-            for dps in pens:
-                dps.walk(draw)
-            
-            #db.saveImage(str(save_to))
+            SkiaPen.CompositeToCanvas(pens, rect, canvas, scale=scale)
 
         image = surface.makeImageSnapshot()
         image.save(save_to, skia.kPNG)
+    
+    def CompositeToCanvas(pens, rect, canvas, scale=1):
+        def draw(pen, state, data):
+            if state == 0:
+                SkiaPen(pen, rect, canvas)
+        
+        if isinstance(pens, DATPen):
+            pens = [pens]
+        
+        for dps in pens:
+            dps.walk(draw)

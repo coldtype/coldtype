@@ -6,7 +6,7 @@ import skia
 co = Font("assets/ColdtypeObviously.designspace")
 tl = Timeline(60)
 
-@animation(rect=(1200, 550), timeline=tl, storyboard=[0, 30, 60], bg=0, layers=["__default__", "circle"])
+@animation(rect=(1200, 550), timeline=tl, storyboard=[0], bg=0.5, layers=["__default__", "circle"])
 def render(f):
     t = tl.progress(f.i, loops=0, easefn="linear")
     l = tl.progress(f.i, loops=1, easefn="eeio")
@@ -18,7 +18,7 @@ def render(f):
             .align(f.a.r)
             .rotate(-5)
             .translate(0, 10)
-            .f(0, 1, 0)
+            .f(1, 0, 0)
             .understroke(sw=30)
             .tag("__default__")),
         (DATPen()

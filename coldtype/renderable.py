@@ -1,4 +1,4 @@
-import inspect, platform, re, tempfile
+import inspect, platform, re, tempfile, skia
 
 from enum import Enum
 from subprocess import run
@@ -9,7 +9,9 @@ from coldtype.color import normalize_color
 from coldtype.animation import Timeable, Frame
 from coldtype.animation.timeline import Timeline
 from coldtype.text.reader import normalize_font_prefix
+from coldtype.pens.datpen import DATPen
 from coldtype.pens.svgpen import SVGPen
+from coldtype.pens.skiapen import SkiaPen
 
 try:
     import drawBot as db
@@ -103,6 +105,10 @@ class renderable():
             previewer.send(str(result), Rect(0, 0, r.w/2, r.h/2), bg=self.bg, image=True)
         else:
             previewer.send(SVGPen.Composite(result, self.rect, viewBox=True), bg=self.bg, max_width=800)
+    
+    def draw_preview(self, canvas:skia.Canvas, result, render_pass):
+        SkiaPen.CompositeToCanvas(DATPen().rect(self.rect).f(self.bg), self.rect, canvas)
+        SkiaPen.CompositeToCanvas(result, self.rect, canvas)
 
 
 class drawbot_script(renderable):

@@ -9,6 +9,29 @@ WEBSOCKET_PORT = 8007
 WEBSOCKET_ADDR = f"ws://localhost:{WEBSOCKET_PORT}"
 
 
+class AbstractPreview():
+    def __init__(self):
+        self.ws = 1
+    
+    def clear(self):
+        pass
+    
+    def close(self):
+        pass
+    
+    def send(self,
+             content,
+             rect=None,
+             full=False,
+             image=False,
+             pdf=False,
+             bg=(1, 1, 1, 0),
+             max_width=5000
+        ):
+        print("SEND!", content[0:10])
+        pass
+
+
 class PersistentPreview():
     def __init__(self):
         try:
