@@ -1,17 +1,16 @@
-import sys, os, re, signal
-from pathlib import Path
-
+import sys, os, re, signal, tracemalloc
 import asyncio, tempfile, websockets, traceback
 import argparse, importlib, inspect, json, ast, math
 
 import time as ptime
 from enum import Enum
+from pathlib import Path
 from typing import Tuple
 from random import shuffle
 from runpy import run_path
 from subprocess import call, Popen
-import tracemalloc
 
+import skia
 import coldtype
 from coldtype.helpers import *
 from coldtype.geometry import Rect
@@ -34,7 +33,7 @@ except ImportError:
     db = None
 
 try:
-    import contextlib, glfw, skia
+    import contextlib, glfw, rtmidi
     from OpenGL import GL
 except:
     print("No OpenGL")
@@ -162,6 +161,8 @@ class Renderer():
 
             memory=parser.add_argument("-m", "--memory", action="store_true", default=False, help="Show statistics about memory usage?"),
 
+            midi_info=parser.add_argument("-mi", "--midi-info", action="store_true", default=False, help="Show available MIDI devices"),
+
             is_subprocess=parser.add_argument("-isp", "--is-subprocess", action="store_true", default=False, help=argparse.SUPPRESS),
 
             thread_count=parser.add_argument("-tc", "--thread-count", type=int, default=8, help="How many threads when multiplexing?"),
@@ -192,6 +193,16 @@ class Renderer():
         return pargs, parser
 
     def __init__(self, parser, no_socket_ok=False):
+        try:
+            self.user_config = json.loads(Path("~/coldtype.json").expanduser().read_text())
+            self.midi_mapping = self.user_config.get("midi", {})
+        except FileNotFoundError:
+            print(">>> no coldtype config found <<<")
+            self.user_config = {}
+        except json.decoder.JSONDecodeError:
+            print(">>> syntax error in ~/coldtype.json <<<")
+            sys.exit(0)
+
         sys.path.insert(0, os.getcwd())
 
         self.args = parser.parse_args()
@@ -231,7 +242,8 @@ class Renderer():
             for r in self.reloadables:
                 self.watchees.append([Watchable.Library, Path(r.__file__)])
         
-        self.window = glfw_window(Rect(0, 0, 1080, 1080))
+        if self.args.glfw:
+            self.window = glfw_window(Rect(0, 0, 1080, 1080))
     
     def reset_filepath(self, filepath):
         self.line_number = -1
@@ -578,6 +590,20 @@ class Renderer():
         if self.args.version:
             print(">>>", coldtype.__version__)
             should_halt = True
+        elif self.args.midi_info:
+            try:
+                midiin = rtmidi.RtMidiIn()
+                ports = range(midiin.getPortCount())
+                for p in ports:
+                    print(p, midiin.getPortName(p))
+            except:
+                print("Please run `pip install rtmidi` in your venv")
+                self.on_exit()
+                return
+            if not self.args.watch:
+                should_halt = True
+            else:
+                should_halt = self.before_start()
         else:
             should_halt = self.before_start()
         
@@ -593,6 +619,21 @@ class Renderer():
                 self.reload_and_render(Action.Initial)
             self.on_start()
             if self.args.watch:
+                midiin = rtmidi.RtMidiIn()
+                lookup = {}
+                self.midis = []
+                for p in range(midiin.getPortCount()):
+                    lookup[midiin.getPortName(p)] = p
+
+                for device, mapping in self.midi_mapping.items():
+                    if device in lookup:
+                        mapping["port"] = lookup[device]
+                        mi = rtmidi.RtMidiIn()
+                        mi.openPort(lookup[device])
+                        self.midis.append([device, mi])
+                    else:
+                        print(">>> no midi port found with that name <<<")
+
                 self.watch_file_changes()
                 try:
                     if self.args.glfw:
@@ -601,7 +642,7 @@ class Renderer():
                         try:
                             while True:
                                 ptime.sleep(0.1)
-                                self.run_waiting_renders()
+                                self.turn_over()
                         except KeyboardInterrupt:
                             self.on_exit()
                     # pass
@@ -751,19 +792,11 @@ class Renderer():
     def listen_to_glfw(self):
         while not glfw.window_should_close(self.window):
             #ptime.sleep(0.5)
-            # Render here, e.g. using pyOpenGL
-
-            # Swap front and back buffers
-            
-            #glfw.swap_buffers(window)
-            self.run_waiting_renders()
-
-            # Poll for and process events
+            self.turn_over()
             glfw.poll_events()
-            #glfw.wait_events()
-        print("ENDED!")
     
-    def run_waiting_renders(self):
+    def turn_over(self):
+        self.monitor_midi()
         if len(self.waiting_to_render) > 0:
             #print(self.waiting_to_render)
             for action, path in self.waiting_to_render:
@@ -803,6 +836,31 @@ class Renderer():
             self.observers.append(o)
         print("... watching ...")
     
+    def monitor_midi(self):
+        for device, mi in self.midis:
+            while msg := mi.getMessage(0):
+                if msg.isNoteOn(): # Maybe not forever?
+                    if self.args.midi_info:
+                        print(device, msg)
+                    nn = msg.getNoteNumber()
+                    action = self.midi_mapping[device]["note_on"].get(str(nn))
+                    if action:
+                        self.on_message({}, action)
+                    #if nn == msg.get("midi"):
+                    #    self.on_action(Action.PreviewStoryboard)
+        return
+        nn = midi.getNoteNumber()
+        if nn == 52 and midi.isNoteOn():
+            print("here")
+            pyautogui.press("f17")
+        #ws.send(json.dumps(dict(type="message", note_number=nn)))
+        if midi.isNoteOn():
+            print('ON: ', midi.getMidiNoteName(midi.getNoteNumber()), midi.getVelocity())
+        elif midi.isNoteOff():
+            print('OFF:', midi.getMidiNoteName(midi.getNoteNumber()))
+        elif midi.isController():
+            print('CONTROLLER', midi.getControllerNumber(), midi.getControllerValue())
+    
     def stop_watching_file_changes(self):
         for o in self.observers:
             o.stop()
@@ -813,8 +871,8 @@ class Renderer():
                 r.terminate()
 
     def on_exit(self, restart=False):
-        #if self.args.watch:
-        #    print(f"<EXIT RENDERER ({exit_code})>")
+        if self.args.watch:
+           print(f"<EXIT(restart:{restart})>")
         glfw.terminate()
         self.reset_renderers()
         self.stop_watching_file_changes()
