@@ -245,7 +245,7 @@ class Renderer():
         if self.args.reload_libraries:
             for r in self.reloadables:
                 self.watchees.append([Watchable.Library, Path(r.__file__)])
-        
+
         if self.args.glfw:
             self.window = glfw_window(Rect(0, 0, 100, 100))
     
@@ -641,6 +641,7 @@ class Renderer():
                 self.watch_file_changes()
                 try:
                     if self.args.glfw:
+                        glfw.set_window_title(self.window, self.watchees[0][1].name)
                         self.listen_to_glfw()
                     else:
                         try:
@@ -819,8 +820,15 @@ class Renderer():
                 w = render.rect.w
                 h1 = render.rect.h
                 h += render.rect.h + 1
-                
-            glfw.set_window_size(self.window, int(w/2), int(h/2))
+
+            ww = int(w/2)
+            wh = int(h/2)    
+            glfw.set_window_size(self.window, ww, wh)
+            screen = glfw.get_primary_monitor()
+            sx, sy, sw, sh = glfw.get_monitor_workarea(screen)
+            glfw.set_window_pos(self.window, sw-ww, sy)
+
+
             GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
             with skia_surface(self.window, Rect(0, 0, w, h)) as surface:
@@ -878,7 +886,6 @@ class Renderer():
                     nn = msg.getNoteNumber()
                     action = self.midi_mapping[device]["note_on"].get(str(nn))
                     if action:
-                        print("THERE WAS AN ACTION", action)
                         self.on_message({}, action)
     
     def stop_watching_file_changes(self):
