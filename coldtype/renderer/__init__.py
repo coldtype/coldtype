@@ -1,5 +1,5 @@
 import sys, os, re, signal, tracemalloc
-import asyncio, tempfile, websockets, traceback
+import tempfile, websockets, traceback, threading
 import argparse, importlib, inspect, json, ast, math
 
 import time as ptime
@@ -72,6 +72,21 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
+last_line = ''
+new_line_event = threading.Event()
+
+
+def keep_last_line():
+    global last_line, new_line_event
+    for line in sys.stdin:
+        last_line = line
+        new_line_event.set()
+
+keep_last_line_thread = threading.Thread(target=keep_last_line)
+keep_last_line_thread.daemon = True
+keep_last_line_thread.start()
+
+
 def bytesto(bytes):
     r = float(bytes)
     for i in range(2):
@@ -83,15 +98,6 @@ def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
-
-
-def glfw_window(rect):
-    if not glfw.init():
-        raise RuntimeError('glfw.init() failed')
-    glfw.window_hint(glfw.STENCIL_BITS, 8)
-    window = glfw.create_window(int(rect.w), int(rect.h), '', None, None)
-    glfw.make_context_current(window)
-    return window
 
 
 @contextlib.contextmanager
@@ -247,7 +253,13 @@ class Renderer():
                 self.watchees.append([Watchable.Library, Path(r.__file__)])
 
         if self.args.glfw:
-            self.window = glfw_window(Rect(0, 0, 100, 100))
+            if not glfw.init():
+                raise RuntimeError('glfw.init() failed')
+            glfw.window_hint(glfw.STENCIL_BITS, 8)
+            glfw.window_hint(glfw.FOCUS_ON_SHOW, glfw.FALSE)
+            self.window = glfw.create_window(int(50), int(50), '', None, None)
+            glfw.make_context_current(self.window)
+            glfw.set_key_callback(self.window, self.on_key)
     
     def reset_filepath(self, filepath):
         self.line_number = -1
@@ -280,6 +292,7 @@ class Renderer():
                     raise Exception("Cannot run drawbot program without drawBot installed")
                 else:
                     db.newDrawing()
+            print("REALODING")
             self.program = run_path(str(self.filepath))
             if load_drawbot:
                 with tempfile.NamedTemporaryFile(suffix=".svg") as tf:
@@ -686,6 +699,13 @@ class Renderer():
     def additional_actions(self):
         return []
     
+    def on_key(self, win, key, scan, action, mods):
+        if action == glfw.PRESS:
+            if key == glfw.KEY_LEFT:
+                self.on_action(Action.PreviewStoryboardPrev)
+            elif key == glfw.KEY_RIGHT:
+                self.on_action(Action.PreviewStoryboardNext)
+    
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
         if action_abbrev == "ps":
@@ -770,7 +790,8 @@ class Renderer():
                 kwargs["action"] = action.value
             kwargs["prefix"] = self.filepath.stem
             kwargs["fps"] = animation.timeline.fps
-            self.preview.send(json.dumps(kwargs), full=True)
+            if self.preview:
+                self.preview.send(json.dumps(kwargs), full=True)
     
     def process_ws_message(self, message):
         try:
@@ -802,6 +823,10 @@ class Renderer():
         while not glfw.window_should_close(self.window) and not self.dead:
             #ptime.sleep(0.5)
             self.turn_over()
+            global last_line
+            if last_line:
+                self.on_stdin(last_line.strip())
+                last_line = None
             glfw.poll_events()
         self.on_exit(restart=False)
     
