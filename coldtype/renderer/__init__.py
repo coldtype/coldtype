@@ -209,12 +209,16 @@ class Renderer():
         self.reset_filepath(self.args.file if hasattr(self.args, "file") else None)
         self.layers = [l.strip() for l in self.args.layers.split(",")] if self.args.layers else []
         
-        self.preview = PersistentPreview()
-        if not no_socket_ok and not self.preview.ws:
-            print(f"\n\n{bcolors.FAIL}! Please start the coldtype viewer app !{bcolors.ENDC}\n\n")
-            raise Exception()
-        
-        self.preview.clear()
+        if self.args.glfw:
+            self.preview = None
+        else:
+            self.preview = PersistentPreview()
+            if not no_socket_ok and not self.preview.ws:
+                print(f"\n\n{bcolors.FAIL}! Please start the coldtype viewer app !{bcolors.ENDC}\n\n")
+                raise Exception()
+            if self.preview:
+                self.preview.clear()
+
         self.program = None
         self.websocket = None
         self.exit_code = 0
@@ -259,10 +263,14 @@ class Renderer():
     def show_error(self):
         print(">>> CAUGHT COLDTYPE RENDER")
         print(traceback.format_exc())
-        self.preview.send(f"<pre>{traceback.format_exc()}</pre>", None)
+        if self.preview:
+            self.preview.send(f"<pre>{traceback.format_exc()}</pre>", None)
     
     def show_message(self, message, scale=1):
-        self.preview.send(f"<pre style='background:hsla(150, 50%, 50%);transform:scale({scale})'>{message}</pre>")
+        if self.preview:
+            self.preview.send(f"<pre style='background:hsla(150, 50%, 50%);transform:scale({scale})'>{message}</pre>")
+        else:
+            print(message)
 
     def reload(self, trigger):
         try:
@@ -276,8 +284,9 @@ class Renderer():
             if load_drawbot:
                 with tempfile.NamedTemporaryFile(suffix=".svg") as tf:
                     db.saveImage(tf.name)
-                    self.preview.clear()
-                    self.preview.send(f"<div class='drawbot-render'>{tf.read().decode('utf-8')}</div>", None)
+                    if self.preview:
+                        self.preview.clear()
+                        self.preview.send(f"<div class='drawbot-render'>{tf.read().decode('utf-8')}</div>", None)
                 db.endDrawing()
             for k, v in self.program.items():
                 if isinstance(v, coldtype.text.reader.Font):
@@ -551,7 +560,8 @@ class Renderer():
         try:
             self.reload(trigger)
             if self.program:
-                self.preview.clear()
+                if self.preview:
+                    self.preview.clear()
                 preview_count, render_count = self.render(trigger, indices=indices)
                 if self.args.show_render_count:
                     print("render>", preview_count, "/", render_count)
@@ -698,7 +708,8 @@ class Renderer():
         action, data = self.stdin_to_action(stdin)
         if action:
             if action == Action.PreviewIndices:
-                self.preview.clear()
+                if self.preview:
+                    self.preview.clear()
                 self.render(action, indices=data)
             elif action == Action.RestartRenderer:
                 self.on_exit(restart=True)
@@ -716,7 +727,8 @@ class Renderer():
                     for idx, fidx in enumerate(render.storyboard):
                         nidx = (fidx + increment) % render.duration
                         render.storyboard[idx] = nidx
-                    self.preview.clear()
+                    if self.preview:
+                        self.preview.clear()
                     self.render(Action.PreviewStoryboard)
             return True
         elif action == Action.ArbitraryCommand:
@@ -886,7 +898,8 @@ class Renderer():
         glfw.terminate()
         self.reset_renderers()
         self.stop_watching_file_changes()
-        self.preview.close()
+        if self.preview:
+            self.preview.close()
         if self.args.memory:
             snapshot = tracemalloc.take_snapshot()
             top_stats = snapshot.statistics('traceback')
