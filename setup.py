@@ -61,7 +61,7 @@ setuptools.setup(
         "noise",
         "PyOpenGL",
         "PyOpenGL-accelerate",
-        "rtmidi",
+        #"rtmidi",
         "glfw",
         #"fontgoggles @ http://github.com/goodhertz/fontgoggles/archive/master.zip"
     ],

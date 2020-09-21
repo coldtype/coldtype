@@ -636,20 +636,23 @@ class Renderer():
                 self.reload_and_render(Action.Initial)
             self.on_start()
             if self.args.watch:
-                midiin = rtmidi.RtMidiIn()
-                lookup = {}
-                self.midis = []
-                for p in range(midiin.getPortCount()):
-                    lookup[midiin.getPortName(p)] = p
+                try:
+                    midiin = rtmidi.RtMidiIn()
+                    lookup = {}
+                    self.midis = []
+                    for p in range(midiin.getPortCount()):
+                        lookup[midiin.getPortName(p)] = p
 
-                for device, mapping in self.midi_mapping.items():
-                    if device in lookup:
-                        mapping["port"] = lookup[device]
-                        mi = rtmidi.RtMidiIn()
-                        mi.openPort(lookup[device])
-                        self.midis.append([device, mi])
-                    else:
-                        print(">>> no midi port found with that name <<<")
+                    for device, mapping in self.midi_mapping.items():
+                        if device in lookup:
+                            mapping["port"] = lookup[device]
+                            mi = rtmidi.RtMidiIn()
+                            mi.openPort(lookup[device])
+                            self.midis.append([device, mi])
+                        else:
+                            print(">>> no midi port found with that name <<<")
+                except:
+                    self.midis = []
 
                 self.watch_file_changes()
                 try:
