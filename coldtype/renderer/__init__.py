@@ -32,11 +32,11 @@ try:
 except ImportError:
     db = None
 
-try:
-    import contextlib, glfw, rtmidi
-    from OpenGL import GL
-except:
-    print("No OpenGL")
+#try:
+import contextlib, glfw, rtmidi
+from OpenGL import GL
+#except:
+#    print("No OpenGL")
 
 try:
     import psutil
@@ -85,7 +85,6 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 
-#@contextlib.contextmanager
 def glfw_window(rect):
     if not glfw.init():
         raise RuntimeError('glfw.init() failed')
@@ -93,8 +92,6 @@ def glfw_window(rect):
     window = glfw.create_window(int(rect.w), int(rect.h), '', None, None)
     glfw.make_context_current(window)
     return window
-    #yield window
-    #glfw.terminate()
 
 
 @contextlib.contextmanager
@@ -193,6 +190,8 @@ class Renderer():
         return pargs, parser
 
     def __init__(self, parser, no_socket_ok=False):
+        self.dead = False
+
         try:
             self.user_config = json.loads(Path("~/coldtype.json").expanduser().read_text())
             self.midi_mapping = self.user_config.get("midi", {})
@@ -229,6 +228,7 @@ class Renderer():
 
         self.observers = []
         self.waiting_to_render = []
+        self.previews_waiting_to_paint = []
 
         self.reloadables = [
             #coldtype.pens.datpen,
@@ -382,20 +382,14 @@ class Renderer():
                             preview_count += 1
                             if preview_result:
                                 if self.args.glfw:
-                                    #with glfw_window(render.rect.scale(0.5)) as window:
-                                    GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-                                    with skia_surface(self.window, render.rect.scale(1)) as surface:
-                                        with surface as canvas:
-                                            render.draw_preview(canvas, preview_result, rp)
-                                            #canvas.drawCircle(100, 100, 40, skia.Paint(Color=skia.ColorGREEN))
-                                        surface.flushAndSubmit()
-                                        glfw.swap_buffers(self.window)
-
-                                        #glfw.post_empty_event()
-
-                                        #while (glfw.get_key(self.window, glfw.KEY_ESCAPE) != glfw.PRESS
-                                        #   and not glfw.window_should_close(self.window)):
-                                        #   glfw.wait_events()
+                                    self.previews_waiting_to_paint.append([render, preview_result, rp])
+                                    # GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+                                    # with skia_surface(self.window, render.rect.scale(1)) as surface:
+                                    #     with surface as canvas:
+                                    #         render.draw_preview(canvas, preview_result, rp)
+                                    #         #canvas.drawCircle(100, 100, 40, skia.Paint(Color=skia.ColorGREEN))
+                                    #     surface.flushAndSubmit()
+                                    #     glfw.swap_buffers(self.window)
                                 else:
                                     if self.args.raster_previews:
                                         self.rasterize(preview_result, render, output_path)
@@ -707,7 +701,7 @@ class Renderer():
                 self.preview.clear()
                 self.render(action, indices=data)
             elif action == Action.RestartRenderer:
-                raise TypeError("Huh")
+                self.on_exit(restart=True)
             else:
                 self.on_action(action)
 
@@ -733,7 +727,9 @@ class Renderer():
                 if render.ui_callback:
                     render.ui_callback(message)
         elif action == Action.RestartRenderer:
-            raise TypeError("Huh")
+            self.on_exit(restart=True)
+        elif action == Action.Kill:
+            self.on_exit(restart=False)
         elif message.get("serialization"):
             ptime.sleep(1)
             self.reload(Action.Resave)
@@ -790,18 +786,39 @@ class Renderer():
     #         await self.on_stdin(line.decode("utf-8").strip())
     
     def listen_to_glfw(self):
-        while not glfw.window_should_close(self.window):
+        while not glfw.window_should_close(self.window) and not self.dead:
             #ptime.sleep(0.5)
             self.turn_over()
             glfw.poll_events()
+            GL.glViewport(0, 0, 200, 200)
     
     def turn_over(self):
         self.monitor_midi()
         if len(self.waiting_to_render) > 0:
-            #print(self.waiting_to_render)
             for action, path in self.waiting_to_render:
                 self.reload_and_render(action, path)
             self.waiting_to_render = []
+        
+        if len(self.previews_waiting_to_paint) > 0:
+            w = 0
+            h = 0
+            for render, result, rp in self.previews_waiting_to_paint:
+                w = render.rect.w
+                h += render.rect.h
+                
+            GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+
+            with skia_surface(self.window, Rect(0, 0, w, h)) as surface:
+                with surface as canvas:
+                    for render, result, rp in self.previews_waiting_to_paint:              
+                        render.draw_preview(canvas, result, rp)
+                        #canvas.drawCircle(100, 100, 40, skia.Paint(Color=skia.ColorGREEN))
+                surface.flushAndSubmit()
+                glfw.swap_buffers(self.window)
+
+                #GL.glViewport(0, 0, w, h)
+            #print(">>", self.previews_waiting_to_paint)
+        self.previews_waiting_to_paint = []
 
     # async def stream_as_generator(self, stream):
     #     loop = asyncio.get_event_loop()
@@ -845,21 +862,8 @@ class Renderer():
                     nn = msg.getNoteNumber()
                     action = self.midi_mapping[device]["note_on"].get(str(nn))
                     if action:
+                        print("THERE WAS AN ACTION", action)
                         self.on_message({}, action)
-                    #if nn == msg.get("midi"):
-                    #    self.on_action(Action.PreviewStoryboard)
-        return
-        nn = midi.getNoteNumber()
-        if nn == 52 and midi.isNoteOn():
-            print("here")
-            pyautogui.press("f17")
-        #ws.send(json.dumps(dict(type="message", note_number=nn)))
-        if midi.isNoteOn():
-            print('ON: ', midi.getMidiNoteName(midi.getNoteNumber()), midi.getVelocity())
-        elif midi.isNoteOff():
-            print('OFF:', midi.getMidiNoteName(midi.getNoteNumber()))
-        elif midi.isController():
-            print('CONTROLLER', midi.getControllerNumber(), midi.getControllerValue())
     
     def stop_watching_file_changes(self):
         for o in self.observers:
@@ -871,6 +875,8 @@ class Renderer():
                 r.terminate()
 
     def on_exit(self, restart=False):
+        self.dead = True
+
         if self.args.watch:
            print(f"<EXIT(restart:{restart})>")
         glfw.terminate()

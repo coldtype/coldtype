@@ -8,7 +8,7 @@ mutator = Font("assets/MutatorSans.ttf")
 #co = Font("assets/ColdtypeObviously.designspace")
 tl = Timeline(60)
 
-@animation(rect=(1200, 550), timeline=tl, storyboard=[5], bg=0.5, layers=["__default__", "circle"])
+@animation(rect=(1200, 550), timeline=tl, storyboard=[5], bg=0.25, layers=["__default__", "circle"])
 def render(f):
     t = tl.progress(f.i, loops=0, easefn="linear")
     l = tl.progress(f.i, loops=1, easefn="eeio")
