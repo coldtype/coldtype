@@ -217,6 +217,7 @@ class Renderer():
         self.completed_renderers = []
 
         self.observers = []
+        self.waiting_to_render = []
 
         self.reloadables = [
             #coldtype.pens.datpen,
@@ -251,7 +252,7 @@ class Renderer():
     def show_message(self, message, scale=1):
         self.preview.send(f"<pre style='background:hsla(150, 50%, 50%);transform:scale({scale})'>{message}</pre>")
 
-    async def reload(self, trigger):
+    def reload(self, trigger):
         try:
             load_drawbot = self.args.drawbot
             if load_drawbot:
@@ -268,7 +269,7 @@ class Renderer():
                 db.endDrawing()
             for k, v in self.program.items():
                 if isinstance(v, coldtype.text.reader.Font):
-                    await v.load()
+                    v.load()
                     if v.path not in self.watchee_paths():
                         self.watchees.append([Watchable.Font, v.path])
                     for ext in v.font.getExternalFiles():
@@ -303,7 +304,7 @@ class Renderer():
                 return matches
         return _rs
     
-    async def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
+    def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
         if not self.args.is_subprocess:
             start = ptime.time()
 
@@ -357,7 +358,7 @@ class Renderer():
                     rp.action = trigger
 
                     try:
-                        result = await render.run(rp)
+                        result = render.run(rp)
                         try:
                             if len(result) == 2 and isinstance(result[1], str):
                                 self.show_message(result[1])
@@ -365,7 +366,7 @@ class Renderer():
                         except:
                             pass
                         if previewing:
-                            preview_result = await render.runpost(result, rp)
+                            preview_result = render.runpost(result, rp)
                             preview_count += 1
                             if preview_result:
                                 if self.args.glfw:
@@ -378,7 +379,7 @@ class Renderer():
                                         surface.flushAndSubmit()
                                         glfw.swap_buffers(self.window)
 
-                                        glfw.post_empty_event()
+                                        #glfw.post_empty_event()
 
                                         #while (glfw.get_key(self.window, glfw.KEY_ESCAPE) != glfw.PRESS
                                         #   and not glfw.window_should_close(self.window)):
@@ -428,13 +429,13 @@ class Renderer():
         
         return preview_count, render_count
 
-    async def render(self, trigger, indices=[]) -> Tuple[int, int]:
+    def render(self, trigger, indices=[]) -> Tuple[int, int]:
         if self.args.is_subprocess: # is a child process of a multiplexed render
             if trigger != Action.RenderIndices:
                 raise Exception("Invalid child process render action")
                 return 0, 0
             else:
-                p, r = await self._single_thread_render(trigger, indices=indices)
+                p, r = self._single_thread_render(trigger, indices=indices)
                 if not self.args.no_sound:
                     os.system("afplay /System/Library/Sounds/Pop.aiff")
                 self.exit_code = 5 # mark as child-process
@@ -457,7 +458,7 @@ class Renderer():
                 trigger = Action.RenderIndices
                 indices = [0, all_frames[-1]] # always render first & last from main, to trigger a filesystem-change detection in premiere
         
-        preview_count, render_count = await self._single_thread_render(trigger, indices)
+        preview_count, render_count = self._single_thread_render(trigger, indices)
         
         if not self.args.is_subprocess and render_count > 0:
             self.send_to_external(None, rendered=True)
@@ -529,7 +530,7 @@ class Renderer():
         else:
             raise Exception(f"rasterizer ({rasterizer}) not supported")
     
-    async def reload_and_render(self, trigger, watchable=None, indices=None):
+    def reload_and_render(self, trigger, watchable=None, indices=None):
         wl = len(self.watchees)
 
         if self.args.reload_libraries and watchable == Watchable.Library:
@@ -542,10 +543,10 @@ class Renderer():
                 self.show_error()
 
         try:
-            await self.reload(trigger)
+            self.reload(trigger)
             if self.program:
                 self.preview.clear()
-                preview_count, render_count = await self.render(trigger, indices=indices)
+                preview_count, render_count = self.render(trigger, indices=indices)
                 if self.args.show_render_count:
                     print("render>", preview_count, "/", render_count)
             else:
@@ -564,7 +565,8 @@ class Renderer():
             tracemalloc.start(10)
             self._last_memory = -1
         try:
-            asyncio.get_event_loop().run_until_complete(self.start())
+            #asyncio.get_event_loop().run_until_complete(self.start())
+            self.start()
         except KeyboardInterrupt:
             print("INTERRUPT")
             self.on_exit()
@@ -572,48 +574,57 @@ class Renderer():
             print("exit>", self.exit_code)
         sys.exit(self.exit_code)
 
-    async def start(self):
+    def start(self):
         if self.args.version:
             print(">>>", coldtype.__version__)
             should_halt = True
         else:
-            should_halt = await self.before_start()
+            should_halt = self.before_start()
         
         if should_halt:
             self.on_exit()
         else:
             if self.args.all:
-                await self.reload_and_render(Action.RenderAll)
+                self.reload_and_render(Action.RenderAll)
             elif self.args.indices:
                 indices = [int(x.strip()) for x in self.args.indices.split(",")]
-                await self.reload_and_render(Action.RenderIndices, indices=indices)
+                self.reload_and_render(Action.RenderIndices, indices=indices)
             else:
-                await self.reload_and_render(Action.Initial)
-            await self.on_start()
+                self.reload_and_render(Action.Initial)
+            self.on_start()
             if self.args.watch:
-                loop = asyncio.get_running_loop()
                 self.watch_file_changes()
                 try:
-                    await asyncio.gather(
-                        self.listen_to_ws(),
-                        self.listen_to_stdin(),
-                        self.listen_to_glfw())
+                    if self.args.glfw:
+                        self.listen_to_glfw()
+                    else:
+                        try:
+                            while True:
+                                ptime.sleep(0.1)
+                                self.run_waiting_renders()
+                        except KeyboardInterrupt:
+                            self.on_exit()
+                    # pass
+                    # await asyncio.gather(
+                    #     self.listen_to_ws(),
+                    #     self.listen_to_stdin(),
+                    #     self.listen_to_glfw())
                 except TypeError:
                     self.on_exit(restart=True)
             else:
                 self.on_exit()
     
-    async def before_start(self):
+    def before_start(self):
         pass
 
-    async def on_start(self):
+    def on_start(self):
         pass
     
-    async def on_message(self, message, action):
+    def on_message(self, message, action):
         if action:
             enum_action = self.lookup_action(action)
             if enum_action:
-                await self.on_action(enum_action, message)
+                self.on_action(enum_action, message)
             else:
                 print(">>> (", action, ") is not a recognized action")
 
@@ -648,20 +659,20 @@ class Renderer():
         else:
             return None, None
 
-    async def on_stdin(self, stdin):
+    def on_stdin(self, stdin):
         action, data = self.stdin_to_action(stdin)
         if action:
             if action == Action.PreviewIndices:
                 self.preview.clear()
-                await self.render(action, indices=data)
+                self.render(action, indices=data)
             elif action == Action.RestartRenderer:
                 raise TypeError("Huh")
             else:
-                await self.on_action(action)
+                self.on_action(action)
 
-    async def on_action(self, action, message=None) -> bool:
+    def on_action(self, action, message=None) -> bool:
         if action in [Action.PreviewStoryboard, Action.RenderAll, Action.RenderWorkarea]:
-            await self.reload_and_render(action)
+            self.reload_and_render(action)
             return True
         elif action in [Action.PreviewStoryboardNext, Action.PreviewStoryboardPrev]:
             increment = 1 if action == Action.PreviewStoryboardNext else -1
@@ -671,10 +682,10 @@ class Renderer():
                         nidx = (fidx + increment) % render.duration
                         render.storyboard[idx] = nidx
                     self.preview.clear()
-                    await self.render(Action.PreviewStoryboard)
+                    self.render(Action.PreviewStoryboard)
             return True
         elif action == Action.ArbitraryCommand:
-            await self.on_stdin(message.get("input"))
+            self.on_stdin(message.get("input"))
             return True
         elif action == Action.UICallback:
             for render in self.renderables(action):
@@ -683,8 +694,8 @@ class Renderer():
         elif action == Action.RestartRenderer:
             raise TypeError("Huh")
         elif message.get("serialization"):
-            await asyncio.sleep(1)
-            await self.reload(Action.Resave)
+            ptime.sleep(1)
+            self.reload(Action.Resave)
             print(">>>>>>>>>>>", self.animation().timeline.cti)
             cw = self.animation().timeline.find_workarea()
             print("WORKAREA", cw)
@@ -711,12 +722,12 @@ class Renderer():
             kwargs["fps"] = animation.timeline.fps
             self.preview.send(json.dumps(kwargs), full=True)
     
-    async def process_ws_message(self, message):
+    def process_ws_message(self, message):
         try:
             jdata = json.loads(message)
             action = jdata.get("action")
             if action:
-                await self.on_message(jdata, jdata.get("action"))
+                self.on_message(jdata, jdata.get("action"))
             elif jdata.get("metadata") and jdata.get("path"):
                 path = Path(jdata.get("path"))
                 if self.args.monitor_lines and path == self.filepath:
@@ -727,41 +738,51 @@ class Renderer():
             self.show_error()
             print("Malformed message", message)
 
-    async def listen_to_ws(self):
-        async with websockets.connect(WEBSOCKET_ADDR) as websocket:
-            self.websocket = websocket
-            async for message in websocket:
-                await self.process_ws_message(message)
+    # def listen_to_ws(self):
+    #     async with websockets.connect(WEBSOCKET_ADDR) as websocket:
+    #         self.websocket = websocket
+    #         async for message in websocket:
+    #             await self.process_ws_message(message)
     
-    async def listen_to_stdin(self):
-        async for line in self.stream_as_generator(sys.stdin):
-            await self.on_stdin(line.decode("utf-8").strip())
+    # async def listen_to_stdin(self):
+    #     async for line in self.stream_as_generator(sys.stdin):
+    #         await self.on_stdin(line.decode("utf-8").strip())
     
-    async def listen_to_glfw(self):
+    def listen_to_glfw(self):
         while not glfw.window_should_close(self.window):
+            #ptime.sleep(0.5)
             # Render here, e.g. using pyOpenGL
 
             # Swap front and back buffers
+            
             #glfw.swap_buffers(window)
+            self.run_waiting_renders()
 
             # Poll for and process events
-            #glfw.poll_events()
-            await asyncio.sleep(0.001)
-            glfw.wait_events()
-
-    async def stream_as_generator(self, stream):
-        loop = asyncio.get_event_loop()
-        reader = asyncio.StreamReader(loop=loop)
-        reader_protocol = asyncio.StreamReaderProtocol(reader)
-        await loop.connect_read_pipe(lambda: reader_protocol, stream)
-
-        while True:
-            line = await reader.readline()
-            if not line:  # EOF.
-                break
-            yield line
+            glfw.poll_events()
+            #glfw.wait_events()
+        print("ENDED!")
     
-    async def on_modified(self, event):
+    def run_waiting_renders(self):
+        if len(self.waiting_to_render) > 0:
+            #print(self.waiting_to_render)
+            for action, path in self.waiting_to_render:
+                self.reload_and_render(action, path)
+            self.waiting_to_render = []
+
+    # async def stream_as_generator(self, stream):
+    #     loop = asyncio.get_event_loop()
+    #     reader = asyncio.StreamReader(loop=loop)
+    #     reader_protocol = asyncio.StreamReaderProtocol(reader)
+    #     await loop.connect_read_pipe(lambda: reader_protocol, stream)
+
+    #     while True:
+    #         line = await reader.readline()
+    #         if not line:  # EOF.
+    #             break
+    #         yield line
+    
+    def on_modified(self, event):
         path = Path(event.src_path)
         if path in self.watchee_paths():
             idx = self.watchee_paths().index(path)
@@ -771,7 +792,7 @@ class Renderer():
                 diff = memory - self._last_memory
                 self._last_memory = memory
                 print(">>> pid:{:d}/new:{:04.2f}MB/total:{:4.2f}".format(os.getpid(), diff, memory))
-            await self.reload_and_render(Action.Resave, self.watchees[idx][0])
+            self.waiting_to_render = [[Action.Resave, self.watchees[idx][0]]]
 
     def watch_file_changes(self):
         self.observers = []

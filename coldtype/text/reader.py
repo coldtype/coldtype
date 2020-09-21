@@ -85,13 +85,14 @@ class Font():
         self.font:BaseFont = opener(self.path, number)
         self.font.cocoa = False
     
-    async def load(self):
-        await self.font.load(empty_writer)
+    def load(self):
+        #self.font.load(empty_writer)
+        self.font._syncLoad(None)
         #print(">>> loaded", self.path.name)
     
-    async def Preload(path):
+    def Preload(path):
         font = Font(path)
-        await font.load()
+        font._syncLoad(None)
         return font
 
 class Style():

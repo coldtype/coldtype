@@ -3,7 +3,9 @@ from coldtype.pens.skiapen import SkiaPathPen
 from random import randint
 import skia
 
-co = Font("assets/ColdtypeObviously.designspace")
+mutator = Font("assets/MutatorSans.ttf")
+
+#co = Font("assets/ColdtypeObviously.designspace")
 tl = Timeline(60)
 
 @animation(rect=(1200, 550), timeline=tl, storyboard=[5], bg=0.5, layers=["__default__", "circle"])
@@ -12,13 +14,13 @@ def render(f):
     l = tl.progress(f.i, loops=1, easefn="eeio")
     
     return DATPenSet([
-        (StyledString("COLDTYPE",
-            Style(co, 350, tu=-100, ro=1, r=1, rotate=15, wdth=0.25))
+        (StyledString("COLD",
+            Style(mutator, 350, tu=-100, ro=1, r=1, rotate=15, wdth=0.25, wght=1))
             .pens()
             .align(f.a.r)
             .rotate(-5)
             .translate(0, 10)
-            .f(1, 1, 0)
+            .f("random")
             .understroke(sw=30)
             .tag("__default__")),
         (DATPen()

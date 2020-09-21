@@ -87,13 +87,13 @@ class renderable():
     def package(self, filepath, output_folder):
         pass
 
-    async def run(self, render_pass):
+    def run(self, render_pass):
         if inspect.iscoroutinefunction(render_pass.fn):
-            return await render_pass.fn(*render_pass.args)
+            return render_pass.fn(*render_pass.args)
         else:
             return render_pass.fn(*render_pass.args)
     
-    async def runpost(self, result, render_pass):
+    def runpost(self, result, render_pass):
         if self.postfn:
             return self.postfn(self, result)
         else:
@@ -119,7 +119,7 @@ class drawbot_script(renderable):
         self.svg_preview = svg_preview
         self.self_rasterizing = True
     
-    async def run(self, render_pass):
+    def run(self, render_pass):
         use_pool = True
         if use_pool:
             pool = AppKit.NSAutoreleasePool.alloc().init()
