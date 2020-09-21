@@ -33,10 +33,15 @@ except ImportError:
     db = None
 
 #try:
-import contextlib, glfw, rtmidi
+import contextlib, glfw
 from OpenGL import GL
 #except:
 #    print("No OpenGL")
+
+try:
+    import rtmidi
+except ImportError:
+    pass
 
 try:
     import psutil
@@ -854,7 +859,7 @@ class Renderer():
             glfw.set_window_size(self.window, ww, wh)
             screen = glfw.get_primary_monitor()
             sx, sy, sw, sh = glfw.get_monitor_workarea(screen)
-            glfw.set_window_pos(self.window, sw-ww, sy)
+            #glfw.set_window_pos(self.window, sw-ww, sy)
 
 
             GL.glClear(GL.GL_COLOR_BUFFER_BIT)
