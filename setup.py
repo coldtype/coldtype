@@ -59,6 +59,10 @@ setuptools.setup(
         "websockets",
         "watchdog",
         "noise",
+        "PyOpenGL",
+        "PyOpenGL-accelerate",
+        "rtmidi",
+        "glfw",
         #"fontgoggles @ http://github.com/goodhertz/fontgoggles/archive/master.zip"
     ],
     classifiers=[
