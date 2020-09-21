@@ -86,15 +86,16 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 
-@contextlib.contextmanager
+#@contextlib.contextmanager
 def glfw_window(rect):
     if not glfw.init():
         raise RuntimeError('glfw.init() failed')
     glfw.window_hint(glfw.STENCIL_BITS, 8)
     window = glfw.create_window(int(rect.w), int(rect.h), '', None, None)
     glfw.make_context_current(window)
-    yield window
-    glfw.terminate()
+    return window
+    #yield window
+    #glfw.terminate()
 
 
 @contextlib.contextmanager
@@ -228,6 +229,8 @@ class Renderer():
         if self.args.reload_libraries:
             for r in self.reloadables:
                 self.watchees.append([Watchable.Library, Path(r.__file__)])
+        
+        self.window = glfw_window(Rect(0, 0, 1080, 1080))
     
     def reset_filepath(self, filepath):
         self.line_number = -1
@@ -365,25 +368,25 @@ class Renderer():
                             preview_result = await render.runpost(result, rp)
                             preview_count += 1
                             if preview_result:
-                                if self.args.raster_previews:
-                                    self.rasterize(preview_result, render, output_path)
-                                    preview_result = output_path
-                                
-                                if self.args.glfw:                                    
-                                    with glfw_window(render.rect.scale(0.5)) as window:
-                                        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+                                if self.args.glfw:
+                                    #with glfw_window(render.rect.scale(0.5)) as window:
+                                    GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+                                    with skia_surface(self.window, render.rect.scale(1)) as surface:
+                                        with surface as canvas:
+                                            render.draw_preview(canvas, preview_result, rp)
+                                            #canvas.drawCircle(100, 100, 40, skia.Paint(Color=skia.ColorGREEN))
+                                        surface.flushAndSubmit()
+                                        glfw.swap_buffers(self.window)
 
-                                        with skia_surface(window, render.rect.scale(1)) as surface:
-                                            with surface as canvas:
-                                                render.draw_preview(canvas, preview_result, rp)
-                                                #canvas.drawCircle(100, 100, 40, skia.Paint(Color=skia.ColorGREEN))
-                                            surface.flushAndSubmit()
-                                            glfw.swap_buffers(window)
+                                        glfw.post_empty_event()
 
-                                            while (glfw.get_key(window, glfw.KEY_ESCAPE) != glfw.PRESS
-                                                and not glfw.window_should_close(window)):
-                                                glfw.wait_events()
+                                        #while (glfw.get_key(self.window, glfw.KEY_ESCAPE) != glfw.PRESS
+                                        #   and not glfw.window_should_close(self.window)):
+                                        #   glfw.wait_events()
                                 else:
+                                    if self.args.raster_previews:
+                                        self.rasterize(preview_result, render, output_path)
+                                        preview_result = output_path
                                     render.send_preview(self.preview, preview_result, rp)
                         
                         if rendering:
@@ -593,7 +596,8 @@ class Renderer():
                 try:
                     await asyncio.gather(
                         self.listen_to_ws(),
-                        self.listen_to_stdin())
+                        self.listen_to_stdin(),
+                        self.listen_to_glfw())
                 except TypeError:
                     self.on_exit(restart=True)
             else:
@@ -732,6 +736,18 @@ class Renderer():
     async def listen_to_stdin(self):
         async for line in self.stream_as_generator(sys.stdin):
             await self.on_stdin(line.decode("utf-8").strip())
+    
+    async def listen_to_glfw(self):
+        while not glfw.window_should_close(self.window):
+            # Render here, e.g. using pyOpenGL
+
+            # Swap front and back buffers
+            #glfw.swap_buffers(window)
+
+            # Poll for and process events
+            #glfw.poll_events()
+            await asyncio.sleep(0.001)
+            glfw.wait_events()
 
     async def stream_as_generator(self, stream):
         loop = asyncio.get_event_loop()
@@ -778,7 +794,7 @@ class Renderer():
     def on_exit(self, restart=False):
         #if self.args.watch:
         #    print(f"<EXIT RENDERER ({exit_code})>")
-
+        glfw.terminate()
         self.reset_renderers()
         self.stop_watching_file_changes()
         self.preview.close()
