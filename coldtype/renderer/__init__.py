@@ -243,7 +243,7 @@ class Renderer():
                 self.watchees.append([Watchable.Library, Path(r.__file__)])
         
         if self.args.glfw:
-            self.window = glfw_window(Rect(0, 0, 1080, 1080))
+            self.window = glfw_window(Rect(0, 0, 100, 100))
     
     def reset_filepath(self, filepath):
         self.line_number = -1
@@ -790,7 +790,7 @@ class Renderer():
             #ptime.sleep(0.5)
             self.turn_over()
             glfw.poll_events()
-            GL.glViewport(0, 0, 200, 200)
+        self.on_exit(restart=False)
     
     def turn_over(self):
         self.monitor_midi()
@@ -801,22 +801,26 @@ class Renderer():
         
         if len(self.previews_waiting_to_paint) > 0:
             w = 0
+            h1 = 0
             h = 0
             for render, result, rp in self.previews_waiting_to_paint:
                 w = render.rect.w
-                h += render.rect.h
+                h1 = render.rect.h
+                h += render.rect.h + 1
                 
+            glfw.set_window_size(self.window, int(w/2), int(h/2))
             GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
             with skia_surface(self.window, Rect(0, 0, w, h)) as surface:
                 with surface as canvas:
-                    for render, result, rp in self.previews_waiting_to_paint:              
-                        render.draw_preview(canvas, result, rp)
+                    for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
+                        result.translate(0, -h1*idx)
+                        render.draw_preview(canvas, Rect(0, -h1*idx-idx, w, h1), result, rp)
                         #canvas.drawCircle(100, 100, 40, skia.Paint(Color=skia.ColorGREEN))
                 surface.flushAndSubmit()
                 glfw.swap_buffers(self.window)
 
-                #GL.glViewport(0, 0, w, h)
+                #GL.glViewport(0, 0, int(w/2), int(h/2))
             #print(">>", self.previews_waiting_to_paint)
         self.previews_waiting_to_paint = []
 
