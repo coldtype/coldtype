@@ -56,6 +56,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             elif method == "stroke" and args[0].get("weight") == 0:
                 pass
             else:
+                canvas.save()
                 self.applyDATAttribute(attrs, attr)
                 canvas.drawPath(self.path, self.paint)
                 canvas.restore()
@@ -83,7 +84,8 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
     def image(self, src=None, opacity=1, rect=None):
         image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(src)))
         matrix = skia.Matrix()
-        #matrix.setScale(0.5, 0.5)
+        matrix.setScale(0.5, 0.5)
+        #self.paint.setColor(skia.ColorTRANSPARENT)
         self.paint.setShader(image.makeShader(
             skia.TileMode.kRepeat,
             skia.TileMode.kRepeat,

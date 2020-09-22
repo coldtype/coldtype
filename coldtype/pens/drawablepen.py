@@ -34,7 +34,7 @@ class DrawablePenMixin(object):
         else:
             attrs = self.dat.attrs["default"]
         for attr in attrs.items():
-            if attr:
+            if attr and attr[-1]:
                 yield attrs, attr
 
     def FindPens(pens):

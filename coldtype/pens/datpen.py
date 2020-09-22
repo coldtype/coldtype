@@ -368,7 +368,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         if field: # getting, not setting
             return self.attrs.get(tag).get(field)
         
-        attrs = dict()
+        attrs = dict(shadow=None)
         if tag and self.attrs.get(tag):
             attrs = self.attrs[tag]
         else:

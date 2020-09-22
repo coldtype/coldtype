@@ -11,6 +11,7 @@ from typing import Tuple
 from random import shuffle
 from runpy import run_path
 from subprocess import call, Popen
+from datetime import datetime
 
 import skia
 import coldtype
@@ -774,6 +775,7 @@ class Renderer():
                 h += render.rect.h + 1
             
             h -= 1
+            #h += 20
             
             frect = Rect(0, 0, w, h)
 
@@ -802,9 +804,12 @@ class Renderer():
                 SkiaPen.CompositeToCanvas(DATPen().f(0.3).rect(frect), frect, canvas)
 
                 for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
-                    result.translate(0, -rects[idx].y)
-                    rect = rects[idx]
+                    #result.translate(0, -rects[idx].y)
+                    rect = rects[idx].offset((w-rects[idx].w)/2, 0)
                     self.draw_preview(canvas, rect, (render, result, rp))
+                
+                #paint = skia.Paint(AntiAlias=True, Color=skia.ColorWHITE)
+                #canvas.drawString(datetime.now().strftime("%H:%M:%S"), 10, h-5, skia.Font(None, 17), paint)
             
             surface.flushAndSubmit()
             glfw.swap_buffers(self.window)
@@ -814,8 +819,12 @@ class Renderer():
         self.server.serveonce()
 
     def draw_preview(self, canvas, rect, waiter):
-        render, result, rp = waiter
-        render.draw_preview(canvas, rect, result, rp)
+        surface = skia.Surface(rect.w, rect.h)
+        with surface as canvas2:
+            render, result, rp = waiter
+            render.draw_preview(canvas2, render.rect, result, rp)
+        image = surface.makeImageSnapshot()
+        canvas.drawImage(image, rect.x, rect.y)
     
     def on_modified(self, event):
         path = Path(event.src_path)
