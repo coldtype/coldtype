@@ -201,14 +201,12 @@ class Renderer():
         return pargs, parser
 
     def __init__(self, parser, no_socket_ok=False):
-        self.dead = False
-
         try:
-            self.user_config = json.loads(Path("~/coldtype.json").expanduser().read_text())
-            self.midi_mapping = self.user_config.get("midi", {})
+            py_config = run_path(str(Path("~/coldtype.py").expanduser()))
+            self.midi_mapping = py_config.get("MIDI", {})
         except FileNotFoundError:
             print(">>> no coldtype config found <<<")
-            self.user_config = {}
+            self.midi_mapping = {}
         except json.decoder.JSONDecodeError:
             print(">>> syntax error in ~/coldtype.json <<<")
             sys.exit(0)
@@ -244,6 +242,7 @@ class Renderer():
         self.observers = []
         self.waiting_to_render = []
         self.previews_waiting_to_paint = []
+        self.playing = 0
 
         self.reloadables = [
             #coldtype.pens.datpen,
@@ -261,7 +260,7 @@ class Renderer():
             if not glfw.init():
                 raise RuntimeError('glfw.init() failed')
             glfw.window_hint(glfw.STENCIL_BITS, 8)
-            glfw.window_hint(glfw.FOCUS_ON_SHOW, glfw.FALSE)
+            #glfw.window_hint(glfw.FOCUS_ON_SHOW, glfw.FALSE)
             self.window = glfw.create_window(int(50), int(50), '', None, None)
             glfw.make_context_current(self.window)
             glfw.set_key_callback(self.window, self.on_key)
@@ -677,7 +676,7 @@ class Renderer():
                     #     self.listen_to_stdin(),
                     #     self.listen_to_glfw())
                 except TypeError:
-                    self.on_exit(restart=True)
+                    self.on_exit(restart=False)
             else:
                 self.on_exit()
     
@@ -713,6 +712,8 @@ class Renderer():
                 self.on_action(Action.PreviewStoryboardPrev)
             elif key == glfw.KEY_RIGHT:
                 self.on_action(Action.PreviewStoryboardNext)
+            elif key == glfw.KEY_SPACE:
+                self.on_action(Action.PreviewPlay)
     
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
@@ -749,8 +750,13 @@ class Renderer():
         if action in [Action.PreviewStoryboard, Action.RenderAll, Action.RenderWorkarea]:
             self.reload_and_render(action)
             return True
-        elif action in [Action.PreviewStoryboardNext, Action.PreviewStoryboardPrev]:
-            increment = 1 if action == Action.PreviewStoryboardNext else -1
+        elif action in [Action.PreviewStoryboardNext, Action.PreviewStoryboardPrev, Action.PreviewPlay]:
+            if action == Action.PreviewPlay:
+                if self.playing == 0:
+                    self.playing = 1
+                else:
+                    self.playing = 0
+            increment = -1 if action == Action.PreviewStoryboardPrev else 1
             for render in self.last_renders:
                 if hasattr(render, "storyboard"):
                     for idx, fidx in enumerate(render.storyboard):
@@ -828,7 +834,7 @@ class Renderer():
     #         await self.on_stdin(line.decode("utf-8").strip())
     
     def listen_to_glfw(self):
-        while not glfw.window_should_close(self.window) and not self.dead:
+        while not glfw.window_should_close(self.window):
             #ptime.sleep(0.5)
             self.turn_over()
             global last_line
@@ -836,6 +842,8 @@ class Renderer():
                 self.on_stdin(last_line.strip())
                 last_line = None
             glfw.poll_events()
+            if self.playing != 0:
+                self.on_action(Action.PreviewStoryboardNext)
         self.on_exit(restart=False)
     
     def turn_over(self):
@@ -854,12 +862,15 @@ class Renderer():
                 h1 = render.rect.h
                 h += render.rect.h + 1
 
-            ww = int(w/2)
-            wh = int(h/2)    
+            monitor = glfw.get_primary_monitor()
+            scale_x, scale_y = glfw.get_monitor_content_scale(monitor)
+            ww = int(w/scale_x)
+            wh = int(h/scale_y)
             glfw.set_window_size(self.window, ww, wh)
-            screen = glfw.get_primary_monitor()
-            sx, sy, sw, sh = glfw.get_monitor_workarea(screen)
-            #glfw.set_window_pos(self.window, sw-ww, sy)
+            #monitor = glfw.get_window_monitor(self.window)
+            #print(screen)
+            sx, sy, sw, sh = glfw.get_monitor_workarea(monitor)
+            glfw.set_window_pos(self.window, sw-ww, sy)
 
 
             GL.glClear(GL.GL_COLOR_BUFFER_BIT)
@@ -917,7 +928,7 @@ class Renderer():
                     if self.args.midi_info:
                         print(device, msg)
                     nn = msg.getNoteNumber()
-                    action = self.midi_mapping[device]["note_on"].get(str(nn))
+                    action = self.midi_mapping[device]["note_on"].get(nn)
                     if action:
                         self.on_message({}, action)
     
@@ -931,8 +942,6 @@ class Renderer():
                 r.terminate()
 
     def on_exit(self, restart=False):
-        self.dead = True
-
         if self.args.watch:
            print(f"<EXIT(restart:{restart})>")
         glfw.terminate()

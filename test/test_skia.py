@@ -20,7 +20,7 @@ def render(f):
             .align(f.a.r)
             .rotate(-5)
             .translate(0, 10)
-            .f(0, 0, 1)
+            .f(0, 1, 0)
             .understroke(sw=30)
             .tag("__default__")),
         (DATPen()
