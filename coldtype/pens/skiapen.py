@@ -77,6 +77,15 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
     def gradient(self, gradient):
         self.paint.setShader(skia.GradientShader.MakeLinear([s[1].xy() for s in gradient.stops], [s[0].skia() for s in gradient.stops]))
     
+    def image(self, src=None, opacity=None, rect=None):
+        print(self, src, opacity, rect)
+        pass
+        #self.paint.setStyle(skia.Paint.kFill_Style)
+        #self.paint.setColor(skia.ColorCYAN)
+    
+    def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
+        return
+    
     def Composite(pens, rect, save_to, scale=2):
         #rect = rect.scale(scale)
         surface = skia.Surface(rect.w, rect.h)

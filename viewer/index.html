@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8" />
+    <title>Coldtype</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';"/>
+    <link rel="stylesheet" type="text/css" href="./assets/viewer.css"/>
+    <script src="./assets/zepto.js"></script>
+    <script src="./assets/lodash.js"></script>
+</head>
+<body>
+    <div id="container">
+        <div class="plain"><h3>Welcome to Coldtype</h3></div>
+    </div>
+
+    <script language="javascript" type="text/javascript">
+
+        var lastTime = (new Date()).getTime();
+        var connected = false;
+        var ws = null;
+        var shouldClear = false;
+
+        function reportTextarea(e) {
+            var $ta = $(e.target);
+            ws.send(JSON.stringify({action:"ui_callback", type:"textarea", value: $ta.val(), id: $ta.attr("id")}));
+        }
+
+        function addListeners() {
+            $("#container textarea").on("keyup", _.debounce(reportTextarea, 250));
+        }
+
+        setTimeout(connectToWebsocket, 100);
+
+        function connectToWebsocket() {
+            if (connected) {
+                return;
+            }
+            console.log("attempting to connect...");
+            const WS_URL = "ws://localhost:8007"
+            var websocket = new WebSocket(WS_URL);
+            websocket.onopen = function (evt) { onOpen(evt) };
+            websocket.onclose = function (evt) { onClose(evt) };
+            websocket.onmessage = function (evt) { onMessage(evt) };
+            websocket.onerror = function (evt) { onError(evt) };
+            ws = websocket;
+
+            function onOpen(evt) {
+                console.log("connected\n");
+                connected = true;
+            }
+
+            function onClose(evt) {
+                console.log("disconnected\n");
+                connected = false;
+                setTimeout(connectToWebsocket, 1000);
+            }
+
+            function onMessage(evt) {
+                let container = document.querySelector("#container");
+                let jdata = JSON.parse(evt.data);
+                if (jdata.clear) {
+                    shouldClear = true;
+                } else if (jdata.html) {
+                    if (shouldClear) {
+                        container.innerHTML = "";
+                        shouldClear = false;
+                    }
+                    container.innerHTML = container.innerHTML + jdata.html;
+                    $('#container').find("textarea").change()
+                    addListeners();
+                } else {
+                    console.log(">>>", jdata);
+                }
+            }
+
+            function onError(evt) {
+                console.log('error: ' + evt.data + '\n');
+            }
+        }
+    </script>
+</body>
+</html>

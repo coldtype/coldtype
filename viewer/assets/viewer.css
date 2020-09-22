@@ -1,0 +1,97 @@
+@font-face {
+    font-family: 'RecMonoCasualItalicWeb';
+    src: url('RecMono-CasualItalic.ttf');
+    font-weight: 500;
+    font-style: normal;
+}
+
+body {
+    background: #eee;
+    font-family: RecMonoCasualItalicWeb;
+}
+
+#container {
+    /* margin-top: 20px; */
+    margin-bottom: 50px;
+}
+
+#searchbar {
+    position: fixed;
+    bottom: 0px;
+    right: 0px;
+    width: 100%;
+    background: #333;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#searchbar-input {
+    background: transparent;
+    color: white;
+    padding: 5px;
+    border: none;
+    font-family: RecMonoCasualItalicWeb, monospace;
+    font-size: 18px;
+    width: 100%;
+    z-index: 1000;
+}
+
+#searchdocs::placeholder {
+    color: rgba(255,255,255,0.5);
+}
+
+.plain {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.page {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    background: white;
+    display: block;
+    position: relative;
+    margin: auto auto;
+    margin-bottom: 10px;
+}
+
+.page svg {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+}
+
+.plain svg {
+    display: block;
+}
+
+.drawbot-render svg {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+pre {
+    font-family: RecMonoCasualItalicWeb, monospace;
+    background: royalblue;
+    border: 3px solid dodgerblue;
+    padding: 5px;
+    color: white;
+    margin: 0;
+    text-align: left;
+    font-size: 12px;
+}
+
+h3 {
+    color: #555;
+    text-align: center;
+    font-style: italic;
+    background: whitesmoke;
+    margin: 0;
+    padding: 10px 10px 13px;
+    border: 1px solid white;
+}
+
+#container textarea {
+    width: 50%;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-family: RecMonoCasualItalicWeb;
+}

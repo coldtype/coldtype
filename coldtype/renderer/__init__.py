@@ -767,7 +767,7 @@ class Renderer():
             h1 = 0
             h = 0
             for render, result, rp in self.previews_waiting_to_paint:
-                w = render.rect.w
+                w = max(render.rect.w, w)
                 h1 = render.rect.h
                 h += render.rect.h + 1
 
@@ -785,7 +785,8 @@ class Renderer():
             GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
             context = skia.GrDirectContext.MakeGL()
-            backend_render_target = skia.GrBackendRenderTarget(int(w), int(h), 0, 0,
+            backend_render_target = skia.GrBackendRenderTarget(
+                int(w), int(h), 0, 0,
                 skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
             surface = skia.Surface.MakeFromBackendRenderTarget(
                 context, backend_render_target, skia.kBottomLeft_GrSurfaceOrigin,
@@ -796,7 +797,8 @@ class Renderer():
             with surface as canvas:
                 for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
                     result.translate(0, -h1*idx)
-                    render.draw_preview(canvas, Rect(0, -h1*idx-idx, w, h1), result, rp)
+                    rect = Rect(0, -h1*idx-idx, w, h1)
+                    self.draw_preview(canvas, rect, (render, result, rp))
             
             surface.flushAndSubmit()
             glfw.swap_buffers(self.window)
@@ -805,17 +807,9 @@ class Renderer():
         self.previews_waiting_to_paint = []
         self.server.serveonce()
 
-    # async def stream_as_generator(self, stream):
-    #     loop = asyncio.get_event_loop()
-    #     reader = asyncio.StreamReader(loop=loop)
-    #     reader_protocol = asyncio.StreamReaderProtocol(reader)
-    #     await loop.connect_read_pipe(lambda: reader_protocol, stream)
-
-    #     while True:
-    #         line = await reader.readline()
-    #         if not line:  # EOF.
-    #             break
-    #         yield line
+    def draw_preview(self, canvas, rect, waiter):
+        render, result, rp = waiter
+        render.draw_preview(canvas, rect, result, rp)
     
     def on_modified(self, event):
         path = Path(event.src_path)
