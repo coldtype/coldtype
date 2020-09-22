@@ -763,16 +763,19 @@ class Renderer():
                 self.reload_and_render(action, path)
             self.waiting_to_render = []
         
+        dscale = 1.0
         rects = []
+
         if len(self.previews_waiting_to_paint) > 0:
             w = 0
             lh = -1
             h = 0
             for render, result, rp in self.previews_waiting_to_paint:
-                w = max(render.rect.w, w)
-                rects.append(Rect(0, lh+1, render.rect.w, render.rect.h))
-                lh += render.rect.h + 1
-                h += render.rect.h + 1
+                sr = render.rect.scale(dscale, "mnx", "mny").round()
+                w = max(sr.w, w)
+                rects.append(Rect(0, lh+1, sr.w, sr.h))
+                lh += sr.h + 1
+                h += sr.h + 1
             
             h -= 1
             #h += 20
@@ -806,7 +809,7 @@ class Renderer():
                 for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
                     #result.translate(0, -rects[idx].y)
                     rect = rects[idx].offset((w-rects[idx].w)/2, 0)
-                    self.draw_preview(canvas, rect, (render, result, rp))
+                    self.draw_preview(dscale, canvas, rect, (render, result, rp))
                 
                 #paint = skia.Paint(AntiAlias=True, Color=skia.ColorWHITE)
                 #canvas.drawString(datetime.now().strftime("%H:%M:%S"), 10, h-5, skia.Font(None, 17), paint)
@@ -818,11 +821,11 @@ class Renderer():
         self.previews_waiting_to_paint = []
         self.server.serveonce()
 
-    def draw_preview(self, canvas, rect, waiter):
+    def draw_preview(self, scale, canvas, rect, waiter):
         surface = skia.Surface(rect.w, rect.h)
         with surface as canvas2:
             render, result, rp = waiter
-            render.draw_preview(canvas2, render.rect, result, rp)
+            render.draw_preview(scale, canvas2, render.rect, result, rp)
         image = surface.makeImageSnapshot()
         canvas.drawImage(image, rect.x, rect.y)
     

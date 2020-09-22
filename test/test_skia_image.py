@@ -4,7 +4,7 @@ co = Font("assets/ColdtypeObviously.designspace")
 
 img = Path("test/renders/test_skia_image_is_image.png")
 
-@renderable(rect=(1000, 1000))
+#@renderable(rect=(1000, 1000))
 def uses_image(r):
     return DATPenSet([
         DATPen().oval(r.inset(10)).f(hsl(0.5)),

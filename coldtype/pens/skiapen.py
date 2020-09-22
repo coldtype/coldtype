@@ -36,8 +36,9 @@ class SkiaPathPen(BasePen):
 
 
 class SkiaPen(DrawablePenMixin, SkiaPathPen):
-    def __init__(self, dat, rect, canvas, style=None):
+    def __init__(self, dat, rect, canvas, scale, style=None):
         super().__init__(dat, rect.h)
+        self.scale = scale
         self.canvas = canvas
         self.rect = rect
 
@@ -102,14 +103,14 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         if clip:
             if isinstance(clip, Rect):
                 skia.Rect()
-                sr = skia.Rect(*clip.flip(self.rect.h).mnmnmxmx())
+                sr = skia.Rect(*clip.scale(self.scale, "mnx", "mny").flip(self.rect.h).mnmnmxmx())
                 self.canvas.clipRect(sr)
         self.paint.setColor(skia.ColorBLACK)
         self.paint.setImageFilter(skia.ImageFilters.DropShadow(0, 0, radius, radius, color.with_alpha(alpha).skia()))
         #self.paint.setBlendMode(skia.BlendMode.kClear)
         return
     
-    def Composite(pens, rect, save_to, scale=2):
+    def Composite(pens, rect, save_to, scale=1):
         #rect = rect.scale(scale)
         surface = skia.Surface(rect.w, rect.h)
         with surface as canvas:
@@ -119,9 +120,12 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         image.save(save_to, skia.kPNG)
     
     def CompositeToCanvas(pens, rect, canvas, scale=1):
+        if scale != 1:
+            pens.scale(scale, scale, Point((0, 0)))
+
         def draw(pen, state, data):
             if state == 0:
-                SkiaPen(pen, rect, canvas)
+                SkiaPen(pen, rect, canvas, scale)
         
         if isinstance(pens, DATPen):
             pens = [pens]

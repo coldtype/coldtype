@@ -4,7 +4,7 @@ from enum import Enum
 from subprocess import run
 from pathlib import Path
 
-from coldtype.geometry import Rect
+from coldtype.geometry import Rect, Point
 from coldtype.color import normalize_color
 from coldtype.animation import Timeable, Frame
 from coldtype.animation.timeline import Timeline
@@ -108,9 +108,10 @@ class renderable():
         else:
             previewer.send(SVGPen.Composite(result, self.rect, viewBox=True), bg=self.bg, max_width=800)
     
-    def draw_preview(self, canvas:skia.Canvas, rect, result, render_pass):
-        SkiaPen.CompositeToCanvas(DATPen().rect(self.rect).f(self.bg).translate(0, -rect.y), self.rect, canvas)
-        SkiaPen.CompositeToCanvas(result, self.rect, canvas)
+    def draw_preview(self, scale, canvas:skia.Canvas, rect, result, render_pass):
+        sr = self.rect.scale(scale, "mnx", "mxx")
+        SkiaPen.CompositeToCanvas(DATPen().rect(sr).f(self.bg), sr, canvas)
+        SkiaPen.CompositeToCanvas(result, sr, canvas, scale)
 
 
 class drawbot_script(renderable):

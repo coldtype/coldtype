@@ -425,6 +425,9 @@ class Rect():
 
     def rect(self):
         return [self.x, self.y, self.w, self.h]
+    
+    def round(self):
+        return Rect([int(round(n)) for n in self])
 
     def xy(self):
         return [self.x, self.y]
