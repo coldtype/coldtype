@@ -2,6 +2,8 @@ import sys, os, re, signal, tracemalloc
 import tempfile, websockets, traceback, threading
 import argparse, importlib, inspect, json, ast, math
 
+from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
+
 import time as ptime
 from enum import Enum
 from pathlib import Path
@@ -25,7 +27,7 @@ from coldtype.pens.skiapen import SkiaPen
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
-from coldtype.viewer import PersistentPreview, WEBSOCKET_ADDR, AbstractPreview
+from coldtype.viewer import PersistentPreview, WEBSOCKET_PORT, AbstractPreview
 
 try:
     import drawBot as db
@@ -77,9 +79,27 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
+clients = []
+
+class SimpleEcho(WebSocket):
+    def handleMessage(self):
+        for client in clients:
+            if client != self:
+                # self.address[0]
+                client.sendMessage(self.data)
+
+    def handleConnected(self):
+        print(self.address, 'connected')
+        clients.append(self)
+
+    def handleClose(self):
+        clients.remove(self)
+        print(self.address, 'closed')
+
+
+# https://stackoverflow.com/questions/27174736/how-to-read-most-recent-line-from-stdin-in-python
 last_line = ''
 new_line_event = threading.Event()
-
 
 def keep_last_line():
     global last_line, new_line_event
@@ -218,7 +238,9 @@ class Renderer():
         self.reset_filepath(self.args.file if hasattr(self.args, "file") else None)
         self.layers = [l.strip() for l in self.args.layers.split(",")] if self.args.layers else []
         
-        if self.args.glfw:
+        self.server = SimpleWebSocketServer('', WEBSOCKET_PORT, SimpleEcho)
+        
+        if True and self.args.glfw:
             self.preview = None
         else:
             self.preview = PersistentPreview()
@@ -296,7 +318,6 @@ class Renderer():
                     raise Exception("Cannot run drawbot program without drawBot installed")
                 else:
                     db.newDrawing()
-            print("REALODING")
             self.program = run_path(str(self.filepath))
             if load_drawbot:
                 with tempfile.NamedTemporaryFile(suffix=".svg") as tf:
@@ -788,7 +809,7 @@ class Renderer():
                 self.send_to_external(None, workarea_update=True, start=start, end=end)
             else:
                 print("No CTI/trackGroups found")
-        elif message.get("trigger_from_app"):
+        elif action in EditAction:
             if action in [EditAction.SelectWorkarea]:
                 self.send_to_external(action, serialization_request=True)
             else:
@@ -804,8 +825,8 @@ class Renderer():
                 kwargs["action"] = action.value
             kwargs["prefix"] = self.filepath.stem
             kwargs["fps"] = animation.timeline.fps
-            if self.preview:
-                self.preview.send(json.dumps(kwargs), full=True)
+            for client in clients:
+                client.sendMessage(json.dumps(kwargs))
     
     def process_ws_message(self, message):
         try:
@@ -887,6 +908,8 @@ class Renderer():
                 #GL.glViewport(0, 0, int(w/2), int(h/2))
             #print(">>", self.previews_waiting_to_paint)
         self.previews_waiting_to_paint = []
+
+        self.server.serveonce()
 
     # async def stream_as_generator(self, stream):
     #     loop = asyncio.get_event_loop()

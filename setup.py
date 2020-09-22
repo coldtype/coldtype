@@ -55,14 +55,15 @@ setuptools.setup(
         "ufo2ft",
         "unicodedata2",
         "numpy",
-        "websocket-client",
-        "websockets",
+        #"websocket-client",
+        #"websockets",
         "watchdog",
         "noise",
         "PyOpenGL",
         "PyOpenGL-accelerate",
         #"rtmidi",
         "glfw",
+        "SimpleWebSocketServer",
         #"fontgoggles @ http://github.com/goodhertz/fontgoggles/archive/master.zip"
     ],
     classifiers=[
