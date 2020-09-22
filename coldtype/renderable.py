@@ -109,7 +109,7 @@ class renderable():
             previewer.send(SVGPen.Composite(result, self.rect, viewBox=True), bg=self.bg, max_width=800)
     
     def draw_preview(self, canvas:skia.Canvas, rect, result, render_pass):
-        SkiaPen.CompositeToCanvas(DATPen().rect(rect).f(self.bg), self.rect, canvas)
+        SkiaPen.CompositeToCanvas(DATPen().rect(self.rect).f(self.bg).translate(0, -rect.y), self.rect, canvas)
         SkiaPen.CompositeToCanvas(result, self.rect, canvas)
 
 

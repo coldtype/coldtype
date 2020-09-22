@@ -762,14 +762,20 @@ class Renderer():
                 self.reload_and_render(action, path)
             self.waiting_to_render = []
         
+        rects = []
         if len(self.previews_waiting_to_paint) > 0:
             w = 0
-            h1 = 0
+            lh = -1
             h = 0
             for render, result, rp in self.previews_waiting_to_paint:
                 w = max(render.rect.w, w)
-                h1 = render.rect.h
+                rects.append(Rect(0, lh+1, render.rect.w, render.rect.h))
+                lh += render.rect.h + 1
                 h += render.rect.h + 1
+            
+            h -= 1
+            
+            frect = Rect(0, 0, w, h)
 
             monitor = glfw.get_primary_monitor()
             scale_x, scale_y = glfw.get_monitor_content_scale(monitor)
@@ -777,10 +783,8 @@ class Renderer():
             wh = int(h/scale_y)
             glfw.set_window_size(self.window, ww, wh)
             #monitor = glfw.get_window_monitor(self.window)
-            #print(screen)
             sx, sy, sw, sh = glfw.get_monitor_workarea(monitor)
             glfw.set_window_pos(self.window, sw-ww, sy)
-
 
             GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
@@ -795,9 +799,11 @@ class Renderer():
             assert surface is not None
 
             with surface as canvas:
+                SkiaPen.CompositeToCanvas(DATPen().f(0.3).rect(frect), frect, canvas)
+
                 for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
-                    result.translate(0, -h1*idx)
-                    rect = Rect(0, -h1*idx-idx, w, h1)
+                    result.translate(0, -rects[idx].y)
+                    rect = rects[idx]
                     self.draw_preview(canvas, rect, (render, result, rp))
             
             surface.flushAndSubmit()

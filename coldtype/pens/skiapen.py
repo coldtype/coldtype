@@ -38,6 +38,8 @@ class SkiaPathPen(BasePen):
 class SkiaPen(DrawablePenMixin, SkiaPathPen):
     def __init__(self, dat, rect, canvas, style=None):
         super().__init__(dat, rect.h)
+        self.canvas = canvas
+        self.rect = rect
 
         all_attrs = list(self.findStyledAttrs(style))
         skia_paint_kwargs = dict(AntiAlias=True)
@@ -56,6 +58,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             else:
                 self.applyDATAttribute(attrs, attr)
                 canvas.drawPath(self.path, self.paint)
+                canvas.restore()
     
     def fill(self, color):
         self.paint.setStyle(skia.Paint.kFill_Style)
@@ -77,13 +80,31 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
     def gradient(self, gradient):
         self.paint.setShader(skia.GradientShader.MakeLinear([s[1].xy() for s in gradient.stops], [s[0].skia() for s in gradient.stops]))
     
-    def image(self, src=None, opacity=None, rect=None):
-        print(self, src, opacity, rect)
-        pass
-        #self.paint.setStyle(skia.Paint.kFill_Style)
-        #self.paint.setColor(skia.ColorCYAN)
+    def image(self, src=None, opacity=1, rect=None):
+        image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(src)))
+        matrix = skia.Matrix()
+        #matrix.setScale(0.5, 0.5)
+        self.paint.setShader(image.makeShader(
+            skia.TileMode.kRepeat,
+            skia.TileMode.kRepeat,
+            matrix
+        ))
+        self.paint.setColorFilter(skia.ColorFilters.Matrix([
+            1, 0, 0, 0, 0,
+            0, 1, 0, 0, 0,
+            0, 0, 1, 0, 0,
+            0, 0, 0, opacity, 0
+        ]))
     
     def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
+        if clip:
+            if isinstance(clip, Rect):
+                skia.Rect()
+                sr = skia.Rect(*clip.flip(self.rect.h).mnmnmxmx())
+                self.canvas.clipRect(sr)
+        self.paint.setColor(skia.ColorBLACK)
+        self.paint.setImageFilter(skia.ImageFilters.DropShadow(0, 0, radius, radius, color.with_alpha(alpha).skia()))
+        #self.paint.setBlendMode(skia.BlendMode.kClear)
         return
     
     def Composite(pens, rect, save_to, scale=2):
