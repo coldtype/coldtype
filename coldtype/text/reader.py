@@ -2,7 +2,7 @@ from pathlib import Path
 from collections import OrderedDict
 from functools import partial
 
-import unicodedata, os, math
+import unicodedata, os, math, asyncio
 
 from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
@@ -79,21 +79,17 @@ def empty_writer(*args):
 class Font():
     # TODO support glyphs?
     def __init__(self, path, number=0):
-        #ufo = glyphsLib.load_to_ufos(self.fontFile)[0]
         self.path = Path(normalize_font_path(path))
         numFonts, opener, getSortInfo = getOpener(self.path)
         self.font:BaseFont = opener(self.path, number)
         self.font.cocoa = False
     
     def load(self):
-        #self.font.load(empty_writer)
-        self.font._syncLoad(None)
-        #print(">>> loaded", self.path.name)
+        asyncio.get_event_loop().run_until_complete(self.font.load(empty_writer))
+        return self
     
     def Preload(path):
-        font = Font(path)
-        font._syncLoad(None)
-        return font
+        return Font(path).load()
 
 class Style():
     def RegisterShorthandPrefix(prefix, expansion):
@@ -152,7 +148,7 @@ class Style():
         if isinstance(font, str):
             self.font:Font = Font(font)
             if isinstance(self.font.font, OTFFont):
-                self.font.font._syncLoad(None)
+                self.font.load() #font._syncLoad(None)
             else:
                 print("Editable font formats cannot be loaded synchronously")
 

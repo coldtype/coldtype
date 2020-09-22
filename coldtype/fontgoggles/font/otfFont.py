@@ -60,20 +60,6 @@ class OTFFont(_OTFBaseFont):
             with open(fontPath, "rb") as f:
                 self.fontData = f.read()
 
-    def _syncLoad(self, outputWriter=None):
-        fontData = self.fontData
-        f = io.BytesIO(fontData)
-        self.ttFont = TTFont(f, fontNumber=self.fontNumber, lazy=True)
-        if self.ttFont.flavor in ("woff", "woff2"):
-            self.ttFont.flavor = None
-            self.ttFont.recalcBBoxes = False
-            self.ttFont.recalcTimestamp = False
-            f = io.BytesIO()
-            self.ttFont.save(f, reorderTables=False)
-            fontData = f.getvalue()
-        self.ftFont = FTFont(fontData, fontNumber=self.fontNumber, ttFont=self.ttFont)
-        self.shaper = HBShape(fontData, fontNumber=self.fontNumber, ttFont=self.ttFont)
-
     async def load(self, outputWriter):
         fontData = self.fontData
         f = io.BytesIO(fontData)

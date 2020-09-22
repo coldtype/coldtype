@@ -55,9 +55,9 @@ def test_family_narrowing(r):
 
 
 @test()
-async def test_stroke_ufo(r):
+def test_stroke_ufo(r):
     hershey_gothic = Font("≈/hershey/Hershey-TriplexGothicGerman.ufo")
-    await hershey_gothic.load()
+    hershey_gothic.load()
     return StyledString("Grieß".upper(), Style(hershey_gothic, 200, tu=-100)).pens().f(None).s("hr", 0.5, 0.5).sw(3).align(r)
 
 

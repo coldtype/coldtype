@@ -122,23 +122,6 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 
-@contextlib.contextmanager
-def skia_surface(window, rect):
-    context = skia.GrDirectContext.MakeGL()
-    backend_render_target = skia.GrBackendRenderTarget(
-        int(rect.w),
-        int(rect.h),
-        0,  # sampleCnt
-        0,  # stencilBits
-        skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
-    surface = skia.Surface.MakeFromBackendRenderTarget(
-        context, backend_render_target, skia.kBottomLeft_GrSurfaceOrigin,
-        skia.kRGBA_8888_ColorType, skia.ColorSpace.MakeSRGB())
-    assert surface is not None
-    yield surface
-    context.abandonContext()
-
-
 def file_and_line_to_def(filepath, lineno):
     # https://julien.danjou.info/finding-definitions-from-a-source-file-and-a-line-number-in-python/
     candidate = None
@@ -801,19 +784,25 @@ class Renderer():
 
             GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-            with skia_surface(self.window, Rect(0, 0, w, h)) as surface:
-                with surface as canvas:
-                    for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
-                        result.translate(0, -h1*idx)
-                        render.draw_preview(canvas, Rect(0, -h1*idx-idx, w, h1), result, rp)
-                        #canvas.drawCircle(100, 100, 40, skia.Paint(Color=skia.ColorGREEN))
-                surface.flushAndSubmit()
-                glfw.swap_buffers(self.window)
+            context = skia.GrDirectContext.MakeGL()
+            backend_render_target = skia.GrBackendRenderTarget(int(w), int(h), 0, 0,
+                skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
+            surface = skia.Surface.MakeFromBackendRenderTarget(
+                context, backend_render_target, skia.kBottomLeft_GrSurfaceOrigin,
+                skia.kRGBA_8888_ColorType, skia.ColorSpace.MakeSRGB())
+            
+            assert surface is not None
 
-                #GL.glViewport(0, 0, int(w/2), int(h/2))
-            #print(">>", self.previews_waiting_to_paint)
+            with surface as canvas:
+                for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
+                    result.translate(0, -h1*idx)
+                    render.draw_preview(canvas, Rect(0, -h1*idx-idx, w, h1), result, rp)
+            
+            surface.flushAndSubmit()
+            glfw.swap_buffers(self.window)
+            context.abandonContext()
+        
         self.previews_waiting_to_paint = []
-
         self.server.serveonce()
 
     # async def stream_as_generator(self, stream):
