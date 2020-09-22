@@ -27,18 +27,15 @@ from coldtype.pens.skiapen import SkiaPen
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
-from coldtype.viewer import PersistentPreview, WEBSOCKET_PORT, AbstractPreview
+from coldtype.viewer import WEBSOCKET_PORT
 
 try:
     import drawBot as db
 except ImportError:
     db = None
 
-#try:
 import contextlib, glfw
 from OpenGL import GL
-#except:
-#    print("No OpenGL")
 
 try:
     import rtmidi
@@ -178,8 +175,6 @@ class Renderer():
             rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default="skia", choices=["drawbot", "cairo", "svg", "skia"], help="Which rasterization engine should coldtype use to create artifacts?"),
 
             raster_previews=parser.add_argument("-rp", "--raster-previews", action="store_true", default=False, help="Should rasters be displayed in the Coldtype viewer?"),
-
-            glfw=parser.add_argument("-gl", "--glfw", action="store_true", default=False, help="Should this use an internal GL window to show previews?"),
             
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
             
@@ -213,11 +208,7 @@ class Renderer():
 
             show_exit_code=parser.add_argument("-sec", "--show-exit-code", action="store_true", default=False, help=argparse.SUPPRESS),
 
-            show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS),
-            
-            reload_libraries=parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False, help=argparse.SUPPRESS),
-
-            drawbot=parser.add_argument("-db", "--drawbot", action="store_true", default=False, help=argparse.SUPPRESS))
+            show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS)),
         return pargs, parser
 
     def __init__(self, parser, no_socket_ok=False):
@@ -239,16 +230,6 @@ class Renderer():
         self.layers = [l.strip() for l in self.args.layers.split(",")] if self.args.layers else []
         
         self.server = SimpleWebSocketServer('', WEBSOCKET_PORT, SimpleEcho)
-        
-        if True and self.args.glfw:
-            self.preview = None
-        else:
-            self.preview = PersistentPreview()
-            if not no_socket_ok and not self.preview.ws:
-                print(f"\n\n{bcolors.FAIL}! Please start the coldtype viewer app !{bcolors.ENDC}\n\n")
-                raise Exception()
-            if self.preview:
-                self.preview.clear()
 
         self.program = None
         self.websocket = None
@@ -266,19 +247,7 @@ class Renderer():
         self.previews_waiting_to_paint = []
         self.playing = 0
 
-        self.reloadables = [
-            #coldtype.pens.datpen,
-            coldtype.text.reader,
-            #coldtype.text.composer,
-            coldtype.text,
-            coldtype
-        ]
-
-        if self.args.reload_libraries:
-            for r in self.reloadables:
-                self.watchees.append([Watchable.Library, Path(r.__file__)])
-
-        if self.args.glfw:
+        if self.args.watch:
             if not glfw.init():
                 raise RuntimeError('glfw.init() failed')
             glfw.window_hint(glfw.STENCIL_BITS, 8)
@@ -301,31 +270,13 @@ class Renderer():
     def show_error(self):
         print(">>> CAUGHT COLDTYPE RENDER")
         print(traceback.format_exc())
-        if self.preview:
-            self.preview.send(f"<pre>{traceback.format_exc()}</pre>", None)
     
     def show_message(self, message, scale=1):
-        if self.preview:
-            self.preview.send(f"<pre style='background:hsla(150, 50%, 50%);transform:scale({scale})'>{message}</pre>")
-        else:
-            print(message)
+        print(message)
 
     def reload(self, trigger):
         try:
-            load_drawbot = self.args.drawbot
-            if load_drawbot:
-                if not db:
-                    raise Exception("Cannot run drawbot program without drawBot installed")
-                else:
-                    db.newDrawing()
             self.program = run_path(str(self.filepath))
-            if load_drawbot:
-                with tempfile.NamedTemporaryFile(suffix=".svg") as tf:
-                    db.saveImage(tf.name)
-                    if self.preview:
-                        self.preview.clear()
-                        self.preview.send(f"<div class='drawbot-render'>{tf.read().decode('utf-8')}</div>", None)
-                db.endDrawing()
             for k, v in self.program.items():
                 if isinstance(v, coldtype.text.reader.Font):
                     v.load()
@@ -368,8 +319,6 @@ class Renderer():
             start = ptime.time()
 
         renders = self.renderables(trigger)
-        for render in renders:
-            render.preview = self.preview
         self.last_renders = renders
         preview_count = 0
         render_count = 0
@@ -428,20 +377,7 @@ class Renderer():
                             preview_result = render.runpost(result, rp)
                             preview_count += 1
                             if preview_result:
-                                if self.args.glfw:
-                                    self.previews_waiting_to_paint.append([render, preview_result, rp])
-                                    # GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-                                    # with skia_surface(self.window, render.rect.scale(1)) as surface:
-                                    #     with surface as canvas:
-                                    #         render.draw_preview(canvas, preview_result, rp)
-                                    #         #canvas.drawCircle(100, 100, 40, skia.Paint(Color=skia.ColorGREEN))
-                                    #     surface.flushAndSubmit()
-                                    #     glfw.swap_buffers(self.window)
-                                else:
-                                    if self.args.raster_previews:
-                                        self.rasterize(preview_result, render, output_path)
-                                        preview_result = output_path
-                                    render.send_preview(self.preview, preview_result, rp)
+                                self.previews_waiting_to_paint.append([render, preview_result, rp])
                         
                         if rendering:
                             did_render = True
@@ -586,25 +522,14 @@ class Renderer():
     def reload_and_render(self, trigger, watchable=None, indices=None):
         wl = len(self.watchees)
 
-        if self.args.reload_libraries and watchable == Watchable.Library:
-            # TODO limit this to what actually changed?
-            print("> reloading reloadables...")
-            try:
-                for m in self.reloadables:
-                    importlib.reload(m)
-            except:
-                self.show_error()
-
         try:
             self.reload(trigger)
             if self.program:
-                if self.preview:
-                    self.preview.clear()
                 preview_count, render_count = self.render(trigger, indices=indices)
                 if self.args.show_render_count:
                     print("render>", preview_count, "/", render_count)
             else:
-                self.preview.send("<pre>No program loaded!</pre>")
+                print(">>>>>>>>>>>> No program loaded! <<<<<<<<<<<<<<")
         except:
             self.show_error()
 
@@ -680,24 +605,8 @@ class Renderer():
                     self.midis = []
 
                 self.watch_file_changes()
-                try:
-                    if self.args.glfw:
-                        glfw.set_window_title(self.window, self.watchees[0][1].name)
-                        self.listen_to_glfw()
-                    else:
-                        try:
-                            while True:
-                                ptime.sleep(0.1)
-                                self.turn_over()
-                        except KeyboardInterrupt:
-                            self.on_exit()
-                    # pass
-                    # await asyncio.gather(
-                    #     self.listen_to_ws(),
-                    #     self.listen_to_stdin(),
-                    #     self.listen_to_glfw())
-                except TypeError:
-                    self.on_exit(restart=False)
+                glfw.set_window_title(self.window, self.watchees[0][1].name)
+                self.listen_to_glfw()
             else:
                 self.on_exit()
     
@@ -759,8 +668,6 @@ class Renderer():
         action, data = self.stdin_to_action(stdin)
         if action:
             if action == Action.PreviewIndices:
-                if self.preview:
-                    self.preview.clear()
                 self.render(action, indices=data)
             elif action == Action.RestartRenderer:
                 self.on_exit(restart=True)
@@ -783,8 +690,6 @@ class Renderer():
                     for idx, fidx in enumerate(render.storyboard):
                         nidx = (fidx + increment) % render.duration
                         render.storyboard[idx] = nidx
-                    if self.preview:
-                        self.preview.clear()
                     self.render(Action.PreviewStoryboard)
             return True
         elif action == Action.ArbitraryCommand:
@@ -970,8 +875,6 @@ class Renderer():
         glfw.terminate()
         self.reset_renderers()
         self.stop_watching_file_changes()
-        if self.preview:
-            self.preview.close()
         if self.args.memory:
             snapshot = tracemalloc.take_snapshot()
             top_stats = snapshot.statistics('traceback')
