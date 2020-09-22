@@ -374,26 +374,27 @@ class DATPen(RecordingPen, DATPenLikeObject):
         else:
             self.attrs[tag] = attrs
         for k, v in kwargs.items():
-            if k == "fill":
-                attrs[k] = normalize_color(v)
-            elif k == "stroke":
-                if not isinstance(v, dict):
-                    attrs[k] = dict(color=normalize_color(v))
+            if v:
+                if k == "fill":
+                    attrs[k] = normalize_color(v)
+                elif k == "stroke":
+                    if not isinstance(v, dict):
+                        attrs[k] = dict(color=normalize_color(v))
+                    else:
+                        attrs[k] = dict(weight=v.get("weight", 1), color=normalize_color(v.get("color", 0)))
+                elif k == "strokeWidth":
+                    if "stroke" in attrs:
+                        attrs["stroke"]["weight"] = v
+                        #if attrs["stroke"]["color"].a == 0:
+                        #    attrs["stroke"]["color"] = normalize_color((1, 0, 0.5))
+                    else:
+                        attrs["stroke"] = dict(color=normalize_color((1, 0, 0.5)), weight=v)
+                elif k == "shadow":
+                    if "color" in v:
+                        v["color"] = normalize_color(v["color"])
+                    attrs[k] = v
                 else:
-                    attrs[k] = dict(weight=v.get("weight", 1), color=normalize_color(v.get("color", 0)))
-            elif k == "strokeWidth":
-                if "stroke" in attrs:
-                    attrs["stroke"]["weight"] = v
-                    #if attrs["stroke"]["color"].a == 0:
-                    #    attrs["stroke"]["color"] = normalize_color((1, 0, 0.5))
-                else:
-                    attrs["stroke"] = dict(color=normalize_color((1, 0, 0.5)), weight=v)
-            elif k == "shadow":
-                if "color" in v:
-                    v["color"] = normalize_color(v["color"])
-                attrs[k] = v
-            else:
-                attrs[k] = v
+                    attrs[k] = v
         return self
     
     def getFrame(self, th=False, tv=False):
