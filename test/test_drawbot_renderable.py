@@ -37,4 +37,4 @@ def db_script_test(r):
         .sw(3)
         .db_drawPath())
 
-    saveImage("test/drawbot/saved_from_drawbot_test.pdf")
+    #saveImage("test/drawbot/saved_from_drawbot_test.pdf")
