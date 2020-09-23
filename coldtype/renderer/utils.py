@@ -84,18 +84,3 @@ def file_and_line_to_def(filepath, lineno):
                 candidate = item
     if candidate:
         return candidate.name
-
-
-# https://stackoverflow.com/questions/27174736/how-to-read-most-recent-line-from-stdin-in-python
-last_line = ''
-new_line_event = threading.Event()
-
-def keep_last_line():
-    global last_line, new_line_event
-    for line in sys.stdin:
-        last_line = line
-        new_line_event.set()
-
-keep_last_line_thread = threading.Thread(target=keep_last_line)
-keep_last_line_thread.daemon = True
-keep_last_line_thread.start()
