@@ -215,14 +215,13 @@ class DATPenLikeObject():
                 p.translate(xoffset+tracking_value*idx, 0)
         return self
     
-    def skew(self, x=0, y=0, unalign=True):
+    def skew(self, x=0, y=0, point=None):
         t = Transform()
-        if unalign != False:
-            point = self.bounds().point("SW") # maybe should be getFrame()?
-            t = t.translate(point.x, point.y)
+        if not point:
+            point = self.bounds().point("C") # maybe should be getFrame()?
+        t = t.translate(point.x, point.y)
         t = t.skew(x, y)
-        if unalign != False:
-            t = t.translate(-point.x, -point.y)
+        t = t.translate(-point.x, -point.y)
         return self.transform(t)
     
     def rotate(self, degrees, point=None):
@@ -369,32 +368,33 @@ class DATPen(RecordingPen, DATPenLikeObject):
         if field: # getting, not setting
             return self.attrs.get(tag).get(field)
         
-        attrs = {}
+        attrs = dict(shadow=None)
         if tag and self.attrs.get(tag):
             attrs = self.attrs[tag]
         else:
             self.attrs[tag] = attrs
         for k, v in kwargs.items():
-            if k == "fill":
-                attrs[k] = normalize_color(v)
-            elif k == "stroke":
-                if not isinstance(v, dict):
-                    attrs[k] = dict(color=normalize_color(v))
+            if v:
+                if k == "fill":
+                    attrs[k] = normalize_color(v)
+                elif k == "stroke":
+                    if not isinstance(v, dict):
+                        attrs[k] = dict(color=normalize_color(v))
+                    else:
+                        attrs[k] = dict(weight=v.get("weight", 1), color=normalize_color(v.get("color", 0)))
+                elif k == "strokeWidth":
+                    if "stroke" in attrs:
+                        attrs["stroke"]["weight"] = v
+                        #if attrs["stroke"]["color"].a == 0:
+                        #    attrs["stroke"]["color"] = normalize_color((1, 0, 0.5))
+                    else:
+                        attrs["stroke"] = dict(color=normalize_color((1, 0, 0.5)), weight=v)
+                elif k == "shadow":
+                    if "color" in v:
+                        v["color"] = normalize_color(v["color"])
+                    attrs[k] = v
                 else:
-                    attrs[k] = dict(weight=v.get("weight", 1), color=normalize_color(v.get("color", 0)))
-            elif k == "strokeWidth":
-                if "stroke" in attrs:
-                    attrs["stroke"]["weight"] = v
-                    #if attrs["stroke"]["color"].a == 0:
-                    #    attrs["stroke"]["color"] = normalize_color((1, 0, 0.5))
-                else:
-                    attrs["stroke"] = dict(color=normalize_color((1, 0, 0.5)), weight=v)
-            elif k == "shadow":
-                if "color" in v:
-                    v["color"] = normalize_color(v["color"])
-                attrs[k] = v
-            else:
-                attrs[k] = v
+                    attrs[k] = v
         return self
     
     def getFrame(self, th=False, tv=False):

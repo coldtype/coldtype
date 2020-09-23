@@ -10,7 +10,7 @@ More info available at: [coldtype.goodhertz.co](https://coldtype.goodhertz.co)
 
 setuptools.setup(
     name="coldtype",
-    version="0.0.6",
+    version="0.0.7",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",
@@ -36,16 +36,12 @@ setuptools.setup(
             'coldtype = coldtype.renderer:main'
         ],
     },
-    extras_require={
-        #"drawbot": [
-        #    "drawbot @ http://github.com/typemytype/drawbot/archive/master.zip"
-        #],
-    },
     install_requires=[
         "fontPens",
         "defcon",
         "mido",
         "skia-pathops",
+        "skia-python>=86.0",
         "easing-functions",
         "fonttools[woff,unicode,type1,lxml,ufo]",
         "freetype-py",
@@ -54,11 +50,14 @@ setuptools.setup(
         "ufo2ft",
         "unicodedata2",
         "numpy",
-        "websocket-client",
-        "websockets",
         "watchdog",
         "noise",
-        #"fontgoggles @ http://github.com/goodhertz/fontgoggles/archive/master.zip"
+        "PyOpenGL",
+        "PyOpenGL-accelerate",
+        "glfw",
+        "SimpleWebSocketServer",
+        #"rtmidi",
+        #"pynput",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -1,0 +1,1 @@
+fontmake -m assets/ColdtypeObviously.designspace -o variable --output-dir=assets

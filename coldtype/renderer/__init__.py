@@ -1,32 +1,31 @@
-import sys, os, re, signal
-from pathlib import Path
-
-import asyncio, tempfile, websockets, traceback
-import argparse, importlib, inspect, json, ast, math
+import sys, os, re, signal, tracemalloc
+import tempfile, traceback, threading
+import argparse, importlib, inspect, json, math
 
 import time as ptime
-from enum import Enum
+from pathlib import Path
 from typing import Tuple
 from random import shuffle
 from runpy import run_path
 from subprocess import call, Popen
-import tracemalloc
+from functools import partial
 
-import coldtype
+import skia, coldtype
 from coldtype.helpers import *
 from coldtype.geometry import Rect
-from coldtype.pens.svgpen import SVGPen
-from coldtype.pens.cairopen import CairoPen
-from coldtype.pens.drawbotpen import DrawBotPen
+from coldtype.pens.skiapen import SkiaPen
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
-from coldtype.viewer import PersistentPreview, WEBSOCKET_ADDR
+from coldtype.renderer.utils import *
+
+import contextlib, glfw
+from OpenGL import GL
 
 try:
-    import drawBot as db
+    import rtmidi
 except ImportError:
-    db = None
+    pass
 
 try:
     import psutil
@@ -35,61 +34,19 @@ except ImportError:
     process = None
 
 
-class Watchable(Enum):
-    Source = "Source"
-    Font = "Font"
-    Library = "Library"
-    Generic = "Generic"
+# https://stackoverflow.com/questions/27174736/how-to-read-most-recent-line-from-stdin-in-python
+last_line = ''
+new_line_event = threading.Event()
 
+def keep_last_line():
+    global last_line, new_line_event
+    for line in sys.stdin:
+        last_line = line
+        new_line_event.set()
 
-class EditAction(Enum):
-    Newline = "newline"
-    Tokenize = "tokenize"
-    TokenizeLine = "tokenize_line"
-    NewSection = "newsection"
-    Capitalize = "capitalize"
-    SelectWorkarea = "select_workarea"
-
-
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
-
-def bytesto(bytes):
-    r = float(bytes)
-    for i in range(2):
-        r = r / 1024
-    return(r)
-
-
-def chunks(lst, n):
-    """Yield successive n-sized chunks from lst."""
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]
-
-
-def file_and_line_to_def(filepath, lineno):
-    # https://julien.danjou.info/finding-definitions-from-a-source-file-and-a-line-number-in-python/
-    candidate = None
-    for item in ast.walk(ast.parse(filepath.read_text())):
-        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            if item.lineno > lineno:
-                continue
-            if candidate:
-                distance = lineno - item.lineno
-                if distance < (lineno - candidate.lineno):
-                    candidate = item
-            else:
-                candidate = item
-    if candidate:
-        return candidate.name
+keep_last_line_thread = threading.Thread(target=keep_last_line)
+keep_last_line_thread.daemon = True
+keep_last_line_thread.start()
 
 
 class Renderer():
@@ -104,19 +61,25 @@ class Renderer():
         pargs = dict(
             version=parser.add_argument("-v", "--version", action="store_true", default=False, help="Display version"),
 
-            watch=parser.add_argument("-w", "--watch", action="store_true", default=False, help="Watch for changes to source files"),
+            watch=parser.add_argument("-w", "--watch", action="store_true", default=True, help="Watch for changes to source files"),
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
             
-            rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default=None, choices=["drawbot", "cairo", "svg"], help="Which rasterization engine should coldtype use to create artifacts?"),
+            rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default="skia", choices=["drawbot", "cairo", "svg", "skia"], help="Which rasterization engine should coldtype use to create artifacts?"),
+
+            raster_previews=parser.add_argument("-rp", "--raster-previews", action="store_true", default=False, help="Should rasters be displayed in the Coldtype viewer?"),
             
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
+
+            preview_scale=parser.add_argument("-ps", "--preview-scale", type=float, default=1.0, help="What size should previews be shown at?"),
             
             all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
 
             multiplex=parser.add_argument("-mp", "--multiplex", action="store_true", default=False, help="Render in multiple processes"),
 
             memory=parser.add_argument("-m", "--memory", action="store_true", default=False, help="Show statistics about memory usage?"),
+
+            midi_info=parser.add_argument("-mi", "--midi-info", action="store_true", default=False, help="Show available MIDI devices"),
 
             is_subprocess=parser.add_argument("-isp", "--is-subprocess", action="store_true", default=False, help=argparse.SUPPRESS),
 
@@ -140,27 +103,39 @@ class Renderer():
 
             show_exit_code=parser.add_argument("-sec", "--show-exit-code", action="store_true", default=False, help=argparse.SUPPRESS),
 
-            show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS),
-            
-            reload_libraries=parser.add_argument("-rl", "--reload-libraries", action="store_true", default=False, help=argparse.SUPPRESS),
-
-            drawbot=parser.add_argument("-db", "--drawbot", action="store_true", default=False, help=argparse.SUPPRESS))
+            show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS)),
         return pargs, parser
 
     def __init__(self, parser, no_socket_ok=False):
+        try:
+            py_config = run_path(str(Path("~/coldtype.py").expanduser()))
+            self.py_config = py_config
+            self.midi_mapping = py_config.get("MIDI", {})
+            self.hotkey_mapping = py_config.get("HOTKEYS", {})
+        except FileNotFoundError:
+            print(">>> no coldtype config found <<<")
+            self.py_config = {}
+            self.midi_mapping = {}
+            self.hotkey_mapping = None
+        except json.decoder.JSONDecodeError:
+            print(">>> syntax error in ~/coldtype.json <<<")
+            sys.exit(0)
+
         sys.path.insert(0, os.getcwd())
 
         self.args = parser.parse_args()
+        if self.args.is_subprocess or self.args.all:
+            self.args.watch = False
+
         self.watchees = []
         self.reset_filepath(self.args.file if hasattr(self.args, "file") else None)
         self.layers = [l.strip() for l in self.args.layers.split(",")] if self.args.layers else []
         
-        self.preview = PersistentPreview()
-        if not no_socket_ok and not self.preview.ws:
-            print(f"\n\n{bcolors.FAIL}! Please start the coldtype viewer app !{bcolors.ENDC}\n\n")
-            raise Exception()
-        
-        self.preview.clear()
+        if self.args.watch:
+            self.server = echo_server()
+        else:
+            self.server = None
+
         self.program = None
         self.websocket = None
         self.exit_code = 0
@@ -173,18 +148,29 @@ class Renderer():
         self.completed_renderers = []
 
         self.observers = []
+        self.action_waiting = None
+        self.waiting_to_render = []
+        self.previews_waiting_to_paint = []
+        self.playing = 0
+        self.hotkeys = None
 
-        self.reloadables = [
-            #coldtype.pens.datpen,
-            coldtype.text.reader,
-            #coldtype.text.composer,
-            coldtype.text,
-            coldtype
-        ]
+        if self.args.watch:
+            if not glfw.init():
+                raise RuntimeError('glfw.init() failed')
+            glfw.window_hint(glfw.STENCIL_BITS, 8)
 
-        if self.args.reload_libraries:
-            for r in self.reloadables:
-                self.watchees.append([Watchable.Library, Path(r.__file__)])
+            if self.py_config.get("WINDOW_BACKGROUND"):
+                glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
+            if self.py_config.get("WINDOW_FLOAT"):
+                glfw.window_hint(glfw.FLOATING, glfw.TRUE)
+            
+            self.window = glfw.create_window(int(50), int(50), '', None, None)
+
+            if o := self.py_config.get("WINDOW_OPACITY"):
+                glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
+            
+            glfw.make_context_current(self.window)
+            glfw.set_key_callback(self.window, self.on_key)
     
     def reset_filepath(self, filepath):
         self.line_number = -1
@@ -200,29 +186,16 @@ class Renderer():
     def show_error(self):
         print(">>> CAUGHT COLDTYPE RENDER")
         print(traceback.format_exc())
-        self.preview.send(f"<pre>{traceback.format_exc()}</pre>", None)
     
     def show_message(self, message, scale=1):
-        self.preview.send(f"<pre style='background:hsla(150, 50%, 50%);transform:scale({scale})'>{message}</pre>")
+        print(message)
 
-    async def reload(self, trigger):
+    def reload(self, trigger):
         try:
-            load_drawbot = self.args.drawbot
-            if load_drawbot:
-                if not db:
-                    raise Exception("Cannot run drawbot program without drawBot installed")
-                else:
-                    db.newDrawing()
             self.program = run_path(str(self.filepath))
-            if load_drawbot:
-                with tempfile.NamedTemporaryFile(suffix=".svg") as tf:
-                    db.saveImage(tf.name)
-                    self.preview.clear()
-                    self.preview.send(f"<div class='drawbot-render'>{tf.read().decode('utf-8')}</div>", None)
-                db.endDrawing()
             for k, v in self.program.items():
                 if isinstance(v, coldtype.text.reader.Font):
-                    await v.load()
+                    v.load()
                     if v.path not in self.watchee_paths():
                         self.watchees.append([Watchable.Font, v.path])
                     for ext in v.font.getExternalFiles():
@@ -257,10 +230,11 @@ class Renderer():
                 return matches
         return _rs
     
-    async def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
+    def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
+        if not self.args.is_subprocess:
+            start = ptime.time()
+
         renders = self.renderables(trigger)
-        for render in renders:
-            render.preview = self.preview
         self.last_renders = renders
         preview_count = 0
         render_count = 0
@@ -299,6 +273,7 @@ class Renderer():
                     output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
                     if previewing:
                         output_path = output_folder / f"_previews/{prefix}_{rp.suffix}.{fmt}"
+                        output_path.parent.mkdir(exist_ok=True, parents=True)
 
                     if rp.single_layer and rp.single_layer != "__default__":
                         output_path = output_folder / f"layer_{rp.single_layer}/{prefix}_{rp.single_layer}_{rp.suffix}.{fmt}"
@@ -307,7 +282,7 @@ class Renderer():
                     rp.action = trigger
 
                     try:
-                        result = await render.run(rp)
+                        result = render.run(rp)
                         try:
                             if len(result) == 2 and isinstance(result[1], str):
                                 self.show_message(result[1])
@@ -315,10 +290,10 @@ class Renderer():
                         except:
                             pass
                         if previewing:
-                            preview_result = await render.runpost(result, rp)
+                            preview_result = render.runpost(result, rp)
                             preview_count += 1
                             if preview_result:
-                                render.send_preview(self.preview, preview_result, rp)
+                                self.previews_waiting_to_paint.append([render, preview_result, rp])
                         
                         if rendering:
                             did_render = True
@@ -354,15 +329,18 @@ class Renderer():
         if render_count > 0:
             self.show_message(f"Rendered {render_count}")
         
+        if not self.args.is_subprocess:
+            print("TIME >>>", ptime.time() - start)
+        
         return preview_count, render_count
 
-    async def render(self, trigger, indices=[]) -> Tuple[int, int]:
+    def render(self, trigger, indices=[]) -> Tuple[int, int]:
         if self.args.is_subprocess: # is a child process of a multiplexed render
             if trigger != Action.RenderIndices:
                 raise Exception("Invalid child process render action")
                 return 0, 0
             else:
-                p, r = await self._single_thread_render(trigger, indices=indices)
+                p, r = self._single_thread_render(trigger, indices=indices)
                 if not self.args.no_sound:
                     os.system("afplay /System/Library/Sounds/Pop.aiff")
                 self.exit_code = 5 # mark as child-process
@@ -385,7 +363,7 @@ class Renderer():
                 trigger = Action.RenderIndices
                 indices = [0, all_frames[-1]] # always render first & last from main, to trigger a filesystem-change detection in premiere
         
-        preview_count, render_count = await self._single_thread_render(trigger, indices)
+        preview_count, render_count = self._single_thread_render(trigger, indices)
         
         if not self.args.is_subprocess and render_count > 0:
             self.send_to_external(None, rendered=True)
@@ -413,6 +391,7 @@ class Renderer():
                 "coldtype",
                 sys.argv[1],
                 "-i", ",".join([str(s) for s in subslice]),
+                "-r", self.args.rasterizer,
                 "-isp",
                 "-l", ",".join(self.layers or []),
                 "-s", str(self.args.scale),
@@ -441,39 +420,35 @@ class Renderer():
         if render.self_rasterizing:
             print("Self rasterizing")
             return
+        
         scale = int(self.args.scale)
         rasterizer = self.args.rasterizer or render.rasterizer
 
         if rasterizer == "drawbot":
+            from coldtype.pens.drawbotpen import DrawBotPen
             DrawBotPen.Composite(content, render.rect, str(path), scale=scale)
+        elif rasterizer == "skia":
+            SkiaPen.Composite(content, render.rect, str(path), scale=scale)
         elif rasterizer == "svg":
+            from coldtype.pens.svgpen import SVGPen
             path.write_text(SVGPen.Composite(content, render.rect, viewBox=True))
         elif rasterizer == "cairo":
+            from coldtype.pens.cairopen import CairoPen
             CairoPen.Composite(content, render.rect, str(path), scale=scale)
         else:
             raise Exception(f"rasterizer ({rasterizer}) not supported")
     
-    async def reload_and_render(self, trigger, watchable=None, indices=None):
+    def reload_and_render(self, trigger, watchable=None, indices=None):
         wl = len(self.watchees)
 
-        if self.args.reload_libraries and watchable == Watchable.Library:
-            # TODO limit this to what actually changed?
-            print("> reloading reloadables...")
-            try:
-                for m in self.reloadables:
-                    importlib.reload(m)
-            except:
-                self.show_error()
-
         try:
-            await self.reload(trigger)
+            self.reload(trigger)
             if self.program:
-                self.preview.clear()
-                preview_count, render_count = await self.render(trigger, indices=indices)
+                preview_count, render_count = self.render(trigger, indices=indices)
                 if self.args.show_render_count:
                     print("render>", preview_count, "/", render_count)
             else:
-                self.preview.send("<pre>No program loaded!</pre>")
+                print(">>>>>>>>>>>> No program loaded! <<<<<<<<<<<<<<")
         except:
             self.show_error()
 
@@ -488,7 +463,8 @@ class Renderer():
             tracemalloc.start(10)
             self._last_memory = -1
         try:
-            asyncio.get_event_loop().run_until_complete(self.start())
+            #asyncio.get_event_loop().run_until_complete(self.start())
+            self.start()
         except KeyboardInterrupt:
             print("INTERRUPT")
             self.on_exit()
@@ -496,47 +472,94 @@ class Renderer():
             print("exit>", self.exit_code)
         sys.exit(self.exit_code)
 
-    async def start(self):
+    def start(self):
         if self.args.version:
             print(">>>", coldtype.__version__)
             should_halt = True
+        elif self.args.midi_info:
+            try:
+                midiin = rtmidi.RtMidiIn()
+                ports = range(midiin.getPortCount())
+                for p in ports:
+                    print(p, midiin.getPortName(p))
+            except:
+                print("Please run `pip install rtmidi` in your venv")
+                self.on_exit()
+                return
+            if not self.args.watch:
+                should_halt = True
+            else:
+                should_halt = self.before_start()
         else:
-            should_halt = await self.before_start()
+            should_halt = self.before_start()
         
         if should_halt:
             self.on_exit()
         else:
             if self.args.all:
-                await self.reload_and_render(Action.RenderAll)
+                self.reload_and_render(Action.RenderAll)
             elif self.args.indices:
                 indices = [int(x.strip()) for x in self.args.indices.split(",")]
-                await self.reload_and_render(Action.RenderIndices, indices=indices)
+                self.reload_and_render(Action.RenderIndices, indices=indices)
             else:
-                await self.reload_and_render(Action.Initial)
-            await self.on_start()
+                self.reload_and_render(Action.Initial)
+            self.on_start()
             if self.args.watch:
-                loop = asyncio.get_running_loop()
-                self.watch_file_changes()
                 try:
-                    await asyncio.gather(
-                        self.listen_to_ws(),
-                        self.listen_to_stdin())
-                except TypeError:
-                    self.on_exit(restart=True)
+                    midiin = rtmidi.RtMidiIn()
+                    lookup = {}
+                    self.midis = []
+                    for p in range(midiin.getPortCount()):
+                        lookup[midiin.getPortName(p)] = p
+
+                    for device, mapping in self.midi_mapping.items():
+                        if device in lookup:
+                            mapping["port"] = lookup[device]
+                            mi = rtmidi.RtMidiIn()
+                            mi.openPort(lookup[device])
+                            self.midis.append([device, mi])
+                        else:
+                            print(">>> no midi port found with that name <<<")
+                except:
+                    self.midis = []
+
+                self.watch_file_changes()
+                glfw.set_window_title(self.window, self.watchees[0][1].name)
+
+                self.hotkeys = None
+                try:
+                    if self.hotkey_mapping:
+                        from pynput import keyboard
+                        mapping = {}
+                        for k, v in self.hotkey_mapping.items():
+                            mapping[k] = partial(self.on_hotkey, k, v)
+                        #self.hotkeys = keyboard.GlobalHotKeys({
+                        #    "<cmd>+<f8>": self.on_hotkey
+                        #})
+                        self.hotkeys = keyboard.GlobalHotKeys(mapping)
+                        self.hotkeys.start()
+                except:
+                    pass
+
+                self.listen_to_glfw()
             else:
                 self.on_exit()
     
-    async def before_start(self):
+    def before_start(self):
         pass
 
-    async def on_start(self):
+    def on_start(self):
         pass
+
+    def on_hotkey(self, key_combo, action):
+        print("HOTKEY", key_combo)
+        self.action_waiting = action
     
-    async def on_message(self, message, action):
+    def on_message(self, message, action):
         if action:
             enum_action = self.lookup_action(action)
             if enum_action:
-                await self.on_action(enum_action, message)
+                self.on_action(enum_action, message)
             else:
                 print(">>> (", action, ") is not a recognized action")
 
@@ -551,6 +574,21 @@ class Renderer():
     
     def additional_actions(self):
         return []
+    
+    def on_key(self, win, key, scan, action, mods):
+        if action == glfw.PRESS:
+            if key == glfw.KEY_LEFT:
+                self.on_action(Action.PreviewStoryboardPrev)
+            elif key == glfw.KEY_RIGHT:
+                self.on_action(Action.PreviewStoryboardNext)
+            elif key == glfw.KEY_DOWN:
+                o = glfw.get_window_opacity(self.window)
+                glfw.set_window_opacity(self.window, max(0.1, o-0.1))
+            elif key == glfw.KEY_UP:
+                o = glfw.get_window_opacity(self.window)
+                glfw.set_window_opacity(self.window, min(1, o+0.1))
+            elif key == glfw.KEY_SPACE:
+                self.on_action(Action.PreviewPlay)
     
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
@@ -571,43 +609,49 @@ class Renderer():
         else:
             return None, None
 
-    async def on_stdin(self, stdin):
+    def on_stdin(self, stdin):
         action, data = self.stdin_to_action(stdin)
         if action:
             if action == Action.PreviewIndices:
-                self.preview.clear()
-                await self.render(action, indices=data)
+                self.render(action, indices=data)
             elif action == Action.RestartRenderer:
-                raise TypeError("Huh")
+                self.on_exit(restart=True)
             else:
-                await self.on_action(action)
+                self.on_action(action)
 
-    async def on_action(self, action, message=None) -> bool:
+    def on_action(self, action, message=None) -> bool:
         if action in [Action.PreviewStoryboard, Action.RenderAll, Action.RenderWorkarea]:
-            await self.reload_and_render(action)
+            self.reload_and_render(action)
             return True
-        elif action in [Action.PreviewStoryboardNext, Action.PreviewStoryboardPrev]:
-            increment = 1 if action == Action.PreviewStoryboardNext else -1
+        elif action in [Action.PreviewStoryboardNext, Action.PreviewStoryboardPrev, Action.PreviewPlay]:
+            if action == Action.PreviewPlay:
+                if self.playing == 0:
+                    self.playing = 1
+                else:
+                    self.playing = 0
+            increment = -1 if action == Action.PreviewStoryboardPrev else 1
             for render in self.last_renders:
                 if hasattr(render, "storyboard"):
                     for idx, fidx in enumerate(render.storyboard):
                         nidx = (fidx + increment) % render.duration
                         render.storyboard[idx] = nidx
-                    self.preview.clear()
-                    await self.render(Action.PreviewStoryboard)
+                    self.render(Action.PreviewStoryboard)
             return True
         elif action == Action.ArbitraryCommand:
-            await self.on_stdin(message.get("input"))
+            self.on_stdin(message.get("input"))
             return True
         elif action == Action.UICallback:
             for render in self.renderables(action):
                 if render.ui_callback:
                     render.ui_callback(message)
         elif action == Action.RestartRenderer:
-            raise TypeError("Huh")
+            self.on_exit(restart=True)
+        elif action == Action.Kill:
+            os.kill(os.getpid(), signal.SIGINT)
+            #self.on_exit(restart=False)
         elif message.get("serialization"):
-            await asyncio.sleep(1)
-            await self.reload(Action.Resave)
+            ptime.sleep(1)
+            self.reload(Action.Resave)
             print(">>>>>>>>>>>", self.animation().timeline.cti)
             cw = self.animation().timeline.find_workarea()
             print("WORKAREA", cw)
@@ -616,7 +660,7 @@ class Renderer():
                 self.send_to_external(None, workarea_update=True, start=start, end=end)
             else:
                 print("No CTI/trackGroups found")
-        elif message.get("trigger_from_app"):
+        elif action in EditAction:
             if action in [EditAction.SelectWorkarea]:
                 self.send_to_external(action, serialization_request=True)
             else:
@@ -632,14 +676,15 @@ class Renderer():
                 kwargs["action"] = action.value
             kwargs["prefix"] = self.filepath.stem
             kwargs["fps"] = animation.timeline.fps
-            self.preview.send(json.dumps(kwargs), full=True)
+            for client in echo_clients:
+                client.sendMessage(json.dumps(kwargs))
     
-    async def process_ws_message(self, message):
+    def process_ws_message(self, message):
         try:
             jdata = json.loads(message)
             action = jdata.get("action")
             if action:
-                await self.on_message(jdata, jdata.get("action"))
+                self.on_message(jdata, jdata.get("action"))
             elif jdata.get("metadata") and jdata.get("path"):
                 path = Path(jdata.get("path"))
                 if self.args.monitor_lines and path == self.filepath:
@@ -649,30 +694,118 @@ class Renderer():
         except:
             self.show_error()
             print("Malformed message", message)
-
-    async def listen_to_ws(self):
-        async with websockets.connect(WEBSOCKET_ADDR) as websocket:
-            self.websocket = websocket
-            async for message in websocket:
-                await self.process_ws_message(message)
     
-    async def listen_to_stdin(self):
-        async for line in self.stream_as_generator(sys.stdin):
-            await self.on_stdin(line.decode("utf-8").strip())
-
-    async def stream_as_generator(self, stream):
-        loop = asyncio.get_event_loop()
-        reader = asyncio.StreamReader(loop=loop)
-        reader_protocol = asyncio.StreamReaderProtocol(reader)
-        await loop.connect_read_pipe(lambda: reader_protocol, stream)
-
-        while True:
-            line = await reader.readline()
-            if not line:  # EOF.
-                break
-            yield line
+    def listen_to_glfw(self):
+        while not glfw.window_should_close(self.window):
+            #ptime.sleep(0.5)
+            self.turn_over()
+            global last_line
+            if last_line:
+                self.on_stdin(last_line.strip())
+                last_line = None
+            glfw.poll_events()
+            if self.playing != 0:
+                self.on_action(Action.PreviewStoryboardNext)
+        self.on_exit(restart=False)
     
-    async def on_modified(self, event):
+    def preview_scale(self):
+        return self.args.preview_scale
+    
+    def turn_over(self):
+        if self.action_waiting:
+            self.on_message({}, self.action_waiting)
+            self.action_waiting = None
+        
+        global echo_incoming
+        if len(echo_incoming) > 0:
+            for echo, msg in echo_incoming:
+                print("WS>>>", echo.address, msg)
+                self.process_ws_message(msg)
+            echo_incoming = []
+
+        self.monitor_midi()
+        if len(self.waiting_to_render) > 0:
+            for action, path in self.waiting_to_render:
+                self.reload_and_render(action, path)
+            self.waiting_to_render = []
+        
+        dscale = self.preview_scale()
+        rects = []
+
+        if len(self.previews_waiting_to_paint) > 0:
+            w = 0
+            lh = -1
+            h = 0
+            for render, result, rp in self.previews_waiting_to_paint:
+                sr = render.rect.scale(dscale, "mnx", "mny").round()
+                w = max(sr.w, w)
+                rects.append(Rect(0, lh+1, sr.w, sr.h))
+                lh += sr.h + 1
+                h += sr.h + 1
+            
+            h -= 1
+            #h += 20
+            
+            frect = Rect(0, 0, w, h)
+
+            monitor = glfw.get_primary_monitor()
+            if m_scale := self.py_config.get("WINDOW_SCALE"):
+                scale_x, scale_y = m_scale
+            else:
+                scale_x, scale_y = glfw.get_monitor_content_scale(monitor)
+            ww = int(w/scale_x)
+            wh = int(h/scale_y)
+            glfw.set_window_size(self.window, ww, wh)
+            if pin := self.py_config.get("WINDOW_PIN", None):
+                #monitor = glfw.get_window_monitor(self.window)
+                work_rect = Rect(glfw.get_monitor_workarea(monitor))
+                pinned = work_rect.take(ww, pin[0]).take(wh, pin[1])
+                glfw.set_window_pos(self.window, pinned.x, pinned.y)
+
+            GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+
+            context = skia.GrDirectContext.MakeGL()
+            backend_render_target = skia.GrBackendRenderTarget(
+                int(w), int(h), 0, 0,
+                skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
+            surface = skia.Surface.MakeFromBackendRenderTarget(
+                context, backend_render_target, skia.kBottomLeft_GrSurfaceOrigin,
+                skia.kRGBA_8888_ColorType, skia.ColorSpace.MakeSRGB())
+            
+            assert surface is not None
+
+            with surface as canvas:
+                SkiaPen.CompositeToCanvas(DATPen().f(0.3).rect(frect), frect, canvas)
+
+                for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
+                    #result.translate(0, -rects[idx].y)
+                    rect = rects[idx].offset((w-rects[idx].w)/2, 0)
+                    self.draw_preview(dscale, canvas, rect, (render, result, rp))
+            
+            surface.flushAndSubmit()
+            glfw.swap_buffers(self.window)
+            context.abandonContext()
+        
+        self.previews_waiting_to_paint = []
+        if self.server:
+            self.server.serveonce()
+
+    def draw_preview(self, scale, canvas, rect, waiter):
+        if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
+            image = skia.Image.MakeFromEncoded(
+                skia.Data.MakeFromFileName(str(waiter[1])))
+            if image:
+                canvas.drawImage(image, rect.x, rect.y)
+            return
+        
+        surface = skia.Surface(rect.w, rect.h)
+        with surface as canvas2:
+            render, result, rp = waiter
+            render.draw_preview(scale, canvas2, render.rect, result, rp)
+        image = surface.makeImageSnapshot()
+        canvas.drawImage(image, rect.x, rect.y)
+    
+    def on_modified(self, event):
         path = Path(event.src_path)
         if path in self.watchee_paths():
             idx = self.watchee_paths().index(path)
@@ -682,7 +815,7 @@ class Renderer():
                 diff = memory - self._last_memory
                 self._last_memory = memory
                 print(">>> pid:{:d}/new:{:04.2f}MB/total:{:4.2f}".format(os.getpid(), diff, memory))
-            await self.reload_and_render(Action.Resave, self.watchees[idx][0])
+            self.waiting_to_render = [[Action.Resave, self.watchees[idx][0]]]
 
     def watch_file_changes(self):
         self.observers = []
@@ -692,6 +825,17 @@ class Renderer():
             o.start()
             self.observers.append(o)
         print("... watching ...")
+    
+    def monitor_midi(self):
+        for device, mi in self.midis:
+            while msg := mi.getMessage(0):
+                if msg.isNoteOn(): # Maybe not forever?
+                    if self.args.midi_info:
+                        print(device, msg)
+                    nn = msg.getNoteNumber()
+                    action = self.midi_mapping[device]["note_on"].get(nn)
+                    if action:
+                        self.on_message({}, action)
     
     def stop_watching_file_changes(self):
         for o in self.observers:
@@ -704,11 +848,12 @@ class Renderer():
 
     def on_exit(self, restart=False):
         #if self.args.watch:
-        #    print(f"<EXIT RENDERER ({exit_code})>")
-
+        #   print(f"<EXIT(restart:{restart})>")
+        glfw.terminate()
+        if self.hotkeys:
+            self.hotkeys.stop()
         self.reset_renderers()
         self.stop_watching_file_changes()
-        self.preview.close()
         if self.args.memory:
             snapshot = tracemalloc.take_snapshot()
             top_stats = snapshot.statistics('traceback')

@@ -1,15 +1,17 @@
-import inspect, platform, re, tempfile
+import inspect, platform, re, tempfile, skia
 
 from enum import Enum
 from subprocess import run
 from pathlib import Path
 
-from coldtype.geometry import Rect
+from coldtype.geometry import Rect, Point
 from coldtype.color import normalize_color
 from coldtype.animation import Timeable, Frame
 from coldtype.animation.timeline import Timeline
 from coldtype.text.reader import normalize_font_prefix
+from coldtype.pens.datpen import DATPen
 from coldtype.pens.svgpen import SVGPen
+from coldtype.pens.skiapen import SkiaPen
 
 try:
     import drawBot as db
@@ -25,6 +27,7 @@ class Action(Enum):
     RenderWorkarea = "render_workarea"
     RenderIndices = "render_indices"
     PreviewStoryboard = "preview_storyboard"
+    PreviewPlay = "preview_play"
     PreviewIndices = "preview_indices"
     PreviewStoryboardNext = "preview_storyboard_next"
     PreviewStoryboardPrev = "preview_storyboard_prev"
@@ -32,6 +35,7 @@ class Action(Enum):
     ArbitraryCommand = "arbitrary_command"
     UICallback = "ui_callback"
     RestartRenderer = "restart_renderer"
+    Kill = "kill"
 
 
 class RenderPass():
@@ -85,31 +89,39 @@ class renderable():
     def package(self, filepath, output_folder):
         pass
 
-    async def run(self, render_pass):
+    def run(self, render_pass):
         if inspect.iscoroutinefunction(render_pass.fn):
-            return await render_pass.fn(*render_pass.args)
+            return render_pass.fn(*render_pass.args)
         else:
             return render_pass.fn(*render_pass.args)
     
-    async def runpost(self, result, render_pass):
+    def runpost(self, result, render_pass):
         if self.postfn:
             return self.postfn(self, result)
         else:
             return result
         
     def send_preview(self, previewer, result, render_pass):
-        previewer.send(SVGPen.Composite(result, self.rect, viewBox=True), bg=self.bg, max_width=800)
+        if isinstance(result, Path):
+            r = self.rect
+            previewer.send(str(result), Rect(0, 0, r.w/2, r.h/2), bg=self.bg, image=True)
+        else:
+            previewer.send(SVGPen.Composite(result, self.rect, viewBox=True), bg=self.bg, max_width=800)
+    
+    def draw_preview(self, scale, canvas:skia.Canvas, rect, result, render_pass):
+        sr = self.rect.scale(scale, "mnx", "mxx")
+        SkiaPen.CompositeToCanvas(DATPen().rect(sr).f(self.bg), sr, canvas)
+        SkiaPen.CompositeToCanvas(result, sr, canvas, scale)
 
 
 class drawbot_script(renderable):
-    def __init__(self, rect=(1080, 1080), scale=1, svg_preview=0, **kwargs):
+    def __init__(self, rect=(1080, 1080), scale=1, **kwargs):
         if not db:
             raise Exception("DrawBot not installed!")
         super().__init__(rect=Rect(rect).scale(scale), **kwargs)
-        self.svg_preview = svg_preview
         self.self_rasterizing = True
     
-    async def run(self, render_pass):
+    def run(self, render_pass):
         use_pool = True
         if use_pool:
             pool = AppKit.NSAutoreleasePool.alloc().init()
@@ -118,14 +130,9 @@ class drawbot_script(renderable):
             db.size(self.rect.w, self.rect.h)
             render_pass.fn(*render_pass.args)
             result = None
-            if render_pass.action in [Action.RenderAll] or not self.svg_preview:
-                render_pass.output_path.parent.mkdir(exist_ok=True, parents=True)
-                db.saveImage(str(render_pass.output_path))
-                result = render_pass.output_path
-            else:
-                with tempfile.NamedTemporaryFile(suffix=".svg") as tf:
-                    db.saveImage(tf.name)
-                    result = tf.read().decode("utf-8")
+            render_pass.output_path.parent.mkdir(exist_ok=True, parents=True)
+            db.saveImage(str(render_pass.output_path))
+            result = render_pass.output_path
             db.endDrawing()
         finally:
             if use_pool:
@@ -133,11 +140,8 @@ class drawbot_script(renderable):
         return result
     
     def send_preview(self, previewer, result, render_pass):
-        if self.svg_preview:
-            previewer.send(f"<div class='drawbot-render'>{result}</div>", bg=self.bg, max_width=800)
-        else:
-            r = self.rect
-            previewer.send(str(render_pass.output_path), Rect(0, 0, r.w/2, r.h/2), bg=self.bg, image=True)
+        r = self.rect
+        previewer.send(str(render_pass.output_path), Rect(0, 0, r.w/2, r.h/2), bg=self.bg, image=True)
 
 
 class svgicon(renderable):

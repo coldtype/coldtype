@@ -4,6 +4,7 @@
         <HostList>
             <Host Name="PPRO" Port="7777"/>
             <Host Name="PHXS" Port="7778"/>
+            <Host Name="AEFT" Port="7779">
         </HostList>
     </Extension>
 </ExtensionList>

@@ -329,7 +329,7 @@ class Point():
         self.y = y
 
     def __repr__(self):
-        return "<furn-Point" + str(self.xy()) + ">"
+        return "<Point" + str(self.xy()) + ">"
 
     def __getitem__(self, key):
         return self.xy()[key]
@@ -425,6 +425,9 @@ class Rect():
 
     def rect(self):
         return [self.x, self.y, self.w, self.h]
+    
+    def round(self):
+        return Rect([int(round(n)) for n in self])
 
     def xy(self):
         return [self.x, self.y]

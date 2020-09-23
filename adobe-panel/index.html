@@ -49,6 +49,7 @@
 
 		function onClose(evt) {
 			connected = false;
+			setTimeout(connectToWebsocket, 5000);
 		}
 
 		function onMessage(evt) {

@@ -6,58 +6,61 @@ __⚠️ Our intention is to ultimately make this library a proper, useable, ope
 
 # Coldtype
 
-_Hello and welcome to `coldtype`, an odd little library for programmatic typography, written by [Rob Stenson](https://robstenson.com), who is me, for use on Goodhertz projects and also other stuff._
+_Hello and welcome to `coldtype`, an odd little library for programmatic typography, written by [Rob Stenson](https://robstenson.com), who is me, for use on [Goodhertz](https://goodhertz.com) projects and also [other stuff](https://vimeo.com/robstenson)._
 
-## An example
+![An example](https://raw.githubusercontent.com/goodhertz/coldtype/skia_sync/examples/renders/simple_render.png)
+
 
 ```python
 from coldtype import *
 
-@renderable(rect=Rect(1080, 1080))
+@renderable((1580, 350))
 def render(r):
-    style = Style("assets/MutatorSans.ttf", 250, wdth=0, wght=1, tu=-350, r=1, ro=1)
-    return StyledString("COLDTYPE", style).pens().align(r).f("hr", 0.8, 0.7).understroke()
+    c1 = hsl(0.65, 0.7)
+    c2 = hsl(0.53, 0.6)
+
+    return DATPenSet([
+        (DATPen()
+            .rect(r.inset(10))
+            .outline(10)
+            .f(Gradient.Horizontal(r,
+                c2.lighter(0.3),
+                c1.lighter(0.3)))),
+        (StyledString("COLDTYPE",
+            Style("assets/ColdtypeObviously-VF.ttf", 250,
+                wdth=1, tu=-170, r=1, rotate=15,
+                kp={"P/E":-150, "T/Y":-50}))
+            .pens()
+            .align(r)
+            .f(Gradient.Horizontal(r, c1, c2))
+            .understroke(s=1, sw=5))
+            .translate(0, 5)])
 ```
-
-![Screenshot of app](https://coldtype.goodhertz.co/media/drawbotesque.png)
-
-_A DrawBot-like programming experience, using VS Code and the Coldtype viewing app. (When you save the file in VS Code, the hanging process (as seen in the terminal) re-renders `simple.py` to SVG and sends the result via a websocket to the Coldtype viewing app, which displays the SVG with a standard Chromium-based webview.)_
-
-___
-___
-___
 
 # Quickstart
 
 - Install a Python >= 3.8
+
+## Option 1
 - Clone this repository
 - `cd` into the the cloned coldtype repository
 - Create a virtual environment, ala `python3.8 -m venv venv --prompt=coldtype` on the command line
 - Then `source venv/bin/activate` to start your venv
 - Then `pip install -e .` (This adds the `coldtype` command to your virtual environment)
-- Then `pip install git+https://github.com/typemytype/drawbot` if you’re on a Mac (to get DrawBot support — not strictly necessary but if you’re rasterizing anything, it’s very useful)
-- Then `pip install -r requirements.txt`
 
-Now you’ll need the coldtype viewer app before you can run anything.
+## Option 2
+Using a virtualenv (based on a python >= 3.8):
+- `pip install coldtype`
 
-To build it from source and start it:
+Now you can run coldtype scripts, ala:
 
-- Install [yarn](https://classic.yarnpkg.com/en/docs/install/)
-- cd into the coldtype/viewer directory, aka `cd viewer` if you’re already in the coldtype repo
-- `yarn run start`
+`coldtype examples/simple.py`
 
-Now you can run coldtype scripts:
+---
 
-- Try `coldtype --version`, which should print out the current version of Coldtype. If it doesn’t, the install hasn’t worked properly.
-- To actually see something, try: `coldtype examples/simple.py`
+## More Examples
 
-___
-___
-___
-
-# More about Coldtype
-
-## An example
+The best way to get familiar with Coldtype is to look at and try modifying some example code, like the animating gif below. To try out this example and many more, check out the [coldtype-examples](https://github.com/goodhertz/coldtype-examples) repository.
 
 ![An example](https://coldtype.goodhertz.co/media/banner_3.gif)
 ---
@@ -83,36 +86,6 @@ def render(f):
 ```
 _source code and instructions for running available here:_ [banner.py](https://github.com/goodhertz/coldtype-examples/blob/master/animations/banner.py)
 
-## More Examples
-
-To try out Coldtype and see some examples (like the banner at the top of this README), check out the [coldtype-examples](https://github.com/goodhertz/coldtype-examples) repository, where there are instructions on how to download and setup Coldtype in a python3.8 environment.
-
-___
-
-## Installation
-
-### In a virtual environment
-
-If you’re using a version of Python >= 3.7, you should be able to add `coldtype` to your virtual environment with this command:
-
-- `pip install coldtype`
-- `pip install git+https://github.com/typemytype/drawbot`
-
-The `drawbot` step is optional, and Mac-specific, but you’ll probably want it if you’re using a Mac, since Cairo (the alternate rasterizer) is quite hard to install. The `[renderer]` bit is not optional if you intend on using the `coldtype` command-line tool (as discussed below), but it is optional if you’re using Coldtype just for its typesetting (i.e. if you’re using it with Blender or another environment that provides code-reloading and rendering).
-
-To test that you have a working installation, try this command with your virtual env activated:
-
-> `coldtype -h`
-
-You’ll also need the Coldtype app, which is a cross-platform app that displays SVG previews of coldtype programs, via websockets.
-
-- Mac app: https://install.goodhertz.co/coldtype/alpha-0.0.1/coldtype-0.0.1.dmg
-- Windows app: https://install.goodhertz.co/coldtype/alpha-0.0.1/coldtype.exe
-
-Though it’s not strictly necessary to have this app open at all times, it’s just something I leave open on my computer, so whenever I want to see the visual output of a coldtype program, it’s ready to go.
-
-**N.B.** _This app isn’t signed or anything, we should work on that._
-
 ___
 
 ## What is Coldtype?
@@ -127,43 +100,33 @@ Coldtype is an offroad vehicle that lets you keep driving where there are no roa
 
 If you’ve heard of [DrawBot](http://www.drawbot.com/) — another offroad vehicle that lets you drive where you want — you may be wondering how Coldtype is different. The answer is that Coldtype provides a very different programming idiom, one based around creating and modifying structured data that can be rendered, rather than — as is common in most “creative coding” platforms (including DrawBot) — providing a metaphorical canvas that you render to directly.
 
-Also Coldtype works on Windows (and Linux, theoretically).
-
-(I should point out that I love DrawBot and that Coldtype would not exist without DrawBot, mostly because using DrawBot was my first time driving in the typographical offroad. That said, Coldtype mostly exists as a response to things I found awkward when programming animations with DrawBot.)
+(I should point out that DrawBot is fantastic and that Coldtype would not exist without DrawBot, mostly because using DrawBot was my first time driving in the typographical offroad. That said, Coldtype mostly exists as a response to things I found awkward when programming animations and user interfaces with DrawBot.)
 
 ### What about Adobe products?
 
 I’ve learned over the last few years to distrust any _Type Tool_ in an Adobe product (or anywhere else). Yes, those can be very good — like HTML+CSS — for doing simple Latin-based typography for static designs. But then, all of a sudden, they are very bad. You can think of Adobe products as a train that you get on and you can fall asleep in a nice seat and the train will get you where you want to go, except when you wake up and realize you wanted to go somewhere the train doesn't go and then you’re like... _dang, do I have to walk?_ (Walking in this metaphor is when you right click and hit _Convert to Outlines_.)
 
-Walking can be a lot of fun, and you get to see a lot. But sometimes you want to get there faster or you want to go farther. Yes, I realize now this metaphor has made me seem very pro-automobile, which... yes I do live in Los Angeles but I work from home, so I’m kind of ambivalent about cars.
-
-But I’m not ambivalent about typesetting with code, so let’s get into it!
+Walking can be a lot of fun, and you get to see a lot. Drawing is a lot like walking. Fabulous exercise. But sometimes you want to get there faster or you want to go farther.
 
 ## What does a Coldtype program look like?
-
-First, make sure to have the Coldtype desktop app open on your computer, and also have a virtual environment activated on the command line, with coldtype installed (as described above).
-
-Now, some example code:
 
 ```python
 from coldtype import *
 
-@renderable(rect=(1350, 500))
-async def render(r):
+@renderable(rect=(1200, 300))
+def render(r):
     return (StyledString("COLDTYPE",
-        Style("assets/MutatorSans.ttf",
-            300, wght=1, tu=-250, r=1))
+        Style("assets/MutatorSans.ttf", 300))
         .pens()
         .align(r, tv=1)
-        .f("random")
-        .understroke()
+        .f(hsl(0.95)))
 ```
 
-You can run this with the `coldtype` command-line tool, e.g.:
+You can run that example inside this repo by calling:
 
-`coldtype examples/example.py -w`
+`coldtype examples/simplest.py`
 
-The `-w` flag means the process will hang and monitor the file for changes. So if you edit the file and hit save, the changes (or errors) will show up in thd Coldtype app automatically.
+When you run this, it should pop up a window that displays the result of the code.
 
 ### Some thoughts about that code
 
@@ -171,13 +134,7 @@ You may look at that code and think to yourself: _wtf_. Yes, that is an appropri
 
 ## How does Coldtype work?
 
-Coldtype is, more than anything else, a programmatic frontend to high-quality typesetting code, provided — in this latest iteration of Coldtype — by the excellent FontGoggles repository. (This was not always the case, but FontGoggles provides a much better version of some Harfbuzz+Freetype code that previously powered the Coldtype typesetting.)
-
-Coldtype also provides a set of idioms for holding onto and manipulating typographic data.
-
 The central graphic element of Coldtype (the `DATPen`) is a wrapper around `fontTool`’s `RecordingPen`, and the central typesetting element (`StyledString`) provides access to a rich set of styling options.
-
-For rasterization/output, Coldtype can be used with Cairo cross-platform, or DrawBot on macOS.
 
 ## Why is an audio software company releasing a typography library?
 
@@ -202,8 +159,6 @@ Also originally I thought it was a funny name because I wanted to make a very fa
 ## Weirdnesses
 
 - __0-1 variation axes value__ — By default, all font variation values (axis values) are scaled to a 0-1 range. I’ve found I almost never want to set a font variation value in the scale set by the font itself, mostly because I’m almost always mapping a 0-1 time (or amplitude) value to the axis. If you’d like to not "(s)cale (v)arations," set `sv=False` when constructing a `Style` object.
-
-- __Extensive use of acronyms__ — Because designing-in-code can be typing-intensive, there are a ton of acronym-based methods and dict keys, i.e. `.f("hr",0.5,0.5)` for setting the fill color on a `DATPen` to a random hue with 0.5 saturation and 0.5 lightness.
 
 ## Programming philosophy
 
@@ -231,41 +186,3 @@ Here is a free-associated list of things that I think define the general vibe of
 - Does not rely on Apple’s CoreText engine or the mostly deprecated APIs that DrawBot uses to interact with it
 - Really only a small subset of what DrawBot, by leveraging CoreText and CoreImage, can do (which is a good thing to me, because I only ever used DrawBot for typography anyway)
 - Little-to-no image support (some, but it is vvv primitive)
-
----
-
-## Working on Coldtype
-
-- `cd` into the `coldtype` directory
-- `python3.8 -m venv venv --prompt=coldtype`
-- `source venv/bin/activate`
-
-Now you should see `(coldtype)` prepended to your terminal prompt. If that’s the case, continue with this invocation:
-
-- `pip install -e .`
-- Open the Coldtype app (just a normal desktop app, you can open it by double-clicking)
-
-- `coldtype example/example.py -w`
-- `ctrl+c` to exit
-
-___
-
-# Other Stuff, Optional
-
-### DrawBot (optional but very useful for image-rendering)
-
-- `pip install git+https://github.com/typemytype/drawbot`
-
-### Cairo (don’t do this is you don’t have to, which, if you’re on a mac, you don’t have to)
-
-- `brew install cairo pkg-config`
-- `pip install pycairo`
-
-Then if that doesn’t work, add to your `~/.bash_profile` ([via](https://github.com/3b1b/manim/issues/524)):
-
-```bash
-export PKG_CONFIG_PATH="/usr/local/opt/libffi/lib/pkgconfig"
-export LDFLAGS="-L/usr/local/opt/libffi/lib"
-```
-
-Then with a re-loaded bash you can `pip install pycairo` again — hopefully it works!

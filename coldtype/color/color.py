@@ -1,5 +1,5 @@
 from coldtype.color.html import NAMED_COLORS
-
+import skia
 
 # inspired by https://github.com/xav/Grapefruit/blob/master/grapefruit.py
 # but more shorthand-oriented
@@ -134,3 +134,6 @@ class Color:
     
     def __repr__(self):
         return "<Color:({:0.2f},{:0.2f},{:0.2f})/({:0.2f},{:0.2f},{:0.2f})a={:0.2f}/>".format(self.r, self.g, self.b, self.h, self.s, self.l, self.a)
+    
+    def skia(self):
+        return skia.Color4f(self.r, self.g, self.b, self.a)
