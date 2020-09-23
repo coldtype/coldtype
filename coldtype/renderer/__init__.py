@@ -3,6 +3,7 @@ import tempfile, websockets, traceback, threading
 import argparse, importlib, inspect, json, ast, math
 
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
+from pynput import keyboard
 
 import time as ptime
 from enum import Enum
@@ -592,6 +593,16 @@ class Renderer():
 
                 self.watch_file_changes()
                 glfw.set_window_title(self.window, self.watchees[0][1].name)
+
+                try:
+                    from pynput import keyboard
+                    self.hotkeys = keyboard.GlobalHotKeys({
+                        "<f8>": self.on_hotkey
+                    })
+                    self.hotkeys.start()
+                except:
+                    self.hotkeys = None
+
                 self.listen_to_glfw()
             else:
                 self.on_exit()
@@ -601,6 +612,9 @@ class Renderer():
 
     def on_start(self):
         pass
+
+    def on_hotkey(self, *args):
+        print(args)
     
     def on_message(self, message, action):
         if action:
@@ -879,6 +893,8 @@ class Renderer():
         if self.args.watch:
            print(f"<EXIT(restart:{restart})>")
         glfw.terminate()
+        if self.hotkeys:
+            self.hotkeys.stop()
         self.reset_renderers()
         self.stop_watching_file_changes()
         if self.args.memory:
