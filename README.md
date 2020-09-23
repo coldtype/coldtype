@@ -8,7 +8,8 @@ __⚠️ Our intention is to ultimately make this library a proper, useable, ope
 
 _Hello and welcome to `coldtype`, an odd little library for programmatic typography, written by [Rob Stenson](https://robstenson.com), who is me, for use on Goodhertz projects and also other stuff._
 
-## An example
+![An example](https://raw.githubusercontent.com/goodhertz/coldtype/skia_sync/examples/renders/simple_render.png)
+
 
 ```python
 from coldtype import *
