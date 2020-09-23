@@ -114,7 +114,7 @@ class Gradient():
         return Gradient([a, rect.point("N")], [b, rect.point("S")])
     
     def Horizontal(rect, a, b):
-        return Gradient([a, rect.point("E")], [b, rect.point("W")])
+        return Gradient([a, rect.point("W")], [b, rect.point("E")])
     
     def Random(rect, opacity=0.5):
         return Gradient([("random", opacity), rect.point("SE")], [("random", opacity), rect.point("NW")])

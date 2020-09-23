@@ -13,34 +13,53 @@ _Hello and welcome to `coldtype`, an odd little library for programmatic typogra
 ```python
 from coldtype import *
 
-mu = Font("assets/MutatorSans.ttf")
-
-@renderable()
+@renderable((1580, 350))
 def render(r):
-    return (StyledString("COLDTYPE",
-        Style(mu, 250, wdth=0, wght=1, tu=-350, r=1))
-        .pens()
-        .align(r)
-        .f("hr", 0.8, 0.7)
-        .understroke())
+    c1 = hsl(0.65, 0.7)
+    c2 = hsl(0.53, 0.6)
+
+    return DATPenSet([
+        (DATPen()
+            .rect(r.inset(10))
+            .outline(10)
+            .f(Gradient.Horizontal(r,
+                c2.lighter(0.3),
+                c1.lighter(0.3)))),
+        (StyledString("COLDTYPE",
+            Style("assets/ColdtypeObviously-VF.ttf", 250,
+                wdth=1, tu=-170, r=1, rotate=15,
+                kp={"P/E":-150, "T/Y":-50}))
+            .pens()
+            .align(r)
+            .f(Gradient.Horizontal(r, c1, c2))
+            .understroke(s=1, sw=5))
+            .translate(0, 5)])
 ```
 
 # Quickstart
 
 - Install a Python >= 3.8
+
+## Option 1
 - Clone this repository
 - `cd` into the the cloned coldtype repository
 - Create a virtual environment, ala `python3.8 -m venv venv --prompt=coldtype` on the command line
 - Then `source venv/bin/activate` to start your venv
 - Then `pip install -e .` (This adds the `coldtype` command to your virtual environment)
 
+## Option 2
+Using a virtualenv (based on a python >= 3.8):
+- `pip install coldtype`
+
 Now you can run coldtype scripts, ala:
 
 `coldtype examples/simple.py`
 
-# More about Coldtype
+---
 
-## An example
+## More Examples
+
+The best way to get familiar with Coldtype is to look at and try modifying some example code, like the animating gif below. To try out this example and many more, check out the [coldtype-examples](https://github.com/goodhertz/coldtype-examples) repository.
 
 ![An example](https://coldtype.goodhertz.co/media/banner_3.gif)
 ---
@@ -65,10 +84,6 @@ def render(f):
     return StyledString("COLDTYPE", Style(obvs, 250, fill=0, **state, r=1, ro=1)).pens().align(f.a.r).f(0).understroke(s=1, sw=15)
 ```
 _source code and instructions for running available here:_ [banner.py](https://github.com/goodhertz/coldtype-examples/blob/master/animations/banner.py)
-
-## More Examples
-
-To try out Coldtype and see some examples (like the banner at the top of this README), check out the [coldtype-examples](https://github.com/goodhertz/coldtype-examples) repository.
 
 ___
 
@@ -105,6 +120,8 @@ def render(r):
         .align(r, tv=1)
         .f(hsl(0.95)))
 ```
+
+You can run that example inside this repo by calling:
 
 `coldtype examples/simplest.py`
 
