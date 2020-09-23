@@ -1,42 +1,26 @@
 import sys, os, re, signal, tracemalloc
-import tempfile, websockets, traceback, threading
-import argparse, importlib, inspect, json, ast, math
-
-from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
-from pynput import keyboard
+import tempfile, traceback, threading
+import argparse, importlib, inspect, json, math
 
 import time as ptime
-from enum import Enum
 from pathlib import Path
 from typing import Tuple
 from random import shuffle
 from runpy import run_path
 from subprocess import call, Popen
-from datetime import datetime
+from functools import partial
 
-import skia
-import coldtype
+import skia, coldtype
 from coldtype.helpers import *
 from coldtype.geometry import Rect
-
-# TODO maybe these only need to be loaded
-# conditionally?
-from coldtype.pens.svgpen import SVGPen
-from coldtype.pens.cairopen import CairoPen
-from coldtype.pens.drawbotpen import DrawBotPen
 from coldtype.pens.skiapen import SkiaPen
-
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
-from coldtype.viewer import WEBSOCKET_PORT
-
-try:
-    import drawBot as db
-except ImportError:
-    db = None
+from coldtype.renderer.utils import *
 
 import contextlib, glfw
+from pynput import keyboard
 from OpenGL import GL
 
 try:
@@ -51,96 +35,6 @@ except ImportError:
     process = None
 
 
-class Watchable(Enum):
-    Source = "Source"
-    Font = "Font"
-    Library = "Library"
-    Generic = "Generic"
-
-
-class EditAction(Enum):
-    Newline = "newline"
-    Tokenize = "tokenize"
-    TokenizeLine = "tokenize_line"
-    NewSection = "newsection"
-    Capitalize = "capitalize"
-    SelectWorkarea = "select_workarea"
-
-
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
-
-clients = []
-
-class SimpleEcho(WebSocket):
-    def handleMessage(self):
-        for client in clients:
-            if client != self:
-                # self.address[0]
-                client.sendMessage(self.data)
-
-    def handleConnected(self):
-        print(self.address, 'connected')
-        clients.append(self)
-
-    def handleClose(self):
-        clients.remove(self)
-        print(self.address, 'closed')
-
-
-# https://stackoverflow.com/questions/27174736/how-to-read-most-recent-line-from-stdin-in-python
-last_line = ''
-new_line_event = threading.Event()
-
-def keep_last_line():
-    global last_line, new_line_event
-    for line in sys.stdin:
-        last_line = line
-        new_line_event.set()
-
-keep_last_line_thread = threading.Thread(target=keep_last_line)
-keep_last_line_thread.daemon = True
-keep_last_line_thread.start()
-
-
-def bytesto(bytes):
-    r = float(bytes)
-    for i in range(2):
-        r = r / 1024
-    return(r)
-
-
-def chunks(lst, n):
-    """Yield successive n-sized chunks from lst."""
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]
-
-
-def file_and_line_to_def(filepath, lineno):
-    # https://julien.danjou.info/finding-definitions-from-a-source-file-and-a-line-number-in-python/
-    candidate = None
-    for item in ast.walk(ast.parse(filepath.read_text())):
-        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            if item.lineno > lineno:
-                continue
-            if candidate:
-                distance = lineno - item.lineno
-                if distance < (lineno - candidate.lineno):
-                    candidate = item
-            else:
-                candidate = item
-    if candidate:
-        return candidate.name
-
-
 class Renderer():
     def Argparser(name="coldtype", file=True, nargs=[]):
         parser = argparse.ArgumentParser(prog=name, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -153,7 +47,7 @@ class Renderer():
         pargs = dict(
             version=parser.add_argument("-v", "--version", action="store_true", default=False, help="Display version"),
 
-            watch=parser.add_argument("-w", "--watch", action="store_true", default=False, help="Watch for changes to source files"),
+            watch=parser.add_argument("-w", "--watch", action="store_true", default=True, help="Watch for changes to source files"),
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
             
@@ -201,10 +95,14 @@ class Renderer():
     def __init__(self, parser, no_socket_ok=False):
         try:
             py_config = run_path(str(Path("~/coldtype.py").expanduser()))
+            self.py_config = py_config
             self.midi_mapping = py_config.get("MIDI", {})
+            self.hotkey_mapping = py_config.get("HOTKEYS", {})
         except FileNotFoundError:
             print(">>> no coldtype config found <<<")
+            self.py_config = {}
             self.midi_mapping = {}
+            self.hotkey_mapping = {}
         except json.decoder.JSONDecodeError:
             print(">>> syntax error in ~/coldtype.json <<<")
             sys.exit(0)
@@ -216,7 +114,7 @@ class Renderer():
         self.reset_filepath(self.args.file if hasattr(self.args, "file") else None)
         self.layers = [l.strip() for l in self.args.layers.split(",")] if self.args.layers else []
         
-        self.server = SimpleWebSocketServer('', WEBSOCKET_PORT, SimpleEcho)
+        self.server = echo_server()
 
         self.program = None
         self.websocket = None
@@ -230,16 +128,27 @@ class Renderer():
         self.completed_renderers = []
 
         self.observers = []
+        self.action_waiting = None
         self.waiting_to_render = []
         self.previews_waiting_to_paint = []
         self.playing = 0
+        self.hotkeys = None
 
         if self.args.watch:
             if not glfw.init():
                 raise RuntimeError('glfw.init() failed')
             glfw.window_hint(glfw.STENCIL_BITS, 8)
-            #glfw.window_hint(glfw.FOCUS_ON_SHOW, glfw.FALSE)
+
+            if self.py_config.get("MONITOR_BACKGROUND"):
+                glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
+            if self.py_config.get("MONITOR_FLOAT"):
+                glfw.window_hint(glfw.FLOATING, glfw.TRUE)
+            
             self.window = glfw.create_window(int(50), int(50), '', None, None)
+
+            if o := self.py_config.get("MONITOR_OPACITY"):
+                glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
+            
             glfw.make_context_current(self.window)
             glfw.set_key_callback(self.window, self.on_key)
     
@@ -496,12 +405,15 @@ class Renderer():
         rasterizer = self.args.rasterizer or render.rasterizer
 
         if rasterizer == "drawbot":
+            from coldtype.pens.drawbotpen import DrawBotPen
             DrawBotPen.Composite(content, render.rect, str(path), scale=scale)
         elif rasterizer == "skia":
             SkiaPen.Composite(content, render.rect, str(path), scale=scale)
         elif rasterizer == "svg":
+            from coldtype.pens.svgpen import SVGPen
             path.write_text(SVGPen.Composite(content, render.rect, viewBox=True))
         elif rasterizer == "cairo":
+            from coldtype.pens.cairopen import CairoPen
             CairoPen.Composite(content, render.rect, str(path), scale=scale)
         else:
             raise Exception(f"rasterizer ({rasterizer}) not supported")
@@ -594,14 +506,20 @@ class Renderer():
                 self.watch_file_changes()
                 glfw.set_window_title(self.window, self.watchees[0][1].name)
 
+                self.hotkeys = None
                 try:
-                    from pynput import keyboard
-                    self.hotkeys = keyboard.GlobalHotKeys({
-                        "<f8>": self.on_hotkey
-                    })
-                    self.hotkeys.start()
+                    if self.hotkey_mapping:
+                        from pynput import keyboard
+                        mapping = {}
+                        for k, v in self.hotkey_mapping.items():
+                            mapping[k] = partial(self.on_hotkey, k, v)
+                        #self.hotkeys = keyboard.GlobalHotKeys({
+                        #    "<cmd>+<f8>": self.on_hotkey
+                        #})
+                        self.hotkeys = keyboard.GlobalHotKeys(mapping)
+                        self.hotkeys.start()
                 except:
-                    self.hotkeys = None
+                    pass
 
                 self.listen_to_glfw()
             else:
@@ -613,8 +531,9 @@ class Renderer():
     def on_start(self):
         pass
 
-    def on_hotkey(self, *args):
-        print(args)
+    def on_hotkey(self, key_combo, action):
+        print("HOTKEY", key_combo)
+        self.action_waiting = action
     
     def on_message(self, message, action):
         if action:
@@ -642,6 +561,12 @@ class Renderer():
                 self.on_action(Action.PreviewStoryboardPrev)
             elif key == glfw.KEY_RIGHT:
                 self.on_action(Action.PreviewStoryboardNext)
+            elif key == glfw.KEY_DOWN:
+                o = glfw.get_window_opacity(self.window)
+                glfw.set_window_opacity(self.window, max(0.1, o-0.1))
+            elif key == glfw.KEY_UP:
+                o = glfw.get_window_opacity(self.window)
+                glfw.set_window_opacity(self.window, min(1, o+0.1))
             elif key == glfw.KEY_SPACE:
                 self.on_action(Action.PreviewPlay)
     
@@ -702,7 +627,8 @@ class Renderer():
         elif action == Action.RestartRenderer:
             self.on_exit(restart=True)
         elif action == Action.Kill:
-            self.on_exit(restart=False)
+            os.kill(os.getpid(), signal.SIGINT)
+            #self.on_exit(restart=False)
         elif message.get("serialization"):
             ptime.sleep(1)
             self.reload(Action.Resave)
@@ -730,7 +656,7 @@ class Renderer():
                 kwargs["action"] = action.value
             kwargs["prefix"] = self.filepath.stem
             kwargs["fps"] = animation.timeline.fps
-            for client in clients:
+            for client in echo_clients:
                 client.sendMessage(json.dumps(kwargs))
     
     def process_ws_message(self, message):
@@ -776,6 +702,10 @@ class Renderer():
         return self.args.preview_scale
     
     def turn_over(self):
+        if self.action_waiting:
+            self.on_message({}, self.action_waiting)
+            self.action_waiting = None
+
         self.monitor_midi()
         if len(self.waiting_to_render) > 0:
             for action, path in self.waiting_to_render:
@@ -806,9 +736,11 @@ class Renderer():
             ww = int(w/scale_x)
             wh = int(h/scale_y)
             glfw.set_window_size(self.window, ww, wh)
-            #monitor = glfw.get_window_monitor(self.window)
-            sx, sy, sw, sh = glfw.get_monitor_workarea(monitor)
-            glfw.set_window_pos(self.window, sw-ww, sy)
+            if pin := self.py_config.get("MONITOR_PIN", None):
+                #monitor = glfw.get_window_monitor(self.window)
+                work_rect = Rect(glfw.get_monitor_workarea(monitor))
+                pinned = work_rect.take(ww, pin[0]).take(wh, pin[1])
+                glfw.set_window_pos(self.window, pinned.x, pinned.y)
 
             GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
@@ -829,9 +761,6 @@ class Renderer():
                     #result.translate(0, -rects[idx].y)
                     rect = rects[idx].offset((w-rects[idx].w)/2, 0)
                     self.draw_preview(dscale, canvas, rect, (render, result, rp))
-                
-                #paint = skia.Paint(AntiAlias=True, Color=skia.ColorWHITE)
-                #canvas.drawString(datetime.now().strftime("%H:%M:%S"), 10, h-5, skia.Font(None, 17), paint)
             
             surface.flushAndSubmit()
             glfw.swap_buffers(self.window)

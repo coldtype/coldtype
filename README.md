@@ -19,14 +19,6 @@ def render(r):
     return StyledString("COLDTYPE", style).pens().align(r).f("hr", 0.8, 0.7).understroke()
 ```
 
-![Screenshot of app](https://coldtype.goodhertz.co/media/drawbotesque.png)
-
-_A DrawBot-like programming experience, using VS Code and the Coldtype viewing app. (When you save the file in VS Code, the hanging process (as seen in the terminal) re-renders `simple.py` to SVG and sends the result via a websocket to the Coldtype viewing app, which displays the SVG with a standard Chromium-based webview.)_
-
-___
-___
-___
-
 # Quickstart
 
 - Install a Python >= 3.8
@@ -35,25 +27,12 @@ ___
 - Create a virtual environment, ala `python3.8 -m venv venv --prompt=coldtype` on the command line
 - Then `source venv/bin/activate` to start your venv
 - Then `pip install -e .` (This adds the `coldtype` command to your virtual environment)
-- Then `pip install git+https://github.com/typemytype/drawbot` if you’re on a Mac (to get DrawBot support — not strictly necessary but if you’re rasterizing anything, it’s very useful)
-- Then `pip install -r requirements.txt`
-
-Now you’ll need the coldtype viewer app before you can run anything.
-
-To build it from source and start it:
-
-- Install [yarn](https://classic.yarnpkg.com/en/docs/install/)
-- cd into the coldtype/viewer directory, aka `cd viewer` if you’re already in the coldtype repo
-- `yarn run start`
 
 Now you can run coldtype scripts:
 
 - Try `coldtype --version`, which should print out the current version of Coldtype. If it doesn’t, the install hasn’t worked properly.
 - To actually see something, try: `coldtype examples/simple.py`
 
-___
-___
-___
 
 # More about Coldtype
 

@@ -15,7 +15,7 @@ def render(f):
     
     return DATPenSet([
         (StyledString("COLD",
-            Style(mutator, 350, tu=-100, ro=1, r=1, rotate=15, wdth=0.25, wght=1))
+            Style(mutator, 350, tu=-100-100*t.e, ro=1, r=1, rotate=15, wdth=0.25, wght=1))
             .pens()
             .align(f.a.r)
             .rotate(-5)
