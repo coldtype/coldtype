@@ -1,5 +1,7 @@
 import skia
 
+from pathlib import Path
+
 from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
@@ -86,7 +88,6 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(src)))
         matrix = skia.Matrix()
         matrix.setScale(0.5, 0.5)
-        #self.paint.setColor(skia.ColorTRANSPARENT)
         self.paint.setShader(image.makeShader(
             skia.TileMode.kRepeat,
             skia.TileMode.kRepeat,

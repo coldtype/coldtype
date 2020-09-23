@@ -161,6 +161,8 @@ class Renderer():
             raster_previews=parser.add_argument("-rp", "--raster-previews", action="store_true", default=False, help="Should rasters be displayed in the Coldtype viewer?"),
             
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
+
+            preview_scale=parser.add_argument("-ps", "--preview-scale", type=float, default=1.0, help="What size should previews be shown at?"),
             
             all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
 
@@ -756,6 +758,9 @@ class Renderer():
                 self.on_action(Action.PreviewStoryboardNext)
         self.on_exit(restart=False)
     
+    def preview_scale(self):
+        return self.args.preview_scale
+    
     def turn_over(self):
         self.monitor_midi()
         if len(self.waiting_to_render) > 0:
@@ -763,7 +768,7 @@ class Renderer():
                 self.reload_and_render(action, path)
             self.waiting_to_render = []
         
-        dscale = 1.0
+        dscale = self.preview_scale()
         rects = []
 
         if len(self.previews_waiting_to_paint) > 0:
