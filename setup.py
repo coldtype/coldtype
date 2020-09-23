@@ -56,6 +56,7 @@ setuptools.setup(
         "PyOpenGL-accelerate",
         "glfw",
         "SimpleWebSocketServer",
+        "more-itertools",
         #"rtmidi",
         #"pynput",
     ],

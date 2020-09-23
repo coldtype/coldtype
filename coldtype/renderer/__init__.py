@@ -169,6 +169,8 @@ class Renderer():
             if o := self.py_config.get("WINDOW_OPACITY"):
                 glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
             
+            self._prev_scale = glfw.get_window_content_scale(self.window)[0]
+            
             glfw.make_context_current(self.window)
             glfw.set_key_callback(self.window, self.on_key)
     
@@ -697,6 +699,11 @@ class Renderer():
     
     def listen_to_glfw(self):
         while not glfw.window_should_close(self.window):
+            scale_x, scale_y = glfw.get_window_content_scale(self.window)
+            if scale_x != self._prev_scale:
+                self._prev_scale = scale_x
+                self.on_action(Action.PreviewStoryboard)
+
             #ptime.sleep(0.5)
             self.turn_over()
             global last_line
@@ -748,11 +755,13 @@ class Renderer():
             
             frect = Rect(0, 0, w, h)
 
+            #print(">>>", glfw.get_window_content_scale(self.window))
+
             monitor = glfw.get_primary_monitor()
             if m_scale := self.py_config.get("WINDOW_SCALE"):
                 scale_x, scale_y = m_scale
             else:
-                scale_x, scale_y = glfw.get_monitor_content_scale(monitor)
+                scale_x, scale_y = glfw.get_window_content_scale(self.window)
             ww = int(w/scale_x)
             wh = int(h/scale_y)
             glfw.set_window_size(self.window, ww, wh)
