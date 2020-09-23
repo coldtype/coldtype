@@ -102,7 +102,7 @@ class Renderer():
             print(">>> no coldtype config found <<<")
             self.py_config = {}
             self.midi_mapping = {}
-            self.hotkey_mapping = {}
+            self.hotkey_mapping = None
         except json.decoder.JSONDecodeError:
             print(">>> syntax error in ~/coldtype.json <<<")
             sys.exit(0)
