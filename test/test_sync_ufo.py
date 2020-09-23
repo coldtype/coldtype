@@ -1,8 +1,19 @@
 from coldtype import *
 
-co = Font("assets/ColdtypeObviously_CompressedBlackItalic.ufo")
-#co = Font("assets/ColdtypeObviously.designspace")
+co1 = Font("assets/ColdtypeObviously_CompressedBlackItalic.ufo")
+co2 = Font("assets/ColdtypeObviously.designspace")
 
 @renderable()
 def hello(r):
-    return StyledString("COLDTYPE", Style(co, 500, wdth=0, tu=0)).pens().align(r, tv=1).f(hsl(0.5))
+    return DATPenSet([
+        (StyledString("COLD",
+            Style(co1, 1000, wdth=1))
+            .pens()
+            .align(r)
+            .f(hsl(0.5))),
+        (StyledString("TYPE",
+            Style(co2, 500, wdth=1))
+            .pens()
+            .align(r)
+            .rotate(45)
+            .f(hsl(0.95, a=0.25)))])
