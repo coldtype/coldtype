@@ -6,7 +6,7 @@ __⚠️ Our intention is to ultimately make this library a proper, useable, ope
 
 # Coldtype
 
-_Hello and welcome to `coldtype`, an odd little library for programmatic typography, written by [Rob Stenson](https://robstenson.com), who is me, for use on Goodhertz projects and also other stuff._
+_Hello and welcome to `coldtype`, an odd little library for programmatic typography, written by [Rob Stenson](https://robstenson.com), who is me, for use on [Goodhertz](https://goodhertz.com) projects and also [other stuff](https://vimeo.com/robstenson)._
 
 ![An example](https://raw.githubusercontent.com/goodhertz/coldtype/skia_sync/examples/renders/simple_render.png)
 

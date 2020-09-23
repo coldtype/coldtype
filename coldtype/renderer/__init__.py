@@ -159,14 +159,14 @@ class Renderer():
                 raise RuntimeError('glfw.init() failed')
             glfw.window_hint(glfw.STENCIL_BITS, 8)
 
-            if self.py_config.get("MONITOR_BACKGROUND"):
+            if self.py_config.get("WINDOW_BACKGROUND"):
                 glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
-            if self.py_config.get("MONITOR_FLOAT"):
+            if self.py_config.get("WINDOW_FLOAT"):
                 glfw.window_hint(glfw.FLOATING, glfw.TRUE)
             
             self.window = glfw.create_window(int(50), int(50), '', None, None)
 
-            if o := self.py_config.get("MONITOR_OPACITY"):
+            if o := self.py_config.get("WINDOW_OPACITY"):
                 glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
             
             glfw.make_context_current(self.window)
@@ -749,14 +749,14 @@ class Renderer():
             frect = Rect(0, 0, w, h)
 
             monitor = glfw.get_primary_monitor()
-            if m_scale := self.py_config.get("MONITOR_SCALE"):
+            if m_scale := self.py_config.get("WINDOW_SCALE"):
                 scale_x, scale_y = m_scale
             else:
                 scale_x, scale_y = glfw.get_monitor_content_scale(monitor)
             ww = int(w/scale_x)
             wh = int(h/scale_y)
             glfw.set_window_size(self.window, ww, wh)
-            if pin := self.py_config.get("MONITOR_PIN", None):
+            if pin := self.py_config.get("WINDOW_PIN", None):
                 #monitor = glfw.get_window_monitor(self.window)
                 work_rect = Rect(glfw.get_monitor_workarea(monitor))
                 pinned = work_rect.take(ww, pin[0]).take(wh, pin[1])
