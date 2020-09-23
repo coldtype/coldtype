@@ -731,7 +731,10 @@ class Renderer():
             frect = Rect(0, 0, w, h)
 
             monitor = glfw.get_primary_monitor()
-            scale_x, scale_y = glfw.get_monitor_content_scale(monitor)
+            if m_scale := self.py_config.get("MONITOR_SCALE"):
+                scale_x, scale_y = m_scale
+            else:
+                scale_x, scale_y = glfw.get_monitor_content_scale(monitor)
             ww = int(w/scale_x)
             wh = int(h/scale_y)
             glfw.set_window_size(self.window, ww, wh)
@@ -818,8 +821,8 @@ class Renderer():
                 r.terminate()
 
     def on_exit(self, restart=False):
-        if self.args.watch:
-           print(f"<EXIT(restart:{restart})>")
+        #if self.args.watch:
+        #   print(f"<EXIT(restart:{restart})>")
         glfw.terminate()
         if self.hotkeys:
             self.hotkeys.stop()
