@@ -36,11 +36,6 @@ setuptools.setup(
             'coldtype = coldtype.renderer:main'
         ],
     },
-    extras_require={
-        #"drawbot": [
-        #    "drawbot @ http://github.com/typemytype/drawbot/archive/master.zip"
-        #],
-    },
     install_requires=[
         "fontPens",
         "defcon",
@@ -55,16 +50,14 @@ setuptools.setup(
         "ufo2ft",
         "unicodedata2",
         "numpy",
-        #"websocket-client",
-        #"websockets",
         "watchdog",
         "noise",
         "PyOpenGL",
         "PyOpenGL-accelerate",
-        #"rtmidi",
         "glfw",
         "SimpleWebSocketServer",
-        #"fontgoggles @ http://github.com/goodhertz/fontgoggles/archive/master.zip"
+        #"rtmidi",
+        #"pynput",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
