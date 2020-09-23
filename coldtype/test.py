@@ -3,7 +3,7 @@ from functools import partial
 from random import Random
 
 
-co = Font("assets/ColdtypeObviously.designspace")
+co = Font("assets/ColdtypeObviously-VF.ttf")
 
 mutator = Font("assets/MutatorSans.ttf")
 

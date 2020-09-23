@@ -1,6 +1,7 @@
 import sys, os, re, signal, tracemalloc
 import tempfile, traceback, threading
 import argparse, importlib, inspect, json, math
+import platform
 
 import time as ptime
 from pathlib import Path
@@ -33,6 +34,7 @@ try:
 except ImportError:
     process = None
 
+DARWIN = platform.system() == "Darwin"
 
 # https://stackoverflow.com/questions/27174736/how-to-read-most-recent-line-from-stdin-in-python
 last_line = ''
@@ -755,13 +757,15 @@ class Renderer():
             
             frect = Rect(0, 0, w, h)
 
-            #print(">>>", glfw.get_window_content_scale(self.window))
-
             monitor = glfw.get_primary_monitor()
             if m_scale := self.py_config.get("WINDOW_SCALE"):
                 scale_x, scale_y = m_scale
             else:
                 scale_x, scale_y = glfw.get_window_content_scale(self.window)
+            
+            if not DARWIN:
+                scale_x, scale_y = 1.0, 1.0
+
             ww = int(w/scale_x)
             wh = int(h/scale_y)
             glfw.set_window_size(self.window, ww, wh)
