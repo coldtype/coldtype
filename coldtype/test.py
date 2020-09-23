@@ -4,7 +4,10 @@ from random import Random
 
 
 co = Font("assets/ColdtypeObviously.designspace")
+
 mutator = Font("assets/MutatorSans.ttf")
+
+recmono = Font("viewer/assets/RecMono-CasualItalic.ttf")
 
 Style.RegisterShorthandPrefix("≈", "~/Type/fonts/fonts")
 

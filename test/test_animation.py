@@ -7,8 +7,6 @@ def find_workarea(self):
 
 Timeline.find_workarea = find_workarea
 
-recmono = Font("viewer/assets/RecMono-CasualItalic.ttf")
-
 @animation(rect=(1920, 1080), timeline=tl)
 def render(f):
     pe = f.a.t.progress(f.i, loops=1, easefn="qeio").e
