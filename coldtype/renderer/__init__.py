@@ -20,7 +20,6 @@ from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.utils import *
 
 import contextlib, glfw
-from pynput import keyboard
 from OpenGL import GL
 
 try:
