@@ -35,13 +35,11 @@ class bcolors:
 
 
 echo_clients = []
+echo_incoming = []
 
 class SimpleEcho(WebSocket):
     def handleMessage(self):
-        for client in clients:
-            if client != self:
-                # self.address[0]
-                client.sendMessage(self.data)
+        echo_incoming.append([self, self.data])
 
     def handleConnected(self):
         print(self.address, 'connected')
@@ -49,7 +47,7 @@ class SimpleEcho(WebSocket):
 
     def handleClose(self):
         echo_clients.remove(self)
-        print(self.address, 'closed')
+        print(self.address, 'closed', len(echo_clients))
 
 
 def echo_server():

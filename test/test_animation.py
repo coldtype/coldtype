@@ -12,12 +12,13 @@ def render(f):
     pe = f.a.t.progress(f.i, loops=1, easefn="qeio").e
     return DATPenSet([
         (StyledString(chr(65+f.i),
-            Style(mutator, 1000, wdth=1-pe))
+            Style(mutator, 1000, wdth=1-pe, wght=pe))
             .pen()
             .f(hsl(pe, s=0.6, l=0.6))
             .align(f.a.r)),
         (StyledString("{:02d}".format(f.i),
             Style(recmono, 50, wdth=1))
             .pens()
-            .align(f.a.r.take(100, "mny"), th=0))
+            .align(f.a.r.take(100, "mny"), th=0)
+            .f(hsl((1-pe)+0.5)))
     ])

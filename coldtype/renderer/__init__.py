@@ -124,11 +124,17 @@ class Renderer():
         sys.path.insert(0, os.getcwd())
 
         self.args = parser.parse_args()
+        if self.args.is_subprocess or self.args.all:
+            self.args.watch = False
+
         self.watchees = []
         self.reset_filepath(self.args.file if hasattr(self.args, "file") else None)
         self.layers = [l.strip() for l in self.args.layers.split(",")] if self.args.layers else []
         
-        self.server = echo_server()
+        if self.args.watch:
+            self.server = echo_server()
+        else:
+            self.server = None
 
         self.program = None
         self.websocket = None
@@ -688,16 +694,6 @@ class Renderer():
         except:
             self.show_error()
             print("Malformed message", message)
-
-    # def listen_to_ws(self):
-    #     async with websockets.connect(WEBSOCKET_ADDR) as websocket:
-    #         self.websocket = websocket
-    #         async for message in websocket:
-    #             await self.process_ws_message(message)
-    
-    # async def listen_to_stdin(self):
-    #     async for line in self.stream_as_generator(sys.stdin):
-    #         await self.on_stdin(line.decode("utf-8").strip())
     
     def listen_to_glfw(self):
         while not glfw.window_should_close(self.window):
@@ -719,6 +715,13 @@ class Renderer():
         if self.action_waiting:
             self.on_message({}, self.action_waiting)
             self.action_waiting = None
+        
+        global echo_incoming
+        if len(echo_incoming) > 0:
+            for echo, msg in echo_incoming:
+                print("WS>>>", echo.address, msg)
+                self.process_ws_message(msg)
+            echo_incoming = []
 
         self.monitor_midi()
         if len(self.waiting_to_render) > 0:
@@ -784,7 +787,8 @@ class Renderer():
             context.abandonContext()
         
         self.previews_waiting_to_paint = []
-        self.server.serveonce()
+        if self.server:
+            self.server.serveonce()
 
     def draw_preview(self, scale, canvas, rect, waiter):
         surface = skia.Surface(rect.w, rect.h)
