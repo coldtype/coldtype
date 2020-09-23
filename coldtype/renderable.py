@@ -115,11 +115,10 @@ class renderable():
 
 
 class drawbot_script(renderable):
-    def __init__(self, rect=(1080, 1080), scale=1, svg_preview=0, **kwargs):
+    def __init__(self, rect=(1080, 1080), scale=1, **kwargs):
         if not db:
             raise Exception("DrawBot not installed!")
         super().__init__(rect=Rect(rect).scale(scale), **kwargs)
-        self.svg_preview = svg_preview
         self.self_rasterizing = True
     
     def run(self, render_pass):
@@ -131,14 +130,9 @@ class drawbot_script(renderable):
             db.size(self.rect.w, self.rect.h)
             render_pass.fn(*render_pass.args)
             result = None
-            if render_pass.action in [Action.RenderAll] or not self.svg_preview:
-                render_pass.output_path.parent.mkdir(exist_ok=True, parents=True)
-                db.saveImage(str(render_pass.output_path))
-                result = render_pass.output_path
-            else:
-                with tempfile.NamedTemporaryFile(suffix=".svg") as tf:
-                    db.saveImage(tf.name)
-                    result = tf.read().decode("utf-8")
+            render_pass.output_path.parent.mkdir(exist_ok=True, parents=True)
+            db.saveImage(str(render_pass.output_path))
+            result = render_pass.output_path
             db.endDrawing()
         finally:
             if use_pool:
@@ -146,11 +140,8 @@ class drawbot_script(renderable):
         return result
     
     def send_preview(self, previewer, result, render_pass):
-        if self.svg_preview:
-            previewer.send(f"<div class='drawbot-render'>{result}</div>", bg=self.bg, max_width=800)
-        else:
-            r = self.rect
-            previewer.send(str(render_pass.output_path), Rect(0, 0, r.w/2, r.h/2), bg=self.bg, image=True)
+        r = self.rect
+        previewer.send(str(render_pass.output_path), Rect(0, 0, r.w/2, r.h/2), bg=self.bg, image=True)
 
 
 class svgicon(renderable):

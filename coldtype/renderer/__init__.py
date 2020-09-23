@@ -791,6 +791,13 @@ class Renderer():
             self.server.serveonce()
 
     def draw_preview(self, scale, canvas, rect, waiter):
+        if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
+            image = skia.Image.MakeFromEncoded(
+                skia.Data.MakeFromFileName(str(waiter[1])))
+            if image:
+                canvas.drawImage(image, rect.x, rect.y)
+            return
+        
         surface = skia.Surface(rect.w, rect.h)
         with surface as canvas2:
             render, result, rp = waiter
