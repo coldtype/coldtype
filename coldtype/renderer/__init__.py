@@ -155,6 +155,8 @@ class Renderer():
         self.previews_waiting_to_paint = []
         self.playing = 0
         self.hotkeys = None
+        self._preview_scale = self.args.preview_scale
+        self._should_reload = False
 
         if self.args.watch:
             if not glfw.init():
@@ -593,6 +595,20 @@ class Renderer():
                 glfw.set_window_opacity(self.window, min(1, o+0.1))
             elif key == glfw.KEY_SPACE:
                 self.on_action(Action.PreviewPlay)
+            elif key in [glfw.KEY_MINUS, glfw.KEY_EQUAL]:
+                inc = -0.1 if key == glfw.KEY_MINUS else 0.1
+                if mods & glfw.MOD_SHIFT:
+                    print("SHIFT!")
+                    inc = inc * 5
+                self._preview_scale = max(0.1, min(5, self._preview_scale + inc))
+                self._should_reload = True
+            elif key == glfw.KEY_0:
+                self._preview_scale = 1.0
+                self._should_reload = True
+            elif key == glfw.KEY_R:
+                self.on_action(Action.RestartRenderer)
+            elif key == glfw.KEY_P:
+                self._should_reload = True
     
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
@@ -705,6 +721,10 @@ class Renderer():
             if scale_x != self._prev_scale:
                 self._prev_scale = scale_x
                 self.on_action(Action.PreviewStoryboard)
+            
+            if self._should_reload:
+                self._should_reload = False
+                self.on_action(Action.PreviewStoryboard)
 
             #ptime.sleep(0.5)
             self.turn_over()
@@ -718,7 +738,7 @@ class Renderer():
         self.on_exit(restart=False)
     
     def preview_scale(self):
-        return self.args.preview_scale
+        return self._preview_scale
     
     def turn_over(self):
         if self.action_waiting:
@@ -814,7 +834,8 @@ class Renderer():
         surface = skia.Surface(rect.w, rect.h)
         with surface as canvas2:
             render, result, rp = waiter
-            render.draw_preview(scale, canvas2, render.rect, result, rp)
+            canvas2.scale(scale, scale)
+            render.draw_preview(1.0, canvas2, render.rect, result, rp)
         image = surface.makeImageSnapshot()
         canvas.drawImage(image, rect.x, rect.y)
     
