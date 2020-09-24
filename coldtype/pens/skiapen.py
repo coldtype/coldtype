@@ -87,7 +87,6 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
     def image(self, src=None, opacity=1, rect=None):
         image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(src)))
         _, _, iw, ih = image.bounds()
-        print("IMAGE", rect, image.bounds())
         matrix = skia.Matrix()
         matrix.setScale(rect.w / iw, rect.h / ih)
         self.paint.setShader(image.makeShader(

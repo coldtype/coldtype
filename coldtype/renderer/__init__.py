@@ -6,7 +6,7 @@ import platform
 import time as ptime
 from pathlib import Path
 from typing import Tuple
-from random import shuffle
+from random import shuffle, Random
 from runpy import run_path
 from subprocess import call, Popen
 from functools import partial
@@ -19,6 +19,8 @@ from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.utils import *
+
+_random = Random()
 
 import contextlib, glfw
 from OpenGL import GL
@@ -197,23 +199,33 @@ class Renderer():
         print(message)
 
     def reload(self, trigger):
-        try:
-            self.program = run_path(str(self.filepath))
-            for k, v in self.program.items():
-                if isinstance(v, coldtype.text.reader.Font):
-                    v.load()
-                    if v.path not in self.watchee_paths():
-                        self.watchees.append([Watchable.Font, v.path])
-                    for ext in v.font.getExternalFiles():
-                        if ext not in self.watchee_paths():
-                            self.watchees.append([Watchable.Font, ext])
-                elif isinstance(v, DefconFont):
-                    p = Path(v.path).resolve()
-                    if p not in self.watchee_paths():
-                        self.watchees.append([Watchable.Font, p])
-        except Exception as e:
-            self.program = None
-            self.show_error()
+        if not self.filepath:
+            self.program = dict(no_filepath=True)
+            pass # ?
+        else:
+            try:
+                self.program = run_path(str(self.filepath))
+                for k, v in self.program.items():
+                    if isinstance(v, coldtype.text.reader.Font):
+                        v.load()
+                        if v.path not in self.watchee_paths():
+                            self.watchees.append([Watchable.Font, v.path])
+                        for ext in v.font.getExternalFiles():
+                            if ext not in self.watchee_paths():
+                                self.watchees.append([Watchable.Font, ext])
+                    elif isinstance(v, DefconFont):
+                        p = Path(v.path).resolve()
+                        if p not in self.watchee_paths():
+                            self.watchees.append([Watchable.Font, p])
+                    
+                if self.program.get("COLDTYPE_NO_WATCH"):
+                    return True
+            except SystemExit:
+                self.on_exit(restart=False)
+                return True
+            except Exception as e:
+                self.program = None
+                self.show_error()
     
     def animation(self):
         renderables = self.renderables(Action.PreviewStoryboard)
@@ -224,7 +236,7 @@ class Renderer():
     def renderables(self, trigger):
         _rs = []
         for k, v in self.program.items():
-            if isinstance(v, renderable):
+            if isinstance(v, renderable) and not v.hidden:
                 _rs.append(v)
         if self.args.filter_functions:
             function_names = [f.strip() for f in self.args.filter_functions.split(",")]
@@ -234,6 +246,24 @@ class Renderer():
             matches = [r for r in _rs if r.func.__name__ == func_name]
             if len(matches) > 0:
                 return matches
+
+        if len(_rs) == 0:
+            r = renderable((500, 500))
+            def draw(r):
+                #ct = coldtype.StyledString("CT", coldtype.Style("assets/ColdtypeObviously-VF.ttf", 500, wdth=0)).pen().round(1)
+                #print(ct.value)
+                ct = DATPen().vl([('moveTo', [(70.0, 236.0)]), ('qCurveTo', [(76.5, 236.0), (83.0, 237.5), (86.0, 238.0)]), ('qCurveTo', [(80.5, 214.0), (66.0, 153.5), (50.0, 89.0), (35.5, 28.0), (30.0, 3.5)]), ('qCurveTo', [(27.5, 2.5), (20.5, -0.5), (13.0, -2.0), (8.5, -2.0)]), ('qCurveTo', [(-2.0, -2.0), (-15.5, 6.0), (-20.0, 29.5), (-14.5, 74.5), (1.5, 148.5), (15.5, 203.5)]), ('qCurveTo', [(29.5, 259.0), (49.5, 328.0), (67.0, 364.0), (85.5, 377.0), (97.5, 377.0)]), ('qCurveTo', [(106.0, 377.0), (118.0, 374.5), (121.5, 372.0)]), ('qCurveTo', [(116.0, 352.0), (108.0, 323.0), (101.5, 297.5), (94.0, 268.5), (88.5, 247.5)]), ('qCurveTo', [(85.0, 248.5), (75.5, 250.0), (70.5, 250.0)]), ('qCurveTo', [(66.5, 250.0), (60.5, 247.5), (59.5, 244.0)]), ('qCurveTo', [(59.0, 240.0), (64.5, 236.0), (70.0, 236.0)]), ('closePath', []), ('moveTo', [(119.5, 289.5)]), ('lineTo', [(168.0, 289.5)]), ('qCurveTo', [(156.5, 242.5), (133.0, 148.5), (113.5, 67.5), (99.0, 10.5), (96.5, 0.0)]), ('qCurveTo', [(91.5, 0.5), (77.0, 1.0), (71.5, 1.0)]), ('qCurveTo', [(65.5, 1.0), (51.5, 0.5), (46.0, 0.0)]), ('qCurveTo', [(49.0, 10.5), (64.0, 67.5), (84.5, 148.5), (108.0, 242.5), (119.5, 289.5)]), ('closePath', []), ('moveTo', [(127.5, 375.0)]), ('lineTo', [(202.0, 375.0)]), ('qCurveTo', [(200.0, 365.5), (193.0, 337.5), (189.0, 323.5)]), ('qCurveTo', [(186.0, 310.5), (178.5, 281.0), (176.0, 270.0)]), ('qCurveTo', [(166.0, 270.0), (147.0, 270.5), (139.0, 270.5)]), ('qCurveTo', [(131.5, 270.5), (112.0, 270.0), (101.5, 270.0)]), ('qCurveTo', [(104.5, 281.0), (112.0, 310.5), (115.0, 323.5)]), ('qCurveTo', [(119.0, 337.5), (125.5, 365.5), (127.5, 375.0)]), ('closePath', [])])
+                return DATPenSet([
+                    DATPen().rect(r).f(coldtype.Gradient.Vertical(r,
+                    coldtype.hsl(_random.random()),
+                    coldtype.hsl(_random.random()))),
+                    ct.align(r.inset(20), "mnx", "mxy").f(1, 0.25)
+                    ])
+            r.__call__(draw)
+            r.blank_renderable = True
+            print(">>> No renderables found <<<")
+            _rs.append(r)
+
         return _rs
     
     def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
@@ -255,10 +285,10 @@ class Renderer():
                 elif render.dst:
                     output_folder = render.dst / (render.custom_folder or render.folder(self.filepath))
                 else:
-                    output_folder = self.filepath.parent / "renders" / (render.custom_folder or render.folder(self.filepath))
+                    output_folder = (self.filepath.parent if self.filepath else Path(os.getcwd())) / "renders" / (render.custom_folder or render.folder(self.filepath))
                 
                 did_render = False
-                prefix = self.args.file_prefix or render.prefix or self.filepath.stem
+                prefix = self.args.file_prefix or render.prefix or self.filepath.stem if self.filepath else None
                 fmt = self.args.format or render.fmt
                 _layers = self.layers if len(self.layers) > 0 else render.layers
 
@@ -448,7 +478,9 @@ class Renderer():
         wl = len(self.watchees)
 
         try:
-            self.reload(trigger)
+            should_halt = self.reload(trigger)
+            if should_halt:
+                return True
             if self.program:
                 preview_count, render_count = self.render(trigger, indices=indices)
                 if self.args.show_render_count:
@@ -508,7 +540,10 @@ class Renderer():
                 indices = [int(x.strip()) for x in self.args.indices.split(",")]
                 self.reload_and_render(Action.RenderIndices, indices=indices)
             else:
-                self.reload_and_render(Action.Initial)
+                should_halt = self.reload_and_render(Action.Initial)
+                if should_halt:
+                    self.on_exit()
+                    return
             self.on_start()
             if self.args.watch:
                 try:
@@ -530,7 +565,10 @@ class Renderer():
                     self.midis = []
 
                 self.watch_file_changes()
-                glfw.set_window_title(self.window, self.watchees[0][1].name)
+                if len(self.watchees) > 0:
+                    glfw.set_window_title(self.window, self.watchees[0][1].name)
+                else:
+                    glfw.set_window_title(self.window, "coldtype")
 
                 self.hotkeys = None
                 try:
@@ -835,6 +873,9 @@ class Renderer():
             render, result, rp = waiter
             canvas2.scale(scale, scale)
             render.draw_preview(1.0, canvas2, render.rect, result, rp)
+            if hasattr(render, "blank_renderable"):
+                paint = skia.Paint(AntiAlias=True, Color=skia.ColorWHITE)
+                canvas2.drawString('Nothing found'.upper(), 315, 480, skia.Font(None, 20), paint)
         image = surface.makeImageSnapshot()
         canvas.drawImage(image, rect.x, rect.y)
     

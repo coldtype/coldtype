@@ -315,6 +315,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def __str__(self):
         return f"<DP(typo:int({self.typographic})({self.glyphName}))/tag:({self._tag})>"
     
+    def vl(self, value):
+        self.value = value
+        return self
+    
     def ups(self):
         dps = DATPenSet()
         dps.append(self.copy())

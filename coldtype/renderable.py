@@ -49,8 +49,7 @@ class RenderPass():
 
 
 class renderable():
-    def __init__(self, rect=(1080, 1080), bg="whitesmoke", hide=False, fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[], layers=[], ui_callback=None):
-        self.hide = hide
+    def __init__(self, rect=(1080, 1080), bg="whitesmoke", fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[], layers=[], ui_callback=None):
         self.rect = Rect(rect)
         self.bg = normalize_color(bg)
         self.fmt = fmt
@@ -63,6 +62,7 @@ class renderable():
         self.rasterizer = rasterizer
         self.self_rasterizing = False
         self.layers = layers
+        self.hidden = False
         if not rasterizer:
             if self.fmt == "svg":
                 self.rasterizer = "svg"
@@ -90,10 +90,7 @@ class renderable():
         pass
 
     def run(self, render_pass):
-        if inspect.iscoroutinefunction(render_pass.fn):
-            return render_pass.fn(*render_pass.args)
-        else:
-            return render_pass.fn(*render_pass.args)
+        return render_pass.fn(*render_pass.args)
     
     def runpost(self, result, render_pass):
         if self.postfn:
@@ -112,6 +109,14 @@ class renderable():
         sr = self.rect.scale(scale, "mnx", "mxx")
         SkiaPen.CompositeToCanvas(DATPen().rect(sr).f(self.bg), sr, canvas)
         SkiaPen.CompositeToCanvas(result, sr, canvas, scale)
+    
+    def hide(self):
+        self.hidden = True
+        return self
+    
+    def show(self):
+        self.hidden = False
+        return self
 
 
 class drawbot_script(renderable):
