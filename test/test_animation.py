@@ -17,8 +17,8 @@ def render(f):
             .f(hsl(pe, s=0.6, l=0.6))
             .align(f.a.r)),
         (StyledString("{:02d}".format(f.i),
-            Style(recmono, 50, wdth=1))
+            Style(recmono, 72, wdth=1))
             .pens()
-            .align(f.a.r.take(100, "mny"), th=0)
+            .align(f.a.r.take(150, "mny"), th=0)
             .f(hsl((1-pe)+0.5)))
     ])

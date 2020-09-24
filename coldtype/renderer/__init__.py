@@ -598,7 +598,6 @@ class Renderer():
             elif key in [glfw.KEY_MINUS, glfw.KEY_EQUAL]:
                 inc = -0.1 if key == glfw.KEY_MINUS else 0.1
                 if mods & glfw.MOD_SHIFT:
-                    print("SHIFT!")
                     inc = inc * 5
                 self._preview_scale = max(0.1, min(5, self._preview_scale + inc))
                 self._should_reload = True
