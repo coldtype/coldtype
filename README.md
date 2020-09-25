@@ -8,7 +8,7 @@ __⚠️ Our intention is to ultimately make this library a proper, useable, ope
 
 _Hello and welcome to `coldtype`, an odd little library for programmatic typography, written by [Rob Stenson](https://robstenson.com), who is me, for use on [Goodhertz](https://goodhertz.com) projects and also [other stuff](https://vimeo.com/robstenson)._
 
-![An example](https://raw.githubusercontent.com/goodhertz/coldtype/skia_sync/examples/renders/simple_render.png)
+![An example](https://raw.githubusercontent.com/goodhertz/coldtype/master/examples/renders/simple_render.png)
 
 
 ```python
@@ -41,20 +41,40 @@ def render(r):
 
 - Install a Python >= 3.8
 
-## Option 1
+## If you want to try coldtype in the coldtype repo itself:
 - Clone this repository
 - `cd` into the the cloned coldtype repository
 - Create a virtual environment, ala `python3.8 -m venv venv --prompt=coldtype` on the command line
 - Then `source venv/bin/activate` to start your venv
 - Then `pip install -e .` (This adds the `coldtype` command to your virtual environment)
+- Then `coldtype`
 
-## Option 2
-Using a virtualenv (based on a python >= 3.8):
+That last command should pop up a window that is a random gradient, along with the letters CT and a little message that says `NOTHING FOUND`.
+
+You can also try running some tests, like:
+
+- `coldtype test/test_animation.py`
+
+With that window open, try hitting the arrow keys to go backward and forward in time.
+
+## If you want to try coldtype in a blank virtual environment
+Using a virtualenv (based on a python >= 3.8) (aka `python3.8 -m venv venv --prompt=<your prompt here>` + `source venv/bin/activate`):
 - `pip install coldtype`
+- `coldtype`
 
-Now you can run coldtype scripts, ala:
+That last command should pop up a window that is a random gradient, along with the letters CT and a little message that says `NOTHING FOUND`.
 
-`coldtype examples/simple.py`
+To write your own script, make a python file in your repo, like `test.py`, and put some code in it, like:
+
+```python
+from coldtype import *
+
+@renderable()
+def test(r):
+    return DATPen().oval(r)
+```
+
+Then you can run that like so — `coldtype test.py` — and a large pink oval should pop up on your screen.
 
 ---
 
@@ -159,30 +179,3 @@ Also originally I thought it was a funny name because I wanted to make a very fa
 ## Weirdnesses
 
 - __0-1 variation axes value__ — By default, all font variation values (axis values) are scaled to a 0-1 range. I’ve found I almost never want to set a font variation value in the scale set by the font itself, mostly because I’m almost always mapping a 0-1 time (or amplitude) value to the axis. If you’d like to not "(s)cale (v)arations," set `sv=False` when constructing a `Style` object.
-
-## Programming philosophy
-
-Here is a free-associated list of things that I think define the general vibe of programming in Coldtype (a work-in-progress)
-
-- Chained mutation/transformation
-    - "Chaining" in this context refers to the programming style favored by libraries like jQuery, which allows you to call multiple methods on a single line, all of which mutate the state of an object and return the object itself in each mutating call. For example:
-        - `DATPen().rect(Rect(500, 500)).translate(100, 100).rotate(45)` creates a `DATPen` object, then adds a rectangle bezier to it, then translates it, then rotates it, all in a single line. In normal circumstances, programming like this is called "spaghetti" code because it's long and hard to follow, or something like that. In this case, its brevity is its benefit
-        - Yes I know mutation is theoretically “bad” or whatever, yeesh, I just really love how it works in real life.
-- Coldtype does not use classic "drawing"-style APIs/graphic state, though the data model of Coldtype can be (and is meant to be) serialized to any number of canvas/drawing APIs, and can be extended to any API that implements `fill`/`stroke` and `moveTo`/`lineTo`/`curveTo`
-
-# Caveats
-
-## What is Coldtype _not_?
-
-- Coldtype is not good for setting large amounts of text in a single frame, because Coldtype has no line-breaking algorithms.
-- This means Coldtype is probably bad for most print applications (you should use DrawBot for that, because DrawBot has line-breaking algorithms).
-- In fact, Coldtype is not good at most things that normal type-setting software is good at. Generally-speaking, the goal of this library is to give you exactly what you want, rather than a “best guess.” For example:
-    - Coldtype does not implement fallback support (expect to see some `.notdef`s)
-
-## How is this different from DrawBot?
-
-- Use whatever text editor you want
-- Cross-platform
-- Does not rely on Apple’s CoreText engine or the mostly deprecated APIs that DrawBot uses to interact with it
-- Really only a small subset of what DrawBot, by leveraging CoreText and CoreImage, can do (which is a good thing to me, because I only ever used DrawBot for typography anyway)
-- Little-to-no image support (some, but it is vvv primitive)
