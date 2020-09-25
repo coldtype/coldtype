@@ -31,6 +31,7 @@ class Action(Enum):
     PreviewIndices = "preview_indices"
     PreviewStoryboardNext = "preview_storyboard_next"
     PreviewStoryboardPrev = "preview_storyboard_prev"
+    RenderedPlay = "rendered_play"
     ArbitraryTyping = "arbitrary_typing"
     ArbitraryCommand = "arbitrary_command"
     UICallback = "ui_callback"
@@ -254,7 +255,7 @@ class animation(renderable, Timeable):
             else:
                 self.storyboard = timeline.storyboard
         else:
-            self.timeline = None
+            self.timeline = Timeline(30)
     
     def folder(self, filepath):
         return filepath.stem # TODO necessary?

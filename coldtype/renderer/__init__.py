@@ -155,6 +155,10 @@ class Renderer():
         self.action_waiting = None
         self.waiting_to_render = []
         self.previews_waiting_to_paint = []
+        self.preloaded_frames = []
+        self.playing_preloaded_frame = -1
+        self.glfw_last_time = -1
+        self.last_animation = None
         self.playing = 0
         self.hotkeys = None
         self._preview_scale = self.args.preview_scale
@@ -217,6 +221,8 @@ class Renderer():
                         p = Path(v.path).resolve()
                         if p not in self.watchee_paths():
                             self.watchees.append([Watchable.Font, p])
+                    elif isinstance(v, animation):
+                        self.last_animation = v
                     
                 if self.program.get("COLDTYPE_NO_WATCH"):
                     return True
@@ -274,11 +280,13 @@ class Renderer():
         else:
             return (self.filepath.parent if self.filepath else Path(os.getcwd())) / "renders" / (render.custom_folder or render.folder(self.filepath))
     
-    def add_paths_to_passes(self, trigger, render):
+    def add_paths_to_passes(self, trigger, render, indices):
+        output_folder = self.render_to_output_folder(render)
         prefix = self.args.file_prefix or render.prefix or self.filepath.stem if self.filepath else None
         fmt = self.args.format or render.fmt
         _layers = self.layers if len(self.layers) > 0 else render.layers
         
+        rps = []
         for rp in render.passes(trigger, _layers, indices):
             output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
 
@@ -287,6 +295,10 @@ class Renderer():
 
             rp.output_path = output_path
             rp.action = trigger
+            rps.append(rp)
+        
+        return output_folder, prefix, fmt, _layers, rps
+
     
     def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
         if not self.args.is_subprocess:
@@ -302,12 +314,8 @@ class Renderer():
                     if watch not in self.watchee_paths():
                         self.watchees.append([Watchable.Font, watch])
                 
-                output_folder = self.render_to_output_folder(render)
-                
                 did_render = False
-                prefix = self.args.file_prefix or render.prefix or self.filepath.stem if self.filepath else None
-                fmt = self.args.format or render.fmt
-                _layers = self.layers if len(self.layers) > 0 else render.layers
+                output_folder, prefix, fmt, _layers, passes = self.add_paths_to_passes(trigger, render, indices)
 
                 previewing = (trigger in [
                     Action.Initial,
@@ -322,17 +330,8 @@ class Renderer():
                     Action.RenderIndices,
                 ])
                 
-                for rp in render.passes(trigger, _layers, indices):
-                    output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
-                    #if previewing:
-                    #    output_path = output_folder / f"_previews/{prefix}_{rp.suffix}.{fmt}"
-                    #    output_path.parent.mkdir(exist_ok=True, parents=True)
-
-                    if rp.single_layer and rp.single_layer != "__default__":
-                        output_path = output_folder / f"layer_{rp.single_layer}/{prefix}_{rp.single_layer}_{rp.suffix}.{fmt}"
-                    
-                    rp.output_path = output_path
-                    rp.action = trigger
+                for rp in passes:
+                    output_path = rp.output_path
 
                     try:
                         result = render.run(rp)
@@ -650,8 +649,7 @@ class Renderer():
                 glfw.set_window_opacity(self.window, min(1, o+0.1))
             elif key == glfw.KEY_SPACE:
                 if mods & glfw.MOD_CONTROL:
-                    anm = self.animation()
-                    print(self.render_to_output_folder(anm))
+                    self.on_action(Action.RenderedPlay)
                 else:
                     self.on_action(Action.PreviewPlay)
             elif key in [glfw.KEY_MINUS, glfw.KEY_EQUAL]:
@@ -667,6 +665,8 @@ class Renderer():
                 self.on_action(Action.RestartRenderer)
             elif key == glfw.KEY_P:
                 self._should_reload = True
+            elif key == glfw.KEY_A:
+                self.on_action(Action.RenderAll)
     
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
@@ -718,6 +718,14 @@ class Renderer():
                         render.storyboard[idx] = nidx
                     self.render(Action.PreviewStoryboard)
             return True
+        elif action == Action.RenderedPlay:
+            if self.playing_preloaded_frame >= 0:
+                self.playing_preloaded_frame = -1
+                self.preloaded_frames = []
+            else:
+                anm = self.animation()
+                passes = self.add_paths_to_passes(Action.RenderAll, anm, anm.all_frames())[-1]
+                self.preload_frames(passes)
         elif action == Action.ArbitraryCommand:
             self.on_stdin(message.get("input"))
             return True
@@ -786,16 +794,61 @@ class Renderer():
             if self._should_reload:
                 self._should_reload = False
                 self.on_action(Action.PreviewStoryboard)
+            
+            t = glfw.get_time()
+            td = t - self.glfw_last_time
 
-            #ptime.sleep(0.5)
-            self.turn_over()
-            global last_line
-            if last_line:
-                self.on_stdin(last_line.strip())
-                last_line = None
+            if self.last_animation and self.playing_preloaded_frame >= 0 and len(self.preloaded_frames) > 0:
+                spf = 1 / float(self.last_animation.timeline.fps)
+                if td >= spf:
+                    self.glfw_last_time = t
+                else:
+                    glfw.poll_events()
+                    continue
+                #if td < (1/float(self.last_animation.timeline.fps)):
+                #    glfw.poll_events()
+                #    continue
+                ptime.sleep(0.01)
+                GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+
+                print(td)
+                w = self.last_animation.rect.w
+                h = self.last_animation.rect.h
+                #print(w, h, self.last_animation.timeline.fps)
+                context = skia.GrDirectContext.MakeGL()
+                backend_render_target = skia.GrBackendRenderTarget(
+                    int(w), int(h), 0, 0,
+                    skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
+                surface = skia.Surface.MakeFromBackendRenderTarget(
+                    context, backend_render_target, skia.kBottomLeft_GrSurfaceOrigin,
+                    skia.kRGBA_8888_ColorType, skia.ColorSpace.MakeSRGB())
+                
+                assert surface is not None
+
+                with surface as canvas:
+                    canvas.drawRect(skia.Rect(0, 0, w, h), skia.Paint(Color=skia.ColorBLACK))
+                    canvas.drawImage(self.preloaded_frames[self.playing_preloaded_frame], 0, 0)
+                
+                surface.flushAndSubmit()
+                glfw.swap_buffers(self.window)
+                context.abandonContext()
+
+                self.playing_preloaded_frame += 1
+                if self.playing_preloaded_frame == len(self.preloaded_frames):
+                    self.playing_preloaded_frame = 0
+            else:
+                self.glfw_last_time = t
+                #ptime.sleep(0.5)
+                self.turn_over()
+                global last_line
+                if last_line:
+                    self.on_stdin(last_line.strip())
+                    last_line = None
+                
+                if self.playing != 0:
+                    self.on_action(Action.PreviewStoryboardNext)
+            
             glfw.poll_events()
-            if self.playing != 0:
-                self.on_action(Action.PreviewStoryboardNext)
         self.on_exit(restart=False)
     
     def preview_scale(self):
@@ -902,6 +955,13 @@ class Renderer():
                 canvas2.drawString('Nothing found'.upper(), 315, 480, skia.Font(None, 20), paint)
         image = surface.makeImageSnapshot()
         canvas.drawImage(image, rect.x, rect.y)
+    
+    def preload_frames(self, passes):
+        for rp in passes:
+            image = skia.Image.MakeFromEncoded(
+                skia.Data.MakeFromFileName(str(rp.output_path)))
+            self.preloaded_frames.append(image)
+        self.playing_preloaded_frame = 0
     
     def on_modified(self, event):
         path = Path(event.src_path)
