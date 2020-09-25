@@ -811,7 +811,7 @@ class Renderer():
                 ptime.sleep(0.01)
                 GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-                print(td)
+                #print(td)
                 w = self.last_animation.rect.w
                 h = self.last_animation.rect.h
                 #print(w, h, self.last_animation.timeline.fps)
@@ -826,8 +826,14 @@ class Renderer():
                 assert surface is not None
 
                 with surface as canvas:
-                    canvas.drawRect(skia.Rect(0, 0, w, h), skia.Paint(Color=skia.ColorBLACK))
-                    canvas.drawImage(self.preloaded_frames[self.playing_preloaded_frame], 0, 0)
+                    path = self.preloaded_frames[self.playing_preloaded_frame]
+                    c = coldtype.hsl(_random.random())
+                    c = self.last_animation.bg
+                    canvas.drawRect(skia.Rect(0, 0, w, h), skia.Paint(Color=c.skia()))
+                    image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(path)))
+                    #image = skia.Image.open(str(path))
+                    canvas.drawImage(image, 0, 0)
+                    #image.unref()
                 
                 surface.flushAndSubmit()
                 glfw.swap_buffers(self.window)
@@ -958,9 +964,7 @@ class Renderer():
     
     def preload_frames(self, passes):
         for rp in passes:
-            image = skia.Image.MakeFromEncoded(
-                skia.Data.MakeFromFileName(str(rp.output_path)))
-            self.preloaded_frames.append(image)
+            self.preloaded_frames.append(rp.output_path)
         self.playing_preloaded_frame = 0
     
     def on_modified(self, event):
