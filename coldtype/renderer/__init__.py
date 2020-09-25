@@ -266,6 +266,28 @@ class Renderer():
 
         return _rs
     
+    def render_to_output_folder(self, render):
+        if self.args.output_folder:
+            return Path(self.args.output_folder).expanduser().resolve()
+        elif render.dst:
+            return render.dst / (render.custom_folder or render.folder(self.filepath))
+        else:
+            return (self.filepath.parent if self.filepath else Path(os.getcwd())) / "renders" / (render.custom_folder or render.folder(self.filepath))
+    
+    def add_paths_to_passes(self, trigger, render):
+        prefix = self.args.file_prefix or render.prefix or self.filepath.stem if self.filepath else None
+        fmt = self.args.format or render.fmt
+        _layers = self.layers if len(self.layers) > 0 else render.layers
+        
+        for rp in render.passes(trigger, _layers, indices):
+            output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
+
+            if rp.single_layer and rp.single_layer != "__default__":
+                output_path = output_folder / f"layer_{rp.single_layer}/{prefix}_{rp.single_layer}_{rp.suffix}.{fmt}"
+
+            rp.output_path = output_path
+            rp.action = trigger
+    
     def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
         if not self.args.is_subprocess:
             start = ptime.time()
@@ -279,13 +301,8 @@ class Renderer():
                 for watch in render.watch:
                     if watch not in self.watchee_paths():
                         self.watchees.append([Watchable.Font, watch])
-
-                if self.args.output_folder:
-                    output_folder = Path(self.args.output_folder).expanduser().resolve()
-                elif render.dst:
-                    output_folder = render.dst / (render.custom_folder or render.folder(self.filepath))
-                else:
-                    output_folder = (self.filepath.parent if self.filepath else Path(os.getcwd())) / "renders" / (render.custom_folder or render.folder(self.filepath))
+                
+                output_folder = self.render_to_output_folder(render)
                 
                 did_render = False
                 prefix = self.args.file_prefix or render.prefix or self.filepath.stem if self.filepath else None
@@ -307,9 +324,9 @@ class Renderer():
                 
                 for rp in render.passes(trigger, _layers, indices):
                     output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
-                    if previewing:
-                        output_path = output_folder / f"_previews/{prefix}_{rp.suffix}.{fmt}"
-                        output_path.parent.mkdir(exist_ok=True, parents=True)
+                    #if previewing:
+                    #    output_path = output_folder / f"_previews/{prefix}_{rp.suffix}.{fmt}"
+                    #    output_path.parent.mkdir(exist_ok=True, parents=True)
 
                     if rp.single_layer and rp.single_layer != "__default__":
                         output_path = output_folder / f"layer_{rp.single_layer}/{prefix}_{rp.single_layer}_{rp.suffix}.{fmt}"
@@ -632,7 +649,11 @@ class Renderer():
                 o = glfw.get_window_opacity(self.window)
                 glfw.set_window_opacity(self.window, min(1, o+0.1))
             elif key == glfw.KEY_SPACE:
-                self.on_action(Action.PreviewPlay)
+                if mods & glfw.MOD_CONTROL:
+                    anm = self.animation()
+                    print(self.render_to_output_folder(anm))
+                else:
+                    self.on_action(Action.PreviewPlay)
             elif key in [glfw.KEY_MINUS, glfw.KEY_EQUAL]:
                 inc = -0.1 if key == glfw.KEY_MINUS else 0.1
                 if mods & glfw.MOD_SHIFT:
