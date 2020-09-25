@@ -13,7 +13,7 @@ def uses_image(r):
             .f(None)
             .attr(image=dict(src=img, opacity=0.35, rect=Rect(0, 0, 125, 125))))])
 
-@renderable(rect=(250, 250))
+#@renderable(rect=(250, 250))
 def is_image(r):
     return DATPenSet([
         DATPen().oval(r.inset(5)).f(hsl(random())),

@@ -663,6 +663,9 @@ class Renderer():
             return Action.PreviewIndices, [int(i.strip()) for i in data]
         elif action_abbrev == "rr":
             return Action.RestartRenderer, None
+        elif action_abbrev == "rp":
+            self.reset_filepath(data[0])
+            return Action.PreviewStoryboard, None
         else:
             return None, None
 
