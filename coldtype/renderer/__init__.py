@@ -877,7 +877,7 @@ class Renderer():
             canvas2.scale(scale, scale)
             render.draw_preview(1.0, canvas2, render.rect, result, rp)
             if hasattr(render, "blank_renderable"):
-                paint = skia.Paint(AntiAlias=True, Color=skia.ColorWHITE)
+                paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=0.5).skia())
                 canvas2.drawString('Nothing found'.upper(), 315, 480, skia.Font(None, 20), paint)
         image = surface.makeImageSnapshot()
         canvas.drawImage(image, rect.x, rect.y)

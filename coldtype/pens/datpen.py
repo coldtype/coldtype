@@ -492,6 +492,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 self.value[idx] = (move, _pts)
         return self
     
+    nlt = nonlinear_transform
+    
     def bend(self, curve):
         cc = CurveCutter(curve)
         ccl = cc.length
