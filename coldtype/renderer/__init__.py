@@ -147,6 +147,8 @@ class Renderer():
         self.line_number = -1
         self.last_renders = []
 
+        self.controller_values = {}
+
         # for multiplex mode
         self.running_renderers = []
         self.completed_renderers = []
@@ -208,7 +210,7 @@ class Renderer():
             pass # ?
         else:
             try:
-                self.program = run_path(str(self.filepath))
+                self.program = run_path(str(self.filepath), init_globals={"CMC": self.controller_values})
                 for k, v in self.program.items():
                     if isinstance(v, coldtype.text.reader.Font):
                         v.load()
@@ -989,15 +991,25 @@ class Renderer():
         print("... watching ...")
     
     def monitor_midi(self):
+        controllers = {}
         for device, mi in self.midis:
             while msg := mi.getMessage(0):
+                if self.args.midi_info:
+                    print(device, msg)
                 if msg.isNoteOn(): # Maybe not forever?
-                    if self.args.midi_info:
-                        print(device, msg)
                     nn = msg.getNoteNumber()
                     action = self.midi_mapping[device]["note_on"].get(nn)
                     if action:
                         self.on_message({}, action)
+                if msg.isController():
+                    controllers[msg.getControllerNumber()] = msg.getControllerValue()/127
+                    if self.args.midi_info:
+                        print(">>>", msg.getControllerNumber(), msg.getControllerValue())
+        
+        if len(controllers) > 0:
+            self.controller_values = {**self.controller_values, **controllers}
+            self.on_action(Action.PreviewStoryboard, {})
+            #print(self.controller_values)
     
     def stop_watching_file_changes(self):
         for o in self.observers:
