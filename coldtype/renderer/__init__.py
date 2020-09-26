@@ -992,12 +992,22 @@ class Renderer():
                     if action:
                         self.on_message({}, action)
                 if msg.isController():
-                    controllers[msg.getControllerNumber()] = msg.getControllerValue()/127
+                    controllers[device + "_" + str(msg.getControllerNumber())] = msg.getControllerValue()/127
         
         if len(controllers) > 0:
-            self.controller_values = {**self.controller_values, **controllers}
+            nested = {}
+            for k, v in controllers.items():
+                device, number = k.split("_")
+                if not nested.get(device):
+                    nested[device] = {}
+                nested[device][int(number)] = v
+            
+            for device, numbers in nested.items():
+                self.controller_values[device] = {**self.controller_values.get(device, {}), **numbers}
+            #self.controller_values = {**self.controller_values, **controllers}
+            #Path("coldtype_midi_values")
+            Path(str(self.filepath) + "_cmc.json").write_text(json.dumps(self.controller_values))
             self.on_action(Action.PreviewStoryboard, {})
-            #print(self.controller_values)
     
     def stop_watching_file_changes(self):
         for o in self.observers:

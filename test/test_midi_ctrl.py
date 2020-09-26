@@ -1,14 +1,15 @@
 from coldtype import *
 from coldtype.warping import warp_fn
-from coldtype.midi.controllers import LaunchControlXL
+from coldtype.midi.controllers import LaunchControlXL, LaunchkeyMini
 
 obv = Font("~/Type/fonts/fonts/ObviouslyVariable.ttf")
 nxl, style = LaunchControlXL(CMC)
+nmn, _ = LaunchkeyMini(CMC)
 
 @animation((1080, 1080), bg=hsl(0.5))
 def render(f):
     return [
-        DATPen().rect(f.a.r).f(Gradient.Vertical(f.a.r, hsl(0.7), hsl(0.9))),
+        DATPen().rect(f.a.r).f(Gradient.Vertical(f.a.r, hsl(nmn(10)), hsl(nmn(20)))),
         (StyledString("Midi",
             Style(obv, **style, r=1, ro=1))
             .pens()
