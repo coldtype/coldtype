@@ -1007,7 +1007,8 @@ class Renderer():
                 self.controller_values[device] = {**self.controller_values.get(device, {}), **numbers}
             #self.controller_values = {**self.controller_values, **controllers}
             #Path("coldtype_midi_values")
-            Path(str(self.filepath) + "_cmc.json").write_text(json.dumps(self.controller_values))
+            if self.filepath:
+                Path(str(self.filepath).replace(".py", "") + "_cmc.json").write_text(json.dumps(self.controller_values))
             self.on_action(Action.PreviewStoryboard, {})
     
     def stop_watching_file_changes(self):
