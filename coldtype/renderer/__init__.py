@@ -947,22 +947,20 @@ class Renderer():
 
     def draw_preview(self, scale, canvas, rect, waiter):
         if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
-            image = skia.Image.MakeFromEncoded(
-                skia.Data.MakeFromFileName(str(waiter[1])))
+            image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(waiter[1])))
             if image:
                 canvas.drawImage(image, rect.x, rect.y)
             return
         
-        surface = skia.Surface(rect.w, rect.h)
-        with surface as canvas2:
-            render, result, rp = waiter
-            canvas2.scale(scale, scale)
-            render.draw_preview(1.0, canvas2, render.rect, result, rp)
-            if hasattr(render, "blank_renderable"):
-                paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=0.5).skia())
-                canvas2.drawString('Nothing found'.upper(), 315, 480, skia.Font(None, 20), paint)
-        image = surface.makeImageSnapshot()
-        canvas.drawImage(image, rect.x, rect.y)
+        render, result, rp = waiter
+        canvas.save()
+        canvas.translate(rect.x, rect.y)
+        canvas.scale(scale, scale)
+        render.draw_preview(1.0, canvas, render.rect, result, rp)
+        if hasattr(render, "blank_renderable"):
+            paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=0.5).skia())
+            canvas.drawString('Nothing found'.upper(), 315, 480, skia.Font(None, 20), paint)
+        canvas.restore()
     
     def preload_frames(self, passes):
         for rp in passes:
