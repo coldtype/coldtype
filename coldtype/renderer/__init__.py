@@ -85,6 +85,8 @@ class Renderer():
 
             midi_info=parser.add_argument("-mi", "--midi-info", action="store_true", default=False, help="Show available MIDI devices"),
 
+            show_time=parser.add_argument("-st", "--show-time", action="store_true", default=False, help="Show time for each render"),
+
             is_subprocess=parser.add_argument("-isp", "--is-subprocess", action="store_true", default=False, help=argparse.SUPPRESS),
 
             thread_count=parser.add_argument("-tc", "--thread-count", type=int, default=8, help="How many threads when multiplexing?"),
@@ -161,6 +163,7 @@ class Renderer():
         self.playing_preloaded_frame = -1
         self.glfw_last_time = -1
         self.last_animation = None
+        self.last_rect = None
         self.playing = 0
         self.hotkeys = None
         self.context = None
@@ -385,7 +388,7 @@ class Renderer():
         if render_count > 0:
             self.show_message(f"Rendered {render_count}")
         
-        if not self.args.is_subprocess:
+        if not self.args.is_subprocess and self.args.show_time:
             print("TIME >>>", ptime.time() - start)
         
         return preview_count, render_count
@@ -809,38 +812,17 @@ class Renderer():
                 else:
                     glfw.poll_events()
                     continue
-                #if td < (1/float(self.last_animation.timeline.fps)):
-                #    glfw.poll_events()
-                #    continue
-                ptime.sleep(0.01)
-                GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-                #print(td)
-                w = self.last_animation.rect.w
-                h = self.last_animation.rect.h
-                #print(w, h, self.last_animation.timeline.fps)
-                if not self.context:
-                    self.context = skia.GrDirectContext.MakeGL()
-                    backend_render_target = skia.GrBackendRenderTarget(
-                        int(w), int(h), 0, 0,
-                        skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
-                    self.surface = skia.Surface.MakeFromBackendRenderTarget(
-                        context, backend_render_target, skia.kBottomLeft_GrSurfaceOrigin,
-                        skia.kRGBA_8888_ColorType, skia.ColorSpace.MakeSRGB())
-                
-                assert self.surface is not None
+                GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
                 with self.surface as canvas:
                     path = self.preloaded_frames[self.playing_preloaded_frame]
-                    c = coldtype.hsl(_random.random())
                     c = self.last_animation.bg
-                    canvas.drawRect(skia.Rect(0, 0, w, h), skia.Paint(Color=c.skia()))
+                    canvas.clear(c.skia())
                     image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(path)))
-                    #image = skia.Image.open(str(path))
                     canvas.drawImage(image, 0, 0)
-                    #image.unref()
                 
-                surface.flushAndSubmit()
+                self.surface.flushAndSubmit()
                 glfw.swap_buffers(self.window)
 
                 self.playing_preloaded_frame += 1
@@ -863,6 +845,22 @@ class Renderer():
     
     def preview_scale(self):
         return self._preview_scale
+    
+    def create_backing_context(self, rect):
+        print("NEW BACKING CONTEXT")
+        if self.context:
+            self.context.abandonContext()
+        self.context = skia.GrDirectContext.MakeGL()
+        backend_render_target = skia.GrBackendRenderTarget(
+            int(rect.w), int(rect.h), 0, 0,
+            skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
+        self.surface = skia.Surface.MakeFromBackendRenderTarget(
+            self.context,
+            backend_render_target,
+            skia.kBottomLeft_GrSurfaceOrigin,
+            skia.kRGBA_8888_ColorType,
+            skia.ColorSpace.MakeSRGB())
+        assert self.surface is not None
     
     def turn_over(self):
         if self.action_waiting:
@@ -895,51 +893,40 @@ class Renderer():
                 rects.append(Rect(0, lh+1, sr.w, sr.h))
                 lh += sr.h + 1
                 h += sr.h + 1
-            
             h -= 1
-            #h += 20
             
             frect = Rect(0, 0, w, h)
+            if not self.context:
+                self.create_backing_context(frect)
+            elif frect != self.last_rect:
+                self.create_backing_context(frect)
 
-            monitor = glfw.get_primary_monitor()
-            if m_scale := self.py_config.get("WINDOW_SCALE"):
-                scale_x, scale_y = m_scale
-            else:
-                scale_x, scale_y = glfw.get_window_content_scale(self.window)
+            if not self.last_rect or frect != self.last_rect:
+                if m_scale := self.py_config.get("WINDOW_SCALE"):
+                    scale_x, scale_y = m_scale
+                else:
+                    scale_x, scale_y = glfw.get_window_content_scale(self.window)
+                
+                if not DARWIN:
+                    scale_x, scale_y = 1.0, 1.0
+
+                ww = int(w/scale_x)
+                wh = int(h/scale_y)
+                glfw.set_window_size(self.window, ww, wh)
+                if pin := self.py_config.get("WINDOW_PIN", None):
+                    monitor = glfw.get_primary_monitor()
+                    work_rect = Rect(glfw.get_monitor_workarea(monitor))
+                    pinned = work_rect.take(ww, pin[0]).take(wh, pin[1])
+                    glfw.set_window_pos(self.window, pinned.x, pinned.y)
             
-            if not DARWIN:
-                scale_x, scale_y = 1.0, 1.0
-
-            ww = int(w/scale_x)
-            wh = int(h/scale_y)
-            glfw.set_window_size(self.window, ww, wh)
-            if pin := self.py_config.get("WINDOW_PIN", None):
-                #monitor = glfw.get_window_monitor(self.window)
-                work_rect = Rect(glfw.get_monitor_workarea(monitor))
-                pinned = work_rect.take(ww, pin[0]).take(wh, pin[1])
-                glfw.set_window_pos(self.window, pinned.x, pinned.y)
+            self.last_rect = frect
 
             GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-            if not self.context:
-                self.context = skia.GrDirectContext.MakeGL()
-                backend_render_target = skia.GrBackendRenderTarget(
-                    int(w), int(h), 0, 0,
-                    skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
-                self.surface = skia.Surface.MakeFromBackendRenderTarget(
-                    self.context,
-                    backend_render_target,
-                    skia.kBottomLeft_GrSurfaceOrigin,
-                    skia.kRGBA_8888_ColorType,
-                    skia.ColorSpace.MakeSRGB())
-            
-            assert self.surface is not None
-
             with self.surface as canvas:
-                SkiaPen.CompositeToCanvas(DATPen().f(0.3).rect(frect), frect, canvas)
+                canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 1))
 
                 for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
-                    #result.translate(0, -rects[idx].y)
                     rect = rects[idx].offset((w-rects[idx].w)/2, 0)
                     self.draw_preview(dscale, canvas, rect, (render, result, rp))
             
@@ -1006,8 +993,6 @@ class Renderer():
                         self.on_message({}, action)
                 if msg.isController():
                     controllers[msg.getControllerNumber()] = msg.getControllerValue()/127
-                    if self.args.midi_info:
-                        print(">>>", msg.getControllerNumber(), msg.getControllerValue())
         
         if len(controllers) > 0:
             self.controller_values = {**self.controller_values, **controllers}
@@ -1027,7 +1012,8 @@ class Renderer():
         #if self.args.watch:
         #   print(f"<EXIT(restart:{restart})>")
         glfw.terminate()
-        self.context.abandonContext()
+        if self.context:
+            self.context.abandonContext()
         if self.hotkeys:
             self.hotkeys.stop()
         self.reset_renderers()

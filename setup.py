@@ -23,6 +23,7 @@ setuptools.setup(
         "coldtype.animation",
         "coldtype.animation.nle",
         "coldtype.color",
+        "coldtype.midi",
         "coldtype.pens",
         "coldtype.renderer",
         "coldtype.text",
