@@ -217,8 +217,9 @@ class Renderer():
             try:
                 self.program = run_path(str(self.filepath), init_globals={"CMC": self.controller_values})
                 for k, v in self.program.items():
-                    if isinstance(v, coldtype.text.reader.Font):
-                        v.load()
+                    if isinstance(v, coldtype.text.reader.Font) and not v.cacheable:
+                        print("YES", v)
+                        #v.load()
                         if v.path not in self.watchee_paths():
                             self.watchees.append([Watchable.Font, v.path])
                         for ext in v.font.getExternalFiles():

@@ -1492,6 +1492,8 @@ class DATPenSet(DATPenLikeObject):
         return dp
     
     def understroke(self, s=0, sw=5, outline=False, dofill=0):
+        if sw == 0:
+            return self
         if not outline:
             return self.interleave(lambda idx, p: p.s(s).sw(sw))
         else:

@@ -22,11 +22,12 @@ def LaunchControlXL(cmc):
         cmc=cmc)
     
     return (lookup, dict(
-        fontSize=lookup(12)*2000+10,
+        fontSize=lookup(12)*2000+20,
         wdth=lookup(11),
         wght=lookup(21),
         slnt=lookup(31),
         tu=lookup(22)*500-250,))
+
 
 def LaunchkeyMini(cmc):
     lookup = midi_controller_lookup_fn(
