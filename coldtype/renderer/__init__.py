@@ -163,6 +163,8 @@ class Renderer():
         self.last_animation = None
         self.playing = 0
         self.hotkeys = None
+        self.context = None
+        self.surface = None
         self._preview_scale = self.args.preview_scale
         self._should_reload = False
 
@@ -817,17 +819,18 @@ class Renderer():
                 w = self.last_animation.rect.w
                 h = self.last_animation.rect.h
                 #print(w, h, self.last_animation.timeline.fps)
-                context = skia.GrDirectContext.MakeGL()
-                backend_render_target = skia.GrBackendRenderTarget(
-                    int(w), int(h), 0, 0,
-                    skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
-                surface = skia.Surface.MakeFromBackendRenderTarget(
-                    context, backend_render_target, skia.kBottomLeft_GrSurfaceOrigin,
-                    skia.kRGBA_8888_ColorType, skia.ColorSpace.MakeSRGB())
+                if not self.context:
+                    self.context = skia.GrDirectContext.MakeGL()
+                    backend_render_target = skia.GrBackendRenderTarget(
+                        int(w), int(h), 0, 0,
+                        skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
+                    self.surface = skia.Surface.MakeFromBackendRenderTarget(
+                        context, backend_render_target, skia.kBottomLeft_GrSurfaceOrigin,
+                        skia.kRGBA_8888_ColorType, skia.ColorSpace.MakeSRGB())
                 
-                assert surface is not None
+                assert self.surface is not None
 
-                with surface as canvas:
+                with self.surface as canvas:
                     path = self.preloaded_frames[self.playing_preloaded_frame]
                     c = coldtype.hsl(_random.random())
                     c = self.last_animation.bg
@@ -839,7 +842,6 @@ class Renderer():
                 
                 surface.flushAndSubmit()
                 glfw.swap_buffers(self.window)
-                context.abandonContext()
 
                 self.playing_preloaded_frame += 1
                 if self.playing_preloaded_frame == len(self.preloaded_frames):
@@ -919,17 +921,21 @@ class Renderer():
 
             GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-            context = skia.GrDirectContext.MakeGL()
-            backend_render_target = skia.GrBackendRenderTarget(
-                int(w), int(h), 0, 0,
-                skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
-            surface = skia.Surface.MakeFromBackendRenderTarget(
-                context, backend_render_target, skia.kBottomLeft_GrSurfaceOrigin,
-                skia.kRGBA_8888_ColorType, skia.ColorSpace.MakeSRGB())
+            if not self.context:
+                self.context = skia.GrDirectContext.MakeGL()
+                backend_render_target = skia.GrBackendRenderTarget(
+                    int(w), int(h), 0, 0,
+                    skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
+                self.surface = skia.Surface.MakeFromBackendRenderTarget(
+                    self.context,
+                    backend_render_target,
+                    skia.kBottomLeft_GrSurfaceOrigin,
+                    skia.kRGBA_8888_ColorType,
+                    skia.ColorSpace.MakeSRGB())
             
-            assert surface is not None
+            assert self.surface is not None
 
-            with surface as canvas:
+            with self.surface as canvas:
                 SkiaPen.CompositeToCanvas(DATPen().f(0.3).rect(frect), frect, canvas)
 
                 for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
@@ -937,9 +943,8 @@ class Renderer():
                     rect = rects[idx].offset((w-rects[idx].w)/2, 0)
                     self.draw_preview(dscale, canvas, rect, (render, result, rp))
             
-            surface.flushAndSubmit()
+            self.surface.flushAndSubmit()
             glfw.swap_buffers(self.window)
-            context.abandonContext()
         
         self.previews_waiting_to_paint = []
         if self.server:
@@ -1022,6 +1027,7 @@ class Renderer():
         #if self.args.watch:
         #   print(f"<EXIT(restart:{restart})>")
         glfw.terminate()
+        self.context.abandonContext()
         if self.hotkeys:
             self.hotkeys.stop()
         self.reset_renderers()
