@@ -35,6 +35,9 @@ class Action(Enum):
     ArbitraryTyping = "arbitrary_typing"
     ArbitraryCommand = "arbitrary_command"
     UICallback = "ui_callback"
+    SaveControllers = "save_controllers"
+    ClearControllers = "clear_controllers"
+    ResetControllers = "reset_controllers"
     RestartRenderer = "restart_renderer"
     Kill = "kill"
 

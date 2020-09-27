@@ -150,7 +150,7 @@ class Renderer():
         self.line_number = -1
         self.last_renders = []
 
-        self.state = RendererState()
+        self.state = RendererState(self)
 
         # for multiplex mode
         self.running_renderers = []
@@ -217,6 +217,7 @@ class Renderer():
         else:
             try:
                 print("RELOADING!")
+                self.state.reset()
                 self.program = run_path(str(self.filepath))
                 for k, v in self.program.items():
                     if isinstance(v, coldtype.text.reader.Font) and not v.cacheable:
@@ -745,6 +746,14 @@ class Renderer():
             for render in self.renderables(action):
                 if render.ui_callback:
                     render.ui_callback(message)
+        elif action == Action.SaveControllers:
+            self.state.persist()
+        elif action == Action.ClearControllers:
+            self.state.clear()
+            self.on_action(Action.PreviewStoryboard)
+        elif action == Action.ResetControllers:
+            self.state.reset()
+            self.on_action(Action.PreviewStoryboard)
         elif action == Action.RestartRenderer:
             self.on_exit(restart=True)
         elif action == Action.Kill:
@@ -1005,13 +1014,10 @@ class Renderer():
                 device, number = k.split("_")
                 if not nested.get(device):
                     nested[device] = {}
-                nested[device][int(number)] = v
+                nested[device][str(number)] = v
             
             for device, numbers in nested.items():
                 self.state.controller_values[device] = {**self.state.controller_values.get(device, {}), **numbers}
-
-            #if self.filepath:
-            #    Path(str(self.filepath).replace(".py", "") + "_cmc.json").write_text(json.dumps(self.state.controller_values))
 
             self.on_action(Action.PreviewStoryboard, {})
     

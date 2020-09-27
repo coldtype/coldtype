@@ -6,27 +6,27 @@ def midi_controller_lookup_fn(name, column_starts=[], cmc={}):
     whatever device you’d like)
     """
     # TODO use the name so individual devices are targetable
-    def lookup(ctrl, default=0.5):
+    def lookup(ctrl, default=None):
         column = int(str(ctrl)[0])
         row = int(str(ctrl)[1])
         mnum = column_starts[row]+(column-1)
         scoped = cmc.get(name, {})
-        return scoped.get(mnum, default)
+        return scoped.get(str(mnum), 0.5 if default == None else default)
     return lookup
 
 
-def LaunchControlXL(cmc):
+def LaunchControlXL(cmc, **kwargs):
     lookup = midi_controller_lookup_fn(
         "Launch Control XL",
         column_starts=[77, 49, 29, 13],
         cmc=cmc)
     
     return (lookup, dict(
-        fontSize=lookup(12)*2000+20,
-        wdth=lookup(11),
-        wght=lookup(21),
-        slnt=lookup(31),
-        tu=lookup(22)*500-250,))
+        fontSize=lookup(12, kwargs.get("fontSize"))*2000+20,
+        wdth=lookup(11, kwargs.get("wdth")),
+        wght=lookup(21, kwargs.get("wght")),
+        slnt=lookup(31, kwargs.get("slnt")),
+        tu=lookup(22, kwargs.get("tu"))*500-250,))
 
 
 def LaunchkeyMini(cmc):
