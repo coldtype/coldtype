@@ -50,7 +50,7 @@ class RenderPass():
 
 
 class renderable():
-    def __init__(self, rect=(1080, 1080), bg="whitesmoke", fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[], layers=[], ui_callback=None):
+    def __init__(self, rect=(1080, 1080), bg="whitesmoke", fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[], layers=[], ui_callback=None, rstate=False):
         self.rect = Rect(rect)
         self.bg = normalize_color(bg)
         self.fmt = fmt
@@ -64,6 +64,7 @@ class renderable():
         self.self_rasterizing = False
         self.layers = layers
         self.hidden = False
+        self.rstate = rstate
         if not rasterizer:
             if self.fmt == "svg":
                 self.rasterizer = "svg"
@@ -90,8 +91,11 @@ class renderable():
     def package(self, filepath, output_folder):
         pass
 
-    def run(self, render_pass):
-        return render_pass.fn(*render_pass.args)
+    def run(self, render_pass, renderer_state):
+        if self.rstate:
+            return render_pass.fn(*render_pass.args, renderer_state)
+        else:
+            return render_pass.fn(*render_pass.args)
     
     def runpost(self, result, render_pass):
         if self.postfn:

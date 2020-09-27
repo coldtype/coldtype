@@ -19,6 +19,7 @@ from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.utils import *
+from coldtype.renderer.state import RendererState
 
 _random = Random()
 
@@ -149,7 +150,7 @@ class Renderer():
         self.line_number = -1
         self.last_renders = []
 
-        self.controller_values = {}
+        self.state = RendererState()
 
         # for multiplex mode
         self.running_renderers = []
@@ -215,7 +216,8 @@ class Renderer():
             pass # ?
         else:
             try:
-                self.program = run_path(str(self.filepath), init_globals={"CMC": self.controller_values})
+                print("RELOADING!")
+                self.program = run_path(str(self.filepath))
                 for k, v in self.program.items():
                     if isinstance(v, coldtype.text.reader.Font) and not v.cacheable:
                         print("YES", v)
@@ -342,7 +344,7 @@ class Renderer():
                     output_path = rp.output_path
 
                     try:
-                        result = render.run(rp)
+                        result = render.run(rp, self.state)
                         try:
                             if len(result) == 2 and isinstance(result[1], str):
                                 self.show_message(result[1])
@@ -709,9 +711,11 @@ class Renderer():
                 self.on_action(action)
 
     def on_action(self, action, message=None) -> bool:
-        if action in [Action.PreviewStoryboard, Action.RenderAll, Action.RenderWorkarea]:
+        if action in [Action.RenderAll, Action.RenderWorkarea]:
             self.reload_and_render(action)
             return True
+        elif action in [Action.PreviewStoryboard]:
+            self.render(Action.PreviewStoryboard)
         elif action in [Action.PreviewStoryboardNext, Action.PreviewStoryboardPrev, Action.PreviewPlay]:
             if action == Action.PreviewPlay:
                 if self.playing == 0:
@@ -1004,11 +1008,11 @@ class Renderer():
                 nested[device][int(number)] = v
             
             for device, numbers in nested.items():
-                self.controller_values[device] = {**self.controller_values.get(device, {}), **numbers}
-            #self.controller_values = {**self.controller_values, **controllers}
-            #Path("coldtype_midi_values")
-            if self.filepath:
-                Path(str(self.filepath).replace(".py", "") + "_cmc.json").write_text(json.dumps(self.controller_values))
+                self.state.controller_values[device] = {**self.state.controller_values.get(device, {}), **numbers}
+
+            #if self.filepath:
+            #    Path(str(self.filepath).replace(".py", "") + "_cmc.json").write_text(json.dumps(self.state.controller_values))
+
             self.on_action(Action.PreviewStoryboard, {})
     
     def stop_watching_file_changes(self):
