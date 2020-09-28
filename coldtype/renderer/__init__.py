@@ -701,7 +701,7 @@ class Renderer():
             return Action.RestartRenderer, None
         elif action_abbrev == "rp":
             self.reset_filepath(data[0])
-            return Action.PreviewStoryboard, None
+            return Action.Resave, None
         else:
             return None, None
 
