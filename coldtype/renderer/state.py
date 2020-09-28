@@ -23,6 +23,8 @@ class RendererState():
                     self.controller_values = cv
             except json.decoder.JSONDecodeError:
                 self.controller_values = {}
+            except FileNotFoundError:
+                self.controller_values = {}
     
     def clear(self):
         if fp := self.filepath:

@@ -112,21 +112,29 @@ class Renderer():
 
             show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS)),
         return pargs, parser
+    
+    def read_configs(self):
+        proj = Path("coldtype.py")
+        user = Path("~/coldtype.py").expanduser()
+        self.midi_mapping = {}
+        self.hotkey_mapping = {}
+        self.py_config = {}
+
+        for p in [user, proj]:
+            if p.exists():
+                print(">>>>>>>>>>>>>>>>>>", p)
+                self.py_config = {
+                    **self.py_config,
+                    **run_path(str(p), init_globals={
+                        "__MIDI__": self.midi_mapping,
+                        "__HOTKEYS__": self.hotkey_mapping,
+                    })
+                }
+                self.midi_mapping = self.py_config.get("MIDI", self.midi_mapping)
+                self.hotkey_mapping = self.py_config.get("HOTKEYS", self.hotkey_mapping)
 
     def __init__(self, parser, no_socket_ok=False):
-        try:
-            py_config = run_path(str(Path("~/coldtype.py").expanduser()))
-            self.py_config = py_config
-            self.midi_mapping = py_config.get("MIDI", {})
-            self.hotkey_mapping = py_config.get("HOTKEYS", {})
-        except FileNotFoundError:
-            print(">>> no coldtype config found <<<")
-            self.py_config = {}
-            self.midi_mapping = {}
-            self.hotkey_mapping = None
-        except json.decoder.JSONDecodeError:
-            print(">>> syntax error in ~/coldtype.json <<<")
-            sys.exit(0)
+        self.read_configs()
 
         sys.path.insert(0, os.getcwd())
 
@@ -221,8 +229,6 @@ class Renderer():
                 self.program = run_path(str(self.filepath))
                 for k, v in self.program.items():
                     if isinstance(v, coldtype.text.reader.Font) and not v.cacheable:
-                        print("YES", v)
-                        #v.load()
                         if v.path not in self.watchee_paths():
                             self.watchees.append([Watchable.Font, v.path])
                         for ext in v.font.getExternalFiles():
