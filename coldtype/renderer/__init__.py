@@ -865,7 +865,6 @@ class Renderer():
         return self._preview_scale
     
     def create_backing_context(self, rect):
-        print("NEW BACKING CONTEXT")
         if self.context:
             self.context.abandonContext()
         self.context = skia.GrDirectContext.MakeGL()
