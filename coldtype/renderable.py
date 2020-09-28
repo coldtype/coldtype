@@ -31,9 +31,13 @@ class Action(Enum):
     PreviewIndices = "preview_indices"
     PreviewStoryboardNext = "preview_storyboard_next"
     PreviewStoryboardPrev = "preview_storyboard_prev"
+    RenderedPlay = "rendered_play"
     ArbitraryTyping = "arbitrary_typing"
     ArbitraryCommand = "arbitrary_command"
     UICallback = "ui_callback"
+    SaveControllers = "save_controllers"
+    ClearControllers = "clear_controllers"
+    ResetControllers = "reset_controllers"
     RestartRenderer = "restart_renderer"
     Kill = "kill"
 
@@ -49,7 +53,7 @@ class RenderPass():
 
 
 class renderable():
-    def __init__(self, rect=(1080, 1080), bg="whitesmoke", fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[], layers=[], ui_callback=None):
+    def __init__(self, rect=(1080, 1080), bg="whitesmoke", fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[], layers=[], ui_callback=None, rstate=False):
         self.rect = Rect(rect)
         self.bg = normalize_color(bg)
         self.fmt = fmt
@@ -63,6 +67,7 @@ class renderable():
         self.self_rasterizing = False
         self.layers = layers
         self.hidden = False
+        self.rstate = rstate
         if not rasterizer:
             if self.fmt == "svg":
                 self.rasterizer = "svg"
@@ -89,8 +94,11 @@ class renderable():
     def package(self, filepath, output_folder):
         pass
 
-    def run(self, render_pass):
-        return render_pass.fn(*render_pass.args)
+    def run(self, render_pass, renderer_state):
+        if self.rstate:
+            return render_pass.fn(*render_pass.args, renderer_state)
+        else:
+            return render_pass.fn(*render_pass.args)
     
     def runpost(self, result, render_pass):
         if self.postfn:
@@ -254,7 +262,7 @@ class animation(renderable, Timeable):
             else:
                 self.storyboard = timeline.storyboard
         else:
-            self.timeline = None
+            self.timeline = Timeline(30)
     
     def folder(self, filepath):
         return filepath.stem # TODO necessary?

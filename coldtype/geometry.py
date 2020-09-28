@@ -422,6 +422,11 @@ class Rect():
 
     def __repr__(self):
         return "<furn-Rect" + str(self.rect()) + ">"
+    
+    def __eq__(self, r):
+        return all([self.x == r.x, self.y == r.y, self.w == r.w, self.h == r.h])
+    
+    __hash__ = object.__hash__
 
     def rect(self):
         return [self.x, self.y, self.w, self.h]

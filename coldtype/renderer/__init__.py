@@ -19,6 +19,7 @@ from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.utils import *
+from coldtype.renderer.state import RendererState
 
 _random = Random()
 
@@ -85,6 +86,8 @@ class Renderer():
 
             midi_info=parser.add_argument("-mi", "--midi-info", action="store_true", default=False, help="Show available MIDI devices"),
 
+            show_time=parser.add_argument("-st", "--show-time", action="store_true", default=False, help="Show time for each render"),
+
             is_subprocess=parser.add_argument("-isp", "--is-subprocess", action="store_true", default=False, help=argparse.SUPPRESS),
 
             thread_count=parser.add_argument("-tc", "--thread-count", type=int, default=8, help="How many threads when multiplexing?"),
@@ -109,21 +112,28 @@ class Renderer():
 
             show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS)),
         return pargs, parser
+    
+    def read_configs(self):
+        proj = Path(".coldtype.py")
+        user = Path("~/.coldtype.py").expanduser()
+        self.midi_mapping = {}
+        self.hotkey_mapping = {}
+        self.py_config = {}
+
+        for p in [user, proj]:
+            if p.exists():
+                self.py_config = {
+                    **self.py_config,
+                    **run_path(str(p), init_globals={
+                        "__MIDI__": self.midi_mapping,
+                        "__HOTKEYS__": self.hotkey_mapping,
+                    })
+                }
+                self.midi_mapping = self.py_config.get("MIDI", self.midi_mapping)
+                self.hotkey_mapping = self.py_config.get("HOTKEYS", self.hotkey_mapping)
 
     def __init__(self, parser, no_socket_ok=False):
-        try:
-            py_config = run_path(str(Path("~/coldtype.py").expanduser()))
-            self.py_config = py_config
-            self.midi_mapping = py_config.get("MIDI", {})
-            self.hotkey_mapping = py_config.get("HOTKEYS", {})
-        except FileNotFoundError:
-            print(">>> no coldtype config found <<<")
-            self.py_config = {}
-            self.midi_mapping = {}
-            self.hotkey_mapping = None
-        except json.decoder.JSONDecodeError:
-            print(">>> syntax error in ~/coldtype.json <<<")
-            sys.exit(0)
+        self.read_configs()
 
         sys.path.insert(0, os.getcwd())
 
@@ -134,11 +144,6 @@ class Renderer():
         self.watchees = []
         self.reset_filepath(self.args.file if hasattr(self.args, "file") else None)
         self.layers = [l.strip() for l in self.args.layers.split(",")] if self.args.layers else []
-        
-        if self.args.watch:
-            self.server = echo_server()
-        else:
-            self.server = None
 
         self.program = None
         self.websocket = None
@@ -146,6 +151,8 @@ class Renderer():
 
         self.line_number = -1
         self.last_renders = []
+
+        self.state = RendererState(self)
 
         # for multiplex mode
         self.running_renderers = []
@@ -155,30 +162,17 @@ class Renderer():
         self.action_waiting = None
         self.waiting_to_render = []
         self.previews_waiting_to_paint = []
+        self.preloaded_frames = []
+        self.playing_preloaded_frame = -1
+        self.glfw_last_time = -1
+        self.last_animation = None
+        self.last_rect = None
         self.playing = 0
         self.hotkeys = None
+        self.context = None
+        self.surface = None
         self._preview_scale = self.args.preview_scale
         self._should_reload = False
-
-        if self.args.watch:
-            if not glfw.init():
-                raise RuntimeError('glfw.init() failed')
-            glfw.window_hint(glfw.STENCIL_BITS, 8)
-
-            if self.py_config.get("WINDOW_BACKGROUND"):
-                glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
-            if self.py_config.get("WINDOW_FLOAT"):
-                glfw.window_hint(glfw.FLOATING, glfw.TRUE)
-            
-            self.window = glfw.create_window(int(50), int(50), '', None, None)
-
-            if o := self.py_config.get("WINDOW_OPACITY"):
-                glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
-            
-            self._prev_scale = glfw.get_window_content_scale(self.window)[0]
-            
-            glfw.make_context_current(self.window)
-            glfw.set_key_callback(self.window, self.on_key)
     
     def reset_filepath(self, filepath):
         self.line_number = -1
@@ -204,10 +198,10 @@ class Renderer():
             pass # ?
         else:
             try:
+                self.state.reset()
                 self.program = run_path(str(self.filepath))
                 for k, v in self.program.items():
-                    if isinstance(v, coldtype.text.reader.Font):
-                        v.load()
+                    if isinstance(v, coldtype.text.reader.Font) and not v.cacheable:
                         if v.path not in self.watchee_paths():
                             self.watchees.append([Watchable.Font, v.path])
                         for ext in v.font.getExternalFiles():
@@ -217,6 +211,8 @@ class Renderer():
                         p = Path(v.path).resolve()
                         if p not in self.watchee_paths():
                             self.watchees.append([Watchable.Font, p])
+                    elif isinstance(v, animation):
+                        self.last_animation = v
                     
                 if self.program.get("COLDTYPE_NO_WATCH"):
                     return True
@@ -266,6 +262,34 @@ class Renderer():
 
         return _rs
     
+    def render_to_output_folder(self, render):
+        if self.args.output_folder:
+            return Path(self.args.output_folder).expanduser().resolve()
+        elif render.dst:
+            return render.dst / (render.custom_folder or render.folder(self.filepath))
+        else:
+            return (self.filepath.parent if self.filepath else Path(os.getcwd())) / "renders" / (render.custom_folder or render.folder(self.filepath))
+    
+    def add_paths_to_passes(self, trigger, render, indices):
+        output_folder = self.render_to_output_folder(render)
+        prefix = self.args.file_prefix or render.prefix or self.filepath.stem if self.filepath else None
+        fmt = self.args.format or render.fmt
+        _layers = self.layers if len(self.layers) > 0 else render.layers
+        
+        rps = []
+        for rp in render.passes(trigger, _layers, indices):
+            output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
+
+            if rp.single_layer and rp.single_layer != "__default__":
+                output_path = output_folder / f"layer_{rp.single_layer}/{prefix}_{rp.single_layer}_{rp.suffix}.{fmt}"
+
+            rp.output_path = output_path
+            rp.action = trigger
+            rps.append(rp)
+        
+        return output_folder, prefix, fmt, _layers, rps
+
+    
     def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
         if not self.args.is_subprocess:
             start = ptime.time()
@@ -279,18 +303,9 @@ class Renderer():
                 for watch in render.watch:
                     if watch not in self.watchee_paths():
                         self.watchees.append([Watchable.Font, watch])
-
-                if self.args.output_folder:
-                    output_folder = Path(self.args.output_folder).expanduser().resolve()
-                elif render.dst:
-                    output_folder = render.dst / (render.custom_folder or render.folder(self.filepath))
-                else:
-                    output_folder = (self.filepath.parent if self.filepath else Path(os.getcwd())) / "renders" / (render.custom_folder or render.folder(self.filepath))
                 
                 did_render = False
-                prefix = self.args.file_prefix or render.prefix or self.filepath.stem if self.filepath else None
-                fmt = self.args.format or render.fmt
-                _layers = self.layers if len(self.layers) > 0 else render.layers
+                output_folder, prefix, fmt, _layers, passes = self.add_paths_to_passes(trigger, render, indices)
 
                 previewing = (trigger in [
                     Action.Initial,
@@ -305,20 +320,11 @@ class Renderer():
                     Action.RenderIndices,
                 ])
                 
-                for rp in render.passes(trigger, _layers, indices):
-                    output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
-                    if previewing:
-                        output_path = output_folder / f"_previews/{prefix}_{rp.suffix}.{fmt}"
-                        output_path.parent.mkdir(exist_ok=True, parents=True)
-
-                    if rp.single_layer and rp.single_layer != "__default__":
-                        output_path = output_folder / f"layer_{rp.single_layer}/{prefix}_{rp.single_layer}_{rp.suffix}.{fmt}"
-                    
-                    rp.output_path = output_path
-                    rp.action = trigger
+                for rp in passes:
+                    output_path = rp.output_path
 
                     try:
-                        result = render.run(rp)
+                        result = render.run(rp, self.state)
                         try:
                             if len(result) == 2 and isinstance(result[1], str):
                                 self.show_message(result[1])
@@ -365,7 +371,7 @@ class Renderer():
         if render_count > 0:
             self.show_message(f"Rendered {render_count}")
         
-        if not self.args.is_subprocess:
+        if not self.args.is_subprocess and self.args.show_time:
             print("TIME >>>", ptime.time() - start)
         
         return preview_count, render_count
@@ -531,6 +537,31 @@ class Renderer():
         else:
             should_halt = self.before_start()
         
+        if self.args.watch:
+            self.server = echo_server()
+
+            if not glfw.init():
+                raise RuntimeError('glfw.init() failed')
+            glfw.window_hint(glfw.STENCIL_BITS, 8)
+
+            if self.py_config.get("WINDOW_BACKGROUND"):
+                glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
+            if self.py_config.get("WINDOW_FLOAT"):
+                glfw.window_hint(glfw.FLOATING, glfw.TRUE)
+            
+            self.window = glfw.create_window(int(50), int(50), '', None, None)
+
+            if o := self.py_config.get("WINDOW_OPACITY"):
+                glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
+            
+            self._prev_scale = glfw.get_window_content_scale(self.window)[0]
+            
+            glfw.make_context_current(self.window)
+            glfw.set_key_callback(self.window, self.on_key)
+        else:
+            self.window = None
+            self.server = None
+        
         if should_halt:
             self.on_exit()
         else:
@@ -632,7 +663,10 @@ class Renderer():
                 o = glfw.get_window_opacity(self.window)
                 glfw.set_window_opacity(self.window, min(1, o+0.1))
             elif key == glfw.KEY_SPACE:
-                self.on_action(Action.PreviewPlay)
+                if mods & glfw.MOD_CONTROL:
+                    self.on_action(Action.RenderedPlay)
+                else:
+                    self.on_action(Action.PreviewPlay)
             elif key in [glfw.KEY_MINUS, glfw.KEY_EQUAL]:
                 inc = -0.1 if key == glfw.KEY_MINUS else 0.1
                 if mods & glfw.MOD_SHIFT:
@@ -646,6 +680,8 @@ class Renderer():
                 self.on_action(Action.RestartRenderer)
             elif key == glfw.KEY_P:
                 self._should_reload = True
+            elif key == glfw.KEY_A:
+                self.on_action(Action.RenderAll)
     
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
@@ -665,7 +701,7 @@ class Renderer():
             return Action.RestartRenderer, None
         elif action_abbrev == "rp":
             self.reset_filepath(data[0])
-            return Action.PreviewStoryboard, None
+            return Action.Resave, None
         else:
             return None, None
 
@@ -680,9 +716,11 @@ class Renderer():
                 self.on_action(action)
 
     def on_action(self, action, message=None) -> bool:
-        if action in [Action.PreviewStoryboard, Action.RenderAll, Action.RenderWorkarea]:
+        if action in [Action.RenderAll, Action.RenderWorkarea]:
             self.reload_and_render(action)
             return True
+        elif action in [Action.PreviewStoryboard]:
+            self.render(Action.PreviewStoryboard)
         elif action in [Action.PreviewStoryboardNext, Action.PreviewStoryboardPrev, Action.PreviewPlay]:
             if action == Action.PreviewPlay:
                 if self.playing == 0:
@@ -697,6 +735,14 @@ class Renderer():
                         render.storyboard[idx] = nidx
                     self.render(Action.PreviewStoryboard)
             return True
+        elif action == Action.RenderedPlay:
+            if self.playing_preloaded_frame >= 0:
+                self.playing_preloaded_frame = -1
+                self.preloaded_frames = []
+            else:
+                anm = self.animation()
+                passes = self.add_paths_to_passes(Action.RenderAll, anm, anm.all_frames())[-1]
+                self.preload_frames(passes)
         elif action == Action.ArbitraryCommand:
             self.on_stdin(message.get("input"))
             return True
@@ -704,6 +750,14 @@ class Renderer():
             for render in self.renderables(action):
                 if render.ui_callback:
                     render.ui_callback(message)
+        elif action == Action.SaveControllers:
+            self.state.persist()
+        elif action == Action.ClearControllers:
+            self.state.clear()
+            self.on_action(Action.PreviewStoryboard)
+        elif action == Action.ResetControllers:
+            self.state.reset()
+            self.on_action(Action.PreviewStoryboard)
         elif action == Action.RestartRenderer:
             self.on_exit(restart=True)
         elif action == Action.Kill:
@@ -765,20 +819,66 @@ class Renderer():
             if self._should_reload:
                 self._should_reload = False
                 self.on_action(Action.PreviewStoryboard)
+            
+            t = glfw.get_time()
+            td = t - self.glfw_last_time
 
-            #ptime.sleep(0.5)
-            self.turn_over()
-            global last_line
-            if last_line:
-                self.on_stdin(last_line.strip())
-                last_line = None
+            if self.last_animation and self.playing_preloaded_frame >= 0 and len(self.preloaded_frames) > 0:
+                spf = 1 / float(self.last_animation.timeline.fps)
+                if td >= spf:
+                    self.glfw_last_time = t
+                else:
+                    glfw.poll_events()
+                    continue
+
+                GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+
+                with self.surface as canvas:
+                    path = self.preloaded_frames[self.playing_preloaded_frame]
+                    c = self.last_animation.bg
+                    canvas.clear(c.skia())
+                    image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(path)))
+                    canvas.drawImage(image, 0, 0)
+                
+                self.surface.flushAndSubmit()
+                glfw.swap_buffers(self.window)
+
+                self.playing_preloaded_frame += 1
+                if self.playing_preloaded_frame == len(self.preloaded_frames):
+                    self.playing_preloaded_frame = 0
+            else:
+                self.glfw_last_time = t
+                #ptime.sleep(0.5)
+                self.turn_over()
+                global last_line
+                if last_line:
+                    self.on_stdin(last_line.strip())
+                    last_line = None
+                
+                if self.playing != 0:
+                    self.on_action(Action.PreviewStoryboardNext)
+            
             glfw.poll_events()
-            if self.playing != 0:
-                self.on_action(Action.PreviewStoryboardNext)
         self.on_exit(restart=False)
     
     def preview_scale(self):
         return self._preview_scale
+    
+    def create_backing_context(self, rect):
+        print("NEW BACKING CONTEXT")
+        if self.context:
+            self.context.abandonContext()
+        self.context = skia.GrDirectContext.MakeGL()
+        backend_render_target = skia.GrBackendRenderTarget(
+            int(rect.w), int(rect.h), 0, 0,
+            skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
+        self.surface = skia.Surface.MakeFromBackendRenderTarget(
+            self.context,
+            backend_render_target,
+            skia.kBottomLeft_GrSurfaceOrigin,
+            skia.kRGBA_8888_ColorType,
+            skia.ColorSpace.MakeSRGB())
+        assert self.surface is not None
     
     def turn_over(self):
         if self.action_waiting:
@@ -811,53 +911,45 @@ class Renderer():
                 rects.append(Rect(0, lh+1, sr.w, sr.h))
                 lh += sr.h + 1
                 h += sr.h + 1
-            
             h -= 1
-            #h += 20
             
             frect = Rect(0, 0, w, h)
+            if not self.context:
+                self.create_backing_context(frect)
+            elif frect != self.last_rect:
+                self.create_backing_context(frect)
 
-            monitor = glfw.get_primary_monitor()
-            if m_scale := self.py_config.get("WINDOW_SCALE"):
-                scale_x, scale_y = m_scale
-            else:
-                scale_x, scale_y = glfw.get_window_content_scale(self.window)
+            if not self.last_rect or frect != self.last_rect:
+                if m_scale := self.py_config.get("WINDOW_SCALE"):
+                    scale_x, scale_y = m_scale
+                else:
+                    scale_x, scale_y = glfw.get_window_content_scale(self.window)
+                
+                if not DARWIN:
+                    scale_x, scale_y = 1.0, 1.0
+
+                ww = int(w/scale_x)
+                wh = int(h/scale_y)
+                glfw.set_window_size(self.window, ww, wh)
+                if pin := self.py_config.get("WINDOW_PIN", None):
+                    monitor = glfw.get_primary_monitor()
+                    work_rect = Rect(glfw.get_monitor_workarea(monitor))
+                    pinned = work_rect.take(ww, pin[0]).take(wh, pin[1])
+                    glfw.set_window_pos(self.window, pinned.x, pinned.y)
             
-            if not DARWIN:
-                scale_x, scale_y = 1.0, 1.0
-
-            ww = int(w/scale_x)
-            wh = int(h/scale_y)
-            glfw.set_window_size(self.window, ww, wh)
-            if pin := self.py_config.get("WINDOW_PIN", None):
-                #monitor = glfw.get_window_monitor(self.window)
-                work_rect = Rect(glfw.get_monitor_workarea(monitor))
-                pinned = work_rect.take(ww, pin[0]).take(wh, pin[1])
-                glfw.set_window_pos(self.window, pinned.x, pinned.y)
+            self.last_rect = frect
 
             GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-            context = skia.GrDirectContext.MakeGL()
-            backend_render_target = skia.GrBackendRenderTarget(
-                int(w), int(h), 0, 0,
-                skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
-            surface = skia.Surface.MakeFromBackendRenderTarget(
-                context, backend_render_target, skia.kBottomLeft_GrSurfaceOrigin,
-                skia.kRGBA_8888_ColorType, skia.ColorSpace.MakeSRGB())
-            
-            assert surface is not None
-
-            with surface as canvas:
-                SkiaPen.CompositeToCanvas(DATPen().f(0.3).rect(frect), frect, canvas)
+            with self.surface as canvas:
+                canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 1))
 
                 for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
-                    #result.translate(0, -rects[idx].y)
                     rect = rects[idx].offset((w-rects[idx].w)/2, 0)
                     self.draw_preview(dscale, canvas, rect, (render, result, rp))
             
-            surface.flushAndSubmit()
+            self.surface.flushAndSubmit()
             glfw.swap_buffers(self.window)
-            context.abandonContext()
         
         self.previews_waiting_to_paint = []
         if self.server:
@@ -865,22 +957,25 @@ class Renderer():
 
     def draw_preview(self, scale, canvas, rect, waiter):
         if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
-            image = skia.Image.MakeFromEncoded(
-                skia.Data.MakeFromFileName(str(waiter[1])))
+            image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(waiter[1])))
             if image:
                 canvas.drawImage(image, rect.x, rect.y)
             return
         
-        surface = skia.Surface(rect.w, rect.h)
-        with surface as canvas2:
-            render, result, rp = waiter
-            canvas2.scale(scale, scale)
-            render.draw_preview(1.0, canvas2, render.rect, result, rp)
-            if hasattr(render, "blank_renderable"):
-                paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=0.5).skia())
-                canvas2.drawString('Nothing found'.upper(), 315, 480, skia.Font(None, 20), paint)
-        image = surface.makeImageSnapshot()
-        canvas.drawImage(image, rect.x, rect.y)
+        render, result, rp = waiter
+        canvas.save()
+        canvas.translate(rect.x, rect.y)
+        canvas.scale(scale, scale)
+        render.draw_preview(1.0, canvas, render.rect, result, rp)
+        if hasattr(render, "blank_renderable"):
+            paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=0.5).skia())
+            canvas.drawString('Nothing found'.upper(), 315, 480, skia.Font(None, 20), paint)
+        canvas.restore()
+    
+    def preload_frames(self, passes):
+        for rp in passes:
+            self.preloaded_frames.append(rp.output_path)
+        self.playing_preloaded_frame = 0
     
     def on_modified(self, event):
         path = Path(event.src_path)
@@ -904,15 +999,31 @@ class Renderer():
         print("... watching ...")
     
     def monitor_midi(self):
+        controllers = {}
         for device, mi in self.midis:
             while msg := mi.getMessage(0):
+                if self.args.midi_info:
+                    print(device, msg)
                 if msg.isNoteOn(): # Maybe not forever?
-                    if self.args.midi_info:
-                        print(device, msg)
                     nn = msg.getNoteNumber()
                     action = self.midi_mapping[device]["note_on"].get(nn)
                     if action:
                         self.on_message({}, action)
+                if msg.isController():
+                    controllers[device + "_" + str(msg.getControllerNumber())] = msg.getControllerValue()/127
+        
+        if len(controllers) > 0:
+            nested = {}
+            for k, v in controllers.items():
+                device, number = k.split("_")
+                if not nested.get(device):
+                    nested[device] = {}
+                nested[device][str(number)] = v
+            
+            for device, numbers in nested.items():
+                self.state.controller_values[device] = {**self.state.controller_values.get(device, {}), **numbers}
+
+            self.on_action(Action.PreviewStoryboard, {})
     
     def stop_watching_file_changes(self):
         for o in self.observers:
@@ -927,6 +1038,8 @@ class Renderer():
         #if self.args.watch:
         #   print(f"<EXIT(restart:{restart})>")
         glfw.terminate()
+        if self.context:
+            self.context.abandonContext()
         if self.hotkeys:
             self.hotkeys.stop()
         self.reset_renderers()

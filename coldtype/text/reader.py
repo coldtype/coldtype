@@ -76,20 +76,35 @@ def normalize_font_path(font):
 def empty_writer(*args):
     pass
 
+FontCache = {}
+
 class Font():
     # TODO support glyphs?
-    def __init__(self, path, number=0):
+    def __init__(self, path, number=0, cacheable=False):
         self.path = Path(normalize_font_path(path))
         numFonts, opener, getSortInfo = getOpener(self.path)
         self.font:BaseFont = opener(self.path, number)
         self.font.cocoa = False
+        self.cacheable = cacheable
+        self._loaded = False
+        self.load()
     
     def load(self):
-        asyncio.get_event_loop().run_until_complete(self.font.load(empty_writer))
-        return self
+        if self._loaded:
+            return self
+        else:
+            #print("LOADING", self.path)
+            self._loaded = True
+            asyncio.get_event_loop().run_until_complete(self.font.load(empty_writer))
+            return self
     
     def Preload(path):
         return Font(path).load()
+    
+    def Cacheable(path):
+        if path not in FontCache:
+            FontCache[path] = Font(path, cacheable=True).load()
+        return FontCache[path]
 
 class Style():
     def RegisterShorthandPrefix(prefix, expansion):

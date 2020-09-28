@@ -10,7 +10,7 @@ More info available at: [coldtype.goodhertz.co](https://coldtype.goodhertz.co)
 
 setuptools.setup(
     name="coldtype",
-    version="0.0.7",
+    version="0.0.8",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",
@@ -23,6 +23,7 @@ setuptools.setup(
         "coldtype.animation",
         "coldtype.animation.nle",
         "coldtype.color",
+        "coldtype.midi",
         "coldtype.pens",
         "coldtype.renderer",
         "coldtype.text",
