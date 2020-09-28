@@ -114,15 +114,14 @@ class Renderer():
         return pargs, parser
     
     def read_configs(self):
-        proj = Path("coldtype.py")
-        user = Path("~/coldtype.py").expanduser()
+        proj = Path(".coldtype.py")
+        user = Path("~/.coldtype.py").expanduser()
         self.midi_mapping = {}
         self.hotkey_mapping = {}
         self.py_config = {}
 
         for p in [user, proj]:
             if p.exists():
-                print(">>>>>>>>>>>>>>>>>>", p)
                 self.py_config = {
                     **self.py_config,
                     **run_path(str(p), init_globals={
@@ -145,11 +144,6 @@ class Renderer():
         self.watchees = []
         self.reset_filepath(self.args.file if hasattr(self.args, "file") else None)
         self.layers = [l.strip() for l in self.args.layers.split(",")] if self.args.layers else []
-        
-        if self.args.watch:
-            self.server = echo_server()
-        else:
-            self.server = None
 
         self.program = None
         self.websocket = None
@@ -179,26 +173,6 @@ class Renderer():
         self.surface = None
         self._preview_scale = self.args.preview_scale
         self._should_reload = False
-
-        if self.args.watch:
-            if not glfw.init():
-                raise RuntimeError('glfw.init() failed')
-            glfw.window_hint(glfw.STENCIL_BITS, 8)
-
-            if self.py_config.get("WINDOW_BACKGROUND"):
-                glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
-            if self.py_config.get("WINDOW_FLOAT"):
-                glfw.window_hint(glfw.FLOATING, glfw.TRUE)
-            
-            self.window = glfw.create_window(int(50), int(50), '', None, None)
-
-            if o := self.py_config.get("WINDOW_OPACITY"):
-                glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
-            
-            self._prev_scale = glfw.get_window_content_scale(self.window)[0]
-            
-            glfw.make_context_current(self.window)
-            glfw.set_key_callback(self.window, self.on_key)
     
     def reset_filepath(self, filepath):
         self.line_number = -1
@@ -224,7 +198,6 @@ class Renderer():
             pass # ?
         else:
             try:
-                print("RELOADING!")
                 self.state.reset()
                 self.program = run_path(str(self.filepath))
                 for k, v in self.program.items():
@@ -563,6 +536,31 @@ class Renderer():
                 should_halt = self.before_start()
         else:
             should_halt = self.before_start()
+        
+        if self.args.watch:
+            self.server = echo_server()
+
+            if not glfw.init():
+                raise RuntimeError('glfw.init() failed')
+            glfw.window_hint(glfw.STENCIL_BITS, 8)
+
+            if self.py_config.get("WINDOW_BACKGROUND"):
+                glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
+            if self.py_config.get("WINDOW_FLOAT"):
+                glfw.window_hint(glfw.FLOATING, glfw.TRUE)
+            
+            self.window = glfw.create_window(int(50), int(50), '', None, None)
+
+            if o := self.py_config.get("WINDOW_OPACITY"):
+                glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
+            
+            self._prev_scale = glfw.get_window_content_scale(self.window)[0]
+            
+            glfw.make_context_current(self.window)
+            glfw.set_key_callback(self.window, self.on_key)
+        else:
+            self.window = None
+            self.server = None
         
         if should_halt:
             self.on_exit()
