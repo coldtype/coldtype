@@ -1,0 +1,1 @@
+__MIDI__["Launch Control XL"]["note_on"][106] = "kill"
