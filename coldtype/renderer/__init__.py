@@ -663,10 +663,10 @@ class Renderer():
                 o = glfw.get_window_opacity(self.window)
                 glfw.set_window_opacity(self.window, min(1, o+0.1))
             elif key == glfw.KEY_SPACE:
-                if mods & glfw.MOD_CONTROL:
-                    self.on_action(Action.RenderedPlay)
-                else:
-                    self.on_action(Action.PreviewPlay)
+                #if mods & glfw.MOD_CONTROL:
+                self.on_action(Action.RenderedPlay)
+                #else:
+                #    self.on_action(Action.PreviewPlay)
             elif key in [glfw.KEY_MINUS, glfw.KEY_EQUAL]:
                 inc = -0.1 if key == glfw.KEY_MINUS else 0.1
                 if mods & glfw.MOD_SHIFT:

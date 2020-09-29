@@ -20,37 +20,33 @@ def cut(mp=127, w=5):
     return ct
 
 colorMatrix = [
-    0.5, 0.5, 0.5, 0, 0,
-    0.5, 0.5, 0.5, 0, 0,
-    0.5, 0.5, 0.5, 0, 0,
+    0, 0, 0, 0, 0.2,
+    0, 0, 0, 0, 0.5,
+    0, 0, 0, 0, 1,
     0, 0, 0, 1, 0,
 ]
 
-@renderable(bg=0, rstate=1)
-def with_image(r, rstate):
+@animation(bg=hsl(0.65, l=0.3), rstate=1, storyboard=[15], timeline=Timeline(30))
+def render(f, rstate):
     nxl, _ = LaunchControlXL(rstate.midi)
+    p = f.a.progress(f.i, loops=1, easefn="qeio").e
 
-    dp = (StyledString("COLD",
-        Style(co, 700, wdth=0.25, tu=50, r=1, ro=1))
+    return (StyledString("COLDTYPE",
+        Style(co, 700, wdth=(p)*0.1, tu=-85+(p*50), r=1, ro=1, rotate=10*p))
         .pens()
-        .align(r)
+        .align(f.a.r)
         .f(1)
-        #.understroke(s=0, sw=20)
-        .precompose(SkiaPen, r)
+        .understroke(s=0, sw=20)
+        .precompose(SkiaPen, f.a.r)
         .attr(skp=dict(
-            ImageFilter=skia.BlurImageFilter.Make(nxl(20)*90, 15),
-            #ColorFilter=skia.TableColorFilter.MakeARGB(ct, None, None, None),
-        )))
-    
-    dps = (DATPenSet([
-        #DATPen().rect(r).f(0),
-        dp])
-        .precompose(SkiaPen, r)
+            ImageFilter=skia.BlurImageFilter.Make(10, 10),
+            ColorFilter=skia.LumaColorFilter.Make()
+        ))
+        .precompose(SkiaPen, f.a.r)
         .attr(skp=dict(
-            #BlendMode=skia.BlendMode.kScreen,
-            #ColorFilter=skia.ColorFilters.Matrix(colorMatrix)
-            ColorFilter=skia.TableColorFilter.MakeARGB(cut(nxl(10)*255, 1), None, None, None),
-            ImageFilter=skia.BlurImageFilter.Make(1, 1)
-            )))
-    
-    return dps
+            ColorFilter=skia.ColorFilters.Compose(
+                skia.TableColorFilter.MakeARGB(cut(200+p*30, 3), None, None, None),
+                hsl(0.95, l=0.7, s=0.7).skiaMatrix(),
+            ),
+            ImageFilter=skia.BlurImageFilter.Make(1, 1)))
+        )
