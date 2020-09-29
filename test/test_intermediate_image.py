@@ -48,5 +48,4 @@ def render(f, rstate):
                 skia.TableColorFilter.MakeARGB(cut(200+p*30, 3), None, None, None),
                 hsl(0.95, l=0.7, s=0.7).skiaMatrix(),
             ),
-            ImageFilter=skia.BlurImageFilter.Make(1, 1)))
-        )
+            ImageFilter=skia.BlurImageFilter.Make(1, 1))))
