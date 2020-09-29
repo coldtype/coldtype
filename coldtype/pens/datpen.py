@@ -298,6 +298,10 @@ class DATPenLikeObject():
         except ImportError:
             print("DrawBot not installed!")
             return self
+    
+    def precompose(self, pen_class, rect):
+        img = pen_class.Precompose(self, rect)
+        return DATPen().rect(rect).attr(image=dict(src=img, rect=rect)).f(None)
 
 
 class DATPen(RecordingPen, DATPenLikeObject):

@@ -31,6 +31,5 @@ def render(f):
             .sw(50)
             .attr(skp=dict(
                 AntiAlias=True,
-                MaskFilter=skia.MaskFilter.MakeBlur(
-                    skia.kNormal_BlurStyle, 20.0)))
+                MaskFilter=skia.MaskFilter.MakeBlur(skia.kNormal_BlurStyle, 20.0)))
             .tag("circle"))])

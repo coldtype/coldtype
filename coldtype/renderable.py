@@ -53,7 +53,7 @@ class RenderPass():
 
 
 class renderable():
-    def __init__(self, rect=(1080, 1080), bg="whitesmoke", fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[], layers=[], ui_callback=None, rstate=False):
+    def __init__(self, rect=(1080, 1080), bg="whitesmoke", fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[], layers=[], ui_callback=None, rstate=False, filter=None):
         self.rect = Rect(rect)
         self.bg = normalize_color(bg)
         self.fmt = fmt
@@ -68,6 +68,8 @@ class renderable():
         self.layers = layers
         self.hidden = False
         self.rstate = rstate
+        self.filter = filter
+
         if not rasterizer:
             if self.fmt == "svg":
                 self.rasterizer = "svg"
@@ -115,7 +117,6 @@ class renderable():
     
     def draw_preview(self, scale, canvas:skia.Canvas, rect, result, render_pass):
         sr = self.rect.scale(scale, "mnx", "mxx")
-        SkiaPen.CompositeToCanvas(DATPen().rect(sr).f(self.bg), sr, canvas)
         SkiaPen.CompositeToCanvas(result, sr, canvas, scale)
     
     def hide(self):
