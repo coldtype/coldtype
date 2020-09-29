@@ -99,12 +99,18 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             skia.TileMode.kRepeat,
             matrix
         ))
-        # self.paint.setColorFilter(skia.ColorFilters.Matrix([
-        #     1, 0, 0, 0, 0,
-        #     0, 1, 0, 0, 0,
-        #     0, 0, 1, 0, 0,
-        #     0, 0, 0, opacity, 0
-        # ]))
+        if opacity != 1:
+            tf = skia.ColorFilters.Matrix([
+                1, 0, 0, 0, 0,
+                0, 1, 0, 0, 0,
+                0, 0, 1, 0, 0,
+                0, 0, 0, opacity, 0
+            ])
+            if cf := self.paint.getColorFilter():
+                self.paint.setColorFilter(skia.ColorFilters.Compose(
+                    tf, cf))
+            else:
+                self.paint.setColorFilter(tf)
     
     def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
         if clip:

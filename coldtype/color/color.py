@@ -137,11 +137,3 @@ class Color:
     
     def skia(self):
         return skia.Color4f(self.r, self.g, self.b, self.a)
-    
-    def skiaMatrix(self):
-        return skia.ColorFilters.Matrix([
-            0, 0, 0, 0, self.r,
-            0, 0, 0, 0, self.g,
-            0, 0, 0, 0, self.b,
-            0, 0, 0, 1, 0,
-        ])
