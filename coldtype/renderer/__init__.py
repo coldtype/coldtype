@@ -635,6 +635,7 @@ class Renderer():
         if action:
             enum_action = self.lookup_action(action)
             if enum_action:
+                print("ENUM_ACTION", enum_action)
                 self.on_action(enum_action, message)
             else:
                 print(">>> (", action, ") is not a recognized action")
@@ -791,10 +792,11 @@ class Renderer():
                 kwargs["action"] = action.value
             kwargs["prefix"] = self.filepath.stem
             kwargs["fps"] = animation.timeline.fps
-            for client in echo_clients:
+            for k, client in self.server.connections.items():
                 client.sendMessage(json.dumps(kwargs))
     
     def process_ws_message(self, message):
+        print("MESSAGE", message)
         try:
             jdata = json.loads(message)
             action = jdata.get("action")
@@ -885,12 +887,13 @@ class Renderer():
             self.on_message({}, self.action_waiting)
             self.action_waiting = None
         
-        global echo_incoming
-        if len(echo_incoming) > 0:
-            for echo, msg in echo_incoming:
-                print("WS>>>", echo.address, msg)
-                self.process_ws_message(msg)
-            echo_incoming = []
+        for k, v in self.server.connections.items():
+            if hasattr(v, "messages") and len(v.messages) > 0:
+                #print(k, v.messages)
+                for msg in v.messages:
+                    print("WS>>>", v.address, msg)
+                    self.process_ws_message(msg)
+                v.messages = []
 
         self.monitor_midi()
         if len(self.waiting_to_render) > 0:
