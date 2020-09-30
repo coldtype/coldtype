@@ -27,6 +27,7 @@ class Action(Enum):
     RenderWorkarea = "render_workarea"
     RenderIndices = "render_indices"
     PreviewStoryboard = "preview_storyboard"
+    PreviewStoryboardReload = "preview_storyboard_reload"
     PreviewPlay = "preview_play"
     PreviewIndices = "preview_indices"
     PreviewStoryboardNext = "preview_storyboard_next"

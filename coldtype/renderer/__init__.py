@@ -312,6 +312,7 @@ class Renderer():
                     Action.Resave,
                     Action.PreviewStoryboard,
                     Action.PreviewIndices,
+                    Action.PreviewStoryboardReload,
                 ])
                 
                 rendering = (self.args.save_renders or trigger in [
@@ -716,7 +717,7 @@ class Renderer():
                 self.on_action(action)
 
     def on_action(self, action, message=None) -> bool:
-        if action in [Action.RenderAll, Action.RenderWorkarea]:
+        if action in [Action.RenderAll, Action.RenderWorkarea, Action.PreviewStoryboardReload]:
             self.reload_and_render(action)
             return True
         elif action in [Action.PreviewStoryboard]:

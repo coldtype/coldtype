@@ -100,6 +100,12 @@ def normalize_color(v):
 def hsl(h, s=0.5, l=0.5, a=1):
     return Color.from_hsl(h*360, s, l, a)
 
+def rgb(r, g, b, a=1):
+    return Color.from_rgb(r, g, b, a)
+
+def bw(c, a=1):
+    return Color.from_rgb(c, c, c, a)
+
 
 class Gradient():
     def __init__(self, *stops):

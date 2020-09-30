@@ -323,6 +323,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = value
         return self
     
+    def take(self, slice):
+        self.value = self.value[slice]
+        return self
+    
     def ups(self):
         dps = DATPenSet()
         dps.append(self.copy())
