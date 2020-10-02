@@ -303,10 +303,30 @@ class DATPenLikeObject():
         img = pen_class.Precompose(self, rect)
         return DATPen().rect(rect).attr(image=dict(src=img, rect=rect)).f(None)
     
-    def potrace(self, pen_class, rect):
-        img = pen_class.Precompose(self, rect, fmt="bmp")
-        with tempfile.NamedTemporaryFile(prefix="coldtype_tmp", suffix="bmp") as tmp:
-            print(img.bitmap().save_to)
+    def potrace(self, pen_class, rect, *args, invert=True):
+        import skia
+        from PIL import Image
+        from pathlib import Path
+        from subprocess import run
+        from fontTools.svgLib import SVGPath
+
+        img = pen_class.Precompose(self, rect)
+        pilimg = Image.fromarray(img.convert(alphaType=skia.kUnpremul_AlphaType))
+        with tempfile.NamedTemporaryFile(prefix="coldtype_tmp", suffix=".bmp") as tmp_bmp:
+            pilimg.save(tmp_bmp.name)
+            rargs = ["bin/potrace", "-s"]
+            if invert:
+                rargs.append("--invert")
+            rargs.extend([str(x) for x in args])
+            rargs.extend(["-o", "-", "--", tmp_bmp.name])
+            print(">>>", " ".join(rargs))
+            result = run(rargs, capture_output=True)
+            t = Transform()
+            t = t.scale(0.1, 0.1)
+            svgp = SVGPath.fromstring(result.stdout, transform=t)
+            dp = DATPen()
+            svgp.draw(dp)
+            return dp
 
 
 class DATPen(RecordingPen, DATPenLikeObject):
