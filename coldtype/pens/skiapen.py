@@ -146,7 +146,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         for dps in pens:
             dps.walk(draw)
     
-    def Precompose(pens, rect):
+    def Precompose(pens, rect, fmt=None):
         surface = skia.Surface(rect.w, rect.h)
         with surface as canvas:
             SkiaPen.CompositeToCanvas(pens, rect, canvas)

@@ -1,4 +1,4 @@
-import math
+import math, tempfile
 from enum import Enum
 from copy import deepcopy
 
@@ -302,6 +302,11 @@ class DATPenLikeObject():
     def precompose(self, pen_class, rect):
         img = pen_class.Precompose(self, rect)
         return DATPen().rect(rect).attr(image=dict(src=img, rect=rect)).f(None)
+    
+    def potrace(self, pen_class, rect):
+        img = pen_class.Precompose(self, rect, fmt="bmp")
+        with tempfile.NamedTemporaryFile(prefix="coldtype_tmp", suffix="bmp") as tmp:
+            print(img.bitmap().save_to)
 
 
 class DATPen(RecordingPen, DATPenLikeObject):
