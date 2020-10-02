@@ -54,7 +54,7 @@ class RenderPass():
 
 
 class renderable():
-    def __init__(self, rect=(1080, 1080), bg="whitesmoke", fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[], layers=[], ui_callback=None, rstate=False, filter=None):
+    def __init__(self, rect=(1080, 1080), bg="whitesmoke", fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[], layers=[], ui_callback=None, rstate=False):
         self.rect = Rect(rect)
         self.bg = normalize_color(bg)
         self.fmt = fmt
@@ -69,7 +69,6 @@ class renderable():
         self.layers = layers
         self.hidden = False
         self.rstate = rstate
-        self.filter = filter
 
         if not rasterizer:
             if self.fmt == "svg":
