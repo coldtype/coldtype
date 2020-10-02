@@ -68,11 +68,8 @@ def test_scaleToRect(r):
 
 @test()
 def test_photoblique(r):
-    def obl(i, p):
-        f = p.getFrame()
-        return p.skew(0.95)#.align(f, th=1)
-    style = Style(mutator, 300, wght=0.5)
-    return (StyledString("OBLQ", style)
+    return (StyledString("OBLQ",
+        Style(mutator, 300, wght=0.5))
         .pen()
         .align(r, th=1, tv=1)
         .f(hsl(0.7, a=0.5))

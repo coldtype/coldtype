@@ -483,6 +483,7 @@ class Renderer():
     
     def reload_and_render(self, trigger, watchable=None, indices=None):
         wl = len(self.watchees)
+        self.window_scrolly = 0
 
         try:
             should_halt = self.reload(trigger)
@@ -551,6 +552,7 @@ class Renderer():
                 glfw.window_hint(glfw.FLOATING, glfw.TRUE)
             
             self.window = glfw.create_window(int(50), int(50), '', None, None)
+            self.window_scrolly = 0
 
             if o := self.py_config.get("WINDOW_OPACITY"):
                 glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
@@ -559,6 +561,7 @@ class Renderer():
             
             glfw.make_context_current(self.window)
             glfw.set_key_callback(self.window, self.on_key)
+            glfw.set_scroll_callback(self.window, self.on_scroll)
         else:
             self.window = None
             self.server = None
@@ -652,6 +655,12 @@ class Renderer():
     def additional_actions(self):
         return []
     
+    def on_scroll(self, win, xoff, yoff):
+        self.window_scrolly += yoff
+        #self.on_action(Action.PreviewStoryboard)
+        #print(xoff, yoff)
+        #pass # TODO!
+    
     def on_key(self, win, key, scan, action, mods):
         if action == glfw.PRESS:
             if key == glfw.KEY_LEFT:
@@ -659,11 +668,19 @@ class Renderer():
             elif key == glfw.KEY_RIGHT:
                 self.on_action(Action.PreviewStoryboardNext)
             elif key == glfw.KEY_DOWN:
-                o = glfw.get_window_opacity(self.window)
-                glfw.set_window_opacity(self.window, max(0.1, o-0.1))
+                if mods & glfw.MOD_SUPER:
+                    o = glfw.get_window_opacity(self.window)
+                    glfw.set_window_opacity(self.window, max(0.1, o-0.1))
+                else:
+                    self.window_scrolly -= (500 if mods & glfw.MOD_SHIFT else 250)
+                    self.on_action(Action.PreviewStoryboard)
             elif key == glfw.KEY_UP:
-                o = glfw.get_window_opacity(self.window)
-                glfw.set_window_opacity(self.window, min(1, o+0.1))
+                if mods & glfw.MOD_SUPER:
+                    o = glfw.get_window_opacity(self.window)
+                    glfw.set_window_opacity(self.window, min(1, o+0.1))
+                else:
+                    self.window_scrolly += (500 if mods & glfw.MOD_SHIFT else 250)
+                    self.on_action(Action.PreviewStoryboard)
             elif key == glfw.KEY_SPACE:
                 #if mods & glfw.MOD_CONTROL:
                 self.on_action(Action.RenderedPlay)
@@ -967,9 +984,11 @@ class Renderer():
         
         render, result, rp = waiter
         canvas.save()
+        canvas.translate(0, self.window_scrolly)
         canvas.translate(rect.x, rect.y)
+        canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
         canvas.scale(scale, scale)
-        canvas.clear(render.bg.skia())
+        #canvas.clear(render.bg.skia())
         render.draw_preview(1.0, canvas, render.rect, result, rp)
         if hasattr(render, "blank_renderable"):
             paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=0.5).skia())

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from coldtype import *
 from coldtype.renderer import Renderer
 
