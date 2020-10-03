@@ -595,7 +595,7 @@ class Renderer():
                             mi.openPort(lookup[device])
                             self.midis.append([device, mi])
                         else:
-                            print(">>> no midi port found with that name <<<")
+                            print(f">>> no midi port found with that name ({device}) <<<")
                 except:
                     self.midis = []
 
