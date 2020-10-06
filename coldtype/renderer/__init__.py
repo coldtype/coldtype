@@ -207,7 +207,7 @@ class Renderer():
                         for ext in v.font.getExternalFiles():
                             if ext not in self.watchee_paths():
                                 self.watchees.append([Watchable.Font, ext])
-                    elif isinstance(v, DefconFont):
+                    elif isinstance(v, DefconFont) and hasattr(v, "coldtype_watch"):
                         p = Path(v.path).resolve()
                         if p not in self.watchee_paths():
                             self.watchees.append([Watchable.Font, p])

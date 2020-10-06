@@ -1032,6 +1032,12 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = exploded.implode().value
         return self
     
+    def slicec(self, contour_slice):
+        self.value = DATPenSet(self.explode()[contour_slice]).implode().value
+        #print(exploded.pens[contour_slice])
+        #self.value = DATPenSet(exploded[contour_slice]).implode().value
+        return self
+    
     def openAndClosed(self):
         """Explode and then classify group each contour into open/closed pens; (what is this good for?)"""
         dp_open = DATPen()
@@ -1528,7 +1534,7 @@ class DATPenSet(DATPenLikeObject):
         if sw == 0:
             return self
         if not outline:
-            return self.interleave(lambda idx, p: p.s(s).sw(sw))
+            return self.interleave(lambda idx, p: p.f(s).s(s).sw(sw))
         else:
             def mod(idx, p):
                 if dofill:
