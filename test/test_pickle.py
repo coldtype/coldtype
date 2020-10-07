@@ -1,0 +1,17 @@
+from coldtype import *
+import pickle
+
+@renderable(fmt="pickle")
+def pickled(r):
+    return (DATPen()
+        .oval(r.inset(100))
+        .f(0)
+        .difference(
+            DATPen().rect(r.inset(100)).translate(-100, -100))
+        .f(hsl(0.9))
+        .xor(DATPen().rect(r)))
+
+@renderable()
+def unpickle(r):
+    return pickle.load(open("test/renders/test_pickle_pickled.pickle", "rb")).rotate(180)
+    #return DATPen().oval(r.inset(100))

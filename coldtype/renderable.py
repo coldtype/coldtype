@@ -73,12 +73,10 @@ class renderable():
         if not rasterizer:
             if self.fmt == "svg":
                 self.rasterizer = "svg"
+            elif self.fmt == "pickle":
+                self.rasterizer = "pickle"
             else:
-                system = platform.system()
-                if system == "Darwin":
-                    self.rasterizer = "drawbot"
-                else:
-                    self.rasterizer = "cairo"
+                self.rasterizer = "skia"
     
     def __call__(self, func):
         self.func = func
@@ -283,12 +281,15 @@ class animation(renderable, Timeable):
         elif action in [Action.RenderWorkarea]:
             if self.timeline:
                 try:
-                    frames = list(self.timeline.workareas[0])
+                    frames = self.workarea()
                 except:
                     frames = self.all_frames()
                 #if hasattr(self.timeline, "find_workarea"):
                 #    frames = self.timeline.find_workarea()
         return frames
+    
+    def workarea(self):
+        return list(self.timeline.workareas[0])
     
     def passes(self, action, layers, indices=[]):
         frames = self.active_frames(action, layers, indices)
