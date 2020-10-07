@@ -2,6 +2,7 @@ import sys, os, re, signal, tracemalloc
 import tempfile, traceback, threading
 import argparse, importlib, inspect, json, math
 import platform
+import pickle
 
 import time as ptime
 from pathlib import Path
@@ -55,7 +56,7 @@ keep_last_line_thread.start()
 
 
 class Renderer():
-    def Argparser(name="coldtype", file=True, nargs=[]):
+    def Argparser(name="coldtype", file=True, defaults={}, nargs=[]):
         parser = argparse.ArgumentParser(prog=name, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
         
         if file:
@@ -70,7 +71,7 @@ class Renderer():
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
             
-            rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default="skia", choices=["drawbot", "cairo", "svg", "skia"], help="Which rasterization engine should coldtype use to create artifacts?"),
+            rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default=None, choices=["drawbot", "cairo", "svg", "skia", "pickle"], help="Which rasterization engine should coldtype use to create artifacts?"),
 
             raster_previews=parser.add_argument("-rp", "--raster-previews", action="store_true", default=False, help="Should rasters be displayed in the Coldtype viewer?"),
             
@@ -90,7 +91,7 @@ class Renderer():
 
             is_subprocess=parser.add_argument("-isp", "--is-subprocess", action="store_true", default=False, help=argparse.SUPPRESS),
 
-            thread_count=parser.add_argument("-tc", "--thread-count", type=int, default=8, help="How many threads when multiplexing?"),
+            thread_count=parser.add_argument("-tc", "--thread-count", type=int, default=defaults.get("thread_count", 8), help="How many threads when multiplexing?"),
 
             no_sound=parser.add_argument("-ns", "--no-sound", action="store_true", default=False, help="Don’t make sound"),
             
@@ -298,6 +299,7 @@ class Renderer():
         self.last_renders = renders
         preview_count = 0
         render_count = 0
+        output_folder = None
         try:
             for render in renders:
                 for watch in render.watch:
@@ -365,8 +367,6 @@ class Renderer():
                                     print(">>> saved...", str(output_path.relative_to(Path.cwd())))
                     except:
                         self.show_error()
-                if did_render:
-                    render.package(self.filepath, output_folder)
         except:
             self.show_error()
         if render_count > 0:
@@ -375,7 +375,7 @@ class Renderer():
         if not self.args.is_subprocess and self.args.show_time:
             print("TIME >>>", ptime.time() - start)
         
-        return preview_count, render_count
+        return preview_count, render_count, renders
 
     def render(self, trigger, indices=[]) -> Tuple[int, int]:
         if self.args.is_subprocess: # is a child process of a multiplexed render
@@ -383,7 +383,7 @@ class Renderer():
                 raise Exception("Invalid child process render action")
                 return 0, 0
             else:
-                p, r = self._single_thread_render(trigger, indices=indices)
+                p, r, _ = self._single_thread_render(trigger, indices=indices)
                 if not self.args.no_sound:
                     os.system("afplay /System/Library/Sounds/Pop.aiff")
                 self.exit_code = 5 # mark as child-process
@@ -406,9 +406,14 @@ class Renderer():
                 trigger = Action.RenderIndices
                 indices = [0, all_frames[-1]] # always render first & last from main, to trigger a filesystem-change detection in premiere
         
-        preview_count, render_count = self._single_thread_render(trigger, indices)
+        preview_count, render_count, renders = self._single_thread_render(trigger, indices)
         
         if not self.args.is_subprocess and render_count > 0:
+            for render in renders:
+                result = render.package(self.filepath, self.render_to_output_folder(render))
+                if result:
+                    self.previews_waiting_to_paint.append([render, result, None])
+
             self.send_to_external(None, rendered=True)
 
         return preview_count, render_count
@@ -417,7 +422,7 @@ class Renderer():
         start = ptime.time()
         
         group = math.floor(len(frames) / self.args.thread_count)
-        ordered_frames = list(range(frames[0], frames[0]+len(frames)))
+        ordered_frames = list(frames) #list(range(frames[0], frames[0]+len(frames)))
         shuffle(ordered_frames)
         subslices = list(chunks(ordered_frames, group))
         
@@ -434,11 +439,12 @@ class Renderer():
                 "coldtype",
                 sys.argv[1],
                 "-i", ",".join([str(s) for s in subslice]),
-                "-r", self.args.rasterizer,
                 "-isp",
                 "-l", ",".join(self.layers or []),
                 "-s", str(self.args.scale),
             ]
+            if r := self.args.rasterizer:
+                sargs.append("-r", r)
             if self.args.no_sound:
                 sargs.append("-ns")
             #print(sys.argv)
@@ -478,6 +484,8 @@ class Renderer():
         elif rasterizer == "cairo":
             from coldtype.pens.cairopen import CairoPen
             CairoPen.Composite(content, render.rect, str(path), scale=scale)
+        elif rasterizer == "pickle":
+            pickle.dump(content, open(path, "wb"))
         else:
             raise Exception(f"rasterizer ({rasterizer}) not supported")
     

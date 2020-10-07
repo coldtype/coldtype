@@ -641,7 +641,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
         glyph.width = width or bounds.w
         sp = glyph.getPen()
         self.replay(sp)
-        print(glyph._contours)
         return glyph
 
     def flatten(self, length=10):
