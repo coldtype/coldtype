@@ -34,20 +34,17 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
-echo_clients = []
-echo_incoming = []
-
 class SimpleEcho(WebSocket):
     def handleMessage(self):
-        echo_incoming.append([self, self.data])
+        print("INCOMING", self, self.data)
+        self.messages.append(self.data)
 
     def handleConnected(self):
         print(self.address, 'connected')
-        echo_clients.append(self)
+        self.messages = []
 
     def handleClose(self):
-        echo_clients.remove(self)
-        print(self.address, 'closed', len(echo_clients))
+        print(self.address, 'closed')
 
 
 def echo_server():

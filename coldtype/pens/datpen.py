@@ -1,4 +1,4 @@
-import math
+import math, tempfile
 from enum import Enum
 from copy import deepcopy
 
@@ -156,8 +156,10 @@ class DATPenLikeObject():
         """Return a new DATPen representation of the frame of this DATPen."""
         return DATPen(fill=("random", 0.25)).rect(self.getFrame(th=th, tv=tv))
     
-    def translate(self, x, y, transformFrame=True):
+    def translate(self, x, y=None, transformFrame=True):
         """Translate this shape by `x` and `y` (pixel values)."""
+        if y is None:
+            y = x
         return self.transform(Transform(1, 0, 0, 1, x, y), transformFrame=transformFrame)
     
     def scale(self, scaleX, scaleY=None, center=None):
@@ -298,6 +300,35 @@ class DATPenLikeObject():
         except ImportError:
             print("DrawBot not installed!")
             return self
+    
+    def precompose(self, pen_class, rect):
+        img = pen_class.Precompose(self, rect)
+        return DATPen().rect(rect).attr(image=dict(src=img, rect=rect)).f(None)
+    
+    def potrace(self, pen_class, rect, *args, invert=True):
+        import skia
+        from PIL import Image
+        from pathlib import Path
+        from subprocess import run
+        from fontTools.svgLib import SVGPath
+
+        img = pen_class.Precompose(self, rect)
+        pilimg = Image.fromarray(img.convert(alphaType=skia.kUnpremul_AlphaType))
+        with tempfile.NamedTemporaryFile(prefix="coldtype_tmp", suffix=".bmp") as tmp_bmp:
+            pilimg.save(tmp_bmp.name)
+            rargs = ["bin/potrace", "-s"]
+            if invert:
+                rargs.append("--invert")
+            rargs.extend([str(x) for x in args])
+            rargs.extend(["-o", "-", "--", tmp_bmp.name])
+            print(">>>", " ".join(rargs))
+            result = run(rargs, capture_output=True)
+            t = Transform()
+            t = t.scale(0.1, 0.1)
+            svgp = SVGPath.fromstring(result.stdout, transform=t)
+            dp = DATPen()
+            svgp.draw(dp)
+            return dp
 
 
 class DATPen(RecordingPen, DATPenLikeObject):
@@ -317,6 +348,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     def vl(self, value):
         self.value = value
+        return self
+    
+    def take(self, slice):
+        self.value = self.value[slice]
         return self
     
     def ups(self):
@@ -608,7 +643,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
         glyph.width = width or bounds.w
         sp = glyph.getPen()
         self.replay(sp)
-        print(glyph._contours)
         return glyph
 
     def flatten(self, length=10):
@@ -997,6 +1031,12 @@ class DATPen(RecordingPen, DATPenLikeObject):
         exploded = self.explode()
         mod_fn(exploded[contour_index])
         self.value = exploded.implode().value
+        return self
+    
+    def slicec(self, contour_slice):
+        self.value = DATPenSet(self.explode()[contour_slice]).implode().value
+        #print(exploded.pens[contour_slice])
+        #self.value = DATPenSet(exploded[contour_slice]).implode().value
         return self
     
     def openAndClosed(self):
@@ -1495,7 +1535,7 @@ class DATPenSet(DATPenLikeObject):
         if sw == 0:
             return self
         if not outline:
-            return self.interleave(lambda idx, p: p.s(s).sw(sw))
+            return self.interleave(lambda idx, p: p.f(s).s(s).sw(sw))
         else:
             def mod(idx, p):
                 if dofill:

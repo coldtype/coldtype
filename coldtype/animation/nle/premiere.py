@@ -649,7 +649,8 @@ class ClipTrack():
 class PremiereTimeline(Timeline):
     __name__ = "Premiere"
 
-    def __init__(self, path, storyboard=None, find_workarea=None, duration_override=None):
+    def __init__(self, path, storyboard=None, find_workarea=None, duration_override=None, workarea_track=0):
+        self.workarea_track = workarea_track
         self._find_workarea = find_workarea
 
         json_path = path if isinstance(path, Path) else Path(path).expanduser()
@@ -736,6 +737,6 @@ class PremiereTimeline(Timeline):
                 print(e)
         if workarea:
             return workarea
-        cg = self.trackClipGroupForFrame(0, self.cti)
+        cg = self.trackClipGroupForFrame(self.workarea_track, self.cti)
         if cg:
             return [cg.start, cg.end]

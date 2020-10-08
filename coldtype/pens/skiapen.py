@@ -56,6 +56,8 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             method, *args = attr
             if method == "skp":
                 pass
+            elif method == "skb":
+                pass
             elif method == "stroke" and args[0].get("weight") == 0:
                 pass
             else:
@@ -85,7 +87,10 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         self.paint.setShader(skia.GradientShader.MakeLinear([s[1].xy() for s in gradient.stops], [s[0].skia() for s in gradient.stops]))
     
     def image(self, src=None, opacity=1, rect=None):
-        image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(src)))
+        if isinstance(src, skia.Image):
+            image = src
+        else:
+            image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(src)))
         _, _, iw, ih = image.bounds()
         matrix = skia.Matrix()
         matrix.setScale(rect.w / iw, rect.h / ih)
@@ -94,12 +99,18 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             skia.TileMode.kRepeat,
             matrix
         ))
-        self.paint.setColorFilter(skia.ColorFilters.Matrix([
-            1, 0, 0, 0, 0,
-            0, 1, 0, 0, 0,
-            0, 0, 1, 0, 0,
-            0, 0, 0, opacity, 0
-        ]))
+        if opacity != 1:
+            tf = skia.ColorFilters.Matrix([
+                1, 0, 0, 0, 0,
+                0, 1, 0, 0, 0,
+                0, 0, 1, 0, 0,
+                0, 0, 0, opacity, 0
+            ])
+            if cf := self.paint.getColorFilter():
+                self.paint.setColorFilter(skia.ColorFilters.Compose(
+                    tf, cf))
+            else:
+                self.paint.setColorFilter(tf)
     
     def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
         if clip:
@@ -134,3 +145,9 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         
         for dps in pens:
             dps.walk(draw)
+    
+    def Precompose(pens, rect, fmt=None):
+        surface = skia.Surface(rect.w, rect.h)
+        with surface as canvas:
+            SkiaPen.CompositeToCanvas(pens, rect, canvas)
+        return surface.makeImageSnapshot()

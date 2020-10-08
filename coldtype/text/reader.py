@@ -271,6 +271,9 @@ class Style():
         for key, value in self.variations.items():
             if self.variations[key] != other.variations[key]:
                 return False
+            
+        if self.rotate != other.rotate:
+            return False
         
         if self.fill != other.fill:
             return False

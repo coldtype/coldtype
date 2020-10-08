@@ -2,6 +2,7 @@ import sys, os, re, signal, tracemalloc
 import tempfile, traceback, threading
 import argparse, importlib, inspect, json, math
 import platform
+import pickle
 
 import time as ptime
 from pathlib import Path
@@ -55,7 +56,7 @@ keep_last_line_thread.start()
 
 
 class Renderer():
-    def Argparser(name="coldtype", file=True, nargs=[]):
+    def Argparser(name="coldtype", file=True, defaults={}, nargs=[]):
         parser = argparse.ArgumentParser(prog=name, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
         
         if file:
@@ -70,7 +71,7 @@ class Renderer():
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
             
-            rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default="skia", choices=["drawbot", "cairo", "svg", "skia"], help="Which rasterization engine should coldtype use to create artifacts?"),
+            rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default=None, choices=["drawbot", "cairo", "svg", "skia", "pickle"], help="Which rasterization engine should coldtype use to create artifacts?"),
 
             raster_previews=parser.add_argument("-rp", "--raster-previews", action="store_true", default=False, help="Should rasters be displayed in the Coldtype viewer?"),
             
@@ -90,7 +91,7 @@ class Renderer():
 
             is_subprocess=parser.add_argument("-isp", "--is-subprocess", action="store_true", default=False, help=argparse.SUPPRESS),
 
-            thread_count=parser.add_argument("-tc", "--thread-count", type=int, default=8, help="How many threads when multiplexing?"),
+            thread_count=parser.add_argument("-tc", "--thread-count", type=int, default=defaults.get("thread_count", 8), help="How many threads when multiplexing?"),
 
             no_sound=parser.add_argument("-ns", "--no-sound", action="store_true", default=False, help="Don’t make sound"),
             
@@ -207,7 +208,7 @@ class Renderer():
                         for ext in v.font.getExternalFiles():
                             if ext not in self.watchee_paths():
                                 self.watchees.append([Watchable.Font, ext])
-                    elif isinstance(v, DefconFont):
+                    elif isinstance(v, DefconFont) and hasattr(v, "coldtype_watch"):
                         p = Path(v.path).resolve()
                         if p not in self.watchee_paths():
                             self.watchees.append([Watchable.Font, p])
@@ -298,6 +299,7 @@ class Renderer():
         self.last_renders = renders
         preview_count = 0
         render_count = 0
+        output_folder = None
         try:
             for render in renders:
                 for watch in render.watch:
@@ -312,6 +314,7 @@ class Renderer():
                     Action.Resave,
                     Action.PreviewStoryboard,
                     Action.PreviewIndices,
+                    Action.PreviewStoryboardReload,
                 ])
                 
                 rendering = (self.args.save_renders or trigger in [
@@ -364,8 +367,6 @@ class Renderer():
                                     print(">>> saved...", str(output_path.relative_to(Path.cwd())))
                     except:
                         self.show_error()
-                if did_render:
-                    render.package(self.filepath, output_folder)
         except:
             self.show_error()
         if render_count > 0:
@@ -374,7 +375,7 @@ class Renderer():
         if not self.args.is_subprocess and self.args.show_time:
             print("TIME >>>", ptime.time() - start)
         
-        return preview_count, render_count
+        return preview_count, render_count, renders
 
     def render(self, trigger, indices=[]) -> Tuple[int, int]:
         if self.args.is_subprocess: # is a child process of a multiplexed render
@@ -382,7 +383,7 @@ class Renderer():
                 raise Exception("Invalid child process render action")
                 return 0, 0
             else:
-                p, r = self._single_thread_render(trigger, indices=indices)
+                p, r, _ = self._single_thread_render(trigger, indices=indices)
                 if not self.args.no_sound:
                     os.system("afplay /System/Library/Sounds/Pop.aiff")
                 self.exit_code = 5 # mark as child-process
@@ -405,9 +406,16 @@ class Renderer():
                 trigger = Action.RenderIndices
                 indices = [0, all_frames[-1]] # always render first & last from main, to trigger a filesystem-change detection in premiere
         
-        preview_count, render_count = self._single_thread_render(trigger, indices)
+        preview_count, render_count, renders = self._single_thread_render(trigger, indices)
         
         if not self.args.is_subprocess and render_count > 0:
+            for render in renders:
+                result = render.package(self.filepath, self.render_to_output_folder(render))
+                if result:
+                    self.previews_waiting_to_paint.append([render, result, None])
+                else:
+                    self.action_waiting = Action.PreviewStoryboard
+
             self.send_to_external(None, rendered=True)
 
         return preview_count, render_count
@@ -416,7 +424,7 @@ class Renderer():
         start = ptime.time()
         
         group = math.floor(len(frames) / self.args.thread_count)
-        ordered_frames = list(range(frames[0], frames[0]+len(frames)))
+        ordered_frames = list(frames) #list(range(frames[0], frames[0]+len(frames)))
         shuffle(ordered_frames)
         subslices = list(chunks(ordered_frames, group))
         
@@ -433,11 +441,12 @@ class Renderer():
                 "coldtype",
                 sys.argv[1],
                 "-i", ",".join([str(s) for s in subslice]),
-                "-r", self.args.rasterizer,
                 "-isp",
                 "-l", ",".join(self.layers or []),
                 "-s", str(self.args.scale),
             ]
+            if r := self.args.rasterizer:
+                sargs.append("-r", r)
             if self.args.no_sound:
                 sargs.append("-ns")
             #print(sys.argv)
@@ -477,11 +486,14 @@ class Renderer():
         elif rasterizer == "cairo":
             from coldtype.pens.cairopen import CairoPen
             CairoPen.Composite(content, render.rect, str(path), scale=scale)
+        elif rasterizer == "pickle":
+            pickle.dump(content, open(path, "wb"))
         else:
             raise Exception(f"rasterizer ({rasterizer}) not supported")
     
     def reload_and_render(self, trigger, watchable=None, indices=None):
         wl = len(self.watchees)
+        self.window_scrolly = 0
 
         try:
             should_halt = self.reload(trigger)
@@ -550,6 +562,7 @@ class Renderer():
                 glfw.window_hint(glfw.FLOATING, glfw.TRUE)
             
             self.window = glfw.create_window(int(50), int(50), '', None, None)
+            self.window_scrolly = 0
 
             if o := self.py_config.get("WINDOW_OPACITY"):
                 glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
@@ -558,6 +571,7 @@ class Renderer():
             
             glfw.make_context_current(self.window)
             glfw.set_key_callback(self.window, self.on_key)
+            glfw.set_scroll_callback(self.window, self.on_scroll)
         else:
             self.window = None
             self.server = None
@@ -591,7 +605,7 @@ class Renderer():
                             mi.openPort(lookup[device])
                             self.midis.append([device, mi])
                         else:
-                            print(">>> no midi port found with that name <<<")
+                            print(f">>> no midi port found with that name ({device}) <<<")
                 except:
                     self.midis = []
 
@@ -634,6 +648,7 @@ class Renderer():
         if action:
             enum_action = self.lookup_action(action)
             if enum_action:
+                print("ENUM_ACTION", enum_action)
                 self.on_action(enum_action, message)
             else:
                 print(">>> (", action, ") is not a recognized action")
@@ -650,6 +665,12 @@ class Renderer():
     def additional_actions(self):
         return []
     
+    def on_scroll(self, win, xoff, yoff):
+        self.window_scrolly += yoff
+        #self.on_action(Action.PreviewStoryboard)
+        #print(xoff, yoff)
+        #pass # TODO!
+    
     def on_key(self, win, key, scan, action, mods):
         if action == glfw.PRESS:
             if key == glfw.KEY_LEFT:
@@ -657,16 +678,24 @@ class Renderer():
             elif key == glfw.KEY_RIGHT:
                 self.on_action(Action.PreviewStoryboardNext)
             elif key == glfw.KEY_DOWN:
-                o = glfw.get_window_opacity(self.window)
-                glfw.set_window_opacity(self.window, max(0.1, o-0.1))
-            elif key == glfw.KEY_UP:
-                o = glfw.get_window_opacity(self.window)
-                glfw.set_window_opacity(self.window, min(1, o+0.1))
-            elif key == glfw.KEY_SPACE:
-                if mods & glfw.MOD_CONTROL:
-                    self.on_action(Action.RenderedPlay)
+                if mods & glfw.MOD_SUPER:
+                    o = glfw.get_window_opacity(self.window)
+                    glfw.set_window_opacity(self.window, max(0.1, o-0.1))
                 else:
-                    self.on_action(Action.PreviewPlay)
+                    self.window_scrolly -= (500 if mods & glfw.MOD_SHIFT else 250)
+                    self.on_action(Action.PreviewStoryboard)
+            elif key == glfw.KEY_UP:
+                if mods & glfw.MOD_SUPER:
+                    o = glfw.get_window_opacity(self.window)
+                    glfw.set_window_opacity(self.window, min(1, o+0.1))
+                else:
+                    self.window_scrolly += (500 if mods & glfw.MOD_SHIFT else 250)
+                    self.on_action(Action.PreviewStoryboard)
+            elif key == glfw.KEY_SPACE:
+                #if mods & glfw.MOD_CONTROL:
+                self.on_action(Action.RenderedPlay)
+                #else:
+                #    self.on_action(Action.PreviewPlay)
             elif key in [glfw.KEY_MINUS, glfw.KEY_EQUAL]:
                 inc = -0.1 if key == glfw.KEY_MINUS else 0.1
                 if mods & glfw.MOD_SHIFT:
@@ -716,7 +745,7 @@ class Renderer():
                 self.on_action(action)
 
     def on_action(self, action, message=None) -> bool:
-        if action in [Action.RenderAll, Action.RenderWorkarea]:
+        if action in [Action.RenderAll, Action.RenderWorkarea, Action.PreviewStoryboardReload]:
             self.reload_and_render(action)
             return True
         elif action in [Action.PreviewStoryboard]:
@@ -790,10 +819,11 @@ class Renderer():
                 kwargs["action"] = action.value
             kwargs["prefix"] = self.filepath.stem
             kwargs["fps"] = animation.timeline.fps
-            for client in echo_clients:
+            for k, client in self.server.connections.items():
                 client.sendMessage(json.dumps(kwargs))
     
     def process_ws_message(self, message):
+        print("MESSAGE", message)
         try:
             jdata = json.loads(message)
             action = jdata.get("action")
@@ -884,12 +914,13 @@ class Renderer():
             self.on_message({}, self.action_waiting)
             self.action_waiting = None
         
-        global echo_incoming
-        if len(echo_incoming) > 0:
-            for echo, msg in echo_incoming:
-                print("WS>>>", echo.address, msg)
-                self.process_ws_message(msg)
-            echo_incoming = []
+        for k, v in self.server.connections.items():
+            if hasattr(v, "messages") and len(v.messages) > 0:
+                #print(k, v.messages)
+                for msg in v.messages:
+                    print("WS>>>", v.address, msg)
+                    self.process_ws_message(msg)
+                v.messages = []
 
         self.monitor_midi()
         if len(self.waiting_to_render) > 0:
@@ -963,8 +994,11 @@ class Renderer():
         
         render, result, rp = waiter
         canvas.save()
+        canvas.translate(0, self.window_scrolly)
         canvas.translate(rect.x, rect.y)
+        canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
         canvas.scale(scale, scale)
+        #canvas.clear(render.bg.skia())
         render.draw_preview(1.0, canvas, render.rect, result, rp)
         if hasattr(render, "blank_renderable"):
             paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=0.5).skia())

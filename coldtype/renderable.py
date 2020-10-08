@@ -27,6 +27,7 @@ class Action(Enum):
     RenderWorkarea = "render_workarea"
     RenderIndices = "render_indices"
     PreviewStoryboard = "preview_storyboard"
+    PreviewStoryboardReload = "preview_storyboard_reload"
     PreviewPlay = "preview_play"
     PreviewIndices = "preview_indices"
     PreviewStoryboardNext = "preview_storyboard_next"
@@ -68,15 +69,14 @@ class renderable():
         self.layers = layers
         self.hidden = False
         self.rstate = rstate
+
         if not rasterizer:
             if self.fmt == "svg":
                 self.rasterizer = "svg"
+            elif self.fmt == "pickle":
+                self.rasterizer = "pickle"
             else:
-                system = platform.system()
-                if system == "Darwin":
-                    self.rasterizer = "drawbot"
-                else:
-                    self.rasterizer = "cairo"
+                self.rasterizer = "skia"
     
     def __call__(self, func):
         self.func = func
@@ -115,7 +115,6 @@ class renderable():
     
     def draw_preview(self, scale, canvas:skia.Canvas, rect, result, render_pass):
         sr = self.rect.scale(scale, "mnx", "mxx")
-        SkiaPen.CompositeToCanvas(DATPen().rect(sr).f(self.bg), sr, canvas)
         SkiaPen.CompositeToCanvas(result, sr, canvas, scale)
     
     def hide(self):
@@ -282,12 +281,15 @@ class animation(renderable, Timeable):
         elif action in [Action.RenderWorkarea]:
             if self.timeline:
                 try:
-                    frames = list(self.timeline.workareas[0])
+                    frames = self.workarea()
                 except:
                     frames = self.all_frames()
                 #if hasattr(self.timeline, "find_workarea"):
                 #    frames = self.timeline.find_workarea()
         return frames
+    
+    def workarea(self):
+        return list(self.timeline.workareas[0])
     
     def passes(self, action, layers, indices=[]):
         frames = self.active_frames(action, layers, indices)

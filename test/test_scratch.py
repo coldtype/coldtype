@@ -4,15 +4,11 @@ co = Font("assets/ColdtypeObviously.designspace")
 
 @renderable()
 def scratch(r):
-    ss = (StyledString("COLDTYPE",
-        Style(co, 150, tu=-50, ro=1, r=1, rotate=-10))
+    return (StyledString("COLDTYPE",
+        Style(co, 150, tu=-100, ro=1, r=1, rotate=-10))
         .pens()
         .align(r)
-        .rotate(15)
+        .rotate(5)
         .translate(0, 10)
-        .f(hsl(0.85))
-        #.s(0).sw(2)
-        .understroke(sw=20)
-        )
-    
-    return DATPenSet([ss])
+        .f(hsl(0.45))
+        .understroke(sw=20))

@@ -13,7 +13,7 @@ def uses_image(r):
             .f(None)
             .attr(image=dict(src=img, opacity=0.35, rect=Rect(0, 0, 125, 125))))])
 
-@renderable(rect=(250, 250))
+#@renderable(rect=(250, 250))
 def is_image(r):
     return DATPenSet([
         DATPen().oval(r.inset(5)).f(hsl(random())),
@@ -25,7 +25,7 @@ def is_image(r):
             .translate(0, 10)
             .f(1))])
 
-@renderable(rect=(500, 500))
+#@renderable(rect=(500, 500))
 def uses_shadow(r):
     return DATPenSet([
         (DATPen()
