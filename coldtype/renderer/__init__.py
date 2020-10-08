@@ -413,6 +413,8 @@ class Renderer():
                 result = render.package(self.filepath, self.render_to_output_folder(render))
                 if result:
                     self.previews_waiting_to_paint.append([render, result, None])
+                else:
+                    self.action_waiting = Action.PreviewStoryboard
 
             self.send_to_external(None, rendered=True)
 

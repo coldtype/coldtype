@@ -156,8 +156,10 @@ class DATPenLikeObject():
         """Return a new DATPen representation of the frame of this DATPen."""
         return DATPen(fill=("random", 0.25)).rect(self.getFrame(th=th, tv=tv))
     
-    def translate(self, x, y, transformFrame=True):
+    def translate(self, x, y=None, transformFrame=True):
         """Translate this shape by `x` and `y` (pixel values)."""
+        if y is None:
+            y = x
         return self.transform(Transform(1, 0, 0, 1, x, y), transformFrame=transformFrame)
     
     def scale(self, scaleX, scaleY=None, center=None):
