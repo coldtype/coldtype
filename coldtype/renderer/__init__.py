@@ -696,6 +696,8 @@ class Renderer():
                 self.on_action(Action.RenderedPlay)
                 #else:
                 #    self.on_action(Action.PreviewPlay)
+            elif key == glfw.KEY_ENTER:
+                self.on_action(Action.PreviewStoryboardReload)
             elif key in [glfw.KEY_MINUS, glfw.KEY_EQUAL]:
                 inc = -0.1 if key == glfw.KEY_MINUS else 0.1
                 if mods & glfw.MOD_SHIFT:

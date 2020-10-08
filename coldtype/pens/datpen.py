@@ -305,7 +305,7 @@ class DATPenLikeObject():
         img = pen_class.Precompose(self, rect)
         return DATPen().rect(rect).attr(image=dict(src=img, rect=rect)).f(None)
     
-    def potrace(self, pen_class, rect, *args, invert=True):
+    def potrace(self, pen_class, rect, poargs, invert=True):
         import skia
         from PIL import Image
         from pathlib import Path
@@ -319,7 +319,7 @@ class DATPenLikeObject():
             rargs = ["bin/potrace", "-s"]
             if invert:
                 rargs.append("--invert")
-            rargs.extend([str(x) for x in args])
+            rargs.extend([str(x) for x in poargs])
             rargs.extend(["-o", "-", "--", tmp_bmp.name])
             print(">>>", " ".join(rargs))
             result = run(rargs, capture_output=True)
