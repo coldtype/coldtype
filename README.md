@@ -1,6 +1,4 @@
-🌋 _Hello! Not sure how you got here unless I gave you the link personally — if I didn’t, you’re welcome to look around, but know that this is alpha-quality software that’s mostly undocumented._ 🌋
-
-__⚠️ Our intention is to ultimately make this library a proper, useable, open-source project, but for the moment — though it is publicly viewable — we are not publicizing it and it is under active development. ⚠️__
+__⚠️🌋 Please be aware this code is alpha-quality; the API is subject to change; documentation is sparse 🌋⚠️__
 
 ---
 
@@ -42,6 +40,7 @@ def render(r):
 - Install a Python >= 3.8
 
 ## If you want to try coldtype in the coldtype repo itself:
+
 - Clone this repository
 - `cd` into the the cloned coldtype repository
 - Create a virtual environment, ala `python3.8 -m venv venv --prompt=coldtype` on the command line
@@ -58,7 +57,9 @@ You can also try running some tests, like:
 With that window open, try hitting the arrow keys to go backward and forward in time.
 
 ## If you want to try coldtype in a blank virtual environment
+
 Using a virtualenv (based on a python >= 3.8) (aka `python3.8 -m venv venv --prompt=<your prompt here>` + `source venv/bin/activate`):
+
 - `pip install coldtype`
 - `coldtype`
 
