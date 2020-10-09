@@ -305,7 +305,7 @@ class DATPenLikeObject():
         img = pen_class.Precompose(self, rect)
         return DATPen().rect(rect).attr(image=dict(src=img, rect=rect)).f(None)
     
-    def potrace(self, pen_class, rect, *args, invert=True):
+    def potrace(self, pen_class, rect, poargs=[], invert=True):
         import skia
         from PIL import Image
         from pathlib import Path
@@ -314,12 +314,16 @@ class DATPenLikeObject():
 
         img = pen_class.Precompose(self, rect)
         pilimg = Image.fromarray(img.convert(alphaType=skia.kUnpremul_AlphaType))
+        binpo = Path("bin/potrace")
+        if not binpo.exists():
+            binpo = Path(__file__).parent.parent.parent / "bin/potrace"
+
         with tempfile.NamedTemporaryFile(prefix="coldtype_tmp", suffix=".bmp") as tmp_bmp:
             pilimg.save(tmp_bmp.name)
-            rargs = ["bin/potrace", "-s"]
+            rargs = [str(binpo), "-s"]
             if invert:
                 rargs.append("--invert")
-            rargs.extend([str(x) for x in args])
+            rargs.extend([str(x) for x in poargs])
             rargs.extend(["-o", "-", "--", tmp_bmp.name])
             print(">>>", " ".join(rargs))
             result = run(rargs, capture_output=True)
@@ -328,7 +332,7 @@ class DATPenLikeObject():
             svgp = SVGPath.fromstring(result.stdout, transform=t)
             dp = DATPen()
             svgp.draw(dp)
-            return dp
+            return dp.f(0)
 
 
 class DATPen(RecordingPen, DATPenLikeObject):
@@ -553,6 +557,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     def _pathop(self, otherPen=None, operation=BooleanOp.XOR):
         self.value = calculate_pathop(self, otherPen, operation)
+        return self
+    
+    def noop(self, *args, **kwargs):
+        """Does nothing"""
         return self
     
     def difference(self, otherPen):
