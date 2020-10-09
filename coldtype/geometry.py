@@ -424,7 +424,10 @@ class Rect():
         return "<furn-Rect" + str(self.rect()) + ">"
     
     def __eq__(self, r):
-        return all([self.x == r.x, self.y == r.y, self.w == r.w, self.h == r.h])
+        try:
+            return all([self.x == r.x, self.y == r.y, self.w == r.w, self.h == r.h])
+        except:
+            return False
     
     __hash__ = object.__hash__
 
