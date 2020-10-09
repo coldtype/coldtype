@@ -50,6 +50,8 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             method, *args = attr
             if method == "skp":
                 skia_paint_kwargs = args[0]
+                if "AntiAlias" not in skia_paint_kwargs:
+                    skia_paint_kwargs["AntiAlias"] = True
 
         for attrs, attr in all_attrs:
             self.paint = skia.Paint(**skia_paint_kwargs)
