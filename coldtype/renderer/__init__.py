@@ -200,7 +200,9 @@ class Renderer():
         else:
             try:
                 self.state.reset()
-                self.program = run_path(str(self.filepath))
+                self.program = run_path(str(self.filepath), init_globals={
+                    "__CONTEXT__": self.context,
+                })
                 for k, v in self.program.items():
                     if isinstance(v, coldtype.text.reader.Font) and not v.cacheable:
                         if v.path not in self.watchee_paths():
@@ -479,7 +481,7 @@ class Renderer():
             from coldtype.pens.drawbotpen import DrawBotPen
             DrawBotPen.Composite(content, render.rect, str(path), scale=scale)
         elif rasterizer == "skia":
-            SkiaPen.Composite(content, render.rect, str(path), scale=scale)
+            SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=self.context)
         elif rasterizer == "svg":
             from coldtype.pens.svgpen import SVGPen
             path.write_text(SVGPen.Composite(content, render.rect, viewBox=True))

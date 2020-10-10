@@ -125,9 +125,13 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         #self.paint.setBlendMode(skia.BlendMode.kClear)
         return
     
-    def Composite(pens, rect, save_to, scale=1):
-        #rect = rect.scale(scale)
-        surface = skia.Surface(rect.w, rect.h)
+    def Composite(pens, rect, save_to, scale=1, context=None):
+        if context:
+            info = skia.ImageInfo.MakeN32Premul(rect.w, rect.h)
+            surface = skia.Surface.MakeRenderTarget(context, skia.Budgeted.kNo, info)
+        else:
+            surface = skia.Surface(rect.w, rect.h)
+
         with surface as canvas:
             SkiaPen.CompositeToCanvas(pens, rect, canvas, scale=scale)
 
@@ -148,8 +152,13 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         for dps in pens:
             dps.walk(draw)
     
-    def Precompose(pens, rect, fmt=None):
-        surface = skia.Surface(rect.w, rect.h)
+    def Precompose(pens, rect, fmt=None, context=None):
+        if context:
+            info = skia.ImageInfo.MakeN32Premul(rect.w, rect.h)
+            surface = skia.Surface.MakeRenderTarget(context, skia.Budgeted.kNo, info)
+        else:
+            surface = skia.Surface(rect.w, rect.h)
+        
         with surface as canvas:
             SkiaPen.CompositeToCanvas(pens, rect, canvas)
         return surface.makeImageSnapshot()

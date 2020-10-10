@@ -301,18 +301,18 @@ class DATPenLikeObject():
             print("DrawBot not installed!")
             return self
     
-    def precompose(self, pen_class, rect):
-        img = pen_class.Precompose(self, rect)
+    def precompose(self, pen_class, rect, context=None):
+        img = pen_class.Precompose(self, rect, context=context)
         return DATPen().rect(rect).attr(image=dict(src=img, rect=rect)).f(None)
     
-    def potrace(self, pen_class, rect, poargs=[], invert=True):
+    def potrace(self, pen_class, rect, poargs=[], invert=True, context=None):
         import skia
         from PIL import Image
         from pathlib import Path
         from subprocess import run
         from fontTools.svgLib import SVGPath
 
-        img = pen_class.Precompose(self, rect)
+        img = pen_class.Precompose(self, rect, context=context)
         pilimg = Image.fromarray(img.convert(alphaType=skia.kUnpremul_AlphaType))
         binpo = Path("bin/potrace")
         if not binpo.exists():
