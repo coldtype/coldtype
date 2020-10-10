@@ -325,7 +325,8 @@ class DATPenLikeObject():
                 rargs.append("--invert")
             rargs.extend([str(x) for x in poargs])
             rargs.extend(["-o", "-", "--", tmp_bmp.name])
-            print(">>>", " ".join(rargs))
+            if False:
+                print(">>>", " ".join(rargs))
             result = run(rargs, capture_output=True)
             t = Transform()
             t = t.scale(0.1, 0.1)

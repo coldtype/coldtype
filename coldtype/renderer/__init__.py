@@ -199,6 +199,7 @@ class Renderer():
             pass # ?
         else:
             try:
+                print("CONTEXT", self.context)
                 self.state.reset()
                 self.program = run_path(str(self.filepath), init_globals={
                     "__CONTEXT__": self.context,
@@ -538,6 +539,71 @@ class Renderer():
         if self.args.show_exit_code:
             print("exit>", self.exit_code)
         sys.exit(self.exit_code)
+    
+    def initialize_gui_and_server(self):
+        self.server = echo_server()
+
+        if not glfw.init():
+            raise RuntimeError('glfw.init() failed')
+        glfw.window_hint(glfw.STENCIL_BITS, 8)
+
+        if self.py_config.get("WINDOW_BACKGROUND"):
+            glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
+        if self.py_config.get("WINDOW_FLOAT"):
+            glfw.window_hint(glfw.FLOATING, glfw.TRUE)
+        
+        self.window = glfw.create_window(int(50), int(50), '', None, None)
+        self.window_scrolly = 0
+
+        if o := self.py_config.get("WINDOW_OPACITY"):
+            glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
+        
+        self._prev_scale = glfw.get_window_content_scale(self.window)[0]
+        
+        glfw.make_context_current(self.window)
+        glfw.set_key_callback(self.window, self.on_key)
+        glfw.set_scroll_callback(self.window, self.on_scroll)
+
+        try:
+            midiin = rtmidi.RtMidiIn()
+            lookup = {}
+            self.midis = []
+            for p in range(midiin.getPortCount()):
+                lookup[midiin.getPortName(p)] = p
+
+            for device, mapping in self.midi_mapping.items():
+                if device in lookup:
+                    mapping["port"] = lookup[device]
+                    mi = rtmidi.RtMidiIn()
+                    mi.openPort(lookup[device])
+                    self.midis.append([device, mi])
+                else:
+                    print(f">>> no midi port found with that name ({device}) <<<")
+        except:
+            self.midis = []
+        
+        self.context = skia.GrDirectContext.MakeGL()
+
+        self.watch_file_changes()
+        if len(self.watchees) > 0:
+            glfw.set_window_title(self.window, self.watchees[0][1].name)
+        else:
+            glfw.set_window_title(self.window, "coldtype")
+
+        self.hotkeys = None
+        try:
+            if self.hotkey_mapping:
+                from pynput import keyboard
+                mapping = {}
+                for k, v in self.hotkey_mapping.items():
+                    mapping[k] = partial(self.on_hotkey, k, v)
+                #self.hotkeys = keyboard.GlobalHotKeys({
+                #    "<cmd>+<f8>": self.on_hotkey
+                #})
+                self.hotkeys = keyboard.GlobalHotKeys(mapping)
+                self.hotkeys.start()
+        except:
+            pass
 
     def start(self):
         if self.args.version:
@@ -561,31 +627,7 @@ class Renderer():
             should_halt = self.before_start()
         
         if self.args.watch:
-            self.server = echo_server()
-
-            if not glfw.init():
-                raise RuntimeError('glfw.init() failed')
-            glfw.window_hint(glfw.STENCIL_BITS, 8)
-
-            if self.py_config.get("WINDOW_BACKGROUND"):
-                glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
-            if self.py_config.get("WINDOW_FLOAT"):
-                glfw.window_hint(glfw.FLOATING, glfw.TRUE)
-            
-            self.window = glfw.create_window(int(50), int(50), '', None, None)
-            self.window_scrolly = 0
-
-            if o := self.py_config.get("WINDOW_OPACITY"):
-                glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
-            
-            self._prev_scale = glfw.get_window_content_scale(self.window)[0]
-            
-            glfw.make_context_current(self.window)
-            glfw.set_key_callback(self.window, self.on_key)
-            glfw.set_scroll_callback(self.window, self.on_scroll)
-
-            self.last_rect = Rect(0, 0, 50, 50)
-            self.create_backing_context(self.last_rect)
+            self.initialize_gui_and_server()
         else:
             self.window = None
             self.server = None
@@ -605,45 +647,6 @@ class Renderer():
                     return
             self.on_start()
             if self.args.watch:
-                try:
-                    midiin = rtmidi.RtMidiIn()
-                    lookup = {}
-                    self.midis = []
-                    for p in range(midiin.getPortCount()):
-                        lookup[midiin.getPortName(p)] = p
-
-                    for device, mapping in self.midi_mapping.items():
-                        if device in lookup:
-                            mapping["port"] = lookup[device]
-                            mi = rtmidi.RtMidiIn()
-                            mi.openPort(lookup[device])
-                            self.midis.append([device, mi])
-                        else:
-                            print(f">>> no midi port found with that name ({device}) <<<")
-                except:
-                    self.midis = []
-
-                self.watch_file_changes()
-                if len(self.watchees) > 0:
-                    glfw.set_window_title(self.window, self.watchees[0][1].name)
-                else:
-                    glfw.set_window_title(self.window, "coldtype")
-
-                self.hotkeys = None
-                try:
-                    if self.hotkey_mapping:
-                        from pynput import keyboard
-                        mapping = {}
-                        for k, v in self.hotkey_mapping.items():
-                            mapping[k] = partial(self.on_hotkey, k, v)
-                        #self.hotkeys = keyboard.GlobalHotKeys({
-                        #    "<cmd>+<f8>": self.on_hotkey
-                        #})
-                        self.hotkeys = keyboard.GlobalHotKeys(mapping)
-                        self.hotkeys.start()
-                except:
-                    pass
-
                 self.listen_to_glfw()
             else:
                 self.on_exit()
@@ -912,11 +915,8 @@ class Renderer():
     def preview_scale(self):
         return self._preview_scale
     
-    def create_backing_context(self, rect):
-        print("NEW BACKING CONTEXT", rect)
-        if self.context:
-            self.context.abandonContext()
-        self.context = skia.GrDirectContext.MakeGL()
+    def create_surface(self, rect):
+        print("NEW SURFACE", rect)
         backend_render_target = skia.GrBackendRenderTarget(
             int(rect.w), int(rect.h), 0, 0,
             skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
@@ -965,10 +965,8 @@ class Renderer():
             h -= 1
             
             frect = Rect(0, 0, w, h)
-            if not self.context:
-                self.create_backing_context(frect)
-            elif frect != self.last_rect:
-                self.create_backing_context(frect)
+            if frect != self.last_rect:
+                self.create_surface(frect)
 
             if not self.last_rect or frect != self.last_rect:
                 if m_scale := self.py_config.get("WINDOW_SCALE"):
