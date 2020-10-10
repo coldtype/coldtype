@@ -40,6 +40,7 @@ class Action(Enum):
     ClearControllers = "clear_controllers"
     ResetControllers = "reset_controllers"
     RestartRenderer = "restart_renderer"
+    ToggleMultiplex = "toggle_multiplex"
     Kill = "kill"
 
 

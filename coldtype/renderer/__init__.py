@@ -172,7 +172,9 @@ class Renderer():
         self.hotkeys = None
         self.context = None
         self.surface = None
+
         self._preview_scale = self.args.preview_scale
+        self.multiplexing = self.args.multiplex
         self._should_reload = False
     
     def reset_filepath(self, filepath):
@@ -199,7 +201,7 @@ class Renderer():
             pass # ?
         else:
             try:
-                print("CONTEXT", self.context)
+                #print("CONTEXT", self.context)
                 self.state.reset()
                 self.program = run_path(str(self.filepath), init_globals={
                     "__CONTEXT__": self.context,
@@ -392,7 +394,7 @@ class Renderer():
                 self.exit_code = 5 # mark as child-process
                 return p, r
         
-        elif self.args.multiplex:
+        elif self.multiplexing:
             if trigger in [Action.RenderAll, Action.RenderWorkarea]:
                 all_frames = self.animation().all_frames()
                 if trigger == Action.RenderAll:
@@ -732,6 +734,8 @@ class Renderer():
                 self._should_reload = True
             elif key == glfw.KEY_A:
                 self.on_action(Action.RenderAll)
+            elif key == glfw.KEY_M:
+                self.on_action(Action.ToggleMultiplex)
     
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
@@ -813,6 +817,9 @@ class Renderer():
         elif action == Action.Kill:
             os.kill(os.getpid(), signal.SIGINT)
             #self.on_exit(restart=False)
+        elif action == Action.ToggleMultiplex:
+            self.multiplexing = not self.multiplexing
+            print(">>> MULTIPLEXING?", self.multiplexing)
         elif message.get("serialization"):
             ptime.sleep(1)
             self.reload(Action.Resave)
