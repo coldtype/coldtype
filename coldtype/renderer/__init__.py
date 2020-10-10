@@ -494,6 +494,15 @@ class Renderer():
             raise Exception(f"rasterizer ({rasterizer}) not supported")
     
     def reload_and_render(self, trigger, watchable=None, indices=None):
+        if self.args.is_subprocess:
+            if not glfw.init():
+                raise RuntimeError('glfw.init() failed')
+            glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
+            glfw.window_hint(glfw.STENCIL_BITS, 8)
+            window = glfw.create_window(640, 480, '', None, None)
+            glfw.make_context_current(window)
+            self.context = skia.GrDirectContext.MakeGL()
+
         wl = len(self.watchees)
         self.window_scrolly = 0
 
@@ -574,6 +583,9 @@ class Renderer():
             glfw.make_context_current(self.window)
             glfw.set_key_callback(self.window, self.on_key)
             glfw.set_scroll_callback(self.window, self.on_scroll)
+
+            self.last_rect = Rect(0, 0, 50, 50)
+            self.create_backing_context(self.last_rect)
         else:
             self.window = None
             self.server = None
