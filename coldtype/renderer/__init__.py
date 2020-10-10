@@ -688,9 +688,11 @@ class Renderer():
     def on_key(self, win, key, scan, action, mods):
         if action == glfw.PRESS:
             if key == glfw.KEY_LEFT:
-                self.on_action(Action.PreviewStoryboardPrev)
+                self.action_waiting = Action.PreviewStoryboardPrev
+                #self.on_action(Action.PreviewStoryboardPrev)
             elif key == glfw.KEY_RIGHT:
-                self.on_action(Action.PreviewStoryboardNext)
+                self.action_waiting = Action.PreviewStoryboardNext
+                #self.on_action(Action.PreviewStoryboardNext)
             elif key == glfw.KEY_DOWN:
                 if mods & glfw.MOD_SUPER:
                     o = glfw.get_window_opacity(self.window)
@@ -911,6 +913,7 @@ class Renderer():
         return self._preview_scale
     
     def create_backing_context(self, rect):
+        print("NEW BACKING CONTEXT", rect)
         if self.context:
             self.context.abandonContext()
         self.context = skia.GrDirectContext.MakeGL()
@@ -927,7 +930,9 @@ class Renderer():
     
     def turn_over(self):
         if self.action_waiting:
-            self.on_message({}, self.action_waiting)
+            print("WAITING", self.action_waiting)
+            #self.on_message({}, self.action_waiting)
+            self.on_action(self.action_waiting)
             self.action_waiting = None
         
         for k, v in self.server.connections.items():

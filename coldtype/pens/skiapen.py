@@ -154,8 +154,10 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
     
     def Precompose(pens, rect, fmt=None, context=None):
         if context:
+            print("HERE!", context, rect)
             info = skia.ImageInfo.MakeN32Premul(rect.w, rect.h)
             surface = skia.Surface.MakeRenderTarget(context, skia.Budgeted.kNo, info)
+            assert surface is not None
         else:
             surface = skia.Surface(rect.w, rect.h)
         
