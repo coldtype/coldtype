@@ -35,7 +35,6 @@ class Action(Enum):
     RenderedPlay = "rendered_play"
     ArbitraryTyping = "arbitrary_typing"
     ArbitraryCommand = "arbitrary_command"
-    UICallback = "ui_callback"
     SaveControllers = "save_controllers"
     ClearControllers = "clear_controllers"
     ResetControllers = "reset_controllers"
@@ -55,7 +54,22 @@ class RenderPass():
 
 
 class renderable():
-    def __init__(self, rect=(1080, 1080), bg="whitesmoke", fmt="png", rasterizer=None, prefix=None, dst=None, custom_folder=None, postfn=None, watch=[], layers=[], ui_callback=None, rstate=False):
+    def __init__(self,
+        rect=(1080, 1080),
+        bg="whitesmoke",
+        fmt="png",
+        rasterizer=None,
+        prefix=None,
+        dst=None,
+        custom_folder=None,
+        postfn=None,
+        watch=[],
+        layers=[],
+        solo=False,
+        rstate=False,
+        preview_only=False):
+        """Base configuration for a renderable function"""
+
         self.rect = Rect(rect)
         self.bg = normalize_color(bg)
         self.fmt = fmt
@@ -63,12 +77,13 @@ class renderable():
         self.dst = Path(dst).expanduser().resolve() if dst else None
         self.custom_folder = custom_folder
         self.postfn = postfn
-        self.ui_callback = ui_callback
         self.watch = [Path(w).expanduser().resolve() for w in watch]
         self.rasterizer = rasterizer
         self.self_rasterizing = False
         self.layers = layers
-        self.hidden = False
+        self.hidden = solo == -1
+        self.solo = solo
+        self.preview_only = preview_only
         self.rstate = rstate
 
         if not rasterizer:

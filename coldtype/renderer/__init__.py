@@ -11,6 +11,7 @@ from random import shuffle, Random
 from runpy import run_path
 from subprocess import call, Popen
 from functools import partial
+from more_itertools import distribute
 
 import skia, coldtype
 from coldtype.helpers import *
@@ -240,9 +241,18 @@ class Renderer():
         for k, v in self.program.items():
             if isinstance(v, renderable) and not v.hidden:
                 _rs.append(v)
+        
+        for r in _rs:
+            output_folder = self.render_to_output_folder(r)
+            r.output_folder = output_folder
+
+        if any([r.solo for r in _rs]):
+            _rs = [r for r in _rs if r.solo]
+            
         if self.args.filter_functions:
             function_names = [f.strip() for f in self.args.filter_functions.split(",")]
             _rs = [r for r in _rs if r.func.__name__ in function_names]
+        
         if self.args.monitor_lines and trigger != Action.RenderAll:
             func_name = file_and_line_to_def(self.filepath, self.line_number)
             matches = [r for r in _rs if r.func.__name__ == func_name]
@@ -362,6 +372,8 @@ class Renderer():
                                             self.rasterize(layer_result, render, output_path)
                                             print(">>> saved layer...", str(output_path.relative_to(Path.cwd())))
                             else:
+                                if render.preview_only:
+                                    continue
                                 render_count += 1
                                 output_path.parent.mkdir(exist_ok=True, parents=True)
                                 if render.self_rasterizing:
@@ -427,11 +439,16 @@ class Renderer():
     
     def render_multiplexed(self, frames):
         start = ptime.time()
+
+        print("TC", self.args.thread_count)
         
         group = math.floor(len(frames) / self.args.thread_count)
         ordered_frames = list(frames) #list(range(frames[0], frames[0]+len(frames)))
         shuffle(ordered_frames)
-        subslices = list(chunks(ordered_frames, group))
+        #subslices = list(chunks(ordered_frames, group))
+        subslices = [list(s) for s in distribute(self.args.thread_count, ordered_frames)]
+
+        print(subslices)
         
         self.reset_renderers()
         self.running_renderers = []
@@ -800,10 +817,6 @@ class Renderer():
         elif action == Action.ArbitraryCommand:
             self.on_stdin(message.get("input"))
             return True
-        elif action == Action.UICallback:
-            for render in self.renderables(action):
-                if render.ui_callback:
-                    render.ui_callback(message)
         elif action == Action.SaveControllers:
             self.state.persist()
         elif action == Action.ClearControllers:

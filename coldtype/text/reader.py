@@ -160,6 +160,9 @@ class Style():
         self.input = locals()
         self.input["self"] = None
 
+        if isinstance(font, Path):
+            font = str(font)
+
         if isinstance(font, str):
             self.font:Font = Font(font)
             if isinstance(self.font.font, OTFFont):
