@@ -64,8 +64,9 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 pass
             else:
                 canvas.save()
-                self.applyDATAttribute(attrs, attr)
-                canvas.drawPath(self.path, self.paint)
+                did_draw = self.applyDATAttribute(attrs, attr)
+                if not did_draw:
+                    canvas.drawPath(self.path, self.paint)
                 canvas.restore()
     
     def fill(self, color):
@@ -88,19 +89,29 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
     def gradient(self, gradient):
         self.paint.setShader(skia.GradientShader.MakeLinear([s[1].xy() for s in gradient.stops], [s[0].skia() for s in gradient.stops]))
     
-    def image(self, src=None, opacity=1, rect=None):
+    def image(self, src=None, opacity=1, rect=None, pattern=True):
         if isinstance(src, skia.Image):
             image = src
         else:
             image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(src)))
-        _, _, iw, ih = image.bounds()
-        matrix = skia.Matrix()
-        matrix.setScale(rect.w / iw, rect.h / ih)
-        self.paint.setShader(image.makeShader(
-            skia.TileMode.kRepeat,
-            skia.TileMode.kRepeat,
-            matrix
-        ))
+        
+        if not pattern:
+            bx, by, bw, bh = self.path.getBounds()
+            #self.canvas.clipPath(self.path, doAntiAlias=True)
+            self.canvas.drawImage(image, bx, by)
+            return True
+        
+        if pattern:
+            _, _, iw, ih = image.bounds()
+            matrix = skia.Matrix()
+            matrix.setTranslate(200, 500)
+            #matrix.setScale(rect.w / iw, rect.h / ih)
+            self.paint.setShader(image.makeShader(
+                skia.TileMode.kRepeat,
+                skia.TileMode.kRepeat,
+                matrix
+            ))
+        
         if opacity != 1:
             tf = skia.ColorFilters.Matrix([
                 1, 0, 0, 0, 0,

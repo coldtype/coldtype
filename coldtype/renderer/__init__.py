@@ -406,7 +406,7 @@ class Renderer():
                 self.exit_code = 5 # mark as child-process
                 return p, r
         
-        elif self.multiplexing:
+        elif self.multiplexing and self.animation():
             if trigger in [Action.RenderAll, Action.RenderWorkarea]:
                 all_frames = self.animation().all_frames()
                 if trigger == Action.RenderAll:
