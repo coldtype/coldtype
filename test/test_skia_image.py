@@ -11,7 +11,11 @@ def uses_image(r):
         (DATPen()
             .oval(r.inset(20))
             .f(None)
-            .attr(image=dict(src=img, opacity=0.35, rect=Rect(0, 0, 125, 125))))])
+            .attr(image=dict(
+                src=img,
+                opacity=0.35,
+                pattern=False,
+                rect=r.inset(100))))])
 
 #@renderable(rect=(250, 250))
 def is_image(r):

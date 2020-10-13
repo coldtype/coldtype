@@ -64,8 +64,9 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 pass
             else:
                 canvas.save()
-                self.applyDATAttribute(attrs, attr)
-                canvas.drawPath(self.path, self.paint)
+                did_draw = self.applyDATAttribute(attrs, attr)
+                if not did_draw:
+                    canvas.drawPath(self.path, self.paint)
                 canvas.restore()
     
     def fill(self, color):
@@ -88,19 +89,22 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
     def gradient(self, gradient):
         self.paint.setShader(skia.GradientShader.MakeLinear([s[1].xy() for s in gradient.stops], [s[0].skia() for s in gradient.stops]))
     
-    def image(self, src=None, opacity=1, rect=None):
+    def image(self, src=None, opacity=1, rect=None, pattern=True):
         if isinstance(src, skia.Image):
             image = src
         else:
             image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(src)))
-        _, _, iw, ih = image.bounds()
-        matrix = skia.Matrix()
-        matrix.setScale(rect.w / iw, rect.h / ih)
-        self.paint.setShader(image.makeShader(
-            skia.TileMode.kRepeat,
-            skia.TileMode.kRepeat,
-            matrix
-        ))
+        
+        if pattern:
+            _, _, iw, ih = image.bounds()
+            matrix = skia.Matrix()
+            matrix.setScale(rect.w / iw, rect.h / ih)
+            self.paint.setShader(image.makeShader(
+                skia.TileMode.kRepeat,
+                skia.TileMode.kRepeat,
+                matrix
+            ))
+        
         if opacity != 1:
             tf = skia.ColorFilters.Matrix([
                 1, 0, 0, 0, 0,
@@ -113,6 +117,16 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                     tf, cf))
             else:
                 self.paint.setColorFilter(tf)
+        
+        if not pattern:
+            bx, by, bw, bh = self.path.getBounds()
+            if rect:
+                rx, ry = rect.flip(self.rect.h).xy()
+                bx += rx
+                by += ry
+            self.canvas.clipPath(self.path, doAntiAlias=True)
+            self.canvas.drawImage(image, bx, by, self.paint)
+            return True
     
     def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
         if clip:
@@ -130,6 +144,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             info = skia.ImageInfo.MakeN32Premul(rect.w, rect.h)
             surface = skia.Surface.MakeRenderTarget(context, skia.Budgeted.kNo, info)
         else:
+            print("CPU RENDER")
             surface = skia.Surface(rect.w, rect.h)
 
         with surface as canvas:
@@ -156,7 +171,9 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         if context:
             info = skia.ImageInfo.MakeN32Premul(rect.w, rect.h)
             surface = skia.Surface.MakeRenderTarget(context, skia.Budgeted.kNo, info)
+            assert surface is not None
         else:
+            print("CPU PRECOMPOSE")
             surface = skia.Surface(rect.w, rect.h)
         
         with surface as canvas:

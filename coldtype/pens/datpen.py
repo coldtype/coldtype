@@ -305,6 +305,9 @@ class DATPenLikeObject():
         img = pen_class.Precompose(self, rect, context=context)
         return DATPen().rect(rect).attr(image=dict(src=img, rect=rect)).f(None)
     
+    def rasterized(self, pen_class, rect, context=None):
+        return pen_class.Precompose(self, rect, context=context)
+    
     def potrace(self, pen_class, rect, poargs=[], invert=True, context=None):
         import skia
         from PIL import Image
@@ -325,7 +328,8 @@ class DATPenLikeObject():
                 rargs.append("--invert")
             rargs.extend([str(x) for x in poargs])
             rargs.extend(["-o", "-", "--", tmp_bmp.name])
-            print(">>>", " ".join(rargs))
+            if False:
+                print(">>>", " ".join(rargs))
             result = run(rargs, capture_output=True)
             t = Transform()
             t = t.scale(0.1, 0.1)

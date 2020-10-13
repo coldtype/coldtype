@@ -13,20 +13,20 @@ class DrawablePenMixin(object):
     def shadow(self, el, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
         raise Exception("Pen does not implement shadow function")
 
-    def image(self, el, src=None, opacity=None, rect=None):
+    def image(self, el, src=None, opacity=None, rect=None, pattern=True):
         raise Exception("Pen does not implement image function")
 
     def applyDATAttribute(self, attrs, attribute):
         k, v = attribute
         if v:
             if k == "shadow":
-                self.shadow(**v)
+                return self.shadow(**v)
             elif k == "fill":
-                self.fill(v)
+                return self.fill(v)
             elif k == "stroke":
-                self.stroke(**v, dash=attrs.get("dash"))
+                return self.stroke(**v, dash=attrs.get("dash"))
             elif k == "image":
-                self.image(**v)
+                return self.image(**v)
     
     def findStyledAttrs(self, style):
         if style and style in self.dat.attrs:
