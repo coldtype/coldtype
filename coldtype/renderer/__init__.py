@@ -75,6 +75,8 @@ class Renderer():
             rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default=None, choices=["drawbot", "cairo", "svg", "skia", "pickle"], help="Which rasterization engine should coldtype use to create artifacts?"),
 
             raster_previews=parser.add_argument("-rp", "--raster-previews", action="store_true", default=False, help="Should rasters be displayed in the Coldtype viewer?"),
+
+            cpu_render=parser.add_argument("-cpu", "--cpu-render", action="store_true", default=False, help="Should final rasters be performed without a GPU context?"),
             
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
 
@@ -501,7 +503,7 @@ class Renderer():
             from coldtype.pens.drawbotpen import DrawBotPen
             DrawBotPen.Composite(content, render.rect, str(path), scale=scale)
         elif rasterizer == "skia":
-            SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=self.context)
+            SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=None if self.args.cpu_render else self.context)
         elif rasterizer == "svg":
             from coldtype.pens.svgpen import SVGPen
             path.write_text(SVGPen.Composite(content, render.rect, viewBox=True))
