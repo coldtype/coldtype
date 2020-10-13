@@ -50,6 +50,8 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             method, *args = attr
             if method == "skp":
                 skia_paint_kwargs = args[0]
+                if "AntiAlias" not in skia_paint_kwargs:
+                    skia_paint_kwargs["AntiAlias"] = True
 
         for attrs, attr in all_attrs:
             self.paint = skia.Paint(**skia_paint_kwargs)
@@ -62,8 +64,9 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 pass
             else:
                 canvas.save()
-                self.applyDATAttribute(attrs, attr)
-                canvas.drawPath(self.path, self.paint)
+                did_draw = self.applyDATAttribute(attrs, attr)
+                if not did_draw:
+                    canvas.drawPath(self.path, self.paint)
                 canvas.restore()
     
     def fill(self, color):
@@ -86,19 +89,22 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
     def gradient(self, gradient):
         self.paint.setShader(skia.GradientShader.MakeLinear([s[1].xy() for s in gradient.stops], [s[0].skia() for s in gradient.stops]))
     
-    def image(self, src=None, opacity=1, rect=None):
+    def image(self, src=None, opacity=1, rect=None, pattern=True):
         if isinstance(src, skia.Image):
             image = src
         else:
             image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(src)))
-        _, _, iw, ih = image.bounds()
-        matrix = skia.Matrix()
-        matrix.setScale(rect.w / iw, rect.h / ih)
-        self.paint.setShader(image.makeShader(
-            skia.TileMode.kRepeat,
-            skia.TileMode.kRepeat,
-            matrix
-        ))
+        
+        if pattern:
+            _, _, iw, ih = image.bounds()
+            matrix = skia.Matrix()
+            matrix.setScale(rect.w / iw, rect.h / ih)
+            self.paint.setShader(image.makeShader(
+                skia.TileMode.kRepeat,
+                skia.TileMode.kRepeat,
+                matrix
+            ))
+        
         if opacity != 1:
             tf = skia.ColorFilters.Matrix([
                 1, 0, 0, 0, 0,
@@ -111,6 +117,16 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                     tf, cf))
             else:
                 self.paint.setColorFilter(tf)
+        
+        if not pattern:
+            bx, by, bw, bh = self.path.getBounds()
+            if rect:
+                rx, ry = rect.flip(self.rect.h).xy()
+                bx += rx
+                by += ry
+            self.canvas.clipPath(self.path, doAntiAlias=True)
+            self.canvas.drawImage(image, bx, by, self.paint)
+            return True
     
     def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
         if clip:
@@ -123,9 +139,14 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         #self.paint.setBlendMode(skia.BlendMode.kClear)
         return
     
-    def Composite(pens, rect, save_to, scale=1):
-        #rect = rect.scale(scale)
-        surface = skia.Surface(rect.w, rect.h)
+    def Composite(pens, rect, save_to, scale=1, context=None):
+        if context:
+            info = skia.ImageInfo.MakeN32Premul(rect.w, rect.h)
+            surface = skia.Surface.MakeRenderTarget(context, skia.Budgeted.kNo, info)
+        else:
+            print("CPU RENDER")
+            surface = skia.Surface(rect.w, rect.h)
+
         with surface as canvas:
             SkiaPen.CompositeToCanvas(pens, rect, canvas, scale=scale)
 
@@ -146,8 +167,15 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         for dps in pens:
             dps.walk(draw)
     
-    def Precompose(pens, rect, fmt=None):
-        surface = skia.Surface(rect.w, rect.h)
+    def Precompose(pens, rect, fmt=None, context=None):
+        if context:
+            info = skia.ImageInfo.MakeN32Premul(rect.w, rect.h)
+            surface = skia.Surface.MakeRenderTarget(context, skia.Budgeted.kNo, info)
+            assert surface is not None
+        else:
+            print("CPU PRECOMPOSE")
+            surface = skia.Surface(rect.w, rect.h)
+        
         with surface as canvas:
             SkiaPen.CompositeToCanvas(pens, rect, canvas)
         return surface.makeImageSnapshot()

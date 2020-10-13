@@ -301,18 +301,21 @@ class DATPenLikeObject():
             print("DrawBot not installed!")
             return self
     
-    def precompose(self, pen_class, rect):
-        img = pen_class.Precompose(self, rect)
+    def precompose(self, pen_class, rect, context=None):
+        img = pen_class.Precompose(self, rect, context=context)
         return DATPen().rect(rect).attr(image=dict(src=img, rect=rect)).f(None)
     
-    def potrace(self, pen_class, rect, poargs=[], invert=True):
+    def rasterized(self, pen_class, rect, context=None):
+        return pen_class.Precompose(self, rect, context=context)
+    
+    def potrace(self, pen_class, rect, poargs=[], invert=True, context=None):
         import skia
         from PIL import Image
         from pathlib import Path
         from subprocess import run
         from fontTools.svgLib import SVGPath
 
-        img = pen_class.Precompose(self, rect)
+        img = pen_class.Precompose(self, rect, context=context)
         pilimg = Image.fromarray(img.convert(alphaType=skia.kUnpremul_AlphaType))
         binpo = Path("bin/potrace")
         if not binpo.exists():
@@ -325,7 +328,8 @@ class DATPenLikeObject():
                 rargs.append("--invert")
             rargs.extend([str(x) for x in poargs])
             rargs.extend(["-o", "-", "--", tmp_bmp.name])
-            print(">>>", " ".join(rargs))
+            if False:
+                print(">>>", " ".join(rargs))
             result = run(rargs, capture_output=True)
             t = Transform()
             t = t.scale(0.1, 0.1)

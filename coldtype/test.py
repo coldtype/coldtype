@@ -3,11 +3,9 @@ from functools import partial
 from random import Random
 
 
-co = Font("assets/ColdtypeObviously-VF.ttf")
-
-mutator = Font("assets/MutatorSans.ttf")
-
-recmono = Font("viewer/assets/RecMono-CasualItalic.ttf")
+co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
+mutator = Font.Cacheable("assets/MutatorSans.ttf")
+recmono = Font.Cacheable("viewer/assets/RecMono-CasualItalic.ttf")
 
 Style.RegisterShorthandPrefix("≈", "~/Type/fonts/fonts")
 

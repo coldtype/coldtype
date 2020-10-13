@@ -11,6 +11,7 @@ from random import shuffle, Random
 from runpy import run_path
 from subprocess import call, Popen
 from functools import partial
+from more_itertools import distribute
 
 import skia, coldtype
 from coldtype.helpers import *
@@ -73,7 +74,7 @@ class Renderer():
             
             rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default=None, choices=["drawbot", "cairo", "svg", "skia", "pickle"], help="Which rasterization engine should coldtype use to create artifacts?"),
 
-            raster_previews=parser.add_argument("-rp", "--raster-previews", action="store_true", default=False, help="Should rasters be displayed in the Coldtype viewer?"),
+            cpu_render=parser.add_argument("-cpu", "--cpu-render", action="store_true", default=False, help="Should final rasters be performed without a GPU context?"),
             
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
 
@@ -172,7 +173,9 @@ class Renderer():
         self.hotkeys = None
         self.context = None
         self.surface = None
+
         self._preview_scale = self.args.preview_scale
+        self.multiplexing = self.args.multiplex
         self._should_reload = False
     
     def reset_filepath(self, filepath):
@@ -199,8 +202,11 @@ class Renderer():
             pass # ?
         else:
             try:
+                #print("CONTEXT", self.context)
                 self.state.reset()
-                self.program = run_path(str(self.filepath))
+                self.program = run_path(str(self.filepath), init_globals={
+                    "__CONTEXT__": self.context,
+                })
                 for k, v in self.program.items():
                     if isinstance(v, coldtype.text.reader.Font) and not v.cacheable:
                         if v.path not in self.watchee_paths():
@@ -235,9 +241,18 @@ class Renderer():
         for k, v in self.program.items():
             if isinstance(v, renderable) and not v.hidden:
                 _rs.append(v)
+        
+        for r in _rs:
+            output_folder = self.render_to_output_folder(r)
+            r.output_folder = output_folder
+
+        if any([r.solo for r in _rs]):
+            _rs = [r for r in _rs if r.solo]
+            
         if self.args.filter_functions:
             function_names = [f.strip() for f in self.args.filter_functions.split(",")]
             _rs = [r for r in _rs if r.func.__name__ in function_names]
+        
         if self.args.monitor_lines and trigger != Action.RenderAll:
             func_name = file_and_line_to_def(self.filepath, self.line_number)
             matches = [r for r in _rs if r.func.__name__ == func_name]
@@ -357,6 +372,8 @@ class Renderer():
                                             self.rasterize(layer_result, render, output_path)
                                             print(">>> saved layer...", str(output_path.relative_to(Path.cwd())))
                             else:
+                                if render.preview_only:
+                                    continue
                                 render_count += 1
                                 output_path.parent.mkdir(exist_ok=True, parents=True)
                                 if render.self_rasterizing:
@@ -389,7 +406,7 @@ class Renderer():
                 self.exit_code = 5 # mark as child-process
                 return p, r
         
-        elif self.args.multiplex:
+        elif self.multiplexing and self.animation():
             if trigger in [Action.RenderAll, Action.RenderWorkarea]:
                 all_frames = self.animation().all_frames()
                 if trigger == Action.RenderAll:
@@ -422,11 +439,16 @@ class Renderer():
     
     def render_multiplexed(self, frames):
         start = ptime.time()
+
+        print("TC", self.args.thread_count)
         
         group = math.floor(len(frames) / self.args.thread_count)
         ordered_frames = list(frames) #list(range(frames[0], frames[0]+len(frames)))
         shuffle(ordered_frames)
-        subslices = list(chunks(ordered_frames, group))
+        #subslices = list(chunks(ordered_frames, group))
+        subslices = [list(s) for s in distribute(self.args.thread_count, ordered_frames)]
+
+        print(subslices)
         
         self.reset_renderers()
         self.running_renderers = []
@@ -479,7 +501,7 @@ class Renderer():
             from coldtype.pens.drawbotpen import DrawBotPen
             DrawBotPen.Composite(content, render.rect, str(path), scale=scale)
         elif rasterizer == "skia":
-            SkiaPen.Composite(content, render.rect, str(path), scale=scale)
+            SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=None if self.args.cpu_render else self.context)
         elif rasterizer == "svg":
             from coldtype.pens.svgpen import SVGPen
             path.write_text(SVGPen.Composite(content, render.rect, viewBox=True))
@@ -492,6 +514,15 @@ class Renderer():
             raise Exception(f"rasterizer ({rasterizer}) not supported")
     
     def reload_and_render(self, trigger, watchable=None, indices=None):
+        if self.args.is_subprocess:
+            if not glfw.init():
+                raise RuntimeError('glfw.init() failed')
+            glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
+            glfw.window_hint(glfw.STENCIL_BITS, 8)
+            window = glfw.create_window(640, 480, '', None, None)
+            glfw.make_context_current(window)
+            self.context = skia.GrDirectContext.MakeGL()
+
         wl = len(self.watchees)
         self.window_scrolly = 0
 
@@ -527,6 +558,71 @@ class Renderer():
         if self.args.show_exit_code:
             print("exit>", self.exit_code)
         sys.exit(self.exit_code)
+    
+    def initialize_gui_and_server(self):
+        self.server = echo_server()
+
+        if not glfw.init():
+            raise RuntimeError('glfw.init() failed')
+        glfw.window_hint(glfw.STENCIL_BITS, 8)
+
+        if self.py_config.get("WINDOW_BACKGROUND"):
+            glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
+        if self.py_config.get("WINDOW_FLOAT"):
+            glfw.window_hint(glfw.FLOATING, glfw.TRUE)
+        
+        self.window = glfw.create_window(int(50), int(50), '', None, None)
+        self.window_scrolly = 0
+
+        if o := self.py_config.get("WINDOW_OPACITY"):
+            glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
+        
+        self._prev_scale = glfw.get_window_content_scale(self.window)[0]
+        
+        glfw.make_context_current(self.window)
+        glfw.set_key_callback(self.window, self.on_key)
+        glfw.set_scroll_callback(self.window, self.on_scroll)
+
+        try:
+            midiin = rtmidi.RtMidiIn()
+            lookup = {}
+            self.midis = []
+            for p in range(midiin.getPortCount()):
+                lookup[midiin.getPortName(p)] = p
+
+            for device, mapping in self.midi_mapping.items():
+                if device in lookup:
+                    mapping["port"] = lookup[device]
+                    mi = rtmidi.RtMidiIn()
+                    mi.openPort(lookup[device])
+                    self.midis.append([device, mi])
+                else:
+                    print(f">>> no midi port found with that name ({device}) <<<")
+        except:
+            self.midis = []
+        
+        self.context = skia.GrDirectContext.MakeGL()
+
+        self.watch_file_changes()
+        if len(self.watchees) > 0:
+            glfw.set_window_title(self.window, self.watchees[0][1].name)
+        else:
+            glfw.set_window_title(self.window, "coldtype")
+
+        self.hotkeys = None
+        try:
+            if self.hotkey_mapping:
+                from pynput import keyboard
+                mapping = {}
+                for k, v in self.hotkey_mapping.items():
+                    mapping[k] = partial(self.on_hotkey, k, v)
+                #self.hotkeys = keyboard.GlobalHotKeys({
+                #    "<cmd>+<f8>": self.on_hotkey
+                #})
+                self.hotkeys = keyboard.GlobalHotKeys(mapping)
+                self.hotkeys.start()
+        except:
+            pass
 
     def start(self):
         if self.args.version:
@@ -550,28 +646,7 @@ class Renderer():
             should_halt = self.before_start()
         
         if self.args.watch:
-            self.server = echo_server()
-
-            if not glfw.init():
-                raise RuntimeError('glfw.init() failed')
-            glfw.window_hint(glfw.STENCIL_BITS, 8)
-
-            if self.py_config.get("WINDOW_BACKGROUND"):
-                glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
-            if self.py_config.get("WINDOW_FLOAT"):
-                glfw.window_hint(glfw.FLOATING, glfw.TRUE)
-            
-            self.window = glfw.create_window(int(50), int(50), '', None, None)
-            self.window_scrolly = 0
-
-            if o := self.py_config.get("WINDOW_OPACITY"):
-                glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
-            
-            self._prev_scale = glfw.get_window_content_scale(self.window)[0]
-            
-            glfw.make_context_current(self.window)
-            glfw.set_key_callback(self.window, self.on_key)
-            glfw.set_scroll_callback(self.window, self.on_scroll)
+            self.initialize_gui_and_server()
         else:
             self.window = None
             self.server = None
@@ -591,45 +666,6 @@ class Renderer():
                     return
             self.on_start()
             if self.args.watch:
-                try:
-                    midiin = rtmidi.RtMidiIn()
-                    lookup = {}
-                    self.midis = []
-                    for p in range(midiin.getPortCount()):
-                        lookup[midiin.getPortName(p)] = p
-
-                    for device, mapping in self.midi_mapping.items():
-                        if device in lookup:
-                            mapping["port"] = lookup[device]
-                            mi = rtmidi.RtMidiIn()
-                            mi.openPort(lookup[device])
-                            self.midis.append([device, mi])
-                        else:
-                            print(f">>> no midi port found with that name ({device}) <<<")
-                except:
-                    self.midis = []
-
-                self.watch_file_changes()
-                if len(self.watchees) > 0:
-                    glfw.set_window_title(self.window, self.watchees[0][1].name)
-                else:
-                    glfw.set_window_title(self.window, "coldtype")
-
-                self.hotkeys = None
-                try:
-                    if self.hotkey_mapping:
-                        from pynput import keyboard
-                        mapping = {}
-                        for k, v in self.hotkey_mapping.items():
-                            mapping[k] = partial(self.on_hotkey, k, v)
-                        #self.hotkeys = keyboard.GlobalHotKeys({
-                        #    "<cmd>+<f8>": self.on_hotkey
-                        #})
-                        self.hotkeys = keyboard.GlobalHotKeys(mapping)
-                        self.hotkeys.start()
-                except:
-                    pass
-
                 self.listen_to_glfw()
             else:
                 self.on_exit()
@@ -674,9 +710,11 @@ class Renderer():
     def on_key(self, win, key, scan, action, mods):
         if action == glfw.PRESS:
             if key == glfw.KEY_LEFT:
-                self.on_action(Action.PreviewStoryboardPrev)
+                self.action_waiting = Action.PreviewStoryboardPrev
+                #self.on_action(Action.PreviewStoryboardPrev)
             elif key == glfw.KEY_RIGHT:
-                self.on_action(Action.PreviewStoryboardNext)
+                self.action_waiting = Action.PreviewStoryboardNext
+                #self.on_action(Action.PreviewStoryboardNext)
             elif key == glfw.KEY_DOWN:
                 if mods & glfw.MOD_SUPER:
                     o = glfw.get_window_opacity(self.window)
@@ -713,6 +751,8 @@ class Renderer():
                 self._should_reload = True
             elif key == glfw.KEY_A:
                 self.on_action(Action.RenderAll)
+            elif key == glfw.KEY_M:
+                self.on_action(Action.ToggleMultiplex)
     
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
@@ -777,10 +817,6 @@ class Renderer():
         elif action == Action.ArbitraryCommand:
             self.on_stdin(message.get("input"))
             return True
-        elif action == Action.UICallback:
-            for render in self.renderables(action):
-                if render.ui_callback:
-                    render.ui_callback(message)
         elif action == Action.SaveControllers:
             self.state.persist()
         elif action == Action.ClearControllers:
@@ -794,6 +830,9 @@ class Renderer():
         elif action == Action.Kill:
             os.kill(os.getpid(), signal.SIGINT)
             #self.on_exit(restart=False)
+        elif action == Action.ToggleMultiplex:
+            self.multiplexing = not self.multiplexing
+            print(">>> MULTIPLEXING?", self.multiplexing)
         elif message.get("serialization"):
             ptime.sleep(1)
             self.reload(Action.Resave)
@@ -896,10 +935,8 @@ class Renderer():
     def preview_scale(self):
         return self._preview_scale
     
-    def create_backing_context(self, rect):
-        if self.context:
-            self.context.abandonContext()
-        self.context = skia.GrDirectContext.MakeGL()
+    def create_surface(self, rect):
+        print("NEW SURFACE", rect)
         backend_render_target = skia.GrBackendRenderTarget(
             int(rect.w), int(rect.h), 0, 0,
             skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
@@ -913,7 +950,9 @@ class Renderer():
     
     def turn_over(self):
         if self.action_waiting:
-            self.on_message({}, self.action_waiting)
+            print("WAITING", self.action_waiting)
+            #self.on_message({}, self.action_waiting)
+            self.on_action(self.action_waiting)
             self.action_waiting = None
         
         for k, v in self.server.connections.items():
@@ -946,10 +985,8 @@ class Renderer():
             h -= 1
             
             frect = Rect(0, 0, w, h)
-            if not self.context:
-                self.create_backing_context(frect)
-            elif frect != self.last_rect:
-                self.create_backing_context(frect)
+            if frect != self.last_rect:
+                self.create_surface(frect)
 
             if not self.last_rect or frect != self.last_rect:
                 if m_scale := self.py_config.get("WINDOW_SCALE"):

@@ -9,26 +9,26 @@ MINYISMAXY = False
 
 
 COMMON_PAPER_SIZES = {
-    'Letter': (612, 792),
-    'Tabloid': (792, 1224),
-    'Ledger': (1224, 792),
-    'Legal': (612, 1008),
-    'A0': (2384, 3371),
-    'A1': (1685, 2384),
-    'A2': (1190, 1684),
-    'A3': (842, 1190),
-    'A4': (595, 842),
-    'A4Small': (595, 842),
-    'A5': (420, 595),
-    'B4': (729, 1032),
-    'B5': (516, 729),
-    'Folio': (612, 936),
-    'Quarto': (610, 780),
+    'letter': (612, 792),
+    'tabloid': (792, 1224),
+    'ledger': (1224, 792),
+    'legal': (612, 1008),
+    'a0': (2384, 3371),
+    'a1': (1685, 2384),
+    'a2': (1190, 1684),
+    'a3': (842, 1190),
+    'a4': (595, 842),
+    'a4Small': (595, 842),
+    'a5': (420, 595),
+    'b4': (729, 1032),
+    'b5': (516, 729),
+    'folio': (612, 936),
+    'quarto': (610, 780),
     '10x14': (720, 1008),
 }
 
 for key, (w, h) in list(COMMON_PAPER_SIZES.items()):
-    COMMON_PAPER_SIZES["%sLandscape" % key] = (h, w)
+    COMMON_PAPER_SIZES["%s-landscape" % key] = (h, w)
 
 
 class Edge(Enum):
@@ -352,7 +352,7 @@ class Rect():
     def __init__(self, *rect):
         if isinstance(rect[0], str):
             x, y = 0, 0
-            w, h = COMMON_PAPER_SIZES[rect[0]]
+            w, h = COMMON_PAPER_SIZES[rect[0].lower()]
         elif isinstance(rect[0], int) or isinstance(rect[0], float):
             try:
                 x, y, w, h = rect
@@ -525,8 +525,7 @@ class Rect():
         return Rect(add(self, another_rect))
 
     def grid(self, rows=2, columns=2):
-        xs = [row.subdivide(columns, Edge.MinX)
-              for row in self.subdivide(rows, Edge.MaxY)]
+        xs = [row.subdivide(columns, Edge.MinX) for row in self.subdivide(rows, Edge.MaxY)]
         return [item for sublist in xs for item in sublist]
 
     def pieces(self, amount, edge):
@@ -551,6 +550,18 @@ class Rect():
 
     def intercardinals(self):
         return self.point("NE"), self.point("SE"), self.point("SW"), self.point("NW")
+    
+    def aspect(self):
+        return self.h / self.w
+    
+    def fit(self, other):
+        sx, sy, sw, sh = self
+        ox, oy, ow, oh = other
+        if ow > oh:
+            fw = sw
+            fh = sw * other.aspect()
+        #print(sh, fw, fh, other.aspect())
+        return self.take(fh, "mdy")
 
     def point(self, eh, ev=Edge.MinX):
         ev = txt_to_edge(ev)
