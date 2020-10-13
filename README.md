@@ -1,4 +1,4 @@
-__⚠️🌋 Please be aware this code is alpha-quality; the API is subject to change; documentation is sparse 🌋⚠️__
+__⚠️🌋 Warning: the code is alpha-quality; the API is subject to change; the documentation is sparse 🌋⚠️__
 
 ---
 
@@ -58,9 +58,19 @@ With that window open, try hitting the arrow keys to go backward and forward in 
 
 ## If you want to try coldtype in a blank virtual environment
 
-Using a virtualenv (based on a python >= 3.8) (aka `python3.8 -m venv venv --prompt=<your prompt here>` + `source venv/bin/activate`):
+Using a virtualenv (based on a python >= 3.8) (aka `python3.8 -m venv venv --prompt=<your prompt here>` + `source venv/bin/activate`), there are two routes: (A) the packaged distribution, or (B) installing a cloned version of the repo into your project’s venv.
+
+I’d recommend Option B for now for experimentation since Coldtype is under active development, but you might lose some reproduceability with option B since there's no versioning of coldtype itself. (If you’re worried about reproduceability, just make sure to note the coldtype sha somewhere so you can restore that state if you need to.)
+
+Option A:
 
 - `pip install coldtype`
+- `coldtype`
+
+Option B:
+
+- Do the steps above for cloning the coldtype repo
+- `pip install -e <path/to/the/coldtype/repo>
 - `coldtype`
 
 That last command should pop up a window that is a random gradient, along with the letters CT and a little message that says `NOTHING FOUND`.
