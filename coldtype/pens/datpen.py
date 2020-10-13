@@ -305,6 +305,9 @@ class DATPenLikeObject():
         img = pen_class.Precompose(self, rect, context=context)
         return DATPen().rect(rect).attr(image=dict(src=img, rect=rect)).f(None)
     
+    def rasterized(self, pen_class, rect, context=None):
+        return pen_class.Precompose(self, rect, context=context)
+    
     def potrace(self, pen_class, rect, poargs=[], invert=True, context=None):
         import skia
         from PIL import Image
