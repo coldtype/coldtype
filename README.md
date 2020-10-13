@@ -1,4 +1,4 @@
-__⚠️🌋 Please be aware this code is alpha-quality; the API is subject to change; documentation is sparse 🌋⚠️__
+__⚠️🌋 Warning: the code is alpha-quality; the API is subject to change; the documentation is sparse 🌋⚠️__
 
 ---
 
