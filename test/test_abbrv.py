@@ -26,11 +26,11 @@ def test_pens(r):
         align(r))
 
 
+c1 = hsl(0.0, 0.7)
+c2 = hsl(0.23, 0.6)
+
 @renderable((1080, 350))
 def render(r):
-    c1 = hsl(0.0, 0.7)
-    c2 = hsl(0.23, 0.6)
-
     return pens(
         pen(rect(r.inset(10)),
             outline(10),

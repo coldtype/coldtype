@@ -774,7 +774,11 @@ class Renderer():
             self.reset_filepath(data[0])
             return Action.Resave, None
         else:
-            return None, None
+            enum_action = self.lookup_action(action_abbrev)
+            if enum_action:
+                return enum_action, None
+            else:
+                return None, None
 
     def on_stdin(self, stdin):
         action, data = self.stdin_to_action(stdin)
@@ -936,7 +940,7 @@ class Renderer():
         return self._preview_scale
     
     def create_surface(self, rect):
-        print("NEW SURFACE", rect)
+        #print("NEW SURFACE", rect)
         backend_render_target = skia.GrBackendRenderTarget(
             int(rect.w), int(rect.h), 0, 0,
             skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))

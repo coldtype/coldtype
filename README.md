@@ -54,13 +54,13 @@ You can also try running some tests, like:
 
 - `coldtype test/test_animation.py`
 
-With that window open, try hitting the arrow keys to go backward and forward in time.
+With that window open, try hitting the arrow keys on your keyboard to go backward and forward in time.
 
 ## If you want to try coldtype in a blank virtual environment
 
 Using a virtualenv (based on a python >= 3.8) (aka `python3.8 -m venv venv --prompt=<your prompt here>` + `source venv/bin/activate`), there are two routes: (A) the packaged distribution, or (B) installing a cloned version of the repo into your project’s venv.
 
-I’d recommend Option B for now for experimentation since Coldtype is under active development, but you might lose some reproduceability with option B since there's no versioning of coldtype itself. (If you’re worried about reproduceability, just make sure to note the coldtype sha somewhere so you can restore that state if you need to.)
+I’d recommend Option B for now if your goal is experimentation, since Coldtype is under active development. That said, you might lose some reproduceability with option B since there's no versioning of coldtype itself with that approach. (If you’re worried about reproduceability, just make sure to note the coldtype sha somewhere so you can restore that state if you need to.)
 
 Option A:
 
@@ -86,6 +86,20 @@ def test(r):
 ```
 
 Then you can run that like so — `coldtype test.py` — and a large pink oval should pop up on your screen.
+
+You may also notice the command is still hanging, meaning it hasn't exited. So if you edit test.py and hit save, you should see the change immediately pop up in the same window. For instance, try insetting the oval and making it a different color, so that your code looks something like this:
+
+```python
+from coldtype import *
+
+@renderable()
+def test(r):
+    return DATPen().oval(r.inset(100)).f(hsl(0.8))
+```
+
+Now the oval should have some padding and be purple-ish.
+
+To quit the running program, as with all CLI programs, you can hit `ctrl c` and that should kill the program. Or you can type `kill` into the command line while the program is running and it should have the same effect. (That’s not something that’ll usually work, but it works in coldtype.)
 
 ---
 
@@ -123,21 +137,25 @@ ___
 
 __A cross-platform library to help you precisely & programmatically do high-quality display typography with Python.__
 
+_Problem_: you want to create images and animations with code, but you don’t want to sacrifice high-quality display typography.
+
+_Solution_: Coldtype (or DrawBot!)
+
 Yes, there are lots of ways to set type with code. Most ways — HTML/CSS/JS, Processing, etc. — are great for 90% of what most people want to do with Latin-based writing systems. Then the road runs out and you can’t do anything else.
 
 Coldtype is an offroad vehicle that lets you keep driving where there are no roads. Like many vehicles built for specialized use, it is not user-friendly. It has no doors (please climb in through the window), and the steering wheel is not very intuitive, also it’s a stick-shift, and you should probably know how to code (or be willing to learn) if you’re going to drive it alone out into the desert. (I apologize for how automotive this metaphor is getting. Probably should’ve gone with some metaphor about people making custom synthesizers in the 70s.)
 
 ### What about DrawBot?
 
-If you’ve heard of [DrawBot](http://www.drawbot.com/) — another offroad vehicle that lets you drive where you want — you may be wondering how Coldtype is different. The answer is that Coldtype provides a very different programming idiom, one based around creating and modifying structured data that can be rendered, rather than — as is common in most “creative coding” platforms (including DrawBot) — providing a metaphorical canvas that you render to directly.
+If you’ve heard of [DrawBot](http://www.drawbot.com/) — another offroad vehicle that lets you drive where you want — you may be wondering how Coldtype is different. The answer is that Coldtype provides a very different programming idiom, one based around creating and modifying structured data that can be rendered, rather than — as is common in most “creative coding” platforms (including DrawBot and Processing) — providing a metaphorical canvas that you render to directly.
 
-(I should point out that DrawBot is fantastic and that Coldtype would not exist without DrawBot, mostly because using DrawBot was my first time driving in the typographical offroad. That said, Coldtype mostly exists as a response to things I found awkward when programming animations and user interfaces with DrawBot.)
+(I should point out that DrawBot is fantastic and that Coldtype would not exist without DrawBot, mostly because using DrawBot was my first time driving in the typographical offroad. That said, Coldtype mostly exists as a response to things I found awkward when programming animations with DrawBot.)
 
 ### What about Adobe products?
 
 I’ve learned over the last few years to distrust any _Type Tool_ in an Adobe product (or anywhere else). Yes, those can be very good — like HTML+CSS — for doing simple Latin-based typography for static designs. But then, all of a sudden, they are very bad. You can think of Adobe products as a train that you get on and you can fall asleep in a nice seat and the train will get you where you want to go, except when you wake up and realize you wanted to go somewhere the train doesn't go and then you’re like... _dang, do I have to walk?_ (Walking in this metaphor is when you right click and hit _Convert to Outlines_.)
 
-Walking can be a lot of fun, and you get to see a lot. Drawing is a lot like walking. Fabulous exercise. But sometimes you want to get there faster or you want to go farther.
+Walking can be a lot of fun, and you get to see a lot. Drawing is a lot like walking. Fabulous exercise. But sometimes you want to get there faster or you want to go farther. Or sometimes you want to walk to a neighborhood but there's a freeway in between you and where you’re headed. (The freeway in this metaphor is Adobe’s complete lack of support for OpenType features in After Effects.) So instead of walking you try an experimental jetpack to fly over the freeway. (That’s Coldtype.)
 
 ## What does a Coldtype program look like?
 
@@ -157,11 +175,11 @@ You can run that example inside this repo by calling:
 
 `coldtype examples/simplest.py`
 
-When you run this, it should pop up a window that displays the result of the code.
+When you run this code, it should pop up a window that displays the result of the code.
 
 ### Some thoughts about that code
 
-You may look at that code and think to yourself: _wtf_. Yes, that is an appropriate reaction. Conventional wisdom in the programming world is that, when balancing the readability and writeability of code, the scales should be tipped towards _readable_. Here the scales are tipped the other way, because coldtype is meant as a **design idiom** for Python. The output of a coldtype program is not a piece of software that you’ll have to maintain for years to come; the output is a video, or an image, or something like that — an artifact. You may want to read a coldtype program again one day, but only for the purpose of learning or plagiarizing your past self.
+You may look at that code and think to yourself: _wtf_. Yes, that is an appropriate reaction. Conventional wisdom in the programming world is that, when balancing the readability and writeability of code, the scales should be tipped towards _readable_. Here the scales are tipped the other way, because coldtype is meant as a **design idiom** for Python. The output of a coldtype program is not a piece of software that you’ll have to maintain for years to come. The output is a video, or an image, or something like that — an artifact. You may want to read a coldtype program again one day, but only for the purpose of learning from or plagiarizing your past self.
 
 ## How does Coldtype work?
 
@@ -169,7 +187,7 @@ The central graphic element of Coldtype (the `DATPen`) is a wrapper around `font
 
 ## Why is an audio software company releasing a typography library?
 
-Because (__A__) I love fonts and (__B__) audio software interfaces use fonts (and have some unique design constraints for typography), also (__C__) we make lots of ads that feature typography that reacts to audio and midi data. The code that powers the audio/midi data does not live in this library, but those reactions are made possible by the typography features of Coldtype.
+Because (__A__) I love fonts and (__B__) audio software interfaces use fonts (and have some unique design constraints for typography), also (__C__) we make lots of ads that feature typography that reacts to audio and midi data. Those reactions and the code to make them happen are all part of Coldtype, although those are advanced topic that aren’t covered in this README. (But they are covered by the example code in the coldtype-examples](https://github.com/goodhertz/coldtype-examples) repo.)
 
 ## Why “coldtype”?
 
@@ -179,6 +197,10 @@ Phototype/coldtype was a hybrid moment in typographic history, and a fascinating
 
 Also originally I thought it was a funny name because I wanted to make a very fast typesetting library using Harfbuzz, and when computers run quickly and efficiently, they remain cold. Of course, I now regularly use all 8 cores of my computer when I use render 1000s of frames at once using coldtype, which gets the fans going, so really it's more like warmtype.
 
+## Is Coldtype capitalized?
+
+I can’t decide, as you may be able to tell from this README’s inconsistent capitalization scheme.
+
 ## What are some projects Coldtype has been used on?
 
 - [Lyric](https://youtu.be/b2_CJ_nx-l4?t=21) [videos](https://vimeo.com/377148622)
@@ -186,7 +208,3 @@ Also originally I thought it was a funny name because I wanted to make a very fa
 - [All Goodhertz plugin interfaces](https://goodhertz.co)
 - [All recent posts on the Goodhertz instagram](https://www.instagram.com/goodhertz/)
 - And [all recent posts on Rob’s instagram](https://www.instagram.com/robrushstenson/)
-
-## Weirdnesses
-
-- __0-1 variation axes value__ — By default, all font variation values (axis values) are scaled to a 0-1 range. I’ve found I almost never want to set a font variation value in the scale set by the font itself, mostly because I’m almost always mapping a 0-1 time (or amplitude) value to the axis. If you’d like to not "(s)cale (v)arations," set `sv=False` when constructing a `Style` object.
