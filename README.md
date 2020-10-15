@@ -127,7 +127,12 @@ loop = Loop(200, len(states), 10)
 def render(f):
     phase = f.a.t.current_phase(f.i)
     state = phase.calc_state(states)
-    return StyledString("COLDTYPE", Style(obvs, 250, fill=0, **state, r=1, ro=1)).pens().align(f.a.r).f(0).understroke(s=1, sw=15)
+    return (StyledString("COLDTYPE",
+        Style(obvs, 250, fill=0, **state, r=1, ro=1))
+        .pens()
+        .align(f.a.r)
+        .f(0)
+        .understroke(s=1, sw=15))
 ```
 _source code and instructions for running available here:_ [banner.py](https://github.com/goodhertz/coldtype-examples/blob/master/animations/banner.py)
 
