@@ -268,3 +268,7 @@ class Gradient():
     
     def Random(rect, opacity=0.5):
         return Gradient([("random", opacity), rect.point("SE")], [("random", opacity), rect.point("NW")])
+    
+    V = Vertical
+    H = Horizontal
+    R = Random

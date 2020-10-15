@@ -9,36 +9,50 @@ def end():
 def skip(*instructions):
     return ["skip"]
 
-def _build(seed, instructions):
-    dp = seed
+def _build(seed_class, seed, instructions):
+    if seed:
+        dp = seed
+    else:
+        dp = seed_class()
 
     def realize_string(txt, fnt, props):
         stst = StyledString(txt, Style(fnt, **props))
-        if isinstance(seed, DATPen):
+        if seed_class == DATPen:
             return stst.pen()
-        elif isinstance(seed, DATPenSet):
+        elif seed_class == DATPenSet:
             return stst.pens()
         else:
             raise Exception("WTF")
 
     for _args in instructions:
+        try:
+            if _args[0] == "skip":
+                continue
+        except:
+            pass
+        
         if isinstance(_args, StyledString): # TODO could be lazy?
             stst = _args
-            if isinstance(seed, DATPen):
+            if seed_class == DATPen:
                 dp = stst.pen()
-            elif isinstance(seed, DATPenSet):
+            elif seed_class == DATPenSet:
                 dp = stst.pens()
+        elif isinstance(_args, DATPen):
+            dp.append(_args)
+        elif isinstance(_args, DATPenSet):
+            dp.append(_args)
         else:
             fn, *args = _args
             if fn == "text":
-                dp = dict(text=args[0])
+                dp = dict(pen=dp, text=args[0])
             elif fn == "font":
-                dp = dict(text=dp["text"], font=args[0]) # text, fontName
+                dp = dict(pen=dp.get("pen"), text=dp["text"], font=args[0]) # text, fontName
             elif fn == "style":
-                dp = dict(text=dp["text"], font=dp["font"], style=args[0])
+                dp = dict(pen=dp.get("pen"), text=dp["text"], font=dp["font"], style=args[0])
             else:
                 # realize the string if it's still latent
                 if isinstance(dp, dict):
+                    pen = dp.get("pen")
                     if "style" in dp:
                         dp = realize_string(
                             dp["text"],
@@ -52,21 +66,41 @@ def _build(seed, instructions):
                     elif "font" not in dp:
                         raise Exception("No font provided in abbr-string")
                 
+                    if pen:
+                        dp = DATPenSet([pen, dp])
+                
                 if fn == "end":
                     return dp
                 elif fn == "skip":
                     continue
+                elif fn == "wrap":
+                    seed_class = DATPenSet
+                    dp = DATPenSet([dp])
                 elif fn == "subinstructions":
-                    dp = _build(dp, args)
+                    dp = _build(seed_class, dp, args)
                 else:
-                    dp = getattr(dp, fn)(*args)
+                    try:
+                        dp = getattr(dp, fn)(*args)
+                    except Exception as e:
+                        print("--------------------")
+                        print(fn, args)
+                        print(e)
     return dp
 
 def pen(*instructions):
-    return _build(DATPen(), instructions)
+    return _build(DATPen, None, instructions)
+
+def s_pen(*instructions):
+    return ["skip"]
 
 def pens(*instructions):
-    return _build(DATPenSet(), instructions)
+    return _build(DATPenSet, None, instructions)
+
+def s_pens(*instructions):
+    return ["skip"]
+
+def wrap():
+    return ["wrap"]
 
 def fsw(f=None, s=None, sw=0):
     return [
@@ -76,15 +110,25 @@ def fsw(f=None, s=None, sw=0):
         strokeWidth(sw),
     ]
 
-def ß(text):
+def s_fsw(*args, **kwargs):
+    return ["skip"]
+
+def text(text):
     return ["text", text]
 
-def ƒ(font):
-    return ["font", font]
+def s_text(*args, **kwargs):
+    return ["skip"]
 
-def ƒƒ(fontSize, **properties): # properties here could have some autocomplete?
+def font(fnt):
+    return ["font", fnt]
+
+def s_font(*args, **kwargs):
+    return ["skip"]
+
+def style(fontSize, **properties): # properties here could have some autocomplete?
     return ["style", {**dict(fontSize=fontSize), **properties}]
 
-text = ß
-font = ƒ
-style = ƒƒ
+def s_style(*args, **kwargs):
+    return ["skip"]
+
+G = Gradient
