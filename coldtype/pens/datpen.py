@@ -145,8 +145,8 @@ class DATPenLikeObject():
         self.frame = None
         return self
     
-    def addFrame(self, frame, typographic=False):
-        """Add a new frame to the DATPen, replacing any old frame."""
+    def addFrame(self, frame, typographic=False, passthru=False):
+        """Add a new frame to the DATPen, replacing any old frame. Passthru ignored, there for compatibility"""
         self.frame = frame
         if typographic:
             self.typographic = True
@@ -257,14 +257,14 @@ class DATPenLikeObject():
     def all_pens(self):
         pens = []
         if hasattr(self, "pens"):
-            pens = self.flatten().pens
+            pens = self.collapse().pens
         if isinstance(self, DATPen):
             pens = [self]
         
         for pen in pens:
             if pen:
                 if hasattr(pen, "pens"):
-                    for _p in pen.flatten().pens:
+                    for _p in pen.collapse().pens:
                         if _p:
                             yield _p
                 else:
@@ -1336,7 +1336,7 @@ class DATPenSet(DATPenLikeObject):
     
     def pen(self):
         dp = DATPen()
-        fps = self.flatten()
+        fps = self.collapse()
         for p in fps.pens:
             dp.record(p)
         if len(fps.pens) > 0:
@@ -1441,18 +1441,18 @@ class DATPenSet(DATPenLikeObject):
         self.pens = self.filter(fn)
         return self
     
-    def flattenonce(self):
+    def collapseonce(self):
         pens = []
         for idx, p in enumerate(self.pens):
             pens.extend(p)
         self.pens = pens
         return self
     
-    def flatten(self, levels=100, onself=False):
+    def collapse(self, levels=100, onself=False):
         pens = []
         for idx, p in enumerate(self.pens):
             if hasattr(p, "pens") and levels > 0:
-                pens.extend(p.flatten(levels=levels-1).pens)
+                pens.extend(p.collapse(levels=levels-1).pens)
             else:
                 pens.append(p)
         dps = DATPenSet(pens)

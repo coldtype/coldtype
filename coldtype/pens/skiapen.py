@@ -121,9 +121,9 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         if not pattern:
             bx, by, bw, bh = self.path.getBounds()
             if rect:
-                rx, ry = rect.flip(self.rect.h).xy()
-                bx += rx
-                by += ry
+                bx, by = rect.flip(self.rect.h).xy()
+                #bx += rx
+                #by += ry
             self.canvas.clipPath(self.path, doAntiAlias=True)
             self.canvas.drawImage(image, bx, by, self.paint)
             return True

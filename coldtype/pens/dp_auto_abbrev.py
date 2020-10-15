@@ -6,16 +6,16 @@ def addComponent(glyphName, transformation):
 def øaddComponent(glyphName, transformation):
 	return ['skip']
 
-def skip_addComponent(glyphName, transformation):
+def s_addComponent(glyphName, transformation):
 	return ['skip']
 
-def addFrame(frame, typographic=False):
-	return ['addFrame', frame, typographic]
+def addFrame(frame, typographic=False, passthru=False):
+	return ['addFrame', frame, typographic, passthru]
 
-def øaddFrame(frame, typographic=False):
+def øaddFrame(frame, typographic=False, passthru=False):
 	return ['skip']
 
-def skip_addFrame(frame, typographic=False):
+def s_addFrame(frame, typographic=False, passthru=False):
 	return ['skip']
 
 def addSmoothPoints(length=100):
@@ -24,7 +24,7 @@ def addSmoothPoints(length=100):
 def øaddSmoothPoints(length=100):
 	return ['skip']
 
-def skip_addSmoothPoints(length=100):
+def s_addSmoothPoints(length=100):
 	return ['skip']
 
 def align(rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
@@ -33,7 +33,7 @@ def align(rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFram
 def øalign(rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
 	return ['skip']
 
-def skip_align(rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
+def s_align(rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
 	return ['skip']
 
 def allStyledAttrs(style=None):
@@ -42,7 +42,7 @@ def allStyledAttrs(style=None):
 def øallStyledAttrs(style=None):
 	return ['skip']
 
-def skip_allStyledAttrs(style=None):
+def s_allStyledAttrs(style=None):
 	return ['skip']
 
 def all_pens():
@@ -51,7 +51,7 @@ def all_pens():
 def øall_pens():
 	return ['skip']
 
-def skip_all_pens():
+def s_all_pens():
 	return ['skip']
 
 def attr(tag="default", field=None, **kwargs):
@@ -60,7 +60,7 @@ def attr(tag="default", field=None, **kwargs):
 def øattr(tag="default", field=None, **kwargs):
 	return ['skip']
 
-def skip_attr(tag="default", field=None, **kwargs):
+def s_attr(tag="default", field=None, **kwargs):
 	return ['skip']
 
 def bend(curve):
@@ -69,7 +69,7 @@ def bend(curve):
 def øbend(curve):
 	return ['skip']
 
-def skip_bend(curve):
+def s_bend(curve):
 	return ['skip']
 
 def bounds():
@@ -78,7 +78,7 @@ def bounds():
 def øbounds():
 	return ['skip']
 
-def skip_bounds():
+def s_bounds():
 	return ['skip']
 
 def bp():
@@ -87,7 +87,7 @@ def bp():
 def øbp():
 	return ['skip']
 
-def skip_bp():
+def s_bp():
 	return ['skip']
 
 def cast(_class, *args):
@@ -96,7 +96,7 @@ def cast(_class, *args):
 def øcast(_class, *args):
 	return ['skip']
 
-def skip_cast(_class, *args):
+def s_cast(_class, *args):
 	return ['skip']
 
 def castshadow(angle=-45, width=100, ro=1, fill=1):
@@ -105,7 +105,7 @@ def castshadow(angle=-45, width=100, ro=1, fill=1):
 def øcastshadow(angle=-45, width=100, ro=1, fill=1):
 	return ['skip']
 
-def skip_castshadow(angle=-45, width=100, ro=1, fill=1):
+def s_castshadow(angle=-45, width=100, ro=1, fill=1):
 	return ['skip']
 
 def catmull(points, close=False):
@@ -114,7 +114,7 @@ def catmull(points, close=False):
 def øcatmull(points, close=False):
 	return ['skip']
 
-def skip_catmull(points, close=False):
+def s_catmull(points, close=False):
 	return ['skip']
 
 def circle(r, ext):
@@ -123,7 +123,7 @@ def circle(r, ext):
 def øcircle(r, ext):
 	return ['skip']
 
-def skip_circle(r, ext):
+def s_circle(r, ext):
 	return ['skip']
 
 def clearAttrs():
@@ -132,7 +132,7 @@ def clearAttrs():
 def øclearAttrs():
 	return ['skip']
 
-def skip_clearAttrs():
+def s_clearAttrs():
 	return ['skip']
 
 def clearFrame():
@@ -141,7 +141,7 @@ def clearFrame():
 def øclearFrame():
 	return ['skip']
 
-def skip_clearFrame():
+def s_clearFrame():
 	return ['skip']
 
 def closePath():
@@ -150,7 +150,7 @@ def closePath():
 def øclosePath():
 	return ['skip']
 
-def skip_closePath():
+def s_closePath():
 	return ['skip']
 
 def contain(rect):
@@ -159,7 +159,7 @@ def contain(rect):
 def øcontain(rect):
 	return ['skip']
 
-def skip_contain(rect):
+def s_contain(rect):
 	return ['skip']
 
 def copy():
@@ -168,7 +168,7 @@ def copy():
 def øcopy():
 	return ['skip']
 
-def skip_copy():
+def s_copy():
 	return ['skip']
 
 def curveTo(points):
@@ -177,7 +177,7 @@ def curveTo(points):
 def øcurveTo(points):
 	return ['skip']
 
-def skip_curveTo(points):
+def s_curveTo(points):
 	return ['skip']
 
 def db_drawPath(rect=None, filters=[]):
@@ -186,7 +186,7 @@ def db_drawPath(rect=None, filters=[]):
 def ødb_drawPath(rect=None, filters=[]):
 	return ['skip']
 
-def skip_db_drawPath(rect=None, filters=[]):
+def s_db_drawPath(rect=None, filters=[]):
 	return ['skip']
 
 def difference(otherPen):
@@ -195,7 +195,7 @@ def difference(otherPen):
 def ødifference(otherPen):
 	return ['skip']
 
-def skip_difference(otherPen):
+def s_difference(otherPen):
 	return ['skip']
 
 def dots(radius=4):
@@ -204,7 +204,7 @@ def dots(radius=4):
 def ødots(radius=4):
 	return ['skip']
 
-def skip_dots(radius=4):
+def s_dots(radius=4):
 	return ['skip']
 
 def endPath():
@@ -213,7 +213,7 @@ def endPath():
 def øendPath():
 	return ['skip']
 
-def skip_endPath():
+def s_endPath():
 	return ['skip']
 
 def explode(into_set=False):
@@ -222,7 +222,7 @@ def explode(into_set=False):
 def øexplode(into_set=False):
 	return ['skip']
 
-def skip_explode(into_set=False):
+def s_explode(into_set=False):
 	return ['skip']
 
 def f(value):
@@ -231,7 +231,7 @@ def f(value):
 def øf(value):
 	return ['skip']
 
-def skip_f(value):
+def s_f(value):
 	return ['skip']
 
 def fill(value):
@@ -240,7 +240,7 @@ def fill(value):
 def øfill(value):
 	return ['skip']
 
-def skip_fill(value):
+def s_fill(value):
 	return ['skip']
 
 def filmjitter(doneness, base=0, speed=(10, 20), scale=(2, 3), octaves=16):
@@ -249,7 +249,7 @@ def filmjitter(doneness, base=0, speed=(10, 20), scale=(2, 3), octaves=16):
 def øfilmjitter(doneness, base=0, speed=(10, 20), scale=(2, 3), octaves=16):
 	return ['skip']
 
-def skip_filmjitter(doneness, base=0, speed=(10, 20), scale=(2, 3), octaves=16):
+def s_filmjitter(doneness, base=0, speed=(10, 20), scale=(2, 3), octaves=16):
 	return ['skip']
 
 def flatpoints():
@@ -258,7 +258,7 @@ def flatpoints():
 def øflatpoints():
 	return ['skip']
 
-def skip_flatpoints():
+def s_flatpoints():
 	return ['skip']
 
 def flatten(length=10):
@@ -267,7 +267,7 @@ def flatten(length=10):
 def øflatten(length=10):
 	return ['skip']
 
-def skip_flatten(length=10):
+def s_flatten(length=10):
 	return ['skip']
 
 def frameSet(th=False, tv=False):
@@ -276,7 +276,7 @@ def frameSet(th=False, tv=False):
 def øframeSet(th=False, tv=False):
 	return ['skip']
 
-def skip_frameSet(th=False, tv=False):
+def s_frameSet(th=False, tv=False):
 	return ['skip']
 
 def getFrame(th=False, tv=False):
@@ -285,7 +285,7 @@ def getFrame(th=False, tv=False):
 def øgetFrame(th=False, tv=False):
 	return ['skip']
 
-def skip_getFrame(th=False, tv=False):
+def s_getFrame(th=False, tv=False):
 	return ['skip']
 
 def getTag():
@@ -294,7 +294,7 @@ def getTag():
 def øgetTag():
 	return ['skip']
 
-def skip_getTag():
+def s_getTag():
 	return ['skip']
 
 def glyph(glyph):
@@ -303,7 +303,7 @@ def glyph(glyph):
 def øglyph(glyph):
 	return ['skip']
 
-def skip_glyph(glyph):
+def s_glyph(glyph):
 	return ['skip']
 
 def gridlines(rect, x=20, y=None):
@@ -312,7 +312,7 @@ def gridlines(rect, x=20, y=None):
 def øgridlines(rect, x=20, y=None):
 	return ['skip']
 
-def skip_gridlines(rect, x=20, y=None):
+def s_gridlines(rect, x=20, y=None):
 	return ['skip']
 
 def grow(outline=10):
@@ -321,7 +321,7 @@ def grow(outline=10):
 def øgrow(outline=10):
 	return ['skip']
 
-def skip_grow(outline=10):
+def s_grow(outline=10):
 	return ['skip']
 
 def hull(points):
@@ -330,7 +330,7 @@ def hull(points):
 def øhull(points):
 	return ['skip']
 
-def skip_hull(points):
+def s_hull(points):
 	return ['skip']
 
 def intersection(otherPen):
@@ -339,7 +339,7 @@ def intersection(otherPen):
 def øintersection(otherPen):
 	return ['skip']
 
-def skip_intersection(otherPen):
+def s_intersection(otherPen):
 	return ['skip']
 
 def line(points):
@@ -348,7 +348,7 @@ def line(points):
 def øline(points):
 	return ['skip']
 
-def skip_line(points):
+def s_line(points):
 	return ['skip']
 
 def lineTo(p1):
@@ -357,7 +357,7 @@ def lineTo(p1):
 def ølineTo(p1):
 	return ['skip']
 
-def skip_lineTo(p1):
+def s_lineTo(p1):
 	return ['skip']
 
 def lines():
@@ -366,7 +366,7 @@ def lines():
 def ølines():
 	return ['skip']
 
-def skip_lines():
+def s_lines():
 	return ['skip']
 
 def map(fn):
@@ -375,7 +375,7 @@ def map(fn):
 def ømap(fn):
 	return ['skip']
 
-def skip_map(fn):
+def s_map(fn):
 	return ['skip']
 
 def map_points(fn):
@@ -384,7 +384,7 @@ def map_points(fn):
 def ømap_points(fn):
 	return ['skip']
 
-def skip_map_points(fn):
+def s_map_points(fn):
 	return ['skip']
 
 def mod_contour(contour_index, mod_fn):
@@ -393,7 +393,7 @@ def mod_contour(contour_index, mod_fn):
 def ømod_contour(contour_index, mod_fn):
 	return ['skip']
 
-def skip_mod_contour(contour_index, mod_fn):
+def s_mod_contour(contour_index, mod_fn):
 	return ['skip']
 
 def moveTo(p0):
@@ -402,7 +402,7 @@ def moveTo(p0):
 def ømoveTo(p0):
 	return ['skip']
 
-def skip_moveTo(p0):
+def s_moveTo(p0):
 	return ['skip']
 
 def nlt(fn):
@@ -411,7 +411,7 @@ def nlt(fn):
 def ønlt(fn):
 	return ['skip']
 
-def skip_nlt(fn):
+def s_nlt(fn):
 	return ['skip']
 
 def nonlinear_transform(fn):
@@ -420,7 +420,7 @@ def nonlinear_transform(fn):
 def ønonlinear_transform(fn):
 	return ['skip']
 
-def skip_nonlinear_transform(fn):
+def s_nonlinear_transform(fn):
 	return ['skip']
 
 def noop(*args, **kwargs):
@@ -429,7 +429,7 @@ def noop(*args, **kwargs):
 def ønoop(*args, **kwargs):
 	return ['skip']
 
-def skip_noop(*args, **kwargs):
+def s_noop(*args, **kwargs):
 	return ['skip']
 
 def nudge(lookup):
@@ -438,7 +438,7 @@ def nudge(lookup):
 def ønudge(lookup):
 	return ['skip']
 
-def skip_nudge(lookup):
+def s_nudge(lookup):
 	return ['skip']
 
 def openAndClosed():
@@ -447,7 +447,7 @@ def openAndClosed():
 def øopenAndClosed():
 	return ['skip']
 
-def skip_openAndClosed():
+def s_openAndClosed():
 	return ['skip']
 
 def outline(offset=1, drawInner=True, drawOuter=True, cap="square"):
@@ -456,7 +456,7 @@ def outline(offset=1, drawInner=True, drawOuter=True, cap="square"):
 def øoutline(offset=1, drawInner=True, drawOuter=True, cap="square"):
 	return ['skip']
 
-def skip_outline(offset=1, drawInner=True, drawOuter=True, cap="square"):
+def s_outline(offset=1, drawInner=True, drawOuter=True, cap="square"):
 	return ['skip']
 
 def oval(rect):
@@ -465,7 +465,7 @@ def oval(rect):
 def øoval(rect):
 	return ['skip']
 
-def skip_oval(rect):
+def s_oval(rect):
 	return ['skip']
 
 def pattern(rect, clip=False):
@@ -474,7 +474,7 @@ def pattern(rect, clip=False):
 def øpattern(rect, clip=False):
 	return ['skip']
 
-def skip_pattern(rect, clip=False):
+def s_pattern(rect, clip=False):
 	return ['skip']
 
 def pen():
@@ -483,7 +483,7 @@ def pen():
 def øpen():
 	return ['skip']
 
-def skip_pen():
+def s_pen():
 	return ['skip']
 
 def pixellate(rect, increment=50, inset=0):
@@ -492,7 +492,7 @@ def pixellate(rect, increment=50, inset=0):
 def øpixellate(rect, increment=50, inset=0):
 	return ['skip']
 
-def skip_pixellate(rect, increment=50, inset=0):
+def s_pixellate(rect, increment=50, inset=0):
 	return ['skip']
 
 def point_t(t=0.5):
@@ -501,7 +501,7 @@ def point_t(t=0.5):
 def øpoint_t(t=0.5):
 	return ['skip']
 
-def skip_point_t(t=0.5):
+def s_point_t(t=0.5):
 	return ['skip']
 
 def points():
@@ -510,7 +510,7 @@ def points():
 def øpoints():
 	return ['skip']
 
-def skip_points():
+def s_points():
 	return ['skip']
 
 def polygon(sides, rect):
@@ -519,25 +519,25 @@ def polygon(sides, rect):
 def øpolygon(sides, rect):
 	return ['skip']
 
-def skip_polygon(sides, rect):
+def s_polygon(sides, rect):
 	return ['skip']
 
-def potrace(pen_class, rect, poargs=[], invert=True):
-	return ['potrace', pen_class, rect, poargs, invert]
+def potrace(pen_class, rect, poargs=[], invert=True, context=None):
+	return ['potrace', pen_class, rect, poargs, invert, context]
 
-def øpotrace(pen_class, rect, poargs=[], invert=True):
+def øpotrace(pen_class, rect, poargs=[], invert=True, context=None):
 	return ['skip']
 
-def skip_potrace(pen_class, rect, poargs=[], invert=True):
+def s_potrace(pen_class, rect, poargs=[], invert=True, context=None):
 	return ['skip']
 
-def precompose(pen_class, rect):
-	return ['precompose', pen_class, rect]
+def precompose(pen_class, rect, context=None):
+	return ['precompose', pen_class, rect, context]
 
-def øprecompose(pen_class, rect):
+def øprecompose(pen_class, rect, context=None):
 	return ['skip']
 
-def skip_precompose(pen_class, rect):
+def s_precompose(pen_class, rect, context=None):
 	return ['skip']
 
 def project(angle, width):
@@ -546,7 +546,7 @@ def project(angle, width):
 def øproject(angle, width):
 	return ['skip']
 
-def skip_project(angle, width):
+def s_project(angle, width):
 	return ['skip']
 
 def qCurveTo(points):
@@ -555,7 +555,7 @@ def qCurveTo(points):
 def øqCurveTo(points):
 	return ['skip']
 
-def skip_qCurveTo(points):
+def s_qCurveTo(points):
 	return ['skip']
 
 def quadratic(a, b, c, lineTo=False):
@@ -564,7 +564,16 @@ def quadratic(a, b, c, lineTo=False):
 def øquadratic(a, b, c, lineTo=False):
 	return ['skip']
 
-def skip_quadratic(a, b, c, lineTo=False):
+def s_quadratic(a, b, c, lineTo=False):
+	return ['skip']
+
+def rasterized(pen_class, rect, context=None):
+	return ['rasterized', pen_class, rect, context]
+
+def ørasterized(pen_class, rect, context=None):
+	return ['skip']
+
+def s_rasterized(pen_class, rect, context=None):
 	return ['skip']
 
 def record(pen):
@@ -573,7 +582,7 @@ def record(pen):
 def ørecord(pen):
 	return ['skip']
 
-def skip_record(pen):
+def s_record(pen):
 	return ['skip']
 
 def rect(rect, *args):
@@ -582,7 +591,7 @@ def rect(rect, *args):
 def ørect(rect, *args):
 	return ['skip']
 
-def skip_rect(rect, *args):
+def s_rect(rect, *args):
 	return ['skip']
 
 def removeBlanks():
@@ -591,7 +600,7 @@ def removeBlanks():
 def øremoveBlanks():
 	return ['skip']
 
-def skip_removeBlanks():
+def s_removeBlanks():
 	return ['skip']
 
 def removeOverlap():
@@ -600,7 +609,7 @@ def removeOverlap():
 def øremoveOverlap():
 	return ['skip']
 
-def skip_removeOverlap():
+def s_removeOverlap():
 	return ['skip']
 
 def repeat(times=1):
@@ -609,7 +618,7 @@ def repeat(times=1):
 def ørepeat(times=1):
 	return ['skip']
 
-def skip_repeat(times=1):
+def s_repeat(times=1):
 	return ['skip']
 
 def repeatx(times=1):
@@ -618,7 +627,7 @@ def repeatx(times=1):
 def ørepeatx(times=1):
 	return ['skip']
 
-def skip_repeatx(times=1):
+def s_repeatx(times=1):
 	return ['skip']
 
 def replay(pen):
@@ -627,7 +636,7 @@ def replay(pen):
 def øreplay(pen):
 	return ['skip']
 
-def skip_replay(pen):
+def s_replay(pen):
 	return ['skip']
 
 def reverse():
@@ -636,7 +645,7 @@ def reverse():
 def øreverse():
 	return ['skip']
 
-def skip_reverse():
+def s_reverse():
 	return ['skip']
 
 def reverseDifference(otherPen):
@@ -645,7 +654,7 @@ def reverseDifference(otherPen):
 def øreverseDifference(otherPen):
 	return ['skip']
 
-def skip_reverseDifference(otherPen):
+def s_reverseDifference(otherPen):
 	return ['skip']
 
 def rotate(degrees, point=None):
@@ -654,7 +663,7 @@ def rotate(degrees, point=None):
 def ørotate(degrees, point=None):
 	return ['skip']
 
-def skip_rotate(degrees, point=None):
+def s_rotate(degrees, point=None):
 	return ['skip']
 
 def roughen(amplitude=10, threshold=10):
@@ -663,7 +672,7 @@ def roughen(amplitude=10, threshold=10):
 def øroughen(amplitude=10, threshold=10):
 	return ['skip']
 
-def skip_roughen(amplitude=10, threshold=10):
+def s_roughen(amplitude=10, threshold=10):
 	return ['skip']
 
 def round(rounding):
@@ -672,7 +681,7 @@ def round(rounding):
 def øround(rounding):
 	return ['skip']
 
-def skip_round(rounding):
+def s_round(rounding):
 	return ['skip']
 
 def roundedRect(rect, hr, vr):
@@ -681,7 +690,7 @@ def roundedRect(rect, hr, vr):
 def øroundedRect(rect, hr, vr):
 	return ['skip']
 
-def skip_roundedRect(rect, hr, vr):
+def s_roundedRect(rect, hr, vr):
 	return ['skip']
 
 def s(value):
@@ -690,7 +699,7 @@ def s(value):
 def øs(value):
 	return ['skip']
 
-def skip_s(value):
+def s_s(value):
 	return ['skip']
 
 def scale(scaleX, scaleY=None, center=None):
@@ -699,7 +708,7 @@ def scale(scaleX, scaleY=None, center=None):
 def øscale(scaleX, scaleY=None, center=None):
 	return ['skip']
 
-def skip_scale(scaleX, scaleY=None, center=None):
+def s_scale(scaleX, scaleY=None, center=None):
 	return ['skip']
 
 def scaleToHeight(h):
@@ -708,7 +717,7 @@ def scaleToHeight(h):
 def øscaleToHeight(h):
 	return ['skip']
 
-def skip_scaleToHeight(h):
+def s_scaleToHeight(h):
 	return ['skip']
 
 def scaleToRect(rect, preserveAspect=True):
@@ -717,7 +726,7 @@ def scaleToRect(rect, preserveAspect=True):
 def øscaleToRect(rect, preserveAspect=True):
 	return ['skip']
 
-def skip_scaleToRect(rect, preserveAspect=True):
+def s_scaleToRect(rect, preserveAspect=True):
 	return ['skip']
 
 def scaleToWidth(w):
@@ -726,7 +735,7 @@ def scaleToWidth(w):
 def øscaleToWidth(w):
 	return ['skip']
 
-def skip_scaleToWidth(w):
+def s_scaleToWidth(w):
 	return ['skip']
 
 def scanlines(rect, sample=40, width=20, threshold=10):
@@ -735,7 +744,7 @@ def scanlines(rect, sample=40, width=20, threshold=10):
 def øscanlines(rect, sample=40, width=20, threshold=10):
 	return ['skip']
 
-def skip_scanlines(rect, sample=40, width=20, threshold=10):
+def s_scanlines(rect, sample=40, width=20, threshold=10):
 	return ['skip']
 
 def semicircle(r, center, fext=0.5, rext=0.5):
@@ -744,7 +753,7 @@ def semicircle(r, center, fext=0.5, rext=0.5):
 def øsemicircle(r, center, fext=0.5, rext=0.5):
 	return ['skip']
 
-def skip_semicircle(r, center, fext=0.5, rext=0.5):
+def s_semicircle(r, center, fext=0.5, rext=0.5):
 	return ['skip']
 
 def simplify():
@@ -753,7 +762,7 @@ def simplify():
 def øsimplify():
 	return ['skip']
 
-def skip_simplify():
+def s_simplify():
 	return ['skip']
 
 def sine(r, periods):
@@ -762,7 +771,7 @@ def sine(r, periods):
 def øsine(r, periods):
 	return ['skip']
 
-def skip_sine(r, periods):
+def s_sine(r, periods):
 	return ['skip']
 
 def skeleton(scale=1, returnSet=False):
@@ -771,7 +780,7 @@ def skeleton(scale=1, returnSet=False):
 def øskeleton(scale=1, returnSet=False):
 	return ['skip']
 
-def skip_skeleton(scale=1, returnSet=False):
+def s_skeleton(scale=1, returnSet=False):
 	return ['skip']
 
 def skeletonPoints():
@@ -780,7 +789,7 @@ def skeletonPoints():
 def øskeletonPoints():
 	return ['skip']
 
-def skip_skeletonPoints():
+def s_skeletonPoints():
 	return ['skip']
 
 def skew(x=0, y=0, point=None):
@@ -789,7 +798,7 @@ def skew(x=0, y=0, point=None):
 def øskew(x=0, y=0, point=None):
 	return ['skip']
 
-def skip_skew(x=0, y=0, point=None):
+def s_skew(x=0, y=0, point=None):
 	return ['skip']
 
 def slicec(contour_slice):
@@ -798,7 +807,7 @@ def slicec(contour_slice):
 def øslicec(contour_slice):
 	return ['skip']
 
-def skip_slicec(contour_slice):
+def s_slicec(contour_slice):
 	return ['skip']
 
 def smooth():
@@ -807,7 +816,7 @@ def smooth():
 def øsmooth():
 	return ['skip']
 
-def skip_smooth():
+def s_smooth():
 	return ['skip']
 
 def standingwave(r, periods, direction=1):
@@ -816,7 +825,7 @@ def standingwave(r, periods, direction=1):
 def østandingwave(r, periods, direction=1):
 	return ['skip']
 
-def skip_standingwave(r, periods, direction=1):
+def s_standingwave(r, periods, direction=1):
 	return ['skip']
 
 def stroke(value):
@@ -825,7 +834,7 @@ def stroke(value):
 def østroke(value):
 	return ['skip']
 
-def skip_stroke(value):
+def s_stroke(value):
 	return ['skip']
 
 def strokeWidth(value):
@@ -834,7 +843,7 @@ def strokeWidth(value):
 def østrokeWidth(value):
 	return ['skip']
 
-def skip_strokeWidth(value):
+def s_strokeWidth(value):
 	return ['skip']
 
 def subsegment(start=0, end=1):
@@ -843,7 +852,7 @@ def subsegment(start=0, end=1):
 def øsubsegment(start=0, end=1):
 	return ['skip']
 
-def skip_subsegment(start=0, end=1):
+def s_subsegment(start=0, end=1):
 	return ['skip']
 
 def svg(file, gid, rect=Rect([0, 0, 0, 100])):
@@ -852,7 +861,7 @@ def svg(file, gid, rect=Rect([0, 0, 0, 100])):
 def øsvg(file, gid, rect=Rect([0, 0, 0, 100])):
 	return ['skip']
 
-def skip_svg(file, gid, rect=Rect([0, 0, 0, 100])):
+def s_svg(file, gid, rect=Rect([0, 0, 0, 100])):
 	return ['skip']
 
 def sw(value):
@@ -861,7 +870,7 @@ def sw(value):
 def øsw(value):
 	return ['skip']
 
-def skip_sw(value):
+def s_sw(value):
 	return ['skip']
 
 def tag(tag):
@@ -870,7 +879,7 @@ def tag(tag):
 def øtag(tag):
 	return ['skip']
 
-def skip_tag(tag):
+def s_tag(tag):
 	return ['skip']
 
 def take(slice):
@@ -879,7 +888,7 @@ def take(slice):
 def øtake(slice):
 	return ['skip']
 
-def skip_take(slice):
+def s_take(slice):
 	return ['skip']
 
 def to_glyph(name=None, width=None):
@@ -888,7 +897,7 @@ def to_glyph(name=None, width=None):
 def øto_glyph(name=None, width=None):
 	return ['skip']
 
-def skip_to_glyph(name=None, width=None):
+def s_to_glyph(name=None, width=None):
 	return ['skip']
 
 def trackToRect(rect, pullToEdges=False, r=0):
@@ -897,7 +906,7 @@ def trackToRect(rect, pullToEdges=False, r=0):
 def øtrackToRect(rect, pullToEdges=False, r=0):
 	return ['skip']
 
-def skip_trackToRect(rect, pullToEdges=False, r=0):
+def s_trackToRect(rect, pullToEdges=False, r=0):
 	return ['skip']
 
 def transform(transform, transformFrame=True):
@@ -906,7 +915,7 @@ def transform(transform, transformFrame=True):
 def øtransform(transform, transformFrame=True):
 	return ['skip']
 
-def skip_transform(transform, transformFrame=True):
+def s_transform(transform, transformFrame=True):
 	return ['skip']
 
 def translate(x, y=None, transformFrame=True):
@@ -915,7 +924,7 @@ def translate(x, y=None, transformFrame=True):
 def øtranslate(x, y=None, transformFrame=True):
 	return ['skip']
 
-def skip_translate(x, y=None, transformFrame=True):
+def s_translate(x, y=None, transformFrame=True):
 	return ['skip']
 
 def union(otherPen):
@@ -924,7 +933,7 @@ def union(otherPen):
 def øunion(otherPen):
 	return ['skip']
 
-def skip_union(otherPen):
+def s_union(otherPen):
 	return ['skip']
 
 def ups():
@@ -933,7 +942,7 @@ def ups():
 def øups():
 	return ['skip']
 
-def skip_ups():
+def s_ups():
 	return ['skip']
 
 def vl(value):
@@ -942,7 +951,7 @@ def vl(value):
 def øvl(value):
 	return ['skip']
 
-def skip_vl(value):
+def s_vl(value):
 	return ['skip']
 
 def walk(callback, depth=0):
@@ -951,7 +960,7 @@ def walk(callback, depth=0):
 def øwalk(callback, depth=0):
 	return ['skip']
 
-def skip_walk(callback, depth=0):
+def s_walk(callback, depth=0):
 	return ['skip']
 
 def xAlignToFrame(x=Edge.CenterX, th=0):
@@ -960,7 +969,7 @@ def xAlignToFrame(x=Edge.CenterX, th=0):
 def øxAlignToFrame(x=Edge.CenterX, th=0):
 	return ['skip']
 
-def skip_xAlignToFrame(x=Edge.CenterX, th=0):
+def s_xAlignToFrame(x=Edge.CenterX, th=0):
 	return ['skip']
 
 def xor(otherPen):
@@ -969,7 +978,7 @@ def xor(otherPen):
 def øxor(otherPen):
 	return ['skip']
 
-def skip_xor(otherPen):
+def s_xor(otherPen):
 	return ['skip']
 
 def å(rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
@@ -978,6 +987,267 @@ def å(rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=T
 def øå(rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
 	return ['skip']
 
-def skip_å(rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
+def s_å(rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
+	return ['skip']
+
+def Glyphs(ufo, glyphNames):
+	return ['Glyphs', ufo, glyphNames]
+
+def øGlyphs(ufo, glyphNames):
+	return ['skip']
+
+def s_Glyphs(ufo, glyphNames):
+	return ['skip']
+
+def addOverlaps(idx1, idx2, which, outline=3, scale=1, xray=0):
+	return ['addOverlaps', idx1, idx2, which, outline, scale, xray]
+
+def øaddOverlaps(idx1, idx2, which, outline=3, scale=1, xray=0):
+	return ['skip']
+
+def s_addOverlaps(idx1, idx2, which, outline=3, scale=1, xray=0):
+	return ['skip']
+
+def alignToRects(rects, x=Edge.CenterX, y=Edge.CenterY, th=1, tv=1):
+	return ['alignToRects', rects, x, y, th, tv]
+
+def øalignToRects(rects, x=Edge.CenterX, y=Edge.CenterY, th=1, tv=1):
+	return ['skip']
+
+def s_alignToRects(rects, x=Edge.CenterX, y=Edge.CenterY, th=1, tv=1):
+	return ['skip']
+
+def append(pen):
+	return ['append', pen]
+
+def øappend(pen):
+	return ['skip']
+
+def s_append(pen):
+	return ['skip']
+
+def clearFrames():
+	return ['clearFrames', ]
+
+def øclearFrames():
+	return ['skip']
+
+def s_clearFrames():
+	return ['skip']
+
+def distribute(v=False):
+	return ['distribute', v]
+
+def ødistribute(v=False):
+	return ['skip']
+
+def s_distribute(v=False):
+	return ['skip']
+
+def distributeOnPath(path, offset=0, cc=None, notfound=None):
+	return ['distributeOnPath', path, offset, cc, notfound]
+
+def ødistributeOnPath(path, offset=0, cc=None, notfound=None):
+	return ['skip']
+
+def s_distributeOnPath(path, offset=0, cc=None, notfound=None):
+	return ['skip']
+
+def extend(pens):
+	return ['extend', pens]
+
+def øextend(pens):
+	return ['skip']
+
+def s_extend(pens):
+	return ['skip']
+
+def ffg(glyph_name):
+	return ['ffg', glyph_name]
+
+def øffg(glyph_name):
+	return ['skip']
+
+def s_ffg(glyph_name):
+	return ['skip']
+
+def fft(tag):
+	return ['fft', tag]
+
+def øfft(tag):
+	return ['skip']
+
+def s_fft(tag):
+	return ['skip']
+
+def filter(fn):
+	return ['filter', fn]
+
+def øfilter(fn):
+	return ['skip']
+
+def s_filter(fn):
+	return ['skip']
+
+def flattenonce():
+	return ['flattenonce', ]
+
+def øflattenonce():
+	return ['skip']
+
+def s_flattenonce():
+	return ['skip']
+
+def glyphs_named(glyph_name):
+	return ['glyphs_named', glyph_name]
+
+def øglyphs_named(glyph_name):
+	return ['skip']
+
+def s_glyphs_named(glyph_name):
+	return ['skip']
+
+def implode():
+	return ['implode', ]
+
+def øimplode():
+	return ['skip']
+
+def s_implode():
+	return ['skip']
+
+def indexed_subset(indices):
+	return ['indexed_subset', indices]
+
+def øindexed_subset(indices):
+	return ['skip']
+
+def s_indexed_subset(indices):
+	return ['skip']
+
+def insert(index, pen):
+	return ['insert', index, pen]
+
+def øinsert(index, pen):
+	return ['skip']
+
+def s_insert(index, pen):
+	return ['skip']
+
+def interleave(style_fn, direction=-1, recursive=True):
+	return ['interleave', style_fn, direction, recursive]
+
+def øinterleave(style_fn, direction=-1, recursive=True):
+	return ['skip']
+
+def s_interleave(style_fn, direction=-1, recursive=True):
+	return ['skip']
+
+def mfilter(fn):
+	return ['mfilter', fn]
+
+def ømfilter(fn):
+	return ['skip']
+
+def s_mfilter(fn):
+	return ['skip']
+
+def mmap(fn):
+	return ['mmap', fn]
+
+def ømmap(fn):
+	return ['skip']
+
+def s_mmap(fn):
+	return ['skip']
+
+def overlapPair(gn1, gn2, which, outline=3):
+	return ['overlapPair', gn1, gn2, which, outline]
+
+def øoverlapPair(gn1, gn2, which, outline=3):
+	return ['skip']
+
+def s_overlapPair(gn1, gn2, which, outline=3):
+	return ['skip']
+
+def overlapPairs(pairs, outline=3):
+	return ['overlapPairs', pairs, outline]
+
+def øoverlapPairs(pairs, outline=3):
+	return ['skip']
+
+def s_overlapPairs(pairs, outline=3):
+	return ['skip']
+
+def pfilter(fn):
+	return ['pfilter', fn]
+
+def øpfilter(fn):
+	return ['skip']
+
+def s_pfilter(fn):
+	return ['skip']
+
+def pmap(fn):
+	return ['pmap', fn]
+
+def øpmap(fn):
+	return ['skip']
+
+def s_pmap(fn):
+	return ['skip']
+
+def print_tree(depth=0):
+	return ['print_tree', depth]
+
+def øprint_tree(depth=0):
+	return ['skip']
+
+def s_print_tree(depth=0):
+	return ['skip']
+
+def reversePens():
+	return ['reversePens', ]
+
+def øreversePens():
+	return ['skip']
+
+def s_reversePens():
+	return ['skip']
+
+def rp():
+	return ['rp', ]
+
+def ørp():
+	return ['skip']
+
+def s_rp():
+	return ['skip']
+
+def tagged(tag):
+	return ['tagged', tag]
+
+def øtagged(tag):
+	return ['skip']
+
+def s_tagged(tag):
+	return ['skip']
+
+def track(t, v=False):
+	return ['track', t, v]
+
+def øtrack(t, v=False):
+	return ['skip']
+
+def s_track(t, v=False):
+	return ['skip']
+
+def understroke(s=0, sw=5, outline=False, dofill=0):
+	return ['understroke', s, sw, outline, dofill]
+
+def øunderstroke(s=0, sw=5, outline=False, dofill=0):
+	return ['skip']
+
+def s_understroke(s=0, sw=5, outline=False, dofill=0):
 	return ['skip']
 
