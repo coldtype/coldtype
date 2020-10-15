@@ -165,10 +165,7 @@ class Style():
 
         if isinstance(font, str):
             self.font:Font = Font(font)
-            if isinstance(self.font.font, OTFFont):
-                self.font.load() #font._syncLoad(None)
-            else:
-                print("Editable font formats cannot be loaded synchronously")
+            self.font.load() #font._syncLoad(None)
 
         else:
             self.font:Font = font

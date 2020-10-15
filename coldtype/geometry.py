@@ -421,7 +421,7 @@ class Rect():
         return self.rect()[key]
 
     def __repr__(self):
-        return "<furn-Rect" + str(self.rect()) + ">"
+        return "Rect(" + str(self.rect()) + ")"
     
     def __eq__(self, r):
         try:
