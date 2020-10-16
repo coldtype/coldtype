@@ -397,7 +397,7 @@ class Renderer():
     def render(self, trigger, indices=[]) -> Tuple[int, int]:
         if self.args.is_subprocess: # is a child process of a multiplexed render
             if trigger != Action.RenderIndices:
-                raise Exception("Invalid child process render action")
+                raise Exception("Invalid child process render action", trigger)
                 return 0, 0
             else:
                 p, r, _ = self._single_thread_render(trigger, indices=indices)
@@ -459,6 +459,8 @@ class Renderer():
 
         for subslice in subslices:
             print("slice >", len(subslice))
+            if len(subslice) == 0:
+                continue
             sargs = [
                 "coldtype",
                 sys.argv[1],
