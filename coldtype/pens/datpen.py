@@ -77,6 +77,9 @@ class DATPenLikeObject():
     def pen(self):
         """Return a single-pen representation of this pen(set)."""
         return self
+    
+    def to_pen(self):
+        return self.pen()
 
     def cast(self, _class, *args):
         """Quickly cast to a (different) subclass."""
@@ -353,6 +356,9 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     def __str__(self):
         return f"<DP(typo:int({self.typographic})({self.glyphName}))/tag:({self._tag})>"
+    
+    def __len__(self):
+        return len(self.value)
     
     def vl(self, value):
         self.value = value
@@ -1043,6 +1049,15 @@ class DATPen(RecordingPen, DATPenLikeObject):
         exploded = self.explode()
         mod_fn(exploded[contour_index])
         self.value = exploded.implode().value
+        return self
+    
+    def filter_contours(self, filter_fn):
+        exploded = self.explode()
+        keep = []
+        for idx, c in enumerate(exploded):
+            if filter_fn(idx, c):
+                keep.append(c)
+        self.value = DATPenSet(keep).implode().value
         return self
     
     def slicec(self, contour_slice):

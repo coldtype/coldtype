@@ -900,6 +900,15 @@ def øto_glyph(name=None, width=None):
 def s_to_glyph(name=None, width=None):
 	return ['skip']
 
+def to_pen():
+	return ['to_pen', ]
+
+def øto_pen():
+	return ['skip']
+
+def s_to_pen():
+	return ['skip']
+
 def trackToRect(rect, pullToEdges=False, r=0):
 	return ['trackToRect', rect, pullToEdges, r]
 
@@ -1035,6 +1044,24 @@ def øclearFrames():
 def s_clearFrames():
 	return ['skip']
 
+def collapse(levels=100, onself=False):
+	return ['collapse', levels, onself]
+
+def øcollapse(levels=100, onself=False):
+	return ['skip']
+
+def s_collapse(levels=100, onself=False):
+	return ['skip']
+
+def collapseonce():
+	return ['collapseonce', ]
+
+def øcollapseonce():
+	return ['skip']
+
+def s_collapseonce():
+	return ['skip']
+
 def distribute(v=False):
 	return ['distribute', v]
 
@@ -1087,15 +1114,6 @@ def øfilter(fn):
 	return ['skip']
 
 def s_filter(fn):
-	return ['skip']
-
-def flattenonce():
-	return ['flattenonce', ]
-
-def øflattenonce():
-	return ['skip']
-
-def s_flattenonce():
 	return ['skip']
 
 def glyphs_named(glyph_name):

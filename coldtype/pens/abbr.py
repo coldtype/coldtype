@@ -15,7 +15,17 @@ def _build(seed_class, seed, instructions):
     else:
         dp = seed_class()
 
-    def realize_string(txt, fnt, props):
+    def realize_string():
+        txt = dp["text"]
+        if "style" in dp:
+            fnt = dp["font"]
+            props = dp["style"]
+        elif "font" in dp:
+            fnt = dp["font"]
+            props = dict(fontSize=250)
+        elif "font" not in dp:
+            raise Exception("No font provided in abbr-string")
+        
         stst = StyledString(txt, Style(fnt, **props))
         if seed_class == DATPen:
             return stst.pen()
@@ -31,14 +41,22 @@ def _build(seed_class, seed, instructions):
         except:
             pass
         
-        if isinstance(_args, StyledString): # TODO could be lazy?
+        if not _args:
+            continue
+        elif isinstance(_args, StyledString): # TODO could be lazy?
             stst = _args
             if seed_class == DATPen:
                 dp = stst.pen()
             elif seed_class == DATPenSet:
                 dp = stst.pens()
         elif isinstance(_args, DATPen):
-            dp.append(_args)
+            if seed_class == DATPen:
+                if len(dp) == 0:
+                    dp = _args
+                else:
+                    dp.record(_args)
+            else:
+                dp.append(_args)
         elif isinstance(_args, DATPenSet):
             dp.append(_args)
         else:
@@ -53,20 +71,8 @@ def _build(seed_class, seed, instructions):
                 # realize the string if it's still latent
                 if isinstance(dp, dict):
                     pen = dp.get("pen")
-                    if "style" in dp:
-                        dp = realize_string(
-                            dp["text"],
-                            dp["font"],
-                            dp["style"])
-                    elif "font" in dp:
-                        dp = realize_string(
-                            dp["text"],
-                            dp["font"],
-                            dict(fontSize=250))
-                    elif "font" not in dp:
-                        raise Exception("No font provided in abbr-string")
-                
-                    if pen:
+                    dp = realize_string()
+                    if pen and len(pen) > 0:
                         dp = DATPenSet([pen, dp])
                 
                 if fn == "end":
@@ -85,6 +91,12 @@ def _build(seed_class, seed, instructions):
                         print("--------------------")
                         print(fn, args)
                         print(e)
+    
+    if isinstance(dp, dict):
+        pen = dp.get("pen")
+        dp = realize_string()
+        if pen:
+            dp = DATPenSet([pen, dp])
     return dp
 
 def pen(*instructions):
@@ -106,8 +118,8 @@ def fsw(f=None, s=None, sw=0):
     return [
         "subinstructions",
         fill(f),
-        stroke(s),
-        strokeWidth(sw),
+        stroke(s) if s else None,
+        strokeWidth(sw) if sw > 0 else None,
     ]
 
 def s_fsw(*args, **kwargs):

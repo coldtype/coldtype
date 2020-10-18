@@ -562,7 +562,10 @@ class Renderer():
         sys.exit(self.exit_code)
     
     def initialize_gui_and_server(self):
-        self.server = echo_server()
+        try:
+            self.server = echo_server()
+        except OSError:
+            self.server = None
 
         if not glfw.init():
             raise RuntimeError('glfw.init() failed')
@@ -866,8 +869,11 @@ class Renderer():
                 kwargs["action"] = action.value
             kwargs["prefix"] = self.filepath.stem
             kwargs["fps"] = animation.timeline.fps
-            for k, client in self.server.connections.items():
-                client.sendMessage(json.dumps(kwargs))
+            if self.server:
+                for k, client in self.server.connections.items():
+                    client.sendMessage(json.dumps(kwargs))
+            else:
+                print("Animation server must be primary")
     
     def process_ws_message(self, message):
         print("MESSAGE", message)
@@ -961,15 +967,18 @@ class Renderer():
             self.on_action(self.action_waiting)
             self.action_waiting = None
         
-        for k, v in self.server.connections.items():
-            if hasattr(v, "messages") and len(v.messages) > 0:
-                #print(k, v.messages)
-                for msg in v.messages:
-                    print("WS>>>", v.address, msg)
-                    self.process_ws_message(msg)
-                v.messages = []
+        if self.server:
+            for k, v in self.server.connections.items():
+                if hasattr(v, "messages") and len(v.messages) > 0:
+                    #print(k, v.messages)
+                    for msg in v.messages:
+                        print("WS>>>", v.address, msg)
+                        self.process_ws_message(msg)
+                    v.messages = []
 
-        self.monitor_midi()
+        if self.server:
+            self.monitor_midi()
+        
         if len(self.waiting_to_render) > 0:
             for action, path in self.waiting_to_render:
                 self.reload_and_render(action, path)
