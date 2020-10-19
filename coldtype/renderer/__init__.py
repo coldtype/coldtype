@@ -1,8 +1,7 @@
 import sys, os, re, signal, tracemalloc
 import tempfile, traceback, threading
 import argparse, importlib, inspect, json, math
-import platform
-import pickle
+import platform, pickle
 
 import time as ptime
 from pathlib import Path
@@ -12,6 +11,7 @@ from runpy import run_path
 from subprocess import call, Popen
 from functools import partial
 from more_itertools import distribute
+from docutils.core import publish_doctree
 
 import skia, coldtype
 from coldtype.helpers import *
@@ -182,9 +182,11 @@ class Renderer():
         self.line_number = -1
         if filepath:
             self.filepath = Path(filepath).expanduser().resolve()
+            self.codepath = None
             self.watchees = [[Watchable.Source, self.filepath]]
         else:
             self.filepath = None
+            self.codepath = None
 
     def watchee_paths(self):
         return [w[1] for w in self.watchees]
@@ -201,10 +203,38 @@ class Renderer():
             self.program = dict(no_filepath=True)
             pass # ?
         else:
+            if self.filepath.suffix == ".rst":
+                doctree = publish_doctree(self.filepath.read_text())
+                def is_code_block(node):
+                    return (node.tagname == 'literal_block'
+                            and 'code' in node.attributes['classes'])
+                code_blocks = doctree.traverse(condition=is_code_block)
+                source_code = [block.astext() for block in code_blocks]
+                if self.codepath:
+                    self.codepath.unlink()
+                with tempfile.NamedTemporaryFile("w", prefix="coldtype_rst_src", suffix=".py", delete=False) as tf:
+                    tf.write("\n".join(source_code))
+                    tf.write("""
+from shutil import copy2
+
+def package_for_docs(self, filepath, output_folder):
+    img = f"{filepath.stem}_{self.func.__name__}.png"
+    dst = Path("docs/_static/renders")
+    dst.mkdir(parents=True, exist_ok=True)
+    copy2(output_folder / img, dst / img)
+
+renderable.package = package_for_docs
+                    """)
+                    self.codepath = Path(tf.name)
+            elif self.filepath.suffix == ".py":
+                self.codepath = self.filepath
+            else:
+                raise Exception("No code found in file!")
+            
             try:
                 #print("CONTEXT", self.context)
                 self.state.reset()
-                self.program = run_path(str(self.filepath), init_globals={
+                self.program = run_path(str(self.codepath), init_globals={
                     "__CONTEXT__": self.context,
                 })
                 for k, v in self.program.items():
@@ -254,7 +284,7 @@ class Renderer():
             _rs = [r for r in _rs if r.func.__name__ in function_names]
         
         if self.args.monitor_lines and trigger != Action.RenderAll:
-            func_name = file_and_line_to_def(self.filepath, self.line_number)
+            func_name = file_and_line_to_def(self.codepath, self.line_number)
             matches = [r for r in _rs if r.func.__name__ == func_name]
             if len(matches) > 0:
                 return matches

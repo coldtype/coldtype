@@ -32,6 +32,7 @@ class FittableMixin():
         print("textContent() not overwritten")
 
     def fit(self, width):
+        """Use various methods (tracking, `wdth` axis, etc.) to fit a piece of text horizontally to a given `width`"""
         if isinstance(width, Rect):
             width = width.w
         current_width = self.width()
@@ -281,6 +282,9 @@ class Style():
         return True
 
     def mod(self, **kwargs):
+        """Modify this style object to create a new
+        one; kwargs can have all of the same kwargs as
+        the standard `Style` constructor"""
         keyed = dict(**self.input, **self.input["kwargs"])
         del keyed["kwargs"]
         del keyed["self"]

@@ -657,7 +657,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def to_glyph(self, name=None, width=None):
         """
         Create a glyph (like from `defcon`) using this pen’s value.
-        *Warning: be sure to call endPath or closePath on your pen or this call will silently do nothing
+        *Warning*: be sure to call endPath or closePath on your pen or this call will silently do nothing
         """
         bounds = self.bounds()
         glyph = Glyph()
