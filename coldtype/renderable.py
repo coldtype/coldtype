@@ -121,13 +121,6 @@ class renderable():
             return self.postfn(self, result)
         else:
             return result
-        
-    def send_preview(self, previewer, result, render_pass):
-        if isinstance(result, Path):
-            r = self.rect
-            previewer.send(str(result), Rect(0, 0, r.w/2, r.h/2), bg=self.bg, image=True)
-        else:
-            previewer.send(SVGPen.Composite(result, self.rect, viewBox=True), bg=self.bg, max_width=800)
     
     def draw_preview(self, scale, canvas:skia.Canvas, rect, result, render_pass):
         sr = self.rect.scale(scale, "mnx", "mxx")
@@ -146,10 +139,10 @@ class drawbot_script(renderable):
     def __init__(self, rect=(1080, 1080), scale=1, **kwargs):
         if not db:
             raise Exception("DrawBot not installed!")
-        super().__init__(rect=Rect(rect).scale(scale), **kwargs)
+        super().__init__(rect=Rect(rect).scale(scale), rasterizer="drawbot", **kwargs)
         self.self_rasterizing = True
     
-    def run(self, render_pass):
+    def run(self, render_pass, renderer_state):
         use_pool = True
         if use_pool:
             pool = AppKit.NSAutoreleasePool.alloc().init()
@@ -166,10 +159,6 @@ class drawbot_script(renderable):
             if use_pool:
                 del pool
         return result
-    
-    def send_preview(self, previewer, result, render_pass):
-        r = self.rect
-        previewer.send(str(render_pass.output_path), Rect(0, 0, r.w/2, r.h/2), bg=self.bg, image=True)
 
 
 class svgicon(renderable):
