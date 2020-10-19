@@ -38,10 +38,6 @@ If you’re looking for the source code, it’s on `Github`_.
 
 .. _Github: https://github.com/goodhertz/coldtype
 
-Installation
-------------
-
-Some text about how to install coldtype.
 
 Reference
 -------------
