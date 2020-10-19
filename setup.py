@@ -58,6 +58,7 @@ setuptools.setup(
         "glfw",
         "SimpleWebSocketServer",
         "more-itertools",
+        "docutils",
         #"rtmidi",
         #"pynput",
     ],
