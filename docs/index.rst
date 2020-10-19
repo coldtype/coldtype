@@ -49,6 +49,7 @@ Reference
 .. toctree::
    :maxdepth: 5
 
+   install
    examples/index
    api/index
 
