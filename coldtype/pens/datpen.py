@@ -2,6 +2,10 @@ import math, tempfile
 from enum import Enum
 from copy import deepcopy
 
+from typing import Optional
+from typing import Callable
+#from collections.abc import Callable
+
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.pens.reverseContourPen import ReverseContourPen
 from fontTools.pens.pointInsidePen import PointInsidePen
@@ -1215,7 +1219,7 @@ def DPO(r):
 
 class DATPenSet(DATPenLikeObject):
     """
-    A set of DATPen’s; behaves like a list
+    A set/collection of DATPen’s; behaves like a list
     """
     def __init__(self, pens=[]):
         self.pens = []
@@ -1239,6 +1243,7 @@ class DATPenSet(DATPenLikeObject):
         return len(self.pens)
     
     def print_tree(self, depth=0):
+        """Print a hierarchical representation of the pen set"""
         print("  "*depth, self)
         for pen in self.pens:
             if hasattr(pen, "pens"):
@@ -1250,6 +1255,9 @@ class DATPenSet(DATPenLikeObject):
         print("  "*depth + "/"+str(self))
     
     def copy(self):
+        """Get a completely new copy of this whole set of pens,
+        usually done so you can duplicate and further modify a
+        DATPenSet without mutating the original"""
         dps = DATPenSet()
         for p in self.pens:
             dps.append(p.copy())
@@ -1259,6 +1267,7 @@ class DATPenSet(DATPenLikeObject):
         return self.pens[index]
     
     def indexed_subset(self, indices):
+        """Take only the pens at the given indices"""
         dps = DATPenSet()
         for idx, p in enumerate(self.pens):
             if idx in indices:
@@ -1318,11 +1327,14 @@ class DATPenSet(DATPenLikeObject):
         return self
     
     def clearFrames(self):
+        """Get rid of any non-bounds-derived pen frames;
+        i.e. frames set by Harfbuzz"""
         for p in self.pens:
             p.clearFrame()
         return self
     
     def addFrame(self, frame, typographic=False, passthru=False):
+        """Add a frame that isn't derived from the bounds"""
         if passthru:
             for p in self.pens:
                 p.addFrame(frame, typographic=typographic)
@@ -1332,6 +1344,11 @@ class DATPenSet(DATPenLikeObject):
         return self
     
     def getFrame(self, th=False, tv=False):
+        """Get the frame of the DATPenSet;
+        `th` means `(t)rue (h)orizontal`;
+        `ty` means `(t)rue (v)ertical`;
+        passing either ignores a non-bounds-derived frame
+        in either dimension"""
         if self.frame and (th == False and tv == False):
             return self.frame
         else:
@@ -1344,12 +1361,14 @@ class DATPenSet(DATPenLikeObject):
                 return Rect(0,0,0,0)
     
     def bounds(self):
+        """Calculated bounds of a DATPenSet"""
         return self.getFrame(th=1, tv=1)
     
     def replay(self, pen):
         self.pen().replay(pen)
     
     def pen(self):
+        """A flat representation of this set as a single pen"""
         dp = DATPen()
         fps = self.collapse()
         for p in fps.pens:
@@ -1383,23 +1402,33 @@ class DATPenSet(DATPenLikeObject):
     #    return self.pmap(lambda idx, p: p.nonlinear_transform(fn))
     
     def round(self, rounding):
+        """Round all values for all pens in this set"""
         for p in self.pens:
             p.round(rounding)
         return self
     
-    def map(self, fn):
+    def map(self, fn: Callable[[int, DATPen], Optional[DATPen]]):
+        """Apply `fn` to all top-level pen(s) in this set;
+        if `fn` returns a value, it will overwrite
+        the pen it was given as an argument;
+        fn lambda receives `idx, p` as arguments"""
         for idx, p in enumerate(self.pens):
             result = fn(idx, p)
             if result:
                 self.pens[idx] = result
         return self
     
-    def mmap(self, fn):
+    def mmap(self, fn: Callable[[int, DATPen], None]):
+        """Apply `fn` to all top-level pen(s) in this set but
+        do not look at return value; first m in mmap
+        stands for `mutate`;
+        fn lambda receives `idx, p` as arguments"""
         for idx, p in enumerate(self.pens):
             fn(idx, p)
         return self
     
-    def filter(self, fn):
+    def filter(self, fn: Callable[[int, DATPen], bool]):
+        """Filter top-level pen(s)"""
         dps = DATPenSet()
         for idx, p in enumerate(self.pens):
             if fn(idx, p):
@@ -1409,6 +1438,7 @@ class DATPenSet(DATPenLikeObject):
         return dps
     
     def pmap(self, fn):
+        """Apply `fn` to all individal pens, recursively"""
         for idx, p in enumerate(self.pens):
             if hasattr(p, "pens"):
                 p.pmap(fn)
@@ -1417,6 +1447,7 @@ class DATPenSet(DATPenLikeObject):
         return self
     
     def pfilter(self, fn):
+        """Apply `fn` to all individual pens, recursively"""
         to_keep = []
         for idx, p in enumerate(self.pens):
             if hasattr(p, "pens"):
@@ -1432,27 +1463,32 @@ class DATPenSet(DATPenLikeObject):
         return self
     
     def glyphs_named(self, glyph_name):
+        """Pluck glyphs named `glyph_name`"""
         #return self.pfilter(lambda i, p: p.glyphName == glyph_name).pmap(lambda idx, p: mod_fn(p))
         for p in self:
             if p.glyphName == glyph_name:
                 yield p
     
     def tagged(self, tag):
+        """Yield all top-level pens tagged w/ `tag`"""
         for p in self:
             if p.getTag() == tag:
                 yield p
     
     def ffg(self, glyph_name):
-        """find the first glyph named this name"""
+        """(f)ind the (f)irst (g)lyph named this name"""
         return list(self.glyphs_named(glyph_name))[0]
     
     def fft(self, tag):
+        """(f)ind the (f)irst (t)agged with `tag`"""
         try:
             return list(self.tagged(tag))[0]
         except:
             return None
     
     def mfilter(self, fn):
+        """Same as `filter` but (m)utates this DATPenSet
+        to now have only the filtered pens"""
         self.pens = self.filter(fn)
         return self
     
@@ -1464,6 +1500,10 @@ class DATPenSet(DATPenLikeObject):
         return self
     
     def collapse(self, levels=100, onself=False):
+        """AKA `flatten` in some programming contexts, though
+        `flatten` is a totally different function here that flattens
+        outlines; this function flattens nested collections into
+        one-dimensional collections"""
         pens = []
         for idx, p in enumerate(self.pens):
             if hasattr(p, "pens") and levels > 0:
@@ -1480,6 +1520,7 @@ class DATPenSet(DATPenLikeObject):
             return dps
     
     def frameSet(self, th=False, tv=False):
+        """All the frames of all the pens"""
         if self.frame:
             return super().frameSet(th=th, tv=tv)
         dps = DATPenSet()
