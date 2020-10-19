@@ -1,11 +1,10 @@
 .. highlight:: python
 
-============
-Styling Text
-============
+==================
+Style/StyledString
+==================
 
-* :class:`~coldtype.Style`
-* :class:`~coldtype.StyledString`
+
 
 .. module:: coldtype
 .. autoclass:: Style

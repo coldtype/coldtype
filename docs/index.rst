@@ -22,28 +22,39 @@ Here’s an example:
 .. image:: /_static/renders/index_render.png
    :width: 350
 
-Examples
---------
+And here’s a video made with a combination of  coldtype and After Effects:
 
-.. toctree::
-   :maxdepth: 3
+.. raw:: html
 
-   examples/index
+   <div id="video" style="max-width:500px;margin-bottom:20px"><div style="padding:100% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/408581790?loop=1&title=0&byline=0&portrait=0" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div><script src="https://player.vimeo.com/api/player.js"></script></div>
 
-Documentation
+
+The code for that video is available here: https://github.com/goodhertz/coldtype-examples/blob/master/animations/808.py
+
+Introduction
+------------
+
+If you’re looking for the source code, it’s on `Github`_.
+
+.. _Github: https://github.com/goodhertz/coldtype
+
+Installation
+------------
+
+Some text about how to install coldtype.
+
+Reference
 -------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 5
 
-   text
-   pens
+   examples/index
+   api/index
 
 
 
 Indices and tables
 ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
