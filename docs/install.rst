@@ -8,8 +8,8 @@ Option A
 
 If you want to try coldtype in the coldtype repo itself (**recommended**):
 
-* Clone this repository
-* ``cd`` into the the cloned coldtype repository
+* Clone the coldtype repository, ala ``git clone https://github.com/goodhertz/coldtype``
+* ``cd`` into the the cloned coldtype repository on your computer
 * Create a virtual environment, ala ``python3.8 -m venv venv --prompt=coldtype`` on the command line
 * Then ``source venv/bin/activate`` to start your venv
 * Then ``pip install -e .`` (This adds the ``coldtype`` command to your virtual environment)

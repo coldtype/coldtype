@@ -1,9 +1,9 @@
 coldtype
 ====================================
 
-`coldtype` is a cross-platform library to for high-quality display typography.
+`coldtype` is a cross-platform library for display typography.
 
-Do you want to make graphics with code? This is a good & strange way to do it!
+Do you want to make graphics and animations with code? This is a good & strange way to do that.
 
 Here’s an example:
 
@@ -32,13 +32,6 @@ And here’s a video made with a combination of  coldtype and After Effects:
 
 
 The code for that video is available here: https://github.com/goodhertz/coldtype-examples/blob/master/animations/808.py
-
-Introduction
-------------
-
-If you’re looking for the source code, it’s on `Github`_.
-
-.. _Github: https://github.com/goodhertz/coldtype
 
 
 Reference
