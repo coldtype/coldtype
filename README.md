@@ -6,6 +6,10 @@ __⚠️🌋 Warning: the code is alpha-quality; the API is subject to change; t
 
 _Hello and welcome to `coldtype`, an odd little library for programmatic typography, written for use on [Goodhertz](https://goodhertz.com) projects and [text animations](https://vimeo.com/robstenson)._
 
+For __installation and tutorials__, check out [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
+
+For motivation and few examples, read on here.
+
 ![An example](https://raw.githubusercontent.com/goodhertz/coldtype/master/examples/renders/simple_render.png)
 
 
