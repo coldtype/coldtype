@@ -1,7 +1,9 @@
 coldtype
 ====================================
 
-`coldtype` is a library for programmatic display typography
+`coldtype` is a cross-platform library to for high-quality display typography.
+
+Do you want to make graphics with code? This is a good & strange way to do it!
 
 Here’s an example:
 
@@ -43,7 +45,7 @@ Reference
 -------------
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 10
 
    install
    examples/index

@@ -206,8 +206,11 @@ class Renderer():
             if self.filepath.suffix == ".rst":
                 doctree = publish_doctree(self.filepath.read_text())
                 def is_code_block(node):
-                    return (node.tagname == 'literal_block'
-                            and 'code' in node.attributes['classes'])
+                    if node.tagname == "literal_block":
+                        classes = node.attributes["classes"]
+                        if "code" in classes and "python" in classes:
+                            return True
+                    return False
                 code_blocks = doctree.traverse(condition=is_code_block)
                 source_code = [block.astext() for block in code_blocks]
                 if self.codepath:

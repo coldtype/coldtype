@@ -6,6 +6,8 @@ Lots of advanced examples, most for animation, are available in the `coldtype-ex
 The examples here are more oriented towards fundamental concepts of coldtype.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 5
 
     shapes
+    text
+    animation
