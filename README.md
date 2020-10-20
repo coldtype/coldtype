@@ -8,7 +8,9 @@ _Hello and welcome to `coldtype`, an odd little library for programmatic typogra
 
 For __installation and tutorials__, check out [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
 
-For motivation and few examples, read on here.
+For motivation and few examples, read on below.
+
+---
 
 ![An example](https://raw.githubusercontent.com/goodhertz/coldtype/master/examples/renders/simple_render.png)
 
