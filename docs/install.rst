@@ -6,7 +6,7 @@ Install
 Option A
 --------
 
-If you want to try coldtype in the coldtype repo itself:
+If you want to try coldtype in the coldtype repo itself (**recommended**):
 
 * Clone this repository
 * ``cd`` into the the cloned coldtype repository
@@ -28,16 +28,16 @@ Option B
 
 If you want to try coldtype in a blank virtual environment:
 
-Using a virtualenv (based on a python >= 3.8) (aka ``python3.8 -m venv venv --prompt=<your prompt here>`` + ``source venv/bin/activate``), there are two routes: (A) the packaged distribution, or (B) installing a cloned version of the repo into your project’s venv.
+Using a virtualenv (based on a python >= 3.8) (aka ``python3.8 -m venv venv --prompt=<your prompt here>`` + ``source venv/bin/activate``), there are two routes: (B.1) the packaged distribution, or (B.2) installing a cloned version of the repo into your project’s venv.
 
-I’d recommend Option B for now if your goal is experimentation, since Coldtype is under active development. That said, you might lose some reproduceability with option B since there's no versioning of coldtype itself with that approach. (If you’re worried about reproduceability, just make sure to note the coldtype sha somewhere so you can restore that state if you need to.)
+I’d recommend Option B.2 for now if your goal is experimentation, since Coldtype is under active development. That said, you might lose some reproduceability with option B.2 since there's no versioning of coldtype itself with that approach. (If you’re worried about reproduceability, just make sure to note the coldtype sha somewhere so you can restore that state if you need to.)
 
-Option A:
+Option B.1:
 
 * ``pip install coldtype``
 * ``coldtype``
 
-Option B:
+Option B.2:
 
 * Do the steps above for cloning the coldtype repo
 * ``pip install -e <path/to/the/coldtype/repo>``

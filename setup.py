@@ -5,7 +5,7 @@ long_description = """
 
 ### Programmatic display typography
 
-More info available at: [coldtype.goodhertz.co](https://coldtype.goodhertz.co)
+More info available at: [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
 """
 
 setuptools.setup(

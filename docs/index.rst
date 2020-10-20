@@ -48,8 +48,26 @@ Reference
    :maxdepth: 10
 
    install
-   examples/index
+   tutorials/index
    api/index
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Links
+
+   github <https://github.com/goodhertz/coldtype>
+   goodhertz.com <https://goodhertz.com>
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Examples
+
+   coldtype-examples <https://github.com/goodhertz/coldtype-examples>
+   808.py <https://github.com/goodhertz/coldtype-examples/blob/master/animations/808.py>
+   banner.py <https://github.com/goodhertz/coldtype-examples/blob/master/animations/banner.py>
+   digestive_wind.py <https://github.com/goodhertz/coldtype-examples/blob/master/animations/digestive_wind.py>
+   stacked_and_justified.py <https://github.com/goodhertz/coldtype-examples/blob/master/animations/stacked_and_justified.py>
+   vulfbach.py <https://github.com/goodhertz/coldtype-examples/blob/master/animations/vulfbach.py>
 
 
 

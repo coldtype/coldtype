@@ -67,7 +67,8 @@ class renderable():
         layers=[],
         solo=False,
         rstate=False,
-        preview_only=False):
+        preview_only=False,
+        viewBox=True):
         """Base configuration for a renderable function"""
 
         self.rect = Rect(rect)
@@ -85,6 +86,7 @@ class renderable():
         self.solo = solo
         self.preview_only = preview_only
         self.rstate = rstate
+        self.viewBox = viewBox
 
         if not rasterizer:
             if self.fmt == "svg":

@@ -4,7 +4,7 @@ __⚠️🌋 Warning: the code is alpha-quality; the API is subject to change; t
 
 # Coldtype
 
-_Hello and welcome to `coldtype`, an odd little library for programmatic typography, written by [Rob Stenson](https://robstenson.com), who is me, for use on [Goodhertz](https://goodhertz.com) projects and also [other stuff](https://vimeo.com/robstenson)._
+_Hello and welcome to `coldtype`, an odd little library for programmatic typography, written for use on [Goodhertz](https://goodhertz.com) projects and [text animations](https://vimeo.com/robstenson)._
 
 ![An example](https://raw.githubusercontent.com/goodhertz/coldtype/master/examples/renders/simple_render.png)
 
@@ -37,7 +37,7 @@ def render(r):
 
 # Documentation
 
-Check out [coldtype.goodhertz.co](https://coldtype.goodhertz.co) for instructions on installing and getting started with coldtype.
+Check out [coldtype.goodhertz.com](https://coldtype.goodhertz.com) for instructions on installing and getting started with coldtype.
 
 ## More Examples
 
@@ -146,6 +146,6 @@ I can’t decide, as you may be able to tell from this README’s inconsistent c
 
 - [Lyric](https://youtu.be/b2_CJ_nx-l4?t=21) [videos](https://vimeo.com/377148622)
 - [3d type specimens](https://vimeo.com/354292807)
-- [All Goodhertz plugin interfaces](https://goodhertz.co)
+- [All Goodhertz plugin interfaces](https://goodhertz.com)
 - [All recent posts on the Goodhertz instagram](https://www.instagram.com/goodhertz/)
 - And [all recent posts on Rob’s instagram](https://www.instagram.com/robrushstenson/)

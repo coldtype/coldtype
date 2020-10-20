@@ -222,9 +222,12 @@ from shutil import copy2
 
 def package_for_docs(self, filepath, output_folder):
     img = f"{filepath.stem}_{self.func.__name__}.png"
-    dst = Path("docs/_static/renders")
-    dst.mkdir(parents=True, exist_ok=True)
-    copy2(output_folder / img, dst / img)
+    try:
+        dst = Path("docs/_static/renders")
+        dst.mkdir(parents=True, exist_ok=True)
+        copy2(output_folder / img, dst / img)
+    except FileNotFoundError:
+        pass
 
 renderable.package = package_for_docs
                     """)
@@ -539,7 +542,7 @@ renderable.package = package_for_docs
             SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=None if self.args.cpu_render else self.context)
         elif rasterizer == "svg":
             from coldtype.pens.svgpen import SVGPen
-            path.write_text(SVGPen.Composite(content, render.rect, viewBox=True))
+            path.write_text(SVGPen.Composite(content, render.rect, viewBox=render.viewBox))
         elif rasterizer == "cairo":
             from coldtype.pens.cairopen import CairoPen
             CairoPen.Composite(content, render.rect, str(path), scale=scale)

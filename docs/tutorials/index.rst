@@ -1,5 +1,5 @@
-Examples
-========
+Tutorials
+=========
 
 Lots of advanced examples, most for animation, are available in the `coldtype-examples <https://github.com/goodhertz/coldtype-examples>`_ repository on github.
 
