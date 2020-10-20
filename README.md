@@ -134,7 +134,7 @@ The central graphic element of Coldtype (the `DATPen`) is a wrapper around `font
 
 ## Why is an audio software company releasing a typography library?
 
-Because (__A__) I love fonts and (__B__) audio software interfaces use fonts (and have some unique design constraints for typography), also (__C__) we make lots of ads that feature typography that reacts to audio and midi data. Those reactions and the code to make them happen are all part of Coldtype, although those are advanced topic that aren’t covered in this README. (But they are covered by the example code in the coldtype-examples](https://github.com/goodhertz/coldtype-examples) repo.)
+Because (__A__) I love fonts and (__B__) audio software interfaces use fonts (and have some unique design constraints for typography), also (__C__) we make lots of ads that feature typography that reacts to audio and midi data. Those reactions and the code to make them happen are all part of Coldtype, although those are advanced topic that aren’t covered in this README. (But they are covered by the example code in the [coldtype-examples](https://github.com/goodhertz/coldtype-examples) repo.)
 
 ## Why “coldtype”?
 
