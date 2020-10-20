@@ -15,9 +15,9 @@ def render(r):
         (StyledString("COLDTYPE",
             Style("assets/ColdtypeObviously-VF.ttf", 250,
                 wdth=1, tu=-170, r=1, rotate=15,
-                kp={"P/E":-150, "T/Y":-50}))
+                kp={"P/E":-150, "T/Y":10}))
             .pens()
             .align(r)
             .f(Gradient.Horizontal(r, c1, c2))
-            .understroke(s=1, sw=5))
-            .translate(0, 5)])
+            .understroke(s=1, sw=5)
+            .translate(0, 5))])
