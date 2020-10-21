@@ -505,7 +505,8 @@ renderable.package = package_for_docs
                 "-l", ",".join(self.layers or []),
                 "-s", str(self.args.scale),
             ]
-            if r := self.args.rasterizer:
+            r = self.args.rasterizer
+            if r:
                 sargs.append("-r", r)
             if self.args.no_sound:
                 sargs.append("-ns")
@@ -614,8 +615,9 @@ renderable.package = package_for_docs
         
         self.window = glfw.create_window(int(50), int(50), '', None, None)
         self.window_scrolly = 0
-
-        if o := self.py_config.get("WINDOW_OPACITY"):
+        
+        o = self.py_config.get("WINDOW_OPACITY")
+        if o:
             glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
         
         self._prev_scale = glfw.get_window_content_scale(self.window)[0]
@@ -1040,7 +1042,8 @@ renderable.package = package_for_docs
                 self.create_surface(frect)
 
             if not self.last_rect or frect != self.last_rect:
-                if m_scale := self.py_config.get("WINDOW_SCALE"):
+                m_scale = self.py_config.get("WINDOW_SCALE")
+                if m_scale:
                     scale_x, scale_y = m_scale
                 else:
                     scale_x, scale_y = glfw.get_window_content_scale(self.window)
@@ -1051,7 +1054,8 @@ renderable.package = package_for_docs
                 ww = int(w/scale_x)
                 wh = int(h/scale_y)
                 glfw.set_window_size(self.window, ww, wh)
-                if pin := self.py_config.get("WINDOW_PIN", None):
+                pin = self.py_config.get("WINDOW_PIN", None)
+                if pin:
                     monitor = glfw.get_primary_monitor()
                     work_rect = Rect(glfw.get_monitor_workarea(monitor))
                     pinned = work_rect.take(ww, pin[0]).take(wh, pin[1])
@@ -1124,7 +1128,8 @@ renderable.package = package_for_docs
     def monitor_midi(self):
         controllers = {}
         for device, mi in self.midis:
-            while msg := mi.getMessage(0):
+            msg = mi.getMessage(0)
+            while msg:
                 if self.args.midi_info:
                     print(device, msg)
                 if msg.isNoteOn(): # Maybe not forever?
@@ -1134,6 +1139,7 @@ renderable.package = package_for_docs
                         self.on_message({}, action)
                 if msg.isController():
                     controllers[device + "_" + str(msg.getControllerNumber())] = msg.getControllerValue()/127
+                msg = mi.getMessage(0)
         
         if len(controllers) > 0:
             nested = {}

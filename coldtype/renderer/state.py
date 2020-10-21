@@ -16,10 +16,11 @@ class RendererState():
         self.reset()
     
     def reset(self):
-        if fp := self.filepath:
+        if self.filepath:
             try:
-                deserial = json.loads(fp.read_text())
-                if cv := deserial.get("controller_values"):
+                deserial = json.loads(self.filepath.read_text())
+                cv = deserial.get("controller_values")
+                if cv:
                     self.controller_values = cv
             except json.decoder.JSONDecodeError:
                 self.controller_values = {}
@@ -27,14 +28,14 @@ class RendererState():
                 self.controller_values = {}
     
     def clear(self):
-        if fp := self.filepath:
-            fp.write_text("")
+        if self.filepath:
+            self.filepath.write_text("")
         self.reset()
     
     @property
     def filepath(self):
-        if fp := self.renderer.filepath:
-            return Path(str(fp).replace(".py", "") + "_state.json")
+        if self.renderer.filepath:
+            return Path(str(self.renderer.filepath).replace(".py", "") + "_state.json")
         else:
             return None
     
@@ -43,8 +44,8 @@ class RendererState():
         return self.controller_values
     
     def persist(self):
-        if fp := self.filepath:
+        if self.filepath:
             print("Saving Controller State...")
-            fp.write_text(RendererStateEncoder().encode(self))
+            self.filepath.write_text(RendererStateEncoder().encode(self))
         else:
             print("No source; cannot persist state")

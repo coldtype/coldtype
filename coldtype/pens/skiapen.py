@@ -112,7 +112,8 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 0, 0, 1, 0, 0,
                 0, 0, 0, opacity, 0
             ])
-            if cf := self.paint.getColorFilter():
+            cf = self.paint.getColorFilter()
+            if cf:
                 self.paint.setColorFilter(skia.ColorFilters.Compose(
                     tf, cf))
             else:
