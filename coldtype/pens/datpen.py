@@ -1519,6 +1519,8 @@ class DATPenSet(DATPenLikeObject):
         else:
             return dps
     
+    flatten = collapse # deprecated but used in the wild
+    
     def frameSet(self, th=False, tv=False):
         """All the frames of all the pens"""
         if self.frame:
