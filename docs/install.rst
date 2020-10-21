@@ -25,6 +25,10 @@ You can also try running some of the tests that are part of the repo, like:
 
 With that window open, try hitting the arrow keys on your keyboard to go backward and forward in time.
 
+.. raw:: html
+
+    <div style="padding:56.25% 0 0 0;position:relative;margin-bottom:50px"><iframe src="https://player.vimeo.com/video/470790061?title=0&byline=0&portrait=0" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div><script src="https://player.vimeo.com/api/player.js"></script>
+
 Option B
 --------
 
