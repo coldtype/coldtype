@@ -31,7 +31,7 @@ And here’s a video made with a combination of  coldtype and After Effects:
    <div id="video" style="max-width:500px;margin-bottom:20px"><div style="padding:100% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/408581790?loop=1&title=0&byline=0&portrait=0" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div><script src="https://player.vimeo.com/api/player.js"></script></div>
 
 
-The code for that video is available here: https://github.com/goodhertz/coldtype-examples/blob/master/animations/808.py
+The code for that video is available here: https://github.com/goodhertz/coldtype-examples/blob/main/animations/808.py
 
 
 Reference
@@ -56,11 +56,11 @@ Reference
    :caption: Examples
 
    coldtype-examples <https://github.com/goodhertz/coldtype-examples>
-   808.py <https://github.com/goodhertz/coldtype-examples/blob/master/animations/808.py>
-   banner.py <https://github.com/goodhertz/coldtype-examples/blob/master/animations/banner.py>
-   digestive_wind.py <https://github.com/goodhertz/coldtype-examples/blob/master/animations/digestive_wind.py>
-   stacked_and_justified.py <https://github.com/goodhertz/coldtype-examples/blob/master/animations/stacked_and_justified.py>
-   vulfbach.py <https://github.com/goodhertz/coldtype-examples/blob/master/animations/vulfbach.py>
+   808.py <https://github.com/goodhertz/coldtype-examples/blob/main/animations/808.py>
+   banner.py <https://github.com/goodhertz/coldtype-examples/blob/main/animations/banner.py>
+   digestive_wind.py <https://github.com/goodhertz/coldtype-examples/blob/main/animations/digestive_wind.py>
+   stacked_and_justified.py <https://github.com/goodhertz/coldtype-examples/blob/main/animations/stacked_and_justified.py>
+   vulfbach.py <https://github.com/goodhertz/coldtype-examples/blob/main/sanimations/vulfbach.py>
 
 
 

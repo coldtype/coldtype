@@ -12,7 +12,7 @@ For motivation and few examples, read on below.
 
 ---
 
-![An example](https://raw.githubusercontent.com/goodhertz/coldtype/master/examples/renders/simple_render.png)
+![An example](https://raw.githubusercontent.com/goodhertz/coldtype/main/examples/renders/simple_render.png)
 
 
 ```python
@@ -76,7 +76,7 @@ def render(f):
         .f(0)
         .understroke(s=1, sw=15))
 ```
-_source code and instructions for running available here:_ [banner.py](https://github.com/goodhertz/coldtype-examples/blob/master/animations/banner.py)
+_source code and instructions for running available here:_ [banner.py](https://github.com/goodhertz/coldtype-examples/blob/main/animations/banner.py)
 
 ___
 
