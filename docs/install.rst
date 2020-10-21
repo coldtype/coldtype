@@ -1,7 +1,7 @@
 Install
 =======
 
-* Install a Python >= 3.8
+* Install a Python >= 3.8 (at the moment, 3.9 doesn’t work but it should in the next 3.9 release; if you’re seeing this and you don’t have a 3.8 installed, install a 3.8 rather than a 3.9 from `python.org/downloads <https://python.org/downloads>`_)
 
 Option A
 --------

@@ -1,7 +1,7 @@
 coldtype
 ====================================
 
-`coldtype` is a cross-platform library for display typography.
+`Coldtype` is a cross-platform library for programming high-quality display typography with Python.
 
 Do you want to make graphics and animations with code? This is a good & strange way to do that.
 
