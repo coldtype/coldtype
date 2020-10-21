@@ -1,7 +1,9 @@
 Install
 =======
 
-* Install a Python >= 3.8 (at the moment, 3.9 doesn’t work but it should in the next 3.9 release; if you’re seeing this and you don’t have a 3.8 installed, install a 3.8 rather than a 3.9 from `python.org/downloads <https://python.org/downloads>`_)
+* Install a Python >= 3.7, <= 3.8
+    * For the moment, Python 3.9 will not work b/c of an issue with the skia graphics library, though that issue should be resolved soon
+    * If you don’t have a Python >= 3.7, I’d recommend Python 3.8.6 (available from `python.org/downloads <https://python.org/downloads>`_ if you scroll down a little)
 
 Option A
 --------

@@ -49,7 +49,7 @@ Check out [coldtype.goodhertz.com](https://coldtype.goodhertz.com) for instructi
 
 The best way to get familiar with Coldtype is to look at and try modifying some example code, like the animating gif below. To try out this example and many more, check out the [coldtype-examples](https://github.com/goodhertz/coldtype-examples) repository.
 
-![An example](https://coldtype.goodhertz.co/media/banner_3.gif)
+![An example](https://raw.githubusercontent.com/goodhertz/coldtype/main/assets/banner_3.gif)
 ---
 ```python
 from coldtype import *
