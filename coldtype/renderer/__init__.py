@@ -112,7 +112,9 @@ class Renderer():
 
             show_exit_code=parser.add_argument("-sec", "--show-exit-code", action="store_true", default=False, help=argparse.SUPPRESS),
 
-            show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS)),
+            show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS),
+            
+            docs=parser.add_argument("-d", "--docs", action="store_true", default=False, help=argparse.SUPPRESS)),
         return pargs, parser
     
     def read_configs(self):
@@ -217,20 +219,6 @@ class Renderer():
                     self.codepath.unlink()
                 with tempfile.NamedTemporaryFile("w", prefix="coldtype_rst_src", suffix=".py", delete=False) as tf:
                     tf.write("\n".join(source_code))
-                    tf.write("""
-from shutil import copy2
-
-def package_for_docs(self, filepath, output_folder):
-    img = f"{filepath.stem}_{self.func.__name__}.png"
-    try:
-        dst = Path("docs/_static/renders")
-        dst.mkdir(parents=True, exist_ok=True)
-        copy2(output_folder / img, dst / img)
-    except FileNotFoundError:
-        pass
-
-renderable.package = package_for_docs
-                    """)
                     self.codepath = Path(tf.name)
             elif self.filepath.suffix == ".py":
                 self.codepath = self.filepath
@@ -271,6 +259,31 @@ renderable.package = package_for_docs
         for r in renderables:
             if isinstance(r, animation):
                 return r
+    
+    def release_fn(self):
+        for k, v in self.program.items():
+            if k == "release":
+                return v
+        
+        if self.args.docs:
+            def build_docs(artifacts):
+                from shutil import copy2
+                for img in artifacts:
+                    try:
+                        dst = Path("docs/_static/renders")
+                        dst.mkdir(parents=True, exist_ok=True)
+                        copy2(img, dst / img.name)
+                    except FileNotFoundError:
+                        print("FileNotFound", img)
+                owd = os.getcwd()
+                try:
+                    os.chdir("docs")
+                    os.system("make html")
+                finally:
+                    os.chdir(owd)
+            
+            return build_docs
+                
     
     def renderables(self, trigger):
         _rs = []
@@ -750,6 +763,26 @@ renderable.package = package_for_docs
         #print(xoff, yoff)
         #pass # TODO!
     
+    def on_release(self):
+        release_fn = self.release_fn()
+        if not release_fn:
+            print("No `release` fn defined in source")
+            return
+        trigger = Action.RenderAll
+        renders = self.renderables(trigger)
+        output_folder = None
+        artifacts = []
+        try:
+            for render in renders:
+                if not render.preview_only:
+                    output_folder, prefix, fmt, _layers, passes = self.add_paths_to_passes(trigger, render, [0])
+                    for rp in passes:
+                        artifacts.append(rp.output_path)
+
+            release_fn(artifacts)
+        except Exception as e:
+            print("Release failed", str(e))
+    
     def on_key(self, win, key, scan, action, mods):
         if action == glfw.PRESS:
             if key == glfw.KEY_LEFT:
@@ -861,6 +894,8 @@ renderable.package = package_for_docs
                 anm = self.animation()
                 passes = self.add_paths_to_passes(Action.RenderAll, anm, anm.all_frames())[-1]
                 self.preload_frames(passes)
+        elif action == Action.Release:
+            self.on_release()
         elif action == Action.ArbitraryCommand:
             self.on_stdin(message.get("input"))
             return True
@@ -1123,7 +1158,10 @@ renderable.package = package_for_docs
             o = AsyncWatchdog(str(d), on_modified=self.on_modified, recursive=False)
             o.start()
             self.observers.append(o)
-        print("... watching ...")
+        if self.filepath:
+            print(f"... watching {self.filepath.name} for changes ...")
+        else:
+            print(f"... no file specified, showing generic window ...")
     
     def monitor_midi(self):
         controllers = {}

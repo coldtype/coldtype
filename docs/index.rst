@@ -1,9 +1,9 @@
 coldtype
 ====================================
 
-`Coldtype` is a cross-platform library for programming high-quality display typography with Python.
+`Coldtype` is a cross-platform library for programming and animating high-quality display typography with Python.
 
-Do you want to make graphics and animations with code? This is a good & strange way to do that.
+Put another way: do you want to make graphics and animations with code? This is a good & strange way to do that.
 
 Here’s an example:
 
@@ -12,19 +12,27 @@ Here’s an example:
    from coldtype import *
 
    @renderable((700, 350))
-   def render(r):
+   def coldtype(r):
       return (StyledString("COLDTYPE",
          Style("assets/ColdtypeObviously-VF.ttf",
             350, wdth=0, tu=20, r=1, rotate=10, ro=1))
          .pens()
          .align(r)
-         .f(Gradient.Horizontal(r, hsl(0.95, s=1, l=0.65), hsl(0.7, s=1, l=0.7)))
+         .f(Gradient.Horizontal(r, hsl(0.69, s=1, l=0.55), hsl(0.55, s=1, l=0.6)))
          .translate(0, 5))
 
-.. image:: /_static/renders/index_render.png
+.. image:: /_static/renders/index_coldtype.png
    :width: 350
 
-And here’s a video made with a combination of  coldtype and After Effects:
+Some oddities to note if you’re familiar with other graphics programming environments:
+
+* There is no "canvas" — all graphics are hierarchical data ``return``-ed from a function to the renderer, which does all the actual drawing-to-a-virtual-canvas.
+
+* There is a lot of emphasis on **method-chaining**, which (I feel) is an underappreciated way to do graphics programming, since the resulting code is easily editable and experimentable. Of course, some — like the creator of Python — have called this style of programming "un-Pythonic."
+
+* As might already be clear from the first two points, coldtype is not meant to be a good introduction to programming (though it might still be, I'm not sure). The emphasis here is on programming patterns that ease the creation of professional graphics, particularly complex animations.
+
+With that in mind, here’s a somewhat complex animation made with a combination of  coldtype and After Effects, to demonstrate what’s possible with not-so-much code:
 
 .. raw:: html
 
@@ -33,6 +41,13 @@ And here’s a video made with a combination of  coldtype and After Effects:
 
 The code for that video is available here: https://github.com/goodhertz/coldtype-examples/blob/main/animations/808.py
 
+For more of examples of what coldtype can do:
+
+- `Vulfpeck, “LAX” <https://www.youtube.com/watch?v=NzxW8nxgENA>`_
+- `"Buggin’ Out (Phife Dawg’s Verse)" <https://vimeo.com/377148622>`_
+- A `3D type specimen <https://vimeo.com/354292807>`_
+- `Goodhertz plugins <https://goodhertz.com/>`_
+- Anything recent on `my website <https://robstenson.com/>`_
 
 Reference
 -------------
