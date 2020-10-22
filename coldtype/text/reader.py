@@ -693,9 +693,7 @@ class StyledString(FittableMixin):
                     dp_atom += dp_layer
                 dp_atom.addFrame(g.frame, typographic=True)
                 dp_atom.glyphName = g.name
-            print(g.name, len(pens))
             pens.append(dp_atom, allow_blank=self.style.include_blanks)
-            print(g.name, len(pens))
 
         if self.style.reverse:
             pens.reversePens()
