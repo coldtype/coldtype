@@ -149,6 +149,7 @@ class Style():
             rotate=0,
             sv=True,
             narrower=None,
+            include_blanks=False,
             **kwargs):
         """
         kern_pairs (kp) — a dict of glyphName->[left,right] values in font-space
@@ -177,6 +178,7 @@ class Style():
         self.reverse = kwargs.get("r", reverse)
         self.removeOverlap = kwargs.get("ro", removeOverlap)
         self.rotate = rotate
+        self.include_blanks = include_blanks
         self.sv = sv # scale-variations
         
         if "OS/2" in self.font.font.ttFont:
@@ -691,7 +693,9 @@ class StyledString(FittableMixin):
                     dp_atom += dp_layer
                 dp_atom.addFrame(g.frame, typographic=True)
                 dp_atom.glyphName = g.name
-            pens.append(dp_atom)
+            print(g.name, len(pens))
+            pens.append(dp_atom, allow_blank=self.style.include_blanks)
+            print(g.name, len(pens))
 
         if self.style.reverse:
             pens.reversePens()

@@ -364,6 +364,12 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def __len__(self):
         return len(self.value)
     
+    def __add__(self, item):
+        return DATPenSet([self, item])
+    
+    def __sub__(self, item):
+        return DATPenSet([self])
+    
     def vl(self, value):
         self.value = value
         return self
@@ -1280,13 +1286,19 @@ class DATPenSet(DATPenLikeObject):
     def __iadd__(self, item):
         return self.append(item)
     
+    def __add__(self, item):
+        return self.append(item)
+    
+    def __sub__(self, item):
+        return self
+    
     def insert(self, index, pen):
         if pen:
             self.pens.insert(index, pen)
         return self
     
-    def append(self, pen):
-        if pen:
+    def append(self, pen, allow_blank=False):
+        if pen or allow_blank:
             if isinstance(pen, DATPenLikeObject):
                 self.pens.append(pen)
             else:

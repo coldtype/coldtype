@@ -28,11 +28,11 @@ Some oddities to note if you’re familiar with other graphics programming envir
 
 * There is no "canvas" — all graphics are **hierarchical data** ``return``-ed from a function to the renderer, which does all the actual drawing-to-a-virtual-canvas.
 
-* There is a lot of emphasis on **method-chaining**, which (I feel) is an underappreciated way to do graphics programming, since the resulting code is easily editable and experimentable. Of course, some (like the creator of Python) have called this style of programming "un-Pythonic."
+* There is a lot of emphasis on **method-chaining**, which (I feel) is an underappreciated way to do graphics programming, since the resulting code is easily editable and experimentable. Of course, some (like the creator of Python) have called this style of programming "un-Pythonic." Take from that what you will!
 
 * As might already be clear from the first two points, coldtype is not meant to be a good introduction to programming (though it might still be, I'm not sure). The emphasis here is on programming patterns that ease the creation of professional graphics, particularly **complex animations**.
 
-With all that in mind, here’s a somewhat complex animation made with a combination of  coldtype and After Effects, to demonstrate what’s possible with not-so-much code:
+With all that in mind, here’s a somewhat complex animation — made with a combination of coldtype and After Effects — demonstrating what’s possible with not-so-much code:
 
 .. raw:: html
 
