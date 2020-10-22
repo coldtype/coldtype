@@ -161,4 +161,5 @@ I can’t decide, as you may be able to tell from this README’s inconsistent c
 - `coldtype.pens.outlinepen` contains code written by Frederik Berlaen, Copyright (c) 2016
 - `coldtype.pens.translationpen` contains code written by Loïc Sander, Copyright (c) 2014
 - `coldtype.fontgoggles` contains parts of the [FontGoggles](https://github.com/justvanrossum/fontgoggles) codebase, written by Just van Rossum, Copyright (c) 2019 Google, LLC
-- MutatorSans included for testing was written by Erik van Blokland, Copyright (c) 2017
+- Mutator Sans included for testing was written by Erik van Blokland, Copyright (c) 2017
+- Recursive Mono Casual Italic is an [open-source typeface](https://github.com/arrowtype/recursive) by @arrowtype
