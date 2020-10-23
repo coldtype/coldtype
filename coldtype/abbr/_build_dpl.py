@@ -1,5 +1,6 @@
 import inspect
 from pathlib import Path
+from coldtype.abbr.inst import Inst
 from coldtype.pens.datpen import DATPen, DATPenLikeObject, DATPenSet
 
 def signature(routine):
@@ -30,17 +31,13 @@ def write_alias(name, routine, aliasset):
     
     txt = ""
     txt += f"def {name}({', '.join(ps)}):\n"
-    txt += f"\treturn ['{name}', {', '.join(vs)}]\n\n"
+    txt += f"\treturn Inst('{name}', {', '.join(vs)})\n\n"
 
-    txt += f"def ø{name}({', '.join(ps)}):\n"
-    txt += f"\treturn ['skip']\n\n"
-
-    txt += f"def s_{name}({', '.join(ps)}):\n"
-    txt += f"\treturn ['skip']\n\n"
     return txt
 
 if __name__ == "<run_path>":
-    dp = "from coldtype.geometry import Rect, Edge\n\n"
+    dp = "from coldtype.geometry import Rect, Edge\n"
+    dp += "from coldtype.abbr.inst import Inst\n\n"
     
     dp_methods = {}
     dps_methods = {}
@@ -64,4 +61,4 @@ if __name__ == "<run_path>":
     #from pprint import pprint
     #pprint(dp_methods)
 
-import coldtype.pens.dp_auto_abbrev
+#import coldtype.abbr.dp_auto_abbrev

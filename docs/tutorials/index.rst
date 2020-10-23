@@ -9,5 +9,6 @@ The examples here are more oriented towards fundamental concepts of coldtype.
     :maxdepth: 5
 
     shapes
+    geometry
     text
     animation

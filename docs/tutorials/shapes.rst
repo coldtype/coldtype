@@ -19,7 +19,7 @@ Let’s start with a classic rectangle.
 .. image:: /_static/renders/shapes_rectangle.png
     :width: 150
 
-That’s how to draw a rectangle with a 50px padding around the edges (the padding comes from the ``r.inset(50)`` call).
+That’s how to draw a rectangle with a 50px padding around the edges (the padding comes from the ``r.inset(50)`` call). (I’m re-reading this now and if you’re thinking to yourself: that’s a square — well that makes sense, but a square’s just a rectangle with the same width & height.)
 
 How about an oval?
 

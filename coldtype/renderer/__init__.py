@@ -22,6 +22,7 @@ from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.utils import *
 from coldtype.renderer.state import RendererState
+from coldtype.abbr.inst import Inst
 
 _random = Random()
 
@@ -392,12 +393,16 @@ class Renderer():
 
                     try:
                         result = render.run(rp, self.state)
+                        if isinstance(result, Inst):
+                            result = result.realize()
+                        
                         try:
-                            if len(result) == 2 and isinstance(result[1], str):
-                                self.show_message(result[1])
-                                result = result[0]
+                            for idx, p in enumerate(result):
+                                if isinstance(p, Inst):
+                                    result[idx] = p.realize()
                         except:
                             pass
+
                         if previewing:
                             preview_result = render.runpost(result, rp)
                             preview_count += 1
