@@ -458,14 +458,16 @@ class Rect():
     def subdivide(self, amount, edge):
         edge = txt_to_edge(edge)
         return [Rect(x) for x in subdivide(self.rect(), amount, edge)]
+    
+    def subdivide_with_leading(self, count, leading, edge, forcePixel=True):
+        return self.subdivide_with_leadings(count, [leading]*(count-1), edge, forcePixel)
 
     def subdivide_with_leadings(self, count, leadings, edge, forcePixel=True):
         edge = txt_to_edge(edge)
         leadings = leadings + [0]
         full = self.w if edge == Edge.MinX or edge == Edge.MaxX else self.h
         unit = (full - sum(leadings)) / count
-        amounts = [val for pair in zip([unit] * count, leadings)
-                   for val in pair][:-1]
+        amounts = [val for pair in zip([unit] * count, leadings) for val in pair][:-1]
         return [Rect(x) for x in subdivide(self.rect(), amounts, edge, forcePixel=forcePixel)][::2]
 
     def transform(self, t):

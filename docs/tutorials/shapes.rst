@@ -18,6 +18,7 @@ Let’s start with a classic rectangle.
 
 .. image:: /_static/renders/shapes_rectangle.png
     :width: 150
+    :class: add-border
 
 That’s how to draw a rectangle with a 50px padding around the edges (the padding comes from the ``r.inset(50)`` call). (I’m re-reading this now and if you’re thinking to yourself: that’s a square — well that makes sense, but a square’s just a rectangle with the same width & height.)
 
@@ -31,6 +32,7 @@ How about an oval?
 
 .. image:: /_static/renders/shapes_oval.png
     :width: 150
+    :class: add-border
 
 That’s an oval. Sweeet.
 
@@ -50,6 +52,7 @@ What if you want to combine an oval and a rect?
 
 .. image:: /_static/renders/shapes_ovalrect.png
     :width: 150
+    :class: add-border
 
 Or maybe you want just the parts of those two shapes that don’t overlap? And maybe you want to fill the shape with a gradient and rotate the rect a little bit and then eyeball how it should be centered in its frame?
 
@@ -71,6 +74,7 @@ Or maybe you want just the parts of those two shapes that don’t overlap? And m
 
 .. image:: /_static/renders/shapes_ovalrect_diff.png
     :width: 150
+    :class: add-border
 
 Modifying Shapes
 ----------------
@@ -90,3 +94,4 @@ Here’s an example of building up a chain of effects to modify a simple vector 
 
 .. image:: /_static/renders/shapes_ovalmod.png
     :width: 150
+    :class: add-border

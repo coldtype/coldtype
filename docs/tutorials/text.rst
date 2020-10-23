@@ -23,6 +23,7 @@ Which should get you this:
 
 .. image:: /_static/renders/text_basic.png
     :width: 500
+    :class: add-border
 
 You might be wondering why the text is blue — that’s the default fill color for any text in coldtype. Let’s mess w/ the color and set some variable font axis values:
 
@@ -39,6 +40,7 @@ You might be wondering why the text is blue — that’s the default fill color
 
 .. image:: /_static/renders/text_lessbasic.png
     :width: 500
+    :class: add-border
 
 What’s interesting (and different) about setting text with Coldtype is that you are telling the computer to draw text, you're asking for information about the individual glyphs and where they sit, given the parameters you’re passing into the combination of ``StyledString`` and ``Style``.
 
@@ -80,6 +82,7 @@ And because of the lines with calls to `rotate`, you should see this on your scr
 
 .. image:: /_static/renders/text_print_tree.png
     :width: 500
+    :class: add-border
 
 Less Basic Text
 ---------------
@@ -112,6 +115,7 @@ To illustrate that point, let’s change the text:
 
 .. image:: /_static/renders/text_typecold.png
     :width: 500
+    :class: add-border
 
 The last two examples also illustrate something important about Coldtype — (almost) everything is self-mutating by default. So a line like ``pens[0].rotate(180)`` changes ``pens[0]`` directly, meaning you don’t need to assign it to a new variable. This makes it very easy to directly manipulate nested structures without needing to reassign variables.
 
@@ -134,6 +138,7 @@ This also means that sometimes it is very necessary to ``copy`` pens in order to
 
 .. image:: /_static/renders/text_simpledrop.png
     :width: 500
+    :class: add-border
 
 I’ll admit the impact of the interesting dropshadow here is lessened somewhat by the appearance of the strange pink lines in the top layer of text. When I added the code stroking the pens (``.s(hsl(0.9)).sw(3)``), I thought it would look like a standard stroked shape. But if you’re familiar with how variable fonts are constructed, those lines might not seem all that strange to you — they indicate that the letters are constructed in order to interpolate cleanly. That said, we probably don’t want to see them! So there’s a special ``ro=1`` flag that you can pass to any ``Style`` constructor, and that’ll ``(r)emove (o)verlaps`` on all the glyphs before they come back to you in their correct positions.
 
@@ -154,6 +159,7 @@ I’ll admit the impact of the interesting dropshadow here is lessened somewhat 
 
 .. image:: /_static/renders/text_ro.png
     :width: 500
+    :class: add-border
 
 Fixed! Also I did some completely unrelated things there.
 
@@ -187,6 +193,7 @@ One additional refinement you may want to make in an example like this is that y
 
 .. image:: /_static/renders/text_stroke_shadow.png
     :width: 500
+    :class: add-border
 
 Dang, you know I thought that example would just work, but it looks like there are some tiny little dots present, which I think are artifacts of the ``castshadow`` call. I didn’t write the guts of that (Loïc Sander wrote something called a ``TranslationPen`` which is used by coldtype internally), so I don’t understand it completely, but it shouldn’t be difficult to devise a way to clean up those tiny specks by testing the ``bounds`` of each of the contours created by the ``TranslationPen``. We can do that by iterating over the individual contours with the ``filter_contours`` method provided by the ``DATPen`` class. We can also use the opportunity demonstrate some debugging techniques, like isolating a single letter and blowing it up.
 
@@ -218,6 +225,7 @@ Dang, you know I thought that example would just work, but it looks like there a
 
 .. image:: /_static/renders/text_stroke_shadow_cleanup.png
     :width: 500
+    :class: add-border
 
 Got it! If you comment out the ``.filter_contours`` line, you should see the little speck show up again.
 
@@ -225,7 +233,7 @@ Two suggestions to help you better understand code or find weird looks: try comm
 
 .. code:: python
 
-    @renderable((1000, 200))
+    @renderable((1000, 250))
     def stroke_shadow_random(r):
         pens = (StyledString("COLDTYPE",
             Style("assets/ColdtypeObviously-VF.ttf",
@@ -247,3 +255,32 @@ Two suggestions to help you better understand code or find weird looks: try comm
 
 .. image:: /_static/renders/text_stroke_shadow_random.png
     :width: 500
+    :class: add-border
+
+Multi-line Text
+---------------
+
+.. code:: python
+
+    mutator = Font.Cacheable("assets/MutatorSans.ttf")
+    
+    text = """SALT PEANUTS
+    IS THE NAME OF THIS SONG"""
+
+    @renderable((1000, 250))
+    def graf(r):
+        style = Style(mutator, 120, wdth=1, wght=0.5, varyFontSize=1, ro=1)
+        lockups = Slug.LineSlugs(text, style)
+        return (Graf(lockups, r, leading=20)
+            .fit(r.w-100)
+            .pens()
+            .map(lambda i,p: p.align(p.getFrame(), th=1, tv=1)
+                .trackToRect(p.getFrame().inset(50, 0), pullToEdges=1)
+                .reversePens())
+            .align(r)
+            .f(0))
+
+.. image:: /_static/renders/text_graf.png
+    :width: 500
+    :class: add-border
+
