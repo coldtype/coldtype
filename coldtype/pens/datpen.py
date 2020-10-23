@@ -605,7 +605,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     def removeOverlap(self):
         """Remove overlaps within this shape and return itself."""
-        return self._pathop(otherPen=DATPen(), operation=BooleanOp.Union)
+        return self._pathop(otherPen=None, operation=BooleanOp.Simplify)
 
     def round(self, rounding):
         """Round the values of this pen to integer values."""

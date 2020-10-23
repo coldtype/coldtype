@@ -175,3 +175,6 @@ class Composer():
     
     def pens(self):
         return self.graf.pens()
+    
+    def pen(self):
+        return self.graf.pens().pen()

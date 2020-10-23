@@ -16,6 +16,7 @@ class BooleanOp(Enum):
     XOR = 2
     ReverseDifference = 3
     Intersection = 4
+    Simplify = 5
 
     def Skia(x):
         return [
@@ -40,6 +41,12 @@ def calculate_pathop(pen1, pen2, operation):
     if USE_SKIA_PATHOPS:
         p1 = Path()
         pen1.replay(p1.getPen())
+        if operation == BooleanOp.Simplify:
+            # ignore pen2
+            p1.simplify(fix_winding=True, keep_starting_points=True)
+            d0 = RecordingPen()
+            p1.draw(d0)
+            return d0.value
         if pen2:
             p2 = Path()
             pen2.replay(p2.getPen())
