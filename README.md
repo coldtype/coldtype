@@ -1,4 +1,4 @@
-__⚠️🌋 Warning: the code is alpha-quality; the API is subject to change; the documentation is sparse 🌋⚠️__
+__⚠️🌋 Disclaimer: this library is alpha-quality; the API is subject to change 🌋⚠️__
 
 ---
 

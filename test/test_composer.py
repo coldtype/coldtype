@@ -99,3 +99,13 @@ def test_ar_multiline(r):
         DATPen().rect(dps[1].getFrame()).f("random", 0.2),
         dps
     ]
+
+@test()
+def test_composer(r):
+    return (Composer(r,
+        "Hello\nWorld".upper(),
+        Style(mutator, 150, wght=1),
+        leading=20)
+        .pens()
+        .xa()
+        .align(r))

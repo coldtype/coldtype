@@ -266,11 +266,6 @@ class ClipGroupPens(DATPenSet):
         
         return self
     
-    def xa(self, x="centerx"):
-        for pen in self:
-            pen.xAlignToFrame(x)
-        return self
-    
     def understroke(self, s=0, sw=5):
         for clip, pen in self.iterate_clips():
             pen.understroke(s=s, sw=sw)

@@ -163,3 +163,15 @@ class Slug(SegmentedString):
         for line in text.split("\n"):
             lines.append(Slug(line, primary, fallback))
         return lines
+
+
+class Composer():
+    def __init__(self, rect, text, style, leading=10, fit=None):
+        lockups = Slug.LineSlugs(text, style)
+        self.rect = rect
+        self.graf = Graf(lockups, self.rect, leading=leading)
+        if fit is not None:
+            self.graf.fit(fit)
+    
+    def pens(self):
+        return self.graf.pens()

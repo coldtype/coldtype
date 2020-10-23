@@ -353,7 +353,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.attr("default", **kwargs)
         self.frame = None
         self.typographic = False
-        self._tag = "Unknown"
+        self._tag = "?"
         self.container = None
         self.glyphName = None
         self.data = {}
@@ -1549,6 +1549,11 @@ class DATPenSet(DATPenLikeObject):
     def alignToRects(self, rects, x=Edge.CenterX, y=Edge.CenterY, th=1, tv=1):
         for idx, p in enumerate(self.pens):
             p.align(rects[idx], x, y, th=th, tv=tv)
+    
+    def xa(self, x="centerx"):
+        for pen in self:
+            pen.xAlignToFrame(x)
+        return self
     
     def distribute(self, v=False):
         off = 0

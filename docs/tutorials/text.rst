@@ -3,6 +3,14 @@ Text
 
 To run any of these examples, you'll want to save a bit of code in a python file, with any name, e.g. ``text.py``, and then run that file by navigating to it on the command line and constructing a call like, ``coldtype shape.py``
 
+Before we begin, let’s run some code needed to setup all the examples below. (If you’re copying just the code from one block below, you'll need to also copy this code and put it at the top of your source file.)
+
+.. code:: python
+
+    from coldtype import *
+
+    co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
+
 Basic Text
 ----------
 
@@ -10,12 +18,10 @@ Let’s start with a simple Hello World, except in this case, let’s just say C
 
 .. code:: python
 
-    from coldtype import *
-
     @renderable((1000, 200))
     def basic(r):
         return (StyledString("COLDTYPE",
-            Style("assets/ColdtypeObviously-VF.ttf", 150))
+            Style(co, 150))
             .pens()
             .align(r))
 
@@ -32,8 +38,7 @@ You might be wondering why the text is blue — that’s the default fill color
     @renderable((1000, 200))
     def lessbasic(r):
         return (StyledString("COLDTYPE",
-            Style("assets/ColdtypeObviously-VF.ttf",
-                150, wdth=0.5, rotate=10, tu=150))
+            Style(co, 150, wdth=0.5, rotate=10, tu=150))
             .pens()
             .align(r)
             .f(hsl(0.8, s=0.75)))
@@ -51,8 +56,7 @@ Put another way, what you get back from calling ``(StyledString, Style(...)).pen
     @renderable((1000, 200))
     def print_tree(r):
         pens = (StyledString("COLDTYPE",
-            Style("assets/ColdtypeObviously-VF.ttf",
-                150, wdth=0.5, rotate=10, tu=150))
+            Style(co, 150, wdth=0.5, rotate=10, tu=150))
             .pens()
             .align(r)
             .f(Gradient.Vertical(r, hsl(0.5, s=0.8), hsl(0.8, s=0.75))))
@@ -68,14 +72,14 @@ Because of the line ``pens.print_tree()``, you should see something like this in
 .. code:: text
 
     <DPS:pens:8:tag(?)>
-        <DP(typo:int(True)(C))/tag:(Unknown)>
-        <DP(typo:int(True)(O))/tag:(Unknown)>
-        <DP(typo:int(True)(L))/tag:(Unknown)>
-        <DP(typo:int(True)(D))/tag:(Unknown)>
-        <DP(typo:int(True)(T))/tag:(Unknown)>
-        <DP(typo:int(True)(Y))/tag:(Unknown)>
-        <DP(typo:int(True)(P))/tag:(Unknown)>
-        <DP(typo:int(True)(E))/tag:(Unknown)>
+        <DP(typo:int(True)(C))/tag:(?)>
+        <DP(typo:int(True)(O))/tag:(?)>
+        <DP(typo:int(True)(L))/tag:(?)>
+        <DP(typo:int(True)(D))/tag:(?)>
+        <DP(typo:int(True)(T))/tag:(?)>
+        <DP(typo:int(True)(Y))/tag:(?)>
+        <DP(typo:int(True)(P))/tag:(?)>
+        <DP(typo:int(True)(E))/tag:(?)>
     </DPS>
 
 And because of the lines with calls to `rotate`, you should see this on your screen:
@@ -102,8 +106,7 @@ To illustrate that point, let’s change the text:
     @renderable((1000, 200))
     def typecold(r):
         pens = (StyledString("TYPECOLD",
-            Style("assets/ColdtypeObviously-VF.ttf",
-                150, wdth=0.5, rotate=10, tu=150))
+            Style(co, 150, wdth=0.5, rotate=10, tu=150))
             .pens()
             .align(r)
             .f(Gradient.Vertical(r, hsl(0.5, s=0.8), hsl(0.8, s=0.75))))
@@ -126,8 +129,7 @@ This also means that sometimes it is very necessary to ``copy`` pens in order to
     @renderable((1000, 200))
     def simpledrop(r):
         pens = (StyledString("TYPECOLD",
-            Style("assets/ColdtypeObviously-VF.ttf",
-                150, wdth=0.5, rotate=10, tu=250))
+            Style(co, 150, wdth=0.5, rotate=10, tu=250))
             .pens()
             .align(r)
             .f(1))
@@ -147,8 +149,7 @@ I’ll admit the impact of the interesting dropshadow here is lessened somewhat 
     @renderable((1000, 200))
     def ro(r):
         pens = (StyledString("TYPECOLD",
-            Style("assets/ColdtypeObviously-VF.ttf",
-                150, wdth=0.5, rotate=10, tu=100, ro=1))
+            Style(co, 150, wdth=0.5, rotate=10, tu=100, ro=1))
             .pens()
             .align(r)
             .f(1))
@@ -174,8 +175,7 @@ One additional refinement you may want to make in an example like this is that y
     @renderable((1000, 200))
     def stroke_shadow(r):
         pens = (StyledString("COLDTYPE",
-            Style("assets/ColdtypeObviously-VF.ttf",
-                150, wdth=0.5, rotate=10, tu=100, ro=1))
+            Style(co, 150, wdth=0.5, rotate=10, tu=100, ro=1))
             .pens()
             .align(r)
             .f(1))
@@ -202,8 +202,7 @@ Dang, you know I thought that example would just work, but it looks like there a
     @renderable((1000, 500))
     def stroke_shadow_cleanup(r):
         pens = (StyledString("O",
-            Style("assets/ColdtypeObviously-VF.ttf",
-                500, wdth=0.5, rotate=10, tu=100, ro=1))
+            Style(co, 500, wdth=0.5, rotate=10, tu=100, ro=1))
             .pens()
             .align(r)
             .f(1))
@@ -236,8 +235,7 @@ Two suggestions to help you better understand code or find weird looks: try comm
     @renderable((1000, 250))
     def stroke_shadow_random(r):
         pens = (StyledString("COLDTYPE",
-            Style("assets/ColdtypeObviously-VF.ttf",
-                150, wdth=0.5, rotate=10, tu=100, ro=1))
+            Style(co, 150, wdth=0.5, rotate=10, tu=100, ro=1))
             .pens()
             .align(r)
             .f(1))
@@ -262,25 +260,15 @@ Multi-line Text
 
 .. code:: python
 
-    mutator = Font.Cacheable("assets/MutatorSans.ttf")
-    
-    text = """SALT PEANUTS
-    IS THE NAME OF THIS SONG"""
-
-    @renderable((1000, 250))
-    def graf(r):
-        style = Style(mutator, 120, wdth=1, wght=0.5, varyFontSize=1, ro=1)
-        lockups = Slug.LineSlugs(text, style)
-        return (Graf(lockups, r, leading=20)
-            .fit(r.w-100)
+    @renderable ((1000, 550))
+    def multiline(r):
+        return (Composer(r, "COLDTYPE\nTYPECOLD", Style(co, 300, wdth=1), fit=800)
             .pens()
-            .map(lambda i,p: p.align(p.getFrame(), th=1, tv=1)
-                .trackToRect(p.getFrame().inset(50, 0), pullToEdges=1)
-                .reversePens())
+            .xa() # a shortcut to x-align each line in this set
             .align(r)
             .f(0))
 
-.. image:: /_static/renders/text_graf.png
+.. image:: /_static/renders/text_multiline.png
     :width: 500
     :class: add-border
 

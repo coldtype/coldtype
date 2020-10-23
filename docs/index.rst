@@ -3,7 +3,9 @@ coldtype
 
 `Coldtype` is a cross-platform library for programming and animating high-quality display typography with Python.
 
-Put another way: do you want to make graphics and animations with code? This is a good & strange way to do that.
+Put another way: do you want to make graphics and animations with code? This is a good & idiosyncratic way to do that.
+
+🌋 **Disclaimer**: coldtype is alpha-quality software 🌋
 
 Here’s an example:
 
