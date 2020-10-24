@@ -272,7 +272,7 @@ class animation(renderable, Timeable):
             self.timeline = Timeline(30)
     
     def folder(self, filepath):
-        return filepath.stem # TODO necessary?
+        return filepath.stem + "/" + self.func.__name__ # TODO necessary?
     
     def layer_folder(self, filepath, layer):
         return layer
