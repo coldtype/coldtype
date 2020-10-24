@@ -1,4 +1,4 @@
-import inspect, platform, re, tempfile, skia
+import inspect, platform, re, tempfile, skia, math
 
 from enum import Enum
 from subprocess import run
@@ -9,7 +9,7 @@ from coldtype.color import normalize_color
 from coldtype.animation import Timeable, Frame
 from coldtype.animation.timeline import Timeline
 from coldtype.text.reader import normalize_font_prefix
-from coldtype.pens.datpen import DATPen
+from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.skiapen import SkiaPen
 
@@ -302,6 +302,25 @@ class animation(renderable, Timeable):
     def passes(self, action, layers, indices=[]):
         frames = self.active_frames(action, layers, indices)
         return [RenderPass(self, "{:04d}".format(i), [Frame(i, self, layers)]) for i in frames]
+    
+    def contactsheet(self, gx, sl=slice(0, None, None)):
+        start, stop, step = sl.indices(self.duration)
+        duration = (stop - start) // step
+        ar = self.rect
+        gy = math.ceil(duration / gx)
+        
+        @renderable(rect=(ar.w*gx, ar.h*gy), bg=self.bg)
+        def contactsheet(r:Rect):
+            pngs = list(sorted(self.output_folder.glob("*.png")))[sl]
+            dps = DATPenSet()
+            dps += DATPen().rect(r).f(self.bg)
+            for idx, g in enumerate(r.grid(columns=gx, rows=gy)):
+                if idx < len(pngs):
+                    dps += DATPen().rect(g).f(None).attr(image=dict(src=pngs[idx], pattern=False))
+            return dps
+        
+        contactsheet.func.__name__ = self.func.__name__ + "_contact"
+        return contactsheet
 
 
 class drawbot_animation(drawbot_script, animation):

@@ -562,6 +562,9 @@ class Rect():
         if ow > oh:
             fw = sw
             fh = sw * other.aspect()
+        else:
+            fh = sh
+            sw = sh * 1/other.aspect()
         #print(sh, fw, fh, other.aspect())
         return self.take(fh, "mdy")
 
