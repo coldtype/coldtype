@@ -3,7 +3,7 @@ from coldtype.test import *
 @test()
 def space_as_glyph(r):
     glyphs = (StyledString("A B",
-        Style(mutator, 500, include_blanks=1))
+        Style(mutator, 500))
         .pens()
         .align(r))
     

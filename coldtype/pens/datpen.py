@@ -364,6 +364,9 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def __len__(self):
         return len(self.value)
     
+    def __bool__(self):
+        return bool(len(self) > 0 or self.frame)
+    
     def __add__(self, item):
         return DATPenSet([self, item])
     

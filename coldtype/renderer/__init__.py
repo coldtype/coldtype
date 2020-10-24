@@ -177,6 +177,10 @@ class Renderer():
         self.context = None
         self.surface = None
 
+        if self.args.filter_functions:
+            self.function_filters = [f.strip() for f in self.args.filter_functions.split(",")]
+        else:
+            self.function_filters = []
         self._preview_scale = self.args.preview_scale
         self.multiplexing = self.args.multiplex
         self._should_reload = False
@@ -299,9 +303,22 @@ class Renderer():
         if any([r.solo for r in _rs]):
             _rs = [r for r in _rs if r.solo]
             
-        if self.args.filter_functions:
-            function_names = [f.strip() for f in self.args.filter_functions.split(",")]
-            _rs = [r for r in _rs if r.func.__name__ in function_names]
+        if self.function_filters:
+            function_patterns = self.function_filters
+            print(">>>", function_patterns)
+            matches = []
+            for r in _rs:
+                for fp in function_patterns:
+                    try:
+                        if re.match(fp, r.func.__name__) and r not in matches:
+                            matches.append(r)
+                    except re.error as e:
+                        print("ff regex compilation error", e)
+            if len(matches) > 0:
+                _rs = matches
+            else:
+                print(">>> no matches for ff")
+            #_rs = [r for r in _rs if re.match() r.func.__name__ in function_names]
         
         if self.args.monitor_lines and trigger != Action.RenderAll:
             func_name = file_and_line_to_def(self.codepath, self.line_number)
@@ -838,6 +855,7 @@ class Renderer():
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
         if action_abbrev == "ps":
+            self._preview_scale = max(0.1, min(5, float(data[0])))
             return Action.PreviewStoryboard, None
         elif action_abbrev == "n":
             return Action.PreviewStoryboardNext, None
@@ -854,6 +872,9 @@ class Renderer():
         elif action_abbrev == "rp":
             self.reset_filepath(data[0])
             return Action.Resave, None
+        elif action_abbrev == "ff":
+            self.function_filters = data
+            return Action.PreviewStoryboard, None
         else:
             enum_action = self.lookup_action(action_abbrev)
             if enum_action:
@@ -954,7 +975,6 @@ class Renderer():
                 print("Animation server must be primary")
     
     def process_ws_message(self, message):
-        print("MESSAGE", message)
         try:
             jdata = json.loads(message)
             action = jdata.get("action")
@@ -1050,7 +1070,6 @@ class Renderer():
                 if hasattr(v, "messages") and len(v.messages) > 0:
                     #print(k, v.messages)
                     for msg in v.messages:
-                        print("WS>>>", v.address, msg)
                         self.process_ws_message(msg)
                     v.messages = []
 
