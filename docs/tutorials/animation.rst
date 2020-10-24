@@ -1,9 +1,10 @@
 Animation
 =========
 
-Lots of example animations in the `coldtype-examples <https://github.com/goodhertz/coldtype-examples>`_ repo.
+There are lots of examples of somewhat complex animation in the `coldtype-examples <https://github.com/goodhertz/coldtype-examples>`_ repo, but here are some simpler (and shorter) ones, that demonstrate the fundamentals of how animations are built in coldtype.
 
-That said, here’s a little example to understand the fundamentals of how animations are built in coldtype.
+A circle moving
+---------------
 
 .. code:: python
 
@@ -20,23 +21,22 @@ That said, here’s a little example to understand the fundamentals of how anima
     
     circle_contactsheet = circle.contactsheet(6) # to render the full animation as a contact-sheet
 
-Here’s all the frames of that animation (a circle moving across the frame, and changing colors), rendered as a contact sheet (ala the last right of the code right above here[#contactsheet]_):
+Save that code in a file called ``animation.py``, then run it ala ``coldtype animation.py`` — when the render preview runs and a window pops up, try hitting the left and right arrow keys on your keyboard to go backward and forward in time.
 
+If you want to see the full animation, hit the key "a" on your keyboard, and you should see some text appear in your terminal, noting that the frames of the animation are being saved to disk. When it finishes (it’ll say something like ``rendered``), you can hit the space bar on the viewer and it should playback the animation. Hit the spacebar again to stop the looped playback.
 
+Here’re all the frames of that animation (a circle moving across the frame, and changing colors), rendered as a contact sheet (ala the last right of the code right above here [#f1]_):
 
 .. image:: /_static/renders/animation_circle_contact.png
     :width: 500
     :class: add-border
 
-Save that in a file called ``animation.py``, then run it ala ``coldtype animation.py`` — when the render preview runs and a window pops up, try hitting the left and right arrow keys on your keyboard to go backward and forward in time.
-
-If you want to see the full animation, hit the key "a" on your keyboard, and you should see some text appear in your terminal, noting that the frames of the animation are being saved to disk. When it finishes (it’ll say something like ``rendered``), you can hit the space bar on the viewer and it should playback the animation. Hit the spacebar again to stop the looped playback.
+A letter flying
+---------------
 
 .. code:: python
 
-    from random import Random
-    rnd = Random()
-    rnd.seed(0)
+    from coldtype import *
 
     tl2 = Timeline(24)
 
@@ -64,4 +64,4 @@ If you want to see the full animation, hit the key "a" on your keyboard, and you
 
 .. rubric:: Footnotes
 
-.. [#contactsheet] The concept of a ``contactsheet`` is probably not something you’ll need to use in your own animations — it’s mostly used here as a way to illustrate the animations without requiring that the animation be embedded as a video file.
+.. [#f1] The concept of a ``contactsheet`` is probably not something you’ll need to use in your own animations — it’s mostly used here as a way to illustrate the animations without requiring that the animation be embedded as a video file.
