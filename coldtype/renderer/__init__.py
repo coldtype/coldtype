@@ -250,7 +250,8 @@ class Renderer():
                     elif isinstance(v, animation):
                         self.last_animation = v
                     elif isinstance(v, WatchablePath):
-                        self.watchees.append([Watchable.Generic, v.path])
+                        if v.path not in self.watchee_paths():
+                            self.watchees.append([Watchable.Generic, v.path])
                     
                 if self.program.get("COLDTYPE_NO_WATCH"):
                     return True
