@@ -249,6 +249,8 @@ class Renderer():
                             self.watchees.append([Watchable.Font, p])
                     elif isinstance(v, animation):
                         self.last_animation = v
+                    elif isinstance(v, WatchablePath):
+                        self.watchees.append([Watchable.Generic, v.path])
                     
                 if self.program.get("COLDTYPE_NO_WATCH"):
                     return True

@@ -1,6 +1,9 @@
 from coldtype import *
 
+
 obvs_ufo = DefconFont("assets/ColdtypeObviously_BlackItalic.ufo")
+generic_txt = WatchablePath("test/test_watch_scratch.txt")
+
 
 @renderable(watch=[obvs_ufo.path])
 def test_watch_ufo_source(r):
