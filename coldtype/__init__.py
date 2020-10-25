@@ -9,7 +9,6 @@ from coldtype.color import *
 from coldtype.renderable import *
 from coldtype.helpers import *
 from coldtype.animation import *
-from coldtype.renderer.utils import WatchablePath
 
 name = "coldtype"
 __version__ = "0.0.9"

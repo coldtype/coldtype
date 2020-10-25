@@ -13,11 +13,6 @@ class Watchable(Enum):
     Font = "Font"
     Library = "Library"
     Generic = "Generic"
-
-
-class WatchablePath():
-    def __init__(self, path_str):
-        self.path = Path(path_str).expanduser().absolute()
     
 
 class EditAction(Enum):

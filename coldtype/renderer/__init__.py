@@ -18,7 +18,7 @@ from coldtype.helpers import *
 from coldtype.geometry import Rect
 from coldtype.pens.skiapen import SkiaPen
 from coldtype.pens.datpen import DATPen, DATPenSet
-from coldtype.renderable import renderable, Action, animation
+from coldtype.renderable import renderable, Action, animation, WatchablePath
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.utils import *
 from coldtype.renderer.state import RendererState

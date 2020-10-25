@@ -163,3 +163,4 @@ I can’t decide, as you may be able to tell from this README’s inconsistent c
 - `coldtype.fontgoggles` contains parts of the [FontGoggles](https://github.com/justvanrossum/fontgoggles) codebase, written by Just van Rossum, Copyright (c) 2019 Google, LLC
 - Mutator Sans included for testing was written by Erik van Blokland, Copyright (c) 2017
 - Recursive Mono Casual Italic is an [open-source typeface](https://github.com/arrowtype/recursive) by @arrowtype
+- Coldtype Obviously is a open-source subset of the commercially-available font [Obviously](https://ohnotype.co/fonts/obviously) by OHno Type Co; s/o to James Edmondson for donating those 8 characters to this project.

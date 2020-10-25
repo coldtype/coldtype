@@ -44,6 +44,11 @@ class Action(Enum):
     Kill = "kill"
 
 
+class WatchablePath():
+    def __init__(self, path_str):
+        self.path = Path(path_str).expanduser().absolute()
+
+
 class RenderPass():
     def __init__(self, render, suffix, args):
         self.render = render
