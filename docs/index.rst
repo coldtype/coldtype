@@ -57,6 +57,7 @@ Reference
 .. toctree::
    :maxdepth: 10
 
+   about
    install
    tutorials/index
    api/index

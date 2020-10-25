@@ -280,15 +280,15 @@ Once you convert a ``StyledString`` to a ``DATPenSet`` via ``.pens()``, you can 
 .. code:: python
 
     @renderable((1000, 1000))
-    def text_on_a_path(r):
+    def on_a_path(r):
         circle = DATPen().oval(r.inset(250)).reverse()
         return (StyledString("COLDTYPE",
             Style(co, 200, wdth=1))
             .pens()
-            .distribute_on_path(circle)
+            .distribute_on_path(circle, offset=275)
             .f(0))
 
-.. image:: /_static/renders/text_text_on_a_path.png
+.. image:: /_static/renders/text_on_a_path.png
     :width: 500
     :class: add-border
 
