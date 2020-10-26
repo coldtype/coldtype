@@ -277,10 +277,19 @@ class Renderer():
         if self.args.docs:
             def build_docs(passes):
                 from shutil import copy2
+                imgs = {}
                 for pss in passes:
+                    img = None
                     if isinstance(pss.render, animation):
+                        gif = Path(str(pss.render.output_folder) + "_animation.gif")
+                        if gif.exists() and gif not in imgs:
+                            img = gif
+                            imgs[gif] = 1
+                    else:
+                        img = pss.output_path
+                    
+                    if not img:
                         continue
-                    img = pss.output_path
                     try:
                         dst = Path("docs/_static/renders")
                         dst.mkdir(parents=True, exist_ok=True)

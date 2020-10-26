@@ -15,9 +15,11 @@ A circle moving
     @animation((250, 250), timeline=tl, bg=1)
     def circle(f):
         e = f.a.progress(f.i, easefn="qeio").e
-        return (DATPen()
-            .oval(f.a.r.offset(-f.a.r.w+f.a.r.w*2*e, 0))
-            .f(hsl(e, s=0.75)))
+        return [
+            DATPen().rect(f.a.r).f(1),
+            (DATPen()
+                .oval(f.a.r.offset(-f.a.r.w+f.a.r.w*2*e, 0))
+                .f(hsl(e, s=0.75)))]
     
     circle_contactsheet = circle.contactsheet(6) # to render the full animation as a contact-sheet
 
@@ -60,6 +62,22 @@ A letter flying
 
 .. image:: /_static/renders/animation_flyinga_contact.png
     :width: 500
+    :class: add-border
+
+And here’s a little bit of code to generate gifs for use on this page. To be honest, I don’t usually generate assets this way, since I always build animations from png frames in a video editor like Premiere or After Effects (or even Photoshop these days), and then generate gifs there. That said, it is nice to show these things in action!
+
+.. code:: python
+
+    def release(passes):
+        circle.make_gif(passes)
+        flyinga.make_gif(passes)
+
+.. image:: /_static/renders/circle_animation.gif
+    :width: 125
+    :class: add-border
+
+.. image:: /_static/renders/flyinga_animation.gif
+    :width: 125
     :class: add-border
 
 .. rubric:: Footnotes
