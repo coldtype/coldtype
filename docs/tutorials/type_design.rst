@@ -31,4 +31,6 @@ Here’s an example of creating a complex lockup of text using the ``assets/Cold
 
 Now if you run the code above (via ``coldtype <your-filename-here>.py``) and then open up the source UFO in RoboFont or another UFO-capable font editor, any changes you save to the source will update automatically in the preview window, if you leave the process hanging.
 
-And because the font is loaded by compiling it to a ttf (via ``FontGoggles``), you can also use a coldtype program as a way to test OT feature code in realtime, without any additional code — simply edit the feature code, hit save, & the coldtype program above with automatically update.
+This works because the font is declared outside the scope of the render function (``ufo_monitor``) and so the coldtype renderer finds the Font reference and adds it to its list of things-to-monitor. If you declare ``f = Font(...`` within a render function, it won’t be monitored.
+
+Also worth noting: because the font is loaded by compiling it to a ttf (via ``FontGoggles``), you can also use a coldtype program as a way to test OT feature code in realtime, without any additional code — simply edit the feature code, hit save, & the coldtype program above with automatically update.
