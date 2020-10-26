@@ -237,6 +237,20 @@ class Renderer():
                 with tempfile.NamedTemporaryFile("w", prefix="coldtype_rst_src", suffix=".py", delete=False) as tf:
                     tf.write("\n".join(source_code))
                     self.codepath = Path(tf.name)
+            
+            elif self.filepath.suffix == ".md":
+                try:
+                    import exdown
+                except ImportError:
+                    raise Exception("pip install exdown")
+                blocks = [c[0] for c in exdown.extract(str(self.filepath), syntax_filter="python")]
+                source_code = "\n".join(blocks)
+                if self.codepath:
+                    self.codepath.unlink()
+                with tempfile.NamedTemporaryFile("w", prefix="coldtype_md_src", suffix=".py", delete=False) as tf:
+                    tf.write(source_code)
+                    self.codepath = Path(tf.name)
+            
             elif self.filepath.suffix == ".py":
                 self.codepath = self.filepath
             else:
@@ -421,6 +435,7 @@ class Renderer():
         render_count = 0
         output_folder = None
         try:
+            # TODO not sure this approach is used anywhere or any better than the global vars approach?
             for render in renders:
                 for watch in render.watch:
                     if watch not in self.watchee_paths():
@@ -1213,6 +1228,12 @@ class Renderer():
     def on_modified(self, event):
         path = Path(event.src_path)
         if path in self.watchee_paths():
+            if path.suffix == ".json":
+                try:
+                    json.loads(path.read_text())
+                except json.JSONDecodeError:
+                    print("Error decoding watched json", path)
+                    return
             idx = self.watchee_paths().index(path)
             print(f">>> resave: {Path(event.src_path).relative_to(Path.cwd())}")
             if self.args.memory and process:

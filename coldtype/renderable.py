@@ -46,7 +46,10 @@ class Action(Enum):
 
 class WatchablePath():
     def __init__(self, path_str):
-        self.path = Path(path_str).expanduser().absolute()
+        if isinstance(path_str, str):
+            self.path = Path(path_str).expanduser().absolute()
+        else:
+            self.path = path_str.expanduser().absolute()
 
 
 class RenderPass():
@@ -279,6 +282,10 @@ class animation(renderable, Timeable):
                 self.storyboard = timeline.storyboard
         else:
             self.timeline = Timeline(30)
+    
+    def __call__(self, func):
+        self.prefix = func.__name__
+        return super().__call__(func)
     
     def folder(self, filepath):
         return filepath.stem + "/" + self.func.__name__ # TODO necessary?
