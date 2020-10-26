@@ -80,11 +80,16 @@ And here’s the result, rendered as a contact sheet with frames ``[0, 33, 66, 9
     :width: 700
     :class: add-border
 
+And here it is as a gif:
 
-And why?
---------
+.. image:: https://raw.githubusercontent.com/goodhertz/coldtype/main/assets/banner_3.gif
+    :width: 700
 
-Yes, there are lots of ways to set type with code. Most ways — HTML/CSS/JS, Processing, etc. — are great for 90% of what most people want to do with Latin-based writing systems. Then the road runs out and you can’t do anything else.
+
+Why is Coldtype?
+----------------
+
+There are lots of ways to set type with code. Most ways — HTML/CSS/JS, Processing, etc. — are great for 90% of what most people want to do with Latin-based writing systems. Then the road runs out and you can’t do anything else.
 
 Coldtype is an offroad vehicle that lets you keep driving where there are no roads. Like many vehicles built for specialized use, it is not user-friendly. It has no doors (please climb in through the window), and the steering wheel is not very intuitive, also it’s a stick-shift, and you should probably know how to code (or be willing to learn) if you’re going to drive it alone out into the desert. (I apologize for how automotive this metaphor is getting. Probably should’ve gone with some metaphor about people making custom synthesizers in the 70s.)
 
