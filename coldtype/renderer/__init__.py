@@ -199,8 +199,20 @@ class Renderer():
         return [w[1] for w in self.watchees]
 
     def show_error(self):
-        print(">>> CAUGHT COLDTYPE RENDER")
-        print(traceback.format_exc())
+        print("============================")
+        print(">>> Error in source file <<<")
+        print("============================")
+        stack = traceback.format_exc()
+        print(stack)
+        r = Rect(1000, 300)
+        render = renderable(r)
+        res = DATPenSet([
+            DATPen().rect(r).f(coldtype.Gradient.V(r,
+            coldtype.hsl(_random.random(), l=0.3),
+            coldtype.hsl(_random.random(), l=0.3))),
+        ])
+        render.show_error = stack.split("\n")[-2]
+        self.previews_waiting_to_paint.append([render, res, None])
     
     def show_message(self, message, scale=1):
         print(message)
@@ -436,6 +448,11 @@ class Renderer():
 
                     try:
                         result = render.run(rp, self.state)
+                        if not result:
+                            print(">>> No result")
+                            result = DATPen().rect(render.rect).f(None)
+
+                        # is it a lazy result?
                         if isinstance(result, Inst):
                             result = result.realize()
                         
@@ -1182,6 +1199,10 @@ class Renderer():
         if hasattr(render, "blank_renderable"):
             paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=0.5).skia())
             canvas.drawString('Nothing found'.upper(), 315, 480, skia.Font(None, 20), paint)
+        if hasattr(render, "show_error"):
+            paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=1).skia())
+            canvas.drawString(render.show_error, 30, 50, skia.Font(None, 30), paint)
+            canvas.drawString("> See process in terminal for details", 30, 100, skia.Font(None, 24), paint)
         canvas.restore()
     
     def preload_frames(self, passes):
