@@ -28,7 +28,9 @@ def render(f):
     
     if "coldtype" in cg.styles():
         pens[0].understroke(sw=10)
-    #for line in pens.iterate_lines():
-    #    print(line)
+    
+    if zoom := cg.styleMatching("zoom"):
+        e = zoom.progress(f.i, easefn="eei").e
+        pens.scale(1+pow(e, 2)*150, center=f.a.r.point("C").offset(0, 51))
     
     return pens
