@@ -18,7 +18,7 @@ from coldtype.helpers import *
 from coldtype.geometry import Rect
 from coldtype.pens.skiapen import SkiaPen
 from coldtype.pens.datpen import DATPen, DATPenSet
-from coldtype.renderable import renderable, Action, animation
+from coldtype.renderable import renderable, Action, animation, WatchablePath
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.utils import *
 from coldtype.renderer.state import RendererState
@@ -199,8 +199,20 @@ class Renderer():
         return [w[1] for w in self.watchees]
 
     def show_error(self):
-        print(">>> CAUGHT COLDTYPE RENDER")
-        print(traceback.format_exc())
+        print("============================")
+        print(">>> Error in source file <<<")
+        print("============================")
+        stack = traceback.format_exc()
+        print(stack)
+        r = Rect(1000, 300)
+        render = renderable(r)
+        res = DATPenSet([
+            DATPen().rect(r).f(coldtype.Gradient.V(r,
+            coldtype.hsl(_random.random(), l=0.3),
+            coldtype.hsl(_random.random(), l=0.3))),
+        ])
+        render.show_error = stack.split("\n")[-2]
+        self.previews_waiting_to_paint.append([render, res, None])
     
     def show_message(self, message, scale=1):
         print(message)
@@ -225,6 +237,20 @@ class Renderer():
                 with tempfile.NamedTemporaryFile("w", prefix="coldtype_rst_src", suffix=".py", delete=False) as tf:
                     tf.write("\n".join(source_code))
                     self.codepath = Path(tf.name)
+            
+            elif self.filepath.suffix == ".md":
+                try:
+                    import exdown
+                except ImportError:
+                    raise Exception("pip install exdown")
+                blocks = [c[0] for c in exdown.extract(str(self.filepath), syntax_filter="python")]
+                source_code = "\n".join(blocks)
+                if self.codepath:
+                    self.codepath.unlink()
+                with tempfile.NamedTemporaryFile("w", prefix="coldtype_md_src", suffix=".py", delete=False) as tf:
+                    tf.write(source_code)
+                    self.codepath = Path(tf.name)
+            
             elif self.filepath.suffix == ".py":
                 self.codepath = self.filepath
             else:
@@ -249,6 +275,9 @@ class Renderer():
                             self.watchees.append([Watchable.Font, p])
                     elif isinstance(v, animation):
                         self.last_animation = v
+                    elif isinstance(v, WatchablePath):
+                        if v.path not in self.watchee_paths():
+                            self.watchees.append([Watchable.Generic, v.path])
                     
                 if self.program.get("COLDTYPE_NO_WATCH"):
                     return True
@@ -266,28 +295,51 @@ class Renderer():
                 return r
     
     def release_fn(self):
+        candidate = None
         for k, v in self.program.items():
             if k == "release":
-                return v
+                candidate = v
         
         if self.args.docs:
-            def build_docs(artifacts):
+            def build_docs(passes):
                 from shutil import copy2
-                for img in artifacts:
+                imgs = {}
+                for pss in passes:
+                    img = None
+                    if isinstance(pss.render, animation):
+                        gif = Path(str(pss.render.output_folder) + "_animation.gif")
+                        if gif.exists() and gif not in imgs:
+                            img = gif
+                            imgs[gif] = 1
+                    else:
+                        img = pss.output_path
+                    
+                    if not img:
+                        continue
                     try:
                         dst = Path("docs/_static/renders")
                         dst.mkdir(parents=True, exist_ok=True)
                         copy2(img, dst / img.name)
+                        print("COPYING", img.name)
                     except FileNotFoundError:
                         print("FileNotFound", img)
                 owd = os.getcwd()
                 try:
                     os.chdir("docs")
+                    os.system("make clean")
                     os.system("make html")
                 finally:
                     os.chdir(owd)
             
-            return build_docs
+            if candidate:
+                def wrapped(passes):
+                    candidate(passes)
+                    build_docs(passes)
+                return wrapped
+            else:
+                return build_docs
+        
+        return candidate
                 
     
     def renderables(self, trigger):
@@ -383,6 +435,7 @@ class Renderer():
         render_count = 0
         output_folder = None
         try:
+            # TODO not sure this approach is used anywhere or any better than the global vars approach?
             for render in renders:
                 for watch in render.watch:
                     if watch not in self.watchee_paths():
@@ -410,6 +463,11 @@ class Renderer():
 
                     try:
                         result = render.run(rp, self.state)
+                        if not result:
+                            print(">>> No result")
+                            result = DATPen().rect(render.rect).f(None)
+
+                        # is it a lazy result?
                         if isinstance(result, Inst):
                             result = result.realize()
                         
@@ -793,15 +851,15 @@ class Renderer():
         trigger = Action.RenderAll
         renders = self.renderables(trigger)
         output_folder = None
-        artifacts = []
+        all_passes = []
         try:
             for render in renders:
                 if not render.preview_only:
                     output_folder, prefix, fmt, _layers, passes = self.add_paths_to_passes(trigger, render, [0])
                     for rp in passes:
-                        artifacts.append(rp.output_path)
+                        all_passes.append(rp)
 
-            release_fn(artifacts)
+            release_fn(all_passes)
         except Exception as e:
             print("Release failed", str(e))
     
@@ -1156,6 +1214,10 @@ class Renderer():
         if hasattr(render, "blank_renderable"):
             paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=0.5).skia())
             canvas.drawString('Nothing found'.upper(), 315, 480, skia.Font(None, 20), paint)
+        if hasattr(render, "show_error"):
+            paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=1).skia())
+            canvas.drawString(render.show_error, 30, 50, skia.Font(None, 30), paint)
+            canvas.drawString("> See process in terminal for details", 30, 100, skia.Font(None, 24), paint)
         canvas.restore()
     
     def preload_frames(self, passes):
@@ -1166,6 +1228,12 @@ class Renderer():
     def on_modified(self, event):
         path = Path(event.src_path)
         if path in self.watchee_paths():
+            if path.suffix == ".json":
+                try:
+                    json.loads(path.read_text())
+                except json.JSONDecodeError:
+                    print("Error decoding watched json", path)
+                    return
             idx = self.watchee_paths().index(path)
             print(f">>> resave: {Path(event.src_path).relative_to(Path.cwd())}")
             if self.args.memory and process:

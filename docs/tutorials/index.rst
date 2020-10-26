@@ -12,3 +12,6 @@ The examples here are more oriented towards fundamental concepts of coldtype.
     geometry
     text
     animation
+    type_design
+    midi
+    premiere

@@ -44,6 +44,14 @@ class Action(Enum):
     Kill = "kill"
 
 
+class WatchablePath():
+    def __init__(self, path_str):
+        if isinstance(path_str, str):
+            self.path = Path(path_str).expanduser().absolute()
+        else:
+            self.path = path_str.expanduser().absolute()
+
+
 class RenderPass():
     def __init__(self, render, suffix, args):
         self.render = render
@@ -52,6 +60,10 @@ class RenderPass():
         self.suffix = suffix
         self.path = None
         self.single_layer = None
+        self.output_path = None
+    
+    def __repr__(self):
+        return f"<RenderPass:f{self.output_path}/>"
 
 
 class renderable():
@@ -271,6 +283,10 @@ class animation(renderable, Timeable):
         else:
             self.timeline = Timeline(30)
     
+    def __call__(self, func):
+        self.prefix = func.__name__
+        return super().__call__(func)
+    
     def folder(self, filepath):
         return filepath.stem + "/" + self.func.__name__ # TODO necessary?
     
@@ -303,15 +319,39 @@ class animation(renderable, Timeable):
         frames = self.active_frames(action, layers, indices)
         return [RenderPass(self, "{:04d}".format(i), [Frame(i, self, layers)]) for i in frames]
     
+    def package(self, filepath, output_folder):
+        pass
+    
+    def make_gif(self, passes):
+        import imageio
+        path = str(self.output_folder) + "_animation.gif"
+        with imageio.get_writer(path, mode="I") as writer:
+            for p in passes:
+                if p.render == self:
+                    image = imageio.imread(str(p.output_path))
+                    writer.append_data(image)
+        print(">>> wrote gif to", path)
+
     def contactsheet(self, gx, sl=slice(0, None, None)):
-        start, stop, step = sl.indices(self.duration)
-        duration = (stop - start) // step
+        try:
+            sliced = True
+            start, stop, step = sl.indices(self.duration)
+            duration = (stop - start) // step
+        except AttributeError: # indices storyboard
+            duration = len(sl)
+            sliced = False
+        
         ar = self.rect
         gy = math.ceil(duration / gx)
         
         @renderable(rect=(ar.w*gx, ar.h*gy), bg=self.bg)
         def contactsheet(r:Rect):
-            pngs = list(sorted(self.output_folder.glob("*.png")))[sl]
+            _pngs = list(sorted(self.output_folder.glob("*.png")))
+            if sliced:
+                pngs = _pngs[sl]
+            else:
+                pngs = [p for i, p in enumerate(_pngs) if i in sl]
+            
             dps = DATPenSet()
             dps += DATPen().rect(r).f(self.bg)
             for idx, g in enumerate(r.grid(columns=gx, rows=gy)):

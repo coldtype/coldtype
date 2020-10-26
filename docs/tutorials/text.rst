@@ -272,3 +272,88 @@ Multi-line Text
     :width: 500
     :class: add-border
 
+Text-on-a-path
+--------------
+
+Once you convert a ``StyledString`` to a ``DATPenSet`` via ``.pens()``, you can use the DATPenSet’s ``distribute_on_path`` method to set the glyphs onto an arbitrary path.
+
+.. code:: python
+
+    @renderable((1000, 1000))
+    def on_a_path(r):
+        circle = DATPen().oval(r.inset(250)).reverse()
+        return (StyledString("COLDTYPE",
+            Style(co, 200, wdth=1))
+            .pens()
+            .distribute_on_path(circle, offset=275)
+            .f(0))
+
+.. image:: /_static/renders/text_on_a_path.png
+    :width: 500
+    :class: add-border
+
+What if we want more text on the circle and we want it to fit automatically to the length of the curve on which it’s set — without overlapping? Before we convert the text to a ``DATPenSet`` (via ``.pens()``), we can employ the ``fit`` method on our ``StyledString`` to fit the text to the length of the curve that we'll end up setting the pens on.
+
+.. code:: python
+
+    @renderable((1000, 1000))
+    def text_on_a_path_fit(r):
+        circle = DATPen().oval(r.inset(250)).reverse()
+        dps = (StyledString("COLDTYPE COLDTYPE COLDTYPE ", # <-- note the trailing space
+            Style(co, 200, wdth=1, tu=100, space=500))
+            .fit(circle.length()) # <-- the fit & length methods
+            .pens()
+            .distribute_on_path(circle)
+            .f(Gradient.H(circle.bounds(), hsl(0.5, s=0.6), hsl(0.85, s=0.6))))
+        return dps
+
+.. image:: /_static/renders/text_text_on_a_path_fit.png
+    :width: 500
+    :class: add-border
+
+One thing that’s weird about setting text on a curve is that, depending on the curve, it can exaggerate — or eliminate — spacing between letters. Sometimes that doesn’t really matter — in the case of this circle, because the curve only bends in one manner, the text is always extra spacey, which usually isn't a problem. But if we set the text on a sine-wave, the issue becomes more apparent, since the spacing is both expanded and compressed on the same curve, and when letters overlap excessively, they can get illegible quickly.
+
+Is there’s a solution? Probably many but the one I like a lot is the ``understroke`` method on the ``DATPenSet`` class, which interleaves a stroked version of each letter in a set (a technique popular in pulp/comic titling & the subsequent graffiti styles they inspired).
+
+Let’s see what that looks like.
+
+.. code:: python
+
+    @renderable((1000, 500))
+    def text_on_a_path_understroke(r):
+        sine = DATPen().sine(r.inset(0, 180), 3)
+        return (StyledString("COLDTYPE COLDTYPE COLDTYPE",
+            Style(co, 100, wdth=1, tu=-50, space=500))
+            .fit(sine.length()) # <-- the fit & length methods
+            .pens()
+            .distribute_on_path(sine)
+            .understroke(sw=10)
+            .f(Gradient.H(sine.bounds(), hsl(0.7, l=0.6, s=0.65), hsl(0.05, l=0.6, s=0.65)))
+            .translate(0, -20))
+
+.. image:: /_static/renders/text_text_on_a_path_understroke.png
+    :width: 500
+    :class: add-border
+
+Interesting! But there’s one thing to correct if we want better legibility. You'll notice in that first purple COLDTYPE, the C is unrecognizable, because the O that comes after it is on top of it. This is how text layout engines usually work for LTR languages — the topmost glyph is the right-most glyph. But that’s not what we want — we want to reverse the order of the glyphs. Luckily, that’s easy, just pass a ``r=1`` (or ``reverse=1``), to the ``Style`` constructor.
+
+.. code:: python
+
+    @renderable((1000, 500))
+    def text_on_a_path_understroke_reversed(r):
+        sine = DATPen().sine(r.inset(0, 180), 3)
+        dps = (StyledString("COLDTYPE COLDTYPE COLDTYPE",
+            Style(co, 100, wdth=1, tu=-50, space=500, r=1))
+            .fit(sine.length())
+            .pens()
+            .distribute_on_path(sine)
+            .understroke(sw=10)
+            .f(Gradient.H(sine.bounds(), hsl(0.7, l=0.7, s=0.65), hsl(0.05, l=0.6, s=0.65)))
+            .translate(0, -20))
+        return dps
+
+.. image:: /_static/renders/text_text_on_a_path_understroke_reversed.png
+    :width: 500
+    :class: add-border
+
+It’s a subtle difference, but one that (to me) makes a huge difference. I also lightened the purple in the gradient, I think it looks a little better that way, right?

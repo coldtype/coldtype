@@ -449,7 +449,7 @@ class StyledString(FittableMixin):
             x += glyph.ax
         self.getGlyphFrames()
     
-    def trackFrames(self):
+    def trackFrames(self, space_width=0):
         t = self.tracking
         x_off = 0
         for idx, g in enumerate(self.glyphs):
@@ -458,7 +458,7 @@ class StyledString(FittableMixin):
             if self.style.mods and g.name in self.style.mods:
                 x_off += self.style.mods[g.name][0]
             if self.style.space and g.name.lower() == "space":
-                x_off += self.style.space
+                x_off += (self.style.space - space_width)
     
     def adjustFramesForPath(self):
         for idx, g in enumerate(self.glyphs):    
@@ -474,6 +474,7 @@ class StyledString(FittableMixin):
             last_gn = None
             for idx, glyph in enumerate(self.glyphs):
                 gn = glyph.name
+
                 for chars, kp in self.style.kern_pairs.items():
                     try:
                         l = kp[0]
@@ -492,8 +493,14 @@ class StyledString(FittableMixin):
                                 glyph.frame.x += kern_shift
                 last_gn = gn
         
+        space_width = 0
+        for glyph in self.glyphs:
+            if glyph.name == "space" and self.style.space and self.style.space > 0:
+                space_width = glyph.frame.w
+                glyph.frame.w = self.style.space
+
         if self.style.trackingMode == 1:
-            self.trackFrames()
+            self.trackFrames(space_width=space_width)
 
         for glyph in self.glyphs:
             glyph.frame = glyph.frame.scale(self.scale())

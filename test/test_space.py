@@ -8,4 +8,15 @@ def space_as_glyph(r):
         .align(r))
     
     return (glyphs
-        + glyphs.frameSet().s(0, 0.25).sw(15))
+        + glyphs.frameSet().s(0, 0.5).sw(5))
+
+
+@test()
+def space_glyph_set_width(r):
+    glyphs = (StyledString("A B",
+        Style(mutator, 500, space=1000))
+        .pens()
+        .align(r))
+    
+    return (glyphs
+        + glyphs.frameSet().s(0, 0.5).sw(5))

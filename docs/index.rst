@@ -26,15 +26,30 @@ Here’s an example:
 .. image:: /_static/renders/index_coldtype.png
    :width: 350
 
-Some oddities to note if you’re familiar with other graphics programming environments:
+If you’re familiar with other graphics programming libraries, that code snippet might seem a little odd, given that it’s **canvas-less** & **abbreviated**, with a idiomatic emphasis on **method-chaining** & **hierarchical data** (which can make programming **animations** a lot easier and faster). `More on those bold words on the about page.`
 
-* There is no "canvas" — all graphics are **hierarchical data** ``return``-ed from a function to the renderer, which does all the actual drawing-to-a-virtual-canvas.
+Table of Contents
+-----------------
 
-* There is a lot of emphasis on **method-chaining**, which (I feel) is an underappreciated way to do graphics programming, since the resulting code is easily editable and experimentable. Of course, some (like the creator of Python) have called this style of programming "un-Pythonic." Take from that what you will!
+.. toctree::
+   :maxdepth: 10
 
-* As might already be clear from the first two points, coldtype is not meant to be a good introduction to programming (though it might still be, I'm not sure). The emphasis here is on programming patterns that ease the creation of professional graphics, particularly **complex animations**.
+   about
+   install
+   tutorials/index
+   :: api/index
 
-With all that in mind, here’s a somewhat complex animation — made with a combination of coldtype and After Effects — demonstrating what’s possible with not-so-much code:
+.. toctree::
+   :maxdepth: 2
+   :caption: Links
+
+   github <https://github.com/goodhertz/coldtype>
+   goodhertz.com <https://goodhertz.com>
+
+An example
+----------
+
+Here’s a somewhat complex animation — made with a combination of coldtype and After Effects — demonstrating what’s possible with not-so-much code:
 
 .. raw:: html
 
@@ -43,30 +58,7 @@ With all that in mind, here’s a somewhat complex animation — made with a com
 
 The code for that video is available here: https://github.com/goodhertz/coldtype-examples/blob/main/animations/808.py
 
-For more of examples of what coldtype can do:
-
-- `Vulfpeck, “LAX” <https://www.youtube.com/watch?v=NzxW8nxgENA>`_
-- `"Buggin’ Out (Phife Dawg’s Verse)" <https://vimeo.com/377148622>`_
-- A `3D type specimen <https://vimeo.com/354292807>`_
-- `Goodhertz plugins <https://goodhertz.com/>`_
-- Anything recent on `my website <https://robstenson.com/>`_
-
-Reference
--------------
-
-.. toctree::
-   :maxdepth: 10
-
-   install
-   tutorials/index
-   api/index
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Links
-
-   github <https://github.com/goodhertz/coldtype>
-   goodhertz.com <https://goodhertz.com>
+Here are some more examples:
 
 .. toctree::
    :maxdepth: 2
@@ -78,7 +70,6 @@ Reference
    digestive_wind.py <https://github.com/goodhertz/coldtype-examples/blob/main/animations/digestive_wind.py>
    stacked_and_justified.py <https://github.com/goodhertz/coldtype-examples/blob/main/animations/stacked_and_justified.py>
    vulfbach.py <https://github.com/goodhertz/coldtype-examples/blob/main/sanimations/vulfbach.py>
-
 
 
 Indices and tables

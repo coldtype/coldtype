@@ -5,7 +5,7 @@ from random import Random
 
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 mutator = Font.Cacheable("assets/MutatorSans.ttf")
-recmono = Font.Cacheable("viewer/assets/RecMono-CasualItalic.ttf")
+recmono = Font.Cacheable("assets/RecMono-CasualItalic.ttf")
 
 Style.RegisterShorthandPrefix("≈", "~/Type/fonts/fonts")
 

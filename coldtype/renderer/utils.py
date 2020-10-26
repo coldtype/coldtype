@@ -2,6 +2,7 @@ import sys, os
 import ast, threading
 
 from enum import Enum
+from pathlib import Path
 
 from coldtype.viewer import WEBSOCKET_PORT
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
@@ -12,7 +13,7 @@ class Watchable(Enum):
     Font = "Font"
     Library = "Library"
     Generic = "Generic"
-
+    
 
 class EditAction(Enum):
     Newline = "newline"

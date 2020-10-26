@@ -1107,6 +1107,13 @@ class DATPen(RecordingPen, DATPenLikeObject):
         p, tangent = cc.subsegmentPoint(start=0, end=tv)
         return p, tangent
     
+    def length(self, t=1):
+        """Get the length of the curve for time `t`"""
+        cc = CurveCutter(self)
+        start = 0
+        tv = t * cc.calcCurveLength()
+        return tv
+    
     def points(self):
         """Returns a list of points grouped by contour from the DATPen’s original contours; useful for drawing bezier skeletons; does not modify the DATPen"""
         contours = []
@@ -1613,6 +1620,8 @@ class DATPenSet(DATPenLikeObject):
         if limit < len(self.pens):
             self.pens = self.pens[0:limit]
         return self
+    
+    distribute_on_path = distributeOnPath
     
     def implode(self):
         # TODO preserve frame from some of this?
