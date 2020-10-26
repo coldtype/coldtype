@@ -308,15 +308,29 @@ class animation(renderable, Timeable):
         frames = self.active_frames(action, layers, indices)
         return [RenderPass(self, "{:04d}".format(i), [Frame(i, self, layers)]) for i in frames]
     
+    def package(self, filepath, output_folder):
+        pass
+    
     def contactsheet(self, gx, sl=slice(0, None, None)):
-        start, stop, step = sl.indices(self.duration)
-        duration = (stop - start) // step
+        try:
+            sliced = True
+            start, stop, step = sl.indices(self.duration)
+            duration = (stop - start) // step
+        except AttributeError: # indices storyboard
+            duration = len(sl)
+            sliced = False
+        
         ar = self.rect
         gy = math.ceil(duration / gx)
         
         @renderable(rect=(ar.w*gx, ar.h*gy), bg=self.bg)
         def contactsheet(r:Rect):
-            pngs = list(sorted(self.output_folder.glob("*.png")))[sl]
+            _pngs = list(sorted(self.output_folder.glob("*.png")))
+            if sliced:
+                pngs = _pngs[sl]
+            else:
+                pngs = [p for i, p in enumerate(_pngs) if i in sl]
+            
             dps = DATPenSet()
             dps += DATPen().rect(r).f(self.bg)
             for idx, g in enumerate(r.grid(columns=gx, rows=gy)):

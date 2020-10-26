@@ -269,9 +269,10 @@ class Renderer():
                 return r
     
     def release_fn(self):
+        candidate = None
         for k, v in self.program.items():
             if k == "release":
-                return v
+                candidate = v
         
         if self.args.docs:
             def build_docs(artifacts):
@@ -286,11 +287,20 @@ class Renderer():
                 owd = os.getcwd()
                 try:
                     os.chdir("docs")
+                    os.system("make clean")
                     os.system("make html")
                 finally:
                     os.chdir(owd)
             
-            return build_docs
+            if candidate:
+                def wrapped(artifacts):
+                    candidate(artifacts)
+                    build_docs(artifacts)
+                return wrapped
+            else:
+                return build_docs
+        
+        return candidate
                 
     
     def renderables(self, trigger):
