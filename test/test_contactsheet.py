@@ -41,3 +41,7 @@ def storyboard(f):
             .f(1))]
 
 storyboard_contact = storyboard.contactsheet(4, [0, 4, 8, 16])
+
+def release(passes):
+    flyinga.make_gif(passes)
+    storyboard.make_gif(passes)

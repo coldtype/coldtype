@@ -57,6 +57,10 @@ class RenderPass():
         self.suffix = suffix
         self.path = None
         self.single_layer = None
+        self.output_path = None
+    
+    def __repr__(self):
+        return f"<RenderPass:f{self.output_path}/>"
 
 
 class renderable():
@@ -311,6 +315,16 @@ class animation(renderable, Timeable):
     def package(self, filepath, output_folder):
         pass
     
+    def make_gif(self, passes):
+        import imageio
+        path = str(self.output_folder) + "_animation.gif"
+        with imageio.get_writer(path, mode="I") as writer:
+            for p in passes:
+                if p.render == self:
+                    image = imageio.imread(str(p.output_path))
+                    writer.append_data(image)
+        print(">>> wrote gif to", path)
+
     def contactsheet(self, gx, sl=slice(0, None, None)):
         try:
             sliced = True

@@ -275,13 +275,17 @@ class Renderer():
                 candidate = v
         
         if self.args.docs:
-            def build_docs(artifacts):
+            def build_docs(passes):
                 from shutil import copy2
-                for img in artifacts:
+                for pss in passes:
+                    if isinstance(pss.render, animation):
+                        continue
+                    img = pss.output_path
                     try:
                         dst = Path("docs/_static/renders")
                         dst.mkdir(parents=True, exist_ok=True)
                         copy2(img, dst / img.name)
+                        print("COPYING", img.name)
                     except FileNotFoundError:
                         print("FileNotFound", img)
                 owd = os.getcwd()
@@ -293,9 +297,9 @@ class Renderer():
                     os.chdir(owd)
             
             if candidate:
-                def wrapped(artifacts):
-                    candidate(artifacts)
-                    build_docs(artifacts)
+                def wrapped(passes):
+                    candidate(passes)
+                    build_docs(passes)
                 return wrapped
             else:
                 return build_docs
@@ -806,15 +810,15 @@ class Renderer():
         trigger = Action.RenderAll
         renders = self.renderables(trigger)
         output_folder = None
-        artifacts = []
+        all_passes = []
         try:
             for render in renders:
                 if not render.preview_only:
                     output_folder, prefix, fmt, _layers, passes = self.add_paths_to_passes(trigger, render, [0])
                     for rp in passes:
-                        artifacts.append(rp.output_path)
+                        all_passes.append(rp)
 
-            release_fn(artifacts)
+            release_fn(all_passes)
         except Exception as e:
             print("Release failed", str(e))
     

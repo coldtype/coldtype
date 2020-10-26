@@ -10,6 +10,6 @@ def r2(r):
     return DATPen().rect(r.inset(150)).rotate(10).f(hsl(random()))
 
 
-def release(artifacts):
-    for a in artifacts:
-        print(a)
+def release(passes):
+    for p in passes:
+        print(p)
