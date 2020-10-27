@@ -1269,6 +1269,7 @@ class DATPenSet(DATPenLikeObject):
             else:
                 print("  "*(depth+1), pen)
         print("  "*depth + "/"+str(self))
+        return self
     
     def copy(self):
         """Get a completely new copy of this whole set of pens,

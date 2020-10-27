@@ -127,20 +127,24 @@ class Renderer():
 
         for p in [user, proj]:
             if p.exists():
-                self.py_config = {
-                    **self.py_config,
-                    **run_path(str(p), init_globals={
-                        "__MIDI__": self.midi_mapping,
-                        "__HOTKEYS__": self.hotkey_mapping,
-                    })
-                }
-                self.midi_mapping = self.py_config.get("MIDI", self.midi_mapping)
-                self.hotkey_mapping = self.py_config.get("HOTKEYS", self.hotkey_mapping)
+                try:
+                    self.py_config = {
+                        **self.py_config,
+                        **run_path(str(p), init_globals={
+                            "__MIDI__": self.midi_mapping,
+                            "__HOTKEYS__": self.hotkey_mapping,
+                        })
+                    }
+                    self.midi_mapping = self.py_config.get("MIDI", self.midi_mapping)
+                    self.hotkey_mapping = self.py_config.get("HOTKEYS", self.hotkey_mapping)
+                except Exception as e:
+                    print("Failed to load config", p)
+                    print("Exception:", e)
 
     def __init__(self, parser, no_socket_ok=False):
-        self.read_configs()
-
         sys.path.insert(0, os.getcwd())
+
+        self.read_configs()
 
         self.args = parser.parse_args()
         if self.args.is_subprocess or self.args.all:
