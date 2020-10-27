@@ -94,13 +94,9 @@ class Font():
         if self._loaded:
             return self
         else:
-            #print("LOADING", self.path)
             self._loaded = True
             asyncio.get_event_loop().run_until_complete(self.font.load(empty_writer))
             return self
-    
-    def Preload(path):
-        return Font(path).load()
     
     def Cacheable(path):
         if path not in FontCache:

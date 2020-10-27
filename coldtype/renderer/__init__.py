@@ -18,7 +18,7 @@ from coldtype.helpers import *
 from coldtype.geometry import Rect
 from coldtype.pens.skiapen import SkiaPen
 from coldtype.pens.datpen import DATPen, DATPenSet
-from coldtype.renderable import renderable, Action, animation, WatchablePath
+from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.utils import *
 from coldtype.renderer.state import RendererState
@@ -263,21 +263,8 @@ class Renderer():
                     "__CONTEXT__": self.context,
                 })
                 for k, v in self.program.items():
-                    if isinstance(v, coldtype.text.reader.Font) and not v.cacheable:
-                        if v.path not in self.watchee_paths():
-                            self.watchees.append([Watchable.Font, v.path])
-                        for ext in v.font.getExternalFiles():
-                            if ext not in self.watchee_paths():
-                                self.watchees.append([Watchable.Font, ext])
-                    elif isinstance(v, DefconFont) and hasattr(v, "coldtype_watch"):
-                        p = Path(v.path).resolve()
-                        if p not in self.watchee_paths():
-                            self.watchees.append([Watchable.Font, p])
-                    elif isinstance(v, animation):
+                    if isinstance(v, animation):
                         self.last_animation = v
-                    elif isinstance(v, WatchablePath):
-                        if v.path not in self.watchee_paths():
-                            self.watchees.append([Watchable.Generic, v.path])
                     
                 if self.program.get("COLDTYPE_NO_WATCH"):
                     return True
@@ -435,11 +422,16 @@ class Renderer():
         render_count = 0
         output_folder = None
         try:
-            # TODO not sure this approach is used anywhere or any better than the global vars approach?
             for render in renders:
                 for watch in render.watch:
-                    if watch not in self.watchee_paths():
-                        self.watchees.append([Watchable.Font, watch])
+                    if isinstance(watch, coldtype.text.reader.Font) and not watch.cacheable:
+                        if watch.path not in self.watchee_paths():
+                            self.watchees.append([Watchable.Font, watch.path])
+                        for ext in watch.font.getExternalFiles():
+                            if ext not in self.watchee_paths():
+                                self.watchees.append([Watchable.Font, ext])
+                    elif watch not in self.watchee_paths():
+                        self.watchees.append([Watchable.Generic, watch])
                 
                 did_render = False
                 output_folder, prefix, fmt, _layers, passes = self.add_paths_to_passes(trigger, render, indices)
@@ -1217,7 +1209,7 @@ class Renderer():
         if hasattr(render, "show_error"):
             paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=1).skia())
             canvas.drawString(render.show_error, 30, 50, skia.Font(None, 30), paint)
-            canvas.drawString("> See process in terminal for details", 30, 100, skia.Font(None, 24), paint)
+            canvas.drawString("> See process in terminal for traceback", 30, 100, skia.Font(None, 24), paint)
         canvas.restore()
     
     def preload_frames(self, passes):

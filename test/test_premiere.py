@@ -1,13 +1,13 @@
 from coldtype import *
 from coldtype.animation.nle.premiere import PremiereTimeline
 
-pw = WatchablePath("test/media/test_premiere_coldtype.json")
-tl = PremiereTimeline(pw.path)
+pp = Path("test/media/test_premiere_coldtype.json")
+tl = PremiereTimeline(pp)
 
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 recmono = Font.Cacheable("assets/RecMono-CasualItalic.ttf")
 
-@animation(timeline=tl, bg=0)
+@animation(timeline=tl, bg=0, watch=[pp])
 def render(f):
     def render_clip_fn(f, idx, clip, ftext):
         if "coldtype" in clip.styles:

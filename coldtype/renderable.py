@@ -8,7 +8,7 @@ from coldtype.geometry import Rect, Point
 from coldtype.color import normalize_color
 from coldtype.animation import Timeable, Frame
 from coldtype.animation.timeline import Timeline
-from coldtype.text.reader import normalize_font_prefix
+from coldtype.text.reader import normalize_font_prefix, Font
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.skiapen import SkiaPen
@@ -42,14 +42,6 @@ class Action(Enum):
     RestartRenderer = "restart_renderer"
     ToggleMultiplex = "toggle_multiplex"
     Kill = "kill"
-
-
-class WatchablePath():
-    def __init__(self, path_str):
-        if isinstance(path_str, str):
-            self.path = Path(path_str).expanduser().absolute()
-        else:
-            self.path = path_str.expanduser().absolute()
 
 
 class RenderPass():
@@ -91,7 +83,17 @@ class renderable():
         self.dst = Path(dst).expanduser().resolve() if dst else None
         self.custom_folder = custom_folder
         self.postfn = postfn
-        self.watch = [Path(w).expanduser().resolve() for w in watch]
+
+        self.watch = []
+        for w in watch:
+            try:
+                self.watch.append(Path(w).expanduser().resolve())
+            except TypeError:
+                if isinstance(w, Font):
+                    self.watch.append(w)
+                else:
+                    raise Exception("Can only watch strings, Paths, and Fonts")
+
         self.rasterizer = rasterizer
         self.self_rasterizing = False
         self.layers = layers
