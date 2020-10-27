@@ -151,7 +151,18 @@ class Renderer():
             self.args.watch = False
 
         self.watchees = []
-        self.reset_filepath(self.args.file if hasattr(self.args, "file") else None)
+        
+        if not self.reset_filepath(self.args.file if hasattr(self.args, "file") else None):
+            self.dead = True
+            return
+        else:
+            self.dead = False
+        
+        if self.args.version:
+            print(">>>", coldtype.__version__)
+            self.dead = True
+            return
+        
         self.layers = [l.strip() for l in self.args.layers.split(",")] if self.args.layers else []
 
         self.program = None
@@ -193,11 +204,21 @@ class Renderer():
         self.line_number = -1
         if filepath:
             self.filepath = Path(filepath).expanduser().resolve()
+            if self.filepath.suffix == ".py":
+                if not self.filepath.exists(): # write some default code there after a prompt
+                    print(">>> That python file does not exist...")
+                    create = input(">>> Do you want to create it and add some coldtype boilerplate? (y/n): ")
+                    if create.lower() == "y":
+                        self.filepath.write_text("from coldtype import *\n\n@renderable()\ndef stub(r):\n    return (DATPen()\n        .oval(r.inset(50))\n        .f(0.8))\n")
+            else:
+                print(">>> That file does not exist")
+                return False
             self.codepath = None
             self.watchees = [[Watchable.Source, self.filepath]]
         else:
             self.filepath = None
             self.codepath = None
+        return True
 
     def watchee_paths(self):
         return [w[1] for w in self.watchees]
@@ -674,6 +695,9 @@ class Renderer():
             self.watch_file_changes()
 
     def main(self):
+        if self.dead:
+            return
+
         if self.args.memory:
             tracemalloc.start(10)
             self._last_memory = -1
@@ -757,10 +781,7 @@ class Renderer():
             pass
 
     def start(self):
-        if self.args.version:
-            print(">>>", coldtype.__version__)
-            should_halt = True
-        elif self.args.midi_info:
+        if self.args.midi_info:
             try:
                 midiin = rtmidi.RtMidiIn()
                 ports = range(midiin.getPortCount())
@@ -1208,8 +1229,9 @@ class Renderer():
         #canvas.clear(render.bg.skia())
         render.draw_preview(1.0, canvas, render.rect, result, rp)
         if hasattr(render, "blank_renderable"):
-            paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=0.5).skia())
-            canvas.drawString('Nothing found'.upper(), 315, 480, skia.Font(None, 20), paint)
+            paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=0.75).skia())
+            canvas.drawString(f"{coldtype.__version__}", 405, 450, skia.Font(None, 36), paint)
+            canvas.drawString("Nothing found".upper(), 315, 480, skia.Font(None, 20), paint)
         if hasattr(render, "show_error"):
             paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=1).skia())
             canvas.drawString(render.show_error, 30, 50, skia.Font(None, 30), paint)
