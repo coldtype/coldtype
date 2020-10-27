@@ -139,7 +139,7 @@ Who works on this?
 
 This library is mostly the work of me, `Rob Stenson <https://robstenson.com>`_, but I want to acknowledge the work of some people and projects who’ve helped bring this project to life:
 
-* `Goodhertz <https://goodhertz.com>`, who has supported the open-sourcing of this library, which was originally written to set text in audio plugin interfaces.
+* `Goodhertz <https://goodhertz.com>`_ has supported the open-sourcing of this library, which was originally written to set text in audio plugin interfaces.
 
 * Coldtype Obviously is a open-source subset of the commercially-available font `Obviously <https://ohnotype.co/fonts/obviously>`_ by OHno Type Co; s/o to James Edmondson for donating those 8 characters to this project.
 
@@ -151,7 +151,7 @@ This library is mostly the work of me, `Rob Stenson <https://robstenson.com>`_, 
 
 * Mutator Sans included for testing was written by Erik van Blokland, Copyright (c) 2017
 
-* Recursive Mono Casual Italic is an `open-source typeface <https://github.com/arrowtype/recursive>`_ by @arrowtype
+* Recursive Mono Casual Italic is an `open-source typeface <https://github.com/arrowtype/recursive>`_ by `Arrow Type <https://www.arrowtype.com/>`_
 
 * Coldtype relies heavily (via FontGoggles) on the incredible `HarfBuzz <https://github.com/harfbuzz/harfbuzz>`_ text shaping library.
 
