@@ -94,9 +94,14 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             image = src
         else:
             image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(src)))
+
+        if not image:
+            print("image <", src, "> not found, cannot be used")
+            return
+        
+        _, _, iw, ih = image.bounds()
         
         if pattern:
-            _, _, iw, ih = image.bounds()
             matrix = skia.Matrix()
             matrix.setScale(rect.w / iw, rect.h / ih)
             self.paint.setShader(image.makeShader(
@@ -125,8 +130,14 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 bx, by = rect.flip(self.rect.h).xy()
                 #bx += rx
                 #by += ry
+            sx = rect.w / iw
+            sy = rect.h / ih
+            self.canvas.save()
+            #self.canvas.setMatrix(matrix)
             self.canvas.clipPath(self.path, doAntiAlias=True)
-            self.canvas.drawImage(image, bx, by, self.paint)
+            self.canvas.scale(sx, sy)
+            self.canvas.drawImage(image, bx/sx, by/sy, self.paint)
+            self.canvas.restore()
             return True
     
     def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
@@ -180,3 +191,6 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         with surface as canvas:
             SkiaPen.CompositeToCanvas(pens, rect, canvas)
         return surface.makeImageSnapshot()
+    
+    def ReadImage(src):
+        return skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(src)))

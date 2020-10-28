@@ -142,6 +142,15 @@ class DATPenLikeObject():
             return self.attr(field="strokeWidth")
     
     strokeWidth = sw
+
+    def img(self, src=None, rect=Rect(0, 0, 500, 500), pattern=True):
+        """Get/set an image fill"""
+        if src:
+            return self.attr(image=dict(src=src, rect=rect, pattern=pattern))
+        else:
+            return self.attr(field="image")
+    
+    image = img
     
     def removeBlanks(self):
         """If this is blank, `return True` (for recursive calls from DATPenSet)."""

@@ -1,7 +1,6 @@
 from coldtype import *
 
 co = Font("assets/ColdtypeObviously.designspace")
-
 img = Path("test/renders/test_skia_image_is_image.png")
 
 @renderable(rect=(1000, 1000))
@@ -17,7 +16,7 @@ def uses_image(r):
                 pattern=False,
                 rect=r.inset(100))))])
 
-#@renderable(rect=(250, 250))
+@renderable(rect=(250, 250))
 def is_image(r):
     return DATPenSet([
         DATPen().oval(r.inset(5)).f(hsl(random())),
@@ -29,7 +28,7 @@ def is_image(r):
             .translate(0, 10)
             .f(1))])
 
-#@renderable(rect=(500, 500))
+@renderable(rect=(500, 500))
 def uses_shadow(r):
     return DATPenSet([
         (DATPen()

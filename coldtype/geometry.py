@@ -262,6 +262,9 @@ def add(rect_a, rect_b):
 
 
 def scale(rect, s, x_edge=Edge.CenterX, y_edge=Edge.CenterY):
+    """
+    Only a partial implementation atm
+    """
     x, y, w, h = rect
     return [x * s, y * s, w * s, h * s]
 
@@ -487,7 +490,10 @@ class Rect():
     def scale(self, s, x_edge=Edge.CenterX, y_edge=Edge.CenterY):
         x_edge = txt_to_edge(x_edge)
         y_edge = txt_to_edge(y_edge)
-        return Rect(scale(self.rect(), s, x_edge, y_edge))
+        sx = self.w * s
+        sy = self.h * s
+        return self.take(sx, x_edge, forcePixel=True).take(sy, y_edge, forcePixel=True)
+        #return Rect(scale(self.rect(), s, x_edge, y_edge))
 
     def union(self, otherRect):
         return Rect.FromMnMnMxMx(unionRect(self.mnmnmxmx(), otherRect.mnmnmxmx()))

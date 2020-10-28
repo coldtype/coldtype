@@ -460,6 +460,7 @@ class Renderer():
                 
                 did_render = False
                 output_folder, prefix, fmt, _layers, passes = self.add_paths_to_passes(trigger, render, indices)
+                render.last_passes = passes
 
                 previewing = (trigger in [
                     Action.Initial,

@@ -83,6 +83,7 @@ class renderable():
         self.dst = Path(dst).expanduser().resolve() if dst else None
         self.custom_folder = custom_folder
         self.postfn = postfn
+        self.last_passes = []
 
         self.watch = []
         for w in watch:
