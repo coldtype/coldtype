@@ -122,8 +122,11 @@ class renderable():
     def layer_folder(self, filepath, layer):
         return ""
     
+    def pass_suffix(self):
+        return self.func.__name__
+    
     def passes(self, action, layers, indices=[]):
-        return [RenderPass(self, self.func.__name__, [self.rect])]
+        return [RenderPass(self, self.pass_suffix(), [self.rect])]
 
     def package(self, filepath, output_folder):
         pass
@@ -318,9 +321,12 @@ class animation(renderable, Timeable):
     def workarea(self):
         return list(self.timeline.workareas[0])
     
+    def pass_suffix(self, index):
+        return "{:04d}".format(index)
+    
     def passes(self, action, layers, indices=[]):
         frames = self.active_frames(action, layers, indices)
-        return [RenderPass(self, "{:04d}".format(i), [Frame(i, self, layers)]) for i in frames]
+        return [RenderPass(self, self.pass_suffix(i), [Frame(i, self, layers)]) for i in frames]
     
     def package(self, filepath, output_folder):
         pass
