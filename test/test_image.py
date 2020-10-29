@@ -14,7 +14,6 @@ def test_image_gen(r):
 def test_resize(r):
     imgp = test_image_gen.last_passes[0].output_path
     img = SkiaPen.ReadImage(imgp)
-    print(img.bounds())
     return (DATPen()
         .rect(r)
         .img(img, r.scale(1.5), 0)

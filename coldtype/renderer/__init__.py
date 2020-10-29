@@ -210,8 +210,16 @@ class Renderer():
                     create = input(">>> Do you want to create it and add some coldtype boilerplate? (y/n): ")
                     if create.lower() == "y":
                         self.filepath.write_text("from coldtype import *\n\n@renderable()\ndef stub(r):\n    return (DATPen()\n        .oval(r.inset(50))\n        .f(0.8))\n")
+            elif self.filepath.suffix == ".rst":
+                if not self.filepath.exists():
+                    print(">>> That rst file does not exist")
+                    return False
+            elif self.filepath.suffix == ".md":
+                if not self.filepath.exists():
+                    print(">>> That md file does not exist")
+                    return False
             else:
-                print(">>> That file does not exist")
+                print(">>> Coldtype can only read .py, .rst, and .md files")
                 return False
             self.codepath = None
             self.watchees = [[Watchable.Source, self.filepath]]

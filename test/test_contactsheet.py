@@ -13,7 +13,7 @@ def flyinga(f):
     return [
         (DATPen()
             .rect(f.a.r)
-            .f(hsl(qeio))),
+            .f(hsl(qeio, s=0.6))),
         (StyledString("A",
             Style(mutator, 50, wght=0.2))
             .pen()
