@@ -4,7 +4,11 @@ from coldtype import *
 from coldtype.renderer import Renderer
 
 all_tests = []
-for p in Path("test").glob("test_*.py"):
+
+sources = Path("test").glob("test_*.py")
+sources.extend(Path("test").glob("test_*.md"))
+
+for p in sources:
     if not p.name.startswith("_"):
         all_tests.append(p)
     all_tests = sorted(all_tests)
