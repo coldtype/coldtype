@@ -651,7 +651,12 @@ class Renderer():
             from coldtype.pens.drawbotpen import DrawBotPen
             DrawBotPen.Composite(content, render.rect, str(path), scale=scale)
         elif rasterizer == "skia":
-            SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=None if self.args.cpu_render else self.context)
+            if render.fmt == "png":
+                SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=None if self.args.cpu_render else self.context)
+            elif render.fmt == "pdf":
+                SkiaPen.PDFOnePage(content, render.rect, str(path), scale=scale)
+            else:
+                print("> Skia render not supported for ", render.fmt)
         elif rasterizer == "svg":
             from coldtype.pens.svgpen import SVGPen
             path.write_text(SVGPen.Composite(content, render.rect, viewBox=render.viewBox))
