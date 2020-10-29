@@ -143,10 +143,10 @@ class DATPenLikeObject():
     
     strokeWidth = sw
 
-    def img(self, src=None, rect=Rect(0, 0, 500, 500), pattern=True):
+    def img(self, src=None, rect=Rect(0, 0, 500, 500), pattern=True, opacity=1.0):
         """Get/set an image fill"""
         if src:
-            return self.attr(image=dict(src=src, rect=rect, pattern=pattern))
+            return self.attr(image=dict(src=src, rect=rect, pattern=pattern, opacity=opacity))
         else:
             return self.attr(field="image")
     

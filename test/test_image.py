@@ -10,11 +10,11 @@ def test_image_gen(r):
         .rotate(45)
         .scale(0.9))
 
-@renderable()
+@renderable((1000, 500))
 def test_resize(r):
     imgp = test_image_gen.last_passes[0].output_path
     img = SkiaPen.ReadImage(imgp)
     return (DATPen()
         .rect(r)
-        .img(img, r.scale(1.5), 0)
+        .img(img, r.take(0.5, "mdx").square(), 0)
         .f(0))
