@@ -5,6 +5,7 @@ venv
 test/artifacts/*
 test/*.blend1
 test/test_media
+test/pdfs
 build
 dist
 coldtype.egg-info

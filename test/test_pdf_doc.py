@@ -1,7 +1,7 @@
 from coldtype import *
-import skia
+import skia, pickle
 
-#@renderable(fmt="pdf")
+@renderable(fmt="pdf")
 def test_onepage(r):
     return (DATPen().oval(r.inset(50)).f(hsl(0.95)))
 
@@ -11,10 +11,13 @@ class pdfdoc(animation):
 
     def package(self, filepath, output_folder):
         pdf_path = filepath.parent / ("pdfs/" + filepath.stem + ".pdf")
+        pdf_path.parent.mkdir(parents=True, exist_ok=True)
         pickles = list(sorted(self.output_folder.glob("*.pickle")))
-        print(pickles)
+        pages = DATPenSet()
+        for pk in pickles:
+            pages += pickle.load(open(pk, "rb"))
+        SkiaPen.PDFMultiPage(pages, self.rect, str(pdf_path))
         
-
 @pdfdoc()
 def test_multipage(f):
     return (DATPen()

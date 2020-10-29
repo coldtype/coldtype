@@ -166,13 +166,13 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         image.save(save_to, skia.kPNG)
     
     def PDFOnePage(pens, rect, save_to, scale=1):
-        stream = skia.FILEWStream(save_to)
+        stream = skia.FILEWStream(str(save_to))
         with skia.PDF.MakeDocument(stream) as document:
             with document.page(rect.w, rect.h) as canvas:
                 SkiaPen.CompositeToCanvas(pens, rect, canvas, scale=scale)
     
     def PDFMultiPage(pages, rect, save_to, scale=1):
-        stream = skia.FILEWStream(save_to)
+        stream = skia.FILEWStream(str(save_to))
         with skia.PDF.MakeDocument(stream) as document:
             for page in pages:
                 with document.page(rect.w, rect.h) as canvas:
