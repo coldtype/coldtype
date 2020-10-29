@@ -13,8 +13,8 @@ def uses_image(r):
             .attr(image=dict(
                 src=img,
                 opacity=0.35,
-                pattern=False,
-                rect=r.inset(100))))])
+                pattern=True,
+                rect=r.take(100, "mnx").square())))])
 
 @renderable(rect=(250, 250))
 def is_image(r):

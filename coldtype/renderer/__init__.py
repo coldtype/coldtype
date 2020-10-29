@@ -1,15 +1,16 @@
-import sys, os, re, signal, tracemalloc
 import tempfile, traceback, threading
 import argparse, importlib, inspect, json, math
+import sys, os, re, signal, tracemalloc
 import platform, pickle
 
 import time as ptime
 from pathlib import Path
 from typing import Tuple
-from random import shuffle, Random
+from pprint import pprint
 from runpy import run_path
-from subprocess import call, Popen
 from functools import partial
+from subprocess import call, Popen
+from random import shuffle, Random
 from more_itertools import distribute
 from docutils.core import publish_doctree
 
@@ -20,8 +21,8 @@ from coldtype.pens.skiapen import SkiaPen
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
-from coldtype.renderer.utils import *
 from coldtype.renderer.state import RendererState
+from coldtype.renderer.utils import *
 from coldtype.abbr.inst import Inst
 
 _random = Random()
@@ -150,6 +151,7 @@ class Renderer():
         if self.args.is_subprocess or self.args.all:
             self.args.watch = False
 
+        self.observers = []
         self.watchees = []
         
         if not self.reset_filepath(self.args.file if hasattr(self.args, "file") else None):
@@ -202,6 +204,7 @@ class Renderer():
     
     def reset_filepath(self, filepath):
         self.line_number = -1
+        self.stop_watching_file_changes()
         if filepath:
             self.filepath = Path(filepath).expanduser().resolve()
             if self.filepath.suffix == ".py":
@@ -223,7 +226,9 @@ class Renderer():
                 return False
             self.codepath = None
             self.watchees = [[Watchable.Source, self.filepath]]
+            self.watch_file_changes()
         else:
+            self.watchees = []
             self.filepath = None
             self.codepath = None
         return True
@@ -698,7 +703,6 @@ class Renderer():
             self.show_error()
 
         if wl < len(self.watchees) and len(self.observers) > 0:
-            from pprint import pprint
             pprint(self.watchees)
             self.stop_watching_file_changes()
             self.watch_file_changes()
@@ -768,7 +772,8 @@ class Renderer():
         
         self.context = skia.GrDirectContext.MakeGL()
 
-        self.watch_file_changes()
+        #self.watch_file_changes()
+
         if len(self.watchees) > 0:
             glfw.set_window_title(self.window, self.watchees[0][1].name)
         else:
