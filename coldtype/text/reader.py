@@ -263,18 +263,23 @@ class Style():
     
     def __eq__(self, other):
         if not self.font == other.font:
+            #print("different font")
             return False
         elif not self.fontSize == other.fontSize:
+            #print("different fontSize")
             return False
         
         for key, value in self.variations.items():
             if self.variations[key] != other.variations[key]:
+                #print("different variation")
                 return False
             
         if self.rotate != other.rotate:
+            #print("different rotate")
             return False
         
         if self.fill != other.fill:
+            #print("different fill")
             return False
         
         return True

@@ -1,6 +1,7 @@
 from coldtype import *
 from functools import partial
 from random import Random
+from pprint import pprint
 
 
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")

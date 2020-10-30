@@ -3,8 +3,8 @@ Geometry
 
 To run any of these examples, you'll want to save a bit of code in a python file, with any name, e.g. ``geometry.py``, and then run that file by navigating to it on the command line and constructing a call like, ``coldtype geometry.py``
 
-Rect(angles)
-------------
+Dividing Rect(angles)
+--------------------
 
 One of the core concepts of Coldtype is the use of the ``coldtype.geometry.Rect`` class to encapsulate rectangles and methods for slicing & dicing them.
 
@@ -22,7 +22,7 @@ The most basic rectangle is the one passed to a renderable, i.e. the ``r`` varia
     :width: 350
     :class: add-border
 
-All `@renderables` have a rectangle associated with them (the full rectangle of the artifact canvas), and all rendering functions are passed rectangles, either via the first and only argument, or as a property of the first argument, as is the case with ``@animation`` renderables, which pass a ``Frame`` argument that makes the rectangle accessible via ``f.a.r`` (where ``f`` is the ``Frame``).
+All ``@renderables`` have a rectangle associated with them (the full rectangle of the artifact canvas), and all rendering functions are passed rectangles, either via the first and only argument, or as a property of the first argument, as is the case with ``@animation`` renderables, which pass a ``Frame`` argument that makes the rectangle accessible via ``f.a.r`` (where ``f`` is the ``Frame``).
 
 But we’re getting ahead of ourselves.
 
@@ -44,7 +44,12 @@ Here’s a simple example that insets, offsets, and takes.
 .. image:: /_static/renders/geometry_iot.png
     :width: 350
     :class: add-border
-    
+
+More complex slicing & dicing
+-----------------------------
+
+**N.B.** You may have noticed that the rect functions that a mix of float and int arguments. That’s because a value less than 1.0 will be treated, by the dividing-series of rect functions, as percentages of the dimension implied by the edge argument. So in that ``take(0.5, "mnx")`` above, the ``0.5`` specifies 50% of the width of the rectangle (width because of the ``mnx`` edge argument).
+
 Here’s an example that divides a rectangle into left and right rectangles, and shows another useful method, ``square`` (which takes the largest square possible from the center of the given rectangle).
 
 .. code:: python
