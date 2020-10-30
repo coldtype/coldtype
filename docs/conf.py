@@ -68,3 +68,10 @@ html_static_path = ['_static']
 html_css_files = [
     'custom.css',
 ]
+
+html_context = {
+    'display_github': True,
+    'github_user': 'goodhertz',
+    'github_repo': 'coldtype',
+    'github_version': 'main/docs/',
+}

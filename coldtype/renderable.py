@@ -169,12 +169,25 @@ class drawbot_script(renderable):
             pool = AppKit.NSAutoreleasePool.alloc().init()
         try:
             db.newDrawing()
-            db.size(self.rect.w, self.rect.h)
+            if renderer_state.previewing:
+                ps = renderer_state.preview_scale
+                db.size(self.rect.w*ps, self.rect.h*ps)
+                db.scale(ps, ps)
+                DATPen().rect(self.rect).f(self.bg).db_drawPath()
+            else:
+                db.size(self.rect.w, self.rect.h)
             render_pass.fn(*render_pass.args)
             result = None
-            render_pass.output_path.parent.mkdir(exist_ok=True, parents=True)
-            db.saveImage(str(render_pass.output_path))
-            result = render_pass.output_path
+            if renderer_state.previewing:
+                previews = (render_pass.output_path.parent / "_previews")
+                previews.mkdir(exist_ok=True, parents=True)
+                preview_frame = previews / render_pass.output_path.name
+                db.saveImage(str(preview_frame))
+                result = preview_frame
+            else:
+                render_pass.output_path.parent.mkdir(exist_ok=True, parents=True)
+                db.saveImage(str(render_pass.output_path))
+                result = render_pass.output_path
             db.endDrawing()
         finally:
             if use_pool:
@@ -380,10 +393,16 @@ class drawbot_animation(drawbot_script, animation):
             Action.RenderWorkarea]:
             frames = super().active_frames(action, layers, indices)
             passes = []
-            for layer in layers:
+            if len(layers) > 0:
+                for layer in layers:
+                    for i in frames:
+                        p = RenderPass(self, "{:04d}".format(i), [Frame(i, self, [layer])])
+                        p.single_layer = layer
+                        passes.append(p)
+            else:
                 for i in frames:
-                    p = RenderPass(self, "{:04d}".format(i), [Frame(i, self, [layer])])
-                    p.single_layer = layer
+                    p = RenderPass(self, "{:04d}".format(i), [Frame(i, self, [])])
+                    #p.single_layer = layer
                     passes.append(p)
             return passes
         else:

@@ -43,19 +43,23 @@ except ImportError:
 
 DARWIN = platform.system() == "Darwin"
 
-# https://stackoverflow.com/questions/27174736/how-to-read-most-recent-line-from-stdin-in-python
 last_line = ''
 new_line_event = threading.Event()
 
-def keep_last_line():
-    global last_line, new_line_event
-    for line in sys.stdin:
-        last_line = line
-        new_line_event.set()
+def monitor_stdin():
+    # https://stackoverflow.com/questions/27174736/how-to-read-most-recent-line-from-stdin-in-python
+    global last_line
+    global new_line_event
 
-keep_last_line_thread = threading.Thread(target=keep_last_line)
-keep_last_line_thread.daemon = True
-keep_last_line_thread.start()
+    def keep_last_line():
+        global last_line, new_line_event
+        for line in sys.stdin:
+            last_line = line
+            new_line_event.set()
+
+    keep_last_line_thread = threading.Thread(target=keep_last_line)
+    keep_last_line_thread.daemon = True
+    keep_last_line_thread.start()
 
 
 class Renderer():
@@ -160,6 +164,8 @@ class Renderer():
         else:
             self.dead = False
         
+        monitor_stdin()
+        
         if self.args.version:
             print(">>>", coldtype.__version__)
             self.dead = True
@@ -226,7 +232,8 @@ class Renderer():
                 return False
             self.codepath = None
             self.watchees = [[Watchable.Source, self.filepath]]
-            self.watch_file_changes()
+            if not self.args.is_subprocess:
+                self.watch_file_changes()
         else:
             self.watchees = []
             self.filepath = None
@@ -488,6 +495,9 @@ class Renderer():
                     Action.RenderWorkarea,
                     Action.RenderIndices,
                 ])
+
+                self.state.previewing = previewing # TODO too janky?
+                self.state.preview_scale = self.preview_scale()
                 
                 for rp in passes:
                     output_path = rp.output_path

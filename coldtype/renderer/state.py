@@ -12,6 +12,8 @@ class RendererStateEncoder(json.JSONEncoder):
 class RendererState():
     def __init__(self, renderer):
         self.renderer = renderer
+        self.previewing = False
+        self.preview_scale = 1
         self.controller_values = {}
         self.reset()
     
