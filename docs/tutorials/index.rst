@@ -8,10 +8,12 @@ The examples here are more oriented towards fundamental concepts of coldtype.
 .. toctree::
     :maxdepth: 5
 
+    overview
     shapes
     geometry
     text
     animation
     type_design
+    drawbot
     midi
     premiere
