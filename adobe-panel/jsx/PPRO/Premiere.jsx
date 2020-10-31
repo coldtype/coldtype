@@ -194,7 +194,8 @@ $._PPP_={
 		for (var i = 0; i < numItems; i++) {
 			var currentItem = root.children[i];
 			if (currentItem) {
-                if (currentItem.name.match(prefix) && currentItem.name.match(/\.png$/)) {
+				// currentItem.name.match(prefix) && 
+                if (currentItem.name.match(/\.png$/)) {
                     //alert(currentItem.name);
                     currentItem.refreshMedia();
                     updatedItems.push(currentItem.name);

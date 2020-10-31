@@ -19,7 +19,7 @@ class RichText(DATPenSet):
         for line in txt.strip().splitlines():
             line_meta = []
             line_result = []
-            for slug in reversed(line.split(" ")):
+            for slug in reversed(line.strip().split(" ")):
                 if slug.startswith("["): # line meta
                     line_meta = slug.strip("[]").split(",")
                 else:
