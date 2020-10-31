@@ -4,7 +4,7 @@ Overview
 Anatomy of a Coldtype Program
 -----------------------------
 
-A coldtype program is a source file, usually a Python file with a ```*.py`` file extension. Inside that file, you can write anything you want, but at the very least you'll need do two things
+A coldtype program is a source file, usually a Python file with a ``*.py`` file extension. Inside that file, you can write anything you want, but at the very least you'll need do two things
 
 1. Import the coldtype library
 2. Define a renderable function
