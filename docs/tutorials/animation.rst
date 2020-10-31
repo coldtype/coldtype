@@ -29,7 +29,7 @@ If you want to see the full animation, hit the key "a" on your keyboard, and you
 
 Here’re all the frames of that animation (a circle moving across the frame, and changing colors), rendered as a contact sheet (ala the last right of the code right above here [#f1]_):
 
-.. image:: /_static/renders/animation_circle_contact.png
+.. image:: /_static/renders/animation_circle_contactsheet.png
     :width: 500
     :class: add-border
 
@@ -60,7 +60,7 @@ A letter flying
 
     flyinga_contact = flyinga.contactsheet(4, slice(0, None, 1))
 
-.. image:: /_static/renders/animation_flyinga_contact.png
+.. image:: /_static/renders/animation_flyinga_contactsheet.png
     :width: 500
     :class: add-border
 

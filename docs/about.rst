@@ -76,7 +76,7 @@ Here’s the code for a somewhat complex animation:
 
 And here’s the result, rendered as a contact sheet with frames ``[0, 33, 66, 99, 133, 166]`` (that last line of code creates a contact sheet from an animation):
 
-.. image:: /_static/renders/about_banner_contact.png
+.. image:: /_static/renders/about_banner_contactsheet.png
     :width: 700
     :class: add-border
 

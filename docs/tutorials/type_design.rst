@@ -6,7 +6,7 @@ Live Reload UFOs
 
 One fun thing that coldtype can do out of the box is load ``.ufo`` and ``.designspace`` files, as well as monitor those files for changes.
 
-Here’s an example of creating a complex lockup of text using the ``assets/ColdtypeObviously_BlackItalic.ufo`` UFO source, then automatically monitoring the UFO source and refreshing the rendered composition based on any changes made there.
+Here’s an example of creating a somewhat complex text setting using the ``assets/ColdtypeObviously_BlackItalic.ufo`` UFO source, then automatically monitoring the UFO source and refreshing the rendered composition based on any changes saved to the UFO.
 
 .. code:: python
 

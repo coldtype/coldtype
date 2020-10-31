@@ -381,7 +381,7 @@ class animation(renderable, Timeable):
                     dps += DATPen().rect(g).f(None).img(pngs[idx], g, pattern=False)
             return dps
         
-        contactsheet.func.__name__ = self.func.__name__ + "_contact"
+        contactsheet.func.__name__ = self.func.__name__ + "_contactsheet"
         return contactsheet
 
 
