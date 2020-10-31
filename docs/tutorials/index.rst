@@ -17,3 +17,4 @@ The examples here are more oriented towards fundamental concepts of coldtype.
     drawbot
     midi
     premiere
+    aftereffects
