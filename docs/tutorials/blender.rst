@@ -5,9 +5,11 @@ I'll admit, using Coldtype in Blender is not a very normal or standard applicati
 
 Anyway the point is that you can avoid setting text in Blender itself by writing Python scripts that run inside Blender.
 
+That is, the idea here is to work in a more hybrid style. You want a gigantic piece of 3d type that uses the second stylistic set of a font? Blender won't help you, but Coldtype can: write a short script in Python, using Coldtype to create the vector, and — voila — you have a gigantic piece of 3d type that you can move around and add materials to, etc.
+
+__N.B.__ This means the point of a Coldtype script in Blender is not to return a ``DATPen`` or ``DATPenSet`` to a renderer, but to work interactively, creating or mutating existing objects available in the Blender data hierarchy in your project file.
+
 Getting it all set up is a bit of a pain, but worth it (if you’re doing anything with typography in Blender).
-
-
 
 Installing
 ----------
