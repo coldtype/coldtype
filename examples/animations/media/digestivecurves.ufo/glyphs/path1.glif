@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="path1" format="2">
+  <advance width="1350"/>
+  <outline>
+    <contour identifier="NH2LyrGQL7">
+      <point x="-342" y="68" type="move"/>
+      <point x="-259" y="111"/>
+      <point x="-108" y="217"/>
+      <point x="140" y="217.0" type="curve" smooth="yes"/>
+      <point x="381" y="217"/>
+      <point x="454" y="98"/>
+      <point x="639" y="98" type="curve" smooth="yes"/>
+      <point x="843" y="98"/>
+      <point x="925" y="217"/>
+      <point x="1106" y="217" type="curve" smooth="yes"/>
+      <point x="1322" y="217"/>
+      <point x="1460" y="119"/>
+      <point x="1656" y="124" type="curve" smooth="yes"/>
+    </contour>
+  </outline>
+</glyph>
