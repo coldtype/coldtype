@@ -1246,10 +1246,10 @@ class Renderer():
                     self.draw_preview(dscale, canvas, rect, (render, result, rp))
             
             self.surface.flushAndSubmit()
-            glfw.swap_buffers(self.window)
             print(">>>", self.syphon_server)
             if self.syphon_server:
-                self.syphon_server.publish_frame_texture(0, syphonpy.MakeRect(0,0,640,480), syphonpy.MakeSize(640,480), False)
+                self.syphon_server.publish_frame_texture(1, syphonpy.MakeRect(0,0,640,480), syphonpy.MakeSize(640,480), False)
+            glfw.swap_buffers(self.window)
         
         self.previews_waiting_to_paint = []
         if self.server:
