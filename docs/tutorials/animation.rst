@@ -80,6 +80,35 @@ And here’s a little bit of code to generate gifs for use on this page. To be h
     :width: 125
     :class: add-border
 
+Animation Workflow
+------------------
+
+First off, you probably don't want to see the contactsheets as you're building an animation, so if you've copied in those lines, you can comment them out.
+
+Once you've started a coldtype process for an animation, you can type in little mnemonics in the terminal window (not the viewer) to trigger different actions in the coldtype renderer.
+
+For instance, with the above process still running, try typing—
+
+.. code:: bash
+    
+    pf 10
+
+—and then hitting `enter` on your keyboard. This will show you a different frame (frame 10) of the animation. The `pf` command stands for (p)review (f)rame.
+
+You can type any number of frame indices here, to preview multiple frames at once, like so:
+
+.. code:: bash
+    
+    pf 3 5 7
+
+If you type in `ra`, this will (r)ender (a)ll, and should take a little while to complete, depending on how fast your computer is.
+
+.. code:: bash
+    
+    ra
+
+Once you do a `ra` command, jump to the viewer app and hit the space bar to preview the animation in real time at the correct frame rate.
+
 .. rubric:: Footnotes
 
 .. [#f1] The concept of a ``contactsheet`` is probably not something you’ll need to use in your own animations — it’s mostly used here as a way to illustrate the animations without requiring that the animation be embedded as a video file.
