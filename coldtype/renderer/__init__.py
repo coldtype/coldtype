@@ -25,6 +25,12 @@ from coldtype.renderer.state import RendererState
 from coldtype.renderer.utils import *
 from coldtype.abbr.inst import Inst
 
+try:
+    import syphonpy
+except:
+    syphonpy = None
+    pass
+
 _random = Random()
 
 import contextlib, glfw
@@ -787,6 +793,8 @@ class Renderer():
         
         self.context = skia.GrDirectContext.MakeGL()
 
+        self.syphon_server = syphonpy.SyphonServer("ColdtypeTest")
+
         #self.watch_file_changes()
 
         if len(self.watchees) > 0:
@@ -1153,12 +1161,12 @@ class Renderer():
     
     def create_surface(self, rect):
         #print("NEW SURFACE", rect)
-        backend_render_target = skia.GrBackendRenderTarget(
+        self.backend_render_target = skia.GrBackendRenderTarget(
             int(rect.w), int(rect.h), 0, 0,
             skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
         self.surface = skia.Surface.MakeFromBackendRenderTarget(
             self.context,
-            backend_render_target,
+            self.backend_render_target,
             skia.kBottomLeft_GrSurfaceOrigin,
             skia.kRGBA_8888_ColorType,
             skia.ColorSpace.MakeSRGB())
@@ -1239,6 +1247,9 @@ class Renderer():
             
             self.surface.flushAndSubmit()
             glfw.swap_buffers(self.window)
+            print(">>>", self.syphon_server)
+            if self.syphon_server:
+                self.syphon_server.publish_frame_texture(0, syphonpy.MakeRect(0,0,640,480), syphonpy.MakeSize(640,480), False)
         
         self.previews_waiting_to_paint = []
         if self.server:
