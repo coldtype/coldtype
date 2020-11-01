@@ -1,7 +1,7 @@
 Animation
 =========
 
-There are lots of examples of somewhat complex animation in the `coldtype-examples <https://github.com/goodhertz/coldtype-examples>`_ repo, but here are some simpler (and shorter) ones, that demonstrate the fundamentals of how animations are built in coldtype.
+There are lots of examples of somewhat complex animation in the `examples/animations <https://github.com/goodhertz/coldtype/tree/main/examples/animations>`_ directory, but here are some simpler (and shorter) ones, that demonstrate the fundamentals of how animations are built in coldtype.
 
 A circle moving
 ---------------

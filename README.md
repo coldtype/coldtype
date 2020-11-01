@@ -47,4 +47,4 @@ Check out [coldtype.goodhertz.com](https://coldtype.goodhertz.com) for instructi
 
 ## More Examples
 
-The best way to get familiar with Coldtype is to look at and try modifying some example code, like the animating gif below. To try out this example and many more, check out the [coldtype-examples](https://github.com/goodhertz/coldtype-examples) repository.
+The best way to get familiar with Coldtype is to look at and try modifying some example code, like the animating gif below. To try out this example and many more, check out the [examples/animation](https://github.com/goodhertz/coldtype/tree/main/examples/animations) directory in this repo.
