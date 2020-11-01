@@ -949,6 +949,8 @@ class Renderer():
                 self._should_reload = True
             elif key == glfw.KEY_R:
                 self.on_action(Action.RestartRenderer)
+            elif key == glfw.KEY_L:
+                self.on_action(Action.Release)
             elif key == glfw.KEY_P:
                 self._should_reload = True
             elif key == glfw.KEY_A:

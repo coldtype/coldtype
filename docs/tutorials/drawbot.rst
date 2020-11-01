@@ -89,20 +89,26 @@ All that said, it is still quite possible to do normal DrawBot things in a Coldt
             print(f"Saving page {idx}...")
             newPage(w, h)
             multipage_doc.func(Frame(idx, multipage_doc, []))
-        saveImage("docs/tutorials/drawbot_multipage.pdf")
+        pdf_path = "docs/tutorials/drawbot_multipage.pdf"
+        saveImage(pdf_path)
+        print("Saved pdf", pdf_path)
         endDrawing()
 
 .. image:: /_static/renders/drawbot_multipage_doc_contactsheet.png
     :width: 500
     :class: add-border
 
+The key to making this work is the magic function ``release``, which can be defined once in any Coldtype source file, and provides a "second chance" so to speak, to create artifacts based on what's been rendered by the coldtype renderer. The salient point here is that you can write your own special code to run whenever the ``release`` action is called, which can be outside the standard save/reload/render workflow of Coldtype. This can be useful for all kinds of things (it’s how this documentation is generated), but here it's useful because we're saying, OK, the graphics look good, let's now use DrawBot to bake a PDF, using the same code that we've been editing and previewing via the Coldtype viewer.
+
+How to trigger the release code? I trigger it via a MIDI trigger + a .coldtype.py configuration file, but it’s as easy as typing "release" into the running command line prompt, or hitting L with the viewer app focused.
+
 
 Scaling
 -------
 
-Because the default behavior of DrawBot is to display a PDF of the result of your code and to zoom in on a composition automatically, you might be surprised that graphics appear pretty small in the Coldtype viewer window by default. To remedy that, there are a few options:
+Because the default behavior of DrawBot is to display a PDF of the result of your code and to zoom in on a composition automatically, you might be surprised that graphics appear pretty small in the Coldtype viewer window by default, because Coldtype defaults to showing the graphics at actual size. If you'd like to default to showing your graphics at a higher resolution (i.e. if you’re making a PDF), there are a few options:
 
-* You can zoom in with +/- on your keyboard
+* You can zoom in with +/- on your keyboard in the viewer app
 * You can specify a `preview-scale` argument to the renderer itself when you start it on the command-line, ala ``coldtype drawbot_script.py -ps 2``
 * You can type `ps 2` into a running renderer CLI prompt, to set the scale programmatically
 
