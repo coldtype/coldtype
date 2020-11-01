@@ -18,3 +18,4 @@ The examples here are more oriented towards fundamental concepts of coldtype.
     midi
     premiere
     aftereffects
+    blender

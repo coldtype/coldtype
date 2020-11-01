@@ -112,3 +112,36 @@ Because the default behavior of DrawBot is to display a PDF of the result of you
 * You can specify a `preview-scale` argument to the renderer itself when you start it on the command-line, ala ``coldtype drawbot_script.py -ps 2``
 * You can type `ps 2` into a running renderer CLI prompt, to set the scale programmatically
 
+Coldtype-in-DrawBot
+-------------------
+
+Not quite sure why this would be useful, but if you're willing to do a little spelunking, Coldtype can also be used from within the DrawBot editing/viewing app.
+
+To install the coldtype library, you'll need to locate the python binary used by DrawBot itself. As of this writing, that’s available on my computer at:
+
+.. code:: bash
+
+    /Applications/DrawBot.app/Contents/MacOS/python
+
+If that’s the same on your computer (you can verify that by copying that path into your terminal and hitting enter), then you can install coldtype like this:
+
+.. code:: bash
+
+    /Applications/DrawBot.app/Contents/MacOS/python -m pip install coldtype
+
+(Unfortunately you can’t install coldtype via the integrated PIP GUI in DrawBot because it times out too soon, and because there’s an issue with a missing Python.h file in the bundled DrawBot python.)
+
+If you do all that and restart DrawBot, you should now be able to use Coldtype directly within DrawBot itself.
+
+.. code:: python
+
+    import coldtype as ct
+
+    r = ct.Rect(width(), height())
+
+    (ct.StyledString("Hello!",
+        ct.Style("~/Type/fonts/fonts/_script/ChocStd.otf", 400))
+        .pens()
+        .align(r)
+        .f(ct.Gradient.H(r.inset(100), ct.hsl(0.5), ct.hsl(0.9)))
+        .db_drawPath())
