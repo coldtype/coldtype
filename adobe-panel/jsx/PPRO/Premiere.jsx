@@ -189,13 +189,13 @@ $._PPP_={
         if (!root) {
             root = app.project.rootItem;
         }
-        var updatedItems = [];
-        var numItems = root.children.numItems;
-		for (var i = 0; i < numItems; i++) {
-			var currentItem = root.children[i];
+
+		var updatedItems = [];
+		var bustCache = function(currentItem) {
 			if (currentItem) {
-				// currentItem.name.match(prefix) && 
+				//  && currentItem.name.match(prefix) && 
                 if (currentItem.name.match(/\.png$/)) {
+					//alert(prefix + currentItem.name);
                     //alert(currentItem.name);
                     currentItem.refreshMedia();
                     updatedItems.push(currentItem.name);
@@ -204,9 +204,20 @@ $._PPP_={
 					var success = currentItem.changeMediaPath(mp);
 					//alert(success + "/" + fps);
 					//currentItem.setOverrideFrameRate(fps);
-                }
+                } else if (currentItem.children) {
+					//alert("yes" + currentItem.name);
+					var numItems = currentItem.children.numItems;
+					for (var i = 0; i < numItems; i++) {
+						bustCache(currentItem.children[i]);
+					}
+				}
                 //currentItem.refreshMedia();
 			}
+		}
+
+        var numItems = root.children.numItems;
+		for (var i = 0; i < numItems; i++) {
+			bustCache(root.children[i]);
         }
         $._PPP_.updateEventPanel("refreshed >>> " + updatedItems.join("/"));
 	},
