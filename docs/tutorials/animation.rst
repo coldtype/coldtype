@@ -109,6 +109,11 @@ If you type in `ra`, this will (r)ender (a)ll, and should take a little while to
 
 Once you do a `ra` command, jump to the viewer app and hit the space bar to preview the animation in real time at the correct frame rate.
 
+Jumping to Adobe
+----------------
+
+While it is possible to complete an animation using nothing but code, I usually employ a program like Premiere or After Effects to both view and finish animations that I start in code, either to apply effects in After Effects, or to match the animation with music in Premiere. Because animations done in Coldtype are rendered to PNGs, you can import those easily in any video editing program. (In Premiere, just make sure to select the 0000 image, then select Options > Image Sequence when importing.
+
 .. rubric:: Footnotes
 
 .. [#f1] The concept of a ``contactsheet`` is probably not something you’ll need to use in your own animations — it’s mostly used here as a way to illustrate the animations without requiring that the animation be embedded as a video file.
