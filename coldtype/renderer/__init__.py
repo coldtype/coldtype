@@ -34,7 +34,7 @@ except:
 _random = Random()
 
 import contextlib, glfw
-from OpenGL import GL
+from OpenGL import GL, GLU
 
 try:
     import rtmidi
@@ -706,6 +706,7 @@ class Renderer():
             window = glfw.create_window(640, 480, '', None, None)
             glfw.make_context_current(window)
             self.context = skia.GrDirectContext.MakeGL()
+            GL.glGenTextures(1)
 
         wl = len(self.watchees)
         self.window_scrolly = 0
@@ -1236,19 +1237,25 @@ class Renderer():
             
             self.last_rect = frect
 
+            GL.glBindTexture(GL.GL_TEXTURE_2D, 1)
             GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
             with self.surface as canvas:
                 canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 1))
-
                 for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
                     rect = rects[idx].offset((w-rects[idx].w)/2, 0)
                     self.draw_preview(dscale, canvas, rect, (render, result, rp))
             
-            self.surface.flushAndSubmit()
-            print(">>>", self.syphon_server)
+            #self.surface.flushAndSubmit()
+            if True:
+                image = self.surface.makeImageSnapshot()
+                array = image.toarray()
+                GLU.gluBuild2DMipmaps(GL.GL_TEXTURE_2D, GL.GL_RGB, frect.w, frect.h, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, array)
+            
             if self.syphon_server:
-                self.syphon_server.publish_frame_texture(1, syphonpy.MakeRect(0,0,640,480), syphonpy.MakeSize(640,480), False)
+                self.syphon_server.publish_frame_texture(1, syphonpy.MakeRect(0,0,frect.w,frect.h), syphonpy.MakeSize(frect.w,frect.h), False)
+            
+            #self.surface.flushAndSubmit()
             glfw.swap_buffers(self.window)
         
         self.previews_waiting_to_paint = []
