@@ -7,11 +7,11 @@ import pickle
 
 op = sibling(__file__, "oval.pickle")
 if not op.exists():
-    oval = (StyledString("L",
+    oval = (StyledString("C",
         Style("assets/ColdtypeObviously-VF.ttf", 1000))
         .pen()
         .align(Rect(0, 0, 1080, 1080))
-        .f(hsl(0.85)))
+        .f(0))
     pickle.dump(oval, open(op, "wb"))
 
 def listit(t):
@@ -31,7 +31,7 @@ def test_kb(r, rs):
         elif rs.cmd.startswith("sc"):
             p.scale(float(rs.cmd.split(" ")[1]))
     
-    out = DATPenSet([p.f(hsl(0.6, a=0.3))])
+    out = DATPenSet([p])
 
     if rs.keylayer > 0:
         pt_lookup = []
@@ -56,11 +56,10 @@ def test_kb(r, rs):
         
         for vi, ii, i, pt in pt_lookup:
             if ii == rs.selected:
-                if rs.arrow and not rs.xray:
+                if rs.arrow and not rs.xray and not rs.mods.ctrl:
                     pt[0] += rs.arrow[0]
                     pt[1] += rs.arrow[1]
                     p.value[vi][-1][i] = pt
-                #print(vi, ii, i, pt, p.value[vi][-1])
                 pt = p.value[vi][-1][i]
                 out += (DATPen()
                     .oval(Rect(pt[0]-50, pt[1]-50, 100, 100))
@@ -75,7 +74,7 @@ def test_kb(r, rs):
     
     pickle.dump(p, open(op, "wb"))
     if rs.keylayer == 2:
-        p.s(0).sw(2)
+        p.f(hsl(0.65, a=0.25)).s(0).sw(3)
     return out
 
 def release(_):

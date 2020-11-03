@@ -14,8 +14,21 @@ class Mods():
     def __init__(self):
         self.reset()
     
+    def update(self, mods):
+        if mods & glfw.MOD_SUPER:
+            self.super = True
+        if mods & glfw.MOD_SHIFT:
+            self.shift = True
+        if mods & glfw.MOD_ALT:
+            self.alt = True
+        if mods & glfw.MOD_CONTROL:
+            self.ctrl = True
+    
     def reset(self):
         self.super = False
+        self.shift = False
+        self.ctrl = False
+        self.alt = False
 
 
 class RendererState():
@@ -81,6 +94,8 @@ class RendererState():
         if action != glfw.PRESS and action != glfw.REPEAT:
             return
         
+        self.mods.update(mods)
+        
         if key == glfw.KEY_ENTER:
             cmd = "".join(self.keybuffer)
             self.cmd = cmd
@@ -95,9 +110,7 @@ class RendererState():
                 return Action.PreviewStoryboard
 
         elif key == glfw.KEY_ESCAPE:
-            print("EXITING KEYBUFFER")
-            self.keylayer = 0
-            self.keybuffer = []
+            self.exit_keylayer()
             return Action.PreviewStoryboard
             #self.needs_display = 1
         elif key in [glfw.KEY_UP, glfw.KEY_DOWN, glfw.KEY_LEFT, glfw.KEY_RIGHT]:
@@ -113,13 +126,19 @@ class RendererState():
                 if mods & glfw.MOD_SHIFT:
                     for idx, a in enumerate(self.arrow):
                         self.arrow[idx] = a * 10
-                if mods & glfw.MOD_SUPER:
-                    self.mods.super = True
                 return Action.PreviewStoryboard
         elif key == glfw.KEY_X and self.keylayer == 2:
             self.xray = not self.xray
             return Action.PreviewStoryboard
+        elif key == glfw.KEY_E and self.keylayer == 2:
+            self.exit_keylayer()
+            return Action.PreviewStoryboard
         return
+    
+    def exit_keylayer(self):
+        print("EXITING KEYLAYER", self.keylayer)
+        self.keylayer = 0
+        self.keybuffer = []
     
     def draw_keylayer(self, canvas, rect):
         canvas.save()
