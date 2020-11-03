@@ -989,12 +989,10 @@ class Renderer():
             self.on_action(Action.RenderAll)
         elif key == glfw.KEY_M:
             self.on_action(Action.ToggleMultiplex)
-        elif key == glfw.KEY_K:
+        elif key == glfw.KEY_E:
             self.state.keylayer = -2
-            self.on_action(Action.PreviewStoryboard)
         elif key == glfw.KEY_C:
             self.state.keylayer = -1
-            self.on_action(Action.PreviewStoryboard)
         elif key == glfw.KEY_Q:
             self.dead = True
             self.on_exit()

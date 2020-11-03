@@ -10,6 +10,14 @@ class RendererStateEncoder(json.JSONEncoder):
         }
 
 
+class Mods():
+    def __init__(self):
+        self.reset()
+    
+    def reset(self):
+        self.super = False
+
+
 class RendererState():
     def __init__(self, renderer):
         self.renderer = renderer
@@ -21,6 +29,8 @@ class RendererState():
         #self.needs_display = 0
         self.cmd = None
         self.arrow = None
+        self.mods = Mods()
+        self.xray = False
         self.reset()
     
     def reset(self):
@@ -61,7 +71,8 @@ class RendererState():
     def on_character(self, codepoint):
         if self.keylayer < 0:
             self.keylayer = abs(self.keylayer)
-        elif self.keylayer > 0:
+            return Action.PreviewStoryboard
+        elif self.keylayer == 1:
             self.keybuffer.append(chr(codepoint))
             return Action.PreviewStoryboard
         #self.needs_display = 1
@@ -102,7 +113,12 @@ class RendererState():
                 if mods & glfw.MOD_SHIFT:
                     for idx, a in enumerate(self.arrow):
                         self.arrow[idx] = a * 10
+                if mods & glfw.MOD_SUPER:
+                    self.mods.super = True
                 return Action.PreviewStoryboard
+        elif key == glfw.KEY_X and self.keylayer == 2:
+            self.xray = not self.xray
+            return Action.PreviewStoryboard
         return
     
     def draw_keylayer(self, canvas, rect):
@@ -117,3 +133,4 @@ class RendererState():
     def reset_keystate(self):
         self.cmd = None
         self.arrow = None
+        self.mods.reset()
