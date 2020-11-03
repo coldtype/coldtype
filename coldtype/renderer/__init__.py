@@ -594,6 +594,7 @@ class Renderer():
                 indices = [0, all_frames[-1]] # always render first & last from main, to trigger a filesystem-change detection in premiere
         
         preview_count, render_count, renders = self._single_thread_render(trigger, indices)
+        self.state.cmd = None
         
         if not self.args.is_subprocess and render_count > 0:
             for render in renders:
@@ -924,7 +925,7 @@ class Renderer():
                     cmd = "".join(self.state.keybuffer)
                     self.state.cmd = cmd
                     self.state.keybuffer = []
-                    print(">>>", cmd)
+                    print(">>> KB-CMD:", cmd)
                     self.on_action(Action.PreviewStoryboard)
                 elif key == glfw.KEY_ESCAPE:
                     self.state.keybuffering = 0
@@ -980,6 +981,7 @@ class Renderer():
                 self.on_action(Action.ToggleMultiplex)
             elif key == glfw.KEY_K:
                 self.state.keybuffering = -1
+                print("<KEYBUFFERING>")
             elif key == glfw.KEY_Q:
                 self.dead = True
                 self.on_exit()

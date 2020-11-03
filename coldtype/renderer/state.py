@@ -17,6 +17,7 @@ class RendererState():
         self.controller_values = {}
         self.keybuffering = 0
         self.keybuffer = []
+        self.cmd = None
         self.reset()
     
     def reset(self):
