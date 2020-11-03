@@ -62,6 +62,19 @@ def monitor_stdin():
     keep_last_line_thread.start()
 
 
+class WebSocketThread(threading.Thread):
+    def __init__(self, server):
+        self.server = server
+        self.should_run = True
+        threading.Thread.__init__(self)
+    
+    def run(self):
+        print("Running a server...")
+        while self.should_run:
+            self.server.serveonce()
+            ptime.sleep(0.25)
+
+
 class Renderer():
     def Argparser(name="coldtype", file=True, defaults={}, nargs=[]):
         parser = argparse.ArgumentParser(prog=name, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -157,6 +170,7 @@ class Renderer():
 
         self.observers = []
         self.watchees = []
+        self.server_thread = None
         
         if not self.reset_filepath(self.args.file if hasattr(self.args, "file") else None):
             self.dead = True
@@ -594,7 +608,7 @@ class Renderer():
                 indices = [0, all_frames[-1]] # always render first & last from main, to trigger a filesystem-change detection in premiere
         
         preview_count, render_count, renders = self._single_thread_render(trigger, indices)
-        self.state.cmd = None
+        self.state.reset_keystate()
         
         if not self.args.is_subprocess and render_count > 0:
             for render in renders:
@@ -743,6 +757,8 @@ class Renderer():
     def initialize_gui_and_server(self):
         try:
             self.server = echo_server()
+            self.server_thread = WebSocketThread(self.server)
+            self.server_thread.start()
         except OSError:
             self.server = None
 
@@ -912,79 +928,76 @@ class Renderer():
             print("Release failed", str(e))
     
     def on_character(self, _, codepoint):
-        #print(chr(codepoint), sep="", end="", flush=True)
-        if self.state.keybuffering == -1:
-            self.state.keybuffering = 1
-        elif self.state.keybuffering:
-            self.state.keybuffer.append(chr(codepoint))
+        if self.state.keylayer != 0:
+            requested_action = self.state.on_character(codepoint)
+            if requested_action:
+                self.on_action(requested_action)
 
     def on_key(self, win, key, scan, action, mods):
-        if action == glfw.PRESS:
-            if self.state.keybuffering:
-                if key == glfw.KEY_ENTER:
-                    cmd = "".join(self.state.keybuffer)
-                    self.state.cmd = cmd
-                    self.state.keybuffer = []
-                    print(">>> KB-CMD:", cmd)
-                    self.on_action(Action.PreviewStoryboard)
-                elif key == glfw.KEY_ESCAPE:
-                    self.state.keybuffering = 0
-                elif key in [glfw.KEY_UP, glfw.KEY_DOWN, glfw.KEY_LEFT, glfw.KEY_RIGHT]:
-                    print("ARROW", key)
-                return
+        if self.state.keylayer > 0:
+            requested_action = self.state.on_key(win, key, scan, action, mods)
+            if requested_action:
+                self.on_action(requested_action)
+            return
 
-            if key == glfw.KEY_LEFT:
-                self.action_waiting = Action.PreviewStoryboardPrev
-                #self.on_action(Action.PreviewStoryboardPrev)
-            elif key == glfw.KEY_RIGHT:
-                self.action_waiting = Action.PreviewStoryboardNext
-                #self.on_action(Action.PreviewStoryboardNext)
-            elif key == glfw.KEY_DOWN:
-                if mods & glfw.MOD_SUPER:
-                    o = glfw.get_window_opacity(self.window)
-                    glfw.set_window_opacity(self.window, max(0.1, o-0.1))
-                else:
-                    self.window_scrolly -= (500 if mods & glfw.MOD_SHIFT else 250)
-                    self.on_action(Action.PreviewStoryboard)
-            elif key == glfw.KEY_UP:
-                if mods & glfw.MOD_SUPER:
-                    o = glfw.get_window_opacity(self.window)
-                    glfw.set_window_opacity(self.window, min(1, o+0.1))
-                else:
-                    self.window_scrolly += (500 if mods & glfw.MOD_SHIFT else 250)
-                    self.on_action(Action.PreviewStoryboard)
-            elif key == glfw.KEY_SPACE:
-                #if mods & glfw.MOD_CONTROL:
-                self.on_action(Action.RenderedPlay)
-                #else:
-                #    self.on_action(Action.PreviewPlay)
-            elif key == glfw.KEY_ENTER:
-                self.on_action(Action.PreviewStoryboardReload)
-            elif key in [glfw.KEY_MINUS, glfw.KEY_EQUAL]:
-                inc = -0.1 if key == glfw.KEY_MINUS else 0.1
-                if mods & glfw.MOD_SHIFT:
-                    inc = inc * 5
-                self._preview_scale = max(0.1, min(5, self._preview_scale + inc))
-                self._should_reload = True
-            elif key == glfw.KEY_0:
-                self._preview_scale = 1.0
-                self._should_reload = True
-            elif key == glfw.KEY_R:
-                self.on_action(Action.RestartRenderer)
-            elif key == glfw.KEY_L:
-                self.on_action(Action.Release)
-            elif key == glfw.KEY_P:
-                self._should_reload = True
-            elif key == glfw.KEY_A:
-                self.on_action(Action.RenderAll)
-            elif key == glfw.KEY_M:
-                self.on_action(Action.ToggleMultiplex)
-            elif key == glfw.KEY_K:
-                self.state.keybuffering = -1
-                print("<KEYBUFFERING>")
-            elif key == glfw.KEY_Q:
-                self.dead = True
-                self.on_exit()
+        if action != glfw.PRESS:
+            return
+        
+        if key == glfw.KEY_LEFT:
+            self.action_waiting = Action.PreviewStoryboardPrev
+            #self.on_action(Action.PreviewStoryboardPrev)
+        elif key == glfw.KEY_RIGHT:
+            self.action_waiting = Action.PreviewStoryboardNext
+            #self.on_action(Action.PreviewStoryboardNext)
+        elif key == glfw.KEY_DOWN:
+            if mods & glfw.MOD_SUPER:
+                o = glfw.get_window_opacity(self.window)
+                glfw.set_window_opacity(self.window, max(0.1, o-0.1))
+            else:
+                self.window_scrolly -= (500 if mods & glfw.MOD_SHIFT else 250)
+                self.on_action(Action.PreviewStoryboard)
+        elif key == glfw.KEY_UP:
+            if mods & glfw.MOD_SUPER:
+                o = glfw.get_window_opacity(self.window)
+                glfw.set_window_opacity(self.window, min(1, o+0.1))
+            else:
+                self.window_scrolly += (500 if mods & glfw.MOD_SHIFT else 250)
+                self.on_action(Action.PreviewStoryboard)
+        elif key == glfw.KEY_SPACE:
+            #if mods & glfw.MOD_CONTROL:
+            self.on_action(Action.RenderedPlay)
+            #else:
+            #    self.on_action(Action.PreviewPlay)
+        elif key == glfw.KEY_ENTER:
+            self.on_action(Action.PreviewStoryboardReload)
+        elif key in [glfw.KEY_MINUS, glfw.KEY_EQUAL]:
+            inc = -0.1 if key == glfw.KEY_MINUS else 0.1
+            if mods & glfw.MOD_SHIFT:
+                inc = inc * 5
+            self._preview_scale = max(0.1, min(5, self._preview_scale + inc))
+            self._should_reload = True
+        elif key == glfw.KEY_0:
+            self._preview_scale = 1.0
+            self._should_reload = True
+        elif key == glfw.KEY_R:
+            self.on_action(Action.RestartRenderer)
+        elif key == glfw.KEY_L:
+            self.on_action(Action.Release)
+        elif key == glfw.KEY_P:
+            self._should_reload = True
+        elif key == glfw.KEY_A:
+            self.on_action(Action.RenderAll)
+        elif key == glfw.KEY_M:
+            self.on_action(Action.ToggleMultiplex)
+        elif key == glfw.KEY_K:
+            self.state.keylayer = -2
+            self.on_action(Action.PreviewStoryboard)
+        elif key == glfw.KEY_C:
+            self.state.keylayer = -1
+            self.on_action(Action.PreviewStoryboard)
+        elif key == glfw.KEY_Q:
+            self.dead = True
+            self.on_exit()
     
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
@@ -1218,7 +1231,8 @@ class Renderer():
         dscale = self.preview_scale()
         rects = []
 
-        if len(self.previews_waiting_to_paint) > 0:
+        render_previews = len(self.previews_waiting_to_paint) > 0
+        if render_previews:
             w = 0
             lh = -1
             h = 0
@@ -1253,7 +1267,7 @@ class Renderer():
                     work_rect = Rect(glfw.get_monitor_workarea(monitor))
                     pinned = work_rect.take(ww, pin[0]).take(wh, pin[1])
                     glfw.set_window_pos(self.window, pinned.x, pinned.y)
-            
+
             self.last_rect = frect
 
             GL.glClear(GL.GL_COLOR_BUFFER_BIT)
@@ -1265,12 +1279,14 @@ class Renderer():
                     rect = rects[idx].offset((w-rects[idx].w)/2, 0)
                     self.draw_preview(dscale, canvas, rect, (render, result, rp))
             
+                if self.state.keylayer > 0:
+                    self.state.draw_keylayer(canvas, self.last_rect)
+            
             self.surface.flushAndSubmit()
             glfw.swap_buffers(self.window)
         
+        self.state.needs_display = 0
         self.previews_waiting_to_paint = []
-        if self.server:
-            self.server.serveonce()
 
     def draw_preview(self, scale, canvas, rect, waiter):
         if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
@@ -1380,6 +1396,8 @@ class Renderer():
             self.hotkeys.stop()
         self.reset_renderers()
         self.stop_watching_file_changes()
+        if self.server_thread:
+            self.server_thread.should_run = False
         if self.args.memory:
             snapshot = tracemalloc.take_snapshot()
             top_stats = snapshot.statistics('traceback')
