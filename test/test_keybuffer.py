@@ -73,7 +73,7 @@ def test_kb(r, rs):
                     .scale(1.5 if ii == rs.selected else 1))
     
     pickle.dump(p, open(op, "wb"))
-    if rs.keylayer == 2:
+    if rs.keylayer != 0:
         p.f(hsl(0.65, a=0.25)).s(0).sw(3)
     return out
 

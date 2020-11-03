@@ -773,6 +773,8 @@ class Renderer():
         
         self.window = glfw.create_window(int(50), int(50), '', None, None)
         self.window_scrolly = 0
+
+        self.typeface = skia.Typeface.MakeFromFile("assets/RecMono-CasualItalic.ttf")
         
         o = self.py_config.get("WINDOW_OPACITY")
         if o:
@@ -1278,7 +1280,7 @@ class Renderer():
                     self.draw_preview(dscale, canvas, rect, (render, result, rp))
             
                 if self.state.keylayer > 0:
-                    self.state.draw_keylayer(canvas, self.last_rect)
+                    self.state.draw_keylayer(canvas, self.last_rect, self.typeface)
             
             self.surface.flushAndSubmit()
             glfw.swap_buffers(self.window)
@@ -1303,12 +1305,12 @@ class Renderer():
         render.draw_preview(1.0, canvas, render.rect, result, rp)
         if hasattr(render, "blank_renderable"):
             paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=0.75).skia())
-            canvas.drawString(f"{coldtype.__version__}", 405, 450, skia.Font(None, 36), paint)
-            canvas.drawString("Nothing found".upper(), 315, 480, skia.Font(None, 20), paint)
+            canvas.drawString(f"{coldtype.__version__}", 359, 450, skia.Font(self.typeface, 42), paint)
+            canvas.drawString("Nothing found", 297, 480, skia.Font(self.typeface, 24), paint)
         if hasattr(render, "show_error"):
             paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=1).skia())
-            canvas.drawString(render.show_error, 30, 50, skia.Font(None, 30), paint)
-            canvas.drawString("> See process in terminal for traceback", 30, 100, skia.Font(None, 24), paint)
+            canvas.drawString(render.show_error, 30, 70, skia.Font(self.typeface, 50), paint)
+            canvas.drawString("> See process in terminal for traceback", 30, 120, skia.Font(self.typeface, 32), paint)
         canvas.restore()
     
     def preload_frames(self, passes):

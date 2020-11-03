@@ -140,11 +140,11 @@ class RendererState():
         self.keylayer = 0
         self.keybuffer = []
     
-    def draw_keylayer(self, canvas, rect):
+    def draw_keylayer(self, canvas, rect, typeface):
         canvas.save()
         if self.keylayer == 1:
             canvas.drawRect(skia.Rect(0, 0, rect.w, 50), skia.Paint(AntiAlias=True, Color=hsl(0.95, l=0.5, a=0.5).skia()))
-            canvas.drawString("".join(self.keybuffer), 10, 32, skia.Font(None, 30), skia.Paint(AntiAlias=True, Color=skia.ColorWHITE))
+            canvas.drawString("".join(self.keybuffer), 10, 32, skia.Font(typeface, 30), skia.Paint(AntiAlias=True, Color=skia.ColorWHITE))
         elif self.keylayer == 2:
             canvas.drawRect(skia.Rect(0, 0, 50, 50), skia.Paint(AntiAlias=True, Color=hsl(0.95, l=0.5, a=0.75).skia()))
         canvas.restore()
