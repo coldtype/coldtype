@@ -1,7 +1,7 @@
 import tempfile, traceback, threading
 import argparse, importlib, inspect, json, math
 import sys, os, re, signal, tracemalloc
-import platform, pickle
+import platform, pickle, string
 
 import time as ptime
 from pathlib import Path
@@ -60,6 +60,19 @@ def monitor_stdin():
     keep_last_line_thread = threading.Thread(target=keep_last_line)
     keep_last_line_thread.daemon = True
     keep_last_line_thread.start()
+
+
+class WebSocketThread(threading.Thread):
+    def __init__(self, server):
+        self.server = server
+        self.should_run = True
+        threading.Thread.__init__(self)
+    
+    def run(self):
+        print("Running a server...")
+        while self.should_run:
+            self.server.serveonce()
+            ptime.sleep(0.25)
 
 
 class Renderer():
@@ -157,6 +170,7 @@ class Renderer():
 
         self.observers = []
         self.watchees = []
+        self.server_thread = None
         
         if not self.reset_filepath(self.args.file if hasattr(self.args, "file") else None):
             self.dead = True
@@ -594,6 +608,7 @@ class Renderer():
                 indices = [0, all_frames[-1]] # always render first & last from main, to trigger a filesystem-change detection in premiere
         
         preview_count, render_count, renders = self._single_thread_render(trigger, indices)
+        self.state.reset_keystate()
         
         if not self.args.is_subprocess and render_count > 0:
             for render in renders:
@@ -742,6 +757,8 @@ class Renderer():
     def initialize_gui_and_server(self):
         try:
             self.server = echo_server()
+            self.server_thread = WebSocketThread(self.server)
+            self.server_thread.start()
         except OSError:
             self.server = None
 
@@ -756,6 +773,8 @@ class Renderer():
         
         self.window = glfw.create_window(int(50), int(50), '', None, None)
         self.window_scrolly = 0
+
+        self.typeface = skia.Typeface.MakeFromFile("assets/RecMono-CasualItalic.ttf")
         
         o = self.py_config.get("WINDOW_OPACITY")
         if o:
@@ -765,6 +784,7 @@ class Renderer():
         
         glfw.make_context_current(self.window)
         glfw.set_key_callback(self.window, self.on_key)
+        glfw.set_char_callback(self.window, self.on_character)
         glfw.set_scroll_callback(self.window, self.on_scroll)
 
         try:
@@ -909,54 +929,75 @@ class Renderer():
         except Exception as e:
             print("Release failed", str(e))
     
+    def on_character(self, _, codepoint):
+        if self.state.keylayer != 0:
+            requested_action = self.state.on_character(codepoint)
+            if requested_action:
+                self.on_action(requested_action)
+
     def on_key(self, win, key, scan, action, mods):
-        if action == glfw.PRESS:
-            if key == glfw.KEY_LEFT:
-                self.action_waiting = Action.PreviewStoryboardPrev
-                #self.on_action(Action.PreviewStoryboardPrev)
-            elif key == glfw.KEY_RIGHT:
-                self.action_waiting = Action.PreviewStoryboardNext
-                #self.on_action(Action.PreviewStoryboardNext)
-            elif key == glfw.KEY_DOWN:
-                if mods & glfw.MOD_SUPER:
-                    o = glfw.get_window_opacity(self.window)
-                    glfw.set_window_opacity(self.window, max(0.1, o-0.1))
-                else:
-                    self.window_scrolly -= (500 if mods & glfw.MOD_SHIFT else 250)
-                    self.on_action(Action.PreviewStoryboard)
-            elif key == glfw.KEY_UP:
-                if mods & glfw.MOD_SUPER:
-                    o = glfw.get_window_opacity(self.window)
-                    glfw.set_window_opacity(self.window, min(1, o+0.1))
-                else:
-                    self.window_scrolly += (500 if mods & glfw.MOD_SHIFT else 250)
-                    self.on_action(Action.PreviewStoryboard)
-            elif key == glfw.KEY_SPACE:
-                #if mods & glfw.MOD_CONTROL:
-                self.on_action(Action.RenderedPlay)
-                #else:
-                #    self.on_action(Action.PreviewPlay)
-            elif key == glfw.KEY_ENTER:
-                self.on_action(Action.PreviewStoryboardReload)
-            elif key in [glfw.KEY_MINUS, glfw.KEY_EQUAL]:
-                inc = -0.1 if key == glfw.KEY_MINUS else 0.1
-                if mods & glfw.MOD_SHIFT:
-                    inc = inc * 5
-                self._preview_scale = max(0.1, min(5, self._preview_scale + inc))
-                self._should_reload = True
-            elif key == glfw.KEY_0:
-                self._preview_scale = 1.0
-                self._should_reload = True
-            elif key == glfw.KEY_R:
-                self.on_action(Action.RestartRenderer)
-            elif key == glfw.KEY_L:
-                self.on_action(Action.Release)
-            elif key == glfw.KEY_P:
-                self._should_reload = True
-            elif key == glfw.KEY_A:
-                self.on_action(Action.RenderAll)
-            elif key == glfw.KEY_M:
-                self.on_action(Action.ToggleMultiplex)
+        if self.state.keylayer > 0:
+            requested_action = self.state.on_key(win, key, scan, action, mods)
+            if requested_action:
+                self.on_action(requested_action)
+            return
+
+        if action != glfw.PRESS:
+            return
+        
+        if key == glfw.KEY_LEFT:
+            self.action_waiting = Action.PreviewStoryboardPrev
+            #self.on_action(Action.PreviewStoryboardPrev)
+        elif key == glfw.KEY_RIGHT:
+            self.action_waiting = Action.PreviewStoryboardNext
+            #self.on_action(Action.PreviewStoryboardNext)
+        elif key == glfw.KEY_DOWN:
+            if mods & glfw.MOD_SUPER:
+                o = glfw.get_window_opacity(self.window)
+                glfw.set_window_opacity(self.window, max(0.1, o-0.1))
+            else:
+                self.window_scrolly -= (500 if mods & glfw.MOD_SHIFT else 250)
+                self.on_action(Action.PreviewStoryboard)
+        elif key == glfw.KEY_UP:
+            if mods & glfw.MOD_SUPER:
+                o = glfw.get_window_opacity(self.window)
+                glfw.set_window_opacity(self.window, min(1, o+0.1))
+            else:
+                self.window_scrolly += (500 if mods & glfw.MOD_SHIFT else 250)
+                self.on_action(Action.PreviewStoryboard)
+        elif key == glfw.KEY_SPACE:
+            #if mods & glfw.MOD_CONTROL:
+            self.on_action(Action.RenderedPlay)
+            #else:
+            #    self.on_action(Action.PreviewPlay)
+        elif key == glfw.KEY_ENTER:
+            self.on_action(Action.PreviewStoryboardReload)
+        elif key in [glfw.KEY_MINUS, glfw.KEY_EQUAL]:
+            inc = -0.1 if key == glfw.KEY_MINUS else 0.1
+            if mods & glfw.MOD_SHIFT:
+                inc = inc * 5
+            self._preview_scale = max(0.1, min(5, self._preview_scale + inc))
+            self._should_reload = True
+        elif key == glfw.KEY_0:
+            self._preview_scale = 1.0
+            self._should_reload = True
+        elif key == glfw.KEY_R:
+            self.on_action(Action.RestartRenderer)
+        elif key == glfw.KEY_L:
+            self.on_action(Action.Release)
+        elif key == glfw.KEY_P:
+            self._should_reload = True
+        elif key == glfw.KEY_A:
+            self.on_action(Action.RenderAll)
+        elif key == glfw.KEY_M:
+            self.on_action(Action.ToggleMultiplex)
+        elif key == glfw.KEY_E:
+            self.state.keylayer = -2
+        elif key == glfw.KEY_C:
+            self.state.keylayer = -1
+        elif key == glfw.KEY_Q:
+            self.dead = True
+            self.on_exit()
     
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
@@ -1097,7 +1138,7 @@ class Renderer():
             print("Malformed message", message)
     
     def listen_to_glfw(self):
-        while not glfw.window_should_close(self.window):
+        while not self.dead and not glfw.window_should_close(self.window):
             scale_x, scale_y = glfw.get_window_content_scale(self.window)
             if scale_x != self._prev_scale:
                 self._prev_scale = scale_x
@@ -1190,7 +1231,8 @@ class Renderer():
         dscale = self.preview_scale()
         rects = []
 
-        if len(self.previews_waiting_to_paint) > 0:
+        render_previews = len(self.previews_waiting_to_paint) > 0
+        if render_previews:
             w = 0
             lh = -1
             h = 0
@@ -1225,7 +1267,7 @@ class Renderer():
                     work_rect = Rect(glfw.get_monitor_workarea(monitor))
                     pinned = work_rect.take(ww, pin[0]).take(wh, pin[1])
                     glfw.set_window_pos(self.window, pinned.x, pinned.y)
-            
+
             self.last_rect = frect
 
             GL.glClear(GL.GL_COLOR_BUFFER_BIT)
@@ -1237,12 +1279,14 @@ class Renderer():
                     rect = rects[idx].offset((w-rects[idx].w)/2, 0)
                     self.draw_preview(dscale, canvas, rect, (render, result, rp))
             
+                if self.state.keylayer > 0:
+                    self.state.draw_keylayer(canvas, self.last_rect, self.typeface)
+            
             self.surface.flushAndSubmit()
             glfw.swap_buffers(self.window)
         
+        self.state.needs_display = 0
         self.previews_waiting_to_paint = []
-        if self.server:
-            self.server.serveonce()
 
     def draw_preview(self, scale, canvas, rect, waiter):
         if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
@@ -1261,12 +1305,12 @@ class Renderer():
         render.draw_preview(1.0, canvas, render.rect, result, rp)
         if hasattr(render, "blank_renderable"):
             paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=0.75).skia())
-            canvas.drawString(f"{coldtype.__version__}", 405, 450, skia.Font(None, 36), paint)
-            canvas.drawString("Nothing found".upper(), 315, 480, skia.Font(None, 20), paint)
+            canvas.drawString(f"{coldtype.__version__}", 359, 450, skia.Font(self.typeface, 42), paint)
+            canvas.drawString("Nothing found", 297, 480, skia.Font(self.typeface, 24), paint)
         if hasattr(render, "show_error"):
             paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=1).skia())
-            canvas.drawString(render.show_error, 30, 50, skia.Font(None, 30), paint)
-            canvas.drawString("> See process in terminal for traceback", 30, 100, skia.Font(None, 24), paint)
+            canvas.drawString(render.show_error, 30, 70, skia.Font(self.typeface, 50), paint)
+            canvas.drawString("> See process in terminal for traceback", 30, 120, skia.Font(self.typeface, 32), paint)
         canvas.restore()
     
     def preload_frames(self, passes):
@@ -1352,6 +1396,8 @@ class Renderer():
             self.hotkeys.stop()
         self.reset_renderers()
         self.stop_watching_file_changes()
+        if self.server_thread:
+            self.server_thread.should_run = False
         if self.args.memory:
             snapshot = tracemalloc.take_snapshot()
             top_stats = snapshot.statistics('traceback')
