@@ -1,7 +1,7 @@
 import tempfile, traceback, threading
 import argparse, importlib, inspect, json, math
 import sys, os, re, signal, tracemalloc
-import platform, pickle
+import platform, pickle, string
 
 import time as ptime
 from pathlib import Path
@@ -765,6 +765,7 @@ class Renderer():
         
         glfw.make_context_current(self.window)
         glfw.set_key_callback(self.window, self.on_key)
+        glfw.set_char_callback(self.window, self.on_character)
         glfw.set_scroll_callback(self.window, self.on_scroll)
 
         try:
@@ -909,8 +910,28 @@ class Renderer():
         except Exception as e:
             print("Release failed", str(e))
     
+    def on_character(self, _, codepoint):
+        #print(chr(codepoint), sep="", end="", flush=True)
+        if self.state.keybuffering == -1:
+            self.state.keybuffering = 1
+        elif self.state.keybuffering:
+            self.state.keybuffer.append(chr(codepoint))
+
     def on_key(self, win, key, scan, action, mods):
         if action == glfw.PRESS:
+            if self.state.keybuffering:
+                if key == glfw.KEY_ENTER:
+                    cmd = "".join(self.state.keybuffer)
+                    self.state.cmd = cmd
+                    self.state.keybuffer = []
+                    print(">>>", cmd)
+                    self.on_action(Action.PreviewStoryboard)
+                elif key == glfw.KEY_ESCAPE:
+                    self.state.keybuffering = 0
+                elif key in [glfw.KEY_UP, glfw.KEY_DOWN, glfw.KEY_LEFT, glfw.KEY_RIGHT]:
+                    print("ARROW", key)
+                return
+
             if key == glfw.KEY_LEFT:
                 self.action_waiting = Action.PreviewStoryboardPrev
                 #self.on_action(Action.PreviewStoryboardPrev)
@@ -957,6 +978,11 @@ class Renderer():
                 self.on_action(Action.RenderAll)
             elif key == glfw.KEY_M:
                 self.on_action(Action.ToggleMultiplex)
+            elif key == glfw.KEY_K:
+                self.state.keybuffering = -1
+            elif key == glfw.KEY_Q:
+                self.dead = True
+                self.on_exit()
     
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
@@ -1097,7 +1123,7 @@ class Renderer():
             print("Malformed message", message)
     
     def listen_to_glfw(self):
-        while not glfw.window_should_close(self.window):
+        while not self.dead and not glfw.window_should_close(self.window):
             scale_x, scale_y = glfw.get_window_content_scale(self.window)
             if scale_x != self._prev_scale:
                 self._prev_scale = scale_x

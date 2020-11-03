@@ -15,6 +15,8 @@ class RendererState():
         self.previewing = False
         self.preview_scale = 1
         self.controller_values = {}
+        self.keybuffering = 0
+        self.keybuffer = []
         self.reset()
     
     def reset(self):
