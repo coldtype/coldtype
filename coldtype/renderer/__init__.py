@@ -263,7 +263,7 @@ class Renderer():
         print("============================")
         stack = traceback.format_exc()
         print(stack)
-        r = Rect(1000, 300)
+        r = Rect(1200, 300)
         render = renderable(r)
         res = DATPenSet([
             DATPen().rect(r).f(coldtype.Gradient.V(r,
@@ -774,7 +774,9 @@ class Renderer():
         self.window = glfw.create_window(int(50), int(50), '', None, None)
         self.window_scrolly = 0
 
-        self.typeface = skia.Typeface.MakeFromFile("assets/RecMono-CasualItalic.ttf")
+        recp = sibling(__file__, "../../assets/RecMono-CasualItalic.ttf")
+        self.typeface = skia.Typeface.MakeFromFile(str(recp))
+        #print(self.typeface.serialize().bytes().decode("utf-8"))
         
         o = self.py_config.get("WINDOW_OPACITY")
         if o:

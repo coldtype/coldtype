@@ -44,6 +44,7 @@ class RendererState():
         self.arrow = None
         self.mods = Mods()
         self.xray = False
+        self.selection = [0]
         self.reset()
     
     def reset(self):
@@ -87,6 +88,11 @@ class RendererState():
             return Action.PreviewStoryboard
         elif self.keylayer == 1:
             self.keybuffer.append(chr(codepoint))
+            return Action.PreviewStoryboard
+        elif self.keylayer == 2:
+            if chr(codepoint) == "x":
+                return
+            self.cmd = chr(codepoint)
             return Action.PreviewStoryboard
         #self.needs_display = 1
     
@@ -148,6 +154,20 @@ class RendererState():
         elif self.keylayer == 2:
             canvas.drawRect(skia.Rect(0, 0, 50, 50), skia.Paint(AntiAlias=True, Color=hsl(0.95, l=0.5, a=0.75).skia()))
         canvas.restore()
+    
+    def increment_selection(self, amount, limit):
+        if len(self.selection) == 1:
+            if amount == 0:
+                return
+            si = self.selection[0]
+            si += amount
+            if si >= limit:
+                si = 0
+            elif si < 0:
+                si = limit - 1
+            self.selection[0] = si
+        else:
+            print("invalid")
     
     def reset_keystate(self):
         self.cmd = None

@@ -43,6 +43,10 @@ from coldtype.pens.outlinepen import OutlinePen
 from coldtype.pens.translationpen import TranslationPen, polarCoord
 
 
+def listit(t):
+    return list(map(listit, t)) if isinstance(t, (list, tuple)) else t
+
+
 class DATPenLikeObject():
     def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
         x = txt_to_edge(x)
@@ -1143,6 +1147,26 @@ class DATPen(RecordingPen, DATPenLikeObject):
                     if len(points) == 0 or points[-1] != pt:
                         points.append(pt)
         return points
+    
+    def points_lookup(self):
+        self.value = listit(self.value)
+        lookup = []
+        vi = 0
+        while vi < len(self.value):
+            pv = self.value[vi]
+            pvpts = self.value[vi][-1]
+            for i, pt in enumerate(self.value[vi][-1]):
+                lookup.append(dict(pt=pt, vi=vi, i=i))
+            vi += 1
+        return lookup
+    
+    def mod_point(self, lookup, idx, x, y):
+        pl = lookup[idx]
+        pt = pl.get("pt")
+        pt[0] += x
+        pt[1] += y
+        self.value[pl.get("vi")][-1][pl.get("i")] = pt
+        return pt
     
     def lines(self):
         """Returns lines connecting point-representation of `flatpoints`"""
