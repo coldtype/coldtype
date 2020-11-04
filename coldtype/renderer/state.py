@@ -1,5 +1,5 @@
 from pathlib import Path
-import json, glfw, skia
+import json, glfw, skia, re
 from coldtype import hsl, Action
 
 
@@ -29,6 +29,9 @@ class Mods():
         self.shift = False
         self.ctrl = False
         self.alt = False
+    
+    def __repr__(self):
+        return f"su:{self.super};sh:{self.shift};alt:{self.alt};ctrl:{self.ctrl}"
 
 
 class RendererState():
@@ -43,8 +46,10 @@ class RendererState():
         self.cmd = None
         self.arrow = None
         self.mods = Mods()
+        self.mouse = None
         self.xray = False
         self.selection = [0]
+        self.zoom = 1
         self.reset()
     
     def reset(self):
@@ -82,17 +87,32 @@ class RendererState():
         else:
             print("No source; cannot persist state")
     
+    def on_mouse_button(self, pos, btn, action, mods):
+        self.mods.update(mods)
+        if action == 1:
+            self.mouse = pos
+            return Action.PreviewStoryboard
+    
     def on_character(self, codepoint):
+        cc = chr(codepoint)
         if self.keylayer < 0:
             self.keylayer = abs(self.keylayer)
             return Action.PreviewStoryboard
         elif self.keylayer == 1:
-            self.keybuffer.append(chr(codepoint))
+            self.keybuffer.append(cc)
             return Action.PreviewStoryboard
         elif self.keylayer == 2:
-            if chr(codepoint) == "x":
+            if cc == "x":
                 return
-            self.cmd = chr(codepoint)
+            if re.match(r"[1-9]{1}", cc):
+                self.zoom = int(cc)
+            elif cc == "=":
+                self.zoom += 0.25
+            elif cc == "-":
+                self.zoom -= 0.25
+            else:
+                self.cmd = cc
+            self.zoom = max(0.25, min(10, self.zoom))
             return Action.PreviewStoryboard
         #self.needs_display = 1
     
@@ -139,10 +159,12 @@ class RendererState():
         elif key == glfw.KEY_E and self.keylayer == 2:
             self.exit_keylayer()
             return Action.PreviewStoryboard
+        elif key == glfw.KEY_S and mods & glfw.MOD_SUPER:
+            self.cmd = "save"
+            return Action.PreviewStoryboard
         return
     
     def exit_keylayer(self):
-        print("EXITING KEYLAYER", self.keylayer)
         self.keylayer = 0
         self.keybuffer = []
     

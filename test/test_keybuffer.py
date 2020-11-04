@@ -1,9 +1,5 @@
 from coldtype import *
-#from fontTools.pens.pointPen import SegmentToPointPen
-from fontPens.digestPointPen import DigestPointPen
 import pickle
-
-# TODO encapsulate this kind of thing as a pattern for easily editing vectors?
 
 op = sibling(__file__, "oval.pickle")
 if not op.exists():
@@ -17,7 +13,6 @@ if not op.exists():
 @renderable(rstate=1)
 def test_kb(r, rs):
     p = pickle.load(open(op, "rb"))
-    
     out = DATPenSet([p])
 
     if rs.keylayer > 0:
@@ -42,6 +37,9 @@ def test_kb(r, rs):
                     .oval(Rect(pt[0]-10, pt[1]-10, 20, 20))
                     .f(hsl(0.95 if idx in rs.selection else 0.75, a=0.5))
                     .scale(1.5 if idx in rs.selection else 1))
+            
+        if rs.mouse:
+            out += DATPen().oval(Rect.FromCenter(rs.mouse, 100))
     
     pickle.dump(p, open(op, "wb"))
 

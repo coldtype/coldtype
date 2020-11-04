@@ -322,6 +322,19 @@ class Point():
 
     def xy(self):
         return self.x, self.y
+    
+    def dist(self, other):
+        sx, sy = self.x, self.y
+        ox, oy = other.x, other.y
+        opp = ox - sx
+        adj = oy - sy
+        if opp == 0:
+            return adj, -1
+        elif adj == 0:
+            return opp, -1
+        deg = math.atan(opp/adj)
+        dist = math.sqrt(math.pow(opp, 2) + math.pow(adj, 2))
+        return dist, math.degrees(deg)
 
     def flip(self, frame):
         return Point((self.x, frame.h - self.y))
@@ -330,6 +343,11 @@ class Point():
         x, y = self.flip(frame)
         self.x = x
         self.y = y
+    
+    def scale(self, x, y=None):
+        if not y:
+            y = x
+        return Point((self.x * x, self.y * y))
 
     def __repr__(self):
         return "<Point" + str(self.xy()) + ">"
@@ -348,8 +366,10 @@ class Point():
 
 
 class Rect():
-    def FromCenter(center, w, h):
+    def FromCenter(center, w, h=None):
         x, y = center
+        if not h:
+            h = w
         return Rect((x - w/2, y - h/2, w, h))
 
     def __init__(self, *rect):

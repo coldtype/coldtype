@@ -82,6 +82,9 @@ class DATPenLikeObject():
         else:
             raise Exception("No Frame")
     
+    def center_on_point(self, rect, pt):
+        return self.translate(rect.w/2-pt[0], rect.h/2-pt[1])
+    
     def pen(self):
         """Return a single-pen representation of this pen(set)."""
         return self
@@ -1154,9 +1157,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
         vi = 0
         while vi < len(self.value):
             pv = self.value[vi]
+            t = pv[0]
             pvpts = self.value[vi][-1]
             for i, pt in enumerate(self.value[vi][-1]):
-                lookup.append(dict(pt=pt, vi=vi, i=i))
+                lookup.append(dict(pt=Point(pt), vi=vi, i=i, t=t))
             vi += 1
         return lookup
     

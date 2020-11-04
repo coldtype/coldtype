@@ -16,7 +16,7 @@ from docutils.core import publish_doctree
 
 import skia, coldtype
 from coldtype.helpers import *
-from coldtype.geometry import Rect
+from coldtype.geometry import Rect, Point
 from coldtype.pens.skiapen import SkiaPen
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.renderable import renderable, Action, animation
@@ -787,6 +787,7 @@ class Renderer():
         glfw.make_context_current(self.window)
         glfw.set_key_callback(self.window, self.on_key)
         glfw.set_char_callback(self.window, self.on_character)
+        glfw.set_mouse_button_callback(self.window, self.on_mouse_button)
         glfw.set_scroll_callback(self.window, self.on_scroll)
 
         try:
@@ -931,6 +932,14 @@ class Renderer():
         except Exception as e:
             print("Release failed", str(e))
     
+    def on_mouse_button(self, _, btn, action, mods):
+        if self.state.keylayer != 0:
+            pos = Point(glfw.get_cursor_pos(self.window)).scale(2) # TODO should this be preview-scale?
+            pos[1] = self.last_rect.h - pos[1]
+            requested_action = self.state.on_mouse_button(pos, btn, action, mods)
+            if requested_action:
+                self.on_action(requested_action)
+
     def on_character(self, _, codepoint):
         if self.state.keylayer != 0:
             requested_action = self.state.on_character(codepoint)
