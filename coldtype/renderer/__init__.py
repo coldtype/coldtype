@@ -1202,7 +1202,6 @@ class Renderer():
                 self.turn_over()
                 global last_line
                 if self.state.cmd:
-                    print(random())
                     cmd = self.state.cmd
                     self.state.reset_keystate()
                     self.on_stdin(cmd)
