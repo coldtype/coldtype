@@ -9,7 +9,7 @@ def test_oval(r, rs):
     if rs.mouse:
         rm = Rect.FromCenter(rs.mouse, 100)
     else:
-        rm = r.take(100, "mdx").square()
+        rm = r
     
     if rs.mods.super:
         tmp_angle += 33

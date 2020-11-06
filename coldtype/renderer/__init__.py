@@ -519,6 +519,9 @@ class Renderer():
 
                     try:
                         result = render.run(rp, self.state)
+                        if self.state.request:
+                            self.on_request_from_render(self.state.request)
+                            self.state.request = None
                         if not result:
                             print(">>> No result")
                             result = DATPen().rect(render.rect).f(None)
@@ -881,6 +884,9 @@ class Renderer():
     def on_start(self):
         pass
 
+    def on_request_from_render(self, request):
+        print("request (noop)>", request)
+
     def on_hotkey(self, key_combo, action):
         print("HOTKEY", key_combo)
         self.action_waiting = action
@@ -956,17 +962,17 @@ class Renderer():
             if requested_action:
                 self.on_action(requested_action)
             return
+        
+        if action == glfw.PRESS or action == glfw.REPEAT:
+            if key == glfw.KEY_LEFT:
+                self.action_waiting = Action.PreviewStoryboardPrev
+            elif key == glfw.KEY_RIGHT:
+                self.action_waiting = Action.PreviewStoryboardNext
 
         if action != glfw.PRESS:
             return
         
-        if key == glfw.KEY_LEFT:
-            self.action_waiting = Action.PreviewStoryboardPrev
-            #self.on_action(Action.PreviewStoryboardPrev)
-        elif key == glfw.KEY_RIGHT:
-            self.action_waiting = Action.PreviewStoryboardNext
-            #self.on_action(Action.PreviewStoryboardNext)
-        elif key == glfw.KEY_DOWN:
+        if key == glfw.KEY_DOWN:
             if mods & glfw.MOD_SUPER:
                 o = glfw.get_window_opacity(self.window)
                 glfw.set_window_opacity(self.window, max(0.1, o-0.1))

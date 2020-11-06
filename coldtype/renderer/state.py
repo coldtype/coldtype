@@ -49,6 +49,7 @@ class RendererState():
         self.keylayer = Keylayer.Default
         self.keybuffer = []
         #self.needs_display = 0
+        self.request = None
         self.cmd = None
         self.arrow = None
         self.mods = Mods()

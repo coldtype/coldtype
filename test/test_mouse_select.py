@@ -21,5 +21,6 @@ def test_select(r, rs):
             .align(c.subdivide(len(txts), "mnx")[idx])
             .f(rf.lighter(0.1)))
 
-    print("selected>", selection)
+    if selection:
+        rs.request = selection
     return dps

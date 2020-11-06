@@ -14,5 +14,5 @@ def hsl_interp(f):
 def rgb_interp(f):
     p = f.a.progress(f.i, easefn="qeio").e
     return (DATPen()
-        .oval(f.a.r)
-        .f(hsl(0.5).rgba_interp(p, hsl(0.8))))
+        .rect(f.a.r.inset(100))
+        .f(hsl(0.5).rgb_interp(p, hsl(0.8))))

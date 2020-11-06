@@ -10,10 +10,10 @@ def hello(r):
             Style(co1, 1000, wdth=1))
             .pens()
             .align(r)
-            .f(hsl(0.5))),
+            .f(hsl(random()))),
         (StyledString("TYPE",
             Style(co2, 500, wdth=1))
             .pens()
             .align(r)
             .rotate(45)
-            .f(hsl(0.95, a=0.25)))])
+            .f(hsl(random(), a=0.25)))])
