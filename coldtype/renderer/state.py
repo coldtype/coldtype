@@ -47,7 +47,7 @@ class RendererState():
         self.arrow = None
         self.mods = Mods()
         self.mouse = None
-        self.xray = False
+        self.xray = True
         self.selection = [0]
         self.zoom = 1
         self.reset()
@@ -102,7 +102,7 @@ class RendererState():
             self.keybuffer.append(cc)
             return Action.PreviewStoryboard
         elif self.keylayer == 2:
-            if cc == "x":
+            if cc == "f":
                 return
             if re.match(r"[1-9]{1}", cc):
                 self.zoom = int(cc)
@@ -135,7 +135,7 @@ class RendererState():
                 #self.needs_display = 1
                 return Action.PreviewStoryboard
 
-        elif key == glfw.KEY_ESCAPE:
+        elif key == glfw.KEY_D:
             self.exit_keylayer()
             return Action.PreviewStoryboard
             #self.needs_display = 1
@@ -153,11 +153,8 @@ class RendererState():
                     for idx, a in enumerate(self.arrow):
                         self.arrow[idx] = a * 10
                 return Action.PreviewStoryboard
-        elif key == glfw.KEY_X and self.keylayer == 2:
+        elif key == glfw.KEY_F and self.keylayer == 2:
             self.xray = not self.xray
-            return Action.PreviewStoryboard
-        elif key == glfw.KEY_E and self.keylayer == 2:
-            self.exit_keylayer()
             return Action.PreviewStoryboard
         elif key == glfw.KEY_S and mods & glfw.MOD_SUPER:
             self.cmd = "save"
