@@ -36,6 +36,7 @@ Table of Contents
 
    about
    install
+   cheatsheet
    tutorials/index
    :: api/index
 

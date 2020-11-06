@@ -1025,18 +1025,18 @@ class Renderer():
         if action_abbrev == "ps":
             self._preview_scale = max(0.1, min(5, float(data[0])))
             return Action.PreviewStoryboard, None
-        elif action_abbrev == "n":
-            return Action.PreviewStoryboardNext, None
-        elif action_abbrev == "p":
-            return Action.PreviewStoryboardPrev, None
-        elif action_abbrev == "ra":
+        elif action_abbrev == "a":
             return Action.RenderAll, None
-        elif action_abbrev == "rw":
+        elif action_abbrev == "w":
             return Action.RenderWorkarea, None
         elif action_abbrev == "pf":
             return Action.PreviewIndices, [int(i.strip()) for i in data]
-        elif action_abbrev == "rr":
+        elif action_abbrev == "r":
             return Action.RestartRenderer, None
+        elif action_abbrev == "l":
+            self.on_action(Action.Release)
+        elif action_abbrev == "m":
+            self.on_action(Action.ToggleMultiplex)
         elif action_abbrev == "rp":
             self.reset_filepath(data[0])
             return Action.Resave, None
@@ -1110,7 +1110,7 @@ class Renderer():
             self.multiplexing = not self.multiplexing
             print(">>> MULTIPLEXING?", self.multiplexing)
         elif message.get("serialization"):
-            ptime.sleep(1)
+            ptime.sleep(0.5)
             self.reload(Action.Resave)
             print(">>>>>>>>>>>", self.animation().timeline.cti)
             cw = self.animation().timeline.find_workarea()
