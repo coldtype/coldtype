@@ -323,18 +323,12 @@ class Point():
     def xy(self):
         return self.x, self.y
     
-    def dist(self, other):
-        sx, sy = self.x, self.y
-        ox, oy = other.x, other.y
-        opp = ox - sx
-        adj = oy - sy
-        if opp == 0:
-            return adj, -1
-        elif adj == 0:
-            return opp, -1
-        deg = math.atan(opp/adj)
-        dist = math.sqrt(math.pow(opp, 2) + math.pow(adj, 2))
-        return dist, math.degrees(deg)
+    def inside(self, rect):
+        mnx, mny, mxx, mxy = rect.mnmnmxmx()
+        if mnx <= self.x <= mxx and mny <= self.y <= mxy:
+            return True
+        else:
+            return False
 
     def flip(self, frame):
         return Point((self.x, frame.h - self.y))
