@@ -1,7 +1,12 @@
+from enum import Enum
 from pathlib import Path
 import json, glfw, skia, re
 from coldtype import hsl, Action
 
+class Keylayer(Enum):
+    Default = 0
+    Cmd = 1
+    Editing = 2
 
 class RendererStateEncoder(json.JSONEncoder):
     def default(self, o):
@@ -40,6 +45,7 @@ class RendererState():
         self.previewing = False
         self.preview_scale = 1
         self.controller_values = {}
+        self.keylayer_shifting = False
         self.keylayer = 0
         self.keybuffer = []
         #self.needs_display = 0
@@ -98,10 +104,10 @@ class RendererState():
         if self.keylayer < 0:
             self.keylayer = abs(self.keylayer)
             return Action.PreviewStoryboard
-        elif self.keylayer == 1:
+        elif self.keylayer == Keylayer.Cmd:
             self.keybuffer.append(cc)
             return Action.PreviewStoryboard
-        elif self.keylayer == 2:
+        elif self.keylayer == Keylayer.Editing:
             if cc == "x":
                 return
             if re.match(r"[1-9]{1}", cc):
@@ -140,7 +146,7 @@ class RendererState():
             return Action.PreviewStoryboard
             #self.needs_display = 1
         elif key in [glfw.KEY_UP, glfw.KEY_DOWN, glfw.KEY_LEFT, glfw.KEY_RIGHT]:
-            if self.keylayer == 2:
+            if self.keylayer == Keylayer.Editing:
                 if key == glfw.KEY_UP:
                     self.arrow = [0, 1]
                 elif key == glfw.KEY_DOWN:
@@ -153,10 +159,10 @@ class RendererState():
                     for idx, a in enumerate(self.arrow):
                         self.arrow[idx] = a * 10
                 return Action.PreviewStoryboard
-        elif key == glfw.KEY_X and self.keylayer == 2:
+        elif key == glfw.KEY_X and self.keylayer == Keylayer.Editing:
             self.xray = not self.xray
             return Action.PreviewStoryboard
-        elif key == glfw.KEY_E and self.keylayer == 2:
+        elif key == glfw.KEY_E and self.keylayer == Keylayer.Editing:
             self.exit_keylayer()
             return Action.PreviewStoryboard
         elif key == glfw.KEY_S and mods & glfw.MOD_SUPER:
@@ -170,10 +176,10 @@ class RendererState():
     
     def draw_keylayer(self, canvas, rect, typeface):
         canvas.save()
-        if self.keylayer == 1:
+        if self.keylayer == Keylayer.Cmd:
             canvas.drawRect(skia.Rect(0, 0, rect.w, 50), skia.Paint(AntiAlias=True, Color=hsl(0.95, l=0.5, a=0.5).skia()))
             canvas.drawString("".join(self.keybuffer), 10, 32, skia.Font(typeface, 30), skia.Paint(AntiAlias=True, Color=skia.ColorWHITE))
-        elif self.keylayer == 2:
+        elif self.keylayer == Keylayer.Editing:
             canvas.drawRect(skia.Rect(0, 0, 50, 50), skia.Paint(AntiAlias=True, Color=hsl(0.95, l=0.5, a=0.75).skia()))
         canvas.restore()
     

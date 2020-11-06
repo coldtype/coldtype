@@ -21,7 +21,7 @@ from coldtype.pens.skiapen import SkiaPen
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
-from coldtype.renderer.state import RendererState
+from coldtype.renderer.state import RendererState, Keylayer
 from coldtype.renderer.utils import *
 from coldtype.abbr.inst import Inst
 
@@ -941,13 +941,16 @@ class Renderer():
                 self.on_action(requested_action)
 
     def on_character(self, _, codepoint):
-        if self.state.keylayer != 0:
+        if self.state.keylayer != Keylayer.Default:
+            if self.state.keylayer_shifting:
+                self.state.keylayer_shifting = False
+                return
             requested_action = self.state.on_character(codepoint)
             if requested_action:
                 self.on_action(requested_action)
 
     def on_key(self, win, key, scan, action, mods):
-        if self.state.keylayer > 0:
+        if self.state.keylayer != Keylayer.Default:
             requested_action = self.state.on_key(win, key, scan, action, mods)
             if requested_action:
                 self.on_action(requested_action)
@@ -1003,9 +1006,11 @@ class Renderer():
         elif key == glfw.KEY_M:
             self.on_action(Action.ToggleMultiplex)
         elif key == glfw.KEY_E:
-            self.state.keylayer = -2
+            self.state.keylayer = Keylayer.Editing
+            self.state.keylayer_shifting = True
         elif key == glfw.KEY_C:
-            self.state.keylayer = -1
+            self.state.keylayer = Keylayer.Cmd
+            self.state.keylayer_shifting = True
         elif key == glfw.KEY_Q:
             self.dead = True
             self.on_exit()
@@ -1290,7 +1295,7 @@ class Renderer():
                     rect = rects[idx].offset((w-rects[idx].w)/2, 0)
                     self.draw_preview(dscale, canvas, rect, (render, result, rp))
             
-                if self.state.keylayer > 0:
+                if self.state.keylayer != Keylayer.Default:
                     self.state.draw_keylayer(canvas, self.last_rect, self.typeface)
             
             self.surface.flushAndSubmit()
