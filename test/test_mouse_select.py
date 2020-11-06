@@ -8,6 +8,8 @@ def test_select(r, rs):
     txts = "COLDTYPE"
     selection = None
 
+    print("PS>", rs.preview_scale)
+
     for idx, c in enumerate(r.inset(10).subdivide_with_leading(len(txts), 10, "mxy")):
         rf = hsl(random(), l=0.55)
         if rs.mouse and rs.mouse.inside(c):

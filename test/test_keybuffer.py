@@ -38,12 +38,14 @@ def test_kb(r, rs):
                     .f(hsl(0.95 if idx in rs.selection else 0.75, a=0.5))
                     .scale(1.5 if idx in rs.selection else 1))
             
-        #if rs.mouse:
-        #    out += DATPen().oval(Rect.FromCenter(rs.mouse, 100))
+        if rs.mouse:
+            out += (DATPen()
+                .oval(Rect.FromCenter(rs.mouse, 100))
+                .f(hsl(random(), a=0.5)))
     
     pickle.dump(p, open(op, "wb"))
 
-    if rs.keylayer != Keylayer.Default:
+    if rs.keylayer == Keylayer.Editing:
         p.f(hsl(0.65, a=0.25)).s(0).sw(3)
     return out
 

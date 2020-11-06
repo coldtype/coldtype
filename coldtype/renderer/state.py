@@ -97,7 +97,7 @@ class RendererState():
     def on_mouse_button(self, pos, btn, action, mods):
         self.mods.update(mods)
         if action == 1:
-            self.mouse = pos
+            self.mouse = pos.scale(1/self.preview_scale)
             return Action.PreviewStoryboard
     
     def on_character(self, codepoint):
@@ -114,8 +114,8 @@ class RendererState():
                 self.zoom += 0.25
             elif cc == "-":
                 self.zoom -= 0.25
-            else:
-                self.cmd = cc
+            #else:
+            #    self.cmd = cc
             self.zoom = max(0.25, min(10, self.zoom))
             return Action.PreviewStoryboard
         #self.needs_display = 1
@@ -177,8 +177,8 @@ class RendererState():
     def draw_keylayer(self, canvas, rect, typeface):
         canvas.save()
         if self.keylayer == Keylayer.Cmd:
-            canvas.drawRect(skia.Rect(0, 0, rect.w, 50), skia.Paint(AntiAlias=True, Color=hsl(0.95, l=0.5, a=0.5).skia()))
-            canvas.drawString("".join(self.keybuffer), 10, 32, skia.Font(typeface, 30), skia.Paint(AntiAlias=True, Color=skia.ColorWHITE))
+            canvas.drawRect(skia.Rect.MakeXYWH(0, rect.h-50, rect.w, 50), skia.Paint(AntiAlias=True, Color=hsl(0.9, l=0.25, a=0.85).skia()))
+            canvas.drawString("".join(self.keybuffer), 10, rect.h-14, skia.Font(typeface, 30), skia.Paint(AntiAlias=True, Color=skia.ColorWHITE))
         elif self.keylayer == Keylayer.Editing:
             canvas.drawRect(skia.Rect(0, 0, 50, 50), skia.Paint(AntiAlias=True, Color=hsl(0.95, l=0.5, a=0.75).skia()))
         canvas.restore()

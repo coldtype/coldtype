@@ -30,3 +30,7 @@ All of those single-key shortcuts also work as single-letter actions in the comm
     "``ps``", "`preview-scale`", "<float>"
     "``ff``", "`filter-functions`", "<regex>"
     "``rp``", "`reset-filepath`", "<filepath>"
+
+These abbreviations can be typed into the command buffer in the app (available by hitting ``c``), or into the stdin of the hanging process in the command line.
+
+For example, once a coldtype program is running, you can hit ``c``, then enter `ps 2` to zoom the viewer to 200%-percent scale.

@@ -196,6 +196,7 @@ class Renderer():
         self.last_renders = []
 
         self.state = RendererState(self)
+        self.state.preview_scale = self.args.preview_scale
 
         # for multiplex mode
         self.running_renderers = []
@@ -219,7 +220,6 @@ class Renderer():
             self.function_filters = [f.strip() for f in self.args.filter_functions.split(",")]
         else:
             self.function_filters = []
-        self._preview_scale = self.args.preview_scale
         self.multiplexing = self.args.multiplex
         self._should_reload = False
     
@@ -997,10 +997,10 @@ class Renderer():
             inc = -0.1 if key == glfw.KEY_MINUS else 0.1
             if mods & glfw.MOD_SHIFT:
                 inc = inc * 5
-            self._preview_scale = max(0.1, min(5, self._preview_scale + inc))
+            self.state.preview_scale = max(0.1, min(5, self.state.preview_scale + inc))
             self._should_reload = True
         elif key == glfw.KEY_0:
-            self._preview_scale = 1.0
+            self.state.preview_scale = 1.0
             self._should_reload = True
         elif key == glfw.KEY_R:
             self.on_action(Action.RestartRenderer)
@@ -1029,7 +1029,7 @@ class Renderer():
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
         if action_abbrev == "ps":
-            self._preview_scale = max(0.1, min(5, float(data[0])))
+            self.state.preview_scale = max(0.1, min(5, float(data[0])))
             return Action.PreviewStoryboard, None
         elif action_abbrev == "a":
             return Action.RenderAll, None
@@ -1223,7 +1223,7 @@ class Renderer():
         self.on_exit(restart=False)
     
     def preview_scale(self):
-        return self._preview_scale
+        return self.state.preview_scale
     
     def create_surface(self, rect):
         #print("NEW SURFACE", rect)
