@@ -31,9 +31,7 @@ def test_xstretch_slnt(r):
 
 @test()
 def test_ystretch(r):
-    st = Style.StretchY(20, debug=1,
-        E=(500, 258))
-    print(st)
+    st = Style.StretchY(20, debug=1, E=(500, 258))
     style = Style(mutator, 300, mods=st, wght=0.5)
     return (StyledString("TYPE", style)
         .pen()

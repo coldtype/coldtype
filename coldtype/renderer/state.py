@@ -129,7 +129,7 @@ class RendererState():
             cmd = "".join(self.keybuffer)
             self.cmd = cmd
             self.keybuffer = []
-            print(">>> KB-CMD:", cmd)
+            #print(">>> KB-CMD:", cmd)
             self.exit_keylayer()
             return Action.PreviewStoryboard
         elif key == glfw.KEY_BACKSPACE:

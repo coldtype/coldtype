@@ -7,6 +7,7 @@ import time as ptime
 from pathlib import Path
 from typing import Tuple
 from pprint import pprint
+from random import random
 from runpy import run_path
 from functools import partial
 from subprocess import call, Popen
@@ -608,7 +609,6 @@ class Renderer():
                 indices = [0, all_frames[-1]] # always render first & last from main, to trigger a filesystem-change detection in premiere
         
         preview_count, render_count, renders = self._single_thread_render(trigger, indices)
-        self.state.reset_keystate()
         
         if not self.args.is_subprocess and render_count > 0:
             for render in renders:
@@ -1169,9 +1169,6 @@ class Renderer():
                 self._should_reload = False
                 self.on_action(Action.PreviewStoryboard)
             
-            #if self.state.cmd:
-            #    print("CMD", self.state.cmd)
-            
             t = glfw.get_time()
             td = t - self.glfw_last_time
 
@@ -1202,16 +1199,21 @@ class Renderer():
             else:
                 ptime.sleep(0.01)
                 self.glfw_last_time = t
-                #ptime.sleep(0.5)
                 self.turn_over()
                 global last_line
-                if last_line:
+                if self.state.cmd:
+                    print(random())
+                    cmd = self.state.cmd
+                    self.state.reset_keystate()
+                    self.on_stdin(cmd)
+                elif last_line:
                     self.on_stdin(last_line.strip())
                     last_line = None
                 
                 if self.playing != 0:
                     self.on_action(Action.PreviewStoryboardNext)
             
+            self.state.reset_keystate()
             glfw.poll_events()
         self.on_exit(restart=False)
     
