@@ -1526,7 +1526,9 @@ class DATPenSet(DATPenLikeObject):
         """Pluck glyphs named `glyph_name`"""
         #return self.pfilter(lambda i, p: p.glyphName == glyph_name).pmap(lambda idx, p: mod_fn(p))
         for p in self:
-            if p.glyphName == glyph_name:
+            if callable(glyph_name) and glyph_name(p.glyphName):
+                yield p
+            elif p.glyphName == glyph_name:
                 yield p
     
     def tagged(self, tag):

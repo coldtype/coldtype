@@ -1000,14 +1000,18 @@ class Renderer():
         elif key == glfw.KEY_L:
             self.on_action(Action.Release)
         elif key == glfw.KEY_P:
-            self._should_reload = True
+            #self._should_reload = True
+            self.on_action(Action.PreviewStoryboardReload)
         elif key == glfw.KEY_A:
             self.on_action(Action.RenderAll)
+        elif key == glfw.KEY_W:
+            self.on_action(Action.RenderWorkarea)
         elif key == glfw.KEY_M:
             self.on_action(Action.ToggleMultiplex)
-        elif key == glfw.KEY_E:
+        elif key == glfw.KEY_D:
             self.state.keylayer = Keylayer.Editing
             self.state.keylayer_shifting = True
+            #self.on_action(Action.PreviewStoryboard) # only necessary if not a charpoint
         elif key == glfw.KEY_C:
             self.state.keylayer = Keylayer.Cmd
             self.state.keylayer_shifting = True
