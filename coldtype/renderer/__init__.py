@@ -944,6 +944,7 @@ class Renderer():
         if self.state.keylayer != Keylayer.Default:
             if self.state.keylayer_shifting:
                 self.state.keylayer_shifting = False
+                self.on_action(Action.PreviewStoryboard)
                 return
             requested_action = self.state.on_character(codepoint)
             if requested_action:
@@ -1168,6 +1169,9 @@ class Renderer():
                 self._should_reload = False
                 self.on_action(Action.PreviewStoryboard)
             
+            #if self.state.cmd:
+            #    print("CMD", self.state.cmd)
+            
             t = glfw.get_time()
             td = t - self.glfw_last_time
 
@@ -1194,7 +1198,9 @@ class Renderer():
                 self.playing_preloaded_frame += 1
                 if self.playing_preloaded_frame == len(self.preloaded_frames):
                     self.playing_preloaded_frame = 0
+                ptime.sleep(0.01)
             else:
+                ptime.sleep(0.01)
                 self.glfw_last_time = t
                 #ptime.sleep(0.5)
                 self.turn_over()

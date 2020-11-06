@@ -46,7 +46,7 @@ class RendererState():
         self.preview_scale = 1
         self.controller_values = {}
         self.keylayer_shifting = False
-        self.keylayer = 0
+        self.keylayer = Keylayer.Default
         self.keybuffer = []
         #self.needs_display = 0
         self.cmd = None
@@ -101,10 +101,7 @@ class RendererState():
     
     def on_character(self, codepoint):
         cc = chr(codepoint)
-        if self.keylayer < 0:
-            self.keylayer = abs(self.keylayer)
-            return Action.PreviewStoryboard
-        elif self.keylayer == Keylayer.Cmd:
+        if self.keylayer == Keylayer.Cmd:
             self.keybuffer.append(cc)
             return Action.PreviewStoryboard
         elif self.keylayer == Keylayer.Editing:
@@ -133,20 +130,21 @@ class RendererState():
             self.cmd = cmd
             self.keybuffer = []
             print(">>> KB-CMD:", cmd)
-            #self.needs_display = 1
+            self.exit_keylayer()
             return Action.PreviewStoryboard
         elif key == glfw.KEY_BACKSPACE:
             if len(self.keybuffer) > 0:
                 self.keybuffer = self.keybuffer[:-1]
-                #self.needs_display = 1
                 return Action.PreviewStoryboard
-
-        elif key == glfw.KEY_D:
+        elif key == glfw.KEY_ESCAPE:
             self.exit_keylayer()
             return Action.PreviewStoryboard
-            #self.needs_display = 1
-        elif key in [glfw.KEY_UP, glfw.KEY_DOWN, glfw.KEY_LEFT, glfw.KEY_RIGHT]:
-            if self.keylayer == Keylayer.Editing:
+
+        elif self.keylayer == Keylayer.Editing:
+            if key == glfw.KEY_D:
+                self.exit_keylayer()
+                return Action.PreviewStoryboard
+            elif key in [glfw.KEY_UP, glfw.KEY_DOWN, glfw.KEY_LEFT, glfw.KEY_RIGHT]:
                 if key == glfw.KEY_UP:
                     self.arrow = [0, 1]
                 elif key == glfw.KEY_DOWN:
@@ -159,22 +157,20 @@ class RendererState():
                     for idx, a in enumerate(self.arrow):
                         self.arrow[idx] = a * 10
                 return Action.PreviewStoryboard
-        #elif key == glfw.KEY_X and self.keylayer == Keylayer.Editing:
-        #    self.xray = not self.xray
-        #    return Action.PreviewStoryboard
-        elif key == glfw.KEY_E and self.keylayer == Keylayer.Editing:
-            self.exit_keylayer()
-            return Action.PreviewStoryboard
-        elif key == glfw.KEY_F and self.keylayer == Keylayer.Editing:
-            self.xray = not self.xray
-            return Action.PreviewStoryboard
-        elif key == glfw.KEY_S and mods & glfw.MOD_SUPER:
+            elif key == glfw.KEY_E and self.keylayer == Keylayer.Editing:
+                self.exit_keylayer()
+                return Action.PreviewStoryboard
+            elif key == glfw.KEY_F and self.keylayer == Keylayer.Editing:
+                self.xray = not self.xray
+                return Action.PreviewStoryboard
+        
+        if key == glfw.KEY_S and mods & glfw.MOD_SUPER:
             self.cmd = "save"
             return Action.PreviewStoryboard
         return
     
     def exit_keylayer(self):
-        self.keylayer = 0
+        self.keylayer = Keylayer.Default
         self.keybuffer = []
     
     def draw_keylayer(self, canvas, rect, typeface):

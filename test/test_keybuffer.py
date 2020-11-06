@@ -15,7 +15,7 @@ def test_kb(r, rs):
     p = pickle.load(open(op, "rb"))
     out = DATPenSet([p])
 
-    if rs.keylayer > 0:
+    if rs.keylayer == Keylayer.Editing:
         pt_lookup = p.points_lookup()
         if rs.arrow and rs.xray:
             rs.increment_selection(rs.arrow[0], len(pt_lookup))
@@ -38,12 +38,12 @@ def test_kb(r, rs):
                     .f(hsl(0.95 if idx in rs.selection else 0.75, a=0.5))
                     .scale(1.5 if idx in rs.selection else 1))
             
-        if rs.mouse:
-            out += DATPen().oval(Rect.FromCenter(rs.mouse, 100))
+        #if rs.mouse:
+        #    out += DATPen().oval(Rect.FromCenter(rs.mouse, 100))
     
     pickle.dump(p, open(op, "wb"))
 
-    if rs.keylayer != 0:
+    if rs.keylayer != Keylayer.Default:
         p.f(hsl(0.65, a=0.25)).s(0).sw(3)
     return out
 
