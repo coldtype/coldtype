@@ -201,3 +201,4 @@ class RendererState():
         self.cmd = None
         self.arrow = None
         self.mods.reset()
+        self.mouse = None

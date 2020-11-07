@@ -204,6 +204,7 @@ class Renderer():
 
         self.observers = []
         self.action_waiting = None
+        self.requests_waiting = []
         self.waiting_to_render = []
         self.previews_waiting_to_paint = []
         self.preloaded_frames = []
@@ -520,7 +521,7 @@ class Renderer():
                     try:
                         result = render.run(rp, self.state)
                         if self.state.request:
-                            self.on_request_from_render(self.state.request)
+                            self.requests_waiting.append([render, str(self.state.request)])
                             self.state.request = None
                         if not result:
                             print(">>> No result")
@@ -751,7 +752,7 @@ class Renderer():
             #asyncio.get_event_loop().run_until_complete(self.start())
             self.start()
         except KeyboardInterrupt:
-            print("INTERRUPT")
+            #print("INTERRUPT")
             self.on_exit()
         if self.args.show_exit_code:
             print("exit>", self.exit_code)
@@ -884,8 +885,8 @@ class Renderer():
     def on_start(self):
         pass
 
-    def on_request_from_render(self, request):
-        print("request (noop)>", request)
+    def on_request_from_render(self, render, request):
+        print("request (noop)>", render, request)
 
     def on_hotkey(self, key_combo, action):
         print("HOTKEY", key_combo)
@@ -1320,6 +1321,10 @@ class Renderer():
         
         self.state.needs_display = 0
         self.previews_waiting_to_paint = []
+    
+        for render, request in self.requests_waiting:
+            self.on_request_from_render(render, request)
+            self.requests_waiting = []
 
     def draw_preview(self, scale, canvas, rect, waiter):
         if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
