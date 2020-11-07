@@ -1270,6 +1270,17 @@ def DPO(r):
     return DATPen().oval(r)
 
 
+class DATText(DATPen):
+    def __init__(self, text, style, frame):
+        self.text = text
+        self.style = style
+        super().__init__()
+        self.addFrame(frame)
+    
+    def __str__(self):
+        return f"<DT({self.text}/{self.style.font})/>"
+
+
 class DATPenSet(DATPenLikeObject):
     """
     A set/collection of DATPen’s; behaves like a list
@@ -1355,7 +1366,9 @@ class DATPenSet(DATPenLikeObject):
                         if p:
                             self.pens.append(p)
                 except TypeError:
-                    print(">>> append rejected", pen)
+                    print("appending non-pen")
+                    self.pens.append(pen)
+                    #print(">>> append rejected", pen)
         return self
     
     def extend(self, pens):

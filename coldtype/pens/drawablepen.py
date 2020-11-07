@@ -42,6 +42,7 @@ class DrawablePenMixin(object):
             pens = [pens]
         elif isinstance(pens, DATPenSet):
             pens = pens.collapse().pens
+        
         for pen in pens:
             if pen:
                 if hasattr(pen, "pens"):

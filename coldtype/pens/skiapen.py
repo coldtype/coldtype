@@ -6,7 +6,7 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
 
-from coldtype.pens.datpen import DATPen
+from coldtype.pens.datpen import DATPen, DATText
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 from coldtype.color import Color
@@ -183,11 +183,35 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             pens.scale(scale, scale, Point((0, 0)))
 
         def draw(pen, state, data):
+            if isinstance(pen, DATText):
+                print(pen.text, pen.style)
+                if isinstance(pen.style.font, str):
+                    font = skia.Typeface(pen.style.font)
+                else:
+                    font = skia.Typeface.MakeFromFile(str(pen.style.font.path))
+                pt = pen.frame.point("SW")
+                canvas.drawString(
+                    pen.text,
+                    pt.x,
+                    rect.h - pt.y,
+                    skia.Font(font, pen.style.fontSize),
+                    skia.Paint(AntiAlias=True, Color=pen.style.fill.skia()))
             if state == 0:
                 SkiaPen(pen, rect, canvas, scale)
         
         if isinstance(pens, DATPen):
             pens = [pens]
+        elif isinstance(pens, DATText):
+            pens = [pens]
+            # font = sts.style.font
+            # print(">>>>>>>>>>", font)
+            # if isinstance(font, str):
+            #     font = skia.Typeface(font)
+            # else:
+            #     font = skia.Typeface.MakeFromFile(font.path)
+            # print(font)
+
+            # pens = []
         
         for dps in pens:
             dps.walk(draw)
