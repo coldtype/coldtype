@@ -945,7 +945,7 @@ class Renderer():
             pos[1] = self.last_rect.h - pos[1]
             requested_action = self.state.on_mouse_button(pos, btn, action, mods)
             if requested_action:
-                self.on_action(requested_action)
+                self.action_waiting = requested_action
 
     def on_character(self, _, codepoint):
         if self.state.keylayer != Keylayer.Default:
@@ -955,13 +955,13 @@ class Renderer():
                 return
             requested_action = self.state.on_character(codepoint)
             if requested_action:
-                self.on_action(requested_action)
+                self.action_waiting = requested_action
 
     def on_key(self, win, key, scan, action, mods):
         if self.state.keylayer != Keylayer.Default:
             requested_action = self.state.on_key(win, key, scan, action, mods)
             if requested_action:
-                self.on_action(requested_action)
+                self.action_waiting = requested_action
             return
         
         if action == glfw.PRESS or action == glfw.REPEAT:
