@@ -1,12 +1,8 @@
 from enum import Enum
 from pathlib import Path
 import json, glfw, skia, re
-from coldtype import hsl, Action
+from coldtype import hsl, Action, Keylayer
 
-class Keylayer(Enum):
-    Default = 0
-    Cmd = 1
-    Editing = 2
 
 class RendererStateEncoder(json.JSONEncoder):
     def default(self, o):
