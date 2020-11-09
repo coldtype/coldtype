@@ -647,6 +647,7 @@ class PremiereTimeline(Timeline):
     def __init__(self, path, storyboard=None, find_workarea=None, duration_override=None, workarea_track=0):
         self.workarea_track = workarea_track
         self._find_workarea = find_workarea
+        self.path = path
 
         json_path = path if isinstance(path, Path) else Path(path).expanduser()
         try:

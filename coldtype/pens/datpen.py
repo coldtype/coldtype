@@ -342,9 +342,9 @@ class DATPenLikeObject():
         """Does nothing"""
         return self
     
-    def precompose(self, pen_class, rect, context=None):
+    def precompose(self, pen_class, rect, placement=None, context=None):
         img = pen_class.Precompose(self, rect, context=context)
-        return DATPen().rect(rect).attr(image=dict(src=img, rect=rect)).f(None)
+        return DATPen().rect(placement or rect).attr(image=dict(src=img, rect=placement or rect, pattern=False)).f(None)
     
     def rasterized(self, pen_class, rect, context=None):
         return pen_class.Precompose(self, rect, context=context)
