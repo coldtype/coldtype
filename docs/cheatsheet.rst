@@ -5,6 +5,10 @@ Cheatsheet
     :header: "Key", "Action", "Notes"
     :widths: 50, 100, 200
 
+    "``=``", "zoom in", ""
+    "``-``", "zoom out", ""
+    "``→``", "one frame forward (in animation)", ""
+    "``←``", "one frame backward (in animation)", ""
     "``a``", "``render_all``", "render/rasterize all renderables and frames in renderables"
     "``w``", "``render_workarea``", "for partial animation rendering"
     "``r``", "``restart_renderer``", "to reload code not in source file"

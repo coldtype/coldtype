@@ -66,7 +66,7 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 html_css_files = [
-    'custom.css',
+    'custom.css?t=3',
 ]
 
 html_context = {

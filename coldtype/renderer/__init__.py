@@ -290,7 +290,9 @@ class Renderer():
                 def is_code_block(node):
                     if node.tagname == "literal_block":
                         classes = node.attributes["classes"]
-                        if "code" in classes and "python" in classes:
+                        # ok the "ruby" here is an ugly hack but it's so I can hide certain code
+                        # from a printed rst
+                        if "code" in classes and ("python" in classes or "ruby" in classes):
                             return True
                     return False
                 code_blocks = doctree.traverse(condition=is_code_block)

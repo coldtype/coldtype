@@ -21,13 +21,15 @@ A circle moving
                 .oval(f.a.r.offset(-f.a.r.w+f.a.r.w*2*e, 0))
                 .f(hsl(e, s=0.75)))]
     
-    circle_contactsheet = circle.contactsheet(6) # to render the full animation as a contact-sheet
+.. code:: ruby
+
+    circle_contactsheet = circle.contactsheet(6)
 
 Save that code in a file called ``animation.py``, then run it ala ``coldtype animation.py`` — when the render preview runs and a window pops up, try hitting the left and right arrow keys on your keyboard to go backward and forward in time.
 
 If you want to see the full animation, hit the key "a" on your keyboard, and you should see some text appear in your terminal, noting that the frames of the animation are being saved to disk. When it finishes (it’ll say something like ``rendered``), you can hit the space bar on the viewer and it should playback the animation. Hit the spacebar again to stop the looped playback.
 
-Here’re all the frames of that animation (a circle moving across the frame, and changing colors), rendered as a contact sheet (ala the last right of the code right above here [#f1]_):
+Here’re all the frames of that animation (a circle moving across the frame, and changing colors):
 
 .. image:: /_static/renders/animation_circle_contactsheet.png
     :width: 500
@@ -58,6 +60,8 @@ A letter flying
                 .rotate(360*qeio)
                 .f(1))]
 
+.. code:: ruby
+
     flyinga_contact = flyinga.contactsheet(4, slice(0, None, 1))
 
 .. image:: /_static/renders/animation_flyinga_contactsheet.png
@@ -82,8 +86,6 @@ And here’s a little bit of code to generate gifs for use on this page. To be h
 
 Animation Workflow
 ------------------
-
-First off, you probably don't want to see the contactsheets as you're building an animation, so if you've copied in those lines, you can comment them out.
 
 Once you've started a coldtype process for an animation, you can type in little mnemonics in the terminal window (not the viewer) to trigger different actions in the coldtype renderer.
 
@@ -113,7 +115,3 @@ Jumping to Adobe
 ----------------
 
 While it is possible to complete an animation using nothing but code, I usually employ a program like Premiere or After Effects to both view and finish animations that I start in code, either to apply effects in After Effects, or to match the animation with music in Premiere. Because animations done in Coldtype are rendered to PNGs, you can import those easily in any video editing program. (In Premiere, just make sure to select the 0000 image, then select Options > Image Sequence when importing.
-
-.. rubric:: Footnotes
-
-.. [#f1] The concept of a ``contactsheet`` is probably not something you’ll need to use in your own animations — it’s mostly used here as a way to illustrate the animations without requiring that the animation be embedded as a video file.
