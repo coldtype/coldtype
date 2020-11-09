@@ -1,7 +1,7 @@
 from coldtype import *
 from defcon import Font
 
-curves = Font(sibling(__file__, "media/digestivecurves.ufo"))
+curves = Font(__sibling__("media/digestivecurves.ufo"))
 df = "~/Type/fonts/fonts/_wdths/DigestiveVariable.ttf"
 
 def ds(e1, e2):

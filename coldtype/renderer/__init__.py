@@ -328,6 +328,8 @@ class Renderer():
                 self.state.reset()
                 self.program = run_path(str(self.codepath), init_globals={
                     "__CONTEXT__": self.context,
+                    "__FILE__": self.filepath,
+                    "__sibling__": partial(sibling, self.filepath)
                 })
                 for k, v in self.program.items():
                     if isinstance(v, animation):
