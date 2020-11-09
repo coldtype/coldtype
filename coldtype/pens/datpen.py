@@ -1,4 +1,4 @@
-import math, tempfile, inspect, pickle
+import math, tempfile, pickle
 from enum import Enum
 from copy import deepcopy
 from pathlib import Path
@@ -1267,14 +1267,12 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 self.line([_y.point("SW"), _y.point("SE")])
         return self.f(None).s(0, 0.1).sw(3)
     
-    def preserve(self, tag, state, callback):
+    def preserve(self, tag, calls, dir=None):
         self.tag(tag)
-        src = inspect.getsource(callback).strip()
-        src = parse_lambda_to_paren(src)
-        tmp = tempfile.NamedTemporaryFile(prefix="coldtype_blender_pen", suffix=".pickle")
-        tmp = Path(f"blender/pickles/test_{tag}.pickle").absolute()
-        tmp.parent.mkdir(exist_ok=True, parents=True)
-        self.data["_preserve"] = dict(func=src, pickle=str(tmp), state=state)
+        pdir = Path("preserved" or dir)
+        pdir.mkdir(exist_ok=True, parents=True)
+        tmp = (pdir / f"test_{tag}.pickle")
+        self.data["_preserve"] = dict(calls=calls, pickle=str(tmp.absolute()))
         pickle.dump(self, open(str(tmp), "wb"))
         return self
 
