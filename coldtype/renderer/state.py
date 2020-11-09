@@ -1,7 +1,7 @@
 from enum import Enum
 from pathlib import Path
 import json, glfw, skia, re
-from coldtype import hsl, Action, Keylayer
+from coldtype import hsl, Action, Keylayer, Point
 
 
 class RendererStateEncoder(json.JSONEncoder):
@@ -50,6 +50,7 @@ class RendererState():
         self.arrow = None
         self.mods = Mods()
         self.mouse = None
+        self.mouse_down = False
         self.xray = True
         self.selection = [0]
         self.zoom = 1
@@ -92,9 +93,24 @@ class RendererState():
     
     def on_mouse_button(self, pos, btn, action, mods):
         self.mods.update(mods)
-        if action == 1:
+        if action == glfw.PRESS:
+            self.mouse_down = True
             self.mouse = pos.scale(1/self.preview_scale)
             return Action.PreviewStoryboard
+        elif action == glfw.RELEASE:
+            self.mouse_down = False
+            new_mouse = pos.scale(1/self.preview_scale)
+            if self.mouse:
+                if new_mouse.x != self.mouse.x and new_mouse.y != self.mouse.y:
+                    return Action.PreviewStoryboard
+
+    def on_mouse_move(self, pos):
+        if self.mouse_down:
+            pos = pos.scale(1/self.preview_scale)
+            if self.mouse:
+                if abs(pos.x - self.mouse.x) > 5 or abs(pos.y - self.mouse.y) > 5:
+                    self.mouse = pos
+                    return Action.PreviewStoryboard
     
     def on_character(self, codepoint):
         cc = chr(codepoint)
@@ -197,4 +213,4 @@ class RendererState():
         self.cmd = None
         self.arrow = None
         self.mods.reset()
-        self.mouse = None
+        #self.mouse = None

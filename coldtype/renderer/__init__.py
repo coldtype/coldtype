@@ -804,6 +804,7 @@ class Renderer():
         glfw.set_key_callback(self.window, self.on_key)
         glfw.set_char_callback(self.window, self.on_character)
         glfw.set_mouse_button_callback(self.window, self.on_mouse_button)
+        glfw.set_cursor_pos_callback(self.window, self.on_mouse_move)
         glfw.set_scroll_callback(self.window, self.on_scroll)
 
         try:
@@ -958,6 +959,13 @@ class Renderer():
             requested_action = self.state.on_mouse_button(pos, btn, action, mods)
             if requested_action:
                 self.action_waiting = requested_action
+    
+    def on_mouse_move(self, _, xpos, ypos):
+        pos = Point((xpos, ypos)).scale(2)
+        pos[1] = self.last_rect.h - pos[1]
+        requested_action = self.state.on_mouse_move(pos)
+        if requested_action:
+            self.action_waiting = requested_action
 
     def on_character(self, _, codepoint):
         if self.state.keylayer != Keylayer.Default:

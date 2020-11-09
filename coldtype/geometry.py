@@ -462,6 +462,20 @@ class Rect():
 
     def square(self):
         return Rect(centered_square(self.rect()))
+    
+    def ipos(self, pt, clamp=True):
+        """
+        Get scaled 0-1 bounded (optional) value
+        from a point in a rectangle
+        """
+        if not pt:
+            return (0.5, 0.5)
+        sx = ((pt.x - self.x) / self.w)
+        sy = ((pt.y - self.y) / self.h)
+        if clamp:
+            sx = min(1, max(0, sx))
+            sy = min(1, max(0, sy))
+        return sx, sy
 
     def divide(self, amount, edge, forcePixel=False):
         edge = txt_to_edge(edge)
