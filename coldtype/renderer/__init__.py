@@ -133,6 +133,8 @@ class Renderer():
             show_exit_code=parser.add_argument("-sec", "--show-exit-code", action="store_true", default=False, help=argparse.SUPPRESS),
 
             show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS),
+
+            disable_syntax_mods=parser.add_argument("-dsm", "--disable-syntax-mods", action="store_true", default=False, help="Coldtype has some optional syntax modifications that require copying the source to a new tempfile before running — would you like to skip this to preserve __file__ in your sources?"),
             
             docs=parser.add_argument("-d", "--docs", action="store_true", default=False, help=argparse.SUPPRESS)),
         return pargs, parser
@@ -313,14 +315,16 @@ class Renderer():
                     self.codepath = Path(tf.name)
             
             elif self.filepath.suffix == ".py":
-                #self.codepath = self.filepath
-                source_code = self.filepath.read_text()
-                source_code = re.sub(r"\-\.[^\(]+\(", ".noop(", source_code)
-                if self.codepath:
-                    self.codepath.unlink()
-                with tempfile.NamedTemporaryFile("w", prefix="coldtype_py_mod", suffix=".py", delete=False) as tf:
-                    tf.write(source_code)
-                    self.codepath = Path(tf.name)
+                if self.args.disable_syntax_mods:
+                    self.codepath = self.filepath
+                else:
+                    source_code = self.filepath.read_text()
+                    source_code = re.sub(r"\-\.[A-Za-z]{1,}[^\(]+\(", ".noop(", source_code)
+                    if self.codepath:
+                        self.codepath.unlink()
+                    with tempfile.NamedTemporaryFile("w", prefix="coldtype_py_mod", suffix=".py", delete=False) as tf:
+                        tf.write(source_code)
+                        self.codepath = Path(tf.name)
             else:
                 raise Exception("No code found in file!")
             
