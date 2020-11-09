@@ -19,6 +19,10 @@ try:
 except ImportError:
     db = None
 
+class Keylayer(Enum):
+    Default = 0
+    Cmd = 1
+    Editing = 2
 
 class Action(Enum):
     Initial = "initial"

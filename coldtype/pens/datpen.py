@@ -1,6 +1,7 @@
-import math, tempfile
+import math, tempfile, inspect, pickle
 from enum import Enum
 from copy import deepcopy
+from pathlib import Path
 
 from typing import Optional
 from typing import Callable
@@ -45,6 +46,19 @@ from coldtype.pens.translationpen import TranslationPen, polarCoord
 
 def listit(t):
     return list(map(listit, t)) if isinstance(t, (list, tuple)) else t
+
+
+def parse_lambda_to_paren(src):
+    depth = 0
+    lsrc = src.split("lambda")[1].strip()
+    for idx, x in enumerate(lsrc):
+        if x == "(":
+            depth += 1
+        elif x == ")":
+            if depth == 0:
+                return lsrc[0:idx]
+            else:
+                depth -= 1
 
 
 class DATPenLikeObject():
@@ -324,6 +338,10 @@ class DATPenLikeObject():
             print("DrawBot not installed!")
             return self
     
+    def noop(self, *args, **kwargs):
+        """Does nothing"""
+        return self
+    
     def precompose(self, pen_class, rect, context=None):
         img = pen_class.Precompose(self, rect, context=context)
         return DATPen().rect(rect).attr(image=dict(src=img, rect=rect)).f(None)
@@ -596,10 +614,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     def _pathop(self, otherPen=None, operation=BooleanOp.XOR):
         self.value = calculate_pathop(self, otherPen, operation)
-        return self
-    
-    def noop(self, *args, **kwargs):
-        """Does nothing"""
         return self
     
     def difference(self, otherPen):
@@ -1252,6 +1266,17 @@ class DATPen(RecordingPen, DATPenLikeObject):
             if _y.y > 0 and _y.y > rect.y:
                 self.line([_y.point("SW"), _y.point("SE")])
         return self.f(None).s(0, 0.1).sw(3)
+    
+    def preserve(self, tag, callback):
+        self.tag(tag)
+        src = inspect.getsource(callback).strip()
+        src = parse_lambda_to_paren(src)
+        tmp = tempfile.NamedTemporaryFile(prefix="coldtype_blender_pen", suffix=".pickle")
+        tmp = Path(f"blender/pickles/test_{tag}.pickle").absolute()
+        tmp.parent.mkdir(exist_ok=True, parents=True)
+        self.data["_preserve"] = dict(func=src, pickle=str(tmp))
+        pickle.dump(self, open(str(tmp), "wb"))
+        return self
 
     def bp(self):
         try:
@@ -1268,6 +1293,17 @@ def DPR(r):
 
 def DPO(r):
     return DATPen().oval(r)
+
+
+class DATText(DATPen):
+    def __init__(self, text, style, frame):
+        self.text = text
+        self.style = style
+        super().__init__()
+        self.addFrame(frame)
+    
+    def __str__(self):
+        return f"<DT({self.text}/{self.style.font})/>"
 
 
 class DATPenSet(DATPenLikeObject):
@@ -1355,7 +1391,9 @@ class DATPenSet(DATPenLikeObject):
                         if p:
                             self.pens.append(p)
                 except TypeError:
-                    print(">>> append rejected", pen)
+                    print("appending non-pen")
+                    self.pens.append(pen)
+                    #print(">>> append rejected", pen)
         return self
     
     def extend(self, pens):

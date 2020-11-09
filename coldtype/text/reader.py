@@ -146,6 +146,7 @@ class Style():
             sv=True,
             narrower=None,
             include_blanks=False,
+            load_font=True,
             **kwargs):
         """
         kern_pairs (kp) — a dict of glyphName->[left,right] values in font-space
@@ -158,15 +159,16 @@ class Style():
         self.input = locals()
         self.input["self"] = None
 
-        if isinstance(font, Path):
-            font = str(font)
-
-        if isinstance(font, str):
-            self.font:Font = Font(font)
-            self.font.load() #font._syncLoad(None)
-
+        if load_font:
+            if isinstance(font, Path):
+                font = str(font)
+            if isinstance(font, str):
+                self.font:Font = Font(font)
+                self.font.load() #font._syncLoad(None)
+            else:
+                self.font:Font = font
         else:
-            self.font:Font = font
+            self.font = font
 
         self.narrower = narrower
         self.layer = layer
@@ -176,20 +178,23 @@ class Style():
         self.rotate = rotate
         self.include_blanks = include_blanks
         self.sv = sv # scale-variations
-        
-        if "OS/2" in self.font.font.ttFont:
-            os2 = self.font.font.ttFont["OS/2"]
-            self.capHeight = os2.sCapHeight if hasattr(os2, "sCapHeight") else 0
-            if self.capHeight == 0:
-                self.capHeight = os2.sTypoAscender if hasattr(os2, "sTypoAscender") else 750
-        elif hasattr(self.font.font, "info"):
-            self.capHeight = self.font.font.info.capHeight
-        elif hasattr(self.font.font, "defaultInfo"):
-            self.capHeight = self.font.font.defaultInfo.capHeight
 
-        if capHeight: # override whatever the font says
-            if capHeight != "x":
-                self.capHeight = capHeight
+        try:        
+            if "OS/2" in self.font.font.ttFont:
+                os2 = self.font.font.ttFont["OS/2"]
+                self.capHeight = os2.sCapHeight if hasattr(os2, "sCapHeight") else 0
+                if self.capHeight == 0:
+                    self.capHeight = os2.sTypoAscender if hasattr(os2, "sTypoAscender") else 750
+            elif hasattr(self.font.font, "info"):
+                self.capHeight = self.font.font.info.capHeight
+            elif hasattr(self.font.font, "defaultInfo"):
+                self.capHeight = self.font.font.defaultInfo.capHeight
+
+            if capHeight: # override whatever the font says
+                if capHeight != "x":
+                    self.capHeight = capHeight
+        except AttributeError:
+            pass
 
         if fitHeight:
             self.fontSize = (fitHeight/self.capHeight)*1000
@@ -245,7 +250,7 @@ class Style():
         self.variationLimits = dict()
         self.varyFontSize = varyFontSize
         
-        if self.font.font.ttFont:
+        if load_font and self.font.font.ttFont:
             try:
                 fvar = self.font.font.ttFont['fvar']
             except:

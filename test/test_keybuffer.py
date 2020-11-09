@@ -1,7 +1,7 @@
 from coldtype import *
 import pickle
 
-op = sibling(__file__, "oval.pickle")
+op = __sibling__("oval.pickle")
 if not op.exists():
     oval = (StyledString("L",
         Style("assets/ColdtypeObviously_BlackItalic.ufo", 1000))

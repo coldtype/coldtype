@@ -313,15 +313,23 @@ class Renderer():
                     self.codepath = Path(tf.name)
             
             elif self.filepath.suffix == ".py":
-                self.codepath = self.filepath
+                #self.codepath = self.filepath
+                source_code = self.filepath.read_text()
+                source_code = re.sub(r"\-\.[^\(]+\(", ".noop(", source_code)
+                if self.codepath:
+                    self.codepath.unlink()
+                with tempfile.NamedTemporaryFile("w", prefix="coldtype_py_mod", suffix=".py", delete=False) as tf:
+                    tf.write(source_code)
+                    self.codepath = Path(tf.name)
             else:
                 raise Exception("No code found in file!")
             
             try:
-                #print("CONTEXT", self.context)
                 self.state.reset()
                 self.program = run_path(str(self.codepath), init_globals={
                     "__CONTEXT__": self.context,
+                    "__FILE__": self.filepath,
+                    "__sibling__": partial(sibling, self.filepath)
                 })
                 for k, v in self.program.items():
                     if isinstance(v, animation):
