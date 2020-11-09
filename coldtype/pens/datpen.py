@@ -1267,14 +1267,14 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 self.line([_y.point("SW"), _y.point("SE")])
         return self.f(None).s(0, 0.1).sw(3)
     
-    def preserve(self, tag, callback):
+    def preserve(self, tag, state, callback):
         self.tag(tag)
         src = inspect.getsource(callback).strip()
         src = parse_lambda_to_paren(src)
         tmp = tempfile.NamedTemporaryFile(prefix="coldtype_blender_pen", suffix=".pickle")
         tmp = Path(f"blender/pickles/test_{tag}.pickle").absolute()
         tmp.parent.mkdir(exist_ok=True, parents=True)
-        self.data["_preserve"] = dict(func=src, pickle=str(tmp))
+        self.data["_preserve"] = dict(func=src, pickle=str(tmp), state=state)
         pickle.dump(self, open(str(tmp), "wb"))
         return self
 
