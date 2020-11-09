@@ -184,7 +184,6 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
 
         def draw(pen, state, data):
             if isinstance(pen, DATText):
-                print(pen.text, pen.style)
                 if isinstance(pen.style.font, str):
                     font = skia.Typeface(pen.style.font)
                 else:

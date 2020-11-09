@@ -170,6 +170,11 @@ class Renderer():
         self.args = parser.parse_args()
         if self.args.is_subprocess or self.args.all:
             self.args.watch = False
+        
+        self.disable_syntax_mods = self.args.disable_syntax_mods
+        self.filepath = None
+        self.state = RendererState(self)
+        self.state.preview_scale = self.args.preview_scale
 
         self.observers = []
         self.watchees = []
@@ -196,9 +201,6 @@ class Renderer():
 
         self.line_number = -1
         self.last_renders = []
-
-        self.state = RendererState(self)
-        self.state.preview_scale = self.args.preview_scale
 
         # for multiplex mode
         self.running_renderers = []
@@ -229,6 +231,8 @@ class Renderer():
     def reset_filepath(self, filepath):
         self.line_number = -1
         self.stop_watching_file_changes()
+        self.state.mouse = None
+
         if filepath:
             self.filepath = Path(filepath).expanduser().resolve()
             if self.filepath.suffix == ".py":
@@ -317,7 +321,7 @@ class Renderer():
                     self.codepath = Path(tf.name)
             
             elif self.filepath.suffix == ".py":
-                if self.args.disable_syntax_mods:
+                if self.disable_syntax_mods:
                     self.codepath = self.filepath
                 else:
                     source_code = self.filepath.read_text()
