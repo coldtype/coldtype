@@ -2,12 +2,11 @@ from coldtype import *
 from coldtype.midi.controllers import LaunchControlXL
 
 cottf = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
-#cottf = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
 co = raw_ufo("assets/ColdtypeObviously_BlackItalic.ufo")
 
 @renderable(rstate=1)
 def memory(r, rstate):
-    nxl, _ = LaunchControlXL(rstate.midi)
+    nxl = LaunchControlXL(rstate.midi)
     dps = (StyledString("CDELOPTY",
         Style(cottf, 100+nxl(20)*200, ro=1, wdth=nxl(10))).pen())
     

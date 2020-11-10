@@ -1,5 +1,4 @@
 from coldtype import *
-from coldtype.midi.controllers import LaunchControlXL
 import coldtype.filtering as fl
 import skia
 
@@ -7,7 +6,6 @@ co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 
 @animation(bg=hsl(0.65, l=0.83), rstate=1, storyboard=[15], timeline=Timeline(30))
 def render(f, rstate):
-    nxl, _ = LaunchControlXL(rstate.midi)
     p = f.a.progress(f.i, loops=1, easefn="qeio").e
 
     return (StyledString("COLDTYPE",
