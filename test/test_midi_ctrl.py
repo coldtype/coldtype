@@ -5,11 +5,19 @@ obv = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
 
 @renderable((1080, 1080), bg=1, rstate=1)
 def render(r, rstate):
-    nxl, style = LaunchControlXL(rstate.midi, fontSize=0.25, wdth=0.25)
-    nmn, _ = LaunchkeyMini(rstate.midi)
+    nxl = LaunchControlXL(rstate.midi)
+    nmn = LaunchkeyMini(rstate.midi)
 
-    dps = (StyledString("Midi",
-        Style(obv, **style, r=1, ro=1))
+    style = Style(obv,
+        20+nxl(12, 0.25)*2000,
+        wdth=nxl(11, 0.25),
+        wght=nxl(21),
+        slnt=nxl(31),
+        tu=-250+nxl(22)*500,
+        r=1,
+        ro=1)
+
+    dps = (StyledString("Midi", style)
         .pens()
         .align(r)
         .f(1))

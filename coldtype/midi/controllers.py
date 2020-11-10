@@ -15,24 +15,15 @@ def midi_controller_lookup_fn(name, column_starts=[], cmc={}):
     return lookup
 
 
-def LaunchControlXL(cmc, **kwargs):
-    lookup = midi_controller_lookup_fn(
+def LaunchControlXL(cmc):
+    return midi_controller_lookup_fn(
         "Launch Control XL",
         column_starts=[77, 49, 29, 13],
         cmc=cmc)
-    
-    return (lookup, dict(
-        fontSize=lookup(12, kwargs.get("fontSize"))*2000+20,
-        wdth=lookup(11, kwargs.get("wdth")),
-        wght=lookup(21, kwargs.get("wght")),
-        slnt=lookup(31, kwargs.get("slnt")),
-        tu=lookup(22, kwargs.get("tu"))*500-250,))
 
 
 def LaunchkeyMini(cmc):
-    lookup = midi_controller_lookup_fn(
+    return midi_controller_lookup_fn(
         "Launchkey Mini LK Mini MIDI",
         column_starts=[21],
         cmc=cmc)
-    
-    return (lookup, {})

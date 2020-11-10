@@ -1,4 +1,5 @@
 from coldtype.test import *
+from coldtype.midi.controllers import LaunchControlXL
 
 @test((1000, 300))
 def test_system_font(r):
