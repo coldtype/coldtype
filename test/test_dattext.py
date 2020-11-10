@@ -21,3 +21,9 @@ def test_return_string(r, rs):
             .f(hsl(0.9))),
         (DATText("COLDTYPE", style, rt)
             .translate(0, 0))])
+
+@test((1000, 300), rstate=1, solo=0)
+def test_midi(r, rs):
+    nxl = LaunchControlXL(rs.midi)
+    style = Style(co, 250, wdth=nxl(10, 0), fill=hsl(nxl(11, 0)))
+    return DATText("COLD", style, r.inset(50))
