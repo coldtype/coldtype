@@ -72,3 +72,29 @@ If you want to address glyphs in a UFO directly by their glyph names, you can al
 .. image:: /_static/renders/type_design_txt.png
     :width: 400
     :class: add-border
+
+Live Reload Designspaces
+------------------------
+
+You can also quickly get an interactive designspace preview going, by reading from a designspace file.
+
+If you click around in the coldtype window that pops up when you run code like the code below, you'll see the font change size & ``wdth``.
+
+.. code:: python
+
+    obv_ds = Font("assets/ColdtypeObviously.designspace")
+
+    @renderable((1200, 350), rstate=1)
+    def ds_mouse(r, rs):
+        ri = r.inset(50)
+        sx, sy = ri.ipos(rs.mouse, (0.5, 1))
+        return [
+            (StyledString("COLDTYPE",
+                Style(obv_ds, 150+sy*100, wdth=sx))
+                .pens()
+                .align(r)
+                .f(0))]
+
+.. image:: /_static/renders/type_design_ds_mouse.png
+    :width: 600
+    :class: add-border
