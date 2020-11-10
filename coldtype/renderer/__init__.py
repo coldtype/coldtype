@@ -537,7 +537,10 @@ class Renderer():
                     output_path = rp.output_path
 
                     try:
-                        result = render.run(rp, self.state)
+                        if render.direct_draw:
+                            result = None
+                        else:
+                            result = render.run(rp, self.state)
                         if self.state.request:
                             self.requests_waiting.append([render, str(self.state.request)])
                             self.state.request = None
@@ -557,10 +560,13 @@ class Renderer():
                             pass
 
                         if previewing:
-                            preview_result = render.runpost(result, rp)
-                            preview_count += 1
-                            if preview_result:
-                                self.previews_waiting_to_paint.append([render, preview_result, rp])
+                            if render.direct_draw:
+                                self.previews_waiting_to_paint.append([render, None, rp])
+                            else:
+                                preview_result = render.runpost(result, rp)
+                                preview_count += 1
+                                if preview_result:
+                                    self.previews_waiting_to_paint.append([render, preview_result, rp])
                         
                         if rendering:
                             did_render = True
@@ -586,7 +592,10 @@ class Renderer():
                                 if render.self_rasterizing:
                                     print(">>> self-rasterized...", output_path.relative_to(Path.cwd()))
                                 else:
-                                    self.rasterize(result or DATPen(), render, output_path)
+                                    if render.direct_draw:
+                                        self.rasterize(partial(render.run, rp, self.state), render, output_path)
+                                    else:
+                                        self.rasterize(result or DATPen(), render, output_path)
                                     # TODO a progress bar?
                                     print(">>> saved...", str(output_path.relative_to(Path.cwd())))
                     except:
@@ -1360,19 +1369,29 @@ class Renderer():
             return
         
         render, result, rp = waiter
+        error_color = coldtype.rgb(1, 1, 1).skia()
         canvas.save()
         canvas.translate(0, self.window_scrolly)
         canvas.translate(rect.x, rect.y)
         canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
         canvas.scale(scale, scale)
         #canvas.clear(render.bg.skia())
-        render.draw_preview(1.0, canvas, render.rect, result, rp)
+        if render.direct_draw:
+            try:
+                render.run(rp, self.state, canvas)
+            except Exception as e:
+                stack = traceback.format_exc()
+                print(stack)
+                render.show_error = stack.split("\n")[-2]
+                error_color = coldtype.rgb(0, 0, 0).skia()
+        else:
+            render.draw_preview(1.0, canvas, render.rect, result, rp)
         if hasattr(render, "blank_renderable"):
             paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=0.75).skia())
             canvas.drawString(f"{coldtype.__version__}", 359, 450, skia.Font(self.typeface, 42), paint)
             canvas.drawString("Nothing found", 297, 480, skia.Font(self.typeface, 24), paint)
         if hasattr(render, "show_error"):
-            paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=1).skia())
+            paint = skia.Paint(AntiAlias=True, Color=error_color)
             canvas.drawString(render.show_error, 30, 70, skia.Font(self.typeface, 50), paint)
             canvas.drawString("> See process in terminal for traceback", 30, 120, skia.Font(self.typeface, 32), paint)
         canvas.restore()

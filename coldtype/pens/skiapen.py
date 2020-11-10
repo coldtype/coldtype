@@ -160,7 +160,10 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             surface = skia.Surface(rect.w, rect.h)
         
         with surface as canvas:
-            SkiaPen.CompositeToCanvas(pens, rect, canvas, scale=scale)
+            if callable(pens):
+                pens(canvas) # direct-draw
+            else:
+                SkiaPen.CompositeToCanvas(pens, rect, canvas, scale=scale)
 
         image = surface.makeImageSnapshot()
         image.save(save_to, skia.kPNG)

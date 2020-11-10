@@ -77,6 +77,7 @@ class renderable():
         solo=False,
         rstate=False,
         preview_only=False,
+        direct_draw=False,
         viewBox=True):
         """Base configuration for a renderable function"""
 
@@ -107,6 +108,7 @@ class renderable():
         self.preview_only = preview_only
         self.rstate = rstate
         self.viewBox = viewBox
+        self.direct_draw = direct_draw
 
         if not rasterizer:
             if self.fmt == "svg":
@@ -158,6 +160,17 @@ class renderable():
     def show(self):
         self.hidden = False
         return self
+
+
+class skia_direct(renderable):
+    def __init__(self, rect=(1080, 1080), **kwargs):
+        super().__init__(rect=rect, direct_draw=True, **kwargs)
+    
+    def run(self, render_pass, renderer_state, canvas):
+        if self.rstate:
+            return render_pass.fn(*render_pass.args, renderer_state, canvas)
+        else:
+            return render_pass.fn(*render_pass.args, canvas)
 
 
 class drawbot_script(renderable):

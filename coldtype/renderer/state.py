@@ -54,6 +54,7 @@ class RendererState():
         self.xray = True
         self.selection = [0]
         self.zoom = 1
+        self.canvas = None
         self.reset()
     
     def reset(self):
