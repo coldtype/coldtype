@@ -463,13 +463,13 @@ class Rect():
     def square(self):
         return Rect(centered_square(self.rect()))
     
-    def ipos(self, pt, clamp=True):
+    def ipos(self, pt, defaults=(0.5, 0.5), clamp=True):
         """
         Get scaled 0-1 bounded (optional) value
         from a point in a rectangle
         """
         if not pt:
-            return (0.5, 0.5)
+            return defaults
         sx = ((pt.x - self.x) / self.w)
         sy = ((pt.y - self.y) / self.h)
         if clamp:

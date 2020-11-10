@@ -1,4 +1,4 @@
-import skia
+import skia, struct
 
 from pathlib import Path
 
@@ -188,6 +188,15 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                     font = skia.Typeface(pen.style.font)
                 else:
                     font = skia.Typeface.MakeFromFile(str(pen.style.font.path))
+                    if len(pen.style.variations) > 0:
+                        fa = skia.FontArguments()
+                        # h/t https://github.com/justvanrossum/drawbot-skia/blob/master/src/drawbot_skia/gstate.py
+                        to_int = lambda s: struct.unpack(">i", bytes(s, "ascii"))[0]
+                        makeCoord = skia.FontArguments.VariationPosition.Coordinate
+                        rawCoords = [makeCoord(to_int(tag), value) for tag, value in pen.style.variations.items()]
+                        coords = skia.FontArguments.VariationPosition.Coordinates(rawCoords)
+                        fa.setVariationDesignPosition(skia.FontArguments.VariationPosition(coords))
+                        font = font.makeClone(fa)
                 pt = pen.frame.point("SW")
                 canvas.drawString(
                     pen.text,
