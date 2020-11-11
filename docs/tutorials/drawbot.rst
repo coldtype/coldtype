@@ -6,7 +6,7 @@ Though `DrawBot <https://drawbot.com>`_ and Coldtype encourage different program
 Installing
 ----------
 
-You’ll also need to install DrawBot in your virtualenv, like so:
+DrawBot is not installed by default with Coldtype, so you’ll need to install DrawBot in your virtualenv, like so:
 
 .. code:: bash
 
@@ -63,7 +63,7 @@ You might be wondering why you’d want to use DrawBot in Coldtype. To me, one b
 Multi-page documents
 --------------------
 
-In general, Coldtype does not support the idea of a multi-page document; the closest thing supported natively by Coldypte is an ``@animation`` renderable — and if you think about it, what’s the real difference between a multi-frame animation and a multi-page document? Luckily there’s a ``@drawbot_animation`` renderable that makes multi-frame drawBot animations very easy.
+In general, Coldtype does not support the idea of a multi-page document; the closest thing supported natively by Coldtype is an ``@animation`` renderable — and if you think about it, what’s the real difference between a multi-frame animation and a multi-page document? Luckily there’s a ``@drawbot_animation`` renderable that makes multi-frame drawBot animations very easy.
 
 All that said, it is still quite possible to do normal DrawBot things in a Coldtype script. So here’s an example of generating a multi-page PDF, using a combination of Coldtype and DrawBot constructs.
 
