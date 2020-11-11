@@ -79,8 +79,6 @@ All that said, it is still quite possible to do normal DrawBot things in a Coldt
         fill(1)
         textBox("Page " + str(f.i), f.a.r.inset(50))
     
-    multipage_doc_contactsheet = multipage_doc.contactsheet(2)
-    
     def release(passes):
         newDrawing()
         r = multipage_doc.rect
@@ -94,11 +92,15 @@ All that said, it is still quite possible to do normal DrawBot things in a Coldt
         print("Saved pdf", pdf_path)
         endDrawing()
 
+.. code:: ruby
+
+    multipage_doc_contactsheet = multipage_doc.contactsheet(2)
+
 .. image:: /_static/renders/drawbot_multipage_doc_contactsheet.png
     :width: 500
     :class: add-border
 
-The key to making this work is the magic function ``release``, which can be defined once in any Coldtype source file, and provides a "second chance" so to speak, to create artifacts based on what's been rendered by the coldtype renderer. The salient point here is that you can write your own special code to run whenever the ``release`` action is called, which can be outside the standard save/reload/render workflow of Coldtype. This can be useful for all kinds of things (it’s how this documentation is generated), but here it's useful because we're saying, OK, the graphics look good, let's now use DrawBot to bake a PDF, using the same code that we've been editing and previewing via the Coldtype viewer.
+The key to making this work is the magic function ``release``, which can be defined once in any Coldtype source file, and provides a "second chance" to create artifacts based on what's been rendered by the coldtype renderer. The salient point here is that you can write your own special code to run whenever the ``release`` action is called, which can be outside the standard save/reload/render workflow of Coldtype. This can be useful for all kinds of things (it’s how this documentation is generated, for example), but here it's useful because we're saying, `OK`, the graphics look good, let's now use DrawBot to bake a PDF, using the same code that we've been editing and previewing via the Coldtype viewer.
 
 How to trigger the release code? I trigger it via a MIDI trigger + a .coldtype.py configuration file, but it’s as easy as typing "release" into the running command line prompt, or hitting L with the viewer app focused.
 

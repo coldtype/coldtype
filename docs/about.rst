@@ -71,6 +71,8 @@ Here’s the code for a somewhat complex animation:
             .align(f.a.r)
             .f(0)
             .understroke(s=1, sw=10))
+
+.. code:: ruby
     
     banner_contact = banner.contactsheet(2, [0, 33, 66, 99, 133, 166])
 
