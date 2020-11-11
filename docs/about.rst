@@ -76,7 +76,7 @@ Here’s the code for a somewhat complex animation:
     
     banner_contact = banner.contactsheet(2, [0, 33, 66, 99, 133, 166])
 
-And here’s the result, rendered as a contact sheet with frames ``[0, 33, 66, 99, 133, 166]`` (that last line of code creates a contact sheet from an animation):
+And here’re a few frames from what that code creates (frames ``[0, 33, 66, 99, 133, 166]``):
 
 .. image:: /_static/renders/about_banner_contactsheet.png
     :width: 700
