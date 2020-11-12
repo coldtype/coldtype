@@ -6,7 +6,7 @@ from coldtype.animation.easing import ease
 
 
 class MidiNote():
-    def __init__(self, note, on, off, fps, rounded):
+    def __init__(self, note, on, off, fps, rounded, idx):
         self.fps = fps
         self.note = note
         self.on_seconds = on
@@ -15,6 +15,7 @@ class MidiNote():
         self.on = self.onf(rounded=rounded)
         self.off = self.offf(rounded=rounded)
         self.duration = self.off - self.on
+        self.idx = idx
 
     def s_to_f(self, value, rounded=True, fps=None):
         _fps = fps or self.fps
@@ -45,8 +46,13 @@ class MidiNoteValue():
     def valid(self):
         return self.note and self.note.note >= 0
     
-    def ease(self, eo="eei", ei="eei"):
-        return ease(eo, self.value)[0]
+    def ease(self, eo="eei", ei="eei", negative=False):
+        if negative and self.position > 0:
+            return -ease(ei, self.value)[0]
+        elif self.position > 0:
+            return ease(ei, self.value)[0]
+        else:
+            return ease(eo, self.value)[0]
 
 
 class MidiTrack():
@@ -144,7 +150,7 @@ class MidiReader():
                     o = open_notes.get(track.name).get(msg.note)
                     if o != None:
                         open_notes[track.name][msg.note] = None
-                        events[track.name].append(MidiNote(msg.note, o, cumulative_time, fps, rounded))
+                        events[track.name].append(MidiNote(msg.note, o, cumulative_time, fps, rounded, idx))
                     if msg.type == "note_on" and msg.velocity > 0:
                         open_notes[track.name][msg.note] = cumulative_time
 

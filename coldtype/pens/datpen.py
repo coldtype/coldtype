@@ -1,4 +1,4 @@
-import math, tempfile, pickle
+import math, tempfile, pickle, inspect
 from enum import Enum
 from copy import deepcopy
 from pathlib import Path
@@ -378,6 +378,25 @@ class DATPenLikeObject():
             dp = DATPen()
             svgp.draw(dp)
             return dp.f(0)
+    
+    def DiskCached(path:Path, build_fn: Callable[[], "DATPenLikeObject"]):
+        dpio = None
+        fn_src = inspect.getsource(build_fn)
+        if not path.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            dpio = build_fn()
+        else:
+            try:
+                dpio = pickle.load(open(path, "rb"))
+                old_fn_src = dpio.data.get("fn_src", "")
+                if fn_src != old_fn_src:
+                    dpio = build_fn()
+            except pickle.PickleError:
+                dpio = build_fn()
+        
+        dpio.data["fn_src"] = fn_src
+        pickle.dump(dpio, open(path, "wb"))
+        return dpio
 
 
 class DATPen(RecordingPen, DATPenLikeObject):

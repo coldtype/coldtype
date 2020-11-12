@@ -19,7 +19,8 @@ $._AE_ = {
         var numItems = root.items.length;
         for (var i = 1; i <= numItems; i++) {
             var item = root.items[i];
-            if (item.name.match(prefix) && item.name.match(/\.png$/)) {
+            //item.name.match(prefix) && 
+            if (item.name.match(/\.png$/)) {
                 //http://docs.aenhancers.com/sources/filesource/#filesource
                 item.mainSource.reload();
             }

@@ -325,7 +325,7 @@ class Renderer():
                     self.codepath = self.filepath
                 else:
                     source_code = self.filepath.read_text()
-                    source_code = re.sub(r"\-\.[A-Za-z_]+\(", ".noop(", source_code)
+                    source_code = re.sub(r"\-\.[A-Za-z_]+([A-Za-z_0-9]+)?\(", ".noop(", source_code)
                     if self.codepath:
                         self.codepath.unlink()
                     with tempfile.NamedTemporaryFile("w", prefix="coldtype_py_mod", suffix=".py", delete=False) as tf:
