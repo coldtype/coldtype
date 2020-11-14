@@ -711,6 +711,9 @@ class StyledString(FittableMixin):
         if self.style.reverse:
             pens.reversePens()
         
+        for k, v in self.style.data.items():
+            pens.data[k] = v
+
         if self.style.kern_pairs:
             overlap_pairs = {pair:value[2] for (pair, value) in self.style.kern_pairs.items() if not isinstance(value, int) and len(value) > 2}
             pens.overlapPairs(overlap_pairs, outline=self.style.overlap_outline)

@@ -3,6 +3,7 @@ import re
 from coldtype.pens.datpen import DATPenSet
 from coldtype.text.composer import Graf, GrafStyle, Lockup
 from coldtype.text.reader import StyledString, Style
+from coldtype.color import hsl
 
 from pathlib import PurePath
 from typing import Optional, List, Callable, Tuple
@@ -96,8 +97,6 @@ class RichText(DATPenSet):
             alt_parsed_lines.append(alt_line_result)
 
         parsed_lines = alt_parsed_lines
-        #from pprint import pprint
-        #pprint(parsed_lines)
 
         lines = []
         groupings = []
@@ -107,7 +106,7 @@ class RichText(DATPenSet):
             texts = []
             for txt, styles in line:
                 ftxt, style = render_text_fn(txt, styles)
-                texts.append([ftxt, idx, style])
+                texts.append([ftxt, idx, style, styles])
 
             grouped_texts = []
             idx = 0
@@ -133,7 +132,10 @@ class RichText(DATPenSet):
 
             for gt in grouped_texts:
                 full_text = "".join([t[0] for t in gt])
-                slugs.append(StyledString(full_text, gt[0][2]))
+                styles = gt[0][3]
+                style = gt[0][2].mod()
+                style.data = dict(style_names=styles)
+                slugs.append(StyledString(full_text, style))
             groupings.append(grouped_texts)
             lines.append(slugs)
 
@@ -153,6 +155,9 @@ class RichText(DATPenSet):
             for slug in line:
                 slug.reversePens()
         return pens
+    
+    def filter_style(self, style):
+        return self.pfilter(lambda i, p: style in p.data.get("style_names", []))
 
 
 if highlight:
@@ -185,3 +190,25 @@ if highlight:
                 tag_delimiters=["≤", "≥"],
                 visible_boundaries=[],
                 invisible_boundaries=["¬"])
+        
+        def DefaultStyles(r, b, bi):
+            """regular, bold, bold-italic"""
+            return {
+                "Keyword": (bi, hsl(0.9, s=0.6)),
+                "Keyword.Namespace": (b, hsl(0.2, s=1)),
+                "Name.Namespace": (b, hsl(0.55, s=1)),
+                "Name.Builtin": (bi, hsl(0.05, s=1)),
+                "Name.Function": (bi, hsl(0.65, s=1, l=0.7)),
+                "Name.Decorator": (bi, hsl(0.2, 1)),
+                "Name": (b, hsl(0.45, 0.7)),
+                "Operator": (b, hsl(0.6, s=1)),
+                "Operator.Word": (b, hsl(0.9)),
+                "Punctuation": (b, hsl(0.8)),
+                "Literal.String.Double": (r, hsl(0.15, s=0.7)),
+                "Literal.String.Affix": (bi, hsl(0.85, s=1)),
+                "Literal.String.Interpol": (b, hsl(0.05, s=1)),
+                "Literal.String.Doc": (r, hsl(0.6, l=0.4)),
+                "Literal.Number.Float": (r, hsl(0.9, s=0.7)),
+                "Literal.Number.Integer": (r, hsl(0.45)),
+                "Comment.Single": (r, (0.3))
+            }

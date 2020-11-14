@@ -10,12 +10,12 @@ reiner = Font.Cacheable("~/Type/fonts/fonts/_script/ReinerScript-Bold.otf")
 
 def render_txt(txt, styles):
     if "i" in styles:
-        return txt, Style(mistral, 110, xShift=7, bs=-6)
+        return txt, Style(mistral, 110, xShift=7, bs=-6, fill=0)
     elif "h" in styles:
-        return txt.upper(), Style(choc, 150, bs=-20)
+        return txt.upper(), Style(choc, 150, bs=-20, fill=0)
     elif "b" in styles:
         return txt.upper(), Style(reiner, 90, bs=0, fill=hsl(0.9))
-    return txt, Style(blanco, 64)
+    return txt, Style(blanco, 64, fill=0)
     
 txt1 = """
 Behold! [h]
@@ -23,9 +23,9 @@ An attempt at rich[i] text
 And one[b] more[b] line
 """
 
-#@test()
+@test()
 def test_rich(r):
-    pens = (RichText(txt1, render_txt, r).xa().align(r, tv=1).f(0))
+    pens = (RichText(txt1, render_txt, r).xa().align(r, tv=1))
     
     pens[1][0].rotate(180).translate(0, -5)
     pens[1][1].f(Gradient.H(
@@ -35,21 +35,33 @@ def test_rich(r):
     return pens
 
 txt2 = """
-Behold! ≤h≥
-An a¬ttempt≤i≥ at rich≤i≥ text
-And one≤b≥ more≤b≥ line
+Behold!≤h≥
+An ¬a¬ttempt≤i≥ ¬at ¬rich≤i≥ ¬text
+And ¬one more≤b≥ ¬line
 """
 
-#@test()
+@test(solo=0)
 def test_rich_custom(r):
-    pens = (RichText(txt2, render_txt, r, tag_delimiters=["≤", "≥"], visible_boundaries=[], invisible_boundaries=["¬"])
-        .xa().align(r, tv=1).f(0))
+    pens = (RichText(txt2, render_txt, r,
+        tag_delimiters=["≤", "≥"],
+        visible_boundaries=["¶"],
+        invisible_boundaries=["¬"])
+        .xa()
+        .align(r, tv=1))
     
-    pens[1][0].rotate(180).translate(0, -5)
-    pens[1][1].f(Gradient.H(
-        pens[1][1].bounds(),
-        hsl(0.6, s=1),
-        hsl(0.95, s=1)))
+    for p in pens.filter_style("h"):
+        p.f(Gradient.V(p.bounds(), hsl(0.3), hsl(0.9)))
+    
+    for p in pens.filter_style("i"):
+        p.f(hsl(0.8, l=0.8))
+        for c in p.copy(with_data=True):
+            if c.glyphName == "space":
+                continue
+            p.insert(0, DATPen().rect(c.bounds()).f(hsl(0.7, a=0.75)))
+            p.insert(0, DATPen().rect(c.getFrame()).f(hsl(0.05, s=0.7, a=0.7)))
+        #p.rotate(180, point=p.frame)
+    
+    #pens.print_tree()
     return pens
 
 code = """

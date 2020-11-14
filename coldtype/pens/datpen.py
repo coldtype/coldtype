@@ -110,17 +110,18 @@ class DATPenLikeObject():
         """Quickly cast to a (different) subclass."""
         return _class(self, *args)
 
-    def copy(self):
+    def copy(self, with_data=False):
         """Make a totally fresh copy; useful given the DATPen’s general reliance on mutable state."""
         dp = DATPen()
         self.replay(dp)
         for tag, attrs in self.attrs.items():
             dp.attr(tag, **attrs)
         dp.glyphName = self.glyphName
-        #dp.data = self.data
-        #if self.typographic:
-        #    dp.frame = self.frame
-        #    dp.typographic = True
+        if with_data:
+            dp.data = self.data
+            if self.typographic:
+                dp.frame = self.frame
+                dp.typographic = True
         return dp
 
     def tag(self, tag):
@@ -412,7 +413,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.data = {}
     
     def __str__(self):
-        return f"<DP(typo:int({self.typographic})({self.glyphName}))/tag:({self._tag})>"
+        return f"<DP(typo:int({self.typographic})({self.glyphName}))/tag:({self._tag}/data:{self.data})>"
     
     def __len__(self):
         return len(self.value)
@@ -1343,7 +1344,7 @@ class DATPenSet(DATPenLikeObject):
                 self += pen
     
     def __str__(self):
-        return f"<DPS:pens:{len(self.pens)}:tag({self._tag})>"
+        return f"<DPS:pens:{len(self.pens)}:tag({self._tag}:data{self.data})>"
     
     def __len__(self):
         return len(self.pens)
@@ -1361,13 +1362,13 @@ class DATPenSet(DATPenLikeObject):
         print("  "*depth + "/"+str(self))
         return self
     
-    def copy(self):
+    def copy(self, with_data=False):
         """Get a completely new copy of this whole set of pens,
         usually done so you can duplicate and further modify a
         DATPenSet without mutating the original"""
         dps = DATPenSet()
         for p in self.pens:
-            dps.append(p.copy())
+            dps.append(p.copy(with_data=with_data))
         return dps
     
     def __getitem__(self, index):
@@ -1562,20 +1563,16 @@ class DATPenSet(DATPenLikeObject):
         return self
     
     def pfilter(self, fn):
-        """Apply `fn` to all individual pens, recursively"""
+        """Filter all pens, recursively"""
         to_keep = []
         for idx, p in enumerate(self.pens):
             if hasattr(p, "pens"):
-                if p.pfilter(fn):
-                    to_keep.append(p)
-            else:
-                if fn(idx, p):
-                    to_keep.append(p)
-        if len(to_keep) > 0:
-            self.pens = to_keep
-        else:
-            return False
-        return self
+                matches = p.pfilter(fn)
+                if len(matches) > 0:
+                    to_keep.extend(matches)
+            if fn(idx, p):
+                to_keep.append(p)
+        return to_keep
     
     def glyphs_named(self, glyph_name):
         """Pluck glyphs named `glyph_name`"""
