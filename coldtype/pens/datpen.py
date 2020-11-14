@@ -380,6 +380,35 @@ class DATPenLikeObject():
             svgp.draw(dp)
             return dp.f(0)
     
+    def phototype(self, pen_class, r, blur=5, cut=127, cutw=3, rotate=0, rotate_point=None, translate=(0, 0), trace=False, context=None, fill=1):
+        import skia
+        import coldtype.filtering as fl
+        try:
+            xblur, yblur = blur
+        except:
+            xblur, yblur = blur, blur
+
+        modded = (self
+            .rotate(rotate, rotate_point or r.point("C"))
+            .translate(*translate)
+            .precompose(pen_class, r, context=context)
+            .attr(skp=dict(
+                ImageFilter=skia.BlurImageFilter.Make(xblur, yblur),
+                ColorFilter=skia.LumaColorFilter.Make(),
+                ))
+            .precompose(pen_class, r, context=context)
+            .attr(skp=dict(
+                ColorFilter=fl.compose(
+                    fl.as_filter(fl.contrast_cut(cut, cutw)),
+                    fl.fill(normalize_color(fill))))))
+        
+        if trace:
+            modded = modded.potrace(pen_class, r, ["-O", 1, "-t", 800], context=context)
+        
+        return (modded
+            .translate(-translate[0], -translate[1])
+            .rotate(-rotate, rotate_point or r.point("C")))
+    
     def DiskCached(path:Path, build_fn: Callable[[], "DATPenLikeObject"]):
         dpio = None
         fn_src = inspect.getsource(build_fn)

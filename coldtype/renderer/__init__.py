@@ -282,6 +282,12 @@ class Renderer():
     
     def show_message(self, message, scale=1):
         print(message)
+    
+    def apply_syntax_mods(self, source_code):
+        if self.disable_syntax_mods:
+            return source_code
+        source_code = re.sub(r"\-\.[A-Za-z_]+([A-Za-z_0-9]+)?\(", ".noop(", source_code)
+        return source_code
 
     def reload(self, trigger):
         if not self.filepath:
@@ -316,15 +322,14 @@ class Renderer():
                 if self.codepath:
                     self.codepath.unlink()
                 with tempfile.NamedTemporaryFile("w", prefix="coldtype_md_src", suffix=".py", delete=False) as tf:
-                    tf.write(source_code)
+                    tf.write(self.apply_syntax_mods(source_code))
                     self.codepath = Path(tf.name)
             
             elif self.filepath.suffix == ".py":
                 if self.disable_syntax_mods:
                     self.codepath = self.filepath
                 else:
-                    source_code = self.filepath.read_text()
-                    source_code = re.sub(r"\-\.[A-Za-z_]+([A-Za-z_0-9]+)?\(", ".noop(", source_code)
+                    source_code = self.apply_syntax_mods(self.filepath.read_text())
                     if self.codepath:
                         self.codepath.unlink()
                     with tempfile.NamedTemporaryFile("w", prefix="coldtype_py_mod", suffix=".py", delete=False) as tf:

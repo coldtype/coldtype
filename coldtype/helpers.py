@@ -15,6 +15,12 @@ def sibling(root, file):
 def raw_ufo(path):
     return DefconFont(normalize_font_path(path))
 
+def ßhide(el):
+    return None
+
+def ßshow(el):
+    return el
+
 def random_series(start=0, end=1, seed=0, count=5000):
     rnd = Random()
     rnd.seed(seed)
