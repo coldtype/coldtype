@@ -240,6 +240,7 @@ class Renderer():
                     print(">>> That python file does not exist...")
                     create = input(">>> Do you want to create it and add some coldtype boilerplate? (y/n): ")
                     if create.lower() == "y":
+                        self.filepath.parent.mkdir(exist_ok=True, parents=True)
                         self.filepath.write_text("from coldtype import *\n\n@renderable()\ndef stub(r):\n    return (DATPen()\n        .oval(r.inset(50))\n        .f(0.8))\n")
             elif self.filepath.suffix == ".rst":
                 if not self.filepath.exists():
@@ -412,7 +413,8 @@ class Renderer():
         _rs = []
         for k, v in self.program.items():
             if isinstance(v, renderable) and not v.hidden:
-                _rs.append(v)
+                if v not in _rs:
+                    _rs.append(v)
         
         for r in _rs:
             output_folder = self.render_to_output_folder(r)
@@ -428,7 +430,7 @@ class Renderer():
             for r in _rs:
                 for fp in function_patterns:
                     try:
-                        if re.match(fp, r.func.__name__) and r not in matches:
+                        if re.match(fp, r.name) and r not in matches:
                             matches.append(r)
                     except re.error as e:
                         print("ff regex compilation error", e)
@@ -436,11 +438,10 @@ class Renderer():
                 _rs = matches
             else:
                 print(">>> no matches for ff")
-            #_rs = [r for r in _rs if re.match() r.func.__name__ in function_names]
         
         if self.args.monitor_lines and trigger != Action.RenderAll:
             func_name = file_and_line_to_def(self.codepath, self.line_number)
-            matches = [r for r in _rs if r.func.__name__ == func_name]
+            matches = [r for r in _rs if r.name == func_name]
             if len(matches) > 0:
                 return matches
 
