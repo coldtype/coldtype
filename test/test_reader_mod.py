@@ -30,7 +30,7 @@ def test_xstretch_slnt(r):
         .sw(2))
 
 @test()
-def test_ystretch(r):
+def test_ystretch(r):   
     st = Style.StretchY(20, debug=1, E=(500, 258))
     style = Style(mutator, 300, mods=st, wght=0.5)
     return (StyledString("TYPE", style)
@@ -43,7 +43,7 @@ def test_ystretch(r):
 @test()
 def test_ystretch_slnt(r):
     st = Style.StretchY(20, debug=1,
-        E=(500, (258, 750/2), 25))
+        E=(500, (258, 750/2), 35))
     style = Style(co, 300, mods=st, wght=0.5)
     return (StyledString("TYPE", style)
         .pen()
@@ -51,5 +51,5 @@ def test_ystretch_slnt(r):
         .f(hsl(0.2, a=0.1))
         .s(hsl(0.5))
         .sw(2)
-        #.removeOverlap()
+        -.removeOverlap()
         )

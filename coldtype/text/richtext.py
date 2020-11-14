@@ -1,7 +1,21 @@
+import re
+
 from coldtype.pens.datpen import DATPenSet
 from coldtype.text.composer import Graf, GrafStyle, Lockup
-from coldtype.text.reader import StyledString
+from coldtype.text.reader import StyledString, Style
+from coldtype.color import hsl
 
+from pathlib import PurePath
+from typing import Optional, List, Callable, Tuple
+
+try:
+    from pygments import highlight
+    from pygments.lexers import PythonLexer
+    from pygments.formatter import Formatter
+    from pygments.token import Token
+except ImportError:
+    highlight = None
+    pass
 
 """
 Very experimental module to support rich-text from annotated strings, like a super-minimal-but-open-ended subset of markdown, inspired by the way rich text is built up in the animation.nle.premiere DPS subclass
@@ -9,29 +23,80 @@ Very experimental module to support rich-text from annotated strings, like a sup
 
 
 class RichText(DATPenSet):
-    def __init__(self, text, render_text_fn, rect, fit=None, graf_style=GrafStyle(leading=20),):
+    def __init__(self,
+        text,
+        render_text_fn:Callable[[str, List[str]], Tuple[str, Style]],
+        rect,
+        fit=None,
+        graf_style=GrafStyle(leading=20),
+        tag_delimiters=["[", "]"],
+        visible_boundaries=[" "],
+        invisible_boundaries=[]):
+        "WIP"
         super().__init__()
+        self.tag_delimiters = tag_delimiters
+        self.visible_boundary_chars = visible_boundaries
+        self.invisible_boundary_chars = invisible_boundaries
+        
+        if isinstance(text, PurePath):
+            text = text.read_text()
+        
         self.pens = self.parse_block(text, render_text_fn, rect, fit, graf_style).pens
 
     def parse_block(self, txt, render_text_fn, rect, fit, graf_style):
         parsed_lines = []
+        alt_parsed_lines = []
 
-        for line in txt.strip().splitlines():
+        for line in txt.splitlines():
             line_meta = []
             line_result = []
-            for slug in reversed(line.strip().split(" ")):
-                if slug.startswith("["): # line meta
-                    line_meta = slug.strip("[]").split(",")
+
+            i = 0
+            in_tag = False
+            bnd_char = ""
+            si = 0
+            slugs = {0:""}
+            metas = {0:""}
+            bnds = {0:""}
+
+            while i < len(line):
+                if in_tag:
+                    if line[i] == self.tag_delimiters[1]:
+                        in_tag = False
+                    else:
+                        metas[si] += line[i]
+                elif line[i] == self.tag_delimiters[0]:
+                    in_tag = True
+                
+                elif line[i] in self.visible_boundary_chars or line[i] in self.invisible_boundary_chars:
+                    bnd_char = line[i]
+                    bnds[si] = bnd_char
+                    si += 1
+                    slugs[si] = ""
+                    metas[si] = ""
+                    bnds[si] = ""
                 else:
-                    ps = slug.split("[")
-                    meta = []
-                    if len(ps) > 1:
-                        ps2 = ps[1].split("]")
-                        meta = ps2[0]
-                    all_meta = [*meta, *line_meta]
-                    line_result.insert(0, [ps[0]+" ", all_meta])
-            line_result[-1][0] = line_result[-1][0][:-1]
-            parsed_lines.append(line_result)
+                    slugs[si] += line[i]
+                i += 1
+            
+            if not list(slugs.values())[-1]:
+                line_meta = list(metas.values())[-1]
+                bnds[si-1] = ""
+            else:
+                line_meta = []
+            
+            alt_line_result = []
+            for i, slug in slugs.items():
+                b = bnds[i]
+                if b in self.invisible_boundary_chars:
+                    b = ""
+                alt_line_result.append([
+                    slug + b,
+                    [*[metas[i]], *line_meta]
+                ])
+            alt_parsed_lines.append(alt_line_result)
+
+        parsed_lines = alt_parsed_lines
 
         lines = []
         groupings = []
@@ -41,7 +106,7 @@ class RichText(DATPenSet):
             texts = []
             for txt, styles in line:
                 ftxt, style = render_text_fn(txt, styles)
-                texts.append([ftxt, idx, style])
+                texts.append([ftxt, idx, style, styles])
 
             grouped_texts = []
             idx = 0
@@ -67,7 +132,10 @@ class RichText(DATPenSet):
 
             for gt in grouped_texts:
                 full_text = "".join([t[0] for t in gt])
-                slugs.append(StyledString(full_text, gt[0][2]))
+                styles = gt[0][3]
+                style = gt[0][2].mod()
+                style.data = dict(style_names=styles)
+                slugs.append(StyledString(full_text, style))
             groupings.append(grouped_texts)
             lines.append(slugs)
 
@@ -87,3 +155,60 @@ class RichText(DATPenSet):
             for slug in line:
                 slug.reversePens()
         return pens
+    
+    def filter_style(self, style):
+        return self.pfilter(lambda i, p: style in p.data.get("style_names", []))
+
+
+if highlight:
+
+    class ColdtypeFormatter(Formatter):
+        def format(self, tokensource, outfile):
+            for ttype, token in tokensource:
+                if ttype != Token.Text:
+                    tt = re.sub(r"^Token\.", "", str(ttype))
+                    outfile.write(f"¬{token}≤{tt}≥")
+                else:
+                    outfile.write(token)
+    
+
+    class HTMLRichText(RichText):
+        def __init__(self,
+            text,
+            render_text_fn:Callable[[str, List[str]], Tuple[str, Style]],
+            rect,
+            fit=None,
+            graf_style=GrafStyle(leading=20)):
+
+            if isinstance(text, PurePath):
+                text = text.read_text()
+
+            txt = highlight(text, PythonLexer(), ColdtypeFormatter())
+            super().__init__(
+                txt, render_text_fn, rect,
+                fit=fit, graf_style=graf_style,
+                tag_delimiters=["≤", "≥"],
+                visible_boundaries=[],
+                invisible_boundaries=["¬"])
+        
+        def DefaultStyles(r, b, bi):
+            """regular, bold, bold-italic"""
+            return {
+                "Keyword": (bi, hsl(0.9, s=0.6)),
+                "Keyword.Namespace": (b, hsl(0.2, s=1)),
+                "Name.Namespace": (b, hsl(0.55, s=1)),
+                "Name.Builtin": (bi, hsl(0.05, s=1)),
+                "Name.Function": (bi, hsl(0.65, s=1, l=0.7)),
+                "Name.Decorator": (bi, hsl(0.2, 1)),
+                "Name": (b, hsl(0.45, 0.7)),
+                "Operator": (b, hsl(0.6, s=1)),
+                "Operator.Word": (b, hsl(0.9)),
+                "Punctuation": (b, hsl(0.8)),
+                "Literal.String.Double": (r, hsl(0.15, s=0.7)),
+                "Literal.String.Affix": (bi, hsl(0.85, s=1)),
+                "Literal.String.Interpol": (b, hsl(0.05, s=1)),
+                "Literal.String.Doc": (r, hsl(0.6, l=0.4)),
+                "Literal.Number.Float": (r, hsl(0.9, s=0.7)),
+                "Literal.Number.Integer": (r, hsl(0.45)),
+                "Comment.Single": (r, (0.3))
+            }

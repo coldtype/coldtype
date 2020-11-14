@@ -67,6 +67,7 @@ class renderable():
         rect=(1080, 1080),
         bg="whitesmoke",
         fmt="png",
+        name=None,
         rasterizer=None,
         prefix=None,
         dst=None,
@@ -100,6 +101,7 @@ class renderable():
                 else:
                     raise Exception("Can only watch strings, Paths, and Fonts")
 
+        self.name = name
         self.rasterizer = rasterizer
         self.self_rasterizing = False
         self.layers = layers
@@ -120,6 +122,8 @@ class renderable():
     
     def __call__(self, func):
         self.func = func
+        if not self.name:
+            self.name = self.func.__name__
         return self
     
     def folder(self, filepath):
@@ -129,7 +133,7 @@ class renderable():
         return ""
     
     def pass_suffix(self):
-        return self.func.__name__
+        return self.name
     
     def passes(self, action, layers, indices=[]):
         return [RenderPass(self, self.pass_suffix(), [self.rect])]
@@ -320,11 +324,12 @@ class animation(renderable, Timeable):
             self.timeline = Timeline(30)
     
     def __call__(self, func):
-        self.prefix = func.__name__
-        return super().__call__(func)
+        res = super().__call__(func)
+        self.prefix = self.name
+        return res
     
     def folder(self, filepath):
-        return filepath.stem + "/" + self.func.__name__ # TODO necessary?
+        return filepath.stem + "/" + self.name # TODO necessary?
     
     def layer_folder(self, filepath, layer):
         return layer
@@ -383,7 +388,7 @@ class animation(renderable, Timeable):
         ar = self.rect
         gy = math.ceil(duration / gx)
         
-        @renderable(rect=(ar.w*gx, ar.h*gy), bg=self.bg)
+        @renderable(rect=(ar.w*gx, ar.h*gy), bg=self.bg, name=self.name + "_contactsheet")
         def contactsheet(r:Rect):
             _pngs = list(sorted(self.output_folder.glob("*.png")))
             if sliced:
@@ -398,7 +403,6 @@ class animation(renderable, Timeable):
                     dps += DATPen().rect(g).f(None).img(pngs[idx], g, pattern=False)
             return dps
         
-        contactsheet.func.__name__ = self.func.__name__ + "_contactsheet"
         return contactsheet
 
 

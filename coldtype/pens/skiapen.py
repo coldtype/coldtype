@@ -87,7 +87,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 self.paint.setColor(color.skia())
     
     def gradient(self, gradient):
-        self.paint.setShader(skia.GradientShader.MakeLinear([s[1].xy() for s in gradient.stops], [s[0].skia() for s in gradient.stops]))
+        self.paint.setShader(skia.GradientShader.MakeLinear([s[1].flip(self.rect).xy() for s in gradient.stops], [s[0].skia() for s in gradient.stops]))
     
     def image(self, src=None, opacity=1, rect=None, pattern=True):
         if isinstance(src, skia.Image):
