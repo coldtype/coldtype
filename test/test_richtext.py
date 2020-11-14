@@ -14,7 +14,7 @@ def render_txt(txt, styles):
     elif "h" in styles:
         return txt.upper(), Style(choc, 150, bs=-20, fill=0)
     elif "b" in styles:
-        return txt.upper(), Style(reiner, 90, bs=0, fill=hsl(0.9))
+        return txt.upper(), Style(reiner, 90, bs=0, fill=hsl(0.1, s=0.8))
     return txt, Style(blanco, 64, fill=0)
     
 txt1 = """
@@ -50,7 +50,8 @@ def test_rich_custom(r):
         .align(r, tv=1))
     
     for p in pens.filter_style("h"):
-        p.f(Gradient.V(p.bounds(), hsl(0.3), hsl(0.9)))
+        (p.f(Gradient.V(p.bounds(), hsl(0.9, s=1), hsl(0.5, s=1)))
+            .s(0).sw(2))
     
     for p in pens.filter_style("i"):
         p.f(hsl(0.8, l=0.8))
@@ -59,7 +60,9 @@ def test_rich_custom(r):
                 continue
             p.insert(0, DATPen().rect(c.bounds()).f(hsl(0.7, a=0.75)))
             p.insert(0, DATPen().rect(c.getFrame()).f(hsl(0.05, s=0.7, a=0.7)))
-        #p.rotate(180, point=p.frame)
+    
+    for p in pens.filter_style("b"):
+        p.rotate(180).translate(-15, 0)
     
     #pens.print_tree()
     return pens
