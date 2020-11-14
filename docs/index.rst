@@ -1,9 +1,9 @@
 coldtype
 ====================================
 
-`Coldtype` is a cross-platform library for programming and animating high-quality display typography with Python.
+`Coldtype` is a cross-platform library for programming and animating display typography with Python.
 
-Put another way: do you want to make graphics and animations with code? This is a good & idiosyncratic way to do that.
+Put another way: do you want to make typographic graphics and animations with code? This is a good & idiosyncratic way to do that.
 
 🌋 **Disclaimer**: coldtype is alpha-quality software 🌋
 
@@ -26,7 +26,7 @@ Here’s an example:
 .. image:: /_static/renders/index_coldtype.png
    :width: 350
 
-If you’re familiar with other graphics programming libraries, that code snippet might seem a little odd, given that it’s **canvas-less** & **abbreviated**, with a idiomatic emphasis on **method-chaining** & **hierarchical data** (which can make programming **animations** a lot easier and faster). `More on those bold words on the about page.`
+If you’re familiar with other graphics programming libraries, that code snippet might seem a little odd, given that it’s **canvas-less** & highly **abbreviated**, with a idiomatic emphasis on **method-chaining** & **hierarchical data** (which can make programming **animations** a lot easier and faster). `More on those bold words on the about page.`
 
 Table of Contents
 -----------------
@@ -68,6 +68,7 @@ Here are some more examples:
    808.md <https://github.com/goodhertz/coldtype/tree/main/examples/animations/808.md>
    banner.py <https://github.com/goodhertz/coldtype/tree/main/examples/animations/banner.py>
    digestive_wind.py <https://github.com/goodhertz/coldtype/tree/main/examples/animations/digestive_wind.py>
+   metaprogramming.py <https://github.com/goodhertz/coldtype/tree/main/examples/animations/metaprogramming.py>
    stacked_and_justified.py <https://github.com/goodhertz/coldtype/tree/main/examples/animations/stacked_and_justified.py>
    vulfbach.py <https://github.com/goodhertz/coldtype/tree/main/examples/animations/vulfbach.py>
 

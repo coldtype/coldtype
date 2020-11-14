@@ -134,9 +134,7 @@ class Renderer():
 
             show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS),
 
-            disable_syntax_mods=parser.add_argument("-dsm", "--disable-syntax-mods", action="store_true", default=False, help="Coldtype has some optional syntax modifications that require copying the source to a new tempfile before running — would you like to skip this to preserve __file__ in your sources?"),
-            
-            docs=parser.add_argument("-d", "--docs", action="store_true", default=False, help=argparse.SUPPRESS)),
+            disable_syntax_mods=parser.add_argument("-dsm", "--disable-syntax-mods", action="store_true", default=False, help="Coldtype has some optional syntax modifications that require copying the source to a new tempfile before running — would you like to skip this to preserve __file__ in your sources?")),
         return pargs, parser
     
     def read_configs(self):
@@ -366,48 +364,7 @@ class Renderer():
         for k, v in self.program.items():
             if k == "release":
                 candidate = v
-        
-        if self.args.docs:
-            def build_docs(passes):
-                from shutil import copy2
-                imgs = {}
-                for pss in passes:
-                    img = None
-                    if isinstance(pss.render, animation):
-                        gif = Path(str(pss.render.output_folder) + "_animation.gif")
-                        if gif.exists() and gif not in imgs:
-                            img = gif
-                            imgs[gif] = 1
-                    else:
-                        img = pss.output_path
-                    
-                    if not img:
-                        continue
-                    try:
-                        dst = Path("docs/_static/renders")
-                        dst.mkdir(parents=True, exist_ok=True)
-                        copy2(img, dst / img.name)
-                        print("COPYING", img.name)
-                    except FileNotFoundError:
-                        print("FileNotFound", img)
-                owd = os.getcwd()
-                try:
-                    os.chdir("docs")
-                    os.system("make clean")
-                    os.system("make html")
-                finally:
-                    os.chdir(owd)
-            
-            if candidate:
-                def wrapped(passes):
-                    candidate(passes)
-                    build_docs(passes)
-                return wrapped
-            else:
-                return build_docs
-        
         return candidate
-                
     
     def renderables(self, trigger):
         _rs = []

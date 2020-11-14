@@ -8,7 +8,7 @@ def test_exception(r, canvas):
 def test_draw(r, canvas):
     canvas.drawString(
         "hello",
-        0,
-        r.h,
-        skia.Font(skia.Typeface("Times"), 150),
+        10,
+        r.h-10,
+        skia.Font(skia.Typeface("Times New Roman"), 150),
         skia.Paint(AntiAlias=True, Color=hsl(0.9, s=1).skia()))
