@@ -81,6 +81,8 @@ class RichText(DATPenSet):
             
             if not list(slugs.values())[-1]:
                 line_meta = list(metas.values())[-1]
+                last_key = list(slugs.keys())[-1]
+                del slugs[last_key]
                 bnds[si-1] = ""
             else:
                 line_meta = []
@@ -90,16 +92,21 @@ class RichText(DATPenSet):
                 b = bnds[i]
                 if b in self.invisible_boundary_chars:
                     b = ""
-                alt_line_result.append([
-                    slug + b,
-                    [*[metas[i]], *line_meta]
-                ])
+                styles = []
+                if metas[i]:
+                    styles.append(metas[i])
+                if line_meta:
+                    styles.append(line_meta)
+                alt_line_result.append([slug + b, styles])
             alt_parsed_lines.append(alt_line_result)
 
-        parsed_lines = alt_parsed_lines
+        parsed_lines = [pl for pl in alt_parsed_lines if pl]
 
         lines = []
         groupings = []
+
+        #from pprint import pprint
+        #pprint(parsed_lines)
 
         for idx, line in enumerate(parsed_lines):
             slugs = []

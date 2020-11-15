@@ -75,6 +75,7 @@ def rich(txt:str):
 """
 
 def render_code(txt, styles):
+    print(txt, styles)
     if "Keyword" in styles:
         return txt, Style(choc, 50, fill=hsl(0.9, s=1), bs=2)
     if "Literal.String.Affix" in styles:
@@ -96,5 +97,28 @@ def render_code(txt, styles):
 
 @test()
 def test_rich_code(r):
-    rt = HTMLRichText(code, render_code, r.inset(100))
-    return rt.align(r, tv=1).scale(2)
+    return (HTMLRichText(code, render_code, r.inset(100),
+        graf_style=GrafStyle(leading=12))
+        .align(r, tv=1)
+        .scale(2))
+
+txt3 = """Header [h]
+Text text text
+last line [i]"""
+
+def render_txt2(txt, styles):
+    print(txt, styles)
+    blanc = "~/Type/fonts/fonts/_text/Blanco-"
+    if "i" in styles:
+        return txt, Style(blanc + "Italic.otf", 32)
+    elif "h" in styles:
+        return txt, Style(blanc + "Bold.otf", 72)
+    return txt, Style(blanc + "Regular.otf", 42)
+
+@test()
+def test_plainish(r):
+    return (RichText(txt3, render_txt2, r)
+        .xa()
+        .align(r)
+        .scale(2)
+        .f(0))
