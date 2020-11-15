@@ -29,11 +29,15 @@ class RichText(DATPenSet):
         rect,
         fit=None,
         graf_style=GrafStyle(leading=20),
+        strip_lines=False,
         tag_delimiters=["[", "]"],
         visible_boundaries=[" "],
         invisible_boundaries=[]):
-        "WIP"
+        """WIP"""
+        
         super().__init__()
+
+        self.strip_lines = strip_lines
         self.tag_delimiters = tag_delimiters
         self.visible_boundary_chars = visible_boundaries
         self.invisible_boundary_chars = invisible_boundaries
@@ -48,6 +52,8 @@ class RichText(DATPenSet):
         alt_parsed_lines = []
 
         for line in txt.splitlines():
+            if self.strip_lines:
+                line = line.strip()
             line_meta = []
             line_result = []
 
@@ -219,3 +225,13 @@ if highlight:
                 "Literal.Number.Integer": (r, hsl(0.45)),
                 "Comment.Single": (r, (0.3))
             }
+
+class NLTText(RichText):
+    def __init__(self,
+        text,
+        render_text_fn:Callable[[str, List[str]], Tuple[str, Style]],
+        rect,
+        fit=None,
+        graf_style=GrafStyle(leading=20),
+        strip_lines=False):
+        super().__init__(text, render_text_fn, rect)

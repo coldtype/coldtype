@@ -1,5 +1,5 @@
 from coldtype.test import *
-from coldtype.text.richtext import HTMLRichText
+from coldtype.text.richtext import HTMLRichText, NLTText
 
 
 mistral = Font.Cacheable("~/Type/fonts/fonts/_script/MistralD.otf")
@@ -102,9 +102,11 @@ def test_rich_code(r):
         .align(r, tv=1)
         .scale(2))
 
-txt3 = """Header [h]
-Text text text
-last line [i]"""
+txt3 = """
+    Header [h]
+    Text text text
+    last line [i]
+"""
 
 def render_txt2(txt, styles):
     print(txt, styles)
@@ -117,8 +119,24 @@ def render_txt2(txt, styles):
 
 @test()
 def test_plainish(r):
-    return (RichText(txt3, render_txt2, r)
+    return (RichText(txt3, render_txt2, r, strip_lines=1)
         .xa()
         .align(r)
         .scale(2)
         .f(0))
+
+nlt_txt = """
+Coldtype is a programming library
+for doing high-quality and bizarre
+typography.
+"""
+
+def render_nlt(txt, styles):
+    return txt, Style(blanco, 42)
+
+@test(solo=1)
+def test_nlt(r):
+    from textblob import TextBlob
+    tb = TextBlob(nlt_txt)
+    #nlt = NLTText(nlt_txt, render_nlt, r)
+    print(tb.tags)
