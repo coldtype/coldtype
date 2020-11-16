@@ -639,16 +639,21 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     nlt = nonlinear_transform
     
-    def bend(self, curve):
+    def bend(self, curve, tangent=True):
         cc = CurveCutter(curve)
         ccl = cc.length
-        dpf = self.getFrame()
         dpl = self.bounds().point("SE").x
         xf = ccl/dpl
         def bender(x, y):
-            p, tangent = cc.subsegmentPoint(end=x*xf)
+            p, tan = cc.subsegmentPoint(end=x*xf)
             px, py = p
-            return (px, y+py-dpf.h*0.5)
+            if tangent:
+                a = math.sin(math.radians(180+tan)) * y
+                b = math.cos(math.radians(180+tan)) * y
+                return (px+a, py+b)
+                #return (px, y+py)
+            else:
+                return (px, y+py)
         return self.nonlinear_transform(bender)
     
     def transform(self, transform, transformFrame=True):
@@ -1711,7 +1716,7 @@ class DATPenSet(DATPenLikeObject):
                 p.translate(t*idx, 0)
         return self
         
-    def distributeOnPath(self, path, offset=0, cc=None, notfound=None):
+    def distribute_on_path(self, path, offset=0, cc=None, notfound=None):
         if cc:
             cutter = cc
         else:
@@ -1742,7 +1747,8 @@ class DATPenSet(DATPenLikeObject):
             self.pens = self.pens[0:limit]
         return self
     
-    distribute_on_path = distributeOnPath
+    # deprecated
+    distributeOnPath = distribute_on_path
     
     def implode(self):
         # TODO preserve frame from some of this?
