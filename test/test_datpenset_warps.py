@@ -44,8 +44,8 @@ def test_text_warped_to_curve(r, rs):
 
 @test((1000, 1000), solo=1, rstate=1, watch_restarts=["coldtype/pens/datpen.py"])
 def test_text_warped_to_vertical_curve(r, rs):
-    text:DATPenSet = (StyledString("TYPE",
-        Style(co, 600, tu=-10, r=1, ro=1, wdth=0.25))
+    text:DATPenSet = (StyledString("COLDTYPE",
+        Style(co, 600, tu=-10, r=1, ro=1, wdth=0))
         .pens()
         .f(None)
         .s(0)
@@ -66,13 +66,14 @@ def test_text_warped_to_vertical_curve(r, rs):
             .f(None)
             .s(hsl(0.9))
             .sw(3)),
-        text.pen().s(0.7),
+        #text.pen().s(0.7),
         (text.pen()
             .flatten(10)
             .translate(0, 0)
-            .bend3(sine, tangent=0, offset=[0.25, 0.5]))])
+            .bend3(sine, tangent=0, offset=[-2, 3]))
+            .f(hsl(0.9, a=0.3))])
         .scale(0.5, center=r.point("C"))
-        .translate(-200, 0))
+        .translate(50, 200))
 
 @test((1000, 1000))
 def test_text_on_a_curve_fit(r):
