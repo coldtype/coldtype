@@ -1378,9 +1378,9 @@ class Renderer():
                     for render in self.renderables(Action.Resave):
                         for wr in render.watch_restarts:
                             if str(path) == str(wr):
-                                #importlib.reload(coldtype)
-                                #importlib.reload(coldtype.pens.datpen)
-                                self.action_waiting = Action.RestartRenderer
+                                importlib.reload(coldtype)
+                                importlib.reload(coldtype.pens.datpen)
+                                #self.action_waiting = Action.RestartRenderer
                 except AttributeError:
                     pass
             
