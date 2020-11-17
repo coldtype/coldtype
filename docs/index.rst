@@ -28,6 +28,19 @@ Here’s an example:
 
 If you’re familiar with other graphics programming libraries, that code snippet might seem a little odd, given that it’s **canvas-less** & highly **abbreviated**, with a idiomatic emphasis on **method-chaining** & **hierarchical data** (which can make programming **animations** a lot easier and faster). `More on those bold words on the about page.`
 
+A more complex example
+----------------------
+
+Here’s a somewhat complex animation — made with a combination of coldtype and After Effects — demonstrating what’s possible with not-so-much code:
+
+.. raw:: html
+
+   <div id="video" style="max-width:500px;margin-bottom:20px"><div style="padding:100% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/479376752?loop=1&title=0&byline=0&portrait=0" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div><script src="https://player.vimeo.com/api/player.js"></script></div>
+
+
+The code for that video is available here: https://github.com/goodhertz/coldtype/tree/main/examples/animations/808.md
+
+
 Table of Contents
 -----------------
 
@@ -46,20 +59,6 @@ Table of Contents
 
    github <https://github.com/goodhertz/coldtype>
    goodhertz.com <https://goodhertz.com>
-
-An example
-----------
-
-Here’s a somewhat complex animation — made with a combination of coldtype and After Effects — demonstrating what’s possible with not-so-much code:
-
-.. raw:: html
-
-   <div id="video" style="max-width:500px;margin-bottom:20px"><div style="padding:100% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/408581790?loop=1&title=0&byline=0&portrait=0" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div><script src="https://player.vimeo.com/api/player.js"></script></div>
-
-
-The code for that video is available here: https://github.com/goodhertz/coldtype/tree/main/examples/animations/808.md
-
-Here are some more examples:
 
 .. toctree::
    :maxdepth: 2
