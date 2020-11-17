@@ -4,12 +4,15 @@ from coldtype.animation import Timeable
 class Timeline(Timeable):
     __name__ = "Generic"
 
-    def __init__(self, duration, fps=30, storyboard=[0], tracks=[]):
+    def __init__(self, duration, fps=30, storyboard=None, tracks=None):
         self.fps = fps
         self.start = 0
         self.end = duration
-        self.tracks = tracks
-        self.storyboard = storyboard
+        self.tracks = tracks or []
+        if not storyboard:
+            self.storyboard = [0]
+        else:
+            self.storyboard = storyboard
         if len(self.storyboard) == 0:
             self.storyboard.append(0)
         self.storyboard.sort()

@@ -1082,7 +1082,7 @@ class Renderer():
                     for idx, fidx in enumerate(render.storyboard):
                         nidx = (fidx + increment) % render.duration
                         render.storyboard[idx] = nidx
-                    self.render(Action.PreviewStoryboard)
+            self.render(Action.PreviewStoryboard)
             return True
         elif action == Action.RenderedPlay:
             if self.playing_preloaded_frame >= 0:
