@@ -204,7 +204,6 @@ class Renderer():
         self.running_renderers = []
         self.completed_renderers = []
 
-        self.observers = []
         self.action_waiting = None
         self.requests_waiting = []
         self.waiting_to_render = []
@@ -1373,13 +1372,27 @@ class Renderer():
                 except json.JSONDecodeError:
                     print("Error decoding watched json", path)
                     return
+            
+            if path.suffix == ".py":
+                try:
+                    for render in self.renderables(Action.Resave):
+                        for wr in render.watch_restarts:
+                            if str(path) == str(wr):
+                                #importlib.reload(coldtype)
+                                #importlib.reload(coldtype.pens.datpen)
+                                self.action_waiting = Action.RestartRenderer
+                except AttributeError:
+                    pass
+            
             idx = self.watchee_paths().index(path)
             print(f">>> resave: {Path(event.src_path).relative_to(Path.cwd())}")
+            
             if self.args.memory and process:
                 memory = bytesto(process.memory_info().rss)
                 diff = memory - self._last_memory
                 self._last_memory = memory
                 print(">>> pid:{:d}/new:{:04.2f}MB/total:{:4.2f}".format(os.getpid(), diff, memory))
+            
             self.waiting_to_render = [[Action.Resave, self.watchees[idx][0]]]
 
     def watch_file_changes(self):

@@ -36,7 +36,7 @@ import coldtype.pens.drawbot_utils as dbu
 
 
 from coldtype.geometry import Rect, Edge, Point, txt_to_edge
-from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT
+from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
 from coldtype.color import Gradient, normalize_color, Color
 from coldtype.pens.misc import ExplodingPen, SmoothPointsPen, BooleanOp, calculate_pathop
 
@@ -673,6 +673,30 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 by = math.cos(math.radians(90-tan)) * y
                 return _c[0]+ax, (y+_c[1])+by
             return _c[0], y+_c[1]
+        return self.nonlinear_transform(bender)
+    
+    def bend3(self, curve, tangent=False, offset=(0, 1)):
+        cc = CurveCutter(curve)
+        ccl = cc.length
+        a = curve.value[0][-1][0]
+        b, c, d = curve.value[-1][-1]
+        mnx = curve.bounds().point("SW").x
+        dpl = self.bounds().point("NW").y
+        bh = self.bounds().h
+        ccl = calcCubicArcLength(a, b, c, d)
+        yf = bh/ccl
+        #print(">>>", yf, ccl, bh)
+        
+        def bender(x, y):
+            c1, c2 = splitCubicAtT(a, b, c, d, offset[0] + (y/bh)*offset[1])
+            _, _a, _b, _c = c1
+            if tangent:
+                tan = math.degrees(math.atan2(_c[1] - _b[1], _c[0] - _b[0]) + math.pi*.5)
+                ax = math.sin(math.radians(tan)) * y
+                by = math.cos(math.radians(tan)) * y
+                return x+_c[0]+ax, (y+_c[1])+by
+            #return x, y
+            return x+_c[0], _c[1]#/2
         return self.nonlinear_transform(bender)
     
     def transform(self, transform, transformFrame=True):

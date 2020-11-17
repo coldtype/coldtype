@@ -1,4 +1,5 @@
 from coldtype.test import *
+from importlib import reload
 
 @test()
 def test_text_on_a_curve(r):
@@ -11,30 +12,6 @@ def test_text_on_a_curve(r):
             .reverse()
             .repeat())
         .understroke(s=0, sw=5))
-
-def bend3(self, curve, tangent=True):
-    from coldtype.beziers import CurveCutter, splitCubicAtT
-    cc = CurveCutter(curve)
-    ccl = cc.length
-    mnx = curve.bounds().point("SW").x
-    dpl = self.bounds().point("SE").x
-    bh = self.bounds().h
-    xf = ccl/dpl
-    a = curve.value[0][-1][0]
-    b, c, d = curve.value[-1][-1]
-    def bender(x, y):
-        c1, c2 = splitCubicAtT(a, b, c, d, y/bh)
-        _, _a, _b, _c = c1
-        if tangent:
-            tan = math.degrees(math.atan2(_c[1] - _b[1], _c[0] - _b[0]) + math.pi*.5)
-            ax = math.sin(math.radians(tan)) * y
-            by = math.cos(math.radians(tan)) * y
-            return x+_c[0]+ax, (y+_c[1])+by
-        #return x, y
-        return x+_c[0], y+_c[1]/2
-    return self.nonlinear_transform(bender)
-
-DATPen.bend3 = bend3
 
 @test(rstate=1)
 def test_text_warped_to_curve(r, rs):
@@ -65,16 +42,18 @@ def test_text_warped_to_curve(r, rs):
             .bend2(sine, tangent=1)
             .scale(0.5, center=r.point("C")))]
 
-@test((1000, 1000), solo=1, rstate=1)
+@test((1000, 1000), solo=1, rstate=1, watch_restarts=["coldtype/pens/datpen.py"])
 def test_text_warped_to_vertical_curve(r, rs):
-    text:DATPenSet = (StyledString("COLDTYPE",
+    text:DATPenSet = (StyledString("TYPE",
         Style(co, 600, tu=-10, r=1, ro=1, wdth=0.25))
         .pens()
         .f(None)
         .s(0)
         .sw(2))
+    
+    #text = DATPen().rect(Rect(0, 0, 100, 500)).f(None).s(0)
 
-    r = r.inset(0, 0)
+    r = r.take(0.5, "mny")
     sine = (DATPen()
         .moveTo((r.x, r.y))
         .curveTo(
@@ -87,12 +66,12 @@ def test_text_warped_to_vertical_curve(r, rs):
             .f(None)
             .s(hsl(0.9))
             .sw(3)),
-        ßhide(text.pen().s(0.7)),
+        text.pen().s(0.7),
         (text.pen()
-            .flatten(5)
+            .flatten(10)
             .translate(0, 0)
-            .bend3(sine, tangent=0))])
-        .scale(0.35, center=r.point("C"))
+            .bend3(sine, tangent=0, offset=[0.25, 0.5]))])
+        .scale(0.5, center=r.point("C"))
         .translate(-200, 0))
 
 @test((1000, 1000))

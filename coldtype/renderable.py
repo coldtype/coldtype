@@ -74,6 +74,7 @@ class renderable():
         custom_folder=None,
         postfn=None,
         watch=[],
+        watch_restarts=[],
         layers=[],
         solo=False,
         rstate=False,
@@ -93,13 +94,11 @@ class renderable():
 
         self.watch = []
         for w in watch:
-            try:
-                self.watch.append(Path(w).expanduser().resolve())
-            except TypeError:
-                if isinstance(w, Font):
-                    self.watch.append(w)
-                else:
-                    raise Exception("Can only watch strings, Paths, and Fonts")
+            self.add_watchee(w)
+
+        self.watch_restarts = []
+        for w in watch_restarts:
+            self.watch_restarts.append(self.add_watchee(w))
 
         self.name = name
         self.rasterizer = rasterizer
@@ -119,6 +118,20 @@ class renderable():
                 self.rasterizer = "pickle"
             else:
                 self.rasterizer = "skia"
+    
+    def add_watchee(self, w):
+        try:
+            pw = Path(w).expanduser().resolve()
+            if not pw.exists():
+                print(w, "<<< does not exist (cannot be watched)")
+            else:
+                self.watch.append(pw)
+                return pw
+        except TypeError:
+            if isinstance(w, Font):
+                self.watch.append(w)
+            else:
+                raise Exception("Can only watch path strings, Paths, and Fonts")
     
     def __call__(self, func):
         self.func = func
