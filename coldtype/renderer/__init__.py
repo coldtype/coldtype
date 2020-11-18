@@ -440,7 +440,7 @@ class Renderer():
         _layers = self.layers if len(self.layers) > 0 else render.layers
         
         rps = []
-        for rp in render.passes(trigger, _layers, indices):
+        for rp in render.passes(trigger, _layers, self.state, indices):
             output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
 
             if rp.single_layer and rp.single_layer != "__default__":
@@ -966,6 +966,9 @@ class Renderer():
                 self.action_waiting = Action.PreviewStoryboardPrev
             elif key == glfw.KEY_RIGHT:
                 self.action_waiting = Action.PreviewStoryboardNext
+            elif key == glfw.KEY_HOME:
+                self.state.frame_index_offset = 0
+                self.action_waiting = Action.PreviewStoryboard
 
         if action != glfw.PRESS:
             return
@@ -1076,14 +1079,11 @@ class Renderer():
                     self.playing = 1
                 else:
                     self.playing = 0
-            increment = -1 if action == Action.PreviewStoryboardPrev else 1
-            for render in self.last_renders:
-                if hasattr(render, "storyboard"):
-                    for idx, fidx in enumerate(render.storyboard):
-                        nidx = (fidx + increment) % render.duration
-                        render.storyboard[idx] = nidx
+            if action == Action.PreviewStoryboardPrev:
+                self.state.frame_index_offset -= 1
+            elif action == Action.PreviewStoryboardNext:
+                self.state.frame_index_offset += 1
             self.render(Action.PreviewStoryboard)
-            return True
         elif action == Action.RenderedPlay:
             if self.playing_preloaded_frame >= 0:
                 self.playing_preloaded_frame = -1

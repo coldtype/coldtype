@@ -150,7 +150,7 @@ class renderable():
     def pass_suffix(self):
         return self.name
     
-    def passes(self, action, layers, indices=[]):
+    def passes(self, action, layers, renderer_state, indices=[]):
         return [RenderPass(self, self.pass_suffix(), [self.rect])]
 
     def package(self, filepath, output_folder):
@@ -248,7 +248,7 @@ class glyph(renderable):
         self.glyphName = glyphName
         super().__init__(rect=r, **kwargs)
     
-    def passes(self, action, layers, indices=[]):
+    def passes(self, action, layers, renderer_state, indices=[]):
         return [RenderPass(self, self.glyphName, [])]
 
 
@@ -266,7 +266,7 @@ class fontpreview(renderable):
         
         self.matches.sort()
     
-    def passes(self, action, layers, indices=[]):
+    def passes(self, action, layers, renderer_state, indices=[]):
         return [RenderPass(self, "{:s}".format(m.name), [self.rect, m]) for m in self.matches]
 
 
@@ -280,7 +280,7 @@ class iconset(renderable):
     def folder(self, filepath):
         return f"{filepath.stem}_source"
     
-    def passes(self, action, layers, indices=[]): # TODO could use the indices here
+    def passes(self, action, layers, renderer_state, indices=[]): # TODO could use the indices here
         sizes = self.sizes
         if action == Action.RenderAll:
             sizes = self.valid_sizes
@@ -352,8 +352,10 @@ class animation(renderable, Timeable):
     def all_frames(self):
         return list(range(0, self.duration))
     
-    def active_frames(self, action, layers, indices):
-        frames = self.storyboard
+    def active_frames(self, action, layers, renderer_state, indices):
+        frames = self.storyboard.copy()
+        for fidx, frame in enumerate(frames):
+            frames[fidx] = (frame + renderer_state.frame_index_offset) % self.duration
         if action == Action.RenderAll:
             frames = self.all_frames()
         elif action in [Action.PreviewIndices, Action.RenderIndices]:
@@ -374,8 +376,8 @@ class animation(renderable, Timeable):
     def pass_suffix(self, index):
         return "{:04d}".format(index)
     
-    def passes(self, action, layers, indices=[]):
-        frames = self.active_frames(action, layers, indices)
+    def passes(self, action, layers, renderer_state, indices=[]):
+        frames = self.active_frames(action, layers, renderer_state, indices)
         return [RenderPass(self, self.pass_suffix(i), [Frame(i, self, layers)]) for i in frames]
     
     def package(self, filepath, output_folder):
@@ -422,7 +424,7 @@ class animation(renderable, Timeable):
 
 
 class drawbot_animation(drawbot_script, animation):
-    def passes(self, action, layers, indices=[]):
+    def passes(self, action, layers, renderer_state, indices=[]):
         if action in [
             Action.RenderAll,
             Action.RenderIndices,
