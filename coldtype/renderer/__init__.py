@@ -24,7 +24,6 @@ from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.state import RendererState, Keylayer
 from coldtype.renderer.utils import *
-from coldtype.abbr.inst import Inst
 
 _random = Random()
 
@@ -509,17 +508,6 @@ class Renderer():
                         if not result:
                             print(">>> No result")
                             result = DATPen().rect(render.rect).f(None)
-
-                        # is it a lazy result?
-                        if isinstance(result, Inst):
-                            result = result.realize()
-                        
-                        try:
-                            for idx, p in enumerate(result):
-                                if isinstance(p, Inst):
-                                    result[idx] = p.realize()
-                        except:
-                            pass
 
                         if previewing:
                             if render.direct_draw:

@@ -429,7 +429,7 @@ class drawbot_animation(drawbot_script, animation):
             Action.RenderAll,
             Action.RenderIndices,
             Action.RenderWorkarea]:
-            frames = super().active_frames(action, layers, indices)
+            frames = super().active_frames(action, layers, renderer_state, indices)
             passes = []
             if len(layers) > 0:
                 for layer in layers:
@@ -444,4 +444,4 @@ class drawbot_animation(drawbot_script, animation):
                     passes.append(p)
             return passes
         else:
-            return super().passes(action, layers, indices)
+            return super().passes(action, layers, renderer_state, indices)
