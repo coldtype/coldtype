@@ -1639,6 +1639,10 @@ class DATPenSet(DATPenLikeObject):
                 to_keep.append(p)
         return to_keep
     
+    def index(self, idx, fn):
+        fn(self[idx])
+        return self
+    
     def glyphs_named(self, glyph_name):
         """Pluck glyphs named `glyph_name`"""
         #return self.pfilter(lambda i, p: p.glyphName == glyph_name).pmap(lambda idx, p: mod_fn(p))

@@ -80,6 +80,7 @@ class renderable():
         rstate=False,
         preview_only=False,
         direct_draw=False,
+        clip=False,
         viewBox=True):
         """Base configuration for a renderable function"""
 
@@ -108,6 +109,7 @@ class renderable():
         self.solo = solo
         self.preview_only = preview_only
         self.rstate = rstate
+        self.clip = clip
         self.viewBox = viewBox
         self.direct_draw = direct_draw
 
@@ -332,7 +334,7 @@ class animation(renderable, Timeable):
             if self.storyboard != [0] and timeline.storyboard == [0]:
                 pass
             else:
-                self.storyboard = timeline.storyboard
+                self.storyboard = timeline.storyboard.copy()
         else:
             self.timeline = Timeline(30)
     

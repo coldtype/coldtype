@@ -1268,7 +1268,10 @@ class Renderer():
             lh = -1
             h = 0
             for render, result, rp in self.previews_waiting_to_paint:
-                sr = render.rect.scale(dscale, "mnx", "mny").round()
+                if hasattr(render, "show_error"):
+                    sr = render.rect
+                else:
+                    sr = render.rect.scale(dscale, "mnx", "mny").round()
                 w = max(sr.w, w)
                 rects.append(Rect(0, lh+1, sr.w, sr.h))
                 lh += sr.h + 1
@@ -1307,7 +1310,7 @@ class Renderer():
                 canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 1))
 
                 for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
-                    rect = rects[idx].offset((w-rects[idx].w)/2, 0)
+                    rect = rects[idx].offset((w-rects[idx].w)/2, 0).round()
                     self.draw_preview(dscale, canvas, rect, (render, result, rp))
             
                 if self.state.keylayer != Keylayer.Default:
@@ -1336,7 +1339,10 @@ class Renderer():
         canvas.translate(0, self.window_scrolly)
         canvas.translate(rect.x, rect.y)
         canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
-        canvas.scale(scale, scale)
+        if not hasattr(render, "show_error"):
+            canvas.scale(scale, scale)
+        if render.clip:
+            canvas.clipRect(skia.Rect(0, 0, rect.w, rect.h))
         #canvas.clear(render.bg.skia())
         if render.direct_draw:
             try:
