@@ -40,7 +40,7 @@ An example:
 
 Some oddities to note if you’re familiar with other graphics programming environments:
 
-* There is no "canvas"; all graphics are **hierarchical data** ``return``-ed from a function to the renderer, which does all the actual drawing-to-a-virtual-canvas.
+* There is no "canvas"; all graphics are **structured data** ``return``-ed from a function to the renderer, which does all the actual drawing-to-a-virtual-canvas.
 
 * There is an idiomatic emphasis on **method-chaining**, which (I feel) is an underappreciated way to do graphics programming, since the resulting code is easily editable and experimentable. Of course, some (like the creator of Python) have called this style of programming "un-Pythonic." Take from that what you will!
 
