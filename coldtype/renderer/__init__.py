@@ -1233,7 +1233,7 @@ class Renderer():
     
     def turn_over(self):
         if self.action_waiting:
-            print(">", self.action_waiting)
+            #print(">", self.action_waiting)
             #self.on_message({}, self.action_waiting)
             self.on_action(self.action_waiting)
             self.action_waiting = None
