@@ -59,6 +59,7 @@ setuptools.setup(
         "SimpleWebSocketServer",
         "more-itertools",
         "docutils",
+        "exdown",
         #"rtmidi",
         #"pynput",
     ],
