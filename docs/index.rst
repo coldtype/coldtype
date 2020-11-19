@@ -31,7 +31,7 @@ If you’re familiar with other graphics programming libraries, that code snippe
 A more complex example
 ----------------------
 
-Here’s a somewhat complex animation — made with a combination of coldtype and After Effects — demonstrating what’s possible with not-so-much code:
+Here’s a somewhat complex animation — made entirely with coldtype — demonstrating what’s possible with not-so-much code:
 
 .. raw:: html
 
