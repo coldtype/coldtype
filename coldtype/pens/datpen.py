@@ -36,7 +36,7 @@ import coldtype.pens.drawbot_utils as dbu
 
 
 from coldtype.geometry import Rect, Edge, Point, txt_to_edge
-from coldtype.beziers import raise_quadratic, CurveCutter
+from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
 from coldtype.color import Gradient, normalize_color, Color
 from coldtype.pens.misc import ExplodingPen, SmoothPointsPen, BooleanOp, calculate_pathop
 
@@ -639,16 +639,52 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     nlt = nonlinear_transform
     
-    def bend(self, curve):
+    def bend(self, curve, tangent=True):
         cc = CurveCutter(curve)
         ccl = cc.length
-        dpf = self.getFrame()
         dpl = self.bounds().point("SE").x
         xf = ccl/dpl
         def bender(x, y):
-            p, tangent = cc.subsegmentPoint(end=x*xf)
+            p, tan = cc.subsegmentPoint(end=x*xf)
             px, py = p
-            return (px, y+py-dpf.h*0.5)
+            if tangent:
+                a = math.sin(math.radians(180+tan)) * y
+                b = math.cos(math.radians(180+tan)) * y
+                return (px+a, py+b)
+                #return (px, y+py)
+            else:
+                return (px, y+py)
+        return self.nonlinear_transform(bender)
+    
+    def bend2(self, curve, tangent=True, offset=(0, 1)):
+        bw = self.bounds().w
+        a = curve.value[0][-1][0]
+        b, c, d = curve.value[-1][-1]
+        def bender(x, y):
+            c1, c2 = splitCubicAtT(a, b, c, d, offset[0] + (x/bw)*offset[1])
+            _, _a, _b, _c = c1
+            if tangent:
+                tan = math.degrees(math.atan2(_c[1] - _b[1], _c[0] - _b[0]) + math.pi*.5)
+                ax = math.sin(math.radians(90-tan)) * y
+                by = math.cos(math.radians(90-tan)) * y
+                return _c[0]+ax, (y+_c[1])+by
+            return _c[0], y+_c[1]
+        return self.nonlinear_transform(bender)
+    
+    def bend3(self, curve, tangent=False, offset=(0, 1)):
+        a = curve.value[0][-1][0]
+        b, c, d = curve.value[-1][-1]
+        bh = self.bounds().h
+        
+        def bender(x, y):
+            c1, c2 = splitCubicAtT(a, b, c, d, offset[0] + (y/bh)*offset[1])
+            _, _a, _b, _c = c1
+            if tangent:
+                tan = math.degrees(math.atan2(_c[1] - _b[1], _c[0] - _b[0]) + math.pi*.5)
+                ax = math.sin(math.radians(90-tan)) * y
+                by = math.cos(math.radians(90-tan)) * y
+                return x+_c[0]+ax, (y+_c[1])+by
+            return x+_c[0], _c[1]
         return self.nonlinear_transform(bender)
     
     def transform(self, transform, transformFrame=True):
@@ -1438,7 +1474,7 @@ class DATPenSet(DATPenLikeObject):
                         if p:
                             self.pens.append(p)
                 except TypeError:
-                    print("appending non-pen")
+                    #print("appending non-pen", type(pen))
                     self.pens.append(pen)
                     #print(">>> append rejected", pen)
         return self
@@ -1603,6 +1639,10 @@ class DATPenSet(DATPenLikeObject):
                 to_keep.append(p)
         return to_keep
     
+    def index(self, idx, fn):
+        fn(self[idx])
+        return self
+    
     def glyphs_named(self, glyph_name):
         """Pluck glyphs named `glyph_name`"""
         #return self.pfilter(lambda i, p: p.glyphName == glyph_name).pmap(lambda idx, p: mod_fn(p))
@@ -1711,7 +1751,7 @@ class DATPenSet(DATPenLikeObject):
                 p.translate(t*idx, 0)
         return self
         
-    def distributeOnPath(self, path, offset=0, cc=None, notfound=None):
+    def distribute_on_path(self, path, offset=0, cc=None, notfound=None):
         if cc:
             cutter = cc
         else:
@@ -1742,7 +1782,8 @@ class DATPenSet(DATPenLikeObject):
             self.pens = self.pens[0:limit]
         return self
     
-    distribute_on_path = distributeOnPath
+    # deprecated
+    distributeOnPath = distribute_on_path
     
     def implode(self):
         # TODO preserve frame from some of this?

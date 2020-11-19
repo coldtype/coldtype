@@ -20,5 +20,4 @@ def render(f):
             Style(recmono, 72, wdth=1))
             .pens()
             .align(f.a.r.take(150, "mny"), th=0)
-            .f(hsl((1-pe)+0.5)))
-    ])
+            .f(hsl((1-pe)+0.5)))])

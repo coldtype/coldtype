@@ -26,7 +26,7 @@ Here’s an example:
 .. image:: /_static/renders/index_coldtype.png
    :width: 350
 
-If you’re familiar with other graphics programming libraries, that code snippet might seem a little odd, given that it’s **canvas-less** & highly **abbreviated**, with a idiomatic emphasis on **method-chaining** & **hierarchical data** (which can make programming **animations** a lot easier and faster). `More on those bold words on the about page.`
+If you’re familiar with other graphics programming libraries, that code snippet might seem a little odd, given that it’s **canvas-less** & highly **abbreviated**, with a idiomatic emphasis on **method-chaining** & **structured data** (which can make programming **animations** a lot easier and faster). `More on those bold words on the about page.`
 
 A more complex example
 ----------------------

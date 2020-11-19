@@ -91,7 +91,7 @@ And because of the lines with calls to `rotate`, you should see this on your scr
 Less Basic Text
 ---------------
 
-Usually, glyph-wise hierarchical representation of text is not a feature of software or software libraries, because when programmers sit down to implement support for text, they do it with the understanding that if you want text, you usually want a `lot` of text, set in large blocks, like this paragraph that you’re reading now.
+Usually, glyph-wise structured representation of text is not a feature of software or software libraries, because when programmers sit down to implement support for text, they do it with the understanding that if you want text, you usually want a `lot` of text, set in large blocks, like this paragraph that you’re reading now.
 
 But for lots of graphic design, what you actually want is very precise control over only a few glyphs, maybe a line or two. That was the magic of technologies like moveable type, or especially Letraset; those technologies gave designers direct control over letterforms. A lot like when you hit "Convert to Outlines" in Illustrator today.
 

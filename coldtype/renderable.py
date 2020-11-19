@@ -74,11 +74,13 @@ class renderable():
         custom_folder=None,
         postfn=None,
         watch=[],
+        watch_restarts=[],
         layers=[],
         solo=False,
         rstate=False,
         preview_only=False,
         direct_draw=False,
+        clip=False,
         viewBox=True):
         """Base configuration for a renderable function"""
 
@@ -93,13 +95,11 @@ class renderable():
 
         self.watch = []
         for w in watch:
-            try:
-                self.watch.append(Path(w).expanduser().resolve())
-            except TypeError:
-                if isinstance(w, Font):
-                    self.watch.append(w)
-                else:
-                    raise Exception("Can only watch strings, Paths, and Fonts")
+            self.add_watchee(w)
+
+        self.watch_restarts = []
+        for w in watch_restarts:
+            self.watch_restarts.append(self.add_watchee(w))
 
         self.name = name
         self.rasterizer = rasterizer
@@ -109,6 +109,7 @@ class renderable():
         self.solo = solo
         self.preview_only = preview_only
         self.rstate = rstate
+        self.clip = clip
         self.viewBox = viewBox
         self.direct_draw = direct_draw
 
@@ -119,6 +120,20 @@ class renderable():
                 self.rasterizer = "pickle"
             else:
                 self.rasterizer = "skia"
+    
+    def add_watchee(self, w):
+        try:
+            pw = Path(w).expanduser().resolve()
+            if not pw.exists():
+                print(w, "<<< does not exist (cannot be watched)")
+            else:
+                self.watch.append(pw)
+                return pw
+        except TypeError:
+            if isinstance(w, Font):
+                self.watch.append(w)
+            else:
+                raise Exception("Can only watch path strings, Paths, and Fonts")
     
     def __call__(self, func):
         self.func = func
@@ -135,7 +150,7 @@ class renderable():
     def pass_suffix(self):
         return self.name
     
-    def passes(self, action, layers, indices=[]):
+    def passes(self, action, layers, renderer_state, indices=[]):
         return [RenderPass(self, self.pass_suffix(), [self.rect])]
 
     def package(self, filepath, output_folder):
@@ -233,7 +248,7 @@ class glyph(renderable):
         self.glyphName = glyphName
         super().__init__(rect=r, **kwargs)
     
-    def passes(self, action, layers, indices=[]):
+    def passes(self, action, layers, renderer_state, indices=[]):
         return [RenderPass(self, self.glyphName, [])]
 
 
@@ -251,7 +266,7 @@ class fontpreview(renderable):
         
         self.matches.sort()
     
-    def passes(self, action, layers, indices=[]):
+    def passes(self, action, layers, renderer_state, indices=[]):
         return [RenderPass(self, "{:s}".format(m.name), [self.rect, m]) for m in self.matches]
 
 
@@ -265,7 +280,7 @@ class iconset(renderable):
     def folder(self, filepath):
         return f"{filepath.stem}_source"
     
-    def passes(self, action, layers, indices=[]): # TODO could use the indices here
+    def passes(self, action, layers, renderer_state, indices=[]): # TODO could use the indices here
         sizes = self.sizes
         if action == Action.RenderAll:
             sizes = self.valid_sizes
@@ -319,13 +334,13 @@ class animation(renderable, Timeable):
             if self.storyboard != [0] and timeline.storyboard == [0]:
                 pass
             else:
-                self.storyboard = timeline.storyboard
+                self.storyboard = timeline.storyboard.copy()
         else:
             self.timeline = Timeline(30)
     
     def __call__(self, func):
         res = super().__call__(func)
-        self.prefix = self.name
+        self.prefix = self.name + "_"
         return res
     
     def folder(self, filepath):
@@ -337,8 +352,10 @@ class animation(renderable, Timeable):
     def all_frames(self):
         return list(range(0, self.duration))
     
-    def active_frames(self, action, layers, indices):
-        frames = self.storyboard
+    def active_frames(self, action, layers, renderer_state, indices):
+        frames = self.storyboard.copy()
+        for fidx, frame in enumerate(frames):
+            frames[fidx] = (frame + renderer_state.frame_index_offset) % self.duration
         if action == Action.RenderAll:
             frames = self.all_frames()
         elif action in [Action.PreviewIndices, Action.RenderIndices]:
@@ -359,8 +376,8 @@ class animation(renderable, Timeable):
     def pass_suffix(self, index):
         return "{:04d}".format(index)
     
-    def passes(self, action, layers, indices=[]):
-        frames = self.active_frames(action, layers, indices)
+    def passes(self, action, layers, renderer_state, indices=[]):
+        frames = self.active_frames(action, layers, renderer_state, indices)
         return [RenderPass(self, self.pass_suffix(i), [Frame(i, self, layers)]) for i in frames]
     
     def package(self, filepath, output_folder):
@@ -407,12 +424,12 @@ class animation(renderable, Timeable):
 
 
 class drawbot_animation(drawbot_script, animation):
-    def passes(self, action, layers, indices=[]):
+    def passes(self, action, layers, renderer_state, indices=[]):
         if action in [
             Action.RenderAll,
             Action.RenderIndices,
             Action.RenderWorkarea]:
-            frames = super().active_frames(action, layers, indices)
+            frames = super().active_frames(action, layers, renderer_state, indices)
             passes = []
             if len(layers) > 0:
                 for layer in layers:
@@ -427,4 +444,4 @@ class drawbot_animation(drawbot_script, animation):
                     passes.append(p)
             return passes
         else:
-            return super().passes(action, layers, indices)
+            return super().passes(action, layers, renderer_state, indices)

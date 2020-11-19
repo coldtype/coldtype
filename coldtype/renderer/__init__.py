@@ -24,7 +24,6 @@ from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.state import RendererState, Keylayer
 from coldtype.renderer.utils import *
-from coldtype.abbr.inst import Inst
 
 _random = Random()
 
@@ -122,8 +121,6 @@ class Renderer():
 
             indices=parser.add_argument("-i", "--indices", type=str, default=None),
 
-            file_prefix=parser.add_argument("-fp", "--file-prefix", type=str, default="", help="Should the output files be prefixed with something? If so, put it here."),
-
             output_folder=parser.add_argument("-of", "--output-folder", type=str, default=None, help="If you don’t want to render to the default output location, specify that here."),
 
             monitor_lines=parser.add_argument("-ml", "--monitor-lines", action="store_true", default=False, help=argparse.SUPPRESS),
@@ -204,7 +201,6 @@ class Renderer():
         self.running_renderers = []
         self.completed_renderers = []
 
-        self.observers = []
         self.action_waiting = None
         self.requests_waiting = []
         self.waiting_to_render = []
@@ -230,6 +226,7 @@ class Renderer():
         self.line_number = -1
         self.stop_watching_file_changes()
         self.state.mouse = None
+        self.state.frame_index_offset = 0
 
         if filepath:
             self.filepath = Path(filepath).expanduser().resolve()
@@ -436,16 +433,24 @@ class Renderer():
     
     def add_paths_to_passes(self, trigger, render, indices):
         output_folder = self.render_to_output_folder(render)
-        prefix = self.args.file_prefix or render.prefix or self.filepath.stem if self.filepath else None
+        
+        if render.prefix is None:
+            if self.filepath is not None:
+                prefix = f"{self.filepath.stem}_"
+            else:
+                prefix = None
+        else:
+            prefix = render.prefix
+
         fmt = self.args.format or render.fmt
         _layers = self.layers if len(self.layers) > 0 else render.layers
         
         rps = []
-        for rp in render.passes(trigger, _layers, indices):
-            output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
+        for rp in render.passes(trigger, _layers, self.state, indices):
+            output_path = output_folder / f"{prefix}{rp.suffix}.{fmt}"
 
             if rp.single_layer and rp.single_layer != "__default__":
-                output_path = output_folder / f"layer_{rp.single_layer}/{prefix}_{rp.single_layer}_{rp.suffix}.{fmt}"
+                output_path = output_folder / f"layer_{rp.single_layer}/{prefix}{rp.single_layer}_{rp.suffix}.{fmt}"
 
             rp.output_path = output_path
             rp.action = trigger
@@ -511,17 +516,6 @@ class Renderer():
                             print(">>> No result")
                             result = DATPen().rect(render.rect).f(None)
 
-                        # is it a lazy result?
-                        if isinstance(result, Inst):
-                            result = result.realize()
-                        
-                        try:
-                            for idx, p in enumerate(result):
-                                if isinstance(p, Inst):
-                                    result[idx] = p.realize()
-                        except:
-                            pass
-
                         if previewing:
                             if render.direct_draw:
                                 self.previews_waiting_to_paint.append([render, None, rp])
@@ -540,7 +534,7 @@ class Renderer():
                                         if layer == layer_tag:
                                             if layer_tag != "__default__":
                                                 layer_folder = render.layer_folder(self.filepath, layer)
-                                                output_path = output_folder / layer_folder / f"{prefix}_{layer}_{rp.suffix}.{fmt}"
+                                                output_path = output_folder / layer_folder / f"{prefix}{layer}_{rp.suffix}.{fmt}"
                                             else:
                                                 output_path = rp.output_path
                                             output_path.parent.mkdir(exist_ok=True, parents=True)
@@ -967,6 +961,9 @@ class Renderer():
                 self.action_waiting = Action.PreviewStoryboardPrev
             elif key == glfw.KEY_RIGHT:
                 self.action_waiting = Action.PreviewStoryboardNext
+            elif key == glfw.KEY_HOME:
+                self.state.frame_index_offset = 0
+                self.action_waiting = Action.PreviewStoryboard
 
         if action != glfw.PRESS:
             return
@@ -1077,14 +1074,11 @@ class Renderer():
                     self.playing = 1
                 else:
                     self.playing = 0
-            increment = -1 if action == Action.PreviewStoryboardPrev else 1
-            for render in self.last_renders:
-                if hasattr(render, "storyboard"):
-                    for idx, fidx in enumerate(render.storyboard):
-                        nidx = (fidx + increment) % render.duration
-                        render.storyboard[idx] = nidx
-                    self.render(Action.PreviewStoryboard)
-            return True
+            if action == Action.PreviewStoryboardPrev:
+                self.state.frame_index_offset -= 1
+            elif action == Action.PreviewStoryboardNext:
+                self.state.frame_index_offset += 1
+            self.render(Action.PreviewStoryboard)
         elif action == Action.RenderedPlay:
             if self.playing_preloaded_frame >= 0:
                 self.playing_preloaded_frame = -1
@@ -1269,7 +1263,10 @@ class Renderer():
             lh = -1
             h = 0
             for render, result, rp in self.previews_waiting_to_paint:
-                sr = render.rect.scale(dscale, "mnx", "mny").round()
+                if hasattr(render, "show_error"):
+                    sr = render.rect
+                else:
+                    sr = render.rect.scale(dscale, "mnx", "mny").round()
                 w = max(sr.w, w)
                 rects.append(Rect(0, lh+1, sr.w, sr.h))
                 lh += sr.h + 1
@@ -1308,7 +1305,7 @@ class Renderer():
                 canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 1))
 
                 for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
-                    rect = rects[idx].offset((w-rects[idx].w)/2, 0)
+                    rect = rects[idx].offset((w-rects[idx].w)/2, 0).round()
                     self.draw_preview(dscale, canvas, rect, (render, result, rp))
             
                 if self.state.keylayer != Keylayer.Default:
@@ -1337,7 +1334,10 @@ class Renderer():
         canvas.translate(0, self.window_scrolly)
         canvas.translate(rect.x, rect.y)
         canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
-        canvas.scale(scale, scale)
+        if not hasattr(render, "show_error"):
+            canvas.scale(scale, scale)
+        if render.clip:
+            canvas.clipRect(skia.Rect(0, 0, rect.w, rect.h))
         #canvas.clear(render.bg.skia())
         if render.direct_draw:
             try:
@@ -1373,13 +1373,27 @@ class Renderer():
                 except json.JSONDecodeError:
                     print("Error decoding watched json", path)
                     return
+            
+            if path.suffix == ".py":
+                try:
+                    for render in self.renderables(Action.Resave):
+                        for wr in render.watch_restarts:
+                            if str(path) == str(wr):
+                                importlib.reload(coldtype)
+                                importlib.reload(coldtype.pens.datpen)
+                                #self.action_waiting = Action.RestartRenderer
+                except AttributeError:
+                    pass
+            
             idx = self.watchee_paths().index(path)
             print(f">>> resave: {Path(event.src_path).relative_to(Path.cwd())}")
+            
             if self.args.memory and process:
                 memory = bytesto(process.memory_info().rss)
                 diff = memory - self._last_memory
                 self._last_memory = memory
                 print(">>> pid:{:d}/new:{:04.2f}MB/total:{:4.2f}".format(os.getpid(), diff, memory))
+            
             self.waiting_to_render = [[Action.Resave, self.watchees[idx][0]]]
 
     def watch_file_changes(self):

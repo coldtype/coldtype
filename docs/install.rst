@@ -2,8 +2,8 @@ Install
 =======
 
 * Install a Python >= 3.7, <= 3.8
-    * For the moment, Python 3.9 will not work b/c of an issue with the skia graphics library, though that issue should be resolved soon
-    * If you don’t have a Python >= 3.7, I’d recommend Python 3.8.6 (available from `python.org/downloads <https://python.org/downloads>`_ if you scroll down a little)
+* For the moment, Python 3.9 will not work b/c of an issue with the skia graphics library, though that issue should be resolved soon
+* If you don’t have a Python >= 3.7, I’d recommend Python 3.8.6 (available from `python.org/downloads <https://python.org/downloads>`_ if you scroll down a little)
 
 Option A
 --------
@@ -69,9 +69,9 @@ You may also notice the command is still hanging, meaning it hasn't exited. So i
 
     from coldtype import *
 
-        @renderable()
-        def test(r):
-            return DATPen().oval(r.inset(100)).f(hsl(0.8))
+    @renderable()
+    def test(r):
+        return DATPen().oval(r.inset(100)).f(hsl(0.8))
 
 Now the oval should have some padding and be purple-ish.
 

@@ -15,27 +15,6 @@ def test_distribute_and_track(r):
         .reversePens()
         .understroke(s=0.2).align(r))
 
-
-@test()
-def test_text_on_a_curve(r):
-    text:DATPenSet = StyledString("COLDTYPE "*7, Style(co, 64, tu=-50, r=1, ro=1)).pens()
-    for glyph in text:
-        glyph.f(hsl(random(), s=1, l=0.75))
-    oval = DATPen().oval(r.inset(50)).reverse().repeat()
-    return text.distributeOnPath(oval).understroke(s=0, sw=5)
-
-
-@test((1000, 1000))
-def test_text_on_a_curve_fit(r):
-    circle = DATPen().oval(r.inset(250)).reverse()
-    return (StyledString("COLDTYPE COLDTYPE COLDTYPE ",
-        Style(co, 100, wdth=1, tu=0, space=500))
-        .fit(circle.length())
-        .pens()
-        .distributeOnPath(circle)
-        .f(Gradient.H(circle.bounds(), hsl(0.5, s=0.6), hsl(0.85, s=0.6))))
-
-
 @test()
 def test_track_to_rect(r):
     text:DATPenSet = StyledString("COLD", Style(co, 300, wdth=0, r=1)).pens().align(r)
