@@ -226,6 +226,7 @@ class Renderer():
         self.line_number = -1
         self.stop_watching_file_changes()
         self.state.mouse = None
+        self.state.frame_index_offset = 0
 
         if filepath:
             self.filepath = Path(filepath).expanduser().resolve()
@@ -440,8 +441,6 @@ class Renderer():
                 prefix = None
         else:
             prefix = render.prefix
-        
-        print("PREFIX", prefix, "<")
 
         fmt = self.args.format or render.fmt
         _layers = self.layers if len(self.layers) > 0 else render.layers
