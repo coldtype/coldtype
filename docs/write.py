@@ -4,6 +4,17 @@ from coldtype import *
 from coldtype.renderer import Renderer
 import subprocess
 
+all_docs = []
+
+sources = list(Path("docs").glob("**/*.rst"))
+#sources.extend(list(Path("docs").glob("test_*.md")))
+
+for p in sources:
+    print(">", p)
+    if not p.name.startswith("_"):
+        all_docs.append(p)
+    all_docs = sorted(all_docs)
+
 class DocsWriter(Renderer):
     def on_stdin(self, stdin):
         stdin = stdin.strip()
@@ -11,6 +22,30 @@ class DocsWriter(Renderer):
             self.upload()
         else:
             super().on_stdin(stdin)
+    
+    def on_message(self, message, action):
+        if action == "next_test":
+            self.load_doc(+1)
+        elif action == "prev_test":
+            self.load_doc(-1)
+        else:
+            super().on_message(message, action)
+        
+    def load_doc(self, inc):
+        if hasattr(self, "doc_index"):
+            self.doc_index += inc
+        else:
+            self.doc_index = 0
+        if self.doc_index == -1:
+            self.doc_index = len(all_docs) - 1
+        elif self.doc_index == len(all_docs):
+            self.doc_index = 0
+        
+        doc_path = all_docs[self.doc_index]
+        print("---" * 20)
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>", doc_path)
+        self.reset_filepath(str(doc_path))
+        self.reload_and_render(Action.PreviewStoryboard)
     
     def initialize_gui_and_server(self):
         self.webserver = subprocess.Popen(["python", "-m", "http.server", "-d", "docs/_build/html"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

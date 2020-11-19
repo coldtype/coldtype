@@ -433,18 +433,13 @@ class Renderer():
     def add_paths_to_passes(self, trigger, render, indices):
         output_folder = self.render_to_output_folder(render)
         
-        print(render.prefix, self.filepath.stem)
-        prefix_candidates = [p for p in [render.prefix, self.filepath.stem] if p is not None]
-
-        if len(prefix_candidates) > 0:
-            prefix = prefix_candidates[0]
+        if render.prefix is None:
+            if self.filepath is not None:
+                prefix = f"{self.filepath.stem}_"
+            else:
+                prefix = None
         else:
-            prefix = None
-        
-        if prefix:
-            prefix_str = prefix + "_"
-        else:
-            prefix_str = prefix
+            prefix = render.prefix
         
         print("PREFIX", prefix, "<")
 
@@ -453,10 +448,10 @@ class Renderer():
         
         rps = []
         for rp in render.passes(trigger, _layers, self.state, indices):
-            output_path = output_folder / f"{prefix_str}{rp.suffix}.{fmt}"
+            output_path = output_folder / f"{prefix}{rp.suffix}.{fmt}"
 
             if rp.single_layer and rp.single_layer != "__default__":
-                output_path = output_folder / f"layer_{rp.single_layer}/{prefix}_{rp.single_layer}_{rp.suffix}.{fmt}"
+                output_path = output_folder / f"layer_{rp.single_layer}/{prefix}{rp.single_layer}_{rp.suffix}.{fmt}"
 
             rp.output_path = output_path
             rp.action = trigger
@@ -540,7 +535,7 @@ class Renderer():
                                         if layer == layer_tag:
                                             if layer_tag != "__default__":
                                                 layer_folder = render.layer_folder(self.filepath, layer)
-                                                output_path = output_folder / layer_folder / f"{prefix}_{layer}_{rp.suffix}.{fmt}"
+                                                output_path = output_folder / layer_folder / f"{prefix}{layer}_{rp.suffix}.{fmt}"
                                             else:
                                                 output_path = rp.output_path
                                             output_path.parent.mkdir(exist_ok=True, parents=True)

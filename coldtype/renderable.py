@@ -340,7 +340,7 @@ class animation(renderable, Timeable):
     
     def __call__(self, func):
         res = super().__call__(func)
-        self.prefix = self.name
+        self.prefix = self.name + "_"
         return res
     
     def folder(self, filepath):

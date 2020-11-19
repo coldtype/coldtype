@@ -28,7 +28,7 @@ def render(f):
     
     for clip, pen in pens.iterate_clips():
         if "coldtype" in clip.styles:
-            pen.f(hsl(0.37, l=0.6)).understroke(sw=10)
+            pen.f(hsl(0.57, s=0.6, l=0.6)).understroke(sw=10)
     
     if zoom := cg.styleMatching("zoom"):
         e = zoom.progress(f.i, easefn="eei").e
