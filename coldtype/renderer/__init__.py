@@ -121,8 +121,6 @@ class Renderer():
 
             indices=parser.add_argument("-i", "--indices", type=str, default=None),
 
-            file_prefix=parser.add_argument("-fp", "--file-prefix", type=str, default="", help="Should the output files be prefixed with something? If so, put it here."),
-
             output_folder=parser.add_argument("-of", "--output-folder", type=str, default=None, help="If you don’t want to render to the default output location, specify that here."),
 
             monitor_lines=parser.add_argument("-ml", "--monitor-lines", action="store_true", default=False, help=argparse.SUPPRESS),
@@ -434,13 +432,28 @@ class Renderer():
     
     def add_paths_to_passes(self, trigger, render, indices):
         output_folder = self.render_to_output_folder(render)
-        prefix = self.args.file_prefix or render.prefix or self.filepath.stem if self.filepath else None
+        
+        print(render.prefix, self.filepath.stem)
+        prefix_candidates = [p for p in [render.prefix, self.filepath.stem] if p is not None]
+
+        if len(prefix_candidates) > 0:
+            prefix = prefix_candidates[0]
+        else:
+            prefix = None
+        
+        if prefix:
+            prefix_str = prefix + "_"
+        else:
+            prefix_str = prefix
+        
+        print("PREFIX", prefix, "<")
+
         fmt = self.args.format or render.fmt
         _layers = self.layers if len(self.layers) > 0 else render.layers
         
         rps = []
         for rp in render.passes(trigger, _layers, self.state, indices):
-            output_path = output_folder / f"{prefix}_{rp.suffix}.{fmt}"
+            output_path = output_folder / f"{prefix_str}{rp.suffix}.{fmt}"
 
             if rp.single_layer and rp.single_layer != "__default__":
                 output_path = output_folder / f"layer_{rp.single_layer}/{prefix}_{rp.single_layer}_{rp.suffix}.{fmt}"
