@@ -1,7 +1,7 @@
 import tempfile, traceback, threading
 import argparse, importlib, inspect, json, math
 import sys, os, re, signal, tracemalloc
-import platform, pickle, string
+import platform, pickle, string, datetime
 
 import time as ptime
 from pathlib import Path
@@ -124,6 +124,8 @@ class Renderer():
             output_folder=parser.add_argument("-of", "--output-folder", type=str, default=None, help="If you don’t want to render to the default output location, specify that here."),
 
             monitor_lines=parser.add_argument("-ml", "--monitor-lines", action="store_true", default=False, help=argparse.SUPPRESS),
+
+            record_input=parser.add_argument("-ri", "--record-input", action="store_true", default=False, help=argparse.SUPPRESS),
 
             filter_functions=parser.add_argument("-ff", "--filter-functions", type=str, default=None, help="Names of functions to render"),
 
@@ -1141,6 +1143,12 @@ class Renderer():
             else:
                 print("Animation server must be primary")
     
+    def record_state(self, jdata=None):
+        now = str(int(datetime.datetime.now().timestamp()))
+        output = Path(self.filepath.parent) / "recordings" / self.filepath.stem / f"{now}.json"
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(jdata or {}, indent=2))
+    
     def process_ws_message(self, message):
         try:
             jdata = json.loads(message)
@@ -1149,8 +1157,11 @@ class Renderer():
                 self.on_message(jdata, jdata.get("action"))
             elif jdata.get("metadata") and jdata.get("path"):
                 path = Path(jdata.get("path"))
-                if self.args.monitor_lines and path == self.filepath:
-                    self.line_number = jdata.get("line_number")
+                if path == self.filepath:
+                    if self.args.record_input:
+                        self.record_state(jdata)
+                    if self.args.monitor_lines:
+                        self.line_number = jdata.get("line_number")
         except TypeError:
             raise TypeError("Huh")
         except:
@@ -1375,6 +1386,12 @@ class Renderer():
                     return
             
             if path.suffix == ".py":
+                if self.args.record_input:
+                    self.record_state(dict(
+                        fulltext=self.filepath.read_text(),
+                        dirty=False,
+                        action="resave",
+                        source="coldtype-renderer"))
                 try:
                     for render in self.renderables(Action.Resave):
                         for wr in render.watch_restarts:
