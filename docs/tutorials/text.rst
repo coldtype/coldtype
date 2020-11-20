@@ -47,7 +47,7 @@ You might be wondering why the text is blue — that’s the default fill color
     :width: 500
     :class: add-border
 
-What’s interesting (and different) about setting text with Coldtype is that you are telling the computer to draw text, you're asking for information about the individual glyphs and where they sit, given the parameters you’re passing into the combination of ``StyledString`` and ``Style``.
+What’s interesting (and different) about setting text with Coldtype is that you aren’t telling the computer to draw text, you're asking for information about the individual glyphs and where they sit, given the parameters you’re passing into the combination of ``StyledString`` and ``Style``.
 
 Put another way, what you get back from calling ``(StyledString, Style(...)).pens()`` is a rich set of data that can be inspected and manipulated.
 
@@ -122,7 +122,7 @@ To illustrate that point, let’s change the text:
 
 The last two examples also illustrate something important about Coldtype — (almost) everything is self-mutating by default. So a line like ``pens[0].rotate(180)`` changes ``pens[0]`` directly, meaning you don’t need to assign it to a new variable. This makes it very easy to directly manipulate nested structures without needing to reassign variables.
 
-This also means that sometimes it is very necessary to ``copy`` pens in order to double them. For instance:
+This also means that sometimes it is very necessary to ``copy`` pens in order to double them, so you can make changes to a copy without modifying the original. For instance:
 
 .. code:: python
 
@@ -313,7 +313,7 @@ What if we want more text on the circle and we want it to fit automatically to t
 
 One thing that’s weird about setting text on a curve is that, depending on the curve, it can exaggerate — or eliminate — spacing between letters. Sometimes that doesn’t really matter — in the case of this circle, because the curve only bends in one manner, the text is always extra spacey, which usually isn't a problem. But if we set the text on a sine-wave, the issue becomes more apparent, since the spacing is both expanded and compressed on the same curve, and when letters overlap excessively, they can get illegible quickly.
 
-Is there’s a solution? Probably many but the one I like a lot is the ``understroke`` method on the ``DATPenSet`` class, which interleaves a stroked version of each letter in a set (a technique popular in pulp/comic titling & the subsequent graffiti styles they inspired).
+Is there a solution? Probably many but the one I like a lot is the ``understroke`` method on the ``DATPenSet`` class, which interleaves a stroked version of each letter in a set (a technique popular in pulp/comic titling & the subsequent graffiti styles they inspired).
 
 Let’s see what that looks like.
 

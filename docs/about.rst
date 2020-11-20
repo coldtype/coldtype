@@ -100,7 +100,7 @@ What about DrawBot?
 
 If you’ve heard of `DrawBot <https://drawbot.com/>`_ — another offroad vehicle — you may be wondering how Coldtype is different. The answer is that Coldtype provides a very different programming idiom, one based around creating and modifying structured data, rather than — as is common in most creative coding platforms (including DrawBot and Processing) — an idiom based around a metaphorical canvas that you render to directly.
 
-I should point out that DrawBot is fantastic and that Coldtype would not exist without DrawBot, mostly because using DrawBot was my first time driving in the typographical offroad. That said, Coldtype mostly exists as a response to things I found awkward when programming animations with DrawBot.
+I should point out that DrawBot is fantastic and that Coldtype would not exist without DrawBot, mostly because using DrawBot was my first time driving in the typographical offroad. That said, Coldtype mostly exists as a response to things I found awkward when programming long-form animations with DrawBot. (Also, you can use `DrawBot as a library from within Coldtype </tutorials/drawbot.html>`_).
 
 Why not HTML/CSS/JavaScript?
 ----------------------------

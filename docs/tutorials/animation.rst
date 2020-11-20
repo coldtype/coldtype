@@ -105,15 +105,15 @@ You can type any number of frame indices here, to preview multiple frames at onc
     
     pf 3 5 7
 
-If you type in `ra`, this will (r)ender (a)ll, and should take a little while to complete, depending on how fast your computer is.
+If you type in `a`, this will render-(a)ll, and should take a little while to complete, depending on how fast your computer is.
 
 .. code:: bash
     
-    ra
+    a
 
-Once you do a `ra` command, jump to the viewer app and hit the space bar to preview the animation in real time at the correct frame rate.
+Once you do an `a` command, jump to the viewer app and hit the space bar to preview the animation in real time at the correct frame rate.
 
 Jumping to Adobe
 ----------------
 
-While it is possible to complete an animation using nothing but code, I usually employ a program like Premiere or After Effects to both view and finish animations that I start in code, either to apply effects in After Effects, or to match the animation with music in Premiere. Because animations done in Coldtype are rendered to PNGs, you can import those easily in any video editing program. (In Premiere, just make sure to select the 0000 image, then select Options > Image Sequence when importing.
+While it is possible to complete an animation using nothing but code, I usually employ a program like Premiere or After Effects to both view and finish animations that I start in code, either to apply effects in After Effects, or to match the animation with music in Premiere. Because animations done in Coldtype are rendered to PNGs, you can import those easily in any video editing program. (In Premiere, just make sure to select the 0000 image, then select Options > Image Sequence when importing.)

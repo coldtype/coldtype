@@ -15,7 +15,7 @@ DrawBot is not installed by default with Coldtype, so you’ll need to install D
 @drawbot_script
 ---------------
 
-Now that you’ve got the module version of DrawBot installed, with just a little be of preamble, you can now use Coldtype to do anything you'd normally do in a DrawBot script.
+Now that you’ve got the module version of DrawBot installed, with just a little bit of preamble, you can now use Coldtype to do anything you'd normally do in a DrawBot script.
 
 .. code:: python
 

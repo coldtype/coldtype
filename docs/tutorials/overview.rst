@@ -81,7 +81,7 @@ Workflow of a Coldtype Program
 
 At this point you might be wondering, `how do I save what's on screen to a file on my computer?`
 
-If you familiar with DrawBot, you might think you need to write some code to do that, but one of the core tenets of coldtype is that rendering and rasterizing are handled by the renderer, not by the source code. This makes some things that are easy in DrawBot difficult in Coldtype, but it also makes many things that are difficult in DrawBot extremely easy in Coldtype.
+If you’re familiar with DrawBot, you might think you need to write some code to do that, but one of the core tenets of coldtype is that rendering and rasterizing are handled by the renderer, not by the source code. This makes some things that are easy in DrawBot difficult in Coldtype, but it also makes many things that are difficult in DrawBot extremely easy in Coldtype.
 
 If you have you’re program running, to render what you have so far to disk, you can focus on the Coldtype viewer window and hit the ``a`` key on your keyboard. That should print some things out on the command-line, including the path of a brand-new png file.
 
@@ -93,7 +93,7 @@ A few notes:
 
 Another core tenet of Coldtype is that it should be easy to trigger things like `render-all` in a variety of ways.
 
-For instance, you can also type ``render_all`` into the command line prompt and hit enter. Or you can abbreviate that and just type in ``ra`` and hit enter.
+For instance, you can also type ``render_all`` into the command line prompt and hit enter. Or you can abbreviate that and just type in ``a`` and hit enter.
 
 You can also hook that action up to a MIDI controller, by writing ``~/.coldtype.py`` configuration file. (More on that in the MIDI tutorial.)
 
