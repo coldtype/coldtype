@@ -56,10 +56,15 @@ class RendererState():
         self.zoom = 1
         self.frame_index_offset = 0
         self.canvas = None
+        self._last_filepath = None
         self.reset()
     
-    def reset(self):
+    def reset(self, ignore_current_state=False):
+        if self.filepath == self._last_filepath and not ignore_current_state:
+            return
+        
         if self.filepath:
+            self._last_filepath = self.filepath
             try:
                 deserial = json.loads(self.filepath.read_text())
                 cv = deserial.get("controller_values")

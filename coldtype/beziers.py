@@ -1,6 +1,6 @@
 import math
 from fontTools.pens.recordingPen import RecordingPen, replayRecording
-from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
+from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT, calcQuadraticArcLength
 from coldtype.geometry import Rect, Point
 
 
@@ -54,6 +54,10 @@ class CurveCutter():
                 p1, p2, p3 = pts
                 p0 = self.pen.value[i-1][-1][-1]
                 length += calcCubicArcLength_cached(p0, p1, p2, p3)
+            elif t == "qCurveTo":
+                p1, p2 = pts
+                p0 = self.pen.value[i-1][-1][-1]
+                length += calcQuadraticArcLength(p0, p1, p2)
             elif t == "lineTo":
                 pass # todo
         return length
@@ -99,6 +103,6 @@ class CurveCutter():
         try:
             t, (a, b, c) = subsegment[-2]
             tangent = math.degrees(math.atan2(c[1] - b[1], c[0] - b[0]) + math.pi*.5)
-            return c, tangent
+            return Point(c), tangent
         except ValueError:
             return None, None

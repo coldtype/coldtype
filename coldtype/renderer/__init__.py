@@ -1009,6 +1009,7 @@ class Renderer():
             self.on_action(Action.PreviewStoryboardReload)
         elif key == glfw.KEY_A:
             self.on_action(Action.RenderAll)
+            self.on_action(Action.RenderedPlay)
         elif key == glfw.KEY_W:
             self.on_action(Action.RenderWorkarea)
         elif key == glfw.KEY_M:
@@ -1100,7 +1101,7 @@ class Renderer():
             self.state.clear()
             self.on_action(Action.PreviewStoryboard)
         elif action == Action.ResetControllers:
-            self.state.reset()
+            self.state.reset(ignore_current_state=True)
             self.on_action(Action.PreviewStoryboard)
         elif action == Action.RestartRenderer:
             self.on_exit(restart=True)
@@ -1452,7 +1453,8 @@ class Renderer():
             for device, numbers in nested.items():
                 self.state.controller_values[device] = {**self.state.controller_values.get(device, {}), **numbers}
 
-            self.on_action(Action.PreviewStoryboard, {})
+            self.action_waiting = Action.PreviewStoryboard
+            #self.on_action(Action.PreviewStoryboard, {})
     
     def stop_watching_file_changes(self):
         for o in self.observers:

@@ -71,6 +71,12 @@ class AbletonAudioTrack(TimeableSet):
         clips = []
         for clip in track.findall("DeviceChain/MainSequencer/Sample/ArrangerAutomation/Events/AudioClip"):
             clips.append(AbletonAudioClip(b2ff, clip))
+
+        automation = []
+        for a in track.xpath("AutomationEnvelopes/Envelopes/AutomationEnvelope/Automation"):
+            automation.append(a)
+        self.automation = automation
+
         super().__init__(clips, name=track_name)
 
 

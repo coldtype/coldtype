@@ -527,10 +527,11 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 if k == "fill":
                     attrs[k] = normalize_color(v)
                 elif k == "stroke":
+                    existing = attrs.get("stroke", {})
                     if not isinstance(v, dict):
-                        attrs[k] = dict(color=normalize_color(v))
+                        attrs[k] = dict(color=normalize_color(v), weight=existing.get("weight", 1))
                     else:
-                        attrs[k] = dict(weight=v.get("weight", 1), color=normalize_color(v.get("color", 0)))
+                        attrs[k] = dict(weight=v.get("weight", existing.get("weight", 1)), color=normalize_color(v.get("color", 0)))
                 elif k == "strokeWidth":
                     if "stroke" in attrs:
                         attrs["stroke"]["weight"] = v
@@ -858,27 +859,27 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = dp.value
         return self.outline(width)
     
-    def roughen(self, amplitude=10, threshold=10):
+    def roughen(self, amplitude=10, threshold=10, ignore_ends=True):
         """Randomizes points in skeleton"""
-        try:
-            randomized = []
-            _x = 0
-            _y = 0
-            for t, pts in self.value:
-                if t == "lineTo" or t == "curveTo":
-                    jx = pnoise1(_x) * amplitude # should actually be 1-d on the tangent!
-                    jy = pnoise1(_y) * amplitude
-                    jx = randint(0, amplitude) - amplitude/2
-                    jy = randint(0, amplitude) - amplitude/2
-                    randomized.append([t, [(x+jx, y+jy) for x, y in pts]])
-                    _x += 0.2
-                    _y += 0.3
-                else:
-                    randomized.append([t, pts])
-            self.value = randomized
-        except:
-            print("noise not installed")
-            pass
+        randomized = []
+        _x = 0
+        _y = 0
+        for idx, (t, pts) in enumerate(self.value):
+            if idx == 0 and ignore_ends:
+                continue
+            if idx == len(self.value) - 1 and ignore_ends:
+                continue
+            if t == "lineTo" or t == "curveTo":
+                jx = pnoise1(_x) * amplitude # should actually be 1-d on the tangent (maybe? TODO)
+                jy = pnoise1(_y) * amplitude
+                jx = randint(0, amplitude) - amplitude/2
+                jy = randint(0, amplitude) - amplitude/2
+                randomized.append([t, [(x+jx, y+jy) for x, y in pts]])
+                _x += 0.2
+                _y += 0.3
+            else:
+                randomized.append([t, pts])
+        self.value = randomized
         return self
 
     def outline(self, offset=1, drawInner=True, drawOuter=True, cap="square"):
@@ -1211,6 +1212,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         start = 0
         end = end * cc.calcCurveLength()
         pv = cc.subsegment(start, end)
+        print(">", start, end)
         self.value = pv
         return self
     
