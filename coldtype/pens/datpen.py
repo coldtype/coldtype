@@ -859,15 +859,17 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = dp.value
         return self.outline(width)
     
-    def roughen(self, amplitude=10, threshold=10, ignore_ends=True):
+    def roughen(self, amplitude=10, threshold=10, ignore_ends=False):
         """Randomizes points in skeleton"""
         randomized = []
         _x = 0
         _y = 0
         for idx, (t, pts) in enumerate(self.value):
             if idx == 0 and ignore_ends:
+                randomized.append([t, pts])
                 continue
             if idx == len(self.value) - 1 and ignore_ends:
+                randomized.append([t, pts])
                 continue
             if t == "lineTo" or t == "curveTo":
                 jx = pnoise1(_x) * amplitude # should actually be 1-d on the tangent (maybe? TODO)
