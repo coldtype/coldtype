@@ -1,14 +1,21 @@
 from coldtype import *
 from coldtype.midi.controllers import LaunchControlXL
 
+"""
+For instagram
+"""
+
 obv = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 
 @renderable(rstate=1)
 def logo(r, rs):
     nxl = LaunchControlXL(rs.midi)
-    word = (StyledString("COLDTYPE",
-        Style(obv, 725, wdth=0, tu=-50, r=1))
+    word = (Composer(r, "COLD\nTYPE",
+        Style(obv, 500, wdth=0.5, tu=-50, r=1),
+        leading=15)
         .pens()
+        .index(0, lambda p: p.translate(-10, 0))
+        .reversePens()
         .f(1)
         .align(r, th=1, tv=1)
         .rotate(15)
@@ -19,18 +26,10 @@ def logo(r, rs):
     
     return DATPenSet([
         DATPen().rect(r).f(hsl(0.6, s=1, l=0.25)).f(1),
-        # word.copy().phototype(SkiaPen, r,
-        #     blur=25,
-        #     cut=150,
-        #     cutw=150,
-        #     fill=hsl(0.91, s=1, l=0.6),
-        #     context=__CONTEXT__),
-        word.copy().phototype(SkiaPen, r,
-            blur=2+10*nxl(10),
-            cut=50+200*nxl(20),
-            cutw=1+10*nxl(30),
-            trace=0,
-            fill=bw(0),
-            context=__CONTEXT__)
-    ])
-    return 
+        (word.copy()
+            .phototype(SkiaPen, r,
+                blur=2+10*nxl(10),
+                cut=50+200*nxl(20),
+                cutw=1+10*nxl(30),
+                fill=bw(0),
+                context=__CONTEXT__))])
