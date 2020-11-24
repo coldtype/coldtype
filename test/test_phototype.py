@@ -1,5 +1,8 @@
 from coldtype import *
 
+# TODO scale in addition to translate?
+
+
 @renderable()
 def phototype_shift(r):
     return (DATPen()
@@ -7,6 +10,6 @@ def phototype_shift(r):
         .f(1)
         .flatten(5)
         .roughen(200)
-        .phototype(SkiaPen, r, blur=15, cutw=15, context=__CONTEXT__, fill=bw(0))
-        #.precompose(SkiaPen, r)
-        .translate(500, 50))
+        .phototype(r, blur=15, cutw=15, fill=bw(0))
+        #.precompose(r)
+        .translate(150, 50))

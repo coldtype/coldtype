@@ -19,10 +19,10 @@ import skia, coldtype
 from coldtype.helpers import *
 from coldtype.geometry import Rect, Point
 from coldtype.pens.skiapen import SkiaPen
-from coldtype.pens.datpen import DATPen, DATPenSet
-from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.state import RendererState, Keylayer
+from coldtype.renderable import renderable, Action, animation
+from coldtype.pens.datpen import DATPen, DATPenSet, DATPenLikeObject
 from coldtype.renderer.utils import *
 
 _random = Random()
@@ -289,7 +289,8 @@ class Renderer():
         return source_code
 
     def reload(self, trigger):
-        
+        for m in ["phototype", "potrace", "precompose", "rasterized"]:
+            setattr(DATPenLikeObject, m, partialmethod(getattr(DATPenLikeObject, "_"+m), SkiaPen, self.context))
 
         if not self.filepath:
             self.program = dict(no_filepath=True)

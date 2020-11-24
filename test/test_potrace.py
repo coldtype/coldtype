@@ -13,12 +13,12 @@ def render(f):
         .f(1))
     letter = (raw
         .copy()
-        .precompose(SkiaPen, f.a.r, context=__CONTEXT__)
+        .precompose(f.a.r)
         .attr(skp=dict(
             ImageFilter=skia.BlurImageFilter.Make(10, 10),
             ColorFilter=skia.LumaColorFilter.Make()
         ))
-        .precompose(SkiaPen, f.a.r, context=__CONTEXT__)
+        .precompose(f.a.r)
         .attr(skp=dict(
             ColorFilter=fl.compose(
                 fl.as_filter(fl.contrast_cut(250, 3)),
@@ -26,5 +26,5 @@ def render(f):
             ))))
     return [
         (letter.copy()
-            .potrace(SkiaPen, f.a.r, ["-O", 1])
+            .potrace(f.a.r, ["-O", 1])
             .f(Gradient.Vertical(f.a.r, hsl(0.5), hsl(0.7))))]

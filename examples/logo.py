@@ -18,7 +18,7 @@ def logo(r, rs):
             .f(None)
             .s(1)
             .sw(2)
-            .phototype(SkiaPen, r, blur=10, cut=23, cutw=5, context=__CONTEXT__)),
+            .phototype(r, blur=10, cut=23, cutw=5)),
         (Composer(r, "COLD\nTYPE",
             Style(obv, 500, wdth=0.5, tu=-50, r=1),
             leading=15)
@@ -31,9 +31,8 @@ def logo(r, rs):
             .translate(3, 10)
             .understroke(sw=25)
             .f(1)
-            .phototype(SkiaPen, r,
+            .phototype(r,
                 blur=2+10*nxl(10),
                 cut=50+200*nxl(20),
                 cutw=1+10*nxl(30),
-                fill=bw(1),
-                context=__CONTEXT__))])
+                fill=bw(1)))])

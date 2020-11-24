@@ -14,12 +14,12 @@ def render(f, rstate):
         .align(f.a.r)
         .f(1)
         .understroke(s=0, sw=30)
-        .precompose(SkiaPen, f.a.r, context=__CONTEXT__)
+        .precompose(f.a.r)
         .attr(skp=dict(
             ImageFilter=skia.BlurImageFilter.Make(10, 10),
             ColorFilter=skia.LumaColorFilter.Make()
         ))
-        .precompose(SkiaPen, f.a.r, context=__CONTEXT__)
+        .precompose(f.a.r)
         .attr(skp=dict(
             ColorFilter=fl.compose(
                 fl.as_filter(fl.contrast_cut(200+p*30, 5)),

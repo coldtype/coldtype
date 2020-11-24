@@ -346,14 +346,14 @@ class DATPenLikeObject():
         """Does nothing"""
         return self
     
-    def precompose(self, pen_class, rect, placement=None, context=None):
+    def _precompose(self, pen_class, context, rect, placement=None):
         img = pen_class.Precompose(self, rect, context=context)
         return DATPen().rect(placement or rect).attr(image=dict(src=img, rect=placement or rect, pattern=False)).f(None)
     
-    def rasterized(self, pen_class, rect, context=None):
+    def _rasterized(self, pen_class, context, rect):
         return pen_class.Precompose(self, rect, context=context)
     
-    def potrace(self, pen_class, rect, poargs=[], invert=True, context=None):
+    def _potrace(self, pen_class, context, rect, poargs=[], invert=True):
         import skia
         from PIL import Image
         from pathlib import Path
@@ -383,7 +383,7 @@ class DATPenLikeObject():
             svgp.draw(dp)
             return dp.f(0)
     
-    def phototype(self, pen_class, r, blur=5, cut=127, cutw=3, rotate=0, rotate_point=None, translate=(0, 0), trace=False, context=None, fill=1):
+    def _phototype(self, pen_class, context, r, blur=5, cut=127, cutw=3, rotate=0, rotate_point=None, translate=(0, 0), trace=False, fill=1):
         import skia
         import coldtype.filtering as fl
         try:
@@ -394,19 +394,19 @@ class DATPenLikeObject():
         modded = (self
             .rotate(rotate, rotate_point or r.point("C"))
             .translate(*translate)
-            .precompose(pen_class, r, context=context)
+            ._precompose(pen_class, context, r)
             .attr(skp=dict(
                 ImageFilter=skia.BlurImageFilter.Make(xblur, yblur),
                 ColorFilter=skia.LumaColorFilter.Make(),
                 ))
-            .precompose(pen_class, r, context=context)
+            ._precompose(pen_class, context, r)
             .attr(skp=dict(
                 ColorFilter=fl.compose(
                     fl.as_filter(fl.contrast_cut(cut, cutw)),
                     fl.fill(normalize_color(fill))))))
         
         if trace:
-            modded = modded.potrace(pen_class, r, ["-O", 1, "-t", 800], context=context)
+            modded = modded._potrace(pen_class, context, r, ["-O", 1, "-t", 800])
         
         return (modded
             .translate(-translate[0], -translate[1])
@@ -1569,7 +1569,10 @@ class DATPenSet(DATPenLikeObject):
     
     def attr(self, key="default", field=None, **kwargs):
         if field: # getting, not setting, kind of weird to return the first value?
-            return self.pens[0].attr(key=key, field=field)
+            if len(self.pens) > 0:
+                return self.pens[0].attr(key=key, field=field)
+            else:
+                return None
         for p in self.pens:
             p.attr(key, **kwargs)
         return self
