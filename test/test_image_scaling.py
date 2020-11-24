@@ -11,4 +11,4 @@ def test_scaling(f):
         .pen()
         .align(pr)
         .f(0)
-        .precompose(SkiaPen, pr, f.a.r, context=__CONTEXT__))
+        .precompose(pr, f.a.r))

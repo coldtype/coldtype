@@ -1,7 +1,7 @@
 import tempfile, traceback, threading
 import argparse, importlib, inspect, json, math
 import sys, os, re, signal, tracemalloc
-import platform, pickle, string
+import platform, pickle, string, datetime
 
 import time as ptime
 from pathlib import Path
@@ -9,20 +9,20 @@ from typing import Tuple
 from pprint import pprint
 from random import random
 from runpy import run_path
-from functools import partial
 from subprocess import call, Popen
 from random import shuffle, Random
 from more_itertools import distribute
 from docutils.core import publish_doctree
+from functools import partial, partialmethod
 
 import skia, coldtype
 from coldtype.helpers import *
 from coldtype.geometry import Rect, Point
 from coldtype.pens.skiapen import SkiaPen
-from coldtype.pens.datpen import DATPen, DATPenSet
-from coldtype.renderable import renderable, Action, animation
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.state import RendererState, Keylayer
+from coldtype.renderable import renderable, Action, animation
+from coldtype.pens.datpen import DATPen, DATPenSet, DATPenLikeObject
 from coldtype.renderer.utils import *
 
 _random = Random()
@@ -124,6 +124,8 @@ class Renderer():
             output_folder=parser.add_argument("-of", "--output-folder", type=str, default=None, help="If you don’t want to render to the default output location, specify that here."),
 
             monitor_lines=parser.add_argument("-ml", "--monitor-lines", action="store_true", default=False, help=argparse.SUPPRESS),
+
+            record_input=parser.add_argument("-ri", "--record-input", action="store_true", default=False, help=argparse.SUPPRESS),
 
             filter_functions=parser.add_argument("-ff", "--filter-functions", type=str, default=None, help="Names of functions to render"),
 
@@ -287,6 +289,9 @@ class Renderer():
         return source_code
 
     def reload(self, trigger):
+        for m in ["phototype", "potrace", "precompose", "rasterized"]:
+            setattr(DATPenLikeObject, m, partialmethod(getattr(DATPenLikeObject, "_"+m), SkiaPen, self.context))
+
         if not self.filepath:
             self.program = dict(no_filepath=True)
             pass # ?
@@ -1007,6 +1012,7 @@ class Renderer():
             self.on_action(Action.PreviewStoryboardReload)
         elif key == glfw.KEY_A:
             self.on_action(Action.RenderAll)
+            self.on_action(Action.RenderedPlay)
         elif key == glfw.KEY_W:
             self.on_action(Action.RenderWorkarea)
         elif key == glfw.KEY_M:
@@ -1098,7 +1104,7 @@ class Renderer():
             self.state.clear()
             self.on_action(Action.PreviewStoryboard)
         elif action == Action.ResetControllers:
-            self.state.reset()
+            self.state.reset(ignore_current_state=True)
             self.on_action(Action.PreviewStoryboard)
         elif action == Action.RestartRenderer:
             self.on_exit(restart=True)
@@ -1141,6 +1147,12 @@ class Renderer():
             else:
                 print("Animation server must be primary")
     
+    def record_state(self, jdata=None):
+        now = str(int(datetime.datetime.now().timestamp()))
+        output = Path(self.filepath.parent) / "recordings" / self.filepath.stem / f"{now}.json"
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(jdata or {}, indent=2))
+    
     def process_ws_message(self, message):
         try:
             jdata = json.loads(message)
@@ -1149,8 +1161,11 @@ class Renderer():
                 self.on_message(jdata, jdata.get("action"))
             elif jdata.get("metadata") and jdata.get("path"):
                 path = Path(jdata.get("path"))
-                if self.args.monitor_lines and path == self.filepath:
-                    self.line_number = jdata.get("line_number")
+                if path == self.filepath:
+                    if self.args.record_input:
+                        self.record_state(jdata)
+                    if self.args.monitor_lines:
+                        self.line_number = jdata.get("line_number")
         except TypeError:
             raise TypeError("Huh")
         except:
@@ -1375,6 +1390,12 @@ class Renderer():
                     return
             
             if path.suffix == ".py":
+                if self.args.record_input:
+                    self.record_state(dict(
+                        fulltext=self.filepath.read_text(),
+                        dirty=False,
+                        action="resave",
+                        source="coldtype-renderer"))
                 try:
                     for render in self.renderables(Action.Resave):
                         for wr in render.watch_restarts:
@@ -1435,7 +1456,8 @@ class Renderer():
             for device, numbers in nested.items():
                 self.state.controller_values[device] = {**self.state.controller_values.get(device, {}), **numbers}
 
-            self.on_action(Action.PreviewStoryboard, {})
+            self.action_waiting = Action.PreviewStoryboard
+            #self.on_action(Action.PreviewStoryboard, {})
     
     def stop_watching_file_changes(self):
         for o in self.observers:

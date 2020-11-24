@@ -198,6 +198,9 @@ class DATPenLikeObject():
         """Translate this shape by `x` and `y` (pixel values)."""
         if y is None:
             y = x
+        img = self.img()
+        if img:
+            img["rect"] = img["rect"].offset(x, y)
         return self.transform(Transform(1, 0, 0, 1, x, y), transformFrame=transformFrame)
     
     def scale(self, scaleX, scaleY=None, center=None):
@@ -343,14 +346,14 @@ class DATPenLikeObject():
         """Does nothing"""
         return self
     
-    def precompose(self, pen_class, rect, placement=None, context=None):
+    def _precompose(self, pen_class, context, rect, placement=None):
         img = pen_class.Precompose(self, rect, context=context)
         return DATPen().rect(placement or rect).attr(image=dict(src=img, rect=placement or rect, pattern=False)).f(None)
     
-    def rasterized(self, pen_class, rect, context=None):
+    def _rasterized(self, pen_class, context, rect):
         return pen_class.Precompose(self, rect, context=context)
     
-    def potrace(self, pen_class, rect, poargs=[], invert=True, context=None):
+    def _potrace(self, pen_class, context, rect, poargs=[], invert=True):
         import skia
         from PIL import Image
         from pathlib import Path
@@ -380,7 +383,7 @@ class DATPenLikeObject():
             svgp.draw(dp)
             return dp.f(0)
     
-    def phototype(self, pen_class, r, blur=5, cut=127, cutw=3, rotate=0, rotate_point=None, translate=(0, 0), trace=False, context=None, fill=1):
+    def _phototype(self, pen_class, context, r, blur=5, cut=127, cutw=3, rotate=0, rotate_point=None, translate=(0, 0), trace=False, fill=1):
         import skia
         import coldtype.filtering as fl
         try:
@@ -391,19 +394,19 @@ class DATPenLikeObject():
         modded = (self
             .rotate(rotate, rotate_point or r.point("C"))
             .translate(*translate)
-            .precompose(pen_class, r, context=context)
+            ._precompose(pen_class, context, r)
             .attr(skp=dict(
                 ImageFilter=skia.BlurImageFilter.Make(xblur, yblur),
                 ColorFilter=skia.LumaColorFilter.Make(),
                 ))
-            .precompose(pen_class, r, context=context)
+            ._precompose(pen_class, context, r)
             .attr(skp=dict(
                 ColorFilter=fl.compose(
                     fl.as_filter(fl.contrast_cut(cut, cutw)),
                     fl.fill(normalize_color(fill))))))
         
         if trace:
-            modded = modded.potrace(pen_class, r, ["-O", 1, "-t", 800], context=context)
+            modded = modded._potrace(pen_class, context, r, ["-O", 1, "-t", 800])
         
         return (modded
             .translate(-translate[0], -translate[1])
@@ -527,10 +530,11 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 if k == "fill":
                     attrs[k] = normalize_color(v)
                 elif k == "stroke":
+                    existing = attrs.get("stroke", {})
                     if not isinstance(v, dict):
-                        attrs[k] = dict(color=normalize_color(v))
+                        attrs[k] = dict(color=normalize_color(v), weight=existing.get("weight", 1))
                     else:
-                        attrs[k] = dict(weight=v.get("weight", 1), color=normalize_color(v.get("color", 0)))
+                        attrs[k] = dict(weight=v.get("weight", existing.get("weight", 1)), color=normalize_color(v.get("color", 0)))
                 elif k == "strokeWidth":
                     if "stroke" in attrs:
                         attrs["stroke"]["weight"] = v
@@ -858,27 +862,29 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = dp.value
         return self.outline(width)
     
-    def roughen(self, amplitude=10, threshold=10):
+    def roughen(self, amplitude=10, threshold=10, ignore_ends=False):
         """Randomizes points in skeleton"""
-        try:
-            randomized = []
-            _x = 0
-            _y = 0
-            for t, pts in self.value:
-                if t == "lineTo" or t == "curveTo":
-                    jx = pnoise1(_x) * amplitude # should actually be 1-d on the tangent!
-                    jy = pnoise1(_y) * amplitude
-                    jx = randint(0, amplitude) - amplitude/2
-                    jy = randint(0, amplitude) - amplitude/2
-                    randomized.append([t, [(x+jx, y+jy) for x, y in pts]])
-                    _x += 0.2
-                    _y += 0.3
-                else:
-                    randomized.append([t, pts])
-            self.value = randomized
-        except:
-            print("noise not installed")
-            pass
+        randomized = []
+        _x = 0
+        _y = 0
+        for idx, (t, pts) in enumerate(self.value):
+            if idx == 0 and ignore_ends:
+                randomized.append([t, pts])
+                continue
+            if idx == len(self.value) - 1 and ignore_ends:
+                randomized.append([t, pts])
+                continue
+            if t == "lineTo" or t == "curveTo":
+                jx = pnoise1(_x) * amplitude # should actually be 1-d on the tangent (maybe? TODO)
+                jy = pnoise1(_y) * amplitude
+                jx = randint(0, amplitude) - amplitude/2
+                jy = randint(0, amplitude) - amplitude/2
+                randomized.append([t, [(x+jx, y+jy) for x, y in pts]])
+                _x += 0.2
+                _y += 0.3
+            else:
+                randomized.append([t, pts])
+        self.value = randomized
         return self
 
     def outline(self, offset=1, drawInner=True, drawOuter=True, cap="square"):
@@ -1211,6 +1217,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         start = 0
         end = end * cc.calcCurveLength()
         pv = cc.subsegment(start, end)
+        print(">", start, end)
         self.value = pv
         return self
     
@@ -1562,7 +1569,10 @@ class DATPenSet(DATPenLikeObject):
     
     def attr(self, key="default", field=None, **kwargs):
         if field: # getting, not setting, kind of weird to return the first value?
-            return self.pens[0].attr(key=key, field=field)
+            if len(self.pens) > 0:
+                return self.pens[0].attr(key=key, field=field)
+            else:
+                return None
         for p in self.pens:
             p.attr(key, **kwargs)
         return self
