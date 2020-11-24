@@ -17,4 +17,4 @@ def render(f):
     return DATPenSet([
         stacked_and.align(c1).trackToRect(c1, pullToEdges=1, r=1),
         justified.align(c2).trackToRect(c2, pullToEdges=1, r=1)
-    ]).f(1).understroke(sw=10)
+    ]).f(1).understroke(sw=10).phototype(SkiaPen, f.a.r, blur=2, cut=150, cutw=35, context=__CONTEXT__)

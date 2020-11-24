@@ -9,11 +9,11 @@ from typing import Tuple
 from pprint import pprint
 from random import random
 from runpy import run_path
-from functools import partial
 from subprocess import call, Popen
 from random import shuffle, Random
 from more_itertools import distribute
 from docutils.core import publish_doctree
+from functools import partial, partialmethod
 
 import skia, coldtype
 from coldtype.helpers import *
@@ -289,6 +289,8 @@ class Renderer():
         return source_code
 
     def reload(self, trigger):
+        
+
         if not self.filepath:
             self.program = dict(no_filepath=True)
             pass # ?
