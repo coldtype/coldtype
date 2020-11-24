@@ -41,12 +41,15 @@ class AbletonMIDIClip(TimeableSet):
 
 class AbletonMIDITrack(TimeableSet):
     def __init__(self, b2ff, track):
+        self.b2ff = b2ff
+        
         track_name = track.find("Name/EffectiveName").attrib["Value"]
         super().__init__([AbletonMIDIClip(b2ff, clip) for clip in track.findall("DeviceChain/MainSequencer/ClipTimeable/ArrangerAutomation/Events/MidiClip")], track_name)
-        
-        #automation = []
-        #for a in track.xpath("AutomationEnvelopes/Envelopes/AutomationEnvelope/Automation"):
-        #    automation.append(a)
+
+        automation = []
+        for a in track.xpath("AutomationEnvelopes/Envelopes/AutomationEnvelope/Automation"):
+            automation.append(a)
+        self.automation = automation
 
     def notes(self):
         return [int(t.name) for t in self.flat_timeables()]

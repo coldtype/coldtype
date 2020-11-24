@@ -198,6 +198,9 @@ class DATPenLikeObject():
         """Translate this shape by `x` and `y` (pixel values)."""
         if y is None:
             y = x
+        img = self.img()
+        if img:
+            img["rect"] = img["rect"].offset(x, y)
         return self.transform(Transform(1, 0, 0, 1, x, y), transformFrame=transformFrame)
     
     def scale(self, scaleX, scaleY=None, center=None):
