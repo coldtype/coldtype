@@ -173,6 +173,9 @@ class DATPenLikeObject():
             return self.attr(field="image")
     
     image = img
+
+    def shadow(self, radius=10, color=(0, 0.3), clip=None):
+        return self.attr(shadow=dict(color=normalize_color(color), radius=radius, clip=clip))
     
     def removeBlanks(self):
         """If this is blank, `return True` (for recursive calls from DATPenSet)."""
@@ -383,7 +386,7 @@ class DATPenLikeObject():
             svgp.draw(dp)
             return dp.f(0)
     
-    def _phototype(self, pen_class, context, r, blur=5, cut=127, cutw=3, rotate=0, rotate_point=None, translate=(0, 0), trace=False, fill=1):
+    def _phototype(self, pen_class, context, r, blur=5, cut=127, cutw=3, rotate=0, rotate_point=None, translate=(0, 0), trace=False, turds=100, fill=1):
         import skia
         import coldtype.filtering as fl
         try:
@@ -406,7 +409,7 @@ class DATPenLikeObject():
                     fl.fill(normalize_color(fill))))))
         
         if trace:
-            modded = modded._potrace(pen_class, context, r, ["-O", 1, "-t", 800])
+            modded = modded._potrace(pen_class, context, r, ["-O", 1, "-t", turds])
         
         return (modded
             .translate(-translate[0], -translate[1])

@@ -140,14 +140,17 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             self.canvas.restore()
             return True
     
-    def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
+    def shadow(self, clip=None, radius=10, color=Color.from_rgb(0,0,0,1)):
         if clip:
             if isinstance(clip, Rect):
                 skia.Rect()
                 sr = skia.Rect(*clip.scale(self.scale, "mnx", "mny").flip(self.rect.h).mnmnmxmx())
                 self.canvas.clipRect(sr)
+            elif isinstance(clip, DATPen):
+                sp = SkiaPathPen(clip, self.rect.h)
+                self.canvas.clipPath(sp.path, doAntiAlias=True)
         self.paint.setColor(skia.ColorBLACK)
-        self.paint.setImageFilter(skia.ImageFilters.DropShadow(0, 0, radius, radius, color.with_alpha(alpha).skia()))
+        self.paint.setImageFilter(skia.ImageFilters.DropShadow(0, 0, radius, radius, color.skia()))
         #self.paint.setBlendMode(skia.BlendMode.kClear)
         return
     
