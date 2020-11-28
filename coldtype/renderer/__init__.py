@@ -517,7 +517,7 @@ class Renderer():
                         if self.state.request:
                             self.requests_waiting.append([render, str(self.state.request)])
                             self.state.request = None
-                        if not result:
+                        if not result and not render.direct_draw:
                             print(">>> No result")
                             result = DATPen().rect(render.rect).f(None)
 

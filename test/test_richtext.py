@@ -95,7 +95,7 @@ def render_code(txt, styles):
     
     return txt, Style(mistral, 50, fill=(0))
 
-@test(solo=1)
+@test(solo=0)
 def test_rich_code(r):
     return (HTMLRichText(code, render_code, r.inset(100),
         graf_style=GrafStyle(leading=12))

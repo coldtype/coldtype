@@ -230,7 +230,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         for dps in pens:
             dps.walk(draw)
     
-    def Precompose(pens, rect, fmt=None, context=None):
+    def Precompose(pens, rect, fmt=None, context=None, scale=1):
         if context:
             info = skia.ImageInfo.MakeN32Premul(rect.w, rect.h)
             surface = skia.Surface.MakeRenderTarget(context, skia.Budgeted.kNo, info)
@@ -241,7 +241,11 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         
         with surface as canvas:
             SkiaPen.CompositeToCanvas(pens, rect, canvas)
-        return surface.makeImageSnapshot()
+        img = surface.makeImageSnapshot()
+        if scale != 1:
+            x, y, w, h = rect.scale(scale)
+            img = img.resize(int(w), int(h))
+        return img
     
     def ReadImage(src):
         return skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(src)))
