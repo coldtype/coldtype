@@ -141,8 +141,10 @@ class MidiTrack():
             return notes_on
         else:
             if len(notes_on) == 0:
-                return None
-                #return MidiNoteValue(note, 0, 0, count, -1, 0)
+                if monosynth:
+                    return None
+                else:
+                    return MidiNoteValue(note, 0, 0, count, -1, 0)
             else:
                 return max(notes_on, key=lambda n: n.value)
 
