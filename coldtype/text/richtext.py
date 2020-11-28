@@ -31,12 +31,14 @@ class RichText(DATPenSet):
         graf_style=GrafStyle(leading=20),
         tag_delimiters=["[", "]"],
         visible_boundaries=[" "],
-        invisible_boundaries=[]):
+        invisible_boundaries=[],
+        union_styles=True):
         "WIP"
         super().__init__()
         self.tag_delimiters = tag_delimiters
         self.visible_boundary_chars = visible_boundaries
         self.invisible_boundary_chars = invisible_boundaries
+        self.union_styles = union_styles
         
         if isinstance(text, PurePath):
             text = text.read_text()
@@ -126,7 +128,7 @@ class RichText(DATPenSet):
                     idx += 1
                     try:
                         next_style = texts[idx][2]
-                        if next_style == style:
+                        if next_style == style and self.union_styles:
                             style_same = True
                             grouped_text.append(texts[idx])
                         else:
@@ -141,7 +143,7 @@ class RichText(DATPenSet):
                 full_text = "".join([t[0] for t in gt])
                 styles = gt[0][3]
                 style = gt[0][2].mod()
-                style.data = dict(style_names=styles)
+                style.data = dict(style_names=styles, txt=full_text)
                 slugs.append(StyledString(full_text, style))
             groupings.append(grouped_texts)
             lines.append(slugs)
@@ -165,6 +167,9 @@ class RichText(DATPenSet):
     
     def filter_style(self, style):
         return self.pfilter(lambda i, p: style in p.data.get("style_names", []))
+    
+    def filter_text(self, text, flags=re.I):
+        return self.pfilter(lambda i, p: re.match(text, p.data.get("txt", ""), flags=flags))
 
 
 if highlight:
