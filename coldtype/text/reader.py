@@ -147,6 +147,7 @@ class Style():
             narrower=None,
             include_blanks=False,
             load_font=True,
+            tag=None,
             **kwargs):
         """
         kern_pairs (kp) — a dict of glyphName->[left,right] values in font-space
@@ -178,6 +179,7 @@ class Style():
         self.rotate = rotate
         self.include_blanks = include_blanks
         self.sv = sv # scale-variations
+        self.tag = tag
 
         try:        
             if "OS/2" in self.font.font.ttFont:
@@ -267,6 +269,8 @@ class Style():
             self.addVariations(unnormalized_variations)
     
     def __eq__(self, other):
+        if not self.tag == other.tag:
+            return False
         if not self.font == other.font:
             #print("different font")
             return False

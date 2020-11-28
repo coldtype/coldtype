@@ -6,13 +6,13 @@ img = Path("test/renders/test_skia_image_is_image.png")
 @renderable(rect=(1000, 1000))
 def uses_image(r):
     return DATPenSet([
-        DATPen().oval(r.inset(10)).f(hsl(0.5, l=0.2)),
+        DATPen().oval(r.inset(10)).f(hsl(0.5, l=0.5)),
         (DATPen()
             .oval(r.inset(20))
             .f(None)
             .attr(image=dict(
                 src=img,
-                opacity=0.35,
+                opacity=0.5,
                 pattern=True,
                 rect=r.take(100, "mnx").square())))])
 
@@ -34,15 +34,16 @@ def uses_shadow(r):
         (DATPen()
             .rect(r.inset(100))
             .rotate(45)
-            .attr(shadow=dict(clip=r.inset(100), alpha=0.75, radius=30))
+            .shadow(30, (0, 0.75), r.inset(100))
+            #.attr(shadow=dict(clip=r.inset(100), alpha=0.75, radius=30))
             .f(hsl(0.75))),
         (DATPen()
             .rect(r.take(20, "mdx"))
             .f(hsl(0.5))
             .rotate(-45)
-            .attr(shadow=dict(alpha=1, radius=30))),
+            .shadow(30, (0, 1))),
         (DATPen()
             .rect(r.take(20, "mdy"))
             .f(hsl(0.1, s=0.6, l=0.6))
-            .attr(shadow=dict(alpha=1, radius=30)))
+            .shadow(30, (0, 1)))
     ])
