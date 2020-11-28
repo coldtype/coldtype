@@ -32,16 +32,17 @@ class MidiNote():
 
 
 class MidiNoteValue():
-    def __init__(self, note, value, svalue, count, index, position):
+    def __init__(self, note, value, svalue, count, index, position, continuation=False):
         self.note = note
         self.value = value
         self.svalue = svalue
         self.count = count
         self.index = index
         self.position = position
+        self.continuation = continuation
     
     def __repr__(self):
-        return "<MidiNoteValue={:0.3f}({:02d});note:{:04d};count:{:04d}>".format(self.value, self.position, self.note.note if self.note else -1, self.count)
+        return "<MidiNoteValue={:0.3f}({:02d});note:{:04d};count:{:04d};({:04d}/{:04d}):{:b}>".format(self.value, self.position, self.note.note if self.note else -1, self.count, self.note.on if self.note else -1, self.note.off if self.note else -1, self.continuation)
     
     def valid(self):
         return self.note and self.note.note >= 0
@@ -65,7 +66,7 @@ class MidiTrack():
     def all_notes(self):
         return set([n.note for n in self.notes])
     
-    def fv(self, frame, note_numbers, reverb=[0,5], duration=0, accumulate=0, all=0):
+    def fv(self, frame, note_numbers, reverb=[0,5], duration=0, accumulate=0, all=0, monosynth=0):
         pre, post = reverb
 
         if isinstance(note_numbers, int) or (isinstance(note_numbers, str) and note_numbers != "*"):
@@ -84,17 +85,28 @@ class MidiTrack():
         
         count = 0
         notes_on = []
+        last_note_off = 0
 
         for idx, note in enumerate(self.notes):
             if note_fn(note.note) and note.note:
+                if monosynth:
+                    continuation = note.on <= last_note_off
+                else:
+                    continuation = False
+
                 note_off = note.off
                 if duration > -1:
                     note_off = note.on + duration
-                pre_start = (note.on - pre)
-                post_end = (note_off + post)
+                
+                if continuation and monosynth:
+                    pre_start = note.on
+                    post_end = note.off
+                else:
+                    pre_start = (note.on - pre)
+                    post_end = (note_off + post)
                 
                 note_index = count
-                if frame >= pre_start: # correct?
+                if frame >= pre_start and not continuation: # correct?
                     count += 1
                 
                 value = 0
@@ -118,15 +130,19 @@ class MidiTrack():
                         value = (post_end - fi) / post
 
                 if value > 0:
-                    notes_on.append(MidiNoteValue(note, value, -1, count, idx, pos))
+                    notes_on.append(MidiNoteValue(note, value, -1, count, idx, pos, continuation))
                 else:
                     pass
+                
+                if note.off > last_note_off:
+                    last_note_off = note.off
 
         if accumulate:
             return notes_on
         else:
             if len(notes_on) == 0:
-                return MidiNoteValue(note.note, 0, 0, count, -1, 0)
+                return None
+                #return MidiNoteValue(note, 0, 0, count, -1, 0)
             else:
                 return max(notes_on, key=lambda n: n.value)
 
