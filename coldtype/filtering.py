@@ -1,7 +1,6 @@
 import skia
 from functools import reduce
 
-
 def contrast_cut(mp=127, w=5):
     ct = bytearray(256)
     for i in range(256):
