@@ -289,8 +289,8 @@ class Renderer():
         return source_code
 
     def reload(self, trigger):
-        for m in ["phototype", "potrace", "precompose", "rasterized"]:
-            setattr(DATPenLikeObject, m, partialmethod(getattr(DATPenLikeObject, "_"+m), SkiaPen, self.context))
+        DATPenLikeObject._pen_class = SkiaPen
+        DATPenLikeObject._context = self.context
 
         if not self.filepath:
             self.program = dict(no_filepath=True)

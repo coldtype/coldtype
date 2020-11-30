@@ -62,6 +62,9 @@ def parse_lambda_to_paren(src):
 
 
 class DATPenLikeObject():
+    _context = None
+    _pen_class = None
+
     def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
         x = txt_to_edge(x)
         y = txt_to_edge(y)
@@ -349,21 +352,42 @@ class DATPenLikeObject():
         """Does nothing"""
         return self
     
-    def _precompose(self, pen_class, context, rect, placement=None, opacity=1, scale=1):
-        img = pen_class.Precompose(self, rect, context=context, scale=scale)
+    def _get_renderer_state(self, pen_class, context):
+        if not pen_class:
+            pen_class = DATPenLikeObject._pen_class
+        if not pen_class:
+            raise Exception("No _pen_class")
+
+        if not context:
+            context = DATPenLikeObject._context
+        elif context == -1:
+            context = None
+        
+        return pen_class, context
+    
+    def precompose(self, rect, placement=None, opacity=1, scale=1, pen_class=None, context=None):
+        pc, ctx = self._get_renderer_state(pen_class, context)
+        img = pc.Precompose(self, rect, context=ctx, scale=scale)
         return DATPen().rect(placement or rect).img(img, (placement or rect), False, opacity).f(None)
     
-    def _rasterized(self, pen_class, context, rect):
-        return pen_class.Precompose(self, rect, context=context)
+    def rasterized(self, rect, pen_class=None, context=None):
+        """
+        Same as precompose but returns the Image created rather
+        than setting that image as the attr-image of this pen
+        """
+        pc, ctx = self._get_renderer_state(pen_class, context)
+        return pc.Precompose(self, rect, context=ctx)
     
-    def _potrace(self, pen_class, context, rect, poargs=[], invert=True):
+    def potrace(self, rect, poargs=[], invert=True, pen_class=None, context=None):
         import skia
         from PIL import Image
         from pathlib import Path
         from subprocess import run
         from fontTools.svgLib import SVGPath
 
-        img = pen_class.Precompose(self, rect, context=context)
+        pc, ctx = self._get_renderer_state(pen_class, context)
+
+        img = pc.Precompose(self, rect, context=ctx)
         pilimg = Image.fromarray(img.convert(alphaType=skia.kUnpremul_AlphaType))
         binpo = Path("bin/potrace")
         if not binpo.exists():
@@ -386,7 +410,9 @@ class DATPenLikeObject():
             svgp.draw(dp)
             return dp.f(0)
     
-    def _phototype(self, pen_class, context, r, blur=5, cut=127, cutw=3, rotate=0, rotate_point=None, translate=(0, 0), trace=False, turds=100, fill=1):
+    def phototype(self, r, blur=5, cut=127, cutw=3, rotate=0, rotate_point=None, translate=(0, 0), trace=False, turds=100, fill=1, pen_class=None, context=None):
+        pc, ctx = self._get_renderer_state(pen_class, context)
+
         import skia
         import coldtype.filtering as fl
         try:
@@ -397,19 +423,19 @@ class DATPenLikeObject():
         modded = (self
             .rotate(rotate, rotate_point or r.point("C"))
             .translate(*translate)
-            ._precompose(pen_class, context, r)
+            .precompose(r, pen_class=pc, context=ctx)
             .attr(skp=dict(
                 ImageFilter=skia.BlurImageFilter.Make(xblur, yblur),
                 ColorFilter=skia.LumaColorFilter.Make(),
                 ))
-            ._precompose(pen_class, context, r)
+            .precompose(r, pen_class=pc, context=ctx)
             .attr(skp=dict(
                 ColorFilter=fl.compose(
                     fl.as_filter(fl.contrast_cut(cut, cutw)),
                     fl.fill(normalize_color(fill))))))
         
         if trace:
-            modded = modded._potrace(pen_class, context, r, ["-O", 1, "-t", turds])
+            modded = modded.potrace(r, ["-O", 1, "-t", turds], pen_class=pc, context=ctx)
         
         return (modded
             .translate(-translate[0], -translate[1])
