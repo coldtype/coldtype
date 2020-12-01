@@ -2,6 +2,7 @@ import math, tempfile, pickle, inspect
 from enum import Enum
 from copy import deepcopy
 from pathlib import Path
+from time import sleep
 
 from typing import Optional
 from typing import Callable
@@ -64,6 +65,7 @@ def parse_lambda_to_paren(src):
 class DATPenLikeObject():
     _context = None
     _pen_class = None
+    _precompose_save = None
 
     def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
         x = txt_to_edge(x)
@@ -352,6 +354,10 @@ class DATPenLikeObject():
         """Does nothing"""
         return self
     
+    def sleep(self, time):
+        sleep(time)
+        return self
+    
     def _get_renderer_state(self, pen_class, context):
         if not pen_class:
             pen_class = DATPenLikeObject._pen_class
@@ -367,17 +373,31 @@ class DATPenLikeObject():
     
     def precompose(self, rect, placement=None, opacity=1, scale=1, pen_class=None, context=None):
         pc, ctx = self._get_renderer_state(pen_class, context)
-        img = pc.Precompose(self, rect, context=ctx, scale=scale)
+        img = pc.Precompose(self, rect, context=ctx, scale=scale, disk=DATPenLikeObject._precompose_save)
         return DATPen().rect(placement or rect).img(img, (placement or rect), False, opacity).f(None)
     
-    def rasterized(self, rect, pen_class=None, context=None):
+    def rasterized(self, rect, scale=1, pen_class=None, context=None):
         """
         Same as precompose but returns the Image created rather
         than setting that image as the attr-image of this pen
         """
         pc, ctx = self._get_renderer_state(pen_class, context)
-        return pc.Precompose(self, rect, context=ctx)
+        return pc.Precompose(self, rect, scale=scale, context=ctx, disk=DATPenLikeObject._precompose_save)
     
+    def mod_pixels(self, rect, scale=0.1, mod=lambda rgba: None, pen_class=None, context=None):
+        import skia
+        import PIL.Image
+        rasterized = self.rasterized(rect, scale=scale, pen_class=pen_class, context=context)
+        pi = PIL.Image.fromarray(rasterized, "RGBa")
+        for x in range(pi.width):
+            for y in range(pi.height):
+                r, g, b, a = pi.getpixel((x, y))
+                res = mod((r, g, b, a))
+                if res:
+                    pi.putpixel((x, y), tuple(res))
+        out = skia.Image.frombytes(pi.convert('RGBA').tobytes(), pi.size, skia.kRGBA_8888_ColorType)
+        return DATPen().rect(rect).img(out, rect, False).f(None)
+
     def potrace(self, rect, poargs=[], invert=True, pen_class=None, context=None):
         import skia
         from PIL import Image
@@ -410,7 +430,7 @@ class DATPenLikeObject():
             svgp.draw(dp)
             return dp.f(0)
     
-    def phototype(self, r, blur=5, cut=127, cutw=3, rotate=0, rotate_point=None, translate=(0, 0), trace=False, turds=100, fill=1, pen_class=None, context=None):
+    def phototype(self, rect, blur=5, cut=127, cutw=3, fill=1, pen_class=None, context=None, a=1, r=0, g=0, b=0):
         pc, ctx = self._get_renderer_state(pen_class, context)
 
         import skia
@@ -420,26 +440,18 @@ class DATPenLikeObject():
         except:
             xblur, yblur = blur, blur
 
-        modded = (self
-            .rotate(rotate, rotate_point or r.point("C"))
-            .translate(*translate)
-            .precompose(r, pen_class=pc, context=ctx)
+        return (self
+            .precompose(rect, pen_class=pc, context=ctx)
             .attr(skp=dict(
                 ImageFilter=skia.BlurImageFilter.Make(xblur, yblur),
                 ColorFilter=skia.LumaColorFilter.Make(),
                 ))
-            .precompose(r, pen_class=pc, context=ctx)
+            .precompose(rect, pen_class=pc, context=ctx)
             .attr(skp=dict(
                 ColorFilter=fl.compose(
-                    fl.as_filter(fl.contrast_cut(cut, cutw)),
+                    fl.as_filter(fl.contrast_cut(cut, cutw),
+                        a=a, r=r, g=g, b=b),
                     fl.fill(normalize_color(fill))))))
-        
-        if trace:
-            modded = modded.potrace(r, ["-O", 1, "-t", turds], pen_class=pc, context=ctx)
-        
-        return (modded
-            .translate(-translate[0], -translate[1])
-            .rotate(-rotate, rotate_point or r.point("C")))
     
     def DiskCached(path:Path, build_fn: Callable[[], "DATPenLikeObject"]):
         dpio = None

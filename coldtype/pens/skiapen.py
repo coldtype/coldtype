@@ -1,4 +1,4 @@
-import skia, struct
+import skia, struct, tempfile
 
 from pathlib import Path
 
@@ -230,7 +230,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         for dps in pens:
             dps.walk(draw)
     
-    def Precompose(pens, rect, fmt=None, context=None, scale=1):
+    def Precompose(pens, rect, fmt=None, context=None, scale=1, disk=False):
         if context:
             info = skia.ImageInfo.MakeN32Premul(rect.w, rect.h)
             surface = skia.Surface.MakeRenderTarget(context, skia.Budgeted.kNo, info)
@@ -245,6 +245,10 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         if scale != 1:
             x, y, w, h = rect.scale(scale)
             img = img.resize(int(w), int(h))
+        
+        if disk:
+            img.save(disk, skia.kPNG)
+            #return disk
         return img
     
     def ReadImage(src):
