@@ -1,6 +1,18 @@
 from coldtype.test import *
 import wave, struct, math, random, pickle
 
+
+"""
+Run in terminal: `coldtype test/test_sonification.py`
+
+After a render_all (aka hitting the `a` key in the viewer app),
+this code will render individual wave files for each letter,
+to the test/test_sonification/ folder
+
+Those waves can then be played back in any DAW and should
+be visible on an x/y scope (like this one http://goodhertz.co/midside-matrix)
+"""
+
 #co = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
 
 class sonification(animation):
