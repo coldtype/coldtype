@@ -35,3 +35,11 @@ def fill(color):
         0, 0, 0, 0, b,
         0, 0, 0, a, 0,
     ])
+
+def blur(blur):
+    try:
+        xblur, yblur = blur
+    except:
+        xblur, yblur = blur, blur
+
+    return skia.BlurImageFilter.Make(xblur, yblur)

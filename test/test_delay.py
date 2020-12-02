@@ -10,10 +10,12 @@ def var(f, depth=0):
         Style(co, 800-t.e*700, wdth=t.e, ro=1, tu=-90+t.e*50, r=1))
         .pens()
         .align(f.a.r)
-        .f(0)
-        .s(1)
+        .f(1)
+        .s(0)
         .sw(23-depth)
         .pmap(lambda i, p: p.nlt(warp_fn(0, 0, mult=30))))
+    
+    cold = cold.color_phototype(f.a.r, blur=2+depth*5, cut=120+depth*5, rgba=[1, 0, 1, 1]).as_set()
     
     if depth < 5:
         cold.insert(0, var.func(Frame((f.i-3)%var.duration, f.a, []), depth=depth+1))
@@ -21,6 +23,6 @@ def var(f, depth=0):
     if depth == 0:
         return DATPenSet([
             DATPen().rect(f.a.r).f(1),
-            cold.phototype(f.a.r, blur=7, cut=200, cutw=3, fill=bw(0))])
+            cold.color_phototype(f.a.r, blur=5)])
     else:
         return cold

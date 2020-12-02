@@ -21,3 +21,13 @@ def phototype_shift(r, rs):
             .f(1)
             .align(r)
             .phototype(r, blur=nxl(10)*15, fill=hsl(0.9)))])
+
+@renderable(solo=0)
+def phototype_no_luma(r):
+    return (StyledString("COLDTYPE",
+        Style(co, 300, ro=1, wdth=0.5, r=1))
+        .pens()
+        .align(r)
+        .f(1)
+        .understroke(sw=50)
+        .color_phototype(r))

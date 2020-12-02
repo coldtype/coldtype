@@ -93,6 +93,6 @@ def restricted_colors(f):
         -.phototype(f.a.r, cut=10)
         -.potrace(f.a.r))
 
-    return cap_c + c.f(None).s(0).sw(5)
+    return cap_c + DATPen().rect(f.a.r).difference(c.f(None)).f(0)
     
     return cap_c

@@ -430,28 +430,35 @@ class DATPenLikeObject():
             svgp.draw(dp)
             return dp.f(0)
     
-    def phototype(self, rect, blur=5, cut=127, cutw=3, fill=1, pen_class=None, context=None, a=1, r=0, g=0, b=0):
+    def phototype(self, rect, blur=5, cut=127, cutw=3, fill=1, pen_class=None, context=None, rgba=[0, 0, 0, 1], luma=True):
+        r, g, b, a = rgba
         pc, ctx = self._get_renderer_state(pen_class, context)
 
         import skia
         import coldtype.filtering as fl
-        try:
-            xblur, yblur = blur
-        except:
-            xblur, yblur = blur, blur
+
+        first_pass = dict(ImageFilter=fl.blur(blur))
+        
+        if luma:
+            first_pass["ColorFilter"] = skia.LumaColorFilter.Make()
+
+        cut_filters = [
+            fl.as_filter(
+                fl.contrast_cut(cut, cutw),
+                a=a, r=r, g=g, b=b)]
+            
+        if fill is not None:
+            cut_filters.append(fl.fill(normalize_color(fill)))
 
         return (self
             .precompose(rect, pen_class=pc, context=ctx)
-            .attr(skp=dict(
-                ImageFilter=skia.BlurImageFilter.Make(xblur, yblur),
-                ColorFilter=skia.LumaColorFilter.Make(),
-                ))
+            .attr(skp=first_pass)
             .precompose(rect, pen_class=pc, context=ctx)
             .attr(skp=dict(
-                ColorFilter=fl.compose(
-                    fl.as_filter(fl.contrast_cut(cut, cutw),
-                        a=a, r=r, g=g, b=b),
-                    fl.fill(normalize_color(fill))))))
+                ColorFilter=fl.compose(*cut_filters))))
+    
+    def color_phototype(self, rect, blur=5, cut=127, cutw=15, pen_class=None, context=None, rgba=[1, 1, 1, 1]):
+        return self.phototype(rect, blur, 255-cut, cutw, fill=None, pen_class=pen_class, context=context, rgba=rgba, luma=False)
     
     def DiskCached(path:Path, build_fn: Callable[[], "DATPenLikeObject"]):
         dpio = None
@@ -512,6 +519,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
         dps = DATPenSet()
         dps.append(self.copy())
         return dps
+    
+    as_set = ups
     
     def moveTo(self, p0):
         """The standard `RecordingPen.moveTo`, but returns self for chainability."""
