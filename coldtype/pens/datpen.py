@@ -182,6 +182,13 @@ class DATPenLikeObject():
     def shadow(self, radius=10, color=(0, 0.3), clip=None):
         return self.attr(shadow=dict(color=normalize_color(color), radius=radius, clip=clip))
     
+    def blendmode(self, blendmode=None):
+        if blendmode:
+            return self.attr(blendmode=blendmode)
+        else:
+            return self.attr(field="blendmode")
+        return self
+    
     def removeBlanks(self):
         """If this is blank, `return True` (for recursive calls from DATPenSet)."""
         return len(self.value) == 0

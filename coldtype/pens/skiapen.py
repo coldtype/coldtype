@@ -43,6 +43,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         self.scale = scale
         self.canvas = canvas
         self.rect = rect
+        self.blendmode = None
 
         all_attrs = list(self.findStyledAttrs(style))
         skia_paint_kwargs = dict(AntiAlias=True)
@@ -52,13 +53,19 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 skia_paint_kwargs = args[0]
                 if "AntiAlias" not in skia_paint_kwargs:
                     skia_paint_kwargs["AntiAlias"] = True
+            elif method == "blendmode":
+                self.blendmode = args[0]
 
         for attrs, attr in all_attrs:
             self.paint = skia.Paint(**skia_paint_kwargs)
+            if self.blendmode:
+                self.paint.setBlendMode(self.blendmode)
             method, *args = attr
             if method == "skp":
                 pass
             elif method == "skb":
+                pass
+            elif method == "blendmode":
                 pass
             elif method == "stroke" and args[0].get("weight") == 0:
                 pass
