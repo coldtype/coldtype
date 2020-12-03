@@ -7,13 +7,11 @@ Run in terminal: `coldtype test/test_sonification.py`
 
 After a render_all (aka hitting the `a` key in the viewer app),
 this code will render individual wave files for each letter,
-to the test/test_sonification/ folder
+to the test/renders/test_sonification folder
 
 Those waves can then be played back in any DAW and should
 be visible on an x/y scope (like this one http://goodhertz.co/midside-matrix)
 """
-
-Style.RegisterShorthandPrefix("≈", "~/Type/fonts/fonts")
 
 class sonification(animation):
     def __init__(self, timeline, filename, samples_per_frame=1, **kwargs):
@@ -52,11 +50,10 @@ class sonification(animation):
             
         obj.close()
 
-def animate_letter(f, fn):
+def animate_letter(f, l):
     e = f.a.progress(f.i, loops=2, easefn="qeio").e
-    ie = 1 - e
-    txt, style = fn(e, ie)
-    c = (StyledString(txt, style)
+    c = (StyledString(l,
+        Style(co, 1000-(1-e)*250, wdth=1-e, wght=e))
         .pens()
         .align(f.a.r)
         .f(None)
@@ -68,28 +65,16 @@ def animate_letter(f, fn):
         )
     return c
 
-tl = Timeline(90)
+tl = Timeline(60)
 
 @sonification(tl, "_T.wav")
-def t(f):
-    return animate_letter(f,
-        lambda e, ie: ("T", Style("≈/ObviouslyVariable.ttf",
-            1000-ie*250, wdth=ie, wght=e)))
+def t(f): return animate_letter(f, "T")
 
 @sonification(tl, "_Y.wav")
-def y(f):
-    return animate_letter(f,
-        lambda e, ie: ("Y", Style("≈/_wdths/CoFoPeshkaV0.4_Variable.ttf",   
-            1000-e*250, wdth=e, wght=e)))
+def y(f): return animate_letter(f, "Y")
 
 @sonification(tl, "_P.wav")
-def p(f):
-    return animate_letter(f,
-        lambda e, ie: ("P", Style("≈/CheeeVariable.ttf",
-            1000, grvt=ie, yest=e)))
+def p(f): return animate_letter(f, "P")
 
 @sonification(tl, "_E.wav")
-def e(f):
-    return animate_letter(f,
-        lambda e, ie: ("E", Style("≈/SwearCilatiVariable.ttf",
-            1000, wght=e)))
+def e(f): return animate_letter(f, "E")
