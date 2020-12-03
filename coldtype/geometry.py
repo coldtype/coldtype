@@ -365,6 +365,9 @@ class Rect():
         if not h:
             h = w
         return Rect((x - w/2, y - h/2, w, h))
+    
+    def Inches(w, h, dpi=72.0):
+        return Rect(w*dpi, h*dpi)
 
     def __init__(self, *rect):
         if isinstance(rect[0], str):

@@ -191,6 +191,14 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 with document.page(rect.w, rect.h) as canvas:
                     SkiaPen.CompositeToCanvas(page, rect, canvas, scale=scale)
     
+    def SVG(pens, rect, save_to, scale=1):
+        print("HERE!")
+        stream = skia.FILEWStream(str(save_to))
+        canvas = skia.SVGCanvas.Make((rect.w, rect.h), stream)
+        SkiaPen.CompositeToCanvas(pens, rect, canvas, scale=scale)
+        del canvas
+        stream.flush()
+    
     def CompositeToCanvas(pens, rect, canvas, scale=1):
         if scale != 1:
             pens.scale(scale, scale, Point((0, 0)))

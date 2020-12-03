@@ -1,5 +1,5 @@
 from coldtype.test import *
 
-@test()
+@test(fmt="svg", rasterizer="skia")
 def test_simplest(r):
     return DATPen().oval(r).f(hsl(random()))

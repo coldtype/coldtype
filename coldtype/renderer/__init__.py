@@ -686,6 +686,8 @@ class Renderer():
                 SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=None if self.args.cpu_render else self.context)
             elif render.fmt == "pdf":
                 SkiaPen.PDFOnePage(content, render.rect, str(path), scale=scale)
+            elif render.fmt == "svg":
+                SkiaPen.SVG(content, render.rect, str(path), scale=scale)
             else:
                 print("> Skia render not supported for ", render.fmt)
         elif rasterizer == "svg":
