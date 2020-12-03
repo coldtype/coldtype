@@ -161,7 +161,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         #self.paint.setBlendMode(skia.BlendMode.kClear)
         return
     
-    def Composite(pens, rect, save_to, scale=1, context=None):
+    def Composite(pens, rect, save_to, scale=1, context=None, style=None):
         if context:
             info = skia.ImageInfo.MakeN32Premul(rect.w, rect.h)
             surface = skia.Surface.MakeRenderTarget(context, skia.Budgeted.kNo, info)
@@ -173,7 +173,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             if callable(pens):
                 pens(canvas) # direct-draw
             else:
-                SkiaPen.CompositeToCanvas(pens, rect, canvas, scale=scale)
+                SkiaPen.CompositeToCanvas(pens, rect, canvas, scale=scale, style=style)
 
         image = surface.makeImageSnapshot()
         image.save(save_to, skia.kPNG)
@@ -198,7 +198,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         del canvas
         stream.flush()
     
-    def CompositeToCanvas(pens, rect, canvas, scale=1):
+    def CompositeToCanvas(pens, rect, canvas, scale=1, style=None):
         if scale != 1:
             pens.scale(scale, scale, Point((0, 0)))
 
@@ -225,7 +225,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                     skia.Font(font, pen.style.fontSize),
                     skia.Paint(AntiAlias=True, Color=pen.style.fill.skia()))
             if state == 0:
-                SkiaPen(pen, rect, canvas, scale)
+                SkiaPen(pen, rect, canvas, scale, style=style)
         
         if isinstance(pens, DATPen):
             pens = [pens]

@@ -81,6 +81,7 @@ class renderable():
         preview_only=False,
         direct_draw=False,
         clip=False,
+        style="default",
         viewBox=True):
         """Base configuration for a renderable function"""
 
@@ -92,6 +93,7 @@ class renderable():
         self.custom_folder = custom_folder
         self.postfn = postfn
         self.last_passes = []
+        self.style = style
 
         self.watch = []
         for w in watch:
@@ -170,7 +172,7 @@ class renderable():
     
     def draw_preview(self, scale, canvas:skia.Canvas, rect, result, render_pass):
         sr = self.rect.scale(scale, "mnx", "mxx")
-        SkiaPen.CompositeToCanvas(result, sr, canvas, scale)
+        SkiaPen.CompositeToCanvas(result, sr, canvas, scale, style=self.style)
     
     def hide(self):
         self.hidden = True
