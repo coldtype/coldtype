@@ -12,4 +12,4 @@ from coldtype.animation import *
 #from coldtype.renderer.state import RendererState, Keylayer
 
 name = "coldtype"
-__version__ = "0.1.1"
+__version__ = "0.1.2"
