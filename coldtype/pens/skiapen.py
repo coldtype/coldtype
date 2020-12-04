@@ -44,6 +44,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         self.canvas = canvas
         self.rect = rect
         self.blendmode = None
+        self.style = style
 
         all_attrs = list(self.findStyledAttrs(style))
         skia_paint_kwargs = dict(AntiAlias=True)
@@ -148,6 +149,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             return True
     
     def shadow(self, clip=None, radius=10, color=Color.from_rgb(0,0,0,1)):
+        #print("SHADOW>", self.style, clip, radius, color)
         if clip:
             if isinstance(clip, Rect):
                 skia.Rect()

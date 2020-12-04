@@ -498,6 +498,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.container = None
         self.glyphName = None
         self.data = {}
+        self._current_attr_tag = "default"
     
     def __str__(self):
         return f"<DP(typo:int({self.typographic})({self.glyphName}))/tag:({self._tag}/data:{self.data})>"
@@ -572,8 +573,11 @@ class DATPen(RecordingPen, DATPenLikeObject):
             attrs = self.attrs["default"]
         return attrs
 
-    def attr(self, tag="default", field=None, **kwargs):
+    def attr(self, tag=None, field=None, **kwargs):
         """Set a style attribute on the pen."""
+        if not tag:
+            tag = self._current_attr_tag
+
         if field: # getting, not setting
             return self.attrs.get(tag).get(field)
         
@@ -605,6 +609,13 @@ class DATPen(RecordingPen, DATPenLikeObject):
                     attrs[k] = v
                 else:
                     attrs[k] = v
+        return self
+    
+    def lattr(self, tag, fn: Callable[["DATPen"], Optional["DATPen"]]):
+        was_tag = self._current_attr_tag
+        self._current_attr_tag = tag
+        fn(self)
+        self._current_attr_tag = was_tag
         return self
     
     def getFrame(self, th=False, tv=False):
@@ -1632,6 +1643,11 @@ class DATPenSet(DATPenLikeObject):
                 return None
         for p in self.pens:
             p.attr(key, **kwargs)
+        return self
+    
+    def lattr(self, tag, fn: Callable[[DATPen], Optional[DATPen]]):
+        for p in self.pens:
+            p.lattr(tag, fn)
         return self
     
     def removeOverlap(self):
