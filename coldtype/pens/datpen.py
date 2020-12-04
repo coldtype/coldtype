@@ -490,6 +490,7 @@ class DATPenLikeObject():
 class DATPen(RecordingPen, DATPenLikeObject):
     def __init__(self, **kwargs):
         super().__init__()
+        self._current_attr_tag = "default"
         self.clearAttrs()
         self.attr("default", **kwargs)
         self.frame = None
@@ -498,7 +499,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.container = None
         self.glyphName = None
         self.data = {}
-        self._current_attr_tag = "default"
     
     def __str__(self):
         return f"<DP(typo:int({self.typographic})({self.glyphName}))/tag:({self._tag}/data:{self.data})>"
@@ -576,7 +576,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def attr(self, tag=None, field=None, **kwargs):
         """Set a style attribute on the pen."""
         if not tag:
-            tag = self._current_attr_tag
+            if hasattr(self, "_current_attr_tag"): # TODO temporary for pickled pens
+                tag = self._current_attr_tag
+            else:
+                tag = "default"
 
         if field: # getting, not setting
             return self.attrs.get(tag).get(field)
