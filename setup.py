@@ -51,7 +51,7 @@ setuptools.setup(
         "ufo2ft",
         "unicodedata2",
         "numpy",
-        "watchdog",
+        "watchdog<=0.10.3",
         "noise",
         "PyOpenGL",
         "PyOpenGL-accelerate",

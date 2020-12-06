@@ -1383,6 +1383,7 @@ class Renderer():
     
     def on_modified(self, event):
         path = Path(event.src_path)
+        #print("!", path)
         if path in self.watchee_paths():
             if path.suffix == ".json":
                 try:
@@ -1409,7 +1410,10 @@ class Renderer():
                     pass
             
             idx = self.watchee_paths().index(path)
-            print(f">>> resave: {Path(event.src_path).relative_to(Path.cwd())}")
+            try:
+                print(f">>> resave: {Path(event.src_path).relative_to(Path.cwd())}")
+            except:
+                print(f">>> resave: {event.src_path}")
             
             if self.args.memory and process:
                 memory = bytesto(process.memory_info().rss)
