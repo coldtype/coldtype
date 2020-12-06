@@ -1,5 +1,6 @@
 from fontTools.misc.arrayTools import unionRect
 from fontTools.misc.transform import Transform
+from coldtype.interpolation import norm
 from enum import Enum
 import math
 
@@ -63,6 +64,26 @@ def txt_to_edge(txt):
             return None
     else:
         return txt
+
+
+def calc_vector(point1, point2):
+    x1, y1 = point1
+    x2, y2 = point2
+    dx = x2 - x1
+    dy = y2 - y1
+    return dx, dy
+
+
+def calc_angle(point1, point2):
+    dx, dy = calc_vector(point1, point2)
+    return math.atan2(dy, dx)
+
+
+def polar_coord(xy, angle, distance):
+    x, y = xy
+    nx = x + (distance * math.cos(angle))
+    ny = y + (distance * math.sin(angle))
+    return nx, ny
 
 
 def centered_square(rect):
@@ -342,6 +363,40 @@ class Point():
         if not y:
             y = x
         return Point((self.x * x, self.y * y))
+    
+    def interp(self, v, other):
+        sx, sy = self
+        ox, oy = other
+        return Point((norm(v, sx, ox), norm(v, sy, oy)))
+    
+    def project(self, angle, dist):
+        dx, dy = polar_coord((0, 0), math.radians(angle), dist)
+        return self.offset(dx, dy)
+    
+    def cdist(self, other):
+        sx, sy = self
+        ox, oy = other
+        opp = ox - sx
+        adj = oy - sy
+        if opp == 0:
+            if sy > oy:
+                return abs(adj), 180
+            else:
+                return abs(adj), 0
+        elif adj == 0:
+            if sx > ox:
+                return abs(opp), 270
+            else:
+                return abs(opp), 90
+        deg = math.atan(opp/adj)
+        dist = math.sqrt(math.pow(opp, 2) + math.pow(adj, 2))
+        return abs(dist), math.degrees(deg)
+    
+    def __eq__(self, o):
+        try:
+            return all([self.x == o.x, self.y == o.y])
+        except:
+            return False
 
     def __repr__(self):
         return "<Point" + str(self.xy()) + ">"

@@ -1314,7 +1314,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
             _c = []
             for step, pts in contour:
                 for pt in pts:
-                    _c.append(pt)
+                    _c.append(Point(pt))
             contours.append(_c)
         return contours
     
