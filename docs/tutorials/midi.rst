@@ -1,7 +1,7 @@
 MIDI
 ====
 
-There are two primary uses for MIDI in Coldtype programs, and they're kind of completely unrelated to each other, though both do use the MIDI protocols. The first (discussed first) is the use of MIDI controllers to set variables and trigger actions on running coldtype scripts. The second is the use of MIDI files (usually exported from audio software) to control animations.
+There are two primary uses for MIDI in Coldtype programs, and they're kind of completely unrelated to each other, though both do use the MIDI protocol. The first is the use of MIDI controllers to set variables and trigger actions on running coldtype scripts. The second is the use of MIDI files (usually exported from audio software) to control animations.
 
 Using MIDI controllers
 ----------------------
@@ -19,7 +19,7 @@ With that in mind, I'll use the Launch Control as an example. So with that devic
     2 Launch Control XL
     3 Launch Control XL HUI
 
-I'm including the unrelated devices because those might show up on your computer as well, depending on what you have plugged in. Basically, you just want to find the `exact` name of the device you're looking to use with Coldtype. In this case, that’s `Launch Control XL` (not the one with `HUI` in the name).
+I'm including the unrelated devices because those (or others) might show up on your computer as well, depending on what you have plugged in. Basically, you just want to find the `exact` name of the device you're looking to use with Coldtype. In this case, that’s ``"Launch Control XL"`` (not the one with `HUI` in the name).
 
 Once you know that, create a file at the root of user path (aka ``~``), called ``.coldtype.py``
 
