@@ -6,6 +6,10 @@ def stub(r, rs):
     out += (DATPen()
         .oval(r.inset(50))
         .f(0.8))
-    if br := rs.box_selection():
-        out += DATPen().rect(br).f(None).s(0).sw(10)
+    if box := rs.shape_selection():
+        if rs.mouse_down:
+            box.f(None).s(hsl(0.6, s=1)).sw(5)
+        else:
+            box.f(hsl(0.7, a=0.2))
+        out += box
     return out
