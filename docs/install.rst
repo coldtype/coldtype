@@ -1,9 +1,8 @@
 Install
 =======
 
-* Install a Python >= 3.7, <= 3.8
-* For the moment, Python 3.9 will not work b/c of an issue with the skia graphics library, though that issue should be resolved soon
-* If you don’t have a Python >= 3.7, I’d recommend Python 3.8.6 (available from `python.org/downloads <https://python.org/downloads>`_ if you scroll down a little)
+* Install a Python >= 3.7
+* If you don’t have a Python >= 3.7, I’d recommend the latest Python (available from `python.org/downloads <https://python.org/downloads>`_)
 
 Option A
 --------
@@ -12,7 +11,7 @@ If you want to try coldtype in the coldtype repo itself (**recommended**):
 
 * Clone the coldtype repository, ala ``git clone https://github.com/goodhertz/coldtype``
 * ``cd`` into the the cloned coldtype repository on your computer
-* Create a virtual environment, ala ``python3.8 -m venv venv --prompt=coldtype`` on the command line
+* Create a virtual environment, ala ``python3.9 -m venv venv --prompt=coldtype`` on the command line
 * Then ``source venv/bin/activate`` to start your venv
 * Then ``pip install -e .`` (This adds the ``coldtype`` command to your virtual environment)
 * Then ``coldtype``
@@ -29,12 +28,14 @@ With that window open, try hitting the arrow keys on your keyboard to go backwar
 
     <div style="padding:56.25% 0 0 0;position:relative;margin-bottom:50px"><iframe src="https://player.vimeo.com/video/470790061?title=0&byline=0&portrait=0" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div><script src="https://player.vimeo.com/api/player.js"></script>
 
+**👆 Python 3.9 now works with skia-python, so the note in that video about getting 3.8 is no longer correct.**
+
 Option B
 --------
 
 If you want to try coldtype in a blank virtual environment:
 
-Using a virtualenv (based on a python >= 3.8) (aka ``python3.8 -m venv venv --prompt=<your prompt here>`` + ``source venv/bin/activate``), there are two routes: (B.1) the packaged distribution, or (B.2) installing a cloned version of the repo into your project’s venv.
+Using a virtualenv (based on a python >= 3.7) (aka ``python3.9 -m venv venv --prompt=<your prompt here>`` + ``source venv/bin/activate``), there are two routes: (B.1) the packaged distribution, or (B.2) installing a cloned version of the repo into your project’s venv.
 
 I’d recommend Option B.2 for now if your goal is experimentation, since Coldtype is under active development. That said, you might lose some reproduceability with option B.2 since there's no versioning of coldtype itself with that approach. (If you’re worried about reproduceability, just make sure to note the coldtype sha somewhere so you can restore that state if you need to.)
 

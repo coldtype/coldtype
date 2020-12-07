@@ -9,12 +9,19 @@ def midi_controller_lookup_fn(name, column_starts=[], cmc={}):
     """
     # TODO use the name so individual devices are targetable
     def lookup(ctrl, default=None):
-        column = int(str(ctrl)[0])
-        row = int(str(ctrl)[1])
-        mnum = column_starts[row]+(column-1)
         scoped = cmc.get(name, {})
+        if column_starts:
+            column = int(str(ctrl)[0])
+            row = int(str(ctrl)[1])
+            mnum = column_starts[row]+(column-1)
+        else:
+            mnum = ctrl
         return scoped.get(str(mnum), 0.5 if default == None else default)
     return lookup
+
+
+def Generic(name, cmc):
+    return midi_controller_lookup_fn(name, cmc=cmc)
 
 
 def LaunchControlXL(cmc):
