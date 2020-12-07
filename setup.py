@@ -51,7 +51,7 @@ setuptools.setup(
         "ufo2ft",
         "unicodedata2",
         "numpy",
-        "watchdog<=0.10.3",
+        "watchdog<=0.10.3", # https://github.com/gorakhargosh/watchdog/issues/702
         "noise",
         "PyOpenGL",
         "PyOpenGL-accelerate",
