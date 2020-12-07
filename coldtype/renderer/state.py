@@ -1,7 +1,7 @@
 from enum import Enum
 from pathlib import Path
 import json, glfw, skia, re
-from coldtype import hsl, Action, Keylayer, Point
+from coldtype import hsl, Action, Keylayer, Point, Rect, DATPen
 
 
 class RendererStateEncoder(json.JSONEncoder):
@@ -49,6 +49,7 @@ class RendererState():
         self.cmd = None
         self.arrow = None
         self.mods = Mods()
+        self.mouse_history = None
         self.mouse = None
         self.mouse_down = False
         self.xray = True
@@ -103,20 +104,35 @@ class RendererState():
         if action == glfw.PRESS:
             self.mouse_down = True
             self.mouse = pos.scale(1/self.preview_scale)
+            if not self.mouse_history:
+                self.mouse_history = [[]]
+            else:
+                self.mouse_history.append([])
+            self.mouse_history[-1].append(self.mouse)
             return Action.PreviewStoryboard
         elif action == glfw.RELEASE:
             self.mouse_down = False
             new_mouse = pos.scale(1/self.preview_scale)
+            self.mouse_history[-1].append(new_mouse)
             if self.mouse:
-                if new_mouse.x != self.mouse.x and new_mouse.y != self.mouse.y:
-                    return Action.PreviewStoryboard
+                #if new_mouse.x != self.mouse.x and new_mouse.y != self.mouse.y:
+                return Action.PreviewStoryboard
+    
+    def shape_selection(self):
+        # TODO could be an arbitrary lasso-style thing?
+        if self.mouse_history:
+            start = self.mouse_history[-1][0]
+            end = self.mouse_history[-1][-1]
+            rect = Rect.FromPoints(start, end)
+            return DATPen().rect(rect)
 
     def on_mouse_move(self, pos):
         if self.mouse_down:
             pos = pos.scale(1/self.preview_scale)
             if self.mouse:
-                if abs(pos.x - self.mouse.x) > 5 or abs(pos.y - self.mouse.y) > 5:
+                if True or abs(pos.x - self.mouse.x) > 5 or abs(pos.y - self.mouse.y) > 5:
                     self.mouse = pos
+                    self.mouse_history[-1].append(self.mouse)
                     return Action.PreviewStoryboard
     
     def on_character(self, codepoint):
