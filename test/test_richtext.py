@@ -1,5 +1,6 @@
 from coldtype.test import *
-from coldtype.text.richtext import HTMLRichText
+from coldtype.text.richtext import PythonCode
+from functools import reduce
 
 
 mistral = Font.Cacheable("~/Type/fonts/fonts/_script/MistralD.otf")
@@ -25,7 +26,7 @@ And one[b] more[b] line
 
 @test()
 def test_rich(r):
-    pens = (RichText(txt1, render_txt, r).xa().align(r, tv=1))
+    pens = (RichText(r, txt1, render_txt).xa().align(r, tv=1))
     
     pens[1][0].rotate(180).translate(0, -5)
     pens[1][1].f(Gradient.H(
@@ -42,7 +43,7 @@ And ¬one more≤b≥ ¬line
 
 @test(solo=0)
 def test_rich_custom(r):
-    pens = (RichText(txt2, render_txt, r,
+    pens = (RichText(r, txt2, render_txt,
         tag_delimiters=["≤", "≥"],
         visible_boundaries=["¶"],
         invisible_boundaries=["¬"])
@@ -68,6 +69,8 @@ def test_rich_custom(r):
     return pens
 
 code = """
+# a rich function
+
 def rich(txt:str):
     # a comment
     text = txt.upper()
@@ -75,7 +78,6 @@ def rich(txt:str):
 """
 
 def render_code(txt, styles):
-    #print(txt, styles)
     if "Keyword" in styles:
         return txt, Style(choc, 50, fill=hsl(0.9, s=1), bs=2)
     if "Literal.String.Affix" in styles:
@@ -97,17 +99,24 @@ def render_code(txt, styles):
 
 @test(solo=0)
 def test_rich_code(r):
-    return (HTMLRichText(code, render_code, r.inset(100),
+    rt = (PythonCode(r.inset(100), code, render_code,
         graf_style=GrafStyle(leading=12))
-        .align(r, tv=1)
-        .scale(2))
+        #.align(r, tv=1)
+        .scale(1)
+        .remove_blanklines())
+    
+    out = DATPenSet()
+    for line in rt:
+        out += DATPen().rect(line.getFrame()).f(hsl(0.3, a=0.1))
+    out += rt
+    return out
 
-txt3 = """Header [h]
-Text text text
-last line [i]"""
+txt3 = """H [h]
+
+Text
+footnote, innit? [i]"""
 
 def render_txt2(txt, styles):
-    #print(txt, styles)
     blanc = "~/Type/fonts/fonts/_text/Blanco-"
     if "i" in styles:
         return txt, Style(blanc + "Italic.otf", 32)
@@ -115,10 +124,26 @@ def render_txt2(txt, styles):
         return txt, Style(blanc + "Bold.otf", 72)
     return txt, Style(blanc + "Regular.otf", 42)
 
-@test()
+@test(solo=0)
 def test_plainish(r):
-    return (RichText(txt3, render_txt2, r)
+    rt = (RichText(r, txt3, render_txt2, blankfill="¶")
         .xa()
         .align(r)
         .scale(2)
-        .f(0))
+        .f(0)
+        -.remove_blanklines())
+    return rt
+
+txt4 = """
+Hello, [a]
+World!
+"""
+
+@test(solo=0)
+def test_style_key_lookup(r):
+    return (RichText(
+        r, txt4, {
+            "a": Style(mistral, 200, fill=hsl(0.3)),
+            "default": Style(blanco, 100, fill=bw(0))})
+        .xa()
+        .align(r))

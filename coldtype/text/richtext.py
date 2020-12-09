@@ -1,12 +1,13 @@
 import re
 
-from coldtype.pens.datpen import DATPenSet
+from coldtype.pens.datpen import DATPenSet, DATPen
 from coldtype.text.composer import Graf, GrafStyle, Lockup
 from coldtype.text.reader import StyledString, Style
 from coldtype.color import hsl
 
 from pathlib import PurePath
-from typing import Optional, List, Callable, Tuple
+from typing import Optional, List, Callable, Tuple, Union
+from functools import reduce
 
 try:
     from pygments import highlight
@@ -24,24 +25,29 @@ Very experimental module to support rich-text from annotated strings, like a sup
 
 class RichText(DATPenSet):
     def __init__(self,
-        text,
-        render_text_fn:Callable[[str, List[str]], Tuple[str, Style]],
         rect,
+        text,
+        render_text_fn:Union[dict, Callable[[str, List[str]], Tuple[str, Style]]],
         fit=None,
         graf_style=GrafStyle(leading=20),
         tag_delimiters=["[", "]"],
         visible_boundaries=[" "],
         invisible_boundaries=[],
-        union_styles=True):
+        union_styles=True,
+        blankfill="¶",
+        strip=True):
         "WIP"
         super().__init__()
         self.tag_delimiters = tag_delimiters
         self.visible_boundary_chars = visible_boundaries
         self.invisible_boundary_chars = invisible_boundaries
         self.union_styles = union_styles
+        self.blankfill = blankfill
         
         if isinstance(text, PurePath):
             text = text.read_text()
+        if strip:
+            text = text.strip()
         
         self.pens = self.parse_block(text, render_text_fn, rect, fit, graf_style).pens
 
@@ -102,7 +108,13 @@ class RichText(DATPenSet):
                 alt_line_result.append([slug + b, styles])
             alt_parsed_lines.append(alt_line_result)
 
-        parsed_lines = [pl for pl in alt_parsed_lines if pl]
+        parsed_lines = []
+        for pl in alt_parsed_lines:
+            #print(">", pl)
+            if pl:
+                parsed_lines.append(pl)
+            elif self.blankfill:
+                parsed_lines.append([[self.blankfill, ["blank"]]])
 
         lines = []
         groupings = []
@@ -114,7 +126,15 @@ class RichText(DATPenSet):
             slugs = []
             texts = []
             for txt, styles in line:
-                ftxt, style = render_text_fn(txt, styles)
+                if callable(render_text_fn):
+                    ftxt, style = render_text_fn(txt, styles)
+                else:
+                    style = styles[0] if len(styles) > 0 else "default"
+                    ftxt = txt
+                    if style in render_text_fn:
+                        style = render_text_fn[style]
+                    else:
+                        style = render_text_fn["default"]
                 texts.append([ftxt, idx, style, styles])
 
             grouped_texts = []
@@ -170,6 +190,17 @@ class RichText(DATPenSet):
     
     def filter_text(self, text, flags=re.I):
         return self.pfilter(lambda i, p: re.match(text, p.data.get("txt", ""), flags=flags))
+    
+    def remove_blanklines(self, blank=None):
+        if not blank and self.blankfill:
+            blank = self.blankfill
+        
+        for line in self.pens:
+            txt = reduce(lambda acc, p: p.data.get("txt", "") + acc, line, "")
+            if txt == blank:
+                line.pens = [DATPen()]
+        
+        return self
 
 
 if highlight:
@@ -184,11 +215,11 @@ if highlight:
                     outfile.write(token)
     
 
-    class HTMLRichText(RichText):
+    class PythonCode(RichText):
         def __init__(self,
+            rect,
             text,
             render_text_fn:Callable[[str, List[str]], Tuple[str, Style]],
-            rect,
             fit=None,
             graf_style=GrafStyle(leading=20)):
 
@@ -197,7 +228,7 @@ if highlight:
 
             txt = highlight(text, PythonLexer(), ColdtypeFormatter())
             super().__init__(
-                txt, render_text_fn, rect,
+                rect, txt, render_text_fn,
                 fit=fit, graf_style=graf_style,
                 tag_delimiters=["≤", "≥"],
                 visible_boundaries=[],
@@ -222,5 +253,6 @@ if highlight:
                 "Literal.String.Doc": (r, hsl(0.6, l=0.4)),
                 "Literal.Number.Float": (r, hsl(0.9, s=0.7)),
                 "Literal.Number.Integer": (r, hsl(0.45)),
-                "Comment.Single": (r, (0.3))
+                "Comment.Single": (r, (0.3)),
+                "default": (r, 0.5),
             }
