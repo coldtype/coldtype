@@ -87,7 +87,7 @@ class Renderer():
         pargs = dict(
             version=parser.add_argument("-v", "--version", action="store_true", default=False, help="Display version"),
 
-            watch=parser.add_argument("-w", "--watch", action="store_true", default=True, help="Watch for changes to source files"),
+            no_watch=parser.add_argument("-nw", "--no-watch", action="store_true", default=False, help="Preventing watching for changes to source files"),
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
             
@@ -166,7 +166,7 @@ class Renderer():
 
         self.args = parser.parse_args()
         if self.args.is_subprocess or self.args.all:
-            self.args.watch = False
+            self.args.no_watch = True
         
         self.disable_syntax_mods = self.args.disable_syntax_mods
         self.filepath = None
@@ -839,14 +839,14 @@ class Renderer():
                 print("Please run `pip install rtmidi` in your venv")
                 self.on_exit()
                 return
-            if not self.args.watch:
+            if self.args.no_watch:
                 should_halt = True
             else:
                 should_halt = self.before_start()
         else:
             should_halt = self.before_start()
         
-        if self.args.watch:
+        if not self.args.no_watch:
             self.initialize_gui_and_server()
         else:
             self.window = None
@@ -866,7 +866,7 @@ class Renderer():
                     self.on_exit()
                     return
             self.on_start()
-            if self.args.watch:
+            if not self.args.no_watch:
                 self.listen_to_glfw()
             else:
                 self.on_exit()
