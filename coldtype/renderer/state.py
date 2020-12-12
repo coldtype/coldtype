@@ -100,6 +100,10 @@ class RendererState():
             print("No source; cannot persist state")
     
     def on_mouse_button(self, pos, btn, action, mods):
+        if btn == 1 and action == glfw.PRESS:
+            self.mouse_history = None
+            return Action.PreviewStoryboard
+        
         self.mods.update(mods)
         if action == glfw.PRESS:
             self.mouse_down = True
@@ -112,11 +116,12 @@ class RendererState():
             return Action.PreviewStoryboard
         elif action == glfw.RELEASE:
             self.mouse_down = False
-            new_mouse = pos.scale(1/self.preview_scale)
-            self.mouse_history[-1].append(new_mouse)
-            if self.mouse:
-                #if new_mouse.x != self.mouse.x and new_mouse.y != self.mouse.y:
-                return Action.PreviewStoryboard
+            if self.mouse_history:
+                new_mouse = pos.scale(1/self.preview_scale)
+                self.mouse_history[-1].append(new_mouse)
+                if self.mouse:
+                    #if new_mouse.x != self.mouse.x and new_mouse.y != self.mouse.y:
+                    return Action.PreviewStoryboard
     
     def shape_selection(self):
         # TODO could be an arbitrary lasso-style thing?
@@ -125,6 +130,22 @@ class RendererState():
             end = self.mouse_history[-1][-1]
             rect = Rect.FromPoints(start, end)
             return DATPen().rect(rect)
+        
+    def polygon_selection(self, clear_on="save"):
+        mh = self.mouse_history
+        if not mh:
+            return False, DATPen()
+        
+        polygon = DATPen()
+        polygon.hull([m[-1] for m in mh])
+        polygon.f(None).s(hsl(0.75, s=1, a=0.5)).sw(5)
+        polygon.closePath()
+        
+        if self.cmd == clear_on:
+            self.mouse_history = None
+            return True, polygon
+        else:
+            return False, polygon
 
     def on_mouse_move(self, pos):
         if self.mouse_down:

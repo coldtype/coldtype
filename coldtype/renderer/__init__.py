@@ -932,14 +932,17 @@ class Renderer():
             print("Release failed", str(e))
     
     def on_mouse_button(self, _, btn, action, mods):
-        if self.state.keylayer != 0:
-            pos = Point(glfw.get_cursor_pos(self.window)).scale(2) # TODO should this be preview-scale?
-            pos[1] = self.last_rect.h - pos[1]
-            requested_action = self.state.on_mouse_button(pos, btn, action, mods)
-            if requested_action:
-                self.action_waiting = requested_action
+        if self.state.keylayer != Keylayer.Editing:
+            return
+        pos = Point(glfw.get_cursor_pos(self.window)).scale(2) # TODO should this be preview-scale?
+        pos[1] = self.last_rect.h - pos[1]
+        requested_action = self.state.on_mouse_button(pos, btn, action, mods)
+        if requested_action:
+            self.action_waiting = requested_action
     
     def on_mouse_move(self, _, xpos, ypos):
+        if self.state.keylayer != Keylayer.Editing:
+            return
         pos = Point((xpos, ypos)).scale(2)
         pos[1] = self.last_rect.h - pos[1]
         requested_action = self.state.on_mouse_move(pos)
