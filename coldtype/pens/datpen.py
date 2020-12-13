@@ -815,6 +815,28 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = rounded
         return self
 
+    def round_to(self, rounding):
+        """Round the values of this pen to nearest multiple of rounding."""
+        def rt(v, mult):
+            rndd = float(round(v / mult) * mult)
+            if rndd.is_integer():
+                return int(rndd)
+            else:
+                return rndd
+        
+        rounded = []
+        for t, pts in self.value:
+            _rounded = []
+            for p in pts:
+                if p:
+                    x, y = p
+                    _rounded.append((rt(x, rounding), rt(y, rounding)))
+                else:
+                    _rounded.append(p)
+            rounded.append((t, _rounded))
+        self.value = rounded
+        return self
+
     def simplify(self):
         """DO NOT USE"""
         import numpy as np
@@ -1420,12 +1442,21 @@ class DATPen(RecordingPen, DATPenLikeObject):
             self.value = dp.value
             return self
     
-    def gridlines(self, rect, x=20, y=None):
+    def gridlines(self, rect, x=20, y=None, absolute=False):
         """Construct a grid in the pen using `x` and (optionally) `y` subdivisions"""
+        xarg = x
+        yarg = y or x
+        if absolute:
+            x = int(rect.w / xarg)
+            y = int(rect.h / yarg)
+        else:
+            x = xarg
+            y = yarg
+        
         for _x in rect.subdivide(x, "minx"):
             if _x.x > 0 and _x.x > rect.x:
                 self.line([_x.point("NW"), _x.point("SW")])
-        for _y in rect.subdivide(y or x, "miny"):
+        for _y in rect.subdivide(y, "miny"):
             if _y.y > 0 and _y.y > rect.y:
                 self.line([_y.point("SW"), _y.point("SE")])
         return self.f(None).s(0, 0.1).sw(3)
@@ -1672,6 +1703,12 @@ class DATPenSet(DATPenLikeObject):
         """Round all values for all pens in this set"""
         for p in self.pens:
             p.round(rounding)
+        return self
+    
+    def round_to(self, rounding):
+        """Round all values for all pens in this set to nearest multiple of rounding value (rather than places, as in `round`)"""
+        for p in self.pens:
+            p.round_to(rounding)
         return self
     
     def map(self, fn: Callable[[int, DATPen], Optional[DATPen]]):

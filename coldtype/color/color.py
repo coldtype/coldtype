@@ -86,6 +86,16 @@ class Color:
     
     def __str__(self):
         return "<Color:rgb({:.1f},{:.1f},{:.1f})/a={:.1f}>".format(self.r, self.g, self.b, self.a)
+    
+    def to_code(self):
+        if self.a == 1:
+            if self.s == 0:
+                return f"bw({self.l})"
+        elif self.a < 1:
+            if self.s == 0:
+                return f"bw({self.l}, {self.a})"
+        
+        return f"hsl({round(self.h/360.0, 2)}, {round(self.s, 2)}, {round(self.l, 2)}, {round(self.a, 2)})"
 
     def with_alpha(self, alpha):
         return Color(self.r, self.g, self.b, alpha)

@@ -137,10 +137,10 @@ class RendererState():
             return False, DATPen()
         
         polygon = DATPen()
-        polygon.hull([m[-1] for m in mh])
+        polygon.line([m[-1] for m in mh])
         polygon.f(None).s(hsl(0.75, s=1, a=0.5)).sw(5)
-        polygon.closePath()
-        
+        #polygon.closePath()
+
         if self.cmd == clear_on:
             self.mouse_history = None
             return True, polygon
@@ -219,6 +219,13 @@ class RendererState():
                 return Action.PreviewStoryboard
             elif key == glfw.KEY_F and self.keylayer == Keylayer.Editing:
                 self.xray = not self.xray
+                return Action.PreviewStoryboard
+            elif key == glfw.KEY_Z and self.keylayer == Keylayer.Editing:
+                if self.mouse_history:
+                    if len(self.mouse_history) > 1:
+                        self.mouse_history = self.mouse_history[:-1]
+                    else:
+                        self.mouse_history = None
                 return Action.PreviewStoryboard
         
         if key == glfw.KEY_S and mods & glfw.MOD_SUPER:
