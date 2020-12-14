@@ -194,6 +194,11 @@ class RendererState():
                 self.keybuffer = self.keybuffer[:-1]
                 return Action.PreviewStoryboard
         elif key == glfw.KEY_ESCAPE:
+            if self.keylayer == Keylayer.Editing:
+                if self.mouse_history:
+                    self.mouse_history = None
+                    return Action.PreviewStoryboard
+            
             self.exit_keylayer()
             return Action.PreviewStoryboard
 
