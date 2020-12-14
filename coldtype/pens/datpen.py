@@ -515,6 +515,32 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def __sub__(self, item):
         return DATPenSet([self])
     
+    def to_code(self):
+        t = None
+        if self._tag and self._tag != "?":
+            t = self._tag
+        out = "(DATPen()"
+        if t:
+            out += f"\n    .tag(\"{t}\")"
+        for mv, pts in self.value:
+            out += "\n"
+            if len(pts) > 0:
+                spts = ", ".join([f"{(x, y)}" for (x, y) in pts])
+                out += f"    .{mv}({spts})"
+            else:
+                out += f"    .{mv}()"
+        for k, v in self.attrs.get("default").items():
+            if v:
+                if k == "fill":
+                    out += f"\n    .f({v.to_code()})"
+                elif k == "stroke":
+                    out += f"\n    .s({v['color'].to_code()})"
+                    out += f"\n    .sw({v['weight']})"
+                else:
+                    print("No code", k, v)
+        out += ")"
+        return out
+    
     def vl(self, value):
         self.value = value
         return self
@@ -1522,6 +1548,26 @@ class DATPenSet(DATPenLikeObject):
     
     def __len__(self):
         return len(self.pens)
+    
+    def to_code(self):
+        out = "(DATPenSet()"
+
+        t = None
+        if self._tag and self._tag != "?":
+            t = self._tag
+        if t:
+            out += f"\n    .tag(\"{t}\")"
+
+        for pen in self.pens:
+            for idx, line in enumerate(pen.to_code().split("\n")):
+                if idx == 0:
+                    out += f"\n    .append{line}"
+                else:
+                    out += f"\n    {line}"
+            out += ""
+
+        out += ")"
+        return out
     
     def print_tree(self, depth=0):
         """Print a hierarchical representation of the pen set"""
