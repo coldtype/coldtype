@@ -133,6 +133,15 @@ class DATPenLikeObject():
         """For conveniently marking a DATPen(Set) w/o having to put it into some other data structure."""
         self._tag = tag
         return self
+
+    def add_data(self, key, value):
+        self.data[key] = value
+        return self
+    
+    def editable(self, tag):
+        self.tag(tag)
+        self.editable = True
+        return self
     
     def getTag(self):
         """Retrieve the tag (could probably be a real property)"""
@@ -485,6 +494,14 @@ class DATPenLikeObject():
         dpio.data["fn_src"] = fn_src
         pickle.dump(dpio, open(path, "wb"))
         return dpio
+    
+    def pickle(self, dst):
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        pickle.dump(self, open(str(dst), "wb"))
+        return self
+    
+    def Unpickle(self, src):
+        return pickle.load(open(str(src), "rb"))
 
 
 class DATPen(RecordingPen, DATPenLikeObject):
