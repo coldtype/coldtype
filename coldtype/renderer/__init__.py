@@ -749,6 +749,9 @@ class Renderer():
             print("exit>", self.exit_code)
         sys.exit(self.exit_code)
     
+    def set_title(self, text):
+        glfw.set_window_title(self.window, text)
+    
     def initialize_gui_and_server(self):
         try:
             self.server = echo_server()
@@ -809,9 +812,9 @@ class Renderer():
         #self.watch_file_changes()
 
         if len(self.watchees) > 0:
-            glfw.set_window_title(self.window, self.watchees[0][1].name)
+            self.set_title(self.watchees[0][1].name)
         else:
-            glfw.set_window_title(self.window, "coldtype")
+            self.set_title("coldtype")
 
         self.hotkeys = None
         try:
@@ -931,9 +934,13 @@ class Renderer():
         except Exception as e:
             print("Release failed", str(e))
     
+    def allow_mouse(self):
+        return self.state.keylayer == Keylayer.Editing
+    
     def on_mouse_button(self, _, btn, action, mods):
-        if self.state.keylayer != Keylayer.Editing:
+        if not self.allow_mouse():
             return
+        
         pos = Point(glfw.get_cursor_pos(self.window)).scale(2) # TODO should this be preview-scale?
         pos[1] = self.last_rect.h - pos[1]
         requested_action = self.state.on_mouse_button(pos, btn, action, mods)

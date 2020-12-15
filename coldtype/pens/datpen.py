@@ -249,12 +249,19 @@ class DATPenLikeObject():
         else:
             return self.scale(h, v)
     
-    def scaleToWidth(self, w):
+    def scaleToWidth(self, w, shrink_only=False):
         """Scale this shape horizontally"""
-        return self.scale(w / self.bounds().w, 1)
+        b = self.bounds()
+        if shrink_only and b.w < w:
+            return self
+        else:
+            return self.scale(w / self.bounds().w, 1)
     
-    def scaleToHeight(self, h):
+    def scaleToHeight(self, h, shrink_only=False):
         """Scale this shape horizontally"""
+        b = self.bounds()
+        if shrink_only and b.h < h:
+            return self
         return self.scale(1, h / self.bounds().h)
     
     def trackToRect(self, rect, pullToEdges=False, r=0):
@@ -371,7 +378,15 @@ class DATPenLikeObject():
         return self
     
     def sleep(self, time):
+        """Sleep call within the chain (if you want to measure something)"""
         sleep(time)
+        return self
+    
+    def cond(self, condition, if_true: Callable[["DATPenLikeObject"], None], if_false=Callable[["DATPenLikeObject"], None]):
+        if condition:
+            if_true(self)
+        else:
+            if_false(self)
         return self
     
     def _get_renderer_state(self, pen_class, context):
