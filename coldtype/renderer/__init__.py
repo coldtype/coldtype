@@ -935,7 +935,8 @@ class Renderer():
             print("Release failed", str(e))
     
     def allow_mouse(self):
-        return self.state.keylayer == Keylayer.Editing
+        return True
+        #return self.state.keylayer == Keylayer.Editing
     
     def on_mouse_button(self, _, btn, action, mods):
         if not self.allow_mouse():
@@ -948,8 +949,9 @@ class Renderer():
             self.action_waiting = requested_action
     
     def on_mouse_move(self, _, xpos, ypos):
-        if self.state.keylayer != Keylayer.Editing:
+        if not self.allow_mouse():
             return
+        
         pos = Point((xpos, ypos)).scale(2)
         pos[1] = self.last_rect.h - pos[1]
         requested_action = self.state.on_mouse_move(pos)
