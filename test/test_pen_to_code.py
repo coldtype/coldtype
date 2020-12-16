@@ -17,7 +17,9 @@ def to_code(r):
             .f(hsl(0.75, 0.6, 0.7))
             .s(1)
             .sw(5)
-            .tag("circle2"))
+            .tag("circle2")
+            .add_data("circular", True)
+            .add_data("cool", dict(very=True)))
     ]).tag("circles")
 
     __sibling__("_test_pen_to_code_output.py").write_text(dps.round_to(1).to_code())
@@ -30,4 +32,6 @@ def from_code(r):
         dps = eval(gen_code.read_text())
         print(dps.getTag())
         dps[1].f(hsl(0.05, l=0.6)).translate(50, 0)
+        assert dps[1].data["circular"] == True
+        assert dps[1].data["cool"]["very"] == True
         return dps

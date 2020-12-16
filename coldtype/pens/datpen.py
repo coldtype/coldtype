@@ -134,8 +134,11 @@ class DATPenLikeObject():
         self._tag = tag
         return self
 
-    def add_data(self, key, value):
-        self.data[key] = value
+    def add_data(self, key, value=None):
+        if value is None:
+            self.data = key
+        else:
+            self.data[key] = value
         return self
     
     def editable(self, tag):
@@ -554,6 +557,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
         out = "(DATPen()"
         if t:
             out += f"\n    .tag(\"{t}\")"
+
+        if self.data:
+            out += f"\n    .add_data({repr(self.data)})"
+
         for mv, pts in self.value:
             out += "\n"
             if len(pts) > 0:
@@ -1589,6 +1596,9 @@ class DATPenSet(DATPenLikeObject):
             t = self._tag
         if t:
             out += f"\n    .tag(\"{t}\")"
+        
+        if self.data:
+            out += f"\n    .add_data({repr(self.data)})"
 
         for pen in self.pens:
             for idx, line in enumerate(pen.to_code().split("\n")):
