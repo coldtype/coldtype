@@ -5,11 +5,15 @@ import copy
 
 from urllib.parse import parse_qs
 
-from coldtype.animation import Timeable
+from coldtype.animation import Timeable, Frame
 from coldtype.animation.easing import ease
 from coldtype.animation.timeline import Timeline
 from coldtype.text import StyledString, Lockup, Graf, GrafStyle
 from coldtype.pens.datpen import DATPen, DATPenSet
+from coldtype.color import *
+
+from typing import Optional
+from typing import Callable
 
 
 VIDEO_OFFSET = 86313 # why is this?
@@ -153,6 +157,8 @@ class Clip(Timeable):
             for m in markers:
                 if self.inpoint <= m.start and self.outpoint > m.end:
                     self.type = ClipType.NewLine #ClipType.ClearScreen
+            
+            self.original_text = str(self.text)
     
     def addJoin(self, clip, direction):
         if direction == -1:
@@ -313,12 +319,13 @@ class ClipGroup(Timeable):
             return self.clips[-1].inline_data.get(field, default)
     
     def currentStyleMatching(self, f, styleName):
+        """deprecated"""
         for si in self.style_indices:
             sc = self.timeline.animation[si].current(f.i)
             if sc and styleName in sc.text:
                 return sc
     
-    def current_style_matching(self, f, identifier):
+    def current_style_matching(self, f:Frame, identifier:Callable[[Clip], bool]):
         for si in self.style_indices:
             sc = self.timeline.animation[si].current(f.i)
             if sc and identifier(sc):
