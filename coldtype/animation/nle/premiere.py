@@ -318,6 +318,12 @@ class ClipGroup(Timeable):
             if sc and styleName in sc.text:
                 return sc
     
+    def current_style_matching(self, f, identifier):
+        for si in self.style_indices:
+            sc = self.timeline.animation[si].current(f.i)
+            if sc and identifier(sc):
+                return sc
+    
     def lines(self, ignore_newlines=False):
         lines = []
         line = []
