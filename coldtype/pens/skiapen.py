@@ -6,7 +6,8 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
 
-from coldtype.pens.datpen import DATPen, DATText
+from coldtype.pens.datpen import DATPen
+from coldtype.pens.dattext import DATText
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 from coldtype.color import Color

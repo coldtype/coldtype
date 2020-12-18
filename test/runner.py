@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 
 from coldtype import *
 from coldtype.renderer import Renderer
@@ -14,6 +15,13 @@ for p in sources:
     all_tests = sorted(all_tests)
 
 class TestRunner(Renderer):
+    def before_start(self):
+        if self.args.test:
+            self.test_index = all_tests.index(Path(self.args.test))
+        else:
+            self.test_index = 0
+        self.load_test(0, rerender=False)
+
     def on_message(self, message, action):
         if action == "next_test":
             self.load_test(+1)
@@ -22,25 +30,30 @@ class TestRunner(Renderer):
         else:
             super().on_message(message, action)
     
-    def load_test(self, inc):
-        if hasattr(self, "test_index"):
-            self.test_index += inc
-        else:
-            self.test_index = 0
-        if self.test_index == -1:
-            self.test_index = len(all_tests) - 1
-        elif self.test_index == len(all_tests):
-            self.test_index = 0
-        
+    def load_test(self, inc, rerender=True):
+        self.test_index = cycle_idx(all_tests, self.test_index + inc)
         test_path = all_tests[self.test_index]
         print("---" * 20)
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>", test_path)
+        print(">>>", test_path)
         self.reset_filepath(str(test_path))
-        self.reload_and_render(Action.PreviewStoryboard)
+        if rerender:
+            self.reload_and_render(Action.PreviewStoryboard)
+            self.set_title(str(test_path))
+    
+    def restart(self):
+        print("----------------------------")
+        args = sys.argv
+        test_path = str(all_tests[self.test_index])
+        if len(args) > 1:
+            args[-1] = test_path
+        else:
+            args.append(test_path)
+        print(sys.executable, ["-m"]+args)
+        os.execl(sys.executable, *(["-m"]+args))
 
 
 def main():
-    pargs, parser = Renderer.Argparser(name="pb.py", file=False, nargs=[["action", "read"], ["catalog", None]])
+    pargs, parser = Renderer.Argparser(name="pb.py", file=False, nargs=[["test", None]])
     TestRunner(parser).main()
 
 if __name__ == "__main__":

@@ -120,8 +120,8 @@ class RendererState():
                 new_mouse = pos.scale(1/self.preview_scale)
                 self.mouse_history[-1].append(new_mouse)
                 if self.mouse:
-                    #if new_mouse.x != self.mouse.x and new_mouse.y != self.mouse.y:
-                    return Action.PreviewStoryboard
+                    if new_mouse.x != self.mouse.x and new_mouse.y != self.mouse.y:
+                        return Action.PreviewStoryboard
     
     def shape_selection(self):
         # TODO could be an arbitrary lasso-style thing?

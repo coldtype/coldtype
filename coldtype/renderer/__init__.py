@@ -891,7 +891,7 @@ class Renderer():
         if action:
             enum_action = self.lookup_action(action)
             if enum_action:
-                print("ENUM_ACTION", enum_action)
+                print(">", enum_action)
                 self.on_action(enum_action, message)
             else:
                 print(">>> (", action, ") is not a recognized action")
@@ -1485,6 +1485,10 @@ class Renderer():
         for r in self.running_renderers:
             if r:
                 r.terminate()
+    
+    def restart(self):
+        print("> RESTARTING...")
+        os.execl(sys.executable, *(["-m"]+sys.argv))
 
     def on_exit(self, restart=False):
         #if self.args.watch:
@@ -1509,8 +1513,7 @@ class Renderer():
                 print(line)
         
         if restart:
-            print(">>>>>>>>>>>>>>> RESTARTING <<<<<<<<<<<<<<<")
-            os.execl(sys.executable, *(["-m"]+sys.argv))
+            self.restart()
 
 
 def main():

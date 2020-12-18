@@ -21,6 +21,14 @@ def ßhide(el):
 def ßshow(el):
     return el
 
+def cycle_idx(arr, idx):
+    if idx < 0:
+        return len(arr) - 1
+    elif idx >= len(arr):
+        return 0
+    else:
+        return idx
+
 def random_series(start=0, end=1, seed=0, count=5000):
     rnd = Random()
     rnd.seed(seed)
