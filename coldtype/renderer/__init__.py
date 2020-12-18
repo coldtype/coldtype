@@ -117,8 +117,6 @@ class Renderer():
             
             format=parser.add_argument("-fmt", "--format", type=str, default=None, help="What image format should be saved to disk?"),
 
-            layers=parser.add_argument("-l", "--layers", type=str, default=None, help="comma-separated list of layers to flag as renderable (if None, will flag all layers as renderable)"),
-
             indices=parser.add_argument("-i", "--indices", type=str, default=None),
 
             output_folder=parser.add_argument("-of", "--output-folder", type=str, default=None, help="If you don’t want to render to the default output location, specify that here."),
@@ -142,6 +140,7 @@ class Renderer():
         self.midi_mapping = {}
         self.hotkey_mapping = {}
         self.py_config = {}
+        self.many_increment = 10
 
         for p in [user, proj]:
             if p.exists():
@@ -155,6 +154,7 @@ class Renderer():
                     }
                     self.midi_mapping = self.py_config.get("MIDI", self.midi_mapping)
                     self.hotkey_mapping = self.py_config.get("HOTKEYS", self.hotkey_mapping)
+                    self.many_increment = self.py_config.get("MANY_INCREMENT", self.many_increment)
                 except Exception as e:
                     print("Failed to load config", p)
                     print("Exception:", e)
@@ -189,8 +189,6 @@ class Renderer():
             print(">>>", coldtype.__version__)
             self.dead = True
             return
-        
-        self.layers = [l.strip() for l in self.args.layers.split(",")] if self.args.layers else []
 
         self.program = None
         self.websocket = None
@@ -448,10 +446,9 @@ class Renderer():
             prefix = render.prefix
 
         fmt = self.args.format or render.fmt
-        _layers = self.layers if len(self.layers) > 0 else render.layers
         
         rps = []
-        for rp in render.passes(trigger, _layers, self.state, indices):
+        for rp in render.passes(trigger, self.state, indices):
             output_path = output_folder / f"{prefix}{rp.suffix}.{fmt}"
 
             if rp.single_layer and rp.single_layer != "__default__":
@@ -461,7 +458,7 @@ class Renderer():
             rp.action = trigger
             rps.append(rp)
         
-        return output_folder, prefix, fmt, _layers, rps
+        return output_folder, prefix, fmt, rps
 
     
     def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
@@ -486,7 +483,7 @@ class Renderer():
                         self.watchees.append([Watchable.Generic, watch])
                 
                 did_render = False
-                output_folder, prefix, fmt, _layers, passes = self.add_paths_to_passes(trigger, render, indices)
+                output_folder, prefix, fmt, passes = self.add_paths_to_passes(trigger, render, indices)
                 render.last_passes = passes
 
                 previewing = (trigger in [
@@ -532,20 +529,8 @@ class Renderer():
                         
                         if rendering:
                             did_render = True
-                            if len(render.layers) > 0 and not rp.single_layer:
-                                for layer in render.layers:
-                                    for layer_result in result:
-                                        layer_tag = layer_result.getTag()
-                                        if layer == layer_tag:
-                                            if layer_tag != "__default__":
-                                                layer_folder = render.layer_folder(self.filepath, layer)
-                                                output_path = output_folder / layer_folder / f"{prefix}{layer}_{rp.suffix}.{fmt}"
-                                            else:
-                                                output_path = rp.output_path
-                                            output_path.parent.mkdir(exist_ok=True, parents=True)
-                                            render_count += 1
-                                            self.rasterize(layer_result, render, output_path)
-                                            print(">>> saved layer...", str(output_path.relative_to(Path.cwd())))
+                            if False:
+                                pass
                             else:
                                 if render.preview_only:
                                     continue
@@ -644,7 +629,6 @@ class Renderer():
                 sys.argv[1],
                 "-i", ",".join([str(s) for s in subslice]),
                 "-isp",
-                "-l", ",".join(self.layers or []),
                 "-s", str(self.args.scale),
             ]
             r = self.args.rasterizer
@@ -926,7 +910,7 @@ class Renderer():
         try:
             for render in renders:
                 if not render.preview_only:
-                    output_folder, prefix, fmt, _layers, passes = self.add_paths_to_passes(trigger, render, [0])
+                    output_folder, prefix, fmt, passes = self.add_paths_to_passes(trigger, render, [0])
                     for rp in passes:
                         all_passes.append(rp)
 
@@ -977,9 +961,15 @@ class Renderer():
         
         if action == glfw.PRESS or action == glfw.REPEAT:
             if key == glfw.KEY_LEFT:
-                self.action_waiting = Action.PreviewStoryboardPrev
+                if mods & glfw.MOD_SHIFT:
+                    self.action_waiting = Action.PreviewStoryboardPrevMany
+                else:
+                    self.action_waiting = Action.PreviewStoryboardPrev
             elif key == glfw.KEY_RIGHT:
-                self.action_waiting = Action.PreviewStoryboardNext
+                if mods & glfw.MOD_SHIFT:
+                    self.action_waiting = Action.PreviewStoryboardNextMany
+                else:
+                    self.action_waiting = Action.PreviewStoryboardNext
             elif key == glfw.KEY_HOME:
                 self.state.frame_index_offset = 0
                 self.action_waiting = Action.PreviewStoryboard
@@ -1088,14 +1078,23 @@ class Renderer():
             return True
         elif action in [Action.PreviewStoryboard]:
             self.render(Action.PreviewStoryboard)
-        elif action in [Action.PreviewStoryboardNext, Action.PreviewStoryboardPrev, Action.PreviewPlay]:
+        elif action in [
+            Action.PreviewStoryboardNextMany,
+            Action.PreviewStoryboardPrevMany,
+            Action.PreviewStoryboardNext,
+            Action.PreviewStoryboardPrev,
+            Action.PreviewPlay]:
             if action == Action.PreviewPlay:
                 if self.playing == 0:
                     self.playing = 1
                 else:
                     self.playing = 0
-            if action == Action.PreviewStoryboardPrev:
+            if action == Action.PreviewStoryboardPrevMany:
+                self.state.frame_index_offset -= self.many_increment
+            elif action == Action.PreviewStoryboardPrev:
                 self.state.frame_index_offset -= 1
+            elif action == Action.PreviewStoryboardNextMany:
+                self.state.frame_index_offset += self.many_increment
             elif action == Action.PreviewStoryboardNext:
                 self.state.frame_index_offset += 1
             self.render(Action.PreviewStoryboard)
@@ -1289,6 +1288,7 @@ class Renderer():
         render_previews = len(self.previews_waiting_to_paint) > 0
         if render_previews:
             w = 0
+            llh = -1
             lh = -1
             h = 0
             for render, result, rp in self.previews_waiting_to_paint:
@@ -1297,9 +1297,13 @@ class Renderer():
                 else:
                     sr = render.rect.scale(dscale, "mnx", "mny").round()
                 w = max(sr.w, w)
-                rects.append(Rect(0, lh+1, sr.w, sr.h))
-                lh += sr.h + 1
-                h += sr.h + 1
+                if render.layer:
+                    rects.append(Rect(0, llh, sr.w, sr.h)) # TODO 0 should be last-last?
+                else:
+                    rects.append(Rect(0, lh+1, sr.w, sr.h))
+                    llh = lh+1
+                    lh += sr.h + 1
+                    h += sr.h + 1
             h -= 1
             
             frect = Rect(0, 0, w, h)

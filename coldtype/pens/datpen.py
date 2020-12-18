@@ -14,6 +14,7 @@ from fontTools.pens.pointInsidePen import PointInsidePen
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.svgLib.path.parser import parse_path
+from fontTools.misc.transform import Transform
 
 from fontPens.flattenPen import FlattenPen
 from fontPens.marginPen import MarginPen

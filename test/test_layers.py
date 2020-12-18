@@ -1,22 +1,36 @@
 from coldtype.test import *
 from coldtype.animation import *
 
+ra = Rect(1920, 1080)
+rb = Rect(500, 500)
 
-#@test(layers=["oval", "rect"])
-def test_static_layers(r):
-    out = DATPenSet([
-        DATPen().oval(r.square()).f("hr",0.5,0.5,0.5).tag("oval"),
-        DATPenSet([DATPen().roundedRect(r.square(), 10, 10).f("hr",0.5,0.5,0.5)]).tag("rect"),
-    ])
-    return out
+def ms(f, fill, **kwargs):
+    return (StyledString(chr(65+f.i),
+        Style(mutator, 1000, **kwargs))
+        .pen()
+        .f(fill)
+        .align(f.a.r, th=0))
 
+@animation(ra)
+def a_default(f):
+    return ms(f, hsl(0.5, 1))
 
-@animation(layers=["oval", "rect", "__default__"], rect=(1920, 1080))
-def test_layered_animation(f):
-    out = DATPenSet()
-    if "oval" in f.layers:
-        out += StyledString(chr(65+f.i), Style(mutator, 1000)).pen().f("random").tag("oval").align(f.a.r, th=0)
-    if "rect" in f.layers:
-        out += StyledString(chr(65+f.i), Style(mutator, 1000, wght=1)).pen().f("hr",0.5,0.5,0.5).tag("rect").align(f.a.r, th=0)
-    out += StyledString(chr(65+f.i), Style(mutator, 1000, wght=0.5)).pen().f(hsl(0.5, a=0.25)).tag("rect").align(f.a.r, th=0).tag("__default__")
-    return out
+@animation(ra, layer=True)
+def a_heaviest(f):
+    return ms(f, hsl(0.3, a=0.5), wght=1)
+    
+@animation(ra, layer=True)
+def a_middleweight(f):
+    return ms(f, hsl(0.9, a=0.5), wght=0.5)
+
+@animation(rb)
+def b_default(f):
+    return ms(f, hsl(0.3), wght=0).scale(0.5)
+
+@animation(rb, layer=1)
+def b_rotate(f):
+    return ms(f, hsl(0.7), wght=0).scale(0.5).rotate(90)
+
+@animation(rb, layer=1)
+def b_rotate2(f):
+    return ms(f, hsl(0.9), wght=0).scale(0.5).rotate(180)
