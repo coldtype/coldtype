@@ -57,7 +57,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.visible = True
     
     def __str__(self):
-        return f"<DP(typo:int({self.typographic})({self.glyphName}))———tag:{self._tag}/visible:{self.visible}/data:{self.data}>"
+        v = "" if self.visible else "ø-"
+        return f"<{v}DP(typo:int({self.typographic})({self.glyphName}))——tag:{self._tag}/data:{self.data}>"
     
     def __len__(self):
         return len(self.value)
@@ -1088,14 +1089,15 @@ class DATPenSet(DATPenLikeObject):
         self.data = {}
         self.visible = True
 
-        if isinstance(pens, DATPen):
+        if isinstance(pens, DATPen) or isinstance(pens, DATPenSet):
             self += pens
         else:
             for pen in pens:
                 self += pen
     
     def __str__(self):
-        return f"<DPS:pens:{len(self.pens)}:tag({self._tag}/visible:{self.visible}/data{self.data})>"
+        v = "" if self.visible else "ø-"
+        return f"<{v}DPS:{len(self.pens)}——tag:{self._tag}/data{self.data})>"
     
     def __len__(self):
         return len(self.pens)
@@ -1125,15 +1127,15 @@ class DATPenSet(DATPenLikeObject):
     
     def print_tree(self, depth=0):
         """Print a hierarchical representation of the pen set"""
-        print("  "*depth, self)
+        print(" |"*depth, self)
         for pen in self.pens:
             if hasattr(pen, "pens"):
                 #print("  "*depth, pen)
                 pen.print_tree(depth=depth+1)
                 #print("  "*depth, "/"+str(pen))
             else:
-                print("  "*(depth+1), pen)
-        print("  "*depth + "/"+str(self))
+                print(" |"*(depth+1), pen)
+        #print("  "*depth + "/"+str(self))
         return self
     
     def copy(self, with_data=False):

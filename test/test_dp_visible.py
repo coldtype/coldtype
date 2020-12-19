@@ -10,9 +10,8 @@ def mixed_visibility(r):
     dps = DATPenSet([dp]).v(1)
     dps2 = DATPenSet([
         dps,
-        DATPen().gridlines(r).s(0, 0.1).sw(1)
-    ])
-    dps2.v(0)
-    dps2.print_tree()
-    print("----------------")
-    return DATPenSet([dps2])
+        DATPen().oval(r.square()).f(hsl(0.3, a=0.25))
+    ]).v(1)
+    dps3 = DATPenSet([dps2])
+    #dps3.print_tree()
+    return dps3.v(1)

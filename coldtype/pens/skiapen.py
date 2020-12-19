@@ -207,9 +207,13 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         
         if hasattr(pens, "visible"):
             if not pens.visible:
+                print("HERE!")
+                return
+        
+        def draw(pen, state, data):
+            if state != 0:
                 return
 
-        def draw(pen, state, data):
             if not pen.visible:
                 return
             
@@ -234,6 +238,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                     rect.h - pt.y,
                     skia.Font(font, pen.style.fontSize),
                     skia.Paint(AntiAlias=True, Color=pen.style.fill.skia()))
+            
             if state == 0:
                 SkiaPen(pen, rect, canvas, scale, style=style)
         
@@ -251,13 +256,8 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
 
             # pens = []
         
-        if hasattr(pens, "visible"):
-            if not pens.visible:
-                return
-        
         for dps in pens:
-            if dps.visible:
-                dps.walk(draw, visible_only=True)
+            dps.walk(draw, visible_only=True)
     
     def Precompose(pens, rect, fmt=None, context=None, scale=1, disk=False):
         if context:

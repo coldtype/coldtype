@@ -12,14 +12,10 @@ Style.RegisterShorthandPrefix("≈", "~/Type/fonts/fonts")
 
 
 def add_grid(render, result):
-    result.print_tree()
-    print("===================")
-    out = DATPenSet([
+    return DATPenSet([
         DATPenSet(result),
         DATPen().gridlines(render.rect).s(0, 0.1).sw(1)
     ])
-    out.print_tree()
-    return out
 
 
 def show_error(r, txt):

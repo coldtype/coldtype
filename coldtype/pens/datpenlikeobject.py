@@ -282,14 +282,14 @@ class DATPenLikeObject():
         return self.translate(nx * scale[0], ny * scale[1])
     
     def walk(self, callback, depth=0, visible_only=False):
+        if visible_only and not self.visible:
+            return
+        
         is_dps = hasattr(self, "pens")
         if is_dps:
             callback(self, -1, dict(depth=depth))
             for pen in self.pens:
-                if visible_only and not pen.visible:
-                    pass
-                else:
-                    pen.walk(callback, depth=depth+1)
+                pen.walk(callback, depth=depth+1, visible_only=visible_only)
             callback(self, 1, dict(depth=depth))
         else:
             callback(self, 0, dict(depth=depth))
