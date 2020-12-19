@@ -123,8 +123,6 @@ class Renderer():
 
             monitor_lines=parser.add_argument("-ml", "--monitor-lines", action="store_true", default=False, help=argparse.SUPPRESS),
 
-            record_input=parser.add_argument("-ri", "--record-input", action="store_true", default=False, help=argparse.SUPPRESS),
-
             filter_functions=parser.add_argument("-ff", "--filter-functions", type=str, default=None, help="Names of functions to render"),
 
             show_exit_code=parser.add_argument("-sec", "--show-exit-code", action="store_true", default=False, help=argparse.SUPPRESS),
@@ -249,7 +247,7 @@ class Renderer():
                 print(">>> Coldtype can only read .py, .rst, and .md files")
                 return False
             self.codepath = None
-            self.watchees = [[Watchable.Source, self.filepath]]
+            self.watchees = [[Watchable.Source, self.filepath, None]]
             if not self.args.is_subprocess:
                 self.watch_file_changes()
         else:
@@ -472,15 +470,15 @@ class Renderer():
         output_folder = None
         try:
             for render in renders:
-                for watch in render.watch:
+                for watch, flag in render.watch:
                     if isinstance(watch, coldtype.text.reader.Font) and not watch.cacheable:
                         if watch.path not in self.watchee_paths():
-                            self.watchees.append([Watchable.Font, watch.path])
+                            self.watchees.append([Watchable.Font, watch.path, flag])
                         for ext in watch.font.getExternalFiles():
                             if ext not in self.watchee_paths():
-                                self.watchees.append([Watchable.Font, ext])
+                                self.watchees.append([Watchable.Font, ext, flag])
                     elif watch not in self.watchee_paths():
-                        self.watchees.append([Watchable.Generic, watch])
+                        self.watchees.append([Watchable.Generic, watch, flag])
                 
                 did_render = False
                 output_folder, prefix, fmt, passes = self.add_paths_to_passes(trigger, render, indices)
@@ -1160,12 +1158,6 @@ class Renderer():
             else:
                 print("Animation server must be primary")
     
-    def record_state(self, jdata=None):
-        now = str(int(datetime.datetime.now().timestamp()))
-        output = Path(self.filepath.parent) / "recordings" / self.filepath.stem / f"{now}.json"
-        output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(json.dumps(jdata or {}, indent=2))
-    
     def process_ws_message(self, message):
         try:
             jdata = json.loads(message)
@@ -1175,8 +1167,6 @@ class Renderer():
             elif jdata.get("metadata") and jdata.get("path"):
                 path = Path(jdata.get("path"))
                 if path == self.filepath:
-                    if self.args.record_input:
-                        self.record_state(jdata)
                     if self.args.monitor_lines:
                         self.line_number = jdata.get("line_number")
         except TypeError:
@@ -1400,6 +1390,7 @@ class Renderer():
     def on_modified(self, event):
         path = Path(event.src_path)
         #print("!", path)
+        #return
         if path in self.watchee_paths():
             if path.suffix == ".json":
                 try:
@@ -1409,12 +1400,6 @@ class Renderer():
                     return
             
             if path.suffix == ".py":
-                if self.args.record_input:
-                    self.record_state(dict(
-                        fulltext=self.filepath.read_text(),
-                        dirty=False,
-                        action="resave",
-                        source="coldtype-renderer"))
                 try:
                     for render in self.renderables(Action.Resave):
                         for wr in render.watch_restarts:
@@ -1426,6 +1411,11 @@ class Renderer():
                     pass
             
             idx = self.watchee_paths().index(path)
+            wpath, wtype, wflag = self.watchees[idx]
+            if wflag == "soft":
+                self.action_waiting = Action.PreviewStoryboard
+                return
+
             try:
                 print(f">>> resave: {Path(event.src_path).relative_to(Path.cwd())}")
             except:
@@ -1437,6 +1427,7 @@ class Renderer():
                 self._last_memory = memory
                 print(">>> pid:{:d}/new:{:04.2f}MB/total:{:4.2f}".format(os.getpid(), diff, memory))
             
+            #self.action_waiting = Action.PreviewStoryboard
             self.waiting_to_render = [[Action.Resave, self.watchees[idx][0]]]
 
     def watch_file_changes(self):

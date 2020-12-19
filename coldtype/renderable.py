@@ -77,6 +77,7 @@ class renderable():
         postfn=None,
         watch=[],
         watch_restarts=[],
+        watch_soft=[],
         solo=False,
         rstate=False,
         preview_only=False,
@@ -103,7 +104,11 @@ class renderable():
 
         self.watch_restarts = []
         for w in watch_restarts:
-            self.watch_restarts.append(self.add_watchee(w))
+            self.watch_restarts.append(self.add_watchee(w, "restart"))
+        
+        self.watch_soft = []
+        for w in watch_soft:
+            self.watch_soft.append(self.add_watchee(w, "soft"))
 
         self.name = name
         self.rasterizer = rasterizer
@@ -127,17 +132,17 @@ class renderable():
             else:
                 self.rasterizer = "skia"
     
-    def add_watchee(self, w):
+    def add_watchee(self, w, flag=None):
         try:
             pw = Path(w).expanduser().resolve()
             if not pw.exists():
                 print(w, "<<< does not exist (cannot be watched)")
             else:
-                self.watch.append(pw)
+                self.watch.append([pw, flag])
                 return pw
         except TypeError:
             if isinstance(w, Font):
-                self.watch.append(w)
+                self.watch.append([w, flag])
             else:
                 raise Exception("Can only watch path strings, Paths, and Fonts")
     
