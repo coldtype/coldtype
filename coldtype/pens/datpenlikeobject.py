@@ -108,6 +108,10 @@ class DATPenLikeObject():
         """For conveniently marking an arbitrary `Rect` container."""
         self.container = rect
         return self
+    
+    def v(self, v):
+        self.visible = bool(v)
+        return self
 
     def f(self, *value):
         """Get/set a (f)ill"""
@@ -277,12 +281,15 @@ class DATPenLikeObject():
         ny = pnoise1(doneness*speed[1], base=base+10, octaves=octaves)
         return self.translate(nx * scale[0], ny * scale[1])
     
-    def walk(self, callback, depth=0):
+    def walk(self, callback, depth=0, visible_only=False):
         is_dps = hasattr(self, "pens")
         if is_dps:
             callback(self, -1, dict(depth=depth))
             for pen in self.pens:
-                pen.walk(callback, depth=depth+1)
+                if visible_only and not pen.visible:
+                    pass
+                else:
+                    pen.walk(callback, depth=depth+1)
             callback(self, 1, dict(depth=depth))
         else:
             callback(self, 0, dict(depth=depth))

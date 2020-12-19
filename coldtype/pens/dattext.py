@@ -5,6 +5,7 @@ class DATText(DATPen):
     def __init__(self, text, style, frame):
         self.text = text
         self.style = style
+        self.visible = True
         super().__init__()
         self.addFrame(frame)
     

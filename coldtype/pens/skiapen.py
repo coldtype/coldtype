@@ -204,8 +204,15 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
     def CompositeToCanvas(pens, rect, canvas, scale=1, style=None):
         if scale != 1:
             pens.scale(scale, scale, Point((0, 0)))
+        
+        if hasattr(pens, "visible"):
+            if not pens.visible:
+                return
 
         def draw(pen, state, data):
+            if not pen.visible:
+                return
+            
             if isinstance(pen, DATText):
                 if isinstance(pen.style.font, str):
                     font = skia.Typeface(pen.style.font)
@@ -244,8 +251,13 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
 
             # pens = []
         
+        if hasattr(pens, "visible"):
+            if not pens.visible:
+                return
+        
         for dps in pens:
-            dps.walk(draw)
+            if dps.visible:
+                dps.walk(draw, visible_only=True)
     
     def Precompose(pens, rect, fmt=None, context=None, scale=1, disk=False):
         if context:

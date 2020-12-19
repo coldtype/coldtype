@@ -54,9 +54,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.container = None
         self.glyphName = None
         self.data = {}
+        self.visible = True
     
     def __str__(self):
-        return f"<DP(typo:int({self.typographic})({self.glyphName}))/tag:({self._tag}/data:{self.data})>"
+        return f"<DP(typo:int({self.typographic})({self.glyphName}))———tag:{self._tag}/visible:{self.visible}/data:{self.data}>"
     
     def __len__(self):
         return len(self.value)
@@ -1085,6 +1086,7 @@ class DATPenSet(DATPenLikeObject):
         self.container = None
         self.frame = None
         self.data = {}
+        self.visible = True
 
         if isinstance(pens, DATPen):
             self += pens
@@ -1093,7 +1095,7 @@ class DATPenSet(DATPenLikeObject):
                 self += pen
     
     def __str__(self):
-        return f"<DPS:pens:{len(self.pens)}:tag({self._tag}:data{self.data})>"
+        return f"<DPS:pens:{len(self.pens)}:tag({self._tag}/visible:{self.visible}/data{self.data})>"
     
     def __len__(self):
         return len(self.pens)
