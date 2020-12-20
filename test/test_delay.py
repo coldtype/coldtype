@@ -21,11 +21,11 @@ def var(f, depth=0):
         .blendmode(skia.BlendMode.kDifference))
     
     if depth < 5:
-        cold.insert(0, var.func(Frame((f.i-3)%var.duration, f.a, []), depth=depth+1))
+        cold.insert(0, var.func(Frame((f.i-3)%var.duration, f.a), depth=depth+1))
     
     if depth == 0:
         return DATPenSet([
-            DATPen().rect(f.a.r).f(1),
+            #DATPen().rect(f.a.r).f(1),
             cold.color_phototype(f.a.r, blur=5)])
     else:
         return cold
