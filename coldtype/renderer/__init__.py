@@ -117,9 +117,13 @@ class Renderer():
 
             no_titlebar=parser.add_argument("-nt", "--no-titlebar", action="store_true", default=False, help="Don’t display the titlebar (i.e. an un-decorated glfw window)"),
 
-            window_opacity=parser.add_argument("-wo", "--window-opacity", type=float, help="opacity of the window, from >0 to 1"),
+            window_opacity=parser.add_argument("-wo", "--window-opacity", type=float, help="opacity of the window, from >0 to 1 (defaults to 1 unless overridden in .coldtype.py file)"),
 
-            window_pin=parser.add_argument("-wp", "--window-pin", type=str, help="where to pin the window"),
+            window_pin=parser.add_argument("-wp", "--window-pin", type=str, help="where to pin the window, if you want to pin the window"),
+
+            window_float=parser.add_argument("-wf", "--window-float", action="store_true", default=False, help="should the window float on top of everything?"),
+
+            window_transparent=parser.add_argument("-wt", "--window-transparent", action="store_true", default=False, help="should the window background be transparent?"),
             
             format=parser.add_argument("-fmt", "--format", type=str, default=None, help="What image format should be saved to disk?"),
 
@@ -695,8 +699,6 @@ class Renderer():
                 raise RuntimeError('glfw.init() failed')
             glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
             glfw.window_hint(glfw.STENCIL_BITS, 8)
-            if self.args.no_titlebar:
-                glfw.window_hint(glfw.DECORATED, glfw.FALSE)
             window = glfw.create_window(640, 480, '', None, None)
             glfw.make_context_current(window)
             self.context = skia.GrDirectContext.MakeGL()
@@ -753,12 +755,21 @@ class Renderer():
         if not glfw.init():
             raise RuntimeError('glfw.init() failed')
         glfw.window_hint(glfw.STENCIL_BITS, 8)
+        
         if self.args.no_titlebar:
             glfw.window_hint(glfw.DECORATED, glfw.FALSE)
+        
+        if self.py_config.get("WINDOW_TRANSPARENT", self.args.window_transparent):
+            glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.TRUE)
+            #glfw.window_hint(glfw.MOUSE_PASSTHROUGH, glfw.TRUE)
+        else:
+            print("HERE?")
+            glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.FALSE)
 
         if self.py_config.get("WINDOW_BACKGROUND"):
             glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
-        if self.py_config.get("WINDOW_FLOAT"):
+        
+        if self.py_config.get("WINDOW_FLOAT", self.args.window_float):
             glfw.window_hint(glfw.FLOATING, glfw.TRUE)
         
         self.window = glfw.create_window(int(50), int(50), '', None, None)
@@ -1374,7 +1385,9 @@ class Renderer():
             canvas.scale(scale, scale)
         if render.clip:
             canvas.clipRect(skia.Rect(0, 0, rect.w, rect.h))
-        #canvas.clear(render.bg.skia())
+        #canvas.clear(coldtype.bw(0, 0).skia())
+        print("BG", render.func.__name__, render.bg)
+        canvas.clear(render.bg.skia())
         if render.direct_draw:
             try:
                 render.run(rp, self.state, canvas)
