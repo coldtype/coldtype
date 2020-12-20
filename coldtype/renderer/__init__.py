@@ -170,6 +170,7 @@ class Renderer():
 
         self.read_configs()
 
+        self.parser = parser
         self.args = parser.parse_args()
         if self.args.is_subprocess or self.args.all:
             self.args.no_watch = True
@@ -177,7 +178,6 @@ class Renderer():
         self.disable_syntax_mods = self.args.disable_syntax_mods
         self.filepath = None
         self.state = RendererState(self)
-        self.state.preview_scale = self.args.preview_scale
 
         self.observers = []
         self.watchees = []
@@ -188,6 +188,8 @@ class Renderer():
             return
         else:
             self.dead = False
+        
+        self.state.preview_scale = self.args.preview_scale
         
         monitor_stdin()
         
@@ -259,6 +261,9 @@ class Renderer():
             self.watchees = [[Watchable.Source, self.filepath, None]]
             if not self.args.is_subprocess:
                 self.watch_file_changes()
+                for line in self.filepath.read_text().splitlines():
+                    if line.startswith("#coldtype"):
+                        self.args = self.parser.parse_args(line.replace("#coldtype", "").strip().split(" "))
         else:
             self.watchees = []
             self.filepath = None
