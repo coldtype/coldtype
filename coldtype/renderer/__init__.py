@@ -115,8 +115,6 @@ class Renderer():
 
             no_sound=parser.add_argument("-ns", "--no-sound", action="store_true", default=False, help="Don’t make sound"),
 
-            no_titlebar=parser.add_argument("-nt", "--no-titlebar", action="store_true", default=False, help="Don’t display the titlebar (i.e. an un-decorated glfw window)"),
-
             window_opacity=parser.add_argument("-wo", "--window-opacity", type=float, help="opacity of the window, from >0 to 1 (defaults to 1 unless overridden in .coldtype.py file)"),
 
             window_pin=parser.add_argument("-wp", "--window-pin", type=str, help="where to pin the window, if you want to pin the window"),
@@ -222,6 +220,7 @@ class Renderer():
         self.hotkeys = None
         self.context = None
         self.surface = None
+        self.transparent = False
 
         if self.args.filter_functions:
             self.function_filters = [f.strip() for f in self.args.filter_functions.split(",")]
@@ -756,14 +755,12 @@ class Renderer():
             raise RuntimeError('glfw.init() failed')
         glfw.window_hint(glfw.STENCIL_BITS, 8)
         
-        if self.args.no_titlebar:
-            glfw.window_hint(glfw.DECORATED, glfw.FALSE)
-        
-        if self.py_config.get("WINDOW_TRANSPARENT", self.args.window_transparent):
+        self.transparent = self.py_config.get("WINDOW_TRANSPARENT", self.args.window_transparent)
+        if self.transparent:
             glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.TRUE)
+            glfw.window_hint(glfw.DECORATED, glfw.FALSE)
             #glfw.window_hint(glfw.MOUSE_PASSTHROUGH, glfw.TRUE)
         else:
-            print("HERE?")
             glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.FALSE)
 
         if self.py_config.get("WINDOW_BACKGROUND"):
@@ -1350,6 +1347,8 @@ class Renderer():
 
             with self.surface as canvas:
                 canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 1))
+                if self.transparent:
+                    canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 0))
 
                 for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
                     rect = rects[idx].offset((w-rects[idx].w)/2, 0).round()
@@ -1380,14 +1379,15 @@ class Renderer():
         canvas.save()
         canvas.translate(0, self.window_scrolly)
         canvas.translate(rect.x, rect.y)
-        canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
+        if not self.transparent:
+            canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
         if not hasattr(render, "show_error"):
             canvas.scale(scale, scale)
         if render.clip:
             canvas.clipRect(skia.Rect(0, 0, rect.w, rect.h))
         #canvas.clear(coldtype.bw(0, 0).skia())
-        print("BG", render.func.__name__, render.bg)
-        canvas.clear(render.bg.skia())
+        #print("BG", render.func.__name__, render.bg)
+        #canvas.clear(render.bg.skia())
         if render.direct_draw:
             try:
                 render.run(rp, self.state, canvas)
