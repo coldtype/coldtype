@@ -114,6 +114,12 @@ class Renderer():
             thread_count=parser.add_argument("-tc", "--thread-count", type=int, default=defaults.get("thread_count", 8), help="How many threads when multiplexing?"),
 
             no_sound=parser.add_argument("-ns", "--no-sound", action="store_true", default=False, help="Don’t make sound"),
+
+            no_titlebar=parser.add_argument("-nt", "--no-titlebar", action="store_true", default=False, help="Don’t display the titlebar (i.e. an un-decorated glfw window)"),
+
+            window_opacity=parser.add_argument("-wo", "--window-opacity", type=float, help="opacity of the window, from >0 to 1"),
+
+            window_pin=parser.add_argument("-wp", "--window-pin", type=str, help="where to pin the window"),
             
             format=parser.add_argument("-fmt", "--format", type=str, default=None, help="What image format should be saved to disk?"),
 
@@ -689,6 +695,8 @@ class Renderer():
                 raise RuntimeError('glfw.init() failed')
             glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
             glfw.window_hint(glfw.STENCIL_BITS, 8)
+            if self.args.no_titlebar:
+                glfw.window_hint(glfw.DECORATED, glfw.FALSE)
             window = glfw.create_window(640, 480, '', None, None)
             glfw.make_context_current(window)
             self.context = skia.GrDirectContext.MakeGL()
@@ -745,6 +753,8 @@ class Renderer():
         if not glfw.init():
             raise RuntimeError('glfw.init() failed')
         glfw.window_hint(glfw.STENCIL_BITS, 8)
+        if self.args.no_titlebar:
+            glfw.window_hint(glfw.DECORATED, glfw.FALSE)
 
         if self.py_config.get("WINDOW_BACKGROUND"):
             glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
@@ -758,9 +768,10 @@ class Renderer():
         self.typeface = skia.Typeface.MakeFromFile(str(recp))
         #print(self.typeface.serialize().bytes().decode("utf-8"))
         
-        o = self.py_config.get("WINDOW_OPACITY")
-        if o:
-            glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
+        o = self.py_config.get("WINDOW_OPACITY", 1)
+        if self.args.window_opacity is not None:
+            o = self.args.window_opacity
+        glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
         
         self._prev_scale = glfw.get_window_content_scale(self.window)[0]
         
@@ -1314,6 +1325,8 @@ class Renderer():
                 wh = int(h/scale_y)
                 glfw.set_window_size(self.window, ww, wh)
                 pin = self.py_config.get("WINDOW_PIN", None)
+                if self.args.window_pin:
+                    pin = self.args.window_pin.split(",")
                 if pin:
                     monitor = glfw.get_primary_monitor()
                     work_rect = Rect(glfw.get_monitor_workarea(monitor))
