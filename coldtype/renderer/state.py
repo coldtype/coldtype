@@ -187,7 +187,11 @@ class RendererState():
             self.cmd = cmd
             self.keybuffer = []
             #print(">>> KB-CMD:", cmd)
-            self.exit_keylayer()
+            if mods & glfw.MOD_SUPER:
+                # keep editing
+                pass
+            else:
+                self.exit_keylayer()
             return Action.PreviewStoryboard
         elif key == glfw.KEY_BACKSPACE:
             if len(self.keybuffer) > 0:
