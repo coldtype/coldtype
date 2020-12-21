@@ -1,4 +1,4 @@
-#coldtype -wt -wp mdx,mdy
+#coldtype -wt -wp mdx,mdy -hkb
 
 from coldtype.test import *
 
