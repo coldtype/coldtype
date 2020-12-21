@@ -763,7 +763,12 @@ class Renderer():
         self.transparent = self.py_config.get("WINDOW_TRANSPARENT", self.args.window_transparent)
         if self.transparent:
             glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.TRUE)
+            try:
+                glfw.window_hint(0x0002000D, glfw.TRUE)
+            except glfw.GLFWError:
+                print("failed to hint window for mouse-passthrough")
             glfw.window_hint(glfw.DECORATED, glfw.FALSE)
+
             #glfw.window_hint(glfw.MOUSE_PASSTHROUGH, glfw.TRUE)
         else:
             glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.FALSE)
@@ -1339,7 +1344,7 @@ class Renderer():
                 glfw.set_window_size(self.window, ww, wh)
                 pin = self.py_config.get("WINDOW_PIN", None)
                 if self.args.window_pin:
-                    pin = self.args.window_pin.split(",")
+                    pin = [s.strip() for s in self.args.window_pin.split(",")]
                 if pin:
                     monitor = glfw.get_primary_monitor()
                     work_rect = Rect(glfw.get_monitor_workarea(monitor))
