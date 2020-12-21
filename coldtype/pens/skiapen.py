@@ -6,7 +6,8 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
 
-from coldtype.pens.datpen import DATPen, DATText
+from coldtype.pens.datpen import DATPen
+from coldtype.pens.dattext import DATText
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 from coldtype.color import Color
@@ -203,8 +204,19 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
     def CompositeToCanvas(pens, rect, canvas, scale=1, style=None):
         if scale != 1:
             pens.scale(scale, scale, Point((0, 0)))
-
+        
+        if hasattr(pens, "visible"):
+            if not pens.visible:
+                print("HERE!")
+                return
+        
         def draw(pen, state, data):
+            if state != 0:
+                return
+
+            if not pen.visible:
+                return
+            
             if isinstance(pen, DATText):
                 if isinstance(pen.style.font, str):
                     font = skia.Typeface(pen.style.font)
@@ -226,6 +238,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                     rect.h - pt.y,
                     skia.Font(font, pen.style.fontSize),
                     skia.Paint(AntiAlias=True, Color=pen.style.fill.skia()))
+            
             if state == 0:
                 SkiaPen(pen, rect, canvas, scale, style=style)
         
@@ -244,7 +257,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             # pens = []
         
         for dps in pens:
-            dps.walk(draw)
+            dps.walk(draw, visible_only=True)
     
     def Precompose(pens, rect, fmt=None, context=None, scale=1, disk=False):
         if context:

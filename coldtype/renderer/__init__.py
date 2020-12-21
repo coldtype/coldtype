@@ -114,18 +114,22 @@ class Renderer():
             thread_count=parser.add_argument("-tc", "--thread-count", type=int, default=defaults.get("thread_count", 8), help="How many threads when multiplexing?"),
 
             no_sound=parser.add_argument("-ns", "--no-sound", action="store_true", default=False, help="Don’t make sound"),
+
+            window_opacity=parser.add_argument("-wo", "--window-opacity", type=float, help="opacity of the window, from >0 to 1 (defaults to 1 unless overridden in .coldtype.py file)"),
+
+            window_pin=parser.add_argument("-wp", "--window-pin", type=str, help="where to pin the window, if you want to pin the window"),
+
+            window_float=parser.add_argument("-wf", "--window-float", action="store_true", default=False, help="should the window float on top of everything?"),
+
+            window_transparent=parser.add_argument("-wt", "--window-transparent", action="store_true", default=False, help="should the window background be transparent?"),
             
             format=parser.add_argument("-fmt", "--format", type=str, default=None, help="What image format should be saved to disk?"),
-
-            layers=parser.add_argument("-l", "--layers", type=str, default=None, help="comma-separated list of layers to flag as renderable (if None, will flag all layers as renderable)"),
 
             indices=parser.add_argument("-i", "--indices", type=str, default=None),
 
             output_folder=parser.add_argument("-of", "--output-folder", type=str, default=None, help="If you don’t want to render to the default output location, specify that here."),
 
             monitor_lines=parser.add_argument("-ml", "--monitor-lines", action="store_true", default=False, help=argparse.SUPPRESS),
-
-            record_input=parser.add_argument("-ri", "--record-input", action="store_true", default=False, help=argparse.SUPPRESS),
 
             filter_functions=parser.add_argument("-ff", "--filter-functions", type=str, default=None, help="Names of functions to render"),
 
@@ -142,6 +146,7 @@ class Renderer():
         self.midi_mapping = {}
         self.hotkey_mapping = {}
         self.py_config = {}
+        self.many_increment = 10
 
         for p in [user, proj]:
             if p.exists():
@@ -155,6 +160,7 @@ class Renderer():
                     }
                     self.midi_mapping = self.py_config.get("MIDI", self.midi_mapping)
                     self.hotkey_mapping = self.py_config.get("HOTKEYS", self.hotkey_mapping)
+                    self.many_increment = self.py_config.get("MANY_INCREMENT", self.many_increment)
                 except Exception as e:
                     print("Failed to load config", p)
                     print("Exception:", e)
@@ -164,6 +170,7 @@ class Renderer():
 
         self.read_configs()
 
+        self.parser = parser
         self.args = parser.parse_args()
         if self.args.is_subprocess or self.args.all:
             self.args.no_watch = True
@@ -171,7 +178,6 @@ class Renderer():
         self.disable_syntax_mods = self.args.disable_syntax_mods
         self.filepath = None
         self.state = RendererState(self)
-        self.state.preview_scale = self.args.preview_scale
 
         self.observers = []
         self.watchees = []
@@ -183,14 +189,14 @@ class Renderer():
         else:
             self.dead = False
         
+        self.state.preview_scale = self.args.preview_scale
+        
         monitor_stdin()
         
         if self.args.version:
             print(">>>", coldtype.__version__)
             self.dead = True
             return
-        
-        self.layers = [l.strip() for l in self.args.layers.split(",")] if self.args.layers else []
 
         self.program = None
         self.websocket = None
@@ -216,6 +222,7 @@ class Renderer():
         self.hotkeys = None
         self.context = None
         self.surface = None
+        self.transparent = False
 
         if self.args.filter_functions:
             self.function_filters = [f.strip() for f in self.args.filter_functions.split(",")]
@@ -251,9 +258,12 @@ class Renderer():
                 print(">>> Coldtype can only read .py, .rst, and .md files")
                 return False
             self.codepath = None
-            self.watchees = [[Watchable.Source, self.filepath]]
+            self.watchees = [[Watchable.Source, self.filepath, None]]
             if not self.args.is_subprocess:
                 self.watch_file_changes()
+                for line in self.filepath.read_text().splitlines():
+                    if line.startswith("#coldtype"):
+                        self.args = self.parser.parse_args(line.replace("#coldtype", "").strip().split(" "))
         else:
             self.watchees = []
             self.filepath = None
@@ -448,10 +458,9 @@ class Renderer():
             prefix = render.prefix
 
         fmt = self.args.format or render.fmt
-        _layers = self.layers if len(self.layers) > 0 else render.layers
         
         rps = []
-        for rp in render.passes(trigger, _layers, self.state, indices):
+        for rp in render.passes(trigger, self.state, indices):
             output_path = output_folder / f"{prefix}{rp.suffix}.{fmt}"
 
             if rp.single_layer and rp.single_layer != "__default__":
@@ -461,7 +470,7 @@ class Renderer():
             rp.action = trigger
             rps.append(rp)
         
-        return output_folder, prefix, fmt, _layers, rps
+        return output_folder, prefix, fmt, rps
 
     
     def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
@@ -475,18 +484,18 @@ class Renderer():
         output_folder = None
         try:
             for render in renders:
-                for watch in render.watch:
+                for watch, flag in render.watch:
                     if isinstance(watch, coldtype.text.reader.Font) and not watch.cacheable:
                         if watch.path not in self.watchee_paths():
-                            self.watchees.append([Watchable.Font, watch.path])
+                            self.watchees.append([Watchable.Font, watch.path, flag])
                         for ext in watch.font.getExternalFiles():
                             if ext not in self.watchee_paths():
-                                self.watchees.append([Watchable.Font, ext])
+                                self.watchees.append([Watchable.Font, ext, flag])
                     elif watch not in self.watchee_paths():
-                        self.watchees.append([Watchable.Generic, watch])
+                        self.watchees.append([Watchable.Generic, watch, flag])
                 
                 did_render = False
-                output_folder, prefix, fmt, _layers, passes = self.add_paths_to_passes(trigger, render, indices)
+                output_folder, prefix, fmt, passes = self.add_paths_to_passes(trigger, render, indices)
                 render.last_passes = passes
 
                 previewing = (trigger in [
@@ -532,20 +541,8 @@ class Renderer():
                         
                         if rendering:
                             did_render = True
-                            if len(render.layers) > 0 and not rp.single_layer:
-                                for layer in render.layers:
-                                    for layer_result in result:
-                                        layer_tag = layer_result.getTag()
-                                        if layer == layer_tag:
-                                            if layer_tag != "__default__":
-                                                layer_folder = render.layer_folder(self.filepath, layer)
-                                                output_path = output_folder / layer_folder / f"{prefix}{layer}_{rp.suffix}.{fmt}"
-                                            else:
-                                                output_path = rp.output_path
-                                            output_path.parent.mkdir(exist_ok=True, parents=True)
-                                            render_count += 1
-                                            self.rasterize(layer_result, render, output_path)
-                                            print(">>> saved layer...", str(output_path.relative_to(Path.cwd())))
+                            if False:
+                                pass
                             else:
                                 if render.preview_only:
                                     continue
@@ -644,7 +641,6 @@ class Renderer():
                 sys.argv[1],
                 "-i", ",".join([str(s) for s in subslice]),
                 "-isp",
-                "-l", ",".join(self.layers or []),
                 "-s", str(self.args.scale),
             ]
             r = self.args.rasterizer
@@ -763,10 +759,24 @@ class Renderer():
         if not glfw.init():
             raise RuntimeError('glfw.init() failed')
         glfw.window_hint(glfw.STENCIL_BITS, 8)
+        
+        self.transparent = self.py_config.get("WINDOW_TRANSPARENT", self.args.window_transparent)
+        if self.transparent:
+            glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.TRUE)
+            try:
+                glfw.window_hint(0x0002000D, glfw.TRUE)
+            except glfw.GLFWError:
+                print("failed to hint window for mouse-passthrough")
+            glfw.window_hint(glfw.DECORATED, glfw.FALSE)
+
+            #glfw.window_hint(glfw.MOUSE_PASSTHROUGH, glfw.TRUE)
+        else:
+            glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.FALSE)
 
         if self.py_config.get("WINDOW_BACKGROUND"):
             glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
-        if self.py_config.get("WINDOW_FLOAT"):
+        
+        if self.py_config.get("WINDOW_FLOAT", self.args.window_float):
             glfw.window_hint(glfw.FLOATING, glfw.TRUE)
         
         self.window = glfw.create_window(int(50), int(50), '', None, None)
@@ -776,9 +786,10 @@ class Renderer():
         self.typeface = skia.Typeface.MakeFromFile(str(recp))
         #print(self.typeface.serialize().bytes().decode("utf-8"))
         
-        o = self.py_config.get("WINDOW_OPACITY")
-        if o:
-            glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
+        o = self.py_config.get("WINDOW_OPACITY", 1)
+        if self.args.window_opacity is not None:
+            o = self.args.window_opacity
+        glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
         
         self._prev_scale = glfw.get_window_content_scale(self.window)[0]
         
@@ -891,7 +902,7 @@ class Renderer():
         if action:
             enum_action = self.lookup_action(action)
             if enum_action:
-                print("ENUM_ACTION", enum_action)
+                print(">", enum_action)
                 self.on_action(enum_action, message)
             else:
                 print(">>> (", action, ") is not a recognized action")
@@ -926,7 +937,7 @@ class Renderer():
         try:
             for render in renders:
                 if not render.preview_only:
-                    output_folder, prefix, fmt, _layers, passes = self.add_paths_to_passes(trigger, render, [0])
+                    output_folder, prefix, fmt, passes = self.add_paths_to_passes(trigger, render, [0])
                     for rp in passes:
                         all_passes.append(rp)
 
@@ -977,9 +988,15 @@ class Renderer():
         
         if action == glfw.PRESS or action == glfw.REPEAT:
             if key == glfw.KEY_LEFT:
-                self.action_waiting = Action.PreviewStoryboardPrev
+                if mods & glfw.MOD_SHIFT:
+                    self.action_waiting = Action.PreviewStoryboardPrevMany
+                else:
+                    self.action_waiting = Action.PreviewStoryboardPrev
             elif key == glfw.KEY_RIGHT:
-                self.action_waiting = Action.PreviewStoryboardNext
+                if mods & glfw.MOD_SHIFT:
+                    self.action_waiting = Action.PreviewStoryboardNextMany
+                else:
+                    self.action_waiting = Action.PreviewStoryboardNext
             elif key == glfw.KEY_HOME:
                 self.state.frame_index_offset = 0
                 self.action_waiting = Action.PreviewStoryboard
@@ -1088,14 +1105,23 @@ class Renderer():
             return True
         elif action in [Action.PreviewStoryboard]:
             self.render(Action.PreviewStoryboard)
-        elif action in [Action.PreviewStoryboardNext, Action.PreviewStoryboardPrev, Action.PreviewPlay]:
+        elif action in [
+            Action.PreviewStoryboardNextMany,
+            Action.PreviewStoryboardPrevMany,
+            Action.PreviewStoryboardNext,
+            Action.PreviewStoryboardPrev,
+            Action.PreviewPlay]:
             if action == Action.PreviewPlay:
                 if self.playing == 0:
                     self.playing = 1
                 else:
                     self.playing = 0
-            if action == Action.PreviewStoryboardPrev:
+            if action == Action.PreviewStoryboardPrevMany:
+                self.state.frame_index_offset -= self.many_increment
+            elif action == Action.PreviewStoryboardPrev:
                 self.state.frame_index_offset -= 1
+            elif action == Action.PreviewStoryboardNextMany:
+                self.state.frame_index_offset += self.many_increment
             elif action == Action.PreviewStoryboardNext:
                 self.state.frame_index_offset += 1
             self.render(Action.PreviewStoryboard)
@@ -1161,12 +1187,6 @@ class Renderer():
             else:
                 print("Animation server must be primary")
     
-    def record_state(self, jdata=None):
-        now = str(int(datetime.datetime.now().timestamp()))
-        output = Path(self.filepath.parent) / "recordings" / self.filepath.stem / f"{now}.json"
-        output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(json.dumps(jdata or {}, indent=2))
-    
     def process_ws_message(self, message):
         try:
             jdata = json.loads(message)
@@ -1176,8 +1196,6 @@ class Renderer():
             elif jdata.get("metadata") and jdata.get("path"):
                 path = Path(jdata.get("path"))
                 if path == self.filepath:
-                    if self.args.record_input:
-                        self.record_state(jdata)
                     if self.args.monitor_lines:
                         self.line_number = jdata.get("line_number")
         except TypeError:
@@ -1289,6 +1307,7 @@ class Renderer():
         render_previews = len(self.previews_waiting_to_paint) > 0
         if render_previews:
             w = 0
+            llh = -1
             lh = -1
             h = 0
             for render, result, rp in self.previews_waiting_to_paint:
@@ -1297,9 +1316,13 @@ class Renderer():
                 else:
                     sr = render.rect.scale(dscale, "mnx", "mny").round()
                 w = max(sr.w, w)
-                rects.append(Rect(0, lh+1, sr.w, sr.h))
-                lh += sr.h + 1
-                h += sr.h + 1
+                if render.layer:
+                    rects.append(Rect(0, llh, sr.w, sr.h)) # TODO 0 should be last-last?
+                else:
+                    rects.append(Rect(0, lh+1, sr.w, sr.h))
+                    llh = lh+1
+                    lh += sr.h + 1
+                    h += sr.h + 1
             h -= 1
             
             frect = Rect(0, 0, w, h)
@@ -1320,6 +1343,8 @@ class Renderer():
                 wh = int(h/scale_y)
                 glfw.set_window_size(self.window, ww, wh)
                 pin = self.py_config.get("WINDOW_PIN", None)
+                if self.args.window_pin:
+                    pin = [s.strip() for s in self.args.window_pin.split(",")]
                 if pin:
                     monitor = glfw.get_primary_monitor()
                     work_rect = Rect(glfw.get_monitor_workarea(monitor))
@@ -1332,6 +1357,8 @@ class Renderer():
 
             with self.surface as canvas:
                 canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 1))
+                if self.transparent:
+                    canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 0))
 
                 for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
                     rect = rects[idx].offset((w-rects[idx].w)/2, 0).round()
@@ -1362,11 +1389,14 @@ class Renderer():
         canvas.save()
         canvas.translate(0, self.window_scrolly)
         canvas.translate(rect.x, rect.y)
-        canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
+        if not self.transparent:
+            canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
         if not hasattr(render, "show_error"):
             canvas.scale(scale, scale)
         if render.clip:
             canvas.clipRect(skia.Rect(0, 0, rect.w, rect.h))
+        #canvas.clear(coldtype.bw(0, 0).skia())
+        #print("BG", render.func.__name__, render.bg)
         #canvas.clear(render.bg.skia())
         if render.direct_draw:
             try:
@@ -1396,6 +1426,7 @@ class Renderer():
     def on_modified(self, event):
         path = Path(event.src_path)
         #print("!", path)
+        #return
         if path in self.watchee_paths():
             if path.suffix == ".json":
                 try:
@@ -1405,12 +1436,6 @@ class Renderer():
                     return
             
             if path.suffix == ".py":
-                if self.args.record_input:
-                    self.record_state(dict(
-                        fulltext=self.filepath.read_text(),
-                        dirty=False,
-                        action="resave",
-                        source="coldtype-renderer"))
                 try:
                     for render in self.renderables(Action.Resave):
                         for wr in render.watch_restarts:
@@ -1422,6 +1447,11 @@ class Renderer():
                     pass
             
             idx = self.watchee_paths().index(path)
+            wpath, wtype, wflag = self.watchees[idx]
+            if wflag == "soft":
+                self.action_waiting = Action.PreviewStoryboard
+                return
+
             try:
                 print(f">>> resave: {Path(event.src_path).relative_to(Path.cwd())}")
             except:
@@ -1433,6 +1463,7 @@ class Renderer():
                 self._last_memory = memory
                 print(">>> pid:{:d}/new:{:04.2f}MB/total:{:4.2f}".format(os.getpid(), diff, memory))
             
+            #self.action_waiting = Action.PreviewStoryboard
             self.waiting_to_render = [[Action.Resave, self.watchees[idx][0]]]
 
     def watch_file_changes(self):
@@ -1485,6 +1516,10 @@ class Renderer():
         for r in self.running_renderers:
             if r:
                 r.terminate()
+    
+    def restart(self):
+        print("> RESTARTING...")
+        os.execl(sys.executable, *(["-m"]+sys.argv))
 
     def on_exit(self, restart=False):
         #if self.args.watch:
@@ -1509,8 +1544,7 @@ class Renderer():
                 print(line)
         
         if restart:
-            print(">>>>>>>>>>>>>>> RESTARTING <<<<<<<<<<<<<<<")
-            os.execl(sys.executable, *(["-m"]+sys.argv))
+            self.restart()
 
 
 def main():

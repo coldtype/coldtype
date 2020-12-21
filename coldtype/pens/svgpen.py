@@ -3,6 +3,20 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
 
+from coldtype.geometry import Rect, Edge, Point
+from coldtype.color import Gradient, Color
+from coldtype.pens.drawablepen import DrawablePenMixin
+from coldtype.pens.datpen import DATPen, DATPenSet
+
+import math
+from coldtype.color import Color
+import textwrap
+from collections import OrderedDict
+from lxml import etree
+import base64
+
+from random import randint
+
 
 def pointToString(pt):
     return " ".join(["{:0.1f}".format(i) for i in pt])
@@ -165,20 +179,6 @@ class SVGPathPen(BasePen):
 
     def getCommands(self):
         return "".join(self._commands)
-
-from coldtype.geometry import Rect, Edge, Point
-from coldtype.color import Gradient, Color
-from coldtype.pens.drawablepen import DrawablePenMixin
-from coldtype.pens.datpen import DATPen, DATPenSet
-
-import math
-from coldtype.color import Color
-import textwrap
-from collections import OrderedDict
-from lxml import etree
-import base64
-
-from random import randint
 
 
 class SVGPen(DrawablePenMixin, SVGPathPen):

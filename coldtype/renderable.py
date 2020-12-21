@@ -37,6 +37,8 @@ class Action(Enum):
     PreviewIndices = "preview_indices"
     PreviewStoryboardNext = "preview_storyboard_next"
     PreviewStoryboardPrev = "preview_storyboard_prev"
+    PreviewStoryboardNextMany = "preview_storyboard_next_many"
+    PreviewStoryboardPrevMany = "preview_storyboard_prev_many"
     RenderedPlay = "rendered_play"
     ArbitraryTyping = "arbitrary_typing"
     ArbitraryCommand = "arbitrary_command"
@@ -75,14 +77,15 @@ class renderable():
         postfn=None,
         watch=[],
         watch_restarts=[],
-        layers=[],
+        watch_soft=[],
         solo=False,
         rstate=False,
         preview_only=False,
         direct_draw=False,
         clip=False,
         style="default",
-        viewBox=True):
+        viewBox=True,
+        layer=False):
         """Base configuration for a renderable function"""
 
         self.rect = Rect(rect)
@@ -101,12 +104,15 @@ class renderable():
 
         self.watch_restarts = []
         for w in watch_restarts:
-            self.watch_restarts.append(self.add_watchee(w))
+            self.watch_restarts.append(self.add_watchee(w, "restart"))
+        
+        self.watch_soft = []
+        for w in watch_soft:
+            self.watch_soft.append(self.add_watchee(w, "soft"))
 
         self.name = name
         self.rasterizer = rasterizer
         self.self_rasterizing = False
-        self.layers = layers
         self.hidden = solo == -1
         self.solo = solo
         self.preview_only = preview_only
@@ -114,6 +120,9 @@ class renderable():
         self.clip = clip
         self.viewBox = viewBox
         self.direct_draw = direct_draw
+        self.layer = layer
+        if self.layer:
+            self.bg = normalize_color(None)
 
         if not rasterizer:
             if self.fmt == "svg":
@@ -123,17 +132,17 @@ class renderable():
             else:
                 self.rasterizer = "skia"
     
-    def add_watchee(self, w):
+    def add_watchee(self, w, flag=None):
         try:
             pw = Path(w).expanduser().resolve()
             if not pw.exists():
                 print(w, "<<< does not exist (cannot be watched)")
             else:
-                self.watch.append(pw)
+                self.watch.append([pw, flag])
                 return pw
         except TypeError:
             if isinstance(w, Font):
-                self.watch.append(w)
+                self.watch.append([w, flag])
             else:
                 raise Exception("Can only watch path strings, Paths, and Fonts")
     
@@ -152,7 +161,7 @@ class renderable():
     def pass_suffix(self):
         return self.name
     
-    def passes(self, action, layers, renderer_state, indices=[]):
+    def passes(self, action, renderer_state, indices=[]):
         return [RenderPass(self, self.pass_suffix(), [self.rect])]
 
     def package(self, filepath, output_folder):
@@ -250,7 +259,7 @@ class glyph(renderable):
         self.glyphName = glyphName
         super().__init__(rect=r, **kwargs)
     
-    def passes(self, action, layers, renderer_state, indices=[]):
+    def passes(self, action, renderer_state, indices=[]):
         return [RenderPass(self, self.glyphName, [])]
 
 
@@ -268,7 +277,7 @@ class fontpreview(renderable):
         
         self.matches.sort()
     
-    def passes(self, action, layers, renderer_state, indices=[]):
+    def passes(self, action, renderer_state, indices=[]):
         return [RenderPass(self, "{:s}".format(m.name), [self.rect, m]) for m in self.matches]
 
 
@@ -282,7 +291,7 @@ class iconset(renderable):
     def folder(self, filepath):
         return f"{filepath.stem}_source"
     
-    def passes(self, action, layers, renderer_state, indices=[]): # TODO could use the indices here
+    def passes(self, action, renderer_state, indices=[]): # TODO could use the indices here
         sizes = self.sizes
         if action == Action.RenderAll:
             sizes = self.valid_sizes
@@ -354,7 +363,7 @@ class animation(renderable, Timeable):
     def all_frames(self):
         return list(range(0, self.duration))
     
-    def active_frames(self, action, layers, renderer_state, indices):
+    def active_frames(self, action, renderer_state, indices):
         frames = self.storyboard.copy()
         for fidx, frame in enumerate(frames):
             frames[fidx] = (frame + renderer_state.frame_index_offset) % self.duration
@@ -378,9 +387,9 @@ class animation(renderable, Timeable):
     def pass_suffix(self, index):
         return "{:04d}".format(index)
     
-    def passes(self, action, layers, renderer_state, indices=[]):
-        frames = self.active_frames(action, layers, renderer_state, indices)
-        return [RenderPass(self, self.pass_suffix(i), [Frame(i, self, layers)]) for i in frames]
+    def passes(self, action, renderer_state, indices=[]):
+        frames = self.active_frames(action, renderer_state, indices)
+        return [RenderPass(self, self.pass_suffix(i), [Frame(i, self)]) for i in frames]
     
     def package(self, filepath, output_folder):
         pass
@@ -426,24 +435,17 @@ class animation(renderable, Timeable):
 
 
 class drawbot_animation(drawbot_script, animation):
-    def passes(self, action, layers, renderer_state, indices=[]):
+    def passes(self, action, renderer_state, indices=[]):
         if action in [
             Action.RenderAll,
             Action.RenderIndices,
             Action.RenderWorkarea]:
-            frames = super().active_frames(action, layers, renderer_state, indices)
+            frames = super().active_frames(action, renderer_state, indices)
             passes = []
-            if len(layers) > 0:
-                for layer in layers:
-                    for i in frames:
-                        p = RenderPass(self, "{:04d}".format(i), [Frame(i, self, [layer])])
-                        p.single_layer = layer
-                        passes.append(p)
-            else:
-                for i in frames:
-                    p = RenderPass(self, "{:04d}".format(i), [Frame(i, self, [])])
-                    #p.single_layer = layer
-                    passes.append(p)
+            for i in frames:
+                p = RenderPass(self, "{:04d}".format(i), [Frame(i, self)])
+                #p.single_layer = layer
+                passes.append(p)
             return passes
         else:
-            return super().passes(action, layers, renderer_state, indices)
+            return super().passes(action, renderer_state, indices)

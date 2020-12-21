@@ -2,4 +2,4 @@ from coldtype import *
 
 @renderable()
 def error(r):
-    raise Exception("Exception!")
+    raise Exception("Intentional Exception!")

@@ -5,10 +5,9 @@ from coldtype.animation.timeline import Timeline
 
 
 class Frame():
-    def __init__(self, i, animation, layers):
+    def __init__(self, i, animation):
         self.i = i
         self.a = animation
-        self.layers = layers
 
 
 class LoopPhase():

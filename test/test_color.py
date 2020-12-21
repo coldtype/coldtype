@@ -10,7 +10,7 @@ def hsl_interp(f):
         .f(hsl(0.5).hsl_interp(p, hsl(0.1))))
 
 
-#@animation()
+@animation()
 def rgb_interp(f):
     p = f.a.progress(f.i, easefn="qeio").e
     return (DATPen()
