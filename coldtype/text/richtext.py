@@ -35,7 +35,8 @@ class RichText(DATPenSet):
         invisible_boundaries=[],
         union_styles=True,
         blankfill="¶",
-        strip=True):
+        strip=True,
+        strip_lines=False):
         "WIP"
         super().__init__()
         self.tag_delimiters = tag_delimiters
@@ -48,6 +49,9 @@ class RichText(DATPenSet):
             text = text.read_text()
         if strip:
             text = text.strip()
+        
+        if strip_lines:
+            text = "\n".join([l.strip() for l in text.split("\n")])
         
         self.pens = self.parse_block(text, render_text_fn, rect, fit, graf_style).pens
 

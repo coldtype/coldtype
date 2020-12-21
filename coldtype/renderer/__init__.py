@@ -149,6 +149,8 @@ class Renderer():
 
             sidecar=parser.add_argument("-sc", "--sidecar", type=str, default=None, help="A file to run alongside your coldtype source file (like a file that processes data or keystrokes), that will run in a managed thread"),
 
+            hide_keybuffer=parser.add_argument("-hkb", "--hide-keybuffer", action="store_true", default=False, help="Should the keybuffer be shown?"),
+
             show_exit_code=parser.add_argument("-sec", "--show-exit-code", action="store_true", default=False, help=argparse.SUPPRESS),
 
             show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS),
@@ -1388,7 +1390,7 @@ class Renderer():
                     rect = rects[idx].offset((w-rects[idx].w)/2, 0).round()
                     self.draw_preview(dscale, canvas, rect, (render, result, rp))
             
-                if self.state.keylayer != Keylayer.Default:
+                if self.state.keylayer != Keylayer.Default and not self.args.hide_keybuffer:
                     self.state.draw_keylayer(canvas, self.last_rect, self.typeface)
             
             self.surface.flushAndSubmit()

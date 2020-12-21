@@ -1,3 +1,5 @@
+#coldtype -wt -wp mdx,mdy
+
 from coldtype.test import *
 
 @renderable((1200, 500), rstate=1)
