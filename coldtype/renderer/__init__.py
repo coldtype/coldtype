@@ -75,6 +75,20 @@ class WebSocketThread(threading.Thread):
             ptime.sleep(0.25)
 
 
+class DataSourceThread(threading.Thread):
+    def __init__(self, filepath):
+        self.filepath = filepath
+        self.program = run_path(self.filepath)
+        self.should_run = True
+        threading.Thread.__init__(self)
+    
+    def run(self):
+        print("Running data thread for:", self.filepath.relative_to(Path.cwd()))
+        while self.should_run:
+            self.program["run"]()
+            self.interval = self.program.get("INTERVAL", 0.5)
+            ptime.sleep(self.interval)
+
 class Renderer():
     def Argparser(name="coldtype", file=True, defaults={}, nargs=[]):
         parser = argparse.ArgumentParser(prog=name, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -133,6 +147,8 @@ class Renderer():
 
             filter_functions=parser.add_argument("-ff", "--filter-functions", type=str, default=None, help="Names of functions to render"),
 
+            sidecar=parser.add_argument("-sc", "--sidecar", type=str, default=None, help="A file to run alongside your coldtype source file (like a file that processes data or keystrokes), that will run in a managed thread"),
+
             show_exit_code=parser.add_argument("-sec", "--show-exit-code", action="store_true", default=False, help=argparse.SUPPRESS),
 
             show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS),
@@ -182,6 +198,7 @@ class Renderer():
         self.observers = []
         self.watchees = []
         self.server_thread = None
+        self.sidecar_threads = []
         
         if not self.reset_filepath(self.args.file if hasattr(self.args, "file") else None):
             self.dead = True
@@ -263,6 +280,7 @@ class Renderer():
                 self.watch_file_changes()
                 for line in self.filepath.read_text().splitlines():
                     if line.startswith("#coldtype"):
+                        print("> Overriding command-line args with:\n    >", line)
                         self.args = self.parser.parse_args(line.replace("#coldtype", "").strip().split(" "))
         else:
             self.watchees = []
@@ -841,6 +859,11 @@ class Renderer():
                 self.hotkeys.start()
         except:
             pass
+    
+        if self.args.sidecar:
+            dst = DataSourceThread(Path(self.args.sidecar).expanduser().resolve())
+            dst.start()
+            self.sidecar_threads.append(dst)
 
     def start(self):
         if self.args.midi_info:
@@ -1348,7 +1371,8 @@ class Renderer():
                 if pin:
                     monitor = glfw.get_primary_monitor()
                     work_rect = Rect(glfw.get_monitor_workarea(monitor))
-                    pinned = work_rect.take(ww, pin[0]).take(wh, pin[1])
+                    pinned = work_rect.take(ww, pin[0]).take(wh, pin[1]).round()
+                    print(">", pinned)
                     glfw.set_window_pos(self.window, pinned.x, pinned.y)
 
             self.last_rect = frect
@@ -1533,6 +1557,8 @@ class Renderer():
         self.stop_watching_file_changes()
         if self.server_thread:
             self.server_thread.should_run = False
+        for t in self.sidecar_threads:
+            t.should_run = False
         if self.args.memory:
             snapshot = tracemalloc.take_snapshot()
             top_stats = snapshot.statistics('traceback')
