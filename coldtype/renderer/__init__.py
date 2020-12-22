@@ -543,9 +543,15 @@ class Renderer():
                             result = None
                         else:
                             result = render.run(rp, self.state)
+                        
                         if self.state.request:
-                            self.requests_waiting.append([render, str(self.state.request)])
+                            self.requests_waiting.append([render, str(self.state.request), None])
                             self.state.request = None
+                        
+                        if self.state.callback:
+                            self.requests_waiting.append([render, self.state.callback, "callback"])
+                            self.state.callback = None
+
                         if not result and not render.direct_draw:
                             print(">>> No result")
                             result = DATPen().rect(render.rect).f(None)
@@ -916,8 +922,8 @@ class Renderer():
     def on_start(self):
         pass
 
-    def on_request_from_render(self, render, request):
-        print("request (noop)>", render, request)
+    def on_request_from_render(self, render, request, action=None):
+        print("request (noop)>", render, request, action)
 
     def on_hotkey(self, key_combo, action):
         print("HOTKEY", key_combo)
@@ -1399,8 +1405,11 @@ class Renderer():
         self.state.needs_display = 0
         self.previews_waiting_to_paint = []
     
-        for render, request in self.requests_waiting:
-            self.on_request_from_render(render, request)
+        for render, request, action in self.requests_waiting:
+            if action == "callback":
+                self.action_waiting = Action.PreviewStoryboard
+            else:
+                self.on_request_from_render(render, request, action)
             self.requests_waiting = []
 
     def draw_preview(self, scale, canvas, rect, waiter):
@@ -1475,6 +1484,7 @@ class Renderer():
             idx = self.watchee_paths().index(path)
             wpath, wtype, wflag = self.watchees[idx]
             if wflag == "soft":
+                self.state.watch_soft_mods[path] = True
                 self.action_waiting = Action.PreviewStoryboard
                 return
 
