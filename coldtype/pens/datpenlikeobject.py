@@ -112,6 +112,10 @@ class DATPenLikeObject():
     def v(self, v):
         self.visible = bool(v)
         return self
+    
+    def a(self, v):
+        self._alpha = v
+        return self
 
     def f(self, *value):
         """Get/set a (f)ill"""
@@ -281,18 +285,18 @@ class DATPenLikeObject():
         ny = pnoise1(doneness*speed[1], base=base+10, octaves=octaves)
         return self.translate(nx * scale[0], ny * scale[1])
     
-    def walk(self, callback, depth=0, visible_only=False):
+    def walk(self, callback, depth=0, visible_only=False, parent=None):
         if visible_only and not self.visible:
             return
         
         is_dps = hasattr(self, "pens")
         if is_dps:
-            callback(self, -1, dict(depth=depth))
+            callback(self, -1, dict(depth=depth, parent=parent))
             for pen in self.pens:
-                pen.walk(callback, depth=depth+1, visible_only=visible_only)
-            callback(self, 1, dict(depth=depth))
+                pen.walk(callback, depth=depth+1, visible_only=visible_only, parent=self)
+            callback(self, 1, dict(depth=depth, parent=parent))
         else:
-            callback(self, 0, dict(depth=depth))
+            callback(self, 0, dict(depth=depth, parent=parent))
     
     def all_pens(self):
         pens = []

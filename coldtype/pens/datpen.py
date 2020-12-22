@@ -51,6 +51,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.frame = None
         self.typographic = False
         self._tag = "?"
+        self._alpha = 1
         self.container = None
         self.glyphName = None
         self.data = {}
@@ -1084,6 +1085,7 @@ class DATPenSet(DATPenLikeObject):
         self.typographic = True
         self.layered = False
         self._tag = "?"
+        self._alpha = 1
         self.container = None
         self.frame = None
         self.data = {}

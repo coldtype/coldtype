@@ -1380,7 +1380,8 @@ class Renderer():
                     monitor = glfw.get_primary_monitor()
                     work_rect = Rect(glfw.get_monitor_workarea(monitor))
                     pinned = work_rect.take(ww, pin[0]).take(wh, pin[1]).round()
-                    print(">", pinned)
+                    if pin[1] == "mdy":
+                        pinned = pinned.offset(0, -30)
                     glfw.set_window_pos(self.window, pinned.x, pinned.y)
 
             self.last_rect = frect
@@ -1468,6 +1469,7 @@ class Renderer():
                     json.loads(path.read_text())
                 except json.JSONDecodeError:
                     print("Error decoding watched json", path)
+                    #print(path.read_text())
                     return
             
             if path.suffix == ".py":
