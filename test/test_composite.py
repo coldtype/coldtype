@@ -1,8 +1,5 @@
 from coldtype.test import *
 
-#cheee = Font.Cacheable("~/Type/fonts/fonts/Eckmannpsych-Variable.ttf")
-obv = Font.Cacheable("~/Type/ex1/greektown/greektown.ufo")
-
 @animation((1000, 500), timeline=Timeline(120), bg=0)
 def simple(f):
     e = f.a.progress(f.i, easefn="qeio", loops=1).e
@@ -16,13 +13,12 @@ def simple(f):
             .rotate(360*le)
             .f(1)
             .f(hsl(le, s=1))
-            .s(0).sw(5))])#.blendmode(skia.BlendMode.kLighten)
+            .s(0).sw(5))]).blendmode(skia.BlendMode.kDifference)
 
-@animation((1200, 800), timeline=Timeline(90), bg=1, composites=1, rstate=1, solo=1)
+@animation((1200, 800), timeline=Timeline(90), bg=1, composites=1, rstate=1)
 def interpolation(f, rs):
     e = f.a.progress(f.i, easefn="qeio", loops=1).e
     le = f.a.progress(f.i, easefn="linear", loops=1, cyclic=False).e
-    #rs.callback = -1
 
     return DATPenSet([
         DATPen().rect(f.a.r).f(1),
