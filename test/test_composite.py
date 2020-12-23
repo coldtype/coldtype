@@ -1,6 +1,6 @@
 from coldtype.test import *
 
-cheee = Font.Cacheable("~/Type/fonts/fonts/CheeeVariable.ttf")
+cheee = Font.Cacheable("~/Type/fonts/fonts/Eckmannpsych-Variable.ttf")
 
 @animation(timeline=Timeline(120), bg=0)
 def simple(f):
@@ -17,18 +17,18 @@ def simple(f):
             .f(hsl(le, s=1))
             .s(0).sw(5))])#.blendmode(skia.BlendMode.kLighten)
 
-@animation((1200, 500), timeline=Timeline(60), bg=1, composites=1)
+@animation((1200, 500), timeline=Timeline(60), bg=1, composites=1, solo=1)
 def interpolation(f):
     e = f.a.progress(f.i, easefn="qeio", loops=1).e
     return DATPenSet([
         #DATPen().rect(f.a.r).f(1),
         interpolation.last_result,
         (StyledString("Y",
-            Style(cheee, 500, yest=1-e*0.5, grvt=e, ro=1))
+            Style(cheee, 500, yest=1-e*0.5, grvt=e, opsz=1-e, ro=1))
             .pen()
             .align(f.a.r, x="mnx")
-            .translate(30+820*e, 0)
+            .translate(30+820*e, 20*e)
+            .rotate(180*e)
             .f(1)
-            .s(0).sw(7)
-            )
-            ]).color_phototype(f.a.r, blur=5, cut=110, cutw=15)
+            .s(0).sw(8))
+            ]).color_phototype(f.a.r, blur=3, cut=110, cutw=15)
