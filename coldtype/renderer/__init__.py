@@ -498,6 +498,9 @@ class Renderer():
     def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
         if not self.args.is_subprocess:
             start = ptime.time()
+        
+        if len(self.previews_waiting_to_paint) > 0:
+            return 0, 0, []
 
         prev_renders = self.last_renders
         renders = self.renderables(trigger)
@@ -1064,10 +1067,10 @@ class Renderer():
                 self.window_scrolly += (500 if mods & glfw.MOD_SHIFT else 250)
                 self.on_action(Action.PreviewStoryboard)
         elif key == glfw.KEY_SPACE:
-            #if mods & glfw.MOD_CONTROL:
-            self.on_action(Action.RenderedPlay)
-            #else:
-            #    self.on_action(Action.PreviewPlay)
+            if mods & glfw.MOD_SHIFT:
+                self.on_action(Action.RenderedPlay)
+            else:
+                self.action_waiting = Action.PreviewPlay
         elif key == glfw.KEY_ENTER:
             self.on_action(Action.PreviewStoryboardReload)
         elif key in [glfw.KEY_MINUS, glfw.KEY_EQUAL]:
@@ -1148,6 +1151,9 @@ class Renderer():
                 self.on_action(action)
 
     def on_action(self, action, message=None) -> bool:
+        #if action != Action.PreviewStoryboardNext:
+        #    print("ACTION", action)
+
         if action in [Action.RenderAll, Action.RenderWorkarea, Action.PreviewStoryboardReload]:
             self.reload_and_render(action)
             return True
@@ -1270,14 +1276,17 @@ class Renderer():
             t = glfw.get_time()
             td = t - self.glfw_last_time
 
-            if self.last_animation and self.playing_preloaded_frame >= 0 and len(self.preloaded_frames) > 0:
+            spf = 0.1
+            if self.last_animation:
                 spf = 1 / float(self.last_animation.timeline.fps)
+
                 if td >= spf:
                     self.glfw_last_time = t
                 else:
                     glfw.poll_events()
                     continue
 
+            if self.last_animation and self.playing_preloaded_frame >= 0 and len(self.preloaded_frames) > 0:
                 GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
                 with self.surface as canvas:
@@ -1307,8 +1316,9 @@ class Renderer():
                     self.on_stdin(last_line.strip())
                     last_line = None
                 
-                if self.playing != 0:
-                    self.on_action(Action.PreviewStoryboardNext)
+                #if self.playing != 0:
+                    #self.action_waiting = Action.PreviewStoryboardNext
+                    #self.on_action(Action.PreviewStoryboardNext)
             
             self.state.reset_keystate()
             glfw.poll_events()
@@ -1339,6 +1349,9 @@ class Renderer():
                 self.on_action(self.action_waiting)
             self.action_waiting = None
         
+        if self.playing != 0:
+            self.on_action(Action.PreviewStoryboardNext)
+        
         if self.server:
             for k, v in self.server.connections.items():
                 if hasattr(v, "messages") and len(v.messages) > 0:
@@ -1350,10 +1363,10 @@ class Renderer():
         if self.server:
             self.monitor_midi()
         
-        if len(self.waiting_to_render) > 0:
-            for action, path in self.waiting_to_render:
-                self.reload_and_render(action, path)
-            self.waiting_to_render = []
+        #if len(self.waiting_to_render) > 0:
+        #    for action, path in self.waiting_to_render:
+        #        self.reload_and_render(action, path)
+        #    self.waiting_to_render = []
         
         dscale = self.preview_scale()
         rects = []
@@ -1415,7 +1428,7 @@ class Renderer():
                 canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 1))
                 if self.transparent:
                     canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 0))
-
+                
                 for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
                     rect = rects[idx].offset((w-rects[idx].w)/2, 0).round()
                     self.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
@@ -1534,8 +1547,8 @@ class Renderer():
                 self._last_memory = memory
                 print(">>> pid:{:d}/new:{:04.2f}MB/total:{:4.2f}".format(os.getpid(), diff, memory))
             
-            #self.action_waiting = Action.PreviewStoryboard
-            self.waiting_to_render = [[Action.Resave, self.watchees[idx][0]]]
+            self.action_waiting = Action.PreviewStoryboardReload
+            #self.waiting_to_render = [[Action.Resave, self.watchees[idx][0]]]
 
     def watch_file_changes(self):
         self.observers = []
