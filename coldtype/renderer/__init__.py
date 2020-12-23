@@ -379,9 +379,9 @@ class Renderer():
                     "__FILE__": self.filepath,
                     "__sibling__": partial(sibling, self.filepath)
                 })
-                for k, v in self.program.items():
-                    if isinstance(v, animation):
-                        self.last_animation = v
+                for r in self.renderables(Action.PreviewStoryboardReload):
+                    if isinstance(r, animation):
+                        self.last_animation = r
                     
                 if self.program.get("COLDTYPE_NO_WATCH"):
                     return True
@@ -458,6 +458,7 @@ class Renderer():
             print(">>> No renderables found <<<")
             _rs.append(r)
 
+        print([r.name for r in _rs])
         return _rs
     
     def render_to_output_folder(self, render):
