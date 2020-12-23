@@ -207,10 +207,9 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         if scale != 1:
             pens.scale(scale, scale, Point((0, 0)))
         
-        if hasattr(pens, "visible"):
-            if not pens.visible:
-                print("HERE!")
-                return
+        if not pens.visible:
+            print("HERE!")
+            return
         
         def draw(pen, state, data):
             if state != 0:
@@ -243,13 +242,6 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             
             if state == 0:
                 SkiaPen(pen, rect, canvas, scale, style=style, alpha=pen.calc_alpha())
-
-        if isinstance(pens, DATPen):
-            pens = DATPenSet([pens])
-        elif isinstance(pens, DATText):
-            pens = DATPenSet([pens])
-        elif not isinstance(pens, DATPenSet):
-            pens = DATPenSet(pens)
         
         pens.walk(draw, visible_only=True)
     

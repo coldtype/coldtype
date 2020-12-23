@@ -10,6 +10,7 @@ from coldtype.animation import Timeable, Frame
 from coldtype.animation.timeline import Timeline
 from coldtype.text.reader import normalize_font_prefix, Font
 from coldtype.pens.datpen import DATPen, DATPenSet
+from coldtype.pens.dattext import DATText
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.skiapen import SkiaPen
 
@@ -39,6 +40,7 @@ class Action(Enum):
     PreviewStoryboardPrev = "preview_storyboard_prev"
     PreviewStoryboardNextMany = "preview_storyboard_next_many"
     PreviewStoryboardPrevMany = "preview_storyboard_prev_many"
+    ClearLastRender = "clear_last_render"
     RenderedPlay = "rendered_play"
     ArbitraryTyping = "arbitrary_typing"
     ArbitraryCommand = "arbitrary_command"
@@ -83,6 +85,7 @@ class renderable():
         preview_only=False,
         direct_draw=False,
         clip=False,
+        composites=False,
         style="default",
         viewBox=True,
         layer=False):
@@ -96,7 +99,9 @@ class renderable():
         self.custom_folder = custom_folder
         self.postfn = postfn
         self.last_passes = []
+        self.last_result = None
         self.style = style
+        self.composites = composites
 
         self.watch = []
         for w in watch:
@@ -190,6 +195,18 @@ class renderable():
     def show(self):
         self.hidden = False
         return self
+    
+    def normalize_result(self, pens):
+        if not pens:
+            return DATPenSet()
+        elif isinstance(pens, DATPen):
+            return DATPenSet([pens])
+        elif isinstance(pens, DATText):
+            return DATPenSet([pens])
+        elif not isinstance(pens, DATPenSet):
+            return DATPenSet(pens)
+        else:
+            return pens
 
 
 class skia_direct(renderable):
@@ -209,6 +226,9 @@ class drawbot_script(renderable):
             raise Exception("DrawBot not installed!")
         super().__init__(rect=Rect(rect).scale(scale), rasterizer="drawbot", **kwargs)
         self.self_rasterizing = True
+    
+    def normalize_result(self, pens):
+        return pens
     
     def run(self, render_pass, renderer_state):
         use_pool = True

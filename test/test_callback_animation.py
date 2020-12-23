@@ -50,11 +50,12 @@ def callback(r, rs):
 
 tl = Timeline(60, 60)
 
-@oneshot((500, 500), timeline=tl)
+@oneshot((1000, 500), timeline=tl)
 def callback2(f):
     e = f.a.progress(f.i, easefn="eeo").e
     return (StyledString("COLD",
-        Style(co, 500-e*350, wdth=e))
+        Style(co, 800-e*650, wdth=e, ro=1))
         .pen()
         .align(f.a.r)
-        .f(0))
+        .f(0)
+        .s(1).sw(3))

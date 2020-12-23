@@ -117,6 +117,8 @@ class Renderer():
 
             multiplex=parser.add_argument("-mp", "--multiplex", action="store_true", default=False, help="Render in multiple processes"),
 
+            composite=parser.add_argument("-c", "--composite", action="store_true", default=False, help="Should the next render composite onto the previous render?"),
+
             memory=parser.add_argument("-m", "--memory", action="store_true", default=False, help="Show statistics about memory usage?"),
 
             midi_info=parser.add_argument("-mi", "--midi-info", action="store_true", default=False, help="Show available MIDI devices"),
@@ -497,6 +499,7 @@ class Renderer():
         if not self.args.is_subprocess:
             start = ptime.time()
 
+        prev_renders = self.last_renders
         renders = self.renderables(trigger)
         self.last_renders = renders
         preview_count = 0
@@ -542,7 +545,15 @@ class Renderer():
                         if render.direct_draw:
                             result = None
                         else:
-                            result = render.run(rp, self.state)
+                            # repopulate last_result across a save
+                            if not render.last_result:
+                                if len(prev_renders) > 0:
+                                    for pr in prev_renders:
+                                        if pr.name == render.name and pr.last_result:
+                                            render.last_result = pr.last_result
+                            result = render.normalize_result(render.run(rp, self.state))
+                            if self.args.composite and not render.composites:
+                                result = DATPenSet([render.last_result, result])
                         
                         if self.state.request:
                             self.requests_waiting.append([render, str(self.state.request), None])
@@ -560,7 +571,7 @@ class Renderer():
                             if render.direct_draw:
                                 self.previews_waiting_to_paint.append([render, None, rp])
                             else:
-                                preview_result = render.runpost(result, rp)
+                                preview_result = render.normalize_result(render.runpost(result, rp))
                                 preview_count += 1
                                 if preview_result:
                                     self.previews_waiting_to_paint.append([render, preview_result, rp])
@@ -705,6 +716,8 @@ class Renderer():
             DrawBotPen.Composite(content, render.rect, str(path), scale=scale)
         elif rasterizer == "skia":
             if render.fmt == "png":
+                content = content.precompose(render.rect)
+                render.last_result = content
                 SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=None if self.args.cpu_render else self.context, style=render.style)
             elif render.fmt == "pdf":
                 SkiaPen.PDFOnePage(content, render.rect, str(path), scale=scale)
@@ -934,7 +947,8 @@ class Renderer():
             enum_action = self.lookup_action(action)
             if enum_action:
                 print(">", enum_action)
-                self.on_action(enum_action, message)
+                self.action_waiting = enum_action
+                #self.on_action(enum_action, message)
             else:
                 print(">>> (", action, ") is not a recognized action")
 
@@ -1080,6 +1094,8 @@ class Renderer():
             self.on_action(Action.RenderWorkarea)
         elif key == glfw.KEY_M:
             self.on_action(Action.ToggleMultiplex)
+        elif key == glfw.KEY_BACKSLASH:
+            self.action_waiting = Action.ClearLastRender
         elif key == glfw.KEY_D:
             self.state.keylayer = Keylayer.Editing
             self.state.keylayer_shifting = True
@@ -1186,6 +1202,10 @@ class Renderer():
         elif action == Action.ToggleMultiplex:
             self.multiplexing = not self.multiplexing
             print(">>> MULTIPLEXING?", self.multiplexing)
+        elif action == Action.ClearLastRender:
+            for r in self.renderables(Action.PreviewStoryboard):
+                r.last_result = None
+            self.action_waiting = Action.PreviewStoryboard
         elif message.get("serialization"):
             ptime.sleep(0.5)
             self.reload(Action.Resave)
@@ -1312,9 +1332,11 @@ class Renderer():
     
     def turn_over(self):
         if self.action_waiting:
-            #print(">", self.action_waiting)
-            #self.on_message({}, self.action_waiting)
+            action_in = self.action_waiting
             self.on_action(self.action_waiting)
+            if action_in != self.action_waiting:
+                # TODO should be recursive?
+                self.on_action(self.action_waiting)
             self.action_waiting = None
         
         if self.server:
@@ -1396,7 +1418,7 @@ class Renderer():
 
                 for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
                     rect = rects[idx].offset((w-rects[idx].w)/2, 0).round()
-                    self.draw_preview(dscale, canvas, rect, (render, result, rp))
+                    self.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
             
                 if self.state.keylayer != Keylayer.Default and not self.args.hide_keybuffer:
                     self.state.draw_keylayer(canvas, self.last_rect, self.typeface)
@@ -1414,7 +1436,7 @@ class Renderer():
                 self.on_request_from_render(render, request, action)
             self.requests_waiting = []
 
-    def draw_preview(self, scale, canvas, rect, waiter):
+    def draw_preview(self, idx, scale, canvas, rect, waiter):
         if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
             image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(waiter[1])))
             if image:
@@ -1426,15 +1448,20 @@ class Renderer():
         canvas.save()
         canvas.translate(0, self.window_scrolly)
         canvas.translate(rect.x, rect.y)
+        
         if not self.transparent:
             canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
+        
         if not hasattr(render, "show_error"):
             canvas.scale(scale, scale)
+        
         if render.clip:
             canvas.clipRect(skia.Rect(0, 0, rect.w, rect.h))
+        
         #canvas.clear(coldtype.bw(0, 0).skia())
         #print("BG", render.func.__name__, render.bg)
         #canvas.clear(render.bg.skia())
+        
         if render.direct_draw:
             try:
                 render.run(rp, self.state, canvas)
@@ -1444,15 +1471,20 @@ class Renderer():
                 render.show_error = stack.split("\n")[-2]
                 error_color = coldtype.rgb(0, 0, 0).skia()
         else:
-            render.draw_preview(1.0, canvas, render.rect, result, rp)
+            comp = result.precompose(render.rect)
+            render.last_result = comp
+            render.draw_preview(1.0, canvas, render.rect, comp, rp)
+        
         if hasattr(render, "blank_renderable"):
             paint = skia.Paint(AntiAlias=True, Color=coldtype.hsl(0, l=1, a=0.75).skia())
             canvas.drawString(f"{coldtype.__version__}", 359, 450, skia.Font(self.typeface, 42), paint)
             canvas.drawString("Nothing found", 297, 480, skia.Font(self.typeface, 24), paint)
+        
         if hasattr(render, "show_error"):
             paint = skia.Paint(AntiAlias=True, Color=error_color)
             canvas.drawString(render.show_error, 30, 70, skia.Font(self.typeface, 50), paint)
             canvas.drawString("> See process in terminal for traceback", 30, 120, skia.Font(self.typeface, 32), paint)
+        
         canvas.restore()
     
     def preload_frames(self, passes):
