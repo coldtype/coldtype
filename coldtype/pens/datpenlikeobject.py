@@ -285,18 +285,21 @@ class DATPenLikeObject():
         ny = pnoise1(doneness*speed[1], base=base+10, octaves=octaves)
         return self.translate(nx * scale[0], ny * scale[1])
     
-    def walk(self, callback, depth=0, visible_only=False, parent=None):
+    def walk(self, callback:Callable[["DATPenLikeObject", int, dict], None], depth=0, visible_only=False, parent=None):
         if visible_only and not self.visible:
             return
         
+        if parent:
+            self._parent = parent
+        
         is_dps = hasattr(self, "pens")
         if is_dps:
-            callback(self, -1, dict(depth=depth, parent=parent))
+            callback(self, -1, dict(depth=depth))
             for pen in self.pens:
                 pen.walk(callback, depth=depth+1, visible_only=visible_only, parent=self)
-            callback(self, 1, dict(depth=depth, parent=parent))
+            callback(self, 1, dict(depth=depth))
         else:
-            callback(self, 0, dict(depth=depth, parent=parent))
+            callback(self, 0, dict(depth=depth))
     
     def all_pens(self):
         pens = []

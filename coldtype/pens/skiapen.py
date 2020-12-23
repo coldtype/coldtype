@@ -242,12 +242,14 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                     skia.Paint(AntiAlias=True, Color=pen.style.fill.skia()))
             
             if state == 0:
-                SkiaPen(pen, rect, canvas, scale, style=style, alpha=data["parent"]._alpha)
+                SkiaPen(pen, rect, canvas, scale, style=style, alpha=pen.calc_alpha())
 
         if isinstance(pens, DATPen):
             pens = DATPenSet([pens])
         elif isinstance(pens, DATText):
             pens = DATPenSet([pens])
+        elif not isinstance(pens, DATPenSet):
+            pens = DATPenSet(pens)
         
         pens.walk(draw, visible_only=True)
     

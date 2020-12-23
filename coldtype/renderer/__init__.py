@@ -1071,7 +1071,8 @@ class Renderer():
             self.on_action(Action.Release)
         elif key == glfw.KEY_P:
             #self._should_reload = True
-            self.on_action(Action.PreviewStoryboardReload)
+            #self.on_action(Action.PreviewStoryboardReload)
+            self.action_waiting = Action.PreviewStoryboardReload
         elif key == glfw.KEY_A:
             self.on_action(Action.RenderAll)
             self.on_action(Action.RenderedPlay)

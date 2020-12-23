@@ -28,7 +28,7 @@ def render(r, rstate):
         (DATPen().rect(r)
             .f(g1)),
         (dps.copy().pen()
-            .castshadow(nxl(41, 0.3)*100-50, nxl(51, 1)*1000).f(0)
+            #.castshadow(nxl(41, 0.3)*100-50, nxl(51, 1)*1000).f(0)
             .f(Gradient.Vertical(r, hsl(nxl(30, 0.66)), hsl(nxl(40, 0.5))))),
         dps.understroke(s=g1, sw=nxl(71)*20)
     ]

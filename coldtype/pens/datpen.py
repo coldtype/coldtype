@@ -52,6 +52,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.typographic = False
         self._tag = "?"
         self._alpha = 1
+        self._parent = None
         self.container = None
         self.glyphName = None
         self.data = {}
@@ -208,6 +209,14 @@ class DATPen(RecordingPen, DATPenLikeObject):
         fn(self)
         self._current_attr_tag = was_tag
         return self
+    
+    def calc_alpha(self):
+        a = self._alpha
+        p = self._parent
+        while p:
+            a = a * p._alpha
+            p = p._parent
+        return a
     
     def getFrame(self, th=False, tv=False):
         """For internal use; creates a frame based on calculated bounds."""
@@ -1086,6 +1095,7 @@ class DATPenSet(DATPenLikeObject):
         self.layered = False
         self._tag = "?"
         self._alpha = 1
+        self._parent = None
         self.container = None
         self.frame = None
         self.data = {}
