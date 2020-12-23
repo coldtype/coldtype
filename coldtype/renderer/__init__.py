@@ -458,7 +458,6 @@ class Renderer():
             print(">>> No renderables found <<<")
             _rs.append(r)
 
-        print([r.name for r in _rs])
         return _rs
     
     def render_to_output_folder(self, render):
