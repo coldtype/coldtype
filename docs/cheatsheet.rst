@@ -9,11 +9,15 @@ Cheatsheet
     "``-``", "zoom out", ""
     "``→``", "one frame forward (in animation)", ""
     "``←``", "one frame backward (in animation)", ""
+    "``home``", "return to storyboard", "defaults to frame 0"
+    "``space``", "play animation", "as fast as possible, but no faster than the specified frame rate (default 30 fps)"
+    "``shift+space``", "play rendered animation", "at specified fps (default 30 fps)"
     "``a``", "``render_all``", "render/rasterize all renderables and frames in renderables"
     "``w``", "``render_workarea``", "for partial animation rendering"
     "``r``", "``restart_renderer``", "to reload code not in source file"
     "``l``", "``release``", "to call special ``release`` fn"
     "``m``", "``toggle_multiplex``", "turn multiplexing on/off"
+    "``\``", "``clear_last_render``", "if compositing, clears the last render / feedback"
 
 All of those single-key shortcuts also work as single-letter actions in the command buffer (below) and the hanging process stdin.
 

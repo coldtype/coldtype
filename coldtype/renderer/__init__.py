@@ -1124,9 +1124,9 @@ class Renderer():
         elif action_abbrev == "r":
             return Action.RestartRenderer, None
         elif action_abbrev == "l":
-            self.on_action(Action.Release)
+            return Action.Release, None
         elif action_abbrev == "m":
-            self.on_action(Action.ToggleMultiplex)
+            return Action.ToggleMultiplex, None
         elif action_abbrev == "rp":
             self.reset_filepath(data[0])
             return Action.Resave, None

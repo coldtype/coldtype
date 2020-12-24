@@ -29,7 +29,11 @@ Save that code in a file called ``animation.py``, then run it ala ``coldtype ani
 
 If you **hold down the arrow keys**, you can preview the animation; depending on how complex your animation is, "previewing" might be exactly the same as viewing the final animation, if the frames render as fast as real-time. (Even if they don’t, holding down the right arrow key should still give you a good sense of the mechanics of the animation in time.)
 
-If you want to see the full animation played back at it's true frame rate, hit the key "a" on your keyboard, and you should see some text appear in your terminal, noting that the frames of the animation are being saved to disk. When it finishes (it’ll say something like ``rendered``), you can hit the space bar on the viewer and it should playback the animation. Hit the spacebar again to stop the looped playback.
+To see the animation come to life, hit the space bar. If your animation renders faster than real-time (i.e. faster than the frame-rate defined in the Timeline associated with the ``@animation`` decorator), when you hit the spacebar, the animation will play back at the defined frame rate (which defaults to 30fps). If not, not a big deal, it'll just be a little slower than the intended frame rate.
+
+One cool thing to note — once you hit the space bar, if you make changes to the source file and hit save, the animation will update and keeping playing back.
+
+If you want to see the full animation played back at it's true frame rate regardless of how intensive the rendering is, hit the key "a" on your keyboard, and you should see some text appear in your terminal, noting that the frames of the animation are being saved to disk. When it finishes (it’ll say something like ``rendered``), the animation will automatically start playing back. You can hit ``shift+space`` in the viewer to stop that playback.
 
 Here’re all the frames of that animation (a circle moving across the frame, and changing colors):
 
@@ -111,7 +115,7 @@ If you type in `a`, this will render-(a)ll, and should take a little while to co
     
     a
 
-Once you do an `a` command, jump to the viewer app and hit the space bar to preview the animation in real time at the correct frame rate.
+Once you do an `a` command, jump to the viewer app and hit ``shift+space`` (i.e. the spacebar) to preview the animation in real time at the correct frame rate, using the cached frames.
 
 Jumping to Adobe
 ----------------
