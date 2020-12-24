@@ -1487,8 +1487,11 @@ class Renderer():
                 render.show_error = stack.split("\n")[-2]
                 error_color = coldtype.rgb(0, 0, 0).skia()
         else:
-            comp = result.precompose(render.rect)
-            render.last_result = comp
+            if self.args.composite or render.composites:
+                comp = result.precompose(render.rect)
+                render.last_result = comp
+            else:
+                comp = result
             render.draw_preview(1.0, canvas, render.rect, comp, rp)
         
         if hasattr(render, "blank_renderable"):
