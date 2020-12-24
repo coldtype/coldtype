@@ -6,7 +6,7 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
 
-from coldtype.pens.datpen import DATPen
+from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.pens.dattext import DATText
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
@@ -39,13 +39,14 @@ class SkiaPathPen(BasePen):
 
 
 class SkiaPen(DrawablePenMixin, SkiaPathPen):
-    def __init__(self, dat, rect, canvas, scale, style=None):
+    def __init__(self, dat, rect, canvas, scale, style=None, alpha=1):
         super().__init__(dat, rect.h)
         self.scale = scale
         self.canvas = canvas
         self.rect = rect
         self.blendmode = None
         self.style = style
+        self.alpha = alpha
 
         all_attrs = list(self.findStyledAttrs(style))
         skia_paint_kwargs = dict(AntiAlias=True)
@@ -74,6 +75,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             else:
                 canvas.save()
                 did_draw = self.applyDATAttribute(attrs, attr)
+                self.paint.setAlphaf(self.paint.getAlphaf()*self.alpha)
                 if not did_draw:
                     canvas.drawPath(self.path, self.paint)
                 canvas.restore()
@@ -205,10 +207,9 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         if scale != 1:
             pens.scale(scale, scale, Point((0, 0)))
         
-        if hasattr(pens, "visible"):
-            if not pens.visible:
-                print("HERE!")
-                return
+        if not pens.visible:
+            print("HERE!")
+            return
         
         def draw(pen, state, data):
             if state != 0:
@@ -240,26 +241,12 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                     skia.Paint(AntiAlias=True, Color=pen.style.fill.skia()))
             
             if state == 0:
-                SkiaPen(pen, rect, canvas, scale, style=style)
+                SkiaPen(pen, rect, canvas, scale, style=style, alpha=pen.calc_alpha())
         
-        if isinstance(pens, DATPen):
-            pens = [pens]
-        elif isinstance(pens, DATText):
-            pens = [pens]
-            # font = sts.style.font
-            # print(">>>>>>>>>>", font)
-            # if isinstance(font, str):
-            #     font = skia.Typeface(font)
-            # else:
-            #     font = skia.Typeface.MakeFromFile(font.path)
-            # print(font)
-
-            # pens = []
-        
-        for dps in pens:
-            dps.walk(draw, visible_only=True)
+        pens.walk(draw, visible_only=True)
     
     def Precompose(pens, rect, fmt=None, context=None, scale=1, disk=False):
+        rect = rect.round()
         if context:
             info = skia.ImageInfo.MakeN32Premul(rect.w, rect.h)
             surface = skia.Surface.MakeRenderTarget(context, skia.Budgeted.kNo, info)
@@ -269,7 +256,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             surface = skia.Surface(rect.w, rect.h)
         
         with surface as canvas:
-            SkiaPen.CompositeToCanvas(pens, rect, canvas)
+            SkiaPen.CompositeToCanvas(pens.translate(-rect.x, -rect.y), rect, canvas)
         img = surface.makeImageSnapshot()
         if scale != 1:
             x, y, w, h = rect.scale(scale)

@@ -47,3 +47,12 @@ def uses_shadow(r):
             .f(hsl(0.1, s=0.6, l=0.6))
             .shadow(30, (0, 1)))
     ])
+
+@renderable(rect=(500, 500), solo=0)
+def placed_precompose(r):
+    dp = DATPen().oval(r.inset(140)).f(hsl(0.5))
+    dpr = dp.precompose(
+        r.inset(150)#.zero(),
+        #r.inset(150)
+        )
+    return dpr

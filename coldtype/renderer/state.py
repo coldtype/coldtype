@@ -46,6 +46,7 @@ class RendererState():
         self.keybuffer = []
         #self.needs_display = 0
         self.request = None
+        self.callback = None
         self.cmd = None
         self.arrow = None
         self.mods = Mods()
@@ -58,6 +59,8 @@ class RendererState():
         self.frame_index_offset = 0
         self.canvas = None
         self._last_filepath = None
+        self.watch_soft_mods = {}
+        self.watch_mods = {}
         self.reset()
     
     def reset(self, ignore_current_state=False):
@@ -273,4 +276,6 @@ class RendererState():
         self.cmd = None
         self.arrow = None
         self.mods.reset()
+        self.watch_mods = {}
+        self.watch_soft_mods = {}
         #self.mouse = None
