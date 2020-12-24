@@ -267,6 +267,9 @@ class Renderer():
                     if create.lower() == "y":
                         self.filepath.parent.mkdir(exist_ok=True, parents=True)
                         self.filepath.write_text("from coldtype import *\n\n@renderable()\ndef stub(r):\n    return (DATPen()\n        .oval(r.inset(50))\n        .f(0.8))\n")
+                        editor_cmd = self.py_config.get("EDITOR_COMMAND")
+                        if editor_cmd:
+                            os.system(editor_cmd + " " + str(self.filepath.relative_to(Path.cwd())))
             elif self.filepath.suffix == ".rst":
                 if not self.filepath.exists():
                     print(">>> That rst file does not exist")
