@@ -59,7 +59,6 @@ class RenderPass():
         self.args = args
         self.suffix = suffix
         self.path = None
-        self.single_layer = None
         self.output_path = None
     
     def __repr__(self):
@@ -158,9 +157,6 @@ class renderable():
         return self
     
     def folder(self, filepath):
-        return ""
-    
-    def layer_folder(self, filepath, layer):
         return ""
     
     def pass_suffix(self):
@@ -377,9 +373,6 @@ class animation(renderable, Timeable):
     def folder(self, filepath):
         return filepath.stem + "/" + self.name # TODO necessary?
     
-    def layer_folder(self, filepath, layer):
-        return layer
-    
     def all_frames(self):
         return list(range(0, self.duration))
     
@@ -423,6 +416,23 @@ class animation(renderable, Timeable):
                     image = imageio.imread(str(p.output_path))
                     writer.append_data(image)
         print(">>> wrote gif to", path)
+    
+    def write_mp4(self, passes):
+        passes = [p for p in passes if p.render == self]
+        template = str(passes[0].output_path).replace("0000.png", "%d.png")
+        codec = "libx264"
+        mp4_path = passes[0].output_path.parent / "test.mp4"
+        run([
+            "ffmpeg",
+            "-y",                   # overwrite existing files
+            "-loglevel", "16",      # 'error, 16' Show all errors, including ones which can be recovered from.
+            "-r", str(self.timeline.fps),   # frame rate
+            "-i", template,    # input sequence
+            "-c:v", codec,          # codec
+            "-crf", "20",           # Constant Rate Factor
+            "-pix_fmt", "yuv420p",  # pixel format
+            str(mp4_path),                # output path
+        ])
 
     def contactsheet(self, gx, sl=slice(0, None, None)):
         try:
@@ -464,7 +474,6 @@ class drawbot_animation(drawbot_script, animation):
             passes = []
             for i in frames:
                 p = RenderPass(self, "{:04d}".format(i), [Frame(i, self)])
-                #p.single_layer = layer
                 passes.append(p)
             return passes
         else:

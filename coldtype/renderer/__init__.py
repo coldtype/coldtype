@@ -488,9 +488,6 @@ class Renderer():
         for rp in render.passes(trigger, self.state, indices):
             output_path = output_folder / f"{prefix}{rp.suffix}.{fmt}"
 
-            if rp.single_layer and rp.single_layer != "__default__":
-                output_path = output_folder / f"layer_{rp.single_layer}/{prefix}{rp.single_layer}_{rp.suffix}.{fmt}"
-
             rp.output_path = output_path
             rp.action = trigger
             rps.append(rp)
@@ -1387,7 +1384,7 @@ class Renderer():
                     sr = render.rect.scale(dscale, "mnx", "mny").round()
                 w = max(sr.w, w)
                 if render.layer:
-                    rects.append(Rect(0, llh, sr.w, sr.h)) # TODO 0 should be last-last?
+                    rects.append(Rect(0, llh, sr.w, sr.h))
                 else:
                     rects.append(Rect(0, lh+1, sr.w, sr.h))
                     llh = lh+1
