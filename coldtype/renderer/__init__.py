@@ -721,6 +721,11 @@ class Renderer():
             if render.fmt == "png":
                 content = content.precompose(render.rect)
                 render.last_result = content
+                if render.bg_render:
+                    content = DATPenSet([
+                        DATPen().rect(render.rect).f(render.bg),
+                        content
+                    ])
                 SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=None if self.args.cpu_render else self.context, style=render.style)
             elif render.fmt == "pdf":
                 SkiaPen.PDFOnePage(content, render.rect, str(path), scale=scale)
@@ -1092,7 +1097,7 @@ class Renderer():
             self.action_waiting = Action.PreviewStoryboardReload
         elif key == glfw.KEY_A:
             self.on_action(Action.RenderAll)
-            self.on_action(Action.RenderedPlay)
+            #self.on_action(Action.RenderedPlay)
         elif key == glfw.KEY_W:
             self.on_action(Action.RenderWorkarea)
         elif key == glfw.KEY_M:

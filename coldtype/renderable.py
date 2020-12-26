@@ -1,4 +1,4 @@
-import inspect, platform, re, tempfile, skia, math
+import inspect, platform, re, tempfile, skia, math, datetime
 
 from enum import Enum
 from subprocess import run
@@ -85,6 +85,7 @@ class renderable():
         direct_draw=False,
         clip=False,
         composites=False,
+        bg_render=False,
         style="default",
         viewBox=True,
         layer=False):
@@ -124,6 +125,7 @@ class renderable():
         self.clip = clip
         self.viewBox = viewBox
         self.direct_draw = direct_draw
+        self.bg_render = bg_render
         self.layer = layer
         if self.layer:
             self.bg = normalize_color(None)
@@ -407,32 +409,43 @@ class animation(renderable, Timeable):
     def package(self, filepath, output_folder):
         pass
     
-    def make_gif(self, passes):
-        import imageio
-        path = str(self.output_folder) + "_animation.gif"
-        with imageio.get_writer(path, mode="I") as writer:
-            for p in passes:
-                if p.render == self:
-                    image = imageio.imread(str(p.output_path))
-                    writer.append_data(image)
-        print(">>> wrote gif to", path)
-    
-    def write_mp4(self, passes):
+    def _ffmpeg(self, passes, date, fmt, cli_args):
         passes = [p for p in passes if p.render == self]
-        template = str(passes[0].output_path).replace("0000.png", "%d.png")
-        codec = "libx264"
-        mp4_path = passes[0].output_path.parent / "test.mp4"
+        template = str(passes[0].output_path).replace("0000.png", "%4d.png")
+        now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        d = ("_" + now) if date else ""
+        output_path = passes[0].output_path.parent.parent / f"{self.name}{d}.{fmt}"
+
+        # https://github.com/typemytype/drawbot/blob/master/drawBot/context/tools/mp4Tools.py
         run([
             "ffmpeg",
-            "-y",                   # overwrite existing files
-            "-loglevel", "16",      # 'error, 16' Show all errors, including ones which can be recovered from.
-            "-r", str(self.timeline.fps),   # frame rate
-            "-i", template,    # input sequence
-            "-c:v", codec,          # codec
-            "-crf", "20",           # Constant Rate Factor
-            "-pix_fmt", "yuv420p",  # pixel format
-            str(mp4_path),                # output path
+            "-y", # overwrite existing files
+            "-loglevel", "16", # 'error, 16' Show all errors
+            "-r", str(self.timeline.fps),
+            "-i", template, # input sequence
+            #"-c:v", codec,
+            *cli_args,
+            output_path,
         ])
+        print(">", output_path)
+    
+    def write_h264(self, passes, date=False):
+        return self._ffmpeg(passes, date, "mp4", [
+            "-c:v", "libx264",
+            "-crf", "20", # Constant Rate Factor
+            "-pix_fmt", "yuv420p", # pixel format
+        ])
+    
+    def write_prores(self, passes, date=False):
+        # https://video.stackexchange.com/questions/14712/how-to-encode-apple-prores-on-windows-or-linux
+        return self._ffmpeg(passes, date, "mov", [
+            "-c:v", "prores_ks",
+            "-c:a", "pcm_s16le",
+            "-profile:v", "2"
+        ])
+    
+    def write_gif(self, passes, date=False):
+        return self._ffmpeg(passes, date, "gif", [])
 
     def contactsheet(self, gx, sl=slice(0, None, None)):
         try:
