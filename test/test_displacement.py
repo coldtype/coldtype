@@ -11,7 +11,7 @@ def improved(e, xo=0, yo=0, xs=1, ys=1, base=1):
     matrix.setScaleY(ys)
     return noise.makeWithLocalMatrix(matrix)
 
-@animation((1500, 800), bg=hsl(0.8), timeline=Timeline(120, fps=24), composites=1, bg_render=True)
+@animation((1500, 800), bg=1, timeline=Timeline(120, fps=24), composites=1, bg_render=True)
 def displacement(f):
     r = f.a.r
     spots = (DATPen()
@@ -59,4 +59,7 @@ def displacement(f):
     return oval
 
 def release(passes):
-    displacement.write_gif(passes)
+    (FFMPEGExport(displacement, passes)
+        .gif()
+        .write()
+        .open())
