@@ -22,7 +22,10 @@ class Timing():
                     easer = easefn[self.loop % 2]
                 elif len(easefn) == 1:
                     easer = easefn[0]
+                else:
+                    easer = easefn[0]
             except TypeError:
+                print("failed")
                 pass
         v, tangent = ease(easer, self.loop_t)
         return min(1, max(0, v)), tangent

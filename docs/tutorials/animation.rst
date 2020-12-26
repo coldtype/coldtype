@@ -74,19 +74,19 @@ A letter flying
     :width: 500
     :class: add-border
 
-And here’s a little bit of code to generate gifs for use on this page. To be honest, I don’t usually generate assets this way, since I always build animations from png frames in a video editor like Premiere or After Effects (or even Photoshop these days), and then generate gifs there. That said, it is nice to show these things in action!
+And here’s a little bit of code to generate gifs, using ffmpeg, which will need to be installed on your computer independently of coldtype (via something like `brew install ffmpeg`) (or you can, as described below, import the pngs as an image sequence into something like Premiere).
 
 .. code:: python
 
     def release(passes):
-        circle.make_gif(passes)
-        flyinga.make_gif(passes)
+        circle.write_gif(passes)
+        flyinga.write_gif(passes)
 
-.. image:: /_static/renders/circle_animation.gif
+.. image:: /_static/renders/circle.gif
     :width: 125
     :class: add-border
 
-.. image:: /_static/renders/flyinga_animation.gif
+.. image:: /_static/renders/flyinga.gif
     :width: 125
     :class: add-border
 

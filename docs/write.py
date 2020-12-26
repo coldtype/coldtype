@@ -64,7 +64,7 @@ class DocsWriter(Renderer):
             for pss in passes:
                 img = None
                 if isinstance(pss.render, animation):
-                    gif = Path(str(pss.render.output_folder) + "_animation.gif")
+                    gif = Path(str(pss.render.output_folder) + ".gif")
                     if gif.exists() and gif not in imgs:
                         img = gif
                         imgs[gif] = 1

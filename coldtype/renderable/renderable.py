@@ -1,4 +1,4 @@
-import inspect, platform, re, tempfile, skia, math
+import inspect, platform, re, tempfile, skia, math, datetime
 
 from enum import Enum
 from subprocess import run
@@ -6,12 +6,9 @@ from pathlib import Path
 
 from coldtype.geometry import Rect, Point
 from coldtype.color import normalize_color
-from coldtype.animation import Timeable, Frame
-from coldtype.animation.timeline import Timeline
 from coldtype.text.reader import normalize_font_prefix, Font
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.pens.dattext import DATText
-from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.skiapen import SkiaPen
 
 try:
@@ -59,7 +56,6 @@ class RenderPass():
         self.args = args
         self.suffix = suffix
         self.path = None
-        self.single_layer = None
         self.output_path = None
     
     def __repr__(self):
@@ -86,6 +82,7 @@ class renderable():
         direct_draw=False,
         clip=False,
         composites=False,
+        bg_render=False,
         style="default",
         viewBox=True,
         layer=False):
@@ -125,6 +122,7 @@ class renderable():
         self.clip = clip
         self.viewBox = viewBox
         self.direct_draw = direct_draw
+        self.bg_render = bg_render
         self.layer = layer
         if self.layer:
             self.bg = normalize_color(None)
@@ -158,9 +156,6 @@ class renderable():
         return self
     
     def folder(self, filepath):
-        return ""
-    
-    def layer_folder(self, filepath, layer):
         return ""
     
     def pass_suffix(self):
@@ -345,127 +340,3 @@ class iconset(renderable):
             img = Image.open(str(largest))
             icon_sizes = [(x, x) for x in self.valid_sizes]
             img.save(str(output), sizes=icon_sizes)
-
-
-class animation(renderable, Timeable):
-    def __init__(self, rect=(1080, 1080), duration=10, storyboard=[0], timeline:Timeline=None, **kwargs):
-        super().__init__(**kwargs)
-        self.rect = Rect(rect)
-        self.r = self.rect
-        self.start = 0
-        self.end = duration
-        #self.duration = duration
-        self.storyboard = storyboard
-        if timeline:
-            self.timeline = timeline
-            self.t = timeline
-            self.start = timeline.start
-            self.end = timeline.end
-            #self.duration = timeline.duration
-            if self.storyboard != [0] and timeline.storyboard == [0]:
-                pass
-            else:
-                self.storyboard = timeline.storyboard.copy()
-        else:
-            self.timeline = Timeline(30)
-    
-    def __call__(self, func):
-        res = super().__call__(func)
-        self.prefix = self.name + "_"
-        return res
-    
-    def folder(self, filepath):
-        return filepath.stem + "/" + self.name # TODO necessary?
-    
-    def layer_folder(self, filepath, layer):
-        return layer
-    
-    def all_frames(self):
-        return list(range(0, self.duration))
-    
-    def active_frames(self, action, renderer_state, indices):
-        frames = self.storyboard.copy()
-        for fidx, frame in enumerate(frames):
-            frames[fidx] = (frame + renderer_state.frame_index_offset) % self.duration
-        if action == Action.RenderAll:
-            frames = self.all_frames()
-        elif action in [Action.PreviewIndices, Action.RenderIndices]:
-            frames = indices
-        elif action in [Action.RenderWorkarea]:
-            if self.timeline:
-                try:
-                    frames = self.workarea()
-                except:
-                    frames = self.all_frames()
-                #if hasattr(self.timeline, "find_workarea"):
-                #    frames = self.timeline.find_workarea()
-        return frames
-    
-    def workarea(self):
-        return list(self.timeline.workareas[0])
-    
-    def pass_suffix(self, index):
-        return "{:04d}".format(index)
-    
-    def passes(self, action, renderer_state, indices=[]):
-        frames = self.active_frames(action, renderer_state, indices)
-        return [RenderPass(self, self.pass_suffix(i), [Frame(i, self)]) for i in frames]
-    
-    def package(self, filepath, output_folder):
-        pass
-    
-    def make_gif(self, passes):
-        import imageio
-        path = str(self.output_folder) + "_animation.gif"
-        with imageio.get_writer(path, mode="I") as writer:
-            for p in passes:
-                if p.render == self:
-                    image = imageio.imread(str(p.output_path))
-                    writer.append_data(image)
-        print(">>> wrote gif to", path)
-
-    def contactsheet(self, gx, sl=slice(0, None, None)):
-        try:
-            sliced = True
-            start, stop, step = sl.indices(self.duration)
-            duration = (stop - start) // step
-        except AttributeError: # indices storyboard
-            duration = len(sl)
-            sliced = False
-        
-        ar = self.rect
-        gy = math.ceil(duration / gx)
-        
-        @renderable(rect=(ar.w*gx, ar.h*gy), bg=self.bg, name=self.name + "_contactsheet")
-        def contactsheet(r:Rect):
-            _pngs = list(sorted(self.output_folder.glob("*.png")))
-            if sliced:
-                pngs = _pngs[sl]
-            else:
-                pngs = [p for i, p in enumerate(_pngs) if i in sl]
-            
-            dps = DATPenSet()
-            dps += DATPen().rect(r).f(self.bg)
-            for idx, g in enumerate(r.grid(columns=gx, rows=gy)):
-                if idx < len(pngs):
-                    dps += DATPen().rect(g).f(None).img(pngs[idx], g, pattern=False)
-            return dps
-        
-        return contactsheet
-
-
-class drawbot_animation(drawbot_script, animation):
-    def passes(self, action, renderer_state, indices=[]):
-        if action in [
-            Action.RenderAll,
-            Action.RenderIndices,
-            Action.RenderWorkarea]:
-            frames = super().active_frames(action, renderer_state, indices)
-            passes = []
-            for i in frames:
-                p = RenderPass(self, "{:04d}".format(i), [Frame(i, self)])
-                #p.single_layer = layer
-                passes.append(p)
-            return passes
-        else:
-            return super().passes(action, renderer_state, indices)

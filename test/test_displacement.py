@@ -1,5 +1,7 @@
-from coldtype import *
+from coldtype.test import *
 import coldtype.filtering as fl
+
+obv = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
 
 def improved(e, xo=0, yo=0, xs=1, ys=1, base=1):
     noise = skia.PerlinNoiseShader.MakeImprovedNoise(0.015, 0.015, 3, base)
@@ -9,7 +11,7 @@ def improved(e, xo=0, yo=0, xs=1, ys=1, base=1):
     matrix.setScaleY(ys)
     return noise.makeWithLocalMatrix(matrix)
 
-@animation(bg=0, timeline=Timeline(120, fps=30))
+@animation((1500, 800), bg=1, timeline=Timeline(120, fps=24), composites=1, bg_render=True)
 def displacement(f):
     r = f.a.r
     spots = (DATPen()
@@ -18,15 +20,22 @@ def displacement(f):
         .precompose(r)
         .attr(skp=dict(
             #PathEffect=skia.DiscretePathEffect.Make(5.0, 15.0, 0),
-            Shader=improved(0, xo=300, yo=200, xs=1.15, ys=1.15, base=random()*1000).makeWithColorFilter(fl.compose(
-                fl.fill(bw(1)),
-                fl.as_filter(fl.contrast_cut(110, 1)), # heighten contrast
+            Shader=improved(1, xo=300, yo=200, xs=1.15, ys=1.5, base=f.i/10).makeWithColorFilter(fl.compose(
+                fl.fill(bw(0)),
+                fl.as_filter(fl.contrast_cut(210, 1)), # heighten contrast
                 skia.LumaColorFilter.Make(), # knock out
             )),
-        ))
-        .phototype(r, fill=bw(1), cut=130, blur=5, cutw=10))
+        )))
     
-    return spots 
+
+    spots = (DATPenSet([
+            displacement.last_result if f.i != -1 else None,
+            DATPen().rect(r).f(1, 0.3),
+            spots,
+            #StyledString("OK", Style(obv, 500, ro=1, wght=0.5, wdth=f.a.progress(f.i, easefn=["ceio"], loops=5).e)).pen().f(0).s(1).sw(7).align(f.a.r).translate(0, -600+f.i*10),
+        ]).color_phototype(r.inset(0), cut=130, blur=3, cutw=20))
+    
+    return spots
     
     spots_img = spots.attrs["default"]["image"]["src"]
     spots_img_filter = skia.ImageFilters.Image(spots_img)
@@ -48,3 +57,9 @@ def displacement(f):
                 skia.IRect(r.x, r.y, r.w, r.h)))))
     
     return oval
+
+def release(passes):
+    (FFMPEGExport(displacement, passes)
+        .gif()
+        .write()
+        .open())

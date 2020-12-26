@@ -299,6 +299,8 @@ class Renderer():
         return [w[1] for w in self.watchees]
 
     def show_error(self):
+        if self.playing > 0:
+            self.playing = -1
         print("============================")
         print(">>> Error in source file <<<")
         print("============================")
@@ -487,9 +489,6 @@ class Renderer():
         rps = []
         for rp in render.passes(trigger, self.state, indices):
             output_path = output_folder / f"{prefix}{rp.suffix}.{fmt}"
-
-            if rp.single_layer and rp.single_layer != "__default__":
-                output_path = output_folder / f"layer_{rp.single_layer}/{prefix}{rp.single_layer}_{rp.suffix}.{fmt}"
 
             rp.output_path = output_path
             rp.action = trigger
@@ -724,6 +723,11 @@ class Renderer():
             if render.fmt == "png":
                 content = content.precompose(render.rect)
                 render.last_result = content
+                if render.bg_render:
+                    content = DATPenSet([
+                        DATPen().rect(render.rect).f(render.bg),
+                        content
+                    ])
                 SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=None if self.args.cpu_render else self.context, style=render.style)
             elif render.fmt == "pdf":
                 SkiaPen.PDFOnePage(content, render.rect, str(path), scale=scale)
@@ -763,6 +767,8 @@ class Renderer():
                 preview_count, render_count = self.render(trigger, indices=indices)
                 if self.args.show_render_count:
                     print("render>", preview_count, "/", render_count)
+                if self.playing < 0:
+                    self.playing = 1
             else:
                 print(">>>>>>>>>>>> No program loaded! <<<<<<<<<<<<<<")
         except:
@@ -1095,7 +1101,7 @@ class Renderer():
             self.action_waiting = Action.PreviewStoryboardReload
         elif key == glfw.KEY_A:
             self.on_action(Action.RenderAll)
-            self.on_action(Action.RenderedPlay)
+            #self.on_action(Action.RenderedPlay)
         elif key == glfw.KEY_W:
             self.on_action(Action.RenderWorkarea)
         elif key == glfw.KEY_M:
@@ -1351,8 +1357,8 @@ class Renderer():
                 # TODO should be recursive?
                 self.on_action(self.action_waiting)
             self.action_waiting = None
-        
-        if self.playing != 0:
+
+        if self.playing > 0:
             self.on_action(Action.PreviewStoryboardNext)
         
         if self.server:
@@ -1387,7 +1393,7 @@ class Renderer():
                     sr = render.rect.scale(dscale, "mnx", "mny").round()
                 w = max(sr.w, w)
                 if render.layer:
-                    rects.append(Rect(0, llh, sr.w, sr.h)) # TODO 0 should be last-last?
+                    rects.append(Rect(0, llh, sr.w, sr.h))
                 else:
                     rects.append(Rect(0, lh+1, sr.w, sr.h))
                     llh = lh+1
