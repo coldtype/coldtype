@@ -299,6 +299,8 @@ class Renderer():
         return [w[1] for w in self.watchees]
 
     def show_error(self):
+        if self.playing > 0:
+            self.playing = -1
         print("============================")
         print(">>> Error in source file <<<")
         print("============================")
@@ -765,6 +767,8 @@ class Renderer():
                 preview_count, render_count = self.render(trigger, indices=indices)
                 if self.args.show_render_count:
                     print("render>", preview_count, "/", render_count)
+                if self.playing < 0:
+                    self.playing = 1
             else:
                 print(">>>>>>>>>>>> No program loaded! <<<<<<<<<<<<<<")
         except:
@@ -1353,8 +1357,8 @@ class Renderer():
                 # TODO should be recursive?
                 self.on_action(self.action_waiting)
             self.action_waiting = None
-        
-        if self.playing != 0:
+
+        if self.playing > 0:
             self.on_action(Action.PreviewStoryboardNext)
         
         if self.server:

@@ -20,7 +20,7 @@ def displacement(f):
         .precompose(r)
         .attr(skp=dict(
             #PathEffect=skia.DiscretePathEffect.Make(5.0, 15.0, 0),
-            Shader=improved(1, xo=300, yo=200, xs=10.15, ys=2.15, base=f.i/30).makeWithColorFilter(fl.compose(
+            Shader=improved(1, xo=300, yo=200, xs=1.15, ys=1.5, base=f.i/10).makeWithColorFilter(fl.compose(
                 fl.fill(bw(0)),
                 fl.as_filter(fl.contrast_cut(210, 1)), # heighten contrast
                 skia.LumaColorFilter.Make(), # knock out
@@ -30,9 +30,9 @@ def displacement(f):
 
     spots = (DATPenSet([
             displacement.last_result if f.i != -1 else None,
-            DATPen().rect(r).f(1, 0.01),
-            #spots,
-            StyledString("OK", Style(obv, 500, ro=1, wght=0.5, wdth=f.a.progress(f.i, easefn=["ceio"], loops=5).e)).pen().f(0).s(1).sw(7).align(f.a.r).translate(0, -600+f.i*10),
+            DATPen().rect(r).f(1, 0.3),
+            spots,
+            #StyledString("OK", Style(obv, 500, ro=1, wght=0.5, wdth=f.a.progress(f.i, easefn=["ceio"], loops=5).e)).pen().f(0).s(1).sw(7).align(f.a.r).translate(0, -600+f.i*10),
         ]).color_phototype(r.inset(0), cut=130, blur=3, cutw=20))
     
     return spots
