@@ -33,3 +33,9 @@ def interpolation(f, rs):
             .f(1)
             .s(0).sw(10))
             ]).color_phototype(f.a.r, blur=5, cut=135, cutw=15)
+
+def release(passes):
+    (FFMPEGExport(interpolation, passes, loops=4)
+        .h264()
+        .write()
+        .open())
