@@ -23,7 +23,7 @@ A circle moving
     
 .. code:: ruby
 
-    circle_contactsheet = circle.contactsheet(6)
+    #circle_contactsheet = circle.contactsheet(6)
 
 Save that code in a file called ``animation.py``, then run it ala ``coldtype animation.py`` — when the render preview runs and a window pops up, try hitting the left and right arrow keys on your keyboard to go backward and forward in time.
 
@@ -68,7 +68,7 @@ A letter flying
 
 .. code:: ruby
 
-    flyinga_contact = flyinga.contactsheet(4, slice(0, None, 1))
+    #flyinga_contact = flyinga.contactsheet(4, slice(0, None, 1))
 
 .. image:: /_static/renders/animation_flyinga_contactsheet.png
     :width: 500
@@ -79,8 +79,8 @@ And here’s a little bit of code to generate gifs, using ffmpeg, which will nee
 .. code:: python
 
     def release(passes):
-        circle.write_gif(passes)
-        flyinga.write_gif(passes)
+        FFMPEGExport(circle, passes).gif().write()
+        FFMPEGExport(flyinga, passes).gif().write()
 
 .. image:: /_static/renders/circle.gif
     :width: 125
