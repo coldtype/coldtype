@@ -1,6 +1,6 @@
 import tempfile, traceback, threading
 import argparse, importlib, inspect, json, math
-import sys, os, re, signal, tracemalloc
+import sys, os, re, signal, tracemalloc, shutil
 import platform, pickle, string, datetime
 
 import time as ptime
@@ -525,6 +525,9 @@ class Renderer():
                 did_render = False
                 output_folder, prefix, fmt, passes = self.add_paths_to_passes(trigger, render, indices)
                 render.last_passes = passes
+
+                if trigger == Action.RenderAll:
+                    shutil.rmtree(output_folder)
 
                 previewing = (trigger in [
                     Action.Initial,
