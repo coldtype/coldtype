@@ -297,13 +297,8 @@ class Renderer():
 
     def watchee_paths(self):
         return [w[1] for w in self.watchees]
-
-    def show_error(self):
-        if self.playing > 0:
-            self.playing = -1
-        print("============================")
-        print(">>> Error in source file <<<")
-        print("============================")
+    
+    def renderable_error(self):
         stack = traceback.format_exc()
         print(stack)
         r = Rect(1200, 300)
@@ -314,6 +309,15 @@ class Renderer():
             coldtype.hsl(_random.random(), l=0.3))),
         ])
         render.show_error = stack.split("\n")[-2]
+        return render, res
+
+    def show_error(self):
+        if self.playing > 0:
+            self.playing = -1
+        print("============================")
+        print(">>> Error in source file <<<")
+        print("============================")
+        render, res = self.renderable_error()
         self.previews_waiting_to_paint.append([render, res, None])
     
     def show_message(self, message, scale=1):
@@ -1443,7 +1447,13 @@ class Renderer():
                 
                 for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
                     rect = rects[idx].offset((w-rects[idx].w)/2, 0).round()
-                    self.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
+                    try:
+                        self.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
+                    except Exception as e:
+                        stack = traceback.format_exc()
+                        print(stack)
+                        paint = skia.Paint(AntiAlias=True, Color=skia.ColorRED)
+                        canvas.drawString(stack.split("\n")[-2], 10, 32, skia.Font(None, 36), paint)
             
                 if self.state.keylayer != Keylayer.Default and not self.args.hide_keybuffer:
                     self.state.draw_keylayer(canvas, self.last_rect, self.typeface)
