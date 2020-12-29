@@ -1148,6 +1148,7 @@ class Renderer():
     def preview_audio(self):
         if pyaudio and self.paudio_source:
             audio_frame = self.last_animation._active_frames(self.state)[0]
+            # TODO 735 is Wavfile().samples_per_frame @ 24 fps
             self.paudio_source.setpos(735*audio_frame)
             data = self.paudio_source.readframes(735)
             self.paudio_stream.write(data)

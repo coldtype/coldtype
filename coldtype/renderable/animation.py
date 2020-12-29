@@ -21,8 +21,6 @@ try:
 except ImportError:
     db = None
 
-CHUNK = 735#int(22050/24)
-
 class animation(renderable, Timeable):
     def __init__(self, rect=(1080, 1080), duration=10, storyboard=[0], timeline:Timeline=None, audio=None, **kwargs):
         super().__init__(**kwargs)
