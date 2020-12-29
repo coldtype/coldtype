@@ -93,7 +93,7 @@ SHORTCUTS = {
     KeyboardShortcut.RestartApp: [
         [[], glfw.KEY_R]
     ],
-    KeyboardShortcut: [
+    KeyboardShortcut.Quit: [
         [[], glfw.KEY_Q]
     ],
 

@@ -13,7 +13,7 @@ def improved(e, xo=0, yo=0, xs=1, ys=1, base=1):
 
 bases = random_series(0, 1000)
 
-@animation((1080, 1080), bg=1, timeline=Timeline(100, fps=24), composites=1, bg_render=True)
+@animation((1080, 1080), bg=hsl(0.7), timeline=Timeline(100, fps=24), composites=1, bg_render=True)
 def displacement(f):
     r = f.a.r
     spots = (DATPen()

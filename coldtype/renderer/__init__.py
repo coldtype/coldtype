@@ -1061,9 +1061,15 @@ class Renderer():
             requested_action = self.state.on_character(codepoint)
             if requested_action:
                 self.action_waiting = requested_action
+            
+    def shortcuts(self):
+        return SHORTCUTS
+    
+    def repeatable_shortcuts(self):
+        return REPEATABLE_SHORTCUTS
     
     def shortcut_to_action(self, shortcut):
-        if shortcut in REPEATABLE_SHORTCUTS:
+        if shortcut in self.repeatable_shortcuts():
             self.paudio_preview = 1
         
         if shortcut == KeyboardShortcut.PreviewPrevMany:
@@ -1151,13 +1157,13 @@ class Renderer():
                 self.action_waiting = requested_action
             return
         
-        for shortcut, options in SHORTCUTS.items():
+        for shortcut, options in self.shortcuts().items():
             for modifiers, skey in options:
                 mod_match = all([mods & m for m in modifiers])
                 if len(modifiers) == 0 and mods != 0:
                     mod_match = False
                 if mod_match and key == skey:
-                    if (action == glfw.REPEAT and shortcut in REPEATABLE_SHORTCUTS) or action == glfw.PRESS:
+                    if (action == glfw.REPEAT and shortcut in self.repeatable_shortcuts()) or action == glfw.PRESS:
                         #print(shortcut, modifiers, skey, mod_match)
                         waiting = self.shortcut_to_action(shortcut)
                         if waiting:

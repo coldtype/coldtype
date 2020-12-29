@@ -3,6 +3,7 @@ import os
 
 from coldtype import *
 from coldtype.renderer import Renderer
+import glfw
 
 all_tests = []
 
@@ -29,6 +30,20 @@ class TestRunner(Renderer):
             self.load_test(-1)
         else:
             super().on_message(message, action)
+        
+    def shortcuts(self):
+        xs = super().shortcuts()
+        xs["prev_test"] = [[[], glfw.KEY_B]]
+        xs["next_test"] = [[[], glfw.KEY_N]]
+        return xs
+    
+    def shortcut_to_action(self, shortcut):
+        if shortcut == "prev_test":
+            return self.load_test(-1)
+        elif shortcut == "next_test":
+            return self.load_test(+1)
+        else:
+            return super().shortcut_to_action(shortcut)
     
     def load_test(self, inc, rerender=True):
         self.test_index = cycle_idx(all_tests, self.test_index + inc)
@@ -39,6 +54,7 @@ class TestRunner(Renderer):
         if rerender:
             self.reload_and_render(Action.PreviewStoryboard)
             self.set_title(str(test_path))
+        return -1
     
     def restart(self):
         print("----------------------------")
