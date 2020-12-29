@@ -21,11 +21,27 @@ try:
 except ImportError:
     db = None
 
+CHUNK = 735#int(22050/24)
+
 class animation(renderable, Timeable):
-    def __init__(self, rect=(1080, 1080), duration=10, storyboard=[0], timeline:Timeline=None, **kwargs):
+    def __init__(self, rect=(1080, 1080), duration=10, storyboard=[0], timeline:Timeline=None, audio=None, **kwargs):
         super().__init__(**kwargs)
         self.rect = Rect(rect)
         self.r = self.rect
+        
+        self.audio = audio
+        
+        if self.audio:
+            import wave
+            import pyaudio
+            import soundfile
+
+            self.audio_wave = wave.open(str(self.audio), "rb")
+            self.p = pyaudio.PyAudio()
+
+            wf = self.audio_wave
+            self.stream = self.p.open(format=self.p.get_format_from_width(wf.getsampwidth()), channels=wf.getnchannels(), rate=wf.getframerate(), output=True)
+
         self.start = 0
         self.end = duration
         #self.duration = duration
@@ -84,6 +100,13 @@ class animation(renderable, Timeable):
     
     def package(self, filepath, output_folder):
         pass
+
+    def play_audio_frame(self, frame):
+        for x in range(0, frame):
+            data = self.audio_wave.readframes(CHUNK)
+        data = self.audio_wave.readframes(CHUNK)
+        self.stream.write(data)
+        self.audio_wave.rewind()
 
     def contactsheet(self, gx, sl=slice(0, None, None)):
         try:

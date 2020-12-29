@@ -531,7 +531,7 @@ class Renderer():
                 render.last_passes = passes
 
                 if trigger == Action.RenderAll:
-                    shutil.rmtree(output_folder)
+                    shutil.rmtree(output_folder, ignore_errors=True)
 
                 previewing = (trigger in [
                     Action.Initial,
