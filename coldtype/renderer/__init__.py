@@ -36,6 +36,12 @@ except ImportError:
     pass
 
 try:
+    import pyaudio, wave
+except ImportError:
+    pyaudio = None
+    wave = None
+
+try:
     import psutil
     process = psutil.Process(os.getpid())
 except ImportError:
@@ -391,6 +397,10 @@ class Renderer():
                 for r in self.renderables(Action.PreviewStoryboardReload):
                     if isinstance(r, animation):
                         self.last_animation = r
+                        if pyaudio and not self.args.is_subprocess and r.audio:
+                            self.paudio_source = wave.open(str(r.audio), "rb")
+                            r.audio_stream = self.paudio_stream
+                            self.paudio_preview = 0
                     
                 if self.program.get("COLDTYPE_NO_WATCH"):
                     return True
@@ -900,6 +910,11 @@ class Renderer():
         except:
             pass
     
+        if pyaudio:
+            self.paudio = pyaudio.PyAudio()
+            self.paudio_source = None
+            self.paudio_stream = self.paudio.open(format=self.paudio.get_format_from_width(2), channels=2, rate=22050, output=True)
+    
         if self.args.sidecar:
             dst = DataSourceThread(Path(self.args.sidecar).expanduser().resolve())
             dst.start()
@@ -1051,12 +1066,14 @@ class Renderer():
             return
         
         if action == glfw.PRESS or action == glfw.REPEAT:
-            if key == glfw.KEY_LEFT:
+            if key == glfw.KEY_J:
+                self.paudio_preview = 1
                 if mods & glfw.MOD_SHIFT:
                     self.action_waiting = Action.PreviewStoryboardPrevMany
                 else:
                     self.action_waiting = Action.PreviewStoryboardPrev
-            elif key == glfw.KEY_RIGHT:
+            elif key == glfw.KEY_L:
+                self.paudio_preview = 1
                 if mods & glfw.MOD_SHIFT:
                     self.action_waiting = Action.PreviewStoryboardNextMany
                 else:
@@ -1082,7 +1099,7 @@ class Renderer():
             else:
                 self.window_scrolly += (500 if mods & glfw.MOD_SHIFT else 250)
                 self.on_action(Action.PreviewStoryboard)
-        elif key == glfw.KEY_SPACE:
+        elif key == glfw.KEY_SPACE or key == glfw.KEY_K:
             if mods & glfw.MOD_SHIFT:
                 self.on_action(Action.RenderedPlay)
             else:
@@ -1100,7 +1117,7 @@ class Renderer():
             self._should_reload = True
         elif key == glfw.KEY_R:
             self.on_action(Action.RestartRenderer)
-        elif key == glfw.KEY_L:
+        elif key == glfw.KEY_L and mods & glfw.MOD_SUPER:
             self.on_action(Action.Release)
         elif key == glfw.KEY_P:
             #self._should_reload = True
@@ -1113,6 +1130,8 @@ class Renderer():
             self.on_action(Action.RenderWorkarea)
         elif key == glfw.KEY_M:
             self.on_action(Action.ToggleMultiplex)
+        elif key == glfw.KEY_H:
+            self.paudio_preview = 1
         elif key == glfw.KEY_BACKSLASH:
             self.action_waiting = Action.ClearLastRender
         elif key == glfw.KEY_D:
@@ -1125,6 +1144,14 @@ class Renderer():
         elif key == glfw.KEY_Q:
             self.dead = True
             self.on_exit()
+        
+    def preview_audio(self):
+        if pyaudio and self.paudio_source:
+            audio_frame = self.last_animation._active_frames(self.state)[0]
+            self.paudio_source.setpos(735*audio_frame)
+            data = self.paudio_source.readframes(735)
+            self.paudio_stream.write(data)
+            self.paudio_source.rewind()
     
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
@@ -1367,6 +1394,11 @@ class Renderer():
 
         if self.playing > 0:
             self.on_action(Action.PreviewStoryboardNext)
+        
+        if pyaudio and self.paudio_source:
+            if self.paudio_preview == 1:
+                self.preview_audio()
+                self.paudio_preview = 0
         
         if self.server:
             for k, v in self.server.connections.items():
@@ -1640,10 +1672,20 @@ class Renderer():
             self.hotkeys.stop()
         self.reset_renderers()
         self.stop_watching_file_changes()
+
+        if pyaudio:
+            self.paudio_stream.stop_stream()
+            self.paudio_stream.close()
+            self.paudio.terminate()
+            if self.paudio_source:
+                self.paudio_source.close()
+        
         if self.server_thread:
             self.server_thread.should_run = False
+        
         for t in self.sidecar_threads:
             t.should_run = False
+        
         if self.args.memory:
             snapshot = tracemalloc.take_snapshot()
             top_stats = snapshot.statistics('traceback')

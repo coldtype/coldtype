@@ -1,4 +1,4 @@
-import inspect, platform, re, tempfile, skia, math, os
+import inspect, platform, re, tempfile, skia, math, os, wave
 
 from enum import Enum
 from subprocess import run
@@ -28,20 +28,7 @@ class animation(renderable, Timeable):
         super().__init__(**kwargs)
         self.rect = Rect(rect)
         self.r = self.rect
-        
         self.audio = audio
-        
-        if self.audio:
-            import wave
-            import pyaudio
-            import soundfile
-
-            self.audio_wave = wave.open(str(self.audio), "rb")
-            self.p = pyaudio.PyAudio()
-
-            wf = self.audio_wave
-            self.stream = self.p.open(format=self.p.get_format_from_width(wf.getsampwidth()), channels=wf.getnchannels(), rate=wf.getframerate(), output=True)
-
         self.start = 0
         self.end = duration
         #self.duration = duration
@@ -70,10 +57,15 @@ class animation(renderable, Timeable):
     def all_frames(self):
         return list(range(0, self.duration))
     
-    def active_frames(self, action, renderer_state, indices):
+    def _active_frames(self, renderer_state):
         frames = self.storyboard.copy()
         for fidx, frame in enumerate(frames):
             frames[fidx] = (frame + renderer_state.frame_index_offset) % self.duration
+        return frames
+    
+    def active_frames(self, action, renderer_state, indices):
+        frames = self._active_frames(renderer_state)
+
         if action == Action.RenderAll:
             frames = self.all_frames()
         elif action in [Action.PreviewIndices, Action.RenderIndices]:
@@ -100,13 +92,6 @@ class animation(renderable, Timeable):
     
     def package(self, filepath, output_folder):
         pass
-
-    def play_audio_frame(self, frame):
-        for x in range(0, frame):
-            data = self.audio_wave.readframes(CHUNK)
-        data = self.audio_wave.readframes(CHUNK)
-        self.stream.write(data)
-        self.audio_wave.rewind()
 
     def contactsheet(self, gx, sl=slice(0, None, None)):
         try:
