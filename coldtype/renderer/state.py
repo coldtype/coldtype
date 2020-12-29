@@ -126,6 +126,13 @@ class RendererState():
                     if new_mouse.x != self.mouse.x and new_mouse.y != self.mouse.y:
                         return Action.PreviewStoryboard
     
+    def mod_preview_scale(self, inc, absolute=0):
+        if absolute > 0:
+            ps = absolute
+        else:
+            ps = self.preview_scale + inc
+        self.preview_scale = max(0.1, min(5, ps))
+    
     def shape_selection(self):
         # TODO could be an arbitrary lasso-style thing?
         if self.mouse_history:

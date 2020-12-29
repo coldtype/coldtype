@@ -23,6 +23,8 @@ from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.state import RendererState, Keylayer
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPenSet, DATPenLikeObject
+from coldtype.renderer.keyboard import KeyboardShortcut, SHORTCUTS, REPEATABLE_SHORTCUTS
+
 from coldtype.renderer.utils import *
 
 _random = Random()
@@ -118,6 +120,8 @@ class Renderer():
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
 
             preview_scale=parser.add_argument("-ps", "--preview-scale", type=float, default=1.0, help="What size should previews be shown at?"),
+
+            preview_audio=parser.add_argument("-pa", "--preview-audio", action="store_true", default=False, help="Should the renderer attempt to playback audio?"),
             
             all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
 
@@ -399,7 +403,6 @@ class Renderer():
                         self.last_animation = r
                         if pyaudio and not self.args.is_subprocess and r.audio:
                             self.paudio_source = wave.open(str(r.audio), "rb")
-                            r.audio_stream = self.paudio_stream
                             self.paudio_preview = 0
                     
                 if self.program.get("COLDTYPE_NO_WATCH"):
@@ -913,7 +916,8 @@ class Renderer():
         if pyaudio:
             self.paudio = pyaudio.PyAudio()
             self.paudio_source = None
-            self.paudio_stream = self.paudio.open(format=self.paudio.get_format_from_width(2), channels=2, rate=22050, output=True)
+            self.paudio_stream = None
+            self.paudio_rate = 0
     
         if self.args.sidecar:
             dst = DataSourceThread(Path(self.args.sidecar).expanduser().resolve())
@@ -1057,6 +1061,88 @@ class Renderer():
             requested_action = self.state.on_character(codepoint)
             if requested_action:
                 self.action_waiting = requested_action
+    
+    def shortcut_to_action(self, shortcut):
+        if shortcut in REPEATABLE_SHORTCUTS:
+            self.paudio_preview = 1
+        
+        if shortcut == KeyboardShortcut.PreviewPrevMany:
+            return Action.PreviewStoryboardPrevMany
+        elif shortcut == KeyboardShortcut.PreviewPrev:
+            return Action.PreviewStoryboardPrev
+        elif shortcut == KeyboardShortcut.PreviewNextMany:
+            return Action.PreviewStoryboardNextMany
+        elif shortcut == KeyboardShortcut.PreviewNext:
+            return Action.PreviewStoryboardNext
+        
+        elif shortcut == KeyboardShortcut.JumpHome:
+            self.state.frame_index_offset = 0
+        elif shortcut == KeyboardShortcut.ClearLastRender:
+            return Action.ClearLastRender
+        
+        elif shortcut == KeyboardShortcut.PlayRendered:
+            self.paudio_preview = 1
+            self.on_action(Action.RenderedPlay)
+            return -1
+        elif shortcut == KeyboardShortcut.PlayPreview:
+            self.paudio_preview = 1
+            return Action.PreviewPlay
+        elif shortcut == KeyboardShortcut.PlayAudioFrame:
+            self.paudio_preview = 1
+        
+        elif shortcut == KeyboardShortcut.ReloadSource:
+            return Action.PreviewStoryboardReload
+        elif shortcut == KeyboardShortcut.RestartApp:
+            self.on_action(Action.RestartRenderer)
+            return -1
+        elif shortcut == KeyboardShortcut.Quit:
+            self.dead = True
+            self.on_exit()
+            return -1
+        
+        elif shortcut == KeyboardShortcut.Release:
+            self.on_action(Action.Release)
+            return -1
+        elif shortcut == KeyboardShortcut.RenderAll:
+            self.on_action(Action.RenderAll)
+            return -1
+        elif shortcut == KeyboardShortcut.RenderWorkarea:
+            self.on_action(Action.RenderWorkarea)
+            return -1
+        elif shortcut == KeyboardShortcut.ToggleMultiplex:
+            self.on_action(Action.ToggleMultiplex)
+            return -1
+        
+        elif shortcut == KeyboardShortcut.KeylayerEditing:
+            self.state.keylayer = Keylayer.Editing
+            self.state.keylayer_shifting = True
+            return -1
+        elif shortcut == KeyboardShortcut.KeylayerCmd:
+            self.state.keylayer = Keylayer.Cmd
+            self.state.keylayer_shifting = True
+        
+        elif shortcut == KeyboardShortcut.PreviewScaleUp:
+            self.state.mod_preview_scale(+0.1)
+        elif shortcut == KeyboardShortcut.PreviewScaleDown:
+            self.state.mod_preview_scale(-0.1)
+        elif shortcut == KeyboardShortcut.PreviewScaleMin:
+            self.state.mod_preview_scale(0, 0.1)
+        elif shortcut == KeyboardShortcut.PreviewScaleMax:
+            self.state.mod_preview_scale(0, 5)
+        elif shortcut == KeyboardShortcut.PreviewScaleDefault:
+            self.state.mod_preview_scale(0, 1)
+
+        elif shortcut == KeyboardShortcut.WindowOpacityDown:
+            o = glfw.get_window_opacity(self.window)
+            glfw.set_window_opacity(self.window, min(1, o-0.1))
+        elif shortcut == KeyboardShortcut.WindowOpacityUp:
+            o = glfw.get_window_opacity(self.window)
+            glfw.set_window_opacity(self.window, min(1, o+0.1))
+        elif shortcut == KeyboardShortcut.WindowOpacityMin:
+            glfw.set_window_opacity(self.window, 0.1)
+        elif shortcut == KeyboardShortcut.WindowOpacityMax:
+            glfw.set_window_opacity(self.window, 1)
+        
 
     def on_key(self, win, key, scan, action, mods):
         if self.state.keylayer != Keylayer.Default:
@@ -1065,92 +1151,40 @@ class Renderer():
                 self.action_waiting = requested_action
             return
         
-        if action == glfw.PRESS or action == glfw.REPEAT:
-            if key == glfw.KEY_J:
-                self.paudio_preview = 1
-                if mods & glfw.MOD_SHIFT:
-                    self.action_waiting = Action.PreviewStoryboardPrevMany
-                else:
-                    self.action_waiting = Action.PreviewStoryboardPrev
-            elif key == glfw.KEY_L:
-                self.paudio_preview = 1
-                if mods & glfw.MOD_SHIFT:
-                    self.action_waiting = Action.PreviewStoryboardNextMany
-                else:
-                    self.action_waiting = Action.PreviewStoryboardNext
-            elif key == glfw.KEY_HOME:
-                self.state.frame_index_offset = 0
-                self.action_waiting = Action.PreviewStoryboard
-
-        if action != glfw.PRESS:
+        for shortcut, options in SHORTCUTS.items():
+            for modifiers, skey in options:
+                mod_match = all([mods & m for m in modifiers])
+                if len(modifiers) == 0 and mods != 0:
+                    mod_match = False
+                if mod_match and key == skey:
+                    if (action == glfw.REPEAT and shortcut in REPEATABLE_SHORTCUTS) or action == glfw.PRESS:
+                        #print(shortcut, modifiers, skey, mod_match)
+                        waiting = self.shortcut_to_action(shortcut)
+                        if waiting:
+                            if waiting != -1:
+                                self.action_waiting = waiting
+                        else:
+                            self.action_waiting = Action.PreviewStoryboard
+                        return
+        
+    def preview_audio(self, frame=None):
+        if not self.args.preview_audio:
             return
         
-        if key == glfw.KEY_DOWN:
-            if mods & glfw.MOD_SUPER:
-                o = glfw.get_window_opacity(self.window)
-                glfw.set_window_opacity(self.window, max(0.1, o-0.1))
-            else:
-                self.window_scrolly -= (500 if mods & glfw.MOD_SHIFT else 250)
-                self.on_action(Action.PreviewStoryboard)
-        elif key == glfw.KEY_UP:
-            if mods & glfw.MOD_SUPER:
-                o = glfw.get_window_opacity(self.window)
-                glfw.set_window_opacity(self.window, min(1, o+0.1))
-            else:
-                self.window_scrolly += (500 if mods & glfw.MOD_SHIFT else 250)
-                self.on_action(Action.PreviewStoryboard)
-        elif key == glfw.KEY_SPACE or key == glfw.KEY_K:
-            if mods & glfw.MOD_SHIFT:
-                self.on_action(Action.RenderedPlay)
-            else:
-                self.action_waiting = Action.PreviewPlay
-        elif key == glfw.KEY_ENTER:
-            self.on_action(Action.PreviewStoryboardReload)
-        elif key in [glfw.KEY_MINUS, glfw.KEY_EQUAL]:
-            inc = -0.1 if key == glfw.KEY_MINUS else 0.1
-            if mods & glfw.MOD_SHIFT:
-                inc = inc * 5
-            self.state.preview_scale = max(0.1, min(5, self.state.preview_scale + inc))
-            self._should_reload = True
-        elif key == glfw.KEY_0:
-            self.state.preview_scale = 1.0
-            self._should_reload = True
-        elif key == glfw.KEY_R:
-            self.on_action(Action.RestartRenderer)
-        elif key == glfw.KEY_L and mods & glfw.MOD_SUPER:
-            self.on_action(Action.Release)
-        elif key == glfw.KEY_P:
-            #self._should_reload = True
-            #self.on_action(Action.PreviewStoryboardReload)
-            self.action_waiting = Action.PreviewStoryboardReload
-        elif key == glfw.KEY_A:
-            self.on_action(Action.RenderAll)
-            #self.on_action(Action.RenderedPlay)
-        elif key == glfw.KEY_W:
-            self.on_action(Action.RenderWorkarea)
-        elif key == glfw.KEY_M:
-            self.on_action(Action.ToggleMultiplex)
-        elif key == glfw.KEY_H:
-            self.paudio_preview = 1
-        elif key == glfw.KEY_BACKSLASH:
-            self.action_waiting = Action.ClearLastRender
-        elif key == glfw.KEY_D:
-            self.state.keylayer = Keylayer.Editing
-            self.state.keylayer_shifting = True
-            #self.on_action(Action.PreviewStoryboard) # only necessary if not a charpoint
-        elif key == glfw.KEY_C:
-            self.state.keylayer = Keylayer.Cmd
-            self.state.keylayer_shifting = True
-        elif key == glfw.KEY_Q:
-            self.dead = True
-            self.on_exit()
-        
-    def preview_audio(self):
         if pyaudio and self.paudio_source:
-            audio_frame = self.last_animation._active_frames(self.state)[0]
+            hz = self.paudio_source.getframerate()
+            if not self.paudio_stream or hz != self.paudio_rate:
+                self.paudio_rate = hz
+                self.paudio_stream = self.paudio.open(format=self.paudio.get_format_from_width(self.paudio_source.getsampwidth()), channels=self.paudio_source.getnchannels(), rate=hz, output=True)
+
+            if frame is None:
+                audio_frame = self.last_animation._active_frames(self.state)[0]
+            else:
+                audio_frame = frame
+            chunk = int(hz / self.last_animation.timeline.fps)
             # TODO 735 is Wavfile().samples_per_frame @ 24 fps
-            self.paudio_source.setpos(735*audio_frame)
-            data = self.paudio_source.readframes(735)
+            self.paudio_source.setpos(chunk*audio_frame)
+            data = self.paudio_source.readframes(chunk)
             self.paudio_stream.write(data)
             self.paudio_source.rewind()
     
@@ -1343,6 +1377,8 @@ class Renderer():
                 self.surface.flushAndSubmit()
                 glfw.swap_buffers(self.window)
 
+                self.preview_audio(frame=(self.playing_preloaded_frame+1)%len(self.preloaded_frames))
+
                 self.playing_preloaded_frame += 1
                 if self.playing_preloaded_frame == len(self.preloaded_frames):
                     self.playing_preloaded_frame = 0
@@ -1396,11 +1432,6 @@ class Renderer():
         if self.playing > 0:
             self.on_action(Action.PreviewStoryboardNext)
         
-        if pyaudio and self.paudio_source:
-            if self.paudio_preview == 1:
-                self.preview_audio()
-                self.paudio_preview = 0
-        
         if self.server:
             for k, v in self.server.connections.items():
                 if hasattr(v, "messages") and len(v.messages) > 0:
@@ -1422,6 +1453,12 @@ class Renderer():
 
         render_previews = len(self.previews_waiting_to_paint) > 0
         if render_previews:
+            if pyaudio and self.paudio_source:
+                if self.paudio_preview == 1:
+                    self.preview_audio()
+                    if self.playing == 0:
+                        self.paudio_preview = 0
+
             w = 0
             llh = -1
             lh = -1
@@ -1675,8 +1712,9 @@ class Renderer():
         self.stop_watching_file_changes()
 
         if pyaudio:
-            self.paudio_stream.stop_stream()
-            self.paudio_stream.close()
+            if self.paudio_stream:
+                self.paudio_stream.stop_stream()
+                self.paudio_stream.close()
             self.paudio.terminate()
             if self.paudio_source:
                 self.paudio_source.close()
