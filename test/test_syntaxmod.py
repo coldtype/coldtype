@@ -1,6 +1,7 @@
 from coldtype.test import *
 
-# If this file is run with -dsm flag, it should failed with a SyntaxError
+# If this file is run with -dsm flag, it should fail with a SyntaxError
+
 -.3 # this is here as a negative test, if this is replaced, syntaxmod has failed
 
 @test()
