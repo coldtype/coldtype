@@ -767,7 +767,7 @@ class Renderer():
             raise Exception(f"rasterizer ({rasterizer}) not supported")
     
     def reload_and_render(self, trigger, watchable=None, indices=None):
-        self.playing = 0
+        #self.playing = 0
 
         if self.args.is_subprocess:
             if not glfw.init():
@@ -1094,6 +1094,7 @@ class Renderer():
             return -1
         elif shortcut == KeyboardShortcut.PlayPreview:
             self.paudio_preview = 1
+            self.playing_preloaded_frame = -1
             return Action.PreviewPlay
         elif shortcut == KeyboardShortcut.PlayAudioFrame:
             self.paudio_preview = 1
@@ -1252,6 +1253,7 @@ class Renderer():
             Action.PreviewStoryboardPrev,
             Action.PreviewPlay]:
             if action == Action.PreviewPlay:
+                self.playing_preloaded_frame = -1
                 if self.playing == 0:
                     self.playing = 1
                 else:
@@ -1266,6 +1268,7 @@ class Renderer():
                 self.state.frame_index_offset += 1
             self.render(Action.PreviewStoryboard)
         elif action == Action.RenderedPlay:
+            self.playing = 0
             if self.playing_preloaded_frame >= 0:
                 self.playing_preloaded_frame = -1
                 self.preloaded_frames = []
