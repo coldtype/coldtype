@@ -16,6 +16,9 @@ from coldtype.color import normalize_color
 import coldtype.pens.drawbot_utils as dbu
 
 
+from noise import pnoise1
+
+
 class DATPenLikeObject():
     _context = None
     _pen_class = None

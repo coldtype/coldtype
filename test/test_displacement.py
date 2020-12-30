@@ -1,7 +1,11 @@
 from coldtype.test import *
 import coldtype.filtering as fl
+from coldtype.warping import warp_fn
 
-obv = Font.Cacheable("~/Type/fonts/fonts/Nichrome0.6-Infra.otf")
+fonts = [Font.Cacheable(f"~/Type/fonts/fonts/{f}") for f in [
+    "Nichrome0.6-Bold.otf",
+    "MeekDisplayv0.2-Bold.otf"
+]]
 
 def improved(e, xo=0, yo=0, xs=1, ys=1, base=1):
     noise = skia.PerlinNoiseShader.MakeImprovedNoise(0.015, 0.015, 3, base)
@@ -12,8 +16,10 @@ def improved(e, xo=0, yo=0, xs=1, ys=1, base=1):
     return noise.makeWithLocalMatrix(matrix)
 
 bases = random_series(0, 1000)
+adj_x = random_series(-500, 500)
+adj_y = random_series(-0.1, 0.1)
 
-@animation((1080, 1080), bg=hsl(0.7), timeline=Timeline(100, fps=24), composites=1, bg_render=True)
+@animation((1080, 1080), bg=1, timeline=Timeline(150, fps=18), composites=1, bg_render=True)
 def displacement(f):
     r = f.a.r
     spots = (DATPen()
@@ -31,16 +37,30 @@ def displacement(f):
     
 
     spots = (DATPenSet([
-            displacement.last_result if f.i != -1 else None,
-            DATPen().rect(r).f(1, 0.15),
+            displacement.last_result.filmjitter(f.a.progress(f.i).e, speed=(50, 50), scale=(3, 5)) if f.i != -1 and displacement.last_result else None,
+            DATPen().rect(r).f(1, 0.01),
             spots,
             #Composer(f.a.r, "Inkblot\nTest".upper(), Style(obv, 250, ro=1, slnt=1, wght=0.75, wdth=0.2+0.4*f.a.progress(f.i, easefn=["ceio"], loops=5).e)).pens().xa().pen().f(0).s(1).sw(7).align(f.a.r).translate(0, -600+f.i*10),
         ]))
     
     if f.i % 1 == 0:
-        spots.append(StyledString(str(11-((f.i+10)//10)), Style(obv, 100+pow(((f.i+1)%10), 4), wght=0.5, wdth=0.5, ro=1)).pen().f(0).s(1).sw(5).align(r, th=0))
+        ii = 10-((f.i)//10)
+        if ii >= 0:
+            je = pow(((f.i)%10), 3.5)
+            spots.append(StyledString(
+                str(ii),
+                Style(fonts[ii%2], -10+je, wght=0.5, wdth=0.5, ro=1))
+                .pen()
+                .f(0)
+                .s(1)
+                .sw(10)
+                .align(r, th=1)
+                .blendmode(skia.BlendMode.kXor)
+                #.flatten(10).nlt(warp_fn(f.i, f.i, xs=500, ys=500))
+                )
         
-    return spots.color_phototype(r.inset(0), cut=135, blur=3.15, cutw=35)
+    #return spots
+    return spots.color_phototype(r.inset(0), cut=150, blur=2.15, cutw=25, rgba=[0, 1, 0, 1])
     
     spots_img = spots.attrs["default"]["image"]["src"]
     spots_img_filter = skia.ImageFilters.Image(spots_img)
