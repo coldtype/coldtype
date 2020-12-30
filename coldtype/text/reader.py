@@ -116,8 +116,6 @@ class Style():
             trackingLimit=0,
             trackingMode=1,
             kern_pairs=dict(),
-            overlap_pairs=dict(),
-            overlap_outline=3,
             space=None,
             baselineShift=0,
             xShift=None,
@@ -205,8 +203,6 @@ class Style():
 
         self.tracking = kwargs.get("t", tracking)
         self.kern_pairs = kwargs.get("kp", kern_pairs)
-        self.overlap_pairs = overlap_pairs
-        self.overlap_outline = overlap_outline
         self.trackingMode = trackingMode
         self.trackingLimit = kwargs.get("tl", trackingLimit)
         self.baselineShift = kwargs.get("bs", baselineShift)
@@ -718,9 +714,6 @@ class StyledString(FittableMixin):
         for k, v in self.style.data.items():
             pens.data[k] = v
 
-        if self.style.kern_pairs:
-            overlap_pairs = {pair:value[2] for (pair, value) in self.style.kern_pairs.items() if not isinstance(value, int) and len(value) > 2}
-            pens.overlapPairs(overlap_pairs, outline=self.style.overlap_outline)
         return pens
 
     def pen(self, frame=True) -> DATPen:

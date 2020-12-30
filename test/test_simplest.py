@@ -2,4 +2,4 @@ from coldtype.test import *
 
 @test(fmt="svg", rasterizer="skia")
 def test_simplest(r):
-    return DATPen().oval(r).f(hsl(random()))
+    return DATPenSet().oval(r).f(hsl(random()))
