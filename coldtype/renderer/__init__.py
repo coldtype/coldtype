@@ -110,6 +110,8 @@ class Renderer():
             version=parser.add_argument("-v", "--version", action="store_true", default=False, help="Display version"),
 
             no_watch=parser.add_argument("-nw", "--no-watch", action="store_true", default=False, help="Preventing watching for changes to source files"),
+
+            websocket=parser.add_argument("-ws", "--websocket", action="store_true", default=False, help="Should the server run a web socket?"),
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
             
@@ -230,7 +232,6 @@ class Renderer():
             return
 
         self.program = None
-        self.websocket = None
         self.exit_code = 0
 
         self.line_number = -1
@@ -822,11 +823,14 @@ class Renderer():
         glfw.set_window_title(self.window, text)
     
     def initialize_gui_and_server(self):
-        try:
-            self.server = echo_server()
-            self.server_thread = WebSocketThread(self.server)
-            self.server_thread.start()
-        except OSError:
+        if self.args.websocket:
+            try:
+                self.server = echo_server()
+                self.server_thread = WebSocketThread(self.server)
+                self.server_thread.start()
+            except OSError:
+                self.server = None
+        else:
             self.server = None
 
         if not glfw.init():
