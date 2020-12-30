@@ -767,6 +767,8 @@ class Renderer():
             raise Exception(f"rasterizer ({rasterizer}) not supported")
     
     def reload_and_render(self, trigger, watchable=None, indices=None):
+        self.playing = 0
+
         if self.args.is_subprocess:
             if not glfw.init():
                 raise RuntimeError('glfw.init() failed')

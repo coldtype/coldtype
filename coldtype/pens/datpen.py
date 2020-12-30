@@ -484,6 +484,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
         sp = glyph.getPen()
         self.replay(sp)
         return glyph
+    
+    def collapse(self):
+        """For compatibility with calls to a DATPenSet"""
+        return DATPenSet([self])
 
     def flatten(self, length=10):
         """
@@ -1048,7 +1052,7 @@ class DATPenSet(DATPen):
         self.data = {}
         self.visible = True
 
-        if isinstance(pens, DATPen) or isinstance(pens, DATPenSet):
+        if isinstance(pens, DATPen):
             self += pens
         else:
             for pen in pens:
@@ -1150,7 +1154,7 @@ class DATPenSet(DATPen):
         return self
     
     def extend(self, pens):
-        if isinstance(pens, DATPenSet):
+        if hasattr(pens, "pens"):
             self.append(pens)
         else:
             for p in pens:
@@ -1536,7 +1540,7 @@ class DATPenSet(DATPen):
         """Provide a callback-lambda to interleave new DATPens between the existing ones; useful for stroke-ing glyphs, since the stroked glyphs can be placed behind the primary filled glyphs."""
         pens = []
         for idx, p in enumerate(self.pens):
-            if recursive and isinstance(p, DATPenSet):
+            if recursive and hasattr(p, "pens"):
                 _p = p.interleave(style_fn, direction=direction, recursive=True)
                 pens.append(_p)
             else:
@@ -1544,7 +1548,7 @@ class DATPenSet(DATPen):
                     np = style_fn(idx, p.copy())
                 except TypeError:
                     np = style_fn(p.copy())
-                if isinstance(np, DATPen) or isinstance(np, DATPenSet):
+                if isinstance(np, DATPen):
                     np = [np]
                 if direction < 0:
                     pens.extend(np)

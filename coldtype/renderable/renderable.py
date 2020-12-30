@@ -194,6 +194,8 @@ class renderable():
     def normalize_result(self, pens):
         if not pens:
             return DATPenSet()
+        elif hasattr(pens, "pens"):
+            return pens
         elif isinstance(pens, DATPen):
             return DATPenSet([pens])
         elif isinstance(pens, DATText):

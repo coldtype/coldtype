@@ -39,8 +39,6 @@ class DrawablePenMixin(object):
 
     def FindPens(pens):
         if isinstance(pens, DATPen):
-            pens = [pens]
-        elif isinstance(pens, DATPenSet):
             pens = pens.collapse().pens
         
         for pen in pens:
