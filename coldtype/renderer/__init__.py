@@ -1166,7 +1166,26 @@ class Renderer():
         
         for shortcut, options in self.shortcuts().items():
             for modifiers, skey in options:
-                mod_match = all([mods & m for m in modifiers])
+                if key != skey:
+                    continue
+
+                mod_matches = [0, 0, 0, 0]
+                for idx, mod in enumerate([glfw.MOD_SUPER, glfw.MOD_ALT, glfw.MOD_SHIFT, glfw.MOD_CONTROL]):
+                    if mod in modifiers:
+                        if mods & mod:
+                            mod_matches[idx] = 1
+                    elif mod not in modifiers:
+                        if not (mods & mod):
+                            mod_matches[idx] = 1
+                
+                #print(shortcut, mod_matches, all(mod_matches))
+                mod_match = all(mod_matches)
+                
+                #if shortcut == KeyboardShortcut.WindowOpacityMin:
+                #    print("min", [mods & m for m in modifiers])
+                #if shortcut == KeyboardShortcut.WindowOpacityDown:
+                #    print("down", [mods & m for m in modifiers])
+                
                 if len(modifiers) == 0 and mods != 0:
                     mod_match = False
                 if mod_match and key == skey:
@@ -1196,10 +1215,13 @@ class Renderer():
                 audio_frame = frame
             chunk = int(hz / self.last_animation.timeline.fps)
             # TODO 735 is Wavfile().samples_per_frame @ 24 fps
-            self.paudio_source.setpos(chunk*audio_frame)
-            data = self.paudio_source.readframes(chunk)
-            self.paudio_stream.write(data)
-            self.paudio_source.rewind()
+
+            try:
+                self.paudio_source.setpos(chunk*audio_frame)
+                data = self.paudio_source.readframes(chunk)
+                self.paudio_stream.write(data)
+            except wave.Error:
+                print(">>> Could not read audio at frame", audio_frame)
     
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")

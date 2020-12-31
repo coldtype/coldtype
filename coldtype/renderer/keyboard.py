@@ -144,15 +144,15 @@ SHORTCUTS = {
     ],
 
     KeyboardShortcut.WindowOpacityDown: [
-        [[], glfw.KEY_DOWN]
+        [[glfw.MOD_SUPER], glfw.KEY_DOWN]
     ],
     KeyboardShortcut.WindowOpacityUp: [
-        [[], glfw.KEY_UP]
+        [[glfw.MOD_SUPER], glfw.KEY_UP]
     ],
     KeyboardShortcut.WindowOpacityMin: [
-        [[glfw.MOD_SUPER], glfw.KEY_DOWN],
+        [[glfw.MOD_SUPER, glfw.MOD_SHIFT], glfw.KEY_DOWN],
     ],
     KeyboardShortcut.WindowOpacityMax: [
-        [[glfw.MOD_SUPER], glfw.KEY_UP]
+        [[glfw.MOD_SUPER, glfw.MOD_SHIFT], glfw.KEY_UP]
     ]
 }
