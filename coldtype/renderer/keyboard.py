@@ -24,6 +24,9 @@ class KeyboardShortcut(Enum):
     RenderWorkarea = "render_workarea"
     ToggleMultiplex = "toggle_multiplex"
 
+    SetWorkareaIn = "set_workarea_in"
+    SetWorkareaOut = "set_workarea_out"
+
     KeylayerEditing = "keylayer_editing"
     KeylayerCmd = "keylayer_command"
 
@@ -108,6 +111,13 @@ SHORTCUTS = {
     ],
     KeyboardShortcut.ToggleMultiplex: [
         [[], glfw.KEY_M]
+    ],
+
+    KeyboardShortcut.SetWorkareaIn: [
+        [[], glfw.KEY_I]
+    ],
+    KeyboardShortcut.SetWorkareaOut: [
+        [[], glfw.KEY_O]
     ],
 
     KeyboardShortcut.KeylayerEditing: [

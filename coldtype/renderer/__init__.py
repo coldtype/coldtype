@@ -1455,8 +1455,8 @@ class Renderer():
                         self.process_ws_message(msg)
                     v.messages = []
 
-        if self.server:
-            self.monitor_midi()
+        #if self.server:
+        self.monitor_midi()
         
         #if len(self.waiting_to_render) > 0:
         #    for action, path in self.waiting_to_render:

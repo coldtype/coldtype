@@ -16,5 +16,4 @@ def playback(f):
         wave.s(0),
         (DATText(str(f.i),
             Style("Helvetica", 100, load_font=0),
-            f.a.r.inset(10)))
-    ]
+            f.a.r.inset(10)))]

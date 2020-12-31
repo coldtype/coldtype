@@ -35,9 +35,9 @@ class Wavfile():
     def amp(self, i):
         return np.average(np.fabs(self.samples_for_frame(i)))
     
-    def frame_waveform(self, fi, r, pen=None):
+    def frame_waveform(self, fi, r, inc=1, pen=None):
         wave = pen or DATPen()
-        samples = self.samples_for_frame(fi)[::1]
+        samples = self.samples_for_frame(fi)[::inc]
         ww = r.w/len(samples)
         wh = r.h
         for idx, w in enumerate(samples):
