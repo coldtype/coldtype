@@ -1377,6 +1377,9 @@ class Renderer():
             return False
     
     def send_to_external(self, action, **kwargs):
+        if not self.server:
+            return
+        
         animation = self.animation()
         if animation and animation.timeline:
             print("EVENT", action, kwargs)
@@ -1384,11 +1387,8 @@ class Renderer():
                 kwargs["action"] = action.value
             kwargs["prefix"] = self.filepath.stem
             kwargs["fps"] = animation.timeline.fps
-            if self.server:
-                for k, client in self.server.connections.items():
-                    client.sendMessage(json.dumps(kwargs))
-            else:
-                print("Animation server must be primary")
+            for k, client in self.server.connections.items():
+                client.sendMessage(json.dumps(kwargs))
     
     def process_ws_message(self, message):
         try:
@@ -1779,11 +1779,12 @@ class Renderer():
         self.stop_watching_file_changes()
 
         if pyaudio:
-            if self.paudio_stream:
+            if hasattr(self, "paudio_stream") and self.paudio_stream:
                 self.paudio_stream.stop_stream()
                 self.paudio_stream.close()
-            self.paudio.terminate()
-            if self.paudio_source:
+            if hasattr(self, "paudio") and self.paudio:
+                self.paudio.terminate()
+            if hasattr(self, "paudio_source") and self.paudio_source:
                 self.paudio_source.close()
         
         if self.server_thread:
