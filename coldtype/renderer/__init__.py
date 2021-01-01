@@ -123,7 +123,7 @@ class Renderer():
 
             preview_scale=parser.add_argument("-ps", "--preview-scale", type=float, default=1.0, help="What size should previews be shown at?"),
 
-            preview_audio=parser.add_argument("-pa", "--preview-audio", action="store_true", default=False, help="Should the renderer attempt to playback audio?"),
+            #preview_audio=parser.add_argument("-pa", "--preview-audio", action="store_true", default=False, help="Should the renderer attempt to playback audio?"),
             
             all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
 
@@ -267,7 +267,8 @@ class Renderer():
         self.line_number = -1
         self.stop_watching_file_changes()
         self.state.mouse = None
-        self.state._frame_index_offsets = {}
+        self.state._frame_offsets = {}
+        self.state._initial_frame_offsets = {}
 
         if filepath:
             self.filepath = Path(filepath).expanduser().resolve()
@@ -401,12 +402,23 @@ class Renderer():
                 })
                 for r in self.renderables(Action.PreviewStoryboardReload):
                     if isinstance(r, animation):
-                        for s in r.storyboard:
-                            self.state.add_frame_offset(r.name, s)
+                        if r.name not in self.state._frame_offsets:
+                            for s in r.storyboard:
+                                self.state.add_frame_offset(r.name, s)
+                        else:
+                            lasts = self.state._initial_frame_offsets[r.name]
+                            if str(lasts) != str(r.storyboard):
+                                del self.state._frame_offsets[r.name]
+                                del self.state._initial_frame_offsets[r.name]
+                                for s in r.storyboard:
+                                    self.state.add_frame_offset(r.name, s)
                         self.last_animation = r
                         if pyaudio and not self.args.is_subprocess and r.audio:
                             self.paudio_source = wave.open(str(r.audio), "rb")
                             self.paudio_preview = 0
+                        
+                        if not r.audio:
+                            self.paudio_source = None
                     
                 if self.program.get("COLDTYPE_NO_WATCH"):
                     return True
@@ -1218,8 +1230,8 @@ class Renderer():
                         return
         
     def preview_audio(self, frame=None):
-        if not self.args.preview_audio:
-            return
+        #if not self.args.preview_audio:
+        #    return
         
         if pyaudio and self.paudio_source:
             hz = self.paudio_source.getframerate()

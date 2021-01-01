@@ -61,10 +61,6 @@ class animation(renderable, Timeable):
         for f in renderer_state.get_frame_offsets(self.name):
             frames.append(f % self.duration)
         return frames
-        #frames = self.storyboard.copy()
-        #for fidx, frame in enumerate(frames):
-        #    frames[fidx] = (frame + renderer_state.frame_index_offset) % self.duration
-        #return frames
     
     def active_frames(self, action, renderer_state, indices):
         frames = self._active_frames(renderer_state)

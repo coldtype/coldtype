@@ -15,7 +15,7 @@ def simple(f):
             .f(hsl(le, s=1))
             .s(0).sw(5))]).blendmode(skia.BlendMode.kDifference)
 
-@animation((1200, 800), timeline=Timeline(90, fps=30), bg=1, composites=1, rstate=1, solo=1)
+@animation((1200, 800), timeline=Timeline(90, fps=30, jumps=[int(90/4)]), bg=1, composites=1, rstate=1, solo=1)
 def interpolation(f, rs):
     e = f.a.progress(f.i, easefn="qeio", loops=1).e
     le = f.a.progress(f.i, easefn="linear", loops=1, cyclic=False).e
