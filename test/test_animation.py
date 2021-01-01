@@ -1,6 +1,6 @@
 from coldtype.test import *
 
-tl = Timeline(26, fps=23.976, storyboard=[0])
+tl = Timeline(26, fps=23.976, storyboard=[0], jumps=[5])
 
 def find_workarea(self):
     return [0, 1, 2]

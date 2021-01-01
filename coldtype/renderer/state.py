@@ -56,7 +56,7 @@ class RendererState():
         self.xray = True
         self.selection = [0]
         self.zoom = 1
-        self.frame_index_offset = 0
+        self._frame_index_offsets = {}
         self.canvas = None
         self._last_filepath = None
         self.watch_soft_mods = {}
@@ -278,6 +278,31 @@ class RendererState():
             self.selection[0] = si
         else:
             print("invalid")
+    
+    def add_frame_offset(self, key, offset):
+        if key in self._frame_index_offsets:
+            offsets = self._frame_index_offsets[key]
+            offsets.append(offset)
+        else:
+            self._frame_index_offsets[key] = [offset]
+    
+    def get_frame_offsets(self, key):
+        return self._frame_index_offsets.get(key, [0])
+    
+    def adjust_all_frame_offsets(self, adj, absolute=False):
+        if absolute:
+            for k, v in self._frame_index_offsets.items():
+                for i, o in enumerate(v):
+                    v[i] = adj
+        else:
+            for k, v in self._frame_index_offsets.items():
+                for i, o in enumerate(v):
+                    v[i] = o + adj
+    
+    def adjust_keyed_frame_offsets(self, key, fn):
+        offs = self.get_frame_offsets(key)
+        for i, o in enumerate(offs):
+            offs[i] = fn(i, o)
     
     def reset_keystate(self):
         self.cmd = None

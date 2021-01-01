@@ -8,7 +8,6 @@ class KeyboardShortcut(Enum):
     PreviewNext = "prev_next"
     PreviewNextMany = "prev_next_many"
     
-    JumpHome = "jump_home"
     ClearLastRender = "clear_last_render"
     
     PlayRendered = "play_rendered"
@@ -26,6 +25,12 @@ class KeyboardShortcut(Enum):
 
     SetWorkareaIn = "set_workarea_in"
     SetWorkareaOut = "set_workarea_out"
+    
+    JumpPrev = "jump_prev"
+    JumpNext = "jump_next"
+    JumpHome = "jump_home"
+    JumpEnd = "jump_end"
+    JumpStoryboard = "jump_storyboard"
 
     KeylayerEditing = "keylayer_editing"
     KeylayerCmd = "keylayer_command"
@@ -48,7 +53,9 @@ REPEATABLE_SHORTCUTS = [
     KeyboardShortcut.PreviewNext,
     KeyboardShortcut.PreviewNextMany,
     KeyboardShortcut.PreviewScaleUp,
-    KeyboardShortcut.PreviewScaleDown
+    KeyboardShortcut.PreviewScaleDown,
+    KeyboardShortcut.JumpPrev,
+    KeyboardShortcut.JumpNext
 ]
 
 
@@ -70,9 +77,6 @@ SHORTCUTS = {
         [[], glfw.KEY_RIGHT]
     ],
     
-    KeyboardShortcut.JumpHome: [
-        [[], glfw.KEY_HOME]
-    ],
     KeyboardShortcut.ClearLastRender: [
         [[], glfw.KEY_BACKSLASH]
     ],
@@ -118,6 +122,22 @@ SHORTCUTS = {
     ],
     KeyboardShortcut.SetWorkareaOut: [
         [[], glfw.KEY_O]
+    ],
+
+    KeyboardShortcut.JumpPrev: [
+        [[], glfw.KEY_UP]
+    ],
+    KeyboardShortcut.JumpNext: [
+        [[], glfw.KEY_DOWN]
+    ],
+    KeyboardShortcut.JumpHome: [
+        [[], glfw.KEY_HOME]
+    ],
+    KeyboardShortcut.JumpEnd: [
+        [[], glfw.KEY_END]
+    ],
+    KeyboardShortcut.JumpStoryboard: [
+        [[glfw.MOD_SUPER], glfw.KEY_HOME]
     ],
 
     KeyboardShortcut.KeylayerEditing: [

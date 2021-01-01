@@ -4,11 +4,13 @@ from coldtype.animation import Timeable
 class Timeline(Timeable):
     __name__ = "Generic"
 
-    def __init__(self, duration, fps=30, storyboard=None, tracks=None):
+    def __init__(self, duration, fps=30, storyboard=None, tracks=None, jumps=None):
         self.fps = fps
         self.start = 0
         self.end = duration
         self.tracks = tracks or []
+        self._jumps = [self.start, *(jumps or []), self.end-1]
+        
         if not storyboard:
             self.storyboard = [0]
         else:
@@ -16,6 +18,9 @@ class Timeline(Timeable):
         if len(self.storyboard) == 0:
             self.storyboard.append(0)
         self.storyboard.sort()
+    
+    def jumps(self):
+        return self._jumps
     
     def __str__(self):
         return "<coldtype.animation.timeline({:s}):{:04d}f@{:02.2f}fps[{:s}]>".format(self.__name__, self.duration, self.fps, ",".join([str(i) for i in self.storyboard]))

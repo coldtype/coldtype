@@ -29,6 +29,7 @@ class animation(renderable, Timeable):
         self.audio = audio
         self.start = 0
         self.end = duration
+        
         #self.duration = duration
         self.storyboard = storyboard
         if timeline:
@@ -56,10 +57,14 @@ class animation(renderable, Timeable):
         return list(range(0, self.duration))
     
     def _active_frames(self, renderer_state):
-        frames = self.storyboard.copy()
-        for fidx, frame in enumerate(frames):
-            frames[fidx] = (frame + renderer_state.frame_index_offset) % self.duration
+        frames = []
+        for f in renderer_state.get_frame_offsets(self.name):
+            frames.append(f % self.duration)
         return frames
+        #frames = self.storyboard.copy()
+        #for fidx, frame in enumerate(frames):
+        #    frames[fidx] = (frame + renderer_state.frame_index_offset) % self.duration
+        #return frames
     
     def active_frames(self, action, renderer_state, indices):
         frames = self._active_frames(renderer_state)
@@ -80,6 +85,19 @@ class animation(renderable, Timeable):
     
     def workarea(self):
         return list(self.timeline.workareas[0])
+    
+    def jump(self, current, direction):
+        c = current % self.duration
+        js = self.timeline.jumps()
+        if direction < 0:
+            for j in reversed(js):
+                if c > j:
+                    return j
+        else:
+            for j in js:
+                if c < j:
+                    return j
+        return current
     
     def pass_suffix(self, index):
         return "{:04d}".format(index)

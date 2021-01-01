@@ -267,7 +267,7 @@ class Renderer():
         self.line_number = -1
         self.stop_watching_file_changes()
         self.state.mouse = None
-        self.state.frame_index_offset = 0
+        self.state._frame_index_offsets = {}
 
         if filepath:
             self.filepath = Path(filepath).expanduser().resolve()
@@ -401,6 +401,8 @@ class Renderer():
                 })
                 for r in self.renderables(Action.PreviewStoryboardReload):
                     if isinstance(r, animation):
+                        for s in r.storyboard:
+                            self.state.add_frame_offset(r.name, s)
                         self.last_animation = r
                         if pyaudio and not self.args.is_subprocess and r.audio:
                             self.paudio_source = wave.open(str(r.audio), "rb")
@@ -1088,7 +1090,23 @@ class Renderer():
             return Action.PreviewStoryboardNext
         
         elif shortcut == KeyboardShortcut.JumpHome:
-            self.state.frame_index_offset = 0
+            self.state.adjust_all_frame_offsets(0, absolute=True)
+        elif shortcut == KeyboardShortcut.JumpEnd:
+            self.state.adjust_all_frame_offsets(-1, absolute=True)
+        
+        elif shortcut == KeyboardShortcut.JumpPrev:
+            self.state.adjust_keyed_frame_offsets(
+                self.last_animation.name,
+                lambda i, o: self.last_animation.jump(o, -1))
+        elif shortcut == KeyboardShortcut.JumpNext:
+            self.state.adjust_keyed_frame_offsets(
+                self.last_animation.name,
+                lambda i, o: self.last_animation.jump(o, +1))
+        elif shortcut == KeyboardShortcut.JumpStoryboard:
+            self.state.adjust_keyed_frame_offsets(
+                self.last_animation.name,
+                lambda i, o: self.last_animation.storyboard[i])
+
         elif shortcut == KeyboardShortcut.ClearLastRender:
             return Action.ClearLastRender
         
@@ -1285,13 +1303,13 @@ class Renderer():
                 else:
                     self.playing = 0
             if action == Action.PreviewStoryboardPrevMany:
-                self.state.frame_index_offset -= self.many_increment
+                self.state.adjust_all_frame_offsets(-self.many_increment)
             elif action == Action.PreviewStoryboardPrev:
-                self.state.frame_index_offset -= 1
+                self.state.adjust_all_frame_offsets(-1)
             elif action == Action.PreviewStoryboardNextMany:
-                self.state.frame_index_offset += self.many_increment
+                self.state.adjust_all_frame_offsets(+self.many_increment)
             elif action == Action.PreviewStoryboardNext:
-                self.state.frame_index_offset += 1
+                self.state.adjust_all_frame_offsets(+1)
             self.render(Action.PreviewStoryboard)
         elif action == Action.RenderedPlay:
             self.playing = 0

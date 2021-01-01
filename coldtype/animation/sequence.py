@@ -654,3 +654,10 @@ class Sequence(Timeline):
         cg = self.trackClipGroupForFrame(self.workarea_track, self.cti)
         if cg:
             return [cg.start, cg.end]
+    
+    def jumps(self):
+        js = self._jumps
+        t = self[self.workarea_track]
+        for clip in t.clips:
+            js.insert(-1, clip.start)
+        return js
