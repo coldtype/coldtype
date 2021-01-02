@@ -154,6 +154,13 @@ class DATPenLikeObject():
         else:
             return self.attr(field="image")
     
+    def img_opacity(self, opacity, key="default"):
+        img = self.attr(key, "image")
+        if not img:
+            raise Exception("No image found")
+        self.attrs[key]["image"]["opacity"] = opacity
+        return self
+    
     image = img
 
     def shadow(self, radius=10, color=(0, 0.3), clip=None):

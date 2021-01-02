@@ -12,6 +12,7 @@ from coldtype.animation.timeline import Timeline
 from coldtype.text.reader import normalize_font_prefix, Font, Style
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.pens.dattext import DATText
+from coldtype.animation.audio import Wavfile
 
 from coldtype.renderable.renderable import renderable, drawbot_script, Action, RenderPass, Overlay
 
@@ -27,6 +28,10 @@ class animation(renderable, Timeable):
         self.rect = Rect(rect)
         self.r = self.rect
         self.audio = audio
+        if self.audio:
+            self.wavfile = Wavfile(audio)
+        else:
+            self.wavfile = None
         self.start = 0
         self.end = duration
         
@@ -105,12 +110,20 @@ class animation(renderable, Timeable):
     def runpost(self, result, render_pass, renderer_state):
         res = super().runpost(result, render_pass, renderer_state)
         if renderer_state.overlays.get(Overlay.Info):
-            t = self.rect.take(100, "mxy")
+            t = self.rect.take(50, "mxy")
             frame:Frame = render_pass.args[0]
+            wave = DATPen()
+            if self.audio:
+                wave = (self.wavfile
+                    .frame_waveform(frame.i, self.rect.inset(0, 300), 20)
+                    .translate(0, self.rect.h/2)
+                    .s(1)
+                    .sw(5))
             return DATPenSet([
                 res,
                 DATPen().rect(t).f(bw(0, 0.75)),
-                DATText(str(frame.i), Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10))
+                DATText(str(frame.i), Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10)),
+                wave
             ])
         return res
     
