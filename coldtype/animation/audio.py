@@ -1,7 +1,10 @@
 import math
 import os.path
 import numpy as np
-import soundfile as sf
+try:
+    import soundfile as sf
+except:
+    sf = None
 
 from coldtype.pens.datpen import DATPen
 

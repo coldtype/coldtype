@@ -12,7 +12,7 @@ from coldtype.animation.timeline import Timeline
 from coldtype.text.reader import normalize_font_prefix, Font, Style
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.pens.dattext import DATText
-from coldtype.animation.audio import Wavfile
+from coldtype.animation.audio import Wavfile, sf
 
 from coldtype.renderable.renderable import renderable, drawbot_script, Action, RenderPass, Overlay
 
@@ -28,7 +28,7 @@ class animation(renderable, Timeable):
         self.rect = Rect(rect)
         self.r = self.rect
         self.audio = audio
-        if self.audio:
+        if self.audio and sf:
             self.wavfile = Wavfile(audio)
         else:
             self.wavfile = None
@@ -113,7 +113,7 @@ class animation(renderable, Timeable):
             t = self.rect.take(50, "mxy")
             frame:Frame = render_pass.args[0]
             wave = DATPen()
-            if self.audio:
+            if self.audio and sf:
                 wave = (self.wavfile
                     .frame_waveform(frame.i, self.rect.inset(0, 300), 20)
                     .translate(0, self.rect.h/2)
