@@ -20,7 +20,7 @@ from coldtype.helpers import *
 from coldtype.geometry import Rect, Point
 from coldtype.pens.skiapen import SkiaPen
 from coldtype.renderer.watchdog import AsyncWatchdog
-from coldtype.renderer.state import RendererState, Keylayer
+from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPenSet, DATPenLikeObject
 from coldtype.renderer.keyboard import KeyboardShortcut, SHORTCUTS, REPEATABLE_SHORTCUTS
@@ -611,7 +611,7 @@ class Renderer():
                             if render.direct_draw:
                                 self.previews_waiting_to_paint.append([render, None, rp])
                             else:
-                                preview_result = render.normalize_result(render.runpost(result, rp))
+                                preview_result = render.normalize_result(render.runpost(result, rp, self.state))
                                 preview_count += 1
                                 if preview_result:
                                     self.previews_waiting_to_paint.append([render, preview_result, rp])
@@ -1163,6 +1163,9 @@ class Renderer():
         elif shortcut == KeyboardShortcut.KeylayerCmd:
             self.state.keylayer = Keylayer.Cmd
             self.state.keylayer_shifting = True
+        
+        elif shortcut == KeyboardShortcut.OverlayInfo:
+            self.state.overlays[Overlay.Info] = not self.state.overlays.get(Overlay.Info, False)
         
         elif shortcut == KeyboardShortcut.PreviewScaleUp:
             self.state.mod_preview_scale(+0.1)

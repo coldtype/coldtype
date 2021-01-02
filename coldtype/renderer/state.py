@@ -1,7 +1,7 @@
 from enum import Enum
 from pathlib import Path
 import json, glfw, skia, re
-from coldtype import hsl, Action, Keylayer, Point, Rect, DATPen
+from coldtype import hsl, Action, Keylayer, Point, Rect, DATPen, Overlay
 
 
 class RendererStateEncoder(json.JSONEncoder):
@@ -44,6 +44,7 @@ class RendererState():
         self.keylayer_shifting = False
         self.keylayer = Keylayer.Default
         self.keybuffer = []
+        self.overlays = {}
         #self.needs_display = 0
         self.request = None
         self.callback = None

@@ -34,6 +34,7 @@ class KeyboardShortcut(Enum):
 
     KeylayerEditing = "keylayer_editing"
     KeylayerCmd = "keylayer_command"
+    OverlayInfo = "overlay_info"
 
     PreviewScaleDown = "preview_scale_down"
     PreviewScaleUp = "preview_scale_up"
@@ -145,6 +146,10 @@ SHORTCUTS = {
     ],
     KeyboardShortcut.KeylayerCmd: [
         [[], glfw.KEY_C],
+    ],
+    
+    KeyboardShortcut.OverlayInfo: [
+        [[], glfw.KEY_SLASH]
     ],
 
     KeyboardShortcut.PreviewScaleUp: [

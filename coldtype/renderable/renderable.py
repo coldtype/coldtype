@@ -22,6 +22,9 @@ class Keylayer(Enum):
     Cmd = 1
     Editing = 2
 
+class Overlay(Enum):
+    Info = "info"
+
 class Action(Enum):
     Initial = "initial"
     Resave = "resave"
@@ -173,7 +176,7 @@ class renderable():
         else:
             return render_pass.fn(*render_pass.args)
     
-    def runpost(self, result, render_pass):
+    def runpost(self, result, render_pass, renderer_state):
         if self.postfn:
             return self.postfn(self, result)
         else:

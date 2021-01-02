@@ -6,14 +6,14 @@ from pathlib import Path
 from datetime import datetime
 
 from coldtype.geometry import Rect, Point
-from coldtype.color import normalize_color
+from coldtype.color import normalize_color, hsl, bw
 from coldtype.animation import Timeable, Frame
 from coldtype.animation.timeline import Timeline
-from coldtype.text.reader import normalize_font_prefix, Font
+from coldtype.text.reader import normalize_font_prefix, Font, Style
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.pens.dattext import DATText
 
-from coldtype.renderable.renderable import renderable, drawbot_script, Action, RenderPass
+from coldtype.renderable.renderable import renderable, drawbot_script, Action, RenderPass, Overlay
 
 try:
     import drawBot as db
@@ -101,6 +101,18 @@ class animation(renderable, Timeable):
     def passes(self, action, renderer_state, indices=[]):
         frames = self.active_frames(action, renderer_state, indices)
         return [RenderPass(self, self.pass_suffix(i), [Frame(i, self)]) for i in frames]
+    
+    def runpost(self, result, render_pass, renderer_state):
+        res = super().runpost(result, render_pass, renderer_state)
+        if renderer_state.overlays.get(Overlay.Info):
+            t = self.rect.take(100, "mxy")
+            frame:Frame = render_pass.args[0]
+            return DATPenSet([
+                res,
+                DATPen().rect(t).f(bw(0, 0.75)),
+                DATText(str(frame.i), Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10))
+            ])
+        return res
     
     def package(self, filepath, output_folder):
         pass
