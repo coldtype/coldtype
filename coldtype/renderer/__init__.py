@@ -1140,7 +1140,6 @@ class Renderer():
             return -1
         elif shortcut == KeyboardShortcut.Quit:
             self.dead = True
-            self.on_exit()
             return -1
         
         elif shortcut == KeyboardShortcut.Release:
@@ -1162,6 +1161,14 @@ class Renderer():
             return -1
         elif shortcut == KeyboardShortcut.KeylayerCmd:
             self.state.keylayer = Keylayer.Cmd
+            self.state.keylayer_shifting = True
+        elif shortcut == KeyboardShortcut.KeylayerText:
+            if self.last_animation:
+                fi = self.last_animation._active_frames(self.state)[0]
+                txt = self.last_animation.timeline.text_for_frame(fi)
+                if txt:
+                    self.state.keybuffer = list(txt)
+            self.state.keylayer = Keylayer.Text
             self.state.keylayer_shifting = True
         
         elif shortcut == KeyboardShortcut.OverlayInfo:
@@ -1189,6 +1196,20 @@ class Renderer():
         elif shortcut == KeyboardShortcut.WindowOpacityMax:
             glfw.set_window_opacity(self.window, 1)
         
+        elif shortcut == KeyboardShortcut.MIDIControllersPersist:
+            self.state.persist()
+        elif shortcut == KeyboardShortcut.MIDIControllersClear:
+            self.state.clear()
+        elif shortcut == KeyboardShortcut.MIDIControllersReset:
+            self.state.reset(ignore_current_state=True)
+    
+    def on_shortcut(self, shortcut):
+        waiting = self.shortcut_to_action(shortcut)
+        if waiting:
+            if waiting != -1:
+                self.action_waiting = waiting
+        else:
+            self.action_waiting = Action.PreviewStoryboard
 
     def on_key(self, win, key, scan, action, mods):
         if self.state.keylayer != Keylayer.Default:
@@ -1224,13 +1245,7 @@ class Renderer():
                 if mod_match and key == skey:
                     if (action == glfw.REPEAT and shortcut in self.repeatable_shortcuts()) or action == glfw.PRESS:
                         #print(shortcut, modifiers, skey, mod_match)
-                        waiting = self.shortcut_to_action(shortcut)
-                        if waiting:
-                            if waiting != -1:
-                                self.action_waiting = waiting
-                        else:
-                            self.action_waiting = Action.PreviewStoryboard
-                        return
+                        return self.on_shortcut(shortcut)
         
     def preview_audio(self, frame=None):
         #if not self.args.preview_audio:
@@ -1340,14 +1355,6 @@ class Renderer():
         elif action == Action.ArbitraryCommand:
             self.on_stdin(message.get("input"))
             return True
-        elif action == Action.SaveControllers:
-            self.state.persist()
-        elif action == Action.ClearControllers:
-            self.state.clear()
-            self.on_action(Action.PreviewStoryboard)
-        elif action == Action.ResetControllers:
-            self.state.reset(ignore_current_state=True)
-            self.on_action(Action.PreviewStoryboard)
         elif action == Action.RestartRenderer:
             self.on_exit(restart=True)
         elif action == Action.Kill:
@@ -1491,6 +1498,10 @@ class Renderer():
         assert self.surface is not None
     
     def turn_over(self):
+        if self.dead:
+            self.on_exit()
+            return
+
         if self.action_waiting:
             action_in = self.action_waiting
             self.on_action(self.action_waiting)
@@ -1736,9 +1747,9 @@ class Renderer():
                     print(device, msg)
                 if msg.isNoteOn(): # Maybe not forever?
                     nn = msg.getNoteNumber()
-                    action = self.midi_mapping[device]["note_on"].get(nn)
-                    if action:
-                        self.on_message({}, action)
+                    shortcut = self.midi_mapping[device]["note_on"].get(nn)
+                    if shortcut:
+                        self.on_shortcut(KeyboardShortcut(shortcut))
                 if msg.isController():
                     controllers[device + "_" + str(msg.getControllerNumber())] = msg.getControllerValue()/127
                 msg = mi.getMessage(0)

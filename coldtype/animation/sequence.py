@@ -36,6 +36,7 @@ class ClipFlags(Enum):
 class Clip(Timeable):
     def __init__(self, text, start, end, idx=None, track=0):
         self.idx = idx
+        self.input_text = str(text)
         self.text = text
         self.start = start
         self.end = end
@@ -661,3 +662,10 @@ class Sequence(Timeline):
         for clip in t.clips:
             js.insert(-1, clip.start)
         return js
+    
+    def text_for_frame(self, fi):
+        cg = self.clip_group(self.workarea_track, fi)
+        if cg and cg.currentSyllable():
+            cgs = cg.currentSyllable()
+            if cgs.start == fi:
+                return cgs.input_text

@@ -34,6 +34,7 @@ class KeyboardShortcut(Enum):
 
     KeylayerEditing = "keylayer_editing"
     KeylayerCmd = "keylayer_command"
+    KeylayerText = "keylayer_text"
     OverlayInfo = "overlay_info"
 
     PreviewScaleDown = "preview_scale_down"
@@ -46,6 +47,10 @@ class KeyboardShortcut(Enum):
     WindowOpacityUp = "window_opacity_up"
     WindowOpacityMin = "window_opacity_min"
     WindowOpacityMax = "window_opacity_max"
+
+    MIDIControllersPersist = "midi_controllers_persist"
+    MIDIControllersClear = "midi_controllers_clear"
+    MIDIControllersReset = "midi_controllers_reset"
 
 
 REPEATABLE_SHORTCUTS = [
@@ -147,7 +152,10 @@ SHORTCUTS = {
     KeyboardShortcut.KeylayerCmd: [
         [[], glfw.KEY_C],
     ],
-    
+    KeyboardShortcut.KeylayerText: [
+        [[], glfw.KEY_T],
+    ],
+
     KeyboardShortcut.OverlayInfo: [
         [[], glfw.KEY_SLASH]
     ],

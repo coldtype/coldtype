@@ -22,6 +22,9 @@ class Timeline(Timeable):
     def jumps(self):
         return self._jumps
     
+    def text_for_frame(self, fi):
+        return ""
+    
     def __str__(self):
         return "<coldtype.animation.timeline({:s}):{:04d}f@{:02.2f}fps[{:s}]>".format(self.__name__, self.duration, self.fps, ",".join([str(i) for i in self.storyboard]))
     

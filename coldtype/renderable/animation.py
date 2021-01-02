@@ -120,10 +120,10 @@ class animation(renderable, Timeable):
                     .s(1)
                     .sw(5))
             return DATPenSet([
+                wave,
                 res,
                 DATPen().rect(t).f(bw(0, 0.75)),
-                DATText(str(frame.i), Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10)),
-                wave
+                DATText(str(frame.i), Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10))
             ])
         return res
     

@@ -21,6 +21,7 @@ class Keylayer(Enum):
     Default = 0
     Cmd = 1
     Editing = 2
+    Text = 3
 
 class Overlay(Enum):
     Info = "info"
@@ -44,9 +45,6 @@ class Action(Enum):
     RenderedPlay = "rendered_play"
     ArbitraryTyping = "arbitrary_typing"
     ArbitraryCommand = "arbitrary_command"
-    SaveControllers = "save_controllers"
-    ClearControllers = "clear_controllers"
-    ResetControllers = "reset_controllers"
     RestartRenderer = "restart_renderer"
     ToggleMultiplex = "toggle_multiplex"
     Kill = "kill"

@@ -49,6 +49,7 @@ class RendererState():
         self.request = None
         self.callback = None
         self.cmd = None
+        self.text = ""
         self.arrow = None
         self.mods = Mods()
         self.mouse_history = None
@@ -170,9 +171,10 @@ class RendererState():
     
     def on_character(self, codepoint):
         cc = chr(codepoint)
-        if self.keylayer == Keylayer.Cmd:
+        if self.keylayer == Keylayer.Cmd or self.keylayer == Keylayer.Text:
             self.keybuffer.append(cc)
             return Action.PreviewStoryboard
+        
         elif self.keylayer == Keylayer.Editing:
             if cc == "f":
                 return
@@ -196,7 +198,10 @@ class RendererState():
         
         if key == glfw.KEY_ENTER:
             cmd = "".join(self.keybuffer)
-            self.cmd = cmd
+            if self.keylayer == Keylayer.Cmd:
+                self.cmd = cmd
+            elif self.keylayer == Keylayer.Text:
+                self.text = cmd
             self.keybuffer = []
             #print(">>> KB-CMD:", cmd)
             if mods & glfw.MOD_SUPER:
@@ -260,9 +265,37 @@ class RendererState():
     
     def draw_keylayer(self, canvas, rect, typeface):
         canvas.save()
+
         if self.keylayer == Keylayer.Cmd:
-            canvas.drawRect(skia.Rect.MakeXYWH(0, rect.h-50, rect.w, 50), skia.Paint(AntiAlias=True, Color=hsl(0.9, l=0.25, a=0.85).skia()))
-            canvas.drawString("".join(self.keybuffer), 10, rect.h-14, skia.Font(typeface, 30), skia.Paint(AntiAlias=True, Color=skia.ColorWHITE))
+            canvas.drawRect(
+                skia.Rect.MakeXYWH(0, rect.h-50, rect.w, 50),
+                skia.Paint(
+                    AntiAlias=True,
+                    Color=hsl(0.9, l=0.25, a=0.85).skia()))
+            canvas.drawString(
+                "".join(self.keybuffer),
+                10,
+                rect.h-14,
+                skia.Font(typeface, 30),
+                skia.Paint(
+                    AntiAlias=True,
+                    Color=skia.ColorWHITE))
+        
+        elif self.keylayer == Keylayer.Text:
+            canvas.drawRect(
+                skia.Rect.MakeXYWH(0, 0, rect.w, 50),
+                skia.Paint(
+                    AntiAlias=True,
+                    Color=hsl(0.7, l=0.25, a=0.85).skia()))
+            canvas.drawString(
+                "".join(self.keybuffer),
+                10,
+                34,
+                skia.Font(typeface, 30),
+                skia.Paint(
+                    AntiAlias=True,
+                    Color=skia.ColorWHITE))
+        
         elif self.keylayer == Keylayer.Editing:
             canvas.drawRect(skia.Rect(0, 0, 50, 50), skia.Paint(AntiAlias=True, Color=hsl(0.95, l=0.5, a=0.75).skia()))
         canvas.restore()
@@ -311,6 +344,7 @@ class RendererState():
     
     def reset_keystate(self):
         self.cmd = None
+        self.text = ""
         self.arrow = None
         self.mods.reset()
         self.watch_mods = {}
