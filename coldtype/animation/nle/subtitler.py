@@ -1,4 +1,4 @@
-import json
+import json, re
 from pathlib import Path
 from coldtype.animation.sequence import Sequence, ClipTrack, Clip
 from coldtype.animation.audio import Wavfile
@@ -25,7 +25,7 @@ class Subtitler(Sequence):
         try:
             self.data = json.loads(self.path.read_text())
         except (FileNotFoundError, json.JSONDecodeError):
-            self.data = dict(tracks=[dict(clips=[])])
+            self.data = dict(workarea_track=0, tracks=[dict(clips=[])])
         
         tracks = []
         for tidx, t in enumerate(self.data.get("tracks")):
@@ -34,7 +34,11 @@ class Subtitler(Sequence):
                 clips.append(Clip(c.get("text"), c.get("start"), c.get("end"), cidx, tidx))
             tracks.append(ClipTrack(self, clips, []))
         
-        super().__init__(duration, fps, storyboard, tracks)
+        super().__init__(duration, fps, storyboard, tracks, workarea_track=self.data["workarea_track"])
+
+        if len(self.data["tracks"]) <= self.workarea_track:
+            self.data["tracks"].append(dict(clips=[]))
+            self.tracks.append(ClipTrack(self, [], []))
     
     def persist(self):
         self.path.write_text(json.dumps(self.data, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -192,6 +196,9 @@ class Subtitler(Sequence):
             elif rs.cmd == "e":
                 #print(self.closest(fi, +1, clips))
                 self.closest_to_playhead(fi, +1, clips)
+            elif re.match(r"[0-9]{1}", rs.cmd):
+                self.data["workarea_track"] = int(rs.cmd)
+                self.persist()
     
     def clip_timeline(self, fi, far, sw=30, sh=50, font_name=None):
         seq = DATPenSet()
@@ -206,17 +213,17 @@ class Subtitler(Sequence):
                     seq.append(DATPenSet([
                         (DATPen()
                             .rect(r)
-                            .f(hsl(cgidx*0.4, 0.6).lighter(0.2))),
+                            .f(hsl(cgidx*0.4+tidx*0.2, 0.75).lighter(0.2))),
                         (DATText(c.input_text,
-                            Style(font_name, 24, load_font=0, fill=bw(0)),
-                            r.inset(2, 5)))]))
+                            Style(font_name, 24, load_font=0, fill=bw(0, 1 if tidx == self.workarea_track else 0.5)),
+                            r.inset(3, 8)))]))
 
         on_cut = fi in self.jumps()
 
         seq.translate(far.w/2 - fi*sw, 10)
 
         seq.append(DATPen()
-            .rect(far.take(sh+20, "mny").take(6 if on_cut else 2, "mdx"))
+            .rect(far.take(sh*len(self.tracks)+20, "mny").take(6 if on_cut else 2, "mdx"))
             .f(hsl(0.9, 1) if on_cut else hsl(0.8, 0.5)))
         
         return seq
@@ -235,3 +242,25 @@ class lyric_editor(animation):
             seq = self.timeline.clip_timeline(f.i, f.a.r, font_name=self.data_font)
             return DATPenSet([res, seq])
         return res
+
+if __name__ == "<run_path>":
+    from coldtype.test import recmono, co
+
+    tl = Subtitler(
+        "test/lyric_data.json",
+        "test/media/helloworld.wav",
+        storyboard=[3])
+
+    @lyric_editor(tl, bg=0, data_font=recmono)
+    def lyric_entry(f, rs):
+        def render_clip_fn(f, idx, clip, ftext):
+            if "stylized" in clip.styles:
+                return ftext.upper(), Style(co, 150, wdth=0.5, tu=50, fill=hsl(0.61, s=1, l=0.7))
+            return ftext, Style(recmono, 100, fill=1)
+
+        return (tl.clip_group(0, f.i, styles=[1])
+            .pens(f, render_clip_fn, f.a.r)
+            #.f(1)
+            .xa()
+            .align(f.a.r)
+            .remove_futures())

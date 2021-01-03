@@ -396,6 +396,7 @@ class Renderer():
             try:
                 self.state.reset()
                 self.program = run_path(str(self.codepath), init_globals={
+                    "__COLDTYPE__": True,
                     "__CONTEXT__": self.context,
                     "__FILE__": self.filepath,
                     "__sibling__": partial(sibling, self.filepath)

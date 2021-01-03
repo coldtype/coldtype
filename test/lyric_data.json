@@ -1,4 +1,5 @@
 {
+  "workarea_track": 1,
   "tracks": [
     {
       "clips": [
@@ -57,11 +58,20 @@
           "tidx": 0
         },
         {
-          "text": "+type.",
+          "text": "+type",
           "start": 100,
           "end": 117,
-          "idx": 8,
-          "tidx": 0
+          "idx": 8
+        }
+      ]
+    },
+    {
+      "clips": [
+        {
+          "text": "stylized",
+          "start": 90,
+          "end": 117,
+          "idx": 0
         }
       ]
     }
