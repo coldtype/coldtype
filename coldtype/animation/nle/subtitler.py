@@ -9,6 +9,7 @@ from coldtype.geometry import Rect
 from coldtype.color import hsl, bw
 from coldtype.renderable.animation import animation
 from coldtype.renderable import Overlay
+from contextlib import contextmanager
 
 
 class Subtitler(Sequence):
@@ -31,7 +32,18 @@ class Subtitler(Sequence):
         for tidx, t in enumerate(self.data.get("tracks")):
             clips = []
             for cidx, c in enumerate(t.get("clips")):
-                clips.append(Clip(c.get("text"), c.get("start"), c.get("end"), cidx, tidx))
+                cs = []
+                txt = c.get("text")
+                start = c.get("start")
+                end = c.get("end")
+                if "≈" in txt[1:]:
+                    for lidx, ltxt in enumerate(txt.split("≈")):
+                        if lidx > 0:
+                            ltxt = "≈" + ltxt
+                        cs.append(Clip(ltxt, start, end, cidx, tidx))
+                else:
+                    cs.append(Clip(txt, start, end, cidx, tidx))
+                clips.extend(cs)
             tracks.append(ClipTrack(self, clips, []))
         
         super().__init__(duration, fps, storyboard, tracks, workarea_track=self.data["workarea_track"])
@@ -61,6 +73,13 @@ class Subtitler(Sequence):
             c["idx"] = cidx
         return clips
     
+    def text_for_frame(self, fi):
+        clips = [c for c in self.clips() if c.get("start") == fi]
+        if len(clips) > 0:
+            return clips[0].get("text")
+        else:
+            return ""
+    
     def remove_clip_at_frame(self, fi, clips):
         return [c for c in clips if c["start"] != fi]
     
@@ -84,11 +103,27 @@ class Subtitler(Sequence):
         clips.append(dict(text=text, start=fi, end=end))
         self.overwrite_clips(clips)
     
-    def cut_clip(self, fi, clips):
+    @contextmanager
+    def active_clip(self, fi, clips):
         cidx = self.current_clip_idx(fi, clips)
         if cidx > -1:
-            clips[cidx]["end"] = fi
-        self.overwrite_clips(clips)
+            try:
+                yield clips[cidx]
+            finally:
+                self.overwrite_clips(clips)
+    
+    def cut_clip(self, fi, clips):
+        with self.active_clip(fi, clips) as c:
+            c["end"] = fi
+        
+    def mod_clip_text(self, fi, clips, fn):
+        with self.active_clip(fi, clips) as c:
+            ctxt = c["text"]
+            csym = None
+            if ctxt[0] in ["≈", "*", "+"]:
+                csym = ctxt[0]
+                ctxt = ctxt[1:]
+            c["text"] = fn(csym, ctxt)
 
     def closest(self, fi, direction, clips, ignore_on=False):
         closest = []
@@ -124,7 +159,6 @@ class Subtitler(Sequence):
         
         if not ignore_on:
             if closest_frame == fi and len(closest) == 1:
-                print("HERE")
                 return self.closest(fi, direction, clips, ignore_on=True)
         
         return closest_frame == fi, closest
@@ -196,6 +230,15 @@ class Subtitler(Sequence):
             elif rs.cmd == "e":
                 #print(self.closest(fi, +1, clips))
                 self.closest_to_playhead(fi, +1, clips)
+            elif rs.cmd == "ts":
+                self.mod_clip_text(fi, clips,
+                    lambda s, t: "*" + t if s != "*" else t)
+            elif rs.cmd == "tl":
+                self.mod_clip_text(fi, clips,
+                    lambda s, t: "≈" + t if s != "≈" else t)
+            elif rs.cmd == "tc":
+                self.mod_clip_text(fi, clips,
+                    lambda s, t: "+" + t if s != "+" else t)
             elif re.match(r"[0-9]{1}", rs.cmd):
                 self.data["workarea_track"] = int(rs.cmd)
                 self.persist()
@@ -210,13 +253,15 @@ class Subtitler(Sequence):
             for cgidx, cg in enumerate(t.clip_groups):
                 for cidx, c in enumerate(cg.clips):
                     r = Rect(c.start*sw, sh*tidx, (c.duration*sw)-2, sh)
-                    seq.append(DATPenSet([
-                        (DATPen()
-                            .rect(r)
-                            .f(hsl(cgidx*0.4+tidx*0.2, 0.75).lighter(0.2))),
-                        (DATText(c.input_text,
-                            Style(font_name, 24, load_font=0, fill=bw(0, 1 if tidx == self.workarea_track else 0.5)),
-                            r.inset(3, 8)))]))
+                    current = c.start-25 <= fi <= c.end+25
+                    if current:
+                        seq.append(DATPenSet([
+                            (DATPen()
+                                .rect(r)
+                                .f(hsl(cgidx*0.4+tidx*0.2, 0.75).lighter(0.2))),
+                            (DATText(c.input_text,
+                                Style(font_name, 24, load_font=0, fill=bw(0, 1 if tidx == self.workarea_track else 0.5)),
+                                r.inset(3, 8)))]))
 
         on_cut = fi in self.jumps()
 
@@ -251,18 +296,18 @@ if __name__ == "<run_path>":
         #"test/media/helloworld.wav",
         "test/lyric_data2.json",
         "~/Type/fouchet/de/media/jitterbugging.wav",
-        storyboard=[0])
+        storyboard=[19])
 
     @lyric_editor(tl, bg=0, data_font=recmono)
-    def lyric_entry(f, rs):
+    def lyric_entry2(f, rs):
         def render_clip_fn(f, idx, clip, ftext):
             if "stylized" in clip.styles:
                 return ftext.upper(), Style(co, 150, wdth=0.5, tu=50, fill=hsl(0.61, s=1, l=0.7))
             return ftext, Style(recmono, 100, fill=1)
 
         return (tl.clip_group(0, f.i)
-            .pens(f, render_clip_fn, f.a.r)
+            .pens(f, render_clip_fn, f.a.r.inset(50))
             #.f(1)
-            .xa()
-            .align(f.a.r)
+            #.xa()
+            #.align(f.a.r)
             .remove_futures())

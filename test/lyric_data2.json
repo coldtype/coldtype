@@ -22,13 +22,13 @@
           "idx": 2
         },
         {
-          "text": "this",
+          "text": "≈this",
           "start": 43,
           "end": 68,
           "idx": 3
         },
         {
-          "text": "*There",
+          "text": "*there",
           "start": 68,
           "end": 74,
           "idx": 4
@@ -40,7 +40,7 @@
           "idx": 5
         },
         {
-          "text": "be",
+          "text": "≈be",
           "start": 78,
           "end": 84,
           "idx": 6
@@ -52,7 +52,7 @@
           "idx": 7
         },
         {
-          "text": "*fourth",
+          "text": "≈Fourth",
           "start": 94,
           "end": 101,
           "idx": 8
@@ -64,7 +64,7 @@
           "idx": 9
         },
         {
-          "text": "+-ju",
+          "text": "+-Ju",
           "start": 104,
           "end": 109,
           "idx": 10
@@ -76,7 +76,7 @@
           "idx": 11
         },
         {
-          "text": "*this",
+          "text": "≈this",
           "start": 117,
           "end": 123,
           "idx": 12
@@ -94,25 +94,25 @@
           "idx": 14
         },
         {
-          "text": "*shout",
+          "text": "shout",
           "start": 144,
           "end": 155,
           "idx": 15
         },
         {
-          "text": "+ing",
+          "text": "+ing,",
           "start": 155,
           "end": 161,
           "idx": 16
         },
         {
-          "text": "*no",
+          "text": "≈no",
           "start": 161,
           "end": 166,
           "idx": 17
         },
         {
-          "text": "*pop",
+          "text": "pop",
           "start": 166,
           "end": 173,
           "idx": 18
@@ -130,7 +130,7 @@
           "idx": 20
         },
         {
-          "text": "≈fi",
+          "text": "fi",
           "start": 183,
           "end": 188,
           "idx": 21
@@ -160,7 +160,7 @@
           "idx": 25
         },
         {
-          "text": "*ce",
+          "text": "≈ce",
           "start": 211,
           "end": 214,
           "idx": 26
@@ -178,19 +178,19 @@
           "idx": 28
         },
         {
-          "text": "+ting",
+          "text": "+ting,",
           "start": 225,
           "end": 229,
           "idx": 29
         },
         {
-          "text": "*no",
+          "text": "≈no",
           "start": 229,
           "end": 234,
           "idx": 30
         },
         {
-          "text": "*pa",
+          "text": "≈pa",
           "start": 234,
           "end": 240,
           "idx": 31
@@ -200,6 +200,906 @@
           "start": 240,
           "end": 259,
           "idx": 32
+        },
+        {
+          "text": "*But",
+          "start": 279,
+          "end": 285,
+          "idx": 33
+        },
+        {
+          "text": "the",
+          "start": 285,
+          "end": 289,
+          "idx": 34
+        },
+        {
+          "text": "rage",
+          "start": 289,
+          "end": 302,
+          "idx": 35
+        },
+        {
+          "text": "≈of",
+          "start": 302,
+          "end": 305,
+          "idx": 36
+        },
+        {
+          "text": "a",
+          "start": 305,
+          "end": 309,
+          "idx": 37
+        },
+        {
+          "text": "hope-",
+          "start": 309,
+          "end": 316,
+          "idx": 38
+        },
+        {
+          "text": "≈less",
+          "start": 316,
+          "end": 324,
+          "idx": 39
+        },
+        {
+          "text": "peo",
+          "start": 324,
+          "end": 329,
+          "idx": 40
+        },
+        {
+          "text": "+ple",
+          "start": 329,
+          "end": 349,
+          "idx": 41
+        },
+        {
+          "text": "*jit",
+          "start": 349,
+          "end": 353,
+          "idx": 42
+        },
+        {
+          "text": "+ter",
+          "start": 353,
+          "end": 357,
+          "idx": 43
+        },
+        {
+          "text": "+bug",
+          "start": 357,
+          "end": 362,
+          "idx": 44
+        },
+        {
+          "text": "+ging",
+          "start": 362,
+          "end": 374,
+          "idx": 45
+        },
+        {
+          "text": "≈in",
+          "start": 374,
+          "end": 379,
+          "idx": 46
+        },
+        {
+          "text": "the",
+          "start": 379,
+          "end": 383,
+          "idx": 47
+        },
+        {
+          "text": "≈streets",
+          "start": 383,
+          "end": 420,
+          "idx": 48
+        },
+        {
+          "text": "*Jack",
+          "start": 425,
+          "end": 435,
+          "idx": 49
+        },
+        {
+          "text": "+son",
+          "start": 435,
+          "end": 440,
+          "idx": 50
+        },
+        {
+          "text": "+ville,",
+          "start": 440,
+          "end": 450,
+          "idx": 51
+        },
+        {
+          "text": "≈Flo",
+          "start": 450,
+          "end": 455,
+          "idx": 52
+        },
+        {
+          "text": "+ri",
+          "start": 455,
+          "end": 457,
+          "idx": 53
+        },
+        {
+          "text": "+da",
+          "start": 457,
+          "end": 476,
+          "idx": 54
+        },
+        {
+          "text": "≈Bir",
+          "start": 476,
+          "end": 482,
+          "idx": 55
+        },
+        {
+          "text": "+ming",
+          "start": 482,
+          "end": 488,
+          "idx": 56
+        },
+        {
+          "text": "+ham",
+          "start": 488,
+          "end": 496,
+          "idx": 57
+        },
+        {
+          "text": "≈At",
+          "start": 496,
+          "end": 500,
+          "idx": 58
+        },
+        {
+          "text": "+lan",
+          "start": 500,
+          "end": 508,
+          "idx": 59
+        },
+        {
+          "text": "+ta",
+          "start": 508,
+          "end": 514,
+          "idx": 60
+        },
+        {
+          "text": "≈Ro",
+          "start": 514,
+          "end": 522,
+          "idx": 61
+        },
+        {
+          "text": "+ches",
+          "start": 522,
+          "end": 529,
+          "idx": 62
+        },
+        {
+          "text": "+ter",
+          "start": 529,
+          "end": 534,
+          "idx": 63
+        },
+        {
+          "text": "≈Bed",
+          "start": 534,
+          "end": 541,
+          "idx": 64
+        },
+        {
+          "text": "+ford-",
+          "start": 541,
+          "end": 547,
+          "idx": 65
+        },
+        {
+          "text": "≈Stuy",
+          "start": 547,
+          "end": 554,
+          "idx": 66
+        },
+        {
+          "text": "+ve",
+          "start": 554,
+          "end": 558,
+          "idx": 67
+        },
+        {
+          "text": "+sant",
+          "start": 558,
+          "end": 568,
+          "idx": 68
+        },
+        {
+          "text": "≈Jer",
+          "start": 568,
+          "end": 577,
+          "idx": 69
+        },
+        {
+          "text": "+sey",
+          "start": 577,
+          "end": 584,
+          "idx": 70
+        },
+        {
+          "text": "Ci",
+          "start": 584,
+          "end": 588,
+          "idx": 71
+        },
+        {
+          "text": "+ty",
+          "start": 588,
+          "end": 595,
+          "idx": 72
+        },
+        {
+          "text": "≈Chi",
+          "start": 595,
+          "end": 599,
+          "idx": 73
+        },
+        {
+          "text": "+ca",
+          "start": 599,
+          "end": 608,
+          "idx": 74
+        },
+        {
+          "text": "+go",
+          "start": 608,
+          "end": 620,
+          "idx": 75
+        },
+        {
+          "text": "≈Jack",
+          "start": 620,
+          "end": 628,
+          "idx": 76
+        },
+        {
+          "text": "+son,",
+          "start": 628,
+          "end": 632,
+          "idx": 77
+        },
+        {
+          "text": "≈Mi",
+          "start": 632,
+          "end": 637,
+          "idx": 78
+        },
+        {
+          "text": "+ssi",
+          "start": 637,
+          "end": 642,
+          "idx": 79
+        },
+        {
+          "text": "+ssi",
+          "start": 642,
+          "end": 646,
+          "idx": 80
+        },
+        {
+          "text": "+ppi",
+          "start": 646,
+          "end": 652,
+          "idx": 81
+        },
+        {
+          "text": "≈Har",
+          "start": 652,
+          "end": 656,
+          "idx": 82
+        },
+        {
+          "text": "+lem,",
+          "start": 656,
+          "end": 663,
+          "idx": 83
+        },
+        {
+          "text": "≈New",
+          "start": 663,
+          "end": 666,
+          "idx": 84
+        },
+        {
+          "text": "York",
+          "start": 666,
+          "end": 679,
+          "idx": 85
+        },
+        {
+          "text": "≈Watts,",
+          "start": 679,
+          "end": 689,
+          "idx": 86
+        },
+        {
+          "text": "≈Los",
+          "start": 689,
+          "end": 696,
+          "idx": 87
+        },
+        {
+          "text": "An",
+          "start": 696,
+          "end": 701,
+          "idx": 88
+        },
+        {
+          "text": "+ge",
+          "start": 701,
+          "end": 704,
+          "idx": 89
+        },
+        {
+          "text": "+les",
+          "start": 704,
+          "end": 729,
+          "idx": 90
+        },
+        {
+          "text": "*jit",
+          "start": 729,
+          "end": 733,
+          "idx": 91
+        },
+        {
+          "text": "+ter",
+          "start": 733,
+          "end": 737,
+          "idx": 92
+        },
+        {
+          "text": "+bug",
+          "start": 737,
+          "end": 741,
+          "idx": 93
+        },
+        {
+          "text": "+ging",
+          "start": 741,
+          "end": 753,
+          "idx": 94
+        },
+        {
+          "text": "≈in",
+          "start": 753,
+          "end": 758,
+          "idx": 95
+        },
+        {
+          "text": "the",
+          "start": 758,
+          "end": 762,
+          "idx": 96
+        },
+        {
+          "text": "streets",
+          "start": 762,
+          "end": 788,
+          "idx": 97
+        },
+        {
+          "text": "≈to",
+          "start": 788,
+          "end": 793,
+          "idx": 98
+        },
+        {
+          "text": "*ten",
+          "start": 793,
+          "end": 802,
+          "idx": 99
+        },
+        {
+          "text": "+-thousand",
+          "start": 802,
+          "end": 814,
+          "idx": 100
+        },
+        {
+          "text": "≈rounds",
+          "start": 814,
+          "end": 823,
+          "idx": 101
+        },
+        {
+          "text": "≈of",
+          "start": 823,
+          "end": 826,
+          "idx": 102
+        },
+        {
+          "text": "am",
+          "start": 826,
+          "end": 830,
+          "idx": 103
+        },
+        {
+          "text": "+mu",
+          "start": 830,
+          "end": 834,
+          "idx": 104
+        },
+        {
+          "text": "+ni",
+          "start": 834,
+          "end": 840,
+          "idx": 105
+        },
+        {
+          "text": "+tion",
+          "start": 840,
+          "end": 845,
+          "idx": 106
+        },
+        {
+          "text": "*to",
+          "start": 845,
+          "end": 850,
+          "idx": 107
+        },
+        {
+          "text": "≈wa",
+          "start": 850,
+          "end": 854,
+          "idx": 108
+        },
+        {
+          "text": "+ter",
+          "start": 854,
+          "end": 858,
+          "idx": 109
+        },
+        {
+          "text": "≈ho",
+          "start": 858,
+          "end": 865,
+          "idx": 110
+        },
+        {
+          "text": "+ses,",
+          "start": 865,
+          "end": 878,
+          "idx": 111
+        },
+        {
+          "text": "≈e",
+          "start": 878,
+          "end": 883,
+          "idx": 112
+        },
+        {
+          "text": "+lec",
+          "start": 883,
+          "end": 888,
+          "idx": 113
+        },
+        {
+          "text": "+tri",
+          "start": 888,
+          "end": 891,
+          "idx": 114
+        },
+        {
+          "text": "+cal",
+          "start": 891,
+          "end": 897,
+          "idx": 115
+        },
+        {
+          "text": "≈prods,",
+          "start": 897,
+          "end": 914,
+          "idx": 116
+        },
+        {
+          "text": "≈pha",
+          "start": 914,
+          "end": 919,
+          "idx": 117
+        },
+        {
+          "text": "+llic",
+          "start": 919,
+          "end": 927,
+          "idx": 118
+        },
+        {
+          "text": "≈sticks",
+          "start": 927,
+          "end": 936,
+          "idx": 119
+        },
+        {
+          "text": "≈hound",
+          "start": 936,
+          "end": 947,
+          "idx": 120
+        },
+        {
+          "text": "≈dogs",
+          "start": 947,
+          "end": 958,
+          "idx": 121
+        },
+        {
+          "text": "*black",
+          "start": 958,
+          "end": 967,
+          "idx": 122
+        },
+        {
+          "text": "≈boots",
+          "start": 967,
+          "end": 976,
+          "idx": 123
+        },
+        {
+          "text": "≈step",
+          "start": 976,
+          "end": 980,
+          "idx": 124
+        },
+        {
+          "text": "+ping",
+          "start": 980,
+          "end": 985,
+          "idx": 125
+        },
+        {
+          "text": "≈in",
+          "start": 985,
+          "end": 990,
+          "idx": 126
+        },
+        {
+          "text": "soft",
+          "start": 990,
+          "end": 998,
+          "idx": 127
+        },
+        {
+          "text": "≈places",
+          "start": 998,
+          "end": 1008,
+          "idx": 128
+        },
+        {
+          "text": "≈of",
+          "start": 1008,
+          "end": 1011,
+          "idx": 129
+        },
+        {
+          "text": "the",
+          "start": 1011,
+          "end": 1014,
+          "idx": 130
+        },
+        {
+          "text": "≈bo",
+          "start": 1014,
+          "end": 1019,
+          "idx": 131
+        },
+        {
+          "text": "+dy",
+          "start": 1019,
+          "end": 1045,
+          "idx": 132
+        },
+        {
+          "text": "*Ve",
+          "start": 1057,
+          "end": 1063,
+          "idx": 133
+        },
+        {
+          "text": "+nom",
+          "start": 1063,
+          "end": 1078,
+          "idx": 134
+        },
+        {
+          "text": "≈is",
+          "start": 1078,
+          "end": 1082,
+          "idx": 135
+        },
+        {
+          "text": "in",
+          "start": 1082,
+          "end": 1085,
+          "idx": 136
+        },
+        {
+          "text": "the",
+          "start": 1085,
+          "end": 1089,
+          "idx": 137
+        },
+        {
+          "text": "≈mouths",
+          "start": 1089,
+          "end": 1107,
+          "idx": 138
+        },
+        {
+          "text": "of",
+          "start": 1107,
+          "end": 1113,
+          "idx": 139
+        },
+        {
+          "text": "*Christ",
+          "start": 1113,
+          "end": 1120,
+          "idx": 140
+        },
+        {
+          "text": "+ian",
+          "start": 1120,
+          "end": 1126,
+          "idx": 141
+        },
+        {
+          "text": "≈house",
+          "start": 1126,
+          "end": 1132,
+          "idx": 142
+        },
+        {
+          "text": "+wives",
+          "start": 1132,
+          "end": 1152,
+          "idx": 143
+        },
+        {
+          "text": "*smart",
+          "start": 1152,
+          "end": 1160,
+          "idx": 144
+        },
+        {
+          "text": "young",
+          "start": 1160,
+          "end": 1165,
+          "idx": 145
+        },
+        {
+          "text": "≈I",
+          "start": 1165,
+          "end": 1168,
+          "idx": 146
+        },
+        {
+          "text": "+talians",
+          "start": 1168,
+          "end": 1183,
+          "idx": 147
+        },
+        {
+          "text": "*Old",
+          "start": 1183,
+          "end": 1190,
+          "idx": 148
+        },
+        {
+          "text": "≈Scan",
+          "start": 1190,
+          "end": 1195,
+          "idx": 149
+        },
+        {
+          "text": "+di",
+          "start": 1195,
+          "end": 1198,
+          "idx": 150
+        },
+        {
+          "text": "+na",
+          "start": 1198,
+          "end": 1203,
+          "idx": 151
+        },
+        {
+          "text": "+vi",
+          "start": 1203,
+          "end": 1207,
+          "idx": 152
+        },
+        {
+          "text": "+ans",
+          "start": 1207,
+          "end": 1211,
+          "idx": 153
+        },
+        {
+          "text": "≈in",
+          "start": 1211,
+          "end": 1215,
+          "idx": 154
+        },
+        {
+          "text": "York",
+          "start": 1215,
+          "end": 1225,
+          "idx": 155
+        },
+        {
+          "text": "+ville",
+          "start": 1225,
+          "end": 1242,
+          "idx": 156
+        },
+        {
+          "text": "*sun",
+          "start": 1242,
+          "end": 1250,
+          "idx": 157
+        },
+        {
+          "text": "+tanned",
+          "start": 1250,
+          "end": 1260,
+          "idx": 158
+        },
+        {
+          "text": "≈sub",
+          "start": 1260,
+          "end": 1264,
+          "idx": 159
+        },
+        {
+          "text": "+urban",
+          "start": 1264,
+          "end": 1270,
+          "idx": 160
+        },
+        {
+          "text": "≈org",
+          "start": 1270,
+          "end": 1276,
+          "idx": 161
+        },
+        {
+          "text": "+ani",
+          "start": 1276,
+          "end": 1281,
+          "idx": 162
+        },
+        {
+          "text": "+zation",
+          "start": 1281,
+          "end": 1292,
+          "idx": 163
+        },
+        {
+          "text": "≈men",
+          "start": 1292,
+          "end": 1308,
+          "idx": 164
+        },
+        {
+          "text": "*clerks",
+          "start": 1308,
+          "end": 1316,
+          "idx": 165
+        },
+        {
+          "text": "and",
+          "start": 1316,
+          "end": 1321,
+          "idx": 166
+        },
+        {
+          "text": "≈con",
+          "start": 1321,
+          "end": 1328,
+          "idx": 167
+        },
+        {
+          "text": "+struc",
+          "start": 1328,
+          "end": 1334,
+          "idx": 168
+        },
+        {
+          "text": "+tion",
+          "start": 1334,
+          "end": 1338,
+          "idx": 169
+        },
+        {
+          "text": "≈work",
+          "start": 1338,
+          "end": 1344,
+          "idx": 170
+        },
+        {
+          "text": "+ers",
+          "start": 1344,
+          "end": 1359,
+          "idx": 171
+        },
+        {
+          "text": "*poor",
+          "start": 1359,
+          "end": 1365,
+          "idx": 172
+        },
+        {
+          "text": "≈white",
+          "start": 1365,
+          "end": 1375,
+          "idx": 173
+        },
+        {
+          "text": "≈trash",
+          "start": 1375,
+          "end": 1384,
+          "idx": 174
+        },
+        {
+          "text": "*and",
+          "start": 1384,
+          "end": 1389,
+          "idx": 175
+        },
+        {
+          "text": "*gun",
+          "start": 1389,
+          "end": 1396,
+          "idx": 176
+        },
+        {
+          "text": "+ha",
+          "start": 1396,
+          "end": 1399,
+          "idx": 177
+        },
+        {
+          "text": "+ppy",
+          "start": 1399,
+          "end": 1403,
+          "idx": 178
+        },
+        {
+          "text": "≈cops",
+          "start": 1403,
+          "end": 1412,
+          "idx": 179
+        },
+        {
+          "text": "≈ev",
+          "start": 1412,
+          "end": 1419,
+          "idx": 180
+        },
+        {
+          "text": "+ery",
+          "start": 1419,
+          "end": 1423,
+          "idx": 181
+        },
+        {
+          "text": "≈where",
+          "start": 1423,
+          "end": 1470,
+          "idx": 182
         }
       ]
     }
