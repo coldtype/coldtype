@@ -1,0 +1,207 @@
+{
+  "workarea_track": 0,
+  "tracks": [
+    {
+      "clips": [
+        {
+          "text": "*Be",
+          "start": 27,
+          "end": 32,
+          "idx": 0
+        },
+        {
+          "text": "+cause",
+          "start": 32,
+          "end": 39,
+          "idx": 1
+        },
+        {
+          "text": "of",
+          "start": 39,
+          "end": 43,
+          "idx": 2
+        },
+        {
+          "text": "this",
+          "start": 43,
+          "end": 68,
+          "idx": 3
+        },
+        {
+          "text": "*There",
+          "start": 68,
+          "end": 74,
+          "idx": 4
+        },
+        {
+          "text": "will",
+          "start": 74,
+          "end": 78,
+          "idx": 5
+        },
+        {
+          "text": "be",
+          "start": 78,
+          "end": 84,
+          "idx": 6
+        },
+        {
+          "text": "no",
+          "start": 84,
+          "end": 94,
+          "idx": 7
+        },
+        {
+          "text": "*fourth",
+          "start": 94,
+          "end": 101,
+          "idx": 8
+        },
+        {
+          "text": "+-of",
+          "start": 101,
+          "end": 104,
+          "idx": 9
+        },
+        {
+          "text": "+-ju",
+          "start": 104,
+          "end": 109,
+          "idx": 10
+        },
+        {
+          "text": "+ly",
+          "start": 109,
+          "end": 117,
+          "idx": 11
+        },
+        {
+          "text": "*this",
+          "start": 117,
+          "end": 123,
+          "idx": 12
+        },
+        {
+          "text": "year",
+          "start": 123,
+          "end": 131,
+          "idx": 13
+        },
+        {
+          "text": "*No",
+          "start": 136,
+          "end": 144,
+          "idx": 14
+        },
+        {
+          "text": "*shout",
+          "start": 144,
+          "end": 155,
+          "idx": 15
+        },
+        {
+          "text": "+ing",
+          "start": 155,
+          "end": 161,
+          "idx": 16
+        },
+        {
+          "text": "*no",
+          "start": 161,
+          "end": 166,
+          "idx": 17
+        },
+        {
+          "text": "*pop",
+          "start": 166,
+          "end": 173,
+          "idx": 18
+        },
+        {
+          "text": "+ping",
+          "start": 173,
+          "end": 177,
+          "idx": 19
+        },
+        {
+          "text": "≈of",
+          "start": 177,
+          "end": 183,
+          "idx": 20
+        },
+        {
+          "text": "≈fi",
+          "start": 183,
+          "end": 188,
+          "idx": 21
+        },
+        {
+          "text": "+re",
+          "start": 188,
+          "end": 191,
+          "idx": 22
+        },
+        {
+          "text": "+crac",
+          "start": 191,
+          "end": 198,
+          "idx": 23
+        },
+        {
+          "text": "+kers",
+          "start": 198,
+          "end": 203,
+          "idx": 24
+        },
+        {
+          "text": "*no",
+          "start": 203,
+          "end": 211,
+          "idx": 25
+        },
+        {
+          "text": "*ce",
+          "start": 211,
+          "end": 214,
+          "idx": 26
+        },
+        {
+          "text": "+le",
+          "start": 214,
+          "end": 219,
+          "idx": 27
+        },
+        {
+          "text": "+bra",
+          "start": 219,
+          "end": 225,
+          "idx": 28
+        },
+        {
+          "text": "+ting",
+          "start": 225,
+          "end": 229,
+          "idx": 29
+        },
+        {
+          "text": "*no",
+          "start": 229,
+          "end": 234,
+          "idx": 30
+        },
+        {
+          "text": "*pa",
+          "start": 234,
+          "end": 240,
+          "idx": 31
+        },
+        {
+          "text": "+rade",
+          "start": 240,
+          "end": 259,
+          "idx": 32
+        }
+      ]
+    }
+  ]
+}

@@ -247,9 +247,11 @@ if __name__ == "<run_path>":
     from coldtype.test import recmono, co
 
     tl = Subtitler(
-        "test/lyric_data.json",
-        "test/media/helloworld.wav",
-        storyboard=[3])
+        #"test/lyric_data.json",
+        #"test/media/helloworld.wav",
+        "test/lyric_data2.json",
+        "~/Type/fouchet/de/media/jitterbugging.wav",
+        storyboard=[0])
 
     @lyric_editor(tl, bg=0, data_font=recmono)
     def lyric_entry(f, rs):
@@ -258,7 +260,7 @@ if __name__ == "<run_path>":
                 return ftext.upper(), Style(co, 150, wdth=0.5, tu=50, fill=hsl(0.61, s=1, l=0.7))
             return ftext, Style(recmono, 100, fill=1)
 
-        return (tl.clip_group(0, f.i, styles=[1])
+        return (tl.clip_group(0, f.i)
             .pens(f, render_clip_fn, f.a.r)
             #.f(1)
             .xa()
