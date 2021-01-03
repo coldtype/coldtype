@@ -5,11 +5,11 @@
         {
           "text": "*He",
           "start": 3,
-          "end": 6
+          "end": 7
         },
         {
           "text": "+l",
-          "start": 6,
+          "start": 7,
           "end": 8
         },
         {
@@ -18,18 +18,8 @@
           "end": 20
         },
         {
-          "text": "≈Wo",
+          "text": "≈Worl",
           "start": 20,
-          "end": 22
-        },
-        {
-          "text": "+r",
-          "start": 22,
-          "end": 23
-        },
-        {
-          "text": "+l",
-          "start": 23,
           "end": 32
         },
         {
@@ -40,16 +30,11 @@
         {
           "text": "+!",
           "start": 39,
-          "end": 41
+          "end": 40
         },
         {
-          "text": "*Thi",
+          "text": "*This",
           "start": 58,
-          "end": 60
-        },
-        {
-          "text": "+s",
-          "start": 60,
           "end": 66
         },
         {
@@ -63,44 +48,14 @@
           "end": 91
         },
         {
-          "text": "≈C",
+          "text": "≈Cold",
           "start": 91,
-          "end": 92
-        },
-        {
-          "text": "+o",
-          "start": 92,
           "end": 94
         },
         {
-          "text": "+l",
+          "text": "+type.",
           "start": 94,
-          "end": 97
-        },
-        {
-          "text": "+d",
-          "start": 97,
-          "end": 99
-        },
-        {
-          "text": "+t",
-          "start": 99,
-          "end": 101
-        },
-        {
-          "text": "+y",
-          "start": 101,
-          "end": 105
-        },
-        {
-          "text": "+p",
-          "start": 105,
-          "end": 106
-        },
-        {
-          "text": "+e.",
-          "start": 106,
-          "end": 121
+          "end": 117
         }
       ]
     }

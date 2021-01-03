@@ -35,9 +35,13 @@ class Subtitler(Sequence):
             if next_clip:
                 if clip["end"] > next_clip["start"]:
                     clip["end"] = next_clip["start"]
+        self.overwrite_clips(clips, self.workarea_track)
     
     def clips(self, tidx):
-        return self.data["tracks"][tidx]["clips"]
+        clips = self.data["tracks"][tidx]["clips"]
+        for cidx, c in enumerate(clips):
+            c["idx"] = cidx
+        return clips
     
     def remove_clip_at_frame(self, fi, tidx):
         clips = self.clips(tidx)
@@ -74,4 +78,91 @@ class Subtitler(Sequence):
         for c in clips:
             if c["start"] <= fi:
                 c["end"] = fi
+        self.overwrite_clips(clips, self.workarea_track)
+
+    def closest(self, fi, direction, clips):
+        cs = self.clips(self.workarea_track)
+        closest = []
+        closest_cut = 5000
+        closest_frame = None
+
+        for c in cs:
+            if direction < 0:
+                sc = fi - c["start"]
+                ec = fi - c["end"]
+            elif direction > 0:
+                sc = c["start"] - fi
+                ec = c["end"] - fi
+            
+            if sc >= 0 and sc < closest_cut:
+                closest_cut = sc
+                closest_frame = c["start"]
+            if ec >= 0 and ec < closest_cut:
+                closest_cut = ec
+                closest_frame = c["end"]
+        
+        for c in cs:
+            if c["start"] == closest_frame:
+                closest.append(["start", c["idx"]])
+            elif c["end"] == closest_frame:
+                closest.append(["end", c["idx"]])
+        
+        return closest_frame == fi, closest
+    
+    def prev_and_next(self, fi):
+        clips = self.clips(self.workarea_track)
+        curr_clip = None
+        next_clip = None
+        prev_clip = None
+        
+        for cidx, clip in enumerate(clips):
+            if curr_clip and not next_clip:
+                if clip["start"] > fi:
+                    next_clip = clip
+            
+            if clip["end"] <= fi:
+                prev_clip = clip
+            
+            if clip["start"] <= fi < clip["end"]:
+                curr_clip = clip
+        
+        return prev_clip, curr_clip, next_clip, clips
+
+    def current(self, fi, tidx):
+        clips = self.clips(tidx)
+        for clip in clips:
+            if clip["start"] <= fi < clip["end"]:
+                return clip, clips
+    
+    def prev(self, clip, clips):
+        for cidx, c in enumerate(clips):
+            if c == clip:
+                try:
+                    return clips[cidx-1]
+                except IndexError:
+                    return None
+    
+    def next(self, clip, clips):
+        for cidx, c in enumerate(clips):
+            if c == clip:
+                try:
+                    return clips[cidx+1]
+                except IndexError:
+                    return None
+
+    def next_to_playhead(self, fi):
+        p, n, clips = self.prev_and_next(fi)
+        if p:
+            p["end"] = fi
+        if n:
+            n["start"] = fi
+        self.overwrite_clips(clips, self.workarea_track)
+
+    def prev_to_playhead(self, fi):
+        #p, n, clips = self.prev_and_next(fi)
+        #if p:
+        #    p["end"] = fi
+            #pp = self.prev(p, clips)
+            #if pp:
+
         self.overwrite_clips(clips, self.workarea_track)
