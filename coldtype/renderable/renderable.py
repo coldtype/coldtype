@@ -25,6 +25,7 @@ class Keylayer(Enum):
 
 class Overlay(Enum):
     Info = "info"
+    Timeline = "timeline"
 
 class Action(Enum):
     Initial = "initial"

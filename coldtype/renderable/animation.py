@@ -109,7 +109,7 @@ class animation(renderable, Timeable):
     
     def runpost(self, result, render_pass, renderer_state):
         res = super().runpost(result, render_pass, renderer_state)
-        if renderer_state.overlays.get(Overlay.Info):
+        if Overlay.Info in renderer_state.overlays:
             t = self.rect.take(50, "mxy")
             frame:Frame = render_pass.args[0]
             wave = DATPen()
@@ -123,7 +123,7 @@ class animation(renderable, Timeable):
                 wave,
                 res,
                 DATPen().rect(t).f(bw(0, 0.75)),
-                DATText(str(frame.i), Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10))
+                DATText(f"{frame.i} / {self.duration}", Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10))
             ])
         return res
     

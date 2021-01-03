@@ -36,6 +36,7 @@ class KeyboardShortcut(Enum):
     KeylayerCmd = "keylayer_command"
     KeylayerText = "keylayer_text"
     OverlayInfo = "overlay_info"
+    OverlayTimeline = "overlay_timeline"
 
     PreviewScaleDown = "preview_scale_down"
     PreviewScaleUp = "preview_scale_up"
@@ -89,11 +90,11 @@ SHORTCUTS = {
     
     KeyboardShortcut.PlayRendered: [
         [[glfw.MOD_SHIFT], glfw.KEY_SPACE],
-        [[glfw.MOD_SHIFT], glfw.KEY_K]
+        #[[glfw.MOD_SHIFT], glfw.KEY_K]
     ],
     KeyboardShortcut.PlayPreview: [
         [[], glfw.KEY_SPACE],
-        [[], glfw.KEY_K]
+        #[[], glfw.KEY_K]
     ],
     KeyboardShortcut.PlayAudioFrame: [
         [[], glfw.KEY_H]
@@ -124,20 +125,23 @@ SHORTCUTS = {
     ],
 
     KeyboardShortcut.SetWorkareaIn: [
-        [[], glfw.KEY_I]
+        [[glfw.MOD_SUPER], glfw.KEY_I]
     ],
     KeyboardShortcut.SetWorkareaOut: [
-        [[], glfw.KEY_O]
+        [[glfw.MOD_SUPER], glfw.KEY_O]
     ],
 
     KeyboardShortcut.JumpPrev: [
-        [[], glfw.KEY_UP]
+        [[], glfw.KEY_UP],
+        [[], glfw.KEY_I]
     ],
     KeyboardShortcut.JumpNext: [
-        [[], glfw.KEY_DOWN]
+        [[], glfw.KEY_DOWN],
+        [[], glfw.KEY_K]
     ],
     KeyboardShortcut.JumpHome: [
-        [[], glfw.KEY_HOME]
+        [[], glfw.KEY_HOME],
+        [[glfw.MOD_SHIFT], glfw.KEY_H]
     ],
     KeyboardShortcut.JumpEnd: [
         [[], glfw.KEY_END]
@@ -158,6 +162,9 @@ SHORTCUTS = {
 
     KeyboardShortcut.OverlayInfo: [
         [[], glfw.KEY_SLASH]
+    ],
+    KeyboardShortcut.OverlayTimeline: [
+        [[glfw.MOD_SUPER], glfw.KEY_T]
     ],
 
     KeyboardShortcut.PreviewScaleUp: [

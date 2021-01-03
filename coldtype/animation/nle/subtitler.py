@@ -1,11 +1,27 @@
 import json
 from pathlib import Path
 from coldtype.animation.sequence import Sequence, ClipTrack, Clip
+from coldtype.animation.audio import Wavfile
+from coldtype.text import Style, StyledString
+from coldtype.pens.datpen import DATPen, DATPenSet
+from coldtype.pens.dattext import DATText
+from coldtype.geometry import Rect
+from coldtype.color import hsl, bw
+from coldtype.renderable.animation import animation
+from coldtype.renderable import Overlay
+
 
 class Subtitler(Sequence):
-    def __init__(self, path, duration, fps=30, storyboard=[0]):
+    def __init__(self, path, audio_path, duration=None, fps=30, storyboard=[0]):
         self.path = Path(path).expanduser().absolute()
         self.path.parent.mkdir(exist_ok=True, parents=True)
+        
+        self.audio_path = Path(audio_path).expanduser().absolute()
+        self.wavfile = Wavfile(self.audio_path)
+
+        if duration is None:
+            duration = self.wavfile.framelength
+        
         try:
             self.data = json.loads(self.path.read_text())
         except (FileNotFoundError, json.JSONDecodeError):
@@ -21,11 +37,9 @@ class Subtitler(Sequence):
         super().__init__(duration, fps, storyboard, tracks)
     
     def persist(self):
-        self.conform()
         self.path.write_text(json.dumps(self.data, indent=2, ensure_ascii=False), encoding="utf-8")
     
-    def conform(self):
-        clips = self.data["tracks"][self.workarea_track]["clips"]
+    def conform(self, clips):
         clips = sorted(clips, key=lambda c: c["start"])
         for cidx, clip in enumerate(clips):
             try:
@@ -35,58 +49,49 @@ class Subtitler(Sequence):
             if next_clip:
                 if clip["end"] > next_clip["start"]:
                     clip["end"] = next_clip["start"]
-        self.overwrite_clips(clips, self.workarea_track)
+        return clips
     
-    def clips(self, tidx):
-        clips = self.data["tracks"][tidx]["clips"]
+    def clips(self):
+        clips = self.data["tracks"][self.workarea_track]["clips"]
         for cidx, c in enumerate(clips):
             c["idx"] = cidx
         return clips
     
-    def remove_clip_at_frame(self, fi, tidx):
-        clips = self.clips(tidx)
-        clips = [c for c in clips if c["start"] != fi]
-        return sorted(clips, key=lambda c: c["start"])
+    def remove_clip_at_frame(self, fi, clips):
+        return [c for c in clips if c["start"] != fi]
     
-    def overwrite_clips(self, clips, tidx):
-        self.data["tracks"][tidx]["clips"] = clips
+    def overwrite_clips(self, clips):
+        self.data["tracks"][self.workarea_track]["clips"] = self.conform(clips)
+        self.persist()
     
-    def delete_clip(self, fi):
-        clips = self.remove_clip_at_frame(fi, self.workarea_track)
-        self.overwrite_clips(clips, self.workarea_track)
+    def delete_clip(self, fi, clips):
+        clips = self.remove_clip_at_frame(fi, clips)
+        self.overwrite_clips(clips)
     
-    def add_clip(self, fi, text):
-        clips = self.remove_clip_at_frame(fi, self.workarea_track)
+    def add_clip(self, fi, text, clips):
+        clips = self.remove_clip_at_frame(fi, clips)
+        _, matches = self.closest(fi, +1, clips)
         end = None
-        for cidx, c in enumerate(clips):
-            if c["start"] > fi:
-                end = c["start"]
+        for (pos, cidx) in matches:
+            if pos == "start":
+                end = clips[cidx]["start"]
         if end is None:
             end = self.duration
         clips.append(dict(text=text, start=fi, end=end))
-        self.overwrite_clips(clips, self.workarea_track)
+        self.overwrite_clips(clips)
     
-    def cut_clip(self, fi):
-        clips = self.clips(self.workarea_track)
-        for c in clips:
-            if c["start"] <= fi < c["end"]:
-                c["end"] = fi
-        self.overwrite_clips(clips, self.workarea_track)
-    
-    def extend_clip(self, fi):
-        clips = self.clips(self.workarea_track)
-        for c in clips:
-            if c["start"] <= fi:
-                c["end"] = fi
-        self.overwrite_clips(clips, self.workarea_track)
+    def cut_clip(self, fi, clips):
+        cidx = self.current_clip_idx(fi, clips)
+        if cidx > -1:
+            clips[cidx]["end"] = fi
+        self.overwrite_clips(clips)
 
-    def closest(self, fi, direction, clips):
-        cs = self.clips(self.workarea_track)
+    def closest(self, fi, direction, clips, ignore_on=False):
         closest = []
         closest_cut = 5000
         closest_frame = None
 
-        for c in cs:
+        for c in clips:
             if direction < 0:
                 sc = fi - c["start"]
                 ec = fi - c["end"]
@@ -95,74 +100,138 @@ class Subtitler(Sequence):
                 ec = c["end"] - fi
             
             if sc >= 0 and sc < closest_cut:
-                closest_cut = sc
-                closest_frame = c["start"]
+                if sc == 0 and ignore_on:
+                    pass
+                else:
+                    closest_cut = sc
+                    closest_frame = c["start"]
             if ec >= 0 and ec < closest_cut:
-                closest_cut = ec
-                closest_frame = c["end"]
+                if ec == 0 and ignore_on:
+                    pass
+                else:
+                    closest_cut = ec
+                    closest_frame = c["end"]
         
-        for c in cs:
+        for c in clips:
             if c["start"] == closest_frame:
                 closest.append(["start", c["idx"]])
             elif c["end"] == closest_frame:
                 closest.append(["end", c["idx"]])
         
+        if not ignore_on:
+            if closest_frame == fi and len(closest) == 1:
+                print("HERE")
+                return self.closest(fi, direction, clips, ignore_on=True)
+        
         return closest_frame == fi, closest
     
-    def prev_and_next(self, fi):
-        clips = self.clips(self.workarea_track)
-        curr_clip = None
-        next_clip = None
-        prev_clip = None
+    def closest_to_playhead(self, fi, which, clips):
+        on_cut, matches = self.closest(fi, which, clips)
+        if not on_cut:
+            for (pos, cidx) in matches:
+                clips[cidx][pos] = fi
+        self.overwrite_clips(clips)
+    
+    # def prev_and_next(self, fi):
+    #     clips = self.clips(self.workarea_track)
+    #     curr_clip = None
+    #     next_clip = None
+    #     prev_clip = None
         
-        for cidx, clip in enumerate(clips):
-            if curr_clip and not next_clip:
-                if clip["start"] > fi:
-                    next_clip = clip
+    #     for cidx, clip in enumerate(clips):
+    #         if curr_clip and not next_clip:
+    #             if clip["start"] > fi:
+    #                 next_clip = clip
             
-            if clip["end"] <= fi:
-                prev_clip = clip
+    #         if clip["end"] <= fi:
+    #             prev_clip = clip
             
-            if clip["start"] <= fi < clip["end"]:
-                curr_clip = clip
+    #         if clip["start"] <= fi < clip["end"]:
+    #             curr_clip = clip
         
-        return prev_clip, curr_clip, next_clip, clips
+    #     return prev_clip, curr_clip, next_clip, clips
 
-    def current(self, fi, tidx):
-        clips = self.clips(tidx)
+    def current_clip_idx(self, fi, clips):
         for clip in clips:
             if clip["start"] <= fi < clip["end"]:
-                return clip, clips
+                return clip["idx"]
+        return -1
     
-    def prev(self, clip, clips):
-        for cidx, c in enumerate(clips):
-            if c == clip:
-                try:
-                    return clips[cidx-1]
-                except IndexError:
-                    return None
+    # def prev(self, clip, clips):
+    #     for cidx, c in enumerate(clips):
+    #         if c == clip:
+    #             try:
+    #                 return clips[cidx-1]
+    #             except IndexError:
+    #                 return None
     
-    def next(self, clip, clips):
-        for cidx, c in enumerate(clips):
-            if c == clip:
-                try:
-                    return clips[cidx+1]
-                except IndexError:
-                    return None
+    # def next(self, clip, clips):
+    #     for cidx, c in enumerate(clips):
+    #         if c == clip:
+    #             try:
+    #                 return clips[cidx+1]
+    #             except IndexError:
+    #                 return None
 
-    def next_to_playhead(self, fi):
-        p, n, clips = self.prev_and_next(fi)
-        if p:
-            p["end"] = fi
-        if n:
-            n["start"] = fi
-        self.overwrite_clips(clips, self.workarea_track)
+    def process_state(self, rs, fi, clips=None):
+        if not clips:
+            clips = self.clips()
 
-    def prev_to_playhead(self, fi):
-        #p, n, clips = self.prev_and_next(fi)
-        #if p:
-        #    p["end"] = fi
-            #pp = self.prev(p, clips)
-            #if pp:
+        if rs.text:
+            self.add_clip(fi, rs.text, clips)
+        elif rs.cmd:
+            if rs.cmd == "d":
+                self.delete_clip(fi, clips)
+            elif rs.cmd == "c":
+                self.cut_clip(fi, clips)
+            elif rs.cmd == "p":
+                self.persist()
+            elif rs.cmd == "q":
+                #print(self.closest(fi, -1, clips))
+                self.closest_to_playhead(fi, -1, clips)
+            elif rs.cmd == "e":
+                #print(self.closest(fi, +1, clips))
+                self.closest_to_playhead(fi, +1, clips)
+    
+    def clip_timeline(self, fi, far, sw=30, sh=50, font_name=None):
+        seq = DATPenSet()
 
-        self.overwrite_clips(clips, self.workarea_track)
+        seq += (DATPen()
+            .rect(Rect(0, 0, (self.duration * sw), sh)).f(bw(0.5, 0.35)))
+
+        for tidx, t in enumerate(self.tracks):
+            for cgidx, cg in enumerate(t.clip_groups):
+                for cidx, c in enumerate(cg.clips):
+                    r = Rect(c.start*sw, sh*tidx, (c.duration*sw)-2, sh)
+                    seq.append(DATPenSet([
+                        (DATPen()
+                            .rect(r)
+                            .f(hsl(cgidx*0.4, 0.6).lighter(0.2))),
+                        (DATText(c.input_text,
+                            Style(font_name, 24, load_font=0, fill=bw(0)),
+                            r.inset(2, 5)))]))
+
+        on_cut = fi in self.jumps()
+
+        seq.translate(far.w/2 - fi*sw, 10)
+
+        seq.append(DATPen()
+            .rect(far.take(sh+20, "mny").take(6 if on_cut else 2, "mdx"))
+            .f(hsl(0.9, 1) if on_cut else hsl(0.8, 0.5)))
+        
+        return seq
+
+
+class lyric_editor(animation):
+    def __init__(self, timeline:Subtitler, rect=(1080, 1080), data_font="Times", **kwargs):
+        self.data_font = data_font
+        super().__init__(rect=rect, timeline=timeline, audio=timeline.audio_path, rstate=1, watch=[timeline.path], **kwargs)
+
+    def runpost(self, res, rp, rs):
+        res = super().runpost(res, rp, rs)
+        f:Frame = rp.args[0]
+        if Overlay.Timeline in rs.overlays:
+            self.timeline.process_state(rs, f.i)
+            seq = self.timeline.clip_timeline(f.i, f.a.r, font_name=self.data_font)
+            return DATPenSet([res, seq])
+        return res

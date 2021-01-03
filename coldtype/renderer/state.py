@@ -350,3 +350,11 @@ class RendererState():
         self.watch_mods = {}
         self.watch_soft_mods = {}
         #self.mouse = None
+    
+    def toggle_overlay(self, overlay):
+        v = not self.overlays.get(overlay, False)
+        if not v:
+            if overlay in self.overlays:
+                del self.overlays[overlay]
+        else:
+            self.overlays[overlay] = True

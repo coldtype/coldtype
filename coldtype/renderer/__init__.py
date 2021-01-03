@@ -604,7 +604,7 @@ class Renderer():
                             self.state.callback = None
 
                         if not result and not render.direct_draw:
-                            print(">>> No result")
+                            #print(">>> No result")
                             result = DATPen().rect(render.rect).f(None)
 
                         if previewing:
@@ -1172,7 +1172,9 @@ class Renderer():
             self.state.keylayer_shifting = True
         
         elif shortcut == KeyboardShortcut.OverlayInfo:
-            self.state.overlays[Overlay.Info] = not self.state.overlays.get(Overlay.Info, False)
+            self.state.toggle_overlay(Overlay.Info)
+        elif shortcut == KeyboardShortcut.OverlayTimeline:
+            self.state.toggle_overlay(Overlay.Timeline)
         
         elif shortcut == KeyboardShortcut.PreviewScaleUp:
             self.state.mod_preview_scale(+0.1)
