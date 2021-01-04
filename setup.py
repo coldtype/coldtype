@@ -60,10 +60,12 @@ setuptools.setup(
         "more-itertools",
         "docutils",
         "exdown",
+        "srt",
+        "timecode",
         #"rtmidi",
         #"pynput",
-        "srt",
-        "timecode"
+        #"pyaudio",
+        
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
