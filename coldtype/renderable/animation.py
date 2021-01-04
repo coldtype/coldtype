@@ -35,20 +35,19 @@ class animation(renderable, Timeable):
         self.start = 0
         self.end = duration
         
-        #self.duration = duration
         self.storyboard = storyboard
         if timeline:
             self.timeline = timeline
             self.t = timeline
             self.start = timeline.start
             self.end = timeline.end
-            #self.duration = timeline.duration
+            
             if self.storyboard != [0] and timeline.storyboard == [0]:
                 pass
             else:
                 self.storyboard = timeline.storyboard.copy()
         else:
-            self.timeline = Timeline(30)
+            self.timeline = Timeline(duration)
     
     def __call__(self, func):
         res = super().__call__(func)
@@ -235,6 +234,7 @@ class FFMPEGExport():
         self.output_path = self.folder / f"{self.a.name}{d}.{self.fmt}"
 
         self.args.append(self.output_path)
+        print(self.args)
         run(self.args)
 
         print(">", self.output_path)

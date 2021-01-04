@@ -9,6 +9,7 @@ Timeline.find_workarea = find_workarea
 
 @animation(rect=(1920, 1080), timeline=tl, bg=0)
 def render(f):
+    print(render.duration)
     pe = f.a.t.progress(f.i, loops=1, easefn="qeio").e
     return DATPenSet([
         (StyledString(chr(65+f.i),
