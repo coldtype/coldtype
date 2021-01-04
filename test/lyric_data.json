@@ -1,0 +1,79 @@
+{
+  "workarea_track": 0,
+  "tracks": [
+    {
+      "clips": [
+        {
+          "text": "*He",
+          "start": 3,
+          "end": 9,
+          "idx": 0,
+          "tidx": 0
+        },
+        {
+          "text": "+llo",
+          "start": 9,
+          "end": 20,
+          "idx": 1
+        },
+        {
+          "text": "≈Worl",
+          "start": 20,
+          "end": 32,
+          "idx": 2,
+          "tidx": 0
+        },
+        {
+          "text": "+d",
+          "start": 32,
+          "end": 39,
+          "idx": 3,
+          "tidx": 0
+        },
+        {
+          "text": "+!",
+          "start": 39,
+          "end": 41,
+          "idx": 4,
+          "tidx": 0
+        },
+        {
+          "text": "*This",
+          "start": 58,
+          "end": 66,
+          "idx": 5,
+          "tidx": 0
+        },
+        {
+          "text": "is",
+          "start": 66,
+          "end": 90,
+          "idx": 6
+        },
+        {
+          "text": "≈Cold",
+          "start": 90,
+          "end": 100,
+          "idx": 7,
+          "tidx": 0
+        },
+        {
+          "text": "+type",
+          "start": 100,
+          "end": 117,
+          "idx": 8
+        }
+      ]
+    },
+    {
+      "clips": [
+        {
+          "text": "stylized",
+          "start": 90,
+          "end": 117,
+          "idx": 0
+        }
+      ]
+    }
+  ]
+}

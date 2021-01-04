@@ -11,7 +11,7 @@ recmono = Font.Cacheable("assets/RecMono-CasualItalic.ttf")
 def render(f):
     def render_clip_fn(f, idx, clip, ftext):
         if "coldtype" in clip.styles:
-            style = clip.styleMatching("coldtype")
+            style = clip.style_matching("coldtype")
             e = style.progress(f.i, easefn="eei").e
             return ftext.upper(), Style(co, 200, wdth=0.5, tu=-150+e*150, rotate=e*360)
         if ftext == "!":
@@ -30,7 +30,7 @@ def render(f):
         if "coldtype" in clip.styles:
             pen.f(hsl(0.57, s=0.6, l=0.6)).understroke(sw=10)
     
-    if zoom := cg.styleMatching("zoom"):
+    if zoom := cg.style_matching("zoom"):
         e = zoom.progress(f.i, easefn="eei").e
         pens.scale(1+pow(e, 2)*150, center=f.a.r.point("C").offset(0, 51))
     

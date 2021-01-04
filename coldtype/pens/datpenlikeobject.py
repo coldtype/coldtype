@@ -16,6 +16,9 @@ from coldtype.color import normalize_color
 import coldtype.pens.drawbot_utils as dbu
 
 
+from noise import pnoise1
+
+
 class DATPenLikeObject():
     _context = None
     _pen_class = None
@@ -150,6 +153,13 @@ class DATPenLikeObject():
             return self.attr(image=dict(src=src, rect=rect, pattern=pattern, opacity=opacity))
         else:
             return self.attr(field="image")
+    
+    def img_opacity(self, opacity, key="default"):
+        img = self.attr(key, "image")
+        if not img:
+            raise Exception("No image found")
+        self.attrs[key]["image"]["opacity"] = opacity
+        return self
     
     image = img
 

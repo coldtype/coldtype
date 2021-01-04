@@ -56,12 +56,14 @@ setuptools.setup(
         "PyOpenGL",
         "PyOpenGL-accelerate",
         "glfw",
-        "SimpleWebSocketServer",
+        #"SimpleWebSocketServer",
         "more-itertools",
         "docutils",
         "exdown",
         #"rtmidi",
         #"pynput",
+        "srt",
+        "timecode"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

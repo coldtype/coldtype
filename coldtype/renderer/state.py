@@ -1,7 +1,7 @@
 from enum import Enum
 from pathlib import Path
 import json, glfw, skia, re
-from coldtype import hsl, Action, Keylayer, Point, Rect, DATPen
+from coldtype import hsl, Action, Keylayer, Point, Rect, DATPen, Overlay
 
 
 class RendererStateEncoder(json.JSONEncoder):
@@ -44,10 +44,12 @@ class RendererState():
         self.keylayer_shifting = False
         self.keylayer = Keylayer.Default
         self.keybuffer = []
+        self.overlays = {}
         #self.needs_display = 0
         self.request = None
         self.callback = None
         self.cmd = None
+        self.text = ""
         self.arrow = None
         self.mods = Mods()
         self.mouse_history = None
@@ -56,7 +58,8 @@ class RendererState():
         self.xray = True
         self.selection = [0]
         self.zoom = 1
-        self.frame_index_offset = 0
+        self._frame_offsets = {}
+        self._initial_frame_offsets = {}
         self.canvas = None
         self._last_filepath = None
         self.watch_soft_mods = {}
@@ -126,6 +129,13 @@ class RendererState():
                     if new_mouse.x != self.mouse.x and new_mouse.y != self.mouse.y:
                         return Action.PreviewStoryboard
     
+    def mod_preview_scale(self, inc, absolute=0):
+        if absolute > 0:
+            ps = absolute
+        else:
+            ps = self.preview_scale + inc
+        self.preview_scale = max(0.1, min(5, ps))
+    
     def shape_selection(self):
         # TODO could be an arbitrary lasso-style thing?
         if self.mouse_history:
@@ -161,9 +171,10 @@ class RendererState():
     
     def on_character(self, codepoint):
         cc = chr(codepoint)
-        if self.keylayer == Keylayer.Cmd:
+        if self.keylayer == Keylayer.Cmd or self.keylayer == Keylayer.Text:
             self.keybuffer.append(cc)
             return Action.PreviewStoryboard
+        
         elif self.keylayer == Keylayer.Editing:
             if cc == "f":
                 return
@@ -187,7 +198,10 @@ class RendererState():
         
         if key == glfw.KEY_ENTER:
             cmd = "".join(self.keybuffer)
-            self.cmd = cmd
+            if self.keylayer == Keylayer.Cmd:
+                self.cmd = cmd
+            elif self.keylayer == Keylayer.Text:
+                self.text = cmd
             self.keybuffer = []
             #print(">>> KB-CMD:", cmd)
             if mods & glfw.MOD_SUPER:
@@ -251,9 +265,37 @@ class RendererState():
     
     def draw_keylayer(self, canvas, rect, typeface):
         canvas.save()
+
         if self.keylayer == Keylayer.Cmd:
-            canvas.drawRect(skia.Rect.MakeXYWH(0, rect.h-50, rect.w, 50), skia.Paint(AntiAlias=True, Color=hsl(0.9, l=0.25, a=0.85).skia()))
-            canvas.drawString("".join(self.keybuffer), 10, rect.h-14, skia.Font(typeface, 30), skia.Paint(AntiAlias=True, Color=skia.ColorWHITE))
+            canvas.drawRect(
+                skia.Rect.MakeXYWH(0, rect.h-50, rect.w, 50),
+                skia.Paint(
+                    AntiAlias=True,
+                    Color=hsl(0.9, l=0.25, a=0.85).skia()))
+            canvas.drawString(
+                "".join(self.keybuffer),
+                10,
+                rect.h-14,
+                skia.Font(typeface, 30),
+                skia.Paint(
+                    AntiAlias=True,
+                    Color=skia.ColorWHITE))
+        
+        elif self.keylayer == Keylayer.Text:
+            canvas.drawRect(
+                skia.Rect.MakeXYWH(0, 0, rect.w, 50),
+                skia.Paint(
+                    AntiAlias=True,
+                    Color=hsl(0.7, l=0.25, a=0.85).skia()))
+            canvas.drawString(
+                "".join(self.keybuffer),
+                10,
+                34,
+                skia.Font(typeface, 30),
+                skia.Paint(
+                    AntiAlias=True,
+                    Color=skia.ColorWHITE))
+        
         elif self.keylayer == Keylayer.Editing:
             canvas.drawRect(skia.Rect(0, 0, 50, 50), skia.Paint(AntiAlias=True, Color=hsl(0.95, l=0.5, a=0.75).skia()))
         canvas.restore()
@@ -272,10 +314,47 @@ class RendererState():
         else:
             print("invalid")
     
+    def add_frame_offset(self, key, offset):
+        if key in self._frame_offsets:
+            offsets = self._frame_offsets[key]
+            initials = self._initial_frame_offsets[key]
+            offsets.append(offset)
+            initials.append(offset)
+        else:
+            self._frame_offsets[key] = [offset]
+            self._initial_frame_offsets[key] = [offset]
+    
+    def get_frame_offsets(self, key):
+        return self._frame_offsets.get(key, [0])
+    
+    def adjust_all_frame_offsets(self, adj, absolute=False):
+        if absolute:
+            for k, v in self._frame_offsets.items():
+                for i, o in enumerate(v):
+                    v[i] = adj
+        else:
+            for k, v in self._frame_offsets.items():
+                for i, o in enumerate(v):
+                    v[i] = o + adj
+    
+    def adjust_keyed_frame_offsets(self, key, fn):
+        offs = self.get_frame_offsets(key)
+        for i, o in enumerate(offs):
+            offs[i] = fn(i, o)
+    
     def reset_keystate(self):
         self.cmd = None
+        self.text = ""
         self.arrow = None
         self.mods.reset()
         self.watch_mods = {}
         self.watch_soft_mods = {}
         #self.mouse = None
+    
+    def toggle_overlay(self, overlay):
+        v = not self.overlays.get(overlay, False)
+        if not v:
+            if overlay in self.overlays:
+                del self.overlays[overlay]
+        else:
+            self.overlays[overlay] = True

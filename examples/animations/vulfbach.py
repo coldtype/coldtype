@@ -45,8 +45,10 @@ def build_line():
 
 line = build_line()
 
-@animation(duration=organ.duration, rect=r, storyboard=[50])
+@animation(duration=organ.duration, rect=r, storyboard=[50], audio=Path("examples/animations/media/organ.wav"))
 def render(f):
+    render.play_audio_frame(f.i)
+
     looped_line = DATPenSet([
         line.copy().translate(-f.i*note_width+r.w-note_width*3-organ.duration*note_width, 0),
         line.copy().translate(-f.i*note_width+r.w-note_width*3, 0)

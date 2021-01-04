@@ -484,6 +484,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
         sp = glyph.getPen()
         self.replay(sp)
         return glyph
+    
+    def collapse(self):
+        """For compatibility with calls to a DATPenSet"""
+        return DATPenSet([self])
 
     def flatten(self, length=10):
         """
@@ -513,44 +517,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
             dp.catmull(_pts, close=True)
         self.value = dp.value
         return self
-    
-    def pixellate(self, rect, increment=50, inset=0):
-        """WIP"""
-        x = -200
-        y = -200
-        dp = DATPen()
-        while x < 1000:
-            while y < 1000:
-                #print(x, y)
-                pen = PointInsidePen(None, (x, y))
-                self.replay(pen)
-                isInside = pen.getResult()
-                if isInside:
-                    dp.rect(Rect(x, y, increment, increment).inset(inset))
-                y += increment
-            x += increment
-            y = -200
-        self.value = dp.value
-        return self
-    
-    def scanlines(self, rect, sample=40, width=20, threshold=10):
-        """WIP"""
-        dp = DATPen()
-        for y in range(min(-300, rect.y), max(1000, rect.h), sample): # 500 should be calc'ed from box right?
-            mp = MarginPen(None, y, isHorizontal=True)
-            self.replay(mp)
-            xs = mp.getAll()
-            if len(xs) > 1:
-                for i in range(0, len(xs), 2):
-                    try:
-                        x1 = xs[i]
-                        x2 = xs[i+1]
-                        if abs(x2 - x1) > threshold:
-                            dp.line([(x1, y), (x2, y)])
-                    except:
-                        pass
-        self.value = dp.value
-        return self.outline(width)
     
     def roughen(self, amplitude=10, threshold=10, ignore_ends=False):
         """Randomizes points in skeleton"""
@@ -717,11 +683,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.roundedRect(rect, 0.5, 0.5)
         return self
     
-    def circle(self, r, ext):
-        qr = r.w/4
-        n, e, s, w = r.cardinals()
-        return self.moveTo(n).curveTo(n.offset(-qr-ext, 0), w.offset(0, qr+ext), w).curveTo(w.offset(0, -qr-ext), s.offset(-qr-ext, 0), s).curveTo(s.offset(qr+ext, 0), e.offset(0, -qr-ext), e).curveTo(e.offset(0, qr+ext), n.offset(qr+ext, 0), n).closePath()
-    
     def semicircle(self, r, center, fext=0.5, rext=0.5):
         """
         Not really a semicircle
@@ -853,8 +814,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 parse_path(path.get("d"), tp)
         return self
     
-    def explode(self, into_set=False):
-        """Read each contour into its own DATPen (or DATPenSet if `into_set` is True); returns a DATPenSet"""
+    def explode(self):
+        """Read each contour into its own DATPen; returns a DATPenSet"""
         dp = RecordingPen()
         ep = ExplodingPen(dp)
         self.replay(ep)
@@ -863,10 +824,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
             dp = DATPen()
             dp.value = p
             dp.attrs = deepcopy(self.attrs)
-            if into_set:
-                dps.append(DATPenSet([dp]))
-            else:
-                dps.append(dp)
+            dps.append(dp)
         return dps
     
     def mod_contour(self, contour_index, mod_fn):
@@ -1077,14 +1035,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
             return None
 
 
-def DPR(r):
-    return DATPen().rect(r)
-
-def DPO(r):
-    return DATPen().oval(r)
-
-
-class DATPenSet(DATPenLikeObject):
+class DATPenSet(DATPen):
     """
     A set/collection of DATPen’s; behaves like a list
     """
@@ -1101,7 +1052,7 @@ class DATPenSet(DATPenLikeObject):
         self.data = {}
         self.visible = True
 
-        if isinstance(pens, DATPen) or isinstance(pens, DATPenSet):
+        if isinstance(pens, DATPen):
             self += pens
         else:
             for pen in pens:
@@ -1203,7 +1154,7 @@ class DATPenSet(DATPenLikeObject):
         return self
     
     def extend(self, pens):
-        if isinstance(pens, DATPenSet):
+        if hasattr(pens, "pens"):
             self.append(pens)
         else:
             for p in pens:
@@ -1282,6 +1233,47 @@ class DATPenSet(DATPenLikeObject):
                 dp.attr(tag=k, **attrs)
         dp.addFrame(self.getFrame())
         return dp
+
+    # Pen Primitives
+
+    def moveTo(self, p0):
+        self._in_progress_pen = DATPen()
+        self._in_progress_pen.moveTo(p0)
+        return self
+    
+    def lineTo(self, p1):
+        self._in_progress_pen.lineTo(p1)
+        return self
+    
+    def qCurveTo(self, *points):
+        self._in_progress_pen.qCurveTo(*points)
+        return self
+    
+    def curveTo(self, *points):
+        self._in_progress_pen.curveTo(*points)
+        return self
+    
+    def closePath(self):
+        self._in_progress_pen.closePath()
+        self.append(self._in_progress_pen)
+        self._in_progress_pen = None
+        return self
+    
+    def endPath(self):
+        self._in_progress_pen.endPath()
+        self.append(self._in_progress_pen)
+        self._in_progress_pen = None
+        return self
+    
+    def record(self, pen):
+        """Alias for append"""
+        return self.append(pen)
+    
+    def explode(self):
+        """Noop on a set"""
+        return self
+    
+    # Overrides
     
     def attr(self, key="default", field=None, **kwargs):
         if field: # getting, not setting, kind of weird to return the first value?
@@ -1548,7 +1540,7 @@ class DATPenSet(DATPenLikeObject):
         """Provide a callback-lambda to interleave new DATPens between the existing ones; useful for stroke-ing glyphs, since the stroked glyphs can be placed behind the primary filled glyphs."""
         pens = []
         for idx, p in enumerate(self.pens):
-            if recursive and isinstance(p, DATPenSet):
+            if recursive and hasattr(p, "pens"):
                 _p = p.interleave(style_fn, direction=direction, recursive=True)
                 pens.append(_p)
             else:
@@ -1556,7 +1548,7 @@ class DATPenSet(DATPenLikeObject):
                     np = style_fn(idx, p.copy())
                 except TypeError:
                     np = style_fn(p.copy())
-                if isinstance(np, DATPen) or isinstance(np, DATPenSet):
+                if isinstance(np, DATPen):
                     np = [np]
                 if direction < 0:
                     pens.extend(np)
@@ -1596,6 +1588,7 @@ class DATPenSet(DATPenLikeObject):
             #self.append(overlaps.copy().f(0, 1, 0, 0.1))
 
     def overlapPair(self, gn1, gn2, which, outline=3):
+        print(">>>", gn1, gn2)
         for idx, dp in enumerate(self):
             if dp.glyphName == gn2:
                 try:
@@ -1605,11 +1598,3 @@ class DATPenSet(DATPenLikeObject):
                 except IndexError:
                     pass
         return self
-    
-    def overlapPairs(self, pairs, outline=3):
-        for pair, which in pairs.items():
-            self.overlapPair(pair[0], pair[1], which, outline=outline)
-        return self
-    
-    def Glyphs(ufo, glyphNames):
-        return DATPenSet([DATPen().glyph(ufo.layers["public.default"][gn]) for gn in glyphNames]).distribute()

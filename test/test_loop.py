@@ -10,7 +10,7 @@ states = [
 
 loop = Loop(120, len(states), 8)
 
-@animation(timeline=loop, storyboard=[110], bg=0)
+@animation(timeline=loop, storyboard=[0, 15], bg=0)
 def render(f):
     state = f.a.t.current_phase(f.i).calc_state(states)
     return (StyledString("COLD",

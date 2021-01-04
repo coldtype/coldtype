@@ -20,7 +20,7 @@ def logo(r, rs):
             .sw(2)
             .phototype(r, blur=10, cut=23, cutw=5)),
         (Composer(r, "COLD\nTYPE",
-            Style(obv, 500, wdth=0.5, tu=-50, r=1),
+            Style(obv, 500, wdth=0.5, tu=-50, r=1, kp={"P/E":-100}),
             leading=15)
             .pens()
             .index(0, lambda p: p.translate(-10, 0))

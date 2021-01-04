@@ -1,8 +1,12 @@
 import math
 import os.path
 import numpy as np
-import soundfile as sf
+try:
+    import soundfile as sf
+except:
+    sf = None
 
+from coldtype.pens.datpen import DATPen
 
 class Wavfile():
     def __init__(self, path, fps=30):
@@ -33,3 +37,17 @@ class Wavfile():
 
     def amp(self, i):
         return np.average(np.fabs(self.samples_for_frame(i)))
+    
+    def frame_waveform(self, fi, r, inc=1, pen=None):
+        wave = pen or DATPen()
+        samples = self.samples_for_frame(fi)[::inc]
+        ww = r.w/len(samples)
+        wh = r.h
+        for idx, w in enumerate(samples):
+            if idx == 0:
+                wave.moveTo((r.x, w[0]*wh))
+            else:
+                wave.lineTo((idx*ww, w[0]*wh))
+        wave.endPath()
+        wave.f(None).s(1).sw(2)
+        return wave

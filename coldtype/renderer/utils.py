@@ -4,9 +4,9 @@ import ast, threading
 from enum import Enum
 from pathlib import Path
 
-from coldtype.viewer import WEBSOCKET_PORT
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
 
+WEBSOCKET_PORT = 8007
 
 class Watchable(Enum):
     Source = "Source"

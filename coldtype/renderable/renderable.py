@@ -21,6 +21,11 @@ class Keylayer(Enum):
     Default = 0
     Cmd = 1
     Editing = 2
+    Text = 3
+
+class Overlay(Enum):
+    Info = "info"
+    Timeline = "timeline"
 
 class Action(Enum):
     Initial = "initial"
@@ -41,9 +46,6 @@ class Action(Enum):
     RenderedPlay = "rendered_play"
     ArbitraryTyping = "arbitrary_typing"
     ArbitraryCommand = "arbitrary_command"
-    SaveControllers = "save_controllers"
-    ClearControllers = "clear_controllers"
-    ResetControllers = "reset_controllers"
     RestartRenderer = "restart_renderer"
     ToggleMultiplex = "toggle_multiplex"
     Kill = "kill"
@@ -173,7 +175,7 @@ class renderable():
         else:
             return render_pass.fn(*render_pass.args)
     
-    def runpost(self, result, render_pass):
+    def runpost(self, result, render_pass, renderer_state):
         if self.postfn:
             return self.postfn(self, result)
         else:
@@ -194,6 +196,8 @@ class renderable():
     def normalize_result(self, pens):
         if not pens:
             return DATPenSet()
+        elif hasattr(pens, "pens"):
+            return pens
         elif isinstance(pens, DATPen):
             return DATPenSet([pens])
         elif isinstance(pens, DATText):
