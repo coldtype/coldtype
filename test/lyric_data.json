@@ -1,5 +1,5 @@
 {
-  "workarea_track": 1,
+  "workarea_track": 0,
   "tracks": [
     {
       "clips": [
@@ -39,7 +39,7 @@
         },
         {
           "text": "*This",
-          "start": 57,
+          "start": 58,
           "end": 66,
           "idx": 5,
           "tidx": 0
