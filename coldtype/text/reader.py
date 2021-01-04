@@ -699,7 +699,7 @@ class StyledString(FittableMixin):
 
     def pens(self, frame=True) -> DATPenSet:
         """
-        Vectorize text into a ``DATPenSet``, such that each glyph (or ligature) is represented by a single `DATPen` (or a ``DATPenSet`` in the case of a color font, which will then nest `DATPen`s for each layer of that color glyph)
+        Vectorize text into a ``DATPenSet``, such that each glyph (or ligature) is represented by a single `DATPen` (or a ``DATPenSet`` in the case of a color font, which will then nest a `DATPen` for each layer of that color glyph)
         """
         self.resetGlyphRun()
         self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
