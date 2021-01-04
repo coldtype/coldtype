@@ -42,7 +42,13 @@ def listit(t):
 
 
 class DATPen(RecordingPen, DATPenLikeObject):
+    """
+    Main vector representation in Coldtype
+    
+    DATPen is a subclass of fontTools ``RecordingPen``
+    """
     def __init__(self, **kwargs):
+        """**kwargs support is deprecated, should not accept any arguments"""
         super().__init__()
         self.single_pen_class = DATPen
         self._current_attr_tag = "default"
@@ -502,7 +508,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
         return self
     
     def addSmoothPoints(self, length=100):
-        """WIP"""
         rp = RecordingPen()
         fp = SmoothPointsPen(rp)
         self.replay(fp)
@@ -615,7 +620,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
         return self
     
     def pattern(self, rect, clip=False):
-        """WIP — maybe not long for this earth"""
         dp_copy = DATPen()
         dp_copy.value = self.value
 
@@ -741,7 +745,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
         return self
     
     def quadratic(self, a, b, c, lineTo=False):
-        """WIP"""
         a, b, c = [p.xy() if isinstance(p, Point) else p for p in [a, b, c]]
         dp = DATPen()
         if lineTo:
@@ -1037,7 +1040,9 @@ class DATPen(RecordingPen, DATPenLikeObject):
 
 class DATPenSet(DATPen):
     """
-    A set/collection of DATPen’s; behaves like a list
+    A set/collection of DATPen’s
+    
+    Behaves like a list but can be queried somewhat like a DOM
     """
     def __init__(self, pens=[]):
         self.single_pen_class = DATPen

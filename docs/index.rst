@@ -52,7 +52,7 @@ Table of Contents
    cheatsheet
    tutorials/index
    blog/index
-   :: api/index
+   api/index
 
 .. toctree::
    :maxdepth: 2

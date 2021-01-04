@@ -166,15 +166,26 @@ class Slug(SegmentedString):
 
 
 class Composer():
-    def __init__(self, rect, text, style, leading=10, fit=None):
+    """
+    For multiline text lockups
+    """
+    def __init__(self, rect:Rect, text:str, style:Style, leading=10, fit=None):
         lockups = Slug.LineSlugs(text, style)
         self.rect = rect
         self.graf = Graf(lockups, self.rect, leading=leading)
         if fit is not None:
             self.graf.fit(fit)
     
-    def pens(self):
+    def pens(self) -> DATPenSet:
+        """
+        Structured representation of the multi-line text
+        
+        In the return ``DATPenSet``, each line will be a ``DATPenSet``, then within those lines, each glyph/ligature for that line will be an individual ``DATPen``
+        """
         return self.graf.pens()
     
-    def pen(self):
+    def pen(self) -> DATPen:
+        """
+        Entire multiline text as a single vector
+        """
         return self.graf.pens().pen()

@@ -37,7 +37,7 @@ extensions = [
     'ablog',
 ]
 
-autosummary_generate = True
+autosummary_generate = False
 add_module_names = False
 
 # Add any paths that contain templates here, relative to this directory.

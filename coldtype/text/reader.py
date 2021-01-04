@@ -15,6 +15,8 @@ from coldtype.color import normalize_color
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.geometry import Rect, Point
 
+from typing import Optional, Callable, Union
+
 try:
     from fontgoggles.font import getOpener
     from fontgoggles.font.baseFont import BaseFont
@@ -32,7 +34,7 @@ class FittableMixin():
         print("textContent() not overwritten")
 
     def fit(self, width):
-        """Use various methods (tracking, `wdth` axis, etc.) to fit a piece of text horizontally to a given `width`"""
+        """Use various methods (tracking, `wdth` axis, etc. — properties specified in the `Style` object) to fit a piece of text horizontally to a given `width` (warning: not very fast)"""
         if isinstance(width, Rect):
             width = width.w
         current_width = self.width()
@@ -104,56 +106,70 @@ class Font():
         return FontCache[path]
 
 class Style():
+    """
+    Class for configuring font properties
+
+    **Keyword arguments**
+
+    * ``font``: can either be a ``coldtype.text.Font`` object, a ``pathlib.Path``, or a plain string path
+    * ``fontSize``: standard point-based font-size, expressed as integer
+    * ``tracking`` (aka ``tu``): set the tracking, by default **in font-source-point-size** aka as if the font-size was always 1000; this means tracking is by default done relatively rather than absolutely (aka the relative tracking will not change when you change the fontSize)
+    * ``trackingMode``: set to 0 to set tracking in a classic fontSize-based (defaults to 1, as described just above)
+    * ``space``: set this to override the width of the standard space character (useful when setting text on a curve and the space is getting collapsed)
+    * ``baselineShift`` (aka ``bs``): if an integer, shifts glyphs by that amount in y axis; if a list, shifts glyphs at corresponding index in list by that amount in y axis
+    * ``xShift`` (aka ``xs``): if an integer, shifts glyphs by that amount in x axis; if a list, shifts glyphs at corresponding index in list by that amount in x axis
+    * ``rotate``: rotate glyphs by degree
+    * ``reverse`` (aka ``r``): reverse the order of the glyphs, so that the left-most glyph is first in when vectorized via ``.pens()``
+    * ``removeOverlaps`` (aka ``ro``): automatically use skia-pathops to remove overlaps from the glyphs (useful when using variable ttf fonts)
+    * ``lang``: set language directly, to access language-specific alternate characters/rules
+
+    **Shorthand kwargs**
+
+    * ``kp`` for ``kern_pairs`` — a dict of glyphName->[left,right] values in font-space
+    * ``tl`` for ``trackingLimit``
+    * ``bs`` for ``baselineShift``
+    * ``ch`` for ``capHeight`` — a number in font-space; not specified, read from font; specified as 'x', capHeight is set to xHeight as read from font
+    """
     def RegisterShorthandPrefix(prefix, expansion):
         global _prefixes
         _prefixes.append([prefix, str(expansion)])
 
     def __init__(self,
-            font=None,
-            fontSize=12,
-            fitHeight=None,
+            font:Union[Font, str]=None,
+            fontSize:int=12,            
             tracking=0,
-            trackingLimit=0,
             trackingMode=1,
             kern_pairs=dict(),
             space=None,
             baselineShift=0,
             xShift=None,
-            mods=None,
-            variations=dict(),
-            variationLimits=dict(),
-            increments=dict(),
-            features=dict(),
-            liga=True,
-            varyFontSize=False,
-            fill=(0, 0.5, 1),
-            stroke=None,
-            strokeWidth=0,
+            rotate=0,
+            reverse=False,
+            removeOverlap=False,
+            lang=None,
+            narrower=None,
+            include_blanks=False,
             palette=0,
             capHeight=None,
             data={},
-            latin=None, # temp
-            lang=None,
-            filter=None,
-            layerer=None,
-            preventHwid=False,
             layer=None,
-            reverse=False,
-            removeOverlap=False,
-            rotate=0,
-            sv=True,
-            narrower=None,
-            include_blanks=False,
-            load_font=True,
-            tag=None,
+            liga=True,
+            fill=(0, 0.5, 1),
+            stroke=None,
+            strokeWidth=0,
+            variations=dict(),
+            variationLimits=dict(),
+            trackingLimit=0,
+            scaleVariations=True,
+            mods=None,
+            features=dict(),
+            increments=dict(),
+            varyFontSize=False,
+            preventHwid=False,
+            fitHeight=None,
+            load_font=True, # should Coldtype attempt to load the font?
+            tag=None, # way to differentiate in __eq__
             **kwargs):
-        """
-        kern_pairs (kp) — a dict of glyphName->[left,right] values in font-space
-        tracking (t)
-        trackingLimit (tl)
-        baselineShift (bs)
-        capHeight (ch) — A number in font-space; not specified, read from font; specified as 'x', capHeight is set to xHeight as read from font
-        """
 
         self.input = locals()
         self.input["self"] = None
@@ -171,12 +187,11 @@ class Style():
 
         self.narrower = narrower
         self.layer = layer
-        self.layerer = layerer
         self.reverse = kwargs.get("r", reverse)
         self.removeOverlap = kwargs.get("ro", removeOverlap)
         self.rotate = rotate
         self.include_blanks = include_blanks
-        self.sv = sv # scale-variations
+        self.scaleVariations = scaleVariations
         self.tag = tag
 
         try:        
@@ -212,9 +227,7 @@ class Style():
         self.mods = mods
         self.palette = palette
         self.lang = lang
-        self.filter = filter
         self.data = data
-        self.latin = latin
         self.preventHwid = preventHwid
 
         if kwargs.get("tu"):
@@ -306,7 +319,7 @@ class Style():
             self.variationLimits[k] = v
     
     def normalizeVariations(self, variations):
-        scale = self.sv
+        scale = self.scaleVariations
         for k, v in variations.items():
             try:
                 axis = self.axes[k]
@@ -430,7 +443,10 @@ def offset(x, y, ox, oy):
 
 
 class StyledString(FittableMixin):
-    def __init__(self, text, style):
+    """
+    Lowest-level vectorized typesetting class
+    """
+    def __init__(self, text:str, style:Style):
         self.text_info = TextInfo(text)
         self.text = text
         self.setStyle(style)
@@ -682,6 +698,9 @@ class StyledString(FittableMixin):
         return dp
 
     def pens(self, frame=True) -> DATPenSet:
+        """
+        Vectorize text into a ``DATPenSet``, such that each glyph (or ligature) is represented by a single `DATPen` (or a ``DATPenSet`` in the case of a color font, which will then nest `DATPen`s for each layer of that color glyph)
+        """
         self.resetGlyphRun()
         self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
         
@@ -717,6 +736,9 @@ class StyledString(FittableMixin):
         return pens
 
     def pen(self, frame=True) -> DATPen:
+        """
+        Vectorize all text into single ``DATPen``
+        """
         return self.pens(frame=frame).pen()
 
 class SegmentedString(FittableMixin):
