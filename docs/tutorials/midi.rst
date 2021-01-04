@@ -58,7 +58,7 @@ The pertinent information there is the note number, 73. Now you can go back to ~
 
 Now if you run an animation (like ``coldtype examples/animations/house.py``), when you hit that same button on the Launch Control, it'll start a sequential render of all the frames in the animation.
 
-N.B. The actions defined in the ``"note_on"`` dict are completely optional, but it's a great way to control a Coldtype program given any state on your computer. That is, if you want to render all the frames of an animation while you have Premiere in the foreground of your application (rather than the coldtype viewer), you can just hit the key that corresponds to midi controller number 59.
+N.B. The actions defined in the ``"note_on"`` dict are completely optional, but it's a great way to control a Coldtype program without having to rely on app focus on on your computer. That is, if you want to render all the frames of an animation while you have Premiere or VS Code open in the foreground of your application (rather than the coldtype viewer), you can just hit the key that corresponds to midi controller number 73 (for example).
 
 **Faders**: Of course, triggering actions isn't the exciting use of a MIDI controller in Coldtype. The exciting thing is hooking up a knob or fader to a variable, meaning you can quickly and easily modify a design otherwise defined completely in code.
 
