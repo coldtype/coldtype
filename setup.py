@@ -56,7 +56,7 @@ setuptools.setup(
         "PyOpenGL",
         "PyOpenGL-accelerate",
         "glfw",
-        #"SimpleWebSocketServer",
+        "SimpleWebSocketServer",
         "more-itertools",
         "docutils",
         "exdown",
