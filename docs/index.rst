@@ -51,6 +51,7 @@ Table of Contents
    install
    cheatsheet
    tutorials/index
+   blog/index
    :: api/index
 
 .. toctree::

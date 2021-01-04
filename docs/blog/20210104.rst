@@ -1,0 +1,33 @@
+.. post:: 4 Jan, 2021
+    :tags: meta
+    :category: meta
+    :author: Rob Stenson
+    :location: Los Angeles
+
+The Coldtype Blog
+=================
+
+Welcome to the Coldtype blog! You may be wondering why an open-source typography/graphics library needs a blog, and the answer is... I thought it would be fun to write some un-structured stuff about this open-source typography/graphics library.
+
+After all, at this moment in the library's existence, given that I'm the only person that has used the library extensively (tho I know there are some people out there trying it out!), the library and its features are very closely related to my own interests. Well that's kind of obvious I guess — what I mean is, more generally, there are a ton of bizarre features in Coldtype (particularly related to animation) that come from my own experiences attempting to combine commercial animation software with Python code, or my own experiences trying to combine commercial type design software with Python code, or my experiences trying to design commercial audio plugins with Python code.
+
+So the plan for this blog is to shed some light on the motivation behind those bizarre features — and even if no one reads it, it'll be a nice thing for me to read in the future and think, `oh, right, that’s why I did that`.
+
+Anyway, to celebrate the founding of this blog, here is some code to generate the word Blog! using one of the greatest gnarliest fonts of all time, made even gnarlier with a little warping.
+
+.. code:: python
+
+    from coldtype import *
+    from coldtype.warping import warp_fn
+
+    @renderable((1000, 500))
+    def blog(r):
+        return (StyledString("Blog!",
+            Style("~/Type/fonts/fonts/_script/MistralD.otf", 350))
+            .pen()
+            .f(Gradient.Horizontal(r, hsl(0.7), hsl(0.9)))
+            .align(r)
+            .nlt(warp_fn(0, 0, 100, 100, mult=30)))
+
+.. image:: /_static/renders/20210104_blog.png
+    :width: 500

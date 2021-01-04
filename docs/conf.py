@@ -17,7 +17,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'coldtype'
-copyright = '2020, Rob Stenson, Goodhertz'
+copyright = '2021, Rob Stenson, Goodhertz'
 author = 'Rob Stenson, Goodhertz'
 
 # The full version, including alpha/beta/rc tags
@@ -34,6 +34,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
+    'ablog',
 ]
 
 autosummary_generate = True
@@ -66,7 +67,7 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 html_css_files = [
-    'custom.css?t=3',
+    'custom.css?t=5',
 ]
 
 html_context = {
