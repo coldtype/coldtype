@@ -76,6 +76,8 @@ A letter flying
 
 And here’s a little bit of code to generate gifs, using ffmpeg, which will need to be installed on your computer independently of coldtype (via something like `brew install ffmpeg`) (or you can, as described below, import the pngs as an image sequence into something like Premiere).
 
+To get this code to run, you want to trigger the ``Release`` KeyboardShortcut, by hitting `cmd+L` in the viewing app.
+
 .. code:: python
 
     def release(passes):
@@ -90,34 +92,9 @@ And here’s a little bit of code to generate gifs, using ffmpeg, which will nee
     :width: 125
     :class: add-border
 
-Animation Workflow
-------------------
-
-Once you've started a coldtype process for an animation, you can type in little mnemonics in the terminal window (not the viewer) to trigger different actions in the coldtype renderer.
-
-For instance, with the above process still running, try typing—
-
-.. code:: bash
-    
-    pf 10
-
-—and then hitting `enter` on your keyboard. This will show you a different frame (frame 10) of the animation. The `pf` command stands for (p)review (f)rame.
-
-You can type any number of frame indices here, to preview multiple frames at once, like so:
-
-.. code:: bash
-    
-    pf 3 5 7
-
-If you type in `a`, this will render-(a)ll, and should take a little while to complete, depending on how fast your computer is.
-
-.. code:: bash
-    
-    a
-
-Once you do an `a` command, jump to the viewer app and hit ``shift+space`` (i.e. the spacebar) to preview the animation in real time at the correct frame rate, using the cached frames.
-
 Jumping to Adobe
 ----------------
 
-While it is possible to complete an animation using nothing but code, I usually employ a program like Premiere or After Effects to both view and finish animations that I start in code, either to apply effects in After Effects, or to match the animation with music in Premiere. Because animations done in Coldtype are rendered to PNGs, you can import those easily in any video editing program. (In Premiere, just make sure to select the 0000 image, then select Options > Image Sequence when importing.)
+While it is possible to complete an animation using nothing but code (and in the near future this process will get easier), I usually employ a program like Premiere or After Effects to both view and finish animations that I start in code, either to apply effects in After Effects, or to match the animation with music in Premiere. Because animations done in Coldtype are rendered to PNGs, you can import those easily in any video editing program. (In Premiere, just make sure to select the 0000 image, then select Options > Image Sequence when importing.)
+
+To generate a full set of frames for a coldtype animation, hit the ``a`` key in the viewer app — once you do, you should see the command line prompt printing out a bunch of information about frames being rendered. (Also, once you do that, you can hit ``shift+space`` to preview the animation in real time at the correct frame rate, using the cached frames.)
