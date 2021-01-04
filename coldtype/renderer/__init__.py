@@ -559,8 +559,8 @@ class Renderer():
                 output_folder, prefix, fmt, passes = self.add_paths_to_passes(trigger, render, indices)
                 render.last_passes = passes
 
-                if trigger == Action.RenderAll:
-                    shutil.rmtree(output_folder, ignore_errors=True)
+                #if trigger == Action.RenderAll:
+                #    shutil.rmtree(output_folder, ignore_errors=True)
 
                 previewing = (trigger in [
                     Action.Initial,
