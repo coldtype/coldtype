@@ -92,9 +92,9 @@ To get this code to run, you want to trigger the ``Release`` KeyboardShortcut, b
     :width: 125
     :class: add-border
 
-Jumping to Adobe
-----------------
+Jumping to an NLE
+-----------------
 
-While it is possible to complete an animation using nothing but code (and in the near future this process will get easier), I usually employ a program like Premiere or After Effects to both view and finish animations that I start in code, either to apply effects in After Effects, or to match the animation with music in Premiere. Because animations done in Coldtype are rendered to PNGs, you can import those easily in any video editing program. (In Premiere, just make sure to select the 0000 image, then select Options > Image Sequence when importing.)
+While it is possible to complete an animation using nothing but code (and in the near future this process will get easier), I usually employ a program like Premiere, After Effects, or DaVinci Resolve to both view and finish animations that I start in code, either to apply effects in After Effects, or to match the animation with music in Premiere or Resolve. Because animations done in Coldtype are rendered to PNGs, you can import those easily in any video editing program. (In Premiere, just make sure to select the 0000 image, then select Options > Image Sequence when importing.)
 
 To generate a full set of frames for a coldtype animation, hit the ``a`` key in the viewer app — once you do, you should see the command line prompt printing out a bunch of information about frames being rendered. (Also, once you do that, you can hit ``shift+space`` to preview the animation in real time at the correct frame rate, using the cached frames.)
