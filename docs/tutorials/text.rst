@@ -133,7 +133,7 @@ This also means that sometimes it is very necessary to ``copy`` pens in order to
             .pens()
             .align(r)
             .f(1))
-        return DATPenSet([
+        return DATPens([
             pens.copy().translate(10, -10).f(0),
             pens.s(hsl(0.9)).sw(3)
         ])
@@ -153,7 +153,7 @@ I’ll admit the impact of the interesting dropshadow here is lessened somewhat 
             .pens()
             .align(r)
             .f(1))
-        return DATPenSet([
+        return DATPens([
             pens.copy().pen().castshadow(-45, 50).f(0),
             pens.s(hsl(0.9)).sw(3)
         ]).align(r, th=1, tv=1)
@@ -179,7 +179,7 @@ One additional refinement you may want to make in an example like this is that y
             .pens()
             .align(r)
             .f(1))
-        return DATPenSet([
+        return DATPens([
             (pens.copy()
                 .pmap(lambda i, p: (p
                     .outline(10)
@@ -207,7 +207,7 @@ Dang, you know I thought that example would just work, but it looks like there a
             .align(r)
             .f(1))
         
-        return DATPenSet([
+        return DATPens([
             (pens
                 .copy()
                 .pmap(lambda i, p:
@@ -239,7 +239,7 @@ Two suggestions to help you better understand code or find weird looks: try comm
             .pens()
             .align(r)
             .f(1))
-        return DATPenSet([
+        return DATPens([
             (pens.copy()
                 .pmap(lambda i, p: (p
                     .outline(10)
@@ -275,7 +275,7 @@ Multi-line Text
 Text-on-a-path
 --------------
 
-Once you convert a ``StyledString`` to a ``DATPenSet`` via ``.pens()``, you can use the DATPenSet’s ``distribute_on_path`` method to set the glyphs onto an arbitrary path.
+Once you convert a ``StyledString`` to a ``DATPens`` via ``.pens()``, you can use the DATPens’s ``distribute_on_path`` method to set the glyphs onto an arbitrary path.
 
 .. code:: python
 
@@ -292,7 +292,7 @@ Once you convert a ``StyledString`` to a ``DATPenSet`` via ``.pens()``, you can 
     :width: 500
     :class: add-border
 
-What if we want more text on the circle and we want it to fit automatically to the length of the curve on which it’s set — without overlapping? Before we convert the text to a ``DATPenSet`` (via ``.pens()``), we can employ the ``fit`` method on our ``StyledString`` to fit the text to the length of the curve that we'll end up setting the pens on.
+What if we want more text on the circle and we want it to fit automatically to the length of the curve on which it’s set — without overlapping? Before we convert the text to a ``DATPens`` (via ``.pens()``), we can employ the ``fit`` method on our ``StyledString`` to fit the text to the length of the curve that we'll end up setting the pens on.
 
 .. code:: python
 
@@ -313,7 +313,7 @@ What if we want more text on the circle and we want it to fit automatically to t
 
 One thing that’s weird about setting text on a curve is that, depending on the curve, it can exaggerate — or eliminate — spacing between letters. Sometimes that doesn’t really matter — in the case of this circle, because the curve only bends in one manner, the text is always extra spacey, which usually isn't a problem. But if we set the text on a sine-wave, the issue becomes more apparent, since the spacing is both expanded and compressed on the same curve, and when letters overlap excessively, they can get illegible quickly.
 
-Is there a solution? Probably many but the one I like a lot is the ``understroke`` method on the ``DATPenSet`` class, which interleaves a stroked version of each letter in a set (a technique popular in pulp/comic titling & the subsequent graffiti styles they inspired).
+Is there a solution? Probably many but the one I like a lot is the ``understroke`` method on the ``DATPens`` class, which interleaves a stroked version of each letter in a set (a technique popular in pulp/comic titling & the subsequent graffiti styles they inspired).
 
 Let’s see what that looks like.
 

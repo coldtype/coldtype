@@ -59,7 +59,7 @@ You can specify as many renderables in a source file as you’d like. So if you 
 
     @renderable((1440, 1080))
     def sample_text(r):
-        return DATPenSet([
+        return DATPens([
             DATPen().oval(r.inset(20)).f(hsl(random())),
             (StyledString("COLDTYPE",
                 Style("assets/ColdtypeObviously-VF.ttf", 500, wdth=0, tu=100, rotate=10))

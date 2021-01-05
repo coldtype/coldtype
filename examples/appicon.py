@@ -22,7 +22,7 @@ def appicon(r, size):
                 tu=tu, wdth=0.7, rotate=15,
                 kp={"P/E": (-150, 0)}, r=1)
         
-        return (DATPenSet([
+        return (DATPens([
             (StyledString("COLD", st(-70))
                 .pens()
                 .align(r.take(0.5, "mxy"))

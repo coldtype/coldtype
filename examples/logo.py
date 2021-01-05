@@ -11,7 +11,7 @@ obv = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 def logo(r, rs):
     nxl = LaunchControlXL(rs.midi)
     
-    return DATPenSet([
+    return DATPens([
         DATPen().rect(r).f(hsl(0.6, s=1, l=0.25)).f(0),
         (DATPen()
             .oval(r.inset(-20))

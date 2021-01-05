@@ -12,7 +12,7 @@ from coldtype.time.timeline import Timeline
 from coldtype.time.loop import Loop, LoopPhase
 
 from coldtype.text.reader import normalize_font_prefix, Font, Style
-from coldtype.pens.datpen import DATPen, DATPenSet
+from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.time.audio import Wavfile, sf
 from coldtype.geometry import Rect, Point
@@ -127,7 +127,7 @@ class animation(renderable, Timeable):
                     .translate(0, self.rect.h/2)
                     .s(1)
                     .sw(5))
-            return DATPenSet([
+            return DATPens([
                 wave,
                 res,
                 DATPen().rect(t).f(bw(0, 0.75)),
@@ -158,7 +158,7 @@ class animation(renderable, Timeable):
             else:
                 pngs = [p for i, p in enumerate(_pngs) if i in sl]
             
-            dps = DATPenSet()
+            dps = DATPens()
             dps += DATPen().rect(r).f(self.bg)
             for idx, g in enumerate(r.grid(columns=gx, rows=gy)):
                 if idx < len(pngs):

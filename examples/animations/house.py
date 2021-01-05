@@ -29,7 +29,7 @@ def render(f):
         p.mod_contour(1, lambda c: c.translate(70*cowbell, 0))
 
     r = f.a.r.inset(0, 150)
-    return DATPenSet([
+    return DATPens([
         cold_pens.align(r, y="maxy").understroke(sw=10),
         type_pens.align(r, y="miny").understroke(sw=10).translate(-15, 0)
     ]).rotate(5)

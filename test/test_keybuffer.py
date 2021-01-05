@@ -13,7 +13,7 @@ if not op.exists():
 @renderable(rstate=1)
 def test_kb(r, rs):
     p = pickle.load(open(op, "rb"))
-    out = DATPenSet([p])
+    out = DATPens([p])
 
     if rs.keylayer == Keylayer.Editing:
         pt_lookup = p.points_lookup()

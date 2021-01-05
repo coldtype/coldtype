@@ -75,10 +75,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
         return bool(len(self) > 0 or self.frame)
     
     def __add__(self, item):
-        return DATPenSet([self, item])
+        return DATPens([self, item])
     
     def __sub__(self, item):
-        return DATPenSet([self])
+        return DATPens([self])
     
     def to_code(self):
         t = None
@@ -119,7 +119,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         return self
     
     def ups(self):
-        dps = DATPenSet()
+        dps = DATPens()
         dps.append(self.copy())
         return dps
     
@@ -492,8 +492,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
         return glyph
     
     def collapse(self):
-        """For compatibility with calls to a DATPenSet"""
-        return DATPenSet([self])
+        """For compatibility with calls to a DATPens"""
+        return DATPens([self])
 
     def flatten(self, length=10):
         """
@@ -818,11 +818,11 @@ class DATPen(RecordingPen, DATPenLikeObject):
         return self
     
     def explode(self):
-        """Read each contour into its own DATPen; returns a DATPenSet"""
+        """Read each contour into its own DATPen; returns a DATPens"""
         dp = RecordingPen()
         ep = ExplodingPen(dp)
         self.replay(ep)
-        dps = DATPenSet()
+        dps = DATPens()
         for p in ep.pens:
             dp = DATPen()
             dp.value = p
@@ -842,13 +842,13 @@ class DATPen(RecordingPen, DATPenLikeObject):
         for idx, c in enumerate(exploded):
             if filter_fn(idx, c):
                 keep.append(c)
-        self.value = DATPenSet(keep).implode().value
+        self.value = DATPens(keep).implode().value
         return self
     
     def slicec(self, contour_slice):
-        self.value = DATPenSet(self.explode()[contour_slice]).implode().value
+        self.value = DATPens(self.explode()[contour_slice]).implode().value
         #print(exploded.pens[contour_slice])
-        #self.value = DATPenSet(exploded[contour_slice]).implode().value
+        #self.value = DATPens(exploded[contour_slice]).implode().value
         return self
     
     def openAndClosed(self):
@@ -1038,7 +1038,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
             return None
 
 
-class DATPenSet(DATPen):
+class DATPens(DATPen):
     """
     A set/collection of DATPen’s
     
@@ -1071,7 +1071,7 @@ class DATPenSet(DATPen):
         return len(self.pens)
     
     def to_code(self):
-        out = "(DATPenSet()"
+        out = "(DATPens()"
 
         t = None
         if self._tag and self._tag != "?":
@@ -1109,8 +1109,8 @@ class DATPenSet(DATPen):
     def copy(self, with_data=False):
         """Get a completely new copy of this whole set of pens,
         usually done so you can duplicate and further modify a
-        DATPenSet without mutating the original"""
-        dps = DATPenSet()
+        DATPens without mutating the original"""
+        dps = DATPens()
         for p in self.pens:
             dps.append(p.copy(with_data=with_data))
         return dps
@@ -1120,7 +1120,7 @@ class DATPenSet(DATPen):
     
     def indexed_subset(self, indices):
         """Take only the pens at the given indices"""
-        dps = DATPenSet()
+        dps = DATPens()
         for idx, p in enumerate(self.pens):
             if idx in indices:
                 dps.append(p.copy())
@@ -1204,7 +1204,7 @@ class DATPenSet(DATPen):
         return self
     
     def getFrame(self, th=False, tv=False):
-        """Get the frame of the DATPenSet;
+        """Get the frame of the DATPens;
         `th` means `(t)rue (h)orizontal`;
         `ty` means `(t)rue (v)ertical`;
         passing either ignores a non-bounds-derived frame
@@ -1221,7 +1221,7 @@ class DATPenSet(DATPen):
                 return Rect(0,0,0,0)
     
     def bounds(self):
-        """Calculated bounds of a DATPenSet"""
+        """Calculated bounds of a DATPens"""
         return self.getFrame(th=1, tv=1)
     
     def replay(self, pen):
@@ -1344,7 +1344,7 @@ class DATPenSet(DATPen):
     
     def filter(self, fn: Callable[[int, DATPen], bool]):
         """Filter top-level pen(s)"""
-        dps = DATPenSet()
+        dps = DATPens()
         for idx, p in enumerate(self.pens):
             if fn(idx, p):
                 dps.append(p)
@@ -1404,7 +1404,7 @@ class DATPenSet(DATPen):
             return None
     
     def mfilter(self, fn):
-        """Same as `filter` but (m)utates this DATPenSet
+        """Same as `filter` but (m)utates this DATPens
         to now have only the filtered pens"""
         self.pens = self.filter(fn)
         return self
@@ -1427,7 +1427,7 @@ class DATPenSet(DATPen):
                 pens.extend(p.collapse(levels=levels-1).pens)
             else:
                 pens.append(p)
-        dps = DATPenSet(pens)
+        dps = DATPens(pens)
         if self.layered:
             dps.layered = True
         if onself:
@@ -1442,7 +1442,7 @@ class DATPenSet(DATPen):
         """All the frames of all the pens"""
         if self.frame:
             return super().frameSet(th=th, tv=tv)
-        dps = DATPenSet()
+        dps = DATPens()
         for p in self.pens:
             if p.frame:
                 dps.append(p.frameSet(th=th, tv=tv))
@@ -1604,4 +1604,4 @@ class DATPenSet(DATPen):
                     pass
         return self
 
-DATPens = DATPenSet
+DATPenSet = DATPens

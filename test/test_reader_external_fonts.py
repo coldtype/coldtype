@@ -3,7 +3,7 @@ from coldtype.test import *
 @test()
 def test_family_narrowing(r):
     style = Style("≈/nikolai/Nikolai-Bold.otf", 200, narrower=Style("≈/nikolai/Nikolai-NarrowBold.otf", 200, narrower=Style("≈/nikolai/Nikolai-CondBold.otf", 200)))
-    out = DATPenSet()
+    out = DATPens()
     rs = r.inset(0, 40).subdivide(3, "mxy")
     out += StyledString("Narrowing", style).pens().align(rs[0])
     out += StyledString("Narrowing", style).fit(r.w-100).pens().align(rs[1])
@@ -27,7 +27,7 @@ def test_emoji(r):
 
 @test()
 def test_color_font(r):
-    out = DATPenSet()
+    out = DATPens()
     for x in reversed(range(0, 6)):
         out += StyledString("COLDTYPE", Style("≈/PappardelleParty-VF.ttf", 550, palette=x)).pens().translate(x*10, x*10)
     return out.align(r)

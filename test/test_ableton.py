@@ -44,7 +44,7 @@ def ableton(f):
     
     sdp.pmap(lambda i,p: p.flatten(5).nonlinear_transform(warp2))
     
-    return DATPenSet([
+    return DATPens([
         dp("KICK", ["36"], [5, 25], 0.9),
         dp("RIMSHOT", ["39"], [3, 20], 0.0),
         dp("SNARE", ["40", "41"], [5, 20], 0.6),

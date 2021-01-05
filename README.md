@@ -19,7 +19,7 @@ def render(r):
     c1 = hsl(0.65, 0.7)
     c2 = hsl(0.53, 0.6)
 
-    return DATPenSet([
+    return DATPens([
         (DATPen()
             .rect(r.inset(10))
             .outline(10)

@@ -5,7 +5,7 @@ co2 = Font("assets/ColdtypeObviously.designspace")
 
 @renderable()
 def hello(r):
-    return DATPenSet([
+    return DATPens([
         (StyledString("COLD",
             Style(co1, 1000, wdth=1))
             .pens()

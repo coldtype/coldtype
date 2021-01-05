@@ -18,7 +18,7 @@ def render_snake(f, fi):
     track.scaleToRect(f.a.r).align(f.a.r, th=1, tv=1).translate(0, -20).f(None).s(1).sw(1).scale(1.15)
     t = track.copy()
     track.repeat(3)#.scale(1.15)
-    dps:DATPenSet = ds(at1.e, at2.e)
+    dps:DATPens = ds(at1.e, at2.e)
 
     minw = ds(0, 0).getFrame(th=1).point("SE").x
     maxw = ds(1, 1).getFrame(th=1).point("SE").x
@@ -43,9 +43,9 @@ def render(f):
         _, zero = render_snake(f, 0)
     track, now = render_snake(f, f.i)
     bg = hsl(0, l=0.97)
-    return DATPenSet([
+    return DATPens([
         DATPen().rect(f.a.r).f(bg),
-        DATPenSet([
+        DATPens([
             zero.f(hsl(0.1, l=0.8)) if test else DATPen(),
             track.f(None).s(hsl(0.65, l=0.9)).sw(15).translate(0, -8),
             now.f(hsl(0.9, l=0.6, s=0.7))#.understroke(s=bg, sw=5),

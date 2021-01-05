@@ -1,6 +1,6 @@
 import re
 
-from coldtype.pens.datpen import DATPen, DATPenSet
+from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.text.composer import Graf, GrafStyle, Lockup
 from coldtype.text.reader import StyledString, Style
 from coldtype.color import hsl
@@ -23,7 +23,7 @@ Very experimental module to support rich-text from annotated strings, like a sup
 """
 
 
-class RichText(DATPenSet):
+class RichText(DATPens):
     def __init__(self,
         rect,
         text,
@@ -180,7 +180,7 @@ class RichText(DATPenSet):
             lockups.append(lockup)
         graf = Graf(lockups, rect, graf_style)
         pens = graf.pens()#.align(rect, x="minx")
-        group_pens = DATPenSet()
+        group_pens = DATPens()
 
         pens.reversePens()
         for line in pens:

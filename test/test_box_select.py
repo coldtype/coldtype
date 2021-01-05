@@ -2,7 +2,7 @@ from coldtype.test import *
 
 @test((1000, 1000), rstate=1)
 def test_rect(r, rs):
-    out = DATPenSet()
+    out = DATPens()
     out += (DATPen()
         .oval(r.inset(50))
         .f(0.8))
@@ -19,7 +19,7 @@ polygons = [] # in-process save-cache
 
 @test((1000, 1000), rstate=1)
 def test_polygon(r, rs):
-    out = DATPenSet()
+    out = DATPens()
     oval = (DATPen()
         .oval(r.inset(150))
         .f(None)

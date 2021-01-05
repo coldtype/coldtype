@@ -7,7 +7,7 @@ from coldtype.midi.controllers import LaunchControlXL
 @renderable((1000, 1000), rstate=1)
 def phototype_shift(r, rs):
     nxl = LaunchControlXL(rs.midi)
-    return DATPenSet([
+    return DATPens([
         (DATPen()
             .oval(r.inset(150))
             .f(1)

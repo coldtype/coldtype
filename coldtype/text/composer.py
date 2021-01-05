@@ -1,4 +1,4 @@
-from coldtype.pens.datpen import DATPen, DATPenSet
+from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.geometry import Rect, Point
 
 from coldtype.text.shaper import segment
@@ -60,7 +60,7 @@ class Graf():
     
     def pens(self, align=False):
         rects = self.lineRects()
-        pens = DATPenSet()
+        pens = DATPens()
         for idx, l in enumerate(self.lines):
             r = rects[idx]
             dps = l.pens().translate(r.x, r.y) # r.x
@@ -121,7 +121,7 @@ class Lockup(FittableMixin):
                 x_off += s.strings[-1].tracking
             except:
                 pass
-        return DATPenSet(pens)
+        return DATPens(pens)
     
     def pen(self):
         return self.pens().pen()
@@ -176,11 +176,11 @@ class Composer():
         if fit is not None:
             self.graf.fit(fit)
     
-    def pens(self) -> DATPenSet:
+    def pens(self) -> DATPens:
         """
         Structured representation of the multi-line text
         
-        In the return ``DATPenSet``, each line will be a ``DATPenSet``, then within those lines, each glyph/ligature for that line will be an individual ``DATPen``
+        In the return ``DATPens``, each line will be a ``DATPens``, then within those lines, each glyph/ligature for that line will be an individual ``DATPen``
         """
         return self.graf.pens()
     

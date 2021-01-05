@@ -5,7 +5,7 @@ img = Path("test/renders/test_skia_image_is_image.png")
 
 @renderable(rect=(1000, 1000))
 def uses_image(r):
-    return DATPenSet([
+    return DATPens([
         DATPen().oval(r.inset(10)).f(hsl(0.5, l=0.5)),
         (DATPen()
             .oval(r.inset(20))
@@ -18,7 +18,7 @@ def uses_image(r):
 
 @renderable(rect=(250, 250))
 def is_image(r):
-    return DATPenSet([
+    return DATPens([
         DATPen().oval(r.inset(5)).f(hsl(random())),
         (StyledString("COLDTYPE",
             Style(co, 100, tu=50, ro=1, r=1, rotate=15, wdth=0))
@@ -30,7 +30,7 @@ def is_image(r):
 
 @renderable(rect=(500, 500))
 def uses_shadow(r):
-    return DATPenSet([
+    return DATPens([
         (DATPen()
             .rect(r.inset(100))
             .rotate(45)

@@ -7,7 +7,7 @@ r = (700, 300)
 
 @renderable(r, watch_soft=[TXT])
 def stub(r):
-    return (DATPenSet([
+    return (DATPens([
         (DATPen()
             .rect(r.inset(15))
             .f(hsl(0.75, 1, 0.3))),

@@ -14,7 +14,7 @@ def stub(r, rs):
         .align(r)
         .f(0))
     
-    return DATPenSet([
+    return DATPens([
         DATPen().rect(r.inset(20)).f(0, 0.5).s(0).sw(5),
         rt.pen().f(0).translate(5, -5),
         rt.f(1)])

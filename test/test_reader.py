@@ -13,7 +13,7 @@ def test_fit(r):
 @test()
 def test_style_mod(r):
     style = Style(co, 250, wdth=1)
-    out = DATPenSet()
+    out = DATPens()
     out += StyledString("CLDTP", style).pen()
     out += StyledString("CLDTP", style.mod(wdth=0)).pen()
     return out.rp().distribute(v=1).track(10, v=1).align(r).f("hr", 0.5, 0.5)
@@ -22,7 +22,7 @@ def test_style_mod(r):
 @test()
 def test_fit_height(r):
     style = Style(co, 150, wdth=1)
-    out = DATPenSet()
+    out = DATPens()
     out += StyledString("CLDTP", style).pen()
     out += StyledString("CLDTP", style.mod(fitHeight=300)).pen()
     return out.rp().distribute(v=1).track(10, v=1).align(r).f("hr", 0.5, 0.5)
@@ -31,7 +31,7 @@ def test_fit_height(r):
 @test()
 def test_interp(r):
     count = 30
-    out = DATPenSet()
+    out = DATPens()
     for x in range(count):
         style = Style(co, 200, wdth=x/count, ro=1)
         out += StyledString("COLDTYPE", style).pens().f("random", 0.1).s(0, 0.1).sw(2).align(r).translate(0, x).rotate(x*0.5)

@@ -4,7 +4,7 @@ from coldtype.test import *
 def simple(f):
     e = f.a.progress(f.i, easefn="qeio", loops=1).e
     le = f.a.progress(f.i, easefn="linear", loops=3, cyclic=0).e
-    return DATPenSet([
+    return DATPens([
         #DATPen().rect(f.a.r).f(0, 0.25),
         (StyledString("WHOA",
             Style(mutator, 250, wdth=1-e, wght=e, ro=1))
@@ -20,7 +20,7 @@ def interpolation(f):
     e = f.a.progress(f.i, easefn="qeio", loops=1).e
     #le = f.a.progress(f.i, easefn="qeio", loops=2, cyclic=True).e
 
-    return (DATPenSet([
+    return (DATPens([
         DATPen().rect(f.a.r).f(1),
         interpolation.last_result.copy().translate(2, -2) if interpolation.last_result else None,
         (StyledString("C",

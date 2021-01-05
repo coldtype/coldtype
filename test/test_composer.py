@@ -29,7 +29,7 @@ def test_combine_slugs(r):
     line = DATPen().rect(Rect(100, 20))
     s2 = Slug("OY", Style(co, 300, wdth=0)).pens()
     shape = DATPen().oval(Rect(100, 100))
-    return DATPenSet([s1, line, s2, shape]).distribute().align(r)
+    return DATPens([s1, line, s2, shape]).distribute().align(r)
 
 
 try:
