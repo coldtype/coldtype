@@ -20,8 +20,8 @@ setuptools.setup(
     #package_dir={"": "coldtype"},
     packages=[
         "coldtype",
-        "coldtype.animation",
-        "coldtype.animation.nle",
+        "coldtype.time",
+        "coldtype.time.nle",
         "coldtype.color",
         "coldtype.midi",
         "coldtype.pens",

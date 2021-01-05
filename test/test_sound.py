@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.animation.audio import Wavfile
+from coldtype.time.audio import Wavfile
 
 audio = Wavfile(__sibling__("media/helloworld.wav"))
 audio = Wavfile(__sibling__("media/12272020.wav"))

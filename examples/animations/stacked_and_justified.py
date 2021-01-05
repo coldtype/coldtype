@@ -15,7 +15,7 @@ def render(f):
     justified = StyledString("JUSTIFIED",
         s.mod(fitHeight=c2.h, opsz=1-at.e)).fit(c2).pens()
 
-    return (DATPenSet([
+    return (DATPens([
             stacked_and.align(c1).trackToRect(c1, pullToEdges=1, r=1),
             justified.align(c2).trackToRect(c2, pullToEdges=1, r=1)
         ])

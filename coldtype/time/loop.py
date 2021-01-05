@@ -1,16 +1,27 @@
 import math
 from coldtype.helpers import loopidx, interp_dict
-from coldtype.animation.timeable import Timing, Timeable, TimeableSet
-from coldtype.animation.timeline import Timeline
+from coldtype.time.timeable import Timing, Timeable, TimeableSet
+from coldtype.time.timeline import Timeline
 
 
 class LoopPhase():
-    def __init__(self, is_transition, i, timeable):
+    """
+    Clip-like representation of a segment of a Loop, most likely retrieved from :meth:`~coldtype.time.loop.Loop.current_phase`
+
+    * Standard ``Timeable`` available as ``.t``
+    * ``.is_transition`` indicates if phase represents a transition
+    """
+    def __init__(self, is_transition:bool, i:int, timeable:Timeable):
         self.t = timeable
         self.i = i
         self.is_transition = is_transition
     
     def calc_state(self, states, e="eeio"):
+        """
+        Calculate progress of the loop phase, based on an easing fuction, ``e``
+
+        * ``e=`` takes a mnemonic as enumerated in :func:`coldtype.time.easing.ease`
+        """
         state = loopidx(states, self.t.index)
         if self.is_transition:
             next_state = loopidx(states, self.t.index+1)
@@ -20,6 +31,11 @@ class LoopPhase():
 
 
 class Loop(Timeline):
+    """
+    Construct for quickly developing animations based on loop
+    
+    Can be used as a ``timeline=`` for an ``@animation``
+    """
     def __init__(self, duration, segment_count, transition_length, loop=1, fps=30, storyboard=[0]):
         self.timeables = []
         self.transitions = []
@@ -84,5 +100,8 @@ class Loop(Timeline):
         is_transition, timeable = self.current(i)
         return is_transition, i, timeable
     
-    def current_phase(self, i):
+    def current_phase(self, i) -> LoopPhase:
+        """
+        Get current phase of the Loop as a ``LoopPhase``
+        """
         return LoopPhase(*self.current_on_loop(i))

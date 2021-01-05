@@ -9,7 +9,7 @@ def varfont(r):
             .pens()
             #.removeOverlap()
             )
-    dps = (DATPenSet([dp])
+    dps = (DATPens([dp])
         .pen()
         .removeOverlap()
         )

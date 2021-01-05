@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.animation.nle.ableton import AbletonReader, AbletonMIDITrack, save_test_xml, AbletonAudioTrack
+from coldtype.time.nle.ableton import AbletonReader, AbletonMIDITrack, save_test_xml, AbletonAudioTrack
 from coldtype.warping import warp_fn
 from random import randint
 
@@ -44,7 +44,7 @@ def ableton(f):
     
     sdp.pmap(lambda i,p: p.flatten(5).nonlinear_transform(warp2))
     
-    return DATPenSet([
+    return DATPens([
         dp("KICK", ["36"], [5, 25], 0.9),
         dp("RIMSHOT", ["39"], [3, 20], 0.0),
         dp("SNARE", ["40", "41"], [5, 20], 0.6),

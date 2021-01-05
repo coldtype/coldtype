@@ -7,7 +7,7 @@ from pathlib import Path
 from coldtype.geometry import Rect, Point
 from coldtype.color import normalize_color
 from coldtype.text.reader import normalize_font_prefix, Font
-from coldtype.pens.datpen import DATPen, DATPenSet
+from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.pens.skiapen import SkiaPen
 
@@ -198,15 +198,15 @@ class renderable():
     
     def normalize_result(self, pens):
         if not pens:
-            return DATPenSet()
+            return DATPens()
         elif hasattr(pens, "pens"):
             return pens
         elif isinstance(pens, DATPen):
-            return DATPenSet([pens])
+            return DATPens([pens])
         elif isinstance(pens, DATText):
-            return DATPenSet([pens])
-        elif not isinstance(pens, DATPenSet):
-            return DATPenSet(pens)
+            return DATPens([pens])
+        elif not isinstance(pens, DATPens):
+            return DATPens(pens)
         else:
             return pens
 

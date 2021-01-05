@@ -1,7 +1,7 @@
-﻿coldtype.pens.datpen.DATPenSet
+﻿coldtype.pens.datpen.DATPens
 ==============================
 
 .. currentmodule:: coldtype.pens.datpen
 
-.. autoclass:: DATPenSet
+.. autoclass:: DATPens
     :members:

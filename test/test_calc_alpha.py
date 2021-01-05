@@ -2,8 +2,8 @@ from coldtype import *
 
 @renderable()
 def nested_alpha(r):
-    dps = DATPenSet([
-        DATPenSet([
+    dps = DATPens([
+        DATPens([
             DATPen().oval(r.inset(50)).f(0).a(0.5)
         ]).a(0.5),
     ]).a(0.5)

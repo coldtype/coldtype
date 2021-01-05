@@ -2,7 +2,7 @@ from coldtype.test import *
 
 @test()
 def empty(r):
-    return DATPenSet([
+    return DATPens([
         DATPen(),
         #123
     ])

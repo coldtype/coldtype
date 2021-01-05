@@ -5,7 +5,7 @@ tmp_angle = 0 # "tmp" b/c it will be set back to 0 when the program restarts
 
 @test((1000, 1000), rstate=1)
 def test_select(r, rs):
-    dps = DATPenSet()
+    dps = DATPens()
     txts = "COLDTYPE"
     selection = None
 

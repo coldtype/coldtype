@@ -1,15 +1,15 @@
 import re, math, copy
 from enum import Enum
 
-from coldtype.animation import Timeable, Frame
-from coldtype.animation.easing import ease
-from coldtype.animation.timeline import Timeline
+from coldtype.time import Timeable, Frame
+from coldtype.time.easing import ease
+from coldtype.time.timeline import Timeline
 
-from coldtype.text import StyledString, Lockup, Graf, GrafStyle
-from coldtype.pens.datpen import DATPen, DATPenSet
+from coldtype.text import StyledString, Lockup, Graf, GrafStyle, Style
+from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.color import *
 
-from typing import Optional, Union, Callable
+from typing import Optional, Union, Callable, Tuple
 
 
 class Marker(Timeable):
@@ -196,7 +196,7 @@ class Clip(Timeable):
         return "<Clip:({:s}/{:04d}/{:04d}\"{:s}\")>".format([" -1", "NOW", " +1"][self.position+1], self.start, self.end, self.text)
 
 
-class ClipGroupPens(DATPenSet):
+class ClipGroupPens(DATPens):
     def __init__(self, clip_group):
         super().__init__()
         self.cg = clip_group
@@ -420,7 +420,17 @@ class ClipGroup(Timeable):
             txt += c.text
         return txt
     
-    def pens(self, f, render_clip_fn, rect=None, graf_style=GrafStyle(leading=20), fit=None, ignore_newlines=False) -> ClipGroupPens:
+    def pens(self,
+        f,
+        render_clip_fn:Callable[[Frame, int, Clip, str], Tuple[str, Style]],
+        rect=None,
+        graf_style=GrafStyle(leading=20),
+        fit=None,
+        ignore_newlines=False,
+        removeOverlap=False) -> ClipGroupPens:
+        """
+        render_clip_fn: frame, line index, clip, clip text — you must return a tuple of text to render and the Style to render it with
+        """
         if not rect:
             rect = f.a.r
         group_pens = ClipGroupPens(self)
@@ -477,11 +487,11 @@ class ClipGroup(Timeable):
         graf = Graf(lockups, rect, graf_style)
         pens = graf.pens()#.align(rect, x="minx")
         
-        re_grouped = DATPenSet()
+        re_grouped = DATPens()
         for idx, line in enumerate(lines):
             #print(pens, idx, line[0].text)
             line_dps = pens[idx]
-            re_grouped_line = DATPenSet()
+            re_grouped_line = DATPens()
             re_grouped_line.tag("line")
             position = 1
             line_text = ""
@@ -496,21 +506,21 @@ class ClipGroup(Timeable):
                     elif clip.position == -1:
                         position = -1
                     line_text += clip.ftext()
-                    clip_dps = DATPenSet(group_dps[tidx:tidx+len(text)])
+                    clip_dps = DATPens(group_dps[tidx:tidx+len(text)])
                     clip_dps.tag("clip")
                     clip_dps.data["clip"] = self.clips[cidx]
                     clip_dps.data["line_index"] = idx
                     clip_dps.data["line"] = re_grouped_line
                     clip_dps.data["group"] = re_grouped
                     if clip.type == ClipType.JoinPrev and last_clip_dps:
-                        grouped_clip_dps = last_clip_dps #DATPenSet()
+                        grouped_clip_dps = last_clip_dps #DATPens()
                         #grouped_clip_dps.append(last_clip_dps)
                         #grouped_clip_dps.pens = last_clip_dps.pens
                         grouped_clip_dps.append(clip_dps)
                         #re_grouped_line[-1] = grouped_clip_dps
                         #last_clip_dps = grouped_clip_dps
                     else:
-                        last_clip_dps = DATPenSet()
+                        last_clip_dps = DATPens()
                         last_clip_dps.tag("slug")
                         last_clip_dps.append(clip_dps)
                         re_grouped_line.append(last_clip_dps)
@@ -523,8 +533,9 @@ class ClipGroup(Timeable):
         
         pens = re_grouped
         for pens in pens.pens:
-            for pen in pens.pens:
-                pen.removeOverlap()
+            if removeOverlap:
+                for pen in pens.pens:
+                    pen.removeOverlap()
             group_pens.append(pens)
         
         for clip, pen in group_pens.iterate_clips():

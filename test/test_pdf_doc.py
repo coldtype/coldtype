@@ -13,7 +13,7 @@ class pdfdoc(animation):
         pdf_path = filepath.parent / ("pdfs/" + filepath.stem + ".pdf")
         pdf_path.parent.mkdir(parents=True, exist_ok=True)
         pickles = list(sorted(self.output_folder.glob("*.pickle")))
-        pages = DATPenSet()
+        pages = DATPens()
         for pk in pickles:
             pages += pickle.load(open(pk, "rb"))
         SkiaPen.PDFMultiPage(pages, self.rect, str(pdf_path))

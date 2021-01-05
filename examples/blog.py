@@ -8,7 +8,7 @@ logos = raw_ufo("assets/logos.ufo")
 
 @renderable((1200, 600))
 def nameplate(r, fontSize=500, wdth=0.25, rotate=0):
-    return (DATPenSet([
+    return (DATPens([
         DATPen().rect(r).f(0),
         (StyledString("COLDTYPE",
             Style(obv, fontSize, wdth=wdth, tu=-50, r=1, rotate=rotate))

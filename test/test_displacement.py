@@ -36,7 +36,7 @@ def displacement(f):
         )))
     
 
-    spots = (DATPenSet([
+    spots = (DATPens([
             displacement.last_result.filmjitter(f.a.progress(f.i).e, speed=(50, 50), scale=(3, 5)) if f.i != -1 and displacement.last_result else None,
             DATPen().rect(r).f(1, 0.1),
             spots,

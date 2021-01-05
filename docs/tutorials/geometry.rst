@@ -58,7 +58,7 @@ Here’s an example that divides a rectangle into left and right rectangles, and
     def lr(r):
         ri = r.inset(50, 50)
         left, right = ri.divide(0.5, "mnx")
-        return DATPenSet([
+        return DATPens([
             (DATPen()
                 .rect(ri)
                 .f(None)
@@ -85,7 +85,7 @@ Here’s an example using ``subdivide`` to subdivide a larger rectangle into sma
 
     @renderable((700, 300))
     def columns(r):
-        dps = DATPenSet()
+        dps = DATPens()
         for c in r.inset(10).subdivide(5, "mnx"):
             dps += DATPen().rect(c.inset(10)).f(hsl(random()))
         return dps
@@ -100,7 +100,7 @@ Of course, columns like that aren’t very typographic. Here’s an example usin
 
     @renderable((700, 500))
     def columns_leading(r):
-        dps = DATPenSet()
+        dps = DATPens()
         for c in r.subdivide_with_leading(5, 20, "mxy"):
             dps += DATPen().rect(c).f(hsl(random()))
         return dps

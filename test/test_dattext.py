@@ -13,7 +13,7 @@ def test_return_string(r, rs):
     rt = r.take(80, "mdy").take(0.8, "mdx")
     style = Style(co, 150, wdth=sx, fill=(0, 0.5))
 
-    return DATPenSet([
+    return DATPens([
         (StyledString("COLDTYPE", style)
             .pens()
             .align(rt, "mnx")

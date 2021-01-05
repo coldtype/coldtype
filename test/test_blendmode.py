@@ -2,7 +2,7 @@ from coldtype.test import *
 
 @test()
 def clear(r):
-    return DATPenSet([
+    return DATPens([
         (DATPen()
             .oval(r)
             .f(hsl(0.3))),
@@ -13,7 +13,7 @@ def clear(r):
 
 @test()
 def overlay(r):
-    return DATPenSet([
+    return DATPens([
         (DATPen()
             .oval(r)
             .f(hsl(0.3))),
@@ -24,7 +24,7 @@ def overlay(r):
 
 @test()
 def modulate(r):
-    return DATPenSet([
+    return DATPens([
         (DATPen()
             .oval(r)
             .f(hsl(0.3))),

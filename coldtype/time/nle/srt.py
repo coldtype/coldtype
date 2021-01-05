@@ -2,7 +2,7 @@ import srt, re
 from timecode import Timecode
 from datetime import datetime
 
-from coldtype.animation.sequence import Sequence, Clip, ClipTrack
+from coldtype.time.sequence import Sequence, Clip, ClipTrack
 
 def srt_to_frame(fps, st):
     tc = Timecode(fps,

@@ -2,7 +2,7 @@ from coldtype.test import *
 
 @test()
 def test_distribute_and_track(r):
-    dps = DATPenSet()
+    dps = DATPens()
     rnd = Random(0)
     for x in range(0, 11):
         dps += (DATPen()
@@ -17,13 +17,13 @@ def test_distribute_and_track(r):
 
 @test()
 def test_track_to_rect(r):
-    text:DATPenSet = StyledString("COLD", Style(co, 300, wdth=0, r=1)).pens().align(r)
+    text:DATPens = StyledString("COLD", Style(co, 300, wdth=0, r=1)).pens().align(r)
     return text.trackToRect(r.inset(50, 0), r=1)
 
 
 @test()
 def test_map_points(r):
-    pt_labels = DATPenSet()
+    pt_labels = DATPens()
     def point_mapper(idx, x, y):
         pt_labels.append(StyledString(str(idx),
             Style("assets/NotoSans-Black.ttf", 10, wght=1, wdth=0))
@@ -48,7 +48,7 @@ def test_explode(r):
 
 @test()
 def test_scaleToRect(r):
-    return DATPenSet([
+    return DATPens([
         DATPen().oval(r).scaleToRect(r.take(0.5, "mdx").inset(0, 30), False).f(hsl(0.2, a=0.1)),
         (StyledString("SPACEFILLING",
             Style(mutator, 50))

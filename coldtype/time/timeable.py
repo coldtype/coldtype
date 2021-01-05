@@ -1,4 +1,4 @@
-from coldtype.animation.easing import ease
+from coldtype.time.easing import ease
 from copy import copy
 import math
 
@@ -33,7 +33,7 @@ class Timing():
 
 class Timeable():
     """
-    Abstract base class for anything with a start and end
+    Abstract base class for anything with a concept of `start` and `end`/`duration`
 
     Implements additional methods to make it easier to work with time-based concepts
     """
@@ -61,7 +61,6 @@ class Timeable():
         return t
     
     def retime(self, start=0, end=0, duration=-1):
-        "Relative start/end adjustments, or hard-set duration"
         self.start = self.start + start
         self.end = self.end + end
         if duration > -1:
@@ -72,6 +71,13 @@ class Timeable():
         return self.start <= i < self.end
 
     def io(self, fi, length, ei="eei", eo="eei", negative=False):
+        """
+        Somewhat like ``progress()``, but can be used to fade in/out (hence the name (i)n/(o)ut)
+
+        * ``length`` refers to the lenght of the ease, in frames
+        * ``ei=`` takes the ease-in mnemonic
+        * ``eo=`` takes the ease-out mnemonic
+        """
         try:
             length_i, length_o = length
         except:
@@ -123,6 +129,8 @@ class Timeable():
     def progress(self, i, loops=0, cyclic=True, negative=False, easefn="linear") -> Timing:
         """
         Given an easing function (``easefn=``), calculate the amount of progress as a Timing object
+
+        ``easefn=`` takes a mnemonic as enumerated in :func:`coldtype.time.easing.ease`
         """
         if i < self.start:
             return Timing(0, 0, 0, easefn)
@@ -135,7 +143,7 @@ class Timeable():
             loop_t, loop_index = self._loop(t, times=loops, cyclic=cyclic, negative=negative)
             return Timing(t, loop_t, loop_index, easefn)
     
-    prg = progress
+    #prg = progress
 
 
 class TimeableView(Timeable):

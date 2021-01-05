@@ -1,4 +1,4 @@
-from coldtype.animation import Timeline, Timeable, TimeableSet
+from coldtype.time import Timeline, Timeable, TimeableSet
 from coldtype.helpers import sibling
 
 from pathlib import Path

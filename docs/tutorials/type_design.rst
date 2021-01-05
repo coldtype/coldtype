@@ -62,7 +62,7 @@ If you want to address glyphs in a UFO directly by their glyph names, you can al
 
     @renderable((800, 200), watch=[generic_txt])
     def txt(r):
-        return DATPenSet([
+        return DATPens([
             (StyledString("> " + generic_txt.read_text() + " <",
                 Style("assets/RecMono-CasualItalic.ttf", 50))
                 .pens()

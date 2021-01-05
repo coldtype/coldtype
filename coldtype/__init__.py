@@ -4,13 +4,13 @@ from pathlib import Path
 from coldtype.text import *
 from coldtype.text.reader import Font
 from coldtype.pens.datpenlikeobject import DATPenLikeObject
-from coldtype.pens.datpen import DATPen, DATPenSet
+from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.geometry import *
 from coldtype.color import *
 from coldtype.renderable import *
 from coldtype.helpers import *
-from coldtype.animation import *
+from coldtype.time import *
 #from coldtype.renderer.state import RendererState, Keylayer
 
 name = "coldtype"

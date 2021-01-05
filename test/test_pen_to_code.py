@@ -5,7 +5,7 @@ from runpy import run_path
 
 @renderable()
 def to_code(r):
-    dps = DATPenSet([
+    dps = DATPens([
         (DATPen()
             .oval(r.inset(50))
             .f(hsl(0.65, 0.6, 0.7))

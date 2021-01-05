@@ -1,9 +1,9 @@
 import json, re
 from pathlib import Path
-from coldtype.animation.sequence import Sequence, ClipTrack, Clip
-from coldtype.animation.audio import Wavfile
+from coldtype.time.sequence import Sequence, ClipTrack, Clip
+from coldtype.time.audio import Wavfile
 from coldtype.text import Style, StyledString
-from coldtype.pens.datpen import DATPen, DATPenSet
+from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.geometry import Rect
 from coldtype.color import hsl, bw
@@ -244,7 +244,7 @@ class Subtitler(Sequence):
                 self.persist()
     
     def clip_timeline(self, fi, far, sw=30, sh=50, font_name=None):
-        seq = DATPenSet()
+        seq = DATPens()
 
         seq += (DATPen()
             .rect(Rect(0, 0, (self.duration * sw), sh)).f(bw(0.5, 0.35)))
@@ -255,7 +255,7 @@ class Subtitler(Sequence):
                     r = Rect(c.start*sw, sh*tidx, (c.duration*sw)-2, sh)
                     current = c.start-25 <= fi <= c.end+25
                     if current:
-                        seq.append(DATPenSet([
+                        seq.append(DATPens([
                             (DATPen()
                                 .rect(r)
                                 .f(hsl(cgidx*0.4+tidx*0.2, 0.75).lighter(0.2))),
@@ -285,7 +285,7 @@ class lyric_editor(animation):
         if Overlay.Timeline in rs.overlays:
             self.timeline.process_state(rs, f.i)
             seq = self.timeline.clip_timeline(f.i, f.a.r, font_name=self.data_font)
-            return DATPenSet([res, seq])
+            return DATPens([res, seq])
         return res
 
 if __name__ == "<run_path>":

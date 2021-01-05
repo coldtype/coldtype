@@ -1,6 +1,6 @@
 from coldtype.test import *
-from coldtype.animation.audio import Wavfile
-from coldtype.animation.nle.subtitler import Subtitler, lyric_editor
+from coldtype.time.audio import Wavfile
+from coldtype.time.nle.subtitler import Subtitler, lyric_editor
 
 
 tl = Subtitler(

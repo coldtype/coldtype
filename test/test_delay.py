@@ -24,7 +24,7 @@ def var(f, depth=0):
         cold.insert(0, var.func(Frame((f.i-3)%var.duration, f.a), depth=depth+1))
     
     if depth == 0:
-        return DATPenSet([
+        return DATPens([
             #DATPen().rect(f.a.r).f(1),
             cold.color_phototype(f.a.r, blur=5)])
     else:

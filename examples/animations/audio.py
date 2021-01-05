@@ -1,7 +1,7 @@
 import numpy as np
 import soundfile as sf
 from coldtype import *
-from coldtype.animation.audio import Wavfile
+from coldtype.time.audio import Wavfile
 
 """
 You'll need to `pip install soundfile` in yourt virtualenv to get this to work

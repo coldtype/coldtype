@@ -12,7 +12,7 @@ from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.ttLib.ttFont import TTFont
 
 from coldtype.color import normalize_color
-from coldtype.pens.datpen import DATPen, DATPenSet
+from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.geometry import Rect, Point
 
 from typing import Optional, Callable, Union
@@ -697,14 +697,14 @@ class StyledString(FittableMixin):
         dp = DATPen(**attrs)
         return dp
 
-    def pens(self, frame=True) -> DATPenSet:
+    def pens(self, frame=True) -> DATPens:
         """
-        Vectorize text into a ``DATPenSet``, such that each glyph (or ligature) is represented by a single `DATPen` (or a ``DATPenSet`` in the case of a color font, which will then nest a `DATPen` for each layer of that color glyph)
+        Vectorize text into a ``DATPens``, such that each glyph (or ligature) is represented by a single `DATPen` (or a ``DATPens`` in the case of a color font, which will then nest a `DATPen` for each layer of that color glyph)
         """
         self.resetGlyphRun()
         self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
         
-        pens = DATPenSet()
+        pens = DATPens()
         for idx, g in enumerate(self.glyphs):
             dp_atom = self._emptyPenWithAttrs()
             if len(g.glyphDrawing.layers) == 1:
@@ -715,7 +715,7 @@ class StyledString(FittableMixin):
                 if self.style.removeOverlap:
                     dp_atom.removeOverlap()
             else:
-                dp_atom = DATPenSet()
+                dp_atom = DATPens()
                 dp_atom.layered = True
                 for layer in g.glyphDrawing.layers:
                     dp_layer = self._emptyPenWithAttrs()
@@ -773,7 +773,7 @@ class SegmentedString(FittableMixin):
         return adjusted
 
     def pens(self):
-        pens = DATPenSet()
+        pens = DATPens()
         x_off = 0
         for s in self.strings:
             dps = s.pens(frame=True)
@@ -783,4 +783,4 @@ class SegmentedString(FittableMixin):
             pens.extend(dps.pens)
             x_off += dps.getFrame().w
         return pens
-        #return DATPenSet([s.pens(frame=True) for s in self.strings])
+        #return DATPens([s.pens(frame=True) for s in self.strings])

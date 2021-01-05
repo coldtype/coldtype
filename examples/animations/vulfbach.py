@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.animation.midi import MidiReader
+from coldtype.time.midi import MidiReader
 
 """
 Run as `coldtype examples/animation/vulfbach.py`
@@ -49,11 +49,11 @@ line = build_line()
 def render(f):
     render.play_audio_frame(f.i)
 
-    looped_line = DATPenSet([
+    looped_line = DATPens([
         line.copy().translate(-f.i*note_width+r.w-note_width*3-organ.duration*note_width, 0),
         line.copy().translate(-f.i*note_width+r.w-note_width*3, 0)
     ])
-    return DATPenSet([
+    return DATPens([
         DATPen().rect(f.a.r).f(0),
         (looped_line.pen()
             .color_phototype(f.a.r, blur=20, cut=215, cutw=40)),
