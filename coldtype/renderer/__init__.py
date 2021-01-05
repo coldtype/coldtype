@@ -2,6 +2,7 @@ import tempfile, traceback, threading
 import argparse, importlib, inspect, json, math
 import sys, os, re, signal, tracemalloc, shutil
 import platform, pickle, string, datetime
+import numpy as np
 
 import time as ptime
 from pathlib import Path
@@ -1256,19 +1257,13 @@ class Renderer():
         #    return
         
         if pyaudio and self.paudio_source:
-            #hz = self.paudio_source.getframerate()
-            
             hz = self.paudio_source.samplerate
             width = self.paudio_source.channels
-
-            print(">>>>>>>>>", self.paudio_source.format)
-            
-            #hz, width = self.paudio_source.sf.shape
 
             if not self.paudio_stream or hz != self.paudio_rate:
                 self.paudio_rate = hz
                 self.paudio_stream = self.paudio.open(
-                    format=self.paudio.get_format_from_width(width),
+                    format=pyaudio.paFloat32,
                     channels=width,
                     rate=hz,
                     output=True)
@@ -1278,13 +1273,12 @@ class Renderer():
             else:
                 audio_frame = frame
             chunk = int(hz / self.last_animation.timeline.fps)
-            # TODO 735 is Wavfile().samples_per_frame @ 24 fps
 
             try:
                 self.paudio_source.seek(chunk*audio_frame)
                 data = self.paudio_source.read(chunk)
+                data = data.astype(np.float32).tostring()
                 self.paudio_stream.write(data)
-                print(data)
             except wave.Error:
                 print(">>> Could not read audio at frame", audio_frame)
     
