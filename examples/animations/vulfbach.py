@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.animation.midi import MidiReader
+from coldtype.time.midi import MidiReader
 
 """
 Run as `coldtype examples/animation/vulfbach.py`

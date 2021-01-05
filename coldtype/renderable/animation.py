@@ -6,15 +6,15 @@ from pathlib import Path
 from datetime import datetime
 
 from coldtype.helpers import loopidx, interp_dict
-from coldtype.animation.timeable import Timing, Timeable, TimeableSet
-from coldtype.animation import Frame
-from coldtype.animation.timeline import Timeline
-from coldtype.animation.loop import Loop, LoopPhase
+from coldtype.time.timeable import Timing, Timeable, TimeableSet
+from coldtype.time import Frame
+from coldtype.time.timeline import Timeline
+from coldtype.time.loop import Loop, LoopPhase
 
 from coldtype.text.reader import normalize_font_prefix, Font, Style
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.pens.dattext import DATText
-from coldtype.animation.audio import Wavfile, sf
+from coldtype.time.audio import Wavfile, sf
 from coldtype.geometry import Rect, Point
 from coldtype.color import normalize_color, hsl, bw
 

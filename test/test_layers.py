@@ -1,5 +1,5 @@
 from coldtype.test import *
-from coldtype.animation import *
+from coldtype.time import *
 
 ra = Rect(1920, 1080)
 rb = Rect(500, 500)

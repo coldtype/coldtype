@@ -44,13 +44,13 @@ The most important thing to understand is that textsetting classes can be turned
     coldtype.renderable.renderable
     coldtype.animation.animation
 
-.. rubric:: Animation Classes
+.. rubric:: Time/Timing Classes
 
 .. autosummary::
     :toctree: reference
     :template: module.rst
 
-    coldtype.animation.Frame
-    coldtype.animation.Timeable
-    coldtype.animation.Timeline
-    coldtype.animation.easing.ease
+    coldtype.time.Frame
+    coldtype.time.Timeable
+    coldtype.time.Timeline
+    coldtype.time.easing.ease

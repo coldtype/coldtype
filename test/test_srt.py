@@ -1,5 +1,5 @@
 from coldtype.test import *
-from coldtype.animation.nle.srt import SRT
+from coldtype.time.nle.srt import SRT
 
 wav = __sibling__("../examples/animations/media/house.wav")
 path = __sibling__("media/srttest.srt")

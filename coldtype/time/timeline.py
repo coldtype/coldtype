@@ -1,4 +1,4 @@
-from coldtype.animation import Timeable
+from coldtype.time import Timeable
 
 
 class Timeline(Timeable):
@@ -35,7 +35,7 @@ class Timeline(Timeable):
         return ""
     
     def __str__(self):
-        return "<coldtype.animation.timeline({:s}):{:04d}f@{:02.2f}fps[{:s}]>".format(self.__name__, self.duration, self.fps, ",".join([str(i) for i in self.storyboard]))
+        return "<coldtype.time.timeline({:s}):{:04d}f@{:02.2f}fps[{:s}]>".format(self.__name__, self.duration, self.fps, ",".join([str(i) for i in self.storyboard]))
     
     def __getitem__(self, item):
         if isinstance(item, str):

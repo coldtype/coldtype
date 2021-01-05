@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.animation.nle.premiere import PremiereTimeline
+from coldtype.time.nle.premiere import PremiereTimeline
 
 pp = Path("test/media/test_premiere_coldtype.json")
 tl = PremiereTimeline(pp)

@@ -1,6 +1,6 @@
-﻿coldtype.animation.Timeable
+﻿coldtype.time.Timeable
 ===========================
 
-.. currentmodule:: coldtype.animation
+.. currentmodule:: coldtype.time
 
 .. autoclass:: Timeable

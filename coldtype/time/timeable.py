@@ -1,4 +1,4 @@
-from coldtype.animation.easing import ease
+from coldtype.time.easing import ease
 from copy import copy
 import math
 

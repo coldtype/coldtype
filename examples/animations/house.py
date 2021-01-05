@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.animation.midi import *
+from coldtype.time.midi import *
 
 
 wav = __sibling__("media/house.wav")

@@ -1,7 +1,7 @@
 import math
 from coldtype.helpers import loopidx, interp_dict
-from coldtype.animation.timeable import Timing, Timeable, TimeableSet
-from coldtype.animation.timeline import Timeline
+from coldtype.time.timeable import Timing, Timeable, TimeableSet
+from coldtype.time.timeline import Timeline
 
 
 class LoopPhase():

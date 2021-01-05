@@ -10,7 +10,7 @@ from coldtype.geometry import *
 from coldtype.color import *
 from coldtype.renderable import *
 from coldtype.helpers import *
-from coldtype.animation import *
+from coldtype.time import *
 #from coldtype.renderer.state import RendererState, Keylayer
 
 name = "coldtype"

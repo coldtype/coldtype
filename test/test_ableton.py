@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.animation.nle.ableton import AbletonReader, AbletonMIDITrack, save_test_xml, AbletonAudioTrack
+from coldtype.time.nle.ableton import AbletonReader, AbletonMIDITrack, save_test_xml, AbletonAudioTrack
 from coldtype.warping import warp_fn
 from random import randint
 

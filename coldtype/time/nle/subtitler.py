@@ -1,7 +1,7 @@
 import json, re
 from pathlib import Path
-from coldtype.animation.sequence import Sequence, ClipTrack, Clip
-from coldtype.animation.audio import Wavfile
+from coldtype.time.sequence import Sequence, ClipTrack, Clip
+from coldtype.time.audio import Wavfile
 from coldtype.text import Style, StyledString
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.pens.dattext import DATText

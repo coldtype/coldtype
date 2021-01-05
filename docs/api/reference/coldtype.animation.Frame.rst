@@ -1,6 +1,6 @@
-﻿coldtype.animation.Frame
+﻿coldtype.time.Frame
 ========================
 
-.. currentmodule:: coldtype.animation
+.. currentmodule:: coldtype.time
 
 .. autoclass:: Frame

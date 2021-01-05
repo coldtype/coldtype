@@ -1,6 +1,6 @@
-﻿coldtype.animation.Timeline
+﻿coldtype.time.Timeline
 ===========================
 
-.. currentmodule:: coldtype.animation
+.. currentmodule:: coldtype.time
 
 .. autoclass:: Timeline

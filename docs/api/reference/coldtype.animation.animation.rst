@@ -1,7 +1,7 @@
-﻿coldtype.animation.animation
+﻿coldtype.time.animation
 ============================
 
-.. currentmodule:: coldtype.animation
+.. currentmodule:: coldtype.time
 
 .. autoclass:: animation
     :members:

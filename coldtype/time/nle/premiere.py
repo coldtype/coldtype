@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from coldtype.animation.sequence import Marker, ClipTrack, Clip, Sequence
+from coldtype.time.sequence import Marker, ClipTrack, Clip, Sequence
 
 
 VIDEO_OFFSET = 86313 # why is this?

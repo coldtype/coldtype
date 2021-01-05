@@ -1,9 +1,9 @@
 import re, math, copy
 from enum import Enum
 
-from coldtype.animation import Timeable, Frame
-from coldtype.animation.easing import ease
-from coldtype.animation.timeline import Timeline
+from coldtype.time import Timeable, Frame
+from coldtype.time.easing import ease
+from coldtype.time.timeline import Timeline
 
 from coldtype.text import StyledString, Lockup, Graf, GrafStyle
 from coldtype.pens.datpen import DATPen, DATPenSet
