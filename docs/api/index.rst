@@ -53,4 +53,6 @@ The most important thing to understand is that textsetting classes can be turned
     coldtype.time.Frame
     coldtype.time.Timeable
     coldtype.time.Timeline
+    coldtype.time.Timing
+    coldtype.time.loop.Loop
     coldtype.time.easing.ease

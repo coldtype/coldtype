@@ -4,3 +4,4 @@
 .. currentmodule:: coldtype.time
 
 .. autoclass:: Timeable
+    :members:
