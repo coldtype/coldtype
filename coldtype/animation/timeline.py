@@ -2,6 +2,15 @@ from coldtype.animation import Timeable
 
 
 class Timeline(Timeable):
+    """
+    General base class for any kind of timeline or sequence, in the NLE sense
+
+    * ``fps`` is `frames-per-second`, and defaults to 30
+    * ``storyboard`` is useful if you want to always see a given frame when your animation loads for the first time, or you'd like to see multiple frames, i.e. ``storyboard=[0, 5]`` to see both frame 0 and frame 5 in the viewer
+    * ``tracks`` is mostly used internally by subclasses that process external data from another NLE or data source like subtitles
+    * ``jumps`` can be used to mark "jump-points" within a timeline, for easy skipping around with the up/down arrows (akin to up/down arrow movements in NLEs)
+    """
+
     __name__ = "Generic"
 
     def __init__(self, duration, fps=30, storyboard=None, tracks=None, jumps=None):

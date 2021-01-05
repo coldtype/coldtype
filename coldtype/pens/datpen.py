@@ -1603,3 +1603,5 @@ class DATPenSet(DATPen):
                 except IndexError:
                     pass
         return self
+
+DATPens = DATPenSet

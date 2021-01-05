@@ -15,6 +15,8 @@ N.B. All of the following are available unprefixed after a ``from coldtype impor
     coldtype.text.reader.StyledString
     coldtype.text.composer.Composer
 
+The most important thing to understand is that textsetting classes can be turned into vector classes via the ``.pen`` or ``.pens`` methods available on both ``StyledString`` and ``Composer`` — ``.pen`` gets you a single vector representation of a piece of text (aka a ``DATPen``), while ``.pens`` gets you a structured list of DATPen’s, aka a ``DATPenSet``.
+
 .. rubric:: Geometry Classes
 
 .. autosummary::
@@ -33,7 +35,22 @@ N.B. All of the following are available unprefixed after a ``from coldtype impor
     coldtype.pens.datpen.DATPen
     coldtype.pens.datpen.DATPenSet
 
-Getting from text to vector
----------------------------
+.. rubric:: Rendering Decorators
 
-The most important thing to understand is that text can be turned into vectors via the ``.pen`` or ``.pens`` methods available on both ``StyledString`` and ``Composer`` — ``.pen`` gets you a single vector representation of a piece of text (aka a ``DATPen``), while ``.pens`` gets you a structured list of DATPen’s, aka a ``DATPenSet``.
+.. autosummary::
+    :toctree: reference
+    :template: module.rst
+
+    coldtype.renderable.renderable
+    coldtype.animation.animation
+
+.. rubric:: Animation Classes
+
+.. autosummary::
+    :toctree: reference
+    :template: module.rst
+
+    coldtype.animation.Frame
+    coldtype.animation.Timeable
+    coldtype.animation.Timeline
+    coldtype.animation.easing.ease

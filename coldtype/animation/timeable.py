@@ -32,6 +32,11 @@ class Timing():
 
 
 class Timeable():
+    """
+    Abstract base class for anything with a start and end
+
+    Implements additional methods to make it easier to work with time-based concepts
+    """
     def __init__(self, start, end, index=0, name=None, data={}):
         self.start = start
         self.end = end
@@ -115,7 +120,10 @@ class Timeable():
                 lt = 1 - lt
         return lt, ltf
     
-    def progress(self, i, loops=0, cyclic=True, negative=False, easefn="linear"):
+    def progress(self, i, loops=0, cyclic=True, negative=False, easefn="linear") -> Timing:
+        """
+        Given an easing function (``easefn=``), calculate the amount of progress as a Timing object
+        """
         if i < self.start:
             return Timing(0, 0, 0, easefn)
         if i > self.end:

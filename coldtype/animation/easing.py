@@ -62,7 +62,33 @@ def curve_pos_and_speed(curve, x):
     raise Exception("No curve value found!")
 
 
-def ease(style, x):
+def ease(style, x) -> [float, float]:
+    """
+    Though available as a general-purpose function, this logic is usually accessed through something like the `.progress` function on an animation or timeable.
+
+    Return two values — the first is the easing result at a given time x; the second is the tangent to that, if calculable (is not, atm, calculable for the mnemonics given)
+
+    for reference, easing mnemonics:
+
+    * cei = CubicEaseIn
+    * ceo = CubicEaseOut
+    * ceio = CubicEaseInOut
+    * qei = QuadEaseIn
+    * qeo = QuadEaseOut
+    * qeio = QuadEaseInOut
+    * eei = ExponentialEaseIn
+    * eeo = ExponentialEaseOut
+    * eeio = ExponentialEaseInOut
+    * sei = SineEaseIn
+    * seo = SineEaseOut
+    * seio = SineEaseInOut
+    * bei = BounceEaseIn
+    * beo = BounceEaseOut
+    * beio = BounceEaseInOut
+    * eleo = ElasticEaseOut
+    * elei = ElasticEaseIn,
+    * elieo = ElasticEaseInOut
+    """
     if style == "linear":
         return x, 0.5
     e = eases.get(style)

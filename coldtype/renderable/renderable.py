@@ -65,6 +65,9 @@ class RenderPass():
 
 
 class renderable():
+    """
+    Base class for any content renderable by Coldtype
+    """
     def __init__(self,
         rect=(1080, 1080),
         bg="whitesmoke",
