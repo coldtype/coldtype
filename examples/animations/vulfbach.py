@@ -45,13 +45,19 @@ def build_line():
 
 line = build_line()
 
-@animation(duration=organ.duration, rect=r, storyboard=[50], audio=Path("examples/animations/media/organ.wav"))
+@animation(duration=organ.duration, rect=r, storyboard=[0], audio=Path("examples/animations/media/organ.wav"))
 def render(f):
-    render.play_audio_frame(f.i)
-
+    time_offset = -f.i * note_width + r.w - note_width * 3
+    time_offset += 10 # fudge
     looped_line = DATPens([
-        line.copy().translate(-f.i*note_width+r.w-note_width*3-organ.duration*note_width, 0),
-        line.copy().translate(-f.i*note_width+r.w-note_width*3, 0)
+        (line
+            .copy()
+            .translate(
+                time_offset - organ.duration *note_width,
+                0)),
+        (line
+            .copy()
+            .translate(time_offset, 0))
     ])
     return DATPens([
         DATPen().rect(f.a.r).f(0),
