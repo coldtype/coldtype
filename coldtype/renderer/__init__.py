@@ -2,6 +2,7 @@ import tempfile, traceback, threading
 import argparse, importlib, inspect, json, math
 import sys, os, re, signal, tracemalloc, shutil
 import platform, pickle, string, datetime
+import numpy as np
 
 import time as ptime
 from pathlib import Path
@@ -38,7 +39,7 @@ except ImportError:
     pass
 
 try:
-    import pyaudio, wave
+    import pyaudio, wave, soundfile
 except ImportError:
     pyaudio = None
     wave = None
@@ -415,7 +416,8 @@ class Renderer():
                                     self.state.add_frame_offset(r.name, s)
                         self.last_animation = r
                         if pyaudio and not self.args.is_subprocess and r.audio:
-                            self.paudio_source = wave.open(str(r.audio), "rb")
+                            self.paudio_source = soundfile.SoundFile(r.audio, "r+")
+                            #self.paudio_source = wave.open(str(r.audio), "rb")
                             self.paudio_preview = 0
                         
                         if not r.audio:
@@ -936,7 +938,7 @@ class Renderer():
     
         if pyaudio:
             self.paudio = pyaudio.PyAudio()
-            self.paudio_source = None
+            self.paudio_source:soundfile.SoundFile = None
             self.paudio_stream = None
             self.paudio_rate = 0
     
@@ -1255,21 +1257,27 @@ class Renderer():
         #    return
         
         if pyaudio and self.paudio_source:
-            hz = self.paudio_source.getframerate()
+            hz = self.paudio_source.samplerate
+            width = self.paudio_source.channels
+
             if not self.paudio_stream or hz != self.paudio_rate:
                 self.paudio_rate = hz
-                self.paudio_stream = self.paudio.open(format=self.paudio.get_format_from_width(self.paudio_source.getsampwidth()), channels=self.paudio_source.getnchannels(), rate=hz, output=True)
+                self.paudio_stream = self.paudio.open(
+                    format=pyaudio.paFloat32,
+                    channels=width,
+                    rate=hz,
+                    output=True)
 
             if frame is None:
                 audio_frame = self.last_animation._active_frames(self.state)[0]
             else:
                 audio_frame = frame
             chunk = int(hz / self.last_animation.timeline.fps)
-            # TODO 735 is Wavfile().samples_per_frame @ 24 fps
 
             try:
-                self.paudio_source.setpos(chunk*audio_frame)
-                data = self.paudio_source.readframes(chunk)
+                self.paudio_source.seek(chunk*audio_frame)
+                data = self.paudio_source.read(chunk)
+                data = data.astype(np.float32).tostring()
                 self.paudio_stream.write(data)
             except wave.Error:
                 print(">>> Could not read audio at frame", audio_frame)
