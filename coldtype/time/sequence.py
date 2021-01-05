@@ -5,11 +5,11 @@ from coldtype.time import Timeable, Frame
 from coldtype.time.easing import ease
 from coldtype.time.timeline import Timeline
 
-from coldtype.text import StyledString, Lockup, Graf, GrafStyle
+from coldtype.text import StyledString, Lockup, Graf, GrafStyle, Style
 from coldtype.pens.datpen import DATPen, DATPenSet
 from coldtype.color import *
 
-from typing import Optional, Union, Callable
+from typing import Optional, Union, Callable, Tuple
 
 
 class Marker(Timeable):
@@ -420,7 +420,17 @@ class ClipGroup(Timeable):
             txt += c.text
         return txt
     
-    def pens(self, f, render_clip_fn, rect=None, graf_style=GrafStyle(leading=20), fit=None, ignore_newlines=False) -> ClipGroupPens:
+    def pens(self,
+        f,
+        render_clip_fn:Callable[[Frame, int, Clip, str], Tuple[str, Style]],
+        rect=None,
+        graf_style=GrafStyle(leading=20),
+        fit=None,
+        ignore_newlines=False,
+        removeOverlap=False) -> ClipGroupPens:
+        """
+        render_clip_fn: frame, line index, clip, clip text — you must return a tuple of text to render and the Style to render it with
+        """
         if not rect:
             rect = f.a.r
         group_pens = ClipGroupPens(self)
@@ -523,8 +533,9 @@ class ClipGroup(Timeable):
         
         pens = re_grouped
         for pens in pens.pens:
-            for pen in pens.pens:
-                pen.removeOverlap()
+            if removeOverlap:
+                for pen in pens.pens:
+                    pen.removeOverlap()
             group_pens.append(pens)
         
         for clip, pen in group_pens.iterate_clips():
