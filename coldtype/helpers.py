@@ -2,7 +2,7 @@ from pathlib import Path
 from defcon import Font as DefconFont
 from coldtype.text.reader import normalize_font_path, StyledString
 from coldtype.pens.datpen import DATPenSet
-from coldtype.interpolation import norm, interp_dict
+from coldtype.interpolation import norm, interp_dict, lerp
 from random import Random
 
 
