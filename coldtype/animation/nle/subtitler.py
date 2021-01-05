@@ -227,7 +227,7 @@ class Subtitler(Sequence):
             elif rs.cmd == "q":
                 #print(self.closest(fi, -1, clips))
                 self.closest_to_playhead(fi, -1, clips)
-            elif rs.cmd == "e":
+            elif rs.cmd == "w":
                 #print(self.closest(fi, +1, clips))
                 self.closest_to_playhead(fi, +1, clips)
             elif rs.cmd == "ts":
