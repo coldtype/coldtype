@@ -42,7 +42,7 @@ The most important thing to understand is that textsetting classes can be turned
     :template: module.rst
 
     coldtype.renderable.renderable
-    coldtype.animation.animation
+    coldtype.renderable.animation.animation
 
 .. rubric:: Time/Timing Classes
 
