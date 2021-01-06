@@ -269,7 +269,7 @@ class Renderer():
     def reset_filepath(self, filepath):
         self.line_number = -1
         self.stop_watching_file_changes()
-        self.state.mouse = None
+        self.state.input_history.clear()
         self.state._frame_offsets = {}
         self.state._initial_frame_offsets = {}
 

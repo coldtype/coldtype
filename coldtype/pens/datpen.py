@@ -470,7 +470,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
 
     def record(self, pen):
         """Play a pen into this pen, meaning that pen will be added to this one’s value."""
-        pen.replay(self)
+        if pen:
+            pen.replay(self)
         return self
     
     def glyph(self, glyph):
