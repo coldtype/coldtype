@@ -14,4 +14,4 @@ from coldtype.time import *
 #from coldtype.renderer.state import RendererState, Keylayer
 
 name = "coldtype"
-__version__ = "0.1.8"
+__version__ = "0.1.9"
