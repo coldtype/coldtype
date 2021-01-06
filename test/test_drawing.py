@@ -6,11 +6,13 @@ swear = Font.Cacheable("~/Type/fonts/fonts/SwearRomanVariable.ttf")
 
 @renderable(bg=1, rstate=1)
 def draw1(r, rs):
-    #nxl = LaunchControlXL(rs.midi)
+    nxl = LaunchControlXL(rs.midi)
     current = DATPen()
     strokes = DATPens()
     #wdth = nxl(20)*150
-    #angle = nxl(10)*180
+    overall_angle = nxl(40)*360-180
+    overall_width = nxl(50)*200-100
+    editing = rs.keylayer == Keylayer.Editing
 
     def draw_item(item, midi=None):
         if item:
@@ -19,6 +21,9 @@ def draw1(r, rs):
             angle = _nxl(10)*-90-90
             wdth = _nxl(20)*150+5
             nib = _nxl(30)*20+1
+            if not editing or True:
+                angle += overall_angle
+                wdth += overall_width
             to = DATPen()
             to.line([p.project(angle-180, wdth), p.project(angle, wdth)]).s(0).sw(nib)
             return to
@@ -27,20 +32,13 @@ def draw1(r, rs):
         for item in g:
             strokes += draw_item(item)
     
-    editing = rs.keylayer == Keylayer.Editing
-    
     if editing:
         current.record(draw_item(rs.input_history.last(), rs.midi))
 
     return (DATPenSet([
         DATPen().rect(r.inset(5)).f(None).s(0).sw(5) if editing else DATPen().rect(r).f(1),
-        #StyledString("a", Style(swear, 1000, wght=0.5)).pen().align(r).f(hsl(0.5)),
         current.s(0.5).sw(10),
         (DATPens([strokes])
-            #.s(hsl(0.9))
-            #.sw(10)
             .s(hsl(0.7) if editing else 0)
-            #.sw(15)
-            #.f(1)
             .color_phototype(r, blur=5, cut=190)
             .img_opacity(0.5 if editing else 1))]))
