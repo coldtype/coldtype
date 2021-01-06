@@ -3,6 +3,8 @@ from pathlib import Path
 import json, glfw, skia, re
 from coldtype import hsl, Action, Keylayer, Point, Rect, DATPen, Overlay
 
+from typing import Callable
+
 
 class RendererStateEncoder(json.JSONEncoder):
     def default(self, o):
@@ -35,6 +37,57 @@ class Mods():
         return f"su:{self.super};sh:{self.shift};alt:{self.alt};ctrl:{self.ctrl}"
 
 
+class InputHistoryItem():
+    def __init__(self, position, action, midi):
+        self.position = position
+        self.action = action
+        self.midi = midi
+        self.idx = -1
+
+
+class InputHistory():
+    def __init__(self):
+        self.history = []
+
+    def clear(self):
+        self.history = []
+    
+    def empty(self):
+        return len(self.history) == 0
+    
+    def record(self, item:InputHistoryItem):
+        item.idx = len(self.history)
+        self.history.append(item)
+    
+    def last(self, action=None) -> InputHistoryItem:
+        for i in reversed(self.history):
+            if (action and i.action == action) or not action:
+                return i
+    
+    def strokes(self, filterfn:Callable[[str, list], bool]=lambda xs: True) -> list:
+        xs = []
+        for i in self.history:
+            if i.action == "down":
+                xs.append(["down", []])
+            elif i.action == "up":
+                xs.append(["up", []])
+            if len(xs) == 0 and i.action == "move":
+                continue
+            else:
+                xs[-1][-1].append(i)
+        return [x for x in xs if filterfn(x[0], x[1])]
+    
+    def moved(self) -> bool:
+        last_down = self.last("down")
+        last_up = self.last("up")
+        if last_down and last_up and last_down.idx < last_up.idx:
+            return last_down.position != last_up.position
+        return False
+    
+    def __getitem__(self, index):
+        return self.history[index]
+
+
 class RendererState():
     def __init__(self, renderer):
         self.renderer = renderer
@@ -52,9 +105,7 @@ class RendererState():
         self.text = ""
         self.arrow = None
         self.mods = Mods()
-        self.mouse_history = None
-        self.mouse = None
-        self.mouse_down = False
+        self.input_history:InputHistory = InputHistory()
         self.xray = True
         self.selection = [0]
         self.zoom = 1
@@ -105,29 +156,30 @@ class RendererState():
         else:
             print("No source; cannot persist state")
     
+    def record_mouse(self, pos, action):
+        new_mouse = pos.scale(1/self.preview_scale)
+        self.input_history.record(
+            InputHistoryItem(new_mouse, action, self.controller_values.copy()))
+        if action == "down":
+            return Action.PreviewStoryboard
+        elif action == "up" and self.input_history.moved():
+            return Action.PreviewStoryboard
+        elif action == "move" and self.keylayer == Keylayer.Editing:
+            return Action.PreviewStoryboard
+    
     def on_mouse_button(self, pos, btn, action, mods):
         if btn == 1 and action == glfw.PRESS:
-            self.mouse_history = None
+            self.input_history.clear()
             return Action.PreviewStoryboard
         
         self.mods.update(mods)
         if action == glfw.PRESS:
-            self.mouse_down = True
-            self.mouse = pos.scale(1/self.preview_scale)
-            if not self.mouse_history:
-                self.mouse_history = [[]]
-            else:
-                self.mouse_history.append([])
-            self.mouse_history[-1].append(self.mouse)
-            return Action.PreviewStoryboard
+            self.record_mouse(pos, "down")
         elif action == glfw.RELEASE:
-            self.mouse_down = False
-            if self.mouse_history:
-                new_mouse = pos.scale(1/self.preview_scale)
-                self.mouse_history[-1].append(new_mouse)
-                if self.mouse:
-                    if new_mouse.x != self.mouse.x and new_mouse.y != self.mouse.y:
-                        return Action.PreviewStoryboard
+            return self.record_mouse(pos, "up")
+    
+    def on_mouse_move(self, pos):
+        return self.record_mouse(pos, "move")
     
     def mod_preview_scale(self, inc, absolute=0):
         if absolute > 0:
@@ -159,15 +211,6 @@ class RendererState():
             return True, polygon
         else:
             return False, polygon
-
-    def on_mouse_move(self, pos):
-        if self.mouse_down:
-            pos = pos.scale(1/self.preview_scale)
-            if self.mouse:
-                if True or abs(pos.x - self.mouse.x) > 5 or abs(pos.y - self.mouse.y) > 5:
-                    self.mouse = pos
-                    self.mouse_history[-1].append(self.mouse)
-                    return Action.PreviewStoryboard
     
     def on_character(self, codepoint):
         cc = chr(codepoint)
@@ -349,7 +392,6 @@ class RendererState():
         self.mods.reset()
         self.watch_mods = {}
         self.watch_soft_mods = {}
-        #self.mouse = None
     
     def toggle_overlay(self, overlay):
         v = not self.overlays.get(overlay, False)
