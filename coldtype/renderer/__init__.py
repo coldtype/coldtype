@@ -151,6 +151,8 @@ class Renderer():
             window_float=parser.add_argument("-wf", "--window-float", action="store_true", default=False, help="should the window float on top of everything?"),
 
             window_transparent=parser.add_argument("-wt", "--window-transparent", action="store_true", default=False, help="should the window background be transparent?"),
+
+            window_passthrough=parser.add_argument("-wpass", "--window-passthrough", action="store_true", default=False, help="should the window ignore all mouse interaction?"),
             
             format=parser.add_argument("-fmt", "--format", type=str, default=None, help="What image format should be saved to disk?"),
 
@@ -857,15 +859,17 @@ class Renderer():
         self.transparent = self.py_config.get("WINDOW_TRANSPARENT", self.args.window_transparent)
         if self.transparent:
             glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.TRUE)
-            try:
-                glfw.window_hint(0x0002000D, glfw.TRUE)
-            except glfw.GLFWError:
-                print("failed to hint window for mouse-passthrough")
             glfw.window_hint(glfw.DECORATED, glfw.FALSE)
-
-            #glfw.window_hint(glfw.MOUSE_PASSTHROUGH, glfw.TRUE)
         else:
             glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.FALSE)
+        
+        self.passthrough = self.py_config.get("WINDOW_PASSTHROUGH", self.args.window_passthrough)
+        if self.passthrough:
+            try:
+                glfw.window_hint(0x0002000D, glfw.TRUE)
+                #glfw.window_hint(glfw.MOUSE_PASSTHROUGH, glfw.TRUE)
+            except glfw.GLFWError:
+                print("failed to hint window for mouse-passthrough")
 
         if self.py_config.get("WINDOW_BACKGROUND"):
             glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
