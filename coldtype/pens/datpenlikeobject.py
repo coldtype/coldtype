@@ -366,6 +366,13 @@ class DATPenLikeObject():
         """Sleep call within the chain (if you want to measure something)"""
         sleep(time)
         return self
+
+    def chain(self, fn:[["DATPenLikeObject"], None]):
+        """
+        For simple take-one callback functions in a chain
+        """
+        fn(self)
+        return self
     
     def cond(self, condition, if_true: Callable[["DATPenLikeObject"], None], if_false=Callable[["DATPenLikeObject"], None]):
         if condition:
