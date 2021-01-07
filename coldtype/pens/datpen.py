@@ -715,6 +715,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
 
     def line(self, points):
         """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""
+        if len(points) == 0:
+            return self
         self.moveTo(points[0])
         for p in points[1:]:
             self.lineTo(p)

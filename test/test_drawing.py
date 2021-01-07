@@ -1,10 +1,8 @@
 from coldtype.test import *
 from coldtype.midi.controllers import LaunchControlXL
 
-scratch = raw_ufo("~/Type/ex1/scratch/scratch.ufo")
 
-
-@renderable(bg=1, rstate=1, watch=[scratch.path])
+@renderable(bg=1, rstate=1)
 def draw1(r, rs):
     nxl = LaunchControlXL(rs.midi)
     current = DATPen()
@@ -14,41 +12,46 @@ def draw1(r, rs):
     overall_width = nxl(50)*200-100
     editing = rs.keylayer == Keylayer.Editing
 
-    def draw_item(item, midi=None):
+    spine = [[], [], []]
+
+    def draw_item(item, midi=None, add_to_spine=True):
         if item:
             p = item.position
             _nxl = LaunchControlXL(midi or item.midi)
-            angle = _nxl(10)*-90-90
+            angle = _nxl(10)*-180-180
             wdth = _nxl(20)*150+5
             nib = _nxl(30)*20+1
             if not editing or True:
                 angle += overall_angle
                 wdth += overall_width
             to = DATPen()
-            to.line([p.project(angle-180, wdth), p.project(angle, wdth)]).s(0).sw(nib)
+            ps = [p.project(angle-180, wdth), p.project(angle, wdth)]
+            to.line(ps).s(0).sw(nib)
+            ps.insert(1, p)
+            if add_to_spine:
+                for i, p in enumerate(ps):
+                    spine[i].append(p)
             return to
 
-    for g in rs.input_history.strokes(lambda g: g.action == "down" and g.keylayer == Keylayer.Editing and len(g) > 1):
-        for item in g:
-            strokes += draw_item(item)
+    for g in rs.input_history.strokes(lambda g: g.action == "down" and g.keylayer == Keylayer.Editing):
+        #for item in g:
+        strokes += draw_item(g[0])
     
     if editing:
-        current.record(draw_item(rs.input_history.last(), rs.midi))
-    
-    # dp = DATPen().glyph(scratch["s.2"]).align(r).scale(1.3)
-    # bbp = dp.to_cbp()[0]
-    # bbp.addExtremes()
-    # dp2 = DATPen.from_cbp([bbp])
-    # dp2.value = dp2.value[0:]
-    # from pprint import pprint
-    # pprint(dp2.value)
+        current.record(draw_item(rs.input_history.last(), rs.midi, add_to_spine=False))
 
-    # return dp2.skeleton()
-    # return dp2.f(None).s(0).sw(5)
+    spines = DATPenSet()
+    if spine[0]:
+        spines = DATPenSet([
+            DATPen().line(spine[0]).f(None).s(0).sw(5),
+            DATPen().line(spine[1]).f(None).s(0).sw(10),
+            DATPen().line(spine[2]).f(None).s(0).sw(5),
+        ])
 
     return (DATPenSet([
         DATPen().rect(r.inset(5)).f(None).s(0).sw(5) if editing else DATPen().rect(r).f(1),
         current.s(0.5).sw(10),
+        spines,
         (DATPens([strokes])
             .s(hsl(0.7) if editing else 0)
             .color_phototype(r, blur=5, cut=190)
