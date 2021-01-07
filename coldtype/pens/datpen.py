@@ -4,8 +4,7 @@ from copy import deepcopy
 from pathlib import Path
 from time import sleep
 
-from typing import Optional
-from typing import Callable
+from typing import Optional, Callable, Tuple
 #from collections.abc import Callable
 
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
@@ -259,10 +258,17 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = dp.value
         return self
     
-    def map(self, fn):
-        for idx, v in enumerate(self.value):
-            move, pts = v
-            self.value[idx] = (move, fn(idx, pts))
+    def map(self, fn:Callable[[int, str, list], Tuple[str, list]]):
+        for idx, (mv, pts) in enumerate(self.value):
+            self.value[idx] = fn(idx, mv, pts)
+        return self
+    
+    def filter(self, fn:Callable[[int, str, list], bool]):
+        vs = []
+        for idx, (mv, pts) in enumerate(self.value):
+            if fn(idx, mv, pts):
+                vs.append((mv, pts))
+        self.value = vs
         return self
     
     def map_points(self, fn):
@@ -470,9 +476,15 @@ class DATPen(RecordingPen, DATPenLikeObject):
 
     def record(self, pen):
         """Play a pen into this pen, meaning that pen will be added to this one’s value."""
+        if hasattr(pen, "pens"):
+            for p in pen:
+                self.record(p)
         if pen:
             pen.replay(self)
         return self
+    
+    def connect(self):
+        return self.map(lambda i, mv, pts: ("lineTo" if i > 0 and mv == "moveTo" else mv, pts))
     
     def glyph(self, glyph):
         """Play a glyph (like from `defcon`) into this pen."""

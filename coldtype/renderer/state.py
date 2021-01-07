@@ -60,6 +60,21 @@ class InputHistoryGroup():
     
     def __getitem__(self, index):
         return self.items[index]
+    
+    def position(self):
+        if len(self.items) > 0:
+            return self.items[0].position
+    
+    def start(self):
+        if len(self.items) > 0:
+            return self.items[0].idx
+    
+    def end(self):
+        if len(self.items) > 0:
+            return self.items[-1].idx
+    
+    def __repr__(self):
+        return f"InputHistoryGroup:{self.action}:{self.start()}-{self.end()}"
 
 
 class InputHistory():
@@ -78,8 +93,19 @@ class InputHistory():
     
     def last(self, action=None) -> InputHistoryItem:
         for i in reversed(self.history):
-            if (action and i.action == action) or not action:
+            if not action:
                 return i
+            elif i.action == action:
+                return i
+            elif callable(action):
+                if action(i.action):
+                    return i
+    
+    def undo(self):
+        strokes = self.strokes()
+        if strokes:
+            last_stroke = strokes[-1]
+            self.history = self.history[:last_stroke.start()]
     
     def strokes(self, filterfn:Callable[[InputHistoryGroup], bool]=lambda g: True) -> List[InputHistoryGroup]:
         xs = []
@@ -88,6 +114,8 @@ class InputHistory():
                 xs.append(InputHistoryGroup("down", i.keylayer, []))
             elif i.action == "up":
                 xs.append(InputHistoryGroup("up", i.keylayer, []))
+            elif i.action == "cmd":
+                xs.append(InputHistoryGroup("cmd", i.keylayer, []))
             
             if len(xs) == 0 and i.action == "move":
                 continue
@@ -209,7 +237,7 @@ class RendererState():
     @property
     def mouse_history(self):
         strokes = self.input_history.downstrokes()
-        strokes = [[p.position for p in s[-1]] for s in strokes]
+        strokes = [[p.position for p in s.items] for s in strokes]
         return strokes
     
     @property
@@ -222,7 +250,7 @@ class RendererState():
     
     @property
     def mouse(self):
-        item = self.input_history[-1]
+        item = self.input_history.last(lambda a: a in ["up", "down", "move"])
         if item:
             return item.position
     
@@ -304,9 +332,8 @@ class RendererState():
                 return Action.PreviewStoryboard
         elif key == glfw.KEY_ESCAPE:
             if self.keylayer == Keylayer.Editing:
-                if self.mouse_history:
-                    self.input_history.clear()
-                    return Action.PreviewStoryboard
+                self.input_history.clear()
+                return Action.PreviewStoryboard
             
             self.exit_keylayer()
             return Action.PreviewStoryboard
@@ -335,13 +362,11 @@ class RendererState():
                 self.xray = not self.xray
                 return Action.PreviewStoryboard
             elif key == glfw.KEY_Z and self.keylayer == Keylayer.Editing:
-                #if self.mouse_history:
-                #    if len(self.mouse_history) > 1:
-                #        self.mouse_history = self.mouse_history[:-1]
-                #    else:
-                #        self.mouse_history = None
-                #return Action.PreviewStoryboard
-                return None
+                self.input_history.undo()
+                return Action.PreviewStoryboard
+            elif key == glfw.KEY_B and self.keylayer == Keylayer.Editing:
+                self.input_history.record(InputHistoryItem(key, "cmd", self.keylayer, self.controller_values.copy()))
+
         
         if key == glfw.KEY_S and mods & glfw.MOD_SUPER:
             self.cmd = "save"
