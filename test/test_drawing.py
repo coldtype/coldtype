@@ -35,16 +35,16 @@ def draw1(r, rs):
     if editing:
         current.record(draw_item(rs.input_history.last(), rs.midi))
     
-    dp = DATPen().glyph(scratch["s.2"]).align(r).scale(1.3)
-    bbp = dp.to_cbp()[0]
-    bbp.addExtremes()
-    dp2 = DATPen.from_cbp([bbp])
-    dp2.value = dp2.value[0:]
-    from pprint import pprint
-    pprint(dp2.value)
+    # dp = DATPen().glyph(scratch["s.2"]).align(r).scale(1.3)
+    # bbp = dp.to_cbp()[0]
+    # bbp.addExtremes()
+    # dp2 = DATPen.from_cbp([bbp])
+    # dp2.value = dp2.value[0:]
+    # from pprint import pprint
+    # pprint(dp2.value)
 
-    return dp2.skeleton()
-    return dp2.f(None).s(0).sw(5)
+    # return dp2.skeleton()
+    # return dp2.f(None).s(0).sw(5)
 
     return (DATPenSet([
         DATPen().rect(r.inset(5)).f(None).s(0).sw(5) if editing else DATPen().rect(r).f(1),
