@@ -1,10 +1,10 @@
 from coldtype.test import *
 from coldtype.midi.controllers import LaunchControlXL
 
-swear = Font.Cacheable("~/Type/fonts/fonts/SwearRomanVariable.ttf")
+scratch = raw_ufo("~/Type/ex1/scratch/scratch.ufo")
 
 
-@renderable(bg=1, rstate=1)
+@renderable(bg=1, rstate=1, watch=[scratch.path])
 def draw1(r, rs):
     nxl = LaunchControlXL(rs.midi)
     current = DATPen()
@@ -34,6 +34,17 @@ def draw1(r, rs):
     
     if editing:
         current.record(draw_item(rs.input_history.last(), rs.midi))
+    
+    dp = DATPen().glyph(scratch["s.2"]).align(r).scale(1.3)
+    bbp = dp.to_cbp()[0]
+    bbp.addExtremes()
+    dp2 = DATPen.from_cbp([bbp])
+    dp2.value = dp2.value[0:]
+    from pprint import pprint
+    pprint(dp2.value)
+
+    return dp2.skeleton()
+    return dp2.f(None).s(0).sw(5)
 
     return (DATPenSet([
         DATPen().rect(r.inset(5)).f(None).s(0).sw(5) if editing else DATPen().rect(r).f(1),
