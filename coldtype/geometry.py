@@ -298,6 +298,14 @@ class Point():
         "As a tuple"
         return self.x, self.y
     
+    def round(self):
+        """round the values in the point to the nearest integer"""
+        return Point([int(round(n)) for n in self])
+    
+    def round_to(self, to=10):
+        """round the values in the point to the nearest integer multiple"""
+        return Point([int(round(n/to)*to) for n in self.xy()])
+    
     def inside(self, rect):
         mnx, mny, mxx, mxy = rect.mnmnmxmx()
         if mnx <= self.x <= mxx and mny <= self.y <= mxy:
@@ -358,6 +366,9 @@ class Point():
 
     def __getitem__(self, key):
         return self.xy()[key]
+    
+    def __len__(self):
+        return 2
 
     def __setitem__(self, key, value):
         if key == 0:

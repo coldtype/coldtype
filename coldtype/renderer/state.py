@@ -44,6 +44,9 @@ class InputHistoryItem():
         self.keylayer = keylayer
         self.midi = midi
         self.idx = -1
+    
+    def __repr__(self):
+        return f"InputHistoryItem({self.idx}/{self.action}/{self.position})"
 
 
 class InputHistoryGroup():
@@ -365,6 +368,8 @@ class RendererState():
                 self.input_history.undo()
                 return Action.PreviewStoryboard
             elif key == glfw.KEY_B and self.keylayer == Keylayer.Editing:
+                self.input_history.record(InputHistoryItem(key, "cmd", self.keylayer, self.controller_values.copy()))
+            elif key == glfw.KEY_C and self.keylayer == Keylayer.Editing:
                 self.input_history.record(InputHistoryItem(key, "cmd", self.keylayer, self.controller_values.copy()))
 
         
