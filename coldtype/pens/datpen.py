@@ -154,6 +154,17 @@ class DATPen(RecordingPen, DATPenLikeObject):
         super().endPath()
         return self
     
+    def interpolate(self, value, other):
+        vl = []
+        for idx, (mv, pts) in enumerate(self.value):
+            ipts = []
+            for jdx, p in enumerate(pts):
+                pta = Point(p)
+                ptb = Point(other.value[idx][-1][jdx])
+                ipts.append(pta.interp(value, ptb))
+            vl.append((mv, ipts))
+        return DATPen().vl(vl)
+    
     def clearAttrs(self):
         """Remove all styling."""
         self.attrs = OrderedDict()
