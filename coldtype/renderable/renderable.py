@@ -118,6 +118,7 @@ class renderable():
             self.watch_soft.append(self.add_watchee(w, "soft"))
 
         self.name = name
+        self.codepath = None
         self.rasterizer = rasterizer
         self.self_rasterizing = False
         self.hidden = solo == -1
