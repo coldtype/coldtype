@@ -84,8 +84,14 @@ class InputHistory():
     def __init__(self):
         self.history = []
 
-    def clear(self):
-        self.history = []
+    def clear(self) -> bool:
+        """Return True if something was cleared"""
+        if len(self.history) > 0:
+            self.history = []
+            return True
+        else:
+            self.history = []
+            return False
     
     def empty(self):
         return len(self.history) == 0
@@ -335,8 +341,9 @@ class RendererState():
                 return Action.PreviewStoryboard
         elif key == glfw.KEY_ESCAPE:
             if self.keylayer == Keylayer.Editing:
-                self.input_history.clear()
-                return Action.PreviewStoryboard
+                cleared = self.input_history.clear()
+                if cleared:
+                    return Action.PreviewStoryboard
             
             self.exit_keylayer()
             return Action.PreviewStoryboard
