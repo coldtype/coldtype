@@ -16,20 +16,23 @@ def stub(f, rs):
         data = json.loads(datafile.read_text())
     except json.JSONDecodeError:
         pass
+
+    ls = data["layers"]
+    def get_l(l):
+        if g := ls.get(l):
+            return DATPen().vl(g["value"])
+        else:
+            return DATPen()
     
-    dp_fg = (DATPen()
-        .vl(data["layers"]["foreground"]["value"]))
-    dp_bg = (DATPen()
-        .vl(data["layers"]["narrowester"]["value"]))
-    dp_md = (DATPen()
-        .vl(data["layers"]["background"]["value"]))
+    dp_fg = get_l("foreground")
+    dp_bg = get_l("narrowester")
+    dp_md = get_l("background")
 
     #return ,
     #    f.a.progress(f.i, loops=1, easefn="eeio").e)
 
-    return (DATPen.Interpolate(
-        [dp_fg, dp_md, dp_bg],
-        f.a.progress(f.i, loops=1, easefn="eeio").e)
+    return (
+        DATPen.Interpolate([dp_fg, dp_md, dp_bg], f.a.progress(f.i, loops=1, easefn="eeio").e)
         .f(1)
         .scale(0.7).translate(-50, 100)
         #.translate(300, 200)
