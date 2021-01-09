@@ -10,7 +10,7 @@ from typing import Tuple
 from pprint import pprint
 from random import random
 from runpy import run_path
-from subprocess import call, Popen
+from subprocess import call, Popen, PIPE, STDOUT
 from random import shuffle, Random
 from more_itertools import distribute
 from docutils.core import publish_doctree
@@ -70,6 +70,9 @@ def monitor_stdin():
     keep_last_line_thread.daemon = True
     keep_last_line_thread.start()
 
+def show_tail(p):
+    for line in p.stdout:
+        print(line.decode("utf-8").split(">>")[-1].strip().strip("\n"))
 
 class WebSocketThread(threading.Thread):
     def __init__(self, server):
@@ -151,6 +154,8 @@ class Renderer():
             window_float=parser.add_argument("-wf", "--window-float", action="store_true", default=False, help="should the window float on top of everything?"),
 
             window_transparent=parser.add_argument("-wt", "--window-transparent", action="store_true", default=False, help="should the window background be transparent?"),
+
+            window_passthrough=parser.add_argument("-wpass", "--window-passthrough", action="store_true", default=False, help="should the window ignore all mouse interaction?"),
             
             format=parser.add_argument("-fmt", "--format", type=str, default=None, help="What image format should be saved to disk?"),
 
@@ -163,6 +168,8 @@ class Renderer():
             filter_functions=parser.add_argument("-ff", "--filter-functions", type=str, default=None, help="Names of functions to render"),
 
             sidecar=parser.add_argument("-sc", "--sidecar", type=str, default=None, help="A file to run alongside your coldtype source file (like a file that processes data or keystrokes), that will run in a managed thread"),
+
+            tails=parser.add_argument("-ts", "--tails", type=str, default=None, help="File to tail, comma-separated (no whitespace); results will print output to the normal process output"),
 
             hide_keybuffer=parser.add_argument("-hkb", "--hide-keybuffer", action="store_true", default=False, help="Should the keybuffer be shown?"),
 
@@ -216,6 +223,7 @@ class Renderer():
         self.watchees = []
         self.server_thread = None
         self.sidecar_threads = []
+        self.tails = []
         
         if not self.reset_filepath(self.args.file if hasattr(self.args, "file") else None):
             self.dead = True
@@ -267,7 +275,7 @@ class Renderer():
     def reset_filepath(self, filepath):
         self.line_number = -1
         self.stop_watching_file_changes()
-        self.state.mouse = None
+        self.state.input_history.clear()
         self.state._frame_offsets = {}
         self.state._initial_frame_offsets = {}
 
@@ -547,6 +555,8 @@ class Renderer():
         output_folder = None
         try:
             for render in renders:
+                render.codepath = self.codepath
+
                 for watch, flag in render.watch:
                     if isinstance(watch, coldtype.text.reader.Font) and not watch.cacheable:
                         if watch.path not in self.watchee_paths():
@@ -857,15 +867,17 @@ class Renderer():
         self.transparent = self.py_config.get("WINDOW_TRANSPARENT", self.args.window_transparent)
         if self.transparent:
             glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.TRUE)
-            try:
-                glfw.window_hint(0x0002000D, glfw.TRUE)
-            except glfw.GLFWError:
-                print("failed to hint window for mouse-passthrough")
             glfw.window_hint(glfw.DECORATED, glfw.FALSE)
-
-            #glfw.window_hint(glfw.MOUSE_PASSTHROUGH, glfw.TRUE)
         else:
             glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.FALSE)
+        
+        self.passthrough = self.py_config.get("WINDOW_PASSTHROUGH", self.args.window_passthrough)
+        if self.passthrough:
+            try:
+                glfw.window_hint(0x0002000D, glfw.TRUE)
+                #glfw.window_hint(glfw.MOUSE_PASSTHROUGH, glfw.TRUE)
+            except glfw.GLFWError:
+                print("failed to hint window for mouse-passthrough")
 
         if self.py_config.get("WINDOW_BACKGROUND"):
             glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
@@ -943,9 +955,22 @@ class Renderer():
             self.paudio_rate = 0
     
         if self.args.sidecar:
+            if self.args.sidecar == ".":
+                self.args.sidecar = self.filepath
             dst = DataSourceThread(Path(self.args.sidecar).expanduser().resolve())
             dst.start()
             self.sidecar_threads.append(dst)
+        
+        if self.args.tails:
+            ts = self.args.tails.split(",")
+            for t in ts:
+                if t in ["rf", "robofont"]:
+                    t = "~/Library/Application Support/RoboFont/robofont-3-py3.log"
+                tp = Path(t.strip()).expanduser().absolute()
+                proc = Popen(["tail", "-f", str(tp)], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
+                t = threading.Thread(target=show_tail, args=(proc,), daemon=True)
+                t.start()
+                self.tails.append(t)
 
     def start(self):
         if self.args.midi_info:
@@ -1817,6 +1842,9 @@ class Renderer():
         
         for t in self.sidecar_threads:
             t.should_run = False
+        
+        #for t in self.tails:
+        #    t.terminate()
         
         if self.args.memory:
             snapshot = tracemalloc.take_snapshot()

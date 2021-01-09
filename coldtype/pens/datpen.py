@@ -4,8 +4,7 @@ from copy import deepcopy
 from pathlib import Path
 from time import sleep
 
-from typing import Optional
-from typing import Callable
+from typing import Optional, Callable, Tuple
 #from collections.abc import Callable
 
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
@@ -155,6 +154,17 @@ class DATPen(RecordingPen, DATPenLikeObject):
         super().endPath()
         return self
     
+    def interpolate(self, value, other):
+        vl = []
+        for idx, (mv, pts) in enumerate(self.value):
+            ipts = []
+            for jdx, p in enumerate(pts):
+                pta = Point(p)
+                ptb = Point(other.value[idx][-1][jdx])
+                ipts.append(pta.interp(value, ptb))
+            vl.append((mv, ipts))
+        return DATPen().vl(vl)
+    
     def clearAttrs(self):
         """Remove all styling."""
         self.attrs = OrderedDict()
@@ -259,10 +269,17 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = dp.value
         return self
     
-    def map(self, fn):
-        for idx, v in enumerate(self.value):
-            move, pts = v
-            self.value[idx] = (move, fn(idx, pts))
+    def map(self, fn:Callable[[int, str, list], Tuple[str, list]]):
+        for idx, (mv, pts) in enumerate(self.value):
+            self.value[idx] = fn(idx, mv, pts)
+        return self
+    
+    def filter(self, fn:Callable[[int, str, list], bool]):
+        vs = []
+        for idx, (mv, pts) in enumerate(self.value):
+            if fn(idx, mv, pts):
+                vs.append((mv, pts))
+        self.value = vs
         return self
     
     def map_points(self, fn):
@@ -470,8 +487,15 @@ class DATPen(RecordingPen, DATPenLikeObject):
 
     def record(self, pen):
         """Play a pen into this pen, meaning that pen will be added to this one’s value."""
-        pen.replay(self)
+        if hasattr(pen, "pens"):
+            for p in pen:
+                self.record(p)
+        if pen:
+            pen.replay(self)
         return self
+    
+    def connect(self):
+        return self.map(lambda i, mv, pts: ("lineTo" if i > 0 and mv == "moveTo" else mv, pts))
     
     def glyph(self, glyph):
         """Play a glyph (like from `defcon`) into this pen."""
@@ -714,6 +738,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
 
     def line(self, points):
         """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""
+        if len(points) == 0:
+            return self
         self.moveTo(points[0])
         for p in points[1:]:
             self.lineTo(p)
@@ -1027,6 +1053,73 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.data["_preserve"] = dict(calls=calls, pickle=str(tmp.absolute()))
         pickle.dump(self, open(str(tmp), "wb"))
         return self
+    
+    def Interpolate(instances, value):
+        spread = len(instances)-1
+        start = math.floor(value*spread)
+        end = math.ceil(value*spread)
+        v = value*spread-start
+        return instances[start].interpolate(v, instances[end])
+    
+    def from_cbp(ps):
+        import beziers.path
+        dp = DATPen()
+        for p in ps:
+            nl = p.asNodelist()
+            offcs = []
+            for n in nl:
+                if n.type == "move":
+                    dp.moveTo((n.x, n.y))
+                elif n.type == "line":
+                    dp.lineTo((n.x, n.y))
+                elif n.type == "offcurve":
+                    offcs.append((n.x, n.y))
+                elif n.type == "curve":
+                    if len(offcs) == 0:
+                        dp.moveTo((n.x, n.y))
+                    else:
+                        dp.curveTo(*offcs, (n.x, n.y))
+                    offcs = []
+            if p.closed:
+                dp.closePath()
+            else:
+                dp.endPath()
+        return dp
+
+    def to_cbp(self):
+        import beziers.path
+        paths = []
+        bbp = beziers.path.BezierPath()
+        nl = []
+        for (mv, pts) in self.value:
+            done = False
+            if mv == "moveTo":
+                p = pts[0]
+                nl.append(beziers.path.Node(p[0], p[1], "move"))
+            elif mv == "lineTo":
+                p = pts[0]
+                nl.append(beziers.path.Node(p[0], p[1], "line"))
+            elif mv == "curveTo":
+                p1, p2, p3 = pts
+                nl.append(beziers.path.Node(p1[0], p1[1], "offcurve"))
+                nl.append(beziers.path.Node(p2[0], p2[1], "offcurve"))
+                nl.append(beziers.path.Node(p3[0], p3[1], "curve"))
+            elif mv == "qCurveTo":
+                p1, p2 = pts
+                nl.append(beziers.path.Node(p1[0], p1[1], "offcurve"))
+                nl.append(beziers.path.Node(p2[0], p2[1], "curve"))
+            elif mv == "closePath":
+                bbp.closed = True
+                done = True
+            elif mv == "endPath":
+                bbp.closed = False
+                done = True
+            if done:
+                bbp.activeRepresentation = beziers.path.NodelistRepresentation(bbp, nl)
+                paths.append(bbp)
+                bbp = beziers.path.BezierPath()
+        return paths
+
 
     def bp(self):
         try:

@@ -17,7 +17,7 @@ def test_rect(r, rs):
 
 polygons = [] # in-process save-cache
 
-@test((1000, 1000), rstate=1)
+@test((1000, 1000), rstate=1, solo=1)
 def test_polygon(r, rs):
     out = DATPens()
     oval = (DATPen()

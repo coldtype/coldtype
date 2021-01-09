@@ -3,6 +3,8 @@ from pathlib import Path
 import json, glfw, skia, re
 from coldtype import hsl, Action, Keylayer, Point, Rect, DATPen, Overlay
 
+from typing import Callable, List
+
 
 class RendererStateEncoder(json.JSONEncoder):
     def default(self, o):
@@ -35,6 +37,119 @@ class Mods():
         return f"su:{self.super};sh:{self.shift};alt:{self.alt};ctrl:{self.ctrl}"
 
 
+class InputHistoryItem():
+    def __init__(self, position, action, keylayer, midi):
+        self.position = position
+        self.action = action
+        self.keylayer = keylayer
+        self.midi = midi
+        self.idx = -1
+    
+    def __repr__(self):
+        return f"InputHistoryItem({self.idx}/{self.action}/{self.position})"
+
+
+class InputHistoryGroup():
+    def __init__(self, action, keylayer, items):
+        self.action = action
+        self.keylayer = keylayer
+        self.items = []
+    
+    def append(self, item):
+        self.items.append(item)
+    
+    def __len__(self):
+        return len(self.items)
+    
+    def __getitem__(self, index):
+        return self.items[index]
+    
+    def position(self):
+        if len(self.items) > 0:
+            return self.items[0].position
+    
+    def start(self):
+        if len(self.items) > 0:
+            return self.items[0].idx
+    
+    def end(self):
+        if len(self.items) > 0:
+            return self.items[-1].idx
+    
+    def __repr__(self):
+        return f"InputHistoryGroup:{self.action}:{self.start()}-{self.end()}"
+
+
+class InputHistory():
+    def __init__(self):
+        self.history = []
+
+    def clear(self) -> bool:
+        """Return True if something was cleared"""
+        if len(self.history) > 0:
+            self.history = []
+            return True
+        else:
+            self.history = []
+            return False
+    
+    def empty(self):
+        return len(self.history) == 0
+    
+    def record(self, item:InputHistoryItem):
+        item.idx = len(self.history)
+        self.history.append(item)
+    
+    def last(self, action=None) -> InputHistoryItem:
+        for i in reversed(self.history):
+            if not action:
+                return i
+            elif i.action == action:
+                return i
+            elif callable(action):
+                if action(i.action):
+                    return i
+    
+    def undo(self):
+        strokes = self.strokes()
+        if strokes:
+            last_stroke = strokes[-1]
+            self.history = self.history[:last_stroke.start()]
+    
+    def strokes(self, filterfn:Callable[[InputHistoryGroup], bool]=lambda g: True) -> List[InputHistoryGroup]:
+        xs = []
+        for i in self.history:
+            if i.action == "down":
+                xs.append(InputHistoryGroup("down", i.keylayer, []))
+            elif i.action == "up":
+                xs.append(InputHistoryGroup("up", i.keylayer, []))
+            elif i.action == "cmd":
+                xs.append(InputHistoryGroup("cmd", i.keylayer, []))
+            
+            if len(xs) == 0 and i.action == "move":
+                continue
+            else:
+                xs[-1].append(i)
+        return [x for x in xs if filterfn(x)]
+    
+    def downstrokes(self):
+        return self.strokes(lambda g: g.action == "down")
+    
+    def upstrokes(self):
+        return self.strokes(lambda g: g.action == "up")
+    
+    def moved(self) -> bool:
+        last_down = self.last("down")
+        last_up = self.last("up")
+        if last_down and last_up and last_down.idx < last_up.idx:
+            return last_down.position != last_up.position
+        return False
+    
+    def __getitem__(self, index):
+        if len(self.history) > 0:
+            return self.history[index]
+
+
 class RendererState():
     def __init__(self, renderer):
         self.renderer = renderer
@@ -52,9 +167,7 @@ class RendererState():
         self.text = ""
         self.arrow = None
         self.mods = Mods()
-        self.mouse_history = None
-        self.mouse = None
-        self.mouse_down = False
+        self.input_history:InputHistory = InputHistory()
         self.xray = True
         self.selection = [0]
         self.zoom = 1
@@ -105,29 +218,50 @@ class RendererState():
         else:
             print("No source; cannot persist state")
     
+    def record_mouse(self, pos, action):
+        new_mouse = pos.scale(1/self.preview_scale)
+        self.input_history.record(
+            InputHistoryItem(new_mouse, action, self.keylayer, self.controller_values.copy()))
+        if action == "down":
+            return Action.PreviewStoryboard
+        elif action == "up" and self.input_history.moved():
+            return Action.PreviewStoryboard
+        elif action == "move" and self.keylayer == Keylayer.Editing:
+            return Action.PreviewStoryboard
+    
     def on_mouse_button(self, pos, btn, action, mods):
         if btn == 1 and action == glfw.PRESS:
-            self.mouse_history = None
+            self.input_history.clear()
             return Action.PreviewStoryboard
         
         self.mods.update(mods)
         if action == glfw.PRESS:
-            self.mouse_down = True
-            self.mouse = pos.scale(1/self.preview_scale)
-            if not self.mouse_history:
-                self.mouse_history = [[]]
-            else:
-                self.mouse_history.append([])
-            self.mouse_history[-1].append(self.mouse)
-            return Action.PreviewStoryboard
+            return self.record_mouse(pos, "down")
         elif action == glfw.RELEASE:
-            self.mouse_down = False
-            if self.mouse_history:
-                new_mouse = pos.scale(1/self.preview_scale)
-                self.mouse_history[-1].append(new_mouse)
-                if self.mouse:
-                    if new_mouse.x != self.mouse.x and new_mouse.y != self.mouse.y:
-                        return Action.PreviewStoryboard
+            return self.record_mouse(pos, "up")
+    
+    def on_mouse_move(self, pos):
+        return self.record_mouse(pos, "move")
+    
+    @property
+    def mouse_history(self):
+        strokes = self.input_history.downstrokes()
+        strokes = [[p.position for p in s.items] for s in strokes]
+        return strokes
+    
+    @property
+    def mouse_down(self):
+        strokes = self.input_history.strokes()
+        if len(strokes) > 0 and strokes[-1][0] == "down":
+            return True
+        else:
+            return False
+    
+    @property
+    def mouse(self):
+        item = self.input_history.last(lambda a: a in ["up", "down", "move"])
+        if item:
+            return item.position
     
     def mod_preview_scale(self, inc, absolute=0):
         if absolute > 0:
@@ -155,19 +289,10 @@ class RendererState():
         #polygon.closePath()
 
         if self.cmd == clear_on:
-            self.mouse_history = None
+            self.input_history.clear()
             return True, polygon
         else:
             return False, polygon
-
-    def on_mouse_move(self, pos):
-        if self.mouse_down:
-            pos = pos.scale(1/self.preview_scale)
-            if self.mouse:
-                if True or abs(pos.x - self.mouse.x) > 5 or abs(pos.y - self.mouse.y) > 5:
-                    self.mouse = pos
-                    self.mouse_history[-1].append(self.mouse)
-                    return Action.PreviewStoryboard
     
     def on_character(self, codepoint):
         cc = chr(codepoint)
@@ -216,8 +341,8 @@ class RendererState():
                 return Action.PreviewStoryboard
         elif key == glfw.KEY_ESCAPE:
             if self.keylayer == Keylayer.Editing:
-                if self.mouse_history:
-                    self.mouse_history = None
+                cleared = self.input_history.clear()
+                if cleared:
                     return Action.PreviewStoryboard
             
             self.exit_keylayer()
@@ -247,12 +372,13 @@ class RendererState():
                 self.xray = not self.xray
                 return Action.PreviewStoryboard
             elif key == glfw.KEY_Z and self.keylayer == Keylayer.Editing:
-                if self.mouse_history:
-                    if len(self.mouse_history) > 1:
-                        self.mouse_history = self.mouse_history[:-1]
-                    else:
-                        self.mouse_history = None
+                self.input_history.undo()
                 return Action.PreviewStoryboard
+            elif key == glfw.KEY_B and self.keylayer == Keylayer.Editing:
+                self.input_history.record(InputHistoryItem(key, "cmd", self.keylayer, self.controller_values.copy()))
+            elif key == glfw.KEY_C and self.keylayer == Keylayer.Editing:
+                self.input_history.record(InputHistoryItem(key, "cmd", self.keylayer, self.controller_values.copy()))
+
         
         if key == glfw.KEY_S and mods & glfw.MOD_SUPER:
             self.cmd = "save"
@@ -349,7 +475,6 @@ class RendererState():
         self.mods.reset()
         self.watch_mods = {}
         self.watch_soft_mods = {}
-        #self.mouse = None
     
     def toggle_overlay(self, overlay):
         v = not self.overlays.get(overlay, False)
