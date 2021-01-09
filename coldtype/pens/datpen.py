@@ -131,7 +131,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
 
     def lineTo(self, p1):
         """The standard `RecordingPen.lineTo`, but returns self for chainability."""
-        super().lineTo(p1)
+        if len(self.value) == 0:
+            super().moveTo(p1)
+        else:
+            super().lineTo(p1)
         return self
 
     def qCurveTo(self, *points):
@@ -680,8 +683,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
             self.rect(Rect(rect))
         return self
 
-    def roundedRect(self, rect, hr, vr):
+    def roundedRect(self, rect, hr, vr=None):
         """Rounded rectangle primitive"""
+        if vr is None:
+            vr = hr
         l, b, w, h = Rect(rect)
         r, t = l + w, b + h
         K = 4 * (math.sqrt(2)-1) / 3
@@ -736,11 +741,14 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 sc.rotate(180)
         return self.record(sc)
 
-    def line(self, points):
+    def line(self, points, moveTo=True):
         """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""
         if len(points) == 0:
             return self
-        self.moveTo(points[0])
+        if len(self.value) == 0 or moveTo:
+            self.moveTo(points[0])
+        else:
+            self.lineTo(points[0])
         for p in points[1:]:
             self.lineTo(p)
         self.endPath()

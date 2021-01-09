@@ -167,6 +167,7 @@ class RendererState():
         self.text = ""
         self.arrow = None
         self.mods = Mods()
+        self.record_mouse_moves = True
         self.input_history:InputHistory = InputHistory()
         self.xray = True
         self.selection = [0]
@@ -241,7 +242,8 @@ class RendererState():
             return self.record_mouse(pos, "up")
     
     def on_mouse_move(self, pos):
-        return self.record_mouse(pos, "move")
+        if self.record_mouse_moves:
+            return self.record_mouse(pos, "move")
     
     @property
     def mouse_history(self):
