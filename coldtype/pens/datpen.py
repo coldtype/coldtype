@@ -1054,6 +1054,13 @@ class DATPen(RecordingPen, DATPenLikeObject):
         pickle.dump(self, open(str(tmp), "wb"))
         return self
     
+    def Interpolate(instances, value):
+        spread = len(instances)-1
+        start = math.floor(value*spread)
+        end = math.ceil(value*spread)
+        v = value*spread-start
+        return instances[start].interpolate(v, instances[end])
+    
     def from_cbp(ps):
         import beziers.path
         dp = DATPen()
