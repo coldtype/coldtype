@@ -1,6 +1,7 @@
 from fontTools.misc.arrayTools import unionRect
 from fontTools.misc.transform import Transform
 from coldtype.interpolation import norm
+from functools import partialmethod
 from enum import Enum
 import math
 
@@ -380,12 +381,10 @@ class Point():
                 "Invalid index for point assignment, must be 0 or 1")
     
     def setx(self, x):
-        self.x = x
-        return self
+        return Point([x, self.y])
     
     def sety(self, y):
-        self.y = y
-        return self
+        return Point([self.x, y])
 
 
 class Rect():
@@ -690,9 +689,6 @@ class Rect():
     def flip(self, h):
         return Rect([self.x, h - self.h - self.y, self.w, self.h])
 
-    def p(self, s):
-        return self.point(s)
-
     def cardinals(self):
         return self.point("N"), self.point("E"), self.point("S"), self.point("W")
 
@@ -762,6 +758,65 @@ class Rect():
                 py = self.y + self.h/2
 
             return Point((px, py))
+    
+    p = point
+
+    @property
+    def pne(self): return self.point("NE")
+
+    @property
+    def pe(self): return self.point("E")
+
+    @property
+    def pse(self): return self.point("SE")
+
+    @property
+    def ps(self): return self.point("S")
+
+    @property
+    def psw(self): return self.point("SW")
+
+    @property
+    def pw(self): return self.point("W")
+
+    @property
+    def pnw(self): return self.point("NW")
+
+    @property
+    def pn(self): return self.point("N")
 
     def intersects(self, other):
         return not (self.point("NE").x < other.point("SW").x or self.point("SW").x > other.point("NE").x or self.point("NE").y < other.point("SW").y or self.point("SW").y > other.point("NE").y)
+    
+    def tk(self, edges, x, y=None):
+        if edges == -1:
+            edges = ["mnx", "mny"]
+        elif edges == +1:
+            edges = ["mxx", "mxy"]
+        elif edges == 0:
+            edges = ["mdx", "mdy"]
+        
+        r = self
+        if y is not None:
+            r = r.take(y, edges[1])
+        
+        r = r.take(x, edges[0])
+        return r
+
+    def tkmnx(self, n):
+        return self.take(n, "mnx")
+
+    def tkmdx(self, n):
+        return self.take(n, "mdx")
+    
+    def tkmxx(self, n):
+        return self.take(n, "mxx")
+
+    def tkmny(self, n):
+        return self.take(n, "mny")
+
+    def tkmdy(self, n):
+        return self.take(n, "mdy")
+    
+    def tkmxy(self, n):
+        return self.take(n, "mxy")
