@@ -27,7 +27,7 @@ class ColdtypeSerializer(BaseWindowController):
         for g in glyph.layers:
             rp = RecordingPen()
             g.draw(rp)
-            data_out["layers"][g.layer.name] = dict(value=rp.value)
+            data_out["layers"][g.layer.name] = dict(value=rp.value, width=g.width)
         self.output.write_text(json.dumps(data_out))
         print("> wrote glyph data", glyph.name)
 

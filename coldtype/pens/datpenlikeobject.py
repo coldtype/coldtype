@@ -367,12 +367,18 @@ class DATPenLikeObject():
         sleep(time)
         return self
 
-    def chain(self, fn:[["DATPenLikeObject"], None]):
+    def chain(self, fn:[["DATPenLikeObject"], None], *args):
         """
         For simple take-one callback functions in a chain
         """
-        fn(self)
+        fn(self, *args)
         return self
+    
+    def replace(self, fn:[["DATPenLikeObject"], None], *args):
+        """
+        For simple take-one callback functions in a chain, to return what the function returns (not the element itself)
+        """
+        return fn(self, *args)
     
     def cond(self, condition, if_true: Callable[["DATPenLikeObject"], None], if_false=Callable[["DATPenLikeObject"], None]):
         if condition:
