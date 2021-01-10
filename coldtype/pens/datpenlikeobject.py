@@ -371,7 +371,8 @@ class DATPenLikeObject():
         """
         For simple take-one callback functions in a chain
         """
-        fn(self, *args)
+        if fn:
+            fn(self, *args)
         return self
     
     def replace(self, fn:[["DATPenLikeObject"], None], *args):
