@@ -378,6 +378,14 @@ class Point():
         else:
             raise IndexError(
                 "Invalid index for point assignment, must be 0 or 1")
+    
+    def setx(self, x):
+        self.x = x
+        return self
+    
+    def sety(self, y):
+        self.y = y
+        return self
 
 
 class Rect():

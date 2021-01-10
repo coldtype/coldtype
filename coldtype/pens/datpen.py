@@ -113,6 +113,11 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = value
         return self
     
+    def printvl(self):
+        from pprint import pprint
+        pprint(self.value)
+        return self
+    
     def take(self, slice):
         self.value = self.value[slice]
         return self
@@ -741,7 +746,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 sc.rotate(180)
         return self.record(sc)
 
-    def line(self, points, moveTo=True):
+    def line(self, points, moveTo=True, endPath=True):
         """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""
         if len(points) == 0:
             return self
@@ -751,7 +756,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
             self.lineTo(points[0])
         for p in points[1:]:
             self.lineTo(p)
-        self.endPath()
+        if endPath:
+            self.endPath()
         return self
     
     def hull(self, points):
