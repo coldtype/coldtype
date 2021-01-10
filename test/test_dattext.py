@@ -27,3 +27,10 @@ def test_midi(r, rs):
     nxl = LaunchControlXL(rs.midi)
     style = Style(co, 250, wdth=nxl(10, 0), fill=hsl(nxl(11, 0)))
     return DATText("CLDTYP", style, r.inset(50))
+
+@test((1000, 300), solo=1)
+def test_align(r):
+    return [
+        DATPen().rect(r).f(1, 0.75),
+        DATText("COLDTYPE", Style(co, 150), r.inset(50))
+    ]
