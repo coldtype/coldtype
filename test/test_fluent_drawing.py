@@ -110,8 +110,8 @@ def _N(r, g):
             .tag("diagonal")))
 
 
-@animation((1000, 1000), timeline=Timeline(3))
-def curves(f):
+@animation((1000, 1000), timeline=Timeline(3), rstate=1)
+def curves(f, rs):
     r = f.a.r
     caps = [_N, _P, _R]
     glyph = caps[f.i](r, Glyph())
@@ -122,6 +122,8 @@ def curves(f):
         .s(0)
         .sw(2)
         .translate(100, 100))
+    
+    overlay = Overlay.Info in rs.overlays
 
     return DATPenSet([
         glyph,
@@ -133,7 +135,7 @@ def curves(f):
             .removeOverlap()
             .f(0)
             .color_phototype(r)
-            .img_opacity(0.25)
+            .img_opacity(0.25 if overlay else 1)
             #.img_opacity(1)
         )
         ])
