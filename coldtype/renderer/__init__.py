@@ -348,6 +348,7 @@ class Renderer():
         if self.disable_syntax_mods:
             return source_code
         source_code = re.sub(r"\-\.[A-Za-z_]+([A-Za-z_0-9]+)?\(", ".noop(", source_code)
+        source_code = re.sub(r"λ", "lambda ", source_code)
         return source_code
 
     def reload(self, trigger):
@@ -1497,7 +1498,7 @@ class Renderer():
                     self.playing_preloaded_frame = 0
                 ptime.sleep(0.01)
             else:
-                ptime.sleep(0.01)
+                ptime.sleep(1)
                 self.glfw_last_time = t
                 self.turn_over()
                 global last_line

@@ -3,7 +3,7 @@ from fontTools.misc.transform import Transform
 from coldtype.interpolation import norm
 from functools import partialmethod
 from enum import Enum
-import math
+import math, re
 
 YOYO = "ma"
 
@@ -820,3 +820,47 @@ class Rect():
     
     def tkmxy(self, n):
         return self.take(n, "mxy")
+    
+    def __truediv__(self, s):
+        ys = s.split("^")
+        xs = re.split(r"\s", ys[0].strip())
+        edges = []
+        amounts = []
+        sfx = ["x", "y"]
+        for idx, x in enumerate(xs):
+            if x[0] == "-":
+                edges.append("mn" + sfx[idx])
+            elif x[0] == "+":
+                edges.append("mx" + sfx[idx])
+            elif x[0] == "=":
+                edges.append("md" + sfx[idx])
+            elif x[0] == "1":
+                edges.append("mn" + sfx[idx])
+                amounts.append(1)
+                continue
+            amounts.append(float(x[1:]))
+        
+        r = self.take(amounts[0], edges[0]).take(amounts[1], edges[1])
+        if len(ys) > 1:
+            xs = ys[1].strip()
+            op = xs[0].strip()
+            xs = xs[1:]
+            xs = re.split(r"\s", xs.strip())
+            offs = []
+            for idx, x in enumerate(xs):
+                offs.append(eval(x))
+            if op == "o":
+                r = r.offset(offs[0], offs[1])
+            elif op == "i":
+                r = r.inset(offs[0], offs[1])
+
+        return r
+
+if __name__ == "<run_path>":
+    #from coldtype import renderable, DATPen
+    from coldtype.renderable import renderable
+    from coldtype.pens.datpen import DATPen
+
+    @renderable((1000, 1000))
+    def shorthand(r):
+        return DATPen().oval(r / "=500 =500")
