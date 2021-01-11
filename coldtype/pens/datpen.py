@@ -1499,6 +1499,13 @@ class DATPens(DATPen):
             if p.getTag() == tag:
                 yield p
     
+    def fmmap(self, filter_fn:Callable[[int, DATPen], bool], map_fn:Callable[[int, DATPen], None]):
+        for idx, p in enumerate(self.pens):
+            if filter_fn(idx, p):
+                map_fn(idx, p)
+        return self
+
+    
     def ffg(self, glyph_name):
         """(f)ind the (f)irst (g)lyph named this name"""
         return list(self.glyphs_named(glyph_name))[0]

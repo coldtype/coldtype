@@ -34,6 +34,8 @@ class Glyph(DATPenSet):
         for k, v in res.items():
             if callable(v):
                 v = v(self)
+            elif isinstance(v, str):
+                v = self.bx / self.varstr(v)
             self.c.lookup[k] = v
             setattr(self.c, k, v)
         return self
@@ -41,7 +43,7 @@ class Glyph(DATPenSet):
     def varstr(self, v):
         vs = re.sub(r"\$([^\s]+)", lambda m: str(eval("g.c." + m.group(1), {"g":self})), v)
         vs = re.sub(r"\&([^\s]+)", lambda m: str(eval("g." + m.group(1), {"g":self})), vs)
-        print(">>>", vs)
+        #print(">>>", vs)
         return vs
     
     def remove(self, k):
@@ -79,38 +81,66 @@ class Glyph(DATPenSet):
             return super().record(fn)
 
 
-def evencurve(p:DATPen, t, a, b, x):
+def evencurve(p:DATPen, t, a, b, x=0):
     if len(p.value) == 0:
         p.moveTo(a)
     else:
         p.lineTo(a)
     
+    try:
+        t1, t2 = t
+    except TypeError:
+        t1, t2 = t, t
+    
     ex = a.interp(0.5, b).setx(x)
     c1 = a.setx(x)
     c2 = b.setx(x)
-    p.curveTo(a.interp(t, c1), ex.interp(t, c1), ex)
-    p.curveTo(ex.interp(t, c2), b.interp(t, c2), b)
+    p.curveTo(a.interp(t1, c1), ex.interp(t2, c1), ex)
+    p.curveTo(ex.interp(t2, c2), b.interp(t1, c2), b)
+
+def evencurvey(p:DATPen, t, a, b, y):
+    if len(p.value) == 0:
+        p.moveTo(a)
+    else:
+        p.lineTo(a)
+    
+    try:
+        t1, t2 = t
+    except TypeError:
+        t1, t2 = t, t
+    
+    ey = a.interp(0.5, b).sety(y)
+    c1 = a.sety(y)
+    c2 = b.sety(y)
+    p.curveTo(a.interp(t1, c1), ey.interp(t2, c1), ey)
+    p.curveTo(ey.interp(t2, c2), b.interp(t1, c2), b)
 
 @glyphfn(630)
 def _A(r, g):
     return (g
+        .constants(
+            t=g.bx.pn.offset(-10, 0))
+        .constants(
+            tl=g.c.t.offset(-70, 0),
+            tr=g.c.t.offset(80, 0))
         .register(
             bl="-$srfw-20 -$srfh",
             br="+$srfw -$srfh",
-            cap="=$srfw +$srfh")
+            cap="=$srfw +$srfh",
+            xbar="=0.4 =100 ^o 0 -50")
         .remove("stem")
-        #.remove("cap")
-        .realize()
+        .remove("cap")
         .record(DATPen()
             .line([
                 g.bl.pnw.offset(100, 0),
-                g.cap.psw.offset(50, 0),
-                g.cap.pse.offset(-50, 0),
-                g.br.pne.offset(-70, 0),
-                g.br.pnw.offset(70, 0),
-                g.cap.ps,
+                g.c.tl,
+                g.c.tr,
+                g.br.pne.offset(-80, 0),
+                g.br.pnw.offset(80, 0),
+                g.c.tr.offset(-130, 0),
+                g.c.tl.offset(85, 0),
                 g.bl.pne.offset(-100, 0)
-            ])))
+            ]).reverse()))
 
 @glyphfn(550)
 def _I(r, g):
@@ -118,25 +148,42 @@ def _I(r, g):
         .register(
             base="-$srfw+50 -$srfh",
             cap="-$srfw+50 +$srfh",
-            stem=g.stem.offset(25, 0))
-        .realize())
+            stem=g.stem.offset(25, 0)))
 
 @glyphfn(550)
-def _P(r, g, mod=None):
+def _P(r, g, mod=None, xc=0, ci=30):
     return (g
         .register(
             base="-$srfw+10 -$srfh",
-            cap="-$srfw-70 +$srfh",
-            mid=λg: g.bx / g.varstr("-&cap.w =$srfh-50") / "+0.5 1 ^o 0 -30")
+            cap="-$srfw-50 +$srfh",
+            mid=λg: g.bx / g.varstr("-&cap.w =$srfh-70") / "+0.5 1 ^o 0 -30")
         .chain(mod)
-        .realize()
         .record(lambda g: DATPen()
-            .chain(evencurve, 0.75,
-                g.cap.pse, g.mid.pne, g.bx.pe.x-g.stem.w-30)
+            .chain(evencurve, 0.9,
+                g.cap.pse, g.mid.pne, g.bx.pe.x-g.stem.w-ci+xc)
             .chain(evencurve, 0.65,
-                g.mid.pse, g.cap.pne, g.bx.pe.x)
+                g.mid.pse, g.cap.pne, g.bx.pe.x+xc)
             .closePath()
             .tag("curve")))
+
+@glyphfn(_P.w)
+def _B(r, g):
+    return (_P.func(r, g, xc=-20, ci=20, mod=lambda g:
+        g.register(
+            base=g.base.take(g.cap.w, "mnx"),
+            mid=g.mid.offset(20, 30).inset(15)))
+        .record(lambda g: DATPen()
+            .chain(evencurve, 0.9,
+                g.mid.pse, g.base.pne, g.bx.pe.x-g.stem.w-30)
+            .chain(evencurve, 0.7,
+                g.base.pse, g.mid.pne.offset(-150, 0), g.bx.pe.x+20)
+            .closePath()))
+
+@glyphfn(_P.w)
+def _D(r, g):
+    return (_P.func(r, g, xc=30, ci=40, mod=lambda g:
+        g.register(mid=g.base.take(g.cap.w, "mnx"))
+            .remove("base")))
 
 @glyphfn(_P.w)
 def _R(r, g):
@@ -167,7 +214,6 @@ def _N(r, g):
             steml="-$nst 1 ^o $innst 0",
             stemr="+$nst 1 ^o -$innst 0")
         .remove("stem")
-        .realize()
         .append(DATPen()
             .line([
                 g.steml.pnw.offset(0, 0),
@@ -177,8 +223,51 @@ def _N(r, g):
             .closePath()
             .tag("diagonal")))
 
+@glyphfn(550)
+def _O(r, g):
+    return (g
+        .constants(
+            hw=g.c.stem+20,
+            o="1 1",
+            oc=λg: g.c.o.inset(g.c.hw, g.c.srfh))
+        .remove("stem")
+        .record(DATPen()
+            .tag("O")
+            .chain(evencurvey, 0.65,
+                g.c.o.pe.offset(0, 50),
+                g.c.o.pw.offset(0, 50),
+                g.c.o.pn.y,
+                )
+            .chain(evencurvey, 0.65,
+                g.c.o.pw.offset(0, -50),
+                g.c.o.pe.offset(0, -50),
+                g.c.o.ps.y)
+            .closePath()
+            .record(DATPen()
+                .chain(evencurvey, 0.85,
+                    g.c.oc.pe.offset(0, 60),
+                    g.c.oc.pw.offset(0, 60),
+                    g.c.oc.pn.y,
+                    )
+                .chain(evencurvey, 0.85,
+                    g.c.oc.pw.offset(0, -60),
+                    g.c.oc.pe.offset(0, -60),
+                    g.c.oc.ps.y)
+                .closePath()
+                .reverse())))
 
-caps = [_A, _I, _N, _P, _R]
+@glyphfn(_O.w-50)
+def _C(r, g):
+    g = _O.func(r, g)
+    ht, hm, hb = g.bx.take(g.c.hw, "mxx").divide(150, "mdy")
+    return (g
+        .register(horn=f"+{ht.w} +{ht.h}")
+        .fmmap(λi,p: p.getTag() == "O", λi,p:
+            p.difference(DATPen()
+                .rect(g.bx / g.varstr("+0.5 =$srfh-20")))))
+
+
+caps = [_A, _B, _C, _D, _I, _N, _O, _P, _R]
 
 @animation((1000, 1000), timeline=Timeline(len(caps)), rstate=1)
 def curves(f, rs):
@@ -194,10 +283,9 @@ def curves(f, rs):
             srfw=lambda g: g.c.instem+g.c.stem+g.c.instem)
         .register(
             stem="-$stem 1 ^o $instem 0"))
-    
-    glyph = cap.func(r, g)
 
-    (glyph
+    glyph = (cap.func(r, g)
+        .realize()
         .round(0)
         .f(None)
         .s(0)
@@ -207,12 +295,13 @@ def curves(f, rs):
     overlay = Overlay.Info in rs.overlays
 
     return DATPenSet([
-        #glyph,
-        #DATPen().rect(glyph.bx).translate(100, 100).f(None).s(hsl(0.9, a=0.3)).sw(5),
-        #DATPen().rect(glyph.bounds()).f(None).s(hsl(0.7, a=0.3)).sw(5),
-        #DATPen().gridlines(r, 50, absolute=True),
+        glyph.copy().f(None).s(hsl(0.5, a=0.5)).sw(20),
+        DATPen().rect(glyph.bx).translate(100, 100).f(None).s(hsl(0.9, a=0.3)).sw(5),
+        DATPen().rect(glyph.bounds()).f(None).s(hsl(0.7, a=0.3)).sw(5),
+        DATPen().gridlines(r, 50, absolute=True),
         (glyph
             .copy()
+            .pen()
             .removeOverlap()
             .f(0)
             .color_phototype(r)
