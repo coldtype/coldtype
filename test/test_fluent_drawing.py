@@ -1,8 +1,8 @@
 from coldtype import *
 from coldtype.grid import Grid
 
-SRFH = 170
-STEM = 125
+SRFH = 150
+STEM = 115
 INSTEM = 100
 SRFW = INSTEM+STEM+INSTEM
 
@@ -109,7 +109,7 @@ def _N(r):
 
 @renderable((1000, 1000))
 def curves(r):
-    glyph = _R(r)
+    glyph = _P(r)
 
     (glyph
         .round(0)
