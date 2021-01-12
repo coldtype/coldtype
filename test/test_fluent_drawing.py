@@ -150,6 +150,39 @@ def _I(r, g):
             cap="-$srfw+50 +$srfh",
             stem=g.stem.offset(25, 0)))
 
+@glyphfn(650)
+def _H(r, g):
+    return (g
+        .register(
+            stemr="+$stem 1 ^o -$instem 0",
+            bl="-$srfw -$srfh",
+            br="+$srfw -$srfh",
+            cl="-$srfw +$srfh",
+            cr="+$srfw +$srfh",
+            xbar="1 =$xbarh ^i $instem 0",
+        ))
+
+@glyphfn(500)
+def _E(r, g):
+    return (g
+        .register(
+            base="1 -$srfh",
+            cap="1 +$srfh",
+            eart="+$stem +$earh",
+            earb="+$stem -$earh",
+            mid=λg: g.bx.take(g.c.srfh/2, "mdy")
+                .subtract(g.c.instem, "mnx")
+                .subtract(g.eart.w+30, "mxx")))
+
+@glyphfn(500)
+def _F(r, g):
+    return (g
+        .register(
+            base="-$srfw+10 -$srfh",
+            cap="1 +$srfh",
+            mid="-250 =$srfh/2 ^o $instem -20",
+            ear="+$stem +$earh"))
+
 @glyphfn(550)
 def _P(r, g, mod=None, xc=0, ci=30):
     return (g
@@ -225,33 +258,38 @@ def _N(r, g):
 
 @glyphfn(500)
 def _O(r, g, clx=0):
+    (g.constants(
+        hw=g.c.stem+20,
+        o=g.bx.inset(0, -10),
+        oc=λg: g.c.o.inset(g.c.hw, g.c.srfh)))
+
+    outer = (DATPen()
+        .tag("O")
+        .chain(evencurvey, 0.65,
+            g.c.o.pe.offset(0, 50),
+            g.c.o.pw.offset(0, 50),
+            g.c.o.pn.y,
+            )
+        .chain(evencurvey, 0.65,
+            g.c.o.pw.offset(0, -50),
+            g.c.o.pe.offset(0, -50),
+            g.c.o.ps.y)
+        .closePath())
+    
+    g.add_data("outer", outer.copy())
+
     return (g
-        .constants(
-            hw=g.c.stem+20,
-            o=g.bx.inset(0, -10),
-            oc=λg: g.c.o.inset(g.c.hw, g.c.srfh))
         .remove("stem")
-        .record(DATPen()
-            .tag("O")
-            .chain(evencurvey, 0.65,
-                g.c.o.pe.offset(0, 50),
-                g.c.o.pw.offset(0, 50),
-                g.c.o.pn.y,
-                )
-            .chain(evencurvey, 0.65,
-                g.c.o.pw.offset(0, -50),
-                g.c.o.pe.offset(0, -50),
-                g.c.o.ps.y)
-            .closePath()
+        .record(outer
             .record(DATPen()
                 .chain(evencurvey, 0.85,
-                    g.c.oc.pe.offset(0, 60),
-                    g.c.oc.pw.offset(0+clx, 60),
+                    g.c.oc.pe.offset(0, 40),
+                    g.c.oc.pw.offset(0+clx, 40),
                     g.c.oc.pn.y,
                     )
                 .chain(evencurvey, 0.85,
-                    g.c.oc.pw.offset(0+clx, -60),
-                    g.c.oc.pe.offset(0, -60),
+                    g.c.oc.pw.offset(0+clx, -40),
+                    g.c.oc.pe.offset(0, -40),
                     g.c.oc.ps.y)
                 .closePath()
                 .reverse())))
@@ -262,15 +300,22 @@ def _C(r, g):
     ht, hm, hb = g.bx.take(g.c.hw, "mxx").divide(90, "mdy")
     O = g.fft("O")
     O.difference(DATPen().rect(hm))
-    O.add_pt(0, 0.5, lambda p: p.offset(-50, -60).rotate(0))
+    O.add_pt(0, 0.5, lambda p: p.offset(-50, -120).rotate(-60))
     
     return (g
         .register(
             horn=f"+{ht.w} +{ht.h}"
             ))
 
+@glyphfn(_C.w)
+def _G(r, g):
+    g = _C.func(r, g)
+    xbar = g.bx / g.varstr("+0.5 =$xbarh ^o 0 -50")
+    g.record(DATPen().rect(xbar).intersection(g.data["outer"].copy()))
+    return g
 
-caps = [_A, _B, _C, _D, _I, _N, _O, _P, _R]
+
+caps = [_A, _B, _C, _D, _E, _F, _G, _H, _I, _N, _O, _P, _R]
 
 @animation((1000, 1000), timeline=Timeline(len(caps)), rstate=1, storyboard=[2])
 def curves(f, rs):
@@ -283,7 +328,9 @@ def curves(f, rs):
             srfh=180,
             stem=115,
             instem=100,
-            srfw=lambda g: g.c.instem+g.c.stem+g.c.instem)
+            xbarh=100,
+            earh=λg: g.c.srfh + 150,
+            srfw=λg: g.c.instem + g.c.stem + g.c.instem)
         .register(
             stem="-$stem 1 ^o $instem 0"))
 

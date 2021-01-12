@@ -25,7 +25,7 @@ from noise import pnoise1
 
 import coldtype.pens.drawbot_utils as dbu
 
-from coldtype.geometry import Rect, Edge, Point, txt_to_edge
+from coldtype.geometry import Rect, Edge, Point, txt_to_edge, calc_angle
 from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
 from coldtype.color import Gradient, normalize_color, Color
 from coldtype.pens.misc import ExplodingPen, SmoothPointsPen, BooleanOp, calculate_pathop
@@ -51,14 +51,11 @@ class DATBPT():
         return c.cdist(b), c.cdist(d)
     
     def rotate(self, angle):
-        print("ROTATE", angle)
         c = self.ps[1]
         bdist, bang = c.cdist(self.ps[0])
         ddist, dang = c.cdist(self.ps[2])
-        print(bdist, bang)
-        print(ddist, dang)
-        self.ps[0] = c.project(bang, bdist)
-        self.ps[2] = c.project(dang, ddist)
+        self.ps[0] = c.project(bang + angle, bdist)
+        self.ps[2] = c.project(dang + angle, ddist)
         return self
     
     def offset(self, x, y):
