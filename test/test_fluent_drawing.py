@@ -115,31 +115,40 @@ def evencurvey(p:DATPen, t, a, b, y):
     p.curveTo(a.interp(t1, c1), ey.interp(t2, c1), ey)
     p.curveTo(ey.interp(t2, c2), b.interp(t1, c2), b)
 
-@glyphfn(630)
+@glyphfn(750)
 def _A(r, g):
+    b = g.bx.take(g.c.srfh, "mny").take(g.c.srfw, "mnx")
+    gap, bl = b.divide(g.c.gap, "mxx")
+    br = b.offset(gap.pse.x, 0)
+
+    bli = 100
+    bri = 80
+
     return (g
-        .constants(
-            t=g.bx.pn.offset(-10, 0))
-        .constants(
-            tl=g.c.t.offset(-70, 0),
-            tr=g.c.t.offset(80, 0))
         .register(
-            bl="-$srfw-20 -$srfh",
-            br="+$srfw -$srfh",
+            bl=bl,
+            br=br,
             cap="=$srfw +$srfh",
-            xbar="=0.4 =100 ^o 0 -50")
+            xbar=λg: g.bx.take(g.c.xbarh, "mdy")
+                .offset(0, -50)
+                .setmnx(g.bl.pne.offset(-bli, 0).x)
+                .setmxx(g.br.pnw.offset(bri, 0).x))
+        .constants(
+            t=g.bl.pne.offset(14, 0).sety(g.bx.h),#.pn.offset(-10, 0),
+            tl=λg: g.c.t.offset(-70, 0),
+            tr=λg: g.c.t.offset(80, 0))
         .remove("stem")
         .remove("cap")
         .record(DATPen()
             .line([
-                g.bl.pnw.offset(100, 0),
+                g.bl.pnw.offset(bli, 0),
                 g.c.tl,
                 g.c.tr,
-                g.br.pne.offset(-80, 0),
-                g.br.pnw.offset(80, 0),
+                g.br.pne.offset(-bri, 0),
+                g.br.pnw.offset(bri, 0),
                 g.c.tr.offset(-130, 0),
                 g.c.tl.offset(85, 0),
-                g.bl.pne.offset(-100, 0)
+                g.bl.pne.offset(-bli, 0)
             ]).reverse()))
 
 @glyphfn(550)
@@ -150,16 +159,16 @@ def _I(r, g):
             cap="-$srfw+50 +$srfh",
             stem=g.stem.offset(25, 0)))
 
-@glyphfn(650)
+@glyphfn(750)
 def _H(r, g):
     return (g
         .register(
-            stemr="+$stem 1 ^o -$instem 0",
             bl="-$srfw -$srfh",
-            br="+$srfw -$srfh",
+            br=λg: g.bl.offset(g.bl.w+g.c.gap, 0),
             cl="-$srfw +$srfh",
-            cr="+$srfw +$srfh",
-            xbar="1 =$xbarh ^i $instem 0",
+            cr=λg: g.cl.offset(g.cl.w+g.c.gap, 0),
+            stemr=λg: g.stem.offset(g.cl.w+g.c.gap, 0),
+            xbar=λg: g.stem.union(g.stemr).take(g.c.xbarh, "mdy")
         ))
 
 @glyphfn(500)
@@ -170,18 +179,16 @@ def _E(r, g):
             cap="1 +$srfh",
             eart="+$stem +$earh",
             earb="+$stem -$earh",
-            mid=λg: g.bx.take(g.c.srfh/2, "mdy")
+            mid=λg: g.bx.take(g.c.xbarh, "mdy")
                 .subtract(g.c.instem, "mnx")
                 .subtract(g.eart.w+30, "mxx")))
 
 @glyphfn(500)
 def _F(r, g):
-    return (g
+    return (_E.func(r, g)
+        .remove("earb")
         .register(
-            base="-$srfw+10 -$srfh",
-            cap="1 +$srfh",
-            mid="-250 =$srfh/2 ^o $instem -20",
-            ear="+$stem +$earh"))
+            base="-$srfw+10 -$srfh"))
 
 @glyphfn(550)
 def _T(r, g):
@@ -246,10 +253,21 @@ def _D(r, g):
 def _R(r, g):
     return (_P.func(r, g, mod=lambda g:
         g.register(
-            base=g.base.subtract(50, "mxx"),
+            base=g.base.subtract(20, "mxx"),
             mid=g.mid.offset(0, 30),
-            baser="+200 -$srfh ^o 20 0"))
-        .record(lambda g: DATPen()
+            baser="+$srfw-60 -$srfh ^o 30 0"))
+        .record(DATPen()
+            .moveTo(g.mid.pse.offset(-50, 0))
+            .boxCurveTo(g.baser.pnw, ("NE"), 0.75)
+            #.lineTo(g.baser.psw)
+            .boxCurveTo(g.baser.ps.offset(20, 0), "SW", 0.75)
+            .lineTo(g.baser.pse)
+            .lineTo(g.baser.pne)
+            .lineTo(g.baser.pne.offset(-g.c.stem, 0))
+            .boxCurveTo(g.mid.pse.offset(50, 20), "NE", 0.65)
+            .closePath())
+        .remove("baser")
+        -.record(lambda g: DATPen()
             .line([
                 g.mid.pse.offset(-20, 0),
                 g.baser.psw,
@@ -321,7 +339,7 @@ def _O(r, g, clx=0):
 @glyphfn(_O.w)
 def _C(r, g):
     g = _O.func(r, g, clx=15)
-    ht, hm, hb = g.bx.take(g.c.hw, "mxx").divide(90, "mdy")
+    ht, hm, hb = g.bx.take(g.c.hw, "mxx").divide(g.c.xbarh, "mdy")
     O = g.fft("O")
     O.difference(DATPen().rect(hm))
     O.add_pt(0, 0.5, λp: p.offset(0, -100))
@@ -340,32 +358,6 @@ def _G(r, g):
     g.record(DATPen().rect(xbar).intersection(g.data["outer"].copy()))
     return g
 
-def boxCurveTo(self, pt, point, factor, mods={}):
-    a = Point(self.value[-1][-1][-1])
-    d = Point(pt)
-    box = Rect.FromMnMnMxMx([min(a.x, d.x), min(a.y, d.y), max(a.x, d.x), max(a.y, d.y)])
-    try:
-        f1, f2 = factor
-    except TypeError:
-        f1, f2 = (factor, factor)
-
-    if isinstance(point, str):
-        p1, p2 = (point, point)
-    else:
-        p1, p2 = point
-    
-    b = a.interp(f1, box.point(p1))
-    c = d.interp(f2, box.point(p2))
-    if mb := mods.get("b"):
-        b = mb(b)
-    elif mc := mods.get("c"):
-        c = mc(c)
-    self.curveTo(b, c, d)
-    return self
-
-
-DATPen.boxCurveTo = boxCurveTo
-
 @glyphfn(500)
 def _S(r, g):
     return (g
@@ -374,43 +366,42 @@ def _S(r, g):
             hornl="-$stem -$earh",
             hornr="+$stem +$earh-10")
         .record(DATPen()
-            .moveTo(g.hornr.point("C").offset(0, -10))
-            .boxCurveTo(g.bx.pn.offset(-30, g.c.over),
+            .moveTo(g.hornr.point("C").offset(0, -10)) # TOPRESET
+            .boxCurveTo(g.bx.pn.offset(-30, g.c.over), # TOPBEGIN
                 "NE",
                 (0.25, 0.75),
-                dict(b=λp: p.offset(-10, 0)))
-            .boxCurveTo(g.bx.pnw.offset(0, -g.c.earh/2-20),
+                dict(b=λp: p.offset(-50, 0)))
+            .boxCurveTo(g.bx.pnw.offset(2, -g.c.earh/2-50), # OUTLEFT
                 "NW",
-                0.6)
-            .boxCurveTo(g.bx.pse.offset(-g.c.stem-40, g.c.srfh+40),
+                0.58)
+            .boxCurveTo(g.bx.pse.offset(-g.c.stem-30, g.c.srfh+30), # BIGDOWN
                 ("SW", "NE"),
-                (0.85, 0.35))
-            .boxCurveTo(g.bx.ps.offset(20, g.c.srfh-g.c.over*2),
+                (0.65, 0.35))
+            .boxCurveTo(g.bx.ps.offset(35, g.c.srfh-g.c.over*2), # BOTSMALL
                 "SE",
-                0.65)
-            .boxCurveTo(g.hornl.pne,
+                0.6)
+            .boxCurveTo(g.hornl.pne, # BOTLAND
                 "SW",
-                0.65,
-                dict(c=λp: p.offset(10, 0)))
-            .lineTo(g.hornl.point("C").offset(0, 10))
-            .boxCurveTo(g.bx.ps.offset(40, -g.c.over),
+                0.5,
+                dict(c=λp: p.offset(35, -20)))
+            .lineTo(g.hornl.point("C").offset(0, 20)) # BOTRESET
+            .boxCurveTo(g.bx.ps.offset(40, -g.c.over), # BOTBEGIN
                 "SW",
-                (0.25, 0.75),
-                dict(b=λp: p.offset(10, 0)))
-            .boxCurveTo(g.bx.pse.offset(0, g.c.earh/2+20),
+                (0.25, 0.7),
+                dict(b=λp: p.offset(40, 0)))
+            .boxCurveTo(g.bx.pse.offset(20, g.c.earh/2+45), # OUTRIGHT
                 "SE",
-                (0.6, 0.6))
-            .boxCurveTo(g.bx.pnw.offset(g.c.stem+40, -g.c.srfh-40),
+                0.6)
+            .boxCurveTo(g.bx.pnw.offset(g.c.stem+30, -g.c.srfh-30), # BIGUP
                 ("NE", "SW"),
-                (0.85, 0.35))
-            .boxCurveTo(g.bx.pn.offset(-20, -g.c.srfh+g.c.over*2),
+                (0.65, 0.35))
+            .boxCurveTo(g.bx.pn.offset(-40, -g.c.srfh+g.c.over*2), # TOPSMALL
                 "NW",
                 0.65)
-            .boxCurveTo(g.hornr.psw,
+            .boxCurveTo(g.hornr.psw, # TOPLAND
                 "NE",
-                0.65,
-                dict(c=λp: p.offset(-10, 0)))
-            .lineTo(g.hornr.psw)
+                0.4,
+                dict(c=λp: p.offset(-35, 40)))
             .closePath()
             .pvl()))
 
@@ -429,7 +420,8 @@ def curves(f, rs):
             instem=100,
             xbarh=100,
             over=10,
-            earh=λg: g.c.srfh + 150,
+            gap=20,
+            earh=λg: g.bx.divide(g.c.xbarh, "mdy")[0].h,#.srfh + 150,
             srfw=λg: g.c.instem + g.c.stem + g.c.instem)
         .register(
             stem="-$stem 1 ^o $instem 0"))
@@ -445,19 +437,19 @@ def curves(f, rs):
     overlay = Overlay.Info in rs.overlays
 
     return DATPenSet([
-        glyph.copy().f(None).s(hsl(0.5, a=0.5)).sw(20) if overlay else None,
+        glyph.copy().f(None).s(0, 0.5).sw(10),
         DATPen().rect(glyph.bx).translate(100, 100).f(None).s(hsl(0.9, a=0.3)).sw(5) if overlay else None,
         DATPen().rect(glyph.bounds()).f(None).s(hsl(0.7, a=0.3)).sw(5) if overlay else None,
         DATPen().gridlines(r, 50, absolute=True) if overlay else None,
-        (glyph
-            .copy()
-            .pen()
-            .removeOverlap()
-            .f(0)
-            .color_phototype(r)
-            .img_opacity(0.25 if overlay else 1)
-            #.img_opacity(1)
-        ),
+        #(glyph
+        #    .copy()
+        #    .pen()
+        #    .removeOverlap()
+        #    .f(0)
+        #    .color_phototype(r)
+        #    .img_opacity(0.25 if overlay else 1)
+        #    #.img_opacity(1)
+        #),
         (glyph.pen().skeleton()) if overlay else None,
-        glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.bounds().w+30, 0).f(0).s(None)
+        glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.bounds().w+30, 0).f(0).s(None).color_phototype(r, blur=5)
         ])

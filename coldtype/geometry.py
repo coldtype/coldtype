@@ -795,6 +795,26 @@ class Rect():
     def intersects(self, other):
         return not (self.point("NE").x < other.point("SW").x or self.point("SW").x > other.point("NE").x or self.point("NE").y < other.point("SW").y or self.point("SW").y > other.point("NE").y)
     
+    def setmnx(self, x):
+        return Rect([x, self.y, self.w, self.h])
+    
+    def setmny(self, y):
+        return Rect([self.x, y, self.w, self.h])
+    
+    def setmxx(self, x):
+        mnx, mny, mxx, mxy = self.mnmnmxmx()
+        return Rect.FromMnMnMxMx([mnx, mny, x, mxy])
+    
+    def setmxy(self, x):
+        mnx, mny, mxx, mxy = self.mnmnmxmx()
+        return Rect.FromMnMnMxMx([mnx, mny, mxx, y])
+    
+    def setmn(self, mn):
+        return self.setmnx(mn.x).setmny(mn.y)
+
+    def setmx(self, mx):
+        return self.setmxx(mx.x).setmxy(mx.y)
+    
     def tk(self, edges, x, y=None):
         if edges == -1:
             edges = ["mnx", "mny"]

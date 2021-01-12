@@ -230,6 +230,29 @@ class DATPen(RecordingPen, DATPenLikeObject):
         super().endPath()
         return self
     
+    def boxCurveTo(self, pt, point, factor, mods={}):
+        a = Point(self.value[-1][-1][-1])
+        d = Point(pt)
+        box = Rect.FromMnMnMxMx([min(a.x, d.x), min(a.y, d.y), max(a.x, d.x), max(a.y, d.y)])
+        try:
+            f1, f2 = factor
+        except TypeError:
+            f1, f2 = (factor, factor)
+
+        if isinstance(point, str):
+            p1, p2 = (point, point)
+        else:
+            p1, p2 = point
+        
+        b = a.interp(f1, box.point(p1))
+        c = d.interp(f2, box.point(p2))
+        if mb := mods.get("b"):
+            b = mb(b)
+        elif mc := mods.get("c"):
+            c = mc(c)
+        self.curveTo(b, c, d)
+        return self
+    
     def interpolate(self, value, other):
         vl = []
         for idx, (mv, pts) in enumerate(self.value):
