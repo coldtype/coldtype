@@ -360,6 +360,9 @@ class Point():
         # dist = math.sqrt(math.pow(opp, 2) + math.pow(adj, 2))
         # return abs(dist), math.degrees(deg)
     
+    #def box(self, other):
+
+    
     def __eq__(self, o):
         try:
             return all([self.x == o.x, self.y == o.y])

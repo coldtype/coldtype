@@ -183,6 +183,16 @@ def _F(r, g):
             mid="-250 =$srfh/2 ^o $instem -20",
             ear="+$stem +$earh"))
 
+@glyphfn(550)
+def _T(r, g):
+    return (g
+        .register(
+            base="=$srfw -$srfh",
+            cap="1 +$srfh",
+            earl="-$stem +$earh",
+            earr="+$stem +$earh",
+            stem=g.bx.take(g.stem.w, "mdx")))
+
 @glyphfn(500)
 def _L(r, g):
     return (g
@@ -198,7 +208,7 @@ def _P(r, g, mod=None, xc=0, ci=30):
         .register(
             base="-$srfw+10 -$srfh",
             cap="-$srfw-50 +$srfh",
-            mid=λg: g.bx / g.varstr("-&cap.w =$srfh-70") / "+0.5 1 ^o 0 -30")
+            mid=λg: g.bx / g.varstr("-&cap.w =$srfh-90") / "+0.5 1 ^o 0 -30")
         .chain(mod)
         .record(lambda g: DATPen()
             .chain(evencurve, 0.9,
@@ -213,7 +223,7 @@ def _B(r, g):
     return (_P.func(r, g, xc=-20, ci=20, mod=lambda g:
         g.register(
             base=g.base.take(g.cap.w, "mnx"),
-            mid=g.mid.offset(20, 30).inset(15)))
+            mid=g.mid.offset(20, 30).inset(5)))
         .record(lambda g: DATPen()
             .chain(evencurve, 0.9,
                 g.mid.pse, g.base.pne, g.bx.pe.x-g.stem.w-30)
@@ -330,6 +340,32 @@ def _G(r, g):
     g.record(DATPen().rect(xbar).intersection(g.data["outer"].copy()))
     return g
 
+def boxCurveTo(self, pt, point, factor, mods={}):
+    a = Point(self.value[-1][-1][-1])
+    d = Point(pt)
+    box = Rect.FromMnMnMxMx([min(a.x, d.x), min(a.y, d.y), max(a.x, d.x), max(a.y, d.y)])
+    try:
+        f1, f2 = factor
+    except TypeError:
+        f1, f2 = (factor, factor)
+
+    if isinstance(point, str):
+        p1, p2 = (point, point)
+    else:
+        p1, p2 = point
+    
+    b = a.interp(f1, box.point(p1))
+    c = d.interp(f2, box.point(p2))
+    if mb := mods.get("b"):
+        b = mb(b)
+    elif mc := mods.get("c"):
+        c = mc(c)
+    self.curveTo(b, c, d)
+    return self
+
+
+DATPen.boxCurveTo = boxCurveTo
+
 @glyphfn(500)
 def _S(r, g):
     return (g
@@ -338,26 +374,49 @@ def _S(r, g):
             hornl="-$stem -$earh",
             hornr="+$stem +$earh-10")
         .record(DATPen()
-            .chain(evencurvey, 0.65, g.hornr.point("C"), g.bx.pnw.offset(0, -g.c.earh/2-20), g.bx.pn.offset(0, g.c.over).y)
-            #.moveTo(g.hornr.point("C"))
-            #.lineTo(g.bx.pn.offset(0, g.c.over))
-            #.lineTo(g.bx.pnw.offset(0, -g.c.earh/2))
-            .chain(evencurvey, 0.65, g.bx.pse.offset(-g.c.stem-40, g.c.srfh+50), g.hornl.pne, g.bx.ps.offset(0, g.c.srfh).y)
-            #.lineTo(g.bx.pse.offset(-g.c.stem-40, g.c.srfh+50))
-            #.lineTo(g.bx.ps.offset(0, g.c.srfh))
-            #.lineTo(g.hornl.pne)
-            .chain(evencurvey, 0.65, g.hornl.point("C"), g.bx.pse.offset(0, g.c.earh/2), g.bx.ps.offset(0, -g.c.over).y)
-            #.lineTo(g.hornl.point("C"))
-            #.lineTo(g.bx.ps.offset(0, -g.c.over))
-            #.lineTo(g.bx.pse.offset(0, g.c.earh/2))
-            .lineTo(g.bx.pnw.offset(g.c.stem+40, -g.c.srfh-50))
-            .lineTo(g.bx.pn.offset(0, -g.c.srfh))
+            .moveTo(g.hornr.point("C").offset(0, -10))
+            .boxCurveTo(g.bx.pn.offset(-30, g.c.over),
+                "NE",
+                (0.25, 0.75),
+                dict(b=λp: p.offset(-10, 0)))
+            .boxCurveTo(g.bx.pnw.offset(0, -g.c.earh/2-20),
+                "NW",
+                0.6)
+            .boxCurveTo(g.bx.pse.offset(-g.c.stem-40, g.c.srfh+40),
+                ("SW", "NE"),
+                (0.85, 0.35))
+            .boxCurveTo(g.bx.ps.offset(20, g.c.srfh-g.c.over*2),
+                "SE",
+                0.65)
+            .boxCurveTo(g.hornl.pne,
+                "SW",
+                0.65,
+                dict(c=λp: p.offset(10, 0)))
+            .lineTo(g.hornl.point("C").offset(0, 10))
+            .boxCurveTo(g.bx.ps.offset(40, -g.c.over),
+                "SW",
+                (0.25, 0.75),
+                dict(b=λp: p.offset(10, 0)))
+            .boxCurveTo(g.bx.pse.offset(0, g.c.earh/2+20),
+                "SE",
+                (0.6, 0.6))
+            .boxCurveTo(g.bx.pnw.offset(g.c.stem+40, -g.c.srfh-40),
+                ("NE", "SW"),
+                (0.85, 0.35))
+            .boxCurveTo(g.bx.pn.offset(-20, -g.c.srfh+g.c.over*2),
+                "NW",
+                0.65)
+            .boxCurveTo(g.hornr.psw,
+                "NE",
+                0.65,
+                dict(c=λp: p.offset(-10, 0)))
             .lineTo(g.hornr.psw)
-            .closePath()))
+            .closePath()
+            .pvl()))
 
-caps = [_A, _B, _C, _D, _E, _F, _G, _H, _I, _L, _N, _O, _P, _R, _S]
+caps = [_A, _B, _C, _D, _E, _F, _G, _H, _I, _L, _N, _O, _P, _R, _S, _T]
 
-@animation((1000, 1000), timeline=Timeline(len(caps)), rstate=1, storyboard=[2])
+@animation((1300, 1000), timeline=Timeline(len(caps)), rstate=1, storyboard=[2])
 def curves(f, rs):
     r = f.a.r
 
@@ -399,5 +458,6 @@ def curves(f, rs):
             .img_opacity(0.25 if overlay else 1)
             #.img_opacity(1)
         ),
-        (glyph.pen().skeleton()) if overlay else None
+        (glyph.pen().skeleton()) if overlay else None,
+        glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.bounds().w+30, 0).f(0).s(None)
         ])
