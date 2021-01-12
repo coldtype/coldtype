@@ -181,7 +181,7 @@ def _B(r, g):
 
 @glyphfn(_P.w)
 def _D(r, g):
-    return (_P.func(r, g, xc=30, ci=40, mod=lambda g:
+    return (_P.func(r, g, xc=30, ci=60, mod=lambda g:
         g.register(mid=g.base.take(g.cap.w, "mnx"))
             .remove("base")))
 
@@ -223,12 +223,12 @@ def _N(r, g):
             .closePath()
             .tag("diagonal")))
 
-@glyphfn(550)
-def _O(r, g):
+@glyphfn(500)
+def _O(r, g, clx=0):
     return (g
         .constants(
             hw=g.c.stem+20,
-            o="1 1",
+            o=g.bx.inset(0, -10),
             oc=λg: g.c.o.inset(g.c.hw, g.c.srfh))
         .remove("stem")
         .record(DATPen()
@@ -246,30 +246,33 @@ def _O(r, g):
             .record(DATPen()
                 .chain(evencurvey, 0.85,
                     g.c.oc.pe.offset(0, 60),
-                    g.c.oc.pw.offset(0, 60),
+                    g.c.oc.pw.offset(0+clx, 60),
                     g.c.oc.pn.y,
                     )
                 .chain(evencurvey, 0.85,
-                    g.c.oc.pw.offset(0, -60),
+                    g.c.oc.pw.offset(0+clx, -60),
                     g.c.oc.pe.offset(0, -60),
                     g.c.oc.ps.y)
                 .closePath()
                 .reverse())))
 
-@glyphfn(_O.w-50)
+@glyphfn(_O.w)
 def _C(r, g):
-    g = _O.func(r, g)
-    ht, hm, hb = g.bx.take(g.c.hw, "mxx").divide(150, "mdy")
+    g = _O.func(r, g, clx=25)
+    ht, hm, hb = g.bx.take(g.c.hw, "mxx").divide(90, "mdy")
+    O = g.fft("O")
+    O.difference(DATPen().rect(hm))
+    O.add_pt(0, 0.5, lambda p: p.offset(-50, -60).rotate(0))
+    
     return (g
-        .register(horn=f"+{ht.w} +{ht.h}")
-        .fmmap(λi,p: p.getTag() == "O", λi,p:
-            p.difference(DATPen()
-                .rect(g.bx / g.varstr("+0.5 =$srfh-20")))))
+        .register(
+            horn=f"+{ht.w} +{ht.h}"
+            ))
 
 
 caps = [_A, _B, _C, _D, _I, _N, _O, _P, _R]
 
-@animation((1000, 1000), timeline=Timeline(len(caps)), rstate=1)
+@animation((1000, 1000), timeline=Timeline(len(caps)), rstate=1, storyboard=[2])
 def curves(f, rs):
     r = f.a.r
 
@@ -295,10 +298,10 @@ def curves(f, rs):
     overlay = Overlay.Info in rs.overlays
 
     return DATPenSet([
-        glyph.copy().f(None).s(hsl(0.5, a=0.5)).sw(20),
-        DATPen().rect(glyph.bx).translate(100, 100).f(None).s(hsl(0.9, a=0.3)).sw(5),
-        DATPen().rect(glyph.bounds()).f(None).s(hsl(0.7, a=0.3)).sw(5),
-        DATPen().gridlines(r, 50, absolute=True),
+        glyph.copy().f(None).s(hsl(0.5, a=0.5)).sw(20) if overlay else None,
+        DATPen().rect(glyph.bx).translate(100, 100).f(None).s(hsl(0.9, a=0.3)).sw(5) if overlay else None,
+        DATPen().rect(glyph.bounds()).f(None).s(hsl(0.7, a=0.3)).sw(5) if overlay else None,
+        DATPen().gridlines(r, 50, absolute=True) if overlay else None,
         (glyph
             .copy()
             .pen()
@@ -307,5 +310,6 @@ def curves(f, rs):
             .color_phototype(r)
             .img_opacity(0.25 if overlay else 1)
             #.img_opacity(1)
-        )
+        ),
+        (glyph.pen().skeleton()) if overlay else None
         ])

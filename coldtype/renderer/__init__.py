@@ -1498,7 +1498,7 @@ class Renderer():
                     self.playing_preloaded_frame = 0
                 ptime.sleep(0.01)
             else:
-                ptime.sleep(0.01)
+                ptime.sleep(0.1)
                 self.glfw_last_time = t
                 self.turn_over()
                 global last_line

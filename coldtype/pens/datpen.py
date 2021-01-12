@@ -40,6 +40,32 @@ def listit(t):
     return list(map(listit, t)) if isinstance(t, (list, tuple)) else t
 
 
+class DATBPT():
+    def __init__(self, ps):
+        self.ps = ps
+    
+    def angle(self):
+        b = self.ps[0]
+        c = self.ps[1]
+        d = self.ps[2]
+        return c.cdist(b), c.cdist(d)
+    
+    def rotate(self, angle):
+        print("ROTATE", angle)
+        c = self.ps[1]
+        bdist, bang = c.cdist(self.ps[0])
+        ddist, dang = c.cdist(self.ps[2])
+        print(bdist, bang)
+        print(ddist, dang)
+        self.ps[0] = c.project(bang, bdist)
+        self.ps[2] = c.project(dang, ddist)
+        return self
+    
+    def offset(self, x, y):
+        self.ps = [p.offset(x, y) for p in self.ps]
+        return self
+
+
 class DATPen(RecordingPen, DATPenLikeObject):
     """
     Main vector representation in Coldtype
@@ -112,6 +138,51 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def vl(self, value):
         self.value = value
         return self
+    
+    def pvl(self):
+        for idx, (mv, pts) in enumerate(self.value):
+            if len(pts) > 0:
+                self.value[idx] = list(self.value[idx])
+                self.value[idx][-1] = [Point(p) for p in self.value[idx][-1]]
+        return self
+    
+    def mod_pt(self, vidx, pidx, fn):
+        self.value[vidx][-1][pidx] = fn(self.value[vidx][-1][pidx])
+        return self
+    
+    def mod_bpt(self, idx, fn):
+        pidxs = [[idx, -2], [idx, -1], [idx+1, 0]]
+        bpt = DATBPT([self.value[i][-1][j] for (i,j) in pidxs])
+        fn(bpt)
+        for idx, (i,j) in enumerate(pidxs):
+            self.value[i][-1][j] = bpt.ps[idx]
+        #self.mod_pt(idx+1, 0, fn)
+        #self.mod_pt(idx, -1, fn)
+        #self.mod_pt(idx, -2, fn)
+        return self
+    
+    def add_pt(self, cuidx, t, fn=None):
+        cidx = 0
+        insert_idx = -1
+        c1, c2 = None, None
+
+        for idx, (mv, pts) in enumerate(self.value):
+            if mv == "curveTo":
+                if cidx == cuidx:
+                    insert_idx = idx
+                    a = self.value[idx-1][-1][-1]
+                    b, c, d = pts
+                    c1, c2 = splitCubicAtT(a, b, c, d, t)
+                cidx += 1
+        
+        if c2:
+            self.value[insert_idx] = ("curveTo", c1[1:])
+            self.value.insert(insert_idx+1, ("curveTo", c2[1:]))
+
+            if fn:
+                self.pvl()
+                self.mod_bpt(insert_idx, fn)
+            return insert_idx
     
     def printvl(self):
         from pprint import pprint

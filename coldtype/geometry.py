@@ -337,6 +337,25 @@ class Point():
         dx, dy = polar_coord((0, 0), math.radians(angle), dist)
         return self.offset(dx, dy)
     
+    def angle(self, other):
+        sx, sy = self
+        ox, oy = other
+        opp = ox - sx
+        adj = oy - sy
+        if opp == 0:
+            if sy > oy:
+                return abs(adj), 180
+            else:
+                return abs(adj), 0
+        elif adj == 0:
+            if sx > ox:
+                return abs(opp), 270
+            else:
+                return abs(opp), 90
+        print(opp, adj)
+        deg = math.atan(opp/adj)
+        return deg
+    
     def cdist(self, other):
         sx, sy = self
         ox, oy = other
