@@ -392,10 +392,10 @@ def _S(r, g):
             .boxCurveTo(g.bx.pse.offset(20, g.c.earh/2+45), # OUTRIGHT
                 "SE",
                 0.6)
-            .boxCurveTo(g.bx.pnw.offset(g.c.stem+30, -g.c.srfh-30), # BIGUP
+            .boxCurveTo(g.bx.pnw.offset(g.c.stem+50, -g.c.srfh-30), # BIGUP
                 ("NE", "SW"),
                 (0.65, 0.35))
-            .boxCurveTo(g.bx.pn.offset(-40, -g.c.srfh+g.c.over*2), # TOPSMALL
+            .boxCurveTo(g.bx.pn.offset(-20, -g.c.srfh+g.c.over*2), # TOPSMALL
                 "NW",
                 0.65)
             .boxCurveTo(g.hornr.psw, # TOPLAND
