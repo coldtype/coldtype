@@ -253,6 +253,11 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.curveTo(b, c, d)
         return self
     
+    def uTurnTo(self, inflection, end, pts, factor):
+        return (self
+            .boxCurveTo(inflection, pts[0], factor)
+            .boxCurveTo(end, pts[1], factor))
+    
     def interpolate(self, value, other):
         vl = []
         for idx, (mv, pts) in enumerate(self.value):

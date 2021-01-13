@@ -443,8 +443,8 @@ def _S(r, g):
 @glyphfn(590)
 def _U(r, g):
     c = 70
-    ocf = 0.8
-    icf = 0.9
+    ocf = 0.75
+    icf = 0.85
     return (g
         .register(
             capl="-$srfw +$srfh",
@@ -456,11 +456,9 @@ def _U(r, g):
         .remove("stem")
         .record(DATPen()
             .moveTo(g.steml.psw)
-            .boxCurveTo(g.c.sc, "SW", ocf)
-            .boxCurveTo(g.stemr.pse, "SE", ocf)
+            .uTurnTo(g.c.sc, g.stemr.pse, ("SW", "SE"), ocf)
             .lineTo(g.stemr.psw)
-            .boxCurveTo(g.c.sc.offset(0, g.c.srfh), "SE", icf)
-            .boxCurveTo(g.steml.pse, "SW", icf)
+            .uTurnTo(g.c.sc.offset(0, g.c.srfh), g.steml.pse, ("SE", "SW"), icf)
             .tag("curve")))
 
 @glyphfn(_U.w)
@@ -527,5 +525,5 @@ def curves(f, rs):
         #    #.img_opacity(1)
         #),
         (glyph.pen().skeleton()) if overlay else None,
-        glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.bounds().w+30, 0).f(0).s(None).color_phototype(r, blur=5)
+        glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.bounds().w+30, 0).f(0).s(None)-.color_phototype(r, blur=5)
         ])
