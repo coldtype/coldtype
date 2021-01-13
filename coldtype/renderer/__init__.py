@@ -84,7 +84,7 @@ class WebSocketThread(threading.Thread):
         print("Running a server...")
         while self.should_run:
             self.server.serveonce()
-            ptime.sleep(0.25)
+            ptime.sleep(0.025)
 
 
 class DataSourceThread(threading.Thread):
@@ -1041,6 +1041,10 @@ class Renderer():
     
     def on_remote_command(self, cmd, context):
         print(">>>>>", cmd, context)
+        kbs = KeyboardShortcut(cmd)
+        if kbs:
+            self.on_shortcut(kbs)
+            return
 
         if not context:
             if cmd == "∑":
@@ -1272,6 +1276,7 @@ class Renderer():
     
     def on_shortcut(self, shortcut):
         waiting = self.shortcut_to_action(shortcut)
+        print(">", waiting)
         if waiting:
             if waiting != -1:
                 self.action_waiting = waiting
