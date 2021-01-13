@@ -792,28 +792,43 @@ class Rect():
     @property
     def pn(self): return self.point("N")
 
+    @property
+    def pc(self): return self.point("C")
+
     def intersects(self, other):
         return not (self.point("NE").x < other.point("SW").x or self.point("SW").x > other.point("NE").x or self.point("NE").y < other.point("SW").y or self.point("SW").y > other.point("NE").y)
     
     def setmnx(self, x):
-        return Rect([x, self.y, self.w, self.h])
+        mnx, mny, mxx, mxy = self.mnmnmxmx()
+        return Rect.FromMnMnMxMx([x, mny, mxx, mxy])
     
     def setmny(self, y):
-        return Rect([self.x, y, self.w, self.h])
+        mnx, mny, mxx, mxy = self.mnmnmxmx()
+        return Rect.FromMnMnMxMx([mnx, y, mxx, mxy])
     
     def setmxx(self, x):
         mnx, mny, mxx, mxy = self.mnmnmxmx()
         return Rect.FromMnMnMxMx([mnx, mny, x, mxy])
     
-    def setmxy(self, x):
+    def setmxy(self, y):
         mnx, mny, mxx, mxy = self.mnmnmxmx()
         return Rect.FromMnMnMxMx([mnx, mny, mxx, y])
+    
+    def setmdx(self, x):
+        c = self.point("C")
+        return Rect.FromCenter(Point([x, c.y]), self.w, self.h)
     
     def setmn(self, mn):
         return self.setmnx(mn.x).setmny(mn.y)
 
     def setmx(self, mx):
         return self.setmxx(mx.x).setmxy(mx.y)
+    
+    def setw(self, w):
+        return Rect(self.x, self.y, w, self.h)
+    
+    def seth(self, h):
+        return Rect(self.x, self.y, self.w, h)
     
     def tk(self, edges, x, y=None):
         if edges == -1:
@@ -849,39 +864,113 @@ class Rect():
         return self.take(n, "mxy")
     
     def __truediv__(self, s):
-        ys = s.split("^")
-        xs = re.split(r"\s", ys[0].strip())
-        edges = []
-        amounts = []
         sfx = ["x", "y"]
-        for idx, x in enumerate(xs):
-            if x[0] == "-":
-                edges.append("mn" + sfx[idx])
-            elif x[0] == "+":
-                edges.append("mx" + sfx[idx])
-            elif x[0] == "=":
-                edges.append("md" + sfx[idx])
-            elif x[0] == "1":
-                edges.append("mn" + sfx[idx])
-                amounts.append(1)
-                continue
-            amounts.append(float(x[1:]))
-        
-        r = self.take(amounts[0], edges[0]).take(amounts[1], edges[1])
-        if len(ys) > 1:
-            xs = ys[1].strip()
-            op = xs[0].strip()
-            xs = xs[1:]
-            xs = re.split(r"\s", xs.strip())
-            offs = []
-            for idx, x in enumerate(xs):
-                offs.append(eval(x))
-            if op == "o":
-                r = r.offset(offs[0], offs[1])
-            elif op == "i":
-                r = r.inset(offs[0], offs[1])
 
+        def do_op(r, xs):
+            op = xs[0]
+            if op in ["t", "i", "o", "s", "m"]:
+                op = op
+                xs = xs[1:].strip()
+            else:
+                op = "t"
+                xs = xs.strip()
+            
+            xs = re.split(r"\s", xs)
+            edges = []
+            amounts = []
+            
+            for idx, x in enumerate(xs):
+                if op in ["t", "s", "m"]:
+                    if x[0] == "-":
+                        edges.append("mn" + sfx[idx])
+                    elif x[0] == "+":
+                        edges.append("mx" + sfx[idx])
+                    elif x[0] == "=":
+                        edges.append("md" + sfx[idx])
+                    elif x[0] == "1":
+                        edges.append("mn" + sfx[idx])
+                        amounts.append(1)
+                        continue
+                    elif x[0] == "0":
+                        edges.append("mn" + sfx[idx])
+                        amounts.append(0)
+                        continue
+                    elif x[0] == "ø":
+                        amounts.append("ø")
+                        continue
+                    amounts.append(float(x[1:]))
+                else:
+                    amounts.append(float(x))
+
+            if op == "t":
+                return (r
+                    .take(amounts[0], edges[0])
+                    .take(amounts[1], edges[1]))
+            elif op == "s":
+                return (r
+                    .subtract(amounts[0], edges[0])
+                    .subtract(amounts[1], edges[1]))
+            elif op == "i":
+                return (r.inset(amounts[0], amounts[1]))
+            elif op == "o":
+                return (r.offset(amounts[0], amounts[1]))
+            elif op == "m":
+                if amounts[0] != "ø":
+                    if edges[0] == "mnx":
+                        r = r.setmnx(amounts[0])
+                    elif edges[0] == "mxx":
+                        r = r.setmxx(amounts[0])
+                if amounts[1] != "ø":
+                    if edges[1] == "mny":
+                        r = r.setmny(amounts[1])
+                    elif edges[1] == "mxy":
+                        r = r.setmxy(amounts[1])
+                return r
+            else:
+                raise Exception("op", op, "not supported")
+
+        ys = s.split("^")
+        r = self
+        for y in ys:
+            r = do_op(r, y.strip())
         return r
+
+        #xs = re.split(r"\s", ys[0].strip())
+
+
+        # edges = []
+        # amounts = []
+        # sfx = ["x", "y"]
+        # for idx, x in enumerate(xs):
+        #     if x[0] == "-":
+        #         edges.append("mn" + sfx[idx])
+        #     elif x[0] == "+":
+        #         edges.append("mx" + sfx[idx])
+        #     elif x[0] == "=":
+        #         edges.append("md" + sfx[idx])
+        #     elif x[0] == "1":
+        #         edges.append("mn" + sfx[idx])
+        #         amounts.append(1)
+        #         continue
+        #     amounts.append(float(x[1:]))
+        
+        # r = self.take(amounts[0], edges[0]).take(amounts[1], edges[1])
+        # if len(ys) > 1:
+        #     xs = ys[1].strip()
+        #     op = xs[0].strip()
+        #     xs = xs[1:]
+        #     xs = re.split(r"\s", xs.strip())
+        #     offs = []
+        #     for idx, x in enumerate(xs):
+        #         offs.append(eval(x))
+        #     if op == "o":
+        #         r = r.offset(offs[0], offs[1])
+        #     elif op == "i":
+        #         r = r.inset(offs[0], offs[1])
+        #     elif op == "s":
+        #         r = r.subtract()
+
+        # return r
 
 if __name__ == "<run_path>":
     #from coldtype import renderable, DATPen

@@ -47,7 +47,12 @@ class Glyph(DATPenSet):
         return vs
     
     def remove(self, k):
-        del self.registrations[k]
+        if k in self.registrations:
+            del self.registrations[k]
+        else:
+            tagged = self.fft(k)
+            if tagged:
+                super().remove(tagged)
         return self
     
     def register(self, fn=None, rect=True, **kwargs):
@@ -298,6 +303,27 @@ def _N(r, g):
             .closePath()
             .tag("diagonal")))
 
+@glyphfn(700)
+def _M(r, g):
+    return (_N.func(r, g)
+        #.remove("stemr")
+        .remove("diagonal")
+        .remove("capr")
+        .register(
+            baser="+&base.w -$srfh",
+            capl="-$srfw-40 +$srfh",
+            #stemr="+$stem 1 ^o -$instem 0",
+            capr="+&base.w +$srfh ^m -&stemr.x ø")
+        .record(DATPen()
+            .lineTo(g.steml.pnw.offset(50, 0))
+            .lineTo(g.base.pse.offset(g.c.gap*4, 0))
+            .lineTo(g.baser.psw.offset(-g.c.gap*4, 0))
+            .lineTo(g.capr.psw.offset(0, 35))
+            .lineTo(g.capr.pnw)
+            .lineTo(g.capr.pnw.offset(-80, 0))
+            .lineTo(g.base.pne.offset(120, 230))
+            .lineTo(g.capl.pne)))
+
 @glyphfn(500)
 def _O(r, g, clx=0):
     (g.constants(
@@ -335,6 +361,15 @@ def _O(r, g, clx=0):
                     g.c.oc.ps.y)
                 .closePath()
                 .reverse())))
+
+@glyphfn(_O.w)
+def _Q(r, g):
+    return (_O.func(r, g)
+        .record(DATPen()
+            .rect(g.bx.take(g.c.stem, "mnx")
+                .take(g.c.srfh*2, "mny"))
+            .rotate(33)
+            .translate(g.bounds().w*0.5+50, -50)))
 
 @glyphfn(_O.w)
 def _C(r, g):
@@ -392,7 +427,7 @@ def _S(r, g):
             .boxCurveTo(g.bx.pse.offset(20, g.c.earh/2+45), # LOSWING
                 "SE",
                 0.6)
-            .boxCurveTo(g.bx.pnw.offset(g.c.stem+50, -g.c.srfh-30), # BIGUP
+            .boxCurveTo(g.bx.pnw.offset(g.c.stem+60, -g.c.srfh-30), # BIGUP
                 ("NE", "SW"),
                 (0.65, 0.35))
             .boxCurveTo(g.bx.pn.offset(-20, -g.c.srfh+g.c.over*2), # HISMALL
@@ -405,9 +440,50 @@ def _S(r, g):
             .closePath()
             .pvl()))
 
-caps = [_A, _B, _C, _D, _E, _F, _G, _H, _I, _L, _N, _O, _P, _R, _S, _T]
+@glyphfn(590)
+def _U(r, g):
+    c = 70
+    ocf = 0.8
+    icf = 0.9
+    return (g
+        .register(
+            capl="-$srfw +$srfh",
+            capr="+$srfw-60 +$srfh",
+            steml=λg: g.stem.setmny(g.c.srfh+c),
+            stemr=λg: g.stem.inset(10, 0).setmdx(g.capr.point("C").x).setmny(g.c.srfh+c))
+        .constants(
+            sc=g.steml.pse.interp(0.5, g.stemr.psw).sety(-g.c.over))
+        .remove("stem")
+        .record(DATPen()
+            .moveTo(g.steml.psw)
+            .boxCurveTo(g.c.sc, "SW", ocf)
+            .boxCurveTo(g.stemr.pse, "SE", ocf)
+            .lineTo(g.stemr.psw)
+            .boxCurveTo(g.c.sc.offset(0, g.c.srfh), "SE", icf)
+            .boxCurveTo(g.steml.pse, "SW", icf)
+            .tag("curve")))
 
-@animation((1300, 1000), timeline=Timeline(len(caps)), rstate=1, storyboard=[2])
+@glyphfn(_U.w)
+def _V(r, g):
+    return (_U.func(r, g)
+        .constants(
+            sc=g.capl.pc.interp(0.5, g.capr.pc).sety(0))
+        .record(DATPen()
+            .moveTo(g.capl.pc.offset(-g.c.stem*0.75, 0))
+            .lineTo(g.c.sc.offset(-60, 0))
+            .lineTo(g.c.sc.offset(g.c.stem-60, 0))
+            .lineTo(g.capr.pc.offset(50, 0))
+            .lineTo(g.capr.pc.offset(-10, 0))
+            .lineTo(g.c.sc.offset(20, g.c.srfh))
+            .lineTo(g.capl.pc.offset(g.c.stem/2, 0))
+            .closePath())
+        .remove("steml")
+        .remove("stemr")
+        .remove("curve"))
+
+caps = [_A, _B, _C, _D, _E, _F, _G, _H, _I, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V]
+
+@animation((2000, 1000), timeline=Timeline(len(caps)), rstate=1, storyboard=[0])
 def curves(f, rs):
     r = f.a.r
 
@@ -416,7 +492,7 @@ def curves(f, rs):
         .addFrame(cap.r)
         .constants(
             srfh=190,
-            stem=115,
+            stem=105,
             instem=100,
             xbarh=100,
             over=10,

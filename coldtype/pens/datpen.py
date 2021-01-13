@@ -1608,6 +1608,11 @@ class DATPens(DATPen):
         except:
             return None
     
+    def remove(self, pen):
+        """remove a pen from these pens"""
+        self.pens.remove(pen)
+        return self
+    
     def mfilter(self, fn):
         """Same as `filter` but (m)utates this DATPens
         to now have only the filtered pens"""
