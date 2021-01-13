@@ -1040,11 +1040,14 @@ class Renderer():
                 print(">>> (", action, ") is not a recognized action")
     
     def on_remote_command(self, cmd, context):
-        print(">>>>>", cmd, context)
-        kbs = KeyboardShortcut(cmd)
-        if kbs:
-            self.on_shortcut(kbs)
-            return
+        #print(">>>>>", cmd, context)
+        try:
+            kbs = KeyboardShortcut(cmd)
+            if kbs:
+                self.on_shortcut(kbs)
+                return
+        except ValueError:
+            pass
 
         if not context:
             if cmd == "∑":
@@ -1075,7 +1078,7 @@ class Renderer():
                     char = ord(c.upper())
                 i += 1
             
-            print(">", cmd, context, char, mods)
+            #print(">", cmd, context, char, mods)
             if char:
                 self.on_potential_shortcut(char, glfw.PRESS, mods)
 
@@ -1276,7 +1279,6 @@ class Renderer():
     
     def on_shortcut(self, shortcut):
         waiting = self.shortcut_to_action(shortcut)
-        print(">", waiting)
         if waiting:
             if waiting != -1:
                 self.action_waiting = waiting
@@ -1312,7 +1314,7 @@ class Renderer():
                 
                 if mod_match and key == skey:
                     if (action == glfw.REPEAT and shortcut in self.repeatable_shortcuts()) or action == glfw.PRESS:
-                        print(shortcut, modifiers, skey, mod_match)
+                        #print(shortcut, modifiers, skey, mod_match)
                         return self.on_shortcut(shortcut)
 
     def on_key(self, win, key, scan, action, mods):
