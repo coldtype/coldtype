@@ -246,9 +246,11 @@ class DATPen(RecordingPen, DATPenLikeObject):
         
         b = a.interp(f1, box.point(p1))
         c = d.interp(f2, box.point(p2))
-        if mb := mods.get("b"):
+        mb = mods.get("b")
+        mc = mods.get("c")
+        if mb:
             b = mb(b)
-        elif mc := mods.get("c"):
+        elif mc:
             c = mc(c)
         self.curveTo(b, c, d)
         return self
