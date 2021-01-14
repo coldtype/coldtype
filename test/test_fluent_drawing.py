@@ -525,5 +525,5 @@ def curves(f, rs):
         #    #.img_opacity(1)
         #),
         (glyph.pen().skeleton()) if overlay else None,
-        glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.bounds().w+30, 0).f(0).s(None)-.color_phototype(r, blur=5)
+        glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.bounds().w+30, 0).f(0).s(None).color_phototype(r, blur=5)
         ])
