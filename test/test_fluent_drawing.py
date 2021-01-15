@@ -176,6 +176,26 @@ def _H(r, g):
             xbar=λg: g.stem.union(g.stemr).take(g.c.xbarh, "mdy")
         ))
 
+@glyphfn(550)
+def _K(r, g):
+    return (_H.func(r, g)
+        .register(
+            xbar=g.xbar.offset(0, -110))
+        .record(DATPen()
+            .lineTo(g.bx.pc.offset(70, 60))
+            .lineTo(g.bx.pc.offset(-20, -10))
+            .lineTo(g.br.pn.offset(-g.c.stem/2-20, 0))
+            .lineTo(g.br.pn.offset(g.c.stem/2+20, 0))
+            .closePath())
+        .record(DATPen()
+            .lineTo(g.xbar.pnw)
+            .lineTo(g.xbar.psw)
+            .lineTo(g.cr.ps.offset(g.c.stem/2, 0))
+            .lineTo(g.cr.ps.offset(-g.c.stem/2-10, 0))
+            .closePath())
+        .remove("xbar")
+        .remove("stemr"))
+
 @glyphfn(500)
 def _E(r, g):
     return (g
@@ -320,8 +340,8 @@ def _M(r, g):
             .lineTo(g.baser.psw.offset(-g.c.gap*4, 0))
             .lineTo(g.capr.psw.offset(0, 35))
             .lineTo(g.capr.pnw)
-            .lineTo(g.capr.pnw.offset(-80, 0))
-            .lineTo(g.base.pne.offset(120, 230))
+            .lineTo(g.capr.pnw.offset(-75, 0))
+            .lineTo(g.base.pne.offset(130, 180))
             .lineTo(g.capl.pne)))
 
 @glyphfn(500)
@@ -471,7 +491,7 @@ def _V(r, g):
             .lineTo(g.c.sc.offset(-60, 0))
             .lineTo(g.c.sc.offset(g.c.stem-60, 0))
             .lineTo(g.capr.pc.offset(50, 0))
-            .lineTo(g.capr.pc.offset(-10, 0))
+            .lineTo(g.capr.pc.offset(-20, 0))
             .lineTo(g.c.sc.offset(20, g.c.srfh))
             .lineTo(g.capl.pc.offset(g.c.stem/2, 0))
             .closePath())
@@ -479,7 +499,7 @@ def _V(r, g):
         .remove("stemr")
         .remove("curve"))
 
-caps = [_A, _B, _C, _D, _E, _F, _G, _H, _I, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V]
+caps = [_A, _B, _C, _D, _E, _F, _G, _H, _I, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V]
 
 @animation((2000, 1000), timeline=Timeline(len(caps)), rstate=1, storyboard=[0])
 def curves(f, rs):
