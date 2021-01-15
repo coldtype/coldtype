@@ -843,6 +843,14 @@ class DATPen(RecordingPen, DATPenLikeObject):
             if cedge == Edge.MaxY:
                 sc.rotate(180)
         return self.record(sc)
+    
+    def diagonal_upto(self, startc, angle, width, line):
+        t = startc.project_to(angle, line)
+        self.moveTo(startc.offset(-width/2, 0))
+        self.lineTo(startc.offset(width/2, 0))
+        self.lineTo(t.offset(width/2, 0))
+        self.lineTo(t.offset(-width/2, 0))
+        return self.closePath()
 
     def line(self, points, moveTo=True, endPath=True):
         """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""

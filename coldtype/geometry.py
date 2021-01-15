@@ -66,6 +66,21 @@ def txt_to_edge(txt):
     else:
         return txt
 
+def line_intersection(line1, line2):
+    xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
+    ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])
+
+    def det(a, b):
+        return a[0] * b[1] - a[1] * b[0]
+
+    div = det(xdiff, ydiff)
+    if div == 0:
+        raise Exception('lines do not intersect')
+
+    d = (det(*line1), det(*line2))
+    x = det(d, xdiff) / div
+    y = det(d, ydiff) / div
+    return x, y
 
 def calc_vector(point1, point2):
     x1, y1 = point1
@@ -337,31 +352,18 @@ class Point():
         dx, dy = polar_coord((0, 0), math.radians(angle), dist)
         return self.offset(dx, dy)
     
+    def project_to(self, angle, line):
+        ray = [self, self.project(angle, 1000)]
+        return Point(line_intersection(ray, line))
+    
     def cdist(self, other):
         vec = calc_vector(self, other)
         ang = calc_angle(self, other)
         dist = math.sqrt(math.pow(vec[0], 2) + math.pow(vec[1], 2))
         return dist, math.degrees(ang)
-        # sx, sy = self
-        # ox, oy = other
-        # opp = ox - sx
-        # adj = oy - sy
-        # if opp == 0:
-        #     if sy > oy:
-        #         return abs(adj), 180
-        #     else:
-        #         return abs(adj), 0
-        # elif adj == 0:
-        #     if sx > ox:
-        #         return abs(opp), 270
-        #     else:
-        #         return abs(opp), 90
-        # deg = math.atan(opp/adj)
-        # dist = math.sqrt(math.pow(opp, 2) + math.pow(adj, 2))
-        # return abs(dist), math.degrees(deg)
     
-    #def box(self, other):
-
+    def noop(self, *args, **kwargs):
+        return self
     
     def __eq__(self, o):
         try:
@@ -465,6 +467,9 @@ class Rect():
     def FromExtents(extents):
         nw, ne, se, sw = extents
         return Rect(sw[0], sw[1], abs(ne[0] - sw[0]), abs(ne[1] - sw[1]))
+    
+    def noop(self, *args, **kwargs):
+        return self
 
     def FromMnMnMxMx(extents):
         """Create a rectangle from ``xmin, ymin, xmax, ymax``"""
@@ -517,10 +522,44 @@ class Rect():
     def wh(self):
         """the width and height as a tuple"""
         return [self.w, self.h]
+    
+    @property
+    def mxx(self):
+        return self.x + self.w
+    
+    @property
+    def mxy(self):
+        return self.y + self.h
 
     def square(self):
         """take a square from the center of this rect"""
         return Rect(centered_square(self.rect()))
+    
+    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
+        x = txt_to_edge(x)
+        y = txt_to_edge(y)
+        b = self
+        
+        xoff = 0
+        if x != None:
+            if x == Edge.CenterX:
+                xoff = -b.x + rect.x + rect.w/2 - b.w/2
+            elif x == Edge.MinX:
+                xoff = -(b.x-rect.x)
+            elif x == Edge.MaxX:
+                xoff = -b.x + rect.x + rect.w - b.w
+        
+        yoff = 0
+        if y != None:
+            if y == Edge.CenterY:
+                yoff = -b.y + rect.y + rect.h/2 - b.h/2
+            elif y == Edge.MaxY:
+                yoff = (rect.y + rect.h) - (b.h + b.y)
+            elif y == Edge.MinY:
+                yoff = -(b.y-rect.y)
+        
+        diff = rect.w - b.w
+        return self.offset(xoff, yoff)
     
     def ipos(self, pt, defaults=(0.5, 0.5), clamp=True):
         """
@@ -830,51 +869,55 @@ class Rect():
     def seth(self, h):
         return Rect(self.x, self.y, self.w, h)
     
-    def tk(self, edges, x, y=None):
-        if edges == -1:
-            edges = ["mnx", "mny"]
-        elif edges == +1:
-            edges = ["mxx", "mxy"]
-        elif edges == 0:
-            edges = ["mdx", "mdy"]
-        
-        r = self
-        if y is not None:
-            r = r.take(y, edges[1])
-        
-        r = r.take(x, edges[0])
-        return r
-
-    def tkmnx(self, n):
-        return self.take(n, "mnx")
-
-    def tkmdx(self, n):
-        return self.take(n, "mdx")
-    
-    def tkmxx(self, n):
-        return self.take(n, "mxx")
-
-    def tkmny(self, n):
-        return self.take(n, "mny")
-
-    def tkmdy(self, n):
-        return self.take(n, "mdy")
-    
-    def tkmxy(self, n):
-        return self.take(n, "mxy")
+    def parse_line(self, d, line):
+        parts = re.split(r"\s", line)
+        reified = []
+        for p in parts:
+            if p == "auto" or p == "a":
+                reified.append("auto")
+            elif "%" in p:
+                reified.append(float(p.replace("%", ""))/100 * d)
+            else:
+                reified.append(float(p))
+        remaining = d - sum([0 if r == "auto" else r for r in reified])
+        if not float(remaining).is_integer():
+            raise Exception("floating parse")
+        auto_count = reified.count("auto")
+        auto_d = remaining / auto_count
+        auto_ds = [auto_d] * auto_count
+        if not auto_d.is_integer():
+            auto_d_floor = math.floor(auto_d)
+            leftover = remaining - auto_d_floor * auto_count
+            for aidx, ad in enumerate(auto_ds):
+                if leftover > 0:
+                    auto_ds[aidx] = auto_d_floor + 1
+                    leftover -= 1
+                else:
+                    auto_ds[aidx] = auto_d_floor
+            #print(auto_ds)
+            #print("NO", auto_d - int(auto_d))
+        res = []
+        for r in reified:
+            if r == "auto":
+                res.append(auto_ds.pop())
+            else:
+                res.append(r)
+        return res
+        #return [auto_d if r == "auto" else r for r in reified]
     
     def __truediv__(self, s):
         sfx = ["x", "y"]
 
         def do_op(r, xs):
             op = xs[0]
-            if op in ["t", "i", "o", "s", "m"]:
+            if op in ["t", "i", "o", "s", "m", "c", "r"]:
                 op = op
                 xs = xs[1:].strip()
             else:
                 op = "t"
                 xs = xs.strip()
             
+            _xs = xs
             xs = re.split(r"\s", xs)
             edges = []
             amounts = []
@@ -900,21 +943,24 @@ class Rect():
                         continue
                     amounts.append(float(x[1:]))
                 else:
-                    amounts.append(float(x))
+                    if x == "auto" or x == "a":
+                        continue
+                    else:
+                        amounts.append(float(x))
 
-            if op == "t":
+            if op == "t": # take
                 return (r
                     .take(amounts[0], edges[0])
                     .take(amounts[1], edges[1]))
-            elif op == "s":
+            elif op == "s": # subtract
                 return (r
                     .subtract(amounts[0], edges[0])
                     .subtract(amounts[1], edges[1]))
-            elif op == "i":
+            elif op == "i": # inset
                 return (r.inset(amounts[0], amounts[1]))
-            elif op == "o":
+            elif op == "o": # offset
                 return (r.offset(amounts[0], amounts[1]))
-            elif op == "m":
+            elif op == "m": # maxima
                 if amounts[0] != "ø":
                     if edges[0] == "mnx":
                         r = r.setmnx(amounts[0])
@@ -926,6 +972,15 @@ class Rect():
                     elif edges[1] == "mxy":
                         r = r.setmxy(amounts[1])
                 return r
+            elif op == "c": # columns
+                ws = self.parse_line(r.w, _xs)
+                rs = []
+                for w in ws:
+                    _r, r = r.divide(w, "mnx")
+                    rs.append(_r)
+                return rs
+            elif op == "r": # rows
+                pass
             else:
                 raise Exception("op", op, "not supported")
 
@@ -934,49 +989,3 @@ class Rect():
         for y in ys:
             r = do_op(r, y.strip())
         return r
-
-        #xs = re.split(r"\s", ys[0].strip())
-
-
-        # edges = []
-        # amounts = []
-        # sfx = ["x", "y"]
-        # for idx, x in enumerate(xs):
-        #     if x[0] == "-":
-        #         edges.append("mn" + sfx[idx])
-        #     elif x[0] == "+":
-        #         edges.append("mx" + sfx[idx])
-        #     elif x[0] == "=":
-        #         edges.append("md" + sfx[idx])
-        #     elif x[0] == "1":
-        #         edges.append("mn" + sfx[idx])
-        #         amounts.append(1)
-        #         continue
-        #     amounts.append(float(x[1:]))
-        
-        # r = self.take(amounts[0], edges[0]).take(amounts[1], edges[1])
-        # if len(ys) > 1:
-        #     xs = ys[1].strip()
-        #     op = xs[0].strip()
-        #     xs = xs[1:]
-        #     xs = re.split(r"\s", xs.strip())
-        #     offs = []
-        #     for idx, x in enumerate(xs):
-        #         offs.append(eval(x))
-        #     if op == "o":
-        #         r = r.offset(offs[0], offs[1])
-        #     elif op == "i":
-        #         r = r.inset(offs[0], offs[1])
-        #     elif op == "s":
-        #         r = r.subtract()
-
-        # return r
-
-if __name__ == "<run_path>":
-    #from coldtype import renderable, DATPen
-    from coldtype.renderable import renderable
-    from coldtype.pens.datpen import DATPen
-
-    @renderable((1000, 1000))
-    def shorthand(r):
-        return DATPen().oval(r / "=500 =500")

@@ -55,7 +55,7 @@ class Glyph(DATPenSet):
                 super().remove(tagged)
         return self
     
-    def register(self, fn=None, rect=True, **kwargs):
+    def register(self, fn=None, **kwargs):
         if fn:
             if callable(fn):
                 res = fn(self)
@@ -64,14 +64,20 @@ class Glyph(DATPenSet):
         else:
             res = kwargs
         
+        def keep(k, v):
+            self.registrations[k] = v
+            setattr(self, k, v)
+        
         for k, v in res.items():
             if callable(v):
                 v = v(self)
             elif isinstance(v, str):
                 v = self.bx / self.varstr(v)
-            if rect:
-                self.registrations[k] = v
-            setattr(self, k, v)
+            if "ƒ" in k:
+                for idx, _k in enumerate(k.split("ƒ")):
+                    keep(_k, v[idx])
+            else:
+                keep(k, v)
         return self
     
     def realize(self):
@@ -122,50 +128,38 @@ def evencurvey(p:DATPen, t, a, b, y):
 
 @glyphfn(750)
 def _A(r, g):
-    b = g.bx.take(g.c.srfh, "mny").take(g.c.srfw, "mnx")
-    gap, bl = b.divide(g.c.gap, "mxx")
-    br = b.offset(gap.pse.x, 0)
-
-    bli = 100
-    bri = 80
-
     return (g
-        .register(
-            bl=bl,
-            br=br,
-            cap="=$srfw +$srfh",
-            xbar=λg: g.bx.take(g.c.xbarh, "mdy")
-                .offset(0, -50)
-                .setmnx(g.bl.pne.offset(-bli, 0).x)
-                .setmxx(g.br.pnw.offset(bri, 0).x))
         .constants(
-            t=g.bl.pne.offset(14, 0).sety(g.bx.h),#.pn.offset(-10, 0),
-            tl=λg: g.c.t.offset(-70, 0),
-            tr=λg: g.c.t.offset(80, 0))
-        .remove("stem")
-        .remove("cap")
+            xbar="1 =$xbarh ^o 0 -60")
+        .register(
+            blƒgapƒbr="1 -$srfh ^c $srfw-20 $gap $srfw+20 a")
         .record(DATPen()
-            .line([
-                g.bl.pnw.offset(bli, 0),
-                g.c.tl,
-                g.c.tr,
-                g.br.pne.offset(-bri, 0),
-                g.br.pnw.offset(bri, 0),
-                g.c.tr.offset(-130, 0),
-                g.c.tl.offset(85, 0),
-                g.bl.pne.offset(-bli, 0)
-            ]).reverse()))
+            .diagonal_upto(g.bl.pn, 78, 80, g.bx.edge("mxy"))
+            .tag("diagl"))
+        .record(DATPen()
+            .diagonal_upto(g.br.pn, 105, 130, g.bx.edge("mxy"))
+            .pvl().mod_pt(0, 0, lambda p: p.offset(-20, 0))
+            .tag("diagr"))
+        .record(DATPen()
+            .rect(g.c.xbar)
+            .difference(g.copy())
+            .explode()[1]
+            .tag("xbar"))
+        .remove("stem")
+        .remove("gap"))
 
 @glyphfn(550)
 def _I(r, g):
     return (g
+        .addFrame(g.bx.setw(g.c.srfw+50))
         .register(
-            base="-$srfw+50 -$srfh",
-            cap="-$srfw+50 +$srfh",
-            stem=g.stem.offset(25, 0)))
+            base="1 -$srfh",
+            cap="1 +$srfh",
+            stem=λg: g.stem.align(g.bx)))
 
 @glyphfn(750)
 def _H(r, g):
+    # TODO rework w/ ^c
     return (g
         .register(
             bl="-$srfw -$srfh",
@@ -173,8 +167,7 @@ def _H(r, g):
             cl="-$srfw +$srfh",
             cr=λg: g.cl.offset(g.cl.w+g.c.gap, 0),
             stemr=λg: g.stem.offset(g.cl.w+g.c.gap, 0),
-            xbar=λg: g.stem.union(g.stemr).take(g.c.xbarh, "mdy")
-        ))
+            xbar=λg: g.stem.union(g.stemr).take(g.c.xbarh, "mdy")))
 
 @glyphfn(550)
 def _K(r, g):
@@ -432,7 +425,7 @@ def _S(r, g):
             .boxCurveTo(g.bx.pse.offset(-g.c.stem-30, g.c.srfh+30), # BIGDOWN
                 ("SW", "NE"),
                 (0.65, 0.35))
-            .boxCurveTo(g.bx.ps.offset(35, g.c.srfh-g.c.over*2), # LOSMALL
+            .boxCurveTo(g.bx.ps.offset(45, g.c.srfh-g.c.over*2), # LOSMALL
                 "SE",
                 0.6)
             .boxCurveTo(g.hornl.pne, # LOLAND
