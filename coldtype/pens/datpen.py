@@ -143,6 +143,13 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 self.value[idx][-1] = [Point(p) for p in self.value[idx][-1]]
         return self
     
+    def fvl(self):
+        allpts = []
+        for mv, pts in self.value:
+            if len(pts) > 0:
+                allpts.extend(pts)
+        return allpts
+    
     def mod_pt(self, vidx, pidx, fn):
         self.value[vidx][-1][pidx] = fn(self.value[vidx][-1][pidx])
         return self

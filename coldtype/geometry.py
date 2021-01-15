@@ -294,6 +294,8 @@ class Point():
             except:
                 self.x = 0
                 self.y = 0
+    
+    __hash__ = object.__hash__
 
     def from_obj(obj):
         p = Point((0, 0))
