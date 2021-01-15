@@ -169,7 +169,7 @@ class Renderer():
 
             sidecar=parser.add_argument("-sc", "--sidecar", type=str, default=None, help="A file to run alongside your coldtype source file (like a file that processes data or keystrokes), that will run in a managed thread"),
 
-            tails=parser.add_argument("-ts", "--tails", type=str, default=None, help="File to tail, comma-separated (no whitespace); results will print output to the normal process output"),
+            tails=parser.add_argument("-tl", "--tails", type=str, default=None, help="File to tail, comma-separated (no whitespace); results will print output to the normal process output"),
 
             hide_keybuffer=parser.add_argument("-hkb", "--hide-keybuffer", action="store_true", default=False, help="Should the keybuffer be shown?"),
 

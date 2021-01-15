@@ -9,7 +9,7 @@ tl = Timeline(50)
 @animation((1500, 1000), timeline=tl, watch_soft=[datafile], rstate=1, bg=1)
 def stub(f, rs):
     os.system(f"robofont -p {stub.codepath}")
-    return
+    #return
 
     r = f.a.r
     nxl = LaunchControlXL(rs.midi)
@@ -43,13 +43,5 @@ def stub(f, rs):
             fill=bw(0)))
 
 if __name__ == "__main__":
-    import inspect
-    import dis
-
-    import lib.fontObjects.doodleSelection as ds
-
-    from pprint import pprint
-    pprint(dis.dis(ds.Selection._deletePointsPresurveContours))
-
-    #cg = CurrentGlyph()
-    #print(">", dis.dis(cg.deleteSelectionFromGlyph))
+    cg = CurrentGlyph()
+    print(cg)
