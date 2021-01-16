@@ -36,7 +36,25 @@ def stub(f):
         "SW", 0.35))
 
     e = f.a.progress(f.i, loops=1, easefn="eeio").e
-    
+
+    rs = r.grid(2, 2)
+    srcs = []
+    dsts = []
+    mtxs = []
+
+    pc = r.pc
+    pco = r.pc.offset(0, 250)
+
+    for idx, rr in enumerate(rs):
+        ps = rr.pnw, rr.pne, rr.psw, rr.pse
+        src = np.array(
+            ps,
+            dtype=np.float32)
+        dst = np.array(
+            [pco if p == pc else p for p in ps],
+            dtype=np.float32)
+        mtxs.append(cv2.getPerspectiveTransform(src, dst))
+
     src = np.array((
         r.pnw,
         r.pne,
@@ -56,15 +74,20 @@ def stub(f):
 
     out = DATPens()
     to_warp = lockup.copy().collapse()
-    to_warp = [DATPen().gridlines(f.a.r).outline().pen()]
+    #to_warp = [DATPen().gridlines(f.a.r).outline().pen()]
     for p in to_warp:
         def transform(x, y):
-            p = (x, y)
-            px = (mtx[0][0]*p[0] + mtx[0][1]*p[1] + mtx[0][2]) / ((mtx[2][0]*p[0] + mtx[2][1]*p[1] + mtx[2][2]))
-            py = (mtx[1][0]*p[0] + mtx[1][1]*p[1] + mtx[1][2]) / ((mtx[2][0]*p[0] + mtx[2][1]*p[1] + mtx[2][2]))
-            p_after = (int(px), int(py))
-            return p_after
-        out += p.nlt(transform)
+            pxy = Point([x, y])
+            for idx, rr in enumerate(rs):
+                if pxy.inside(rr):
+                    mtx = mtxs[idx]
+                    p = (x, y)
+                    px = (mtx[0][0]*p[0] + mtx[0][1]*p[1] + mtx[0][2]) / ((mtx[2][0]*p[0] + mtx[2][1]*p[1] + mtx[2][2]))
+                    py = (mtx[1][0]*p[0] + mtx[1][1]*p[1] + mtx[1][2]) / ((mtx[2][0]*p[0] + mtx[2][1]*p[1] + mtx[2][2]))
+                    p_after = (int(px), int(py))
+                    return p_after
+        
+        out += p.flatten(10).nlt(transform)
 
     return DATPens([
         DATPens([
