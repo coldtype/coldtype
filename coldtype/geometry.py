@@ -398,6 +398,23 @@ class Point():
     
     def sety(self, y):
         return Point([self.x, y])
+    
+    def as3d(self):
+        return Point3D(self)
+
+
+class Point3D(Point):
+    def __init__(self, p):
+        super().__init__(p)
+        self.z = 0
+    
+    def __len__(self):
+        return 3
+    
+    def __getitem__(self, idx):
+        if idx == 2:
+            return self.z
+        return super().__getitem__(idx)
 
 
 class Rect():
