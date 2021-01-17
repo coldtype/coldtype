@@ -287,6 +287,18 @@ class DATPenLikeObject():
         t = t.translate(-point.x, -point.y)
         return self.transform(t, transformFrame=False)
     
+    def at_rotation(self, degrees, fn:Callable[["DATPenLikeObject"], None], point=None):
+        self.rotate(degrees)
+        fn(self)
+        self.rotate(-degrees)
+        return self
+    
+    def at_scale(self, scale, fn:Callable[["DATPenLikeObject"], None]):
+        self.scale(scale)
+        self.scale()
+        # TODO
+        return self
+    
     def filmjitter(self, doneness, base=0, speed=(10, 20), scale=(2, 3), octaves=16):
         """
         An easy way to make something move in a way reminiscent of misregistered film

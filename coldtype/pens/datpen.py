@@ -1033,6 +1033,11 @@ class DATPen(RecordingPen, DATPenLikeObject):
         p, tangent = cc.subsegmentPoint(start=0, end=tv)
         return p, tangent
     
+    def split_t(self, t=0.5):
+        a = self.value[0][-1][0]
+        b, c, d = self.value[-1][-1]
+        return splitCubicAtT(a, b, c, d, t)
+    
     def length(self, t=1):
         """Get the length of the curve for time `t`"""
         cc = CurveCutter(self)
