@@ -1004,6 +1004,13 @@ class DATPen(RecordingPen, DATPenLikeObject):
         #self.value = DATPens(exploded[contour_slice]).implode().value
         return self
     
+    def sliced_line(self, start, end):
+        allpts = []
+        for mv, pts in self.value[start:end]:
+            print(pts)
+            #pts = [pts[-1] for (mv, pts) in self.value[start:end]]
+        return allpts
+    
     def openAndClosed(self):
         """Explode and then classify group each contour into open/closed pens; (what is this good for?)"""
         dp_open = DATPen()

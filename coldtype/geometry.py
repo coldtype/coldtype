@@ -545,6 +545,14 @@ class Rect():
         return [self.w, self.h]
     
     @property
+    def mnx(self):
+        return self.x
+    
+    @property
+    def mny(self):
+        return self.y
+
+    @property
     def mxx(self):
         return self.x + self.w
     
@@ -862,17 +870,37 @@ class Rect():
         mnx, mny, mxx, mxy = self.mnmnmxmx()
         return Rect.FromMnMnMxMx([x, mny, mxx, mxy])
     
+    def setlmnx(self, x):
+        if x > self.mnx:
+            return self.setmnx(x)
+        return self
+    
     def setmny(self, y):
         mnx, mny, mxx, mxy = self.mnmnmxmx()
         return Rect.FromMnMnMxMx([mnx, y, mxx, mxy])
+    
+    def setlmny(self, y):
+        if y > self.mny:
+            return self.setmny(y)
+        return self
     
     def setmxx(self, x):
         mnx, mny, mxx, mxy = self.mnmnmxmx()
         return Rect.FromMnMnMxMx([mnx, mny, x, mxy])
     
+    def setlmxx(self, x):
+        if x < self.mxx:
+            return self.setmxx(x)
+        return self
+    
     def setmxy(self, y):
         mnx, mny, mxx, mxy = self.mnmnmxmx()
         return Rect.FromMnMnMxMx([mnx, mny, mxx, y])
+    
+    def setlmxy(self, y):
+        if y < self.mxy:
+            return self.setmxy(y)
+        return self
     
     def setmdx(self, x):
         c = self.point("C")
@@ -931,7 +959,7 @@ class Rect():
 
         def do_op(r, xs):
             op = xs[0]
-            if op in ["t", "i", "o", "s", "m", "c", "r"]:
+            if op in ["t", "i", "o", "s", "m", "c", "r", "a", "l"]:
                 op = op
                 xs = xs[1:].strip()
             else:
@@ -944,7 +972,7 @@ class Rect():
             amounts = []
             
             for idx, x in enumerate(xs):
-                if op in ["t", "s", "m"]:
+                if op in ["t", "s", "m", "l"]:
                     if x[0] == "-":
                         edges.append("mn" + sfx[idx])
                     elif x[0] == "+":
@@ -981,17 +1009,40 @@ class Rect():
                 return (r.inset(amounts[0], amounts[1]))
             elif op == "o": # offset
                 return (r.offset(amounts[0], amounts[1]))
+            elif op == "l": # limits
+                # TODO simplify with setlmx* series
+                if amounts[0] != "ø":
+                    x = amounts[0]
+                    if edges[0] == "mnx":
+                        if x > r.mnx:
+                            r = r.setmnx(x)
+                    elif edges[0] == "mxx":
+                        if x < r.mxx:
+                            r = r.setmxx(x)
+                elif amounts[1] != "ø":
+                    y = amounts[1]
+                    if edges[1] == "mny":
+                        if y > r.mny:
+                            r = r.setmny(y)
+                    elif edges[1] == "mxy":
+                        if y < r.mxy:
+                            r = r.setmxy(y)
+                return r
             elif op == "m": # maxima
                 if amounts[0] != "ø":
                     if edges[0] == "mnx":
                         r = r.setmnx(amounts[0])
                     elif edges[0] == "mxx":
                         r = r.setmxx(amounts[0])
+                    elif edges[0] == "mdx":
+                        r = r.setmdx(amounts[0])
                 if amounts[1] != "ø":
                     if edges[1] == "mny":
                         r = r.setmny(amounts[1])
                     elif edges[1] == "mxy":
                         r = r.setmxy(amounts[1])
+                    elif edges[1] == "mdy":
+                        r = r.setmdy(amounts[1])
                 return r
             elif op == "c": # columns
                 ws = self.parse_line(r.w, _xs)

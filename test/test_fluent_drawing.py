@@ -1,9 +1,10 @@
 from coldtype import *
 from coldtype.grid import Grid
 
+from fontTools.misc.bezierTools import splitLine
 
 class glyphfn():
-    def __init__(self, w):
+    def __init__(self, w=1000):
         self.w = w
         self.r = Rect(w, 750)
 
@@ -28,6 +29,10 @@ class Glyph(DATPenSet):
         setattr(self, "bx", frame)
         return self
     
+    def setWidth(self, width):
+        self.addFrame(Rect(width, self.bx.h))
+        return self
+    
     def constants(self, **kwargs):
         res = kwargs
         
@@ -46,13 +51,22 @@ class Glyph(DATPenSet):
         #print(">>>", vs)
         return vs
     
-    def remove(self, k):
+    def get(self, k):
         if k in self.registrations:
-            del self.registrations[k]
+            return DATPen().rect(self.registrations[k])
         else:
             tagged = self.fft(k)
             if tagged:
-                super().remove(tagged)
+                return tagged.copy()
+    
+    def remove(self, *args):
+        for k in args:
+            if k in self.registrations:
+                del self.registrations[k]
+            else:
+                tagged = self.fft(k)
+                if tagged:
+                    super().remove(tagged)
         return self
     
     def register(self, fn=None, **kwargs):
@@ -126,11 +140,9 @@ def evencurvey(p:DATPen, t, a, b, y):
     p.curveTo(a.interp(t1, c1), ey.interp(t2, c1), ey)
     p.curveTo(ey.interp(t2, c2), b.interp(t1, c2), b)
 
-@glyphfn(750)
+@glyphfn()
 def _A(r, g):
     return (g
-        .constants(
-            xbar="1 =$xbarh ^o 0 -60")
         .register(
             blƒgapƒbr="1 -$srfh ^c $srfw-20 $gap $srfw+20 a")
         .record(DATPen()
@@ -141,33 +153,31 @@ def _A(r, g):
             .pvl().mod_pt(0, 0, lambda p: p.offset(-20, 0))
             .tag("diagr"))
         .record(DATPen()
-            .rect(g.c.xbar)
+            .rect(g.bx / g.varstr("1 =$xbarh ^o 0 -60"))
             .difference(g.copy())
             .explode()[1]
             .tag("xbar"))
-        .remove("stem")
-        .remove("gap"))
+        .remove("stem", "gap"))
 
-@glyphfn(550)
+@glyphfn()
 def _I(r, g):
     return (g
-        .addFrame(g.bx.setw(g.c.srfw+50))
+        .setWidth(g.c.srfw+50)
         .register(
             base="1 -$srfh",
             cap="1 +$srfh",
-            stem=λg: g.stem.align(g.bx)))
+            stem="=$stem 1"))
 
-@glyphfn(750)
+@glyphfn()
 def _H(r, g):
-    # TODO rework w/ ^c
     return (g
         .register(
-            bl="-$srfw -$srfh",
-            br=λg: g.bl.offset(g.bl.w+g.c.gap, 0),
-            cl="-$srfw +$srfh",
-            cr=λg: g.cl.offset(g.cl.w+g.c.gap, 0),
-            stemr=λg: g.stem.offset(g.cl.w+g.c.gap, 0),
-            xbar=λg: g.stem.union(g.stemr).take(g.c.xbarh, "mdy")))
+            blƒgapƒbr="1 -$srfh ^c $srfw $gap $srfw a",
+            clƒgapƒcr="1 +$srfh ^c $srfw $gap $srfw a",
+            steml="-$stem 1 ^m =&bl.ps.x ø",
+            stemr="-$stem 1 ^m =&br.ps.x ø",
+            xbar="1 =$xbarh ^m -&steml.pc.x ø ^m +&stemr.pc.x ø")
+        .remove("stem", "gap"))
 
 @glyphfn(550)
 def _K(r, g):
@@ -189,43 +199,40 @@ def _K(r, g):
         .remove("xbar")
         .remove("stemr"))
 
-@glyphfn(500)
+@glyphfn()
 def _E(r, g):
     return (g
+        .setWidth(g.c.stem*5)
         .register(
             base="1 -$srfh",
             cap="1 +$srfh",
             eart="+$stem +$earh",
             earb="+$stem -$earh",
-            mid=λg: g.bx.take(g.c.xbarh, "mdy")
-                .subtract(g.c.instem, "mnx")
-                .subtract(g.eart.w+30, "mxx")))
+            mid="1 =$xbarh ^m -&stem.pc.x ø ^m +&eart.psw.x-30 ø ^l +450 ø"))
 
-@glyphfn(500)
+@glyphfn()
 def _F(r, g):
     return (_E.func(r, g)
         .remove("earb")
         .register(
             base="-$srfw+10 -$srfh"))
 
-@glyphfn(550)
+@glyphfn(500)
+def _L(r, g):
+    return (_E.func(r, g)
+        .register(cap="-$srfw +$srfh")
+        .remove("eart", "mid"))
+
+@glyphfn()
 def _T(r, g):
     return (g
+        .setWidth(g.c.stem*5)
         .register(
             base="=$srfw -$srfh",
             cap="1 +$srfh",
             earl="-$stem +$earh",
             earr="+$stem +$earh",
-            stem=g.bx.take(g.stem.w, "mdx")))
-
-@glyphfn(500)
-def _L(r, g):
-    return (g
-        .register(
-            base="1 -$srfh",
-            cap="-$srfw +$srfh",
-            ear="+$stem -$earh"
-        ))
+            stem="=$stem 1"))
 
 @glyphfn(550)
 def _P(r, g, mod=None, xc=0, ci=30):
@@ -297,24 +304,35 @@ def _R(r, g):
 def _N(r, g):
     return (g
         .constants(
-            nst=g.c.stem-30,
-            innst=g.c.instem-20,
-            base=λg: g.c.innst*2 + g.c.nst)
+            stem=g.c.stem-30,
+            instem=g.c.instem-20,
+            base=λg: g.c.instem*2 + g.c.stem
+            )
         .register(
+            inlƒstemlƒgapƒstemr="c $instem $stem a $stem $instem",
             base="-$base -$srfh",
-            capl="-&base.w +$srfh",
-            capr="+&base.w +$srfh",
-            steml="-$nst 1 ^o $innst 0",
-            stemr="+$nst 1 ^o -$innst 0")
-        .remove("stem")
+            capl="1 +$srfh ^m +&steml.pc.x ø",
+            capr="+$base +$srfh")
         .append(DATPen()
-            .line([
-                g.steml.pnw.offset(0, 0),
-                g.stemr.pse.offset(-(g.c.nst+g.c.innst), 0),
-                g.stemr.pse.offset(-10, 0),
-                g.capl.pne])
-            .closePath()
-            .tag("diagonal")))
+            .diagonal_upto(
+                g.stemr.psw,
+                g.stemr.ps.cdist(g.steml.pne.offset(40, 0))[1],
+                g.c.stem+80,
+                g.bx.edge("mxy"))
+            .intersection(DATPen().rect(g.gap))
+            .tag("diagonal"))
+        # .register(
+        #     base=g.base.setlmxx(g
+        #         .get("base")
+        #         .difference(g.get("diagonal"))
+        #         .explode()[0]
+        #         .points()[0][-2].x-g.c.gap),
+        #     capr=g.capr.setlmnx(g
+        #         .get("capr")
+        #         .difference(g.get("diagonal"))
+        #         .explode()[0]
+        #         .points()[0][2].x+g.c.gap))
+        .remove("stem", "gap", "inl"))
 
 @glyphfn(700)
 def _M(r, g):
@@ -504,7 +522,7 @@ def curves(f, rs):
         .constants(
             srfh=190,
             stem=105,
-            instem=100,
+            instem=105,
             xbarh=100,
             over=10,
             gap=20,
