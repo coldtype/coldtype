@@ -1,4 +1,4 @@
-from coldtype import *
+from coldtype.test import *
 from coldtype.grid import Grid
 
 from fontTools.misc.bezierTools import splitLine
@@ -79,8 +79,9 @@ class Glyph(DATPenSet):
             res = kwargs
         
         def keep(k, v):
-            self.registrations[k] = v
-            setattr(self, k, v)
+            if k != "_":
+                self.registrations[k] = v
+                setattr(self, k, v)
         
         for k, v in res.items():
             if callable(v):
@@ -149,7 +150,7 @@ def _A(r, g):
             .diagonal_upto(g.bl.pn, 78, 80, g.bx.edge("mxy"))
             .tag("diagl"))
         .record(DATPen()
-            .diagonal_upto(g.br.pn, 105, 130, g.bx.edge("mxy"))
+            .diagonal_upto(g.br.pn, 105, 170, g.bx.edge("mxy"))
             .pvl().mod_pt(0, 0, lambda p: p.offset(-20, 0))
             .tag("diagr"))
         .record(DATPen()
@@ -185,7 +186,7 @@ def _K(r, g):
         .register(
             xbar=g.xbar.offset(0, -110))
         .record(DATPen()
-            .lineTo(g.bx.pc.offset(70, 60))
+            .lineTo(g.bx.pc.offset(70, 50))
             .lineTo(g.bx.pc.offset(-20, -10))
             .lineTo(g.br.pn.offset(-g.c.stem/2-20, 0))
             .lineTo(g.br.pn.offset(g.c.stem/2+20, 0))
@@ -276,10 +277,10 @@ def _D(r, g):
 
 @glyphfn(_P.w)
 def _R(r, g):
-    return (_P.func(r, g, mod=lambda g:
+    return (_P.func(r, g, ci=50, mod=lambda g:
         g.register(
             base=g.base.subtract(20, "mxx"),
-            mid=g.mid.offset(0, 30),
+            mid=g.mid.offset(0, 30).inset(10),
             baser="+$srfw-60 -$srfh ^o 30 0"))
         .record(DATPen()
             .moveTo(g.mid.pse.offset(-50, 0))
@@ -304,56 +305,82 @@ def _R(r, g):
 def _N(r, g):
     return (g
         .constants(
-            stem=g.c.stem-30,
+            stem=g.c.stem-25,
             instem=g.c.instem-20,
-            base=λg: g.c.instem*2 + g.c.stem
-            )
+            base=λg: g.c.instem*2 + g.c.stem,
+            diagw=80,
+            shoulderout=30)
         .register(
-            inlƒstemlƒgapƒstemr="c $instem $stem a $stem $instem",
+            _ƒstemlƒgapƒstemr="c $instem $stem a $stem $instem",
             base="-$base -$srfh",
             capl="1 +$srfh ^m +&steml.pc.x ø",
             capr="+$base +$srfh")
         .append(DATPen()
             .diagonal_upto(
                 g.stemr.psw,
-                g.stemr.ps.cdist(g.steml.pne.offset(40, 0))[1],
-                g.c.stem+80,
+                g.stemr.ps.cdist(g.steml.pne.offset(g.c.shoulderout, 0))[1],
+                g.c.stem+g.c.diagw,
                 g.bx.edge("mxy"))
             .intersection(DATPen().rect(g.gap))
             .tag("diagonal"))
-        # .register(
-        #     base=g.base.setlmxx(g
-        #         .get("base")
-        #         .difference(g.get("diagonal"))
-        #         .explode()[0]
-        #         .points()[0][-2].x-g.c.gap),
-        #     capr=g.capr.setlmnx(g
-        #         .get("capr")
-        #         .difference(g.get("diagonal"))
-        #         .explode()[0]
-        #         .points()[0][2].x+g.c.gap))
-        .remove("stem", "gap", "inl"))
+        .register(
+            base=g.base.setlmxx(DATPen()
+                .rect(g.bx / g.varstr("1 -$srfh"))
+                .intersection(g.get("diagonal"))
+                .bounds().x-g.c.gap),
+            capr=g.capr.setlmnx(DATPen()
+                .rect(g.bx / g.varstr("1 +$srfh"))
+                .intersection(g.get("diagonal"))
+                .bounds().mxx+g.c.gap))
+        .remove("stem", "gap"))
 
 @glyphfn(700)
 def _M(r, g):
     return (_N.func(r, g)
-        #.remove("stemr")
-        .remove("diagonal")
-        .remove("capr")
+        .remove("diagonal", "base")
+        .constants(
+            nosein=40)
         .register(
+            basel=g.base,
             baser="+&base.w -$srfh",
-            capl="-$srfw-40 +$srfh",
-            #stemr="+$stem 1 ^o -$instem 0",
-            capr="+&base.w +$srfh ^m -&stemr.x ø")
-        .record(DATPen()
-            .lineTo(g.steml.pnw.offset(50, 0))
-            .lineTo(g.base.pse.offset(g.c.gap*4, 0))
-            .lineTo(g.baser.psw.offset(-g.c.gap*4, 0))
-            .lineTo(g.capr.psw.offset(0, 35))
-            .lineTo(g.capr.pnw)
-            .lineTo(g.capr.pnw.offset(-75, 0))
-            .lineTo(g.base.pne.offset(130, 180))
-            .lineTo(g.capl.pne)))
+            capr="+&capl.w +$srfh")
+        .append(DATPen()
+            .diagonal_upto(
+                g.gap.ps.offset(g.c.nosein, 0),
+                g.gap.ps.offset(g.c.nosein, 0).cdist(g.steml.pne.offset(g.c.shoulderout, 0))[1],
+                g.c.stem+g.c.diagw,
+                g.bx.edge("mxy"))
+            .intersection(DATPen().rect(g.gap))
+            .tag("diagl"))
+        .append(DATPen()
+            .diagonal_upto(
+                g.gap.ps.offset(-g.c.nosein, 0),
+                g.gap.ps.offset(-g.c.nosein, 0).cdist(g.stemr.pnw.offset(-g.c.shoulderout, 0))[1],
+                g.c.stem+g.c.diagw,
+                g.bx.edge("mxy"))
+            .intersection(DATPen().rect(g.gap))
+            .tag("diagr"))
+        .register(
+            basel=g.basel.setlmxx(DATPen()
+                .rect(g.bx / g.varstr("1 -$srfh"))
+                .intersection(g.get("diagl"))
+                .bounds().mnx-g.c.gap),
+            baser=g.baser.setlmnx(DATPen()
+                .rect(g.bx / g.varstr("1 -$srfh"))
+                .intersection(g.get("diagr"))
+                .bounds().mxx+g.c.gap+0))
+        .append(g.get("diagl")
+            .difference(g.get("diagr"))
+            .explode()[0]
+            .record(g.get("diagr")
+                .difference(g.get("diagl"))
+                .explode()[0])
+            .record(g.get("diagl")
+                .intersection(g.get("diagr")))
+            .removeOverlap()
+            .pvl()
+            .mod_pt(0, 0, λp: p.offset(0, -40)))
+        .remove("diagl", "diagr"))
 
 @glyphfn(500)
 def _O(r, g, clx=0):
@@ -458,9 +485,9 @@ def _S(r, g):
             .boxCurveTo(g.bx.pse.offset(20, g.c.earh/2+45), # LOSWING
                 "SE",
                 0.6)
-            .boxCurveTo(g.bx.pnw.offset(g.c.stem+60, -g.c.srfh-30), # BIGUP
+            .boxCurveTo(g.bx.pnw.offset(g.c.stem+70, -g.c.srfh-30), # BIGUP
                 ("NE", "SW"),
-                (0.65, 0.35))
+                (0.65, 0.3))
             .boxCurveTo(g.bx.pn.offset(-20, -g.c.srfh+g.c.over*2), # HISMALL
                 "NW",
                 0.65)
@@ -556,5 +583,6 @@ def curves(f, rs):
         #    #.img_opacity(1)
         #),
         (glyph.pen().skeleton()) if overlay else None,
-        glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.bounds().w+30, 0).f(0).s(None).color_phototype(r, blur=5)
+        glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.bounds().w+30, 0).f(0).s(None).color_phototype(r, blur=5),
+        #show_points(glyph.pen(), Style(recmono, 100))
         ])
