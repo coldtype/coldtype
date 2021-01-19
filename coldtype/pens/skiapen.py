@@ -8,6 +8,7 @@ from fontTools.pens.basePen import BasePen
 
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
+from coldtype.pens.datimage import DATImage
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 from coldtype.color import Color
@@ -243,10 +244,27 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                     rect.h - pt.y,
                     skia.Font(font, pen.style.fontSize),
                     skia.Paint(AntiAlias=True, Color=pen.style.fill.skia()))
+                return
+            elif isinstance(pen, DATImage):
+                paint = skia.Paint(AntiAlias=True)
+                f = pen.frame
+                canvas.save()
+                for action, *args in pen.transforms:
+                    if action == "rotate":
+                        deg, pt = args
+                        canvas.rotate(-deg, pt.x, pt.y)
+                    #print(action, args)
+                canvas.drawImage(pen._img, f.x, f.y, paint)
+                canvas.restore()
+                #pen = DATPen().rect(pen.bounds()).img(pen._img, rect=pen.bounds(), pattern=False)
+                return
             
             if state == 0:
+                print("DRAWING", pen)
                 SkiaPen(pen, rect, canvas, scale, style=style, alpha=pen.calc_alpha())
         
+        print("COMPTOCANV >>>>>>>>>>>>>>>>")
+        pens.print_tree()
         pens.walk(draw, visible_only=True)
     
     def Precompose(pens, rect, fmt=None, context=None, scale=1, disk=False):
