@@ -3,6 +3,8 @@ from coldtype.grid import Grid
 
 from fontTools.misc.bezierTools import splitLine
 
+a = [(120, 230)]
+
 class glyphfn():
     def __init__(self, w=1000):
         self.w = w

@@ -146,7 +146,11 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             self.canvas.save()
             #self.canvas.setMatrix(matrix)
             self.canvas.clipPath(self.path, doAntiAlias=True)
-            self.canvas.scale(sx, sy)
+            if False:
+                self.canvas.scale(sx, sy)
+            else:
+                # TODO scale the image, or maybe that shouldn't be here? this scaling method is horrible for image quality
+                self.canvas.scale(sx, sy)
             self.canvas.drawImage(image, bx/sx, by/sy, self.paint)
             self.canvas.restore()
             return True
