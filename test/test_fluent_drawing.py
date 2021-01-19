@@ -487,7 +487,7 @@ def _S(r, g):
             .boxCurveTo(g.bx.pse.offset(20, g.c.earh/2+45), # LOSWING
                 "SE",
                 0.6)
-            .boxCurveTo(g.bx.pnw.offset(g.c.stem+70, -g.c.srfh-30), # BIGUP
+            .boxCurveTo(g.bx.pnw.offset(g.c.stem+70, -g.c.srfh-20), # BIGUP
                 ("NE", "SW"),
                 (0.65, 0.3))
             .boxCurveTo(g.bx.pn.offset(-20, -g.c.srfh+g.c.over*2), # HISMALL
@@ -500,25 +500,23 @@ def _S(r, g):
             .closePath()
             .pvl()))
 
-@glyphfn(590)
+@glyphfn()
 def _U(r, g):
-    c = 70
-    ocf = 0.75
-    icf = 0.85
+    c = 90
     return (g
         .register(
-            capl="-$srfw +$srfh",
-            capr="+$srfw-60 +$srfh",
+            caplƒ_ƒcapr="1 +$srfh ^c $srfw+20 $gap $srfw-60 a",
             steml=λg: g.stem.setmny(g.c.srfh+c),
-            stemr=λg: g.stem.inset(10, 0).setmdx(g.capr.point("C").x).setmny(g.c.srfh+c))
+            stemr=λg: g.stem / g.varstr(f"i 10 0 ^m =&capr.pc.x -$srfh+{c}"))
         .constants(
             sc=g.steml.pse.interp(0.5, g.stemr.psw).sety(-g.c.over))
         .remove("stem")
         .record(DATPen()
             .moveTo(g.steml.psw)
-            .uTurnTo(g.c.sc, g.stemr.pse, ("SW", "SE"), ocf)
+            .uTurnTo(g.c.sc, g.stemr.pse, ("SW", "SE"), 0.75)
             .lineTo(g.stemr.psw)
-            .uTurnTo(g.c.sc.offset(0, g.c.srfh), g.steml.pse, ("SE", "SW"), icf)
+            .uTurnTo(g.c.sc.offset(0, g.c.srfh), g.steml.pse, ("SE", "SW"), 0.85)
+            .closePath()
             .tag("curve")))
 
 @glyphfn(_U.w)
