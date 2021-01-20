@@ -61,7 +61,11 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 self.blendmode = args[0]
 
         for attrs, attr in all_attrs:
-            self.paint = skia.Paint(**skia_paint_kwargs)
+            filtered_paint_kwargs = {}
+            for k, v in skia_paint_kwargs.items():
+                if not k.startswith("_"):
+                    filtered_paint_kwargs[k] = v
+            self.paint = skia.Paint(**filtered_paint_kwargs)
             if self.blendmode:
                 self.paint.setBlendMode(self.blendmode)
             method, *args = attr
@@ -260,11 +264,11 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 return
             
             if state == 0:
-                print("DRAWING", pen)
+                #print("DRAWING", pen)
                 SkiaPen(pen, rect, canvas, scale, style=style, alpha=pen.calc_alpha())
         
-        print("COMPTOCANV >>>>>>>>>>>>>>>>")
-        pens.print_tree()
+        #print("COMPTOCANV >>>>>>>>>>>>>>>>")
+        #pens.print_tree()
         pens.walk(draw, visible_only=True)
     
     def Precompose(pens, rect, fmt=None, context=None, scale=1, disk=False):

@@ -1028,7 +1028,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
         start = 0
         end = end * cc.calcCurveLength()
         pv = cc.subsegment(start, end)
-        print(">", start, end)
         self.value = pv
         return self
     
