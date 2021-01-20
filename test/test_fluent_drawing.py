@@ -381,7 +381,7 @@ def _M(r, g):
                 .intersection(g.get("diagr")))
             .removeOverlap()
             .pvl()
-            .mod_pt(0, 0, λp: p.offset(0, -40)))
+            .mod_pt(0, 0, λp: p.offset(10, -70)))
         .remove("diagl", "diagr"))
 
 @glyphfn(500)
@@ -474,11 +474,11 @@ def _S(r, g):
                 (0.65, 0.35))
             .boxCurveTo(g.bx.ps.offset(45, g.c.srfh-g.c.over*2), # LOSMALL
                 "SE",
-                0.6)
+                0.60)
             .boxCurveTo(g.hornl.pne, # LOLAND
                 "SW",
-                0.5,
-                dict(c=λp: p.offset(35, -20)))
+                (0.36, 0.67),
+                dict(c=λp: p.offset(85, -20)))
             .lineTo(g.hornl.point("C").offset(0, 20)) # LORESET
             .boxCurveTo(g.bx.ps.offset(40, -g.c.over), # LOSTART
                 "SW",
@@ -487,10 +487,10 @@ def _S(r, g):
             .boxCurveTo(g.bx.pse.offset(20, g.c.earh/2+45), # LOSWING
                 "SE",
                 0.6)
-            .boxCurveTo(g.bx.pnw.offset(g.c.stem+70, -g.c.srfh-20), # BIGUP
+            .boxCurveTo(g.bx.pnw.offset(g.c.stem+70, -g.c.srfh-30), # BIGUP
                 ("NE", "SW"),
-                (0.65, 0.3))
-            .boxCurveTo(g.bx.pn.offset(-20, -g.c.srfh+g.c.over*2), # HISMALL
+                (0.65, 0.37))
+            .boxCurveTo(g.bx.pn.offset(-10, -g.c.srfh+g.c.over*2), # HISMALL
                 "NW",
                 0.65)
             .boxCurveTo(g.hornr.psw, # HILAND
@@ -584,5 +584,6 @@ def curves(f, rs):
         #),
         (glyph.pen().skeleton()) if overlay else None,
         glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.bounds().w+30, 0).f(0).s(None).color_phototype(r, blur=5),
+        glyph.pen().removeOverlap().scale(0.5, center=Point([100, 100])).translate(glyph.bounds().w+30+glyph.bounds().w*0.75+30, 0).f(0).s(None),
         #show_points(glyph.pen(), Style(recmono, 100))
         ])
