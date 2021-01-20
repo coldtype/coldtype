@@ -465,9 +465,13 @@ class DATPenLikeObject():
             if False:
                 print(">>>", " ".join(rargs))
             result = run(rargs, capture_output=True)
+            if False:
+                print(result)
             t = Transform()
             t = t.scale(0.1, 0.1)
             svgp = SVGPath.fromstring(result.stdout, transform=t)
+            if False:
+                print(svgp)
             dp = self.single_pen_class()
             svgp.draw(dp)
             return dp.f(0)

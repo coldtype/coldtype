@@ -46,7 +46,13 @@ class DATImage(DATPen):
     
     def precompose(self, rect, as_image=True):
         res = DATPens([self]).precompose(rect)
-        return DATImage(self.src, img=res.img().get("src"))
+        if as_image:
+            return DATImage.FromPen(res, original_src=self.src)
+        else:
+            return res
+    
+    def FromPen(pen:DATPen, original_src=None):
+        return DATImage(original_src, img=pen.img().get("src"))
     
     def __str__(self):
         return f"<DATImage({self.src.relative_to(Path.cwd())})/>"
