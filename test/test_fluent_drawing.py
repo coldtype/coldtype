@@ -15,17 +15,7 @@ class glyphfn():
         return self
 
 
-class Constants():
-    def __init__(self):
-        self.lookup = {}
-
-
 class Glyph(DATPens):
-    def __init__(self):
-        self.registrations = {}
-        self.c = Constants()
-        super().__init__()
-
     def addFrame(self, frame):
         super().addFrame(frame)
         setattr(self, "bx", frame)
