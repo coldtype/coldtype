@@ -20,7 +20,7 @@ class Constants():
         self.lookup = {}
 
 
-class Glyph(DATPenSet):
+class Glyph(DATPens):
     def __init__(self):
         self.registrations = {}
         self.c = Constants()
@@ -34,114 +34,7 @@ class Glyph(DATPenSet):
     def setWidth(self, width):
         self.addFrame(Rect(width, self.bx.h))
         return self
-    
-    def constants(self, **kwargs):
-        res = kwargs
-        
-        for k, v in res.items():
-            if callable(v):
-                v = v(self)
-            elif isinstance(v, str):
-                v = self.bx / self.varstr(v)
-            self.c.lookup[k] = v
-            setattr(self.c, k, v)
-        return self
-    
-    def varstr(self, v):
-        vs = re.sub(r"\$([^\s]+)", lambda m: str(eval("g.c." + m.group(1), {"g":self})), v)
-        vs = re.sub(r"\&([^\s]+)", lambda m: str(eval("g." + m.group(1), {"g":self})), vs)
-        #print(">>>", vs)
-        return vs
-    
-    def get(self, k):
-        if k in self.registrations:
-            return DATPen().rect(self.registrations[k])
-        else:
-            tagged = self.fft(k)
-            if tagged:
-                return tagged.copy()
-    
-    def remove(self, *args):
-        for k in args:
-            if k in self.registrations:
-                del self.registrations[k]
-            else:
-                tagged = self.fft(k)
-                if tagged:
-                    super().remove(tagged)
-        return self
-    
-    def register(self, fn=None, **kwargs):
-        if fn:
-            if callable(fn):
-                res = fn(self)
-            else:
-                res = fn
-        else:
-            res = kwargs
-        
-        def keep(k, v):
-            if k != "_":
-                self.registrations[k] = v
-                setattr(self, k, v)
-        
-        for k, v in res.items():
-            if callable(v):
-                v = v(self)
-            elif isinstance(v, str):
-                v = self.bx / self.varstr(v)
-            if "ƒ" in k:
-                for idx, _k in enumerate(k.split("ƒ")):
-                    keep(_k, v[idx])
-            else:
-                keep(k, v)
-        return self
-    
-    def realize(self):
-        for k, v in self.registrations.items():
-            self.append(DATPen().rect(v).tag(k))
-        return self
-    
-    def record(self, fn):
-        if callable(fn):
-            return super().record(fn(self))
-        else:
-            return super().record(fn)
 
-
-def evencurve(p:DATPen, t, a, b, x=0):
-    if len(p.value) == 0:
-        p.moveTo(a)
-    else:
-        p.lineTo(a)
-    
-    try:
-        t1, t2 = t
-    except TypeError:
-        t1, t2 = t, t
-    
-    ex = a.interp(0.5, b).setx(x)
-    c1 = a.setx(x)
-    c2 = b.setx(x)
-    p.curveTo(a.interp(t1, c1), ex.interp(t2, c1), ex)
-    p.curveTo(ex.interp(t2, c2), b.interp(t1, c2), b)
-
-def evencurvey(p:DATPen, t, a, b, y):
-    if len(p.value) == 0:
-        p.moveTo(a)
-    else:
-        p.lineTo(a)
-    
-    try:
-        t1, t2 = t
-    except TypeError:
-        t1, t2 = t, t
-    
-    ey = a.interp(0.5, b).sety(y)
-    c1 = a.sety(y)
-    c2 = b.sety(y)
-    p.curveTo(a.interp(t1, c1), ey.interp(t2, c1), ey)
-    p.curveTo(ey.interp(t2, c2), b.interp(t1, c2), b)
 
 @glyphfn()
 def _A(r, g):
@@ -159,6 +52,7 @@ def _A(r, g):
             .rect(g.bx / g.varstr("1 =$xbarh ^o 0 -60"))
             .difference(g.copy())
             .explode()[1]
+            .scale(1.1, 1)
             .tag("xbar"))
         .remove("stem", "gap"))
 
@@ -246,10 +140,12 @@ def _P(r, g, mod=None, xc=0, ci=30):
             mid=λg: g.bx / g.varstr("-&cap.w =$srfh-90") / "+0.5 1 ^o 0 -30")
         .chain(mod)
         .record(lambda g: DATPen()
-            .chain(evencurve, 0.9,
-                g.cap.pse, g.mid.pne, g.bx.pe.x-g.stem.w-ci+xc)
-            .chain(evencurve, 0.65,
-                g.mid.pse, g.cap.pne, g.bx.pe.x+xc)
+            .moveTo(g.cap.pse)
+            .uTurnTo(g.cap.pse.i(0.5, g.mid.pne).setx(g.bx.mxx-g.stem.w-ci+xc),
+                g.mid.pne, ("NE", "SE"), 0.9)
+            .lineTo(g.mid.pse)
+            .uTurnTo(g.mid.pse.i(g.cap.pne).setx(g.bx.pe.x+xc),
+                g.cap.pne, ("SE", "NE"), 0.65)
             .closePath()
             .tag("curve")))
 
@@ -260,10 +156,12 @@ def _B(r, g):
             base=g.base.take(g.cap.w, "mnx"),
             mid=g.mid.offset(20, 30).inset(5)))
         .record(lambda g: DATPen()
-            .chain(evencurve, 0.9,
-                g.mid.pse, g.base.pne, g.bx.pe.x-g.stem.w-30)
-            .chain(evencurve, 0.7,
-                g.base.pse, g.mid.pne.offset(-150, 0), g.bx.pe.x+20)
+            .moveTo(g.mid.pse)
+            .uTurnTo(g.mid.pse.i(g.base.pne).setx(g.bx.pe.x-g.stem.w-30),
+                g.base.pne, ("NE", "SE"), 0.9)
+            .lineTo(g.base.pse)
+            .uTurnTo(g.base.pse.i(g.mid.pne).setx(g.bx.pe.x+20),
+                g.mid.pne.offset(-150, 0), ("SE", "NE"), 0.7)
             .closePath()))
 
 @glyphfn(_P.w)
@@ -273,7 +171,7 @@ def _D(r, g):
             .remove("base")))
     (g.fft("curve")
         .pvl()
-        .mod_pt(4, -1, λp: p.offset(0, 30))
+        .mod_pt(4, -1, λp: p.offset(0, 40))
         .mod_pt(1, -1, λp: p.offset(0, 30)))
     return g
 
@@ -387,40 +285,28 @@ def _M(r, g):
 @glyphfn(500)
 def _O(r, g, clx=0):
     (g.constants(
-        hw=g.c.stem+20,
-        o=g.bx.inset(0, g.c.over),
-        oc=λg: g.c.o.inset(g.c.hw, g.c.srfh)))
+        hw=g.c.stem+10,
+        o=g.bx.inset(0, -g.c.over),
+        i=λg: g.c.o.inset(g.c.hw, g.c.srfh)))
 
-    outer = (DATPen()
-        .tag("O")
-        .chain(evencurvey, 0.65,
-            g.c.o.pe.offset(0, 50),
-            g.c.o.pw.offset(0, 50),
-            g.c.o.pn.y,
-            )
-        .chain(evencurvey, 0.65,
-            g.c.o.pw.offset(0, -50),
-            g.c.o.pe.offset(0, -50),
-            g.c.o.ps.y)
-        .closePath())
+    def o(r, off, offc):
+        return (DATPen()
+            .moveTo(r.pe.offset(0, off))
+            .uTurnTo(r.pn, r.pw.offset(0, off),
+                ("NE", "NW"), offc)
+            .lineTo(r.pw.offset(0, -off))
+            .uTurnTo(r.ps, r.pe.offset(0, -off),
+                ("SW", "SE"), offc)
+            .closePath())
+    
+    outer = o(g.c.o, 40, 0.65).tag("O")
+    inner = o(g.c.i.subtract(clx, "mnx"), 16, 0.85).tag("O_counter").reverse()
     
     g.add_data("outer", outer.copy())
 
     return (g
         .remove("stem")
-        .record(outer
-            .record(DATPen()
-                .chain(evencurvey, 0.85,
-                    g.c.oc.pe.offset(0, 40),
-                    g.c.oc.pw.offset(0+clx, 40),
-                    g.c.oc.pn.y,
-                    )
-                .chain(evencurvey, 0.85,
-                    g.c.oc.pw.offset(0+clx, -40),
-                    g.c.oc.pe.offset(0, -40),
-                    g.c.oc.ps.y)
-                .closePath()
-                .reverse())))
+        .record(outer.record(inner)))
 
 @glyphfn(_O.w)
 def _Q(r, g):
@@ -431,26 +317,41 @@ def _Q(r, g):
             .rotate(33)
             .translate(g.bounds().w*0.5+50, -50)))
 
-@glyphfn(_O.w)
-def _C(r, g):
+def _CG(r, g):
     g = _O.func(r, g, clx=15)
     ht, hm, hb = g.bx.take(g.c.hw, "mxx").divide(g.c.xbarh, "mdy")
-    O = g.fft("O")
-    O.difference(DATPen().rect(hm))
-    O.add_pt(0, 0.5, λp: p.offset(0, -100))
-    O.mod_pt(2, -1, λp: p.offset(-10, 0))
-    O.mod_pt(2, -2, λp: p.offset(30, 0))
     
     return (g
-        .register(
-            horn=f"+{ht.w} +{ht.h}"
-            ))
+        .register(horn=f"+{ht.w} +{ht.h}")
+        .fft("O", λp: (p
+            .add_pt(0, 0.5, λp: p.offset(0, -100))
+            .mod_pt(2, -1, λp: p.offset(-10, 0))
+            .mod_pt(2, -2, λp: p.offset(30, 0))
+            .difference(DATPen().rect(hm.add(10, "mnx")))
+            .pvl())))
+
+@glyphfn(_O.w)
+def _C(r, g):
+    return (_CG(r, g)
+        .fft("O", λp: (p
+            .mod_pt(6, 0, λp: p.offset(5, 0))
+            .mod_pt(7, 0, λp: p.offset(-10, 0))
+            .mod_pt(5, 2, λp: p.offset(5, 0)))))
 
 @glyphfn(_C.w)
 def _G(r, g):
-    g = _C.func(r, g)
-    xbar = g.bx / g.varstr("+0.5 =$xbarh ^o 0 -50")
-    g.record(DATPen().rect(xbar).intersection(g.data["outer"].copy()))
+    g = (_CG(r, g)
+        .append(
+            DATPen()
+            .rect(g.bx / g.varstr("+0.5 =$xbarh ^o 0 -50"))
+            .pvl()
+            .mod_pt(1, 0, λp: p.offset(-20, 0))
+            .tag("xbar"))
+        .fft("O", λp: (p
+            .mod_pt(5, 0, λp: p.offset(25, 0))
+            .mod_pt(5, 2, λp: p.offset(0, 50)))))
+    #xbar = g.bx / g.varstr()
+    #g.record(DATPen().rect(xbar).intersection(g.data["outer"].copy()))
     return g
 
 @glyphfn(500)
@@ -472,13 +373,13 @@ def _S(r, g):
             .boxCurveTo(g.bx.pse.offset(-g.c.stem-30, g.c.srfh+30), # BIGDOWN
                 ("SW", "NE"),
                 (0.65, 0.35))
-            .boxCurveTo(g.bx.ps.offset(45, g.c.srfh-g.c.over*2), # LOSMALL
+            .boxCurveTo(g.bx.ps.offset(35, g.c.srfh-g.c.over*2), # LOSMALL
                 "SE",
-                0.60)
+                0.63)
             .boxCurveTo(g.hornl.pne, # LOLAND
                 "SW",
-                (0.36, 0.67),
-                dict(c=λp: p.offset(85, -20)))
+                (0.35, 0.84),
+                dict(c=λp: p.offset(45, 0)))
             .lineTo(g.hornl.point("C").offset(0, 20)) # LORESET
             .boxCurveTo(g.bx.ps.offset(40, -g.c.over), # LOSTART
                 "SW",
@@ -496,7 +397,7 @@ def _S(r, g):
             .boxCurveTo(g.hornr.psw, # HILAND
                 "NE",
                 0.4,
-                dict(c=λp: p.offset(-35, 40)))
+                dict(c=λp: p.offset(-25, 40)))
             .closePath()
             .pvl()))
 
@@ -568,8 +469,18 @@ def curves(f, rs):
     
     overlay = Overlay.Info in rs.overlays
 
+    lpts = DATPens()
+    txtstyle = Style("Times", 24, load_font=0, fill=hsl(0.4, 1))
+
+    for p in glyph:
+        for idx, (mv, pts) in enumerate(p.value):
+            if len(pts) > 0:
+                for jdx, pt in enumerate(pts):
+                    lpts += DATText(f"{idx},{jdx}", txtstyle, Rect.FromCenter(pt, 20))
+
     return DATPenSet([
-        glyph.copy().f(None).s(0, 0.5).sw(10),
+        glyph.copy().f(None).s(0, 0.5).sw(10) if overlay else None,
+        glyph.pen().removeOverlap().f(None).s(0, 1).sw(5) if not overlay else None,
         DATPen().rect(glyph.bx).translate(100, 100).f(None).s(hsl(0.9, a=0.3)).sw(5) if overlay else None,
         DATPen().rect(glyph.bounds()).f(None).s(hsl(0.7, a=0.3)).sw(5) if overlay else None,
         DATPen().gridlines(r, 50, absolute=True) if overlay else None,
@@ -582,8 +493,9 @@ def curves(f, rs):
         #    .img_opacity(0.25 if overlay else 1)
         #    #.img_opacity(1)
         #),
-        (glyph.pen().skeleton()) if overlay else None,
+        (glyph.pen().skeleton(scale=4).f(None).s(hsl(0.57, 1, 0.47))) if overlay else None,
         glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.bounds().w+30, 0).f(0).s(None).color_phototype(r, blur=5),
         glyph.pen().removeOverlap().scale(0.5, center=Point([100, 100])).translate(glyph.bounds().w+30+glyph.bounds().w*0.75+30, 0).f(0).s(None),
+        lpts if overlay else None
         #show_points(glyph.pen(), Style(recmono, 100))
         ])

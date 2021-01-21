@@ -352,6 +352,14 @@ class Point():
         ox, oy = other
         return Point((norm(v, sx, ox), norm(v, sy, oy)))
     
+    def i(self, *args):
+        other = args
+        if isinstance(other[0], Point):
+            return self.interp(0.5, other[0])
+        else:
+            x, pt = other
+            return self.interp(x, pt)
+    
     def project(self, angle, dist):
         dx, dy = polar_coord((0, 0), math.radians(angle), dist)
         return self.offset(dx, dy)
@@ -725,6 +733,8 @@ class Rect():
     def expand(self, amount, edge):
         edge = txt_to_edge(edge)
         return Rect(expand(self.rect(), amount, edge))
+    
+    add = expand
 
     def inset(self, dx, dy=None):
         """

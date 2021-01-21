@@ -1,4 +1,4 @@
-import math, tempfile, pickle, inspect
+import math, tempfile, pickle, inspect, re
 from enum import Enum
 from copy import deepcopy
 from pathlib import Path
@@ -34,6 +34,11 @@ from coldtype.pens.outlinepen import OutlinePen
 from coldtype.pens.translationpen import TranslationPen, polarCoord
 
 from coldtype.pens.datpenlikeobject import DATPenLikeObject
+
+
+class DATConstants():
+    def __init__(self):
+        self.lookup = {}
 
 
 def listit(t):
@@ -186,7 +191,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
             if fn:
                 self.pvl()
                 self.mod_bpt(insert_idx, fn)
-            return insert_idx
+            #return insert_idx
+        return self
     
     def printvl(self):
         from pprint import pprint
@@ -1257,7 +1263,21 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 paths.append(bbp)
                 bbp = beziers.path.BezierPath()
         return paths
+    
+    def constants(self, **kwargs):
+        if not hasattr(self, "c"):
+            self.c = DATConstants()
 
+        res = kwargs
+        
+        for k, v in res.items():
+            if callable(v):
+                v = v(self)
+            elif isinstance(v, str):
+                v = self.bx / self.varstr(v)
+            self.c.lookup[k] = v
+            setattr(self.c, k, v)
+        return self
 
     def bp(self):
         try:
@@ -1287,6 +1307,7 @@ class DATPens(DATPen):
         self.frame = None
         self.data = {}
         self.visible = True
+        self.registrations = {}
 
         if isinstance(pens, DATPen):
             self += pens
@@ -1500,10 +1521,58 @@ class DATPens(DATPen):
         self.append(self._in_progress_pen)
         self._in_progress_pen = None
         return self
+
+    def varstr(self, v):
+        vs = re.sub(r"\$([^\s]+)", lambda m: str(eval("g.c." + m.group(1), {"g":self})), v)
+        vs = re.sub(r"\&([^\s]+)", lambda m: str(eval("g." + m.group(1), {"g":self})), vs)
+        #print(">>>", vs)
+        return vs
+    
+    def get(self, k):
+        if k in self.registrations:
+            return DATPen().rect(self.registrations[k])
+        else:
+            tagged = self.fft(k)
+            if tagged:
+                return tagged.copy()
+    
+    def register(self, fn=None, **kwargs):
+        if fn:
+            if callable(fn):
+                res = fn(self)
+            else:
+                res = fn
+        else:
+            res = kwargs
+        
+        def keep(k, v):
+            if k != "_":
+                self.registrations[k] = v
+                setattr(self, k, v)
+        
+        for k, v in res.items():
+            if callable(v):
+                v = v(self)
+            elif isinstance(v, str):
+                v = self.bx / self.varstr(v)
+            if "ƒ" in k:
+                for idx, _k in enumerate(k.split("ƒ")):
+                    keep(_k, v[idx])
+            else:
+                keep(k, v)
+        return self
+    
+    def realize(self):
+        for k, v in self.registrations.items():
+            self.append(DATPen().rect(v).tag(k))
+        return self
     
     def record(self, pen):
         """Alias for append"""
-        return self.append(pen)
+        if callable(pen):
+            return self.append(pen(self))
+        else:
+            return self.append(pen)
     
     def explode(self):
         """Noop on a set"""
@@ -1629,21 +1698,35 @@ class DATPens(DATPen):
                 map_fn(idx, p)
         return self
 
-    
     def ffg(self, glyph_name):
         """(f)ind the (f)irst (g)lyph named this name"""
         return list(self.glyphs_named(glyph_name))[0]
     
-    def fft(self, tag):
+    def fft(self, tag, fn=None):
         """(f)ind the (f)irst (t)agged with `tag`"""
         try:
-            return list(self.tagged(tag))[0]
+            tagged = list(self.tagged(tag))[0]
+            if fn:
+                fn(tagged)
+                return self
+            else:
+                return tagged
         except:
+            if fn:
+                return self
             return None
     
-    def remove(self, pen):
-        """remove a pen from these pens"""
-        self.pens.remove(pen)
+    def remove(self, *args):
+        """remove a pen from these pens by identify, or by tag if a string is passed"""
+        for k in args:
+            if k in self.registrations:
+                del self.registrations[k]
+            elif isinstance(k, str):
+                tagged = self.fft(k)
+                if tagged:
+                    self.pens.remove(tagged)
+            else:
+                self.pens.remove(k)
         return self
     
     def mfilter(self, fn):

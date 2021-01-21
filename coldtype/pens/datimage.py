@@ -50,6 +50,9 @@ class DATImage(DATPen):
             return DATImage.FromPen(res, original_src=self.src)
         else:
             return res
+        
+    def to_pen(self, rect=None):
+        return self.precompose(rect or self.frame, as_image=False)
     
     def FromPen(pen:DATPen, original_src=None):
         return DATImage(original_src, img=pen.img().get("src"))
