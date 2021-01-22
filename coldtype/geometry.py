@@ -410,8 +410,14 @@ class Point():
     def setx(self, x):
         return Point([x, self.y])
     
+    def __mul__(self, other):
+        return self.setx(other)
+    
     def sety(self, y):
         return Point([self.x, y])
+    
+    def __matmul__(self, other):
+        return self.sety(other)
     
     def as3d(self):
         return Point3D(self)

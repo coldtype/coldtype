@@ -66,6 +66,27 @@ def _I(r, g):
             stem="=$stem 1"))
 
 @glyphfn()
+def _J(r, g):
+    c = 90
+    return (g
+        .setWidth(g.c.stem*4.25)
+        .register(
+            stem=f"+$stem 1 ^o -$instem 0 ^s 0 -$srfh+{c}",
+            ear=f"-$stem+20 -$earh+30 ^s 0 -$srfh+{c}",
+            cap="+$srfw +$srfh")
+        .append(DATPen()
+            .moveTo(a:=g.stem.psw // 60)
+            .boxCurveTo(i:=a.i(0.5, g.ear.pne) @ g.c.srfh, "SE", c:=0.77)
+            .boxCurveTo(g.ear.pne, "SW", c+0.03)
+            .lineTo(g.ear.pnw)
+            .boxCurveTo(i @ 0 / 0, "SW", c:=0.77)
+            .boxCurveTo(g.stem.pse, "SE", c-0.08)
+            .closePath()
+            .pvl()
+            -.mod_pt(5, 1, λp: p / -1))
+        .remove("ear"))
+
+@glyphfn()
 def _H(r, g):
     return (g
         .register(
@@ -78,18 +99,19 @@ def _H(r, g):
 
 @glyphfn(550)
 def _K(r, g):
+    cmp = 20
     return (_H.func(r, g)
         .constants(
             udiag=Line(g.stem.pc // -100, g.cr.ps).extr(0.1),
             inr=Rect.FromPoints(g.stem.psw, g.cr.pne))
         .append(DATPen()
             .line(g.c.udiag)
-            .outline(g.c.ldiag)
+            .outline(g.c.ldiag+cmp)
             .reverse()
             .intersection(DATPen().rect(g.c.inr)))
         .append(DATPen()
             .line(Line(g.br.pn, g.cl.ps / 70).extr(0.5))
-            .outline(g.c.hdiag)
+            .outline(g.c.hdiag-cmp)
             .intersection(
                 DATPen().fence(g.c.udiag, [g.cr.pne, g.br.pse])))
         .remove("xbar", "stemr"))
@@ -437,14 +459,43 @@ def _V(r, g):
             .line(g.c.ldiag_line)
             .outline(g.c.ldiag)
             .intersection(g.bxr))
-        .remove("steml")
-        .remove("stemr")
-        .remove("curve"))
+        .remove("steml", "stemr", "curve"))
+
+@glyphfn()
+def _W(r, g):
+    return (g
+        .constants(srfw=g.c.srfw-50)
+        .register(
+            caplƒ_ƒcapmƒ_ƒcapr="1 +$srfh ^c $srfw $gap $srfw-10 $gap $srfw-20 a")
+        .constants(
+            hdiag=g.c.hdiag-20,
+            ldiag=g.c.ldiag+15,
+            hd1=Line(g.capl.ps, p1:=g.capl.pse.sety(0)),
+            hd2=Line(p2:=g.capm.ps / 5, p3:=g.capm.pse.sety(0)),
+            ld1=Line(p1 / (nudge:=10), p2 / -25),
+            ld2=Line(p3 / (nudge), g.capr.ps))
+        .append(DATPen()
+            .line(g.c.hd1)
+            .outline(g.c.hdiag)
+            .intersection(DATPen().fence(g.bx.edge("mnx"), ~g.c.ld1)))
+        .append(DATPen()
+            .line(g.c.hd2)
+            .outline(g.c.hdiag)
+            .intersection(DATPen().fence(g.bx.edge("mnx"), ~g.c.ld2)))
+        .append(DATPen()
+            .line(g.c.ld1)
+            .outline(g.c.ldiag)
+            .intersection(g.bxr))
+        .append(DATPen()
+            .line(g.c.ld2)
+            .outline(g.c.ldiag)
+            .intersection(g.bxr))
+        .remove("stem"))
 
 @glyphfn()
 def _X(r, g):
-    f = 60
-    skew = 0.07
+    f = 50
+    skew = 0.04
     return (g
         .register(
             blƒbgapƒbr=f"1 -$srfh ^c $srfw-{f} $gap $srfw+{f} a",
@@ -485,7 +536,31 @@ def _Y(r, g):
             .outline(g.c.ldiag))
         .remove("gap"))
 
-caps = [_A, _B, _C, _D, _E, _F, _G, _H, _I, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _X, _Y]
+@glyphfn()
+def _Z(r, g:Glyph):
+    diag = g.c.ldiag + 50
+    return (g
+        .setWidth(g.c.stem*4.5)
+        .register(
+            cap="1 +$srfh",
+            base="1 -$srfh",
+            eart="-$stem +$earh",
+            earb="+$stem -$earh")
+        .append(DATPen()
+            .line(l:=Line(g.cap.pne // (d:=diag-20), g.base.psw // -d))
+            .outline(diag)
+            .intersection(g.bxr))
+        .append(DATPen()
+            .rect(g.cap)
+            .intersection(DATPen()
+                .fence(g.bx.edge("mnx"), g.bx.edge("mxy"), l)))
+        .append(DATPen()
+            .rect(g.base)
+            .intersection(DATPen()
+                .fence(g.bx.edge("mxx"), ~g.bx.edge("mny"), ~l)))
+        .remove("stem", "cap", "base"))
+
+caps = [_A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z]
 
 @animation((2000, 1000), timeline=Timeline(len(caps)), rstate=1, storyboard=[0])
 def curves(f, rs):
@@ -544,7 +619,7 @@ def curves(f, rs):
         #),
         (glyph.pen().skeleton(scale=4).f(None).s(hsl(0.57, 1, 0.47))) if overlay else None,
         glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.bounds().w+30, 0).f(0).s(None).color_phototype(r, blur=5),
-        #glyph.pen().removeOverlap().scale(0.5, center=Point([100, 100])).translate(glyph.bounds().w+30+glyph.bounds().w*0.75+30, 0).f(0).s(None),
+        glyph.pen().removeOverlap().scale(0.5, center=Point([100, 100])).translate(glyph.bounds().w+30+glyph.bounds().w*0.75+30, 0).f(None).s(0).sw(3),
         lpts if overlay else None
         #show_points(glyph.pen(), Style(recmono, 100))
         ])
