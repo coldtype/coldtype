@@ -401,6 +401,12 @@ class Point():
             raise IndexError(
                 "Invalid index for point assignment, must be 0 or 1")
     
+    def __floordiv__(self, other):
+        return self.offset(0, other)
+    
+    def __truediv__(self, other):
+        return self.offset(other, 0)
+    
     def setx(self, x):
         return Point([x, self.y])
     
@@ -423,6 +429,34 @@ class Point3D(Point):
         if idx == 2:
             return self.z
         return super().__getitem__(idx)
+
+
+class Line():
+    def __init__(self, start, end):
+        self.start = start
+        self.end = end
+    
+    def __len__(self):
+        return 2
+    
+    def __getitem__(self, idx):
+        if idx == 0:
+            return self.start
+        elif idx == 1:
+            return self.end
+        else:
+            raise IndexError("Line only has two points")
+    
+    def __invert__(self):
+        p1, p2 = self
+        return Line(p2, p1)
+
+    def t(self, t):
+        return self.start.interp(t, self.end)
+    
+    def extr(self, amt):
+        p1, p2 = self
+        return Line(p2.i(1+amt, p1), p1.i(1+amt, p2))
 
 
 class Rect():
@@ -766,7 +800,7 @@ class Rect():
 
     def edge(self, edge):
         edge = txt_to_edge(edge)
-        return edgepoints(self.rect(), edge)
+        return Line(*edgepoints(self.rect(), edge))
 
     def center(self):
         return Point(centerpoint(self.rect()))

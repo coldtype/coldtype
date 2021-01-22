@@ -25,7 +25,7 @@ from noise import pnoise1
 
 import coldtype.pens.drawbot_utils as dbu
 
-from coldtype.geometry import Rect, Edge, Point, txt_to_edge, calc_angle
+from coldtype.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle
 from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
 from coldtype.color import Gradient, normalize_color, Color
 from coldtype.pens.misc import ExplodingPen, SmoothPointsPen, BooleanOp, calculate_pathop
@@ -157,6 +157,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     def mod_pt(self, vidx, pidx, fn):
         self.value[vidx][-1][pidx] = fn(self.value[vidx][-1][pidx])
+        return self
+    
+    def mod_pts(self, rect, fn):
+        self.map_points(fn, lambda p: p.inside(rect))
         return self
     
     def mod_bpt(self, idx, fn):
@@ -388,6 +392,9 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = dp.value
         return self
     
+    def __invert__(self):
+        return self.reverse()
+    
     def map(self, fn:Callable[[int, str, list], Tuple[str, list]]):
         for idx, (mv, pts) in enumerate(self.value):
             self.value[idx] = fn(idx, mv, pts)
@@ -401,13 +408,15 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = vs
         return self
     
-    def map_points(self, fn):
+    def map_points(self, fn, filter_fn=None):
         idx = 0
         for cidx, c in enumerate(self.value):
             move, pts = c
             pts = list(pts)
             for pidx, p in enumerate(pts):
                 x, y = p
+                if filter_fn and not filter_fn(p):
+                    continue
                 result = fn(idx, x, y)
                 if result:
                     pts[pidx] = result
@@ -693,7 +702,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
 
     def outline(self, offset=1, drawInner=True, drawOuter=True, cap="square"):
         """AKA expandStroke"""
-        op = OutlinePen(None, offset=offset, optimizeCurve=True, cap=cap)
+        op = OutlinePen(None, offset=offset/2, optimizeCurve=True, cap=cap)
         self.replay(op)
         op.drawSettings(drawInner=drawInner, drawOuter=drawOuter)
         g = op.getGlyph()
@@ -864,9 +873,18 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.lineTo(t.offset(width/2, 0))
         self.lineTo(t.offset(-width/2, 0))
         return self.closePath()
+    
+    def diagonal(self, start, end, width):
+        self.moveTo(start.offset(-width/2, 0))
+        self.lineTo(start.offset(width/2, 0))
+        self.lineTo(end.offset(width/2, 0))
+        self.lineTo(end.offset(-width/2, 0))
+        return self.closePath()
 
     def line(self, points, moveTo=True, endPath=True):
         """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""
+        if isinstance(points, Line):
+            points = list(points)
         if len(points) == 0:
             return self
         if len(self.value) == 0 or moveTo:
@@ -884,6 +902,15 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.moveTo(points[0])
         for pt in points[1:]:
             self.lineTo(pt)
+        self.closePath()
+        return self
+    
+    def fence(self, *edges):
+        self.moveTo(edges[0][0])
+        self.lineTo(edges[0][1])
+        for edge in edges[1:]:
+            self.lineTo(edge[0])
+            self.lineTo(edge[1])
         self.closePath()
         return self
     
@@ -1365,6 +1392,7 @@ class DATPens(DATPen):
         dps = DATPens()
         for p in self.pens:
             dps.append(p.copy(with_data=with_data))
+        dps.registrations = self.registrations.copy()
         return dps
     
     def __getitem__(self, index):

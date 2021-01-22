@@ -348,6 +348,7 @@ class Renderer():
         if self.disable_syntax_mods:
             return source_code
         source_code = re.sub(r"\-\.[A-Za-z_]+([A-Za-z_0-9]+)?\(", ".noop(", source_code)
+        source_code = re.sub(r"λ\.", "lambda x: x.", source_code)
         source_code = re.sub(r"λ", "lambda ", source_code)
         return source_code
 
