@@ -161,21 +161,21 @@ def _B(r, g):
         g.register(
             base=g.base.take(g.cap.w, "mnx"),
             mid=g.mid.offset(20, 30).inset(5)))
-        .record(λg: DATPen().tag("belly")
-            .moveTo(g.mid.pse)
+        .ap(DP("belly")
             .declare(
                 n:=18,
                 cif:=g.c.cicf-0.02,
                 cof:=g.c.cocf+0.02)
-            .boxCurveTo(g.mid.pse.i(g.base.pne) * (g.c.cimx+n), "NE", cif)
-            .boxCurveTo(g.base.pne, "SE", cif)
-            .lineTo(g.base.pse)
-            .boxCurveTo(g.base.pse.i(g.mid.pne) * (g.c.comx+n*2), "SE", cof)
-            .boxCurveTo(g.mid.pne / -150, "NE", cof)
+            .mt(lp:=g.mid.pse)
+            .bct(lp.i(lp:=g.base.pne) * (g.c.cimx+n), "NE", cif)
+            .bct(lp, "SE", cif)
+            .lt(lp:=g.base.pse)
+            .bct(lp.i(lp:=g.mid.pne) * (g.c.comx+n*2), "SE", cof)
+            .bct(lp / -150, "NE", cof)
             .union(DP(g.base))
             .pvl()
             .declare(c:=20)
-            .mod_pt(5, 0, λ/c)
+            .mod_pt(5, 0, λ/(c:=20))
             .mod_pt(6, 0, λ/(c/2))
             .closePath())
         .remove("base"))
@@ -251,23 +251,21 @@ def _O(r, g, clx=0):
     (g.constants(
         hw=g.c.stem+10,
         o=g.bx.inset(0, -g.c.over),
-        i=λ.c.o.inset(g.c.hw, g.c.srfh)))
+        i=λ.c.o.inset(g.c.hw, g.c.srfh).subtract(clx, "mnx")))
 
     def o(r, off, offc):
         return (DATPen()
             .mt(r.pe.offset(0, off))
-            .bct(r.pn, r.pw // off, "NE", offc[0])
-            #.btc()
-            -.uTurnTo(r.pn, r.pw.offset(0, off),
-                ("NE", "NW"), offc)
-            .lineTo(r.pw.offset(0, -off))
-            .uTurnTo(r.ps, r.pe.offset(0, -off),
-                ("SW", "SE"), offc)
-            .closePath())
+            .bct(r.pn, "NE", offc)
+            .bct(r.pw // off, "NW", offc)
+            .lt(r.pw // -off)
+            .bct(r.ps, "SW", offc)
+            .bct(r.pe // -off, "SE", offc)
+            .cp())
     
     return (g
         .ap(o(g.c.o, 40, 0.65).tag("O"))
-        .ap(~o(g.c.i.subtract(clx, "mnx"), 16, 0.85).tag("Oi")))
+        .ap(~o(g.c.i, 16, 0.85).tag("Oi")))
 
 @glyphfn(_O.w)
 def _Q(r, g):
@@ -285,7 +283,8 @@ def _CG(r, g):
             .mod_pt(2, -1, λ/-10)
             .mod_pt(2, -2, λ/30)
             .difference(DP(g.aperture.add(10, "mnx")))
-            .pvl()))
+            .pvl()
+            .mod_pt(1, 0, λ/30)))
         .remove("Oi"))
 
 @glyphfn(_O.w)
@@ -299,6 +298,7 @@ def _C(r, g):
 
 @glyphfn(_C.w)
 def _G(r, g):
+    #return _CG(r, g)
     return (_CG(r, g)
         .append(DP("xbar", xbarr:=g.aperture * (g.bx.pc.x+10) // -50)
             .pvl()
@@ -498,7 +498,7 @@ def curves(f, rs):
         glyph.pen().removeOverlap().f(None).s(0, 1).sw(5) if not overlay else None,
         DATPen().rect(glyph.bx).translate(100, 100).f(None).s(hsl(0.9, a=0.3)).sw(5) if overlay else None,
         DATPen().rect(glyph.bounds()).f(None).s(hsl(0.7, a=0.3)).sw(5) if overlay else None,
-        DATPen().gridlines(r, 50, absolute=True) if overlay else None,
+        #DATPen().gridlines(r, 50, absolute=True) if overlay else None,
         #(glyph
         #    .copy()
         #    .pen()

@@ -118,7 +118,7 @@ class animation(renderable, Timeable):
     def runpost(self, result, render_pass, renderer_state):
         res = super().runpost(result, render_pass, renderer_state)
         if Overlay.Info in renderer_state.overlays:
-            t = self.rect.take(50, "mxy")
+            t = self.rect.take(50, "mny")
             frame:Frame = render_pass.args[0]
             wave = DATPen()
             if self.audio and sf:
