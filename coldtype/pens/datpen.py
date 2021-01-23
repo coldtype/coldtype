@@ -66,6 +66,12 @@ class DATBPT():
     def offset(self, x, y):
         self.ps = [p.offset(x, y) for p in self.ps]
         return self
+    
+    def __floordiv__(self, other):
+        return self.offset(0, other)
+    
+    def __truediv__(self, other):
+        return self.offset(other, 0)
 
 
 class DATPen(RecordingPen, DATPenLikeObject):
@@ -74,7 +80,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     DATPen is a subclass of fontTools ``RecordingPen``
     """
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         """**kwargs support is deprecated, should not accept any arguments"""
         super().__init__()
         self.single_pen_class = DATPen
@@ -90,6 +96,14 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.glyphName = None
         self.data = {}
         self.visible = True
+
+        for arg in args:
+            if isinstance(arg, str):
+                self.tag(arg)
+            elif isinstance(arg, Rect):
+                self.rect(arg)
+            elif isinstance(arg, Line):
+                self.line(arg)
     
     def __str__(self):
         v = "" if self.visible else "ø-"
@@ -140,6 +154,9 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def vl(self, value):
         self.value = value
         return self
+    
+    def replace_with(self, other):
+        return self.vl(other.value)
     
     def pvl(self):
         for idx, (mv, pts) in enumerate(self.value):
@@ -218,6 +235,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
         """The standard `RecordingPen.moveTo`, but returns self for chainability."""
         super().moveTo(p0)
         return self
+    
+    mt = moveTo
 
     def lineTo(self, p1):
         """The standard `RecordingPen.lineTo`, but returns self for chainability."""
@@ -226,26 +245,36 @@ class DATPen(RecordingPen, DATPenLikeObject):
         else:
             super().lineTo(p1)
         return self
+    
+    lt = lineTo
 
     def qCurveTo(self, *points):
         """The standard `RecordingPen.qCurveTo`, but returns self for chainability."""
         super().qCurveTo(*points)
         return self
+    
+    qct = qCurveTo
 
     def curveTo(self, *points):
         """The standard `RecordingPen.curveTo`, but returns self for chainability."""
         super().curveTo(*points)
         return self
+    
+    ct = curveTo
 
     def closePath(self):
         """The standard `RecordingPen.closePath`, but returns self for chainability."""
         super().closePath()
         return self
+    
+    cp = closePath
 
     def endPath(self):
         """The standard `RecordingPen.endPath`, but returns self for chainability."""
         super().endPath()
         return self
+    
+    ep = endPath
     
     def boxCurveTo(self, pt, point, factor, mods={}):
         a = Point(self.value[-1][-1][-1])
@@ -271,6 +300,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
             c = mc(c)
         self.curveTo(b, c, d)
         return self
+    
+    bct = boxCurveTo
     
     def uTurnTo(self, inflection, end, pts, factor):
         return (self
@@ -544,6 +575,13 @@ class DATPen(RecordingPen, DATPenLikeObject):
         """Calculate and return the intersection of this shape and another."""
         return self._pathop(otherPen=otherPen, operation=BooleanOp.Intersection)
     
+    def fenced(self, *lines):
+        if len(lines) == 1 and isinstance(lines[0], Rect):
+            return self.intersection(DATPen().rect(lines[0]))
+        return self.intersection(DATPen().fence(*lines))
+    
+    ƒ = fenced
+    
     def removeOverlap(self):
         """Remove overlaps within this shape and return itself."""
         return self._pathop(otherPen=None, operation=BooleanOp.Simplify)
@@ -710,6 +748,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
         g.draw(p)
         self.value = p.value
         return self
+    
+    ol = outline
     
     def project(self, angle, width):
         offset = polarCoord((0, 0), math.radians(angle), width)
@@ -1037,12 +1077,16 @@ class DATPen(RecordingPen, DATPenLikeObject):
         #self.value = DATPens(exploded[contour_slice]).implode().value
         return self
     
-    def sliced_line(self, start, end):
+    def sliced_line(self, idx):
         allpts = []
-        for mv, pts in self.value[start:end]:
-            print(pts)
+        for mv, pts in self.value:
+            if len(pts) > 0:
+                allpts.append(pts)
             #pts = [pts[-1] for (mv, pts) in self.value[start:end]]
-        return allpts
+        allpts = allpts*2
+        return Line(allpts[idx][0], allpts[idx+1][0])
+    
+    sl = sliced_line
     
     def openAndClosed(self):
         """Explode and then classify group each contour into open/closed pens; (what is this good for?)"""
@@ -1301,9 +1345,14 @@ class DATPen(RecordingPen, DATPenLikeObject):
             if callable(v):
                 v = v(self)
             elif isinstance(v, str):
-                v = self.bx / self.varstr(v)
+                v = eval(self.varstr(v))
+                #v = self.bx / self.varstr(v)
             self.c.lookup[k] = v
             setattr(self.c, k, v)
+        return self
+    
+    def declare(self, *whatever):
+        # TODO do something with what's declared somehow?
         return self
 
     def bp(self):
@@ -1438,6 +1487,8 @@ class DATPens(DATPen):
                     #print(">>> append rejected", pen)
         return self
     
+    ap = append
+    
     def extend(self, pens):
         if hasattr(pens, "pens"):
             self.append(pens)
@@ -1556,6 +1607,8 @@ class DATPens(DATPen):
         #print(">>>", vs)
         return vs
     
+    vs = varstr
+    
     def get(self, k):
         if k in self.registrations:
             return DATPen().rect(self.registrations[k])
@@ -1582,7 +1635,7 @@ class DATPens(DATPen):
             if callable(v):
                 v = v(self)
             elif isinstance(v, str):
-                v = self.bx / self.varstr(v)
+                v = self.bx % self.varstr(v)
             if "ƒ" in k:
                 for idx, _k in enumerate(k.split("ƒ")):
                     keep(_k, v[idx])
@@ -1959,3 +2012,5 @@ class DATPens(DATPen):
         return self
 
 DATPenSet = DATPens
+DPS = DATPens
+DP = DATPen

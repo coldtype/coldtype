@@ -309,6 +309,8 @@ class Point():
     def offset(self, dx, dy):
         "Offset by dx, dy"
         return Point((self.x + dx, self.y + dy))
+    
+    o = offset
 
     def rect(self, w, h):
         "Create a rect from this point as center, with w and h dimensions provided"
@@ -442,6 +444,9 @@ class Line():
         self.start = start
         self.end = end
     
+    def __repr__(self):
+        return f"<Line:{self.start}/{self.end}>"
+    
     def __len__(self):
         return 2
     
@@ -463,6 +468,16 @@ class Line():
     def extr(self, amt):
         p1, p2 = self
         return Line(p2.i(1+amt, p1), p1.i(1+amt, p2))
+    
+    def offset(self, x, y):
+        p1, p2 = self
+        return Line(p1.offset(x, y), p2.offset(x, y))
+    
+    def __floordiv__(self, other):
+        return self.offset(0, other)
+    
+    def __truediv__(self, other):
+        return self.offset(other, 0)
 
 
 class Rect():
@@ -893,10 +908,16 @@ class Rect():
     def pe(self): return self.point("E")
 
     @property
+    def ee(self): return self.edge("mxx")
+
+    @property
     def pse(self): return self.point("SE")
 
     @property
     def ps(self): return self.point("S")
+
+    @property
+    def es(self): return self.edge("mny")
 
     @property
     def psw(self): return self.point("SW")
@@ -905,13 +926,25 @@ class Rect():
     def pw(self): return self.point("W")
 
     @property
+    def ew(self): return self.edge("mnx")
+
+    @property
     def pnw(self): return self.point("NW")
 
     @property
     def pn(self): return self.point("N")
 
     @property
+    def en(self): return self.edge("mxy")
+
+    @property
     def pc(self): return self.point("C")
+
+    @property
+    def ecx(self): return self.edge("mdx")
+
+    @property
+    def ecy(self): return self.edge("mdy")
 
     def intersects(self, other):
         return not (self.point("NE").x < other.point("SW").x or self.point("SW").x > other.point("NE").x or self.point("NE").y < other.point("SW").y or self.point("SW").y > other.point("NE").y)
@@ -1004,7 +1037,13 @@ class Rect():
         return res
         #return [auto_d if r == "auto" else r for r in reified]
     
-    def __truediv__(self, s):
+    def __floordiv__(self, other):
+        return self.offset(0, other)
+    
+    def __truediv__(self, other):
+        return self.offset(other, 0)
+    
+    def __mod__(self, s):
         sfx = ["x", "y"]
 
         def do_op(r, xs):
@@ -1109,5 +1148,8 @@ class Rect():
         ys = s.split("^")
         r = self
         for y in ys:
-            r = do_op(r, y.strip())
+            try:
+                r = do_op(r, y.strip())
+            except IndexError:
+                print("FAILED")
         return r

@@ -282,6 +282,8 @@ class DATPenLikeObject():
         t = Transform()
         if not point:
             point = self.bounds().point("C") # maybe should be getFrame()?
+        elif isinstance(point, str):
+            point = self.bounds().point(point)
         t = t.translate(point.x, point.y)
         t = t.rotate(math.radians(degrees))
         t = t.translate(-point.x, -point.y)
