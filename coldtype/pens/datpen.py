@@ -1608,6 +1608,9 @@ class DATPens(DATPen):
         return vs
     
     vs = varstr
+
+    def bvs(self, v):
+        return self.bounds() % self.varstr(v)
     
     def get(self, k):
         if k in self.registrations:

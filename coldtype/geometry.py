@@ -478,6 +478,12 @@ class Line():
     
     def __truediv__(self, other):
         return self.offset(other, 0)
+    
+    def intersection(self, other):
+        return Point(line_intersection(self, other))
+    
+    def __and__(self, other):
+        return self.intersection(other)
 
 
 class Rect():
@@ -953,6 +959,9 @@ class Rect():
         mnx, mny, mxx, mxy = self.mnmnmxmx()
         return Rect.FromMnMnMxMx([x, mny, mxx, mxy])
     
+    def __mul__(self, other):
+        return self.setmnx(other)
+    
     def setlmnx(self, x):
         if x > self.mnx:
             return self.setmnx(x)
@@ -961,6 +970,9 @@ class Rect():
     def setmny(self, y):
         mnx, mny, mxx, mxy = self.mnmnmxmx()
         return Rect.FromMnMnMxMx([mnx, y, mxx, mxy])
+    
+    def __matmul__(self, other):
+        return self.setmny(other)
     
     def setlmny(self, y):
         if y > self.mny:
@@ -1010,10 +1022,14 @@ class Rect():
             elif "%" in p:
                 reified.append(float(p.replace("%", ""))/100 * d)
             else:
-                reified.append(float(p))
+                fp = float(p)
+                if fp > 1:
+                    reified.append(fp)
+                else:
+                    reified.append(fp*d)
         remaining = d - sum([0 if r == "auto" else r for r in reified])
-        if not float(remaining).is_integer():
-            raise Exception("floating parse")
+        #if not float(remaining).is_integer():
+        #    raise Exception("floating parse")
         auto_count = reified.count("auto")
         auto_d = remaining / auto_count
         auto_ds = [auto_d] * auto_count
@@ -1083,6 +1099,8 @@ class Rect():
                 else:
                     if x == "auto" or x == "a":
                         continue
+                    elif "%" in x:
+                        continue
                     else:
                         amounts.append(float(x))
 
@@ -1141,7 +1159,12 @@ class Rect():
                     rs.append(_r)
                 return rs
             elif op == "r": # rows
-                pass
+                ws = self.parse_line(r.h, _xs)
+                rs = []
+                for w in ws:
+                    _r, r = r.divide(w, "mny")
+                    rs.append(_r)
+                return rs
             else:
                 raise Exception("op", op, "not supported")
 
