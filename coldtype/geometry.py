@@ -45,22 +45,18 @@ class Edge(Enum):
 def txt_to_edge(txt):
     if isinstance(txt, str):
         txt = txt.lower()
-        if txt == "maxy" or txt == "mxy":
+        if txt in ["maxy", "mxy", "n"]:
             return Edge.MaxY
-        elif txt == "maxx" or txt == "mxx":
+        elif txt in ["maxx", "mxx", "e"]:
             return Edge.MaxX
-        elif txt == "miny" or txt == "mny":
+        elif txt in ["miny", "mny", "s"]:
             return Edge.MinY
-        elif txt == "minx" or txt == "mnx":
+        elif txt in ["minx", "mnx", "w"]:
             return Edge.MinX
-        elif txt == "centery":
+        elif txt in ["centery", "cy", "midy", "mdy"]:
             return Edge.CenterY
-        elif txt == "centerx":
+        elif txt in ["centerx", "cx", "midx", "mdx"]:
             return Edge.CenterX
-        elif txt == "midx" or txt == "mdx":
-            return Edge.CenterX
-        elif txt == "midy" or txt == "mdy":
-            return Edge.CenterY
         else:
             return None
     else:

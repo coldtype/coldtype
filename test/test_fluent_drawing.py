@@ -34,6 +34,30 @@ class Glyph(DATPens):
     def bxr(self):
         return DATPen().rect(self.bx)
 
+    def brack(self, a, pt, b, y, c):
+        if isinstance(pt, str):
+            apt = a.point(pt)
+            be = b.ew if "W" in pt else b.ee
+            ctrl = a.edge(pt[0]) & be
+            end = ctrl//(-y if pt[0] == "S" else y)
+            start = ctrl/(-y if pt[1] == "W" else y)
+            if pt[1] == "W":
+                if start.x < apt.x:
+                    start = apt
+            elif pt[1] == "E":
+                if start.x > apt.x:
+                    start = apt
+            r = Rect.FromPoints(ctrl, end, start)
+            return self.ap(DP("bracket")
+                .mt(start)
+                .bct(end, ctrl, c)
+                .lt(ctrl)
+                .cp())
+        else:
+            for p in pt:
+                self.brack(a, p, b, y, c)
+            return self
+
 @glyphfn()
 def _A(r, g):
     return (g
@@ -227,7 +251,10 @@ def _N(r, g):
             .ol(g.c.hdiag).ƒ(g.steml.ecx, ~g.stemr.ecx))
         .register(
             base=g.base.setlmxx((diag.sl(0) & g.base.en).x - g.c.gap),
-            capr=g.capr.setlmnx((diag.sl(3) & g.capr.es).x + g.c.gap+5)))
+            capr=g.capr.setlmnx((diag.sl(3) & g.capr.es).x + g.c.gap+5))
+        .brack(g.capl, ("SW"), g.steml, i:=50, c:=0.65)
+        .brack(g.base, ("NE", "NW"), g.steml, i, c)
+        .brack(g.capr, ("SE", "SW"), g.stemr, i, c))
 
 @glyphfn()
 def _M(r, g):
