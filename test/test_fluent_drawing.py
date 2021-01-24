@@ -162,7 +162,7 @@ def _P(r, g, mod=None, tc=0.6, xc=0, ci=30, my=0):
 
 @glyphfn(_P.w)
 def _B(r, g):
-    return (_P.func(r, g, tc=0.56, my=-5, xc=-20, ci=20, mod=λg: g
+    return (_P.func(r, g, tc=0.56, my=-5, xc=0, ci=20, mod=λg: g
         .register(
             base=g.base.take(g.cap.w, "mnx")))
         .guide(
@@ -180,9 +180,8 @@ def _B(r, g):
             .bct(g.bbxc.pe, "SE", cof)
             .bct(g.mid.pne, "NE", cof)
             .cp()
-            .declare(c:=20)
-            .mod_pt(5, 0, λ/(c:=20))
-            .mod_pt(6, 0, λ/(c/2))
+            .mod_pt(5, 0, (c:=20, 0))
+            .mod_pt(6, 0, (c/2, 0))
             .closePath())
         .remove("base"))
 
