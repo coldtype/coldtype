@@ -1096,6 +1096,7 @@ class Rect():
                         amounts.append(0)
                         continue
                     elif x[0] == "ø":
+                        edges.append(None)
                         amounts.append("ø")
                         continue
                     amounts.append(float(x[1:]))

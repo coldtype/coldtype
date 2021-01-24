@@ -89,9 +89,11 @@ def _H(r, g, rn=0):
 @glyphfn()
 def _K(r, g):
     return (_H.func(r, g, rn=10)
-        .ap(DP(udiag:=Line(g.steml.pc // -100, g.cr.ps).extr(0.1))
+        .ap(DP(
+            udiag:=Line(g.steml.pc//-100, g.cr.ps).extr(0.1))
             .ol(g.c.ldiag+(cmp:=20)).ƒ(g.steml.ew, ~g.bx.ee))
-        .append(DP(Line(g.br.pn, g.cl.ps / 70).extr(0.12))
+        .append(DP(
+            Line(g.br.pn, g.cl.ps / 70).extr(0.12))
             .ol(g.c.hdiag-cmp).ƒ(udiag, [g.cr.pne, g.br.pse]))
         .remove("xbar", "stemr"))
 
@@ -132,14 +134,15 @@ def _T(r, g):
             earr="+$stem +$earh",
             stem="=$stem 1"))
 
-@glyphfn(570)
-def _P(r, g, mod=None, tc=0.6, xc=0, ci=30):
+@glyphfn()
+def _P(r, g, mod=None, tc=0.6, xc=0, ci=30, my=0):
     return (g
+        .set_width(g.c.stem*4.5+xc)
         .add_stem()
         .guide(
             bxc=f"1 +{tc}",
             curve="&bxc ^m -&stem.mxx+50 ø",
-            midƒknockƒcap="&bxc ^r $xbarh a $srfh",
+            midƒknockƒcap=f"&bxc ^r $xbarh+{my} a $srfh",
             knock=f"&knock ^s +$stem+{ci} 0",
             mid="&mid ^m -&stem.pc.x ø ^m +&curve.mnx ø",
             cap="&cap ^m +&curve.mnx ø")
@@ -150,7 +153,7 @@ def _P(r, g, mod=None, tc=0.6, xc=0, ci=30):
         .ap(DP("curve")
             .mt(g.cap.pnw)
             .lt(g.cap.psw, g.cap.pse)
-            .bct(g.knock.pe//5, "NE", g.c.cicf)
+            .bct(g.knock.pe, "NE", g.c.cicf)
             .bct(g.mid.pne, "SE", g.c.cicf)
             .lt(g.mid.pnw, g.mid.psw, g.mid.pse)
             .bct(g.curve.pe, "SE", g.c.cocf)
@@ -159,23 +162,24 @@ def _P(r, g, mod=None, tc=0.6, xc=0, ci=30):
 
 @glyphfn(_P.w)
 def _B(r, g):
-    return (_P.func(r, g, xc=-20, ci=20, mod=λg:
-        g.register(
-            base=g.base.take(g.cap.w, "mnx"),
-            mid=g.mid.offset(20, 30).inset(5)))
+    return (_P.func(r, g, tc=0.56, my=-5, xc=-20, ci=20, mod=λg: g
+        .register(
+            base=g.base.take(g.cap.w, "mnx")))
+        .guide(
+            bbxc=f"1 1 ^m -&curve.mnx +&knock.mny ^e +{(bnx:=20)} 0",
+            bknock=f"&bbxc ^m +&knock.mxx+{bnx*0.5} -&base.mxy ^m ø +&mid.mny")
         .ap(DP("belly")
             .declare(
                 n:=18,
                 cif:=g.c.cicf-0.02,
                 cof:=g.c.cocf+0.02)
             .mt(lp:=g.mid.pse)
-            .bct(lp.i(lp:=g.base.pne) * (g.c.cimx+n), "NE", cif)
-            .bct(lp, "SE", cif)
-            .lt(lp:=g.base.pse)
-            .bct(lp.i(lp:=g.mid.pne) * (g.c.comx+n*2), "SE", cof)
-            .bct(lp / -150, "NE", cof)
-            .union(DP(g.base))
-            .pvl()
+            .bct(g.bknock.pe, "NE", cif)
+            .bct(g.bknock.psw, "SE", cif)
+            .lt(g.base.pnw, g.base.psw, g.base.pse)
+            .bct(g.bbxc.pe, "SE", cof)
+            .bct(g.mid.pne, "NE", cof)
+            .cp()
             .declare(c:=20)
             .mod_pt(5, 0, λ/(c:=20))
             .mod_pt(6, 0, λ/(c/2))
@@ -188,27 +192,27 @@ def _D(r, g):
         .register(mid=g.base.take(g.cap.w, "mnx")))
         .remove("base")
         .fft("curve", λc: c.pvl()
-            .declare(q:=40)
+            .declare(q:=30)
             .mod_pt(8, 2, λ//q)
-            .mod_pt(3, 2, λ//(q-10))))
+            .mod_pt(3, 2, λ//(q+10))))
     return g
 
 @glyphfn(_P.w)
 def _R(r, g):
-    return (_P.func(r, g, ci=60, mod=λg: g
+    return (_P.func(r, g, tc=0.60, xc=20, ci=60, mod=λg: g
         .register(
             base=g.base.subtract(20, "mxx"),
             mid=g.mid.offset(0, 20).inset(10))
         .guide(
-            baser="+$srfw-70 -$srfh ^o 30 0")
+            baser="+$srfw-100 -$srfh ^o 30 0")
         .ap(DP("leg")
             .mt(g.mid.pse/-20)
             .bct(g.baser.pnw, "NE", 0.65)
             .bct(g.baser.ps/20, "SW", 0.85)
             .lt(g.baser.pse)
             .lt(p:=g.baser.pne)
-            .lt(p/-g.c.stem)
-            .bct(g.mid.pse.o(50, 20), "NE", 0.65)
+            .lt(p/-70)
+            .bct(g.mid.pse.o(50, 10), "NE", 0.65)
             .cp())))
 
 @glyphfn()
@@ -476,21 +480,10 @@ def curves(f, rs):
         glyph.copy().f(None).s(0, 0.5).sw(10) if overlay else None,
         glyph.pen().removeOverlap().f(None).s(0, 1).sw(5) if not overlay else None,
         DATPen().rect(glyph.bx).translate(100, 100).f(None).s(hsl(0.9, a=0.3)).sw(5) if overlay else None,
-        DATPens([DP(g).translate(100, 100).f(None).s(hsl(0.9, 1, a=0.25)).sw(5) for k,g in glyph.guides.items()]) if overlay else None,
+        DATPens([DP(g).translate(100, 100).f(None).s(hsl(random(), 1, a=0.25)).sw(5) for k,g in glyph.guides.items()]) if overlay else None,
         DATPen().rect(glyph.bounds()).f(None).s(hsl(0.7, a=0.3)).sw(5) if overlay else None,
         #DATPen().gridlines(r, 50, absolute=True) if overlay else None,
-        #(glyph
-        #    .copy()
-        #    .pen()
-        #    .removeOverlap()
-        #    .f(0)
-        #    .color_phototype(r)
-        #    .img_opacity(0.25 if overlay else 1)
-        #    #.img_opacity(1)
-        #),
         (glyph.pen().skeleton(scale=4).f(None).s(hsl(0.57, 1, 0.47))) if overlay else None,
         glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.bounds().w+30, 0).f(0).s(None).color_phototype(r, blur=5),
         glyph.pen().removeOverlap().scale(0.5, center=Point([100, 100])).translate(glyph.bounds().w+30+glyph.bounds().w*0.75+30, 0).f(None).s(0).sw(3),
-        lpts if overlay else None
-        #show_points(glyph.pen(), Style(recmono, 100))
-        ])
+        lpts if overlay else None])
