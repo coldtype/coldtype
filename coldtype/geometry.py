@@ -479,6 +479,9 @@ class Line():
     def __truediv__(self, other):
         return self.offset(other, 0)
     
+    def __mod__(self, other):
+        return self.offset(*other)
+    
     def intersection(self, other):
         return Point(line_intersection(self, other))
     

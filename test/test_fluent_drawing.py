@@ -302,8 +302,7 @@ def _G(r, g):
     return (_CG(r, g)
         .append(DP("xbar", xbarr:=g.aperture * (g.bx.pc.x+10) // -50)
             .pvl()
-            .mod_pt(1, 0, λ/-20)
-            .tag("xbar"))
+            .mod_pt(1, 0, λ/-20))
         .fft("O", λp: (p
             .mod_pt(5, 0, λ/25)
             .mod_pt(5, 2, λ@xbarr.mxy)))
@@ -313,48 +312,31 @@ def _G(r, g):
 def _S(r, g):
     return (g
         .remove("stem")
+        .set_width(g.c.stem*5)
         .register(
             hornl="-$stem -$earh",
-            hornr="+$stem +$earh-10")
-        .record(DATPen()
-            .moveTo(g.hornr.point("C").offset(0, -10)) # HIRESET
-            .boxCurveTo(g.bx.pn.offset(-30, g.c.over), # HISTART
-                "NE",
-                (0.25, 0.75),
-                dict(b=λp: p.offset(-50, 0)))
-            .boxCurveTo(g.bx.pnw.offset(2, -g.c.earh/2-50), # HISWING
-                "NW",
-                0.58)
-            .boxCurveTo(g.bx.pse.offset(-g.c.stem-30, g.c.srfh+30), # BIGDOWN
-                ("SW", "NE"),
-                (0.65, 0.35))
-            .boxCurveTo(g.bx.ps.offset(35, g.c.srfh-g.c.over*2), # LOSMALL
-                "SE",
-                0.63)
-            .boxCurveTo(g.hornl.pne, # LOLAND
-                "SW",
-                (0.35, 0.84),
-                dict(c=λp: p.offset(45, 0)))
-            .lineTo(g.hornl.point("C").offset(0, 20)) # LORESET
-            .boxCurveTo(g.bx.ps.offset(40, -g.c.over), # LOSTART
-                "SW",
-                (0.25, 0.7),
-                dict(b=λp: p.offset(40, 0)))
-            .boxCurveTo(g.bx.pse.offset(20, g.c.earh/2+45), # LOSWING
-                "SE",
-                0.6)
-            .boxCurveTo(g.bx.pnw.offset(g.c.stem+70, -g.c.srfh-30), # BIGUP
-                ("NE", "SW"),
-                (0.65, 0.37))
-            .boxCurveTo(g.bx.pn.offset(-10, -g.c.srfh+g.c.over*2), # HISMALL
-                "NW",
-                0.65)
-            .boxCurveTo(g.hornr.psw, # HILAND
-                "NE",
-                0.4,
-                dict(c=λp: p.offset(-25, 40)))
-            .closePath()
-            .pvl()))
+            hornr="+$stem +$earh-10",
+            _ƒcenterƒ_="1 1 ^m -$stem ø ^m +$srfw ø ^r $srfh a $srfh")
+        .record(DP("curve")
+            .declare(
+                yres:=80,
+                stx:=40,
+                stc:=(0.25, 0.75))
+            .mt(g.hornr.pc//-yres) # HIRESET
+            .bct(g.bx.pn/-stx//g.c.over, "NE", stc) # HISTART
+            .bct(g.bx.pnw/2//(-g.c.earh/2 -30), "NW", 0.6) # HISWING
+            .bct(g.bx.pse/(-g.c.stem-30)//(g.c.srfh+30), # BIGDOWN
+                ("SW", "NE"), (0.65, 0.35))
+            .bct(g.bx.ps/35 // (g.c.srfh-g.c.over*2), "SE", 0.63) # LOSMALL
+            .bct(g.hornl.pne, "SW", (0.35, 0.84), dict(c=λ/45)) # LOLAND
+            .lt(g.hornl.pc//yres) # LORESET
+            .bct(g.bx.ps/stx//-g.c.over, "SW", stc) # LOSTART
+            .bct(g.bx.pse/20//(g.c.earh/2+45), "SE", 0.63) # LOSWING
+            .bct(g.bx.pnw/(g.c.stem+70)//(-g.c.srfh-30), # BIGUP
+                ("NE", "SW"), (0.65, 0.37))
+            .bct(g.bx.pn / -10 // (-g.c.srfh+g.c.over*2), "NW", 0.65) # HISMALL
+            .bct(g.hornr.psw, "NE", 0.4, dict(c=λ/-25//40)) # HILAND
+            .cp()))
 
 @glyphfn()
 def _U(r, g):
@@ -367,8 +349,7 @@ def _U(r, g):
         .register(
             steml=f"-$stem 1 ^m =&capl.ps.x -$srfh+{c}",
             stemr=f"+$ldiag+10 1 ^m =&capr.ps.x -$srfh+{c}")
-        .declare(
-            sc:=g.steml.pse.i(g.stemr.psw) @ -g.c.over)
+        .declare(sc:=g.steml.pse.i(g.stemr.psw) @ -g.c.over)
         .remove("stem")
         .record(DATPen("curve")
             .mt(g.steml.psw)

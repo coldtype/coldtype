@@ -173,7 +173,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         return allpts
     
     def mod_pt(self, vidx, pidx, fn):
-        self.value[vidx][-1][pidx] = fn(self.value[vidx][-1][pidx])
+        self.value[vidx][-1][pidx] = fn(Point(self.value[vidx][-1][pidx]))
         return self
     
     def mod_pts(self, rect, fn):
