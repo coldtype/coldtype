@@ -34,7 +34,14 @@ class Glyph(DATPens):
     def bxr(self):
         return DATPen().rect(self.bx)
 
-    def brack(self, a, pt, b, y, c):
+    def brack(self, a, b, pt, y=None, c=None):
+        if not y:
+            y = self.c.brackh
+        if not c:
+            c = self.c.brackc
+        
+        #print(a, b, pt, y, c)
+        
         if isinstance(pt, str):
             apt = a.point(pt)
             be = b.ew if "W" in pt else b.ee
@@ -55,7 +62,7 @@ class Glyph(DATPens):
                 .cp())
         else:
             for p in pt:
-                self.brack(a, p, b, y, c)
+                self.brack(a, b, p, y, c)
             return self
 
 @glyphfn()
@@ -156,7 +163,13 @@ def _T(r, g):
             cap="1 +$srfh",
             earl="-$stem +$earh",
             earr="+$stem +$earh",
-            stem="=$stem 1"))
+            stem="=$stem 1")
+        .brack(g.cap, g.earl, "SE")
+        .brack(g.cap, g.stem, "SW")
+        .brack(g.cap, g.stem, "SE")
+        .brack(g.cap, g.earr, "SW")
+        .brack(g.base, g.stem, "NW")
+        .brack(g.base, g.stem, "NE"))
 
 @glyphfn()
 def _P(r, g, mod=None, tc=0.6, xc=0, ci=30, my=0):
@@ -182,7 +195,11 @@ def _P(r, g, mod=None, tc=0.6, xc=0, ci=30, my=0):
             .lt(g.mid.pnw, g.mid.psw, g.mid.pse)
             .bct(g.curve.pe, "SE", g.c.cocf)
             .bct(g.cap.pne, "NE", g.c.cocf)
-            .cp()))
+            .cp())
+        .brack(g.cap, g.stem, "SW")
+        .brack(g.cap, g.stem, "SE")
+        .brack(g.base, g.stem, "NW")
+        .brack(g.base, g.stem, "NE"))
 
 @glyphfn(_P.w)
 def _B(r, g):
@@ -252,9 +269,9 @@ def _N(r, g):
         .register(
             base=g.base.setlmxx((diag.sl(0) & g.base.en).x - g.c.gap),
             capr=g.capr.setlmnx((diag.sl(3) & g.capr.es).x + g.c.gap+5))
-        .brack(g.capl, ("SW"), g.steml, i:=50, c:=0.65)
-        .brack(g.base, ("NE", "NW"), g.steml, i, c)
-        .brack(g.capr, ("SE", "SW"), g.stemr, i, c))
+        .brack(g.capl, g.steml, ("SW"))
+        .brack(g.base, g.steml, ("NE", "NW"))
+        .brack(g.capr, g.stemr, ("SE", "SW")))
 
 @glyphfn()
 def _M(r, g):
@@ -377,14 +394,18 @@ def _U(r, g):
         .register(
             steml=f"-$stem 1 ^m =&capl.ps.x -$srfh+{c}",
             stemr=f"+$ldiag+10 1 ^m =&capr.ps.x -$srfh+{c}")
-        .declare(sc:=g.steml.pse.i(g.stemr.psw) @ -g.c.over)
+        .declare(sc:=g.steml.pse.i(0.47, g.stemr.psw) @ -g.c.over)
         .remove("stem")
         .record(DATPen("curve")
             .mt(g.steml.psw)
-            .bct(sc, "SW", c:=0.75).bct(g.stemr.pse, "SE", c)
+            .bct(sc, "SW", c:=0.75)
+            .bct(g.stemr.pse, "SE", c)
             .lt(g.stemr.psw)
-            .bct(sc // g.c.srfh, "SE", c:=0.85).bct(g.steml.pse, "SW", c)
-            .cp()))
+            .bct(sc // g.c.srfh, "SE", c:=0.85)
+            .bct(g.steml.pse, "SW", c)
+            .cp())
+        .brack(g.capl, g.steml, ("SW", "SE"))
+        .brack(g.capr, g.stemr, ("SW", "SE")))
 
 @glyphfn(_U.w)
 def _V(r, g):
@@ -481,7 +502,9 @@ def curves(f, rs):
             ninstem=f"$instem - {20}",
             nbase="$ninstem*2 + $nstem",
             nshoulder=30,
-            earh=λg: g.bx.divide(g.c.xbarh, "mdy")[0].h))
+            earh=λg: g.bx.divide(g.c.xbarh, "mdy")[0].h,
+            brackh=50,
+            brackc=0.75))
 
     glyph = (cap.func(r, g)
         .realize()
