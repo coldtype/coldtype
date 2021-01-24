@@ -238,12 +238,17 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     mt = moveTo
 
-    def lineTo(self, p1):
-        """The standard `RecordingPen.lineTo`, but returns self for chainability."""
+    def lineTo(self, *ps):
+        """The standard `RecordingPen.lineTo`, but returns self for chainability, and accepts multiple points, and also will automatically moveTo if the pen has no value"""
+
+        p1 = ps[0]
         if len(self.value) == 0:
             super().moveTo(p1)
         else:
             super().lineTo(p1)
+        if len(ps) > 1:
+            for p in ps[1:]:
+                super().lineTo(p)
         return self
     
     lt = lineTo
@@ -286,12 +291,17 @@ class DATPen(RecordingPen, DATPenLikeObject):
             f1, f2 = (factor, factor)
 
         if isinstance(point, str):
-            p1, p2 = (point, point)
+            p = box.point(point)
+            p1, p2 = (p, p)
+        elif isinstance(point, Point):
+            p1, p2 = point, point
         else:
             p1, p2 = point
+            p1 = box.point(p1)
+            p2 = box.point(p2)
         
-        b = a.interp(f1, box.point(p1))
-        c = d.interp(f2, box.point(p2))
+        b = a.interp(f1, p1)
+        c = d.interp(f2, p2)
         mb = mods.get("b")
         mc = mods.get("c")
         if mb:
@@ -1384,6 +1394,7 @@ class DATPens(DATPen):
         self.data = {}
         self.visible = True
         self.registrations = {}
+        self.guides = {}
 
         if isinstance(pens, DATPen):
             self += pens
@@ -1620,18 +1631,12 @@ class DATPens(DATPen):
             if tagged:
                 return tagged.copy()
     
-    def register(self, fn=None, **kwargs):
-        if fn:
-            if callable(fn):
-                res = fn(self)
-            else:
-                res = fn
-        else:
-            res = kwargs
+    def _register(self, lookup, **kwargs):
+        res = kwargs
         
         def keep(k, v):
             if k != "_":
-                self.registrations[k] = v
+                lookup[k] = v
                 setattr(self, k, v)
         
         for k, v in res.items():
@@ -1645,6 +1650,12 @@ class DATPens(DATPen):
             else:
                 keep(k, v)
         return self
+    
+    def register(self, **kwargs):
+        return self._register(self.registrations, **kwargs)
+    
+    def guide(self, **kwargs):
+        return self._register(self.guides, **kwargs)
     
     def realize(self):
         for k, v in self.registrations.items():

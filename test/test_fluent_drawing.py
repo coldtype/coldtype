@@ -133,25 +133,27 @@ def _T(r, g):
             stem="=$stem 1"))
 
 @glyphfn(570)
-def _P(r, g, mod=None, xc=0, ci=30):
+def _P(r, g, mod=None, tc=0.6, xc=0, ci=30):
     return (g
         .add_stem()
+        .guide(
+            bxc=f"1 +{tc}",
+            curve="&bxc ^m -&stem.mxx+50 ø",
+            midƒknockƒcap="&bxc ^r $xbarh a $srfh",
+            knock=f"&knock ^s +$stem+{ci} 0",
+            mid="&mid ^m -&stem.pc.x ø ^m +&curve.mnx ø",
+            cap="&cap ^m +&curve.mnx ø")
         .register(
-            base="-$srfw+10 -$srfh",
-            cap=f"-$srfw-50 +$srfh",
-            mid=f"-&cap.w =$srfh-90 ^m -&stem.mnx+30 ø ^o 0 -20")
+            base="-$srfw+10 -$srfh")
         .chain(mod)
-        .constants(
-            cicf=0.9,
-            cocf=0.65,
-            comx=g.bx.mxx + xc,
-            cimx=g.bx.mxx - g.stem.w - ci + xc)
-        .record(DP("curve")
-            .mt(p:=g.cap.pse)
-            .bct(p.i(g.mid.pne) * g.c.cimx, "NE", g.c.cicf)
+        .constants(cicf=0.9, cocf=0.65)
+        .ap(DP("curve")
+            .mt(g.cap.pnw)
+            .lt(g.cap.psw, g.cap.pse)
+            .bct(g.knock.pe//5, "NE", g.c.cicf)
             .bct(g.mid.pne, "SE", g.c.cicf)
-            .lt(p:=g.mid.pse)
-            .bct(p.i(g.cap.pne) * g.c.comx, "SE", g.c.cocf)
+            .lt(g.mid.pnw, g.mid.psw, g.mid.pse)
+            .bct(g.curve.pe, "SE", g.c.cocf)
             .bct(g.cap.pne, "NE", g.c.cocf)
             .cp()))
 
@@ -182,22 +184,23 @@ def _B(r, g):
 
 @glyphfn(_P.w)
 def _D(r, g):
-    g = (_P.func(r, g, xc=30, ci=60, mod=λg: g
-        .register(mid=g.base.take(g.cap.w, "mnx"))
-        .remove("base"))
+    g = (_P.func(r, g, tc=1, xc=30, ci=50, mod=λg: g
+        .register(mid=g.base.take(g.cap.w, "mnx")))
+        .remove("base")
         .fft("curve", λc: c.pvl()
-            .declare(q:=20)
-            .mod_pt(4, -1, λ//q)
-            .mod_pt(1, 2, λ//(q-10))))
+            .declare(q:=40)
+            .mod_pt(8, 2, λ//q)
+            .mod_pt(3, 2, λ//(q-10))))
     return g
 
 @glyphfn(_P.w)
 def _R(r, g):
-    return (_P.func(r, g, ci=60, mod=λg:
-        g.register(
+    return (_P.func(r, g, ci=60, mod=λg: g
+        .register(
             base=g.base.subtract(20, "mxx"),
-            mid=g.mid.offset(0, 20).inset(10),
-            baser="+$srfw-60 -$srfh ^o 30 0"))
+            mid=g.mid.offset(0, 20).inset(10))
+        .guide(
+            baser="+$srfw-70 -$srfh ^o 30 0")
         .ap(DP("leg")
             .mt(g.mid.pse/-20)
             .bct(g.baser.pnw, "NE", 0.65)
@@ -206,9 +209,7 @@ def _R(r, g):
             .lt(p:=g.baser.pne)
             .lt(p/-g.c.stem)
             .bct(g.mid.pse.o(50, 20), "NE", 0.65)
-            .cp()
-            .translate(10, 0))
-        .remove("baser"))
+            .cp())))
 
 @glyphfn()
 def _N(r, g):
@@ -311,31 +312,28 @@ def _G(r, g):
 @glyphfn(500)
 def _S(r, g):
     return (g
-        .remove("stem")
-        .set_width(g.c.stem*5)
+        .set_width(g.c.stem*4.15)
         .register(
-            hornl="-$stem -$earh",
-            hornr="+$stem +$earh-10",
-            _ƒcenterƒ_="1 1 ^m -$stem ø ^m +$srfw ø ^r $srfh a $srfh")
+            hornl="-$stem -$earh+0",
+            hornr="+$stem +$earh-10")
+        .guide(
+            bxx="i 0 $srfh",
+            bxy="i $hdiag -$over",
+            bxi=λg: DP(g.bxx).intersection(DP(g.bxy))
+                .bounds().inset(-10).offset(10, 0))
         .record(DP("curve")
-            .declare(
-                yres:=80,
-                stx:=40,
-                stc:=(0.25, 0.75))
-            .mt(g.hornr.pc//-yres) # HIRESET
-            .bct(g.bx.pn/-stx//g.c.over, "NE", stc) # HISTART
-            .bct(g.bx.pnw/2//(-g.c.earh/2 -30), "NW", 0.6) # HISWING
-            .bct(g.bx.pse/(-g.c.stem-30)//(g.c.srfh+30), # BIGDOWN
-                ("SW", "NE"), (0.65, 0.35))
-            .bct(g.bx.ps/35 // (g.c.srfh-g.c.over*2), "SE", 0.63) # LOSMALL
-            .bct(g.hornl.pne, "SW", (0.35, 0.84), dict(c=λ/45)) # LOLAND
-            .lt(g.hornl.pc//yres) # LORESET
-            .bct(g.bx.ps/stx//-g.c.over, "SW", stc) # LOSTART
-            .bct(g.bx.pse/20//(g.c.earh/2+45), "SE", 0.63) # LOSWING
-            .bct(g.bx.pnw/(g.c.stem+70)//(-g.c.srfh-30), # BIGUP
-                ("NE", "SW"), (0.65, 0.37))
-            .bct(g.bx.pn / -10 // (-g.c.srfh+g.c.over*2), "NW", 0.65) # HISMALL
-            .bct(g.hornr.psw, "NE", 0.4, dict(c=λ/-25//40)) # HILAND
+            .mt(g.hornr.ps)
+            .bct(g.bxy.pn/-(stx:=30), "NE", start:=(0.65, 0.65))
+            .bct(g.bxx.pnw, "NW", swing:=0.6)
+            .bct(g.bxi.pse//(bigy:=55), ("SW", "NE"), big:=(0.65, 0.35))
+            .bct(g.bxi.ps/(smallx:=15), "SE", small:=0.65)
+            .bct(g.hornl.pne, g.bxi.psw, land:=0.65)
+            .lt(g.hornl.pn)
+            .bct(g.bxy.ps/stx, "SW", start)
+            .bct(g.bxx.pse/10, "SE", swing)
+            .bct(g.bxi.pnw//-bigy, ("NE", "SW"), big)
+            .bct(g.bxi.pn/-smallx//5, "NW", small)
+            .bct(g.hornr.psw, g.bxi.pne, land)
             .cp()))
 
 @glyphfn()
@@ -478,6 +476,7 @@ def curves(f, rs):
         glyph.copy().f(None).s(0, 0.5).sw(10) if overlay else None,
         glyph.pen().removeOverlap().f(None).s(0, 1).sw(5) if not overlay else None,
         DATPen().rect(glyph.bx).translate(100, 100).f(None).s(hsl(0.9, a=0.3)).sw(5) if overlay else None,
+        DATPens([DP(g).translate(100, 100).f(None).s(hsl(0.9, 1, a=0.25)).sw(5) for k,g in glyph.guides.items()]) if overlay else None,
         DATPen().rect(glyph.bounds()).f(None).s(hsl(0.7, a=0.3)).sw(5) if overlay else None,
         #DATPen().gridlines(r, 50, absolute=True) if overlay else None,
         #(glyph

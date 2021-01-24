@@ -1067,7 +1067,7 @@ class Rect():
 
         def do_op(r, xs):
             op = xs[0]
-            if op in ["t", "i", "o", "s", "m", "c", "r", "a", "l"]:
+            if op in ["t", "i", "o", "s", "m", "c", "r", "a", "l", "@", "e"]:
                 op = op
                 xs = xs[1:].strip()
             else:
@@ -1080,7 +1080,7 @@ class Rect():
             amounts = []
             
             for idx, x in enumerate(xs):
-                if op in ["t", "s", "m", "l"]:
+                if op in ["t", "s", "m", "l", "e"]:
                     if x[0] == "-":
                         edges.append("mn" + sfx[idx])
                     elif x[0] == "+":
@@ -1115,6 +1115,10 @@ class Rect():
                 return (r
                     .subtract(amounts[0], edges[0])
                     .subtract(amounts[1], edges[1]))
+            elif op == "e": # subtract
+                return (r
+                    .expand(amounts[0], edges[0])
+                    .expand(amounts[1], edges[1]))
             elif op == "i": # inset
                 return (r.inset(amounts[0], amounts[1]))
             elif op == "o": # offset
@@ -1168,14 +1172,19 @@ class Rect():
                     _r, r = r.divide(w, "mny")
                     rs.append(_r)
                 return rs
+            elif op == "@": # get-at-index
+                return r[int(amounts[0])]
             else:
                 raise Exception("op", op, "not supported")
 
         ys = s.split("^")
         r = self
         for y in ys:
-            try:
-                r = do_op(r, y.strip())
-            except IndexError:
-                print("FAILED")
+            if y.startswith("Rect("):
+                r = eval(y.strip())
+            else:
+                try:
+                    r = do_op(r, y.strip())
+                except IndexError:
+                    print("FAILED")
         return r
