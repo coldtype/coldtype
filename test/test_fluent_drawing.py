@@ -33,6 +33,11 @@ class Glyph(DATPens):
     @property
     def bxr(self):
         return DATPen().rect(self.bx)
+    
+    def brackets(self, bracks):
+        for a, b, pt in bracks:
+            self.brack(a, b, pt)
+        return self
 
     def brack(self, a, b, pt, y=None, c=None):
         if not y:
@@ -42,7 +47,7 @@ class Glyph(DATPens):
         
         #print(a, b, pt, y, c)
         
-        if isinstance(pt, str):
+        if isinstance(pt, str) and len(pt) == 2:
             apt = a.point(pt)
             be = b.ew if "W" in pt else b.ee
             ctrl = a.edge(pt[0]) & be
@@ -61,6 +66,10 @@ class Glyph(DATPens):
                 .lt(ctrl)
                 .cp())
         else:
+            if pt == "N":
+                pt = ("NW", "NE")
+            elif pt == "S":
+                pt = ("SE", "SW")
             for p in pt:
                 self.brack(a, b, p, y, c)
             return self
@@ -85,7 +94,11 @@ def _I(r, g):
         .register(
             base="1 -$srfh",
             cap="1 +$srfh",
-            stem="=$stem 1"))
+            stem="=$stem 1")
+        .brackets([
+            (g.cap, g.stem, "S"),
+            (g.base, g.stem, "N")
+        ]))
 
 @glyphfn()
 def _J(r, g):
@@ -105,7 +118,8 @@ def _J(r, g):
             .bct(g.stem.pse, "SE", c-0.08)
             .cp()
             .pvl())
-        .remove("ear"))
+        .remove("ear")
+        .brackets([(g.cap, g.stem, "S")]))
 
 @glyphfn()
 def _H(r, g, rn=0):
@@ -115,7 +129,15 @@ def _H(r, g, rn=0):
             clƒ_ƒcr=f"1 +$srfh ^c $srfw-{rn} $gap $srfw+{rn} a",
             steml="-$stem 1 ^m =&bl.ps.x ø",
             stemr="-$stem 1 ^m =&br.ps.x ø",
-            xbar="1 =$xbarh ^m -&steml.pc.x ø ^m +&stemr.pc.x ø"))
+            xbar="1 =$xbarh ^m -&steml.pc.x ø ^m +&stemr.pc.x ø")
+        .brackets([
+            (g.cl, g.steml, "S"),
+            (g.cr, g.stemr, "S"),
+            (g.bl, g.steml, "N"),
+            (g.br, g.stemr, "N"),
+            #(g.xbar, g.steml, ("NE", "SE")),
+            #(g.xbar, g.stemr, ("NW", "SW")),
+        ]))
 
 @glyphfn()
 def _K(r, g):
@@ -131,12 +153,17 @@ def _K(r, g):
 @glyphfn()
 def _E(r, g):
     return (g
-        .setWidth(g.c.stem*4.5)
+        .set_width(g.c.stem*4.5)
         .add_stem()
         .register(
-            baseƒ_ƒ_cap="r $srfh a $srfh",
+            baseƒ_ƒcap="r $srfh a $srfh",
             earbƒ_ƒeart="+$stem 1 ^r $earh a $earh",
-            mid="1 =$xbarh ^m -&stem.pc.x ø ^m +&eart.psw.x-30 ø ^l +450 ø"))
+            earb="&earb ^o 10 0",
+            mid="1 =$xbarh ^m -&stem.pc.x ø ^m +&eart.psw.x-30 ø ^l +450 ø")
+        .brackets([
+            (g.cap, g.stem, "SW"),
+            (g.base, g.stem, "NW")
+        ]))
 
 @glyphfn()
 def _F(r, g):
@@ -196,10 +223,9 @@ def _P(r, g, mod=None, tc=0.6, xc=0, ci=30, my=0):
             .bct(g.curve.pe, "SE", g.c.cocf)
             .bct(g.cap.pne, "NE", g.c.cocf)
             .cp())
-        .brack(g.cap, g.stem, "SW")
-        .brack(g.cap, g.stem, "SE")
-        .brack(g.base, g.stem, "NW")
-        .brack(g.base, g.stem, "NE"))
+        .brackets([
+            (g.cap, g.stem, "S"),
+            (g.base, g.stem, "N")]))
 
 @glyphfn(_P.w)
 def _B(r, g):
@@ -228,14 +254,14 @@ def _B(r, g):
 
 @glyphfn(_P.w)
 def _D(r, g):
-    g = (_P.func(r, g, tc=1, xc=30, ci=50, mod=λg: g
+    # TODO mid inside mid-point is wrong b/c the knock is wrong
+    return (_P.func(r, g, tc=1, xc=30, ci=50, mod=λg: g
         .register(mid=g.base.take(g.cap.w, "mnx")))
         .remove("base")
         .fft("curve", λc: c.pvl()
             .declare(q:=30)
             .mod_pt(8, 2, λ//q)
             .mod_pt(3, 2, λ//(q+10))))
-    return g
 
 @glyphfn(_P.w)
 def _R(r, g):
@@ -269,9 +295,10 @@ def _N(r, g):
         .register(
             base=g.base.setlmxx((diag.sl(0) & g.base.en).x - g.c.gap),
             capr=g.capr.setlmnx((diag.sl(3) & g.capr.es).x + g.c.gap+5))
-        .brack(g.capl, g.steml, ("SW"))
-        .brack(g.base, g.steml, ("NE", "NW"))
-        .brack(g.capr, g.stemr, ("SE", "SW")))
+        .brackets([
+            (g.capl, g.steml, "SW"),
+            (g.capr, g.stemr, "S"),
+            (g.base, g.steml, "N")]))
 
 @glyphfn()
 def _M(r, g):
