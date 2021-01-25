@@ -138,6 +138,9 @@ class animation(renderable, Timeable):
     def package(self, filepath, output_folder):
         pass
 
+    def fn_to_frame(self, fn_name):
+        return 0
+
     def contactsheet(self, gx, sl=slice(0, None, None)):
         try:
             sliced = True

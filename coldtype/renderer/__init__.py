@@ -1051,7 +1051,27 @@ class Renderer():
         except ValueError:
             pass
 
-        if not context:
+        if context:
+            if cmd == "show_function":
+                lines = self.codepath.read_text().split("\n")
+                lidx = int(context)
+                line = lines[lidx]
+                while not line.startswith("@"):
+                    lidx -= 1
+                    line = lines[lidx]
+                fn_name = lines[lidx+1].strip("def ").split("(")[0].strip()
+                if self.last_animation:
+                    fi = self.last_animation.fn_to_frame(fn_name)
+                    #self.last_animation.storyboard = [fi]
+                    self.state.adjust_all_frame_offsets(0, absolute=True)
+                    self.state.adjust_keyed_frame_offsets(
+                        self.last_animation.name,
+                        lambda i, o: fi)
+
+                    self.action_waiting = Action.PreviewStoryboard
+                #print(">>>>>>>>>>>>", line, )
+
+        else:
             if cmd == "∑":
                 self.state.exit_keylayer()
                 self.action_waiting = Action.PreviewStoryboard

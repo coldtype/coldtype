@@ -12,6 +12,7 @@ class glyphfn():
 
     def __call__(self, func):
         self.func = func
+        self.name = func.__name__
         return self
 
 def length(self):
@@ -630,13 +631,25 @@ def _Z(r, g:Glyph):
             (g.base, g.earb, "NW")
         ]))
 
-caps = [_A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z]
+class font(animation):
+    def __init__(self, rect=(2000, 1000)):
+        self.glyphs = []
+        for k, v in globals().items():
+            if isinstance(v, glyphfn):
+                self.glyphs.append(v)
+        self.glyphs.sort(key=lambda a: a.name)
+        super().__init__(rect, timeline=Timeline(len(self.glyphs)), rstate=1)
+    
+    def fn_to_frame(self, fn_name):
+        for idx, g in enumerate(self.glyphs):
+            if g.name == fn_name:
+                return idx
 
-@animation((2000, 1000), timeline=Timeline(len(caps)), rstate=1, storyboard=[0])
+@font()
 def curves(f, rs):
     r = f.a.r
 
-    cap = caps[f.i]
+    cap = curves.glyphs[f.i]
     g = (Glyph()
         .addFrame(cap.r)
         .constants(
