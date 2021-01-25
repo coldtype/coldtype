@@ -100,10 +100,14 @@ class DATPen(RecordingPen, DATPenLikeObject):
         for arg in args:
             if isinstance(arg, str):
                 self.tag(arg)
+            elif isinstance(arg, DATPen):
+                self.replace_with(arg)
             elif isinstance(arg, Rect):
                 self.rect(arg)
             elif isinstance(arg, Line):
                 self.line(arg)
+            elif isinstance(arg, Point):
+                self.oval(Rect.FromCenter(arg, 50, 50))
     
     def __str__(self):
         v = "" if self.visible else "ø-"
@@ -613,7 +617,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
             for p in pts:
                 if p:
                     x, y = p
-                    _rounded.append((round(x, rounding), round(y, rounding)))
+                    if rounding > 0:
+                        _rounded.append((round(x, rounding), round(y, rounding)))
+                    else:
+                        _rounded.append((math.floor(x), math.floor(y)))
                 else:
                     _rounded.append(p)
             rounded.append((t, _rounded))
@@ -1663,7 +1670,9 @@ class DATPens(DATPen):
     def register(self, **kwargs):
         return self._register(self.registrations, **kwargs)
     
-    def guide(self, **kwargs):
+    def guide(self, *args, **kwargs):
+        for arg in args:
+            kwargs[str(random())] = arg
         return self._register(self.guides, **kwargs)
     
     def realize(self):

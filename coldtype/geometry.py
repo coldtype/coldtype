@@ -437,8 +437,8 @@ class Point3D(Point):
 
 class Line():
     def __init__(self, start, end):
-        self.start = start
-        self.end = end
+        self.start = Point(start)
+        self.end = Point(end)
     
     def __repr__(self):
         return f"<Line:{self.start}/{self.end}>"
@@ -453,13 +453,23 @@ class Line():
             return self.end
         else:
             raise IndexError("Line only has two points")
-    
-    def __invert__(self):
+
+    def reverse(self):
         p1, p2 = self
         return Line(p2, p1)
+    
+    def __invert__(self):
+        return self.reverse()
 
     def t(self, t):
         return self.start.interp(t, self.end)
+    
+    def tpx(self, tpx):
+        print("angle>", self.angle())
+        pass
+
+    def angle(self):
+        return calc_angle(self.start, self.end)
     
     def extr(self, amt):
         p1, p2 = self
@@ -791,6 +801,18 @@ class Rect():
         return Rect(subtract(self.rect(), amount, edge))
 
     def expand(self, amount, edge):
+        edges = None
+        if edge == "NW":
+            edges = ["mxy", "mnx"]
+        elif edge == "NE":
+            edges = ["mxy", "mxx"]
+        elif edge == "SE":
+            edges = ["mny", "mxx"]
+        elif edge == "SW":
+            edges = ["mny", "mnx"]
+        
+        if edges:
+            return self.expand(amount, edges[0]).expand(amount, edges[1])
         edge = txt_to_edge(edge)
         return Rect(expand(self.rect(), amount, edge))
     
