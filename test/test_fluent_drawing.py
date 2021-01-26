@@ -101,7 +101,7 @@ class Glyph(DATPens):
             
             r = Rect.FromPoints(ctrl, end, start)
             ri = r.expand(10, opp)
-            self.guide(apt)
+            #self.guide(apt)
 
             bracket = (DP("bracket", ri)
                 .difference(DP()
@@ -380,23 +380,24 @@ def _N(r, g):
 @glyphfn()
 def _M(r, g):
     return (g
-        .set_width(g.c.stem*6.60)
+        .set_width(g.c.stem*6)
         .declare(
-            spread:=-60,
-            nosein:=30,
+            spread:=-70,
+            nosein:=50,
             wght:=g.c.hdiag-30)
         .register(
             _ƒstemlƒ_ƒstemr="c $ninstem $nstem a $nstem $ninstem",
             baselƒ_ƒbaser="1 -$srfh ^c $nbase a $nbase",
             caplƒ_ƒcapr=f"1 +$srfh ^c $nbase+{spread} a $nbase+{spread}")
-        .append(diagl:=DP("dgl",
-            Line(g.capl.pne, g.bx.ps / nosein))
+        .ap(diagl:=DP("dgl",
+            ddl:=Line(g.capl.pne, g.bx.ps / nosein))
             .ol(wght).ƒ(g.bx))
-        .append(diagr:=DP("dgr",
+        .ap(diagr:=DP("dgr",
             Line(g.capr.pnw, g.bx.ps / -nosein))
             .ol(wght).ƒ(g.bx))
+        .guide(diagl.sl(2))
         .fft("dgl", λ.ƒ(diagr.sl(0), ~g.bx.edge("mnx")))
-        .fft("dgr", λ.ƒ(diagl.sl(2), g.bx.edge("mxx")))
+        .fft("dgr", λ.ƒ(diagl.sl(0), ~g.bx.edge("mxx")))
         .brackets([
             (g.capl, g.steml, "SW"),
             (g.basel, g.steml, "N"),
@@ -662,10 +663,10 @@ def curves(f, rs):
             hdiag=f"$stem+{(n:=30)}",
             ldiag=f"$stem-{n}",
             srfw="$instem + $stem + $instem",
-            nstem=f"$stem - {25}",
-            ninstem=f"$instem - {20}",
+            nstem=f"$stem - {15}",
+            ninstem=f"$instem - {30}",
             nbase="$ninstem*2 + $nstem",
-            nshoulder=30,
+            nshoulder=15,
             earh=λg: g.bx.divide(g.c.xbarh, "mdy")[0].h,
             brackw=30,
             brackh=60,
@@ -692,13 +693,14 @@ def curves(f, rs):
     overlay = Overlay.Info in rs.overlays
 
     lpts = DATPens()
-    txtstyle = Style("Times", 24, load_font=0, fill=hsl(0.4, 1))
+    txtstyle = Style("Times", 18, load_font=0, fill=hsl(0.5, 0.5))
 
     for p in glyph:
-        for idx, (mv, pts) in enumerate(p.value):
-            if len(pts) > 0:
-                for jdx, pt in enumerate(pts):
-                    lpts += DATText(f"{idx},{jdx}", txtstyle, Rect.FromCenter(pt, 20).offset(20, 20))
+        if "bracket" not in p.getTag():
+            for idx, (mv, pts) in enumerate(p.value):
+                if len(pts) > 0:
+                    for jdx, pt in enumerate(pts):
+                        lpts += DATText(f"{idx},{jdx}", txtstyle, Rect.FromCenter(pt, 20).offset(20, 20))
 
     return DATPenSet([
         glyph.copy().f(None).s(0, 0.5).sw(5) if overlay else None,
@@ -707,7 +709,7 @@ def curves(f, rs):
         DATPens([DP(x).translate(100+g.l, 100).f(None).s(hsl(random(), 1, a=0.25)).sw(10) for k,x in glyph.guides.items()]) if overlay else None,
         DATPen(glyph.bounds().expand(g.l+g.r, "mxx")).translate(-g.l, 0).f(None).s(hsl(0.7, a=0.3)).sw(5) if overlay else None,
         #DATPen().gridlines(r, 50, absolute=True) if overlay else None,
-        (glyph.pen().skeleton(scale=4).f(None).s(hsl(0.57, 1, 0.47))) if overlay else None,
+        #(glyph.pen().skeleton(scale=4).f(None).s(hsl(0.57, 1, 0.47))) if overlay else None,
         #glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.bounds().w+30, 0).f(0).s(None).color_phototype(r, blur=5),
         (glyph.pen().removeOverlap()
             .scale(0.75, center=Point([100, 100]))
