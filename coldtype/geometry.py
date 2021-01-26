@@ -642,7 +642,7 @@ class Rect():
         """take a square from the center of this rect"""
         return Rect(centered_square(self.rect()))
     
-    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
+    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY):
         x = txt_to_edge(x)
         y = txt_to_edge(y)
         b = self

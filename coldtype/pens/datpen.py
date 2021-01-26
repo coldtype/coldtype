@@ -902,6 +902,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.closePath()
         return self
     
+    rr = roundedRect
+    
     def oval(self, rect):
         """Oval primitive"""
         self.roundedRect(rect, 0.5, 0.5)
@@ -1380,6 +1382,17 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def declare(self, *whatever):
         # TODO do something with what's declared somehow?
         return self
+    
+    def varstr(self, v):
+        vs = re.sub(r"\$([^\s]+)", lambda m: str(eval("g.c." + m.group(1), {"g":self})), v)
+        vs = re.sub(r"\&([^\s]+)", lambda m: str(eval("g." + m.group(1), {"g":self})), vs)
+        #print(">>>", vs)
+        return vs
+    
+    vs = varstr
+
+    def bvs(self, v):
+        return self.bounds() % self.varstr(v)
 
     def bp(self):
         try:
@@ -1413,10 +1426,10 @@ class DATPens(DATPen):
         self.guides = {}
 
         if isinstance(pens, DATPen):
-            self += pens
+            self.append(pens)
         else:
             for pen in pens:
-                self += pen
+                self.append(pen)
     
     def __str__(self):
         v = "" if self.visible else "ø-"
@@ -1501,7 +1514,9 @@ class DATPens(DATPen):
     
     def append(self, pen, allow_blank=False):
         if pen or allow_blank:
-            if isinstance(pen, DATPenLikeObject):
+            if isinstance(pen, Rect):
+                return self.pens.append(DATPen(pen))
+            elif isinstance(pen, DATPenLikeObject):
                 self.pens.append(pen)
             else:
                 try:
@@ -1627,17 +1642,6 @@ class DATPens(DATPen):
         self.append(self._in_progress_pen)
         self._in_progress_pen = None
         return self
-
-    def varstr(self, v):
-        vs = re.sub(r"\$([^\s]+)", lambda m: str(eval("g.c." + m.group(1), {"g":self})), v)
-        vs = re.sub(r"\&([^\s]+)", lambda m: str(eval("g." + m.group(1), {"g":self})), vs)
-        #print(">>>", vs)
-        return vs
-    
-    vs = varstr
-
-    def bvs(self, v):
-        return self.bounds() % self.varstr(v)
     
     def get(self, k):
         if k in self.registrations:

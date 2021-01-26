@@ -31,6 +31,10 @@ class DATImage(DATPen):
     def height(self):
         return self._img.height()
     
+    def align(self, rect, x="mdx", y="mdy"):
+        self.addFrame(self.rect().align(rect, x, y))
+        return self
+    
     def resize(self, factor):
         if factor == 1:
             return self
@@ -50,6 +54,36 @@ class DATImage(DATPen):
             return DATImage.FromPen(res, original_src=self.src)
         else:
             return res
+    
+    def crop(self, crop, mutate=True):
+        if callable(crop):
+            crop = crop(self)
+        
+        xo, yo = -crop.bounds().x, -crop.bounds().y
+
+        cropped = DATPens([
+            (self.in_pen().translate(xo, yo)),
+            (DATPen()
+                .rect(self.bounds())
+                .difference(crop)
+                .f(0, 1)
+                .blendmode(skia.BlendMode.kClear)
+                .translate(xo, yo))
+            ]).precompose(crop.bounds().zero())
+        
+        
+        if mutate:
+            self._img = cropped.img().get("src")
+            self.addFrame(self.rect())
+            return self
+        else:
+            return DATImage(self.src, img=cropped.img().get("src"))
+        
+        #return self
+    
+    def in_pen(self):
+        return (DATPen(self.bounds())
+            .img(self._img, self.bounds(), pattern=False))
         
     def to_pen(self, rect=None):
         return self.precompose(rect or self.frame, as_image=False)

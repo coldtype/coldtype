@@ -515,7 +515,7 @@ def _U(r, g):
             .bct(sc, "SW", c:=0.75)
             .bct(g.stemr.pse, "SE", c)
             .lt(g.stemr.psw)
-            .bct(sc // g.c.srfh, "SE", c:=0.85)
+            .bct(sc // g.c.srfh, "SE", c:=0.90)
             .bct(g.steml.pse, "SW", c)
             .cp())
         .brackets([
@@ -647,10 +647,10 @@ class font(animation):
                 return idx
 
 @font()
-def curves(f, rs):
+def single_char(f, rs):
     r = f.a.r
 
-    cap = curves.glyphs[f.i]
+    cap = single_char.glyphs[f.i]
     g = (Glyph()
         .addFrame(cap.r)
         .constants(
@@ -721,3 +721,8 @@ def curves(f, rs):
             .f(hsl(0.65, s=1, l=0.8, a=0.25)).s(0).sw(3)),
         lpts if overlay else None
         ])
+
+@renderable(rect=(2000, 400), rstate=1)
+def test_string(r, rs):
+    #return single_char.func(r, rs)
+    pass
