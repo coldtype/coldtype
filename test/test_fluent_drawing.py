@@ -51,6 +51,9 @@ class Glyph(DATPens):
         self.addFrame(Rect(math.floor(width), self.bx.h))
         return self
     
+    def spaced_frame(self):
+        return self.bounds().expand(self.l+self.r, "mxx")
+    
     setWidth = set_width
     
     def add_stem(self):
@@ -68,7 +71,11 @@ class Glyph(DATPens):
         if hasattr(self, "_brackets"):
             for b in self._brackets:
                 self.brack(*b)
-        return super().realize()
+        res = super().realize()
+        return res.translate(self.l, 0).addFrame(self.spaced_frame())
+    
+    def all_guides(self):
+        return DATPens([DP(x).translate(self.l, 0).f(None).s(hsl(random(), 1, a=0.25)).sw(10) for k,x in self.guides.items()])
 
     def brack(self, a, b, pt, y=None, c=None):
         x = self.c.brackw
@@ -162,7 +169,7 @@ def _J(r, g):
         .register(
             stem=f"+$stem 1 ^o -$instem 0 ^s 0 -$srfh+{c}",
             ear=f"-$stem+20 -$earh+30 ^s 0 -$srfh+{c}",
-            cap="+$srfw +$srfh")
+            cap="+$srfw +$srfh ^e -30 0")
         .ap(DP()
             .mt(a:=g.stem.psw // 60)
             .bct(i:=a.i(0.5, g.ear.pne) @ g.c.srfh, "SE", c:=0.77)
@@ -646,11 +653,7 @@ class font(animation):
             if g.name == fn_name:
                 return idx
 
-@font()
-def single_char(f, rs):
-    r = f.a.r
-
-    cap = single_char.glyphs[f.i]
+def build_glyph(cap):
     g = (Glyph()
         .addFrame(cap.r)
         .constants(
@@ -672,24 +675,31 @@ def single_char(f, rs):
             brackh=60,
             brackc=0.75))
 
-    glyph = (cap.func(r, g)
+    glyph = (cap.func(Rect(1080, 1080), g)
         .realize()
         .f(None)
         .s(0)
-        .sw(2)
-        .translate(g.l, 0))
+        .sw(2))
     
-    if True:
+    return glyph
+
+@font()
+def single_char(f, rs):
+    r = f.a.r
+    
+    glyph = build_glyph(single_char.glyphs[f.i])
+    g = glyph
+    
+    if False:
         #print(glyph.pen().removeOverlap().round(0).printvl())
         ufo = raw_ufo(__sibling__("_test_fluent_drawing.ufo"))
         glyph_name = cap.func.__name__.strip("_")
         gp = glyph.pen()-.removeOverlap().round(0)
-        ufo_glyph = gp.to_glyph(name=glyph_name, width=gp.bounds().w+g.r)
+        ufo_glyph = gp.to_glyph(name=glyph_name, width=gp.bounds().w+glyph.r)
         ufo.insertGlyph(ufo_glyph)
         ufo.save()
 
-    glyph.translate(100, 100)
-    
+    glyph.translate(100, 100) # for display
     overlay = Overlay.Info in rs.overlays
 
     lpts = DATPens()
@@ -705,16 +715,16 @@ def single_char(f, rs):
     return DATPenSet([
         glyph.copy().f(None).s(0, 0.5).sw(5) if overlay else None,
         glyph.pen().removeOverlap().f(None).s(0, 1).sw(5) if not overlay else None,
-        #DATPen().rect(glyph.bx).translate(100, 100).f(None).s(hsl(0.9, a=0.3)).sw(5) if overlay else None,
-        DATPens([DP(x).translate(100+g.l, 100).f(None).s(hsl(random(), 1, a=0.25)).sw(10) for k,x in glyph.guides.items()]) if overlay else None,
-        DATPen(glyph.bounds().expand(g.l+g.r, "mxx")).translate(-g.l, 0).f(None).s(hsl(0.7, a=0.3)).sw(5) if overlay else None,
+        DATPen().rect(glyph.bounds()).f(None).s(hsl(0.9, a=0.3)).sw(5) if overlay else None,
+        glyph.all_guides().translate(100, 100) if overlay else None,
+        DATPen(glyph.spaced_frame()).translate(-g.l, 0).f(None).s(hsl(0.7, a=0.3)).sw(5) if overlay else None,
         #DATPen().gridlines(r, 50, absolute=True) if overlay else None,
         #(glyph.pen().skeleton(scale=4).f(None).s(hsl(0.57, 1, 0.47))) if overlay else None,
-        #glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.bounds().w+30, 0).f(0).s(None).color_phototype(r, blur=5),
-        (glyph.pen().removeOverlap()
+        #(glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.getFrame().w+30, 0).f(0).s(None).color_phototype(r, blur=5)),
+        ßshow(glyph.pen().removeOverlap()
             .scale(0.75, center=Point([100, 100]))
             .translate(
-                glyph.bounds().w+30
+                glyph.getFrame().w+30
                 #+ glyph.bounds().w*0.75+30
                 , 0
                 )
@@ -724,5 +734,16 @@ def single_char(f, rs):
 
 @renderable(rect=(2000, 400), rstate=1)
 def test_string(r, rs):
-    #return single_char.func(r, rs)
-    pass
+    xa = 0
+    out = DPS()
+    for i in [7, 9]:
+        glyph = build_glyph(single_char.glyphs[i])
+        out += (glyph
+            .pen()
+            .removeOverlap()
+            .s(None)
+            .f(0)
+            .scale(0.25, center=r.inset(100).psw)
+            .translate(xa, 0))
+        xa += glyph.getFrame().w * 0.25
+    return out
