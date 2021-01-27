@@ -208,7 +208,7 @@ def H(r, g, rn=0):
             clƒ_ƒcr=f"1 +$sfht ^c $sfw-{rn} $gap $sfw+{rn} a",
             steml="-$stem 1 ^m =&bl.ps.x ø",
             stemr="-$stem 1 ^m =&br.ps.x ø",
-            xbar="1 =$xbarh ^m -&steml.pc.x ø ^m +&stemr.pc.x ø")
+            xbar="1 -$xbarh ^o 0 $earhb-20 ^m -&steml.pc.x ø ^m +&stemr.pc.x ø")
         .brackets([
             (g.cl, g.steml, "S"),
             (g.cr, g.stemr, "S"),
@@ -240,13 +240,9 @@ def E(r, g):
         .add_stem()
         .register(
             baseƒ_ƒcap="r $sfhb a $sfht",
-            earbƒ_ƒeart="+$stem 1 ^r $earhb a $earht",
-            earb="&earb ^o 0 0")
-        #.guide(
-        #    center=""
-        #)
-        .register(
-            mid="1 =$xbarh ^m -&stem.pc.x ø ^m +&eart.psw.x-30 ø")
+            earbƒcenterƒeart="+$stem 1 ^r $earhb a $earht",
+            earb="&earb ^o 0 0",
+            center="&center ^m -&stem.pc.x ø ^m +&eart.psw.x-40 ø ^t 1 =$xbarh")
         .brackets([
             (g.cap, g.stem, "SW"),
             (g.base, g.stem, "NW"),
@@ -257,7 +253,9 @@ def E(r, g):
 def F(r, g):
     return (E.func(r, g)
         .remove("earb")
-        .register(base="&base ^m +&mid.mxx+10 ø")
+        .register(
+            center="&center ^o 0 -20",
+            base="&base ^m +&center.mxx+10 ø")
         .brackets([
             (g.cap, g.stem, "SW"),
             (g.base, g.stem, "N"),
@@ -301,12 +299,12 @@ def P(r, g, mod=None, tc=0.6, xc=0, ci=30, my=0, mn=0):
         .set_width(g.c.stem*4.5+xc)
         .add_stem()
         .guide(
-            bxc=f"1 +$earhb+{mn}" if tc < 1 else f"1 1",
-            curve="&bxc ^m -&stem.mxx+50 ø",
-            midƒknockƒcap=f"&bxc ^r {mh} a $sfht",
-            knock=f"&knock ^s +$stem+{ci} 0",
-            mid="&mid ^m -&stem.pc.x ø ^m +&curve.mnx ø",
-            cap="&cap ^m +&curve.mnx ø")
+            _bxc=f"1 +$earhb+{mn}" if tc < 1 else f"1 1",
+            _curve="&bxc ^m -&stem.mxx+50 ø",
+            _midƒ_knockƒ_cap=f"&bxc ^r {mh} a $sfht",
+            _knock=f"&knock ^s +$stem+{ci} 0",
+            _mid="&mid ^m -&stem.pc.x ø ^m +&curve.mnx ø",
+            _cap="&cap ^m +&curve.mnx ø")
         .register(
             base="-$sfw+10 -$sfhb")
         .chain(mod)
@@ -326,12 +324,12 @@ def P(r, g, mod=None, tc=0.6, xc=0, ci=30, my=0, mn=0):
 
 @glyphfn()
 def B(r, g):
-    return (P.func(r, g, tc=0.56, my=0, mn=-10, xc=0, ci=20, mod=λg: g
+    return (P.func(r, g, my=0, mn=-20, xc=-10, ci=30, mod=λg: g
         .register(
             base=g.base.take(g.cap.w, "mnx")))
         .guide(
-            bbxc=f"1 1 ^m -&curve.mnx +&knock.mny ^e +{(bnx:=30)} 0",
-            bknock=f"&bbxc ^m +&knock.mxx+{bnx*0.5} -&base.mxy ^m ø +&mid.mny")
+            _bbxc=f"1 1 ^m -&curve.mnx +&knock.mny ^e +{(bnx:=30)} 0",
+            _bknock=f"&bbxc ^m +&knock.mxx+{bnx*1} -&base.mxy ^m ø +&mid.mny")
         .ap(DP("belly")
             .declare(
                 n:=18,
@@ -341,7 +339,7 @@ def B(r, g):
             .bct(g.bknock.pe, "NE", cif)
             .bct(g.bknock.psw, "SE", cif)
             .lt(g.base.pnw, g.base.psw, g.base.pse)
-            .bct(g.bbxc.pe, "SE", cof)
+            .bct(g.bbxc.pe/30, "SE", cof)
             .bct(g.mid.pne, "NE", cof)
             .cp()
             .mod_pt(5, 0, (c:=20, 0))
@@ -375,14 +373,14 @@ def R(r, g):
             #mid=g.mid.offset(0, 20).inset(10)
             )
         .guide(
-            baser="+$sfw-70 -$sfhb ^o 40 0")
+            baser="+$sfw -$sfhb ^o 60 0")
         .ap(DP("leg")
             .mt(g.mid.pse/-30)
             .bct(brs:=g.base.pne/(g.c.gap+10), "NE", 0.65)
             .bct(brs/(g.c.stem+10)@0, "SW", 0.85)
             .lt(g.baser.pse)
             .lt(p:=g.baser.pne)
-            .lt(brs/(g.c.stem+5))
+            .lt(brs/(g.c.stem+25))
             .bct(g.mid.pse.o(50, 20), "NE", 0.65)
             .cp()
             .translate(0, 0))))
@@ -466,36 +464,42 @@ def Q(r, g):
         .ap(DP(g.quill).rotate(23)))
 
 def _CG(r, g):
-    return (O.func(r, g, clx=15)
-        .register(beardƒapertureƒhorn=f"+$hw 1 ^r a $xbarh a")
-        .fft("O", λp: (p
-            .record(g.fft("Oi"))
-            .mod_pt(0, 0, (n:=-90, 0))
-            .mod_pt(1, 0, (n, -120))
-            .mod_pt(1, 1, (-10, 0))
-            .mod_pt(1, 2, (-20, 0))
-            #.add_pt(0, 0.5, λ//-100)
-            #.mod_pt(2, -1, λ/-10)
-            #.mod_pt(2, -2, λ/30)
-            .difference(DP(g.aperture.add(10, "mnx")))))
-        .remove("Oi"))
+    return (g
+        .set_width(g.c.stem*4)
+        .guide(
+            stemlƒcntryƒstemr="i 0 -$over ^c $stem+30 a $stem-10",
+            knckbƒixbarƒknckt="&cntry ^s 0 -$sfhb ^s 0 +$sfht ^r a $xbarh a",
+            oxbar="&ixbar ^m -0 ø ^m +&stemr.mxx ø")
+        .register(
+            eart="&stemr ^m ø -&ixbar.mxy")
+        .ap(DP("curve")
+            .mt(g.oxbar.pne/(-g.stemr.w/2))
+            .bct(g.cntry.pn/-20, "NE", (oc:=0.65))
+            .bct(g.oxbar.pw, "NW", oc)
+            .bct(g.cntry.ps, "SW", oc)
+            .bct(g.oxbar.pse, "SE", oc)
+            .lt(g.ixbar.pse)
+            .bct(g.knckb.ps/-5, g.knckb.pse/-10, (ic:=0.85)-0.01)
+            .bct(g.ixbar.pw, "SW", ic)
+            .bct(g.knckt.pn, "NW", ic)
+            .bct(g.ixbar.pne, "NE", ic)
+            .cp()))
 
 @glyphfn()
 def C(r, g):
-    return (_CG(r, g)
-        .remove("aperture", "beard")
-        .fft("O", λp: (p
-            .mod_pt(4, 2, (10, 0))
-            .mod_pt(6, 0, (n:=4, 0))
-            .mod_pt(7, 0, (-n/2, 0))
-            .mod_pt(5, 2, (n, 0)))))
+    return (_CG(r, g))
 
 @glyphfn()
 def G(r, g):
     return (_CG(r, g)
-        .ap(DP("xbar",
-            xbarr:=g.aperture * (g.bx.pc.x+10) // -50)
-            .mod_pt(1, 0, λ/-20))
+        .guide(xbar="&ixbar ^o 0 -$gap*2 ^m -&knckb.pc.x-20 ø ^m +&stemr.mxx ø")
+        .ap(DP(g.xbar).mod_pt(1, 0, (-20, 0)))
+        .fft("curve", λp: (p
+            .mod_pt(4, 2, λp: p @ g.xbar.mxy)
+            .mod_pt(4, 1, (0, -10))))
+        #.ap(DP("xbar",
+        #    xbarr:=g.aperture * (g.bx.pc.x+10) // -50)
+        #    .mod_pt(1, 0, λ/-20))
         .fft("O", λp: (p
             .mod_pt(5, 0, λ/25)
             .mod_pt(5, 2, λ@xbarr.mxy)))
@@ -771,7 +775,7 @@ def build_glyph(cap):
             earht="$sfht*2.25",
             stem=115,
             instem=λ.c.stem - 10,
-            xbarh=80,
+            xbarh=100,
             over=10,
             gap=20,
             hdiag=f"$stem+{(n:=30)}",
@@ -781,8 +785,8 @@ def build_glyph(cap):
             ninstem=f"$instem - {30}",
             nbase="$ninstem*2 + $nstem",
             nshoulder=-5,
-            brackw=30,
-            brackh=60,
+            brackw=60,
+            brackh=80,
             brackc=0.75))
 
     glyph = (cap.func(Rect(1080, 1080), g)
