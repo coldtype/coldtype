@@ -324,12 +324,12 @@ def P(r, g, mod=None, tc=0.6, xc=0, ci=30, my=0, mn=0):
 
 @glyphfn()
 def B(r, g):
-    return (P.func(r, g, my=0, mn=-20, xc=-10, ci=30, mod=λg: g
+    return (P.func(r, g, my=0, mn=-10, xc=0, mod=λg: (g
         .register(
             base=g.base.take(g.cap.w, "mnx")))
         .guide(
             _bbxc=f"1 1 ^m -&curve.mnx +&knock.mny ^e +{(bnx:=30)} 0",
-            _bknock=f"&bbxc ^m +&knock.mxx+{bnx*1} -&base.mxy ^m ø +&mid.mny")
+            _bknock=f"&bbxc ^m +&knock.mxx+{bnx*1} -&base.mxy ^m ø +&mid.mny"))
         .ap(DP("belly")
             .declare(
                 n:=18,
@@ -344,6 +344,11 @@ def B(r, g):
             .cp()
             .mod_pt(5, 0, (c:=20, 0))
             .mod_pt(6, 0, (c/2, 0)))
+        .fft("curve", λp: (p
+            .declare(n:=30) # TODO good example of a "re-tune curve" function
+            .mod_pt(8, 2, (0, n/3))
+            .mod_pt(8, 1, (0, n))
+            .mod_pt(8, 0, (-n, 0))))
         .remove("base")
         .brackets([
             (g.cap, g.stem, "SW"),
