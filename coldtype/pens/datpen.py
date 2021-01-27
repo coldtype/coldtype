@@ -1384,8 +1384,11 @@ class DATPen(RecordingPen, DATPenLikeObject):
         return self
     
     def varstr(self, v):
-        vs = re.sub(r"\$([^\s]+)", lambda m: str(eval("g.c." + m.group(1), {"g":self})), v)
-        vs = re.sub(r"\&([^\s]+)", lambda m: str(eval("g." + m.group(1), {"g":self})), vs)
+        #_vs = re.sub(r"\$([^\s\$]+)", lambda m: str("g.c." + m.group(1)), v)
+        #_vs = re.sub(r"\&([^\s\$]+)", lambda m: str("g." + m.group(1)), _vs)
+        #print(">>>", _vs)
+        vs = re.sub(r"\$([^\s\$]+)", lambda m: str(eval("g.c." + m.group(1), {"g":self})), v)
+        vs = re.sub(r"\&([^\s\$]+)", lambda m: str(eval("g." + m.group(1), {"g":self})), vs)
         #print(">>>", vs)
         return vs
     
@@ -1656,7 +1659,10 @@ class DATPens(DATPen):
         
         def keep(k, v):
             if k != "_":
-                lookup[k] = v
+                if not k.startswith("_"):
+                    lookup[k] = v
+                else:
+                    k = k[1:]
                 setattr(self, k, v)
         
         for k, v in res.items():

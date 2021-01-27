@@ -10,7 +10,7 @@ from coldtype.pens.dattext import DATText
 from coldtype.geometry import *
 from coldtype.color import *
 from coldtype.renderable import *
-from coldtype.helpers import *
+from coldtype.helpers import loopidx, sibling, raw_ufo, ßhide, ßshow, cycle_idx, random_series, show_points, glyph_to_uni, uni_to_glyph
 from coldtype.time import *
 #from coldtype.renderer.state import RendererState, Keylayer
 
