@@ -40,7 +40,17 @@ class Glyph(DATPens):
     def __init__(self):
         self.l = 10
         self.r = 10
+        self.name = None
         super().__init__()
+    
+    def glyph_name(self, name):
+        self.name = name
+        return self
+    
+    def space(self, l, r):
+        self.l = l
+        self.r = r
+        return self
 
     def addFrame(self, frame):
         super().addFrame(frame)
@@ -52,6 +62,8 @@ class Glyph(DATPens):
         return self
     
     def spaced_frame(self):
+        if "empty" in self.guides:
+            return self.getFrame().expand(self.l+self.r, "mxx")
         return self.bounds().expand(self.l+self.r, "mxx")
     
     setWidth = set_width
@@ -139,9 +151,9 @@ class Glyph(DATPens):
 def A(r, g):
     return (g
         .register(
-            blƒ_ƒbr=f"1 -$srfh ^c $srfw-{(c:=20)} $gap $srfw+{c} a")
+            blƒ_ƒbr=f"1 -$sfhb ^c $sfw-{(c:=20)} $gap $sfw+{c} a")
         .set_width(g.br.mxx)
-        .register(cap="1 +$srfh ^i $instem 0")
+        .register(cap="1 +$sfht ^i $instem 0")
         .declare(
             hd:=Line(g.br.pn, y:=g.bx.pn.setx(g.br.pnw.x) / 0),
             ld:=Line(g.bl.pn, y / (-g.c.hdiag*0.16)))
@@ -157,10 +169,10 @@ def A(r, g):
 @glyphfn()
 def I(r, g):
     return (g
-        .set_width(g.c.srfw+50)
+        .set_width(g.c.stem*3)
         .register(
-            base="1 -$srfh",
-            cap="1 +$srfh",
+            base="1 -$sfhb",
+            cap="1 +$sfht",
             stem="=$stem 1")
         .brackets([
             (g.cap, g.stem, "S"),
@@ -173,12 +185,12 @@ def J(r, g):
         .setWidth(g.c.stem*4.25)
         .declare(c:=100)
         .register(
-            stem=f"+$stem 1 ^o -$instem 0 ^s 0 -$srfh+{c}",
-            ear=f"-$stem+20 -$earh+30 ^s 0 -$srfh+{c}",
-            cap="+$srfw +$srfh ^e -30 0")
+            stem=f"+$stem 1 ^o -$instem 0 ^s 0 -$sfhb+{c}",
+            ear=f"-$stem+20 -$earhb+30 ^s 0 -$sfhb+{c}",
+            cap="+$sfw +$sfht ^e -30 0")
         .ap(DP()
             .mt(a:=g.stem.psw // 60)
-            .bct(i:=a.i(0.5, g.ear.pne) @ g.c.srfh, "SE", c:=0.77)
+            .bct(i:=a.i(0.5, g.ear.pne) @ g.c.sfhb, "SE", c:=0.77)
             .bct(g.ear.pne, "SW", c+0.03)
             .lt(g.ear.pnw)
             .bct(i @ 0 / 0, "SW", c:=0.77)
@@ -192,8 +204,8 @@ def J(r, g):
 def H(r, g, rn=0):
     return (g
         .register(
-            blƒ_ƒbr=f"1 -$srfh ^c $srfw-{rn} $gap $srfw+{rn} a",
-            clƒ_ƒcr=f"1 +$srfh ^c $srfw-{rn} $gap $srfw+{rn} a",
+            blƒ_ƒbr=f"1 -$sfhb ^c $sfw-{rn} $gap $sfw+{rn} a",
+            clƒ_ƒcr=f"1 +$sfht ^c $sfw-{rn} $gap $sfw+{rn} a",
             steml="-$stem 1 ^m =&bl.ps.x ø",
             stemr="-$stem 1 ^m =&br.ps.x ø",
             xbar="1 =$xbarh ^m -&steml.pc.x ø ^m +&stemr.pc.x ø")
@@ -218,7 +230,7 @@ def K(r, g):
             (g.cl, g.steml, "S"),
             (g.bl, g.steml, "N"),
             (g.cr, g.fft("udiag").sl(3), "SE"),
-            (g.br, ~g.fft("ldiag").sl(2), "NE")
+            (g.br, ~g.fft("ldiag").sl(3), "NE")
             ]))
 
 @glyphfn()
@@ -227,9 +239,13 @@ def E(r, g):
         .set_width(g.c.stem*4.5)
         .add_stem()
         .register(
-            baseƒ_ƒcap="r $srfh a $srfh",
-            earbƒ_ƒeart="+$stem 1 ^r $earh a $earh",
-            earb="&earb ^o 0 0",
+            baseƒ_ƒcap="r $sfhb a $sfht",
+            earbƒ_ƒeart="+$stem 1 ^r $earhb a $earht",
+            earb="&earb ^o 0 0")
+        #.guide(
+        #    center=""
+        #)
+        .register(
             mid="1 =$xbarh ^m -&stem.pc.x ø ^m +&eart.psw.x-30 ø")
         .brackets([
             (g.cap, g.stem, "SW"),
@@ -241,12 +257,11 @@ def E(r, g):
 def F(r, g):
     return (E.func(r, g)
         .remove("earb")
-        .register(base="-$srfw+10 -$srfh")
+        .register(base="&base ^m +&mid.mxx+10 ø")
         .brackets([
             (g.cap, g.stem, "SW"),
             (g.base, g.stem, "N"),
-            (g.cap, g.eart, "SW")
-            ]))
+            (g.cap, g.eart, "SW")]))
 
 @glyphfn()
 def L(r, g):
@@ -254,9 +269,9 @@ def L(r, g):
         .set_width(g.c.stem*4.25)
         .add_stem()
         .register(
-            base="1 -$srfh",
-            cap="-$srfw +$srfh",
-            earb="+$stem -$earh")
+            base="1 -$sfhb",
+            cap="-$sfw +$sfht",
+            earb="+$stem -$earhb*1.1")
         .brackets([
             (g.cap, g.stem, "S"),
             (g.base, g.stem, "N")]))
@@ -266,10 +281,10 @@ def T(r, g):
     return (g
         .set_width(g.c.stem*4.5)
         .register(
-            base="=$srfw -$srfh",
-            cap="1 +$srfh",
-            earl="-$stem +$earh",
-            earr="+$stem +$earh",
+            base="=$sfw -$sfhb",
+            cap="1 +$sfht",
+            earl="-$stem +$earhb",
+            earr="+$stem +$earhb",
             stem="=$stem 1")
         .brackets([
             (g.cap, g.earl, "SE"),
@@ -278,22 +293,22 @@ def T(r, g):
         )
 
 @glyphfn()
-def P(r, g, mod=None, tc=0.6, xc=0, ci=30, my=0):
+def P(r, g, mod=None, tc=0.6, xc=0, ci=30, my=0, mn=0):
     mh = g.c.xbarh + my
     if tc == 1:
-        mh = g.c.srfh
+        mh = g.c.sfhb
     return (g
         .set_width(g.c.stem*4.5+xc)
         .add_stem()
         .guide(
-            bxc=f"1 +{tc}",
+            bxc=f"1 +$earhb+{mn}" if tc < 1 else f"1 1",
             curve="&bxc ^m -&stem.mxx+50 ø",
-            midƒknockƒcap=f"&bxc ^r {mh} a $srfh",
+            midƒknockƒcap=f"&bxc ^r {mh} a $sfht",
             knock=f"&knock ^s +$stem+{ci} 0",
             mid="&mid ^m -&stem.pc.x ø ^m +&curve.mnx ø",
             cap="&cap ^m +&curve.mnx ø")
         .register(
-            base="-$srfw+10 -$srfh")
+            base="-$sfw+10 -$sfhb")
         .chain(mod)
         .constants(cicf=0.9, cocf=0.65)
         .ap(DP("curve")
@@ -311,7 +326,7 @@ def P(r, g, mod=None, tc=0.6, xc=0, ci=30, my=0):
 
 @glyphfn()
 def B(r, g):
-    return (P.func(r, g, tc=0.56, my=-10, xc=0, ci=20, mod=λg: g
+    return (P.func(r, g, tc=0.56, my=0, mn=-10, xc=0, ci=20, mod=λg: g
         .register(
             base=g.base.take(g.cap.w, "mnx")))
         .guide(
@@ -354,13 +369,13 @@ def D(r, g):
 
 @glyphfn()
 def R(r, g):
-    return (P.func(r, g, tc=0.57, xc=0, my=0, mod=λg: g
+    return (P.func(r, g, xc=0, my=10, mod=λg: g
         .register(
             base=g.base.subtract(20, "mxx"),
             #mid=g.mid.offset(0, 20).inset(10)
             )
         .guide(
-            baser="+$srfw-70 -$srfh ^o 40 0")
+            baser="+$sfw-70 -$sfhb ^o 40 0")
         .ap(DP("leg")
             .mt(g.mid.pse/-30)
             .bct(brs:=g.base.pne/(g.c.gap+10), "NE", 0.65)
@@ -378,8 +393,8 @@ def N(r, g):
         .set_width(int(g.c.stem*5.5))
         .register(
             _ƒstemlƒ_ƒstemr="c $ninstem $nstem a $nstem $ninstem",
-            base="-0.5 -$srfh",
-            caplƒ_ƒcapr="1 +$srfh ^c &steml.pc.x a 0.5")
+            base="-0.5 -$sfhb",
+            caplƒ_ƒcapr="1 +$sfht ^c &steml.pc.x a 0.5")
         .ap(diag:=DP("diagonal",
             Line(g.stemr.psw, g.steml.pne / g.c.nshoulder))
             .ol(g.c.hdiag).ƒ(g.steml.ecx, ~g.stemr.ecx))
@@ -401,8 +416,8 @@ def M(r, g):
             wght:=g.c.hdiag-30)
         .register(
             _ƒstemlƒ_ƒstemr="c $ninstem $nstem a $nstem $ninstem",
-            baselƒ_ƒbaser="1 -$srfh ^c $nbase a $nbase",
-            caplƒ_ƒcapr=f"1 +$srfh ^c $nbase+{spread} a $nbase+{spread}")
+            baselƒ_ƒbaser="1 -$sfhb ^c $nbase a $nbase",
+            caplƒ_ƒcapr=f"1 +$sfht ^c $nbase+{spread} a $nbase+{spread}")
         .ap(diagl:=DP("dgl",
             ddl:=Line(g.capl.pne, g.bx.ps / nosein))
             .ol(wght).ƒ(g.bx))
@@ -421,11 +436,14 @@ def M(r, g):
 
 @glyphfn()
 def O(r, g, clx=0):
-    (g.set_width(g.c.stem*4.25)
+    (g.set_width(g.c.stem*4.15)
+        .space(n:=g.l+5, n)
         .constants(
-            hw=g.c.stem+30,
-            o=g.bx.inset(0, -g.c.over),
-            i=λ.c.o.inset(g.c.hw, g.c.srfh).subtract(clx, "mnx")))
+            hw=g.c.stem+35)
+        .guide(
+            #o=g.bx.inset(0, -g.c.over*1.2),
+            o="i 0 -$over",
+            i="i $hw 0 ^s 0 +$sfht ^s 0 -$sfhb"))
 
     def o(r, off, offc):
         return (DATPen()
@@ -438,33 +456,28 @@ def O(r, g, clx=0):
             .cp())
     
     return (g
-        .ap(o(g.c.o, 40, 0.65).tag("O"))
-        .ap(~o(g.c.i, 16, 0.85).tag("Oi")))
+        .ap(o(g.o, 40, 0.65).tag("O"))
+        .ap(~o(g.i, 16, 0.85).tag("Oi")))
 
 @glyphfn()
 def Q(r, g):
     return (O.func(r, g)
-        .record(DATPen()
-            .rect(g.bx % g.vs("=$stem -$srfh*2 ^o $srfh/2 -$srfh/2-20"))
-            .rotate(33)))
+        .guide(quill="=$stem -$sfhb ^o 0 -$sfhb*0.5 ^m =&i.mxx ø")
+        .ap(DP(g.quill).rotate(23)))
 
 def _CG(r, g):
     return (O.func(r, g, clx=15)
         .register(beardƒapertureƒhorn=f"+$hw 1 ^r a $xbarh a")
         .fft("O", λp: (p
             .record(g.fft("Oi"))
+            .mod_pt(0, 0, (n:=-90, 0))
+            .mod_pt(1, 0, (n, -120))
+            .mod_pt(1, 1, (-10, 0))
+            .mod_pt(1, 2, (-20, 0))
             #.add_pt(0, 0.5, λ//-100)
             #.mod_pt(2, -1, λ/-10)
             #.mod_pt(2, -2, λ/30)
-            .difference(DP(g.aperture.add(10, "mnx")))
-            -.mod_pt(11, 0, (n:=-80, 0))
-            -.mod_pt(12, 0, (n, -130))
-            -.mod_pt(12, 1, (-10, 0))
-            .pvl()
-            .declare(n:=10)
-            -.mod_pt(0, 0, λ/-n)
-            -.mod_pt(12, 2, λ/-n)
-            -.mod_pt(1, 0, λ/n)))
+            .difference(DP(g.aperture.add(10, "mnx")))))
         .remove("Oi"))
 
 @glyphfn()
@@ -472,20 +485,20 @@ def C(r, g):
     return (_CG(r, g)
         .remove("aperture", "beard")
         .fft("O", λp: (p
-            .mod_pt(6, 0, λ/5)
-            .mod_pt(7, 0, λ/-10)
-            .mod_pt(5, 2, λ/5))))
+            .mod_pt(4, 2, (10, 0))
+            .mod_pt(6, 0, (n:=4, 0))
+            .mod_pt(7, 0, (-n/2, 0))
+            .mod_pt(5, 2, (n, 0)))))
 
 @glyphfn()
 def G(r, g):
-    #return _CG(r, g)
     return (_CG(r, g)
-        .append(DP("xbar", xbarr:=g.aperture * (g.bx.pc.x+10) // -50)
-            .pvl()
+        .ap(DP("xbar",
+            xbarr:=g.aperture * (g.bx.pc.x+10) // -50)
             .mod_pt(1, 0, λ/-20))
         .fft("O", λp: (p
-            .mod_pt(4, 0, λ/25)
-            .mod_pt(4, 2, λ@xbarr.mxy)))
+            .mod_pt(5, 0, λ/25)
+            .mod_pt(5, 2, λ@xbarr.mxy)))
         .remove("beard", "aperture"))
 
 @glyphfn()
@@ -493,26 +506,23 @@ def S(r, g):
     return (g
         .set_width(g.c.stem*4.15)
         .register(
-            earb="-$stem -$earh+0",
-            eart="+$stem +$earh-10")
+            earb="-$stem -$earhb+0",
+            eart="+$stem +$earht")
         .guide(
-            _tbx=f"1 +&eart.h ^o 0 -{(ebx:=60)}",
-            _bbx=f"1 -&earb.h ^o 0 {ebx}",
-            _bxx="i 0 $srfh",
+            tbx=f"1 +&eart.h ^o 0 -$sfht/5",
+            bbx=f"1 -&earb.h ^o 0 $sfhb/5",
             _bxy="i $hdiag -$over",
-            bxi="i $hdiag $srfh -$over ^o 15 0 ^i 10 -10",
-            bxii=λg: DP(g.bxx).intersection(DP(g.bxy))
-                .bounds().inset(-10).offset(10, 0))
+            _bxi="i $hdiag $over ^s 0 -$sfhb ^s 0 +$sfht ^o 15 0 ^i 10 -30")
         .record(DP("curve")
             .mt(g.eart.ps)
             .bct(g.bxy.pn/-(stx:=30), "NE", start:=(0.59, 0.65))
             .bct(g.tbx.pw, "NW", swing:=0.6)
-            .bct(g.bxi.pse//(bigy:=45), ("SW", "NE"), big:=(0.62, 0.37))
-            .bct(g.bxi.ps/(smallx:=15), "SE", small:=0.65)
+            .bct(g.bxi.pse//(bigy:=55), ("SW", "NE"), big:=(0.62, 0.37))
+            .bct(g.bxi.ps/(smallx:=25), "SE", small:=0.57)
             .bct(g.earb.pne, g.bxi.psw, land:=0.65)
             .lt(g.earb.pn)
             .bct(g.bxy.ps/stx, "SW", start)
-            .bct(g.bbx.pe/10, "SE", swing)
+            .bct(g.bbx.pe/20, "SE", swing)
             .bct(g.bxi.pnw//-bigy, ("NE", "SW"), big)
             .bct(g.bxi.pn/-smallx//(adj:=5), "NW", small)
             .bct(g.eart.psw, g.bxi.pne//adj, land)
@@ -524,19 +534,22 @@ def U(r, g):
     return (g
         .add_stem()
         .register(
-            caplƒ_ƒcapr="1 +$srfh ^c $srfw+20 $gap $srfw-60 a")
+            caplƒ_ƒcapr="1 +$sfht ^c $sfw+20 $gap $sfw-60 a")
         .set_width(g.capr.mxx)
         .register(
-            steml=f"-$stem 1 ^m =&capl.ps.x -$srfh+{c}",
-            stemr=f"+$ldiag+10 1 ^m =&capr.ps.x -$srfh+{c}")
-        .declare(sc:=g.steml.pse.i(0.47, g.stemr.psw) @ -g.c.over)
+            steml=f"-$stem 1 ^m =&capl.ps.x -$sfhb+{c}",
+            stemr=f"+$ldiag+10 1 ^m =&capr.ps.x -$sfhb+{c}")
+        .guide(
+            center="m -&steml.mxx --$over ^m +&stemr.mnx ø",
+            knock="&center ^m ø -$sfhb")
+        #.declare(sc:=g.steml.pse.i(0.47, g.stemr.psw) @ -g.c.over)
         .remove("stem")
         .record(DATPen("curve")
             .mt(g.steml.psw)
-            .bct(sc, "SW", c:=0.75)
+            .bct(g.center.ps, "SW", c:=0.75)
             .bct(g.stemr.pse, "SE", c)
             .lt(g.stemr.psw)
-            .bct(sc // g.c.srfh, "SE", c:=0.90)
+            .bct(g.knock.ps, "SE", c:=0.90)
             .bct(g.steml.pse, "SW", c)
             .cp())
         .brackets([
@@ -546,25 +559,28 @@ def U(r, g):
 @glyphfn()
 def V(r, g):
     return (U.func(r, g)
+        .guide(center="&center ^m ø -0")
         .declare(
-            hdl:=Line(g.capl.ps, y:=(g.bx.ps * g.capl.mxx)),
+            hdl:=Line(g.capl.ps, y:=(g.center.ps)),
             ldl:=Line(g.capr.ps, y / 0))
         .ap(hdiag:=DP(hdl).ol(g.c.hdiag).ƒ(ldl, g.bx.ew))
-        .ap(ldiag:=DP(ldl).ol(g.c.ldiag).ƒ(hdiag.sl(2), g.bx.ee))
+        .ap(ldiag:=DP(ldl).ol(g.c.ldiag).ƒ(hdiag.sl(3), g.bx.ee))
         .remove("steml", "stemr", "curve")
         .guide(hdiag.sl(2), ldiag.sl(0))
+        .brackets([])
         .brackets([
-            (g.capl, ~hdiag.sl(2), "SW"),
+            (g.capl, ~hdiag.sl(3), "SW"),
             (g.capl, hdiag.sl(0), "SE"),
             (g.capr, ~ldiag.sl(2), "SW"),
-            (g.capr, ldiag.sl(0), "SE")]))
+            (g.capr, ldiag.sl(0), "SE")
+            ]))
 
 @glyphfn()
 def W(r, g):
     return (g
-        .constants(srfw=g.c.srfw-50)
+        .constants(sfw=g.c.sfw-50)
         .register(caplƒ_ƒcapmƒ_ƒcapr=
-            "1 +$srfh ^c $srfw $gap $srfw-10 $gap $srfw-20 a")
+            "1 +$sfht ^c $sfw $gap $sfw-10 $gap $sfw-20 a")
         .set_width(g.capr.mxx)
         .declare(
             hdiag:=g.c.hdiag+-20,
@@ -579,7 +595,7 @@ def W(r, g):
         .ap(ld2:=DP(ld2).ol(ldiag).ƒ(g.bx))
         #.guide(ld1.sl(0))
         .brackets([
-            (g.capl, ~hd1.sl(2), "SW"),
+            (g.capl, ~hd1.sl(3), "SW"),
             (g.capl, hd1.sl(0), "SE"),
             (g.capm, ~ld1.sl(0), "SW"),
             (g.capm, hd2.sl(0), "SE"),
@@ -591,13 +607,13 @@ def W(r, g):
 def X(r, g):
     return (g
         .register(
-            blƒ_ƒbr=f"1 -$srfh ^c $srfw-{(f:=50)} $gap $srfw+{f} a",
-            clƒ_ƒcr=f"1 +$srfh ^c $srfw+{f} $gap $srfw-{f} a")
+            blƒ_ƒbr=f"1 -$sfhb ^c $sfw-{(f:=20)} $gap $sfw+{f} a",
+            clƒ_ƒcr=f"1 +$sfht ^c $sfw+{f} $gap $sfw-{f} a")
         .set_width(g.br.mxx)
         .declare(
             hdl:=Line(g.cl.ps, g.br.pn))
         .ap(hdlp:=DP(hdl).ol(g.c.hdiag).ƒ(g.bx))
-        .ap(ldlp1:=DP(Line(g.bl.pn, hdl.t(0.5-(skew:=0.04))).extr(0.3))
+        .ap(ldlp1:=DP(Line(g.bl.pn, hdl.t(0.5-(skew:=0.06))).extr(0.3))
             .ol(g.c.ldiag).ƒ(g.bx.ew, hdl))
         .ap(ldlp2:=DP(Line(g.cr.ps, hdl.t(0.5+skew)).extr(0.3))
             .ol(g.c.ldiag).ƒ(g.bx.ee, hdl))
@@ -618,8 +634,8 @@ def Y(r, g):
     return (g
         .add_stem()
         .register(
-            clƒ_ƒcr=f"1 +$srfh ^c $srfw+{(f:=50)} $gap $srfw-{f} a",
-            base="1 -$srfh ^m -&cl.pc.x-10 ø ^m +&cr.pc.x+10 ø",
+            clƒ_ƒcr=f"1 +$sfht ^c $sfw+{(f:=50)} $gap $sfw-{f} a",
+            base="1 -$sfhb ^m -&cl.pc.x-10 ø ^m +&cr.pc.x+10 ø",
             stem=λg: g.stem % g.vs("=$hdiag -0.5 ^m =&base.pc.x ø"))
         .ap(diagl:=DP("diagl",
             Line(g.cl.ps, g.base.pn // (yup:=120)))
@@ -639,10 +655,10 @@ def Z(r, g:Glyph):
     return (g
         .set_width(g.c.stem*4.5)
         .register(
-            cap="1 +$srfh",
-            base="1 -$srfh",
-            eart="-$stem +$earh",
-            earb="+$stem -$earh")
+            cap=f"1 +$sfht ^s -{(xti:=30)} 0",
+            base="1 -$sfhb",
+            eart=f"-$stem +$earht ^o {xti} 0",
+            earb="+$stem -$earhb")
         .ap(DP(l:=Line(g.cap.pne // (d:=diag), g.base.psw // -d))
             .ol(diag).ƒ(g.bx))
         .ap(DP(g.cap).ƒ(g.bx.ew, g.bx.en, l))
@@ -650,11 +666,17 @@ def Z(r, g:Glyph):
         .remove("cap", "base")
         .brackets([
             (g.cap, g.eart, "SE"),
-            (g.base, g.earb, "NW")
-        ]))
+            (g.base, g.earb, "NW")]))
+
+@glyphfn()
+def space(r, g):
+    return (g
+        .set_width(g.c.stem*2)
+        .space(0, 0)
+        .guide(empty=g.bx))
 
 class font(animation):
-    def __init__(self, rect=(2000, 1000)):
+    def __init__(self, rect=(2000, 1200)):
         self.glyphs = []
         for k, v in globals().items():
             if isinstance(v, glyphfn):
@@ -669,12 +691,84 @@ class font(animation):
     
     def char_to_frame(self, c):
         return self.fn_to_frame(uni_to_glyph(ord(c)))
+    
+    def glyph_view(self, r, glyph, compare, overlay=False):
+        lpts = DATPens()
+        txtstyle = Style("Times", 18, load_font=0, fill=hsl(0.5, 0.5))
+
+        for p in glyph:
+            if "bracket" not in p.getTag():
+                for idx, (mv, pts) in enumerate(p.value):
+                    if len(pts) > 0:
+                        for jdx, pt in enumerate(pts):
+                            lpts += DATText(f"{idx},{jdx}", txtstyle, Rect.FromCenter(pt, 20).offset(20, 20))
+
+        return DATPens([
+            glyph.copy().f(None).s(0, 0.5).sw(5) if overlay else None,
+            glyph.pen().removeOverlap().f(None).s(0, 1).sw(5) if not overlay else None,
+            DATPen().rect(glyph.bounds()).f(None).s(hsl(0.9, a=0.3)).sw(5) if overlay else None,
+            glyph.all_guides() if overlay else None,
+            DATPen(glyph.spaced_frame()).translate(-glyph.l, 0).f(None).s(hsl(0.7, a=0.3)).sw(5) if overlay else None,
+            DPS([
+                DP(r.es).s(0).sw(1),
+                DP(r.take(750, "mny").en).s(0).sw(1),
+            ]) if overlay else None,
+            #DATPen().gridlines(r, 50, absolute=True) if overlay else None,
+            (glyph.pen().skeleton(scale=4).f(None).s(hsl(0.57, 1, 0.47))) if overlay else None,
+            #(glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.getFrame().w+30, 0).f(0).s(None).color_phototype(r, blur=5)),
+            ßshow(glyph.pen().removeOverlap()
+                .scale(0.75, center=Point([0, 0]))
+                .translate(
+                    glyph.getFrame().w+30
+                    #+ glyph.bounds().w*0.75+30
+                    , 0
+                    )
+                .f(hsl(0.65, s=1, l=0.8, a=0.75))
+                .s(0).sw(3)
+                .s(None)
+                ),
+            lpts if overlay else None,
+            (build_glyph(
+                single_char.glyphs[single_char.char_to_frame(compare)])
+                .scale(0.75, center=Point([0, 0]))
+                .translate(glyph.spaced_frame().w+30, 0)
+                .pen()
+                .removeOverlap()
+                .f(hsl(0.9, a=0.25))
+                .s(None)) if compare else None
+            ])
+    
+    def test_string(self, scale, txt):
+        out = DPS()
+        if txt:
+            cidxs = [single_char.fn_to_frame(uni_to_glyph(ord(c))) for c in txt.upper()]
+
+            xa = 0
+            for i in cidxs:
+                if i is None:
+                    continue
+                glyph = build_glyph(single_char.glyphs[i])
+                out += (glyph
+                    .pen()
+                    .removeOverlap()
+                    .s(0).sw(2)
+                    .f(hsl(0.9, a=0.1))
+                    .scale(scale, center=Point([0, 0]))
+                    .translate(xa, 0))
+                xa += glyph.getFrame().w * scale
+        return out
 
 def build_glyph(cap):
     g = (Glyph()
         .addFrame(cap.r)
+        .space(n:=10, n)
+        .glyph_name(cap.func.__name__)
         .constants(
-            srfh=170,
+            _sfh=170,
+            sfhb=λ.c._sfh+50,
+            sfht=λ.c._sfh-40,
+            earhb="$sfhb*1.75",
+            earht="$sfht*2.25",
             stem=115,
             instem=λ.c.stem - 10,
             xbarh=80,
@@ -682,12 +776,11 @@ def build_glyph(cap):
             gap=20,
             hdiag=f"$stem+{(n:=30)}",
             ldiag=f"$stem-{n}",
-            srfw="$instem + $stem + $instem",
+            sfw="$instem + $stem + $instem",
             nstem=f"$stem - {15}",
             ninstem=f"$instem - {30}",
             nbase="$ninstem*2 + $nstem",
             nshoulder=-5,
-            earh=λg: g.bx.divide(g.c.xbarh, "mdy")[0].h,
             brackw=30,
             brackh=60,
             brackc=0.75))
@@ -715,63 +808,36 @@ def single_char(f, rs):
         ufo_glyph = gp.to_glyph(name=glyph_name, width=gp.bounds().w+glyph.r)
         ufo.insertGlyph(ufo_glyph)
         ufo.save()
-
-    glyph.translate(100, 100) # for display
-    overlay = Overlay.Info in rs.overlays
-
-    lpts = DATPens()
-    txtstyle = Style("Times", 18, load_font=0, fill=hsl(0.5, 0.5))
-
-    for p in glyph:
-        if "bracket" not in p.getTag():
-            for idx, (mv, pts) in enumerate(p.value):
-                if len(pts) > 0:
-                    for jdx, pt in enumerate(pts):
-                        lpts += DATText(f"{idx},{jdx}", txtstyle, Rect.FromCenter(pt, 20).offset(20, 20))
-
+    
     return DATPens([
-        #DP(r).f(1, 0.85),
-        glyph.copy().f(None).s(0, 0.5).sw(5) if overlay else None,
-        glyph.pen().removeOverlap().f(None).s(0, 1).sw(5) if not overlay else None,
-        DATPen().rect(glyph.bounds()).f(None).s(hsl(0.9, a=0.3)).sw(5) if overlay else None,
-        glyph.all_guides().translate(100, 100) if overlay else None,
-        DATPen(glyph.spaced_frame()).translate(-g.l, 0).f(None).s(hsl(0.7, a=0.3)).sw(5) if overlay else None,
-        #DATPen().gridlines(r, 50, absolute=True) if overlay else None,
-        (glyph.pen().skeleton(scale=4).f(None).s(hsl(0.57, 1, 0.47))) if overlay else None,
-        #(glyph.pen().removeOverlap().scale(0.75, center=Point([100, 100])).translate(glyph.getFrame().w+30, 0).f(0).s(None).color_phototype(r, blur=5)),
-        ßshow(glyph.pen().removeOverlap()
-            .scale(0.75, center=Point([100, 100]))
-            .translate(
-                glyph.getFrame().w+30
-                #+ glyph.bounds().w*0.75+30
-                , 0
-                )
-            .f(hsl(0.65, s=1, l=0.8, a=0.75))
-            .s(0).sw(3)
-            .s(None)
-            ),
-        lpts if overlay else None,
-    #build_glyph(single_char.glyphs[single_char.char_to_frame("P")]).translate(100, 100).scale(0.75, center=Point([100, 100])).translate(glyph.getFrame().w+30, 0).pen().removeOverlap().f(hsl(0.9, a=0.25)).s(None)
-        ])
+        (single_char
+            .glyph_view(r, glyph, None, Overlay.Info in rs.overlays)
+            .translate(100, 300)),
+        (single_char
+            .test_string(0.15, glyph.name + (rs.read_text(clear=False) or "SPACING"))
+            .translate(50, 50)).s(None).f(0.25)])
 
-@renderable(rect=(2000, 400), rstate=1)
+#@renderable(rect=(2000, 400), rstate=1)
 def test_string(r, rs):
     #print(hex(glyph_to_uni("A")))
     #print(uni_to_glyph(0x41))
 
-    cidxs = [single_char.fn_to_frame(uni_to_glyph(ord(c))) for c in "ZEPHYR"]
-
-    xa = 0
     out = DPS()
-    for i in cidxs:
-        glyph = build_glyph(single_char.glyphs[i])
-        out += (glyph
-            .pen()
-            .removeOverlap()
-            .s(None)
-            .f(0)
-            .scale(0.25, center=r.inset(100).psw)
-            .translate(xa, 0))
-        xa += glyph.getFrame().w * 0.25
-    #out.insert(0, DP(r).f(1, 0.5))
+    if txt := rs.read_text():
+        cidxs = [single_char.fn_to_frame(uni_to_glyph(ord(c))) for c in txt.upper()]
+
+        xa = 0
+        for i in cidxs:
+            if i is None:
+                continue
+            glyph = build_glyph(single_char.glyphs[i])
+            out += (glyph
+                .pen()
+                .removeOverlap()
+                .s(0).sw(2)
+                .f(hsl(0.9, a=0.1))
+                .scale(0.25, center=r.inset(100).psw)
+                .translate(xa, 0))
+            xa += glyph.getFrame().w * 0.25
+        #out.insert(0, DP(r).f(1, 0.5))
     return out

@@ -130,8 +130,8 @@ class animation(renderable, Timeable):
             return DATPens([
                 wave,
                 res,
-                DATPen().rect(t).f(bw(0, 0.75)),
-                DATText(f"{frame.i} / {self.duration}", Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10))
+                #DATPen().rect(t).f(bw(0, 0.75)),
+                #DATText(f"{frame.i} / {self.duration}", Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10))
             ])
         return res
     

@@ -347,7 +347,7 @@ class Renderer():
     def apply_syntax_mods(self, source_code):
         if self.disable_syntax_mods:
             return source_code
-        source_code = re.sub(r"\-\.[A-Za-z_]+([A-Za-z_0-9]+)?\(", ".noop(", source_code)
+        source_code = re.sub(r"\-\.[A-Za-z_ƒ]+([A-Za-z_0-9]+)?\(", ".noop(", source_code)
         source_code = re.sub(r"λ\s?([/\.\@]{1,2})", r"lambda xxx: xxx\1", source_code)
         #source_code = re.sub(r"λ\.", "lambda x: x.", source_code)
         source_code = re.sub(r"λ", "lambda ", source_code)

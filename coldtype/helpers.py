@@ -54,7 +54,6 @@ _by_uni = None
 _by_glyph = None
 
 def _populate_glyphs_unis():
-    print("HELLO!")
     global _by_uni
     global _by_glyph
     _by_uni = {}

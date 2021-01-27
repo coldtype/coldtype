@@ -165,6 +165,7 @@ class RendererState():
         self.callback = None
         self.cmd = None
         self.text = ""
+        self.clear_text = False
         self.arrow = None
         self.mods = Mods()
         self.record_mouse_moves = True
@@ -470,9 +471,20 @@ class RendererState():
         for i, o in enumerate(offs):
             offs[i] = fn(i, o)
     
+    def read_text(self, clear=False):
+        self.clear_text = clear
+        if self.keybuffer:
+            return "".join(self.keybuffer)
+        elif self.text:
+            return self.text
+        else:
+            return None
+    
     def reset_keystate(self):
         self.cmd = None
-        self.text = ""
+        if self.clear_text:
+            self.text = ""
+            self.clear_text = False
         self.arrow = None
         self.mods.reset()
         self.watch_mods = {}
