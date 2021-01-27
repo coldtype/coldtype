@@ -38,8 +38,8 @@ Line.tpx = tpx
 
 class Glyph(DATPens):
     def __init__(self):
-        self.l = 20
-        self.r = 20
+        self.l = 10
+        self.r = 10
         super().__init__()
 
     def addFrame(self, frame):
@@ -457,13 +457,13 @@ def _CG(r, g):
             #.mod_pt(2, -1, λ/-10)
             #.mod_pt(2, -2, λ/30)
             .difference(DP(g.aperture.add(10, "mnx")))
-            .mod_pt(11, 0, (n:=-80, 0))
-            .mod_pt(12, 0, (n, -130))
-            .mod_pt(12, 1, (-10, 0))
+            -.mod_pt(11, 0, (n:=-80, 0))
+            -.mod_pt(12, 0, (n, -130))
+            -.mod_pt(12, 1, (-10, 0))
             .pvl()
             .declare(n:=10)
-            .mod_pt(0, 0, λ/-n)
-            .mod_pt(12, 2, λ/-n)
+            -.mod_pt(0, 0, λ/-n)
+            -.mod_pt(12, 2, λ/-n)
             -.mod_pt(1, 0, λ/n)))
         .remove("Oi"))
 
@@ -496,7 +496,7 @@ def S(r, g):
             earb="-$stem -$earh+0",
             eart="+$stem +$earh-10")
         .guide(
-            _tbx=f"1 +&eart.h ^o 0 -{(ebx:=50)}",
+            _tbx=f"1 +&eart.h ^o 0 -{(ebx:=60)}",
             _bbx=f"1 -&earb.h ^o 0 {ebx}",
             _bxx="i 0 $srfh",
             _bxy="i $hdiag -$over",
@@ -505,9 +505,9 @@ def S(r, g):
                 .bounds().inset(-10).offset(10, 0))
         .record(DP("curve")
             .mt(g.eart.ps)
-            .bct(g.bxy.pn/-(stx:=30), "NE", start:=(0.65, 0.65))
+            .bct(g.bxy.pn/-(stx:=30), "NE", start:=(0.59, 0.65))
             .bct(g.tbx.pw, "NW", swing:=0.6)
-            .bct(g.bxi.pse//(bigy:=45), ("SW", "NE"), big:=(0.82, 0.37))
+            .bct(g.bxi.pse//(bigy:=45), ("SW", "NE"), big:=(0.62, 0.37))
             .bct(g.bxi.ps/(smallx:=15), "SE", small:=0.65)
             .bct(g.earb.pne, g.bxi.psw, land:=0.65)
             .lt(g.earb.pn)
@@ -674,7 +674,7 @@ def build_glyph(cap):
     g = (Glyph()
         .addFrame(cap.r)
         .constants(
-            srfh=220,
+            srfh=170,
             stem=115,
             instem=λ.c.stem - 10,
             xbarh=80,
@@ -751,7 +751,7 @@ def single_char(f, rs):
             .s(None)
             ),
         lpts if overlay else None,
-        build_glyph(single_char.glyphs[single_char.char_to_frame("P")]).translate(100, 100).scale(0.75, center=Point([100, 100])).translate(glyph.getFrame().w+30, 0).removeOverlap().f(hsl(0.9, a=0.25)).s(None)
+    #build_glyph(single_char.glyphs[single_char.char_to_frame("P")]).translate(100, 100).scale(0.75, center=Point([100, 100])).translate(glyph.getFrame().w+30, 0).pen().removeOverlap().f(hsl(0.9, a=0.25)).s(None)
         ])
 
 @renderable(rect=(2000, 400), rstate=1)
@@ -759,7 +759,7 @@ def test_string(r, rs):
     #print(hex(glyph_to_uni("A")))
     #print(uni_to_glyph(0x41))
 
-    cidxs = [single_char.fn_to_frame(uni_to_glyph(ord(c))) for c in "TARTUOPS"]
+    cidxs = [single_char.fn_to_frame(uni_to_glyph(ord(c))) for c in "ZEPHYR"]
 
     xa = 0
     out = DPS()
