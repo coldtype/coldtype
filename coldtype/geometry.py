@@ -493,6 +493,11 @@ class Line():
     
     def __and__(self, other):
         return self.intersection(other)
+    
+    def interp(self, x, other):
+        return Line(self.start.i(x, other.start), self.end.i(x, other.end))
+
+    i = interp
 
 
 class Rect():

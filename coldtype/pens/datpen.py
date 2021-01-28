@@ -1664,10 +1664,11 @@ class DATPens(DATPen):
     def _register(self, lookup, **kwargs):
         res = kwargs
         
-        def keep(k, v):
+        def keep(k, v, invisible=False):
             if k != "_":
-                if not k.startswith("_"):
-                    lookup[k] = v
+                if not k.startswith("_") and not k.startswith("Ƨ"):
+                    if not invisible:
+                        lookup[k] = v
                 else:
                     k = k[1:]
                 setattr(self, k, v)
@@ -1679,7 +1680,7 @@ class DATPens(DATPen):
                 v = self.bx % self.varstr(v)
             if "ƒ" in k:
                 for idx, _k in enumerate(k.split("ƒ")):
-                    keep(_k, v[idx])
+                    keep(_k, v[idx], invisible=k.startswith("Ƨ"))
             else:
                 keep(k, v)
         return self
