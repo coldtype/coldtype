@@ -92,7 +92,7 @@ class Glyph(DATPens):
             dps += (DP(x)
                 .translate(self.l, 0)
                 .f(None)
-                .s(hsl(idx/3, 1, a=0.25)).sw(10))
+                .s(hsl(idx/2.3, 1, a=0.25)).sw(10))
         return dps
 
     def brack(self, a, b, pt, y=None, c=None):
@@ -396,23 +396,20 @@ def R(r, g):
 @glyphfn()
 def N(r, g):
     return (g
-        .set_width(int(g.c.stem*5.04))
+        .set_width(int(g.c.stem*5.25))
+        .guide(caplƒ_ƒcapr="1 +$sfht ^c $nsfw a $nsfw")
         .register(
             _ƒstemlƒ_ƒstemr="c $ninstem $nstem a $nstem $ninstem",
             base="-$nsfw -$sfhb",
-            caplƒ_ƒcapr="1 +$sfht ^c $nsfw a $nsfw"
-            )
-        .declare(ll:=Line(g.steml.ee & g.capl.es, g.base.pne/30))
+            capr="&capr",
+            capl="&capl ^m +&steml.mxx ø")
+        .guide(
+            l1=Line((g.steml.ee & g.capl.es)//-20, g.base.pne/30),
+            l2=λg: g.l1.offset(min(g.c.hdiag+40, g.capr.psw.x-g.l1[0].x-g.c.gap), 0))
         .ap(DP("diag2")
-            .line(ll.extr(1))
-            )
-        -.ap(diag:=DP("diagonal",
-            Line(g.stemr.psw, g.steml.pne / g.c.nshoulder))
-            .ol(g.c.hdiag-10).ƒ(g.steml.ecx, ~g.stemr.ecx))
-        #.register(
-        #    base=g.base.setlmxx((diag.sl(0) & g.base.en).x - g.c.gap),
-        #    capr=g.capr.setlmnx((diag.sl(3) & g.capr.es).x + g.c.gap+5))
-        -.brackets([
+            .mt(g.l1 & g.steml.ee, g.l1 & g.bx.es, g.stemr.ps)
+            .lt(g.l2 & g.stemr.ecx, g.l2 & g.bx.en, g.capl.pn).cp())
+        .brackets([
             (g.capl, g.steml, "SW"),
             (g.capr, g.stemr, "S"),
             (g.base, g.steml, "N")]))
@@ -420,30 +417,32 @@ def N(r, g):
 @glyphfn()
 def M(r, g):
     return (g
-        .set_width(g.c.stem*6)
-        .declare(
-            spread:=-70,
-            nosein:=50,
-            wght:=g.c.hdiag-30)
+        .set_width(g.c.stem*6.10)
+        .declare(wght:=g.c.hdiag-15)
+        .guide(
+            gcaplƒ_ƒgcapr=f"1 +$sfht ^c $nsfw a $nsfw",
+            base="1 -$sfhb")
         .register(
             _ƒstemlƒ_ƒstemr="c $ninstem $nstem a $nstem $ninstem",
             baselƒ_ƒbaser="1 -$sfhb ^c $nsfw a $nsfw",
-            caplƒ_ƒcapr=f"1 +$sfht ^c $nsfw+{spread} a $nsfw+{spread}")
-        .ap(diagl:=DP("dgl",
-            ddl:=Line(g.capl.pne, g.bx.ps / nosein))
-            .ol(wght).ƒ(g.bx))
-        .ap(diagr:=DP("dgr",
-            Line(g.capr.pnw, g.bx.ps / -nosein))
-            .ol(wght).ƒ(g.bx))
-        .guide(diagl.sl(2))
-        .fft("dgl", λ.ƒ(diagr.sl(0), ~g.bx.edge("mnx")))
-        .fft("dgr", λ.ƒ(diagl.sl(0), ~g.bx.edge("mxx")))
+            capl="&gcapl ^m +&steml.mxx ø",
+            capr="&gcapr ^m -&stemr.mnx ø")
+        .guide(
+            l1=Line((g.capl.es & g.steml.ee)//(n:=-60), g.basel.pne/g.c.gap),
+            l1o=λ.l1.offset(wght, 0),
+            l2=Line((g.capr.es & g.stemr.ew)//n, g.baser.pnw/-g.c.gap),
+            l2o=λ.l2.offset(-wght, 0))
+        .ap(DP("dl")
+            .mt(g.l1 & g.bx.en, g.l1 & g.bx.es)
+            .lt(g.l2 & g.bx.es, g.l2 & g.bx.en)
+            .lt(g.l2o & g.bx.en, g.l2o & g.base.en)
+            .lt(g.l1o & g.base.en)
+            .lt(g.l1o & g.bx.en))
         .brackets([
             (g.capl, g.steml, "SW"),
             (g.basel, g.steml, "N"),
             (g.capr, g.stemr, "SE"),
-            (g.baser, g.stemr, "N")
-        ]))
+            (g.baser, g.stemr, "N")]))
 
 @glyphfn()
 def O(r, g, clx=0):
@@ -525,7 +524,7 @@ def S(r, g):
             tbx=f"1 +&eart.h ^o 0 -$sfht/5",
             bbx=f"1 -&earb.h ^o 0 $sfhb/5",
             _bxy="i $hdiag -$over",
-            _bxi="i $hdiag $over ^s 0 -$sfhb ^s 0 +$sfht ^o 15 0 ^i 10 -30")
+            _bxi="i $hdiag $over*0.75 ^s 0 -$sfhb ^s 0 +$sfht ^o 15 0 ^i 10 -30")
         .record(DP("curve")
             .mt(g.eart.ps)
             .bct(g.bxy.pn/-(stx:=30), "NE", start:=(0.59, 0.65))
@@ -778,8 +777,8 @@ def build_glyph(cap):
         .glyph_name(cap.func.__name__)
         .constants(
             _sfh=170,
-            sfhb=λ.c._sfh+60,
-            sfht=λ.c._sfh-30,
+            sfhb=λ.c._sfh+40,
+            sfht=λ.c._sfh-40,
             earhb="$sfhb*1.75",
             earht="$sfht*2.25",
             stem=115,

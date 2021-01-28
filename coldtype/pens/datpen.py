@@ -233,6 +233,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
         pprint(self.value)
         return self
     
+    def print(self, *args):
+        print(args)
+        return self
+    
     def take(self, slice):
         self.value = self.value[slice]
         return self
@@ -244,9 +248,12 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     as_set = ups
     
-    def moveTo(self, p0):
+    def moveTo(self, *ps):
         """The standard `RecordingPen.moveTo`, but returns self for chainability."""
-        super().moveTo(p0)
+        super().moveTo(ps[0])
+        if len(ps) > 1:
+            for p in ps[1:]:
+                super().lineTo(p)
         return self
     
     mt = moveTo
