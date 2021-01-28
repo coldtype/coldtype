@@ -637,6 +637,14 @@ class Rect():
     @property
     def mxy(self):
         return self.y + self.h
+    
+    @property
+    def mdx(self):
+        return self.point("C").x
+    
+    @property
+    def mdy(self):
+        return self.point("C").y
 
     def square(self):
         """take a square from the center of this rect"""
