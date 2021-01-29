@@ -1,5 +1,7 @@
 from coldtype.test import *
 
+# should be run as coldtype test/test_data_src.py -sc test/_test_data_src_src.py
+
 TXT:Path = __sibling__("_test_data_src_src.txt")
 
 r = (5140, 2844)

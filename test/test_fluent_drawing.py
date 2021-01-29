@@ -647,7 +647,7 @@ def S(r, g):
             eart="+$stem +$earht")
         .guide(
             tbx=f"1 +&eart.h ^o 0 -$sfht/5",
-            bbx=f"1 -&earb.h ^o 0 $sfhb/5",
+            bbx=f"1 -&earb.h",
             _bxy="i $hdiag -$over",
             _bxi="i $hdiag $over*0.75 ^s 0 -$sfhb ^s 0 +$sfht ^o 15 0 ^i 10 -30")
         .record(DP("curve")
@@ -659,7 +659,7 @@ def S(r, g):
             .bct(g.earb.pne, g.bxi.psw//-20, land:=0.65)
             .lt(g.earb.pn)
             .bct(g.bxy.ps/stx, "SW", start)
-            .bct(g.bbx.pe/20, "SE", swing)
+            .bct(g.bbx.pe/20, "SE", swing+0.05)
             .bct(g.bxi.pnw//-bigy, ("NE", "SW"), big)
             .bct(g.bxi.pn/-smallx//(adj:=5), "NW", small)
             .bct(g.eart.psw, g.bxi.pne//adj, land)
