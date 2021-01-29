@@ -293,6 +293,9 @@ class Point():
     
     __hash__ = object.__hash__
 
+    def Z():
+        return Point([0, 0])
+
     def from_obj(obj):
         p = Point((0, 0))
         try:
@@ -503,6 +506,18 @@ class Line():
         return Line(self.start.i(x, other.start), self.end.i(x, other.end))
 
     i = interp
+
+    def setx(self, x):
+        return Line(self.start.setx(x), self.end.setx(x))
+    
+    def __mul__(self, other):
+        return self.setx(other)
+    
+    def sety(self, y):
+        return Line(self.start.sety(y), self.end.sety(y))
+    
+    def __matmul__(self, other):
+        return self.sety(other)
 
 
 class Rect():

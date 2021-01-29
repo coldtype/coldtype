@@ -956,8 +956,32 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.lineTo(end.offset(-width/2, 0))
         return self.closePath()
     
-    def lsdiag(self, l1, l2):
-        return self.mt(l1.start).lt(l2.start, l2.end, l1.end).cp()
+    def lsdiag(self, l1, l2, extr=0):
+        ll1 = Line(l1.start, l2.start)
+        ll2 = Line(l1.end, l2.end)
+        if extr > 0:
+            ll1 = ll1.extr(extr)
+            ll2 = ll2.extr(extr)
+        return self.mt(ll1.start).lt(ll1.end, ll2.end, ll2.start).cp()
+    
+    def lsdiagc(self, l1, l2, cl, extr=0):
+        ll1 = Line(l1.start, l2.start)
+        ll2 = Line(l1.end, l2.end)
+        if extr > 0:
+            ll1 = ll1.extr(extr)
+            ll2 = ll2.extr(extr)
+        return (self
+            .mt(ll1.start)
+            .lt(ll1 & cl)
+            .lt(ll2 & cl)
+            .lt(ll2.start)
+            .cp())
+        return (self
+            .mt(l1.start)
+            .lt(Line(l1.start, l2.start) & cl)
+            .lt(Line(l1.end, l2.end) & cl)
+            .lt(l1.end)
+            .cp())
 
     def line(self, points, moveTo=True, endPath=True):
         """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""
@@ -1526,6 +1550,8 @@ class DATPens(DATPen):
         return self
     
     def append(self, pen, allow_blank=False):
+        if callable(pen):
+            pen = pen(self)
         if pen or allow_blank:
             if isinstance(pen, Rect):
                 return self.pens.append(DATPen(pen))
