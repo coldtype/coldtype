@@ -955,6 +955,9 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.lineTo(end.offset(width/2, 0))
         self.lineTo(end.offset(-width/2, 0))
         return self.closePath()
+    
+    def lsdiag(self, l1, l2):
+        return self.mt(l1.start).lt(l2.start, l2.end, l1.end).cp()
 
     def line(self, points, moveTo=True, endPath=True):
         """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""

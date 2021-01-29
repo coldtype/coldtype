@@ -479,6 +479,8 @@ class Line():
         p1, p2 = self
         return Line(p1.offset(x, y), p2.offset(x, y))
     
+    o = offset
+    
     def __floordiv__(self, other):
         return self.offset(0, other)
     
@@ -843,6 +845,8 @@ class Rect():
         if dy == None:
             dy = dx
         return Rect(offset(self.rect(), dx, dy))
+    
+    o = offset
 
     def zero(self):
         return Rect((0, 0, self.w, self.h))
@@ -1092,6 +1096,31 @@ class Rect():
     
     def __truediv__(self, other):
         return self.offset(other, 0)
+    
+    def symbol_to_edge(self, idx, symbol):
+        d = ["x", "y"][idx]
+        if symbol == "-":
+            return "mn" + d
+        elif symbol == "+":
+            return "mx" + d
+        elif symbol == "=":
+            return "md" + d
+    
+    def sign_to_edge(self, idx, sign):
+        d = ["x", "y"][idx]
+        if sign == 0:
+            return "md" + d
+        elif sign < 0:
+            return "mn" + d
+        else:
+            return "mx" + d
+    
+    def t(self, e, n):
+        xy = 0
+        if isinstance(e, complex):
+            xy = 1
+            e = e.imag
+        return self.take(n, self.sign_to_edge(xy, e))
     
     def __mod__(self, s):
         sfx = ["x", "y"]

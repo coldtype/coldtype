@@ -658,15 +658,14 @@ def U(r, g):
     return (g
         .add_stem()
         .register(
-            caplƒ_ƒcapr="1 +$sfht ^c $sfw+20 $gap $sfw-60 a")
+            caplƒ_ƒcapr="1 +$sfht ^c $sfw $gap*2 $sfw-80 a")
         .set_width(g.capr.mxx)
         .register(
-            steml=f"-$stem 1 ^m =&capl.ps.x -$sfhb+{c}",
+            steml=f"-$hdiag 1 ^m =&capl.ps.x -$sfhb+{c}",
             stemr=f"+$ldiag+10 1 ^m =&capr.ps.x -$sfhb+{c}")
         .guide(
             center="m -&steml.mxx --$over ^m +&stemr.mnx ø",
             knock="&center ^m ø -$sfhb")
-        #.declare(sc:=g.steml.pse.i(0.47, g.stemr.psw) @ -g.c.over)
         .remove("stem")
         .record(DATPen("curve")
             .mt(g.steml.psw)
@@ -733,48 +732,31 @@ def diag(l1, l2):
 @glyphfn()
 def X(r, g):
     return (g
+        .declare(
+            ox:=40,
+            hdw:=g.c.hdiag+20,
+            ldw:=g.c.ldiag+20)
         .register(
             blƒ_ƒbr=f"1 -$sfhb ^c $sfw-{(f:=20)} $gap $sfw+{f} a",
             clƒ_ƒcr=f"1 +$sfht ^c $sfw+{f} $gap $sfw-{f} a")
         .set_width(g.br.mxx)
-        .guide(
-            ssteml="-$ldiag+20 -$sfhb ^m =&bl.pc.x ø",
-            sstemr="-$ldiag+20 +$sfht ^m =&cr.pc.x ø",
-            hd=λg: diag(g.cl.take(w:=g.c.hdiag+30, "mdx").es, g.br.take(w, "mdx").en),
-            ldl=λg: diag(g.ssteml.en, g.sstemr.offset(-50, 0).es),
-            ldr=λg: diag(g.sstemr.es, g.ssteml.offset(50, 0).en),
-            #hdl=λg: Line(g.steml.ew & g.cl.es, g.stemr.ew & g.br.en),
-            #hdlo=λg: Line(g.steml.ee & g.cl.es, g.stemr.ee & g.br.en),
-            #hdlt=λg: g.hdl.i(0.5, g.hdlo),
-            #ldl=λg: Line(g.ssteml.ew & g.bl.en, g.sstemr.ew & g.cr.es),
-            #ldlo=λg: Line(g.ssteml.ee & g.bl.en, g.sstemr.ee & g.cr.es)
-            )
-        .ap(g.hd.copy())
-        #.ap(DP().mt(g.hdl.start, g.hdl.end, g.hdlo.end, g.hdlo.start).cp())
-        #.ap(DP()
-        #    .declare(cl:=g.hdl.offset(x:=0, x))
-        #    .hull([g.ldl.start, g.ldlo.start, g.ldlo & cl, g.ldl & cl]))
-        #.ap(DP()
-        #    .hull([g.ldlo.end, g.ldl.end, g.ldl & g.hdlo, g.ldlo & g.hdlo]))
-        # .declare(
-        #     hdl:=Line(g.cl.ps, g.br.pn))
-        # .ap(hdlp:=DP(hdl).ol(g.c.hdiag).ƒ(g.bx))
-        # .ap(ldlp1:=DP(Line(g.bl.pn, hdl.t(0.5-(skew:=0.06))).extr(0.3))
-        #     .ol(g.c.ldiag).ƒ(g.bx.ew, hdl))
-        # .ap(ldlp2:=DP(Line(g.cr.ps, hdl.t(0.5+skew)).extr(0.3))
-        #     .ol(g.c.ldiag).ƒ(g.bx.ee, hdl))
-        # .guide(ldlp1.sl(1))
-        # .brackets([
-        #     (g.cl, ~hdlp.sl(2), "SW"),
-        #     #(g.cl, hdlp.sl(0), "SE"),
-        #     (g.bl, ldlp1.sl(1), "NW"),
-        #     #(g.bl, ~ldlp1.sl(3), "NE"),
-        #     #(g.cr, ~ldlp2.sl(3), "SW"),
-        #     (g.cr, ldlp2.sl(1), "SE"),
-        #     #(g.br, hdlp.sl(2), "NW"),
-        #     (g.br, ~hdlp.sl(0), "NE")
-        # ])
-        )
+        .ap(hd:=DP()
+            .lsdiag(g.cl.t(0, hdw).es, g.br.t(0, hdw).en))
+        .ap(ldl:=DP()
+            .lsdiag(g.bl.t(0, ldw).en, g.cr.t(0, ldw).o(-ox, 0).es)
+            .ƒ(hd.sl(0), g.bx.ew))
+        .ap(ldr:=DP()
+            .lsdiag(g.bl.t(0, ldw).o(ox, 0).en, g.cr.t(0, ldw).es)
+            .ƒ(hd.sl(2), ~g.bx.ee))
+        .brackets([
+            (g.cl, ~hd.sl(0), "SW"),
+            (g.cl, hd.sl(2), "SE"),
+            (g.bl, ~ldl.sl(2), "NW"),
+            (g.bl, ~ldl.sl(1), "NE"),
+            (g.cr, ~ldr.sl(2), "SW"),
+            (g.cr, ldr.sl(0), "SE"),
+            (g.br, hd.sl(0), "NW"),
+            (g.br, ~hd.sl(2), "NE")]))
 
 @glyphfn()
 def Y(r, g):
