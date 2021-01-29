@@ -4,6 +4,8 @@ import beziers.point
 import glfw
 from defcon import Font
 
+# INTERESTING IDEAS BUT A DEAD SCRIPT
+
 ch = "a"
 
 if "__COLDTYPE__" in globals():
