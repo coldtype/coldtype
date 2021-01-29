@@ -277,7 +277,13 @@ class Subtitler(Sequence):
 class lyric_editor(animation):
     def __init__(self, timeline:Subtitler, rect=(1080, 1080), data_font="Times", **kwargs):
         self.data_font = data_font
-        super().__init__(rect=rect, timeline=timeline, audio=timeline.audio_path, rstate=1, watch=[timeline.path], **kwargs)
+        super().__init__(
+            rect=rect,
+            timeline=timeline,
+            audio=timeline.audio_path,
+            rstate=1,
+            watch=[timeline.path],
+            **kwargs)
 
     def runpost(self, res, rp, rs):
         res = super().runpost(res, rp, rs)

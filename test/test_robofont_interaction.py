@@ -4,13 +4,15 @@ from coldtype.midi.controllers import LaunchControlXL
 import json
 
 datafile = Path("~/robofont-coldtype.json").expanduser()
-tl = Timeline(50)
+tl = Timeline(30, fps=24)
 
 @animation((1500, 1000), timeline=tl, watch_soft=[datafile], rstate=1, bg=1)
 def stub(f, rs):
+    #os.system(f"robofont -p {stub.codepath}")
+    #return
+
     r = f.a.r
     nxl = LaunchControlXL(rs.midi)
-    #os.system(f"robofont -p {stub.codepath}")
     dp = DATPen()
     try:
         data = json.loads(datafile.read_text())
@@ -19,7 +21,8 @@ def stub(f, rs):
 
     ls = data["layers"]
     def get_l(l):
-        if g := ls.get(l):
+        g = ls.get(l)
+        if g:
             return DATPen().vl(g["value"])
         else:
             return DATPen()
@@ -39,8 +42,6 @@ def stub(f, rs):
             cutw=int(nxl(30)*30),
             fill=bw(0)))
 
-#if __name__ == "__main__":
-#    cg = CurrentGlyph()
-#    dp = RecordingPen()
-#    cg.draw(dp)
-#    print(dp.value)
+if __name__ == "__main__":
+    cg = CurrentGlyph()
+    print(cg)

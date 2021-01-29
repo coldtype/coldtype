@@ -1,8 +1,9 @@
 from fontTools.misc.arrayTools import unionRect
 from fontTools.misc.transform import Transform
 from coldtype.interpolation import norm
+from functools import partialmethod
 from enum import Enum
-import math
+import math, re
 
 YOYO = "ma"
 
@@ -44,27 +45,40 @@ class Edge(Enum):
 def txt_to_edge(txt):
     if isinstance(txt, str):
         txt = txt.lower()
-        if txt == "maxy" or txt == "mxy":
+        if txt in ["maxy", "mxy", "n"]:
             return Edge.MaxY
-        elif txt == "maxx" or txt == "mxx":
+        elif txt in ["maxx", "mxx", "e"]:
             return Edge.MaxX
-        elif txt == "miny" or txt == "mny":
+        elif txt in ["miny", "mny", "s"]:
             return Edge.MinY
-        elif txt == "minx" or txt == "mnx":
+        elif txt in ["minx", "mnx", "w"]:
             return Edge.MinX
-        elif txt == "centery":
+        elif txt in ["centery", "cy", "midy", "mdy"]:
             return Edge.CenterY
-        elif txt == "centerx":
+        elif txt in ["centerx", "cx", "midx", "mdx"]:
             return Edge.CenterX
-        elif txt == "midx" or txt == "mdx":
-            return Edge.CenterX
-        elif txt == "midy" or txt == "mdy":
-            return Edge.CenterY
         else:
             return None
     else:
         return txt
 
+#https://stackoverflow.com/questions/20677795/how-do-i-compute-the-intersection-point-of-two-lines
+
+def line_intersection(line1, line2):
+    xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
+    ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])
+
+    def det(a, b):
+        return a[0] * b[1] - a[1] * b[0]
+
+    div = det(xdiff, ydiff)
+    if div == 0:
+        raise Exception('lines do not intersect')
+
+    d = (det(*line1), det(*line2))
+    x = det(d, xdiff) / div
+    y = det(d, ydiff) / div
+    return x, y
 
 def calc_vector(point1, point2):
     x1, y1 = point1
@@ -276,6 +290,11 @@ class Point():
             except:
                 self.x = 0
                 self.y = 0
+    
+    __hash__ = object.__hash__
+
+    def Z():
+        return Point([0, 0])
 
     def from_obj(obj):
         p = Point((0, 0))
@@ -289,6 +308,8 @@ class Point():
     def offset(self, dx, dy):
         "Offset by dx, dy"
         return Point((self.x + dx, self.y + dy))
+    
+    o = offset
 
     def rect(self, w, h):
         "Create a rect from this point as center, with w and h dimensions provided"
@@ -332,28 +353,30 @@ class Point():
         ox, oy = other
         return Point((norm(v, sx, ox), norm(v, sy, oy)))
     
+    def i(self, *args):
+        other = args
+        if isinstance(other[0], Point):
+            return self.interp(0.5, other[0])
+        else:
+            x, pt = other
+            return self.interp(x, pt)
+    
     def project(self, angle, dist):
         dx, dy = polar_coord((0, 0), math.radians(angle), dist)
         return self.offset(dx, dy)
     
+    def project_to(self, angle, line):
+        ray = [self, self.project(angle, 1000)]
+        return Point(line_intersection(ray, line))
+    
     def cdist(self, other):
-        sx, sy = self
-        ox, oy = other
-        opp = ox - sx
-        adj = oy - sy
-        if opp == 0:
-            if sy > oy:
-                return abs(adj), 180
-            else:
-                return abs(adj), 0
-        elif adj == 0:
-            if sx > ox:
-                return abs(opp), 270
-            else:
-                return abs(opp), 90
-        deg = math.atan(opp/adj)
-        dist = math.sqrt(math.pow(opp, 2) + math.pow(adj, 2))
-        return abs(dist), math.degrees(deg)
+        vec = calc_vector(self, other)
+        ang = calc_angle(self, other)
+        dist = math.sqrt(math.pow(vec[0], 2) + math.pow(vec[1], 2))
+        return dist, math.degrees(ang)
+    
+    def noop(self, *args, **kwargs):
+        return self
     
     def __eq__(self, o):
         try:
@@ -378,6 +401,123 @@ class Point():
         else:
             raise IndexError(
                 "Invalid index for point assignment, must be 0 or 1")
+    
+    def __floordiv__(self, other):
+        return self.offset(0, other)
+    
+    def __truediv__(self, other):
+        return self.offset(other, 0)
+    
+    def setx(self, x):
+        return Point([x, self.y])
+    
+    def __mul__(self, other):
+        return self.setx(other)
+    
+    def sety(self, y):
+        return Point([self.x, y])
+    
+    def __matmul__(self, other):
+        return self.sety(other)
+    
+    def __or__(self, other):
+        return Line(self, other)
+    
+    def as3d(self):
+        return Point3D(self)
+
+
+class Point3D(Point):
+    def __init__(self, p):
+        super().__init__(p)
+        self.z = 0
+    
+    def __len__(self):
+        return 3
+    
+    def __getitem__(self, idx):
+        if idx == 2:
+            return self.z
+        return super().__getitem__(idx)
+
+
+class Line():
+    def __init__(self, start, end):
+        self.start = Point(start)
+        self.end = Point(end)
+    
+    def __repr__(self):
+        return f"<Line:{self.start}/{self.end}>"
+    
+    def __len__(self):
+        return 2
+    
+    def __getitem__(self, idx):
+        if idx == 0:
+            return self.start
+        elif idx == 1:
+            return self.end
+        else:
+            raise IndexError("Line only has two points")
+
+    def reverse(self):
+        p1, p2 = self
+        return Line(p2, p1)
+    
+    def __invert__(self):
+        return self.reverse()
+
+    def t(self, t):
+        return self.start.interp(t, self.end)
+    
+    def tpx(self, tpx):
+        print("angle>", self.angle())
+        pass
+
+    def angle(self):
+        return calc_angle(self.start, self.end)
+    
+    def extr(self, amt):
+        p1, p2 = self
+        return Line(p2.i(1+amt, p1), p1.i(1+amt, p2))
+    
+    def offset(self, x, y):
+        p1, p2 = self
+        return Line(p1.offset(x, y), p2.offset(x, y))
+    
+    o = offset
+    
+    def __floordiv__(self, other):
+        return self.offset(0, other)
+    
+    def __truediv__(self, other):
+        return self.offset(other, 0)
+    
+    def __mod__(self, other):
+        return self.offset(*other)
+    
+    def intersection(self, other):
+        return Point(line_intersection(self, other))
+    
+    def __and__(self, other):
+        return self.intersection(other)
+    
+    def interp(self, x, other):
+        return Line(self.start.i(x, other.start), self.end.i(x, other.end))
+
+    i = interp
+
+    def setx(self, x):
+        return Line(self.start.setx(x), self.end.setx(x))
+    
+    def __mul__(self, other):
+        return self.setx(other)
+    
+    def sety(self, y):
+        return Line(self.start.sety(y), self.end.sety(y))
+    
+    def __matmul__(self, other):
+        return self.sety(other)
 
 
 class Rect():
@@ -451,6 +591,9 @@ class Rect():
     def FromExtents(extents):
         nw, ne, se, sw = extents
         return Rect(sw[0], sw[1], abs(ne[0] - sw[0]), abs(ne[1] - sw[1]))
+    
+    def noop(self, *args, **kwargs):
+        return self
 
     def FromMnMnMxMx(extents):
         """Create a rectangle from ``xmin, ymin, xmax, ymax``"""
@@ -503,10 +646,60 @@ class Rect():
     def wh(self):
         """the width and height as a tuple"""
         return [self.w, self.h]
+    
+    @property
+    def mnx(self):
+        return self.x
+    
+    @property
+    def mny(self):
+        return self.y
+
+    @property
+    def mxx(self):
+        return self.x + self.w
+    
+    @property
+    def mxy(self):
+        return self.y + self.h
+    
+    @property
+    def mdx(self):
+        return self.point("C").x
+    
+    @property
+    def mdy(self):
+        return self.point("C").y
 
     def square(self):
         """take a square from the center of this rect"""
         return Rect(centered_square(self.rect()))
+    
+    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY):
+        x = txt_to_edge(x)
+        y = txt_to_edge(y)
+        b = self
+        
+        xoff = 0
+        if x != None:
+            if x == Edge.CenterX:
+                xoff = -b.x + rect.x + rect.w/2 - b.w/2
+            elif x == Edge.MinX:
+                xoff = -(b.x-rect.x)
+            elif x == Edge.MaxX:
+                xoff = -b.x + rect.x + rect.w - b.w
+        
+        yoff = 0
+        if y != None:
+            if y == Edge.CenterY:
+                yoff = -b.y + rect.y + rect.h/2 - b.h/2
+            elif y == Edge.MaxY:
+                yoff = (rect.y + rect.h) - (b.h + b.y)
+            elif y == Edge.MinY:
+                yoff = -(b.y-rect.y)
+        
+        diff = rect.w - b.w
+        return self.offset(xoff, yoff)
     
     def ipos(self, pt, defaults=(0.5, 0.5), clamp=True):
         """
@@ -641,8 +834,22 @@ class Rect():
         return Rect(subtract(self.rect(), amount, edge))
 
     def expand(self, amount, edge):
+        edges = None
+        if edge == "NW":
+            edges = ["mxy", "mnx"]
+        elif edge == "NE":
+            edges = ["mxy", "mxx"]
+        elif edge == "SE":
+            edges = ["mny", "mxx"]
+        elif edge == "SW":
+            edges = ["mny", "mnx"]
+        
+        if edges:
+            return self.expand(amount, edges[0]).expand(amount, edges[1])
         edge = txt_to_edge(edge)
         return Rect(expand(self.rect(), amount, edge))
+    
+    add = expand
 
     def inset(self, dx, dy=None):
         """
@@ -656,6 +863,8 @@ class Rect():
         if dy == None:
             dy = dx
         return Rect(offset(self.rect(), dx, dy))
+    
+    o = offset
 
     def zero(self):
         return Rect((0, 0, self.w, self.h))
@@ -674,16 +883,13 @@ class Rect():
 
     def edge(self, edge):
         edge = txt_to_edge(edge)
-        return edgepoints(self.rect(), edge)
+        return Line(*edgepoints(self.rect(), edge))
 
     def center(self):
         return Point(centerpoint(self.rect()))
 
     def flip(self, h):
         return Rect([self.x, h - self.h - self.y, self.w, self.h])
-
-    def p(self, s):
-        return self.point(s)
 
     def cardinals(self):
         return self.point("N"), self.point("E"), self.point("S"), self.point("W")
@@ -754,6 +960,310 @@ class Rect():
                 py = self.y + self.h/2
 
             return Point((px, py))
+    
+    p = point
+
+    @property
+    def pne(self): return self.point("NE")
+
+    @property
+    def pe(self): return self.point("E")
+
+    @property
+    def ee(self): return self.edge("mxx")
+
+    @property
+    def pse(self): return self.point("SE")
+
+    @property
+    def ps(self): return self.point("S")
+
+    @property
+    def es(self): return self.edge("mny")
+
+    @property
+    def psw(self): return self.point("SW")
+
+    @property
+    def pw(self): return self.point("W")
+
+    @property
+    def ew(self): return self.edge("mnx")
+
+    @property
+    def pnw(self): return self.point("NW")
+
+    @property
+    def pn(self): return self.point("N")
+
+    @property
+    def en(self): return self.edge("mxy")
+
+    @property
+    def pc(self): return self.point("C")
+
+    @property
+    def ecx(self): return self.edge("mdx")
+
+    @property
+    def ecy(self): return self.edge("mdy")
 
     def intersects(self, other):
         return not (self.point("NE").x < other.point("SW").x or self.point("SW").x > other.point("NE").x or self.point("NE").y < other.point("SW").y or self.point("SW").y > other.point("NE").y)
+    
+    def setmnx(self, x):
+        mnx, mny, mxx, mxy = self.mnmnmxmx()
+        return Rect.FromMnMnMxMx([x, mny, mxx, mxy])
+    
+    def __mul__(self, other):
+        return self.setmnx(other)
+    
+    def setlmnx(self, x):
+        if x > self.mnx:
+            return self.setmnx(x)
+        return self
+    
+    def setmny(self, y):
+        mnx, mny, mxx, mxy = self.mnmnmxmx()
+        return Rect.FromMnMnMxMx([mnx, y, mxx, mxy])
+    
+    def __matmul__(self, other):
+        return self.setmny(other)
+    
+    def setlmny(self, y):
+        if y > self.mny:
+            return self.setmny(y)
+        return self
+    
+    def setmxx(self, x):
+        mnx, mny, mxx, mxy = self.mnmnmxmx()
+        return Rect.FromMnMnMxMx([mnx, mny, x, mxy])
+    
+    def setlmxx(self, x):
+        if x < self.mxx:
+            return self.setmxx(x)
+        return self
+    
+    def setmxy(self, y):
+        mnx, mny, mxx, mxy = self.mnmnmxmx()
+        return Rect.FromMnMnMxMx([mnx, mny, mxx, y])
+    
+    def setlmxy(self, y):
+        if y < self.mxy:
+            return self.setmxy(y)
+        return self
+    
+    def setmdx(self, x):
+        c = self.point("C")
+        return Rect.FromCenter(Point([x, c.y]), self.w, self.h)
+    
+    def setmn(self, mn):
+        return self.setmnx(mn.x).setmny(mn.y)
+
+    def setmx(self, mx):
+        return self.setmxx(mx.x).setmxy(mx.y)
+    
+    def setw(self, w):
+        return Rect(self.x, self.y, w, self.h)
+    
+    def seth(self, h):
+        return Rect(self.x, self.y, self.w, h)
+    
+    def parse_line(self, d, line):
+        parts = re.split(r"\s", line)
+        reified = []
+        for p in parts:
+            if p == "auto" or p == "a":
+                reified.append("auto")
+            elif "%" in p:
+                reified.append(float(p.replace("%", ""))/100 * d)
+            else:
+                fp = float(p)
+                if fp > 1:
+                    reified.append(fp)
+                else:
+                    reified.append(fp*d)
+        remaining = d - sum([0 if r == "auto" else r for r in reified])
+        #if not float(remaining).is_integer():
+        #    raise Exception("floating parse")
+        auto_count = reified.count("auto")
+        auto_d = remaining / auto_count
+        auto_ds = [auto_d] * auto_count
+        if not auto_d.is_integer():
+            auto_d_floor = math.floor(auto_d)
+            leftover = remaining - auto_d_floor * auto_count
+            for aidx, ad in enumerate(auto_ds):
+                if leftover > 0:
+                    auto_ds[aidx] = auto_d_floor + 1
+                    leftover -= 1
+                else:
+                    auto_ds[aidx] = auto_d_floor
+            #print(auto_ds)
+            #print("NO", auto_d - int(auto_d))
+        res = []
+        for r in reified:
+            if r == "auto":
+                res.append(auto_ds.pop())
+            else:
+                res.append(r)
+        return res
+        #return [auto_d if r == "auto" else r for r in reified]
+    
+    def __floordiv__(self, other):
+        return self.offset(0, other)
+    
+    def __truediv__(self, other):
+        return self.offset(other, 0)
+    
+    def symbol_to_edge(self, idx, symbol):
+        d = ["x", "y"][idx]
+        if symbol == "-":
+            return "mn" + d
+        elif symbol == "+":
+            return "mx" + d
+        elif symbol == "=":
+            return "md" + d
+    
+    def sign_to_edge(self, idx, sign):
+        d = ["x", "y"][idx]
+        if sign == 0:
+            return "md" + d
+        elif sign < 0:
+            return "mn" + d
+        else:
+            return "mx" + d
+    
+    def t(self, e, n):
+        xy = 0
+        if isinstance(e, complex):
+            xy = 1
+            e = e.imag
+        return self.take(n, self.sign_to_edge(xy, e))
+    
+    def __mod__(self, s):
+        sfx = ["x", "y"]
+
+        def do_op(r, xs):
+            op = xs[0]
+            if op in ["t", "i", "o", "s", "m", "c", "r", "a", "l", "@", "e"]:
+                op = op
+                xs = xs[1:].strip()
+            else:
+                op = "t"
+                xs = xs.strip()
+            
+            _xs = xs
+            xs = re.split(r"\s", xs)
+            edges = []
+            amounts = []
+            
+            for idx, x in enumerate(xs):
+                if op in ["t", "s", "m", "l", "e"]:
+                    if x[0] == "-":
+                        edges.append("mn" + sfx[idx])
+                    elif x[0] == "+":
+                        edges.append("mx" + sfx[idx])
+                    elif x[0] == "=":
+                        edges.append("md" + sfx[idx])
+                    elif x[0] == "1":
+                        edges.append("mn" + sfx[idx])
+                        amounts.append(1)
+                        continue
+                    elif x[0] == "0":
+                        edges.append("mn" + sfx[idx])
+                        amounts.append(0)
+                        continue
+                    elif x[0] == "ø":
+                        edges.append(None)
+                        amounts.append("ø")
+                        continue
+                    amounts.append(float(x[1:]))
+                else:
+                    if x == "auto" or x == "a":
+                        continue
+                    elif "%" in x:
+                        continue
+                    else:
+                        amounts.append(float(x))
+
+            if op == "t": # take
+                return (r
+                    .take(amounts[0], edges[0])
+                    .take(amounts[1], edges[1]))
+            elif op == "s": # subtract
+                return (r
+                    .subtract(amounts[0], edges[0])
+                    .subtract(amounts[1], edges[1]))
+            elif op == "e": # subtract
+                return (r
+                    .expand(amounts[0], edges[0])
+                    .expand(amounts[1], edges[1]))
+            elif op == "i": # inset
+                return (r.inset(amounts[0], amounts[1]))
+            elif op == "o": # offset
+                return (r.offset(amounts[0], amounts[1]))
+            elif op == "l": # limits
+                # TODO simplify with setlmx* series
+                if amounts[0] != "ø":
+                    x = amounts[0]
+                    if edges[0] == "mnx":
+                        if x > r.mnx:
+                            r = r.setmnx(x)
+                    elif edges[0] == "mxx":
+                        if x < r.mxx:
+                            r = r.setmxx(x)
+                elif amounts[1] != "ø":
+                    y = amounts[1]
+                    if edges[1] == "mny":
+                        if y > r.mny:
+                            r = r.setmny(y)
+                    elif edges[1] == "mxy":
+                        if y < r.mxy:
+                            r = r.setmxy(y)
+                return r
+            elif op == "m": # maxima
+                if amounts[0] != "ø":
+                    if edges[0] == "mnx":
+                        r = r.setmnx(amounts[0])
+                    elif edges[0] == "mxx":
+                        r = r.setmxx(amounts[0])
+                    elif edges[0] == "mdx":
+                        r = r.setmdx(amounts[0])
+                if amounts[1] != "ø":
+                    if edges[1] == "mny":
+                        r = r.setmny(amounts[1])
+                    elif edges[1] == "mxy":
+                        r = r.setmxy(amounts[1])
+                    elif edges[1] == "mdy":
+                        r = r.setmdy(amounts[1])
+                return r
+            elif op == "c": # columns
+                ws = self.parse_line(r.w, _xs)
+                rs = []
+                for w in ws:
+                    _r, r = r.divide(w, "mnx")
+                    rs.append(_r)
+                return rs
+            elif op == "r": # rows
+                ws = self.parse_line(r.h, _xs)
+                rs = []
+                for w in ws:
+                    _r, r = r.divide(w, "mny")
+                    rs.append(_r)
+                return rs
+            elif op == "@": # get-at-index
+                return r[int(amounts[0])]
+            else:
+                raise Exception("op", op, "not supported")
+
+        ys = s.split("^")
+        r = self
+        for y in ys:
+            if y.startswith("Rect("):
+                r = eval(y.strip())
+            else:
+                try:
+                    r = do_op(r, y.strip())
+                except IndexError:
+                    print("FAILED")
+        return r

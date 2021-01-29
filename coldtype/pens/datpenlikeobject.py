@@ -282,10 +282,24 @@ class DATPenLikeObject():
         t = Transform()
         if not point:
             point = self.bounds().point("C") # maybe should be getFrame()?
+        elif isinstance(point, str):
+            point = self.bounds().point(point)
         t = t.translate(point.x, point.y)
         t = t.rotate(math.radians(degrees))
         t = t.translate(-point.x, -point.y)
         return self.transform(t, transformFrame=False)
+    
+    def at_rotation(self, degrees, fn:Callable[["DATPenLikeObject"], None], point=None):
+        self.rotate(degrees)
+        fn(self)
+        self.rotate(-degrees)
+        return self
+    
+    def at_scale(self, scale, fn:Callable[["DATPenLikeObject"], None]):
+        self.scale(scale)
+        self.scale()
+        # TODO
+        return self
     
     def filmjitter(self, doneness, base=0, speed=(10, 20), scale=(2, 3), octaves=16):
         """
@@ -371,7 +385,8 @@ class DATPenLikeObject():
         """
         For simple take-one callback functions in a chain
         """
-        fn(self, *args)
+        if fn:
+            fn(self, *args)
         return self
     
     def replace(self, fn:[["DATPenLikeObject"], None], *args):
@@ -452,9 +467,13 @@ class DATPenLikeObject():
             if False:
                 print(">>>", " ".join(rargs))
             result = run(rargs, capture_output=True)
+            if False:
+                print(result)
             t = Transform()
             t = t.scale(0.1, 0.1)
             svgp = SVGPath.fromstring(result.stdout, transform=t)
+            if False:
+                print(svgp)
             dp = self.single_pen_class()
             svgp.draw(dp)
             return dp.f(0)

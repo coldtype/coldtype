@@ -84,7 +84,7 @@ class WebSocketThread(threading.Thread):
         print("Running a server...")
         while self.should_run:
             self.server.serveonce()
-            ptime.sleep(0.25)
+            ptime.sleep(0.025)
 
 
 class DataSourceThread(threading.Thread):
@@ -169,7 +169,7 @@ class Renderer():
 
             sidecar=parser.add_argument("-sc", "--sidecar", type=str, default=None, help="A file to run alongside your coldtype source file (like a file that processes data or keystrokes), that will run in a managed thread"),
 
-            tails=parser.add_argument("-ts", "--tails", type=str, default=None, help="File to tail, comma-separated (no whitespace); results will print output to the normal process output"),
+            tails=parser.add_argument("-tl", "--tails", type=str, default=None, help="File to tail, comma-separated (no whitespace); results will print output to the normal process output"),
 
             hide_keybuffer=parser.add_argument("-hkb", "--hide-keybuffer", action="store_true", default=False, help="Should the keybuffer be shown?"),
 
@@ -347,7 +347,10 @@ class Renderer():
     def apply_syntax_mods(self, source_code):
         if self.disable_syntax_mods:
             return source_code
-        source_code = re.sub(r"\-\.[A-Za-z_]+([A-Za-z_0-9]+)?\(", ".noop(", source_code)
+        source_code = re.sub(r"\-\.[A-Za-z_ƒ]+([A-Za-z_0-9]+)?\(", ".noop(", source_code)
+        source_code = re.sub(r"λ\s?([/\.\@]{1,2})", r"lambda xxx: xxx\1", source_code)
+        #source_code = re.sub(r"λ\.", "lambda x: x.", source_code)
+        source_code = re.sub(r"λ", "lambda ", source_code)
         return source_code
 
     def reload(self, trigger):
@@ -1037,6 +1040,69 @@ class Renderer():
                 #self.on_action(enum_action, message)
             else:
                 print(">>> (", action, ") is not a recognized action")
+    
+    def on_remote_command(self, cmd, context):
+        #print(">>>>>", cmd, context)
+        try:
+            kbs = KeyboardShortcut(cmd)
+            if kbs:
+                self.on_shortcut(kbs)
+                return
+        except ValueError:
+            pass
+
+        if context:
+            if cmd == "show_function":
+                lines = self.codepath.read_text().split("\n")
+                lidx = int(context)
+                line = lines[lidx]
+                while not line.startswith("@"):
+                    lidx -= 1
+                    line = lines[lidx]
+                fn_name = lines[lidx+1].strip("def ").split("(")[0].strip()
+                if self.last_animation:
+                    fi = self.last_animation.fn_to_frame(fn_name)
+                    #self.last_animation.storyboard = [fi]
+                    self.state.adjust_all_frame_offsets(0, absolute=True)
+                    self.state.adjust_keyed_frame_offsets(
+                        self.last_animation.name,
+                        lambda i, o: fi)
+
+                    self.action_waiting = Action.PreviewStoryboard
+                #print(">>>>>>>>>>>>", line, )
+
+        else:
+            if cmd == "∑":
+                self.state.exit_keylayer()
+                self.action_waiting = Action.PreviewStoryboard
+                return
+            if self.state.keylayer == Keylayer.Cmd:
+                self.state.keybuffer = cmd
+                self.action_waiting = Action.PreviewStoryboard
+                return
+
+            mods = [0, 0, 0, 0]
+            char = None
+            i = 0
+            while i < len(cmd):
+                c = cmd[i]
+                if c == "∆": # shift
+                    mods[2] = 1
+                elif c == "˚": # control
+                    mods[3] = 1
+                elif c == "¬": # alt
+                    mods[1] = 1
+                elif c == "…": # super
+                    mods[0] = 1
+                elif c == "∑":
+                    char = glfw.KEY_ESCAPE
+                else:
+                    char = ord(c.upper())
+                i += 1
+            
+            #print(">", cmd, context, char, mods)
+            if char:
+                self.on_potential_shortcut(char, glfw.PRESS, mods)
 
     def lookup_action(self, action):
         try:
@@ -1240,6 +1306,38 @@ class Renderer():
                 self.action_waiting = waiting
         else:
             self.action_waiting = Action.PreviewStoryboard
+    
+    def on_potential_shortcut(self, key, action, mods):
+        for shortcut, options in self.shortcuts().items():
+            for modifiers, skey in options:
+                if key != skey:
+                    continue
+
+                if isinstance(mods, list):
+                    mod_matches = mods
+                else:
+                    mod_matches = [0, 0, 0, 0]
+                    for idx, mod in enumerate([glfw.MOD_SUPER, glfw.MOD_ALT, glfw.MOD_SHIFT, glfw.MOD_CONTROL]):
+                        if mod in modifiers:
+                            if mods & mod:
+                                mod_matches[idx] = 1
+                        elif mod not in modifiers:
+                            if not (mods & mod):
+                                mod_matches[idx] = 1
+                
+                #print(shortcut, mod_matches, all(mod_matches))
+                mod_match = all(mod_matches)
+                
+                if not mod_match and len(modifiers) == 0 and isinstance(mods, list):
+                    mod_match = True
+                
+                if len(modifiers) == 0 and mods != 0 and not isinstance(mods, list):
+                    mod_match = False
+                
+                if mod_match and key == skey:
+                    if (action == glfw.REPEAT and shortcut in self.repeatable_shortcuts()) or action == glfw.PRESS:
+                        #print(shortcut, modifiers, skey, mod_match)
+                        return self.on_shortcut(shortcut)
 
     def on_key(self, win, key, scan, action, mods):
         if self.state.keylayer != Keylayer.Default:
@@ -1248,34 +1346,7 @@ class Renderer():
                 self.action_waiting = requested_action
             return
         
-        for shortcut, options in self.shortcuts().items():
-            for modifiers, skey in options:
-                if key != skey:
-                    continue
-
-                mod_matches = [0, 0, 0, 0]
-                for idx, mod in enumerate([glfw.MOD_SUPER, glfw.MOD_ALT, glfw.MOD_SHIFT, glfw.MOD_CONTROL]):
-                    if mod in modifiers:
-                        if mods & mod:
-                            mod_matches[idx] = 1
-                    elif mod not in modifiers:
-                        if not (mods & mod):
-                            mod_matches[idx] = 1
-                
-                #print(shortcut, mod_matches, all(mod_matches))
-                mod_match = all(mod_matches)
-                
-                #if shortcut == KeyboardShortcut.WindowOpacityMin:
-                #    print("min", [mods & m for m in modifiers])
-                #if shortcut == KeyboardShortcut.WindowOpacityDown:
-                #    print("down", [mods & m for m in modifiers])
-                
-                if len(modifiers) == 0 and mods != 0:
-                    mod_match = False
-                if mod_match and key == skey:
-                    if (action == glfw.REPEAT and shortcut in self.repeatable_shortcuts()) or action == glfw.PRESS:
-                        #print(shortcut, modifiers, skey, mod_match)
-                        return self.on_shortcut(shortcut)
+        self.on_potential_shortcut(key, action, mods)
         
     def preview_audio(self, frame=None):
         #if not self.args.preview_audio:
@@ -1447,6 +1518,10 @@ class Renderer():
                 if path == self.filepath:
                     if self.args.monitor_lines:
                         self.line_number = jdata.get("line_number")
+            elif jdata.get("command"):
+                cmd = jdata.get("command")
+                context = jdata.get("context")
+                self.on_remote_command(cmd, context)
         except TypeError:
             raise TypeError("Huh")
         except:
@@ -1497,7 +1572,7 @@ class Renderer():
                     self.playing_preloaded_frame = 0
                 ptime.sleep(0.01)
             else:
-                ptime.sleep(0.01)
+                ptime.sleep(0.025)
                 self.glfw_last_time = t
                 self.turn_over()
                 global last_line

@@ -118,7 +118,7 @@ class animation(renderable, Timeable):
     def runpost(self, result, render_pass, renderer_state):
         res = super().runpost(result, render_pass, renderer_state)
         if Overlay.Info in renderer_state.overlays:
-            t = self.rect.take(50, "mxy")
+            t = self.rect.take(50, "mny")
             frame:Frame = render_pass.args[0]
             wave = DATPen()
             if self.audio and sf:
@@ -130,13 +130,16 @@ class animation(renderable, Timeable):
             return DATPens([
                 wave,
                 res,
-                DATPen().rect(t).f(bw(0, 0.75)),
-                DATText(f"{frame.i} / {self.duration}", Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10))
+                #DATPen().rect(t).f(bw(0, 0.75)),
+                #DATText(f"{frame.i} / {self.duration}", Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10))
             ])
         return res
     
     def package(self, filepath, output_folder):
         pass
+
+    def fn_to_frame(self, fn_name):
+        return 0
 
     def contactsheet(self, gx, sl=slice(0, None, None)):
         try:

@@ -2,7 +2,7 @@ from coldtype import *
 from coldtype.time.audio import Wavfile
 
 audio = Wavfile(__sibling__("media/helloworld.wav"))
-audio = Wavfile(__sibling__("media/12272020.wav"))
+audio = Wavfile(__sibling__("media/20210106.wav"))
 #audio = Wavfile(__sibling__("media/ratchet.wav"))
 
 @animation(timeline=Timeline(audio.framelength), audio=audio.path)

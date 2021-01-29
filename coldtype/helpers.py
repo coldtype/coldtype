@@ -49,3 +49,36 @@ def show_points(pen, style, offcurves=True, filter=lambda i: True):
             if len(pts) > 0 and filter(idx):
                 pt_labels += StyledString(str(idx), style).pen().translate(*pts[-1])
     return pt_labels
+
+_by_uni = None
+_by_glyph = None
+
+def _populate_glyphs_unis():
+    global _by_uni
+    global _by_glyph
+    _by_uni = {}
+    _by_glyph = {}
+
+    #try:
+    if True:
+        lines = (Path(__file__).parent.parent / "assets/glyphNamesToUnicode.txt").read_text().split("\n")
+
+        for l in lines:
+            if l.startswith("#"):
+                continue
+            l = l.split(" ")[:2]
+            uni = int(l[1], 16)
+            _by_uni[uni] = l[0]
+            _by_glyph[l[0]] = uni
+    #except:
+    #    pass
+
+def uni_to_glyph(u):
+    if not _by_uni:
+        _populate_glyphs_unis()
+    return _by_uni.get(u)
+    
+def glyph_to_uni(g):
+    if not _by_glyph:
+        _populate_glyphs_unis()
+    return _by_glyph.get(g)

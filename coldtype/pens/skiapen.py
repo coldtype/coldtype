@@ -8,6 +8,7 @@ from fontTools.pens.basePen import BasePen
 
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
+from coldtype.pens.datimage import DATImage
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 from coldtype.color import Color
@@ -60,7 +61,11 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 self.blendmode = args[0]
 
         for attrs, attr in all_attrs:
-            self.paint = skia.Paint(**skia_paint_kwargs)
+            filtered_paint_kwargs = {}
+            for k, v in skia_paint_kwargs.items():
+                if not k.startswith("_"):
+                    filtered_paint_kwargs[k] = v
+            self.paint = skia.Paint(**filtered_paint_kwargs)
             if self.blendmode:
                 self.paint.setBlendMode(self.blendmode)
             method, *args = attr
@@ -146,7 +151,11 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             self.canvas.save()
             #self.canvas.setMatrix(matrix)
             self.canvas.clipPath(self.path, doAntiAlias=True)
-            self.canvas.scale(sx, sy)
+            if False:
+                self.canvas.scale(sx, sy)
+            else:
+                # TODO scale the image, or maybe that shouldn't be here? this scaling method is horrible for image quality
+                self.canvas.scale(sx, sy)
             self.canvas.drawImage(image, bx/sx, by/sy, self.paint)
             self.canvas.restore()
             return True
@@ -239,10 +248,27 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                     rect.h - pt.y,
                     skia.Font(font, pen.style.fontSize),
                     skia.Paint(AntiAlias=True, Color=pen.style.fill.skia()))
+                return
+            elif isinstance(pen, DATImage):
+                paint = skia.Paint(AntiAlias=True)
+                f = pen.frame
+                canvas.save()
+                for action, *args in pen.transforms:
+                    if action == "rotate":
+                        deg, pt = args
+                        canvas.rotate(-deg, pt.x, pt.y)
+                    #print(action, args)
+                canvas.drawImage(pen._img, f.x, f.y, paint)
+                canvas.restore()
+                #pen = DATPen().rect(pen.bounds()).img(pen._img, rect=pen.bounds(), pattern=False)
+                return
             
             if state == 0:
+                #print("DRAWING", pen)
                 SkiaPen(pen, rect, canvas, scale, style=style, alpha=pen.calc_alpha())
         
+        #print("COMPTOCANV >>>>>>>>>>>>>>>>")
+        #pens.print_tree()
         pens.walk(draw, visible_only=True)
     
     def Precompose(pens, rect, fmt=None, context=None, scale=1, disk=False):

@@ -1,4 +1,4 @@
-import math, tempfile, pickle, inspect
+import math, tempfile, pickle, inspect, re
 from enum import Enum
 from copy import deepcopy
 from pathlib import Path
@@ -25,7 +25,7 @@ from noise import pnoise1
 
 import coldtype.pens.drawbot_utils as dbu
 
-from coldtype.geometry import Rect, Edge, Point, txt_to_edge
+from coldtype.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle
 from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
 from coldtype.color import Gradient, normalize_color, Color
 from coldtype.pens.misc import ExplodingPen, SmoothPointsPen, BooleanOp, calculate_pathop
@@ -36,8 +36,42 @@ from coldtype.pens.translationpen import TranslationPen, polarCoord
 from coldtype.pens.datpenlikeobject import DATPenLikeObject
 
 
+class DATConstants():
+    def __init__(self):
+        self.lookup = {}
+
+
 def listit(t):
     return list(map(listit, t)) if isinstance(t, (list, tuple)) else t
+
+
+class DATBPT():
+    def __init__(self, ps):
+        self.ps = ps
+    
+    def angle(self):
+        b = self.ps[0]
+        c = self.ps[1]
+        d = self.ps[2]
+        return c.cdist(b), c.cdist(d)
+    
+    def rotate(self, angle):
+        c = self.ps[1]
+        bdist, bang = c.cdist(self.ps[0])
+        ddist, dang = c.cdist(self.ps[2])
+        self.ps[0] = c.project(bang + angle, bdist)
+        self.ps[2] = c.project(dang + angle, ddist)
+        return self
+    
+    def offset(self, x, y):
+        self.ps = [p.offset(x, y) for p in self.ps]
+        return self
+    
+    def __floordiv__(self, other):
+        return self.offset(0, other)
+    
+    def __truediv__(self, other):
+        return self.offset(other, 0)
 
 
 class DATPen(RecordingPen, DATPenLikeObject):
@@ -46,7 +80,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     DATPen is a subclass of fontTools ``RecordingPen``
     """
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         """**kwargs support is deprecated, should not accept any arguments"""
         super().__init__()
         self.single_pen_class = DATPen
@@ -62,6 +96,18 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.glyphName = None
         self.data = {}
         self.visible = True
+
+        for arg in args:
+            if isinstance(arg, str):
+                self.tag(arg)
+            elif isinstance(arg, DATPen):
+                self.replace_with(arg)
+            elif isinstance(arg, Rect):
+                self.rect(arg)
+            elif isinstance(arg, Line):
+                self.line(arg)
+            elif isinstance(arg, Point):
+                self.oval(Rect.FromCenter(arg, 50, 50))
     
     def __str__(self):
         v = "" if self.visible else "ø-"
@@ -113,6 +159,84 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = value
         return self
     
+    def replace_with(self, other):
+        return self.vl(other.value)
+    
+    def pvl(self):
+        for idx, (mv, pts) in enumerate(self.value):
+            if len(pts) > 0:
+                self.value[idx] = list(self.value[idx])
+                self.value[idx][-1] = [Point(p) for p in self.value[idx][-1]]
+        return self
+    
+    def fvl(self):
+        allpts = []
+        for mv, pts in self.value:
+            if len(pts) > 0:
+                allpts.extend(pts)
+        return allpts
+    
+    def mod_pt(self, vidx, pidx, fn):
+        pt = Point(self.value[vidx][-1][pidx])
+        if callable(fn):
+            res = fn(pt)
+        else:
+            res = pt.offset(*fn)
+        try:
+            self.value[vidx][-1][pidx] = res
+        except TypeError:
+            self.pvl()
+            self.value[vidx][-1][pidx] = res
+        return self
+    
+    def mod_pts(self, rect, fn):
+        self.map_points(fn, lambda p: p.inside(rect))
+        return self
+    
+    def mod_bpt(self, idx, fn):
+        pidxs = [[idx, -2], [idx, -1], [idx+1, 0]]
+        bpt = DATBPT([self.value[i][-1][j] for (i,j) in pidxs])
+        fn(bpt)
+        for idx, (i,j) in enumerate(pidxs):
+            self.value[i][-1][j] = bpt.ps[idx]
+        #self.mod_pt(idx+1, 0, fn)
+        #self.mod_pt(idx, -1, fn)
+        #self.mod_pt(idx, -2, fn)
+        return self
+    
+    def add_pt(self, cuidx, t, fn=None):
+        cidx = 0
+        insert_idx = -1
+        c1, c2 = None, None
+
+        for idx, (mv, pts) in enumerate(self.value):
+            if mv == "curveTo":
+                if cidx == cuidx:
+                    insert_idx = idx
+                    a = self.value[idx-1][-1][-1]
+                    b, c, d = pts
+                    c1, c2 = splitCubicAtT(a, b, c, d, t)
+                cidx += 1
+        
+        if c2:
+            self.value[insert_idx] = ("curveTo", c1[1:])
+            self.value.insert(insert_idx+1, ("curveTo", c2[1:]))
+
+            if fn:
+                self.pvl()
+                self.mod_bpt(insert_idx, fn)
+            #return insert_idx
+        return self
+    
+    def printvl(self):
+        from pprint import pprint
+        pprint(self.value)
+        return self
+    
+    def print(self, *args):
+        print(args)
+        return self
+    
     def take(self, slice):
         self.value = self.value[slice]
         return self
@@ -124,38 +248,95 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     as_set = ups
     
-    def moveTo(self, p0):
+    def moveTo(self, *ps):
         """The standard `RecordingPen.moveTo`, but returns self for chainability."""
-        super().moveTo(p0)
+        super().moveTo(ps[0])
+        if len(ps) > 1:
+            for p in ps[1:]:
+                super().lineTo(p)
         return self
+    
+    mt = moveTo
 
-    def lineTo(self, p1):
-        """The standard `RecordingPen.lineTo`, but returns self for chainability."""
+    def lineTo(self, *ps):
+        """The standard `RecordingPen.lineTo`, but returns self for chainability, and accepts multiple points, and also will automatically moveTo if the pen has no value"""
+
+        p1 = ps[0]
         if len(self.value) == 0:
             super().moveTo(p1)
         else:
             super().lineTo(p1)
+        if len(ps) > 1:
+            for p in ps[1:]:
+                super().lineTo(p)
         return self
+    
+    lt = lineTo
 
     def qCurveTo(self, *points):
         """The standard `RecordingPen.qCurveTo`, but returns self for chainability."""
         super().qCurveTo(*points)
         return self
+    
+    qct = qCurveTo
 
     def curveTo(self, *points):
         """The standard `RecordingPen.curveTo`, but returns self for chainability."""
         super().curveTo(*points)
         return self
+    
+    ct = curveTo
 
     def closePath(self):
         """The standard `RecordingPen.closePath`, but returns self for chainability."""
         super().closePath()
         return self
+    
+    cp = closePath
 
     def endPath(self):
         """The standard `RecordingPen.endPath`, but returns self for chainability."""
         super().endPath()
         return self
+    
+    ep = endPath
+    
+    def boxCurveTo(self, pt, point, factor, mods={}):
+        a = Point(self.value[-1][-1][-1])
+        d = Point(pt)
+        box = Rect.FromMnMnMxMx([min(a.x, d.x), min(a.y, d.y), max(a.x, d.x), max(a.y, d.y)])
+        try:
+            f1, f2 = factor
+        except TypeError:
+            f1, f2 = (factor, factor)
+
+        if isinstance(point, str):
+            p = box.point(point)
+            p1, p2 = (p, p)
+        elif isinstance(point, Point):
+            p1, p2 = point, point
+        else:
+            p1, p2 = point
+            p1 = box.point(p1)
+            p2 = box.point(p2)
+        
+        b = a.interp(f1, p1)
+        c = d.interp(f2, p2)
+        mb = mods.get("b")
+        mc = mods.get("c")
+        if mb:
+            b = mb(b)
+        elif mc:
+            c = mc(c)
+        self.curveTo(b, c, d)
+        return self
+    
+    bct = boxCurveTo
+    
+    def uTurnTo(self, inflection, end, pts, factor):
+        return (self
+            .boxCurveTo(inflection, pts[0], factor)
+            .boxCurveTo(end, pts[1], factor))
     
     def interpolate(self, value, other):
         vl = []
@@ -272,6 +453,9 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = dp.value
         return self
     
+    def __invert__(self):
+        return self.reverse()
+    
     def map(self, fn:Callable[[int, str, list], Tuple[str, list]]):
         for idx, (mv, pts) in enumerate(self.value):
             self.value[idx] = fn(idx, mv, pts)
@@ -285,13 +469,15 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = vs
         return self
     
-    def map_points(self, fn):
+    def map_points(self, fn, filter_fn=None):
         idx = 0
         for cidx, c in enumerate(self.value):
             move, pts = c
             pts = list(pts)
             for pidx, p in enumerate(pts):
                 x, y = p
+                if filter_fn and not filter_fn(p):
+                    continue
                 result = fn(idx, x, y)
                 if result:
                     pts[pidx] = result
@@ -419,6 +605,13 @@ class DATPen(RecordingPen, DATPenLikeObject):
         """Calculate and return the intersection of this shape and another."""
         return self._pathop(otherPen=otherPen, operation=BooleanOp.Intersection)
     
+    def fenced(self, *lines):
+        if len(lines) == 1 and isinstance(lines[0], Rect):
+            return self.intersection(DATPen().rect(lines[0]))
+        return self.intersection(DATPen().fence(*lines))
+    
+    ƒ = fenced
+    
     def removeOverlap(self):
         """Remove overlaps within this shape and return itself."""
         return self._pathop(otherPen=None, operation=BooleanOp.Simplify)
@@ -431,7 +624,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
             for p in pts:
                 if p:
                     x, y = p
-                    _rounded.append((round(x, rounding), round(y, rounding)))
+                    if rounding > 0:
+                        _rounded.append((round(x, rounding), round(y, rounding)))
+                    else:
+                        _rounded.append((math.floor(x), math.floor(y)))
                 else:
                     _rounded.append(p)
             rounded.append((t, _rounded))
@@ -586,6 +782,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.value = p.value
         return self
     
+    ol = outline
+    
     def project(self, angle, width):
         offset = polarCoord((0, 0), math.radians(angle), width)
         self.translate(offset[0], offset[1])
@@ -711,6 +909,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.closePath()
         return self
     
+    rr = roundedRect
+    
     def oval(self, rect):
         """Oval primitive"""
         self.roundedRect(rect, 0.5, 0.5)
@@ -740,9 +940,53 @@ class DATPen(RecordingPen, DATPenLikeObject):
             if cedge == Edge.MaxY:
                 sc.rotate(180)
         return self.record(sc)
+    
+    def diagonal_upto(self, startc, angle, width, line):
+        t = startc.project_to(angle, line)
+        self.moveTo(startc.offset(-width/2, 0))
+        self.lineTo(startc.offset(width/2, 0))
+        self.lineTo(t.offset(width/2, 0))
+        self.lineTo(t.offset(-width/2, 0))
+        return self.closePath()
+    
+    def diagonal(self, start, end, width):
+        self.moveTo(start.offset(-width/2, 0))
+        self.lineTo(start.offset(width/2, 0))
+        self.lineTo(end.offset(width/2, 0))
+        self.lineTo(end.offset(-width/2, 0))
+        return self.closePath()
+    
+    def lsdiag(self, l1, l2, extr=0):
+        ll1 = Line(l1.start, l2.start)
+        ll2 = Line(l1.end, l2.end)
+        if extr > 0:
+            ll1 = ll1.extr(extr)
+            ll2 = ll2.extr(extr)
+        return self.mt(ll1.start).lt(ll1.end, ll2.end, ll2.start).cp()
+    
+    def lsdiagc(self, l1, l2, cl, extr=0):
+        ll1 = Line(l1.start, l2.start)
+        ll2 = Line(l1.end, l2.end)
+        if extr > 0:
+            ll1 = ll1.extr(extr)
+            ll2 = ll2.extr(extr)
+        return (self
+            .mt(ll1.start)
+            .lt(ll1 & cl)
+            .lt(ll2 & cl)
+            .lt(ll2.start)
+            .cp())
+        return (self
+            .mt(l1.start)
+            .lt(Line(l1.start, l2.start) & cl)
+            .lt(Line(l1.end, l2.end) & cl)
+            .lt(l1.end)
+            .cp())
 
-    def line(self, points, moveTo=True):
+    def line(self, points, moveTo=True, endPath=True):
         """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""
+        if isinstance(points, Line):
+            points = list(points)
         if len(points) == 0:
             return self
         if len(self.value) == 0 or moveTo:
@@ -751,7 +995,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
             self.lineTo(points[0])
         for p in points[1:]:
             self.lineTo(p)
-        self.endPath()
+        if endPath:
+            self.endPath()
         return self
     
     def hull(self, points):
@@ -759,6 +1004,15 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.moveTo(points[0])
         for pt in points[1:]:
             self.lineTo(pt)
+        self.closePath()
+        return self
+    
+    def fence(self, *edges):
+        self.moveTo(edges[0][0])
+        self.lineTo(edges[0][1])
+        for edge in edges[1:]:
+            self.lineTo(edge[0])
+            self.lineTo(edge[1])
         self.closePath()
         return self
     
@@ -885,6 +1139,17 @@ class DATPen(RecordingPen, DATPenLikeObject):
         #self.value = DATPens(exploded[contour_slice]).implode().value
         return self
     
+    def sliced_line(self, idx):
+        allpts = []
+        for mv, pts in self.value:
+            if len(pts) > 0:
+                allpts.append(pts)
+            #pts = [pts[-1] for (mv, pts) in self.value[start:end]]
+        allpts = allpts*2
+        return Line(allpts[idx][0], allpts[idx+1][0])
+    
+    sl = sliced_line
+    
     def openAndClosed(self):
         """Explode and then classify group each contour into open/closed pens; (what is this good for?)"""
         dp_open = DATPen()
@@ -902,7 +1167,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
         start = 0
         end = end * cc.calcCurveLength()
         pv = cc.subsegment(start, end)
-        print(">", start, end)
         self.value = pv
         return self
     
@@ -913,6 +1177,11 @@ class DATPen(RecordingPen, DATPenLikeObject):
         tv = t * cc.calcCurveLength()
         p, tangent = cc.subsegmentPoint(start=0, end=tv)
         return p, tangent
+    
+    def split_t(self, t=0.5):
+        a = self.value[0][-1][0]
+        b, c, d = self.value[-1][-1]
+        return splitCubicAtT(a, b, c, d, t)
     
     def length(self, t=1):
         """Get the length of the curve for time `t`"""
@@ -1127,7 +1396,40 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 paths.append(bbp)
                 bbp = beziers.path.BezierPath()
         return paths
+    
+    def constants(self, **kwargs):
+        if not hasattr(self, "c"):
+            self.c = DATConstants()
 
+        res = kwargs
+        
+        for k, v in res.items():
+            if callable(v):
+                v = v(self)
+            elif isinstance(v, str):
+                v = eval(self.varstr(v))
+                #v = self.bx / self.varstr(v)
+            self.c.lookup[k] = v
+            setattr(self.c, k, v)
+        return self
+    
+    def declare(self, *whatever):
+        # TODO do something with what's declared somehow?
+        return self
+    
+    def varstr(self, v):
+        #_vs = re.sub(r"\$([^\s\$]+)", lambda m: str("g.c." + m.group(1)), v)
+        #_vs = re.sub(r"\&([^\s\$]+)", lambda m: str("g." + m.group(1)), _vs)
+        #print(">>>", _vs)
+        vs = re.sub(r"\$([^\s\$]+)", lambda m: str(eval("g.c." + m.group(1), {"g":self})), v)
+        vs = re.sub(r"\&([^\s\$]+)", lambda m: str(eval("g." + m.group(1), {"g":self})), vs)
+        #print(">>>", vs)
+        return vs
+    
+    vs = varstr
+
+    def bvs(self, v):
+        return self.bounds() % self.varstr(v)
 
     def bp(self):
         try:
@@ -1157,12 +1459,14 @@ class DATPens(DATPen):
         self.frame = None
         self.data = {}
         self.visible = True
+        self.registrations = {}
+        self.guides = {}
 
         if isinstance(pens, DATPen):
-            self += pens
+            self.append(pens)
         else:
             for pen in pens:
-                self += pen
+                self.append(pen)
     
     def __str__(self):
         v = "" if self.visible else "ø-"
@@ -1214,6 +1518,7 @@ class DATPens(DATPen):
         dps = DATPens()
         for p in self.pens:
             dps.append(p.copy(with_data=with_data))
+        dps.registrations = self.registrations.copy()
         return dps
     
     def __getitem__(self, index):
@@ -1245,8 +1550,12 @@ class DATPens(DATPen):
         return self
     
     def append(self, pen, allow_blank=False):
+        if callable(pen):
+            pen = pen(self)
         if pen or allow_blank:
-            if isinstance(pen, DATPenLikeObject):
+            if isinstance(pen, Rect):
+                return self.pens.append(DATPen(pen))
+            elif isinstance(pen, DATPenLikeObject):
                 self.pens.append(pen)
             else:
                 try:
@@ -1258,6 +1567,8 @@ class DATPens(DATPen):
                     self.pens.append(pen)
                     #print(">>> append rejected", pen)
         return self
+    
+    ap = append
     
     def extend(self, pens):
         if hasattr(pens, "pens"):
@@ -1371,9 +1682,57 @@ class DATPens(DATPen):
         self._in_progress_pen = None
         return self
     
+    def get(self, k):
+        if k in self.registrations:
+            return DATPen().rect(self.registrations[k])
+        else:
+            tagged = self.fft(k)
+            if tagged:
+                return tagged.copy()
+    
+    def _register(self, lookup, **kwargs):
+        res = kwargs
+        
+        def keep(k, v, invisible=False):
+            if k != "_":
+                if not k.startswith("_") and not k.startswith("Ƨ"):
+                    if not invisible:
+                        lookup[k] = v
+                else:
+                    k = k[1:]
+                setattr(self, k, v)
+        
+        for k, v in res.items():
+            if callable(v):
+                v = v(self)
+            elif isinstance(v, str):
+                v = self.bx % self.varstr(v)
+            if "ƒ" in k:
+                for idx, _k in enumerate(k.split("ƒ")):
+                    keep(_k, v[idx], invisible=k.startswith("Ƨ"))
+            else:
+                keep(k, v)
+        return self
+    
+    def register(self, **kwargs):
+        return self._register(self.registrations, **kwargs)
+    
+    def guide(self, *args, **kwargs):
+        for arg in args:
+            kwargs[str(random())] = arg
+        return self._register(self.guides, **kwargs)
+    
+    def realize(self):
+        for k, v in self.registrations.items():
+            self.append(DATPen().rect(v).tag(k))
+        return self
+    
     def record(self, pen):
         """Alias for append"""
-        return self.append(pen)
+        if callable(pen):
+            return self.append(pen(self))
+        else:
+            return self.append(pen)
     
     def explode(self):
         """Noop on a set"""
@@ -1493,16 +1852,42 @@ class DATPens(DATPen):
             if p.getTag() == tag:
                 yield p
     
+    def fmmap(self, filter_fn:Callable[[int, DATPen], bool], map_fn:Callable[[int, DATPen], None]):
+        for idx, p in enumerate(self.pens):
+            if filter_fn(idx, p):
+                map_fn(idx, p)
+        return self
+
     def ffg(self, glyph_name):
         """(f)ind the (f)irst (g)lyph named this name"""
         return list(self.glyphs_named(glyph_name))[0]
     
-    def fft(self, tag):
+    def fft(self, tag, fn=None):
         """(f)ind the (f)irst (t)agged with `tag`"""
         try:
-            return list(self.tagged(tag))[0]
+            tagged = list(self.tagged(tag))[0]
+            if fn:
+                fn(tagged)
+                return self
+            else:
+                return tagged
         except:
+            if fn:
+                return self
             return None
+    
+    def remove(self, *args):
+        """remove a pen from these pens by identify, or by tag if a string is passed"""
+        for k in args:
+            if k in self.registrations:
+                del self.registrations[k]
+            elif isinstance(k, str):
+                tagged = self.fft(k)
+                if tagged:
+                    self.pens.remove(tagged)
+            else:
+                self.pens.remove(k)
+        return self
     
     def mfilter(self, fn):
         """Same as `filter` but (m)utates this DATPens
@@ -1706,3 +2091,5 @@ class DATPens(DATPen):
         return self
 
 DATPenSet = DATPens
+DPS = DATPens
+DP = DATPen

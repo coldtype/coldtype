@@ -9,6 +9,7 @@ from coldtype.color import normalize_color
 from coldtype.text.reader import normalize_font_prefix, Font
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
+from coldtype.pens.datimage import DATImage
 from coldtype.pens.skiapen import SkiaPen
 
 try:
@@ -205,6 +206,8 @@ class renderable():
         elif isinstance(pens, DATPen):
             return DATPens([pens])
         elif isinstance(pens, DATText):
+            return DATPens([pens])
+        elif isinstance(pens, DATImage):
             return DATPens([pens])
         elif not isinstance(pens, DATPens):
             return DATPens(pens)
