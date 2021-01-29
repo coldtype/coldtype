@@ -4,11 +4,11 @@ from coldtype.midi.controllers import LaunchControlXL
 import json
 
 datafile = Path("~/robofont-coldtype.json").expanduser()
-tl = Timeline(50)
+tl = Timeline(30, fps=24)
 
 @animation((1500, 1000), timeline=tl, watch_soft=[datafile], rstate=1, bg=1)
 def stub(f, rs):
-    os.system(f"robofont -p {stub.codepath}")
+    #os.system(f"robofont -p {stub.codepath}")
     #return
 
     r = f.a.r

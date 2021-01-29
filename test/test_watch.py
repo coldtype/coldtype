@@ -11,5 +11,4 @@ def test_watch_ufo_source(r):
             Style("assets/RecMono-CasualItalic.ttf", 50))
             .pens()
             .f(0.25)
-            .align(r.take(150, "mny"))),
-    ])
+            .align(r.take(150, "mny")))])
