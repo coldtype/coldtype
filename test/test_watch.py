@@ -1,6 +1,6 @@
 from coldtype import *
 
-obvs_ufo = DefconFont("assets/ColdtypeObviously_BlackItalic.ufo")
+obvs_ufo = raw_ufo("assets/ColdtypeObviously_BlackItalic.ufo")
 generic_txt = __sibling__("test_watch_scratch.txt")
 
 @renderable(watch=[obvs_ufo.path, generic_txt])

@@ -4,12 +4,12 @@ from coldtype.test import *
 
 @renderable((1200, 500), rstate=1)
 def stub(r, rs):
-    kb = rs.cmd or "".join(rs.keybuffer)
+    txt = rs.read_text(clear=False)
     
     rt = (RichText(r,
-        ("This is a\n" + (kb + "\n" if kb else "") + "program").upper(),
+        ("This is a\n" + (txt + "\n" if txt else "") + "program").upper(),
         dict(default=Style(mutator, 100, wght=0.5, wdth=0.15)),
-        fit=r.w - 100 if rs.cmd else None)
+        fit=r.w - 100 if text else None)
         .xa()
         .align(r)
         .f(0))
