@@ -417,6 +417,9 @@ class Point():
     def __matmul__(self, other):
         return self.sety(other)
     
+    def __or__(self, other):
+        return Line(self, other)
+    
     def as3d(self):
         return Point3D(self)
 

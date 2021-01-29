@@ -384,6 +384,25 @@ def L(r, g):
             (g.base, g.earb, "NW", 200, 80, 0.85)]))
 
 @glyphfn()
+def Z(r, g:Glyph):
+    diag = g.c.ldiag + 30
+    return (g
+        .set_width(g.c.stem*4.5)
+        .register(
+            cap=f"1 +$sfht ^s -{(xti:=30)} 0",
+            eart=f"-$stem +$earht ^o {xti} 0",
+            base="1 -$sfhb",
+            earb="+$stem -$earhb")
+        .ap(hd:=DP().lsdiag(g.bx.pne/-g.c.hdiag | g.bx.pne, g.bx.psw | g.bx.psw/g.c.hdiag))
+        .guide(hdlm=hd.sl(0).i(0.5, ~hd.sl(2)))
+        .ap(DP().lsdiagc(g.cap.ew, g.cap.ee, g.hdlm))
+        .ap(~DP().lsdiagc(g.base.ee, g.base.ew, g.hdlm))
+        .remove("cap", "base")
+        .brackets([
+            (g.cap, g.eart, "SE", 200, 80, 0.85),
+            (g.base, g.earb, "NW", 200, 80, 0.85)]))
+
+@glyphfn()
 def T(r, g):
     return (g
         .set_width(g.c.stem*4.5)
@@ -726,8 +745,15 @@ def W(r, g):
             (g.capr, ld2.sl(2), "SE")
         ]))
 
-def diag(l1, l2):
-    return DP().mt(l1.start).lt(l2.start, l2.end, l1.end).cp()
+def lsdiagc(self, l1, l2, cl):
+    return (self
+        .mt(l1.start)
+        .lt(Line(l1.start, l2.start) & cl)
+        .lt(Line(l1.end, l2.end) & cl)
+        .lt(l1.end)
+        .cp())
+
+DATPen.lsdiagc = lsdiagc
 
 @glyphfn()
 def X(r, g):
@@ -742,21 +768,21 @@ def X(r, g):
         .set_width(g.br.mxx)
         .ap(hd:=DP()
             .lsdiag(g.cl.t(0, hdw).es, g.br.t(0, hdw).en))
-        .ap(ldl:=DP()
-            .lsdiag(g.bl.t(0, ldw).en, g.cr.t(0, ldw).o(-ox, 0).es)
-            .ƒ(hd.sl(0), g.bx.ew))
+        .guide(hdlm=hd.sl(0).i(0.5, ~hd.sl(2)))
+        .ap(ldl:=~DP()
+            .lsdiagc(g.bl.t(0, ldw).en, g.cr.t(0, ldw).o(-ox, 0).es, g.hdlm))
         .ap(ldr:=DP()
-            .lsdiag(g.bl.t(0, ldw).o(ox, 0).en, g.cr.t(0, ldw).es)
-            .ƒ(hd.sl(2), ~g.bx.ee))
+            .lsdiagc(g.cr.t(0, ldw).es, g.bl.t(0, ldw).o(ox, 0).en, g.hdlm))
         .brackets([
             (g.cl, ~hd.sl(0), "SW"),
             (g.cl, hd.sl(2), "SE"),
-            (g.bl, ~ldl.sl(2), "NW"),
+            (g.bl, ldl.sl(3), "NW"),
             (g.bl, ~ldl.sl(1), "NE"),
-            (g.cr, ~ldr.sl(2), "SW"),
-            (g.cr, ldr.sl(0), "SE"),
+            (g.cr, ~ldr.sl(0), "SW"),
+            (g.cr, ldr.sl(2), "SE"),
             (g.br, hd.sl(0), "NW"),
-            (g.br, ~hd.sl(2), "NE")]))
+            (g.br, ~hd.sl(2), "NE")
+            ]))
 
 @glyphfn()
 def Y(r, g):
@@ -765,37 +791,13 @@ def Y(r, g):
         .register(
             clƒ_ƒcr=f"1 +$sfht ^c $sfw+{(f:=50)} $gap $sfw-{f} a",
             base="1 -$sfhb ^m -&cl.pc.x-10 ø ^m +&cr.pc.x+10 ø",
-            stem=λg: g.stem % g.vs("=$hdiag -0.5 ^m =&base.pc.x ø"))
-        .ap(diagl:=DP("diagl",
-            Line(g.cl.ps, g.base.pn // (yup:=120)))
-            .ol(g.c.hdiag).ƒ(g.bx.ew, ~(fst:=g.stem.setmxy(g.bx.mxy)).ee))
-        .ap(diagr:=DP("diagr",
-            Line(g.cr.ps, g.base.pn // (yup-30)))
-            .ol(g.c.ldiag).ƒ(~g.bx.ee, fst.ew))
-        .guide(diagl.sl(3))
+            stem="&stem ^t =$hdiag -0.45 ^m =&base.pc.x ø")
+        .ap(hd:=DP().lsdiag(g.cl.t(0, g.c.hdiag).es, g.stem.en))
+        .ap(ld:=DP().lsdiag(g.cr.t(0, g.c.ldiag).es, g.stem.t(1, g.c.ldiag).en))
         .brackets([
             (g.base, g.stem, "N"),
-            (g.cl, ~diagl.sl(3), "SW"),
-            (g.cr, diagr.sl(0), "SE")]))
-
-@glyphfn()
-def Z(r, g:Glyph):
-    diag = g.c.ldiag + 30
-    return (g
-        .set_width(g.c.stem*4.5)
-        .register(
-            cap=f"1 +$sfht ^s -{(xti:=30)} 0",
-            base="1 -$sfhb",
-            eart=f"-$stem +$earht ^o {xti} 0",
-            earb="+$stem -$earhb")
-        .ap(DP(l:=Line(g.cap.pne // (d:=diag), g.base.psw // -d))
-            .ol(diag).ƒ(g.bx))
-        .ap(DP(g.cap).ƒ(g.bx.ew, g.bx.en, l))
-        .ap(DP(g.base).ƒ(g.bx.ee, ~g.bx.es, ~l))
-        .remove("cap", "base")
-        .brackets([
-            (g.cap, g.eart, "SE"),
-            (g.base, g.earb, "NW")]))
+            (g.cl, ~hd.sl(0), "SW"),
+            (g.cr, ld.sl(2), "SE")]))
 
 @glyphfn()
 def space(r, g):
@@ -839,7 +841,7 @@ def build_glyph(cap):
     
     return glyph
 
-@font()
+@font((1300, 1500))
 def single_char(f, rs):
     r = f.a.r
     
