@@ -105,7 +105,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
             elif isinstance(arg, Rect):
                 self.rect(arg)
             elif isinstance(arg, Line):
-                self.line(arg)
+                self.line(arg).s(0, 0.5, 1).sw(5)
             elif isinstance(arg, Point):
                 self.oval(Rect.FromCenter(arg, 50, 50))
     

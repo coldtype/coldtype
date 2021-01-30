@@ -2,6 +2,7 @@ from fontTools.misc.arrayTools import unionRect
 from fontTools.misc.transform import Transform
 from coldtype.interpolation import norm
 from functools import partialmethod
+from more_itertools import split_at
 from enum import Enum
 import math, re
 
@@ -1124,33 +1125,88 @@ class Rect():
         elif symbol == "=":
             return "md" + d
     
-    def sign_to_edge(self, idx, sign):
-        d = ["x", "y"][idx]
-        if sign == 0:
-            return "md" + d
-        elif sign < 0:
-            return "mn" + d
-        else:
-            return "mx" + d
+    def sign_to_dim(self, sign):
+        xy = "x"
+        if isinstance(sign, complex):
+            xy = "y"
+            sign = sign.imag
+        return xy, sign
     
-    def t(self, e, n):
-        xy = 0
-        if isinstance(e, complex):
-            xy = 1
-            e = e.imag
-        return self.take(n, self.sign_to_edge(xy, e))
+    def sign_to_edge(self, sign):
+        xy, sign = self.sign_to_dim(sign)
+        if sign == 0:
+            return "md" + xy
+        elif sign < 0:
+            return "mn" + xy
+        else:
+            return "mx" + xy
+    
+    def t(self, sign, n):
+        return self.take(n, self.sign_to_edge(sign))
+    
+    def s(self, sign, n):
+        return self.subtract(n, self.sign_to_edge(sign))
+    
+    def i(self, sign, n):
+        xy, _ = self.sign_to_dim(sign)
+        return self.inset(n if xy == "x" else 0, n if xy == "y" else 0)
     
     def __mod__(self, s):
         sfx = ["x", "y"]
 
+        props = {
+            "⊢": "ew",
+            "⊣": "ee",
+            "⊤": "en",
+            "⊥": "es",
+            "↕": "ecx",
+            "↔": "ecy",
+            "←": "pw",
+            "↑": "pn",
+            "→": "pe",
+            "↓": "ps",
+            "↖": "pnw",
+            "↗": "pne",
+            "↘": "pse",
+            "↙": "psw",
+            "•": "pc",
+        }
+
+        ops = {
+            "t": 1, # take
+            "i": 0, # inset
+            "o": 0, # offset
+            "s": 0, # subtract
+            "e": 0, # expand
+            "m": "ø", # maxima
+            "c": None, # columns
+            "r": None, # rows
+            "@": None, # get-at-index
+        }
+
         def do_op(r, xs):
             op = xs[0]
-            if op in ["t", "i", "o", "s", "m", "c", "r", "a", "l", "@", "e"]:
+            if op in ops.keys():
                 op = op
                 xs = xs[1:].strip()
             else:
                 op = "t"
                 xs = xs.strip()
+            
+            if xs[0] == "x":
+                xs = xs[1:].strip()
+                op_default = ops.get(op)
+                if op_default is not None:
+                    xs = xs + " " + str(op_default)
+            elif xs[0] == "y":
+                xs = xs[1:].strip()
+                op_default = ops.get(op)
+                #print("dfeault", ops.get(op))
+                if op_default is not None:
+                    xs = str(op_default) + " " + xs
+            
+            #print("--------------")
+            #print(op, xs)
             
             _xs = xs
             xs = re.split(r"\s", xs)
@@ -1194,12 +1250,15 @@ class Rect():
                 return (r
                     .subtract(amounts[0], edges[0])
                     .subtract(amounts[1], edges[1]))
-            elif op == "e": # subtract
+            elif op == "e": # expand
                 return (r
                     .expand(amounts[0], edges[0])
                     .expand(amounts[1], edges[1]))
             elif op == "i": # inset
-                return (r.inset(amounts[0], amounts[1]))
+                if len(amounts) > 1:
+                    return (r.inset(amounts[0], amounts[1]))
+                else:
+                    return r.inset(amounts[0])
             elif op == "o": # offset
                 return (r.offset(amounts[0], amounts[1]))
             elif op == "l": # limits
@@ -1256,9 +1315,23 @@ class Rect():
             else:
                 raise Exception("op", op, "not supported")
 
-        ys = s.split("^")
+        seps = ["^", *props.keys()]
+        ys = split_at(s, lambda x: x in seps, keep_separator=True)
+
         r = self
         for y in ys:
+            if len(y) == 0:
+                continue
+            else:
+                y = "".join(y)
+            
+            if y in seps:
+                if y == "^":
+                    continue
+                else:
+                    r = getattr(r, props[y])
+                    continue
+            
             if y.startswith("Rect("):
                 r = eval(y.strip())
             else:
