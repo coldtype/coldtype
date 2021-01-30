@@ -8,7 +8,7 @@ def epl1(r):
     #    .align(r)
     #    .f(0))
     return DPS([
-        DP(r%"^i100^sy+100^mx-200↔^oy100"),
+        DP(r%"I100/SY+100/MX-200/—/OY100"),
         (DP(r.inset(100).subtract(100, "mxy").setmnx(200).ecy.offset(0, 100))
             .s(0, 0.2).sw(10)),
     ])

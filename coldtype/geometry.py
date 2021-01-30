@@ -1159,8 +1159,8 @@ class Rect():
             "⊣": "ee",
             "⊤": "en",
             "⊥": "es",
-            "↕": "ecx",
-            "↔": "ecy",
+            "|": "ecx",
+            "—": "ecy",
             "←": "pw",
             "↑": "pn",
             "→": "pe",
@@ -1173,14 +1173,14 @@ class Rect():
         }
 
         ops = {
-            "t": 1, # take
-            "i": 0, # inset
-            "o": 0, # offset
-            "s": 0, # subtract
-            "e": 0, # expand
-            "m": "ø", # maxima
-            "c": None, # columns
-            "r": None, # rows
+            "T": 1, # take
+            "I": 0, # inset
+            "O": 0, # offset
+            "S": 0, # subtract
+            "E": 0, # expand
+            "M": "ø", # maxima
+            "C": None, # columns
+            "R": None, # rows
             "@": None, # get-at-index
         }
 
@@ -1190,23 +1190,23 @@ class Rect():
                 op = op
                 xs = xs[1:].strip()
             else:
-                op = "t"
+                op = "T"
                 xs = xs.strip()
             
-            if xs[0] == "x":
+            if xs[0] == "X":
                 xs = xs[1:].strip()
                 op_default = ops.get(op)
                 if op_default is not None:
                     xs = xs + " " + str(op_default)
-            elif xs[0] == "y":
+            elif xs[0] == "Y":
                 xs = xs[1:].strip()
                 op_default = ops.get(op)
                 #print("dfeault", ops.get(op))
                 if op_default is not None:
                     xs = str(op_default) + " " + xs
             
-            #print("--------------")
-            #print(op, xs)
+            print("--------------")
+            print(op, xs, "<")
             
             _xs = xs
             xs = re.split(r"\s", xs)
@@ -1214,7 +1214,7 @@ class Rect():
             amounts = []
             
             for idx, x in enumerate(xs):
-                if op in ["t", "s", "m", "l", "e"]:
+                if op in ["T", "S", "M", "L", "E"]:
                     if x[0] == "-":
                         edges.append("mn" + sfx[idx])
                     elif x[0] == "+":
@@ -1233,6 +1233,7 @@ class Rect():
                         edges.append(None)
                         amounts.append("ø")
                         continue
+                    print(">attempt:", x[1:])
                     amounts.append(float(x[1:]))
                 else:
                     if x == "auto" or x == "a":
@@ -1242,26 +1243,26 @@ class Rect():
                     else:
                         amounts.append(float(x))
 
-            if op == "t": # take
+            if op == "T": # take
                 return (r
                     .take(amounts[0], edges[0])
                     .take(amounts[1], edges[1]))
-            elif op == "s": # subtract
+            elif op == "S": # subtract
                 return (r
                     .subtract(amounts[0], edges[0])
                     .subtract(amounts[1], edges[1]))
-            elif op == "e": # expand
+            elif op == "E": # expand
                 return (r
                     .expand(amounts[0], edges[0])
                     .expand(amounts[1], edges[1]))
-            elif op == "i": # inset
+            elif op == "I": # inset
                 if len(amounts) > 1:
                     return (r.inset(amounts[0], amounts[1]))
                 else:
                     return r.inset(amounts[0])
-            elif op == "o": # offset
+            elif op == "O": # offset
                 return (r.offset(amounts[0], amounts[1]))
-            elif op == "l": # limits
+            elif op == "L": # limits
                 # TODO simplify with setlmx* series
                 if amounts[0] != "ø":
                     x = amounts[0]
@@ -1280,7 +1281,7 @@ class Rect():
                         if y < r.mxy:
                             r = r.setmxy(y)
                 return r
-            elif op == "m": # maxima
+            elif op == "M": # maxima
                 if amounts[0] != "ø":
                     if edges[0] == "mnx":
                         r = r.setmnx(amounts[0])
@@ -1296,14 +1297,14 @@ class Rect():
                     elif edges[1] == "mdy":
                         r = r.setmdy(amounts[1])
                 return r
-            elif op == "c": # columns
+            elif op == "C": # columns
                 ws = self.parse_line(r.w, _xs)
                 rs = []
                 for w in ws:
                     _r, r = r.divide(w, "mnx")
                     rs.append(_r)
                 return rs
-            elif op == "r": # rows
+            elif op == "R": # rows
                 ws = self.parse_line(r.h, _xs)
                 rs = []
                 for w in ws:
@@ -1315,7 +1316,7 @@ class Rect():
             else:
                 raise Exception("op", op, "not supported")
 
-        seps = ["^", *props.keys()]
+        seps = ["^", "/", *props.keys()]
         ys = split_at(s, lambda x: x in seps, keep_separator=True)
 
         r = self
@@ -1326,10 +1327,10 @@ class Rect():
                 y = "".join(y)
             
             if y in seps:
-                if y == "^":
+                if y in props.keys():
+                    r = getattr(r, props[y])
                     continue
                 else:
-                    r = getattr(r, props[y])
                     continue
             
             if y.startswith("Rect("):
