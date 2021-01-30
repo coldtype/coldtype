@@ -1071,7 +1071,7 @@ class Rect():
         return Rect(self.x, self.y, self.w, h)
     
     def parse_line(self, d, line):
-        parts = re.split(r"\s", line)
+        parts = re.split(r"\s|ƒ", line)
         reified = []
         for p in parts:
             if p == "auto" or p == "a":
@@ -1209,7 +1209,7 @@ class Rect():
             print(op, xs, "<")
             
             _xs = xs
-            xs = re.split(r"\s", xs)
+            xs = re.split(r"\s|ƒ", xs)
             edges = []
             amounts = []
             
@@ -1316,7 +1316,7 @@ class Rect():
             else:
                 raise Exception("op", op, "not supported")
 
-        seps = ["^", "/", *props.keys()]
+        seps = ["/", *props.keys()]
         ys = split_at(s, lambda x: x in seps, keep_separator=True)
 
         r = self

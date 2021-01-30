@@ -1421,8 +1421,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
         #_vs = re.sub(r"\$([^\s\$]+)", lambda m: str("g.c." + m.group(1)), v)
         #_vs = re.sub(r"\&([^\s\$]+)", lambda m: str("g." + m.group(1)), _vs)
         #print(">>>", _vs)
-        vs = re.sub(r"\$([^\s\$\/]+)", lambda m: str(eval("g.c." + m.group(1), {"g":self})), v)
-        vs = re.sub(r"\&([^\s\$\/]+)", lambda m: str(eval("g." + m.group(1), {"g":self})), vs)
+        vs = re.sub(r"\$([^ƒ\s\$\/]+)", lambda m: str(eval("g.c." + m.group(1), {"g":self})), v)
+        vs = re.sub(r"\&([^ƒ\s\$\/]+)", lambda m: str(eval("g." + m.group(1), {"g":self})), vs)
         print(">>>", vs)
         return vs
     
