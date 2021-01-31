@@ -72,7 +72,7 @@ class Glyph(DATPens):
     setWidth = set_width
     
     def add_stem(self):
-        return self.register(stem="TX-$stem/OX$instem")
+        return self.register(sl="TX-$stem/OX$instem")
     
     @property
     def bxr(self):
@@ -409,49 +409,45 @@ def P(r, g, mod=None, xc=0, ci=30, my=0, mn=0):
         .set_width(g.c.stem*4.5+xc)
         .add_stem()
         .guide(
+            sr=f"TX +$stem+{ci}",
             center="&gxb/OY-30",
             bxc=f"SY-&center.mny+{mn}",
-            _crv="&bxc/MX-&stem.mxx+50",
+            _crv="&bxc/MX-&sl.mxx+50",
             _midƒkxƒ_cl=f"&bxc/R {mh} a $sfht",
-            kx=f"&kx/SX+$stem+{ci}",
-            _mid="&mid/MX-&stem.pc.x/MX+&crv.mnx",
+            kx=f"&kx/MX+&sr.mnx",
+            _mid="&mid/MX-&sl.pc.x/MX+&crv.mnx",
             cl="&cl/MX+&crv.mnx")
-        .register(bl="-$sfw+10 -$sfhb")
+        .register(bl="&gb/MX+&sr.mnx-$gap")
         .chain(mod)
         .constants(ci=0.9, co=0.65)
-        .ep("&cl↖↙↘ &kx→|↗|$ci &mid↗|↘|$ci &mid↖↙↘ &crv→|↘|$co &cl↗|↗|$co",
+        .ep("&cl↖↙↘ ↗|$ci|&kx→ ↘|$ci|&mid↗ &mid↖↙↘ ↘|$co|&crv→ ↗|$co|&cl↗",
             tag="curve")
         .brackets([
-            (g.cl, g.stem, "SW"),
-            (g.bl, g.stem, "N")]))
+            (g.cl, g.sl, "SW"),
+            (g.bl, g.sl, "N")]))
 
 @glyphfn()
 def B(r, g):
     return (P.func(r, g, my=-10, mn=30, xc=0, mod=λg: (g
-        .register(
-            base=g.base.take(g.cap.w, "mnx")))
+        .register(bl=g.bl.take(g.cl.w, "mnx"))))
+        .remove("curve")
         .guide(
-            _bbxc=f"M-&curve.mnx +&knock.mny/EX+{(bnx:=10)}",
-            _bknock=f"&bbxc/M+&knock.mxx+{bnx*1} -&base.mxy/MY+&mid.mny"))
-        .ap(DP("belly")
-            .mt(lp:=g.mid.pse)
-            .bct(g.bknock.pe, "NE", g.c.cicf)
-            .bct(g.bknock.psw, "SE", g.c.cicf)
-            .lt(g.base.pnw, g.base.psw, g.base.pse)
-            .bct(g.bbxc.pe/30, "SE", g.c.cocf)
-            .bct(g.mid.pne, "NE", g.c.cocf)
-            .cp()
-            .mod_pt(5, 0, (c:=20, 0))
-            .mod_pt(6, 0, (c/2, 0)))
-        .fft("curve", λp: (p
-            .declare(n:=30) # TODO good example of a "re-tune curve" function
-            .mod_pt(8, 2, (0, n/3))
-            .mod_pt(8, 1, (0, n))
-            .mod_pt(8, 0, (-n, 0))))
-        .remove("base")
+            _bbxc=f"M-&crv.mnx +&kx.mny/EX+{(bnx:=10)}",
+            _bkx=f"&bbxc/M+&kx.mxx+{bnx*1} -&bl.mxy/MY+&mid.mny")
+        .ep("""&cl↖↙↘ ↗|$ci|&kx→ ↘|$ci|&mid↗ &mid↖↙ #↙OX+20/OY+10
+            ↘|$co|&crv→ ↗|$co|&cl↗""")
+        .ep("""&mid↙↘ ↗|$ci|&bkx→ ↘|$ci|#↙ &bl↖↙
+            #↘OX+20 ↘|$co|&bbxc→OX+30 ↗|$co|&mid↗OX-50/OY-10""")
         .brackets([
-            (g.cap, g.stem, "SW"),
-            (g.base, g.stem, "NW")]))
+            (g.cl, g.sl, "SW"),
+            (g.bl, g.sl, "NW")]))
+
+@glyphfn()
+def R(r, g):
+    return (P.func(r, g, ci=50, mn=30, mod=λg: g
+        .guide(br="+$sfw -$sfhb/OX60/MX-&sr.mnx")
+        .ep("""&mid↘OX-30 ↗|65|&br↖ ↙|75|&sr↘OX-20 &br↘↗
+            &sr/MY-&br.mxy↘OX-10 ↗|70|&mid↘OX50/OY20""")))
 
 @glyphfn()
 def D(r, g):
@@ -459,7 +455,6 @@ def D(r, g):
         .set_width(g.c.stem*4.5)
         .add_stem()
         .guide(
-            sl="&stem",
             sr="TX+$stem+30",
             Ƨkx="&gm/MX-&sl.mxx+20/MX+&sr.mnx",
             kbƒ_ƒkt="&kx/R a $xbarh+-10 a")
@@ -469,22 +464,6 @@ def D(r, g):
         .brackets([
             (g.gc, g.sl, "SW"),
             (g.gb, g.sl, "NW")]))
-
-@glyphfn()
-def R(r, g):
-    return (P.func(r, g, mn=30, mod=λg: g
-        .register(bl=g.base.subtract(20, "mxx"))
-        .remove("base")
-        .guide(br="+$sfw -$sfhb/OX60")
-        .ap(DP("leg")
-            .mt(g.mid.pse/-30)
-            .bct(brs:=g.bl.pne/(g.c.gap+10), "NE", 0.65)
-            .bct(brs/(g.c.stem+10)@0, "SW", 0.85)
-            .lt(g.br.pse)
-            .lt(p:=g.br.pne)
-            .lt(brs/(g.c.stem+25))
-            .bct(g.mid.pse.o(50, 20), "NE", 0.65)
-            .cp())))
 
 @glyphfn()
 def N(r, g):
@@ -542,9 +521,10 @@ def O(r, g, clx=0):
         .space(n:=g.l+5, n)
         .constants(
             hw=g.c.stem+35)
+        .guide(slƒkyƒsr="IY-$over/C $hw a $hw")
         .guide(
             o="IY-$over",
-            i="IX+$hw/SY+$sfht/SY-$sfhb"))
+            i="&ky/MY+&gc.mny/MY-&gb.mxy"))
 
     def o(r, off, offc):
         return (DATPen()
