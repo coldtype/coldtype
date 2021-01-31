@@ -274,23 +274,17 @@ def I(r, g):
 def J(r, g):
     return (g
         .setWidth(g.c.stem*4.25)
-        .register(
-            earƒknckƒsrƒrght="C $stem+20 a $stem $instem",
+        .guide(
+            earƒkyƒsrƒrght="C $stem+20 a $stem $instem",
             ear="&ear/MY+&gxb.mdy",
+            ky="&ky/EY-$over")
+        .register(
             sr="&sr/MY-&gxb.mny",
-            knck="&knck/EY-$over",
-            cr="&gc/MX-&knck.mnx")
-        .remove("knck", "rght")
-        .guide(iknck="&knck/SY-&gb.h")
-        .ap(DP()
-            .mt(g.sr.psw // 60)
-            .bct(g.iknck.ps, "SE", ic:=0.85)
-            .bct(g.ear.pne, "SW", ic+0.03)
-            .lt(g.ear.pnw)
-            .bct(g.knck.ps, "SW", oc:=0.75)
-            .bct(g.sr.pse, "SE", oc-0.08)
-            .cp())
-        .remove("ear")
+            cr="&gc/MX-&ky.mnx")
+        .remove("ky", "rght", "ear")
+        .guide(iky="&ky/SY-&gb.h")
+        .constants(ic=85, oc=75)
+        .ep("&sr↙ ↘|$ic|&iky↓ ↙|$ic|&ear↗ #↖ ↙|$oc|&ky↓ ↘|$oc-8|&sr↘")
         .brackets([(g.cr, g.sr, "S")]))
 
 @glyphfn()
@@ -417,31 +411,23 @@ def P(r, g, mod=None, xc=0, ci=30, my=0, mn=0):
         .guide(
             center="&gxb/OY-30",
             bxc=f"SY-&center.mny+{mn}",
-            _curve="&bxc/MX-&stem.mxx+50",
-            _midƒ_knockƒ_cap=f"&bxc/R {mh} a $sfht",
-            _knock=f"&knock/SX+$stem+{ci}",
-            _mid="&mid/MX-&stem.pc.x/MX+&curve.mnx",
-            _cap="&cap/MX+&curve.mnx")
-        .register(
-            base="-$sfw+10 -$sfhb")
+            _crv="&bxc/MX-&stem.mxx+50",
+            _midƒkxƒ_cl=f"&bxc/R {mh} a $sfht",
+            kx=f"&kx/SX+$stem+{ci}",
+            _mid="&mid/MX-&stem.pc.x/MX+&crv.mnx",
+            cl="&cl/MX+&crv.mnx")
+        .register(bl="-$sfw+10 -$sfhb")
         .chain(mod)
-        .constants(cicf=0.9, cocf=0.65)
-        .ap(DP("curve")
-            .mt(g.cap.pnw)
-            .lt(g.cap.psw, g.cap.pse)
-            .bct(g.knock.pe, "NE", g.c.cicf)
-            .bct(g.mid.pne, "SE", g.c.cicf)
-            .lt(g.mid.pnw, g.mid.psw, g.mid.pse)
-            .bct(g.curve.pe, "SE", g.c.cocf)
-            .bct(g.cap.pne, "NE", g.c.cocf)
-            .cp())
+        .constants(ci=0.9, co=0.65)
+        .ep("&cl↖↙↘ &kx→|↗|$ci &mid↗|↘|$ci &mid↖↙↘ &crv→|↘|$co &cl↗|↗|$co",
+            tag="curve")
         .brackets([
-            (g.cap, g.stem, "SW"),
-            (g.base, g.stem, "N")]))
+            (g.cl, g.stem, "SW"),
+            (g.bl, g.stem, "N")]))
 
 @glyphfn()
 def B(r, g):
-    return (P.func(r, g, my=-10, mn=20, xc=0, mod=λg: (g
+    return (P.func(r, g, my=-10, mn=30, xc=0, mod=λg: (g
         .register(
             base=g.base.take(g.cap.w, "mnx")))
         .guide(
@@ -473,24 +459,16 @@ def D(r, g):
         .set_width(g.c.stem*4.5)
         .add_stem()
         .guide(
-            stemr="TX+$stem+30",
-            Ƨknck="&gm/MX-&stem.mxx+20/MX+&stemr.mnx",
-            knckbƒ_ƒknckt="&knck/R a $xbarh+-10 a")
-        .ap(DP("curve")
-            .mt(g.gc.psw)
-            .lt(g.knckt.pnw)
-            .bct(g.knckt.pse, "NE", (ic:=0.75))
-            .lt(g.knckb.pne)
-            .bct(g.knckb.psw, "SE", ic)
-            .lt(g.gb.pnw, g.gb.psw, g.stem.pse)
-            .bct(g.stemr.pe @ (g.knckb.pne.y+(n:=10)), "SE", (oc:=0.65))
-            .lt(g.stemr.pe @ (g.knckt.pse.y-n))
-            .bct(g.stem.pne, "NE", oc)
-            .lt(g.gc.pnw)
-            .cp())
+            sl="&stem",
+            sr="TX+$stem+30",
+            Ƨkx="&gm/MX-&sl.mxx+20/MX+&sr.mnx",
+            kbƒ_ƒkt="&kx/R a $xbarh+-10 a")
+        .constants(ic=75, oc=65)
+        .ep("""&gc↖↙ &kt↖ ↗|$ic|#↘ &kb↗ ↘|$ic|#↙ &gb↖↙
+            &sl↘ ↘|$oc|&sr→ &gxb↗/OY-20 ↗|$oc|&sl↗""")
         .brackets([
-            (g.gc, g.stem, "SW"),
-            (g.gb, g.stem, "NW")]))
+            (g.gc, g.sl, "SW"),
+            (g.gb, g.sl, "NW")]))
 
 @glyphfn()
 def R(r, g):

@@ -10,6 +10,24 @@ YOYO = "ma"
 
 MINYISMAXY = False
 
+EPL_SYMBOLS = {
+    "⊢": "ew",
+    "⊣": "ee",
+    "⊤": "en",
+    "⊥": "es",
+    "⌶": "ecx",
+    "Ｈ": "ecy",
+    "←": "pw",
+    "↑": "pn",
+    "→": "pe",
+    "↓": "ps",
+    "↖": "pnw",
+    "↗": "pne",
+    "↘": "pse",
+    "↙": "psw",
+    "•": "pc",
+}
+
 
 COMMON_PAPER_SIZES = {
     'letter': (612, 792),
@@ -352,6 +370,8 @@ class Point():
         """Interpolate with another point"""
         sx, sy = self
         ox, oy = other
+        if not isinstance(v, float) and v != 1:
+            v = v/100
         return Point((norm(v, sx, ox), norm(v, sy, oy)))
     
     def i(self, *args):
@@ -883,8 +903,15 @@ class Rect():
         return [Rect(x) for x in pieces(self.rect(), amount, edge)]
 
     def edge(self, edge):
+        if edge in EPL_SYMBOLS:
+            return getattr(self, EPL_SYMBOLS[edge])
+
         edge = txt_to_edge(edge)
         return Line(*edgepoints(self.rect(), edge))
+    
+    def e(self, e):
+        if e in EPL_SYMBOLS:
+            return getattr(self, EPL_SYMBOLS[e])
 
     def center(self):
         return Point(centerpoint(self.rect()))
@@ -927,6 +954,9 @@ class Rect():
         * S
         * SW
         """
+        if eh in EPL_SYMBOLS:
+            return getattr(self, EPL_SYMBOLS[eh])
+
         ev = txt_to_edge(ev)
         if eh == "C":
             return self.point(Edge.CenterX, Edge.CenterY)
@@ -1154,24 +1184,6 @@ class Rect():
     def __mod__(self, s):
         sfx = ["x", "y"]
 
-        props = {
-            "⊢": "ew",
-            "⊣": "ee",
-            "⊤": "en",
-            "⊥": "es",
-            "|": "ecx",
-            "—": "ecy",
-            "←": "pw",
-            "↑": "pn",
-            "→": "pe",
-            "↓": "ps",
-            "↖": "pnw",
-            "↗": "pne",
-            "↘": "pse",
-            "↙": "psw",
-            "•": "pc",
-        }
-
         ops = {
             "T": 1, # take
             "I": 0, # inset
@@ -1205,8 +1217,8 @@ class Rect():
                 if op_default is not None:
                     xs = str(op_default) + " " + xs
             
-            print("--------------")
-            print(op, xs, "<")
+            #print("--------------")
+            #print(op, xs, "<")
             
             _xs = xs
             xs = re.split(r"\s|ƒ", xs)
@@ -1233,7 +1245,7 @@ class Rect():
                         edges.append(None)
                         amounts.append("ø")
                         continue
-                    print(">attempt:", x[1:])
+                    #print(">attempt:", x[1:])
                     amounts.append(float(x[1:]))
                 else:
                     if x == "auto" or x == "a":
@@ -1316,7 +1328,7 @@ class Rect():
             else:
                 raise Exception("op", op, "not supported")
 
-        seps = ["/", *props.keys()]
+        seps = ["/", *EPL_SYMBOLS.keys()]
         ys = split_at(s, lambda x: x in seps, keep_separator=True)
 
         r = self
@@ -1327,8 +1339,8 @@ class Rect():
                 y = "".join(y)
             
             if y in seps:
-                if y in props.keys():
-                    r = getattr(r, props[y])
+                if y in EPL_SYMBOLS.keys():
+                    r = getattr(r, EPL_SYMBOLS[y])
                     continue
                 else:
                     continue

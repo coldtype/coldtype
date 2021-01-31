@@ -25,7 +25,7 @@ from noise import pnoise1
 
 import coldtype.pens.drawbot_utils as dbu
 
-from coldtype.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle
+from coldtype.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle, EPL_SYMBOLS
 from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
 from coldtype.color import Gradient, normalize_color, Color
 from coldtype.pens.misc import ExplodingPen, SmoothPointsPen, BooleanOp, calculate_pathop
@@ -97,7 +97,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.data = {}
         self.visible = True
 
-        for arg in args:
+        for idx, arg in enumerate(args):
             if isinstance(arg, str):
                 self.tag(arg)
             elif isinstance(arg, DATPen):
@@ -1418,18 +1418,78 @@ class DATPen(RecordingPen, DATPenLikeObject):
         return self
     
     def varstr(self, v):
-        #_vs = re.sub(r"\$([^\s\$]+)", lambda m: str("g.c." + m.group(1)), v)
-        #_vs = re.sub(r"\&([^\s\$]+)", lambda m: str("g." + m.group(1)), _vs)
-        #print(">>>", _vs)
-        vs = re.sub(r"\$([^ƒ\s\$\/]+)", lambda m: str(eval("g.c." + m.group(1), {"g":self})), v)
-        vs = re.sub(r"\&([^ƒ\s\$\/]+)", lambda m: str(eval("g." + m.group(1), {"g":self})), vs)
-        print(">>>", vs)
+        if not hasattr(self, "_last_vscr"):
+            self._last_vscr = None
+        
+        if "#" in v and self._last_vscr:
+            #print(">>>>>>>>>>", self._last_vscr)
+            v = v.replace("#", self._last_vscr)
+        
+        eps = "".join(EPL_SYMBOLS.keys())
+        epre1 = re.compile(r"\$([^ƒ\s\$\&\/\#"+eps+"]+)")
+        epre2 = re.compile(r"\&([^ƒ\s\$\&\/\#"+eps+"]+)")
+        
+        def rep_con(m):
+            res = eval("g.c." + m.group(1), {"g":self})
+            if isinstance(res, Rect):
+                self._last_vscr = str(res)
+            return str(res)
+        
+        def rep_ref(m):
+            res = eval("g." + m.group(1), {"g":self})
+            if isinstance(res, Rect):
+                self._last_vscr = str(res)
+            return str(res)
+
+        vs = re.sub(epre1, rep_con, v)
+        vs = re.sub(epre2, rep_ref, vs)
+        #print(">>>", vs)
         return vs
     
     vs = varstr
 
     def bvs(self, v):
         return self.bounds() % self.varstr(v)
+    
+    def ep(self, s, srcdp=None, fn=None, tag=None):
+        epre = re.compile("["+"".join(EPL_SYMBOLS.keys())+"]{2,}")
+
+        if srcdp is None:
+            srcdp = self
+        cmds = s.split(" ")
+        for cidx, cmd in enumerate(cmds):
+            args = cmd.split("|")
+            if args[0] == "E":
+                self.endPath()
+            elif args[0] == "C":
+                self.closePath()
+            elif not args[0]:
+                continue
+            elif len(args) == 1:
+                mm = re.findall(epre, cmd)
+                if mm:
+                    first = mm[0][0]
+                    a, b = cmd.split(first)
+                    cmd = a + first + " " + a + (" " + a).join(mm[0][1:])
+                #print(mm, cmd)
+                for c in cmd.split(" "):
+                    v = self.bounds() % srcdp.vs(c)
+                    if cidx == 0 and (len(self.value) == 0 or self.value[-1][0] in ["closePath", "endPath"]):
+                        self.moveTo(v)
+                    else:
+                        self.lineTo(v)
+            elif len(args) == 3:
+                ctrl, cf, to = args
+                v = Rect(0, 0) % srcdp.vs(to)
+                self.boxCurveTo(v, ctrl, eval(srcdp.vs(cf)))
+        
+        if self.value[-1][0] not in ["closePath", "endPath"]:
+            self.closePath()
+        if tag:
+            self.tag(tag)
+        if fn:
+            fn(self)
+        return self
 
     def bp(self):
         try:
@@ -1733,6 +1793,12 @@ class DATPens(DATPen):
             return self.append(pen(self))
         else:
             return self.append(pen)
+    
+    def ep(self, s, fn=None, tag=None):
+        dp = DATPen()
+        dp.ep(s, srcdp=self, fn=fn, tag=tag)
+        self.append(dp)
+        return self
     
     def explode(self):
         """Noop on a set"""
