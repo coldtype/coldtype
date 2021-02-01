@@ -1,4 +1,4 @@
-from fontTools.misc.arrayTools import unionRect
+from fontTools.misc.arrayTools import unionRect, sectRect
 from fontTools.misc.transform import Transform
 from coldtype.interpolation import norm
 from functools import partialmethod
@@ -831,6 +831,9 @@ class Rect():
 
     def union(self, otherRect):
         return Rect.FromMnMnMxMx(unionRect(self.mnmnmxmx(), otherRect.mnmnmxmx()))
+    
+    def intersection(self, otherRect):
+        return Rect.FromMnMnMxMx(sectRect(self.mnmnmxmx(), otherRect.mnmnmxmx())[1])
 
     def take(self, amount, edge, forcePixel=False):
         """

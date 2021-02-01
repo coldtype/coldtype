@@ -1453,6 +1453,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     def ep(self, s, srcdp=None, fn=None, tag=None):
         epre = re.compile("["+"".join(EPL_SYMBOLS.keys())+"]{2,}")
+        should_reverse = False
 
         if srcdp is None:
             srcdp = self
@@ -1463,6 +1464,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 self.endPath()
             elif args[0] == "C":
                 self.closePath()
+            elif args[0] == "R":
+                should_reverse = not should_reverse
             elif not args[0]:
                 continue
             elif len(args) == 1:
@@ -1489,6 +1492,9 @@ class DATPen(RecordingPen, DATPenLikeObject):
             self.tag(tag)
         if fn:
             fn(self)
+        
+        if should_reverse:
+            self.reverse()
         return self
 
     def bp(self):

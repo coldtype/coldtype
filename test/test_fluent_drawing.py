@@ -332,13 +332,14 @@ def E(r, g):
         .set_width(g.c.stem*4.5)
         .add_stem()
         .register(
-            base=g.gb, cap=g.gc,
+            bl=g.gb,
+            cl=g.gc,
             earbƒ_centerƒeart="TX+$stem/R $earhb-30 a $earht-20",
-            xbar="&center/MX-&stem.pc.x/MX+&eart.psw.x-40/TY=$xbarh"
+            xbar="&center/MX-&sl.pc.x/MX+&eart.psw.x-40/TY=$xbarh"
             )
         .brackets([
-            (g.cap, g.stem, "SW"),
-            (g.base, g.stem, "NW"),
+            (g.cl, g.sl, "SW"),
+            (g.bl, g.sl, "NW"),
             #(g.cap, g.eart, "SW", 200, 80, 0.85),
             #(g.base, g.earb, "NW", 200, 80, 0.85)
             ]))
@@ -349,11 +350,11 @@ def F(r, g):
         .remove("earb")
         .register(
             xbar="&xbar/OY-20",
-            base="&base/MX+&xbar.mxx+10")
+            bl="&bl/MX+&xbar.mxx+10")
         .brackets([
-            (g.cap, g.stem, "SW"),
-            (g.base, g.stem, "N"),
-            (g.cap, g.eart, "SW", 100, 100, 0.8)]))
+            (g.cl, g.sl, "SW"),
+            (g.bl, g.sl, "N"),
+            (g.cl, g.eart, "SW", 100, 100, 0.8)]))
 
 @glyphfn()
 def L(r, g):
@@ -361,13 +362,13 @@ def L(r, g):
         .set_width(g.c.stem*4.25)
         .add_stem()
         .register(
-            base=g.gb,
-            cap="&gc/TX-$sfw",
+            bl=g.gb,
+            cl="&gc/TX-$sfw",
             earb="+$stem -$earhb*1.1")
         .brackets([
-            (g.cap, g.stem, "S"),
-            (g.base, g.stem, "NW"),
-            (g.base, g.earb, "NW", 200, 80, 0.85)]))
+            (g.cl, g.sl, "S"),
+            (g.bl, g.sl, "NW"),
+            (g.bl, g.earb, "NW", 200, 80, 0.85)]))
 
 @glyphfn()
 def Z(r, g:Glyph):
@@ -520,25 +521,19 @@ def O(r, g, clx=0):
     (g.set_width(g.c.stem*4.15)
         .space(n:=g.l+5, n)
         .constants(
-            hw=g.c.stem+35)
-        .guide(slƒkyƒsr="IY-$over/C $hw a $hw")
+            hw=g.c.stem+35,
+            oc=65,
+            ic=85)
         .guide(
+            slƒkyƒsr="IY-$over/C $hw a $hw",
             o="IY-$over",
-            i="&ky/MY+&gc.mny/MY-&gb.mxy"))
-
-    def o(r, off, offc):
-        return (DATPen()
-            .mt(r.pe@g.gxb.pe.y//off)
-            .bct(r.pn, "NE", offc)
-            .bct(r.pw@g.gxb.pw.y//off, "NW", offc)
-            .lt(r.pw@g.gxb.pw.y//-off)
-            .bct(r.ps, "SW", offc)
-            .bct(r.pe@g.gxb.pe.y//-off, "SE", offc)
-            .cp())
+            i="&ky/MY+&gc.mny/MY-&gb.mxy",
+            oxb="&gxb/IY20",
+            ixb=λg: g.gxb.intersection(g.ky)))
     
     return (g
-        .ap(o(g.o, 30, 0.65).tag("O"))
-        .ap(~o(g.i, 16, 0.85).tag("Oi")))
+        .ep("&oxb↗ ↗|$oc|&o↑ ↖|$oc|&oxb↖ &oxb↙ ↙|$oc|&o↓ ↘|$oc|&oxb↘")
+        .ep("&ixb↗ ↗|$ic|&i↑ ↖|$ic|&ixb↖ &ixb↙ ↙|$ic|&i↓ ↘|$ic|&ixb↘ R"))
 
 @glyphfn()
 def Q(r, g):
@@ -741,16 +736,16 @@ def X(r, g):
 @glyphfn()
 def Y(r, g):
     return (g
-        .add_stem()
+        #.add_stem()
         .constants(hd=g.c.hdiag+15)
         .register(
             clƒ_ƒcr=f"&gc/C $sfw+{(f:=50)} $gap $sfw-{f} a",
             bc="&gb/MX-&cl.pc.x-10/MX+&cr.pc.x+10",
-            stem="&stem/T=$hd -0.45/MX=&bc.pc.x")
-        .ap(hd:=DP().lsdiagc(g.cl.t(0, g.c.hd).es, g.stem.en, g.stem.ee, extr=0.1))
-        .ap(ld:=DP().lsdiag(g.cr.t(0, g.c.ldiag).es, g.stem.t(1, g.c.ldiag).en, extr=0.1))
+            sc="T=$hd -0.45/MX=&bc.pc.x")
+        .ap(hd:=DP().lsdiagc(g.cl.t(0, g.c.hd).es, g.sc.en, g.sc.ee, extr=0.1))
+        .ap(ld:=DP().lsdiag(g.cr.t(0, g.c.ldiag).es, g.sc.t(1, g.c.ldiag).en, extr=0.1))
         .brackets([
-            (g.bc, g.stem, "N"),
+            (g.bc, g.sc, "N"),
             (g.cl, ~hd.sl(0), "SW"),
             (g.cr, ld.sl(2), "SE")]))
 
@@ -813,12 +808,14 @@ def single_char(f, rs):
         ufo.insertGlyph(ufo_glyph)
         ufo.save()
     
+    char = chr(glyph_to_uni(glyph.name))
+    
     return DATPens([
         (single_char
             .glyph_view(r, glyph, None, Overlay.Info in rs.overlays)
             .translate(100, 300)
             .append(λdps: dps.fft("cutout").copy().f(1).s(None).translate(0, 600).phototype(r, blur=7, cutw=10, fill=bw(0)).img_opacity(0.05))),
-        #(single_char
-        #    .test_string(0.15, rs.read_text(clear=False) or ("OH" + glyph.name + "NO"))
-        #    .translate(50, 50)).s(None).f(0.25)
+        (single_char
+            .test_string(0.15, rs.read_text(clear=False) or ("OH" + char + "NO"))
+            .translate(50, 50)).s(None).f(0.25)
         ])
