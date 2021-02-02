@@ -1,9 +1,4 @@
 from coldtype.test import *
-from coldtype.grid import Grid
-
-from fontTools.misc.bezierTools import splitLine
-
-a = [(120, 230)]
 
 class glyphfn():
     def __init__(self):
@@ -14,26 +9,6 @@ class glyphfn():
         self.func = func
         self.name = func.__name__
         return self
-
-def length(self):
-    a2 = math.pow(self.start.x - self.end.x, 2)
-    b2 = math.pow(self.start.y - self.end.y, 2)
-    return math.sqrt(a2 + b2)
-
-def tpx(self, tpx, limit=True):
-    x = tpx * math.cos(self.angle())
-    y = tpx * math.sin(self.angle())
-    tp = self.start.offset(x, y)
-    if not limit:
-        return tp
-    else:
-        if Line(self.start, tp).length() > self.length():
-            return self.end
-        else:
-            return tp
-
-Line.length = length
-Line.tpx = tpx
 
 
 class Glyph(DATPens):

@@ -500,9 +500,22 @@ class Line():
     def t(self, t):
         return self.start.interp(t, self.end)
     
-    def tpx(self, tpx):
-        print("angle>", self.angle())
-        pass
+    def length(self):
+        a2 = math.pow(self.start.x - self.end.x, 2)
+        b2 = math.pow(self.start.y - self.end.y, 2)
+        return math.sqrt(a2 + b2)
+    
+    def tpx(self, tpx, limit=True):
+        x = tpx * math.cos(self.angle())
+        y = tpx * math.sin(self.angle())
+        tp = self.start.offset(x, y)
+        if not limit:
+            return tp
+        else:
+            if Line(self.start, tp).length() > self.length():
+                return self.end
+            else:
+                return tp
 
     def angle(self):
         return calc_angle(self.start, self.end)
