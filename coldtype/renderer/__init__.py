@@ -347,6 +347,16 @@ class Renderer():
     def apply_syntax_mods(self, source_code):
         if self.disable_syntax_mods:
             return source_code
+        
+        def inline_other(x):
+            cwd = self.filepath.relative_to(Path.cwd()).parent
+            path = Path(cwd / (x.group(1)+".py"))
+            if path not in self.watchee_paths():
+                self.watchees.append([Watchable.Source, path, None])
+            src = path.read_text()
+            return src
+
+        source_code = re.sub(r"from ([^\s]+) import \* \#INLINE", inline_other, source_code)
         source_code = re.sub(r"\-\.[A-Za-z_ƒ]+([A-Za-z_0-9]+)?\(", ".nerp(", source_code)
         source_code = re.sub(r"λ\s?([/\.\@]{1,2})", r"lambda xxx: xxx\1", source_code)
         #source_code = re.sub(r"λ\.", "lambda x: x.", source_code)
