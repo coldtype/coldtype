@@ -347,10 +347,29 @@ class Renderer():
     def apply_syntax_mods(self, source_code):
         if self.disable_syntax_mods:
             return source_code
-        source_code = re.sub(r"\-\.[A-Za-z_ƒ]+([A-Za-z_0-9]+)?\(", ".noop(", source_code)
+        source_code = re.sub(r"\-\.[A-Za-z_ƒ]+([A-Za-z_0-9]+)?\(", ".nerp(", source_code)
         source_code = re.sub(r"λ\s?([/\.\@]{1,2})", r"lambda xxx: xxx\1", source_code)
         #source_code = re.sub(r"λ\.", "lambda x: x.", source_code)
         source_code = re.sub(r"λ", "lambda ", source_code)
+
+        while ".nerp(" in source_code:
+            start = source_code.find(".nerp(")
+            end = -1
+            i = 6
+            depth = 1
+            c = source_code[start+i]
+            while depth > 0 and c:
+                #print(c, depth)
+                if c == "(":
+                    depth += 1
+                elif c== ")":
+                    depth -= 1
+                i += 1
+                c = source_code[start+i]
+            end = start+i
+            source_code = source_code[:start] + ".noop()" + source_code[end:]
+            #print(start, end)
+            
         return source_code
 
     def reload(self, trigger):

@@ -1457,9 +1457,12 @@ class DATPen(RecordingPen, DATPenLikeObject):
 
         if srcdp is None:
             srcdp = self
+        
         cmds = s.split(" ")
         for cidx, cmd in enumerate(cmds):
             args = cmd.split("|")
+            if args[0].startswith("-"):
+                continue
             if args[0] == "E":
                 self.endPath()
             elif args[0] == "C":
@@ -1469,6 +1472,18 @@ class DATPen(RecordingPen, DATPenLikeObject):
             elif not args[0]:
                 continue
             elif len(args) == 1:
+                def mtlt(v):
+                    if cidx == 0 and (len(self.value) == 0 or self.value[-1][0] in ["closePath", "endPath"]):
+                        self.moveTo(v)
+                    else:
+                        self.lineTo(v)
+
+
+                if "∩" in args[0]:
+                    p1, p2 = [Rect(0, 0)%srcdp.vs(a) for a in args[0].split("∩")]
+                    mtlt(p1 & p2)
+                    continue
+                
                 mm = re.findall(epre, cmd)
                 if mm:
                     first = mm[0][0]
@@ -1477,13 +1492,16 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 #print(mm, cmd)
                 for c in cmd.split(" "):
                     v = self.bounds() % srcdp.vs(c)
-                    if cidx == 0 and (len(self.value) == 0 or self.value[-1][0] in ["closePath", "endPath"]):
-                        self.moveTo(v)
-                    else:
-                        self.lineTo(v)
+                    mtlt(v)
             elif len(args) == 3:
                 ctrl, cf, to = args
                 v = Rect(0, 0) % srcdp.vs(to)
+                if ctrl[0] in EPL_SYMBOLS:
+                    if len(ctrl) > 1:
+                        ctrl = list(ctrl)
+                else:
+                    ctrl = Rect(0, 0) % srcdp.vs(ctrl)
+                    #print("CTRL>>>", ctrl)
                 self.boxCurveTo(v, ctrl, eval(srcdp.vs(cf)))
         
         if self.value[-1][0] not in ["closePath", "endPath"]:

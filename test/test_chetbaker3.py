@@ -5,19 +5,20 @@ r = Rect(1080, 1080)
 
 from fontTools.misc.bezierTools import splitCubicAtT
 
-obv = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
+obv = Font.Cacheable("~/Type/fonts/fonts/OhnoFatfaceVariable.ttf")
 
-tl = Timeline(15)
+tl = Timeline(2)
 
 lockup = (Composer(r,
-    "GRANT GREEN\nJAZZ GUITARIST\nICONIC TONE\nBLUE NOTE RECORDS",
+    "THE KITCHEN\nCABINET\n“DOGWOOD\n/500 MILES”",
     #"LO! THERE",
-    Style(obv, 330, wdth=0.5, wght=0.35, slnt=0.5),
+    Style(obv, 390, wdth=0.75, wght=0.35, slnt=0.5, opsz=0.5),
     leading=30,
-    fit=r.w-50)
+    fit=r.w-0)
     .pens()
     .xa()
-    .align(r))
+    .align(r)
+    .pmap(λi,p: p.flatten(5)))
 
 def bendr(self, r:Rect, curves, cx:DATPen=None, tangent=None, offset=(0, 1)):
     crv0 = DATPen().moveTo(r.psw).boxCurveTo(r.pse, "N", 0.5)
@@ -51,7 +52,7 @@ def stub(f, rs):
     e = f.a.progress(f.i, loops=0, easefn="eeio").e
     
     rsmouse = Point([0, 0])
-    rsmouse = r.ps.offset(0, -400+e*800)
+    rsmouse = r.ps.offset(-2000, 900)
     #rsmouse = rs.mouse
     #print(rsmouse)
 
@@ -78,7 +79,7 @@ def stub(f, rs):
         ]).f(1).pen().flatten(5)
 
     return DATPens([
-        DATPen().rect(f.a.r).f(0),
+        DATPen().rect(f.a.r).f(hsl(0.1, s=1, l=0.5)),
         (lockup
             .pen()
             .addFrame(r)
@@ -89,5 +90,6 @@ def stub(f, rs):
             #.bendr(r, [by], bx)
             #.rotate(-25)
             .f(1)
-            .scale(0.75)
-            .phototype(f.a.r, blur=2, cut=110, cutw=50.5))])
+            .scale(0.95)
+            #.rotate(5)
+            .phototype(f.a.r, blur=3, cut=170, cutw=25, fill=hsl(0.15, s=1)))])

@@ -26,6 +26,8 @@ EPL_SYMBOLS = {
     "↘": "pse",
     "↙": "psw",
     "•": "pc",
+    "⍺": "start",
+    "⍵": "end",
 }
 
 
@@ -297,18 +299,23 @@ def edgepoints(rect, edge):
 
 class Point():
     """Representation of a point (x,y), indexable"""
-    def __init__(self, point):
-        try:
-            x, y = point
-            self.x = x
-            self.y = y
-        except:
+    def __init__(self, *points):
+        if len(points) == 2:
+            self.x = points[0]
+            self.y = points[1]
+        else:
+            point = points[0]
             try:
-                self.x = point.x
-                self.y = point.y
+                x, y = point
+                self.x = x
+                self.y = y
             except:
-                self.x = 0
-                self.y = 0
+                try:
+                    self.x = point.x
+                    self.y = point.y
+                except:
+                    self.x = 0
+                    self.y = 0
     
     __hash__ = object.__hash__
 
@@ -406,7 +413,7 @@ class Point():
             return False
 
     def __repr__(self):
-        return "<Point" + str(self.xy()) + ">"
+        return "Point" + str(self.xy())
 
     def __getitem__(self, key):
         return self.xy()[key]
@@ -468,7 +475,7 @@ class Line():
         self.end = Point(end)
     
     def __repr__(self):
-        return f"<Line:{self.start}/{self.end}>"
+        return f"Line({self.start}, {self.end})"
     
     def __len__(self):
         return 2
@@ -834,6 +841,8 @@ class Rect():
     
     def intersection(self, otherRect):
         return Rect.FromMnMnMxMx(sectRect(self.mnmnmxmx(), otherRect.mnmnmxmx())[1])
+    
+    sect = intersection
 
     def take(self, amount, edge, forcePixel=False):
         """
@@ -1185,6 +1194,40 @@ class Rect():
         return self.inset(n if xy == "x" else 0, n if xy == "y" else 0)
     
     def __mod__(self, s):
+        #print(">>>>>>", s)
+
+        seps = ["⨝", "∩"]
+        #resp = re.compile("["+"".join(seps)+"]{1}")
+        ps = list(split_at(s, lambda x: x in seps, keep_separator=True))
+        if len(ps) > 1:
+            ps = ["".join(p) for p in ps]
+            #print(ps)
+            rl = None
+            i = 0
+            while i < len(ps):
+                #print(ps)
+                
+                if i == 0:
+                    r1 = self.__mod__(ps[i])
+                    op = ps[i+1]
+                    r2 = self.__mod__(ps[i+2])
+                else:
+                    r1 = rl
+                    op = ps[i]
+                    r2 = self.__mod__(ps[i+1])
+                
+                #print(op, r1, r2)
+                if op == "⨝":
+                    rl = Line(r1, r2)
+                elif op == "∩":
+                    rl = r1 & r2
+                
+                if i == 0:
+                    i += 3
+                else:
+                    i += 2
+            return rl
+
         sfx = ["x", "y"]
 
         ops = {
@@ -1197,6 +1240,7 @@ class Rect():
             "C": None, # columns
             "R": None, # rows
             "@": None, # get-at-index
+            "↕": None, # extrapolate
         }
 
         def do_op(r, xs):
@@ -1328,6 +1372,8 @@ class Rect():
                 return rs
             elif op == "@": # get-at-index
                 return r[int(amounts[0])]
+            elif op == "↕": # extrapolate
+                return r.extr(amounts[0])
             else:
                 raise Exception("op", op, "not supported")
 
@@ -1341,6 +1387,9 @@ class Rect():
             else:
                 y = "".join(y)
             
+            if len(y.strip()) == 0:
+                continue
+            
             if y in seps:
                 if y in EPL_SYMBOLS.keys():
                     r = getattr(r, EPL_SYMBOLS[y])
@@ -1350,9 +1399,14 @@ class Rect():
             
             if y.startswith("Rect("):
                 r = eval(y.strip())
+            elif y.startswith("Line("):
+                r = eval(y.strip())
+            elif y.startswith("Point("):
+                r = eval(y.strip())
             else:
                 try:
                     r = do_op(r, y.strip())
                 except IndexError:
+                    print(list(ys), y)
                     print("FAILED")
         return r

@@ -155,13 +155,13 @@ class Glyph(DATPens):
             return self
 
 class font(animation):
-    def __init__(self, rect=(2000, 1200)):
+    def __init__(self, rect=(2000, 1200), feature="A"):
         self.glyphs = []
         for k, v in globals().items():
             if isinstance(v, glyphfn):
                 self.glyphs.append(v)
         self.glyphs.sort(key=lambda a: a.name)
-        super().__init__(rect, timeline=Timeline(len(self.glyphs)), rstate=1)
+        super().__init__(rect, timeline=Timeline(len(self.glyphs), storyboard=[self.fn_to_frame(feature)]), rstate=1)
 
     def fn_to_frame(self, fn_name):
         for idx, g in enumerate(self.glyphs):
@@ -275,16 +275,16 @@ def J(r, g):
     return (g
         .setWidth(g.c.stem*4.25)
         .guide(
-            earƒkyƒsrƒrght="C $stem+20 a $stem $instem",
-            ear="&ear/MY+&gxb.mdy",
+            eblƒkyƒsrƒrght="C $stem+20 a $stem $instem",
+            ebl="&ebl/MY+&gxb.mdy",
             ky="&ky/EY-$over")
         .register(
             sr="&sr/MY-&gxb.mny",
             cr="&gc/MX-&ky.mnx")
-        .remove("ky", "rght", "ear")
         .guide(iky="&ky/SY-&gb.h")
         .constants(ic=85, oc=75)
-        .ep("&sr↙ ↘|$ic|&iky↓ ↙|$ic|&ear↗ #↖ ↙|$oc|&ky↓ ↘|$oc-8|&sr↘")
+        .ep("""&sr/MY-&ebl.mxy↙ ↘|$ic|&iky↓
+            ↙|$ic|&ebl↗ #↖ ↙|$oc|&ky↓ ↘|$oc-8|&sr↘""")
         .brackets([(g.cr, g.sr, "S")]))
 
 @glyphfn()
@@ -400,8 +400,7 @@ def T(r, g):
         .brackets([
             (g.cap, g.earl, "SE", 100, 100, 0.95),
             (g.cap, g.earr, "SW", 100, 100, 0.95),
-            (g.base, g.stem, "N")])
-        )
+            (g.base, g.stem, "N")]))
 
 @glyphfn()
 def P(r, g, mod=None, xc=0, ci=30, my=0, mn=0):
@@ -528,12 +527,12 @@ def O(r, g, clx=0):
             slƒkyƒsr="IY-$over/C $hw a $hw",
             o="IY-$over",
             i="&ky/MY+&gc.mny/MY-&gb.mxy",
-            oxb="&gxb/IY20",
-            ixb=λg: g.gxb.intersection(g.ky)))
+            ox="&gxb/IY20",
+            ix=λg: g.gxb.sect(g.ky)))
     
     return (g
-        .ep("&oxb↗ ↗|$oc|&o↑ ↖|$oc|&oxb↖ &oxb↙ ↙|$oc|&o↓ ↘|$oc|&oxb↘")
-        .ep("&ixb↗ ↗|$ic|&i↑ ↖|$ic|&ixb↖ &ixb↙ ↙|$ic|&i↓ ↘|$ic|&ixb↘ R"))
+        .ep("&ox↗ ↗|$oc|&o↑ ↖|$oc|&ox↖ &ox↙ ↙|$oc|&o↓ ↘|$oc|&ox↘")
+        .ep("&ix↗ ↗|$ic|&i↑ ↖|$ic|&ix↖ &ix↙ ↙|$ic|&i↓ ↘|$ic|&ix↘ R"))
 
 @glyphfn()
 def Q(r, g):
@@ -542,66 +541,49 @@ def Q(r, g):
         .ap(DP(g.quill).rotate(23)))
 
 @glyphfn()
-def C(r, g):
+def C(r, g, pullup=None):
     return (g
         .set_width(g.c.stem*4)
         .guide(
             Ƨstemlƒcntryƒstemr="IY-$over/C $stem+30 a $stem-10",
-            knckbƒixbarƒknckt="&cntry/SY-$sfhb/SY+$sfht/Ra $xbarh a")
+            sr="&stemr/TX-0.5",
+            cy="&cntry",
+            kbƒixbarƒkt="&cntry/SY-$sfhb/SY+$sfht/Ra $xbarh a",
+            ox="&gxb/IY+25/MX+&sr.mxx",
+            ix="&ixbar/IY+10",
+            Ƨxbar="&ixbar/OY-$gap*2/MX-&kb.pc.x-20/MX+&stemr.mxx")
         .register(
             eart="&stemr/MY-&ixbar.mxy/MY+&bx.mxy")
-        .ap(DP("curve")
-            .mt(g.gxb.pne/(-g.stemr.w/2))
-            .bct(g.cntry.pn/-20, "NE", (oc:=0.71))
-            .bct(g.gxb.pnw//-(n:=30), "NW", oc)
-            .lt(g.gxb.psw//n)
-            .bct(g.cntry.ps/-10, "SW", oc)
-            .bct(g.gxb.pse, "SE", oc)
-            .lt(g.ixbar.pse)
-            .bct(g.knckb.ps/-5, g.knckb.pse/-10, (ic:=0.85)-0.01)
-            .bct(g.ixbar.psw//(n*0.5), "SW", ic)
-            .lt(g.ixbar.pnw//(-n*0.5))
-            .bct(g.knckt.pn, "NW", ic)
-            .bct(g.ixbar.pne, "NE", ic)
-            .cp()))
+        .constants(oc=71, ic=85)
+        .ep(f"""&kt↘OX&sr.w &sr↗|$oc-8|&cy↑OX-25
+            ↖|$oc|&ox↖ #↙ ↙|$oc|&cy↓OX-10 {pullup or "↘|$oc|&gxb↘"}
+            &kb↗ &kb↘OX-10|$ic-5|&kb↓OX-5
+            ↙|$ic|&ix↙ &ix↖ ↖|$ic|&kt↑ &kt↗OX-7|$ic-5|&kt↘"""))
 
 @glyphfn()
 def G(r, g):
-    return (C.func(r, g)
-        .guide(xbar="&ixbar/OY-$gap*2/MX-&knckb.pc.x-20/MX+&stemr.mxx")
-        .guide(south=Rect.FromCenter(g.cntry.ps, 50))
-        .ap(DP(g.xbar).mod_pt(1, 0, λp: p * g.stemr.pc.x))
-        .fft("curve", λp: (p
-            .mod_pt(5, 2, λp: p @ g.xbar.mxy)
-            .mod_pt(5, 1, (0, -10)))))
+    return (C.func(r, g, pullup="↘|$oc|&xbar↗")
+        .ep("&xbar↗↖↙ #/MX+&sr.mxx↘"))
 
 @glyphfn()
 def S(r, g):
     return (g
         .set_width(g.c.stem*4.15)
         .register(
-            earb="T-$stem -$earhb",
-            eart="T+$stem +$earht")
+            earb="T-$stem -$earhb-20",
+            eart="T+$stem +$earht-10")
         .guide(
             tbx="TY+&eart.h/OY-20",
             bbx="TY-&earb.h",
             _bxy="I+$hdiag -$over",
-            _bxi="I+$hdiag $over*0.75/SY-$sfhb/SY+$sfht/OX15/I10 -30"
+            bxi="I+$hdiag $over*0.75/SY-$sfhb/SY+$sfht/OX15/I10 -30/EY-40",
+            kbƒ_ƒkt="&bxi/R a $xbarh-20 a"
             )
-        .record(DP("curve")
-            .mt(g.eart.ps)
-            .bct(g.bxy.pn/-(stx:=30), "NE", start:=(0.59, 0.65))
-            .bct(g.tbx.pw, "NW", swing:=0.6)
-            .bct(g.bxi.pse//(bigy:=55), ("SW", "NE"), big:=(0.62, 0.40))
-            .bct(g.bxi.ps/(smallx:=15)//-20, "SE", small:=0.65)
-            .bct(g.earb.pne, g.bxi.psw//-20, land:=0.65)
-            .lt(g.earb.pn)
-            .bct(g.bxy.ps/stx, "SW", start)
-            .bct(g.bbx.pe/20, "SE", swing+0.05)
-            .bct(g.bxi.pnw//-bigy, ("NE", "SW"), big)
-            .bct(g.bxi.pn/-smallx//(adj:=5), "NW", small)
-            .bct(g.eart.psw, g.bxi.pne//adj, land)
-            .cp()))
+        .constants(stx=30, sty=50, smx=25)
+        .ep("""&eart↓ ↗|65|&bxy↑/OX-$stx*2 ↖|65|&tbx←
+            -&kb↖ ↙↗|62,40|&kb↘/OY+$sty ↘|65|&kb↓/OX+$smx &bxi↙|65|&earb↗
+            &earb↑ ↙|65|&bxy↓/OX$stx*2 ↘|65|&bbx→/OX20
+            -&kt↘ ↗↙|62,40|&kt↖/OY-$sty ↖|65|&kt↑/OX-$smx/OY5 &bxi↗|65|&eart↙"""))
 
 @glyphfn()
 def U(r, g):
@@ -616,14 +598,9 @@ def U(r, g):
         .guide(
             cy="MX-&sl.mxx/MY--$over/MX+&sr.mnx",
             ky="&cy/MY-$sfhb")
-        .record(DATPen("curve")
-            .mt(g.sl.psw)
-            .bct(g.cy.ps, "SW", c:=0.75)
-            .bct(g.sr.pse, "SE", c)
-            .lt(g.sr.psw)
-            .bct(g.ky.ps, "SE", c:=0.90)
-            .bct(g.sl.pse, "SW", c)
-            .cp())
+        .constants(oc=75, ic=90)
+        .ep("&sl↙ ↙|$oc|&cy↓ ↘|$oc|&sr↘ &sr↙ ↘|$ic|&ky↓ ↙|$ic|&sl↘",
+            tag="curve")
         .brackets([
             (g.cl, g.sl, "S"),
             (g.cr, g.sr, "S")]))
@@ -631,22 +608,15 @@ def U(r, g):
 @glyphfn()
 def V(r, g):
     return (U.func(r, g)
-        .remove("sl", "sr", "curve")
+        .remove("sl", "sr", "curve").brackets([])
         .guide(
-            apex=g.ky.ps//20/4,
-            l1=λg:Line(g.sl.ee & g.cl.es, g.apex),
-            l2=λg:Line(g.sr.ew & g.cr.es, g.apex),
-            l1o=λg:g.l1/-g.sl.w,
-            l2o=λg:g.l2/g.sr.w)
-        .ap(v:=~DP().mt(g.l1.start)
-            .lt(g.l1.extr(0.1).end) # could limit based on l2o?
-            .lt(g.l2.extr(0.1).end) # could limit based on l1o?
-            .lt(g.l2.start)
-            .lt(g.l2o.start)
-            .lt(g.l2o & g.bx.es)
-            .lt(g.l1o & g.bx.es)
-            .lt(g.l1o.start)
-            .cp())
+            apex="&ky↓/O 4 20",
+            l1="&sl⊣∩&cl⊥⨝&apex",
+            l2="&sr⊢∩&cr⊥⨝&apex",
+            l1o="&l1/OX-&sl.w",
+            l2o="&l2/OX+&sr.w")
+        .ep("""&l1⍺ &l1/↕0.1⍵ &l2/↕0.1⍵ &l2⍺ &l2o⍺
+            &l2o∩&bx⊥ &l1o∩&bx⊥ &l1o⍺ R""")
         .brackets([
             (g.cl, ~g.l1o, "SW"),
             (g.cl, ~g.l1, "SE"),
@@ -792,7 +762,7 @@ def build_glyph(cap):
     
     return glyph
 
-@font((2000, 1500))
+@font((2000, 1500), feature="S")
 def single_char(f, rs):
     r = f.a.r
     
@@ -812,10 +782,11 @@ def single_char(f, rs):
     
     return DATPens([
         (single_char
-            .glyph_view(r, glyph, None, Overlay.Info in rs.overlays)
+            .glyph_view(r, glyph, None, Overlay.Info not in rs.overlays)
             .translate(100, 300)
             .append(λdps: dps.fft("cutout").copy().f(1).s(None).translate(0, 600).phototype(r, blur=7, cutw=10, fill=bw(0)).img_opacity(0.05))),
         (single_char
             .test_string(0.15, rs.read_text(clear=False) or ("OH" + char + "NO"))
             .translate(50, 50)).s(None).f(0.25)
-        ])
+        ]
+        )
