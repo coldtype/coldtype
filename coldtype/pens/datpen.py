@@ -1426,8 +1426,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
             v = v.replace("#", self._last_vscr)
         
         eps = "".join(EPL_SYMBOLS.keys())
-        epre1 = re.compile(r"\$([^ƒ\s\$\&\/\#"+eps+"]+)")
-        epre2 = re.compile(r"\&([^ƒ\s\$\&\/\#"+eps+"]+)")
+        epre1 = re.compile(r"\$([^,ƒ\s\$\&\/\#"+eps+"]+)")
+        epre2 = re.compile(r"\&([^,ƒ\s\$\&\/\#"+eps+"]+)")
         
         def rep_con(m):
             res = eval("g.c." + m.group(1), {"g":self})
@@ -1478,7 +1478,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
                     else:
                         self.lineTo(v)
 
-
                 if "∩" in args[0]:
                     p1, p2 = [Rect(0, 0)%srcdp.vs(a) for a in args[0].split("∩")]
                     mtlt(p1 & p2)
@@ -1492,7 +1491,11 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 #print(mm, cmd)
                 for c in cmd.split(" "):
                     v = self.bounds() % srcdp.vs(c)
-                    mtlt(v)
+                    if isinstance(v, Line):
+                        mtlt(v.start)
+                        mtlt(v.end)
+                    else:
+                        mtlt(v)
             elif len(args) == 3:
                 ctrl, cf, to = args
                 v = Rect(0, 0) % srcdp.vs(to)
@@ -1775,6 +1778,9 @@ class DATPens(DATPen):
                 return tagged.copy()
     
     def _register(self, lookup, **kwargs):
+        if not hasattr(self, "bx"):
+            self.bx = self.bounds()
+
         res = kwargs
         
         def keep(k, v, invisible=False):

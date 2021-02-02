@@ -92,13 +92,16 @@ class Glyph(DATPens):
     def all_guides(self):
         dps = DATPens()
         for idx, (k, x) in enumerate(self.guides.items()):
+            c = hsl(idx/2.3, 1, a=0.25)
             g = (DP(x)
                 .translate(self.l, 0)
                 .f(None)
-                .s(hsl(idx/2.3, 1, a=0.25)).sw(10))
+                .s(c).sw(10))
             if k in ["gb", "gc", "gxb"]:
-                g.s(hsl(0.6, 1, 0.5, 0.25)).sw(2)
+                c = hsl(0.6, 1, 0.5, 0.25)
+                g.s(c).sw(2)
             dps += g
+            dps += DATText(k, Style("Helvetica", 24, load_font=0, fill=c.with_alpha(0.5).darker(0.2)), Rect.FromCenter(g.bounds().pne, 100))
         return dps
 
     def brack(self, a, b, pt, y=None, x=None, c=None):
@@ -239,22 +242,20 @@ class font(animation):
 @glyphfn()
 def A(r, g):
     return (g
-        .register(blƒ_ƒbr=f"TY-$sfhb/C$sfw-{(c:=20)} $gap $sfw+{c} a")
+        .register(
+            blƒ_ƒbr=f"TY-$sfhb/C$sfw-{(c:=20)} $gap $sfw+{c} a")
         .set_width(g.br.mxx)
         .guide(
-            Ƨxbar="&gxb/OY-&gxb.h*0.65",
-            Ƨsteml="&bl/TX=$ldiag",
-            Ƨstemr="&br/TX=$hdiag+10",
-            apex=λg: g.gc.ps * g.bl.pne.x // -20,
-            Ƨl1=λg: Line(g.steml.pne, g.apex),
-            Ƨl2=λg: Line(g.stemr.pnw, g.apex),
-            Ƨl1o=λg: g.l1 / -g.steml.w,
-            Ƨl2o=λg: g.l2 / g.stemr.w)
-        .ap(DP("l").mt(g.l1.start)
-            .lt(g.apex, g.l1 & g.bx.en, g.l1o & g.bx.en, g.l1o.start).cp())
-        .ap(DP("r").mt(g.l2o.start)
-            .lt(g.l2o & g.bx.en, g.l1o & g.bx.en, g.apex, g.l2.start).cp())
-        .ap(DP().rect(g.xbar).ƒ(g.l1/-30, ~g.l2/30))
+            xb="&gxb/OY-&gxb.h*0.65",
+            sl="&bl/TX=$ldiag",
+            sr="&br/TX=$hdiag+10",
+            apex="&bl⊣∩&gc⊥/OY-20",
+            l1ƒl1o="&sl↗⨝&apex〻OX-&sl.w",
+            l2ƒl2o="&sr↖⨝&apex〻OX+&sr.w")
+        .ep("&l1⍺ &apex &l1∩&bx⊤ &l1o∩&bx⊤ &l1o⍺")
+        .ep("&l2o⍺ &l2o∩&bx⊤ &l1o∩&bx⊤ &apex &l2⍺")
+        .ep("""&xb⊤∩&l1/OX-10 &xb⊤∩&l2/OX+10
+            &xb⊥∩&l2/OX+10 &xb⊥∩&l1/OX-10 R""")
         .brackets([
             (g.bl, ~g.l1o, "NW"),
             (g.br, ~g.l1, "NE"),
@@ -265,10 +266,10 @@ def A(r, g):
 def I(r, g):
     return (g
         .set_width(g.c.stem*3)
-        .register(base=g.gb, cap=g.gc, stem="=$stem 1")
+        .register(bm=g.gb, cm=g.gc, sm="TX=$stem")
         .brackets([
-            (g.cap, g.stem, "S"),
-            (g.base, g.stem, "N")]))
+            (g.cm, g.sm, "S"),
+            (g.bm, g.sm, "N")]))
 
 @glyphfn()
 def J(r, g):
@@ -293,15 +294,15 @@ def H(r, g):
         .register(
             blƒ_ƒbr=f"&gb/C $sfw $gap $sfw a",
             clƒ_ƒcr=f"&gc/C $sfw $gap $sfw a",
-            steml="TX-$stem/MX=&bl.ps.x",
-            stemr="TX-$stem/MX=&br.ps.x")
+            sl="TX-$stem/MX=&bl.ps.x",
+            sr="TX-$stem/MX=&br.ps.x",
+            xb="&gxb/OY-10/MX-&bl.pc.x/MX+&br.pc.x")
         .set_width(g.br.mxx)
-        .ap(DP(g.gxb//-10).ƒ(g.steml.ecx, ~g.stemr.ecx))
         .brackets([
-            (g.cl, g.steml, "S"),
-            (g.cr, g.stemr, "S"),
-            (g.bl, g.steml, "N"),
-            (g.br, g.stemr, "N")]))
+            (g.cl, g.sl, "S"),
+            (g.cr, g.sr, "S"),
+            (g.bl, g.sl, "N"),
+            (g.br, g.sr, "N")]))
 
 @glyphfn()
 def K(r, g):
@@ -332,25 +333,22 @@ def E(r, g):
         .set_width(g.c.stem*4.5)
         .add_stem()
         .register(
-            bl=g.gb,
-            cl=g.gc,
+            bl=g.gb, cl=g.gc,
             earbƒ_centerƒeart="TX+$stem/R $earhb-30 a $earht-20",
-            xbar="&center/MX-&sl.pc.x/MX+&eart.psw.x-40/TY=$xbarh"
-            )
+            xbar="&gxb/MX-&sl.pc.x/MX+&eart.psw.x-50")
         .brackets([
             (g.cl, g.sl, "SW"),
-            (g.bl, g.sl, "NW"),
-            #(g.cap, g.eart, "SW", 200, 80, 0.85),
-            #(g.base, g.earb, "NW", 200, 80, 0.85)
-            ]))
+            (g.bl, g.sl, "NW")]))
 
 @glyphfn()
 def F(r, g):
     return (E.func(r, g)
         .remove("earb")
+        .constants(sy=20)
         .register(
-            xbar="&xbar/OY-20",
-            bl="&bl/MX+&xbar.mxx+10")
+            eart="&eart/EY-$sy",
+            xbar="&xbar/OY-$sy",
+            bl="&bl/MX+&xbar.mxx+$sy*0.5")
         .brackets([
             (g.cl, g.sl, "SW"),
             (g.bl, g.sl, "N"),
@@ -368,21 +366,23 @@ def L(r, g):
         .brackets([
             (g.cl, g.sl, "S"),
             (g.bl, g.sl, "NW"),
-            (g.bl, g.earb, "NW", 200, 80, 0.85)]))
+            (g.bl, g.earb, "NW", 140, 130, 0.95)]))
 
 @glyphfn()
 def Z(r, g:Glyph):
     diag = g.c.ldiag + 30
     return (g
+        .constants(dw=g.c.ldiag + 50)
         .set_width(g.c.stem*4.5)
-        .guide(gc="&gc/SX-30")
+        .guide(
+            gc="&gc/SX-30",
+            hdrƒhdl="&bx↗⨝&bx↙OX+$dw〻OX-$dw")
         .register(
             eart=f"T-$stem +$earht/OX&gc.mnx",
             earb="+$stem -$earhb")
-        .ap(hd:=DP().lsdiag(g.bx.pne/-g.c.hdiag | g.bx.pne, g.bx.psw | g.bx.psw/g.c.hdiag))
-        .guide(hdlm=hd.sl(0).i(0.5, ~hd.sl(2)))
-        .ap(DP().lsdiagc(g.gc.ew, g.gc.ee, g.hdlm))
-        .ap(~DP().lsdiagc(g.gb.ee, g.gb.ew, g.hdlm))
+        .ep("&hdl &hdr~")
+        .ep("&gc↖↙ &gc⊥∩&hdr/OX-50 &gc⊤∩&hdr/OX-50")
+        .ep("&gb↘↗ &gb⊤∩&hdl/OX+50 &gb⊥∩&hdl/OX+50")
         .brackets([
             (g.gc, g.eart, "SE", 200, 80, 0.85),
             (g.gb, g.earb, "NW", 200, 80, 0.85)]))
@@ -392,21 +392,19 @@ def T(r, g):
     return (g
         .set_width(g.c.stem*4.75)
         .register(
-            base="&gb/TX=$sfw",
-            cap="&gc",
+            bm="&gb/TX=$sfw",
+            cm="&gc",
             earl="-$stem +$earht+20",
             earr="+$stem +$earht+20",
-            stem="TX=$stem")
+            sm="TX=$stem")
         .brackets([
-            (g.cap, g.earl, "SE", 100, 100, 0.95),
-            (g.cap, g.earr, "SW", 100, 100, 0.95),
-            (g.base, g.stem, "N")]))
+            (g.cm, g.earl, "SE", 100, 100, 0.95),
+            (g.cm, g.earr, "SW", 100, 100, 0.95),
+            (g.bm, g.sm, "N")]))
 
-@glyphfn()
-def P(r, g, mod=None, xc=0, ci=30, my=0, mn=0):
-    mh = g.c.xbarh + my
+def _P(g, ci=30, my=0, mn=0):
     return (g
-        .set_width(g.c.stem*4.5+xc)
+        .set_width(g.c.stem*4.5)
         .add_stem()
         .guide(
             sr=f"TX +$stem+{ci}",
@@ -416,7 +414,23 @@ def P(r, g, mod=None, xc=0, ci=30, my=0, mn=0):
             _midƒkxƒ_cl=f"&bxc/R {mh} a $sfht",
             kx=f"&kx/MX+&sr.mnx",
             _mid="&mid/MX-&sl.pc.x/MX+&crv.mnx",
-            cl="&cl/MX+&crv.mnx")
+            cl="&cl/MX+&crv.mnx"))
+
+@glyphfn()
+def P(r, g, mod=None, ci=30, my=0, mn=0):
+    mh = g.c.xbarh + my
+    return (g
+        .set_width(g.c.stem*4.5)
+        .add_stem()
+        .guide(
+            _sr=f"TX +$stem+{ci}",
+            gxb="&gxb/OY-30",
+            _crvt=f"SY-&gxb.mny",
+            _crv="&crvt/MX-&sl.mxx+50",
+            _midƒ_kxƒ_cl=f"&crvt/R {mh} a $sfht",
+            _kx=f"&kx/MX+&sr.mnx",
+            mid="&mid/MX-&sl.pc.x/MX+&crv.mnx",
+            _cl="&cl/MX+&crv.mnx")
         .register(bl="&gb/MX+&sr.mnx-$gap")
         .chain(mod)
         .constants(ci=0.9, co=0.65)
@@ -428,7 +442,7 @@ def P(r, g, mod=None, xc=0, ci=30, my=0, mn=0):
 
 @glyphfn()
 def B(r, g):
-    return (P.func(r, g, my=-10, mn=30, xc=0, mod=λg: (g
+    return (P.func(r, g, my=-10, mn=30, mod=λg: (g
         .register(bl=g.bl.take(g.cl.w, "mnx"))))
         .remove("curve")
         .guide(
@@ -573,14 +587,14 @@ def S(r, g):
             earb="T-$stem -$earhb-20",
             eart="T+$stem +$earht-10")
         .guide(
-            tbx="TY+&eart.h/OY-20",
+            tbx="TY+&eart.h/OY-40",
             bbx="TY-&earb.h",
             _bxy="I+$hdiag -$over",
             bxi="I+$hdiag $over*0.75/SY-$sfhb/SY+$sfht/OX15/I10 -30/EY-40",
             kbƒ_ƒkt="&bxi/R a $xbarh-20 a"
             )
         .constants(stx=30, sty=50, smx=25)
-        .ep("""&eart↓ ↗|65|&bxy↑/OX-$stx*2 ↖|65|&tbx←
+        .ep("""&eart↓ ↗|65|&bxy↑/OX-$stx ↖|65|&tbx←
             -&kb↖ ↙↗|62,40|&kb↘/OY+$sty ↘|65|&kb↓/OX+$smx &bxi↙|65|&earb↗
             &earb↑ ↙|65|&bxy↓/OX$stx*2 ↘|65|&bbx→/OX20
             -&kt↘ ↗↙|62,40|&kt↖/OY-$sty ↖|65|&kt↑/OX-$smx/OY5 &bxi↗|65|&eart↙"""))
@@ -762,7 +776,7 @@ def build_glyph(cap):
     
     return glyph
 
-@font((2000, 1500), feature="S")
+@font((2000, 1500), feature="Z")
 def single_char(f, rs):
     r = f.a.r
     

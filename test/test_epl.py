@@ -15,13 +15,16 @@ def epl1(r):
     ri = r%"Caƒ300ƒa/@1/Raƒ500ƒa/@1"
     dps = DPS().constants(ri=ri, cf=65)
 
-    #return dps.ep("$ri↗↘").s(0)
+    dps.guide(test1ƒtest2="$ri/O+100,+40/⊣〻OX-100")
+    print(dps.guides)
+    return DP(dps.guides["test2"]).s(0.5).sw(5).f(None)
 
-    a = dps.ep("$ri↗↘ $ri↙OX-40|$cf|#/OX-50← ↖|$cf|#↗").f(0).pens[0]
+    a = dps.ep("$ri↗↘ $ri↙OX-40|$cf|#/O-50,+50/← ↖|$cf|#↗").f(0).pens[0]
     b = DP().mt(ri.pne).lt(ri.pse).bct((ri/-50).pw, "SW", dps.c.cf+1).bct(ri.pne, "NW", dps.c.cf+1).cp().f(0)
 
     #print(Rect(0, 0) % "Line(Point(10, 10), Point(50, 50))")
     print(Rect(0, 0) % dps.vs("$ri↗⨝$ri↘"))
+    print(">>>", ri, ri % dps.vs("I10,10"))
 
     dps2 = DPS().constants(ri=ri).guide(l1=ri.e("⊢"), l2=ri.e("⊤"))
     dps2.ep("$ri↑ $ri⊢∩$ri⊤ $ri/⊥/↕0.1/⍵")

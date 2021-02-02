@@ -11,6 +11,7 @@ YOYO = "ma"
 MINYISMAXY = False
 
 EPL_SYMBOLS = {
+    "~": "reverse",
     "⊢": "ew",
     "⊣": "ee",
     "⊤": "en",
@@ -28,6 +29,7 @@ EPL_SYMBOLS = {
     "•": "pc",
     "⍺": "start",
     "⍵": "end",
+    "〻": None
 }
 
 
@@ -916,14 +918,20 @@ class Rect():
 
     def edge(self, edge):
         if edge in EPL_SYMBOLS:
-            return getattr(self, EPL_SYMBOLS[edge])
+            attr = getattr(self, EPL_SYMBOLS[edge])
+            if callable(attr):
+                return attr()
+            return attr
 
         edge = txt_to_edge(edge)
         return Line(*edgepoints(self.rect(), edge))
     
     def e(self, e):
         if e in EPL_SYMBOLS:
-            return getattr(self, EPL_SYMBOLS[e])
+            attr = getattr(self, EPL_SYMBOLS[edge])
+            if callable(attr):
+                return attr()
+            return attr
 
     def center(self):
         return Point(centerpoint(self.rect()))
@@ -1113,7 +1121,7 @@ class Rect():
         return Rect(self.x, self.y, self.w, h)
     
     def parse_line(self, d, line):
-        parts = re.split(r"\s|ƒ", line)
+        parts = re.split(r"\s|ƒ|,", line)
         reified = []
         for p in parts:
             if p == "auto" or p == "a":
@@ -1196,7 +1204,7 @@ class Rect():
     def __mod__(self, s):
         #print(">>>>>>", s)
 
-        seps = ["⨝", "∩"]
+        seps = ["⨝", "∩", "〻"]
         #resp = re.compile("["+"".join(seps)+"]{1}")
         ps = list(split_at(s, lambda x: x in seps, keep_separator=True))
         if len(ps) > 1:
@@ -1205,22 +1213,28 @@ class Rect():
             rl = None
             i = 0
             while i < len(ps):
-                #print(ps)
-                
                 if i == 0:
                     r1 = self.__mod__(ps[i])
                     op = ps[i+1]
-                    r2 = self.__mod__(ps[i+2])
+                    if op == "〻":
+                        r2 = self.__mod__(f"{r1}/{ps[i+2]}")
+                    else:
+                        r2 = self.__mod__(ps[i+2])
                 else:
                     r1 = rl
                     op = ps[i]
-                    r2 = self.__mod__(ps[i+1])
+                    if op == "〻":
+                        r2 = self.__mod__(f"{rl}/{ps[i+1]}")
+                    else:
+                        r2 = self.__mod__(ps[i+1])
                 
                 #print(op, r1, r2)
                 if op == "⨝":
                     rl = Line(r1, r2)
                 elif op == "∩":
                     rl = r1 & r2
+                elif op == "〻":
+                    rl = (r1, r2)
                 
                 if i == 0:
                     i += 3
@@ -1268,7 +1282,7 @@ class Rect():
             #print(op, xs, "<")
             
             _xs = xs
-            xs = re.split(r"\s|ƒ", xs)
+            xs = re.split(r"\s|ƒ|,", xs)
             edges = []
             amounts = []
             
@@ -1393,6 +1407,8 @@ class Rect():
             if y in seps:
                 if y in EPL_SYMBOLS.keys():
                     r = getattr(r, EPL_SYMBOLS[y])
+                    if callable(r):
+                        r = r()
                     continue
                 else:
                     continue
