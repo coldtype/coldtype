@@ -25,7 +25,7 @@ from noise import pnoise1
 
 import coldtype.pens.drawbot_utils as dbu
 
-from coldtype.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle, EPL_SYMBOLS
+from coldtype.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle, EPL_SYMBOLS, Geometrical
 from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
 from coldtype.color import Gradient, normalize_color, Color
 from coldtype.pens.misc import ExplodingPen, SmoothPointsPen, BooleanOp, calculate_pathop
@@ -1642,7 +1642,7 @@ class DATPens(DATPen):
         if callable(pen):
             pen = pen(self)
         if pen or allow_blank:
-            if isinstance(pen, Rect):
+            if isinstance(pen, Geometrical):
                 return self.pens.append(DATPen(pen))
             elif isinstance(pen, DATPenLikeObject):
                 self.pens.append(pen)

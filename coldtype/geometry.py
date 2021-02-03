@@ -300,8 +300,10 @@ def edgepoints(rect, edge):
     elif edge == Edge.CenterY:
         return (x, y + h/2), (x + w, y + h/2)
 
+class Geometrical():
+    pass
 
-class Point():
+class Point(Geometrical):
     """Representation of a point (x,y), indexable"""
     def __init__(self, *points):
         if len(points) == 2:
@@ -338,6 +340,12 @@ class Point():
     def offset(self, dx, dy):
         "Offset by dx, dy"
         return Point((self.x + dx, self.y + dy))
+    
+    def offset_x(self, dx):
+        return self.offset(dx, 0)
+    
+    def offset_y(self, dy):
+        return self.offset(0, dy)
     
     o = offset
 
@@ -476,7 +484,7 @@ class Point3D(Point):
         return super().__getitem__(idx)
 
 
-class Line():
+class Line(Geometrical):
     def __init__(self, start, end):
         self.start = Point(start)
         self.end = Point(end)
@@ -533,6 +541,12 @@ class Line():
         p1, p2 = self
         return Line(p1.offset(x, y), p2.offset(x, y))
     
+    def offset_x(self, dx):
+        return self.offset(dx, 0)
+    
+    def offset_y(self, dy):
+        return self.offset(0, dy)
+    
     o = offset
     
     def __floordiv__(self, other):
@@ -568,7 +582,7 @@ class Line():
         return self.sety(other)
 
 
-class Rect():
+class Rect(Geometrical):
     """
     Representation of a rectangle as (x, y, w, h), indexable
     

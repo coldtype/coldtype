@@ -184,6 +184,8 @@ def epl(s, ctx={}):
             print("SYNTAX ERROR", e)
     return evaled
 
+# TODO #-support for last... could be one symbol for each of rect,point,line?
+
 @renderable()
 def epl1(r):
     dps = DPS().constants(ri=r.inset(50), cf=65)
