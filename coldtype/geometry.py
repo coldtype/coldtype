@@ -29,6 +29,8 @@ EPL_SYMBOLS = {
     "•": "pc",
     "⍺": "start",
     "⍵": "end",
+    "⨝": None,
+    "∩": None,
     "〻": None
 }
 
@@ -374,6 +376,9 @@ class Point():
         if not y:
             y = x
         return Point((self.x * x, self.y * y))
+    
+    def join(self, other):
+        return Line(self, other)
     
     def interp(self, v, other):
         """Interpolate with another point"""
@@ -906,11 +911,23 @@ class Rect():
         if dy == None:
             dy = dx
         return Rect(inset(self.rect(), dx, dy))
+    
+    def inset_x(self, dx):
+        return self.inset(dx, 0)
+    
+    def inset_y(self, dy):
+        return self.inset(0, dy)
 
     def offset(self, dx, dy=None):
         if dy == None:
             dy = dx
         return Rect(offset(self.rect(), dx, dy))
+    
+    def offset_x(self, dx):
+        return self.offset(dx, 0)
+    
+    def offset_y(self, dy):
+        return self.offset(0, dy)
     
     o = offset
 
@@ -1213,6 +1230,26 @@ class Rect():
     def i(self, sign, n):
         xy, _ = self.sign_to_dim(sign)
         return self.inset(n if xy == "x" else 0, n if xy == "y" else 0)
+    
+    def columns(self, *args):
+        r = self
+        _xs = " ".join([str(s) for s in args])
+        ws = self.parse_line(r.w, _xs)
+        rs = []
+        for w in ws:
+            _r, r = r.divide(w, "mnx")
+            rs.append(_r)
+        return rs
+    
+    def rows(self, *args):
+        r = self
+        _xs = " ".join([str(s) for s in args])
+        ws = self.parse_line(r.h, _xs)
+        rs = []
+        for w in ws:
+            _r, r = r.divide(w, "mny")
+            rs.append(_r)
+        return rs 
     
     def __mod__(self, s):
         #print(">>>>>>", s)

@@ -1452,6 +1452,8 @@ class DATPen(RecordingPen, DATPenLikeObject):
         return self.bounds() % self.varstr(v)
     
     def ep(self, s, srcdp=None, fn=None, tag=None):
+        s = s.replace("∎", "&bx")
+
         epre = re.compile("["+"".join(EPL_SYMBOLS.keys())+"]{2,}")
         should_reverse = False
 

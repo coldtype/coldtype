@@ -303,6 +303,7 @@ class Renderer():
                 print(">>> Coldtype can only read .py, .rst, and .md files")
                 return False
             self.codepath = None
+            self._codepath_offset = 0
             self.watchees = [[Watchable.Source, self.filepath, None]]
             if not self.args.is_subprocess:
                 self.watch_file_changes()
@@ -348,12 +349,15 @@ class Renderer():
         if self.disable_syntax_mods:
             return source_code
         
+        self._codepath_offset = 0
+        
         def inline_other(x):
             cwd = self.filepath.relative_to(Path.cwd()).parent
             path = Path(cwd / (x.group(1)+".py"))
             if path not in self.watchee_paths():
                 self.watchees.append([Watchable.Source, path, None])
             src = path.read_text()
+            self._codepath_offset = len(src.split("\n"))
             return src
 
         source_code = re.sub(r"from ([^\s]+) import \* \#INLINE", inline_other, source_code)
@@ -1084,6 +1088,7 @@ class Renderer():
             if cmd == "show_function":
                 lines = self.codepath.read_text().split("\n")
                 lidx = int(context)
+                lidx += self._codepath_offset
                 line = lines[lidx]
                 while not line.startswith("@"):
                     lidx -= 1
