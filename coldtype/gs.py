@@ -2,7 +2,6 @@ import re
 from more_itertools import split_at, split_before
 from pprint import pprint
 
-from coldtype import DATPens
 
 GSH_UNARY_SUFFIX_FUNCS = {
     "~": "reverse",
@@ -166,8 +165,7 @@ def gshphrase(s):
 
     return out
 
-def gsh(s, ctx={}):
-    dps = DATPens()
+def gs(s, ctx={}, dps=None):
     evaled = []
     s = "ƒ"+re.sub(r"[\s\n]+", "ƒ", s).strip()
 
@@ -182,10 +180,18 @@ def gsh(s, ctx={}):
         py = (gshphrase(phrase))
         py = py.replace("$", "ctx.c.")
         py = py.replace("&", "ctx.")
-        py = py.replace("■", "ctx.bounds()")
-        py = py.replace("□", "_dps.bounds()")
+        if hasattr(ctx, "bx"):
+            py = py.replace("■", "ctx.bx")
+        else:
+            py = py.replace("■", "ctx.bounds()")
+        if dps is not None:
+            py = py.replace("□", "_dps.bounds()")
         print("=============", py)
-        return eval(py, dict(ctx=ctx, _last=last, _dps=dps))
+        try:
+            return eval(py, dict(ctx=ctx, _last=last, _dps=dps))
+        except SyntaxError as e:
+            print("SYNTAX ERROR", e, phrase, py)
+            return None
 
     s = re.sub(r"([\$\&]{1}[a-z]+)([↖↑↗→↘↓↙←•]{2,})", expand_multiarrow, s)
     #print("---------------------", s)
@@ -221,50 +227,12 @@ def gsh(s, ctx={}):
             #print(tuple[:-1])
             more = tuple[:-1]
             phrase = tuple[-1]
-        try:
-            ev = do_eval(phrase, last)
-            if more:
-                evaled.append((*more, ev))
-            else:
-                evaled.append(ev)
+
+        ev = do_eval(phrase, last)
+        if more:
+            evaled.append((*more, ev))
+        else:
+            evaled.append(ev)
+        if dps is not None:
             dps.append(evaled[-1])
-        except SyntaxError as e:
-            evaled.append(None)
-            print("SYNTAX ERROR", e)
-    return evaled, dps
-
-# TODO #-support for last... could be one symbol for each of rect,point,line?
-
-if __name__ == "<run_path>":
-    from coldtype import *
-
-    #@renderable()
-    def test(r):
-        dps = DPS().constants(ri=r.inset(50), cf=65)
-        e, dps2 = gsh("""
-            $ri $ri𝓘100⌶∩$ri𝓘200⊤
-            $ri𝓣Y=0.5𝓘X150𝓒20—a—10@1⊥⍺
-            $ri𝓘150↖⨝$ri↘〻𝓞X-100 □𝓘100
-            """, ctx=dps)
-        return [
-            dps2.f(None).s(0).sw(5)
-        ]
-    
-    @renderable()
-    def test2(r):
-        dps = DPS().constants(r=r.inset(50), cf=65)
-        e, dps2 = gsh("$r←↓↑ $r↓|45|$r→ ↙|65|$r↑ ɜ Я",
-            ctx=dps)
-        pprint(e)
-        dp = DP()
-        dp.mt(e[0])
-        for _e in e[1:]:
-            if isinstance(_e, Point):
-                dp.lt(_e)
-            elif isinstance(_e, str):
-                getattr(dp, _e)()
-            elif len(_e) == 3:
-                dp.boxCurveTo(_e[-1], _e[0], _e[1])
-        if dp.value[-1][0] not in ["endPath", "closePath"]:
-            dp.closePath()
-        return dp.f(None).s(0).sw(5)
+    return evaled

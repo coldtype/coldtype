@@ -26,6 +26,7 @@ from noise import pnoise1
 import coldtype.pens.drawbot_utils as dbu
 
 from coldtype.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle, EPL_SYMBOLS, Geometrical
+from coldtype.gs import gs
 from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
 from coldtype.color import Gradient, normalize_color, Color
 from coldtype.pens.misc import ExplodingPen, SmoothPointsPen, BooleanOp, calculate_pathop
@@ -445,8 +446,17 @@ class DATPen(RecordingPen, DATPenLikeObject):
         except:
             return Rect(0, 0, 0, 0)
     
+    def is_unended(self):
+        if len(self.value) == 0:
+            return True
+        elif self.value[-1][0] not in ["endPath", "closePath"]:
+            return True
+        return False
+    
     def reverse(self):
         """Reverse the winding direction of the pen."""
+        if self.is_unended():
+            raise Exception("Cannot reverse unended path")
         dp = DATPen()
         rp = ReverseContourPen(dp)
         self.replay(rp)
@@ -1446,78 +1456,23 @@ class DATPen(RecordingPen, DATPenLikeObject):
         #print(">>>", vs)
         return vs
     
-    vs = varstr
-
-    def bvs(self, v):
-        return self.bounds() % self.varstr(v)
-    
-    def ep(self, s, srcdp=None, fn=None, tag=None):
-        s = s.replace("∎", "&bx")
-
-        epre = re.compile("["+"".join(EPL_SYMBOLS.keys())+"]{2,}")
-        should_reverse = False
-
-        if srcdp is None:
-            srcdp = self
+    def gs(self, e, fn=None, tag=None):
+        self.moveTo(e[0])
+        for _e in e[1:]:
+            if isinstance(_e, Point):
+                self.lineTo(_e)
+            elif isinstance(_e, str):
+                getattr(self, _e)()
+            elif len(_e) == 3:
+                self.boxCurveTo(_e[-1], _e[0], _e[1])
         
-        cmds = s.split(" ")
-        for cidx, cmd in enumerate(cmds):
-            args = cmd.split("|")
-            if args[0].startswith("-"):
-                continue
-            if args[0] == "E":
-                self.endPath()
-            elif args[0] == "C":
-                self.closePath()
-            elif args[0] == "R":
-                should_reverse = not should_reverse
-            elif not args[0]:
-                continue
-            elif len(args) == 1:
-                def mtlt(v):
-                    if cidx == 0 and (len(self.value) == 0 or self.value[-1][0] in ["closePath", "endPath"]):
-                        self.moveTo(v)
-                    else:
-                        self.lineTo(v)
-
-                if "∩" in args[0]:
-                    p1, p2 = [Rect(0, 0)%srcdp.vs(a) for a in args[0].split("∩")]
-                    mtlt(p1 & p2)
-                    continue
-                
-                mm = re.findall(epre, cmd)
-                if mm:
-                    first = mm[0][0]
-                    a, b = cmd.split(first)
-                    cmd = a + first + " " + a + (" " + a).join(mm[0][1:])
-                #print(mm, cmd)
-                for c in cmd.split(" "):
-                    v = self.bounds() % srcdp.vs(c)
-                    if isinstance(v, Line):
-                        mtlt(v.start)
-                        mtlt(v.end)
-                    else:
-                        mtlt(v)
-            elif len(args) == 3:
-                ctrl, cf, to = args
-                v = Rect(0, 0) % srcdp.vs(to)
-                if ctrl[0] in EPL_SYMBOLS:
-                    if len(ctrl) > 1:
-                        ctrl = list(ctrl)
-                else:
-                    ctrl = Rect(0, 0) % srcdp.vs(ctrl)
-                    #print("CTRL>>>", ctrl)
-                self.boxCurveTo(v, ctrl, eval(srcdp.vs(cf)))
-        
-        if self.value[-1][0] not in ["closePath", "endPath"]:
+        if self.is_unended():
             self.closePath()
+
         if tag:
             self.tag(tag)
         if fn:
             fn(self)
-        
-        if should_reverse:
-            self.reverse()
         return self
 
     def bp(self):
@@ -1798,12 +1753,11 @@ class DATPens(DATPen):
             if callable(v):
                 v = v(self)
             elif isinstance(v, str):
-                v = self.bx % self.varstr(v)
-            if "ƒ" in k:
-                for idx, _k in enumerate(k.split("ƒ")):
-                    keep(_k, v[idx], invisible=k.startswith("Ƨ"))
-            else:
-                keep(k, v)
+                v = gs(v, ctx=self, dps=DATPens())
+            
+            for idx, _k in enumerate(k.split("ƒ")):
+                print(">>>>>>>>>>", _k, v[idx])
+                keep(_k, v[idx], invisible=k.startswith("Ƨ"))
         return self
     
     def register(self, **kwargs):
@@ -1816,7 +1770,7 @@ class DATPens(DATPen):
     
     def realize(self):
         for k, v in self.registrations.items():
-            self.append(DATPen().rect(v).tag(k))
+            self.append(DATPen(v).tag(k))
         return self
     
     def record(self, pen):
@@ -1826,11 +1780,13 @@ class DATPens(DATPen):
         else:
             return self.append(pen)
     
-    def ep(self, s, fn=None, tag=None):
-        dp = DATPen()
-        dp.ep(s, srcdp=self, fn=fn, tag=tag)
-        self.append(dp)
-        return self
+    def gs(self, s, fn=None, tag=None):
+        return self.append(DP().gs(gs(s, ctx=self, dps=DATPens())))
+    
+    def gss(self, s):
+        dps = DATPens()
+        xs = gs(s, ctx=self, dps=dps)
+        return self.extend(dps.pens)
     
     def explode(self):
         """Noop on a set"""
