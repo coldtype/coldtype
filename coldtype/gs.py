@@ -2,6 +2,8 @@ import re
 from more_itertools import split_at, split_before
 from pprint import pprint
 
+from coldtype.geometry import Point, Line, Rect
+
 
 GSH_UNARY_SUFFIX_FUNCS = {
     "~": "reverse",
@@ -73,8 +75,8 @@ GSH_EXPLODES = {
 }
 
 GSH_PATH_OPS = {
-    "ɜ": "endPath", # 'open'
-    "ɞ": "closePath", # 'closed'
+    "ɜ": "endPath",
+    "ɞ": "closePath",
     "Я": "reverse"
 }
 
@@ -84,12 +86,11 @@ def gshchain(s):
     chars.extend(GSH_UNARY_SUFFIX_PROPS)
     chars.extend(GSH_UNARY_SUFFIX_FUNCS)
     chars.append(">")
-    cs = ["".join(x) for x in split_before(s, lambda x: x in chars) if x[0] != ">"]
-    #print(cs)
     
-    #cs = s.split(">")
+    cs = ["".join(x) for x in split_before(s, lambda x: x in chars) if x[0] != ">"]
     out = cs[0]
     spre = re.compile(",|—")
+
     for c in cs[1:]:
         f = c[0]
         if f in GSH_BINARY_OPS:
@@ -128,10 +129,10 @@ def gshchain(s):
                 out += f".{fn}({','.join(args[i])})"
         elif f in GSH_UNARY_SUFFIX_PROPS:
             fn = GSH_UNARY_SUFFIX_PROPS[f]
-            out += f".{fn}"
+            out += f".{fn}" #+ c[1:]
         elif f in GSH_UNARY_SUFFIX_FUNCS:
             fn = GSH_UNARY_SUFFIX_FUNCS[f]
-            out += f".{fn}()"
+            out += f".{fn}()" #+ c[1:]
     return out
 
 def gshterm(s:str):
@@ -162,10 +163,26 @@ def gshphrase(s):
                 t2 = terms[i+1]
                 out += f"({t1}.{op[0]}({t2}))"
                 i += 2
-
     return out
 
+def gshgroup(s):
+    s = s.replace("(", "[").replace(")", "]")
+    rg = re.compile(r"\[([^\]]+)\]")
+
+    def expand(m):
+        #print("MATCH", m.group(1))
+        return f"({gshphrase(m.group(1))})"
+
+    rm = rg.findall(s)
+    while len(rm) > 0:
+        s = rg.sub(expand, s)
+        rm = rg.findall(s)
+    
+    #print("AFTER", s)
+    return gshphrase(s)
+
 def gs(s, ctx={}, dps=None):
+    print("GSIN>>>>>>>>>>>>>>>>", s)
     evaled = []
     last_locals = {}
     s = "ƒ"+re.sub(r"[\s\n]+", "ƒ", s).strip()
@@ -178,19 +195,19 @@ def gs(s, ctx={}, dps=None):
         return "ƒ".join(out)
     
     def do_eval(phrase, last):
-        py = (gshphrase(phrase))
+        py = (gshgroup(phrase))
         py = py.replace("$", "ctx.c.")
         py = py.replace("&", "ctx.")
         if hasattr(ctx, "bx"):
-            py = py.replace("■", "ctx.bx")
+            py = py.replace("□", "ctx.bx")
         else:
-            py = py.replace("■", "ctx.bounds()")
+            py = py.replace("□", "ctx.bounds()")
         if dps is not None:
-            py = py.replace("□", "_dps.bounds()")
-        print("=============", py)
+            py = py.replace("■", "_dps.bounds()")
+        print("gs===", py)
         try:
-            res = eval(py, dict(ctx=ctx, _last=last, _dps=dps), last_locals)
-            print("LOCALS", last_locals)
+            res = eval(py, dict(ctx=ctx, _last=last, _dps=dps, Point=Point, Line=Line, Rect=Rect), last_locals)
+            #print("LOCALS", last_locals)
             return res
         except SyntaxError as e:
             print("SYNTAX ERROR", e, phrase, py)

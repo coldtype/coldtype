@@ -683,7 +683,7 @@ class Rect(Geometrical):
         return self.rect()[key]
 
     def __repr__(self):
-        return "Rect(" + str(self.rect()) + ")"
+        return "Rect(" + str(self.rect()).replace(" ", "") + ")"
     
     def __eq__(self, r):
         try:
@@ -1105,6 +1105,23 @@ class Rect(Geometrical):
 
     def intersects(self, other):
         return not (self.point("NE").x < other.point("SW").x or self.point("SW").x > other.point("NE").x or self.point("NE").y < other.point("SW").y or self.point("SW").y > other.point("NE").y)
+    
+    def maxima(self, n, edge):
+        e = txt_to_edge(edge)
+        if e == Edge.MinX:
+            return self.setmnx(n)
+        elif e == Edge.MaxX:
+            return self.setmxx(n)
+        elif e == Edge.CenterX:
+            return self.setmdx(n)
+        elif e == Edge.MinY:
+            return self.setmny(n)
+        elif e == Edge.MaxY:
+            return self.setmxy(n)
+        elif e == Edge.CenterY:
+            return self.setmdy(n)
+        else:
+            raise Exception("HELLO")
     
     def setmnx(self, x):
         mnx, mny, mxx, mxy = self.mnmnmxmx()

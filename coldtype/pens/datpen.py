@@ -456,7 +456,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def reverse(self):
         """Reverse the winding direction of the pen."""
         if self.is_unended():
-            raise Exception("Cannot reverse unended path")
+            self.closePath()
         dp = DATPen()
         rp = ReverseContourPen(dp)
         self.replay(rp)
@@ -1414,47 +1414,51 @@ class DATPen(RecordingPen, DATPenLikeObject):
         res = kwargs
         
         for k, v in res.items():
-            if callable(v):
-                v = v(self)
-            elif isinstance(v, str):
-                v = eval(self.varstr(v))
-                #v = self.bx / self.varstr(v)
-            self.c.lookup[k] = v
-            setattr(self.c, k, v)
+            if isinstance(v, str):
+                v = gs(v, self, dps=DATPens())
+                for idx, _k in enumerate(k.split("ƒ")):
+                    self.c.lookup[_k] = v[idx]
+                    setattr(self.c, _k, v[idx])
+                continue
+            else:
+                if callable(v):
+                    v = v(self)
+                self.c.lookup[k] = v
+                setattr(self.c, k, v)
         return self
     
     def declare(self, *whatever):
         # TODO do something with what's declared somehow?
         return self
     
-    def varstr(self, v):
-        if not hasattr(self, "_last_vscr"):
-            self._last_vscr = None
+    # def varstr(self, v):
+    #     if not hasattr(self, "_last_vscr"):
+    #         self._last_vscr = None
         
-        if "#" in v and self._last_vscr:
-            #print(">>>>>>>>>>", self._last_vscr)
-            v = v.replace("#", self._last_vscr)
+    #     if "#" in v and self._last_vscr:
+    #         #print(">>>>>>>>>>", self._last_vscr)
+    #         v = v.replace("#", self._last_vscr)
         
-        eps = "".join(EPL_SYMBOLS.keys())
-        epre1 = re.compile(r"\$([^,ƒ\s\$\&\/\#"+eps+"]+)")
-        epre2 = re.compile(r"\&([^,ƒ\s\$\&\/\#"+eps+"]+)")
+    #     eps = "".join(EPL_SYMBOLS.keys())
+    #     epre1 = re.compile(r"\$([^,ƒ\s\$\&\/\#"+eps+"]+)")
+    #     epre2 = re.compile(r"\&([^,ƒ\s\$\&\/\#"+eps+"]+)")
         
-        def rep_con(m):
-            res = eval("g.c." + m.group(1), {"g":self})
-            if isinstance(res, Rect):
-                self._last_vscr = str(res)
-            return str(res)
+    #     def rep_con(m):
+    #         res = eval("g.c." + m.group(1), {"g":self})
+    #         if isinstance(res, Rect):
+    #             self._last_vscr = str(res)
+    #         return str(res)
         
-        def rep_ref(m):
-            res = eval("g." + m.group(1), {"g":self})
-            if isinstance(res, Rect):
-                self._last_vscr = str(res)
-            return str(res)
+    #     def rep_ref(m):
+    #         res = eval("g." + m.group(1), {"g":self})
+    #         if isinstance(res, Rect):
+    #             self._last_vscr = str(res)
+    #         return str(res)
 
-        vs = re.sub(epre1, rep_con, v)
-        vs = re.sub(epre2, rep_ref, vs)
-        #print(">>>", vs)
-        return vs
+    #     vs = re.sub(epre1, rep_con, v)
+    #     vs = re.sub(epre2, rep_ref, vs)
+    #     #print(">>>", vs)
+    #     return vs
     
     def gs(self, e, fn=None, tag=None):
         self.moveTo(e[0])
@@ -1752,11 +1756,20 @@ class DATPens(DATPen):
         for k, v in res.items():
             if callable(v):
                 v = v(self)
+                v = [v]
             elif isinstance(v, str):
                 v = gs(v, ctx=self, dps=DATPens())
+            else:
+                v = [v]
             
-            for idx, _k in enumerate(k.split("ƒ")):
-                print(">>>>>>>>>>", _k, v[idx])
+            ks = k.split("ƒ")
+            print("REGISTRATION", ks, v)
+
+            if len(ks) > 1 and len(v) == 1:
+                print("HERE", ks, v)
+                v = v[0]
+            for idx, _k in enumerate(ks):
+                print(">>>>>>>>>>", k, _k, idx, v[idx])
                 keep(_k, v[idx], invisible=k.startswith("Ƨ"))
         return self
     
