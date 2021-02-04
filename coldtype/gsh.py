@@ -75,7 +75,8 @@ GSH_EXPLODES = {
 
 GSH_PATH_OPS = {
     "ɜ": "endPath", # 'open'
-    "ɞ": "closePath" # 'closed'
+    "ɞ": "closePath", # 'closed'
+    "Я": "reverse"
 }
 
 def gshchain(s):
@@ -252,8 +253,9 @@ if __name__ == "<run_path>":
     @renderable()
     def test2(r):
         dps = DPS().constants(r=r.inset(50), cf=65)
-        e, dps2 = gsh("$r←↓↑ $r↓|45|$r→ ↙|65|$r↑ ɜ",
+        e, dps2 = gsh("$r←↓↑ $r↓|45|$r→ ↙|65|$r↑ ɜ Я",
             ctx=dps)
+        pprint(e)
         dp = DP()
         dp.mt(e[0])
         for _e in e[1:]:
