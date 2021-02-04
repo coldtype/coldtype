@@ -167,6 +167,7 @@ def gshphrase(s):
 
 def gs(s, ctx={}, dps=None):
     evaled = []
+    last_locals = {}
     s = "ƒ"+re.sub(r"[\s\n]+", "ƒ", s).strip()
 
     def expand_multiarrow(m):
@@ -188,7 +189,9 @@ def gs(s, ctx={}, dps=None):
             py = py.replace("□", "_dps.bounds()")
         print("=============", py)
         try:
-            return eval(py, dict(ctx=ctx, _last=last, _dps=dps))
+            res = eval(py, dict(ctx=ctx, _last=last, _dps=dps), last_locals)
+            print("LOCALS", last_locals)
+            return res
         except SyntaxError as e:
             print("SYNTAX ERROR", e, phrase, py)
             return None

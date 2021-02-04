@@ -19,3 +19,10 @@ def test2(r):
         .f(hsl(0.9,l=0.8)).s(0).sw(4)
         .register(a="$r↖⨝$r↘", b="$rＨ∩&a")
         .realize())
+
+@renderable((500, 500))
+def test3(r):
+    return (DPS()
+        .constants(r=r.inset(180))
+        .gs("$r← $r↑|x:=335|$r→ $r↓|x|$r←")
+        .f(hsl(0.7, l=0.9)).s(0).sw(4))
