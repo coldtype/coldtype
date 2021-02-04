@@ -73,6 +73,11 @@ GSH_EXPLODES = {
     "〻": ["duplicate"],
 }
 
+GSH_PATH_OPS = {
+    "ɜ": "endPath", # 'open'
+    "ɞ": "closePath" # 'closed'
+}
+
 def gshchain(s):
     chars = list(GSH_BINARY_OPS_EDGEAWARE.keys())
     chars.extend(GSH_BINARY_OPS.keys())
@@ -184,6 +189,9 @@ def gsh(s, ctx={}):
     s = re.sub(r"([\$\&]{1}[a-z]+)([↖↑↗→↘↓↙←•]{2,})", expand_multiarrow, s)
     #print("---------------------", s)
 
+    for k, v in GSH_PATH_OPS.items():
+        s = s.replace(k, '"' + v + '"')
+
     splits = ["ƒ"]
     splits.extend(GSH_EXPLODES.keys())
     for phrase in split_before(s, lambda x: x in splits):
@@ -244,14 +252,17 @@ if __name__ == "<run_path>":
     @renderable()
     def test2(r):
         dps = DPS().constants(r=r.inset(50), cf=65)
-        e, dps2 = gsh("""
-            $r←↓↑ $r↓|45|$r→ ↙|65|$r↑
-            """, ctx=dps)
+        e, dps2 = gsh("$r←↓↑ $r↓|45|$r→ ↙|65|$r↑ ɜ",
+            ctx=dps)
         dp = DP()
         dp.mt(e[0])
         for _e in e[1:]:
             if isinstance(_e, Point):
                 dp.lt(_e)
+            elif isinstance(_e, str):
+                getattr(dp, _e)()
             elif len(_e) == 3:
                 dp.boxCurveTo(_e[-1], _e[0], _e[1])
+        if dp.value[-1][0] not in ["endPath", "closePath"]:
+            dp.closePath()
         return dp.f(None).s(0).sw(5)
