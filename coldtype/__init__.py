@@ -16,3 +16,6 @@ from coldtype.time import *
 
 name = "coldtype"
 __version__ = "0.1.9"
+
+def noop():
+    return None
