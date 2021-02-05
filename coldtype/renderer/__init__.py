@@ -607,6 +607,7 @@ class Renderer():
         try:
             for render in renders:
                 render.codepath = self.codepath
+                render.filepath = self.filepath
 
                 for watch, flag in render.watch:
                     if isinstance(watch, coldtype.text.reader.Font) and not watch.cacheable:
@@ -1089,6 +1090,19 @@ class Renderer():
             else:
                 print(">>> (", action, ") is not a recognized action")
     
+    def jump_to_fn(self, fn_name):
+        if self.last_animation:
+            fi = self.last_animation.fn_to_frame(fn_name)
+            if fi is None:
+                print("fn_to_frame: no match")
+                return False
+            #self.last_animation.storyboard = [fi]
+            self.state.adjust_all_frame_offsets(0, absolute=True)
+            self.state.adjust_keyed_frame_offsets(
+                self.last_animation.name, lambda i, o: fi)
+            self.action_waiting = Action.PreviewStoryboard
+            return True
+    
     def on_remote_command(self, cmd, context):
         #print(">>>>>", cmd, context)
         try:
@@ -1109,17 +1123,7 @@ class Renderer():
                     lidx -= 1
                     line = lines[lidx]
                 fn_name = lines[lidx+1].strip("def ").split("(")[0].strip()
-                if self.last_animation:
-                    fi = self.last_animation.fn_to_frame(fn_name)
-                    #self.last_animation.storyboard = [fi]
-                    self.state.adjust_all_frame_offsets(0, absolute=True)
-                    self.state.adjust_keyed_frame_offsets(
-                        self.last_animation.name,
-                        lambda i, o: fi)
-
-                    self.action_waiting = Action.PreviewStoryboard
-                #print(">>>>>>>>>>>>", line, )
-
+                self.jump_to_fn(fn_name)
         else:
             if cmd == "∑":
                 self.state.exit_keylayer()
@@ -1458,6 +1462,8 @@ class Renderer():
                 return None, None
 
     def on_stdin(self, stdin):
+        if self.jump_to_fn(stdin):
+            return
         action, data = self.stdin_to_action(stdin)
         if action:
             if action == Action.PreviewIndices:
