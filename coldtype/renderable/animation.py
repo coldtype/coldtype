@@ -32,7 +32,7 @@ class animation(renderable, Timeable):
     """
     Base class for any frame-wise animation animatable by Coldtype
     """
-    def __init__(self, rect=(1080, 1080), duration=10, storyboard=[0], timeline:Timeline=None, audio=None, **kwargs):
+    def __init__(self, rect=(1080, 1080), duration=10, storyboard=[0], timeline:Timeline=None, audio=None, show_frame=True, **kwargs):
         super().__init__(**kwargs)
         self.rect = Rect(rect)
         self.r = self.rect
@@ -43,6 +43,7 @@ class animation(renderable, Timeable):
             self.wavfile = None
         self.start = 0
         self.end = duration
+        self.show_frame = show_frame
         
         self.storyboard = storyboard
         if timeline:
@@ -130,8 +131,8 @@ class animation(renderable, Timeable):
             return DATPens([
                 wave,
                 res,
-                #DATPen().rect(t).f(bw(0, 0.75)),
-                #DATText(f"{frame.i} / {self.duration}", Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10))
+                DATPen().rect(t).f(bw(0, 0.75)) if self.show_frame else None,
+                DATText(f"{frame.i} / {self.duration}", Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10)) if self.show_frame else None
             ])
         return res
     

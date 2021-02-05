@@ -177,6 +177,8 @@ class Renderer():
 
             show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS),
 
+            frame_offsets=parser.add_argument("-fo", "--frame-offsets", type=str, default=None, help=argparse.SUPPRESS),
+
             disable_syntax_mods=parser.add_argument("-dsm", "--disable-syntax-mods", action="store_true", default=False, help="Coldtype has some optional syntax modifications that require copying the source to a new tempfile before running — would you like to skip this to preserve __file__ in your sources?")),
         return pargs, parser
     
@@ -447,10 +449,14 @@ class Renderer():
                     "__FILE__": self.filepath,
                     "__sibling__": partial(sibling, self.filepath)
                 })
+
+                full_restart = False
+
                 for r in self.renderables(Action.PreviewStoryboardReload):
                     if isinstance(r, animation):
                         if r.name not in self.state._frame_offsets:
-                            for s in r.storyboard:
+                            full_restart = True
+                            for i, s in enumerate(r.storyboard):
                                 self.state.add_frame_offset(r.name, s)
                         else:
                             lasts = self.state._initial_frame_offsets[r.name]
@@ -459,6 +465,7 @@ class Renderer():
                                 del self.state._initial_frame_offsets[r.name]
                                 for s in r.storyboard:
                                     self.state.add_frame_offset(r.name, s)
+                        
                         self.last_animation = r
                         if pyaudio and not self.args.is_subprocess and r.audio:
                             self.paudio_source = soundfile.SoundFile(r.audio, "r+")
@@ -467,6 +474,13 @@ class Renderer():
                         
                         if not r.audio:
                             self.paudio_source = None
+                
+                if full_restart:
+                    fos = {}
+                    if self.args.frame_offsets:
+                        fos = eval(self.args.frame_offsets)
+                        for k, v in fos.items():
+                            self.state.adjust_keyed_frame_offsets(k, lambda i, o: v[i])
                     
                 if self.program.get("COLDTYPE_NO_WATCH"):
                     return True
@@ -1925,7 +1939,18 @@ class Renderer():
     
     def restart(self):
         print("> RESTARTING...")
-        os.execl(sys.executable, *(["-m"]+sys.argv))
+        args = sys.argv
+        
+        # attempt to preserve state across reload
+        fo = str(self.state._frame_offsets)
+        try:
+            foi = args.index("-fo")
+            args[foi+1] = fo
+        except ValueError:
+            args.append("-fo")
+            args.append(fo)
+        
+        os.execl(sys.executable, *(["-m"]+args))
 
     def on_exit(self, restart=False):
         #if self.args.watch:
