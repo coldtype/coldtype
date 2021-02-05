@@ -489,6 +489,10 @@ class Line(Geometrical):
         self.start = Point(start)
         self.end = Point(end)
     
+    @property
+    def mid(self):
+        return self.start.i(0.5, self.end)
+    
     def __repr__(self):
         return f"Line({self.start}, {self.end})"
     

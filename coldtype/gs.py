@@ -38,7 +38,8 @@ GSH_UNARY_SUFFIX_PROPS = {
     "↙": "psw",
     "•": "pc",
     "⍺": "start",
-    "⍵": "end"
+    "⍵": "end",
+    "µ": "mid",
 }
 
 GSH_BINARY_OPS = {
@@ -51,7 +52,7 @@ GSH_BINARY_OPS = {
     "R": "rows",
     "𝓡": "rows",
     "@": "__getitem__",
-    "↕": "extrapolate",
+    "↕": "extr",
 }
 
 GSH_BINARY_OPS_EDGEAWARE = {
@@ -86,13 +87,25 @@ def gshchain(s):
     chars.extend(GSH_UNARY_SUFFIX_PROPS)
     chars.extend(GSH_UNARY_SUFFIX_FUNCS)
     chars.append(">")
+    chars.append("Ƨ")
     
     cs = ["".join(x) for x in split_before(s, lambda x: x in chars) if x[0] != ">"]
     out = cs[0]
     spre = re.compile(",|—")
+    skip = False
+
+    #print(cs)
 
     for c in cs[1:]:
         f = c[0]
+        if f == "Ƨ":
+            #print("skipping")
+            skip = True
+            continue
+        elif skip:
+            skip = False
+            continue
+
         if f in GSH_BINARY_OPS:
             fn = GSH_BINARY_OPS[f]
             d = None
@@ -166,6 +179,9 @@ def gshphrase(s):
     return out
 
 def gshgroup(s):
+    if s.startswith("Ƨ"):
+        return None
+
     s = s.replace("(", "[").replace(")", "]")
     rg = re.compile(r"\[([^\]]+)\]")
 
@@ -182,12 +198,12 @@ def gshgroup(s):
     return gshphrase(s)
 
 def gs(s, ctx={}, dps=None):
-    print("GSIN>>>>>>>>>>>>>>>>", s)
+    #print("GSIN>>>>>>>>>>>>>>>>", s)
     evaled = []
     last_locals = {}
     s = "ƒ"+re.sub(r"[\s\n]+", "ƒ", s).strip()
 
-    def expand_multiarrow(m):
+    def expand_multisuffix(m):
         out = []
         arrows = list(m.group(2))
         for a in arrows:
@@ -196,6 +212,8 @@ def gs(s, ctx={}, dps=None):
     
     def do_eval(phrase, last):
         py = (gshgroup(phrase))
+        if not py:
+            return None
         py = py.replace("$", "ctx.c.")
         py = py.replace("&", "ctx.")
         if hasattr(ctx, "bx"):
@@ -204,7 +222,7 @@ def gs(s, ctx={}, dps=None):
             py = py.replace("□", "ctx.bounds()")
         if dps is not None:
             py = py.replace("■", "_dps.bounds()")
-        print("gs===", py)
+        #print("gs===", py)
         try:
             res = eval(py, dict(ctx=ctx, _last=last, _dps=dps, Point=Point, Line=Line, Rect=Rect), last_locals)
             #print("LOCALS", last_locals)
@@ -213,7 +231,7 @@ def gs(s, ctx={}, dps=None):
             print("SYNTAX ERROR", e, phrase, py)
             return None
 
-    s = re.sub(r"([\$\&]{1}[a-z]+)([↖↑↗→↘↓↙←•]{2,})", expand_multiarrow, s)
+    s = re.sub(r"([\$\&]{1}[a-z]+)([↖↑↗→↘↓↙←•⍺⍵µ]{2,})", expand_multisuffix, s)
     #print("---------------------", s)
 
     for k, v in GSH_PATH_OPS.items():
@@ -240,11 +258,16 @@ def gs(s, ctx={}, dps=None):
         if "|" in phrase:
             tuple = phrase.split("|")
             for i, t in enumerate(tuple[:-1]):
-                if t in GSH_UNARY_TO_STRING:
-                    tuple[i] = GSH_UNARY_TO_STRING[t]
-                else:
-                    tuple[i] = do_eval(t, last)
-            #print(tuple[:-1])
+                if isinstance(t, str):
+                    if len(t) > 1:
+                        if t[0] in GSH_UNARY_TO_STRING:
+                            tuple[i] = [GSH_UNARY_TO_STRING[x] for x in t]
+                            continue
+                    else:
+                        if t in GSH_UNARY_TO_STRING:
+                            tuple[i] = GSH_UNARY_TO_STRING[t]
+                            continue
+                tuple[i] = do_eval(t, last)
             more = tuple[:-1]
             phrase = tuple[-1]
 

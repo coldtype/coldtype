@@ -33,5 +33,6 @@ def test3(r):
 def test4(r):
     return (DPS()
         .constants(r=r.inset(150))
-        .gss("x:=$r⊣ y:=xOX50 ($r⊤∩(y))OY25")
+        .gss("x:=$r⊣ y:=xOX50 ($r⊤∩(y))OY50")
+        .gs("(r:=$rI-20)↖ ↙↗|175|r↓")
         .f(None).s(0).sw(4))

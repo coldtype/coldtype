@@ -1463,7 +1463,9 @@ class DATPen(RecordingPen, DATPenLikeObject):
     def gs(self, e, fn=None, tag=None):
         self.moveTo(e[0])
         for _e in e[1:]:
-            if isinstance(_e, Point):
+            if _e is None:
+                continue
+            elif isinstance(_e, Point):
                 self.lineTo(_e)
             elif isinstance(_e, str):
                 getattr(self, _e)()
@@ -1763,13 +1765,13 @@ class DATPens(DATPen):
                 v = [v]
             
             ks = k.split("ƒ")
-            print("REGISTRATION", ks, v)
+            #print("REGISTRATION", ks, v)
 
             if len(ks) > 1 and len(v) == 1:
-                print("HERE", ks, v)
+                #print("HERE", ks, v)
                 v = v[0]
             for idx, _k in enumerate(ks):
-                print(">>>>>>>>>>", k, _k, idx, v[idx])
+                #print(">>>>>>>>>>", k, _k, idx, v[idx])
                 keep(_k, v[idx], invisible=k.startswith("Ƨ"))
         return self
     
@@ -1794,7 +1796,8 @@ class DATPens(DATPen):
             return self.append(pen)
     
     def gs(self, s, fn=None, tag=None):
-        return self.append(DP().gs(gs(s, ctx=self, dps=DATPens())))
+        return self.append(
+            DP().gs(gs(s, ctx=self, dps=DATPens()), tag=tag, fn=fn))
     
     def gss(self, s):
         dps = DATPens()
