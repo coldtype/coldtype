@@ -1,5 +1,4 @@
 from coldtype.test import *
-from coldtype.gs import gs, gshphrase
 
 @renderable((500, 500))
 def test(r):

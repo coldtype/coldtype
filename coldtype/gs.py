@@ -69,6 +69,7 @@ GSH_BINARY_OPS_EDGEAWARE = {
 GSH_JOINS = {
     "⨝": ["join"],
     "∩": ["intersection"],
+    "∮": lambda a, b: f"DP().mt({a}.start).lt({a}.end).lt({b}.end).lt({b}.start).cp()"
 }
 
 GSH_EXPLODES = {
@@ -94,12 +95,9 @@ def gshchain(s):
     spre = re.compile(",|—")
     skip = False
 
-    #print(cs)
-
     for c in cs[1:]:
         f = c[0]
         if f == "Ƨ":
-            #print("skipping")
             skip = True
             continue
         elif skip:
@@ -146,6 +144,7 @@ def gshchain(s):
         elif f in GSH_UNARY_SUFFIX_FUNCS:
             fn = GSH_UNARY_SUFFIX_FUNCS[f]
             out += f".{fn}()" #+ c[1:]
+    
     return out
 
 def gshterm(s:str):
@@ -160,8 +159,6 @@ def gshphrase(s):
             terms.append("("+gshterm(t)+")")
         else:
             terms.append(t)
-    
-    #pprint(terms)
 
     out = ""
     t1 = terms[0]
@@ -174,7 +171,10 @@ def gshphrase(s):
             if op_s in GSH_JOINS:
                 op = GSH_JOINS[op_s]
                 t2 = terms[i+1]
-                out += f"({t1}.{op[0]}({t2}))"
+                if callable(op):
+                    out += op(t1, t2)
+                else:
+                    out += f"({t1}.{op[0]}({t2}))"
                 i += 2
     return out
 
@@ -186,7 +186,6 @@ def gshgroup(s):
     rg = re.compile(r"\[([^\]]+)\]")
 
     def expand(m):
-        #print("MATCH", m.group(1))
         return f"({gshphrase(m.group(1))})"
 
     rm = rg.findall(s)
@@ -194,11 +193,9 @@ def gshgroup(s):
         s = rg.sub(expand, s)
         rm = rg.findall(s)
     
-    #print("AFTER", s)
     return gshphrase(s)
 
 def gs(s, ctx={}, dps=None):
-    #print("GSIN>>>>>>>>>>>>>>>>", s)
     evaled = []
     last_locals = {}
     s = "ƒ"+re.sub(r"[\s\n]+", "ƒ", s).strip()
@@ -222,21 +219,28 @@ def gs(s, ctx={}, dps=None):
             py = py.replace("□", "ctx.bounds()")
         if dps is not None:
             py = py.replace("■", "_dps.bounds()")
-        #print("gs===", py)
+
         try:
-            res = eval(py, dict(ctx=ctx, _last=last, _dps=dps, Point=Point, Line=Line, Rect=Rect), last_locals)
-            #print("LOCALS", last_locals)
+            res = eval(py, dict(
+                ctx=ctx,
+                _last=last,
+                _dps=dps,
+                Point=Point,
+                Line=Line,
+                Rect=Rect,
+                DP=dps.single_pen_class if dps is not None else None)
+                , last_locals)
             return res
         except SyntaxError as e:
             print("SYNTAX ERROR", e, phrase, py)
             return None
 
     s = re.sub(r"([\$\&]{1}[a-z]+)([↖↑↗→↘↓↙←•⍺⍵µ]{2,})", expand_multisuffix, s)
-    #print("---------------------", s)
 
     for k, v in GSH_PATH_OPS.items():
         s = s.replace(k, '"' + v + '"')
 
+    join_to_path = False
     splits = ["ƒ"]
     splits.extend(GSH_EXPLODES.keys())
     for phrase in split_before(s, lambda x: x in splits):
@@ -254,10 +258,14 @@ def gs(s, ctx={}, dps=None):
         if not phrase:
             continue
 
+        if phrase == "∫":
+            join_to_path = True
+            continue
+
         more = []
         if "|" in phrase:
             tuple = phrase.split("|")
-            for i, t in enumerate(tuple[:-1]):
+            for i, t in enumerate(tuple):
                 if isinstance(t, str):
                     if len(t) > 1:
                         if t[0] in GSH_UNARY_TO_STRING:
@@ -268,14 +276,16 @@ def gs(s, ctx={}, dps=None):
                             tuple[i] = GSH_UNARY_TO_STRING[t]
                             continue
                 tuple[i] = do_eval(t, last)
-            more = tuple[:-1]
+            more = tuple
             phrase = tuple[-1]
 
-        ev = do_eval(phrase, last)
         if more:
-            evaled.append((*more, ev))
+            evaled.append(more)
         else:
-            evaled.append(ev)
+            evaled.append(do_eval(phrase, last))
         if dps is not None:
             dps.append(evaled[-1])
+    
+    if join_to_path and dps:
+        return [dps.single_pen_class().gs(evaled)]
     return evaled

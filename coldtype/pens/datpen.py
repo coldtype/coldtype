@@ -1159,6 +1159,94 @@ class DATPen(RecordingPen, DATPenLikeObject):
         return Line(allpts[idx][0], allpts[idx+1][0])
     
     sl = sliced_line
+
+    def nsew(self):
+        pts = [el[1][-1] for el in self.value if len(el[1]) > 0]
+        
+        lines = []
+        for i, p in enumerate(pts):
+            if i + 1 == len(pts):
+                lines.append(Line(p, pts[0]))
+            else:
+                lines.append(Line(p, pts[i+1]))
+        
+        mnx, mny, mxx, mxy = self.bounds().mnmnmxmx()
+        min_ang = min([l.ang for l in lines])
+        max_ang = max([l.ang for l in lines])
+        xs = [l for l in lines if l.ang == min_ang]
+        ys = [l for l in lines if l.ang == max_ang]
+        n = [l for l in xs if l.start.y == mxy or l.end.y == mxy][0]
+        s = [l for l in xs if l.start.y == mny or l.end.y == mny][0]
+        e = [l for l in ys if l.start.x == mxx or l.end.x == mxx][0]
+        w = [l for l in ys if l.start.x == mnx or l.end.x == mnx][0]
+        return n, s, e, w
+
+    def point(self, pt):
+        n, s, e, w = self.nsew()
+        if pt == "NE":
+            return n.pe
+        elif pt == "NW":
+            return n.pw
+        elif pt == "SE":
+            return s.pe
+        elif pt == "SW":
+            return s.pw
+        elif pt == "N":
+            return n.mid
+        elif pt == "S":
+            return s.mid
+        elif pt == "E":
+            return e.mid
+        elif pt == "W":
+            return w.mid
+
+    @property
+    def pne(self):
+        return self.point("NE")
+    
+    @property
+    def pnw(self):
+        return self.point("NW")
+    
+    @property
+    def psw(self):
+        return self.point("SW")
+    
+    @property
+    def pse(self):
+        return self.point("SE")
+    
+    @property
+    def pn(self):
+        return self.point("N")
+
+    @property
+    def ps(self):
+        return self.point("S")
+    
+    @property
+    def pe(self):
+        return self.point("E")
+    
+    @property
+    def pw(self):
+        return self.point("W")
+    
+    @property
+    def en(self):
+        return self.nsew()[0]
+
+    @property
+    def es(self):
+        return self.nsew()[1]
+
+    @property
+    def ee(self):
+        return self.nsew()[2]
+    
+    @property
+    def ew(self):
+        return self.nsew()[3]
     
     def openAndClosed(self):
         """Explode and then classify group each contour into open/closed pens; (what is this good for?)"""

@@ -493,6 +493,38 @@ class Line(Geometrical):
     def mid(self):
         return self.start.i(0.5, self.end)
     
+    @property
+    def mxx(self):
+        return max([p.x for p in [self.start, self.end]])
+    
+    @property
+    def mnx(self):
+        return min([p.x for p in [self.start, self.end]])
+    
+    @property
+    def mxy(self):
+        return max([p.y for p in [self.start, self.end]])
+    
+    @property
+    def mny(self):
+        return min([p.y for p in [self.start, self.end]])
+    
+    @property
+    def pe(self):
+        return max([self.start, self.end], key=lambda p: p.x)
+    
+    @property
+    def pw(self):
+        return min([self.start, self.end], key=lambda p: p.x)
+    
+    @property
+    def pn(self):
+        return max([self.start, self.end], key=lambda p: p.y)
+    
+    @property
+    def ps(self):
+        return min([self.start, self.end], key=lambda p: p.y)
+    
     def __repr__(self):
         return f"Line({self.start}, {self.end})"
     
@@ -537,6 +569,10 @@ class Line(Geometrical):
     def angle(self):
         return calc_angle(self.start, self.end)
     
+    @property
+    def ang(self):
+        return self.angle()%math.pi
+    
     def extr(self, amt):
         p1, p2 = self
         return Line(p2.i(1+amt, p1), p1.i(1+amt, p2))
@@ -567,6 +603,9 @@ class Line(Geometrical):
     
     def __and__(self, other):
         return self.intersection(other)
+    
+    def join(self, other):
+        return Rect.FromPoints(self.start, self.end, other.end, other.start)
     
     def interp(self, x, other):
         return Line(self.start.i(x, other.start), self.end.i(x, other.end))
