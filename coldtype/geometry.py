@@ -10,31 +10,6 @@ YOYO = "ma"
 
 MINYISMAXY = False
 
-EPL_SYMBOLS = {
-    "~": "reverse",
-    "⊢": "ew",
-    "⊣": "ee",
-    "⊤": "en",
-    "⊥": "es",
-    "⌶": "ecx",
-    "Ｈ": "ecy",
-    "←": "pw",
-    "↑": "pn",
-    "→": "pe",
-    "↓": "ps",
-    "↖": "pnw",
-    "↗": "pne",
-    "↘": "pse",
-    "↙": "psw",
-    "•": "pc",
-    "⍺": "start",
-    "⍵": "end",
-    "⨝": None,
-    "∩": None,
-    "〻": None
-}
-
-
 COMMON_PAPER_SIZES = {
     'letter': (612, 792),
     'tabloid': (792, 1224),
@@ -1004,21 +979,8 @@ class Rect(Geometrical):
         return [Rect(x) for x in pieces(self.rect(), amount, edge)]
 
     def edge(self, edge):
-        if edge in EPL_SYMBOLS:
-            attr = getattr(self, EPL_SYMBOLS[edge])
-            if callable(attr):
-                return attr()
-            return attr
-
         edge = txt_to_edge(edge)
         return Line(*edgepoints(self.rect(), edge))
-    
-    def e(self, e):
-        if e in EPL_SYMBOLS:
-            attr = getattr(self, EPL_SYMBOLS[edge])
-            if callable(attr):
-                return attr()
-            return attr
 
     def center(self):
         return Point(centerpoint(self.rect()))
@@ -1061,8 +1023,6 @@ class Rect(Geometrical):
         * S
         * SW
         """
-        if eh in EPL_SYMBOLS:
-            return getattr(self, EPL_SYMBOLS[eh])
 
         ev = txt_to_edge(ev)
         if eh == "C":

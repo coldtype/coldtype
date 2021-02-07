@@ -25,7 +25,7 @@ from noise import pnoise1
 
 import coldtype.pens.drawbot_utils as dbu
 
-from coldtype.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle, EPL_SYMBOLS, Geometrical
+from coldtype.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle, Geometrical
 from coldtype.gs import gs
 from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
 from coldtype.color import Gradient, normalize_color, Color
@@ -1519,35 +1519,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
         # TODO do something with what's declared somehow?
         return self
     
-    # def varstr(self, v):
-    #     if not hasattr(self, "_last_vscr"):
-    #         self._last_vscr = None
-        
-    #     if "#" in v and self._last_vscr:
-    #         #print(">>>>>>>>>>", self._last_vscr)
-    #         v = v.replace("#", self._last_vscr)
-        
-    #     eps = "".join(EPL_SYMBOLS.keys())
-    #     epre1 = re.compile(r"\$([^,ƒ\s\$\&\/\#"+eps+"]+)")
-    #     epre2 = re.compile(r"\&([^,ƒ\s\$\&\/\#"+eps+"]+)")
-        
-    #     def rep_con(m):
-    #         res = eval("g.c." + m.group(1), {"g":self})
-    #         if isinstance(res, Rect):
-    #             self._last_vscr = str(res)
-    #         return str(res)
-        
-    #     def rep_ref(m):
-    #         res = eval("g." + m.group(1), {"g":self})
-    #         if isinstance(res, Rect):
-    #             self._last_vscr = str(res)
-    #         return str(res)
-
-    #     vs = re.sub(epre1, rep_con, v)
-    #     vs = re.sub(epre2, rep_ref, vs)
-    #     #print(">>>", vs)
-    #     return vs
-    
     def gs(self, e, fn=None, tag=None):
         self.moveTo(e[0])
         for _e in e[1:]:
@@ -1859,7 +1830,7 @@ class DATPens(DATPen):
                 #print("HERE", ks, v)
                 v = v[0]
             for idx, _k in enumerate(ks):
-                #print(">>>>>>>>>>", k, _k, idx, v[idx])
+                #print(">>>>>>>>>>", k, _k, idx, v)
                 keep(_k, v[idx], invisible=k.startswith("Ƨ"))
         return self
     

@@ -1,7 +1,7 @@
 from coldtype import *
 from coldtype.gs import gs
 
-print(gs("↗|65|10|↑"))
+assert(gs("↗|65|10|↑") == [["NE", 65, 10, "N"]])
 
 @renderable((500, 500))
 def test1(r):
@@ -17,6 +17,11 @@ def test1(r):
 
 @renderable((500, 500))
 def test2(r):
-    return (DPS().constants(ri=r.inset(50))
-        .gss("$ri⊢∮~($ri↗⨝$ri↘OX-100)")
+    return (DPS()
+        .constants(ri=r.inset(50))
+        .guide(
+            _ƒxƒyƒzƒ_="$riIY50C100—50—a—50—100",
+            d1="&x⊥∮&z⊤")
+        .gss("""$ri⊢∮~($ri↗⨝$ri↘OX-100)
+            &d1⊣∮〱OX-30""")
         .f(None).s(0).sw(4))

@@ -72,8 +72,12 @@ GSH_JOINS = {
     "∮": lambda a, b: f"DP().mt({a}.start).lt({a}.end).lt({b}.end).lt({b}.start).cp()"
 }
 
+GSH_BACKREFS = {
+    "〱": "_last",
+}
+
 GSH_EXPLODES = {
-    "〻": ["duplicate"],
+    "〻": "_last",
 }
 
 GSH_PATH_OPS = {
@@ -171,6 +175,10 @@ def gshphrase(s):
             if op_s in GSH_JOINS:
                 op = GSH_JOINS[op_s]
                 t2 = terms[i+1]
+                
+                for k, v in GSH_BACKREFS.items():
+                    t2 = t2.replace(k, f"({t1})")
+                
                 if callable(op):
                     out += op(t1, t2)
                 else:
@@ -207,7 +215,7 @@ def gs(s, ctx={}, dps=None):
             out.append(m.group(1)+a)
         return "ƒ".join(out)
     
-    def do_eval(phrase, last):
+    def do_eval(phrase):
         py = (gshgroup(phrase))
         if not py:
             return None
@@ -223,7 +231,7 @@ def gs(s, ctx={}, dps=None):
         try:
             res = eval(py, dict(
                 ctx=ctx,
-                _last=last,
+                _last=evaled[-1] if len(evaled) > 0 else None,
                 _dps=dps,
                 Point=Point,
                 Line=Line,
@@ -243,6 +251,7 @@ def gs(s, ctx={}, dps=None):
     join_to_path = False
     splits = ["ƒ"]
     splits.extend(GSH_EXPLODES.keys())
+
     for phrase in split_before(s, lambda x: x in splits):
         phrase = "".join(phrase).strip()
         last = None
@@ -252,8 +261,8 @@ def gs(s, ctx={}, dps=None):
             continue
         if phrase[0] in GSH_EXPLODES:
             phrase = "_last"+phrase[1:]
-            last = evaled[-1]
-        elif phrase[0] == "ƒ":
+        #    last = evaled[-1]
+        if phrase[0] == "ƒ":
             phrase = phrase[1:]
         if not phrase:
             continue
@@ -275,14 +284,14 @@ def gs(s, ctx={}, dps=None):
                         if t in GSH_UNARY_TO_STRING:
                             tuple[i] = GSH_UNARY_TO_STRING[t]
                             continue
-                tuple[i] = do_eval(t, last)
+                tuple[i] = do_eval(t)
             more = tuple
             phrase = tuple[-1]
 
         if more:
             evaled.append(more)
         else:
-            evaled.append(do_eval(phrase, last))
+            evaled.append(do_eval(phrase))
         if dps is not None:
             dps.append(evaled[-1])
     
