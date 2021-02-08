@@ -1173,8 +1173,14 @@ class DATPen(RecordingPen, DATPenLikeObject):
         mnx, mny, mxx, mxy = self.bounds().mnmnmxmx()
         min_ang = min([l.ang for l in lines])
         max_ang = max([l.ang for l in lines])
-        xs = [l for l in lines if l.ang == min_ang]
-        ys = [l for l in lines if l.ang == max_ang]
+        #for idx, l in enumerate(lines):
+        #    print(idx, ">", l.ang, min_ang, max_ang)
+        xs = [l for l in lines if math.isclose(l.ang,min_ang)]
+        ys = [l for l in lines if math.isclose(l.ang, max_ang)]
+
+        #print(len(xs), len(ys))
+        #print("--------------------")
+
         n = [l for l in xs if l.start.y == mxy or l.end.y == mxy][0]
         s = [l for l in xs if l.start.y == mny or l.end.y == mny][0]
         e = [l for l in ys if l.start.x == mxx or l.end.x == mxx][0]
@@ -1247,6 +1253,16 @@ class DATPen(RecordingPen, DATPenLikeObject):
     @property
     def ew(self):
         return self.nsew()[3]
+    
+    @property
+    def ecx(self):
+        n, s, e, w = self.nsew()
+        return e.interp(0.5, w.reverse())
+    
+    @property
+    def ecy(self):
+        n, s, e, w = self.nsew()
+        return n.interp(0.5, s.reverse())
     
     def openAndClosed(self):
         """Explode and then classify group each contour into open/closed pens; (what is this good for?)"""
