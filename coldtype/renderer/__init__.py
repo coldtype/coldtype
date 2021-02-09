@@ -177,6 +177,8 @@ class Renderer():
 
             show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS),
 
+            frame_offsets=parser.add_argument("-fo", "--frame-offsets", type=str, default=None, help=argparse.SUPPRESS),
+
             disable_syntax_mods=parser.add_argument("-dsm", "--disable-syntax-mods", action="store_true", default=False, help="Coldtype has some optional syntax modifications that require copying the source to a new tempfile before running — would you like to skip this to preserve __file__ in your sources?")),
         return pargs, parser
     
@@ -303,6 +305,7 @@ class Renderer():
                 print(">>> Coldtype can only read .py, .rst, and .md files")
                 return False
             self.codepath = None
+            self._codepath_offset = 0
             self.watchees = [[Watchable.Source, self.filepath, None]]
             if not self.args.is_subprocess:
                 self.watch_file_changes()
@@ -348,24 +351,28 @@ class Renderer():
         if self.disable_syntax_mods:
             return source_code
         
+        self._codepath_offset = 0
+        
         def inline_other(x):
             cwd = self.filepath.relative_to(Path.cwd()).parent
             path = Path(cwd / (x.group(1)+".py"))
             if path not in self.watchee_paths():
                 self.watchees.append([Watchable.Source, path, None])
             src = path.read_text()
+            self._codepath_offset = len(src.split("\n"))
             return src
 
         source_code = re.sub(r"from ([^\s]+) import \* \#INLINE", inline_other, source_code)
         source_code = re.sub(r"\-\.[A-Za-z_ƒ]+([A-Za-z_0-9]+)?\(", ".nerp(", source_code)
+        source_code = re.sub(r"([\s]+)Ƨ\(", r"\1nerp(", source_code)
         source_code = re.sub(r"λ\s?([/\.\@]{1,2})", r"lambda xxx: xxx\1", source_code)
         #source_code = re.sub(r"λ\.", "lambda x: x.", source_code)
         source_code = re.sub(r"λ", "lambda ", source_code)
 
-        while ".nerp(" in source_code:
-            start = source_code.find(".nerp(")
+        while "nerp(" in source_code:
+            start = source_code.find("nerp(")
             end = -1
-            i = 6
+            i = 5
             depth = 1
             c = source_code[start+i]
             while depth > 0 and c:
@@ -377,9 +384,9 @@ class Renderer():
                 i += 1
                 c = source_code[start+i]
             end = start+i
-            source_code = source_code[:start] + ".noop()" + source_code[end:]
+            source_code = source_code[:start] + "noop()" + source_code[end:]
             #print(start, end)
-            
+        
         return source_code
 
     def reload(self, trigger):
@@ -442,10 +449,14 @@ class Renderer():
                     "__FILE__": self.filepath,
                     "__sibling__": partial(sibling, self.filepath)
                 })
+
+                full_restart = False
+
                 for r in self.renderables(Action.PreviewStoryboardReload):
                     if isinstance(r, animation):
                         if r.name not in self.state._frame_offsets:
-                            for s in r.storyboard:
+                            full_restart = True
+                            for i, s in enumerate(r.storyboard):
                                 self.state.add_frame_offset(r.name, s)
                         else:
                             lasts = self.state._initial_frame_offsets[r.name]
@@ -454,6 +465,7 @@ class Renderer():
                                 del self.state._initial_frame_offsets[r.name]
                                 for s in r.storyboard:
                                     self.state.add_frame_offset(r.name, s)
+                        
                         self.last_animation = r
                         if pyaudio and not self.args.is_subprocess and r.audio:
                             self.paudio_source = soundfile.SoundFile(r.audio, "r+")
@@ -462,6 +474,13 @@ class Renderer():
                         
                         if not r.audio:
                             self.paudio_source = None
+                
+                if full_restart:
+                    fos = {}
+                    if self.args.frame_offsets:
+                        fos = eval(self.args.frame_offsets)
+                        for k, v in fos.items():
+                            self.state.adjust_keyed_frame_offsets(k, lambda i, o: v[i])
                     
                 if self.program.get("COLDTYPE_NO_WATCH"):
                     return True
@@ -588,6 +607,7 @@ class Renderer():
         try:
             for render in renders:
                 render.codepath = self.codepath
+                render.filepath = self.filepath
 
                 for watch, flag in render.watch:
                     if isinstance(watch, coldtype.text.reader.Font) and not watch.cacheable:
@@ -1070,6 +1090,19 @@ class Renderer():
             else:
                 print(">>> (", action, ") is not a recognized action")
     
+    def jump_to_fn(self, fn_name):
+        if self.last_animation:
+            fi = self.last_animation.fn_to_frame(fn_name)
+            if fi is None:
+                print("fn_to_frame: no match")
+                return False
+            #self.last_animation.storyboard = [fi]
+            self.state.adjust_all_frame_offsets(0, absolute=True)
+            self.state.adjust_keyed_frame_offsets(
+                self.last_animation.name, lambda i, o: fi)
+            self.action_waiting = Action.PreviewStoryboard
+            return True
+    
     def on_remote_command(self, cmd, context):
         #print(">>>>>", cmd, context)
         try:
@@ -1084,22 +1117,13 @@ class Renderer():
             if cmd == "show_function":
                 lines = self.codepath.read_text().split("\n")
                 lidx = int(context)
+                lidx += self._codepath_offset
                 line = lines[lidx]
                 while not line.startswith("@"):
                     lidx -= 1
                     line = lines[lidx]
                 fn_name = lines[lidx+1].strip("def ").split("(")[0].strip()
-                if self.last_animation:
-                    fi = self.last_animation.fn_to_frame(fn_name)
-                    #self.last_animation.storyboard = [fi]
-                    self.state.adjust_all_frame_offsets(0, absolute=True)
-                    self.state.adjust_keyed_frame_offsets(
-                        self.last_animation.name,
-                        lambda i, o: fi)
-
-                    self.action_waiting = Action.PreviewStoryboard
-                #print(">>>>>>>>>>>>", line, )
-
+                self.jump_to_fn(fn_name)
         else:
             if cmd == "∑":
                 self.state.exit_keylayer()
@@ -1438,6 +1462,8 @@ class Renderer():
                 return None, None
 
     def on_stdin(self, stdin):
+        if self.jump_to_fn(stdin):
+            return
         action, data = self.stdin_to_action(stdin)
         if action:
             if action == Action.PreviewIndices:
@@ -1919,7 +1945,18 @@ class Renderer():
     
     def restart(self):
         print("> RESTARTING...")
-        os.execl(sys.executable, *(["-m"]+sys.argv))
+        args = sys.argv
+        
+        # attempt to preserve state across reload
+        fo = str(self.state._frame_offsets)
+        try:
+            foi = args.index("-fo")
+            args[foi+1] = fo
+        except ValueError:
+            args.append("-fo")
+            args.append(fo)
+        
+        os.execl(sys.executable, *(["-m"]+args))
 
     def on_exit(self, restart=False):
         #if self.args.watch:

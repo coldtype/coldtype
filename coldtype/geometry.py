@@ -10,29 +10,6 @@ YOYO = "ma"
 
 MINYISMAXY = False
 
-EPL_SYMBOLS = {
-    "~": "reverse",
-    "⊢": "ew",
-    "⊣": "ee",
-    "⊤": "en",
-    "⊥": "es",
-    "⌶": "ecx",
-    "Ｈ": "ecy",
-    "←": "pw",
-    "↑": "pn",
-    "→": "pe",
-    "↓": "ps",
-    "↖": "pnw",
-    "↗": "pne",
-    "↘": "pse",
-    "↙": "psw",
-    "•": "pc",
-    "⍺": "start",
-    "⍵": "end",
-    "〻": None
-}
-
-
 COMMON_PAPER_SIZES = {
     'letter': (612, 792),
     'tabloid': (792, 1224),
@@ -298,8 +275,10 @@ def edgepoints(rect, edge):
     elif edge == Edge.CenterY:
         return (x, y + h/2), (x + w, y + h/2)
 
+class Geometrical():
+    pass
 
-class Point():
+class Point(Geometrical):
     """Representation of a point (x,y), indexable"""
     def __init__(self, *points):
         if len(points) == 2:
@@ -336,6 +315,12 @@ class Point():
     def offset(self, dx, dy):
         "Offset by dx, dy"
         return Point((self.x + dx, self.y + dy))
+    
+    def offset_x(self, dx):
+        return self.offset(dx, 0)
+    
+    def offset_y(self, dy):
+        return self.offset(0, dy)
     
     o = offset
 
@@ -374,6 +359,9 @@ class Point():
         if not y:
             y = x
         return Point((self.x * x, self.y * y))
+    
+    def join(self, other):
+        return Line(self, other)
     
     def interp(self, v, other):
         """Interpolate with another point"""
@@ -471,10 +459,46 @@ class Point3D(Point):
         return super().__getitem__(idx)
 
 
-class Line():
+class Line(Geometrical):
     def __init__(self, start, end):
         self.start = Point(start)
         self.end = Point(end)
+    
+    @property
+    def mid(self):
+        return self.start.i(0.5, self.end)
+    
+    @property
+    def mxx(self):
+        return max([p.x for p in [self.start, self.end]])
+    
+    @property
+    def mnx(self):
+        return min([p.x for p in [self.start, self.end]])
+    
+    @property
+    def mxy(self):
+        return max([p.y for p in [self.start, self.end]])
+    
+    @property
+    def mny(self):
+        return min([p.y for p in [self.start, self.end]])
+    
+    @property
+    def pe(self):
+        return max([self.start, self.end], key=lambda p: p.x)
+    
+    @property
+    def pw(self):
+        return min([self.start, self.end], key=lambda p: p.x)
+    
+    @property
+    def pn(self):
+        return max([self.start, self.end], key=lambda p: p.y)
+    
+    @property
+    def ps(self):
+        return min([self.start, self.end], key=lambda p: p.y)
     
     def __repr__(self):
         return f"Line({self.start}, {self.end})"
@@ -520,6 +544,10 @@ class Line():
     def angle(self):
         return calc_angle(self.start, self.end)
     
+    @property
+    def ang(self):
+        return self.angle()%math.pi
+    
     def extr(self, amt):
         p1, p2 = self
         return Line(p2.i(1+amt, p1), p1.i(1+amt, p2))
@@ -527,6 +555,12 @@ class Line():
     def offset(self, x, y):
         p1, p2 = self
         return Line(p1.offset(x, y), p2.offset(x, y))
+    
+    def offset_x(self, dx):
+        return self.offset(dx, 0)
+    
+    def offset_y(self, dy):
+        return self.offset(0, dy)
     
     o = offset
     
@@ -544,6 +578,9 @@ class Line():
     
     def __and__(self, other):
         return self.intersection(other)
+    
+    def join(self, other):
+        return Rect.FromPoints(self.start, self.end, other.end, other.start)
     
     def interp(self, x, other):
         return Line(self.start.i(x, other.start), self.end.i(x, other.end))
@@ -563,7 +600,7 @@ class Line():
         return self.sety(other)
 
 
-class Rect():
+class Rect(Geometrical):
     """
     Representation of a rectangle as (x, y, w, h), indexable
     
@@ -664,7 +701,7 @@ class Rect():
         return self.rect()[key]
 
     def __repr__(self):
-        return "Rect(" + str(self.rect()) + ")"
+        return "Rect(" + str(self.rect()).replace(" ", "") + ")"
     
     def __eq__(self, r):
         try:
@@ -906,11 +943,23 @@ class Rect():
         if dy == None:
             dy = dx
         return Rect(inset(self.rect(), dx, dy))
+    
+    def inset_x(self, dx):
+        return self.inset(dx, 0)
+    
+    def inset_y(self, dy):
+        return self.inset(0, dy)
 
     def offset(self, dx, dy=None):
         if dy == None:
             dy = dx
         return Rect(offset(self.rect(), dx, dy))
+    
+    def offset_x(self, dx):
+        return self.offset(dx, 0)
+    
+    def offset_y(self, dy):
+        return self.offset(0, dy)
     
     o = offset
 
@@ -930,21 +979,8 @@ class Rect():
         return [Rect(x) for x in pieces(self.rect(), amount, edge)]
 
     def edge(self, edge):
-        if edge in EPL_SYMBOLS:
-            attr = getattr(self, EPL_SYMBOLS[edge])
-            if callable(attr):
-                return attr()
-            return attr
-
         edge = txt_to_edge(edge)
         return Line(*edgepoints(self.rect(), edge))
-    
-    def e(self, e):
-        if e in EPL_SYMBOLS:
-            attr = getattr(self, EPL_SYMBOLS[edge])
-            if callable(attr):
-                return attr()
-            return attr
 
     def center(self):
         return Point(centerpoint(self.rect()))
@@ -987,8 +1023,6 @@ class Rect():
         * S
         * SW
         """
-        if eh in EPL_SYMBOLS:
-            return getattr(self, EPL_SYMBOLS[eh])
 
         ev = txt_to_edge(ev)
         if eh == "C":
@@ -1074,6 +1108,23 @@ class Rect():
 
     def intersects(self, other):
         return not (self.point("NE").x < other.point("SW").x or self.point("SW").x > other.point("NE").x or self.point("NE").y < other.point("SW").y or self.point("SW").y > other.point("NE").y)
+    
+    def maxima(self, n, edge):
+        e = txt_to_edge(edge)
+        if e == Edge.MinX:
+            return self.setmnx(n)
+        elif e == Edge.MaxX:
+            return self.setmxx(n)
+        elif e == Edge.CenterX:
+            return self.setmdx(n)
+        elif e == Edge.MinY:
+            return self.setmny(n)
+        elif e == Edge.MaxY:
+            return self.setmxy(n)
+        elif e == Edge.CenterY:
+            return self.setmdy(n)
+        else:
+            raise Exception("HELLO")
     
     def setmnx(self, x):
         mnx, mny, mxx, mxy = self.mnmnmxmx()
@@ -1214,228 +1265,22 @@ class Rect():
         xy, _ = self.sign_to_dim(sign)
         return self.inset(n if xy == "x" else 0, n if xy == "y" else 0)
     
-    def __mod__(self, s):
-        #print(">>>>>>", s)
-
-        seps = ["⨝", "∩", "〻"]
-        #resp = re.compile("["+"".join(seps)+"]{1}")
-        ps = list(split_at(s, lambda x: x in seps, keep_separator=True))
-        if len(ps) > 1:
-            ps = ["".join(p) for p in ps]
-            #print(ps)
-            rl = None
-            i = 0
-            while i < len(ps):
-                if i == 0:
-                    r1 = self.__mod__(ps[i])
-                    op = ps[i+1]
-                    if op == "〻":
-                        r2 = self.__mod__(f"{r1}/{ps[i+2]}")
-                    else:
-                        r2 = self.__mod__(ps[i+2])
-                else:
-                    r1 = rl
-                    op = ps[i]
-                    if op == "〻":
-                        r2 = self.__mod__(f"{rl}/{ps[i+1]}")
-                    else:
-                        r2 = self.__mod__(ps[i+1])
-                
-                #print(op, r1, r2)
-                if op == "⨝":
-                    rl = Line(r1, r2)
-                elif op == "∩":
-                    rl = r1 & r2
-                elif op == "〻":
-                    rl = (r1, r2)
-                
-                if i == 0:
-                    i += 3
-                else:
-                    i += 2
-            return rl
-
-        sfx = ["x", "y"]
-
-        ops = {
-            "T": 1, # take
-            "I": 0, # inset
-            "O": 0, # offset
-            "S": 0, # subtract
-            "E": 0, # expand
-            "M": "ø", # maxima
-            "C": None, # columns
-            "R": None, # rows
-            "@": None, # get-at-index
-            "↕": None, # extrapolate
-        }
-
-        def do_op(r, xs):
-            op = xs[0]
-            if op in ops.keys():
-                op = op
-                xs = xs[1:].strip()
-            else:
-                op = "T"
-                xs = xs.strip()
-            
-            if xs[0] == "X":
-                xs = xs[1:].strip()
-                op_default = ops.get(op)
-                if op_default is not None:
-                    xs = xs + " " + str(op_default)
-            elif xs[0] == "Y":
-                xs = xs[1:].strip()
-                op_default = ops.get(op)
-                #print("dfeault", ops.get(op))
-                if op_default is not None:
-                    xs = str(op_default) + " " + xs
-            
-            #print("--------------")
-            #print(op, xs, "<")
-            
-            _xs = xs
-            xs = re.split(r"\s|ƒ|,", xs)
-            edges = []
-            amounts = []
-            
-            for idx, x in enumerate(xs):
-                if op in ["T", "S", "M", "L", "E"]:
-                    if x[0] == "-":
-                        edges.append("mn" + sfx[idx])
-                    elif x[0] == "+":
-                        edges.append("mx" + sfx[idx])
-                    elif x[0] == "=":
-                        edges.append("md" + sfx[idx])
-                    elif x[0] == "1":
-                        edges.append("mn" + sfx[idx])
-                        amounts.append(1)
-                        continue
-                    elif x[0] == "0":
-                        edges.append("mn" + sfx[idx])
-                        amounts.append(0)
-                        continue
-                    elif x[0] == "ø":
-                        edges.append(None)
-                        amounts.append("ø")
-                        continue
-                    #print(">attempt:", x[1:])
-                    amounts.append(float(x[1:]))
-                else:
-                    if x == "auto" or x == "a":
-                        continue
-                    elif "%" in x:
-                        continue
-                    else:
-                        amounts.append(float(x))
-
-            if op == "T": # take
-                return (r
-                    .take(amounts[0], edges[0])
-                    .take(amounts[1], edges[1]))
-            elif op == "S": # subtract
-                return (r
-                    .subtract(amounts[0], edges[0])
-                    .subtract(amounts[1], edges[1]))
-            elif op == "E": # expand
-                return (r
-                    .expand(amounts[0], edges[0])
-                    .expand(amounts[1], edges[1]))
-            elif op == "I": # inset
-                if len(amounts) > 1:
-                    return (r.inset(amounts[0], amounts[1]))
-                else:
-                    return r.inset(amounts[0])
-            elif op == "O": # offset
-                return (r.offset(amounts[0], amounts[1]))
-            elif op == "L": # limits
-                # TODO simplify with setlmx* series
-                if amounts[0] != "ø":
-                    x = amounts[0]
-                    if edges[0] == "mnx":
-                        if x > r.mnx:
-                            r = r.setmnx(x)
-                    elif edges[0] == "mxx":
-                        if x < r.mxx:
-                            r = r.setmxx(x)
-                elif amounts[1] != "ø":
-                    y = amounts[1]
-                    if edges[1] == "mny":
-                        if y > r.mny:
-                            r = r.setmny(y)
-                    elif edges[1] == "mxy":
-                        if y < r.mxy:
-                            r = r.setmxy(y)
-                return r
-            elif op == "M": # maxima
-                if amounts[0] != "ø":
-                    if edges[0] == "mnx":
-                        r = r.setmnx(amounts[0])
-                    elif edges[0] == "mxx":
-                        r = r.setmxx(amounts[0])
-                    elif edges[0] == "mdx":
-                        r = r.setmdx(amounts[0])
-                if amounts[1] != "ø":
-                    if edges[1] == "mny":
-                        r = r.setmny(amounts[1])
-                    elif edges[1] == "mxy":
-                        r = r.setmxy(amounts[1])
-                    elif edges[1] == "mdy":
-                        r = r.setmdy(amounts[1])
-                return r
-            elif op == "C": # columns
-                ws = self.parse_line(r.w, _xs)
-                rs = []
-                for w in ws:
-                    _r, r = r.divide(w, "mnx")
-                    rs.append(_r)
-                return rs
-            elif op == "R": # rows
-                ws = self.parse_line(r.h, _xs)
-                rs = []
-                for w in ws:
-                    _r, r = r.divide(w, "mny")
-                    rs.append(_r)
-                return rs
-            elif op == "@": # get-at-index
-                return r[int(amounts[0])]
-            elif op == "↕": # extrapolate
-                return r.extr(amounts[0])
-            else:
-                raise Exception("op", op, "not supported")
-
-        seps = ["/", *EPL_SYMBOLS.keys()]
-        ys = split_at(s, lambda x: x in seps, keep_separator=True)
-
+    def columns(self, *args):
         r = self
-        for y in ys:
-            if len(y) == 0:
-                continue
-            else:
-                y = "".join(y)
-            
-            if len(y.strip()) == 0:
-                continue
-            
-            if y in seps:
-                if y in EPL_SYMBOLS.keys():
-                    r = getattr(r, EPL_SYMBOLS[y])
-                    if callable(r):
-                        r = r()
-                    continue
-                else:
-                    continue
-            
-            if y.startswith("Rect("):
-                r = eval(y.strip())
-            elif y.startswith("Line("):
-                r = eval(y.strip())
-            elif y.startswith("Point("):
-                r = eval(y.strip())
-            else:
-                try:
-                    r = do_op(r, y.strip())
-                except IndexError:
-                    print(list(ys), y)
-                    print("FAILED")
-        return r
+        _xs = " ".join([str(s) for s in args])
+        ws = self.parse_line(r.w, _xs)
+        rs = []
+        for w in ws:
+            _r, r = r.divide(w, "mnx")
+            rs.append(_r)
+        return rs
+    
+    def rows(self, *args):
+        r = self
+        _xs = " ".join([str(s) for s in args])
+        ws = self.parse_line(r.h, _xs)
+        rs = []
+        for w in ws:
+            _r, r = r.divide(w, "mny")
+            rs.append(_r)
+        return rs
