@@ -25,3 +25,18 @@ def test2(r):
         .gss("""$ri⊢∮~($ri↗⨝$ri↘OX-100)
             &d1⊣∮〱OX-30""")
         .f(None).s(0).sw(4))
+
+@renderable((500, 500))
+def test3(r):
+    return (DPS()
+        .record(StyledString("o", Style("~/Type/fonts/fonts/vulf/VulfMonoRegular.otf", 700)).pen().align(r, tv=1))
+        .constants(
+            r=r,
+            ri="$rI-8",
+            c="$riI53,80",
+            ic="$riI122,138",
+            c3=Geo(68, 59),
+            c4=Geo(63, 67))
+        .gs("""$c↑ ↗|$c3|$c→ ↘|$c3~|$c↓ ↙|$c3|$c← ↖|$c3~|$c↑""")
+        .gs("""$ic↑ ↗|$c4|$ic→ ↘|$c4~|$ic↓ ↙|$c4|$ic← ↖|$c4~|$ic↑""")
+        .skel())

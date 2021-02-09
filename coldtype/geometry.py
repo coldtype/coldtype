@@ -278,6 +278,56 @@ def edgepoints(rect, edge):
 class Geometrical():
     pass
 
+
+def Geo(*args):
+    if len(args) == 1:
+        return Atom(args[0])
+    elif len(args) == 2:
+        if isinstance(args[0], Point):
+            return Line(*args)
+        else:
+            return Point(*args)
+    elif len(args) == 4:
+        return Rect(*args)
+
+
+class Atom(Geometrical):
+    def __init__(self, x):
+        self.x = x
+    
+    __hash__ = object.__hash__
+    
+    def __eq__(self, o):
+        # TODO isclose?
+        try:
+            return self.x == o.x
+        except AttributeError:
+            return self.x == o
+
+    def __repr__(self):
+        return "Point" + str(self.xy())
+
+    def __getitem__(self, key):
+        if key == 0:
+            return self.x
+        else:
+            raise TypeError("Index must be 0")
+    
+    def __len__(self):
+        return 1
+
+    def __setitem__(self, key, value):
+        if key == 0:
+            self.x = value
+        else:
+            raise IndexError(
+                "Invalid index for point assignment, must be 0 or 1")
+    
+    def reverse(self):
+        return self
+    
+
+
 class Point(Geometrical):
     """Representation of a point (x,y), indexable"""
     def __init__(self, *points):
@@ -443,6 +493,9 @@ class Point(Geometrical):
     
     def as3d(self):
         return Point3D(self)
+    
+    def reverse(self):
+        return Point(self.y, self.x)
 
 
 class Point3D(Point):

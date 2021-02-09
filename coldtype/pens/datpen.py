@@ -25,10 +25,10 @@ from noise import pnoise1
 
 import coldtype.pens.drawbot_utils as dbu
 
-from coldtype.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle, Geometrical
+from coldtype.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle, Geometrical, Atom
 from coldtype.gs import gs
 from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
-from coldtype.color import Gradient, normalize_color, Color
+from coldtype.color import Gradient, normalize_color, Color, hsl
 from coldtype.pens.misc import ExplodingPen, SmoothPointsPen, BooleanOp, calculate_pathop
 
 from coldtype.pens.outlinepen import OutlinePen
@@ -309,7 +309,10 @@ class DATPen(RecordingPen, DATPenLikeObject):
         try:
             f1, f2 = factor
         except TypeError:
-            f1, f2 = (factor, factor)
+            if isinstance(factor, Atom):
+                f1, f2 = (factor[0], factor[0])
+            else:
+                f1, f2 = (factor, factor)
 
         if isinstance(point, str):
             p = box.point(point)
@@ -1417,6 +1420,12 @@ class DATPen(RecordingPen, DATPenLikeObject):
             self.value = dp.value
             return self
     
+    def skel(self):
+        return DPS([
+            self,
+            self.skeleton().f(None).s(hsl(0.9)).sw(4)
+        ])
+    
     def gridlines(self, rect, x=20, y=None, absolute=False):
         """Construct a grid in the pen using `x` and (optionally) `y` subdivisions"""
         xarg = x
@@ -2193,6 +2202,19 @@ class DATPens(DATPen):
                     pens.extend(np)
 
         self.pens = pens
+        return self
+    
+    def skel(self, pts=None, start=0):
+        _pts = pts or DPS()
+        for idx, pen in enumerate(self):
+            if hasattr(pen, "pens"):
+                pen.skel(pts=_pts)
+            else:
+                c = (start + idx)*0.37
+                pen.f(hsl(c, s=1, a=0.05)).s(hsl(c, s=0.65, a=0.5)).sw(8)
+                _pts.append(pen.copy().skeleton().f(None).s(hsl(c+0.05, s=1, a=0.35)).sw(4))
+        if not pts:
+            self.append(_pts)
         return self
     
     def addOverlaps(self, idx1, idx2, which, outline=3, scale=1, xray=0):
