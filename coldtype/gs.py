@@ -206,6 +206,7 @@ def gshgroup(s):
 def gs(s, ctx={}, dps=None):
     evaled = []
     last_locals = {}
+    s = s.replace("_", "")
     s = "ƒ"+re.sub(r"[\s\n]+", "ƒ", s).strip()
 
     def expand_multisuffix(m):
