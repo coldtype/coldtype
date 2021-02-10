@@ -249,7 +249,10 @@ class drawbot_script(renderable):
                 DATPen().rect(self.rect).f(self.bg).db_drawPath()
             else:
                 db.size(self.rect.w, self.rect.h)
-            render_pass.fn(*render_pass.args)
+            if self.rstate:
+                render_pass.fn(*render_pass.args, renderer_state)
+            else:
+                render_pass.fn(*render_pass.args)
             result = None
             if renderer_state.previewing:
                 previews = (render_pass.output_path.parent / "_previews")

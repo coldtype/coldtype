@@ -30,6 +30,7 @@ from coldtype.gs import gs
 from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
 from coldtype.color import Gradient, normalize_color, Color, hsl
 from coldtype.pens.misc import ExplodingPen, SmoothPointsPen, BooleanOp, calculate_pathop
+from coldtype.grid import Grid
 
 from coldtype.pens.outlinepen import OutlinePen
 from coldtype.pens.translationpen import TranslationPen, polarCoord
@@ -1863,6 +1864,9 @@ class DATPens(DATPen):
         return self._register(self.registrations, **kwargs)
     
     def guide(self, *args, **kwargs):
+        if len(args) > 0 and isinstance(args[0], Grid):
+            kwargs = args[0].keyed
+            args = []
         for arg in args:
             kwargs[str(random())] = arg
         return self._register(self.guides, **kwargs)
@@ -2217,6 +2221,21 @@ class DATPens(DATPen):
             self.append(_pts)
         return self
     
+    def all_guides(self, sw=6, l=0):
+        dps = DATPens()
+        for idx, (k, x) in enumerate(self.guides.items()):
+            c = hsl(idx/2.3, 1, l=0.35, a=0.35)
+            g = (DP(x)
+                .translate(l, 0)
+                .f(None)
+                .s(c).sw(sw))
+            if k in ["gb", "gc", "gxb"]:
+                c = hsl(0.6, 1, 0.5, 0.25)
+                g.s(c).sw(2)
+            dps += g
+            dps += DATText(k, ["Helvetica", 24, dict(fill=c.with_alpha(0.5).darker(0.2))], Rect.FromCenter(g.bounds().pc, 24))
+        return dps
+    
     def addOverlaps(self, idx1, idx2, which, outline=3, scale=1, xray=0):
         c1 = self[idx1]
         c2 = self[idx2]
@@ -2260,3 +2279,15 @@ class DATPens(DATPen):
 DATPenSet = DATPens
 DPS = DATPens
 DP = DATPen
+
+
+class DATText(DATPen):
+    def __init__(self, text, style, frame):
+        self.text = text
+        self.style = style
+        self.visible = True
+        super().__init__()
+        self.addFrame(frame)
+    
+    def __str__(self):
+        return f"<DT({self.text}/{self.style.font})/>"

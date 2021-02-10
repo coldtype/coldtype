@@ -57,13 +57,9 @@ GSH_BINARY_OPS = {
 
 GSH_BINARY_OPS_EDGEAWARE = {
     "T": "take",
-    "𝓣": "take",
     "S": "subtract",
-    "𝓢": "subtract",
     "E": "expand",
-    "𝓔": "expand",
     "M": "maxima",
-    "𝓜": "maxima"
 }
 
 GSH_JOINS = {

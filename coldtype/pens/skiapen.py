@@ -12,6 +12,7 @@ from coldtype.pens.datimage import DATImage
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 from coldtype.color import Color
+from coldtype.text.reader import Style
 
 
 class SkiaPathPen(BasePen):
@@ -77,6 +78,8 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 pass
             elif method == "stroke" and args[0].get("weight") == 0:
                 pass
+            elif method == "dash":
+                pass
             else:
                 canvas.save()
                 did_draw = self.applyDATAttribute(attrs, attr)
@@ -95,6 +98,8 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
     
     def stroke(self, weight=1, color=None, dash=None):
         self.paint.setStyle(skia.Paint.kStroke_Style)
+        if dash:
+            self.paint.setPathEffect(skia.DashPathEffect.Make(*dash))
         if color and weight > 0:
             self.paint.setStrokeWidth(weight)
             if isinstance(color, Gradient):
@@ -228,6 +233,9 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 return
             
             if isinstance(pen, DATText):
+                if not isinstance(pen.style, Style):
+                    pen.style = Style(*pen.style[:-1], **pen.style[-1], load_font=0)
+                
                 if isinstance(pen.style.font, str):
                     font = skia.Typeface(pen.style.font)
                 else:

@@ -1,4 +1,4 @@
-from coldtype import Rect, Edge, Point
+from coldtype.geometry import Rect, Edge, Point
 import re, math
 
 def parse_line(d, line):
@@ -13,7 +13,8 @@ def parse_line(d, line):
             reified.append(float(p))
     remaining = d - sum([0 if r == "auto" else r for r in reified])
     if not float(remaining).is_integer():
-        raise Exception("floating parse")
+        remaining = round(remaining)
+        #raise Exception("floating parse")
     auto_count = reified.count("auto")
     auto_d = remaining / auto_count
     auto_ds = [auto_d] * auto_count
