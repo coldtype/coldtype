@@ -11,9 +11,9 @@ from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.ttLib.ttFont import TTFont
 
-from coldtype.color import normalize_color
+from drafting.color import normalize_color
 from coldtype.pens.datpen import DATPen, DATPens
-from coldtype.geometry import Rect, Point
+from drafting.geometry import Rect, Point
 
 from typing import Optional, Callable, Union
 

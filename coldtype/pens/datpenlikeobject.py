@@ -11,8 +11,8 @@ from typing import Callable
 
 from fontTools.misc.transform import Transform
 
-from coldtype.geometry import Rect, Edge, Point, txt_to_edge
-from coldtype.color import normalize_color
+from drafting.geometry import Rect, Edge, Point, txt_to_edge
+from drafting.color import normalize_color
 import coldtype.pens.drawbot_utils as dbu
 
 

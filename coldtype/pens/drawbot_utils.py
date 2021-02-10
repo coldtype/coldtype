@@ -1,4 +1,4 @@
-from coldtype.color import Color, Gradient
+from drafting.color import Color, Gradient
 try:
     import drawBot as db
 except:

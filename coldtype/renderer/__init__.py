@@ -18,7 +18,7 @@ from functools import partial, partialmethod
 
 import skia, coldtype
 from coldtype.helpers import *
-from coldtype.geometry import Rect, Point
+from drafting.geometry import Rect, Point
 from coldtype.pens.skiapen import SkiaPen
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.state import RendererState, Keylayer, Overlay

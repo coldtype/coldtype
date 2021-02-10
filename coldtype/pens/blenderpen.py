@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.geometry import Rect, Edge, Point
+from drafting.geometry import Rect, Edge, Point
 from coldtype.beziers import CurveCutter, raise_quadratic
 from coldtype.pens.drawablepen import DrawablePenMixin
 from fontTools.pens.basePen import BasePen

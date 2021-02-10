@@ -25,12 +25,13 @@ from noise import pnoise1
 
 import coldtype.pens.drawbot_utils as dbu
 
-from coldtype.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle, Geometrical, Atom
-from coldtype.gs import gs
+from drafting.sh import sh
+
+from drafting.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle, Geometrical, Atom
 from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
-from coldtype.color import Gradient, normalize_color, Color, hsl
+from drafting.color import Gradient, normalize_color, Color, hsl
 from coldtype.pens.misc import ExplodingPen, SmoothPointsPen, BooleanOp, calculate_pathop
-from coldtype.grid import Grid
+from drafting.grid import Grid
 
 from coldtype.pens.outlinepen import OutlinePen
 from coldtype.pens.translationpen import TranslationPen, polarCoord
@@ -1529,7 +1530,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         
         for k, v in res.items():
             if isinstance(v, str):
-                v = gs(v, self, dps=DATPens())
+                v = sh(v, self, dps=DATPens())
                 for idx, _k in enumerate(k.split("ƒ")):
                     self.c.lookup[_k] = v[idx]
                     setattr(self.c, _k, v[idx])
@@ -1845,7 +1846,7 @@ class DATPens(DATPen):
                 v = v(self)
                 v = [v]
             elif isinstance(v, str):
-                v = gs(v, ctx=self, dps=DATPens())
+                v = sh(v, ctx=self, dps=DATPens())
             else:
                 v = [v]
             
@@ -1885,11 +1886,11 @@ class DATPens(DATPen):
     
     def gs(self, s, fn=None, tag=None):
         return self.append(
-            DP().gs(gs(s, ctx=self, dps=DATPens()), tag=tag, fn=fn))
+            DP().gs(sh(s, ctx=self, dps=DATPens()), tag=tag, fn=fn))
     
     def gss(self, s):
         dps = DATPens()
-        xs = gs(s, ctx=self, dps=dps)
+        xs = sh(s, ctx=self, dps=dps)
         return self.extend(dps.pens)
     
     def explode(self):

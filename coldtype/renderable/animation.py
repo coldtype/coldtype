@@ -15,8 +15,8 @@ from coldtype.text.reader import normalize_font_prefix, Font, Style
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.time.audio import Wavfile, sf
-from coldtype.geometry import Rect, Point
-from coldtype.color import normalize_color, hsl, bw
+from drafting.geometry import Rect, Point
+from drafting.color import normalize_color, hsl, bw
 
 from coldtype.renderable.renderable import renderable, drawbot_script, Action, RenderPass, Overlay
 

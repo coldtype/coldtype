@@ -1,7 +1,4 @@
 from coldtype import *
-from coldtype.gs import gs
-
-assert(gs("↗|65|10|↑") == [["NE", 65, 10, "N"]])
 
 @renderable((500, 500))
 def test1(r):

@@ -22,7 +22,6 @@ setuptools.setup(
         "coldtype",
         "coldtype.time",
         "coldtype.time.nle",
-        "coldtype.color",
         "coldtype.midi",
         "coldtype.pens",
         "coldtype.renderer",
