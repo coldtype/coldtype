@@ -5,9 +5,10 @@ def test(r):
     return (DPS()
         .constants(ri=r.inset(50))
         .gss("""
-            $ri $riI50⌶∩$riI100⊤
+            $ri
+            $riI50⌶∩$riI100⊤
             $riTY=0.5IX75C20—a—10@1⊥⍺
-            $riI75↖⨝$ri↘〻OX-50 ■I50""")
+            $riI75↖⨝$ri↘〻OX-50""")
         .f(None).s(0).sw(4))
 
 @renderable((500, 500))
@@ -18,7 +19,9 @@ def test2(r):
             ↙|$cf|$r↑
             $r→|$cf+10|$r↓OX-130 ɜ""")
         .f(hsl(0.9,l=0.8)).s(0).sw(4)
-        .register(a="$r↖⨝$r↘", b="$rＨ∩&a")
+        .register(
+            a="$r↖⨝$r↘",
+            b="($rＨ∩#a)OX100OY100")
         .realize())
 
 @renderable((500, 500))

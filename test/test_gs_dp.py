@@ -9,6 +9,8 @@ def test1(r):
             an="&a⊤",
             cs="&c⊥",
             acp="∫ &an⍺⍵ &cs⍵⍺")
+        -.print(λ._guides.__dict__)
+        -.append(λ.all_guides())
         .gss("&acp⊢ &acp⊣ &acp⊣µ")
         .f(None).s(0).sw(4))
 
@@ -19,6 +21,7 @@ def test2(r):
         .guide(
             _ƒxƒyƒzƒ_="$riIY50C100—50—a—50—100",
             d1="&x⊥∮&z⊤")
+        #.print(λ._guides)
         .gss("""$ri⊢∮~($ri↗⨝$ri↘OX-100)
             &d1⊣∮〱OX-30""")
         .f(None).s(0).sw(4))

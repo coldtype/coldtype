@@ -25,7 +25,7 @@ from noise import pnoise1
 
 import coldtype.pens.drawbot_utils as dbu
 
-from drafting.sh import sh
+from drafting.sh import sh, SHContext, SHLookup
 
 from drafting.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle, Geometrical, Atom
 from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
@@ -37,11 +37,6 @@ from coldtype.pens.outlinepen import OutlinePen
 from coldtype.pens.translationpen import TranslationPen, polarCoord
 
 from coldtype.pens.datpenlikeobject import DATPenLikeObject
-
-
-class DATConstants():
-    def __init__(self):
-        self.lookup = {}
 
 
 def listit(t):
@@ -237,7 +232,11 @@ class DATPen(RecordingPen, DATPenLikeObject):
         return self
     
     def print(self, *args):
-        print(args)
+        for a in args:
+            if callable(a):
+                print(a(self))
+            else:
+                print(a)
         return self
     
     def take(self, slice):
@@ -1522,30 +1521,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 bbp = beziers.path.BezierPath()
         return paths
     
-    def constants(self, **kwargs):
-        if not hasattr(self, "c"):
-            self.c = DATConstants()
-
-        res = kwargs
-        
-        for k, v in res.items():
-            if isinstance(v, str):
-                v = sh(v, self, dps=DATPens())
-                for idx, _k in enumerate(k.split("ƒ")):
-                    self.c.lookup[_k] = v[idx]
-                    setattr(self.c, _k, v[idx])
-                continue
-            else:
-                if callable(v):
-                    v = v(self)
-                self.c.lookup[k] = v
-                setattr(self.c, k, v)
-        return self
-    
-    def declare(self, *whatever):
-        # TODO do something with what's declared somehow?
-        return self
-    
     def gs(self, e, fn=None, tag=None):
         self.moveTo(e[0])
         for _e in e[1:]:
@@ -1577,7 +1552,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
             return None
 
 
-class DATPens(DATPen):
+class DATPens(DATPen, SHContext):
     """
     A set/collection of DATPen’s
     
@@ -1597,6 +1572,14 @@ class DATPens(DATPen):
         self.visible = True
         self.registrations = {}
         self.guides = {}
+        
+        self.lookups = {}
+        self.locals = dict(DP=DATPen)
+        self.subs = {
+            "□": lambda c: "ctx.guides.bx" if hasattr(c, "guides") and hasattr(c.guides, "bx") else "ctx.bounds()",
+            "■": "_dps.bounds()"
+        }
+
 
         if isinstance(pens, DATPen):
             self.append(pens)
@@ -1826,54 +1809,79 @@ class DATPens(DATPen):
             if tagged:
                 return tagged.copy()
     
-    def _register(self, lookup, **kwargs):
-        if not hasattr(self, "bx"):
-            self.bx = self.bounds()
+    def constants(self, *args, **kwargs):
+        return self.context_record("$", "_constants", *args, **kwargs)
 
-        res = kwargs
-        
-        def keep(k, v, invisible=False):
-            if k != "_":
-                if not k.startswith("_") and not k.startswith("Ƨ"):
-                    if not invisible:
-                        lookup[k] = v
-                else:
-                    k = k[1:]
-                setattr(self, k, v)
-        
-        for k, v in res.items():
-            if callable(v):
-                v = v(self)
-                v = [v]
-            elif isinstance(v, str):
-                v = sh(v, ctx=self, dps=DATPens())
-            else:
-                v = [v]
-            
-            ks = k.split("ƒ")
-            #print("REGISTRATION", ks, v)
-
-            if len(ks) > 1 and len(v) == 1:
-                #print("HERE", ks, v)
-                v = v[0]
-            for idx, _k in enumerate(ks):
-                #print(">>>>>>>>>>", k, _k, idx, v)
-                keep(_k, v[idx], invisible=k.startswith("Ƨ"))
+        # res = kwargs        
+        # for k, v in res.items():
+        #     if isinstance(v, str):
+        #         v = sh(v, self, dps=DATPens())
+        #         for idx, _k in enumerate(k.split("ƒ")):
+        #             self.c.lookup[_k] = v[idx]
+        #             setattr(self.c, _k, v[idx])
+        #         continue
+        #     else:
+        #         if callable(v):
+        #             v = v(self)
+        #         self.c.lookup[k] = v
+        #         setattr(self.c, k, v)
+    
+    def declare(self, *whatever):
+        # TODO do something with what's declared somehow?
         return self
     
-    def register(self, **kwargs):
-        return self._register(self.registrations, **kwargs)
+    # def _register(self, lookup, **kwargs):
+    #     # if not hasattr(self, "bx"):
+    #     #     self.bx = self.bounds()
+
+    #     # res = kwargs
+        
+    #     # def keep(k, v, invisible=False):
+    #     #     if k != "_":
+    #     #         if not k.startswith("_") and not k.startswith("Ƨ"):
+    #     #             if not invisible:
+    #     #                 lookup[k] = v
+    #     #         else:
+    #     #             k = k[1:]
+    #     #         setattr(self, k, v)
+        
+    #     # for k, v in res.items():
+    #     #     if callable(v):
+    #     #         v = v(self)
+    #     #         v = [v]
+    #     #     elif isinstance(v, str):
+    #     #         v = sh(v, ctx=self, dps=DATPens())
+    #     #     else:
+    #     #         v = [v]
+            
+    #     #     ks = k.split("ƒ")
+    #     #     #print("REGISTRATION", ks, v)
+
+    #     #     if len(ks) > 1 and len(v) == 1:
+    #     #         #print("HERE", ks, v)
+    #     #         v = v[0]
+    #     #     for idx, _k in enumerate(ks):
+    #     #         #print(">>>>>>>>>>", k, _k, idx, v)
+    #     #         keep(_k, v[idx], invisible=k.startswith("Ƨ"))
+    #     return self
     
-    def guide(self, *args, **kwargs):
-        if len(args) > 0 and isinstance(args[0], Grid):
-            kwargs = args[0].keyed
-            args = []
-        for arg in args:
-            kwargs[str(random())] = arg
-        return self._register(self.guides, **kwargs)
+    def register(self, *args, **kwargs):
+        return self.context_record("#", "_register", *args, **kwargs)
+    
+    def guides(self, *args, **kwargs):
+        return self.context_record("&", "_guides", *args, **kwargs)
+    
+    guide = guides
+
+    def sh(self, s):
+        from drafting.sh import sh
+        res = sh(s, self)
+        if res[0] == "∫":
+            res = [DATPen().gs(res[1:])]
+        return res
     
     def realize(self):
-        for k, v in self.registrations.items():
+        for k, v in self._register.values.items():
             self.append(DATPen(v).tag(k))
         return self
     
@@ -2224,7 +2232,7 @@ class DATPens(DATPen):
     
     def all_guides(self, sw=6, l=0):
         dps = DATPens()
-        for idx, (k, x) in enumerate(self.guides.items()):
+        for idx, (k, x) in enumerate(self._guides.values.items()):
             c = hsl(idx/2.3, 1, l=0.35, a=0.35)
             g = (DP(x)
                 .translate(l, 0)
