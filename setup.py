@@ -62,6 +62,7 @@ setuptools.setup(
         "exdown",
         "srt",
         "timecode",
+        "drafting>=0.0.1",
         #"rtmidi",
         #"pynput",
         #"pyaudio",
