@@ -2137,11 +2137,13 @@ class DATPens(DATPen, SHContext):
                 p.translate(t*idx, 0)
         return self
         
-    def distribute_on_path(self, path, offset=0, cc=None, notfound=None):
+    def distribute_on_path(self, path, offset=0, cc=None, notfound=None, center=False):
         if cc:
             cutter = cc
         else:
             cutter = CurveCutter(path)
+        if center is not False:
+            offset = (cutter.length-self.bounds().w)/2 + center
         limit = len(self.pens)
         for idx, p in enumerate(self.pens):
             f = p.getFrame()
