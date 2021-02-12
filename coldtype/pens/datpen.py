@@ -1570,13 +1570,11 @@ class DATPens(DATPen, SHContext):
         self.frame = None
         self.data = {}
         self.visible = True
-        self.registrations = {}
-        self.guides = {}
         
         self.lookups = {}
         self.locals = dict(DP=DATPen)
         self.subs = {
-            "□": lambda c: "ctx.guides.bx" if hasattr(c, "guides") and hasattr(c.guides, "bx") else "ctx.bounds()",
+            "□": "ctx.bounds()",
             "■": "_dps.bounds()"
         }
 
@@ -1637,7 +1635,8 @@ class DATPens(DATPen, SHContext):
         dps = DATPens()
         for p in self.pens:
             dps.append(p.copy(with_data=with_data))
-        dps.registrations = self.registrations.copy()
+        
+        #dps.registrations = self.registrations.copy()
         return dps
     
     def __getitem__(self, index):
@@ -2238,7 +2237,7 @@ class DATPens(DATPen, SHContext):
                 .translate(l, 0)
                 .f(None)
                 .s(c).sw(sw))
-            if k in ["gb", "gc", "gxb"]:
+            if k in ["gb", "gc", "gs", "gxb"]:
                 c = hsl(0.6, 1, 0.5, 0.25)
                 g.s(c).sw(2)
             dps += g
