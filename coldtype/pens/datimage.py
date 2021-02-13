@@ -7,6 +7,8 @@ import skia, math
 class DATImage(DATPen):
     def __init__(self, src, img=None):
         self.src = Path(str(src)).expanduser().absolute()
+        if not self.src.exists():
+            raise Exception("Image src does not exist", self.src)
         if img:
             self._img = img
         else:
