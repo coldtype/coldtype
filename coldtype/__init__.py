@@ -17,5 +17,7 @@ from coldtype.time import *
 name = "coldtype"
 __version__ = "0.1.9"
 
+__sibling__ = lambda x: x # will be redefined contextually
+
 def noop():
     return None
