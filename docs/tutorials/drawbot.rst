@@ -21,6 +21,7 @@ Now that you’ve got the module version of DrawBot installed, with just a littl
 
     from coldtype import *
     from drawBot import *
+    from drafting.pens.drawbotpen import DrawBotPen, DrawBotPens
 
     @drawbot_script((500, 300))
     def db_text(r):
@@ -53,8 +54,8 @@ You might be wondering why you’d want to use DrawBot in Coldtype. To me, one b
         # Coldtype Rect's can be passed anywhere a rectangle-like list would be passed in DrawBot
 
         oval = DATPen().oval(r.take(0.75, "mny").inset(20).square())
-        oval.copy().outline(20).f(hsl(0.95, 1, 0.8, a=0.25)).db_drawPath()
-        textBox(long_txt2, oval.bp(), align="right")
+        oval.copy().outline(20).f(hsl(0.95, 1, 0.8, a=0.25)).cast(DrawBotPen).draw()
+        textBox(long_txt2, oval.cast(DrawBotPen).bezierPath(), align="right")
     
 .. image:: /_static/renders/drawbot_combined_idioms.png
     :width: 250
@@ -74,7 +75,7 @@ All that said, it is still quite possible to do normal DrawBot things in a Coldt
     @drawbot_animation((500, 200))
     def multipage_doc(f):
         c = hsl(f.a.progress(f.i).e, s=0.5, l=0.5)
-        DATPen().rect(f.a.r).f(c).db_drawPath()
+        DATPen().rect(f.a.r).f(c).cast(DrawBotPen).draw()
         fontSize(50)
         fill(1)
         textBox("Page " + str(f.i), f.a.r.inset(50))
@@ -146,4 +147,5 @@ If you do all that and restart DrawBot, you should now be able to use Coldtype d
         .pens()
         .align(r)
         .f(ct.Gradient.H(r.inset(100), ct.hsl(0.5), ct.hsl(0.9)))
-        .db_drawPath())
+        .cast(DrawBotPens)
+        .draw())
