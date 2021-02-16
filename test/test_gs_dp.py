@@ -3,15 +3,15 @@ from coldtype import *
 @renderable((500, 500))
 def test1(r):
     return (DPS()
-        .constants(ri=r.inset(50))
-        .guide(
+        .define(
+            ri=r.inset(50),
             aƒbƒc="$riC50—a—50",
-            an="&a⊤",
-            cs="&c⊥",
-            acp="∫ &an⍺⍵ &cs⍵⍺")
-        -.print(λ._guides.__dict__)
-        -.append(λ.all_guides())
-        .gss("&acp⊢ &acp⊣ &acp⊣µ")
+            an="$a⊤",
+            cs="$c⊥",
+            acp="∫ $an⍺⍵ $cs⍵⍺")
+        .print(λ.defs.__dict__)
+        .append(λ.all_guides())
+        .gss("$acp⊢ &acp⊣ $acp⊣µ")
         .f(None).s(0).sw(4))
 
 @renderable((500, 500))
