@@ -1,4 +1,4 @@
-from _test_inline2 import * #INLINE
+from test._test_inline2 import * #INLINE
 from coldtype import *
 
 @renderable()

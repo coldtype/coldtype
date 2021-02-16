@@ -26,6 +26,7 @@ from noise import pnoise1
 import coldtype.pens.drawbot_utils as dbu
 
 from drafting.sh import sh, SHContext, SHLookup
+from drafting.pens.draftingpen import DraftingPen
 
 from drafting.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle, Geometrical, Atom
 from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
@@ -98,7 +99,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         for idx, arg in enumerate(args):
             if isinstance(arg, str):
                 self.tag(arg)
-            elif isinstance(arg, DATPen):
+            elif isinstance(arg, DATPen) or isinstance(arg, DraftingPen):
                 self.replace_with(arg)
             elif isinstance(arg, Rect):
                 self.rect(arg)
@@ -1635,8 +1636,6 @@ class DATPens(DATPen, SHContext):
         dps = DATPens()
         for p in self.pens:
             dps.append(p.copy(with_data=with_data))
-        
-        #dps.registrations = self.registrations.copy()
         return dps
     
     def __getitem__(self, index):
@@ -1675,6 +1674,8 @@ class DATPens(DATPen, SHContext):
                 return self.pens.append(DATPen(pen))
             elif isinstance(pen, DATPenLikeObject):
                 self.pens.append(pen)
+            elif isinstance(pen, DraftingPen):
+                self.pens.append(DATPen(pen))
             else:
                 try:
                     for p in pen:
@@ -1801,29 +1802,12 @@ class DATPens(DATPen, SHContext):
         return self
     
     def get(self, k):
-        if k in self.registrations:
-            return DATPen().rect(self.registrations[k])
-        else:
-            tagged = self.fft(k)
-            if tagged:
-                return tagged.copy()
+        tagged = self.fft(k)
+        if tagged:
+            return tagged.copy()
     
-    def constants(self, *args, **kwargs):
-        return self.context_record("$", "_constants", *args, **kwargs)
-
-        # res = kwargs        
-        # for k, v in res.items():
-        #     if isinstance(v, str):
-        #         v = sh(v, self, dps=DATPens())
-        #         for idx, _k in enumerate(k.split("ƒ")):
-        #             self.c.lookup[_k] = v[idx]
-        #             setattr(self.c, _k, v[idx])
-        #         continue
-        #     else:
-        #         if callable(v):
-        #             v = v(self)
-        #         self.c.lookup[k] = v
-        #         setattr(self.c, k, v)
+    def define(self, *args, **kwargs):
+        return self.context_record("$", "defs", None, *args, **kwargs)
     
     def declare(self, *whatever):
         # TODO do something with what's declared somehow?
@@ -1864,13 +1848,12 @@ class DATPens(DATPen, SHContext):
     #     #         keep(_k, v[idx], invisible=k.startswith("Ƨ"))
     #     return self
     
-    def register(self, *args, **kwargs):
-        return self.context_record("#", "_register", *args, **kwargs)
+    #def register(self, *args, **kwargs):
+    #    return self.context_record("#", "_register", *args, **kwargs)
     
-    def guides(self, *args, **kwargs):
-        return self.context_record("&", "_guides", *args, **kwargs)
-    
-    guide = guides
+    #def guides(self, *args, **kwargs):
+    #    return self.context_record("&", "_guides", *args, **kwargs)
+    #guide = guides
 
     def sh(self, s):
         from drafting.sh import sh
@@ -2045,9 +2028,7 @@ class DATPens(DATPen, SHContext):
     def remove(self, *args):
         """remove a pen from these pens by identify, or by tag if a string is passed"""
         for k in args:
-            if k in self.registrations:
-                del self.registrations[k]
-            elif isinstance(k, str):
+            if isinstance(k, str):
                 tagged = self.fft(k)
                 if tagged:
                     self.pens.remove(tagged)
@@ -2231,19 +2212,20 @@ class DATPens(DATPen, SHContext):
             self.append(_pts)
         return self
     
-    def all_guides(self, sw=6, l=0):
+    def all_guides(self, field="defs", sw=6, l=0):
         dps = DATPens()
-        for idx, (k, x) in enumerate(self._guides.values.items()):
+        for idx, (k, x) in enumerate(getattr(self, field).values.items()):
             c = hsl(idx/2.3, 1, l=0.35, a=0.35)
-            g = (DP(x)
-                .translate(l, 0)
-                .f(None)
-                .s(c).sw(sw))
-            if k in ["gb", "gc", "gs", "gxb"]:
-                c = hsl(0.6, 1, 0.5, 0.25)
-                g.s(c).sw(2)
-            dps += g
-            dps += DATText(k, ["Helvetica", 24, dict(fill=c.with_alpha(0.5).darker(0.2))], Rect.FromCenter(g.bounds().pc, 24))
+            if isinstance(x, Geometrical) or isinstance(x, DraftingPen) or isinstance(x, DATPen):
+                g = (DATPen(x)
+                    .translate(l, 0)
+                    .f(None)
+                    .s(c).sw(sw))
+                if k in ["gb", "gc", "gs", "gxb"]:
+                    c = hsl(0.6, 1, 0.5, 0.25)
+                    g.s(c).sw(2)
+                dps += g
+                dps += DATText(k, ["Helvetica", 24, dict(fill=c.with_alpha(0.5).darker(0.2))], Rect.FromCenter(g.bounds().pc, 24))
         return dps
     
     def addOverlaps(self, idx1, idx2, which, outline=3, scale=1, xray=0):
