@@ -35,13 +35,13 @@ def test_text_warped_to_curve(r, rs):
             .f(None)
             .s(hsl(0.9))
             .sw(3)
-            .scale(0.5, center=r.point("C"))),
+            .scale(0.5, point=r.point("C"))),
         #(text.pen().s(0.7)),
         (text.pen()
             .flatten(10)
             #.scale(1, 2)
             .bend2(sine, tangent=0, offset=[-1, 2])
-            .scale(0.5, center=r.point("C")))]
+            .scale(0.5, point=r.point("C")))]
 
 @test((1000, 1000), solo=1, rstate=1, watch_restarts=["coldtype/pens/datpen.py"])
 def test_text_warped_to_vertical_curve(r, rs):
@@ -73,7 +73,7 @@ def test_text_warped_to_vertical_curve(r, rs):
             .translate(0, 0)
             .bend3(sine, tangent=1, offset=[0, 1]))
             .f(hsl(0.9, a=0.3))])
-        .scale(0.5, center=r.point("C"))
+        .scale(0.5, point=r.point("C"))
         .translate(50, 200))
 
 @test((1000, 1000))

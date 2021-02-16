@@ -30,7 +30,7 @@ def from_code(r):
     gen_code = __sibling__("_test_pen_to_code_output.py")
     if gen_code.exists():
         dps = eval(gen_code.read_text())
-        print(dps.getTag())
+        print(dps.tag())
         dps[1].f(hsl(0.05, l=0.6)).translate(50, 0)
         assert dps[1].data["circular"] == True
         assert dps[1].data["cool"]["very"] == True

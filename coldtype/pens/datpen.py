@@ -76,6 +76,8 @@ class DATPen(DraftingPen):
         """**kwargs support is deprecated, should not accept any arguments"""
         super().__init__()
         self.single_pen_class = DATPen
+        self.multi_pen_class = DATPens
+
         self._current_attr_tag = "default"
         self.clearAttrs()
         self.attr("default", **kwargs)
@@ -86,11 +88,12 @@ class DATPen(DraftingPen):
         self.container = None
         self.glyphName = None
         self.data = {}
+        self._visible = True
 
         for idx, arg in enumerate(args):
             if isinstance(arg, str):
                 self.tag(arg)
-            elif isinstance(arg, DATPen) or isinstance(arg, DraftingPen):
+            elif isinstance(arg, DraftingPen):
                 self.replace_with(arg)
             elif isinstance(arg, Rect):
                 self.rect(arg)
@@ -215,67 +218,6 @@ class DATPen(DraftingPen):
     
     as_set = ups
     
-    def clearAttrs(self):
-        """Remove all styling."""
-        self.attrs = OrderedDict()
-        self.attr("default", fill=(1, 0, 0.5))
-        return self
-    
-    def allStyledAttrs(self, style=None):
-        if style and style in self.attrs:
-            attrs = self.attrs[style]
-        else:
-            attrs = self.attrs["default"]
-        return attrs
-
-    def attr(self, tag=None, field=None, **kwargs):
-        """Set a style attribute on the pen."""
-        if not tag:
-            if hasattr(self, "_current_attr_tag"): # TODO temporary for pickled pens
-                tag = self._current_attr_tag
-            else:
-                tag = "default"
-
-        if field: # getting, not setting
-            return self.attrs.get(tag).get(field)
-        
-        attrs = dict(shadow=None)
-        if tag and self.attrs.get(tag):
-            attrs = self.attrs[tag]
-        else:
-            self.attrs[tag] = attrs
-        for k, v in kwargs.items():
-            if v:
-                if k == "fill":
-                    attrs[k] = normalize_color(v)
-                elif k == "stroke":
-                    existing = attrs.get("stroke", {})
-                    if not isinstance(v, dict):
-                        attrs[k] = dict(color=normalize_color(v), weight=existing.get("weight", 1))
-                    else:
-                        attrs[k] = dict(weight=v.get("weight", existing.get("weight", 1)), color=normalize_color(v.get("color", 0)))
-                elif k == "strokeWidth":
-                    if "stroke" in attrs:
-                        attrs["stroke"]["weight"] = v
-                        #if attrs["stroke"]["color"].a == 0:
-                        #    attrs["stroke"]["color"] = normalize_color((1, 0, 0.5))
-                    else:
-                        attrs["stroke"] = dict(color=normalize_color((1, 0, 0.5)), weight=v)
-                elif k == "shadow":
-                    if "color" in v:
-                        v["color"] = normalize_color(v["color"])
-                    attrs[k] = v
-                else:
-                    attrs[k] = v
-        return self
-    
-    def lattr(self, tag, fn: Callable[["DATPen"], Optional["DATPen"]]):
-        was_tag = self._current_attr_tag
-        self._current_attr_tag = tag
-        fn(self)
-        self._current_attr_tag = was_tag
-        return self
-    
     def calc_alpha(self):
         a = self._alpha
         p = self._parent
@@ -322,15 +264,6 @@ class DATPen(DraftingPen):
                 nx, ny = lookup.get(i)
                 return (x+nx, y+ny)
         return self.map_points(nudger)
-    
-    def repeat(self, times=1):
-        copy = self.copy()
-        copy_0_move, copy_0_data = copy.value[0]
-        copy.value[0] = ("lineTo", copy_0_data)
-        self.value = self.value[:-1] + copy.value
-        if times > 1:
-            self.repeat(times-1)
-        return self
     
     def repeatx(self, times=1):
         w = self.getFrame(th=1).point("SE").x
@@ -402,30 +335,6 @@ class DATPen(DraftingPen):
             return x+_c[0], _c[1]
         return self.nonlinear_transform(bender)
     
-    def _pathop(self, otherPen=None, operation=BooleanOp.XOR):
-        self.value = calculate_pathop(self, otherPen, operation)
-        return self
-    
-    def difference(self, otherPen):
-        """Calculate and return the difference of this shape and another."""
-        return self._pathop(otherPen=otherPen, operation=BooleanOp.Difference)
-    
-    def union(self, otherPen):
-        """Calculate and return the union of this shape and another."""
-        return self._pathop(otherPen=otherPen, operation=BooleanOp.Union)
-    
-    def xor(self, otherPen):
-        """Calculate and return the XOR of this shape and another."""
-        return self._pathop(otherPen=otherPen, operation=BooleanOp.XOR)
-    
-    def reverseDifference(self, otherPen):
-        """Calculate and return the reverseDifference of this shape and another."""
-        return self._pathop(otherPen=otherPen, operation=BooleanOp.ReverseDifference)
-    
-    def intersection(self, otherPen):
-        """Calculate and return the intersection of this shape and another."""
-        return self._pathop(otherPen=otherPen, operation=BooleanOp.Intersection)
-    
     def fenced(self, *lines):
         if len(lines) == 1 and isinstance(lines[0], Rect):
             return self.intersection(DATPen().rect(lines[0]))
@@ -433,23 +342,12 @@ class DATPen(DraftingPen):
     
     ƒ = fenced
     
-    def removeOverlap(self):
-        """Remove overlaps within this shape and return itself."""
-        return self._pathop(otherPen=None, operation=BooleanOp.Simplify)
-    
     def connect(self):
         return self.map(lambda i, mv, pts: ("lineTo" if i > 0 and mv == "moveTo" else mv, pts))
     
     def collapse(self):
         """For compatibility with calls to a DATPens"""
         return DATPens([self])
-    
-    def addSmoothPoints(self, length=100):
-        rp = RecordingPen()
-        fp = SmoothPointsPen(rp)
-        self.replay(fp)
-        self.value = rp.value
-        return self
     
     def smooth(self):
         """Runs a catmull spline on the datpen, useful in combination as flatten+roughen+smooth"""
@@ -1005,68 +903,10 @@ class DATPen(DraftingPen):
         self.editable = True
         return self
     
-    # def getTag(self):
-    #     """Retrieve the tag (could probably be a real property)"""
-    #     return self._tag
-    
     def contain(self, rect):
         """For conveniently marking an arbitrary `Rect` container."""
         self.container = rect
         return self
-    
-    def v(self, v):
-        self.visible(bool(v))
-        return self
-    
-    def a(self, v):
-        self._alpha = v
-        return self
-
-    def f(self, *value):
-        """Get/set a (f)ill"""
-        if value:
-            return self.attr(fill=value)
-        else:
-            return self.attr(field="fill")
-    
-    fill = f
-    
-    def s(self, *value):
-        """Get/set a (s)troke"""
-        if value:
-            return self.attr(stroke=value)
-        else:
-            return self.attr(field="stroke")
-    
-    stroke = s
-    
-    def sw(self, value):
-        """Get/set a (s)troke (w)idth"""
-        if value:
-            return self.attr(strokeWidth=value)
-        else:
-            return self.attr(field="strokeWidth")
-    
-    strokeWidth = sw
-
-    def img(self, src=None, rect=Rect(0, 0, 500, 500), pattern=True, opacity=1.0):
-        """Get/set an image fill"""
-        if src:
-            return self.attr(image=dict(src=src, rect=rect, pattern=pattern, opacity=opacity))
-        else:
-            return self.attr(field="image")
-    
-    def img_opacity(self, opacity, key="default"):
-        img = self.attr(key, "image")
-        if not img:
-            raise Exception("No image found")
-        self.attrs[key]["image"]["opacity"] = opacity
-        return self
-    
-    image = img
-
-    def shadow(self, radius=10, color=(0, 0.3), clip=None):
-        return self.attr(shadow=dict(color=normalize_color(color), radius=radius, clip=clip))
     
     def blendmode(self, blendmode=None):
         if blendmode:
@@ -1074,10 +914,6 @@ class DATPen(DraftingPen):
         else:
             return self.attr(field="blendmode")
         return self
-    
-    def removeBlanks(self):
-        """If this is blank, `return True` (for recursive calls from DATPens)."""
-        return len(self.value) == 0
     
     def clearFrame(self):
         """Remove the DATPen frame."""
@@ -1126,11 +962,11 @@ class DATPen(DraftingPen):
         self.rotate(-degrees)
         return self
     
-    def at_scale(self, scale, fn:Callable[["DATPen"], None]):
-        self.scale(scale)
-        self.scale()
-        # TODO
-        return self
+    # def at_scale(self, scale, fn:Callable[["DATPen"], None]):
+    #     self.scale(scale)
+    #     self.scale()
+    #     # TODO
+    #     return self
     
     def filmjitter(self, doneness, base=0, speed=(10, 20), scale=(2, 3), octaves=16):
         """
@@ -1342,7 +1178,6 @@ class DATPens(DATPen, DraftingPens):
         self.data = {}
         self._visible = True
         
-        self.lookups = {}
         self.locals = dict(DP=DATPen)
         self.subs = {
             "□": "ctx.bounds()",
@@ -1350,7 +1185,7 @@ class DATPens(DATPen, DraftingPens):
         }
 
 
-        if isinstance(pens, DATPen):
+        if isinstance(pens, DraftingPen):
             self.append(pens)
         else:
             for pen in pens:
@@ -1658,41 +1493,21 @@ class DATPens(DATPen, DraftingPens):
         return self
     
     # Overrides
-    
-    def attr(self, key="default", field=None, **kwargs):
-        if field: # getting, not setting, kind of weird to return the first value?
-            if len(self.pens) > 0:
-                return self.pens[0].attr(key=key, field=field)
-            else:
-                return None
-        for p in self.pens:
-            p.attr(key, **kwargs)
-        return self
-    
-    def lattr(self, tag, fn: Callable[[DATPen], Optional[DATPen]]):
-        for p in self.pens:
-            p.lattr(tag, fn)
-        return self
-    
-    def removeOverlap(self):
-        for p in self.pens:
-            p.removeOverlap()
-        return self
 
     #def nlt(self, fn, flatten=0):
     #    return self.pmap(lambda idx, p: p.nonlinear_transform(fn))
     
-    def round(self, rounding):
-        """Round all values for all pens in this set"""
-        for p in self.pens:
-            p.round(rounding)
-        return self
+    # def round(self, rounding):
+    #     """Round all values for all pens in this set"""
+    #     for p in self.pens:
+    #         p.round(rounding)
+    #     return self
     
-    def round_to(self, rounding):
-        """Round all values for all pens in this set to nearest multiple of rounding value (rather than places, as in `round`)"""
-        for p in self.pens:
-            p.round_to(rounding)
-        return self
+    # def round_to(self, rounding):
+    #     """Round all values for all pens in this set to nearest multiple of rounding value (rather than places, as in `round`)"""
+    #     for p in self.pens:
+    #         p.round_to(rounding)
+    #     return self
     
     def map(self, fn: Callable[[int, DATPen], Optional[DATPen]]):
         """Apply `fn` to all top-level pen(s) in this set;
@@ -1979,7 +1794,7 @@ class DATPens(DATPen, DraftingPens):
         dps = DATPens()
         for idx, (k, x) in enumerate(getattr(self, field).values.items()):
             c = hsl(idx/2.3, 1, l=0.35, a=0.35)
-            if isinstance(x, Geometrical) or isinstance(x, DraftingPen) or isinstance(x, DATPen):
+            if isinstance(x, Geometrical) or isinstance(x, DraftingPen):
                 g = (DATPen(x)
                     .translate(l, 0)
                     .f(None)
