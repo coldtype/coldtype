@@ -41,7 +41,6 @@ setuptools.setup(
         "fontPens",
         "defcon",
         "mido",
-        "skia-pathops",
         "skia-python>=86.0",
         "easing-functions",
         "fonttools[woff,unicode,type1,lxml,ufo]",

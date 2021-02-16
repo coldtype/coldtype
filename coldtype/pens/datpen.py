@@ -1,36 +1,23 @@
 import math, tempfile, pickle, inspect
-from enum import Enum
-from copy import deepcopy
 from pathlib import Path
 
 from typing import Optional, Callable, Tuple
 #from collections.abc import Callable
 
-from fontTools.pens.recordingPen import RecordingPen
-from fontTools.pens.transformPen import TransformPen
-from fontTools.svgLib.path.parser import parse_path
 from fontTools.misc.transform import Transform
 
-from collections import OrderedDict
-from random import random, randint
-from numbers import Number
+from random import randint
 from noise import pnoise1
 
-import coldtype.pens.drawbot_utils as dbu
-
-from drafting.sh import sh, SHContext, SHLookup
+from drafting.sh import sh
 from drafting.pens.draftingpens import DraftingPen, DraftingPens
 
-from drafting.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle, Geometrical, Atom
-from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
-from drafting.color import Gradient, normalize_color, Color, hsl
-from coldtype.pens.misc import ExplodingPen, SmoothPointsPen, BooleanOp, calculate_pathop
-from drafting.grid import Grid
+from drafting.geometry import Rect, Edge, Point, Line, Geometrical
+from coldtype.beziers import CurveCutter, splitCubicAtT
+from drafting.color import normalize_color, hsl
 
 from coldtype.pens.outlinepen import OutlinePen
 from coldtype.pens.translationpen import TranslationPen, polarCoord
-
-import coldtype.pens.drawbot_utils as dbu
 
 
 def listit(t):
@@ -550,29 +537,6 @@ class DATPen(DraftingPen):
         self.record(dp)
         return self
     
-    def svg(self, file, gid, rect=Rect(0, 0, 0, 100)):
-        """WIP; attempt to read an svg file into the pen"""
-        from bs4 import BeautifulSoup
-        with open(file, "r") as f:
-            soup = BeautifulSoup(f.read(), features="lxml")
-            tp = TransformPen(self, (1, 0, 0, -1, 0, rect.h))
-            for path in soup.find(id=gid).find_all("path"):
-                parse_path(path.get("d"), tp)
-        return self
-    
-    def explode(self):
-        """Read each contour into its own DATPen; returns a DATPens"""
-        dp = RecordingPen()
-        ep = ExplodingPen(dp)
-        self.replay(ep)
-        dps = DATPens()
-        for p in ep.pens:
-            dp = DATPen()
-            dp.value = p
-            dp.attrs = deepcopy(self.attrs)
-            dps.append(dp)
-        return dps
-    
     def mod_contour(self, contour_index, mod_fn):
         exploded = self.explode()
         mod_fn(exploded[contour_index])
@@ -830,34 +794,7 @@ class DATPen(DraftingPen):
         return paths
     
     def gs(self, e, fn=None, tag=None):
-        self.moveTo(e[0])
-        for _e in e[1:]:
-            if _e is None:
-                continue
-            elif isinstance(_e, Point):
-                self.lineTo(_e)
-            elif isinstance(_e, str):
-                getattr(self, _e)()
-            elif len(_e) == 3:
-                self.boxCurveTo(_e[-1], _e[0], _e[1])
-        
-        if self.unended():
-            self.closePath()
-
-        if tag:
-            self.tag(tag)
-        if fn:
-            fn(self)
-        return self
-
-    def bp(self):
-        try:
-            bp = dbu.db.BezierPath()
-            self.replay(bp)
-            return bp
-        except:
-            print("DrawBot not installed!")
-            return None
+        return self.sh(e, fn, tag)
     
     _context = None
     _pen_class = None
@@ -975,53 +912,6 @@ class DATPen(DraftingPen):
         nx = pnoise1(doneness*speed[0], base=base, octaves=octaves)
         ny = pnoise1(doneness*speed[1], base=base+10, octaves=octaves)
         return self.translate(nx * scale[0], ny * scale[1])
-    
-    def all_pens(self):
-        pens = []
-        if hasattr(self, "pens"):
-            pens = self.collapse().pens
-        if isinstance(self, self.single_pen_class):
-            pens = [self]
-        
-        for pen in pens:
-            if pen:
-                if hasattr(pen, "pens"):
-                    for _p in pen.collapse().pens:
-                        if _p:
-                            yield _p
-                else:
-                    yield pen
-    
-    def _db_drawPath(self):
-        for dp in list(self.all_pens()):
-            with dbu.db.savedState():
-                dbu.db.fill(None)
-                dbu.db.stroke(None)
-                dbu.db.strokeWidth(0)
-                for attr, value in dp.allStyledAttrs().items():
-                    if attr == "fill":
-                        dbu.db_fill(value)
-                    elif attr == "stroke":
-                        dbu.db_stroke(value.get("weight", 1), value.get("color"), None)
-                    dbu.db.drawPath(dp.bp())
-    
-    def db_drawPath(self, rect=None, filters=[]):
-        try:
-            if rect and len(filters) > 0:
-                im = dbu.db.ImageObject()
-                with im:
-                    dbu.db.size(*rect.wh())
-                    self._db_drawPath()
-                for filter_name, filter_kwargs in filters:
-                    getattr(im, filter_name)(**filter_kwargs)
-                x, y = im.offset()
-                dbu.db.image(im, (x, y))
-            else:
-                self._db_drawPath()
-            return self
-        except ImportError:
-            print("DrawBot not installed!")
-            return self
     
     def _get_renderer_state(self, pen_class, context):
         if not pen_class:
@@ -1417,48 +1307,6 @@ class DATPens(DATPen, DraftingPens):
     def declare(self, *whatever):
         # TODO do something with what's declared somehow?
         return self
-    
-    # def _register(self, lookup, **kwargs):
-    #     # if not hasattr(self, "bx"):
-    #     #     self.bx = self.bounds()
-
-    #     # res = kwargs
-        
-    #     # def keep(k, v, invisible=False):
-    #     #     if k != "_":
-    #     #         if not k.startswith("_") and not k.startswith("Ƨ"):
-    #     #             if not invisible:
-    #     #                 lookup[k] = v
-    #     #         else:
-    #     #             k = k[1:]
-    #     #         setattr(self, k, v)
-        
-    #     # for k, v in res.items():
-    #     #     if callable(v):
-    #     #         v = v(self)
-    #     #         v = [v]
-    #     #     elif isinstance(v, str):
-    #     #         v = sh(v, ctx=self, dps=DATPens())
-    #     #     else:
-    #     #         v = [v]
-            
-    #     #     ks = k.split("ƒ")
-    #     #     #print("REGISTRATION", ks, v)
-
-    #     #     if len(ks) > 1 and len(v) == 1:
-    #     #         #print("HERE", ks, v)
-    #     #         v = v[0]
-    #     #     for idx, _k in enumerate(ks):
-    #     #         #print(">>>>>>>>>>", k, _k, idx, v)
-    #     #         keep(_k, v[idx], invisible=k.startswith("Ƨ"))
-    #     return self
-    
-    #def register(self, *args, **kwargs):
-    #    return self.context_record("#", "_register", *args, **kwargs)
-    
-    #def guides(self, *args, **kwargs):
-    #    return self.context_record("&", "_guides", *args, **kwargs)
-    #guide = guides
 
     def sh(self, s):
         from drafting.sh import sh
