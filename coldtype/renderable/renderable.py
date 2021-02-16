@@ -237,6 +237,7 @@ class drawbot_script(renderable):
         return pens
     
     def run(self, render_pass, renderer_state):
+        from drafting.pens.drawbotpen import DrawBotPen
         use_pool = True
         if use_pool:
             pool = AppKit.NSAutoreleasePool.alloc().init()
@@ -246,7 +247,7 @@ class drawbot_script(renderable):
                 ps = renderer_state.preview_scale
                 db.size(self.rect.w*ps, self.rect.h*ps)
                 db.scale(ps, ps)
-                DATPen().rect(self.rect).f(self.bg).db_drawPath()
+                DATPen().rect(self.rect).f(self.bg).cast(DrawBotPen).draw()
             else:
                 db.size(self.rect.w, self.rect.h)
             if self.rstate:
