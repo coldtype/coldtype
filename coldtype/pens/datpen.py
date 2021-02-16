@@ -1328,6 +1328,8 @@ class DATPens(DATPen, DraftingPens):
     Behaves like a list but can be queried somewhat like a DOM
     """
     def __init__(self, pens=[]):
+        DraftingPens.__init__(self) # TODO pass pens
+
         self.single_pen_class = DATPen
         self.pens = []
         self.typographic = True
