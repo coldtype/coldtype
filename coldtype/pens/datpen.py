@@ -19,7 +19,7 @@ from noise import pnoise1
 import coldtype.pens.drawbot_utils as dbu
 
 from drafting.sh import sh, SHContext, SHLookup
-from drafting.pens.draftingpen import DraftingPen
+from drafting.pens.draftingpens import DraftingPen, DraftingPens
 
 from drafting.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle, Geometrical, Atom
 from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
@@ -79,7 +79,6 @@ class DATPen(DraftingPen):
         self._current_attr_tag = "default"
         self.clearAttrs()
         self.attr("default", **kwargs)
-        self.frame = None
         self.typographic = False
         self._tag = "?"
         self._alpha = 1
@@ -108,7 +107,7 @@ class DATPen(DraftingPen):
         return len(self.value)
     
     def __bool__(self):
-        return bool(len(self) > 0 or self.frame)
+        return bool(len(self) > 0 or self._frame)
     
     def __add__(self, item):
         return DATPens([self, item])
@@ -287,21 +286,6 @@ class DATPen(DraftingPen):
     
     def getFrame(self, th=False, tv=False):
         return self.ambit(th=th, tv=tv)
-        """For internal use; creates a frame based on calculated bounds."""
-        if self.frame:
-            if (th or tv) and len(self.value) > 0:
-                f = self.frame
-                b = self.bounds()
-                if th and tv:
-                    return b
-                elif th:
-                    return Rect(b.x, f.y, b.w, f.h)
-                else:
-                    return Rect(f.x, b.y, f.w, b.h)
-            else:
-                return self.frame
-        else:
-            return self.bounds()
     
     def map(self, fn:Callable[[int, str, list], Tuple[str, list]]):
         for idx, (mv, pts) in enumerate(self.value):
@@ -982,8 +966,8 @@ class DATPen(DraftingPen):
     _precompose_save = None
 
     def xAlignToFrame(self, x=Edge.CenterX, th=0):
-        if self.frame:
-            return self.align(self.getFrame(th=th, tv=0), x=x, transformFrame=0, th=1)
+        if self._frame:
+            return self.align(self.ambit(th=th, tv=0), x=x, transformFrame=0, th=1)
         else:
             raise Exception("No Frame")
     
@@ -1000,7 +984,7 @@ class DATPen(DraftingPen):
         if with_data:
             dp.data = self.data
             if self.typographic:
-                dp.frame = self.frame
+                dp._frame = self._frame
                 dp.typographic = True
         return dp
 
@@ -1097,12 +1081,12 @@ class DATPen(DraftingPen):
     
     def clearFrame(self):
         """Remove the DATPen frame."""
-        self.frame = None
+        self._frame = None
         return self
     
     def addFrame(self, frame, typographic=False, passthru=False):
         """Add a new frame to the DATPen, replacing any old frame. Passthru ignored, there for compatibility"""
-        self.frame = frame
+        self._frame = frame
         if typographic:
             self.typographic = True
         return self
@@ -1110,15 +1094,6 @@ class DATPen(DraftingPen):
     def frameSet(self, th=False, tv=False):
         """Return a new DATPen representation of the frame of this DATPen."""
         return self.single_pen_class(fill=("random", 0.25)).rect(self.getFrame(th=th, tv=tv))
-    
-    def translate(self, x, y=None, transformFrame=True):
-        """Translate this shape by `x` and `y` (pixel values)."""
-        if y is None:
-            y = x
-        img = self.img()
-        if img:
-            img["rect"] = img["rect"].offset(x, y)
-        return self.transform(Transform(1, 0, 0, 1, x, y), transformFrame=transformFrame)
     
     def trackToRect(self, rect, pullToEdges=False, r=0):
         """Distribute pens evenly within a frame"""
@@ -1346,7 +1321,7 @@ class DATPen(DraftingPen):
         return pickle.load(open(str(src), "rb"))
 
 
-class DATPens(DATPen, SHContext):
+class DATPens(DATPen, DraftingPens):
     """
     A set/collection of DATPen’s
     
@@ -1362,7 +1337,6 @@ class DATPens(DATPen, SHContext):
         self._parent = None
         self.container = None
         self._frame = None
-        self.frame = None
         self.data = {}
         self._visible = True
         
@@ -1524,7 +1498,7 @@ class DATPens(DATPen, SHContext):
             for p in self.pens:
                 p.addFrame(frame, typographic=typographic)
         else:
-            self.frame = frame
+            self._frame = frame
             self.typographic = typographic
         return self
     
@@ -1534,13 +1508,13 @@ class DATPens(DATPen, SHContext):
         `ty` means `(t)rue (v)ertical`;
         passing either ignores a non-bounds-derived frame
         in either dimension"""
-        if self.frame and (th == False and tv == False):
-            return self.frame
+        if self._frame and (th == False and tv == False):
+            return self._frame
         else:
             try:
-                union = self.pens[0].getFrame(th=th, tv=tv)
+                union = self.pens[0].ambit(th=th, tv=tv)
                 for p in self.pens[1:]:
-                    union = union.union(p.getFrame(th=th, tv=tv))
+                    union = union.union(p.ambit(th=th, tv=tv))
                 return union
             except Exception as e:
                 return Rect(0,0,0,0)
@@ -1702,13 +1676,6 @@ class DATPens(DATPen, SHContext):
         for p in self.pens:
             p.removeOverlap()
         return self
-    
-    def transform(self, transform, transformFrame=True):
-        for p in self.pens:
-            p.transform(transform)
-        if transformFrame and self.frame:
-            self.frame = self.frame.transform(transform)
-        return self
 
     #def nlt(self, fn, flatten=0):
     #    return self.pmap(lambda idx, p: p.nonlinear_transform(fn))
@@ -1867,11 +1834,11 @@ class DATPens(DATPen, SHContext):
     
     def frameSet(self, th=False, tv=False):
         """All the frames of all the pens"""
-        if self.frame:
+        if self._frame:
             return super().frameSet(th=th, tv=tv)
         dps = DATPens()
         for p in self.pens:
-            if p.frame:
+            if p._frame:
                 dps.append(p.frameSet(th=th, tv=tv))
         return dps
     

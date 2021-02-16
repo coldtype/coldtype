@@ -249,7 +249,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                         coords = skia.FontArguments.VariationPosition.Coordinates(rawCoords)
                         fa.setVariationDesignPosition(skia.FontArguments.VariationPosition(coords))
                         font = font.makeClone(fa)
-                pt = pen.frame.point("SW")
+                pt = pen._frame.point("SW")
                 canvas.drawString(
                     pen.text,
                     pt.x,
@@ -259,7 +259,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 return
             elif isinstance(pen, DATImage):
                 paint = skia.Paint(AntiAlias=True)
-                f = pen.frame
+                f = pen._frame
                 canvas.save()
                 for action, *args in pen.transforms:
                     if action == "rotate":

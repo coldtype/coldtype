@@ -71,7 +71,7 @@ def test_cjk_multilang(r):
 
 
 def xa(dps, x=Edge.CenterX, th=0):
-    if dps.frame:
+    if dps._frame:
         return dps.align(dps.getFrame(th=th, tv=0), x=x, transformFrame=0, th=1)
     else:
         raise Exception("No Frame")

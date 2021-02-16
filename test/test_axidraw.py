@@ -28,7 +28,7 @@ def test_draw(r, layer=None):
     typel = (StyledString("Type",
         Style(mis, 500))
         .pen()
-        .align(r, tv=1) # TODO THIS IS BROKEN
+        .align(r) # TODO THIS IS BROKEN
         .flatten(5)
         .removeOverlap())
     
