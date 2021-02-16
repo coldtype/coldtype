@@ -1,26 +1,19 @@
-import math, tempfile, pickle, inspect, re
+import math, tempfile, pickle, inspect
 from enum import Enum
 from copy import deepcopy
 from pathlib import Path
-from time import sleep
 
 from typing import Optional, Callable, Tuple
 #from collections.abc import Callable
 
-from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
-from fontTools.pens.reverseContourPen import ReverseContourPen
-from fontTools.pens.pointInsidePen import PointInsidePen
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.svgLib.path.parser import parse_path
 from fontTools.misc.transform import Transform
 
-from fontPens.flattenPen import FlattenPen
-from fontPens.marginPen import MarginPen
 from collections import OrderedDict
 from random import random, randint
 from numbers import Number
-from defcon import Glyph
 from noise import pnoise1
 
 import coldtype.pens.drawbot_utils as dbu
@@ -44,36 +37,36 @@ def listit(t):
     return list(map(listit, t)) if isinstance(t, (list, tuple)) else t
 
 
-class DATBPT():
-    def __init__(self, ps):
-        self.ps = ps
+# class DATBPT():
+#     def __init__(self, ps):
+#         self.ps = ps
     
-    def angle(self):
-        b = self.ps[0]
-        c = self.ps[1]
-        d = self.ps[2]
-        return c.cdist(b), c.cdist(d)
+#     def angle(self):
+#         b = self.ps[0]
+#         c = self.ps[1]
+#         d = self.ps[2]
+#         return c.cdist(b), c.cdist(d)
     
-    def rotate(self, angle):
-        c = self.ps[1]
-        bdist, bang = c.cdist(self.ps[0])
-        ddist, dang = c.cdist(self.ps[2])
-        self.ps[0] = c.project(bang + angle, bdist)
-        self.ps[2] = c.project(dang + angle, ddist)
-        return self
+#     def rotate(self, angle):
+#         c = self.ps[1]
+#         bdist, bang = c.cdist(self.ps[0])
+#         ddist, dang = c.cdist(self.ps[2])
+#         self.ps[0] = c.project(bang + angle, bdist)
+#         self.ps[2] = c.project(dang + angle, ddist)
+#         return self
     
-    def offset(self, x, y):
-        self.ps = [p.offset(x, y) for p in self.ps]
-        return self
+#     def offset(self, x, y):
+#         self.ps = [p.offset(x, y) for p in self.ps]
+#         return self
     
-    def __floordiv__(self, other):
-        return self.offset(0, other)
+#     def __floordiv__(self, other):
+#         return self.offset(0, other)
     
-    def __truediv__(self, other):
-        return self.offset(other, 0)
+#     def __truediv__(self, other):
+#         return self.offset(other, 0)
 
 
-class DATPen(RecordingPen):
+class DATPen(DraftingPen):
     """
     Main vector representation in Coldtype
     
@@ -94,7 +87,6 @@ class DATPen(RecordingPen):
         self.container = None
         self.glyphName = None
         self.data = {}
-        self.visible = True
 
         for idx, arg in enumerate(args):
             if isinstance(arg, str):
@@ -109,7 +101,7 @@ class DATPen(RecordingPen):
                 self.oval(Rect.FromCenter(arg, 50, 50))
     
     def __str__(self):
-        v = "" if self.visible else "ø-"
+        v = "" if self._visible else "ø-"
         return f"<{v}DP(typo:int({self.typographic})({self.glyphName}))——tag:{self._tag}/data:{self.data}>"
     
     def __len__(self):
@@ -154,20 +146,6 @@ class DATPen(RecordingPen):
         out += ")"
         return out
     
-    def vl(self, value):
-        self.value = value
-        return self
-    
-    def replace_with(self, other):
-        return self.vl(other.value)
-    
-    def pvl(self):
-        for idx, (mv, pts) in enumerate(self.value):
-            if len(pts) > 0:
-                self.value[idx] = list(self.value[idx])
-                self.value[idx][-1] = [Point(p) for p in self.value[idx][-1]]
-        return self
-    
     def fvl(self):
         allpts = []
         for mv, pts in self.value:
@@ -192,16 +170,16 @@ class DATPen(RecordingPen):
         self.map_points(fn, lambda p: p.inside(rect))
         return self
     
-    def mod_bpt(self, idx, fn):
-        pidxs = [[idx, -2], [idx, -1], [idx+1, 0]]
-        bpt = DATBPT([self.value[i][-1][j] for (i,j) in pidxs])
-        fn(bpt)
-        for idx, (i,j) in enumerate(pidxs):
-            self.value[i][-1][j] = bpt.ps[idx]
-        #self.mod_pt(idx+1, 0, fn)
-        #self.mod_pt(idx, -1, fn)
-        #self.mod_pt(idx, -2, fn)
-        return self
+    # def mod_bpt(self, idx, fn):
+    #     pidxs = [[idx, -2], [idx, -1], [idx+1, 0]]
+    #     bpt = DATBPT([self.value[i][-1][j] for (i,j) in pidxs])
+    #     fn(bpt)
+    #     for idx, (i,j) in enumerate(pidxs):
+    #         self.value[i][-1][j] = bpt.ps[idx]
+    #     #self.mod_pt(idx+1, 0, fn)
+    #     #self.mod_pt(idx, -1, fn)
+    #     #self.mod_pt(idx, -2, fn)
+    #     return self
     
     def add_pt(self, cuidx, t, fn=None):
         cidx = 0
@@ -227,19 +205,6 @@ class DATPen(RecordingPen):
             #return insert_idx
         return self
     
-    def printvl(self):
-        from pprint import pprint
-        pprint(self.value)
-        return self
-    
-    def print(self, *args):
-        for a in args:
-            if callable(a):
-                print(a(self))
-            else:
-                print(a)
-        return self
-    
     def take(self, slice):
         self.value = self.value[slice]
         return self
@@ -250,110 +215,6 @@ class DATPen(RecordingPen):
         return dps
     
     as_set = ups
-    
-    def moveTo(self, *ps):
-        """The standard `RecordingPen.moveTo`, but returns self for chainability."""
-        super().moveTo(ps[0])
-        if len(ps) > 1:
-            for p in ps[1:]:
-                super().lineTo(p)
-        return self
-    
-    mt = moveTo
-
-    def lineTo(self, *ps):
-        """The standard `RecordingPen.lineTo`, but returns self for chainability, and accepts multiple points, and also will automatically moveTo if the pen has no value"""
-
-        p1 = ps[0]
-        if len(self.value) == 0:
-            super().moveTo(p1)
-        else:
-            super().lineTo(p1)
-        if len(ps) > 1:
-            for p in ps[1:]:
-                super().lineTo(p)
-        return self
-    
-    lt = lineTo
-
-    def qCurveTo(self, *points):
-        """The standard `RecordingPen.qCurveTo`, but returns self for chainability."""
-        super().qCurveTo(*points)
-        return self
-    
-    qct = qCurveTo
-
-    def curveTo(self, *points):
-        """The standard `RecordingPen.curveTo`, but returns self for chainability."""
-        super().curveTo(*points)
-        return self
-    
-    ct = curveTo
-
-    def closePath(self):
-        """The standard `RecordingPen.closePath`, but returns self for chainability."""
-        super().closePath()
-        return self
-    
-    cp = closePath
-
-    def endPath(self):
-        """The standard `RecordingPen.endPath`, but returns self for chainability."""
-        super().endPath()
-        return self
-    
-    ep = endPath
-    
-    def boxCurveTo(self, pt, point, factor, mods={}):
-        a = Point(self.value[-1][-1][-1])
-        d = Point(pt)
-        box = Rect.FromMnMnMxMx([min(a.x, d.x), min(a.y, d.y), max(a.x, d.x), max(a.y, d.y)])
-        try:
-            f1, f2 = factor
-        except TypeError:
-            if isinstance(factor, Atom):
-                f1, f2 = (factor[0], factor[0])
-            else:
-                f1, f2 = (factor, factor)
-
-        if isinstance(point, str):
-            p = box.point(point)
-            p1, p2 = (p, p)
-        elif isinstance(point, Point):
-            p1, p2 = point, point
-        else:
-            p1, p2 = point
-            p1 = box.point(p1)
-            p2 = box.point(p2)
-        
-        b = a.interp(f1, p1)
-        c = d.interp(f2, p2)
-        mb = mods.get("b")
-        mc = mods.get("c")
-        if mb:
-            b = mb(b)
-        elif mc:
-            c = mc(c)
-        self.curveTo(b, c, d)
-        return self
-    
-    bct = boxCurveTo
-    
-    def uTurnTo(self, inflection, end, pts, factor):
-        return (self
-            .boxCurveTo(inflection, pts[0], factor)
-            .boxCurveTo(end, pts[1], factor))
-    
-    def interpolate(self, value, other):
-        vl = []
-        for idx, (mv, pts) in enumerate(self.value):
-            ipts = []
-            for jdx, p in enumerate(pts):
-                pta = Point(p)
-                ptb = Point(other.value[idx][-1][jdx])
-                ipts.append(pta.interp(value, ptb))
-            vl.append((mv, ipts))
-        return DATPen().vl(vl)
     
     def clearAttrs(self):
         """Remove all styling."""
@@ -425,6 +286,7 @@ class DATPen(RecordingPen):
         return a
     
     def getFrame(self, th=False, tv=False):
+        return self.ambit(th=th, tv=tv)
         """For internal use; creates a frame based on calculated bounds."""
         if self.frame:
             if (th or tv) and len(self.value) > 0:
@@ -440,36 +302,6 @@ class DATPen(RecordingPen):
                 return self.frame
         else:
             return self.bounds()
-    
-    def bounds(self):
-        """Calculate the bounds of this shape; mostly for internal use."""
-        try:
-            cbp = BoundsPen(None)
-            self.replay(cbp)
-            mnx, mny, mxx, mxy = cbp.bounds
-            return Rect((mnx, mny, mxx - mnx, mxy - mny))
-        except:
-            return Rect(0, 0, 0, 0)
-    
-    def is_unended(self):
-        if len(self.value) == 0:
-            return True
-        elif self.value[-1][0] not in ["endPath", "closePath"]:
-            return True
-        return False
-    
-    def reverse(self):
-        """Reverse the winding direction of the pen."""
-        if self.is_unended():
-            self.closePath()
-        dp = DATPen()
-        rp = ReverseContourPen(dp)
-        self.replay(rp)
-        self.value = dp.value
-        return self
-    
-    def __invert__(self):
-        return self.reverse()
     
     def map(self, fn:Callable[[int, str, list], Tuple[str, list]]):
         for idx, (mv, pts) in enumerate(self.value):
@@ -586,16 +418,6 @@ class DATPen(RecordingPen):
             return x+_c[0], _c[1]
         return self.nonlinear_transform(bender)
     
-    def transform(self, transform, transformFrame=True):
-        """Perform an arbitrary transformation on the pen, using the fontTools `Transform` class."""
-        op = RecordingPen()
-        tp = TransformPen(op, transform)
-        self.replay(tp)
-        self.value = op.value
-        if transformFrame and self.frame:
-            self.frame = self.frame.transform(transform)
-        return self
-    
     def _pathop(self, otherPen=None, operation=BooleanOp.XOR):
         self.value = calculate_pathop(self, otherPen, operation)
         return self
@@ -630,120 +452,13 @@ class DATPen(RecordingPen):
     def removeOverlap(self):
         """Remove overlaps within this shape and return itself."""
         return self._pathop(otherPen=None, operation=BooleanOp.Simplify)
-
-    def round(self, rounding):
-        """Round the values of this pen to integer values."""
-        rounded = []
-        for t, pts in self.value:
-            _rounded = []
-            for p in pts:
-                if p:
-                    x, y = p
-                    if rounding > 0:
-                        _rounded.append((round(x, rounding), round(y, rounding)))
-                    else:
-                        _rounded.append((math.floor(x), math.floor(y)))
-                else:
-                    _rounded.append(p)
-            rounded.append((t, _rounded))
-        self.value = rounded
-        return self
-
-    def round_to(self, rounding):
-        """Round the values of this pen to nearest multiple of rounding."""
-        def rt(v, mult):
-            rndd = float(round(v / mult) * mult)
-            if rndd.is_integer():
-                return int(rndd)
-            else:
-                return rndd
-        
-        rounded = []
-        for t, pts in self.value:
-            _rounded = []
-            for p in pts:
-                if p:
-                    x, y = p
-                    _rounded.append((rt(x, rounding), rt(y, rounding)))
-                else:
-                    _rounded.append(p)
-            rounded.append((t, _rounded))
-        self.value = rounded
-        return self
-
-    def simplify(self):
-        """DO NOT USE"""
-        import numpy as np
-        last = None
-        times = 0
-        nv = []
-        for idx, (t, pts) in enumerate(self.value):
-            if last == t and t == "qCurveTo":
-                continue
-                p0 = np.array(self.value[idx-2][-1][-1])
-                p1, p2, p3 = [np.array(p) for p in self.value[idx-1][-1]]
-                q0 = np.array(self.value[idx-1][-1][-1])
-                q1, q2, q3 = [np.array(p) for p in pts]
-                r0 = p0
-                kp = 2
-                kq = 2
-                r1 = p0 + kp * (p1 - p0)
-                r2 = q3 + kq * (q2 - q3)
-                r3 = q3
-                nv.pop()
-                nv.append([t, [r1.tolist(), r2.tolist(), r3.tolist()]])
-                times += 1
-            else:
-                nv.append([t, pts])
-            last = t
-        #self.value = nv
-        return self
-
-    def record(self, pen):
-        """Play a pen into this pen, meaning that pen will be added to this one’s value."""
-        if hasattr(pen, "pens"):
-            for p in pen:
-                self.record(p)
-        if pen:
-            pen.replay(self)
-        return self
     
     def connect(self):
         return self.map(lambda i, mv, pts: ("lineTo" if i > 0 and mv == "moveTo" else mv, pts))
     
-    def glyph(self, glyph):
-        """Play a glyph (like from `defcon`) into this pen."""
-        glyph.draw(self)
-        return self
-    
-    def to_glyph(self, name=None, width=None):
-        """
-        Create a glyph (like from `defcon`) using this pen’s value.
-        *Warning*: be sure to call endPath or closePath on your pen or this call will silently do nothing
-        """
-        bounds = self.bounds()
-        glyph = Glyph()
-        glyph.name = name
-        glyph.width = width or bounds.w
-        sp = glyph.getPen()
-        self.replay(sp)
-        return glyph
-    
     def collapse(self):
         """For compatibility with calls to a DATPens"""
         return DATPens([self])
-
-    def flatten(self, length=10):
-        """
-        Runs a fontTools `FlattenPen` on this pen
-        """
-        if length == 0:
-            return self
-        dp = DATPen()
-        fp = FlattenPen(dp, approximateSegmentLength=length, segmentLines=True)
-        self.replay(fp)
-        self.value = dp.value
-        return self
     
     def addSmoothPoints(self, length=100):
         rp = RecordingPen()
@@ -876,152 +591,6 @@ class DATPen(RecordingPen):
             return self.intersection(clip_box)
         return self
     
-    def rect(self, rect, *args):
-        """Rectangle primitive — `moveTo/lineTo/lineTo/lineTo/closePath`"""
-        if isinstance(rect, Rect):
-            self.moveTo(rect.point("SW").xy())
-            self.lineTo(rect.point("SE").xy())
-            self.lineTo(rect.point("NE").xy())
-            self.lineTo(rect.point("NW").xy())
-            self.closePath()
-        elif isinstance(rect, Number):
-            if len(args) == 1:
-                return self.rect(Rect(rect, args[0]))
-            else:
-                return self.rect(Rect(rect, args[0], args[1], args[2]))
-        elif isinstance(rect[0], Rect):
-            for r in rect:
-                self.rect(r)
-        else:
-            self.rect(Rect(rect))
-        return self
-
-    def roundedRect(self, rect, hr, vr=None):
-        """Rounded rectangle primitive"""
-        if vr is None:
-            vr = hr
-        l, b, w, h = Rect(rect)
-        r, t = l + w, b + h
-        K = 4 * (math.sqrt(2)-1) / 3
-        circle = hr == 0.5 and vr == 0.5
-        if hr <= 0.5:
-            hr = w * hr
-        if vr <= 0.5:
-            vr = h * vr
-        self.moveTo((l + hr, b))
-        if not circle:
-            self.lineTo((r - hr, b))
-        self.curveTo((r+hr*(K-1), b), (r, b+vr*(1-K)), (r, b+vr))
-        if not circle:
-            self.lineTo((r, t-vr))
-        self.curveTo((r, t-vr*(1-K)), (r-hr*(1-K), t), (r-hr, t))
-        if not circle:
-            self.lineTo((l+hr, t))
-        self.curveTo((l+hr*(1-K), t), (l, t-vr*(1-K)), (l, t-vr))
-        if not circle:
-            self.lineTo((l, b+vr))
-        self.curveTo((l, b+vr*(1-K)), (l+hr*(1-K), b), (l+hr, b))
-        self.closePath()
-        return self
-    
-    rr = roundedRect
-    
-    def oval(self, rect):
-        """Oval primitive"""
-        self.roundedRect(rect, 0.5, 0.5)
-        return self
-    
-    def semicircle(self, r, center, fext=0.5, rext=0.5):
-        """
-        Not really a semicircle
-        `fext` controls extension from the standard on the "flat" edge
-        `rext` controls extension from the standard on the "round" edge
-        """
-        sc = DATPen()
-        n, e, s, w = r.cardinals()
-        ne, se, sw, nw = r.intercardinals()
-        cedge = txt_to_edge(center)
-
-        if cedge in [Edge.MinX, Edge.MaxX]:
-            fqe = r.w*fext
-            rqe = r.h*rext
-            sc.moveTo(sw).curveTo(sw.offset(fqe, 0), e.offset(0, -rqe), e).curveTo(e.offset(0, rqe), nw.offset(fqe, 0), nw).closePath()
-            if cedge == Edge.MaxX:
-                sc.rotate(180)
-        elif cedge in [Edge.MinY, Edge.MaxY]:
-            fqe = r.h*fext
-            rqe = r.w*rext
-            sc.moveTo(se).curveTo(se.offset(0, fqe), n.offset(rqe, 0), n).curveTo(n.offset(-rqe, 0), sw.offset(0, fqe), sw).closePath()
-            if cedge == Edge.MaxY:
-                sc.rotate(180)
-        return self.record(sc)
-    
-    def diagonal_upto(self, startc, angle, width, line):
-        t = startc.project_to(angle, line)
-        self.moveTo(startc.offset(-width/2, 0))
-        self.lineTo(startc.offset(width/2, 0))
-        self.lineTo(t.offset(width/2, 0))
-        self.lineTo(t.offset(-width/2, 0))
-        return self.closePath()
-    
-    def diagonal(self, start, end, width):
-        self.moveTo(start.offset(-width/2, 0))
-        self.lineTo(start.offset(width/2, 0))
-        self.lineTo(end.offset(width/2, 0))
-        self.lineTo(end.offset(-width/2, 0))
-        return self.closePath()
-    
-    def lsdiag(self, l1, l2, extr=0):
-        ll1 = Line(l1.start, l2.start)
-        ll2 = Line(l1.end, l2.end)
-        if extr > 0:
-            ll1 = ll1.extr(extr)
-            ll2 = ll2.extr(extr)
-        return self.mt(ll1.start).lt(ll1.end, ll2.end, ll2.start).cp()
-    
-    def lsdiagc(self, l1, l2, cl, extr=0):
-        ll1 = Line(l1.start, l2.start)
-        ll2 = Line(l1.end, l2.end)
-        if extr > 0:
-            ll1 = ll1.extr(extr)
-            ll2 = ll2.extr(extr)
-        return (self
-            .mt(ll1.start)
-            .lt(ll1 & cl)
-            .lt(ll2 & cl)
-            .lt(ll2.start)
-            .cp())
-        return (self
-            .mt(l1.start)
-            .lt(Line(l1.start, l2.start) & cl)
-            .lt(Line(l1.end, l2.end) & cl)
-            .lt(l1.end)
-            .cp())
-
-    def line(self, points, moveTo=True, endPath=True):
-        """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""
-        if isinstance(points, Line):
-            points = list(points)
-        if len(points) == 0:
-            return self
-        if len(self.value) == 0 or moveTo:
-            self.moveTo(points[0])
-        else:
-            self.lineTo(points[0])
-        for p in points[1:]:
-            self.lineTo(p)
-        if endPath:
-            self.endPath()
-        return self
-    
-    def hull(self, points):
-        """Same as `DATPen.line` but calls closePath instead of endPath`"""
-        self.moveTo(points[0])
-        for pt in points[1:]:
-            self.lineTo(pt)
-        self.closePath()
-        return self
-    
     def fence(self, *edges):
         self.moveTo(edges[0][0])
         self.lineTo(edges[0][1])
@@ -1044,17 +613,6 @@ class DATPen(RecordingPen):
             dp.lineTo(p)
         dp.closePath()
         dp.align(rect)
-        self.record(dp)
-        return self
-    
-    def quadratic(self, a, b, c, lineTo=False):
-        a, b, c = [p.xy() if isinstance(p, Point) else p for p in [a, b, c]]
-        dp = DATPen()
-        if lineTo:
-            dp.lineTo(a)
-        else:
-            dp.moveTo(a)
-        dp.curveTo(*raise_quadratic(a, b, c))
         self.record(dp)
         return self
     
@@ -1153,132 +711,6 @@ class DATPen(RecordingPen):
         #print(exploded.pens[contour_slice])
         #self.value = DATPens(exploded[contour_slice]).implode().value
         return self
-    
-    def sliced_line(self, idx):
-        allpts = []
-        for mv, pts in self.value:
-            if len(pts) > 0:
-                allpts.append(pts)
-            #pts = [pts[-1] for (mv, pts) in self.value[start:end]]
-        allpts = allpts*2
-        return Line(allpts[idx][0], allpts[idx+1][0])
-    
-    sl = sliced_line
-
-    def nsew(self):
-        pts = [el[1][-1] for el in self.value if len(el[1]) > 0]
-        
-        lines = []
-        for i, p in enumerate(pts):
-            if i + 1 == len(pts):
-                lines.append(Line(p, pts[0]))
-            else:
-                lines.append(Line(p, pts[i+1]))
-        
-        mnx, mny, mxx, mxy = self.bounds().mnmnmxmx()
-        min_ang = min([l.ang for l in lines])
-        max_ang = max([l.ang for l in lines])
-        #for idx, l in enumerate(lines):
-        #    print(idx, ">", l.ang, min_ang, max_ang)
-        xs = [l for l in lines if math.isclose(l.ang,min_ang)]
-        ys = [l for l in lines if math.isclose(l.ang, max_ang)]
-
-        #print(len(xs), len(ys))
-        #print("--------------------")
-
-        n = [l for l in xs if l.start.y == mxy or l.end.y == mxy][0]
-        s = [l for l in xs if l.start.y == mny or l.end.y == mny][0]
-        e = [l for l in ys if l.start.x == mxx or l.end.x == mxx][0]
-        w = [l for l in ys if l.start.x == mnx or l.end.x == mnx][0]
-        return n, s, e, w
-
-    def point(self, pt):
-        n, s, e, w = self.nsew()
-        if pt == "NE":
-            return n.pe
-        elif pt == "NW":
-            return n.pw
-        elif pt == "SE":
-            return s.pe
-        elif pt == "SW":
-            return s.pw
-        elif pt == "N":
-            return n.mid
-        elif pt == "S":
-            return s.mid
-        elif pt == "E":
-            return e.mid
-        elif pt == "W":
-            return w.mid
-
-    @property
-    def pne(self):
-        return self.point("NE")
-    
-    @property
-    def pnw(self):
-        return self.point("NW")
-    
-    @property
-    def psw(self):
-        return self.point("SW")
-    
-    @property
-    def pse(self):
-        return self.point("SE")
-    
-    @property
-    def pn(self):
-        return self.point("N")
-
-    @property
-    def ps(self):
-        return self.point("S")
-    
-    @property
-    def pe(self):
-        return self.point("E")
-    
-    @property
-    def pw(self):
-        return self.point("W")
-    
-    @property
-    def en(self):
-        return self.nsew()[0]
-
-    @property
-    def es(self):
-        return self.nsew()[1]
-
-    @property
-    def ee(self):
-        return self.nsew()[2]
-    
-    @property
-    def ew(self):
-        return self.nsew()[3]
-    
-    @property
-    def ecx(self):
-        n, s, e, w = self.nsew()
-        return e.interp(0.5, w.reverse())
-    
-    @property
-    def ecy(self):
-        n, s, e, w = self.nsew()
-        return n.interp(0.5, s.reverse())
-    
-    def openAndClosed(self):
-        """Explode and then classify group each contour into open/closed pens; (what is this good for?)"""
-        dp_open = DATPen()
-        dp_closed = DATPen()
-        for pen in self.explode().pens:
-            if pen.value[-1][0] == "closePath":
-                dp_closed.record(pen)
-            else:
-                dp_open.record(pen)
-        return dp_open, dp_closed
     
     def subsegment(self, start=0, end=1):
         """Return a subsegment of the pen based on `t` values `start` and `end`"""
@@ -1456,13 +888,6 @@ class DATPen(RecordingPen):
         pickle.dump(self, open(str(tmp), "wb"))
         return self
     
-    def Interpolate(instances, value):
-        spread = len(instances)-1
-        start = math.floor(value*spread)
-        end = math.ceil(value*spread)
-        v = value*spread-start
-        return instances[start].interpolate(v, instances[end])
-    
     def from_cbp(ps):
         import beziers.path
         dp = DATPen()
@@ -1534,7 +959,7 @@ class DATPen(RecordingPen):
             elif len(_e) == 3:
                 self.boxCurveTo(_e[-1], _e[0], _e[1])
         
-        if self.is_unended():
+        if self.unended():
             self.closePath()
 
         if tag:
@@ -1556,34 +981,6 @@ class DATPen(RecordingPen):
     _pen_class = None
     _precompose_save = None
 
-    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
-        x = txt_to_edge(x)
-        y = txt_to_edge(y)
-        b = self.getFrame(th=th, tv=tv)
-        
-        xoff = 0
-        if x != None:
-            if x == Edge.CenterX:
-                xoff = -b.x + rect.x + rect.w/2 - b.w/2
-            elif x == Edge.MinX:
-                xoff = -(b.x-rect.x)
-            elif x == Edge.MaxX:
-                xoff = -b.x + rect.x + rect.w - b.w
-        
-        yoff = 0
-        if y != None:
-            if y == Edge.CenterY:
-                yoff = -b.y + rect.y + rect.h/2 - b.h/2
-            elif y == Edge.MaxY:
-                yoff = (rect.y + rect.h) - (b.h + b.y)
-            elif y == Edge.MinY:
-                yoff = -(b.y-rect.y)
-        
-        diff = rect.w - b.w
-        return self.translate(xoff, yoff, transformFrame=transformFrame)
-    
-    å = align
-
     def xAlignToFrame(self, x=Edge.CenterX, th=0):
         if self.frame:
             return self.align(self.getFrame(th=th, tv=0), x=x, transformFrame=0, th=1)
@@ -1592,17 +989,6 @@ class DATPen(RecordingPen):
     
     def center_on_point(self, rect, pt):
         return self.translate(rect.w/2-pt[0], rect.h/2-pt[1])
-    
-    def pen(self):
-        """Return a single-pen representation of this pen(set)."""
-        return self
-    
-    def to_pen(self):
-        return self.pen()
-
-    def cast(self, _class, *args):
-        """Quickly cast to a (different) subclass."""
-        return _class(self, *args)
 
     def copy(self, with_data=False):
         """Make a totally fresh copy; useful given the DATPen’s general reliance on mutable state."""
@@ -1618,10 +1004,10 @@ class DATPen(RecordingPen):
                 dp.typographic = True
         return dp
 
-    def tag(self, tag):
-        """For conveniently marking a DATPen(Set) w/o having to put it into some other data structure."""
-        self._tag = tag
-        return self
+    # def tag(self, tag):
+    #     """For conveniently marking a DATPen(Set) w/o having to put it into some other data structure."""
+    #     self._tag = tag
+    #     return self
 
     def add_data(self, key, value=None):
         if value is None:
@@ -1635,9 +1021,9 @@ class DATPen(RecordingPen):
         self.editable = True
         return self
     
-    def getTag(self):
-        """Retrieve the tag (could probably be a real property)"""
-        return self._tag
+    # def getTag(self):
+    #     """Retrieve the tag (could probably be a real property)"""
+    #     return self._tag
     
     def contain(self, rect):
         """For conveniently marking an arbitrary `Rect` container."""
@@ -1645,7 +1031,7 @@ class DATPen(RecordingPen):
         return self
     
     def v(self, v):
-        self.visible = bool(v)
+        self.visible(bool(v))
         return self
     
     def a(self, v):
@@ -1734,47 +1120,6 @@ class DATPen(RecordingPen):
             img["rect"] = img["rect"].offset(x, y)
         return self.transform(Transform(1, 0, 0, 1, x, y), transformFrame=transformFrame)
     
-    def scale(self, scaleX, scaleY=None, center=None):
-        """Scale this shape by a percentage amount (1-scale)."""
-        t = Transform()
-        if center != False:
-            point = self.bounds().point("C") if center == None else center # maybe should be getFrame()?
-            t = t.translate(point.x, point.y)
-        t = t.scale(scaleX, scaleY or scaleX)
-        if center != False:
-            t = t.translate(-point.x, -point.y)
-        return self.transform(t)
-    
-    def scaleToRect(self, rect, preserveAspect=True, shrink_only=False):
-        """Scale this shape into a `Rect`."""
-        bounds = self.bounds()
-        h = rect.w / bounds.w
-        v = rect.h / bounds.h
-        if preserveAspect:
-            scale = h if h < v else v
-            if shrink_only and scale >= 1:
-                return self
-            return self.scale(scale)
-        else:
-            if shrink_only and (h >= 1 or v >= 1):
-                return self
-            return self.scale(h, v)
-    
-    def scaleToWidth(self, w, shrink_only=False):
-        """Scale this shape horizontally"""
-        b = self.bounds()
-        if shrink_only and b.w < w:
-            return self
-        else:
-            return self.scale(w / self.bounds().w, 1)
-    
-    def scaleToHeight(self, h, shrink_only=False):
-        """Scale this shape horizontally"""
-        b = self.bounds()
-        if shrink_only and b.h < h:
-            return self
-        return self.scale(1, h / self.bounds().h)
-    
     def trackToRect(self, rect, pullToEdges=False, r=0):
         """Distribute pens evenly within a frame"""
         if len(self) == 1:
@@ -1800,27 +1145,6 @@ class DATPen(RecordingPen):
                 p.translate(xoffset+tracking_value*idx, 0)
         return self
     
-    def skew(self, x=0, y=0, point=None):
-        t = Transform()
-        if not point:
-            point = self.bounds().point("C") # maybe should be getFrame()?
-        t = t.translate(point.x, point.y)
-        t = t.skew(x, y)
-        t = t.translate(-point.x, -point.y)
-        return self.transform(t)
-    
-    def rotate(self, degrees, point=None):
-        """Rotate this shape by a degree (in 360-scale, counterclockwise)."""
-        t = Transform()
-        if not point:
-            point = self.bounds().point("C") # maybe should be getFrame()?
-        elif isinstance(point, str):
-            point = self.bounds().point(point)
-        t = t.translate(point.x, point.y)
-        t = t.rotate(math.radians(degrees))
-        t = t.translate(-point.x, -point.y)
-        return self.transform(t, transformFrame=False)
-    
     def at_rotation(self, degrees, fn:Callable[["DATPen"], None], point=None):
         self.rotate(degrees)
         fn(self)
@@ -1840,22 +1164,6 @@ class DATPen(RecordingPen):
         nx = pnoise1(doneness*speed[0], base=base, octaves=octaves)
         ny = pnoise1(doneness*speed[1], base=base+10, octaves=octaves)
         return self.translate(nx * scale[0], ny * scale[1])
-    
-    def walk(self, callback:Callable[["DATPen", int, dict], None], depth=0, visible_only=False, parent=None):
-        if visible_only and not self.visible:
-            return
-        
-        if parent:
-            self._parent = parent
-        
-        is_dps = hasattr(self, "pens")
-        if is_dps:
-            callback(self, -1, dict(depth=depth))
-            for pen in self.pens:
-                pen.walk(callback, depth=depth+1, visible_only=visible_only, parent=self)
-            callback(self, 1, dict(depth=depth))
-        else:
-            callback(self, 0, dict(depth=depth))
     
     def all_pens(self):
         pens = []
@@ -1903,36 +1211,6 @@ class DATPen(RecordingPen):
         except ImportError:
             print("DrawBot not installed!")
             return self
-    
-    def noop(self, *args, **kwargs):
-        """Does nothing"""
-        return self
-    
-    def sleep(self, time):
-        """Sleep call within the chain (if you want to measure something)"""
-        sleep(time)
-        return self
-
-    def chain(self, fn:[["DATPen"], None], *args):
-        """
-        For simple take-one callback functions in a chain
-        """
-        if fn:
-            fn(self, *args)
-        return self
-    
-    def replace(self, fn:[["DATPen"], None], *args):
-        """
-        For simple take-one callback functions in a chain, to return what the function returns (not the element itself)
-        """
-        return fn(self, *args)
-    
-    def cond(self, condition, if_true: Callable[["DATPen"], None], if_false=Callable[["DATPen"], None]):
-        if condition:
-            if_true(self)
-        else:
-            if_false(self)
-        return self
     
     def _get_renderer_state(self, pen_class, context):
         if not pen_class:
@@ -2079,13 +1357,14 @@ class DATPens(DATPen, SHContext):
         self.pens = []
         self.typographic = True
         self.layered = False
-        self._tag = "?"
+        #self._tag = "?"
         self._alpha = 1
         self._parent = None
         self.container = None
+        self._frame = None
         self.frame = None
         self.data = {}
-        self.visible = True
+        self._visible = True
         
         self.lookups = {}
         self.locals = dict(DP=DATPen)

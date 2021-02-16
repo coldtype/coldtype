@@ -31,7 +31,8 @@ def test3(r):
     return (DPS()
         .define(r=r.inset(180))
         .gs("$r← $r↑|x:=335|$r→ $r↓|x|$r←")
-        .f(hsl(0.7, l=0.9)).s(0).sw(4))
+        .f(hsl(0.7, l=0.9)).s(0).sw(4)
+        .rotate(90))
 
 @renderable((500, 500))
 def test4(r):
