@@ -22,9 +22,7 @@ def test2(r):
         .define(
             a="$r↖⨝$r↘",
             b="($rＨ∩$a)OX100OY100")
-        .gss("$a $b")
-        #.realize()
-        )
+        .gss("$a $b"))
 
 @renderable((500, 500))
 def test3(r):

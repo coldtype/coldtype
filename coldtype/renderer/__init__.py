@@ -356,7 +356,7 @@ class Renderer():
         def inline_other(x):
             #cwd = self.filepath.relative_to(Path.cwd())
             cwd = Path.cwd()
-            print(">>>>>>>>>>>>>>>>>>>>>>>", cwd)
+            #print(">>>>>>>>>>>>>>>>>>>>>>>", cwd)
             path = Path(cwd / (x.group(1).replace(".", "/")+".py"))
             if path not in self.watchee_paths():
                 self.watchees.append([Watchable.Source, path, None])

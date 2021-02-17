@@ -734,68 +734,6 @@ class DATPen(DraftingPen):
         pickle.dump(self, open(str(tmp), "wb"))
         return self
     
-    def from_cbp(ps):
-        import beziers.path
-        dp = DATPen()
-        for p in ps:
-            nl = p.asNodelist()
-            offcs = []
-            for n in nl:
-                if n.type == "move":
-                    dp.moveTo((n.x, n.y))
-                elif n.type == "line":
-                    dp.lineTo((n.x, n.y))
-                elif n.type == "offcurve":
-                    offcs.append((n.x, n.y))
-                elif n.type == "curve":
-                    if len(offcs) == 0:
-                        dp.moveTo((n.x, n.y))
-                    else:
-                        dp.curveTo(*offcs, (n.x, n.y))
-                    offcs = []
-            if p.closed:
-                dp.closePath()
-            else:
-                dp.endPath()
-        return dp
-
-    def to_cbp(self):
-        import beziers.path
-        paths = []
-        bbp = beziers.path.BezierPath()
-        nl = []
-        for (mv, pts) in self.value:
-            done = False
-            if mv == "moveTo":
-                p = pts[0]
-                nl.append(beziers.path.Node(p[0], p[1], "move"))
-            elif mv == "lineTo":
-                p = pts[0]
-                nl.append(beziers.path.Node(p[0], p[1], "line"))
-            elif mv == "curveTo":
-                p1, p2, p3 = pts
-                nl.append(beziers.path.Node(p1[0], p1[1], "offcurve"))
-                nl.append(beziers.path.Node(p2[0], p2[1], "offcurve"))
-                nl.append(beziers.path.Node(p3[0], p3[1], "curve"))
-            elif mv == "qCurveTo":
-                p1, p2 = pts
-                nl.append(beziers.path.Node(p1[0], p1[1], "offcurve"))
-                nl.append(beziers.path.Node(p2[0], p2[1], "curve"))
-            elif mv == "closePath":
-                bbp.closed = True
-                done = True
-            elif mv == "endPath":
-                bbp.closed = False
-                done = True
-            if done:
-                bbp.activeRepresentation = beziers.path.NodelistRepresentation(bbp, nl)
-                paths.append(bbp)
-                bbp = beziers.path.BezierPath()
-        return paths
-    
-    def gs(self, e, fn=None, tag=None):
-        return self.sh(e, fn, tag)
-    
     _context = None
     _pen_class = None
     _precompose_save = None
@@ -1307,13 +1245,6 @@ class DATPens(DATPen, DraftingPens):
     def declare(self, *whatever):
         # TODO do something with what's declared somehow?
         return self
-
-    def sh(self, s):
-        from drafting.sh import sh
-        res = sh(s, self)
-        if res[0] == "∫":
-            res = [DATPen().gs(res[1:])]
-        return res
     
     def realize(self):
         for k, v in self._register.values.items():
@@ -1326,15 +1257,6 @@ class DATPens(DATPen, DraftingPens):
             return self.append(pen(self))
         else:
             return self.append(pen)
-    
-    def gs(self, s, fn=None, tag=None):
-        return self.append(
-            DP().gs(sh(s, ctx=self, dps=DATPens()), tag=tag, fn=fn))
-    
-    def gss(self, s):
-        dps = DATPens()
-        xs = sh(s, ctx=self, dps=dps)
-        return self.extend(dps.pens)
     
     def explode(self):
         """Noop on a set"""
