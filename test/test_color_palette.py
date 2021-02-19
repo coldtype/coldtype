@@ -51,8 +51,6 @@ def improved(e, xo=0, yo=0, xs=1, ys=1, base=1):
     matrix.setScaleY(ys)
     return noise.makeWithLocalMatrix(matrix)
 
-#DATPenLikeObject._precompose_save = "test2.png"
-
 @animation(timeline=Timeline(120))
 def restricted_colors(f):
     t = f.a.progress(f.i, loops=0, easefn="linear")

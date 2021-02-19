@@ -1,4 +1,5 @@
 from coldtype import *
+from drafting.pens.drawbotpen import DrawBotPen
 from drawBot import *
 
 co = Font("assets/ColdtypeObviously.designspace")
@@ -35,6 +36,7 @@ def db_script_test(r):
             hsl(0.15, s=0.7, l=0.6)))
         .s(0)
         .sw(3)
-        .db_drawPath())
+        .cast(DrawBotPen)
+        .draw())
 
     #saveImage("test/drawbot/saved_from_drawbot_test.pdf")

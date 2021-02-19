@@ -18,12 +18,12 @@ from functools import partial, partialmethod
 
 import skia, coldtype
 from coldtype.helpers import *
-from coldtype.geometry import Rect, Point
+from drafting.geometry import Rect, Point
 from coldtype.pens.skiapen import SkiaPen
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
-from coldtype.pens.datpen import DATPen, DATPens, DATPenLikeObject
+from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.renderer.keyboard import KeyboardShortcut, SHORTCUTS, REPEATABLE_SHORTCUTS
 
 from coldtype.renderer.utils import *
@@ -354,8 +354,10 @@ class Renderer():
         self._codepath_offset = 0
         
         def inline_other(x):
-            cwd = self.filepath.relative_to(Path.cwd()).parent
-            path = Path(cwd / (x.group(1)+".py"))
+            #cwd = self.filepath.relative_to(Path.cwd())
+            cwd = Path.cwd()
+            #print(">>>>>>>>>>>>>>>>>>>>>>>", cwd)
+            path = Path(cwd / (x.group(1).replace(".", "/")+".py"))
             if path not in self.watchee_paths():
                 self.watchees.append([Watchable.Source, path, None])
             src = path.read_text()
@@ -368,6 +370,7 @@ class Renderer():
         source_code = re.sub(r"λ\s?([/\.\@]{1,2})", r"lambda xxx: xxx\1", source_code)
         #source_code = re.sub(r"λ\.", "lambda x: x.", source_code)
         source_code = re.sub(r"λ", "lambda ", source_code)
+        #source_code = re.sub(r"ßDPS\(([^\)]+)\)", r"(ß:=DPS(\1))", source_code)
 
         while "nerp(" in source_code:
             start = source_code.find("nerp(")
@@ -390,8 +393,8 @@ class Renderer():
         return source_code
 
     def reload(self, trigger):
-        DATPenLikeObject._pen_class = SkiaPen
-        DATPenLikeObject._context = self.context
+        DATPen._pen_class = SkiaPen
+        DATPen._context = self.context
 
         if not self.filepath:
             self.program = dict(no_filepath=True)

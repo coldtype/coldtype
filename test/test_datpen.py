@@ -3,7 +3,7 @@ from coldtype.test import *
 
 @test()
 def test_projection(r):
-    shape = DATPen().rect(300, 300).difference(DATPen().oval((-150, -150, 300, 300)))
+    shape = DATPen().rect(Rect(300, 300)).difference(DATPen().oval((-150, -150, 300, 300)))
     return DATPens([
         shape.copy().castshadow(-35, 200).f("hr", 0.65, 0.25),
         shape.copy().project(-35, 200).f("hr", 0.5, 0.5),
@@ -43,14 +43,14 @@ def test_catmull(r):
     return dp.catmull(points).endPath().f(None).s("random").sw(20)
 
 
-@test()
-def test_semicircles(r):
-    frank = Style("≈/_script/AdobeHandwriting-Frank.otf", 72)
-    sc1 = DATPen().semicircle(r.square(), "mnx", 0.6, 0.4).scale(0.5).translate(-300, 0)
-    sc2 = DATPen().semicircle(r.square(), "mny", 0.6, 0.4).scale(0.5).translate(300, 0)
-    return [
-        sc1,
-        show_points(sc1, frank),
-        sc2,
-        show_points(sc2, frank)
-    ]
+# @test()
+# def test_semicircles(r):
+#     frank = Style("≈/_script/AdobeHandwriting-Frank.otf", 72)
+#     sc1 = DATPen().semicircle(r.square(), "mnx", 0.6, 0.4).scale(0.5).translate(-300, 0)
+#     sc2 = DATPen().semicircle(r.square(), "mny", 0.6, 0.4).scale(0.5).translate(300, 0)
+#     return [
+#         sc1,
+#         show_points(sc1, frank),
+#         sc2,
+#         show_points(sc2, frank)
+#     ]

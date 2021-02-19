@@ -9,7 +9,7 @@ def stub(r, rs):
     rt = (RichText(r,
         ("This is a\n" + (txt + "\n" if txt else "") + "program").upper(),
         dict(default=Style(mutator, 100, wght=0.5, wdth=0.15)),
-        fit=r.w - 100 if text else None)
+        fit=r.w - 100 if txt else None)
         .xa()
         .align(r)
         .f(0))

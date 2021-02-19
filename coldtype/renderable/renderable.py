@@ -4,8 +4,8 @@ from enum import Enum
 from subprocess import run
 from pathlib import Path
 
-from coldtype.geometry import Rect, Point
-from coldtype.color import normalize_color
+from drafting.geometry import Rect, Point
+from drafting.color import normalize_color
 from coldtype.text.reader import normalize_font_prefix, Font
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
@@ -237,6 +237,7 @@ class drawbot_script(renderable):
         return pens
     
     def run(self, render_pass, renderer_state):
+        from drafting.pens.drawbotpen import DrawBotPen
         use_pool = True
         if use_pool:
             pool = AppKit.NSAutoreleasePool.alloc().init()
@@ -246,10 +247,13 @@ class drawbot_script(renderable):
                 ps = renderer_state.preview_scale
                 db.size(self.rect.w*ps, self.rect.h*ps)
                 db.scale(ps, ps)
-                DATPen().rect(self.rect).f(self.bg).db_drawPath()
+                DATPen().rect(self.rect).f(self.bg).cast(DrawBotPen).draw()
             else:
                 db.size(self.rect.w, self.rect.h)
-            render_pass.fn(*render_pass.args)
+            if self.rstate:
+                render_pass.fn(*render_pass.args, renderer_state)
+            else:
+                render_pass.fn(*render_pass.args)
             result = None
             if renderer_state.previewing:
                 previews = (render_pass.output_path.parent / "_previews")

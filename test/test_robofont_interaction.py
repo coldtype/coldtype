@@ -34,7 +34,7 @@ def stub(f, rs):
     return (
         DATPen.Interpolate([dp_fg, dp_bg], f.a.progress(f.i, loops=1, easefn="ceio").e)
         .f(1)
-        .scale(0.5, center=r.point("SW"))
+        .scale(0.5, point=r.point("SW"))
         .translate(50, 100)
         .phototype(r,
             blur=1+nxl(10)*30,

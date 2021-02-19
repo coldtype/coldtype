@@ -2,7 +2,7 @@ import time, math
 
 from fontTools.pens.basePen import BasePen
 from fontTools.pens.transformPen import TransformPen
-from coldtype.geometry import Rect
+from drafting.geometry import Rect
 
 try:
     from pyaxidraw import axidraw
@@ -42,7 +42,7 @@ class AxiDrawPen(BasePen):
             self.ad.lineto(*self.last_moveTo)
 
     def draw(self, scale=0.01, cm=False):
-        self.dat.scale(scale, center=False)
+        self.dat.scale(scale, point=False)
         self.page = self.page.scale(scale)
         b = self.dat.bounds()
         limits = Rect(0, 0, 11, 8.5)

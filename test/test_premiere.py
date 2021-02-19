@@ -32,6 +32,6 @@ def render(f):
     
     if zoom := cg.style_matching("zoom"):
         e = zoom.progress(f.i, easefn="eei").e
-        pens.scale(1+pow(e, 2)*150, center=f.a.r.point("C").offset(0, 51))
+        pens.scale(1+pow(e, 2)*150, point=f.a.r.point("C").offset(0, 51))
     
     return pens

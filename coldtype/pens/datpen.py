@@ -1,81 +1,59 @@
-import math, tempfile, pickle, inspect, re
-from enum import Enum
-from copy import deepcopy
+import math, tempfile, pickle, inspect
 from pathlib import Path
-from time import sleep
 
 from typing import Optional, Callable, Tuple
 #from collections.abc import Callable
 
-from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
-from fontTools.pens.reverseContourPen import ReverseContourPen
-from fontTools.pens.pointInsidePen import PointInsidePen
-from fontTools.pens.recordingPen import RecordingPen
-from fontTools.pens.transformPen import TransformPen
-from fontTools.svgLib.path.parser import parse_path
 from fontTools.misc.transform import Transform
 
-from fontPens.flattenPen import FlattenPen
-from fontPens.marginPen import MarginPen
-from collections import OrderedDict
-from random import random, randint
-from numbers import Number
-from defcon import Glyph
+from random import randint
 from noise import pnoise1
 
-import coldtype.pens.drawbot_utils as dbu
+from drafting.sh import sh
+from drafting.pens.draftingpens import DraftingPen, DraftingPens
 
-from coldtype.geometry import Rect, Edge, Point, Line, txt_to_edge, calc_angle, Geometrical, Atom
-from coldtype.gs import gs
-from coldtype.beziers import raise_quadratic, CurveCutter, splitCubicAtT, calcCubicArcLength
-from coldtype.color import Gradient, normalize_color, Color, hsl
-from coldtype.pens.misc import ExplodingPen, SmoothPointsPen, BooleanOp, calculate_pathop
+from drafting.geometry import Rect, Edge, Point, Line, Geometrical
+from coldtype.beziers import CurveCutter, splitCubicAtT
+from drafting.color import normalize_color, hsl
 
 from coldtype.pens.outlinepen import OutlinePen
 from coldtype.pens.translationpen import TranslationPen, polarCoord
-
-from coldtype.pens.datpenlikeobject import DATPenLikeObject
-
-
-class DATConstants():
-    def __init__(self):
-        self.lookup = {}
 
 
 def listit(t):
     return list(map(listit, t)) if isinstance(t, (list, tuple)) else t
 
 
-class DATBPT():
-    def __init__(self, ps):
-        self.ps = ps
+# class DATBPT():
+#     def __init__(self, ps):
+#         self.ps = ps
     
-    def angle(self):
-        b = self.ps[0]
-        c = self.ps[1]
-        d = self.ps[2]
-        return c.cdist(b), c.cdist(d)
+#     def angle(self):
+#         b = self.ps[0]
+#         c = self.ps[1]
+#         d = self.ps[2]
+#         return c.cdist(b), c.cdist(d)
     
-    def rotate(self, angle):
-        c = self.ps[1]
-        bdist, bang = c.cdist(self.ps[0])
-        ddist, dang = c.cdist(self.ps[2])
-        self.ps[0] = c.project(bang + angle, bdist)
-        self.ps[2] = c.project(dang + angle, ddist)
-        return self
+#     def rotate(self, angle):
+#         c = self.ps[1]
+#         bdist, bang = c.cdist(self.ps[0])
+#         ddist, dang = c.cdist(self.ps[2])
+#         self.ps[0] = c.project(bang + angle, bdist)
+#         self.ps[2] = c.project(dang + angle, ddist)
+#         return self
     
-    def offset(self, x, y):
-        self.ps = [p.offset(x, y) for p in self.ps]
-        return self
+#     def offset(self, x, y):
+#         self.ps = [p.offset(x, y) for p in self.ps]
+#         return self
     
-    def __floordiv__(self, other):
-        return self.offset(0, other)
+#     def __floordiv__(self, other):
+#         return self.offset(0, other)
     
-    def __truediv__(self, other):
-        return self.offset(other, 0)
+#     def __truediv__(self, other):
+#         return self.offset(other, 0)
 
 
-class DATPen(RecordingPen, DATPenLikeObject):
+class DATPen(DraftingPen):
     """
     Main vector representation in Coldtype
     
@@ -85,10 +63,11 @@ class DATPen(RecordingPen, DATPenLikeObject):
         """**kwargs support is deprecated, should not accept any arguments"""
         super().__init__()
         self.single_pen_class = DATPen
+        self.multi_pen_class = DATPens
+
         self._current_attr_tag = "default"
         self.clearAttrs()
         self.attr("default", **kwargs)
-        self.frame = None
         self.typographic = False
         self._tag = "?"
         self._alpha = 1
@@ -96,12 +75,12 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.container = None
         self.glyphName = None
         self.data = {}
-        self.visible = True
+        self._visible = True
 
         for idx, arg in enumerate(args):
             if isinstance(arg, str):
                 self.tag(arg)
-            elif isinstance(arg, DATPen):
+            elif isinstance(arg, DraftingPen):
                 self.replace_with(arg)
             elif isinstance(arg, Rect):
                 self.rect(arg)
@@ -111,14 +90,15 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 self.oval(Rect.FromCenter(arg, 50, 50))
     
     def __str__(self):
-        v = "" if self.visible else "ø-"
+        v = "" if self._visible else "ø-"
         return f"<{v}DP(typo:int({self.typographic})({self.glyphName}))——tag:{self._tag}/data:{self.data}>"
     
     def __len__(self):
         return len(self.value)
     
     def __bool__(self):
-        return bool(len(self) > 0 or self.frame)
+        return True
+        return bool(len(self) > 0 or self._frame)
     
     def __add__(self, item):
         return DATPens([self, item])
@@ -156,20 +136,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
         out += ")"
         return out
     
-    def vl(self, value):
-        self.value = value
-        return self
-    
-    def replace_with(self, other):
-        return self.vl(other.value)
-    
-    def pvl(self):
-        for idx, (mv, pts) in enumerate(self.value):
-            if len(pts) > 0:
-                self.value[idx] = list(self.value[idx])
-                self.value[idx][-1] = [Point(p) for p in self.value[idx][-1]]
-        return self
-    
     def fvl(self):
         allpts = []
         for mv, pts in self.value:
@@ -194,16 +160,16 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.map_points(fn, lambda p: p.inside(rect))
         return self
     
-    def mod_bpt(self, idx, fn):
-        pidxs = [[idx, -2], [idx, -1], [idx+1, 0]]
-        bpt = DATBPT([self.value[i][-1][j] for (i,j) in pidxs])
-        fn(bpt)
-        for idx, (i,j) in enumerate(pidxs):
-            self.value[i][-1][j] = bpt.ps[idx]
-        #self.mod_pt(idx+1, 0, fn)
-        #self.mod_pt(idx, -1, fn)
-        #self.mod_pt(idx, -2, fn)
-        return self
+    # def mod_bpt(self, idx, fn):
+    #     pidxs = [[idx, -2], [idx, -1], [idx+1, 0]]
+    #     bpt = DATBPT([self.value[i][-1][j] for (i,j) in pidxs])
+    #     fn(bpt)
+    #     for idx, (i,j) in enumerate(pidxs):
+    #         self.value[i][-1][j] = bpt.ps[idx]
+    #     #self.mod_pt(idx+1, 0, fn)
+    #     #self.mod_pt(idx, -1, fn)
+    #     #self.mod_pt(idx, -2, fn)
+    #     return self
     
     def add_pt(self, cuidx, t, fn=None):
         cidx = 0
@@ -229,15 +195,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
             #return insert_idx
         return self
     
-    def printvl(self):
-        from pprint import pprint
-        pprint(self.value)
-        return self
-    
-    def print(self, *args):
-        print(args)
-        return self
-    
     def take(self, slice):
         self.value = self.value[slice]
         return self
@@ -249,171 +206,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     as_set = ups
     
-    def moveTo(self, *ps):
-        """The standard `RecordingPen.moveTo`, but returns self for chainability."""
-        super().moveTo(ps[0])
-        if len(ps) > 1:
-            for p in ps[1:]:
-                super().lineTo(p)
-        return self
-    
-    mt = moveTo
-
-    def lineTo(self, *ps):
-        """The standard `RecordingPen.lineTo`, but returns self for chainability, and accepts multiple points, and also will automatically moveTo if the pen has no value"""
-
-        p1 = ps[0]
-        if len(self.value) == 0:
-            super().moveTo(p1)
-        else:
-            super().lineTo(p1)
-        if len(ps) > 1:
-            for p in ps[1:]:
-                super().lineTo(p)
-        return self
-    
-    lt = lineTo
-
-    def qCurveTo(self, *points):
-        """The standard `RecordingPen.qCurveTo`, but returns self for chainability."""
-        super().qCurveTo(*points)
-        return self
-    
-    qct = qCurveTo
-
-    def curveTo(self, *points):
-        """The standard `RecordingPen.curveTo`, but returns self for chainability."""
-        super().curveTo(*points)
-        return self
-    
-    ct = curveTo
-
-    def closePath(self):
-        """The standard `RecordingPen.closePath`, but returns self for chainability."""
-        super().closePath()
-        return self
-    
-    cp = closePath
-
-    def endPath(self):
-        """The standard `RecordingPen.endPath`, but returns self for chainability."""
-        super().endPath()
-        return self
-    
-    ep = endPath
-    
-    def boxCurveTo(self, pt, point, factor, mods={}):
-        a = Point(self.value[-1][-1][-1])
-        d = Point(pt)
-        box = Rect.FromMnMnMxMx([min(a.x, d.x), min(a.y, d.y), max(a.x, d.x), max(a.y, d.y)])
-        try:
-            f1, f2 = factor
-        except TypeError:
-            if isinstance(factor, Atom):
-                f1, f2 = (factor[0], factor[0])
-            else:
-                f1, f2 = (factor, factor)
-
-        if isinstance(point, str):
-            p = box.point(point)
-            p1, p2 = (p, p)
-        elif isinstance(point, Point):
-            p1, p2 = point, point
-        else:
-            p1, p2 = point
-            p1 = box.point(p1)
-            p2 = box.point(p2)
-        
-        b = a.interp(f1, p1)
-        c = d.interp(f2, p2)
-        mb = mods.get("b")
-        mc = mods.get("c")
-        if mb:
-            b = mb(b)
-        elif mc:
-            c = mc(c)
-        self.curveTo(b, c, d)
-        return self
-    
-    bct = boxCurveTo
-    
-    def uTurnTo(self, inflection, end, pts, factor):
-        return (self
-            .boxCurveTo(inflection, pts[0], factor)
-            .boxCurveTo(end, pts[1], factor))
-    
-    def interpolate(self, value, other):
-        vl = []
-        for idx, (mv, pts) in enumerate(self.value):
-            ipts = []
-            for jdx, p in enumerate(pts):
-                pta = Point(p)
-                ptb = Point(other.value[idx][-1][jdx])
-                ipts.append(pta.interp(value, ptb))
-            vl.append((mv, ipts))
-        return DATPen().vl(vl)
-    
-    def clearAttrs(self):
-        """Remove all styling."""
-        self.attrs = OrderedDict()
-        self.attr("default", fill=(1, 0, 0.5))
-        return self
-    
-    def allStyledAttrs(self, style=None):
-        if style and style in self.attrs:
-            attrs = self.attrs[style]
-        else:
-            attrs = self.attrs["default"]
-        return attrs
-
-    def attr(self, tag=None, field=None, **kwargs):
-        """Set a style attribute on the pen."""
-        if not tag:
-            if hasattr(self, "_current_attr_tag"): # TODO temporary for pickled pens
-                tag = self._current_attr_tag
-            else:
-                tag = "default"
-
-        if field: # getting, not setting
-            return self.attrs.get(tag).get(field)
-        
-        attrs = dict(shadow=None)
-        if tag and self.attrs.get(tag):
-            attrs = self.attrs[tag]
-        else:
-            self.attrs[tag] = attrs
-        for k, v in kwargs.items():
-            if v:
-                if k == "fill":
-                    attrs[k] = normalize_color(v)
-                elif k == "stroke":
-                    existing = attrs.get("stroke", {})
-                    if not isinstance(v, dict):
-                        attrs[k] = dict(color=normalize_color(v), weight=existing.get("weight", 1))
-                    else:
-                        attrs[k] = dict(weight=v.get("weight", existing.get("weight", 1)), color=normalize_color(v.get("color", 0)))
-                elif k == "strokeWidth":
-                    if "stroke" in attrs:
-                        attrs["stroke"]["weight"] = v
-                        #if attrs["stroke"]["color"].a == 0:
-                        #    attrs["stroke"]["color"] = normalize_color((1, 0, 0.5))
-                    else:
-                        attrs["stroke"] = dict(color=normalize_color((1, 0, 0.5)), weight=v)
-                elif k == "shadow":
-                    if "color" in v:
-                        v["color"] = normalize_color(v["color"])
-                    attrs[k] = v
-                else:
-                    attrs[k] = v
-        return self
-    
-    def lattr(self, tag, fn: Callable[["DATPen"], Optional["DATPen"]]):
-        was_tag = self._current_attr_tag
-        self._current_attr_tag = tag
-        fn(self)
-        self._current_attr_tag = was_tag
-        return self
-    
     def calc_alpha(self):
         a = self._alpha
         p = self._parent
@@ -423,51 +215,7 @@ class DATPen(RecordingPen, DATPenLikeObject):
         return a
     
     def getFrame(self, th=False, tv=False):
-        """For internal use; creates a frame based on calculated bounds."""
-        if self.frame:
-            if (th or tv) and len(self.value) > 0:
-                f = self.frame
-                b = self.bounds()
-                if th and tv:
-                    return b
-                elif th:
-                    return Rect(b.x, f.y, b.w, f.h)
-                else:
-                    return Rect(f.x, b.y, f.w, b.h)
-            else:
-                return self.frame
-        else:
-            return self.bounds()
-    
-    def bounds(self):
-        """Calculate the bounds of this shape; mostly for internal use."""
-        try:
-            cbp = BoundsPen(None)
-            self.replay(cbp)
-            mnx, mny, mxx, mxy = cbp.bounds
-            return Rect((mnx, mny, mxx - mnx, mxy - mny))
-        except:
-            return Rect(0, 0, 0, 0)
-    
-    def is_unended(self):
-        if len(self.value) == 0:
-            return True
-        elif self.value[-1][0] not in ["endPath", "closePath"]:
-            return True
-        return False
-    
-    def reverse(self):
-        """Reverse the winding direction of the pen."""
-        if self.is_unended():
-            self.closePath()
-        dp = DATPen()
-        rp = ReverseContourPen(dp)
-        self.replay(rp)
-        self.value = dp.value
-        return self
-    
-    def __invert__(self):
-        return self.reverse()
+        return self.ambit(th=th, tv=tv)
     
     def map(self, fn:Callable[[int, str, list], Tuple[str, list]]):
         for idx, (mv, pts) in enumerate(self.value):
@@ -504,15 +252,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
                 nx, ny = lookup.get(i)
                 return (x+nx, y+ny)
         return self.map_points(nudger)
-    
-    def repeat(self, times=1):
-        copy = self.copy()
-        copy_0_move, copy_0_data = copy.value[0]
-        copy.value[0] = ("lineTo", copy_0_data)
-        self.value = self.value[:-1] + copy.value
-        if times > 1:
-            self.repeat(times-1)
-        return self
     
     def repeatx(self, times=1):
         w = self.getFrame(th=1).point("SE").x
@@ -584,40 +323,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
             return x+_c[0], _c[1]
         return self.nonlinear_transform(bender)
     
-    def transform(self, transform, transformFrame=True):
-        """Perform an arbitrary transformation on the pen, using the fontTools `Transform` class."""
-        op = RecordingPen()
-        tp = TransformPen(op, transform)
-        self.replay(tp)
-        self.value = op.value
-        if transformFrame and self.frame:
-            self.frame = self.frame.transform(transform)
-        return self
-    
-    def _pathop(self, otherPen=None, operation=BooleanOp.XOR):
-        self.value = calculate_pathop(self, otherPen, operation)
-        return self
-    
-    def difference(self, otherPen):
-        """Calculate and return the difference of this shape and another."""
-        return self._pathop(otherPen=otherPen, operation=BooleanOp.Difference)
-    
-    def union(self, otherPen):
-        """Calculate and return the union of this shape and another."""
-        return self._pathop(otherPen=otherPen, operation=BooleanOp.Union)
-    
-    def xor(self, otherPen):
-        """Calculate and return the XOR of this shape and another."""
-        return self._pathop(otherPen=otherPen, operation=BooleanOp.XOR)
-    
-    def reverseDifference(self, otherPen):
-        """Calculate and return the reverseDifference of this shape and another."""
-        return self._pathop(otherPen=otherPen, operation=BooleanOp.ReverseDifference)
-    
-    def intersection(self, otherPen):
-        """Calculate and return the intersection of this shape and another."""
-        return self._pathop(otherPen=otherPen, operation=BooleanOp.Intersection)
-    
     def fenced(self, *lines):
         if len(lines) == 1 and isinstance(lines[0], Rect):
             return self.intersection(DATPen().rect(lines[0]))
@@ -625,130 +330,12 @@ class DATPen(RecordingPen, DATPenLikeObject):
     
     ƒ = fenced
     
-    def removeOverlap(self):
-        """Remove overlaps within this shape and return itself."""
-        return self._pathop(otherPen=None, operation=BooleanOp.Simplify)
-
-    def round(self, rounding):
-        """Round the values of this pen to integer values."""
-        rounded = []
-        for t, pts in self.value:
-            _rounded = []
-            for p in pts:
-                if p:
-                    x, y = p
-                    if rounding > 0:
-                        _rounded.append((round(x, rounding), round(y, rounding)))
-                    else:
-                        _rounded.append((math.floor(x), math.floor(y)))
-                else:
-                    _rounded.append(p)
-            rounded.append((t, _rounded))
-        self.value = rounded
-        return self
-
-    def round_to(self, rounding):
-        """Round the values of this pen to nearest multiple of rounding."""
-        def rt(v, mult):
-            rndd = float(round(v / mult) * mult)
-            if rndd.is_integer():
-                return int(rndd)
-            else:
-                return rndd
-        
-        rounded = []
-        for t, pts in self.value:
-            _rounded = []
-            for p in pts:
-                if p:
-                    x, y = p
-                    _rounded.append((rt(x, rounding), rt(y, rounding)))
-                else:
-                    _rounded.append(p)
-            rounded.append((t, _rounded))
-        self.value = rounded
-        return self
-
-    def simplify(self):
-        """DO NOT USE"""
-        import numpy as np
-        last = None
-        times = 0
-        nv = []
-        for idx, (t, pts) in enumerate(self.value):
-            if last == t and t == "qCurveTo":
-                continue
-                p0 = np.array(self.value[idx-2][-1][-1])
-                p1, p2, p3 = [np.array(p) for p in self.value[idx-1][-1]]
-                q0 = np.array(self.value[idx-1][-1][-1])
-                q1, q2, q3 = [np.array(p) for p in pts]
-                r0 = p0
-                kp = 2
-                kq = 2
-                r1 = p0 + kp * (p1 - p0)
-                r2 = q3 + kq * (q2 - q3)
-                r3 = q3
-                nv.pop()
-                nv.append([t, [r1.tolist(), r2.tolist(), r3.tolist()]])
-                times += 1
-            else:
-                nv.append([t, pts])
-            last = t
-        #self.value = nv
-        return self
-
-    def record(self, pen):
-        """Play a pen into this pen, meaning that pen will be added to this one’s value."""
-        if hasattr(pen, "pens"):
-            for p in pen:
-                self.record(p)
-        if pen:
-            pen.replay(self)
-        return self
-    
     def connect(self):
         return self.map(lambda i, mv, pts: ("lineTo" if i > 0 and mv == "moveTo" else mv, pts))
-    
-    def glyph(self, glyph):
-        """Play a glyph (like from `defcon`) into this pen."""
-        glyph.draw(self)
-        return self
-    
-    def to_glyph(self, name=None, width=None):
-        """
-        Create a glyph (like from `defcon`) using this pen’s value.
-        *Warning*: be sure to call endPath or closePath on your pen or this call will silently do nothing
-        """
-        bounds = self.bounds()
-        glyph = Glyph()
-        glyph.name = name
-        glyph.width = width or bounds.w
-        sp = glyph.getPen()
-        self.replay(sp)
-        return glyph
     
     def collapse(self):
         """For compatibility with calls to a DATPens"""
         return DATPens([self])
-
-    def flatten(self, length=10):
-        """
-        Runs a fontTools `FlattenPen` on this pen
-        """
-        if length == 0:
-            return self
-        dp = DATPen()
-        fp = FlattenPen(dp, approximateSegmentLength=length, segmentLines=True)
-        self.replay(fp)
-        self.value = dp.value
-        return self
-    
-    def addSmoothPoints(self, length=100):
-        rp = RecordingPen()
-        fp = SmoothPointsPen(rp)
-        self.replay(fp)
-        self.value = rp.value
-        return self
     
     def smooth(self):
         """Runs a catmull spline on the datpen, useful in combination as flatten+roughen+smooth"""
@@ -874,152 +461,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
             return self.intersection(clip_box)
         return self
     
-    def rect(self, rect, *args):
-        """Rectangle primitive — `moveTo/lineTo/lineTo/lineTo/closePath`"""
-        if isinstance(rect, Rect):
-            self.moveTo(rect.point("SW").xy())
-            self.lineTo(rect.point("SE").xy())
-            self.lineTo(rect.point("NE").xy())
-            self.lineTo(rect.point("NW").xy())
-            self.closePath()
-        elif isinstance(rect, Number):
-            if len(args) == 1:
-                return self.rect(Rect(rect, args[0]))
-            else:
-                return self.rect(Rect(rect, args[0], args[1], args[2]))
-        elif isinstance(rect[0], Rect):
-            for r in rect:
-                self.rect(r)
-        else:
-            self.rect(Rect(rect))
-        return self
-
-    def roundedRect(self, rect, hr, vr=None):
-        """Rounded rectangle primitive"""
-        if vr is None:
-            vr = hr
-        l, b, w, h = Rect(rect)
-        r, t = l + w, b + h
-        K = 4 * (math.sqrt(2)-1) / 3
-        circle = hr == 0.5 and vr == 0.5
-        if hr <= 0.5:
-            hr = w * hr
-        if vr <= 0.5:
-            vr = h * vr
-        self.moveTo((l + hr, b))
-        if not circle:
-            self.lineTo((r - hr, b))
-        self.curveTo((r+hr*(K-1), b), (r, b+vr*(1-K)), (r, b+vr))
-        if not circle:
-            self.lineTo((r, t-vr))
-        self.curveTo((r, t-vr*(1-K)), (r-hr*(1-K), t), (r-hr, t))
-        if not circle:
-            self.lineTo((l+hr, t))
-        self.curveTo((l+hr*(1-K), t), (l, t-vr*(1-K)), (l, t-vr))
-        if not circle:
-            self.lineTo((l, b+vr))
-        self.curveTo((l, b+vr*(1-K)), (l+hr*(1-K), b), (l+hr, b))
-        self.closePath()
-        return self
-    
-    rr = roundedRect
-    
-    def oval(self, rect):
-        """Oval primitive"""
-        self.roundedRect(rect, 0.5, 0.5)
-        return self
-    
-    def semicircle(self, r, center, fext=0.5, rext=0.5):
-        """
-        Not really a semicircle
-        `fext` controls extension from the standard on the "flat" edge
-        `rext` controls extension from the standard on the "round" edge
-        """
-        sc = DATPen()
-        n, e, s, w = r.cardinals()
-        ne, se, sw, nw = r.intercardinals()
-        cedge = txt_to_edge(center)
-
-        if cedge in [Edge.MinX, Edge.MaxX]:
-            fqe = r.w*fext
-            rqe = r.h*rext
-            sc.moveTo(sw).curveTo(sw.offset(fqe, 0), e.offset(0, -rqe), e).curveTo(e.offset(0, rqe), nw.offset(fqe, 0), nw).closePath()
-            if cedge == Edge.MaxX:
-                sc.rotate(180)
-        elif cedge in [Edge.MinY, Edge.MaxY]:
-            fqe = r.h*fext
-            rqe = r.w*rext
-            sc.moveTo(se).curveTo(se.offset(0, fqe), n.offset(rqe, 0), n).curveTo(n.offset(-rqe, 0), sw.offset(0, fqe), sw).closePath()
-            if cedge == Edge.MaxY:
-                sc.rotate(180)
-        return self.record(sc)
-    
-    def diagonal_upto(self, startc, angle, width, line):
-        t = startc.project_to(angle, line)
-        self.moveTo(startc.offset(-width/2, 0))
-        self.lineTo(startc.offset(width/2, 0))
-        self.lineTo(t.offset(width/2, 0))
-        self.lineTo(t.offset(-width/2, 0))
-        return self.closePath()
-    
-    def diagonal(self, start, end, width):
-        self.moveTo(start.offset(-width/2, 0))
-        self.lineTo(start.offset(width/2, 0))
-        self.lineTo(end.offset(width/2, 0))
-        self.lineTo(end.offset(-width/2, 0))
-        return self.closePath()
-    
-    def lsdiag(self, l1, l2, extr=0):
-        ll1 = Line(l1.start, l2.start)
-        ll2 = Line(l1.end, l2.end)
-        if extr > 0:
-            ll1 = ll1.extr(extr)
-            ll2 = ll2.extr(extr)
-        return self.mt(ll1.start).lt(ll1.end, ll2.end, ll2.start).cp()
-    
-    def lsdiagc(self, l1, l2, cl, extr=0):
-        ll1 = Line(l1.start, l2.start)
-        ll2 = Line(l1.end, l2.end)
-        if extr > 0:
-            ll1 = ll1.extr(extr)
-            ll2 = ll2.extr(extr)
-        return (self
-            .mt(ll1.start)
-            .lt(ll1 & cl)
-            .lt(ll2 & cl)
-            .lt(ll2.start)
-            .cp())
-        return (self
-            .mt(l1.start)
-            .lt(Line(l1.start, l2.start) & cl)
-            .lt(Line(l1.end, l2.end) & cl)
-            .lt(l1.end)
-            .cp())
-
-    def line(self, points, moveTo=True, endPath=True):
-        """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""
-        if isinstance(points, Line):
-            points = list(points)
-        if len(points) == 0:
-            return self
-        if len(self.value) == 0 or moveTo:
-            self.moveTo(points[0])
-        else:
-            self.lineTo(points[0])
-        for p in points[1:]:
-            self.lineTo(p)
-        if endPath:
-            self.endPath()
-        return self
-    
-    def hull(self, points):
-        """Same as `DATPen.line` but calls closePath instead of endPath`"""
-        self.moveTo(points[0])
-        for pt in points[1:]:
-            self.lineTo(pt)
-        self.closePath()
-        return self
-    
     def fence(self, *edges):
         self.moveTo(edges[0][0])
         self.lineTo(edges[0][1])
@@ -1042,17 +483,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
             dp.lineTo(p)
         dp.closePath()
         dp.align(rect)
-        self.record(dp)
-        return self
-    
-    def quadratic(self, a, b, c, lineTo=False):
-        a, b, c = [p.xy() if isinstance(p, Point) else p for p in [a, b, c]]
-        dp = DATPen()
-        if lineTo:
-            dp.lineTo(a)
-        else:
-            dp.moveTo(a)
-        dp.curveTo(*raise_quadratic(a, b, c))
         self.record(dp)
         return self
     
@@ -1108,29 +538,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
         self.record(dp)
         return self
     
-    def svg(self, file, gid, rect=Rect(0, 0, 0, 100)):
-        """WIP; attempt to read an svg file into the pen"""
-        from bs4 import BeautifulSoup
-        with open(file, "r") as f:
-            soup = BeautifulSoup(f.read(), features="lxml")
-            tp = TransformPen(self, (1, 0, 0, -1, 0, rect.h))
-            for path in soup.find(id=gid).find_all("path"):
-                parse_path(path.get("d"), tp)
-        return self
-    
-    def explode(self):
-        """Read each contour into its own DATPen; returns a DATPens"""
-        dp = RecordingPen()
-        ep = ExplodingPen(dp)
-        self.replay(ep)
-        dps = DATPens()
-        for p in ep.pens:
-            dp = DATPen()
-            dp.value = p
-            dp.attrs = deepcopy(self.attrs)
-            dps.append(dp)
-        return dps
-    
     def mod_contour(self, contour_index, mod_fn):
         exploded = self.explode()
         mod_fn(exploded[contour_index])
@@ -1151,132 +558,6 @@ class DATPen(RecordingPen, DATPenLikeObject):
         #print(exploded.pens[contour_slice])
         #self.value = DATPens(exploded[contour_slice]).implode().value
         return self
-    
-    def sliced_line(self, idx):
-        allpts = []
-        for mv, pts in self.value:
-            if len(pts) > 0:
-                allpts.append(pts)
-            #pts = [pts[-1] for (mv, pts) in self.value[start:end]]
-        allpts = allpts*2
-        return Line(allpts[idx][0], allpts[idx+1][0])
-    
-    sl = sliced_line
-
-    def nsew(self):
-        pts = [el[1][-1] for el in self.value if len(el[1]) > 0]
-        
-        lines = []
-        for i, p in enumerate(pts):
-            if i + 1 == len(pts):
-                lines.append(Line(p, pts[0]))
-            else:
-                lines.append(Line(p, pts[i+1]))
-        
-        mnx, mny, mxx, mxy = self.bounds().mnmnmxmx()
-        min_ang = min([l.ang for l in lines])
-        max_ang = max([l.ang for l in lines])
-        #for idx, l in enumerate(lines):
-        #    print(idx, ">", l.ang, min_ang, max_ang)
-        xs = [l for l in lines if math.isclose(l.ang,min_ang)]
-        ys = [l for l in lines if math.isclose(l.ang, max_ang)]
-
-        #print(len(xs), len(ys))
-        #print("--------------------")
-
-        n = [l for l in xs if l.start.y == mxy or l.end.y == mxy][0]
-        s = [l for l in xs if l.start.y == mny or l.end.y == mny][0]
-        e = [l for l in ys if l.start.x == mxx or l.end.x == mxx][0]
-        w = [l for l in ys if l.start.x == mnx or l.end.x == mnx][0]
-        return n, s, e, w
-
-    def point(self, pt):
-        n, s, e, w = self.nsew()
-        if pt == "NE":
-            return n.pe
-        elif pt == "NW":
-            return n.pw
-        elif pt == "SE":
-            return s.pe
-        elif pt == "SW":
-            return s.pw
-        elif pt == "N":
-            return n.mid
-        elif pt == "S":
-            return s.mid
-        elif pt == "E":
-            return e.mid
-        elif pt == "W":
-            return w.mid
-
-    @property
-    def pne(self):
-        return self.point("NE")
-    
-    @property
-    def pnw(self):
-        return self.point("NW")
-    
-    @property
-    def psw(self):
-        return self.point("SW")
-    
-    @property
-    def pse(self):
-        return self.point("SE")
-    
-    @property
-    def pn(self):
-        return self.point("N")
-
-    @property
-    def ps(self):
-        return self.point("S")
-    
-    @property
-    def pe(self):
-        return self.point("E")
-    
-    @property
-    def pw(self):
-        return self.point("W")
-    
-    @property
-    def en(self):
-        return self.nsew()[0]
-
-    @property
-    def es(self):
-        return self.nsew()[1]
-
-    @property
-    def ee(self):
-        return self.nsew()[2]
-    
-    @property
-    def ew(self):
-        return self.nsew()[3]
-    
-    @property
-    def ecx(self):
-        n, s, e, w = self.nsew()
-        return e.interp(0.5, w.reverse())
-    
-    @property
-    def ecy(self):
-        n, s, e, w = self.nsew()
-        return n.interp(0.5, s.reverse())
-    
-    def openAndClosed(self):
-        """Explode and then classify group each contour into open/closed pens; (what is this good for?)"""
-        dp_open = DATPen()
-        dp_closed = DATPen()
-        for pen in self.explode().pens:
-            if pen.value[-1][0] == "closePath":
-                dp_closed.record(pen)
-            else:
-                dp_open.record(pen)
-        return dp_open, dp_closed
     
     def subsegment(self, start=0, end=1):
         """Return a subsegment of the pen based on `t` values `start` and `end`"""
@@ -1454,149 +735,275 @@ class DATPen(RecordingPen, DATPenLikeObject):
         pickle.dump(self, open(str(tmp), "wb"))
         return self
     
-    def Interpolate(instances, value):
-        spread = len(instances)-1
-        start = math.floor(value*spread)
-        end = math.ceil(value*spread)
-        v = value*spread-start
-        return instances[start].interpolate(v, instances[end])
+    _context = None
+    _pen_class = None
+    _precompose_save = None
     
-    def from_cbp(ps):
-        import beziers.path
-        dp = DATPen()
-        for p in ps:
-            nl = p.asNodelist()
-            offcs = []
-            for n in nl:
-                if n.type == "move":
-                    dp.moveTo((n.x, n.y))
-                elif n.type == "line":
-                    dp.lineTo((n.x, n.y))
-                elif n.type == "offcurve":
-                    offcs.append((n.x, n.y))
-                elif n.type == "curve":
-                    if len(offcs) == 0:
-                        dp.moveTo((n.x, n.y))
-                    else:
-                        dp.curveTo(*offcs, (n.x, n.y))
-                    offcs = []
-            if p.closed:
-                dp.closePath()
-            else:
-                dp.endPath()
+    def center_on_point(self, rect, pt):
+        return self.translate(rect.w/2-pt[0], rect.h/2-pt[1])
+
+    def copy(self, with_data=False):
+        """Make a totally fresh copy; useful given the DATPen’s general reliance on mutable state."""
+        dp = self.single_pen_class()
+        self.replay(dp)
+        for tag, attrs in self.attrs.items():
+            dp.attr(tag, **attrs)
+        dp.glyphName = self.glyphName
+        if with_data:
+            dp.data = self.data
+            if self.typographic:
+                dp._frame = self._frame
+                dp.typographic = True
         return dp
 
-    def to_cbp(self):
-        import beziers.path
-        paths = []
-        bbp = beziers.path.BezierPath()
-        nl = []
-        for (mv, pts) in self.value:
-            done = False
-            if mv == "moveTo":
-                p = pts[0]
-                nl.append(beziers.path.Node(p[0], p[1], "move"))
-            elif mv == "lineTo":
-                p = pts[0]
-                nl.append(beziers.path.Node(p[0], p[1], "line"))
-            elif mv == "curveTo":
-                p1, p2, p3 = pts
-                nl.append(beziers.path.Node(p1[0], p1[1], "offcurve"))
-                nl.append(beziers.path.Node(p2[0], p2[1], "offcurve"))
-                nl.append(beziers.path.Node(p3[0], p3[1], "curve"))
-            elif mv == "qCurveTo":
-                p1, p2 = pts
-                nl.append(beziers.path.Node(p1[0], p1[1], "offcurve"))
-                nl.append(beziers.path.Node(p2[0], p2[1], "curve"))
-            elif mv == "closePath":
-                bbp.closed = True
-                done = True
-            elif mv == "endPath":
-                bbp.closed = False
-                done = True
-            if done:
-                bbp.activeRepresentation = beziers.path.NodelistRepresentation(bbp, nl)
-                paths.append(bbp)
-                bbp = beziers.path.BezierPath()
-        return paths
+    def add_data(self, key, value=None):
+        if value is None:
+            self.data = key
+        else:
+            self.data[key] = value
+        return self
     
-    def constants(self, **kwargs):
-        if not hasattr(self, "c"):
-            self.c = DATConstants()
-
-        res = kwargs
-        
-        for k, v in res.items():
-            if isinstance(v, str):
-                v = gs(v, self, dps=DATPens())
-                for idx, _k in enumerate(k.split("ƒ")):
-                    self.c.lookup[_k] = v[idx]
-                    setattr(self.c, _k, v[idx])
-                continue
+    def editable(self, tag):
+        self.tag(tag)
+        self.editable = True
+        return self
+    
+    def contain(self, rect):
+        """For conveniently marking an arbitrary `Rect` container."""
+        self.container = rect
+        return self
+    
+    def blendmode(self, blendmode=None):
+        if blendmode:
+            return self.attr(blendmode=blendmode)
+        else:
+            return self.attr(field="blendmode")
+        return self
+    
+    def clearFrame(self):
+        """Remove the DATPen frame."""
+        self._frame = None
+        return self
+    
+    def addFrame(self, frame, typographic=False, passthru=False):
+        """Add a new frame to the DATPen, replacing any old frame. Passthru ignored, there for compatibility"""
+        self._frame = frame
+        if typographic:
+            self.typographic = True
+        return self
+    
+    def frameSet(self, th=False, tv=False):
+        """Return a new DATPen representation of the frame of this DATPen."""
+        return self.single_pen_class(fill=("random", 0.25)).rect(self.getFrame(th=th, tv=tv))
+    
+    def trackToRect(self, rect, pullToEdges=False, r=0):
+        """Distribute pens evenly within a frame"""
+        if len(self) == 1:
+            return self.align(rect)
+        total_width = 0
+        pens = self.pens
+        if r:
+            pens = list(reversed(pens))
+        start_x = pens[0].getFrame(th=pullToEdges).x
+        end_x = pens[-1].getFrame(th=pullToEdges).point("SE").x
+        # TODO easy to knock out apostrophes here based on a callback, last "actual" frame
+        total_width = end_x - start_x
+        leftover_w = rect.w - total_width
+        tracking_value = leftover_w / (len(self)-1)
+        if pullToEdges:
+            xoffset = rect.x - pens[0].bounds().x
+        else:
+            xoffset = rect.x - pens[0].getFrame().x
+        for idx, p in enumerate(pens):
+            if idx == 0:
+                p.translate(xoffset, 0)
             else:
-                if callable(v):
-                    v = v(self)
-                self.c.lookup[k] = v
-                setattr(self.c, k, v)
+                p.translate(xoffset+tracking_value*idx, 0)
         return self
     
-    def declare(self, *whatever):
-        # TODO do something with what's declared somehow?
+    def at_rotation(self, degrees, fn:Callable[["DATPen"], None], point=None):
+        self.rotate(degrees)
+        fn(self)
+        self.rotate(-degrees)
         return self
     
-    def gs(self, e, fn=None, tag=None):
-        self.moveTo(e[0])
-        for _e in e[1:]:
-            if _e is None:
-                continue
-            elif isinstance(_e, Point):
-                self.lineTo(_e)
-            elif isinstance(_e, str):
-                getattr(self, _e)()
-            elif len(_e) == 3:
-                self.boxCurveTo(_e[-1], _e[0], _e[1])
+    # def at_scale(self, scale, fn:Callable[["DATPen"], None]):
+    #     self.scale(scale)
+    #     self.scale()
+    #     # TODO
+    #     return self
+    
+    def filmjitter(self, doneness, base=0, speed=(10, 20), scale=(2, 3), octaves=16):
+        """
+        An easy way to make something move in a way reminiscent of misregistered film
+        """
+        nx = pnoise1(doneness*speed[0], base=base, octaves=octaves)
+        ny = pnoise1(doneness*speed[1], base=base+10, octaves=octaves)
+        return self.translate(nx * scale[0], ny * scale[1])
+    
+    def _get_renderer_state(self, pen_class, context):
+        if not pen_class:
+            pen_class = DATPen._pen_class
+        if not pen_class:
+            raise Exception("No _pen_class")
+
+        if not context:
+            context = DATPen._context
+        elif context == -1:
+            context = None
         
-        if self.is_unended():
-            self.closePath()
+        return pen_class, context
+    
+    def precompose(self, rect, placement=None, opacity=1, scale=1, pen_class=None, context=None):
+        pc, ctx = self._get_renderer_state(pen_class, context)
+        img = pc.Precompose(self, rect, context=ctx, scale=scale, disk=DATPen._precompose_save)
+        return self.single_pen_class().rect(placement or rect).img(img, (placement or rect), False, opacity).f(None)
+    
+    def rasterized(self, rect, scale=1, pen_class=None, context=None):
+        """
+        Same as precompose but returns the Image created rather
+        than setting that image as the attr-image of this pen
+        """
+        pc, ctx = self._get_renderer_state(pen_class, context)
+        return pc.Precompose(self, rect, scale=scale, context=ctx, disk=DATPen._precompose_save)
+    
+    def mod_pixels(self, rect, scale=0.1, mod=lambda rgba: None, pen_class=None, context=None):
+        import skia
+        import PIL.Image
+        rasterized = self.rasterized(rect, scale=scale, pen_class=pen_class, context=context)
+        pi = PIL.Image.fromarray(rasterized, "RGBa")
+        for x in range(pi.width):
+            for y in range(pi.height):
+                r, g, b, a = pi.getpixel((x, y))
+                res = mod((r, g, b, a))
+                if res:
+                    pi.putpixel((x, y), tuple(res))
+        out = skia.Image.frombytes(pi.convert('RGBA').tobytes(), pi.size, skia.kRGBA_8888_ColorType)
+        return self.single_pen_class().rect(rect).img(out, rect, False).f(None)
 
-        if tag:
-            self.tag(tag)
-        if fn:
-            fn(self)
+    def potrace(self, rect, poargs=[], invert=True, pen_class=None, context=None):
+        import skia
+        from PIL import Image
+        from pathlib import Path
+        from subprocess import run
+        from fontTools.svgLib import SVGPath
+
+        pc, ctx = self._get_renderer_state(pen_class, context)
+
+        img = pc.Precompose(self, rect, context=ctx)
+        pilimg = Image.fromarray(img.convert(alphaType=skia.kUnpremul_AlphaType))
+        binpo = Path("bin/potrace")
+        if not binpo.exists():
+            binpo = Path(__file__).parent.parent.parent / "bin/potrace"
+
+        with tempfile.NamedTemporaryFile(prefix="coldtype_tmp", suffix=".bmp") as tmp_bmp:
+            pilimg.save(tmp_bmp.name)
+            rargs = [str(binpo), "-s"]
+            if invert:
+                rargs.append("--invert")
+            rargs.extend([str(x) for x in poargs])
+            rargs.extend(["-o", "-", "--", tmp_bmp.name])
+            if False:
+                print(">>>", " ".join(rargs))
+            result = run(rargs, capture_output=True)
+            if False:
+                print(result)
+            t = Transform()
+            t = t.scale(0.1, 0.1)
+            svgp = SVGPath.fromstring(result.stdout, transform=t)
+            if False:
+                print(svgp)
+            dp = self.single_pen_class()
+            svgp.draw(dp)
+            return dp.f(0)
+    
+    def phototype(self, rect, blur=5, cut=127, cutw=3, fill=1, pen_class=None, context=None, rgba=[0, 0, 0, 1], luma=True):
+        r, g, b, a = rgba
+        pc, ctx = self._get_renderer_state(pen_class, context)
+
+        import skia
+        import coldtype.filtering as fl
+
+        first_pass = dict(ImageFilter=fl.blur(blur))
+        
+        if luma:
+            first_pass["ColorFilter"] = skia.LumaColorFilter.Make()
+
+        cut_filters = [
+            fl.as_filter(
+                fl.contrast_cut(cut, cutw),
+                a=a, r=r, g=g, b=b)]
+            
+        if fill is not None:
+            cut_filters.append(fl.fill(normalize_color(fill)))
+
+        return (self
+            .precompose(rect, pen_class=pc, context=ctx)
+            .attr(skp=first_pass)
+            .precompose(rect, pen_class=pc, context=ctx)
+            .attr(skp=dict(
+                ColorFilter=fl.compose(*cut_filters))))
+    
+    def color_phototype(self, rect, blur=5, cut=127, cutw=15, pen_class=None, context=None, rgba=[1, 1, 1, 1]):
+        return self.phototype(rect, blur, 255-cut, cutw, fill=None, pen_class=pen_class, context=context, rgba=rgba, luma=False)
+    
+    def DiskCached(path:Path, build_fn: Callable[[], "DATPen"]):
+        dpio = None
+        fn_src = inspect.getsource(build_fn)
+        if not path.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            dpio = build_fn()
+        else:
+            try:
+                dpio = pickle.load(open(path, "rb"))
+                old_fn_src = dpio.data.get("fn_src", "")
+                if fn_src != old_fn_src:
+                    dpio = build_fn()
+            except pickle.PickleError:
+                dpio = build_fn()
+        
+        dpio.data["fn_src"] = fn_src
+        pickle.dump(dpio, open(path, "wb"))
+        return dpio
+    
+    def pickle(self, dst):
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        pickle.dump(self, open(str(dst), "wb"))
         return self
-
-    def bp(self):
-        try:
-            bp = dbu.db.BezierPath()
-            self.replay(bp)
-            return bp
-        except:
-            print("DrawBot not installed!")
-            return None
+    
+    def Unpickle(self, src):
+        return pickle.load(open(str(src), "rb"))
 
 
-class DATPens(DATPen):
+class DATPens(DATPen, DraftingPens):
     """
     A set/collection of DATPen’s
     
     Behaves like a list but can be queried somewhat like a DOM
     """
     def __init__(self, pens=[]):
+        DraftingPens.__init__(self) # TODO pass pens
+
         self.single_pen_class = DATPen
         self.pens = []
         self.typographic = True
         self.layered = False
-        self._tag = "?"
+        #self._tag = "?"
         self._alpha = 1
         self._parent = None
         self.container = None
-        self.frame = None
+        self._frame = None
         self.data = {}
-        self.visible = True
-        self.registrations = {}
-        self.guides = {}
+        self._visible = True
+        
+        self.locals = dict(DP=DATPen)
+        self.subs = {
+            "□": "ctx.bounds()",
+            "■": "_dps.bounds()"
+        }
 
-        if isinstance(pens, DATPen):
+
+        if isinstance(pens, DraftingPen):
             self.append(pens)
         else:
             for pen in pens:
@@ -1652,7 +1059,6 @@ class DATPens(DATPen):
         dps = DATPens()
         for p in self.pens:
             dps.append(p.copy(with_data=with_data))
-        dps.registrations = self.registrations.copy()
         return dps
     
     def __getitem__(self, index):
@@ -1688,9 +1094,11 @@ class DATPens(DATPen):
             pen = pen(self)
         if pen or allow_blank:
             if isinstance(pen, Geometrical):
-                return self.pens.append(DATPen(pen))
-            elif isinstance(pen, DATPenLikeObject):
+                self.pens.append(DATPen(pen))
+            elif isinstance(pen, DATPen):
                 self.pens.append(pen)
+            elif isinstance(pen, DraftingPen):
+                self.pens.append(DATPen(pen))
             else:
                 try:
                     for p in pen:
@@ -1745,7 +1153,7 @@ class DATPens(DATPen):
             for p in self.pens:
                 p.addFrame(frame, typographic=typographic)
         else:
-            self.frame = frame
+            self._frame = frame
             self.typographic = typographic
         return self
     
@@ -1755,13 +1163,13 @@ class DATPens(DATPen):
         `ty` means `(t)rue (v)ertical`;
         passing either ignores a non-bounds-derived frame
         in either dimension"""
-        if self.frame and (th == False and tv == False):
-            return self.frame
+        if self._frame and (th == False and tv == False):
+            return self._frame
         else:
             try:
-                union = self.pens[0].getFrame(th=th, tv=tv)
+                union = self.pens[0].ambit(th=th, tv=tv)
                 for p in self.pens[1:]:
-                    union = union.union(p.getFrame(th=th, tv=tv))
+                    union = union.union(p.ambit(th=th, tv=tv))
                 return union
             except Exception as e:
                 return Rect(0,0,0,0)
@@ -1817,58 +1225,19 @@ class DATPens(DATPen):
         return self
     
     def get(self, k):
-        if k in self.registrations:
-            return DATPen().rect(self.registrations[k])
-        else:
-            tagged = self.fft(k)
-            if tagged:
-                return tagged.copy()
+        tagged = self.fft(k)
+        if tagged:
+            return tagged.copy()
     
-    def _register(self, lookup, **kwargs):
-        if not hasattr(self, "bx"):
-            self.bx = self.bounds()
-
-        res = kwargs
-        
-        def keep(k, v, invisible=False):
-            if k != "_":
-                if not k.startswith("_") and not k.startswith("Ƨ"):
-                    if not invisible:
-                        lookup[k] = v
-                else:
-                    k = k[1:]
-                setattr(self, k, v)
-        
-        for k, v in res.items():
-            if callable(v):
-                v = v(self)
-                v = [v]
-            elif isinstance(v, str):
-                v = gs(v, ctx=self, dps=DATPens())
-            else:
-                v = [v]
-            
-            ks = k.split("ƒ")
-            #print("REGISTRATION", ks, v)
-
-            if len(ks) > 1 and len(v) == 1:
-                #print("HERE", ks, v)
-                v = v[0]
-            for idx, _k in enumerate(ks):
-                #print(">>>>>>>>>>", k, _k, idx, v)
-                keep(_k, v[idx], invisible=k.startswith("Ƨ"))
+    def define(self, *args, **kwargs):
+        return self.context_record("$", "defs", None, *args, **kwargs)
+    
+    def declare(self, *whatever):
+        # TODO do something with what's declared somehow?
         return self
     
-    def register(self, **kwargs):
-        return self._register(self.registrations, **kwargs)
-    
-    def guide(self, *args, **kwargs):
-        for arg in args:
-            kwargs[str(random())] = arg
-        return self._register(self.guides, **kwargs)
-    
     def realize(self):
-        for k, v in self.registrations.items():
+        for k, v in self._register.values.items():
             self.append(DATPen(v).tag(k))
         return self
     
@@ -1879,62 +1248,26 @@ class DATPens(DATPen):
         else:
             return self.append(pen)
     
-    def gs(self, s, fn=None, tag=None):
-        return self.append(
-            DP().gs(gs(s, ctx=self, dps=DATPens()), tag=tag, fn=fn))
-    
-    def gss(self, s):
-        dps = DATPens()
-        xs = gs(s, ctx=self, dps=dps)
-        return self.extend(dps.pens)
-    
     def explode(self):
         """Noop on a set"""
         return self
     
     # Overrides
-    
-    def attr(self, key="default", field=None, **kwargs):
-        if field: # getting, not setting, kind of weird to return the first value?
-            if len(self.pens) > 0:
-                return self.pens[0].attr(key=key, field=field)
-            else:
-                return None
-        for p in self.pens:
-            p.attr(key, **kwargs)
-        return self
-    
-    def lattr(self, tag, fn: Callable[[DATPen], Optional[DATPen]]):
-        for p in self.pens:
-            p.lattr(tag, fn)
-        return self
-    
-    def removeOverlap(self):
-        for p in self.pens:
-            p.removeOverlap()
-        return self
-    
-    def transform(self, transform, transformFrame=True):
-        for p in self.pens:
-            p.transform(transform)
-        if transformFrame and self.frame:
-            self.frame = self.frame.transform(transform)
-        return self
 
     #def nlt(self, fn, flatten=0):
     #    return self.pmap(lambda idx, p: p.nonlinear_transform(fn))
     
-    def round(self, rounding):
-        """Round all values for all pens in this set"""
-        for p in self.pens:
-            p.round(rounding)
-        return self
+    # def round(self, rounding):
+    #     """Round all values for all pens in this set"""
+    #     for p in self.pens:
+    #         p.round(rounding)
+    #     return self
     
-    def round_to(self, rounding):
-        """Round all values for all pens in this set to nearest multiple of rounding value (rather than places, as in `round`)"""
-        for p in self.pens:
-            p.round_to(rounding)
-        return self
+    # def round_to(self, rounding):
+    #     """Round all values for all pens in this set to nearest multiple of rounding value (rather than places, as in `round`)"""
+    #     for p in self.pens:
+    #         p.round_to(rounding)
+    #     return self
     
     def map(self, fn: Callable[[int, DATPen], Optional[DATPen]]):
         """Apply `fn` to all top-level pen(s) in this set;
@@ -2033,9 +1366,7 @@ class DATPens(DATPen):
     def remove(self, *args):
         """remove a pen from these pens by identify, or by tag if a string is passed"""
         for k in args:
-            if k in self.registrations:
-                del self.registrations[k]
-            elif isinstance(k, str):
+            if isinstance(k, str):
                 tagged = self.fft(k)
                 if tagged:
                     self.pens.remove(tagged)
@@ -2080,11 +1411,11 @@ class DATPens(DATPen):
     
     def frameSet(self, th=False, tv=False):
         """All the frames of all the pens"""
-        if self.frame:
+        if self._frame:
             return super().frameSet(th=th, tv=tv)
         dps = DATPens()
         for p in self.pens:
-            if p.frame:
+            if p._frame:
                 dps.append(p.frameSet(th=th, tv=tv))
         return dps
     
@@ -2125,11 +1456,13 @@ class DATPens(DATPen):
                 p.translate(t*idx, 0)
         return self
         
-    def distribute_on_path(self, path, offset=0, cc=None, notfound=None):
+    def distribute_on_path(self, path, offset=0, cc=None, notfound=None, center=False):
         if cc:
             cutter = cc
         else:
             cutter = CurveCutter(path)
+        if center is not False:
+            offset = (cutter.length-self.bounds().w)/2 + center
         limit = len(self.pens)
         for idx, p in enumerate(self.pens):
             f = p.getFrame()
@@ -2217,6 +1550,22 @@ class DATPens(DATPen):
             self.append(_pts)
         return self
     
+    def all_guides(self, field="defs", sw=6, l=0):
+        dps = DATPens()
+        for idx, (k, x) in enumerate(getattr(self, field).values.items()):
+            c = hsl(idx/2.3, 1, l=0.35, a=0.35)
+            if isinstance(x, Geometrical) or isinstance(x, DraftingPen):
+                g = (DATPen(x)
+                    .translate(l, 0)
+                    .f(None)
+                    .s(c).sw(sw))
+                if k in ["gb", "gc", "gs", "gxb"]:
+                    c = hsl(0.6, 1, 0.5, 0.25)
+                    g.s(c).sw(2)
+                dps += g
+                dps += DATText(k, ["Helvetica", 24, dict(fill=c.with_alpha(0.5).darker(0.2))], Rect.FromCenter(g.bounds().pc, 24))
+        return dps
+    
     def addOverlaps(self, idx1, idx2, which, outline=3, scale=1, xray=0):
         c1 = self[idx1]
         c2 = self[idx2]
@@ -2260,3 +1609,15 @@ class DATPens(DATPen):
 DATPenSet = DATPens
 DPS = DATPens
 DP = DATPen
+
+
+class DATText(DATPen):
+    def __init__(self, text, style, frame):
+        self.text = text
+        self.style = style
+        self.visible = True
+        super().__init__()
+        self.addFrame(frame)
+    
+    def __str__(self):
+        return f"<DT({self.text}/{self.style.font})/>"

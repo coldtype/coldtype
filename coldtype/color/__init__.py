@@ -1,1 +1,0 @@
-from coldtype.color.color import *

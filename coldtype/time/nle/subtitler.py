@@ -5,8 +5,8 @@ from coldtype.time.audio import Wavfile
 from coldtype.text import Style, StyledString
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
-from coldtype.geometry import Rect
-from coldtype.color import hsl, bw
+from drafting.geometry import Rect
+from drafting.color import hsl, bw
 from coldtype.renderable.animation import animation
 from coldtype.renderable import Overlay
 from contextlib import contextmanager

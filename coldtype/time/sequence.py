@@ -7,7 +7,7 @@ from coldtype.time.timeline import Timeline
 
 from coldtype.text import StyledString, Lockup, Graf, GrafStyle, Style
 from coldtype.pens.datpen import DATPen, DATPens
-from coldtype.color import *
+from drafting.color import *
 
 from typing import Optional, Union, Callable, Tuple
 

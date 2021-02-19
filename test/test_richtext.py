@@ -127,11 +127,13 @@ def render_txt2(txt, styles):
 @test(solo=0)
 def test_plainish(r):
     rt = (RichText(r, txt3, render_txt2, blankfill="¶")
+        #.remove_blanks()
         .xa()
         .align(r)
         .scale(2)
         .f(0)
         -.remove_blanklines())
+    #return DP(rt.ambit(th=1))
     return rt
 
 txt4 = """

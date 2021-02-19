@@ -9,9 +9,10 @@ from fontTools.pens.basePen import BasePen
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.pens.datimage import DATImage
-from coldtype.geometry import Rect, Edge, Point
+from drafting.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
-from coldtype.color import Color
+from drafting.color import Color
+from coldtype.text.reader import Style
 
 
 class SkiaPathPen(BasePen):
@@ -77,6 +78,8 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 pass
             elif method == "stroke" and args[0].get("weight") == 0:
                 pass
+            elif method == "dash":
+                pass
             else:
                 canvas.save()
                 did_draw = self.applyDATAttribute(attrs, attr)
@@ -95,6 +98,8 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
     
     def stroke(self, weight=1, color=None, dash=None):
         self.paint.setStyle(skia.Paint.kStroke_Style)
+        if dash:
+            self.paint.setPathEffect(skia.DashPathEffect.Make(*dash))
         if color and weight > 0:
             self.paint.setStrokeWidth(weight)
             if isinstance(color, Gradient):
@@ -228,6 +233,9 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 return
             
             if isinstance(pen, DATText):
+                if not isinstance(pen.style, Style):
+                    pen.style = Style(*pen.style[:-1], **pen.style[-1], load_font=0)
+                
                 if isinstance(pen.style.font, str):
                     font = skia.Typeface(pen.style.font)
                 else:
@@ -241,7 +249,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                         coords = skia.FontArguments.VariationPosition.Coordinates(rawCoords)
                         fa.setVariationDesignPosition(skia.FontArguments.VariationPosition(coords))
                         font = font.makeClone(fa)
-                pt = pen.frame.point("SW")
+                pt = pen._frame.point("SW")
                 canvas.drawString(
                     pen.text,
                     pt.x,
@@ -251,7 +259,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 return
             elif isinstance(pen, DATImage):
                 paint = skia.Paint(AntiAlias=True)
-                f = pen.frame
+                f = pen._frame
                 canvas.save()
                 for action, *args in pen.transforms:
                     if action == "rotate":

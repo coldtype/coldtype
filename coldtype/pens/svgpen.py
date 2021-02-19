@@ -3,13 +3,13 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
 
-from coldtype.geometry import Rect, Edge, Point
-from coldtype.color import Gradient, Color
+from drafting.geometry import Rect, Edge, Point
+from drafting.color import Gradient, Color
 from coldtype.pens.drawablepen import DrawablePenMixin
 from coldtype.pens.datpen import DATPen, DATPens
 
 import math
-from coldtype.color import Color
+from drafting.color import Color
 import textwrap
 from collections import OrderedDict
 from lxml import etree

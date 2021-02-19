@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.geometry import Rect, Edge, Point
+from drafting.geometry import Rect, Edge, Point
 from coldtype.beziers import CurveCutter, raise_quadratic
 from coldtype.pens.drawablepen import DrawablePenMixin
 from fontTools.pens.basePen import BasePen
@@ -263,7 +263,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
         else:
             self.bez, self.created = BPH.Primitive("Bezier", collection, self.tag, dn=dn)
             self.bez.data.fill_mode = "BOTH"
-            self.record(self.dat.copy().removeOverlap().scale(scale, center=False))
+            self.record(self.dat.copy().removeOverlap().scale(scale, point=False))
             self.drawOnBezierCurve(self.bez.data, cyclic=cyclic)
         for attrs, attr in self.findStyledAttrs(style):
             self.applyDATAttribute(attrs, attr)
