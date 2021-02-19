@@ -14,7 +14,7 @@ from coldtype.time import *
 #from coldtype.renderer.state import RendererState, Keylayer
 
 name = "coldtype"
-__version__ = "0.1.9"
+__version__ = "0.2.0"
 
 __sibling__ = lambda x: x # will be redefined contextually
 
