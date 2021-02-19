@@ -97,6 +97,7 @@ class DATPen(DraftingPen):
         return len(self.value)
     
     def __bool__(self):
+        return True
         return bool(len(self) > 0 or self._frame)
     
     def __add__(self, item):
@@ -737,12 +738,6 @@ class DATPen(DraftingPen):
     _context = None
     _pen_class = None
     _precompose_save = None
-
-    def xAlignToFrame(self, x=Edge.CenterX, th=0):
-        if self._frame:
-            return self.align(self.ambit(th=th, tv=0), x=x, transformFrame=0, th=1)
-        else:
-            raise Exception("No Frame")
     
     def center_on_point(self, rect, pt):
         return self.translate(rect.w/2-pt[0], rect.h/2-pt[1])
@@ -760,11 +755,6 @@ class DATPen(DraftingPen):
                 dp._frame = self._frame
                 dp.typographic = True
         return dp
-
-    # def tag(self, tag):
-    #     """For conveniently marking a DATPen(Set) w/o having to put it into some other data structure."""
-    #     self._tag = tag
-    #     return self
 
     def add_data(self, key, value=None):
         if value is None:
