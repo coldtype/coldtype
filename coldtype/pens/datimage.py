@@ -37,12 +37,16 @@ class DATImage(DATPen):
         self.addFrame(self.rect().align(rect, x, y))
         return self
     
-    def resize(self, factor):
-        if factor == 1:
+    def resize(self, factor, factor_y=None):
+        fx, fy = factor, factor
+        if factor_y is not None:
+            fy = factor_y
+        
+        if fx == 1 and fy == 1:
             return self
         self._img = self._img.resize(
-            int(self._img.width()*factor),
-            int(self._img.height()*factor))
+            int(self._img.width()*fx),
+            int(self._img.height()*fy))
         self.addFrame(self.rect().align(self._frame, "mnx", "mny"))
         return self
     
