@@ -1556,6 +1556,10 @@ class Renderer():
     def send_to_external(self, action, **kwargs):
         if not self.server:
             return
+
+        if action == "save":
+            for _, client in self.server.connections.items():
+                client.sendMessage(json.dumps({"midi_shortcut":action, "file":str(self.filepath)}))
         
         animation = self.animation()
         if animation and animation.timeline:
@@ -1564,7 +1568,7 @@ class Renderer():
                 kwargs["action"] = action.value
             kwargs["prefix"] = self.filepath.stem
             kwargs["fps"] = animation.timeline.fps
-            for k, client in self.server.connections.items():
+            for _, client in self.server.connections.items():
                 client.sendMessage(json.dumps(kwargs))
     
     def process_ws_message(self, message):
@@ -1922,7 +1926,16 @@ class Renderer():
                     if shortcut:
                         self.on_shortcut(KeyboardShortcut(shortcut))
                 if msg.isController():
-                    controllers[device + "_" + str(msg.getControllerNumber())] = msg.getControllerValue()/127
+                    cn = msg.getControllerNumber()
+                    cv = msg.getControllerValue()
+                    shortcut = self.midi_mapping[device].get("controller", {}).get(cn)
+                    if shortcut:
+                        if cv in shortcut:
+                            if self.server:
+                                print("shortcut!", shortcut, cv)
+                                self.send_to_external(shortcut[cv])
+                    else:
+                        controllers[device + "_" + str(cn)] = cv/127
                 msg = mi.getMessage(0)
         
         if len(controllers) > 0:
