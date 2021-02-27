@@ -1560,6 +1560,7 @@ class Renderer():
         if action == "save":
             for _, client in self.server.connections.items():
                 client.sendMessage(json.dumps({"midi_shortcut":action, "file":str(self.filepath)}))
+            return
         
         animation = self.animation()
         if animation and animation.timeline:
