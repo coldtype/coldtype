@@ -1196,6 +1196,8 @@ class Renderer():
 
             release_fn(all_passes)
         except Exception as e:
+            stack = traceback.format_exc()
+            print(stack)
             print("Release failed", str(e))
     
     def allow_mouse(self):
