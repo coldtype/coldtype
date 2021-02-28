@@ -11,6 +11,7 @@ from noise import pnoise1
 
 from drafting.sh import sh
 from drafting.pens.draftingpens import DraftingPen, DraftingPens
+from drafting.interpolation import norm
 
 from drafting.geometry import Rect, Edge, Point, Line, Geometrical
 from coldtype.beziers import CurveCutter, splitCubicAtT
@@ -739,8 +740,8 @@ class DATPen(DraftingPen):
     _pen_class = None
     _precompose_save = None
     
-    def center_on_point(self, rect, pt):
-        return self.translate(rect.w/2-pt[0], rect.h/2-pt[1])
+    def center_on_point(self, rect, pt, interp=1):
+        return self.translate(norm(interp, 0, rect.w/2-pt[0]), norm(interp, 0, rect.h/2-pt[1]))
 
     def copy(self, with_data=False):
         """Make a totally fresh copy; useful given the DATPen’s general reliance on mutable state."""
