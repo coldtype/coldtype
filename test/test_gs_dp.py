@@ -8,9 +8,7 @@ def test1(r):
             aƒbƒc="$riC50—a—50",
             an="$a⊤",
             cs="$c⊥",
-            acp="∫ $an⍺⍵ $cs⍵⍺")
-        #.print(λ.defs.__dict__)
-        #.append(λ.all_guides())
+            acp="($an⍺)⫎($cs⍵)")
         .gss("$acp⊢ $acp⊣ $acp⊣µ")
         .f(None).s(0).sw(4))
 

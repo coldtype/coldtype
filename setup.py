@@ -10,7 +10,7 @@ More info available at: [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
 
 setuptools.setup(
     name="coldtype",
-    version="0.2.0",
+    version="0.2.1",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",
@@ -61,7 +61,7 @@ setuptools.setup(
         "exdown",
         "srt",
         "timecode",
-        "drafting>=0.0.2",
+        "drafting>=0.0.3",
         #"rtmidi",
         #"pynput",
         #"pyaudio",

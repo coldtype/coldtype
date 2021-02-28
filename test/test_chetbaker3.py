@@ -21,8 +21,8 @@ lockup = (Composer(r,
     .pmap(λi,p: p.flatten(5)))
 
 def bendr(self, r:Rect, curves, cx:DATPen=None, tangent=None, offset=(0, 1)):
-    crv0 = DATPen().moveTo(r.psw).boxCurveTo(r.pse, "N", 0.5)
-    crvl = DATPen().moveTo(r.psw).boxCurveTo(r.pse, "N", 0.5)
+    crv0 = DATPen().moveTo(r.psw).boxCurveTo("N", 0.5, r.pse)
+    crvl = DATPen().moveTo(r.psw).boxCurveTo("N", 0.5, r.pse)
     bw = self.getFrame().w
     bh = self.getFrame().h
 
