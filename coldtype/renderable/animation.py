@@ -32,11 +32,12 @@ class animation(renderable, Timeable):
     """
     Base class for any frame-wise animation animatable by Coldtype
     """
-    def __init__(self, rect=(1080, 1080), duration=10, storyboard=[0], timeline:Timeline=None, audio=None, show_frame=True, **kwargs):
+    def __init__(self, rect=(1080, 1080), duration=10, storyboard=[0], timeline:Timeline=None, audio=None, show_frame=True, overlay=True, **kwargs):
         super().__init__(**kwargs)
         self.rect = Rect(rect)
         self.r = self.rect
         self.audio = audio
+        self.overlay = overlay
         if self.audio and sf:
             self.wavfile = Wavfile(audio)
         else:
@@ -118,7 +119,7 @@ class animation(renderable, Timeable):
     
     def runpost(self, result, render_pass, renderer_state):
         res = super().runpost(result, render_pass, renderer_state)
-        if Overlay.Info in renderer_state.overlays:
+        if Overlay.Info in renderer_state.overlays and self.overlay:
             t = self.rect.take(50, "mny")
             frame:Frame = render_pass.args[0]
             wave = DATPen()
