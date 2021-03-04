@@ -24,7 +24,8 @@ eases = dict(
     beio=ef.BounceEaseInOut,
     eleo=ef.ElasticEaseOut,
     elei=ef.ElasticEaseIn,
-    elieo=ef.ElasticEaseInOut)
+    elieo=ef.ElasticEaseInOut,
+    eleio=ef.ElasticEaseInOut)
 
 
 def curve_pos_and_speed(curve, x):

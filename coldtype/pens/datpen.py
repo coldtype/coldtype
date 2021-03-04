@@ -296,7 +296,7 @@ class DATPen(DraftingPen):
     def bend2(self, curve, tangent=True, offset=(0, 1)):
         bw = self.bounds().w
         a = curve.value[0][-1][0]
-        b, c, d = curve.value[-1][-1]
+        b, c, d = curve.value[1][-1]
         def bender(x, y):
             c1, c2 = splitCubicAtT(a, b, c, d, offset[0] + (x/bw)*offset[1])
             _, _a, _b, _c = c1
@@ -310,7 +310,7 @@ class DATPen(DraftingPen):
     
     def bend3(self, curve, tangent=False, offset=(0, 1)):
         a = curve.value[0][-1][0]
-        b, c, d = curve.value[-1][-1]
+        b, c, d = curve.value[1][-1]
         bh = self.bounds().h
         
         def bender(x, y):
@@ -1337,7 +1337,7 @@ class DATPens(DATPen, DraftingPens):
     def tagged(self, tag):
         """Yield all top-level pens tagged w/ `tag`"""
         for p in self:
-            if p.getTag() == tag:
+            if p.tag() == tag:
                 yield p
     
     def fmmap(self, filter_fn:Callable[[int, DATPen], bool], map_fn:Callable[[int, DATPen], None]):
