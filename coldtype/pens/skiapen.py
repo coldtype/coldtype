@@ -12,7 +12,7 @@ from coldtype.pens.datimage import DATImage
 from drafting.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 from drafting.color import Color
-from coldtype.text.reader import Style
+from drafting.text.reader import Style
 
 
 class SkiaPathPen(BasePen):

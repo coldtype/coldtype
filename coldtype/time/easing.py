@@ -5,6 +5,7 @@ import easing_functions as ef
 from coldtype.pens.datpen import DATPen
 from fontTools.misc.bezierTools import splitCubic, splitLine
 
+from typing import List
 
 eases = dict(
     cei=ef.CubicEaseIn,
@@ -63,7 +64,7 @@ def curve_pos_and_speed(curve, x):
     raise Exception("No curve value found!")
 
 
-def ease(style, x) -> [float, float]:
+def ease(style, x):
     """
     Though available as a general-purpose function, this logic is usually accessed through something like the `.progress` function on an animation or timeable.
 

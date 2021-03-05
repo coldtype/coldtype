@@ -19,6 +19,7 @@ from functools import partial, partialmethod
 import skia, coldtype
 from coldtype.helpers import *
 from drafting.geometry import Rect, Point
+from drafting.text.reader import Font as DraftingFont
 from coldtype.pens.skiapen import SkiaPen
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
@@ -613,7 +614,7 @@ class Renderer():
                 render.filepath = self.filepath
 
                 for watch, flag in render.watch:
-                    if isinstance(watch, coldtype.text.reader.Font) and not watch.cacheable:
+                    if isinstance(watch, DraftingFont) and not watch.cacheable:
                         if watch.path not in self.watchee_paths():
                             self.watchees.append([Watchable.Font, watch.path, flag])
                         for ext in watch.font.getExternalFiles():

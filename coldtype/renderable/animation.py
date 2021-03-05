@@ -11,7 +11,7 @@ from coldtype.time import Frame
 from coldtype.time.timeline import Timeline
 from coldtype.time.loop import Loop, LoopPhase
 
-from coldtype.text.reader import normalize_font_prefix, Font, Style
+from drafting.text.reader import normalize_font_prefix, Font, Style
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.time.audio import Wavfile, sf

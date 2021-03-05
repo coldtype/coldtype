@@ -2,7 +2,7 @@ import math, sys, os, re
 from pathlib import Path
 
 from coldtype.text import *
-from coldtype.text.reader import Font
+from drafting.text.reader import Font
 from coldtype.pens.datpen import DATPen, DATPens, DATPenSet, DP, DPS
 from coldtype.pens.dattext import DATText
 #from coldtype.pens.datimage import DATImage

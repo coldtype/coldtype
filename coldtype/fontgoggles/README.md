@@ -1,1 +1,0 @@
-This is an automated import of github.com/goodhertz/fontgoggles, to avoid hosting this code on pypi itself

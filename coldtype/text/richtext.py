@@ -1,8 +1,8 @@
 import re
 
 from coldtype.pens.datpen import DATPen, DATPens
-from coldtype.text.composer import Graf, GrafStyle, Lockup
-from coldtype.text.reader import StyledString, Style
+from drafting.text.composer import Graf, GrafStyle, Lockup
+from drafting.text.reader import StyledString, Style
 from drafting.color import hsl
 
 from pathlib import PurePath

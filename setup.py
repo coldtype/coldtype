@@ -27,10 +27,6 @@ setuptools.setup(
         "coldtype.renderer",
         "coldtype.renderable",
         "coldtype.text",
-        "coldtype.fontgoggles",
-        "coldtype.fontgoggles.compile",
-        "coldtype.fontgoggles.font",
-        "coldtype.fontgoggles.misc",
     ],
     entry_points={
         'console_scripts': [
