@@ -52,12 +52,15 @@ def show_points(pen, style, offcurves=True, filter=lambda i: True):
 
 _by_uni = None
 _by_glyph = None
+_class_lookup = None
 
 def _populate_glyphs_unis():
     global _by_uni
     global _by_glyph
+    global _class_lookup
     _by_uni = {}
     _by_glyph = {}
+    _class_lookup = {}
 
     #try:
     if True:
@@ -66,10 +69,11 @@ def _populate_glyphs_unis():
         for l in lines:
             if l.startswith("#"):
                 continue
-            l = l.split(" ")[:2]
+            l = l.split(" ")[:3]
             uni = int(l[1], 16)
             _by_uni[uni] = l[0]
             _by_glyph[l[0]] = uni
+            _class_lookup[l[0]] = l[2]
     #except:
     #    pass
 
@@ -82,3 +86,8 @@ def glyph_to_uni(g):
     if not _by_glyph:
         _populate_glyphs_unis()
     return _by_glyph.get(g)
+
+def glyph_to_class(g):
+    if not _class_lookup:
+        _populate_glyphs_unis()
+    return _class_lookup.get(g)
