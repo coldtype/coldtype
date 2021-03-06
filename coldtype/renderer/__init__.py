@@ -117,6 +117,8 @@ class Renderer():
             no_watch=parser.add_argument("-nw", "--no-watch", action="store_true", default=False, help="Preventing watching for changes to source files"),
 
             websocket=parser.add_argument("-ws", "--websocket", action="store_true", default=False, help="Should the server run a web socket?"),
+
+            no_midi=parser.add_argument("-nm", "--no-midi", action="store_true", default=False, help="Midi is on by default, do you want to turn it off?"),
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
             
@@ -1698,8 +1700,8 @@ class Renderer():
                         self.process_ws_message(msg)
                     v.messages = []
 
-        #if self.server:
-        self.monitor_midi()
+        if not self.args.no_midi:
+            self.monitor_midi()
         
         #if len(self.waiting_to_render) > 0:
         #    for action, path in self.waiting_to_render:
