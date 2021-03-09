@@ -14,11 +14,7 @@ from drafting.pens.draftingpens import DraftingPen, DraftingPens
 from drafting.interpolation import norm
 
 from drafting.geometry import Rect, Edge, Point, Line, Geometrical
-from coldtype.beziers import CurveCutter, splitCubicAtT
 from drafting.color import normalize_color, hsl
-
-from coldtype.pens.outlinepen import OutlinePen
-from coldtype.pens.translationpen import TranslationPen, polarCoord
 
 
 def listit(t):
@@ -264,66 +260,6 @@ class DATPen(DraftingPen):
             self.repeatx(times-1)
         return self
     
-    def nonlinear_transform(self, fn):
-        for idx, (move, pts) in enumerate(self.value):
-            if len(pts) > 0:
-                _pts = []
-                for _pt in pts:
-                    x, y = _pt
-                    _pts.append(fn(x, y))
-                self.value[idx] = (move, _pts)
-        return self
-    
-    nlt = nonlinear_transform
-    
-    def bend(self, curve, tangent=True):
-        cc = CurveCutter(curve)
-        ccl = cc.length
-        dpl = self.bounds().point("SE").x
-        xf = ccl/dpl
-        def bender(x, y):
-            p, tan = cc.subsegmentPoint(end=x*xf)
-            px, py = p
-            if tangent:
-                a = math.sin(math.radians(180+tan)) * y
-                b = math.cos(math.radians(180+tan)) * y
-                return (px+a, py+b)
-                #return (px, y+py)
-            else:
-                return (px, y+py)
-        return self.nonlinear_transform(bender)
-    
-    def bend2(self, curve, tangent=True, offset=(0, 1)):
-        bw = self.bounds().w
-        a = curve.value[0][-1][0]
-        b, c, d = curve.value[1][-1]
-        def bender(x, y):
-            c1, c2 = splitCubicAtT(a, b, c, d, offset[0] + (x/bw)*offset[1])
-            _, _a, _b, _c = c1
-            if tangent:
-                tan = math.degrees(math.atan2(_c[1] - _b[1], _c[0] - _b[0]) + math.pi*.5)
-                ax = math.sin(math.radians(90-tan)) * y
-                by = math.cos(math.radians(90-tan)) * y
-                return _c[0]+ax, (y+_c[1])+by
-            return _c[0], y+_c[1]
-        return self.nonlinear_transform(bender)
-    
-    def bend3(self, curve, tangent=False, offset=(0, 1)):
-        a = curve.value[0][-1][0]
-        b, c, d = curve.value[1][-1]
-        bh = self.bounds().h
-        
-        def bender(x, y):
-            c1, c2 = splitCubicAtT(a, b, c, d, offset[0] + (y/bh)*offset[1])
-            _, _a, _b, _c = c1
-            if tangent:
-                tan = math.degrees(math.atan2(_c[1] - _b[1], _c[0] - _b[0]) + math.pi*.5)
-                ax = math.sin(math.radians(90-tan)) * y
-                by = math.cos(math.radians(90-tan)) * y
-                return x+_c[0]+ax, (y+_c[1])+by
-            return x+_c[0], _c[1]
-        return self.nonlinear_transform(bender)
-    
     def fenced(self, *lines):
         if len(lines) == 1 and isinstance(lines[0], Rect):
             return self.intersection(DATPen().rect(lines[0]))
@@ -371,39 +307,6 @@ class DATPen(DraftingPen):
                 randomized.append([t, pts])
         self.value = randomized
         return self
-
-    def outline(self, offset=1, drawInner=True, drawOuter=True, cap="square"):
-        """AKA expandStroke"""
-        op = OutlinePen(None, offset=offset, optimizeCurve=True, cap=cap)
-        self.replay(op)
-        op.drawSettings(drawInner=drawInner, drawOuter=drawOuter)
-        g = op.getGlyph()
-        p = DATPen()
-        g.draw(p)
-        self.value = p.value
-        return self
-    
-    ol = outline
-    
-    def project(self, angle, width):
-        offset = polarCoord((0, 0), math.radians(angle), width)
-        self.translate(offset[0], offset[1])
-        return self
-
-    def castshadow(self, angle=-45, width=100, ro=1, fill=1):
-        out = DATPen()
-        tp = TranslationPen(out, frontAngle=angle, frontWidth=width)
-        self.replay(tp)
-        if fill:
-            out.record(self.copy().project(angle, width))
-        if ro:
-            out.removeOverlap()
-        self.value = out.value
-        return self
-
-    def grow(self, outline=10):
-        out = self.copy().outline(outline)
-        return self.record(out.reverse())
     
     def dots(self, radius=4):
         """(Necessary?) Create circles at moveTo commands"""
@@ -559,35 +462,6 @@ class DATPen(DraftingPen):
         #print(exploded.pens[contour_slice])
         #self.value = DATPens(exploded[contour_slice]).implode().value
         return self
-    
-    def subsegment(self, start=0, end=1):
-        """Return a subsegment of the pen based on `t` values `start` and `end`"""
-        cc = CurveCutter(self)
-        start = 0
-        end = end * cc.calcCurveLength()
-        pv = cc.subsegment(start, end)
-        self.value = pv
-        return self
-    
-    def point_t(self, t=0.5):
-        """Get point value for time `t`"""
-        cc = CurveCutter(self)
-        start = 0
-        tv = t * cc.calcCurveLength()
-        p, tangent = cc.subsegmentPoint(start=0, end=tv)
-        return p, tangent
-    
-    def split_t(self, t=0.5):
-        a = self.value[0][-1][0]
-        b, c, d = self.value[-1][-1]
-        return splitCubicAtT(a, b, c, d, t)
-    
-    def length(self, t=1):
-        """Get the length of the curve for time `t`"""
-        cc = CurveCutter(self)
-        start = 0
-        tv = t * cc.calcCurveLength()
-        return tv
     
     def points(self):
         """Returns a list of points grouped by contour from the DATPen’s original contours; useful for drawing bezier skeletons; does not modify the DATPen"""
@@ -1427,116 +1301,12 @@ class DATPens(DATPen, DraftingPens):
         for idx, p in enumerate(self.pens):
             p.align(rects[idx], x, y, th=th, tv=tv)
     
-    def xa(self, x="centerx"):
-        for pen in self:
-            pen.xAlignToFrame(x)
-        return self
-    
-    def distribute(self, v=False):
-        off = 0
-        for p in self:
-            frame = p.getFrame()
-            if v:
-                if frame.y < 0:
-                    p.translate(0, -frame.y)
-                p.translate(0, off)
-                off += frame.h
-            else:
-                if frame.x < 0:
-                    p.translate(-frame.x, 0)
-                p.translate(off, 0)
-                off += frame.w
-        return self
-    
-    def track(self, t, v=False):
-        for idx, p in enumerate(self.pens):
-            frame = p.getFrame()
-            if v:
-                p.translate(0, t*idx)
-            else:
-                p.translate(t*idx, 0)
-        return self
-        
-    def distribute_on_path(self, path, offset=0, cc=None, notfound=None, center=False):
-        if cc:
-            cutter = cc
-        else:
-            cutter = CurveCutter(path)
-        if center is not False:
-            offset = (cutter.length-self.bounds().w)/2 + center
-        limit = len(self.pens)
-        for idx, p in enumerate(self.pens):
-            f = p.getFrame()
-            bs = f.y
-            ow = offset + f.x + f.w / 2
-            #if ow < 0:
-            #    if notfound:
-            #        notfound(p)
-            if ow > cutter.length:
-                limit = min(idx, limit)
-            else:
-                _p, tangent = cutter.subsegmentPoint(end=ow)
-                x_shift = bs * math.cos(math.radians(tangent))
-                y_shift = bs * math.sin(math.radians(tangent))
-                t = Transform()
-                t = t.translate(_p[0] + x_shift - f.x, _p[1] + y_shift - f.y)
-                t = t.translate(f.x, f.y)
-                t = t.rotate(math.radians(tangent-90))
-                t = t.translate(-f.x, -f.y)
-                t = t.translate(-f.w*0.5)
-                p.transform(t)
-
-        if limit < len(self.pens):
-            self.pens = self.pens[0:limit]
-        return self
-    
-    # deprecated
-    distributeOnPath = distribute_on_path
-    
     def implode(self):
         # TODO preserve frame from some of this?
         dp = self[0]
         for p in self[1:]:
             dp.record(p)
         return dp
-    
-    def understroke(self, s=0, sw=5, outline=False, dofill=0):
-        if sw == 0:
-            return self
-        if not outline:
-            return self.interleave(lambda idx, p: p.f(s).s(s).sw(sw))
-        else:
-            def mod(idx, p):
-                if dofill:
-                    pf = p.copy()
-                p.f(s).outline(sw*2)
-                if dofill:
-                    p.reverse().record(pf)
-                return p
-            return self.interleave(mod)
-    
-    def interleave(self, style_fn, direction=-1, recursive=True):
-        """Provide a callback-lambda to interleave new DATPens between the existing ones; useful for stroke-ing glyphs, since the stroked glyphs can be placed behind the primary filled glyphs."""
-        pens = []
-        for idx, p in enumerate(self.pens):
-            if recursive and hasattr(p, "pens"):
-                _p = p.interleave(style_fn, direction=direction, recursive=True)
-                pens.append(_p)
-            else:
-                try:
-                    np = style_fn(idx, p.copy())
-                except TypeError:
-                    np = style_fn(p.copy())
-                if isinstance(np, DATPen):
-                    np = [np]
-                if direction < 0:
-                    pens.extend(np)
-                pens.append(p)
-                if direction > 0:
-                    pens.extend(np)
-
-        self.pens = pens
-        return self
     
     def skel(self, pts=None, start=0):
         _pts = pts or DPS()
