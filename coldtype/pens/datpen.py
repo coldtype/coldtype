@@ -613,23 +613,6 @@ class DATPen(DraftingPen):
     _context = None
     _pen_class = None
     _precompose_save = None
-    
-    def center_on_point(self, rect, pt, interp=1):
-        return self.translate(norm(interp, 0, rect.w/2-pt[0]), norm(interp, 0, rect.h/2-pt[1]))
-
-    def copy(self, with_data=False):
-        """Make a totally fresh copy; useful given the DATPen’s general reliance on mutable state."""
-        dp = self.single_pen_class()
-        self.replay(dp)
-        for tag, attrs in self.attrs.items():
-            dp.attr(tag, **attrs)
-        dp.glyphName = self.glyphName
-        if with_data:
-            dp.data = self.data
-            if self.typographic:
-                dp._frame = self._frame
-                dp.typographic = True
-        return dp
 
     def add_data(self, key, value=None):
         if value is None:
@@ -1049,253 +1032,29 @@ class DATPens(DATPen, DraftingPens):
             except Exception as e:
                 return Rect(0,0,0,0)
     
-    def bounds(self):
-        """Calculated bounds of a DATPens"""
-        return self.getFrame(th=1, tv=1)
+    # def bounds(self):
+    #     """Calculated bounds of a DATPens"""
+    #     return self.getFrame(th=1, tv=1)
     
-    def replay(self, pen):
-        self.pen().replay(pen)
+    # def pen(self):
+    #     """A flat representation of this set as a single pen"""
+    #     dp = DATPen()
+    #     fps = self.collapse()
+    #     for p in fps.pens:
+    #         dp.record(p)
+    #     if len(fps.pens) > 0:
+    #         for k, attrs in fps.pens[0].attrs.items():
+    #             dp.attr(tag=k, **attrs)
+    #     dp.addFrame(self.getFrame())
+    #     return dp
     
-    def pen(self):
-        """A flat representation of this set as a single pen"""
-        dp = DATPen()
-        fps = self.collapse()
-        for p in fps.pens:
-            dp.record(p)
-        if len(fps.pens) > 0:
-            for k, attrs in fps.pens[0].attrs.items():
-                dp.attr(tag=k, **attrs)
-        dp.addFrame(self.getFrame())
-        return dp
-
-    # Pen Primitives
-
-    def moveTo(self, p0):
-        self._in_progress_pen = DATPen()
-        self._in_progress_pen.moveTo(p0)
-        return self
-    
-    def lineTo(self, p1):
-        self._in_progress_pen.lineTo(p1)
-        return self
-    
-    def qCurveTo(self, *points):
-        self._in_progress_pen.qCurveTo(*points)
-        return self
-    
-    def curveTo(self, *points):
-        self._in_progress_pen.curveTo(*points)
-        return self
-    
-    def closePath(self):
-        self._in_progress_pen.closePath()
-        self.append(self._in_progress_pen)
-        self._in_progress_pen = None
-        return self
-    
-    def endPath(self):
-        self._in_progress_pen.endPath()
-        self.append(self._in_progress_pen)
-        self._in_progress_pen = None
-        return self
-    
-    def get(self, k):
-        tagged = self.fft(k)
-        if tagged:
-            return tagged.copy()
-    
-    def define(self, *args, **kwargs):
-        return self.context_record("$", "defs", None, *args, **kwargs)
-    
-    def declare(self, *whatever):
-        # TODO do something with what's declared somehow?
-        return self
-    
-    def realize(self):
-        for k, v in self._register.values.items():
-            self.append(DATPen(v).tag(k))
-        return self
-    
-    def record(self, pen):
-        """Alias for append"""
-        if callable(pen):
-            return self.append(pen(self))
-        else:
-            return self.append(pen)
-    
-    def explode(self):
-        """Noop on a set"""
-        return self
-    
-    # Overrides
-
-    #def nlt(self, fn, flatten=0):
-    #    return self.pmap(lambda idx, p: p.nonlinear_transform(fn))
-    
-    # def round(self, rounding):
-    #     """Round all values for all pens in this set"""
-    #     for p in self.pens:
-    #         p.round(rounding)
+    # def realize(self):
+    #     for k, v in self._register.values.items():
+    #         self.append(DATPen(v).tag(k))
     #     return self
     
-    # def round_to(self, rounding):
-    #     """Round all values for all pens in this set to nearest multiple of rounding value (rather than places, as in `round`)"""
-    #     for p in self.pens:
-    #         p.round_to(rounding)
-    #     return self
-    
-    def map(self, fn: Callable[[int, DATPen], Optional[DATPen]]):
-        """Apply `fn` to all top-level pen(s) in this set;
-        if `fn` returns a value, it will overwrite
-        the pen it was given as an argument;
-        fn lambda receives `idx, p` as arguments"""
-        for idx, p in enumerate(self.pens):
-            result = fn(idx, p)
-            if result:
-                self.pens[idx] = result
-        return self
-    
-    def mmap(self, fn: Callable[[int, DATPen], None]):
-        """Apply `fn` to all top-level pen(s) in this set but
-        do not look at return value; first m in mmap
-        stands for `mutate`;
-        fn lambda receives `idx, p` as arguments"""
-        for idx, p in enumerate(self.pens):
-            fn(idx, p)
-        return self
-    
-    def filter(self, fn: Callable[[int, DATPen], bool]):
-        """Filter top-level pen(s)"""
-        dps = DATPens()
-        for idx, p in enumerate(self.pens):
-            if fn(idx, p):
-                dps.append(p)
-        #self.pens = dps.pens
-        #return self
-        return dps
-    
-    def pmap(self, fn):
-        """Apply `fn` to all individal pens, recursively"""
-        for idx, p in enumerate(self.pens):
-            if hasattr(p, "pens"):
-                p.pmap(fn)
-            else:
-                fn(idx, p)
-        return self
-    
-    def pfilter(self, fn):
-        """Filter all pens, recursively"""
-        to_keep = []
-        for idx, p in enumerate(self.pens):
-            if hasattr(p, "pens"):
-                matches = p.pfilter(fn)
-                if len(matches) > 0:
-                    to_keep.extend(matches)
-            if fn(idx, p):
-                to_keep.append(p)
-        return to_keep
-    
-    def index(self, idx, fn):
-        fn(self[idx])
-        return self
-    
-    def glyphs_named(self, glyph_name):
-        """Pluck glyphs named `glyph_name`"""
-        #return self.pfilter(lambda i, p: p.glyphName == glyph_name).pmap(lambda idx, p: mod_fn(p))
-        for p in self:
-            if callable(glyph_name) and glyph_name(p.glyphName):
-                yield p
-            elif p.glyphName == glyph_name:
-                yield p
-    
-    def tagged(self, tag):
-        """Yield all top-level pens tagged w/ `tag`"""
-        for p in self:
-            if p.tag() == tag:
-                yield p
-    
-    def fmmap(self, filter_fn:Callable[[int, DATPen], bool], map_fn:Callable[[int, DATPen], None]):
-        for idx, p in enumerate(self.pens):
-            if filter_fn(idx, p):
-                map_fn(idx, p)
-        return self
-
-    def ffg(self, glyph_name):
-        """(f)ind the (f)irst (g)lyph named this name"""
-        return list(self.glyphs_named(glyph_name))[0]
-    
-    def fft(self, tag, fn=None):
-        """(f)ind the (f)irst (t)agged with `tag`"""
-        try:
-            tagged = list(self.tagged(tag))[0]
-            if fn:
-                fn(tagged)
-                return self
-            else:
-                return tagged
-        except:
-            if fn:
-                return self
-            return None
-    
-    def remove(self, *args):
-        """remove a pen from these pens by identify, or by tag if a string is passed"""
-        for k in args:
-            if isinstance(k, str):
-                tagged = self.fft(k)
-                if tagged:
-                    self.pens.remove(tagged)
-            else:
-                self.pens.remove(k)
-        return self
-    
-    def mfilter(self, fn):
-        """Same as `filter` but (m)utates this DATPens
-        to now have only the filtered pens"""
-        self.pens = self.filter(fn)
-        return self
-    
-    def collapseonce(self):
-        pens = []
-        for idx, p in enumerate(self.pens):
-            pens.extend(p)
-        self.pens = pens
-        return self
-    
-    def collapse(self, levels=100, onself=False):
-        """AKA `flatten` in some programming contexts, though
-        `flatten` is a totally different function here that flattens
-        outlines; this function flattens nested collections into
-        one-dimensional collections"""
-        pens = []
-        for idx, p in enumerate(self.pens):
-            if hasattr(p, "pens") and levels > 0:
-                pens.extend(p.collapse(levels=levels-1).pens)
-            else:
-                pens.append(p)
-        dps = DATPens(pens)
-        if self.layered:
-            dps.layered = True
-        if onself:
-            self.pens = dps.pens
-            return self
-        else:
-            return dps
-    
-    flatten = collapse # deprecated but used in the wild
-    
-    def frameSet(self, th=False, tv=False):
-        """All the frames of all the pens"""
-        if self._frame:
-            return super().frameSet(th=th, tv=tv)
-        dps = DATPens()
-        for p in self.pens:
-            if p._frame:
-                dps.append(p.frameSet(th=th, tv=tv))
-        return dps
-    
-    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
-        return super().align(rect, x, y, th, tv, transformFrame)
+    # def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, th=True, tv=False, transformFrame=True):
+    #     return super().align(rect, x, y, th, tv, transformFrame)
     
     def alignToRects(self, rects, x=Edge.CenterX, y=Edge.CenterY, th=1, tv=1):
         for idx, p in enumerate(self.pens):
