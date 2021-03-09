@@ -1927,8 +1927,17 @@ class Renderer():
                 if msg.isNoteOn(): # Maybe not forever?
                     nn = msg.getNoteNumber()
                     shortcut = self.midi_mapping[device]["note_on"].get(nn)
-                    if shortcut:
+                    try:
+                        ksc = KeyboardShortcut(shortcut)
+                        ea = None
+                    except ValueError:
+                        ksc = None
+                        ea = EditAction(shortcut)
+                    
+                    if ksc:
                         self.on_shortcut(KeyboardShortcut(shortcut))
+                    elif ea:
+                        self.on_action(EditAction(shortcut), {})
                 if msg.isController():
                     cn = msg.getControllerNumber()
                     cv = msg.getControllerValue()
