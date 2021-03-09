@@ -1359,6 +1359,10 @@ class Renderer():
             self.state.clear()
         elif shortcut == KeyboardShortcut.MIDIControllersReset:
             self.state.reset(ignore_current_state=True)
+        
+        elif shortcut == KeyboardShortcut.JumpToFrameFunctionDef:
+            frame = self.last_animation._active_frames(self.state)[0]
+            self.send_to_external("jump_to_def", info=self.last_animation.frame_to_fn(frame))
     
     def on_shortcut(self, shortcut):
         waiting = self.shortcut_to_action(shortcut)
@@ -1560,9 +1564,9 @@ class Renderer():
         if not self.server:
             return
 
-        if action == "save":
+        if action in ["save", "jump_to_def"]:
             for _, client in self.server.connections.items():
-                client.sendMessage(json.dumps({"midi_shortcut":action, "file":str(self.filepath)}))
+                client.sendMessage(json.dumps({"midi_shortcut":action, "file":str(self.filepath), **kwargs}))
             return
         
         animation = self.animation()

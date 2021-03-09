@@ -1,4 +1,5 @@
 import inspect, platform, re, tempfile, skia, math, os, wave
+from typing import Tuple
 
 from enum import Enum
 from subprocess import run
@@ -142,6 +143,9 @@ class animation(renderable, Timeable):
 
     def fn_to_frame(self, fn_name):
         return 0
+    
+    def frame_to_fn(self, fi) -> Tuple[str, dict]:
+        return None, {}
 
     def contactsheet(self, gx, sl=slice(0, None, None)):
         try:

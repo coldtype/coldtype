@@ -53,6 +53,8 @@ class KeyboardShortcut(Enum):
     MIDIControllersClear = "midi_controllers_clear"
     MIDIControllersReset = "midi_controllers_reset"
 
+    JumpToFrameFunctionDef = "jump_to_function_def"
+
 
 REPEATABLE_SHORTCUTS = [
     KeyboardShortcut.PreviewPrev,
@@ -194,5 +196,9 @@ SHORTCUTS = {
     ],
     KeyboardShortcut.WindowOpacityMax: [
         [[glfw.MOD_SUPER, glfw.MOD_SHIFT], glfw.KEY_UP]
+    ],
+
+    KeyboardShortcut.JumpToFrameFunctionDef: [
+        [[], glfw.KEY_F],
     ]
 }
