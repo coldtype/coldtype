@@ -19,6 +19,8 @@ def test_multi_var(f):
         .remove_blanks()
         .align(f.a.r)
         .f(1))
+    
+    #print(pens.collapse().collapse().collapse().tree())
 
     if True:
         zoom = f.a.progress(f.i, loops=4, easefn="eeio")

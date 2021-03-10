@@ -270,9 +270,11 @@ class DATPen(DraftingPen):
     def connect(self):
         return self.map(lambda i, mv, pts: ("lineTo" if i > 0 and mv == "moveTo" else mv, pts))
     
-    def collapse(self):
-        """For compatibility with calls to a DATPens"""
-        return DATPens([self])
+    # def collapse(self, levels=100, onself=False):
+    #     """For compatibility with calls to a DATPens"""
+    #     if hasattr(self, "pens"):
+    #         super().collapse(levels=levels, onself=onself)
+    #     return DATPens([self])
     
     def smooth(self):
         """Runs a catmull spline on the datpen, useful in combination as flatten+roughen+smooth"""
@@ -651,7 +653,8 @@ class DATPen(DraftingPen):
         return self
     
     def frameSet(self, th=False, tv=False):
-        """Return a new DATPen representation of the frame of this DATPen."""
+        """Return a new DATPen represent
+        ation of the frame of this DATPen."""
         return self.single_pen_class(fill=("random", 0.25)).rect(self.getFrame(th=th, tv=tv))
     
     def trackToRect(self, rect, pullToEdges=False, r=0):
@@ -833,7 +836,7 @@ class DATPen(DraftingPen):
         return pickle.load(open(str(src), "rb"))
 
 
-class DATPens(DATPen, DraftingPens):
+class DATPens(DraftingPens, DATPen):
     """
     A set/collection of DATPen’s
     
@@ -843,17 +846,6 @@ class DATPens(DATPen, DraftingPens):
         DraftingPens.__init__(self) # TODO pass pens
 
         self.single_pen_class = DATPen
-        self.pens = []
-        self.typographic = True
-        self.layered = False
-        #self._tag = "?"
-        self._alpha = 1
-        self._parent = None
-        self.container = None
-        self._frame = None
-        self.data = {}
-        self._visible = True
-        
         self.locals = dict(DP=DATPen)
         self.subs = {
             "□": "ctx.bounds()",
