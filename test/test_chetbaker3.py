@@ -5,24 +5,30 @@ r = Rect(1080, 1080)
 
 from fontTools.misc.bezierTools import splitCubicAtT
 
+obv2 = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
 obv = Font.Cacheable("~/Type/fonts/fonts/OhnoFatfaceVariable.ttf")
 
 tl = Timeline(2)
 
-lockup = (Composer(r,
-    "THE KITCHEN\nCABINET\n“DOGWOOD\n/500 MILES”",
-    #"LO! THERE",
-    Style(obv, 390, wdth=0.75, wght=0.35, slnt=0.5, opsz=0.5),
-    leading=30,
-    fit=r.w-0)
-    .pens()
+lockup = (RichText(r,
+    "THE KITCHEN\nCABINET\nTRANSATLANTIC[a] \nCABLE[a] EP[a2]",
+    {
+        "default":Style(obv, 480, wdth=0.75, wght=0.15, slnt=0.5, opsz=0.75, tu=-10),
+        "a2":Style(obv2, 250, wdth=1, wght=0.15, slnt=0.5, opsz=0, tu=-100),
+        "a": Style(obv2, 250, wdth=0.65, wght=0.25, tu=-50, slnt=1),
+    },
+    graf_style=GrafStyle(leading=30),
+    #leading=30,
+    fit=r.w-0
+    )
+    #.pens()
     .xa()
     .align(r)
-    .pmap(λi,p: p.flatten(5)))
+    .pmap(lambda i,p: p.flatten(3)))
 
 def bendr(self, r:Rect, curves, cx:DATPen=None, tangent=None, offset=(0, 1)):
-    crv0 = DATPen().moveTo(r.psw).boxCurveTo("N", 0.5, r.pse)
-    crvl = DATPen().moveTo(r.psw).boxCurveTo("N", 0.5, r.pse)
+    crv0 = DATPen().moveTo(r.psw).boxCurveTo("N", 0.15, r.pse)
+    crvl = DATPen().moveTo(r.psw).boxCurveTo("N", 0.15, r.pse)
     bw = self.getFrame().w
     bh = self.getFrame().h
 
@@ -79,17 +85,17 @@ def stub(f, rs):
         ]).f(1).pen().flatten(5)
 
     return DATPens([
-        DATPen().rect(f.a.r).f(hsl(0.1, s=1, l=0.5)),
+        DATPen().rect(f.a.r).f(hsl(0.6, s=0.7, l=0.5)),
         (lockup
             .pen()
             .addFrame(r)
-            .bendr(r, [by], bx, tangent=[e, e+0.25])
+            .bendr(r, [by], bx, tangent=[e, e+0.15])
             #.scale(0.5)
             #.at_rotation(e*360, λp: p.bendr(r, [by], bx))
             #.rotate(25)
             #.bendr(r, [by], bx)
             #.rotate(-25)
             .f(1)
-            .scale(0.95)
+            .scale(0.65)
             #.rotate(5)
-            .phototype(f.a.r, blur=3, cut=170, cutw=25, fill=hsl(0.15, s=1)))])
+            .phototype(f.a.r, blur=2, cut=150, cutw=25, fill=bw(1)))])

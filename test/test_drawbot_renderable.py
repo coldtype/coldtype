@@ -1,6 +1,6 @@
 from coldtype import *
 from drafting.pens.drawbotpen import DrawBotPen
-from drawBot import *
+import drawBot as db
 
 co = Font("assets/ColdtypeObviously.designspace")
 
@@ -10,22 +10,22 @@ long_txt = """This code is a mix of DrawBot and Coldtype, meant to demonstrate t
 def db_script_test(r):
     ri = r.inset(20, 20)
 
-    fill(*hsl(0.5))
-    oval(*ri.take(0.5, "mxx").square())
+    db.fill(*hsl(0.5))
+    db.oval(*ri.take(0.5, "mxx").square())
 
-    im = ImageObject()
+    im = db.ImageObject()
     with im:
-        size(500, 500)
-        image("https://static.goodhertz.co/statics/store/img/logos/hertz-color-danico-250-lssy.png", (0, 0))
+        db.size(500, 500)
+        db.image("https://static.goodhertz.co/statics/store/img/logos/hertz-color-danico-250-lssy.png", (0, 0))
         im.photoEffectMono()
     
     x, y = im.offset()
-    image(im, (250+x, -10+y))
+    db.image(im, (250+x, -10+y))
 
-    fontSize(19)
-    font("Georgia-Italic")
-    fill(*hsl(0.9, s=0.7, l=0.6))
-    textBox(long_txt, ri.take(200, "mny").take(250, "mnx"))
+    db.fontSize(19)
+    db.font("Georgia-Italic")
+    db.fill(*hsl(0.9, s=0.7, l=0.6))
+    db.textBox(long_txt, ri.take(200, "mny").take(250, "mnx"))
 
     (StyledString("COLDTYPE",
         Style(co, 150, ro=1))

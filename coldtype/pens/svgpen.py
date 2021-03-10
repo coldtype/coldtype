@@ -5,7 +5,7 @@ from fontTools.pens.basePen import BasePen
 
 from drafting.geometry import Rect, Edge, Point
 from drafting.color import Gradient, Color
-from coldtype.pens.drawablepen import DrawablePenMixin
+from drafting.pens.drawablepen import DrawablePenMixin
 from coldtype.pens.datpen import DATPen, DATPens
 
 import math

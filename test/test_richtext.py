@@ -65,7 +65,6 @@ def test_rich_custom(r):
     for p in pens.filter_style("b"):
         p.rotate(180).translate(-15, 0)
     
-    #pens.print_tree()
     return pens
 
 code = """

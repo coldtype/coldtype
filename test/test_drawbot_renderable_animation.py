@@ -1,5 +1,5 @@
 from coldtype import *
-from drafting.pens.drawbotpen import DrawBotPens
+from drafting.pens.drawbotpen import DrawBotPen
 
 co = Font("assets/ColdtypeObviously.designspace")
 tl = Timeline(50, storyboard=[0])
@@ -16,7 +16,7 @@ def db_script_test(f):
         .f(hsl(e, s=1, l=1-e*0.35))
         .understroke(sw=20)
         .scale(1-1*e*0.5)
-        .cast(DrawBotPens)
-        .draw(f.a.r, [
-            ["pixellate", dict(scale=5.0+5.0*e)]
-        ]))
+        .cast(DrawBotPen)
+        .draw_with_filters(f.a.r, [["pixellate", dict(scale=5.0+5.0*e)]])
+        #.draw()
+        )

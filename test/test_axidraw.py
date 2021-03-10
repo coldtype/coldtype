@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.pens.axidrawpen import AxiDrawPen
+from drafting.pens.axidrawpen import AxiDrawPen
 
 """
 https://axidraw.com/doc/py_api/#installation

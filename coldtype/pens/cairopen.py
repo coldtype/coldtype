@@ -10,9 +10,9 @@ except:
 
 
 from drafting.geometry import Rect, Edge, Point
-from coldtype.pens.drawablepen import DrawablePenMixin
+from drafting.pens.drawablepen import DrawablePenMixin
 from drafting.color import Color, Gradient
-from coldtype.beziers import raise_quadratic
+from drafting.beziers import raise_quadratic
 import base64
 
 
