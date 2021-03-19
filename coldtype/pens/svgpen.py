@@ -189,7 +189,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         self.dat = dat
         self.h = h
         tp = TransformPen(self, (1, 0, 0, -1, 0, h))
-        dat.round(2).replay(tp)
+        dat.round_to(0.1).replay(tp)
     
     def _endPath(self):
         """
