@@ -1,4 +1,5 @@
 from coldtype.test import *
+from drafting.text.richtext import RichText
 
 tl = Timeline(300, fps=30)
 

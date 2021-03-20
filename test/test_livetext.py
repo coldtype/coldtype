@@ -1,6 +1,7 @@
 #coldtype -wt -wp mdx,mdy -hkb
 
 from coldtype.test import *
+from drafting.text.richtext import RichText
 
 @renderable((1200, 500), rstate=1)
 def stub(r, rs):
@@ -17,4 +18,5 @@ def stub(r, rs):
     return DATPens([
         DATPen().rect(r.inset(20)).f(0, 0.5).s(0).sw(5),
         rt.pen().f(0).translate(5, -5),
-        rt.f(1)])
+        rt.f(1)
+        ])

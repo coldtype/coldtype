@@ -1,5 +1,5 @@
 from coldtype.test import *
-from coldtype.text.richtext import PythonCode
+from drafting.text.richtext import RichText, PythonCode
 from functools import reduce
 
 
@@ -86,7 +86,7 @@ def render_code(txt, styles):
     if "Name" in styles:
         return txt, Style(choc, 50, fill=hsl(0.7, s=1))
     if "Name.Function" in styles:
-        return txt, Style(reiner, 70, fill=hsl(0.6, s=1))
+        return txt, Style(choc, 50, fill=hsl(0.6, s=1))
     if "Name.Builtin" in styles:
         return txt, Style(mistral, 50, fill=hsl(0.3, s=1))
     if "Comment.Single" in styles:
@@ -107,7 +107,8 @@ def test_rich_code(r):
     out = DATPens()
     for line in rt:
         out += DATPen().rect(line.getFrame()).f(hsl(0.3, a=0.1))
-    out += rt
+
+    out += rt#DPS(rt.pens)
     return out
 
 txt3 = """H [h]
@@ -142,9 +143,12 @@ World!
 
 @test(solo=0)
 def test_style_key_lookup(r):
-    return (RichText(
+    rt = (RichText(
         r, txt4, {
             "a": Style(mistral, 200, fill=hsl(0.3)),
             "default": Style(blanco, 100, fill=bw(0))})
         .xa()
         .align(r))
+    #print(rt.tree())
+    return rt
+    return DPS([rt])

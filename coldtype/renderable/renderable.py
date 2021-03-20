@@ -1,4 +1,5 @@
 import inspect, platform, re, tempfile, skia, math, datetime
+from drafting.pens.draftingpens import DraftingPens
 
 from enum import Enum
 from subprocess import run
@@ -202,6 +203,8 @@ class renderable():
         if not pens:
             return DATPens()
         elif hasattr(pens, "pens"):
+            if isinstance(pens, DraftingPens):
+                return DATPens(pens.pens)
             return pens
         elif isinstance(pens, DATPen):
             return DATPens([pens])

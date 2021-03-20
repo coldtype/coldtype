@@ -38,7 +38,6 @@ class DATPen(DraftingPen):
         self.attr("default", **kwargs)
         self.typographic = False
         self._tag = "?"
-        self._alpha = 1
         self._parent = None
         self.container = None
         self.glyphName = None
@@ -110,14 +109,6 @@ class DATPen(DraftingPen):
             if len(pts) > 0:
                 allpts.extend(pts)
         return allpts
-    
-    def calc_alpha(self):
-        a = self._alpha
-        p = self._parent
-        while p:
-            a = a * p._alpha
-            p = p._parent
-        return a
     
     def getFrame(self, th=False, tv=False):
         return self.ambit(th=th, tv=tv)
@@ -659,12 +650,12 @@ class DATPens(DraftingPens, DATPen):
             "■": "_dps.bounds()"
         }
 
-
-        if isinstance(pens, DraftingPen):
-            self.append(pens)
-        else:
-            for pen in pens:
-                self.append(pen)
+        self.append(pens)
+        #if isinstance(pens, DraftingPen):
+        #    self.append(pens)
+        #else:
+        #    for pen in pens:
+        #        self.append(pen)
     
     def __str__(self):
         v = "" if self.visible else "ø-"
@@ -741,6 +732,8 @@ class DATPens(DraftingPens, DATPen):
                 self.pens.append(DATPen(pen))
             elif isinstance(pen, DATPen):
                 self.pens.append(pen)
+            elif isinstance(pen, DraftingPens):
+                self.pens.append(DATPens(pen.pens))
             elif isinstance(pen, DraftingPen):
                 self.pens.append(DATPen(pen))
             else:

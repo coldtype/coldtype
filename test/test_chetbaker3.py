@@ -1,5 +1,6 @@
 from coldtype import *
 from coldtype.warping import warp_fn
+from drafting.text.richtext import RichText
 
 r = Rect(1080, 1080)
 
@@ -89,6 +90,7 @@ def stub(f, rs):
         (lockup
             .pen()
             .addFrame(r)
+            .cast(DATPen)
             .bendr(r, [by], bx, tangent=[e, e+0.15])
             #.scale(0.5)
             #.at_rotation(e*360, λp: p.bendr(r, [by], bx))
