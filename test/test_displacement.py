@@ -3,7 +3,7 @@ import coldtype.filtering as fl
 from coldtype.warping import warp_fn
 
 fonts = [Font.Cacheable(f"~/Type/fonts/fonts/{f}") for f in [
-    "Nichrome0.6-Bold.otf",
+    "MDNichrome0.7-Bold.otf",
     "MeekDisplayv0.2-Bold.otf"
 ]]
 
