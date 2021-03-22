@@ -229,6 +229,7 @@ class Renderer():
         self.server_thread = None
         self.sidecar_threads = []
         self.tails = []
+        self.watchee_mods = {}
         
         if not self.reset_filepath(self.args.file if hasattr(self.args, "file") else None):
             self.dead = True
@@ -543,6 +544,7 @@ class Renderer():
         if self.args.monitor_lines and trigger != Action.RenderAll:
             func_name = file_and_line_to_def(self.codepath, self.line_number)
             matches = [r for r in _rs if r.name == func_name]
+            print(">", matches)
             if len(matches) > 0:
                 return matches
 
@@ -1684,6 +1686,13 @@ class Renderer():
         if self.dead:
             self.on_exit()
             return
+        
+        now = ptime.time()
+        for k, v in self.watchee_mods.items():
+            if v and (now - v) > 0.1:
+                #print("CAUGHT ONE")
+                self.action_waiting = Action.PreviewStoryboard
+                self.watchee_mods[k] = None
 
         if self.action_waiting:
             action_in = self.action_waiting
@@ -1870,6 +1879,17 @@ class Renderer():
         #return
         if path in self.watchee_paths():
             if path.suffix == ".json":
+                last = self.watchee_mods.get(path)
+                now = ptime.time()
+                self.watchee_mods[path] = now
+                if last is not None:
+                    diff = now - last
+                    if diff < 0.1:
+                        #print("SKIP")
+                        return
+                    else:
+                        #print("CONTINUE")
+                        pass
                 try:
                     json.loads(path.read_text())
                 except json.JSONDecodeError:

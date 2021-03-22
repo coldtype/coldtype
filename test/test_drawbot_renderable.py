@@ -1,7 +1,7 @@
 from coldtype import *
-from drafting.pens.drawbotpen import DrawBotPen
-import drawBot as db
+import drafting.drawbot as drdb
 
+db = drdb.db
 co = Font("assets/ColdtypeObviously.designspace")
 
 long_txt = """This code is a mix of DrawBot and Coldtype, meant to demonstrate that Coldtype primitives (like designspace-reading) can be combined with DrawBot primitives like multi-line text support and the Mac Font library."""
@@ -36,7 +36,16 @@ def db_script_test(r):
             hsl(0.15, s=0.7, l=0.6)))
         .s(0)
         .sw(3)
-        .cast(DrawBotPen)
-        .draw())
+        .chain(drdb.dbdraw)
+        )
+    
+    (StyledString("COLDTYPE",
+        Style(co, 50, ro=1, r=1, tu=-100))
+        .pens()
+        .align(ri, "mnx", "mdy")
+        .translate(0, 40)
+        .f(0)
+        .understroke(s=1, sw=5)
+        .chain(drdb.dbdraw))
 
     #saveImage("test/drawbot/saved_from_drawbot_test.pdf")
