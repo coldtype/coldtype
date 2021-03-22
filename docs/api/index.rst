@@ -5,17 +5,7 @@ API
 
 N.B. All of the following are available unprefixed after a ``from coldtype import *``, or are available at the specified prefix locations after an ``import coldtype``.
 
-.. rubric:: Textsetting Classes
-
-.. autosummary::
-    :toctree: reference
-    :template: module.rst
-
-    coldtype.text.reader.Style
-    coldtype.text.reader.StyledString
-    coldtype.text.composer.Composer
-
-The most important thing to understand is that textsetting classes can be turned into vector classes via the ``.pen`` or ``.pens`` methods available on both ``StyledString`` and ``Composer`` — ``.pen`` gets you a single vector representation of a piece of text (aka a ``DATPen``), while ``.pens`` gets you a structured list of DATPen’s, aka a ``DATPens``.
+Much of the documentation for core text-setting and geometry classes in Coldtype now lives on `drafting.goodhertz.com <https://drafting.goodhertz.com>`_
 
 .. rubric:: Vector/Path Classes
 
