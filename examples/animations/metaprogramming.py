@@ -1,7 +1,7 @@
 from coldtype import *
 from coldtype.warping import warp_fn
 from coldtype.time.easing import ease
-from coldtype.text.richtext import PythonCode
+from drafting.text.richtext import PythonCode
 
 ### Code that is
 ### it’s own animation

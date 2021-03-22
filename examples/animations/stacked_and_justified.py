@@ -16,8 +16,8 @@ def render(f):
         s.mod(fitHeight=c2.h, opsz=1-at.e)).fit(c2).pens()
 
     return (DATPens([
-            stacked_and.align(c1).trackToRect(c1, pullToEdges=1, r=1),
-            justified.align(c2).trackToRect(c2, pullToEdges=1, r=1)
+            stacked_and.align(c1).track_to_rect(c1, pullToEdges=1, r=1),
+            justified.align(c2).track_to_rect(c2, pullToEdges=1, r=1)
         ])
         .f(1)
         .understroke(sw=10)

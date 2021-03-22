@@ -11,7 +11,7 @@ ISNT THIS WILD"""
 def test_multiline_fit(r):
     # This is pretty janky atm
     lockups = Slug.LineSlugs(text, Style(mutator, 120, wdth=1, wght=1, varyFontSize=1, ro=1))
-    return Graf(lockups, r, leading=20).fit(r.w-100).pens().map(lambda i,p: p.align(p.getFrame(), th=1, tv=1).trackToRect(p.getFrame().inset(50, 0), pullToEdges=1).reversePens()).align(r).f(0)
+    return Graf(lockups, r, leading=20).fit(r.w-100).pens().map(lambda i,p: p.align(p.getFrame(), th=1, tv=1).track_to_rect(p.getFrame().inset(50, 0), pullToEdges=1).reversePens()).align(r).f(0)
 
 
 @test()

@@ -10,7 +10,7 @@ More info available at: [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
 
 setuptools.setup(
     name="coldtype",
-    version="0.2.1",
+    version="0.3.0",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",
@@ -27,10 +27,6 @@ setuptools.setup(
         "coldtype.renderer",
         "coldtype.renderable",
         "coldtype.text",
-        "coldtype.fontgoggles",
-        "coldtype.fontgoggles.compile",
-        "coldtype.fontgoggles.font",
-        "coldtype.fontgoggles.misc",
     ],
     entry_points={
         'console_scripts': [
@@ -38,17 +34,11 @@ setuptools.setup(
         ],
     },
     install_requires=[
-        "fontPens",
+        "drafting>=0.1.2",
         "defcon",
         "mido",
         "skia-python>=86.0",
         "easing-functions",
-        "fonttools[woff,unicode,type1,lxml,ufo]",
-        "freetype-py",
-        "uharfbuzz>=0.12.0",
-        "python-bidi",
-        "ufo2ft",
-        "unicodedata2",
         "numpy",
         "watchdog<=0.10.3", # https://github.com/gorakhargosh/watchdog/issues/702
         "noise",
@@ -61,7 +51,6 @@ setuptools.setup(
         "exdown",
         "srt",
         "timecode",
-        "drafting>=0.0.3",
         #"rtmidi",
         #"pynput",
         #"pyaudio",

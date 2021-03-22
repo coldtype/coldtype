@@ -19,5 +19,5 @@ def coldtype(r):
             170, wdth=0.25, rotate=10, r=0))
         .pens()
         .f(1)
-        .trackToRect(r.inset(20), pullToEdges=0)
+        .track_to_rect(r.inset(20), pullToEdges=0)
         .align(r))

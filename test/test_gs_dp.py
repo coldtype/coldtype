@@ -9,7 +9,7 @@ def test1(r):
             an="$a⊤",
             cs="$c⊥",
             acp="($an⍺)⫎($cs⍵)")
-        .gss("$acp⊢ $acp⊣ $acp⊣µ")
+        .gss("$acp¶π0,50⊢ $acp⊣ $acp⊣µ")
         .f(None).s(0).sw(4))
 
 @renderable((500, 500))

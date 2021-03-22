@@ -61,13 +61,13 @@ Put another way, what you get back from calling ``(StyledString, Style(...)).pen
             .align(r)
             .f(Gradient.Vertical(r, hsl(0.5, s=0.8), hsl(0.8, s=0.75))))
         
-        pens.print_tree()
+        print(pens.tree())
         pens[0].rotate(180)
         pens[-1].rotate(180)
         pens[-2].rotate(10)
         return pens
 
-Because of the line ``pens.print_tree()``, you should see something like this in your terminal when you run that example:
+Because of the line ``print(pens.tree())``, you should see something like this in your terminal when you run that example:
 
 .. code:: text
 
