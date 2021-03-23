@@ -2,7 +2,7 @@ from coldtype import *
 
 fnt = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 
-@renderable(bg=hsl(0.4, s=1, l=0.8))
+@renderable((1080, 540), bg=hsl(0.4, s=1, l=0.8))
 def stub(r):
     txt = (StyledString("COLDTYPE",
         Style(fnt, 500, wdth=0.20, r=1, ro=1, tu=-50, rotate=10))
