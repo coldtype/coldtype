@@ -15,7 +15,7 @@ def stub(f):
 
     programming = (StyledString("Programming",
         Style(font2, 200-e2*50,
-            wdth=0.3, wght=1-e2*0.5, slnt=1,
+            #wdth=0.3, wght=1-e2*0.5, slnt=1,
             #tu=-100+200*e2,
             r=1,
             rotate=e2*10,
@@ -28,8 +28,8 @@ def stub(f):
 
     design = (StyledString("Design",
         Style(font1, 310,
-            grvt=e2,
-            yest=0.37,
+            #grvt=e2,
+            #yest=0.37,
             #tu=-90,
             r=1))
         .pens()
