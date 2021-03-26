@@ -1689,7 +1689,7 @@ class Renderer():
         
         now = ptime.time()
         for k, v in self.watchee_mods.items():
-            if v and (now - v) > 0.1:
+            if v and (now - v) > 1:
                 #print("CAUGHT ONE")
                 self.action_waiting = Action.PreviewStoryboard
                 self.watchee_mods[k] = None
@@ -1884,7 +1884,7 @@ class Renderer():
                 self.watchee_mods[path] = now
                 if last is not None:
                     diff = now - last
-                    if diff < 0.1:
+                    if diff < 1:
                         #print("SKIP")
                         return
                     else:

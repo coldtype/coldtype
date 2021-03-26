@@ -89,7 +89,7 @@ def ease(style, x):
     * beio = BounceEaseInOut
     * eleo = ElasticEaseOut
     * elei = ElasticEaseIn,
-    * elieo = ElasticEaseInOut
+    * eleio = ElasticEaseInOut
     """
     if style == "linear":
         return x, 0.5

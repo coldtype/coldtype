@@ -10,19 +10,20 @@ class ColdtypeSerializer(BaseWindowController):
         self.w = FloatingWindow((300, 40), "Coldtype Serializer", minSize=(123, 200))
         self.w.globalToggle = CheckBox((10, 10, -10, 20), 'serialize?', value=True)
         self.output = Path("~/robofont-coldtype.json").expanduser().absolute()
-        addObserver(self, "shouldDraw", "draw")
+        addObserver(self, "shouldDraw", "fontWillSave")
         
         self.setUpBaseWindowBehavior()
         self.w.open()
     
     def windowCloseCallback(self, sender):
-        removeObserver(self, 'draw')
+        removeObserver(self, 'fontWillSave')
         super(ColdtypeSerializer, self).windowCloseCallback(sender)
 
     def shouldDraw(self, notification):
         if not self.w.globalToggle.get():
             return
-        glyph = notification['glyph']
+        #glyph = notification['glyph']
+        glyph = CurrentGlyph()
         data_out = {"name": glyph.name, "layers": {}}
         for g in glyph.layers:
             rp = RecordingPen()
