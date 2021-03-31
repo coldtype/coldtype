@@ -222,6 +222,14 @@ class ClipGroupPens(DATPens):
         for clip, pen in self.iterate_clips():
             fn(clip, pen)
         return self
+    
+    def clean_empties(self):
+        for _, pen in self.iterate_slugs():
+            pen.pens = [p for p in pen.pens if len(p.pens) > 0]
+        for line in self:
+            line.pens = [p for p in line.pens if len(p.pens) > 0]
+        self.pens = [p for p in self.pens if len(p.pens) > 0]
+        return self
 
     def remove_futures(self, clean=True):
         for clip, pen in self.iterate_clips():
@@ -229,12 +237,29 @@ class ClipGroupPens(DATPens):
                 pen.pens = []
         
         if clean:
-            for _, pen in self.iterate_slugs():
-                pen.pens = [p for p in pen.pens if len(p.pens) > 0]
-            for line in self:
-                line.pens = [p for p in line.pens if len(p.pens) > 0]
-            self.pens = [p for p in self.pens if len(p.pens) > 0]
+            self.clean_empties()
+        return self
+    
+    def remove_future_lines(self, clean=True):
+        for _, line in self.iterate_lines():
+            any_now = False
+            for pen in line:
+                for p in pen:
+                    if clip := p.data.get("clip"):
+                        if clip.position <= 0:
+                            any_now = True
+            
+            if not any_now:
+                line.pens = []
+            #for x in line.iterate_clips():
+            #    print(">>>", x)
+
+        #for clip, pen in self.iterate_clips():
+        #    if clip.position > 0:
+        #        pen.pens = []
         
+        if clean:
+            self.clean_empties()
         return self
     
     def understroke(self, s=0, sw=5):

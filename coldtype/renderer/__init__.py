@@ -154,6 +154,8 @@ class Renderer():
 
             window_pin=parser.add_argument("-wp", "--window-pin", type=str, help="where to pin the window, if you want to pin the window"),
 
+            window_pin_inset=parser.add_argument("-wpi", "--window-pin-inset", type=str, help="how much to 'inset' the pin of the window"),
+
             window_float=parser.add_argument("-wf", "--window-float", action="store_true", default=False, help="should the window float on top of everything?"),
 
             window_transparent=parser.add_argument("-wt", "--window-transparent", action="store_true", default=False, help="should the window background be transparent?"),
@@ -1777,6 +1779,9 @@ class Renderer():
                     pinned = work_rect.take(ww, pin[0]).take(wh, pin[1]).round()
                     if pin[1] == "mdy":
                         pinned = pinned.offset(0, -30)
+                    if self.args.window_pin_inset:
+                        x, y = [int(n) for n in self.args.window_pin_inset.split(",")]
+                        pinned = pinned.offset(-x, y)
                     glfw.set_window_pos(self.window, pinned.x, pinned.y)
 
             self.last_rect = frect
