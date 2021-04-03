@@ -17,7 +17,7 @@ def var(f, depth=0):
     
     cold = (cold
         .color_phototype(f.a.r, blur=2+depth*5, cut=120+depth*5, rgba=[1, 0, 1, 1])
-        .as_set()
+        .ups()
         .blendmode(skia.BlendMode.kDifference))
     
     if depth < 5:

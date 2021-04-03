@@ -1,4 +1,5 @@
 import inspect, platform, re, tempfile, skia, math, datetime
+from drafting.pens.draftingpens import DraftingPens
 
 from enum import Enum
 from subprocess import run
@@ -6,7 +7,7 @@ from pathlib import Path
 
 from drafting.geometry import Rect, Point
 from drafting.color import normalize_color
-from coldtype.text.reader import normalize_font_prefix, Font
+from drafting.text.reader import normalize_font_prefix, Font
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.pens.datimage import DATImage
@@ -202,6 +203,8 @@ class renderable():
         if not pens:
             return DATPens()
         elif hasattr(pens, "pens"):
+            if isinstance(pens, DraftingPens):
+                return DATPens(pens.pens)
             return pens
         elif isinstance(pens, DATPen):
             return DATPens([pens])

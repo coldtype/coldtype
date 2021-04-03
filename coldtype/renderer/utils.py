@@ -5,8 +5,10 @@ from enum import Enum
 from pathlib import Path
 
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 WEBSOCKET_PORT = 8007
+HTTP_PORT = 8008
 
 class Watchable(Enum):
     Source = "Source"
@@ -50,6 +52,35 @@ class SimpleEcho(WebSocket):
 
 def echo_server():
     return SimpleWebSocketServer('', WEBSOCKET_PORT, SimpleEcho)
+
+
+class LoggingServer(BaseHTTPRequestHandler):
+    def _set_response(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+
+    def do_GET(self):
+        print("GET", self.path, self.headers)
+        self._set_response()
+
+    def do_POST(self):
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length)
+        print("POST", self.path, self.headers, post_data.encode("utf-8"))
+        self._set_response()
+
+
+def http_server(server_class=HTTPServer, handler_class=LoggingServer, port=HTTP_PORT):
+    server_address = ('', port)
+    httpd = server_class(server_address, handler_class)
+    logging.info('Starting httpd...\n')
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    httpd.server_close()
+    logging.info('Stopping httpd...\n')
 
 
 def bytesto(bytes):

@@ -5,7 +5,7 @@ from fontTools.pens.basePen import BasePen
 
 from drafting.geometry import Rect, Edge, Point
 from drafting.color import Gradient, Color
-from coldtype.pens.drawablepen import DrawablePenMixin
+from drafting.pens.drawablepen import DrawablePenMixin
 from coldtype.pens.datpen import DATPen, DATPens
 
 import math
@@ -189,7 +189,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         self.dat = dat
         self.h = h
         tp = TransformPen(self, (1, 0, 0, -1, 0, h))
-        dat.round(2).replay(tp)
+        dat.round_to(0.1).replay(tp)
     
     def _endPath(self):
         """

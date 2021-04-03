@@ -19,6 +19,7 @@ from functools import partial, partialmethod
 import skia, coldtype
 from coldtype.helpers import *
 from drafting.geometry import Rect, Point
+from drafting.text.reader import Font as DraftingFont
 from coldtype.pens.skiapen import SkiaPen
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
@@ -116,6 +117,8 @@ class Renderer():
             no_watch=parser.add_argument("-nw", "--no-watch", action="store_true", default=False, help="Preventing watching for changes to source files"),
 
             websocket=parser.add_argument("-ws", "--websocket", action="store_true", default=False, help="Should the server run a web socket?"),
+
+            no_midi=parser.add_argument("-nm", "--no-midi", action="store_true", default=False, help="Midi is on by default, do you want to turn it off?"),
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
             
@@ -150,6 +153,8 @@ class Renderer():
             window_opacity=parser.add_argument("-wo", "--window-opacity", type=float, help="opacity of the window, from >0 to 1 (defaults to 1 unless overridden in .coldtype.py file)"),
 
             window_pin=parser.add_argument("-wp", "--window-pin", type=str, help="where to pin the window, if you want to pin the window"),
+
+            window_pin_inset=parser.add_argument("-wpi", "--window-pin-inset", type=str, help="how much to 'inset' the pin of the window"),
 
             window_float=parser.add_argument("-wf", "--window-float", action="store_true", default=False, help="should the window float on top of everything?"),
 
@@ -226,6 +231,7 @@ class Renderer():
         self.server_thread = None
         self.sidecar_threads = []
         self.tails = []
+        self.watchee_mods = {}
         
         if not self.reset_filepath(self.args.file if hasattr(self.args, "file") else None):
             self.dead = True
@@ -540,6 +546,7 @@ class Renderer():
         if self.args.monitor_lines and trigger != Action.RenderAll:
             func_name = file_and_line_to_def(self.codepath, self.line_number)
             matches = [r for r in _rs if r.name == func_name]
+            print(">", matches)
             if len(matches) > 0:
                 return matches
 
@@ -613,7 +620,7 @@ class Renderer():
                 render.filepath = self.filepath
 
                 for watch, flag in render.watch:
-                    if isinstance(watch, coldtype.text.reader.Font) and not watch.cacheable:
+                    if isinstance(watch, DraftingFont) and not watch.cacheable:
                         if watch.path not in self.watchee_paths():
                             self.watchees.append([Watchable.Font, watch.path, flag])
                         for ext in watch.font.getExternalFiles():
@@ -1356,6 +1363,10 @@ class Renderer():
             self.state.clear()
         elif shortcut == KeyboardShortcut.MIDIControllersReset:
             self.state.reset(ignore_current_state=True)
+        
+        elif shortcut == KeyboardShortcut.JumpToFrameFunctionDef:
+            frame = self.last_animation._active_frames(self.state)[0]
+            self.send_to_external("jump_to_def", info=self.last_animation.frame_to_fn(frame))
     
     def on_shortcut(self, shortcut):
         waiting = self.shortcut_to_action(shortcut)
@@ -1557,9 +1568,9 @@ class Renderer():
         if not self.server:
             return
 
-        if action == "save":
+        if action in ["save", "jump_to_def"]:
             for _, client in self.server.connections.items():
-                client.sendMessage(json.dumps({"midi_shortcut":action, "file":str(self.filepath)}))
+                client.sendMessage(json.dumps({"midi_shortcut":action, "file":str(self.filepath), **kwargs}))
             return
         
         animation = self.animation()
@@ -1677,6 +1688,13 @@ class Renderer():
         if self.dead:
             self.on_exit()
             return
+        
+        now = ptime.time()
+        for k, v in self.watchee_mods.items():
+            if v and (now - v) > 1:
+                #print("CAUGHT ONE")
+                self.action_waiting = Action.PreviewStoryboard
+                self.watchee_mods[k] = None
 
         if self.action_waiting:
             action_in = self.action_waiting
@@ -1697,8 +1715,8 @@ class Renderer():
                         self.process_ws_message(msg)
                     v.messages = []
 
-        #if self.server:
-        self.monitor_midi()
+        if not self.args.no_midi:
+            self.monitor_midi()
         
         #if len(self.waiting_to_render) > 0:
         #    for action, path in self.waiting_to_render:
@@ -1761,6 +1779,9 @@ class Renderer():
                     pinned = work_rect.take(ww, pin[0]).take(wh, pin[1]).round()
                     if pin[1] == "mdy":
                         pinned = pinned.offset(0, -30)
+                    if self.args.window_pin_inset:
+                        x, y = [int(n) for n in self.args.window_pin_inset.split(",")]
+                        pinned = pinned.offset(-x, y)
                     glfw.set_window_pos(self.window, pinned.x, pinned.y)
 
             self.last_rect = frect
@@ -1863,6 +1884,17 @@ class Renderer():
         #return
         if path in self.watchee_paths():
             if path.suffix == ".json":
+                last = self.watchee_mods.get(path)
+                now = ptime.time()
+                self.watchee_mods[path] = now
+                if last is not None:
+                    diff = now - last
+                    if diff < 1:
+                        #print("SKIP")
+                        return
+                    else:
+                        #print("CONTINUE")
+                        pass
                 try:
                     json.loads(path.read_text())
                 except json.JSONDecodeError:
@@ -1924,8 +1956,17 @@ class Renderer():
                 if msg.isNoteOn(): # Maybe not forever?
                     nn = msg.getNoteNumber()
                     shortcut = self.midi_mapping[device]["note_on"].get(nn)
-                    if shortcut:
+                    try:
+                        ksc = KeyboardShortcut(shortcut)
+                        ea = None
+                    except ValueError:
+                        ksc = None
+                        ea = EditAction(shortcut)
+                    
+                    if ksc:
                         self.on_shortcut(KeyboardShortcut(shortcut))
+                    elif ea:
+                        self.on_action(EditAction(shortcut), {})
                 if msg.isController():
                     cn = msg.getControllerNumber()
                     cv = msg.getControllerValue()

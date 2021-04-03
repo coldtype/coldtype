@@ -18,7 +18,7 @@ def test_distribute_and_track(r):
 @test()
 def test_track_to_rect(r):
     text:DATPens = StyledString("COLD", Style(co, 300, wdth=0, r=1)).pens().align(r)
-    return text.trackToRect(r.inset(50, 0), r=1)
+    return text.track_to_rect(r.inset(50, 0), r=1)
 
 
 @test()

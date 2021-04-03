@@ -10,9 +10,9 @@ from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.pens.datimage import DATImage
 from drafting.geometry import Rect, Edge, Point
-from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
+from drafting.pens.drawablepen import DrawablePenMixin, Gradient
 from drafting.color import Color
-from coldtype.text.reader import Style
+from drafting.text.reader import Style
 
 
 class SkiaPathPen(BasePen):
@@ -276,7 +276,6 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 SkiaPen(pen, rect, canvas, scale, style=style, alpha=pen.calc_alpha())
         
         #print("COMPTOCANV >>>>>>>>>>>>>>>>")
-        #pens.print_tree()
         pens.walk(draw, visible_only=True)
     
     def Precompose(pens, rect, fmt=None, context=None, scale=1, disk=False):

@@ -24,4 +24,5 @@ def render(f):
         .align(f.a.r)
         .f(hsl(0.9, s=0.6, l=0.4))
         .understroke(s=1, sw=20)
-        .color_phototype(f.a.r))
+        .phototype(f.a.r, cutw=45)
+        )

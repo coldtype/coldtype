@@ -157,16 +157,8 @@ This library is mostly the work of me, `Rob Stenson <https://robstenson.com>`_, 
 
 * Coldtype Obviously is a open-source subset of the commercially-available font `Obviously <https://ohnotype.co/fonts/obviously>`_ by OHno Type Co; s/o to James Edmondson for donating those 8 characters to this project.
 
-* ``coldtype.pens.outlinepen`` contains code written by Frederik Berlaen, Copyright (c) 2016
-
-* ``coldtype.pens.translationpen`` contains code written by Loïc Sander, Copyright (c) 2014
-
-* ``coldtype.fontgoggles`` contains parts of the `FontGoggles <https://github.com/justvanrossum/fontgoggles>`_ codebase, written by Just van Rossum, Copyright (c) 2019 Google, LLC. Just is also responsible for DrawBot which the main inspiration behind this project.
-
 * Mutator Sans included for testing was written by Erik van Blokland, Copyright (c) 2017
 
 * Recursive Mono Casual Italic is an `open-source typeface <https://github.com/arrowtype/recursive>`_ by `Arrow Type <https://www.arrowtype.com/>`_
 
-* Coldtype relies heavily (via FontGoggles) on the incredible `HarfBuzz <https://github.com/harfbuzz/harfbuzz>`_ text shaping library.
-
-* Coldtype also relies heavily on the also incredible `fontTools <https://github.com/fonttools/fonttools>`_
+* Coldtype also relies heavily on the incredible library `fontTools <https://github.com/fonttools/fonttools>`_
