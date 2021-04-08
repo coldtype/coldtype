@@ -77,6 +77,7 @@ class renderable():
         name=None,
         rasterizer=None,
         prefix=None,
+        suffix=None,
         dst=None,
         custom_folder=None,
         postfn=None,
@@ -99,6 +100,7 @@ class renderable():
         self.bg = normalize_color(bg)
         self.fmt = fmt
         self.prefix = prefix
+        self.suffix = suffix
         self.dst = Path(dst).expanduser().resolve() if dst else None
         self.custom_folder = custom_folder
         self.postfn = postfn
