@@ -6,13 +6,17 @@ import skia, math
 
 class DATImage(DATPen):
     def __init__(self, src, img=None):
-        self.src = Path(str(src)).expanduser().absolute()
-        if not self.src.exists():
-            raise Exception("Image src does not exist", self.src)
-        if img:
-            self._img = img
+        if isinstance(src, Path) or isinstance(src, str):
+            self.src = Path(str(src)).expanduser().absolute()
+            if not self.src.exists():
+                raise Exception("Image src does not exist", self.src)
+            if img:
+                self._img = img
+            else:
+                self._img = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(self.src)))
         else:
-            self._img = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(self.src)))
+            self.src = None
+            self._img = src
         self.transforms = []
         self.visible = True
         super().__init__()
@@ -98,4 +102,7 @@ class DATImage(DATPen):
         return DATImage(original_src, img=pen.img().get("src"))
     
     def __str__(self):
-        return f"<DATImage({self.src.relative_to(Path.cwd())})/>"
+        if self.src:
+            return f"<DATImage({self.src.relative_to(Path.cwd())})/>"
+        else:
+            return f"<DATImage(in-memory)/>"

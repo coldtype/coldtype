@@ -84,6 +84,7 @@ class Clip(Timeable):
                 self.inline_data[k] = eval(v)
         
         self.text = parts[0]
+        self.text = self.text.replace("{colon}", ":")
 
         #if "ß" in self.text:
         #    parts = self.text.split(":")
