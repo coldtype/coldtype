@@ -848,9 +848,6 @@ class Renderer():
         elif rasterizer == "svg":
             from coldtype.pens.svgpen import SVGPen
             path.write_text(SVGPen.Composite(content, render.rect, viewBox=render.viewBox))
-        elif rasterizer == "cairo":
-            from coldtype.pens.cairopen import CairoPen
-            CairoPen.Composite(content, render.rect, str(path), scale=scale)
         elif rasterizer == "pickle":
             pickle.dump(content, open(path, "wb"))
         else:

@@ -6,7 +6,7 @@ from typing import Optional, Callable, Tuple
 
 from fontTools.misc.transform import Transform
 
-from random import randint
+from random import randint, Random
 from noise import pnoise1
 
 from drafting.sh import sh
@@ -15,6 +15,15 @@ from drafting.interpolation import norm
 
 from drafting.geometry import Rect, Edge, Point, Line, Geometrical
 from drafting.color import normalize_color, hsl
+
+
+def _random_series(start=0, end=1, seed=0, count=5000):
+    rnd = Random()
+    rnd.seed(seed)
+    rnds = []
+    for x in range(count):
+        rnds.append(start+rnd.random()*(end-start))
+    return rnds
 
 
 def listit(t):
@@ -148,8 +157,12 @@ class DATPen(DraftingPen):
         self.value = dp.value
         return self
     
-    def roughen(self, amplitude=10, threshold=10, ignore_ends=False):
+    def roughen(self, amplitude=10, threshold=10, ignore_ends=False, seed=None):
         """Randomizes points in skeleton"""
+        if seed is not None:
+            rs = _random_series(0, amplitude, seed=seed)
+        else:
+            rs = _random_series(0, amplitude, seed=randint(0, 5000))
         randomized = []
         _x = 0
         _y = 0
@@ -161,10 +174,10 @@ class DATPen(DraftingPen):
                 randomized.append([t, pts])
                 continue
             if t == "lineTo" or t == "curveTo":
-                jx = pnoise1(_x) * amplitude # should actually be 1-d on the tangent (maybe? TODO)
-                jy = pnoise1(_y) * amplitude
-                jx = randint(0, amplitude) - amplitude/2
-                jy = randint(0, amplitude) - amplitude/2
+                #jx = pnoise1(_x) * amplitude # should actually be 1-d on the tangent (maybe? TODO)
+                #jy = pnoise1(_y) * amplitude
+                jx = rs[idx*2] - amplitude/2
+                jy = rs[idx*2+1] - amplitude/2
                 randomized.append([t, [(x+jx, y+jy) for x, y in pts]])
                 _x += 0.2
                 _y += 0.3

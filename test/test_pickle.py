@@ -8,7 +8,7 @@ def pickled(r):
         .f(0)
         .difference(
             DATPen().rect(r.inset(100)).translate(-100, -100))
-        .f(hsl(0.9))
+        .f(hsl(0.5))
         .xor(DATPen().rect(r)))
 
 @renderable()
