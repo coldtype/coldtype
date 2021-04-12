@@ -9,6 +9,7 @@ class KeyboardShortcut(Enum):
     PreviewNextMany = "prev_next_many"
     
     ClearLastRender = "clear_last_render"
+    ClearRenderedFrames = "clear_rendered_frames"
     
     PlayRendered = "play_rendered"
     PlayPreview = "play_preview"
@@ -88,6 +89,9 @@ SHORTCUTS = {
     
     KeyboardShortcut.ClearLastRender: [
         [[], glfw.KEY_BACKSLASH]
+    ],
+    KeyboardShortcut.ClearRenderedFrames: [
+        [[glfw.MOD_SHIFT], glfw.KEY_BACKSLASH]
     ],
     
     KeyboardShortcut.PlayRendered: [

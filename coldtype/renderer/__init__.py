@@ -1277,6 +1277,8 @@ class Renderer():
 
         elif shortcut == KeyboardShortcut.ClearLastRender:
             return Action.ClearLastRender
+        elif shortcut == KeyboardShortcut.ClearRenderedFrames:
+            return Action.ClearRenderedFrames
         
         elif shortcut == KeyboardShortcut.PlayRendered:
             self.paudio_preview = 1
@@ -1542,6 +1544,10 @@ class Renderer():
             for r in self.renderables(Action.PreviewStoryboard):
                 r.last_result = None
             self.action_waiting = Action.PreviewStoryboard
+        elif action == Action.ClearRenderedFrames:
+            for r in self.renderables(Action.PreviewStoryboard):
+                shutil.rmtree(r.output_folder, ignore_errors=True)
+            print("Deleted rendered version")
         elif message.get("serialization"):
             ptime.sleep(0.5)
             self.reload(Action.Resave)

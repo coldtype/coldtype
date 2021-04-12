@@ -45,6 +45,7 @@ class Action(Enum):
     PreviewStoryboardNextMany = "preview_storyboard_next_many"
     PreviewStoryboardPrevMany = "preview_storyboard_prev_many"
     ClearLastRender = "clear_last_render"
+    ClearRenderedFrames = "clear_rendered_frames"
     RenderedPlay = "rendered_play"
     ArbitraryTyping = "arbitrary_typing"
     ArbitraryCommand = "arbitrary_command"

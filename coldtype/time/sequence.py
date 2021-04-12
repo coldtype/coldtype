@@ -55,6 +55,19 @@ class Clip(Timeable):
         self.inline_data = {}
         self.flags = {}
         self.type = ClipType.Isolated
+        self.symbol = None
+        self.symbol_position = 0
+
+        if self.text.startswith("^"):
+            symbol, rest = self.text.split("|")
+            self.symbol = symbol[1:]
+            self.symbol_position = -1
+            self.text = rest
+        elif self.text.startswith("$"):
+            symbol, rest = self.text.split("|")
+            self.symbol = symbol[1:]
+            self.symbol_position = +1
+            self.text = rest
 
         if self.text.startswith("*"):
             self.text = self.text[1:]
@@ -273,22 +286,26 @@ class ClipGroup(Timeable):
     def __init__(self, timeline, index, clips):
         self.index = index
         self.clips = clips
-        if len(clips) > 0:
-            self.start = clips[0].start
-            self.end = clips[-1].end
-            self.track = clips[0].track
+        self.timeline = timeline
+        self.style_indices = []
+
+        self.retime()
+
+        for idx, clip in enumerate(clips):
+            clip.idx = idx
+            clip.group = self
+    
+    def retime(self):
+        if len(self.clips) > 0:
+            self.start = self.clips[0].start
+            self.end = self.clips[-1].end
+            self.track = self.clips[0].track
             self.valid = True
         else:
             self.start = 0
             self.end = 0
             self.track = None
             self.valid = False
-        self.timeline = timeline
-        self.style_indices = []
-
-        for idx, clip in enumerate(clips):
-            clip.idx = idx
-            clip.group = self
     
     def styles(self):
         all_styles = set()
@@ -658,6 +675,44 @@ class Sequence(Timeline):
     def __init__(self, duration, fps, storyboard, tracks, workarea_track=0):
         self.workarea_track = workarea_track
         super().__init__(duration, fps, storyboard, tracks)
+    
+    def find_symbol(self, symbol):
+        start = -1
+        end = -1
+        for t in self.tracks:
+            for c in t.clips:
+                c:Clip
+                if c.symbol and c.symbol == symbol:
+                    if c.symbol_position == -1:
+                        start = c.start
+                    elif c.symbol_position == +1:
+                        end = c.end
+        return start, end
+    
+    def retime_for_symbol(self, symbol):
+        start, end = self.find_symbol(symbol)
+        if start == -1 or end == -1:
+            raise Exception("No symbol found")
+        
+        duration = end - start
+        self.start = 0
+        self.end = duration
+
+        # TODO storyboard?
+        for idx, frame in enumerate(self.storyboard):
+            self.storyboard[idx] = frame - start
+
+        for t in self.tracks:
+            t:ClipTrack
+            for c in t.clips:
+                c:Clip
+                c.start = c.start - start
+                c.end = c.end - start
+            
+            for cg in t.clip_groups:
+                cg.retime()
+        
+        return self
     
     def trackClipGroupForFrame(self, track_idx, frame_idx, styles=[], check_end=True):
         for gidx, group in enumerate(self[track_idx].clip_groups):
