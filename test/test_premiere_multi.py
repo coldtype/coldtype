@@ -8,7 +8,7 @@ pt2 = PremiereTimeline(json).retime_for_symbol("aaa")
 
 print(pt1.duration, pt2.duration)
 
-@animation(timeline=pt1, bg=0, solo=1)
+@animation(timeline=pt1, bg=0, solo=0)
 def t1(f):
     cg:ClipGroup = pt1.clip_group(0, f, [2])
 
@@ -22,7 +22,7 @@ def t1(f):
         .translate(0, 200)
         .remove_futures())
 
-@animation(timeline=pt2, bg=0.2, solo=0)
+@animation(timeline=pt2, bg=0.2, solo=1)
 def t2(f):
     cg:ClipGroup = pt2.clip_group(1, f, [2])
 
