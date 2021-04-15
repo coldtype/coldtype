@@ -58,7 +58,12 @@ class Clip(Timeable):
         self.symbol = None
         self.symbol_position = 0
 
-        if self.text.startswith("^"):
+        if self.text.startswith("^$"):
+            symbol, rest = self.text.split("|")
+            self.symbol = symbol[2:]
+            self.symbol_position = -2
+            self.text = rest
+        elif self.text.startswith("^"):
             symbol, rest = self.text.split("|")
             self.symbol = symbol[1:]
             self.symbol_position = -1
@@ -683,7 +688,10 @@ class Sequence(Timeline):
             for c in t.clips:
                 c:Clip
                 if c.symbol and c.symbol == symbol:
-                    if c.symbol_position == -1:
+                    if c.symbol_position == -2:
+                        start = c.start
+                        end = c.end
+                    elif c.symbol_position == -1:
                         start = c.start
                     elif c.symbol_position == +1:
                         end = c.end
