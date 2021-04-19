@@ -7,11 +7,7 @@ from coldtype.pens.datimage import DATImage
 @renderable((1920, 1080))
 def stub(r):
     capture = cv2.VideoCapture(0)
-    ret, frame = capture.read()
-    #bc, gc, rc = cv2.split(frame)
-    #ac = np.ones(bc.shape, dtype=bc.dtype) * 50
-    #image = cv2.merge((bc, gc, rc, ac))
-    #image = skia.Image.fromarray(frame)
+    _, frame = capture.read()
     save_to = f"experiments/media/capture0.jpg"
     cv2.imwrite(save_to, frame)
     capture.release()
