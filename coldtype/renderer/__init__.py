@@ -120,7 +120,7 @@ class Renderer():
 
             port=parser.add_argument("-p", "--port", type=int, default=8007, help="What port should the websocket run on (provided -ws is passed)"),
         
-            listen=parser.add_argument("-l", "--listen", type=str, default=None, help="What address should a websocket connection be made to, for control of external coldtype program?"),
+            websocket_external=parser.add_argument("-wse", "--websocket-external", type=str, default=None, help="What address should a websocket connection be made to, for control of external coldtype program?"),
 
             no_midi=parser.add_argument("-nm", "--no-midi", action="store_true", default=False, help="Midi is on by default, do you want to turn it off?"),
             
@@ -913,6 +913,10 @@ class Renderer():
         glfw.set_window_title(self.window, text)
     
     def initialize_gui_and_server(self):
+        if self.args.websocket_external:
+            self.state.external_url = f"ws://{self.args.websocket_external}"
+            print(self.state.external_url)
+
         if self.args.websocket:
             try:
                 print("WEBSOCKET!", self.args.port)
@@ -1606,6 +1610,11 @@ class Renderer():
                 cmd = jdata.get("command")
                 context = jdata.get("context")
                 self.on_remote_command(cmd, context)
+            elif jdata.get("renderable"):
+                renderable = jdata.get("renderable")
+                self.state.external_result = renderable
+                self.action_waiting = Action.PreviewStoryboard
+                
         except TypeError:
             raise TypeError("Huh")
         except:

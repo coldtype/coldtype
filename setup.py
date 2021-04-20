@@ -54,7 +54,7 @@ setuptools.setup(
         #"rtmidi",
         #"pynput",
         #"pyaudio",
-        
+        #"websocket-client",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

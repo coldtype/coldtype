@@ -1,8 +1,7 @@
 from enum import Enum
 from pathlib import Path
-import json, glfw, skia, re
+import json, glfw, skia, re, websocket
 from coldtype import hsl, Action, Keylayer, Point, Rect, DATPen, Overlay
-
 from typing import Callable, List
 
 
@@ -179,6 +178,8 @@ class RendererState():
         self._last_filepath = None
         self.watch_soft_mods = {}
         self.watch_mods = {}
+        self.external_url = None
+        self.external_result = None
         self.reset()
     
     def reset(self, ignore_current_state=False):
@@ -497,3 +498,16 @@ class RendererState():
                 del self.overlays[overlay]
         else:
             self.overlays[overlay] = True
+    
+    def render_external(self, result):
+        ws = None
+        try:
+            ws = websocket.WebSocket()
+            ws.connect(self.external_url)
+            ws.send(json.dumps({"renderable": result.to_code()}))
+        except ConnectionRefusedError:
+            print("!!! Could not connect to websocket", self.external_url)
+        
+        if ws:
+            ws.close()
+        return self
