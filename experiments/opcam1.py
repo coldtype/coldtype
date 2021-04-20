@@ -1,11 +1,41 @@
 import cv2
 import numpy as np
-from coldtype import *
+from coldtype.test import *
 from random import randint
 from coldtype.pens.datimage import DATImage
+from drafting.text.richtext import RichText
+from time import sleep
+import base64
 
-@renderable((1920, 1080))
-def stub(r):
+
+fnt1 = Font.Cacheable("~/Type/fonts/fonts/_script/BancoPro.otf")
+fnt2 = Font.Cacheable("~/Type/fonts/fonts/_script/MistralD.otf")
+
+tl = Timeline(30)
+
+@animation((1080, 1080), rstate=1, timeline=tl)
+def stub(f, rs):
+    #sleep(3)
+
+    r = f.a.r
+    txt = (RichText(f.a.r,
+        "FULLY\nvaccinated[v]",
+        {"default":Style(fnt1, 270),
+        "v":Style(fnt2, 200)})
+        .pen()
+        .f(0)
+        .align(r)
+        .cast(DP)
+        .translate(0, -150+300*f.a.progress(f.i).e))
+
+    rs.render_external(f.a.r, DPS([
+        DP(r).f(0),
+        txt.copy().f(1)]))
+
+    return txt
+
+    sleep(0.5)
+
     capture = cv2.VideoCapture(0)
     _, frame = capture.read()
     save_to = f"experiments/media/capture0.jpg"
@@ -17,10 +47,10 @@ def stub(r):
         (DATImage(save_to)
             .align(r)
             .precompose(r, as_image=False)
-            #.phototype(r, blur=5, cutw=35, cut=150)
+            #.phototype(r, blur=2, cutw=50, cut=150)
             )])
     
     return DPS([
         DP(r).f(1),
         txt.precompose(r)#.blendmode(skia.BlendMode.kDifference)
-    ])#.precompose(r).phototype(r, fill=hsl(0.3))
+    ]).precompose(r)#.phototype(r, fill=0, cutw=30)

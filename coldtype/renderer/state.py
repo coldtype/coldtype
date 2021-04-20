@@ -1,9 +1,10 @@
 from enum import Enum
 from pathlib import Path
-import json, glfw, skia, re, websocket
+import json, glfw, skia, re, base64
 from coldtype import hsl, Action, Keylayer, Point, Rect, DATPen, Overlay
 from typing import Callable, List
-
+from time import sleep
+from websocket import create_connection
 
 class RendererStateEncoder(json.JSONEncoder):
     def default(self, o):
@@ -499,12 +500,15 @@ class RendererState():
         else:
             self.overlays[overlay] = True
     
-    def render_external(self, result):
+    def render_external(self, rect, result):
+        img = result.precompose(rect).image().get("src")
+        data = img.encodeToData(skia.kWEBP, 100)
+        #encoded = base64.b64encode(img.toarray())
+
         ws = None
         try:
-            ws = websocket.WebSocket()
-            ws.connect(self.external_url)
-            ws.send(json.dumps({"renderable": result.to_code()}))
+            ws = create_connection(self.external_url)
+            ws.send_binary(data.bytes())
         except ConnectionRefusedError:
             print("!!! Could not connect to websocket", self.external_url)
         

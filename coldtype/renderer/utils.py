@@ -33,6 +33,7 @@ class bcolors:
 
 class SimpleEcho(WebSocket):
     def handleMessage(self):
+        print("INCOMING!")
         #print("INCOMING", self, self.data)
         self.messages.append(self.data)
 

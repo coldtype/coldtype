@@ -1,3 +1,4 @@
+from coldtype.pens.datimage import DATImage
 import tempfile, traceback, threading
 import argparse, importlib, inspect, json, math
 import sys, os, re, signal, tracemalloc, shutil
@@ -1615,11 +1616,15 @@ class Renderer():
                 self.state.external_result = renderable
                 self.action_waiting = Action.PreviewStoryboard
                 
-        except TypeError:
-            raise TypeError("Huh")
+        #except TypeError:
+        #    raise TypeError("Huh")
         except:
-            self.show_error()
-            print("Malformed message", message)
+            try:
+                self.state.external_result = DATImage(skia.Image.MakeFromEncoded(message))
+                self.action_waiting = Action.PreviewStoryboard
+            except:
+                self.show_error()
+                print("Malformed message")
     
     def listen_to_glfw(self):
         while not self.dead and not glfw.window_should_close(self.window):
@@ -1835,6 +1840,8 @@ class Renderer():
             else:
                 self.on_request_from_render(render, request, action)
             self.requests_waiting = []
+        
+        #self.state.external_result = None
 
     def draw_preview(self, idx, scale, canvas, rect, waiter):
         if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
