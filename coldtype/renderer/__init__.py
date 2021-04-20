@@ -118,6 +118,10 @@ class Renderer():
 
             websocket=parser.add_argument("-ws", "--websocket", action="store_true", default=False, help="Should the server run a web socket?"),
 
+            port=parser.add_argument("-p", "--port", type=int, default=8007, help="What port should the websocket run on (provided -ws is passed)"),
+        
+            listen=parser.add_argument("-l", "--listen", type=str, default=None, help="What address should a websocket connection be made to, for control of external coldtype program?"),
+
             no_midi=parser.add_argument("-nm", "--no-midi", action="store_true", default=False, help="Midi is on by default, do you want to turn it off?"),
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
@@ -911,7 +915,8 @@ class Renderer():
     def initialize_gui_and_server(self):
         if self.args.websocket:
             try:
-                self.server = echo_server()
+                print("WEBSOCKET!", self.args.port)
+                self.server = echo_server(self.args.port)
                 self.server_thread = WebSocketThread(self.server)
                 self.server_thread.start()
             except OSError:
