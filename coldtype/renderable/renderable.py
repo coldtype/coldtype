@@ -94,7 +94,8 @@ class renderable():
         bg_render=False,
         style="default",
         viewBox=True,
-        layer=False):
+        layer=False,
+        write_all=False):
         """Base configuration for a renderable function"""
 
         self.rect = Rect(rect)
@@ -107,6 +108,7 @@ class renderable():
         self.postfn = postfn
         self.last_passes = []
         self.last_result = None
+        self.write_all = write_all
         self.style = style
         self.composites = composites
 

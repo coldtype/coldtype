@@ -35,6 +35,8 @@ _random = Random()
 import contextlib, glfw
 from OpenGL import GL
 
+from time import sleep
+
 try:
     import rtmidi
 except ImportError:
@@ -1598,6 +1600,14 @@ class Renderer():
     
     def process_ws_message(self, message):
         try:
+            self.state.external_result = DATImage(skia.Image.MakeFromEncoded(message))
+            self.action_waiting = Action.PreviewStoryboard
+            #sleep(1)
+            return
+        except TypeError:
+            print("NOT AN IMAGE", message)
+
+        try:
             jdata = json.loads(message)
             action = jdata.get("action")
             if action:
@@ -1611,20 +1621,16 @@ class Renderer():
                 cmd = jdata.get("command")
                 context = jdata.get("context")
                 self.on_remote_command(cmd, context)
-            elif jdata.get("renderable"):
-                renderable = jdata.get("renderable")
-                self.state.external_result = renderable
-                self.action_waiting = Action.PreviewStoryboard
+            #elif jdata.get("renderable"):
+            #    renderable = jdata.get("renderable")
+            #    self.state.external_result = renderable
+            #    self.action_waiting = Action.PreviewStoryboard
                 
         #except TypeError:
         #    raise TypeError("Huh")
         except:
-            try:
-                self.state.external_result = DATImage(skia.Image.MakeFromEncoded(message))
-                self.action_waiting = Action.PreviewStoryboard
-            except:
-                self.show_error()
-                print("Malformed message")
+            self.show_error()
+            print("Malformed message")
     
     def listen_to_glfw(self):
         while not self.dead and not glfw.window_should_close(self.window):
@@ -1730,12 +1736,17 @@ class Renderer():
             self.on_action(Action.PreviewStoryboardNext)
         
         if self.server:
+            msgs = []
             for k, v in self.server.connections.items():
                 if hasattr(v, "messages") and len(v.messages) > 0:
                     #print(k, v.messages)
                     for msg in v.messages:
-                        self.process_ws_message(msg)
+                        msgs.append(msg)
+                        #self.process_ws_message(msg)
                     v.messages = []
+            
+            for msg in msgs:
+                self.process_ws_message(msg)
 
         if not self.args.no_midi:
             self.monitor_midi()
@@ -1881,6 +1892,9 @@ class Renderer():
             if self.args.composite or render.composites:
                 comp = result.precompose(render.rect)
                 render.last_result = comp
+            #elif render.write_all:
+            #    print(">>>>>>>>>>>", rp.output_path)
+            #    comp = result.precompose(render.rect)
             else:
                 comp = result
             render.draw_preview(1.0, canvas, render.rect, comp, rp)
