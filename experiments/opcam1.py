@@ -15,11 +15,12 @@ tl = Timeline(120)
 
 @animation((1080, 1080), rstate=1, timeline=tl)
 def stub(f, rs:RendererState):
-    capture = cv2.VideoCapture(0)
-    _, frame = capture.read()
-    save_to = "experiments/media/bmpcc/capture{:04d}.jpg".format(f.i-1 if f.i > 0 else tl.duration-1)
-    cv2.imwrite(save_to, frame)
-    capture.release()
+    if True:
+        capture = cv2.VideoCapture(0)
+        _, frame = capture.read()
+        save_to = "experiments/media/bmpcc/capture{:04d}.jpg".format(f.i-1 if f.i > 0 else tl.duration-1)
+        cv2.imwrite(save_to, frame)
+        capture.release()
 
     r = f.a.r
 
@@ -34,7 +35,7 @@ def stub(f, rs:RendererState):
     #return crv
 
     txt = (RichText(f.a.r,
-        "OPTICAL\ncamera effects [v]",
+        "LETTERS\nThrough a Pyrex [v]",
         {"default":Style(fnt1, 270, tu=-50),
         "v":Style(fnt2, 180)})
         .xa()
