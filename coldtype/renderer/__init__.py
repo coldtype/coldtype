@@ -1323,7 +1323,7 @@ class Renderer():
         elif shortcut == KeyboardShortcut.PlayPreviewSlow:
             if shortcut not in self.recurring_actions:
                 self.recurring_actions[shortcut] = dict(
-                    interval=1.0,
+                    interval=3.0,
                     action=KeyboardShortcut.PreviewNext,
                     last=0)
             else:
@@ -1627,13 +1627,13 @@ class Renderer():
                 client.sendMessage(json.dumps(kwargs))
     
     def process_ws_message(self, message):
-        try:
-            self.state.external_result = DATImage(skia.Image.MakeFromEncoded(message))
-            self.action_waiting = Action.PreviewStoryboard
-            #sleep(1)
-            return
-        except TypeError:
-            print("NOT AN IMAGE", message)
+        # try:
+        #     self.state.external_result = DATImage(skia.Image.MakeFromEncoded(message))
+        #     self.action_waiting = Action.PreviewStoryboard
+        #     #sleep(1)
+        #     return
+        # except TypeError:
+        #     print("NOT AN IMAGE", message)
 
         try:
             jdata = json.loads(message)
@@ -1649,6 +1649,14 @@ class Renderer():
                 cmd = jdata.get("command")
                 context = jdata.get("context")
                 self.on_remote_command(cmd, context)
+            elif jdata.get("rendered") is not None:
+                idx = jdata.get("rendered")
+                print("IDX>>>>>>>", idx)
+                self.state.adjust_keyed_frame_offsets(
+                    self.last_animation.name,
+                    lambda i, o: idx)
+                self.action_waiting = Action.PreviewStoryboard
+
             #elif jdata.get("renderable"):
             #    renderable = jdata.get("renderable")
             #    self.state.external_result = renderable

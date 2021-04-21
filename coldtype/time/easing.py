@@ -96,6 +96,8 @@ def ease(style, x):
     e = eases.get(style)
     if e:
         return e().ease(x), 0.5
+    elif hasattr(style, "moveTo"):
+        return curve_pos_and_speed(style, x)
     elif False:
         if style in easer_ufo:
             return curve_pos_and_speed(DATPen().glyph(easer_ufo[style]), x)

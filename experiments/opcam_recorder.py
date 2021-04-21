@@ -14,7 +14,7 @@ tl = Timeline(120)
 
 @animation((1080, 1080), rstate=1, timeline=tl)
 def opcam(f, rs):
-    sleep(0.25)
+    sleep(1)
 
     r = f.a.r
 
