@@ -500,7 +500,7 @@ class RendererState():
         else:
             self.overlays[overlay] = True
     
-    def render_external(self, rect, result):
+    def render_external(self, rect, idx, result):
         img = result.precompose(rect).image().get("src")
         data = img.encodeToData(skia.kWEBP, 100)
         #encoded = base64.b64encode(img.toarray())
@@ -508,10 +508,12 @@ class RendererState():
         ws = None
         try:
             ws = create_connection(self.external_url)
+            print("> open", idx)
             ws.send_binary(data.bytes())
         except ConnectionRefusedError:
             print("!!! Could not connect to websocket", self.external_url)
         
         if ws:
+            print("< close", idx)
             ws.close()
         return self

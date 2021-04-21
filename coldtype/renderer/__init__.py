@@ -145,7 +145,7 @@ class Renderer():
 
             composite=parser.add_argument("-c", "--composite", action="store_true", default=False, help="Should the next render composite onto the previous render?"),
 
-            memory=parser.add_argument("-m", "--memory", action="store_true", default=False, help="Show statistics about memory usage?"),
+            memory=parser.add_argument("-mm", "--memory", action="store_true", default=False, help="Show statistics about memory usage?"),
 
             midi_info=parser.add_argument("-mi", "--midi-info", action="store_true", default=False, help="Show available MIDI devices"),
 
@@ -159,9 +159,13 @@ class Renderer():
 
             window_opacity=parser.add_argument("-wo", "--window-opacity", type=float, help="opacity of the window, from >0 to 1 (defaults to 1 unless overridden in .coldtype.py file)"),
 
+            monitor_name=parser.add_argument("-mn", "--monitor-name", type=str, help="the name of the monitor to open the window in; pass 'list' to list all monitor names"),
+
             window_pin=parser.add_argument("-wp", "--window-pin", type=str, help="where to pin the window, if you want to pin the window"),
 
             window_pin_inset=parser.add_argument("-wpi", "--window-pin-inset", type=str, help="how much to 'inset' the pin of the window"),
+
+            window_content_scale=parser.add_argument("-wcs", "--window-content-scale", type=float, default=None, help="do you want to override the reported content-scale?"),
 
             window_float=parser.add_argument("-wf", "--window-float", action="store_true", default=False, help="should the window float on top of everything?"),
 
@@ -286,6 +290,8 @@ class Renderer():
             self.function_filters = []
         self.multiplexing = self.args.multiplex
         self._should_reload = False
+
+        self.recurring_actions = {}
     
     def reset_filepath(self, filepath):
         self.line_number = -1
@@ -915,6 +921,17 @@ class Renderer():
     def set_title(self, text):
         glfw.set_window_title(self.window, text)
     
+    def get_content_scale(self):
+        u_scale = self.py_config.get("WINDOW_SCALE")
+        
+        if self.args.window_content_scale == None:
+            if u_scale:
+                return u_scale
+            else:
+                return glfw.get_window_content_scale(self.window)[0]
+        else:
+            return self.args.window_content_scale
+    
     def initialize_gui_and_server(self):
         if self.args.websocket_external:
             self.state.external_url = f"ws://{self.args.websocket_external}"
@@ -955,7 +972,7 @@ class Renderer():
         
         if self.py_config.get("WINDOW_FLOAT", self.args.window_float):
             glfw.window_hint(glfw.FLOATING, glfw.TRUE)
-        
+
         self.window = glfw.create_window(int(50), int(50), '', None, None)
         self.window_scrolly = 0
 
@@ -968,7 +985,7 @@ class Renderer():
             o = self.args.window_opacity
         glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
         
-        self._prev_scale = glfw.get_window_content_scale(self.window)[0]
+        self._prev_scale = self.get_content_scale()
         
         glfw.make_context_current(self.window)
         glfw.set_key_callback(self.window, self.on_key)
@@ -976,6 +993,9 @@ class Renderer():
         glfw.set_mouse_button_callback(self.window, self.on_mouse_button)
         glfw.set_cursor_pos_callback(self.window, self.on_mouse_move)
         glfw.set_scroll_callback(self.window, self.on_scroll)
+
+        #if primary_monitor:
+        #    glfw.set_window_monitor(self.window, primary_monitor, 0, 0, int(50), int(50))
 
         try:
             midiin = rtmidi.RtMidiIn()
@@ -1300,6 +1320,14 @@ class Renderer():
             self.paudio_preview = 1
             self.playing_preloaded_frame = -1
             return Action.PreviewPlay
+        elif shortcut == KeyboardShortcut.PlayPreviewSlow:
+            if shortcut not in self.recurring_actions:
+                self.recurring_actions[shortcut] = dict(
+                    interval=1.0,
+                    action=KeyboardShortcut.PreviewNext,
+                    last=0)
+            else:
+                del self.recurring_actions[shortcut]
         elif shortcut == KeyboardShortcut.PlayAudioFrame:
             self.paudio_preview = 1
         
@@ -1634,8 +1662,9 @@ class Renderer():
     
     def listen_to_glfw(self):
         while not self.dead and not glfw.window_should_close(self.window):
-            scale_x, scale_y = glfw.get_window_content_scale(self.window)
+            scale_x = self.get_content_scale()
             if scale_x != self._prev_scale:
+                print("HERE!")
                 self._prev_scale = scale_x
                 self.on_action(Action.PreviewStoryboard)
             
@@ -1732,8 +1761,8 @@ class Renderer():
                 self.on_action(self.action_waiting)
             self.action_waiting = None
 
-        if self.playing > 0:
-            self.on_action(Action.PreviewStoryboardNext)
+        #if self.playing > 0:
+        #    self.on_action(Action.PreviewStoryboardNext)
         
         if self.server:
             msgs = []
@@ -1791,14 +1820,10 @@ class Renderer():
                 self.create_surface(frect)
 
             if not self.last_rect or frect != self.last_rect:
-                m_scale = self.py_config.get("WINDOW_SCALE")
-                if m_scale:
-                    scale_x, scale_y = m_scale
-                else:
-                    scale_x, scale_y = glfw.get_window_content_scale(self.window)
-                
-                if not DARWIN:
-                    scale_x, scale_y = 1.0, 1.0
+                m_scale = self.get_content_scale()
+                scale_x, scale_y = m_scale, m_scale
+                #if not DARWIN:
+                #    scale_x, scale_y = 1.0, 1.0
 
                 ww = int(w/scale_x)
                 wh = int(h/scale_y)
@@ -1806,8 +1831,29 @@ class Renderer():
                 pin = self.py_config.get("WINDOW_PIN", None)
                 if self.args.window_pin:
                     pin = [s.strip() for s in self.args.window_pin.split(",")]
-                if pin:
-                    monitor = glfw.get_primary_monitor()
+                
+                print("PIN", pin)
+
+                primary_monitor = None
+                if self.args.monitor_name:
+                    remn = self.args.monitor_name
+                    monitors = glfw.get_monitors()
+                    matches = []
+                    for monitor in monitors:
+                        mn = glfw.get_monitor_name(monitor)
+                        print(">>> MONITOR >>>", mn)
+                        if remn in str(mn):
+                            matches.append(monitor)
+                    if len(matches) > 0:
+                        primary_monitor = matches[0]
+                
+                #print(">>>>>>>>>>>>>>", Rect(glfw.get_monitor_workarea(primary_monitor)))
+
+                if pin and pin != ["None"]:
+                    if primary_monitor:
+                        monitor = primary_monitor
+                    else:
+                        monitor = glfw.get_primary_monitor()
                     work_rect = Rect(glfw.get_monitor_workarea(monitor))
                     pinned = work_rect.take(ww, pin[0]).take(wh, pin[1]).round()
                     if pin[1] == "mdy":
@@ -1816,6 +1862,8 @@ class Renderer():
                         x, y = [int(n) for n in self.args.window_pin_inset.split(",")]
                         pinned = pinned.offset(-x, y)
                     glfw.set_window_pos(self.window, pinned.x, pinned.y)
+                else:
+                    glfw.set_window_pos(self.window, -500, 0)
 
             self.last_rect = frect
 
@@ -1853,6 +1901,16 @@ class Renderer():
             self.requests_waiting = []
         
         #self.state.external_result = None
+
+        if self.playing > 0:
+            self.on_action(Action.PreviewStoryboardNext)
+        
+        for k, ra in self.recurring_actions.items():
+            interval = ra.get("interval")
+            if now - ra.get("last") > interval:
+                ra["last"] = now
+                print("RECURRING ACTION", k)
+                self.on_shortcut(ra.get("action"))
 
     def draw_preview(self, idx, scale, canvas, rect, waiter):
         if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
@@ -1892,9 +1950,6 @@ class Renderer():
             if self.args.composite or render.composites:
                 comp = result.precompose(render.rect)
                 render.last_result = comp
-            #elif render.write_all:
-            #    print(">>>>>>>>>>>", rp.output_path)
-            #    comp = result.precompose(render.rect)
             else:
                 comp = result
             render.draw_preview(1.0, canvas, render.rect, comp, rp)
@@ -1985,6 +2040,19 @@ class Renderer():
             print(f"... no file specified, showing generic window ...")
     
     def monitor_midi(self):
+        def execute_shortcut(shortcut):
+            try:
+                ksc = KeyboardShortcut(shortcut)
+                ea = None
+            except ValueError:
+                ksc = None
+                ea = EditAction(shortcut)
+            
+            if ksc:
+                self.on_shortcut(KeyboardShortcut(shortcut))
+            elif ea:
+                self.on_action(EditAction(shortcut), {})
+
         controllers = {}
         for device, mi in self.midis:
             msg = mi.getMessage(0)
@@ -1994,26 +2062,19 @@ class Renderer():
                 if msg.isNoteOn(): # Maybe not forever?
                     nn = msg.getNoteNumber()
                     shortcut = self.midi_mapping[device]["note_on"].get(nn)
-                    try:
-                        ksc = KeyboardShortcut(shortcut)
-                        ea = None
-                    except ValueError:
-                        ksc = None
-                        ea = EditAction(shortcut)
-                    
-                    if ksc:
-                        self.on_shortcut(KeyboardShortcut(shortcut))
-                    elif ea:
-                        self.on_action(EditAction(shortcut), {})
+                    execute_shortcut(shortcut)
                 if msg.isController():
                     cn = msg.getControllerNumber()
                     cv = msg.getControllerValue()
                     shortcut = self.midi_mapping[device].get("controller", {}).get(cn)
                     if shortcut:
                         if cv in shortcut:
-                            if self.server:
-                                print("shortcut!", shortcut, cv)
-                                self.send_to_external(shortcut[cv])
+                            print("shortcut!", shortcut, cv)
+                            execute_shortcut(shortcut.get(cv))
+
+                            #if self.server:
+                            #    print("shortcut!", shortcut, cv)
+                            #    self.send_to_external(shortcut[cv])
                     else:
                         controllers[device + "_" + str(cn)] = cv/127
                 msg = mi.getMessage(0)

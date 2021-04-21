@@ -7,7 +7,7 @@ def find_workarea(self):
 
 Timeline.find_workarea = find_workarea
 
-@animation(rect=(1920, 1080), timeline=tl, bg=0, write_all=1)
+@animation(rect=(1920, 1080), timeline=tl, bg=0)
 def render(f):
     pe = f.a.t.progress(f.i, loops=1, easefn="qeio").e
     return DATPens([
