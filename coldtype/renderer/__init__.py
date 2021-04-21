@@ -1323,7 +1323,7 @@ class Renderer():
         elif shortcut == KeyboardShortcut.PlayPreviewSlow:
             if shortcut not in self.recurring_actions:
                 self.recurring_actions[shortcut] = dict(
-                    interval=3.0,
+                    interval=1.0,
                     action=KeyboardShortcut.PreviewNext,
                     last=0)
             else:

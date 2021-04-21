@@ -15,6 +15,12 @@ tl = Timeline(120)
 
 @animation((1080, 1080), rstate=1, timeline=tl)
 def stub(f, rs:RendererState):
+    capture = cv2.VideoCapture(0)
+    _, frame = capture.read()
+    save_to = "experiments/media/bmpcc/capture{:04d}.jpg".format(f.i-1 if f.i > 0 else tl.duration-1)
+    cv2.imwrite(save_to, frame)
+    capture.release()
+
     r = f.a.r
 
     crv = (DP().define(r=r)
@@ -41,7 +47,7 @@ def stub(f, rs:RendererState):
     amb = txt.ambit(tv=1)
     txt.translate(0, -amb.mxy+(f.a.r.h+amb.h)*ee)
     
-    rs.notify_external(f.i)
+    #rs.notify_external(f.i)
     
     return DPS([
         DP(r).f(0),
