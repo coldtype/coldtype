@@ -1627,14 +1627,6 @@ class Renderer():
                 client.sendMessage(json.dumps(kwargs))
     
     def process_ws_message(self, message):
-        # try:
-        #     self.state.external_result = DATImage(skia.Image.MakeFromEncoded(message))
-        #     self.action_waiting = Action.PreviewStoryboard
-        #     #sleep(1)
-        #     return
-        # except TypeError:
-        #     print("NOT AN IMAGE", message)
-
         try:
             jdata = json.loads(message)
             action = jdata.get("action")
@@ -1656,11 +1648,6 @@ class Renderer():
                     self.last_animation.name,
                     lambda i, o: idx)
                 self.action_waiting = Action.PreviewStoryboard
-
-            #elif jdata.get("renderable"):
-            #    renderable = jdata.get("renderable")
-            #    self.state.external_result = renderable
-            #    self.action_waiting = Action.PreviewStoryboard
                 
         #except TypeError:
         #    raise TypeError("Huh")
@@ -1907,8 +1894,6 @@ class Renderer():
             else:
                 self.on_request_from_render(render, request, action)
             self.requests_waiting = []
-        
-        #self.state.external_result = None
 
         if self.playing > 0:
             self.on_action(Action.PreviewStoryboardNext)

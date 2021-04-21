@@ -4,7 +4,6 @@ import json, glfw, skia, re, base64
 from coldtype import hsl, Action, Keylayer, Point, Rect, DATPen, Overlay
 from typing import Callable, List
 from time import sleep
-from websocket import create_connection
 
 class RendererStateEncoder(json.JSONEncoder):
     def default(self, o):
@@ -180,7 +179,6 @@ class RendererState():
         self.watch_soft_mods = {}
         self.watch_mods = {}
         self.external_url = None
-        self.external_result = None
         self.reset()
     
     def reset(self, ignore_current_state=False):
@@ -501,6 +499,7 @@ class RendererState():
             self.overlays[overlay] = True
     
     def notify_external(self, idx):
+        from websocket import create_connection
         ws = None
         try:
             ws = create_connection(self.external_url)
@@ -508,24 +507,6 @@ class RendererState():
             ws.send(json.dumps({"rendered": idx}))
         except ConnectionRefusedError:
             print("!!! Could not connect to websocket", self.external_url)
-        if ws:
-            print("< close", idx)
-            ws.close()
-        return self
-    
-    def render_external(self, rect, idx, result):
-        img = result.precompose(rect).image().get("src")
-        data = img.encodeToData(skia.kWEBP, 100)
-        #encoded = base64.b64encode(img.toarray())
-
-        ws = None
-        try:
-            ws = create_connection(self.external_url)
-            print("> open", idx)
-            ws.send_binary(data.bytes())
-        except ConnectionRefusedError:
-            print("!!! Could not connect to websocket", self.external_url)
-        
         if ws:
             print("< close", idx)
             ws.close()
