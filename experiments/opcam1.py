@@ -1,6 +1,5 @@
 from coldtype.renderer.state import RendererState
 import cv2
-import numpy as np
 from coldtype.test import *
 from coldtype.warping import warp_fn
 from random import randint
@@ -15,11 +14,10 @@ tl = Timeline(120)
 
 @animation((1080, 1080), rstate=1, timeline=tl)
 def stub(f, rs:RendererState):
-    if True:
+    if False:
         capture = cv2.VideoCapture(0)
         _, frame = capture.read()
         save_to = "experiments/media/bmpcc/capture{:04d}.jpg".format(f.i-1 if f.i > 0 else tl.duration-1)
-        cv2.imwrite(save_to, frame)
         capture.release()
 
     r = f.a.r
@@ -31,13 +29,14 @@ def stub(f, rs:RendererState):
     e = f.a.progress(f.i).e
     amb = crv.ambit()
     ee = crv.take_curve(1).t(e).y/amb.h
+    ee = e
     
     #return crv
 
     txt = (RichText(f.a.r,
-        "LETTERS\nThrough a Pyrex [v]",
-        {"default":Style(fnt1, 270, tu=-50),
-        "v":Style(fnt2, 180)})
+        "HELLO\nWorld [v]",
+        {"default":Style(fnt1, 100, tu=-50),
+        "v":Style(fnt2, 120)})
         .xa()
         .pen()
         .f(0)
@@ -46,12 +45,12 @@ def stub(f, rs:RendererState):
     
     #txt.translate(0, -txt.ambit(tv=1).mxy)
     amb = txt.ambit(tv=1)
-    txt.translate(0, -amb.mxy+(f.a.r.h+amb.h)*ee)
+    #txt.translate(0, -amb.mxy+(f.a.r.h+amb.h)*ee)
     
     #rs.notify_external(f.i)
     
     return DPS([
         DP(r).f(0),
-        txt.flatten(3).nlt(warp_fn(f.i, f.i)).f(1),
+        txt.flatten(3).nlt(warp_fn(f.i*5, f.i*5)).f(1),
         #crv
     ])

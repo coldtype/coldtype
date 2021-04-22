@@ -27,6 +27,7 @@ setuptools.setup(
         "coldtype.renderer",
         "coldtype.renderable",
         "coldtype.text",
+        "coldtype.capture",
     ],
     entry_points={
         'console_scripts': [
