@@ -19,7 +19,7 @@ from functools import partial, partialmethod
 
 import skia, coldtype
 from coldtype.helpers import *
-from drafting.geometry import Rect, Point
+from drafting.geometry import Rect, Point, Edge
 from drafting.text.reader import Font as DraftingFont
 from coldtype.pens.skiapen import SkiaPen
 from coldtype.renderer.watchdog import AsyncWatchdog
@@ -1829,9 +1829,7 @@ class Renderer():
                 glfw.set_window_size(self.window, ww, wh)
                 pin = self.py_config.get("WINDOW_PIN", None)
                 if self.args.window_pin:
-                    pin = [s.strip() for s in self.args.window_pin.split(",")]
-                
-                print("PIN", pin)
+                    pin = pin
 
                 primary_monitor = None
                 if self.args.monitor_name:
@@ -1845,24 +1843,24 @@ class Renderer():
                             matches.append(monitor)
                     if len(matches) > 0:
                         primary_monitor = matches[0]
-                
-                #print(">>>>>>>>>>>>>>", Rect(glfw.get_monitor_workarea(primary_monitor)))
 
-                if pin and pin != ["None"]:
+                if pin:
                     if primary_monitor:
                         monitor = primary_monitor
                     else:
                         monitor = glfw.get_primary_monitor()
                     work_rect = Rect(glfw.get_monitor_workarea(monitor))
-                    pinned = work_rect.take(ww, pin[0]).take(wh, pin[1]).round()
-                    if pin[1] == "mdy":
+                    edges = Edge.PairFromCompass(pin)
+                    pinned = work_rect.take(ww, edges[0]).take(wh, edges[1]).round()
+                    if edges[1] == "mdy":
                         pinned = pinned.offset(0, -30)
+                    pinned = pinned.flip(work_rect.h+45)
                     if self.args.window_pin_inset:
                         x, y = [int(n) for n in self.args.window_pin_inset.split(",")]
                         pinned = pinned.offset(-x, y)
                     glfw.set_window_pos(self.window, pinned.x, pinned.y)
                 else:
-                    glfw.set_window_pos(self.window, -500, 0)
+                    glfw.set_window_pos(self.window, 0, 0)
 
             self.last_rect = frect
 
