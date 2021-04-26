@@ -1663,7 +1663,6 @@ class Renderer():
         while not self.dead and not glfw.window_should_close(self.window):
             scale_x = self.get_content_scale()
             if scale_x != self._prev_scale:
-                print("HERE!")
                 self._prev_scale = scale_x
                 self.on_action(Action.PreviewStoryboard)
             
