@@ -1854,7 +1854,7 @@ class Renderer():
                     pinned = work_rect.take(ww, edges[0]).take(wh, edges[1]).round()
                     if edges[1] == "mdy":
                         pinned = pinned.offset(0, -30)
-                    pinned = pinned.flip(work_rect.h+45)
+                    pinned = pinned.flip(work_rect.h+46)
                     if self.args.window_pin_inset:
                         x, y = [int(n) for n in self.args.window_pin_inset.split(",")]
                         pinned = pinned.offset(-x, y)
