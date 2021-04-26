@@ -27,6 +27,7 @@ setuptools.setup(
         "coldtype.renderer",
         "coldtype.renderable",
         "coldtype.text",
+        "coldtype.capture",
     ],
     entry_points={
         'console_scripts': [
@@ -54,7 +55,7 @@ setuptools.setup(
         #"rtmidi",
         #"pynput",
         #"pyaudio",
-        
+        #"websocket-client",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

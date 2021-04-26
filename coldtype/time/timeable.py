@@ -1,3 +1,4 @@
+from drafting.pens.draftingpen import DraftingPen
 from coldtype.time.easing import ease
 from copy import copy
 import math
@@ -13,7 +14,7 @@ class Timing():
     
     def ease(self, easefn):
         easer = easefn
-        if not isinstance(easer, str):
+        if not isinstance(easer, str) and not isinstance(easer, DraftingPen):
             try:
                 iter(easefn) # is-iterable
                 if len(easefn) > self.loop:
@@ -126,7 +127,7 @@ class Timeable():
                 lt = 1 - lt
         return lt, ltf
     
-    def progress(self, i, loops=0, cyclic=True, negative=False, easefn="linear") -> Timing:
+    def progress(self, i, loops=0, cyclic=True, negative=False, easefn="linear", to1=False) -> Timing:
         """
         Given an easing function (``easefn=``), calculate the amount of progress as a Timing object
 
@@ -136,7 +137,10 @@ class Timeable():
             return Timing(0, 0, 0, easefn)
         if i > self.end:
             return Timing(1, 1, 0, easefn)
-        t = (i-self.start) / self.duration
+        d = self.duration
+        if to1:
+            d = d - 1
+        t = (i-self.start) / d
         if loops == 0:
             return Timing(t, t, 0, easefn)
         else:

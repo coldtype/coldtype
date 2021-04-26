@@ -1,10 +1,9 @@
 from enum import Enum
 from pathlib import Path
-import json, glfw, skia, re
+import json, glfw, skia, re, base64
 from coldtype import hsl, Action, Keylayer, Point, Rect, DATPen, Overlay
-
 from typing import Callable, List
-
+from time import sleep
 
 class RendererStateEncoder(json.JSONEncoder):
     def default(self, o):
@@ -179,6 +178,7 @@ class RendererState():
         self._last_filepath = None
         self.watch_soft_mods = {}
         self.watch_mods = {}
+        self.external_url = None
         self.reset()
     
     def reset(self, ignore_current_state=False):
@@ -497,3 +497,17 @@ class RendererState():
                 del self.overlays[overlay]
         else:
             self.overlays[overlay] = True
+    
+    def notify_external(self, idx):
+        from websocket import create_connection
+        ws = None
+        try:
+            ws = create_connection(self.external_url)
+            print("> open", idx)
+            ws.send(json.dumps({"rendered": idx}))
+        except ConnectionRefusedError:
+            print("!!! Could not connect to websocket", self.external_url)
+        if ws:
+            print("< close", idx)
+            ws.close()
+        return self

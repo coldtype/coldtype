@@ -1,4 +1,4 @@
-#coldtype -wp mxx,mxy -wt
+#coldtype -wp SE -wt
 
 """
 A circle appears with no background

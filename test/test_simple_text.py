@@ -7,4 +7,5 @@ def stub(r):
         .pens()
         .align(r)
         .f(hsl(0.7)))
+    print(dps[0].a(0.1))
     return dps
