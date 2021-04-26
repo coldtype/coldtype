@@ -1,4 +1,4 @@
-#coldtype -wt -wp mdx,mdy -hkb
+#coldtype -wt -wp C -hkb
 
 from coldtype.test import *
 from drafting.text.richtext import RichText

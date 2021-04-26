@@ -1826,9 +1826,10 @@ class Renderer():
                 ww = int(w/scale_x)
                 wh = int(h/scale_y)
                 glfw.set_window_size(self.window, ww, wh)
+
                 pin = self.py_config.get("WINDOW_PIN", None)
                 if self.args.window_pin:
-                    pin = pin
+                    pin = self.args.window_pin
 
                 primary_monitor = None
                 if self.args.monitor_name:
