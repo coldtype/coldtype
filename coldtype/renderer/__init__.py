@@ -762,6 +762,10 @@ class Renderer():
                 self.render_multiplexed(frames)
                 trigger = Action.RenderIndices
                 indices = [0, all_frames[-1]] # always render first & last from main, to trigger a filesystem-change detection in premiere
+
+        elif self.animation() and trigger == Action.RenderWorkarea:
+            all_frames = self.animation().all_frames()
+            self._single_thread_render(Action.RenderIndices, [0, all_frames[-1]])
         
         preview_count, render_count, renders = self._single_thread_render(trigger, indices)
         
