@@ -1830,6 +1830,10 @@ class Renderer():
                 pin = self.py_config.get("WINDOW_PIN", None)
                 if self.args.window_pin:
                     pin = self.args.window_pin
+                
+                if not isinstance(pin, str):
+                    print("--window-pin must be compass direction")
+                    pin = "NE"
 
                 primary_monitor = None
                 if self.args.monitor_name:
