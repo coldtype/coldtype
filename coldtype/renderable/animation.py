@@ -172,7 +172,7 @@ class animation(renderable, Timeable):
             
             dps = DATPens()
             dps += DATPen().rect(r).f(self.bg)
-            for idx, g in enumerate(r.grid(columns=gx, rows=gy)):
+            for idx, g in enumerate(r.grid(gx, gy)):
                 if idx < len(pngs):
                     dps += DATPen().rect(g).f(None).img(pngs[idx], g, pattern=False)
             return dps
