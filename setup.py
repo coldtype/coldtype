@@ -41,7 +41,7 @@ setuptools.setup(
         "skia-python>=86.0",
         "easing-functions",
         "numpy",
-        "watchdog<=0.10.3", # https://github.com/gorakhargosh/watchdog/issues/702
+        "watchdog", # https://github.com/gorakhargosh/watchdog/issues/702
         "noise",
         "PyOpenGL",
         "PyOpenGL-accelerate",

@@ -2030,7 +2030,7 @@ class Renderer():
         self.observers = []
         dirs = set([w[1].parent for w in self.watchees])
         for d in dirs:
-            o = AsyncWatchdog(str(d), on_modified=self.on_modified, recursive=False)
+            o = AsyncWatchdog(str(d), on_modified=self.on_modified, recursive=True)
             o.start()
             self.observers.append(o)
         if self.filepath:
