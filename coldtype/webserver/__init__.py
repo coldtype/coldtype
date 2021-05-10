@@ -26,13 +26,13 @@ test = [
         ["f", ["hsl", 0.6, {"s":1}]],
         ["align", "®"]],
     ["S", "COLD", "co", 500,
-        {"wdth":0.5, "tu":-80, "r":1, "ro": 1},
+        {"wdth":0.5, "tu":-80, "r":1, "ro": 1, "rotate":-5},
         ".",
         ["pens"],
         ["align", "®"],
         ["f", 1],
         ["understroke", 0, 30],
-        ["rotate", -15]]]
+        ["rotate", 15]]]
 
 DATPen._pen_class = SkiaPen
 

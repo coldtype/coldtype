@@ -7,7 +7,9 @@ def _parse(el, depth=0, chain=False):
 
     for idx, e in enumerate(el):
         if idx == 0:
-            if e == "R":
+            if e == "ø":
+                return ""
+            elif e == "R":
                 out.append("Rect")
             elif e == "P":
                 out.append("DATPen")
@@ -30,9 +32,12 @@ def _parse(el, depth=0, chain=False):
         elif isinstance(e, str) or isinstance(e, int) or isinstance(e, float):
             if e == "®":
                 e = "r"
-            elif isinstance(e, str) and "=" not in e:
+            elif isinstance(e, str) and "=" not in e and not e.startswith("."):
                 e = f"\"{e}\""
-            if idx < 2:
+            
+            if isinstance(e, str) and e.startswith("."):
+                out[-1] += e
+            elif idx < 2:
                 out.append(str(e))
             else:
                 if out[0] == "StSt" and idx == 2:
