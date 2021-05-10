@@ -21,13 +21,14 @@ setuptools.setup(
     packages=[
         "coldtype",
         "coldtype.time",
-        "coldtype.time.nle",
         "coldtype.midi",
         "coldtype.pens",
-        "coldtype.renderer",
-        "coldtype.renderable",
         "coldtype.text",
         "coldtype.capture",
+        "coldtype.time.nle",
+        "coldtype.renderer",
+        "coldtype.renderable",
+        "coldtype.webserver",
     ],
     entry_points={
         'console_scripts': [
