@@ -64,13 +64,13 @@ def parse(tree):
     to_eval = "[" + ",\n ".join(out) + "]"
     return to_eval
 
-def evalcdel(tree, r=Rect(1080, 1080)):
+def evalcdel(tree,
+    r=Rect(1080, 1080),
+    font_cache={},
+    DEFAULT_FONT="assets/ColdtypeObviously-VF.ttf"):
     from drafting.color import hsl, rgb
     from coldtype.pens.datpen import DATPen, DATPens
     from coldtype.text import StSt, StyledString, Style
-
-    font_cache = {}
-    DEFAULT_FONT = "assets/ColdtypeObviously-VF.ttf"
     return eval(parse(tree))
 
 if __name__ == "__main__":

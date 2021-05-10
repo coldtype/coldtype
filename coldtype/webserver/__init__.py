@@ -1,9 +1,10 @@
 import tempfile, shutil
 from urllib.request import urlopen
 from coldtype.renderable import renderable
+from coldtype.webserver.cdelopty import evalcdel
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.skiapen import SkiaPen
-from drafting.text.reader import Font, StyledString, Style
+from drafting.text.reader import Font #, StyledString, Style
 from drafting.geometry import Rect
 from drafting.color import hsl
 from flask import send_file
@@ -16,23 +17,28 @@ with urlopen(cottf_path) as response:
         print(tf.name)
 
 cottf = Font(tf.name)
+fonts = {"co": cottf}
+
+test = [
+    ["P", "®", ".", ["f", 0]],
+    ["P", ".",
+        ["oval", ["R", "®", ".", ["inset", 50]]],
+        ["f", ["hsl", 0.6, {"s":1}]],
+        ["align", "®"]],
+    ["S", "COLD", "co", 500,
+        {"wdth":0.5, "tu":-80, "r":1, "ro": 1},
+        ".",
+        ["pens"],
+        ["align", "®"],
+        ["f", 1],
+        ["understroke", 0, 30],
+        ["rotate", -15]]]
 
 DATPen._pen_class = SkiaPen
 
 @renderable(Rect(1080, 1080), rstate=1)
 def test1(r, get):
-    f = float(get.get("f", "0.9"))
-    txt = get.get("txt", "COLDTYPE")
-    return DATPens([
-        DATPen(r).f(0),
-        DATPen().oval(r.inset(50)).f(hsl(f, 0.75)),
-        (StyledString(txt,
-            Style(cottf, 500, wdth=0, ro=1, tu=-50, r=1))
-            .pens()
-            .align(r, tv=1)
-            .f(1)
-            .understroke(sw=20))
-    ])
+    return evalcdel(get.get("cdel", test), r, fonts)
 
 def hello_world(req):
     rp = test1.passes(None, None)[0]
