@@ -33,7 +33,10 @@ def _parse(el, depth=0, chain=False):
             if e == "®":
                 e = "r"
             elif isinstance(e, str) and "=" not in e and not e.startswith("."):
-                e = f"\"{e}\""
+                if "\n" in e:
+                    e = f"\"\"\"{e}\"\"\""
+                else:
+                    e = f"\"{e}\""
             
             if isinstance(e, str) and e.startswith("."):
                 out[-1] += e
@@ -46,6 +49,8 @@ def _parse(el, depth=0, chain=False):
                     out.append(f", {e}")
         elif isinstance(e, dict):
             out.append(f", **{e}")
+        elif e is None:
+            out.append(None)
         else:
             parsed = _parse(e, depth+1, out[0] == "DATPen" or out[0] == "DATPens" or out[0] == "StSt")
             parsed = "".join([str(el) for el in parsed])
@@ -67,6 +72,7 @@ def parse(tree):
         out.append("(" + _parse(el) + ")")
 
     to_eval = "[" + ",\n ".join(out) + "]"
+    print(to_eval)
     return to_eval
 
 def evalcdel(tree,
