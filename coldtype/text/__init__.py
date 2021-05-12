@@ -19,7 +19,7 @@ def StSt(text,
     **kwargs):
     style = Style(font, font_size, **kwargs)
     fit = kwargs.get("fit", None)
-    leading = kwargs.get("leading", 20)
+    leading = kwargs.get("leading", 10)
     if "\n" in text:
         lockup = Composer(rect, text, style, fit=fit, leading=leading)
     else:

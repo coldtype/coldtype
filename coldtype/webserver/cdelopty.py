@@ -72,7 +72,6 @@ def parse(tree):
         out.append("(" + _parse(el) + ")")
 
     to_eval = "[" + ",\n ".join(out) + "]"
-    print(to_eval)
     return to_eval
 
 def evalcdel(tree,
