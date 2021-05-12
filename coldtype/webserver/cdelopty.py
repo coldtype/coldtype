@@ -77,7 +77,7 @@ def parse(tree):
 def evalcdel(tree,
     r=Rect(1080, 1080),
     font_cache={},
-    DEFAULT_FONT="assets/ColdtypeObviously-VF.ttf"):
+    DEFAULT_FONT=None):
     from drafting.color import hsl, rgb
     from coldtype.pens.datpen import DATPen, DATPens
     from coldtype.text import StSt, StyledString, Style
