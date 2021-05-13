@@ -817,6 +817,8 @@ class Renderer():
                 sargs.append("-r", r)
             if self.args.no_sound:
                 sargs.append("-ns")
+            if self.args.cpu_render:
+                sargs.append("-cpu")
             #print(sys.argv)
             #print(sargs)
             #return
@@ -873,7 +875,7 @@ class Renderer():
     def reload_and_render(self, trigger, watchable=None, indices=None):
         #self.playing = 0
 
-        if self.args.is_subprocess:
+        if self.args.is_subprocess and not self.args.cpu_render:
             if not glfw.init():
                 raise RuntimeError('glfw.init() failed')
             glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
@@ -881,6 +883,7 @@ class Renderer():
             window = glfw.create_window(640, 480, '', None, None)
             glfw.make_context_current(window)
             self.context = skia.GrDirectContext.MakeGL()
+            print("SUB GLFW")
 
         wl = len(self.watchees)
         self.window_scrolly = 0
