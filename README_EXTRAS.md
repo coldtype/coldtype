@@ -13,3 +13,15 @@ Actually specifying it might not be necessary? Seems to work on my machine
 brew install glfw --HEAD
 PYGLFW_LIBRARY=/usr/local/Cellar/glfw/HEAD-0b9e48f/lib/libglfw.3.4.dylib
 ```
+
+### GCP
+
+PyTorch images seem to work nicely (`c2-deeplearning-pytorch-1-8-cu110-v20210512-debian-10`), not sure this is a real link: https://console.cloud.google.com/compute/imagesDetail/projects/ml-images/global/images/c2-deeplearning-pytorch-1-8-cu110-v20210512-debian-10?folder=&organizationId=&project=uplifted-sol-90414
+
+SSH w/ cloud console, then:
+
+- `sudo apt install libgl1-mesa-glx` # https://github.com/conda-forge/pygridgen-feedstock/issues/10
+- `git clone https://github.com/goodhertz/coldtype`
+- `cd coldtype`
+- `pip install -e .`
+- `coldtype examples/animations/house.py -a -mp -cpu -ns`
