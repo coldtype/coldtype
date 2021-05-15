@@ -1,3 +1,6 @@
+import datetime
+from subprocess import run
+
 from coldtype import *
 from coldtype.pens.dattext import DATText
 
@@ -147,3 +150,26 @@ def font_previewer(r):
         .pens()
         .align(r)
         .f(0))
+
+# to run this code, go to the viewer
+# app while it’s running, then hit cmd+l
+# N.B. you'll need to have `fontmake`
+# available in your virtualenv, which
+# should be as easy as `pip install fontmake`
+# with the virtualenv activated
+
+def release(_):
+    ufo = DefconFont(ufo_path)
+    date = datetime.datetime.now().strftime("%y%m%d%H%M")
+    font_name = "_".join([
+        ufo.info.familyName.replace(" ", ""),
+        ufo.info.styleName.replace(" ", ""),
+        date
+    ])
+    fontmade_path = ufo_path.parent / f"fontmakes/{font_name}.otf"
+    fontmade_path.parent.mkdir(exist_ok=True)
+    run([
+        "fontmake",
+        "-u", str(ufo_path),
+        "-o", "otf",
+        "--output-path=" + str(fontmade_path)])
