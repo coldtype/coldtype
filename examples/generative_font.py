@@ -116,6 +116,7 @@ def glyph_viewer(f):
     ufo.info.capHeight = cap_height
     ufo.info.ascender = cap_height
     ufo.info.descender = descender
+    ufo.info.unitsPerEm = 1000
 
     print(f"> drawing :{glyph_fn.glyph_name}:")
     glyph_pen = glyph_fn.func(glyph_fn.frame).f(0)
