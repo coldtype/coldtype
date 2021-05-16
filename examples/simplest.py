@@ -4,7 +4,7 @@ from coldtype.warping import warp_fn
 @renderable(rect=(1200, 300))
 def render(r):
     return (StyledString("COLDTYPE",
-        Style("assets/MutatorSans.ttf", 200))
+        Style("assets/MutatorSans.ttf", 200, wght=1))
         .pen()
         .align(r, tv=1)
         .f(hsl(0.75, 1))
