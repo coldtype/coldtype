@@ -32,22 +32,46 @@
             }
         }
 
-        function drawPensToCanvas(rect, pens) {
+        function rgba(c) {
+            return `rgba(${c[0]*255}, ${c[1]*255}, ${c[2]*255}, ${c[3]})`;
+        }
+
+        function drawPensToCanvas(bg, rect, pens) {
             const can = document.getElementById("canvas");
+            can.style.backgroundColor = rgba(bg);
+            const ctx = can.getContext('2d');
             can.width = rect[2];
             can.height = rect[3];
             can.style.width = `${rect[2]/2}px`;
             can.style.height = `${rect[3]/2}px`;
-            const ctx = can.getContext('2d');
-            //ctx.scale(2, 2);
 
-            console.log("rect>", rect);
             function draw(pen, state, data) {
                 let p = new Path2D(pen.d.toUpperCase());
-                f = pen.default.fill[1];
+                let mode = "default";
+                let attrs = pen[mode];
                 ctx.save();
-                ctx.fillStyle = `rgba(${f[0]*255}, ${f[1]*255}, ${f[2]*255}, ${f[3]})`;
-                ctx.fill(p);
+                if (pen.default.fill) {
+                    let [fillType, fill] = attrs.fill;
+                    if (fillType === "f") {
+                        ctx.fillStyle = rgba(fill);
+                        ctx.fill(p);
+                    } else if (fillType == "g") {
+                        let [f1, p1] = fill[0];
+                        let [f2, p2] = fill[1];
+                        let grade = ctx.createLinearGradient(p1[0], p1[1], p2[0], p2[1]);
+                        grade.addColorStop(0, rgba(f1));
+                        grade.addColorStop(1, rgba(f2));
+                        ctx.fillStyle = grade;
+                        ctx.fill(p);
+                    }
+                }
+
+                if (pen.default.stroke) {
+                    let [stroke, strokeWeight] = attrs.stroke;
+                    ctx.strokeStyle = rgba(stroke);
+                    ctx.lineWidth = strokeWeight;
+                    ctx.stroke(p);
+                }
                 ctx.restore();
             }
 
@@ -66,24 +90,28 @@
             websocket.onerror = function (evt) { onError(evt) };
 
             function onOpen(evt) {
-                console.log("connected!");
+                console.log("> connected");
                 connected = true;
                 doSend(JSON.stringify({webviewer:true}));
             }
 
             function onClose(evt) {
+                console.log("> closed")
                 connected = false;
                 setTimeout(connectToWebsocket, 5000);
             }
 
             function onMessage(evt) {
                 var data = JSON.parse(evt.data);
+                if (data.title) {
+                    document.title = data.title;
+                }
                 if (data.renders) {
                     data.renders.forEach(render => {
                         if (render.fmt == "canvas") {
-                            drawPensToCanvas(render.rect, render.jsonpen);
+                            drawPensToCanvas(render.bg, render.rect, render.jsonpen);
                         } else {
-                            $("#svg").empty().append(render.svg);
+                            $("#svg").empty().css("background", rgba(render.bg), append(render.svg));
                         }
                     });
                 }

@@ -1803,16 +1803,21 @@ class Renderer():
     
     def turn_over_webviewer(self):
         renders = []
+        try:
+            title = self.watchees[0][1].name
+        except:
+            title = "coldtype"
+
         for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
             if self.args.format == "canvas":
-                renders.append(dict(fmt="canvas", jsonpen=JSONPen.Composite(result, render.rect), rect=[*render.rect]))
+                renders.append(dict(fmt="canvas", jsonpen=JSONPen.Composite(result, render.rect), rect=[*render.rect], bg=[*render.bg]))
             else:
-                renders.append(dict(fmt="svg", svg=SVGPen.Composite(result, render.rect, viewBox=render.viewBox), rect=[*render.rect]))
+                renders.append(dict(fmt="svg", svg=SVGPen.Composite(result, render.rect, viewBox=render.viewBox), rect=[*render.rect], bg=[*render.bg]))
     
         if renders:
             for _, client in self.server.connections.items():
                 if hasattr(client, "webviewer") and client.webviewer:
-                    client.sendMessage(json.dumps({"renders":renders}))
+                    client.sendMessage(json.dumps({"renders":renders, "title":title}))
     
     def turn_over_glfw(self):
         dscale = self.preview_scale()
