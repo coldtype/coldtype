@@ -36,7 +36,7 @@ setuptools.setup(
         ],
     },
     install_requires=[
-        "drafting[text]>=0.1.6",
+        "drafting[text]>=0.1.7",
         "defcon",
         "mido",
         "skia-python>=86.0",

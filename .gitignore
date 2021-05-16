@@ -2,6 +2,7 @@
 .vscode
 env
 venv
+venv2
 test/artifacts/*
 test/*.blend1
 test/test_media
