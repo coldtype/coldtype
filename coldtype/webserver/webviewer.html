@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style type="text/css">
+        body {
+            background: whitesmoke;
+        }
+    </style>
+</head>
+<body>
+    <script type="text/javascript">
+        connectToWebsocket();
+
+        var connected = false;
+
+        function connectToWebsocket() {
+            if (connected) {
+                return;
+            }
+            const WS_URL = "ws://localhost:8007"; // TODO needs to be configurable
+            try {
+                var websocket = new WebSocket(WS_URL);
+            } catch {
+                console.log("nope")
+            }
+            websocket.onopen = function (evt) { onOpen(evt) };
+            websocket.onclose = function (evt) { onClose(evt) };
+            websocket.onmessage = function (evt) { onMessage(evt) };
+            websocket.onerror = function (evt) { onError(evt) };
+
+            function onOpen(evt) {
+                console.log("connected!");
+                connected = true;
+                doSend(JSON.stringify({webviewer:true}));
+            }
+
+            function onClose(evt) {
+                connected = false;
+                setTimeout(connectToWebsocket, 5000);
+            }
+
+            function onMessage(evt) {
+                var data = JSON.parse(evt.data);
+                console.log(data);
+            }
+
+            function onError(evt) {
+                websocket.close();
+            }
+
+            function doSend(message) {
+                websocket.send(message);
+            }
+
+            function doDisconnect() {
+                websocket.close();
+            }
+        }
+    </script>
+</body>
+
+</html>

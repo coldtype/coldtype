@@ -1,6 +1,9 @@
-import glfw
 from enum import Enum
 
+try:
+    import glfw
+except ImportError:
+    glfw = None
 
 class KeyboardShortcut(Enum):
     PreviewPrev = "prev_prev"
@@ -69,141 +72,143 @@ REPEATABLE_SHORTCUTS = [
     KeyboardShortcut.JumpNext
 ]
 
+def build_shortcuts():
+    return {
+        KeyboardShortcut.PreviewPrevMany: [
+            [[glfw.MOD_SHIFT], glfw.KEY_J],
+            [[glfw.MOD_SHIFT], glfw.KEY_LEFT]
+        ],
+        KeyboardShortcut.PreviewPrev: [
+            [[], glfw.KEY_J],
+            [[], glfw.KEY_LEFT]
+        ],
+        KeyboardShortcut.PreviewNextMany: [
+            [[glfw.MOD_SHIFT], glfw.KEY_L],
+            [[glfw.MOD_SHIFT], glfw.KEY_RIGHT]
+        ],
+        KeyboardShortcut.PreviewNext: [
+            [[], glfw.KEY_L],
+            [[], glfw.KEY_RIGHT]
+        ],
+        
+        KeyboardShortcut.ClearLastRender: [
+            [[], glfw.KEY_BACKSLASH]
+        ],
+        KeyboardShortcut.ClearRenderedFrames: [
+            [[glfw.MOD_SHIFT], glfw.KEY_BACKSLASH]
+        ],
+        
+        KeyboardShortcut.PlayRendered: [
+            [[glfw.MOD_SHIFT], glfw.KEY_SPACE],
+            #[[glfw.MOD_SHIFT], glfw.KEY_K]
+        ],
+        KeyboardShortcut.PlayPreview: [
+            [[], glfw.KEY_SPACE],
+            #[[], glfw.KEY_K]
+        ],
+        KeyboardShortcut.PlayAudioFrame: [
+            [[], glfw.KEY_H]
+        ],
 
-SHORTCUTS = {
-    KeyboardShortcut.PreviewPrevMany: [
-        [[glfw.MOD_SHIFT], glfw.KEY_J],
-        [[glfw.MOD_SHIFT], glfw.KEY_LEFT]
-    ],
-    KeyboardShortcut.PreviewPrev: [
-        [[], glfw.KEY_J],
-        [[], glfw.KEY_LEFT]
-    ],
-    KeyboardShortcut.PreviewNextMany: [
-        [[glfw.MOD_SHIFT], glfw.KEY_L],
-        [[glfw.MOD_SHIFT], glfw.KEY_RIGHT]
-    ],
-    KeyboardShortcut.PreviewNext: [
-        [[], glfw.KEY_L],
-        [[], glfw.KEY_RIGHT]
-    ],
-    
-    KeyboardShortcut.ClearLastRender: [
-        [[], glfw.KEY_BACKSLASH]
-    ],
-    KeyboardShortcut.ClearRenderedFrames: [
-        [[glfw.MOD_SHIFT], glfw.KEY_BACKSLASH]
-    ],
-    
-    KeyboardShortcut.PlayRendered: [
-        [[glfw.MOD_SHIFT], glfw.KEY_SPACE],
-        #[[glfw.MOD_SHIFT], glfw.KEY_K]
-    ],
-    KeyboardShortcut.PlayPreview: [
-        [[], glfw.KEY_SPACE],
-        #[[], glfw.KEY_K]
-    ],
-    KeyboardShortcut.PlayAudioFrame: [
-        [[], glfw.KEY_H]
-    ],
+        KeyboardShortcut.ReloadSource: [
+            [[], glfw.KEY_ENTER],
+            [[], glfw.KEY_P],
+        ],
+        KeyboardShortcut.RestartApp: [
+            [[], glfw.KEY_R]
+        ],
+        KeyboardShortcut.Quit: [
+            [[], glfw.KEY_Q]
+        ],
 
-    KeyboardShortcut.ReloadSource: [
-        [[], glfw.KEY_ENTER],
-        [[], glfw.KEY_P],
-    ],
-    KeyboardShortcut.RestartApp: [
-        [[], glfw.KEY_R]
-    ],
-    KeyboardShortcut.Quit: [
-        [[], glfw.KEY_Q]
-    ],
+        KeyboardShortcut.Release: [
+            [[glfw.MOD_SUPER], glfw.KEY_L]
+        ],
+        KeyboardShortcut.RenderAll: [
+            [[], glfw.KEY_A],
+        ],
+        KeyboardShortcut.RenderWorkarea: [
+            [[], glfw.KEY_W]
+        ],
+        KeyboardShortcut.ToggleMultiplex: [
+            [[], glfw.KEY_M]
+        ],
 
-    KeyboardShortcut.Release: [
-        [[glfw.MOD_SUPER], glfw.KEY_L]
-    ],
-    KeyboardShortcut.RenderAll: [
-        [[], glfw.KEY_A],
-    ],
-    KeyboardShortcut.RenderWorkarea: [
-        [[], glfw.KEY_W]
-    ],
-    KeyboardShortcut.ToggleMultiplex: [
-        [[], glfw.KEY_M]
-    ],
+        KeyboardShortcut.SetWorkareaIn: [
+            [[glfw.MOD_SUPER], glfw.KEY_I]
+        ],
+        KeyboardShortcut.SetWorkareaOut: [
+            [[glfw.MOD_SUPER], glfw.KEY_O]
+        ],
 
-    KeyboardShortcut.SetWorkareaIn: [
-        [[glfw.MOD_SUPER], glfw.KEY_I]
-    ],
-    KeyboardShortcut.SetWorkareaOut: [
-        [[glfw.MOD_SUPER], glfw.KEY_O]
-    ],
+        KeyboardShortcut.JumpPrev: [
+            [[], glfw.KEY_UP],
+            [[], glfw.KEY_I]
+        ],
+        KeyboardShortcut.JumpNext: [
+            [[], glfw.KEY_DOWN],
+            [[], glfw.KEY_K]
+        ],
+        KeyboardShortcut.JumpHome: [
+            [[], glfw.KEY_HOME],
+            [[glfw.MOD_SHIFT], glfw.KEY_H]
+        ],
+        KeyboardShortcut.JumpEnd: [
+            [[], glfw.KEY_END]
+        ],
+        KeyboardShortcut.JumpStoryboard: [
+            [[glfw.MOD_SUPER], glfw.KEY_HOME]
+        ],
 
-    KeyboardShortcut.JumpPrev: [
-        [[], glfw.KEY_UP],
-        [[], glfw.KEY_I]
-    ],
-    KeyboardShortcut.JumpNext: [
-        [[], glfw.KEY_DOWN],
-        [[], glfw.KEY_K]
-    ],
-    KeyboardShortcut.JumpHome: [
-        [[], glfw.KEY_HOME],
-        [[glfw.MOD_SHIFT], glfw.KEY_H]
-    ],
-    KeyboardShortcut.JumpEnd: [
-        [[], glfw.KEY_END]
-    ],
-    KeyboardShortcut.JumpStoryboard: [
-        [[glfw.MOD_SUPER], glfw.KEY_HOME]
-    ],
+        KeyboardShortcut.KeylayerEditing: [
+            [[], glfw.KEY_D]
+        ],
+        KeyboardShortcut.KeylayerCmd: [
+            [[], glfw.KEY_C],
+        ],
+        KeyboardShortcut.KeylayerText: [
+            [[], glfw.KEY_T],
+        ],
 
-    KeyboardShortcut.KeylayerEditing: [
-        [[], glfw.KEY_D]
-    ],
-    KeyboardShortcut.KeylayerCmd: [
-        [[], glfw.KEY_C],
-    ],
-    KeyboardShortcut.KeylayerText: [
-        [[], glfw.KEY_T],
-    ],
+        KeyboardShortcut.OverlayInfo: [
+            [[], glfw.KEY_SLASH]
+        ],
+        KeyboardShortcut.OverlayTimeline: [
+            [[glfw.MOD_SUPER], glfw.KEY_T]
+        ],
 
-    KeyboardShortcut.OverlayInfo: [
-        [[], glfw.KEY_SLASH]
-    ],
-    KeyboardShortcut.OverlayTimeline: [
-        [[glfw.MOD_SUPER], glfw.KEY_T]
-    ],
+        KeyboardShortcut.PreviewScaleUp: [
+            [[], glfw.KEY_EQUAL]
+        ],
+        KeyboardShortcut.PreviewScaleDown: [
+            [[], glfw.KEY_MINUS]
+        ],
+        KeyboardShortcut.PreviewScaleMin: [
+            [[glfw.MOD_SUPER], glfw.KEY_MINUS]
+        ],
+        KeyboardShortcut.PreviewScaleMax: [
+            [[glfw.MOD_SUPER], glfw.KEY_EQUAL]
+        ],
+        KeyboardShortcut.PreviewScaleDefault: [
+            [[], glfw.KEY_0]
+        ],
 
-    KeyboardShortcut.PreviewScaleUp: [
-        [[], glfw.KEY_EQUAL]
-    ],
-    KeyboardShortcut.PreviewScaleDown: [
-        [[], glfw.KEY_MINUS]
-    ],
-    KeyboardShortcut.PreviewScaleMin: [
-        [[glfw.MOD_SUPER], glfw.KEY_MINUS]
-    ],
-    KeyboardShortcut.PreviewScaleMax: [
-        [[glfw.MOD_SUPER], glfw.KEY_EQUAL]
-    ],
-    KeyboardShortcut.PreviewScaleDefault: [
-        [[], glfw.KEY_0]
-    ],
+        KeyboardShortcut.WindowOpacityDown: [
+            [[glfw.MOD_SUPER], glfw.KEY_DOWN]
+        ],
+        KeyboardShortcut.WindowOpacityUp: [
+            [[glfw.MOD_SUPER], glfw.KEY_UP]
+        ],
+        KeyboardShortcut.WindowOpacityMin: [
+            [[glfw.MOD_SUPER, glfw.MOD_SHIFT], glfw.KEY_DOWN],
+        ],
+        KeyboardShortcut.WindowOpacityMax: [
+            [[glfw.MOD_SUPER, glfw.MOD_SHIFT], glfw.KEY_UP]
+        ],
 
-    KeyboardShortcut.WindowOpacityDown: [
-        [[glfw.MOD_SUPER], glfw.KEY_DOWN]
-    ],
-    KeyboardShortcut.WindowOpacityUp: [
-        [[glfw.MOD_SUPER], glfw.KEY_UP]
-    ],
-    KeyboardShortcut.WindowOpacityMin: [
-        [[glfw.MOD_SUPER, glfw.MOD_SHIFT], glfw.KEY_DOWN],
-    ],
-    KeyboardShortcut.WindowOpacityMax: [
-        [[glfw.MOD_SUPER, glfw.MOD_SHIFT], glfw.KEY_UP]
-    ],
+        KeyboardShortcut.JumpToFrameFunctionDef: [
+            [[], glfw.KEY_F],
+        ]
+    }
 
-    KeyboardShortcut.JumpToFrameFunctionDef: [
-        [[], glfw.KEY_F],
-    ]
-}
+SHORTCUTS = build_shortcuts() if glfw else {}

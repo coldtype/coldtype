@@ -35,28 +35,35 @@ setuptools.setup(
             'coldtype = coldtype.renderer:main'
         ],
     },
+    extras_require={
+        "skia": [
+            "skia-python>=86.0",
+        ],
+        "viewer": [
+            "glfw",
+            "PyOpenGL",
+            "PyOpenGL-accelerate",
+            "skia-python>=86.0",
+            "rtmidi",
+        ],
+        "experimental": [
+            "pynput",
+            "pyaudio",
+        ]
+    },
     install_requires=[
-        "drafting[text]>=0.1.6",
-        "defcon",
-        "mido",
-        "skia-python>=86.0",
-        "easing-functions",
-        "numpy",
-        "watchdog<2.0.0", # https://github.com/gorakhargosh/watchdog/issues/702
-        "noise",
-        "PyOpenGL",
-        "PyOpenGL-accelerate",
-        "glfw",
-        "SimpleWebSocketServer",
-        "more-itertools",
-        "docutils",
-        "exdown",
+        "drafting[text]>=0.1.7",
         "srt",
+        "mido",
+        "numpy",
+        "noise",
+        "defcon",
+        "docutils",
         "timecode",
-        #"rtmidi",
-        #"pynput",
-        #"pyaudio",
-        #"websocket-client",
+        "more-itertools",
+        "easing-functions",
+        "SimpleWebSocketServer",
+        "watchdog<2.0.0", # https://github.com/gorakhargosh/watchdog/issues/702
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

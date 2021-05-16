@@ -17,23 +17,39 @@ from more_itertools import distribute
 from docutils.core import publish_doctree
 from functools import partial, partialmethod
 
-import skia, coldtype
+import coldtype
 from coldtype.helpers import *
 from drafting.geometry import Rect, Point, Edge
 from drafting.text.reader import Font as DraftingFont
-from coldtype.pens.skiapen import SkiaPen
+
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.renderer.keyboard import KeyboardShortcut, SHORTCUTS, REPEATABLE_SHORTCUTS
 
+try:
+    import skia
+    from coldtype.pens.skiapen import SkiaPen
+except ImportError:
+    skia = None
+    SkiaPen = None
+
+try:
+    import drawBot as db
+except ImportError:
+    db = None
+
+try:
+    import glfw
+    from OpenGL import GL
+except ImportError:
+    glfw = None
+    GL = None
+
 from coldtype.renderer.utils import *
 
 _random = Random()
-
-import contextlib, glfw
-from OpenGL import GL
 
 from time import sleep
 
@@ -120,6 +136,8 @@ class Renderer():
             no_watch=parser.add_argument("-nw", "--no-watch", action="store_true", default=False, help="Preventing watching for changes to source files"),
 
             websocket=parser.add_argument("-ws", "--websocket", action="store_true", default=False, help="Should the server run a web socket?"),
+
+            webviewer=parser.add_argument("-wv", "--webviewer", action="store_true", default=False, help="Do you want to live-preview in a webviewer instead of with a glfw-skia window?"),
 
             port=parser.add_argument("-p", "--port", type=int, default=8007, help="What port should the websocket run on (provided -ws is passed)"),
         
@@ -243,6 +261,8 @@ class Renderer():
         self.sidecar_threads = []
         self.tails = []
         self.watchee_mods = {}
+        
+        self.rasterizer_warning = None
         
         if not self.reset_filepath(self.args.file if hasattr(self.args, "file") else None):
             self.dead = True
@@ -412,8 +432,9 @@ class Renderer():
         return source_code
 
     def reload(self, trigger):
-        DATPen._pen_class = SkiaPen
-        DATPen._context = self.context
+        if skia and SkiaPen:
+            DATPen._pen_class = SkiaPen
+            DATPen._context = self.context
 
         if not self.filepath:
             self.program = dict(no_filepath=True)
@@ -602,6 +623,20 @@ class Renderer():
             prefix = render.prefix
 
         fmt = self.args.format or render.fmt
+        rasterizer = self.args.rasterizer or render.rasterizer
+
+        if rasterizer == "skia" and skia is None:
+            if not self.rasterizer_warning:
+                self.rasterizer_warning = True
+                print(f"\n! Skia not installed; changing renderer to svg\n")
+            render.rasterizer = "svg"
+            fmt = "svg"
+        elif rasterizer == "drawbot" and db is None:
+            if not self.rasterizer_warning:
+                self.rasterizer_warning = True
+                print(f"\n! DrawBot not installed; changing renderer to svg\n")
+            render.rasterizer = "svg"
+            fmt = "svg"
         
         rps = []
         for rp in render.passes(trigger, self.state, indices):
@@ -817,7 +852,7 @@ class Renderer():
                 sargs.append("-r", r)
             if self.args.no_sound:
                 sargs.append("-ns")
-            if self.args.cpu_render:
+            if self.args.cpu_render or skia is None:
                 sargs.append("-cpu")
             #print(sys.argv)
             #print(sargs)
@@ -849,6 +884,8 @@ class Renderer():
             from coldtype.pens.drawbotpen import DrawBotPen
             DrawBotPen.Composite(content, render.rect, str(path), scale=scale)
         elif rasterizer == "skia":
+            if not skia:
+                raise Exception("pip install skia-python")
             if render.fmt == "png":
                 content = content.precompose(render.rect)
                 render.last_result = content
@@ -926,7 +963,8 @@ class Renderer():
         sys.exit(self.exit_code)
     
     def set_title(self, text):
-        glfw.set_window_title(self.window, text)
+        if glfw:
+            glfw.set_window_title(self.window, text)
     
     def get_content_scale(self):
         u_scale = self.py_config.get("WINDOW_SCALE")
@@ -934,8 +972,10 @@ class Renderer():
         if self.args.window_content_scale == None:
             if u_scale:
                 return u_scale
-            else:
+            elif glfw:
                 return glfw.get_window_content_scale(self.window)[0]
+            else:
+                return 1
         else:
             return self.args.window_content_scale
     
@@ -954,55 +994,56 @@ class Renderer():
                 self.server = None
         else:
             self.server = None
-
-        if not glfw.init():
-            raise RuntimeError('glfw.init() failed')
-        glfw.window_hint(glfw.STENCIL_BITS, 8)
-        
-        self.transparent = self.py_config.get("WINDOW_TRANSPARENT", self.args.window_transparent)
-        if self.transparent:
-            glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.TRUE)
-            glfw.window_hint(glfw.DECORATED, glfw.FALSE)
-        else:
-            glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.FALSE)
-        
-        self.passthrough = self.py_config.get("WINDOW_PASSTHROUGH", self.args.window_passthrough)
-        if self.passthrough:
-            try:
-                glfw.window_hint(0x0002000D, glfw.TRUE)
-                #glfw.window_hint(glfw.MOUSE_PASSTHROUGH, glfw.TRUE)
-            except glfw.GLFWError:
-                print("failed to hint window for mouse-passthrough")
-
-        if self.py_config.get("WINDOW_BACKGROUND"):
-            glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
-        
-        if self.py_config.get("WINDOW_FLOAT", self.args.window_float):
-            glfw.window_hint(glfw.FLOATING, glfw.TRUE)
-
-        self.window = glfw.create_window(int(50), int(50), '', None, None)
-        self.window_scrolly = 0
-
-        recp = sibling(__file__, "../../assets/RecMono-CasualItalic.ttf")
-        self.typeface = skia.Typeface.MakeFromFile(str(recp))
-        #print(self.typeface.serialize().bytes().decode("utf-8"))
-        
-        o = self.py_config.get("WINDOW_OPACITY", 1)
-        if self.args.window_opacity is not None:
-            o = self.args.window_opacity
-        glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
         
         self._prev_scale = self.get_content_scale()
-        
-        glfw.make_context_current(self.window)
-        glfw.set_key_callback(self.window, self.on_key)
-        glfw.set_char_callback(self.window, self.on_character)
-        glfw.set_mouse_button_callback(self.window, self.on_mouse_button)
-        glfw.set_cursor_pos_callback(self.window, self.on_mouse_move)
-        glfw.set_scroll_callback(self.window, self.on_scroll)
 
-        #if primary_monitor:
-        #    glfw.set_window_monitor(self.window, primary_monitor, 0, 0, int(50), int(50))
+        if glfw:
+            if not glfw.init():
+                raise RuntimeError('glfw.init() failed')
+            glfw.window_hint(glfw.STENCIL_BITS, 8)
+            
+            self.transparent = self.py_config.get("WINDOW_TRANSPARENT", self.args.window_transparent)
+            if self.transparent:
+                glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.TRUE)
+                glfw.window_hint(glfw.DECORATED, glfw.FALSE)
+            else:
+                glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.FALSE)
+            
+            self.passthrough = self.py_config.get("WINDOW_PASSTHROUGH", self.args.window_passthrough)
+            if self.passthrough:
+                try:
+                    glfw.window_hint(0x0002000D, glfw.TRUE)
+                    #glfw.window_hint(glfw.MOUSE_PASSTHROUGH, glfw.TRUE)
+                except glfw.GLFWError:
+                    print("failed to hint window for mouse-passthrough")
+
+            if self.py_config.get("WINDOW_BACKGROUND"):
+                glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
+            
+            if self.py_config.get("WINDOW_FLOAT", self.args.window_float):
+                glfw.window_hint(glfw.FLOATING, glfw.TRUE)
+
+            self.window = glfw.create_window(int(50), int(50), '', None, None)
+            self.window_scrolly = 0
+
+            recp = sibling(__file__, "../../assets/RecMono-CasualItalic.ttf")
+            self.typeface = skia.Typeface.MakeFromFile(str(recp))
+            #print(self.typeface.serialize().bytes().decode("utf-8"))
+            
+            o = self.py_config.get("WINDOW_OPACITY", 1)
+            if self.args.window_opacity is not None:
+                o = self.args.window_opacity
+            glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
+            
+            glfw.make_context_current(self.window)
+            glfw.set_key_callback(self.window, self.on_key)
+            glfw.set_char_callback(self.window, self.on_character)
+            glfw.set_mouse_button_callback(self.window, self.on_mouse_button)
+            glfw.set_cursor_pos_callback(self.window, self.on_mouse_move)
+            glfw.set_scroll_callback(self.window, self.on_scroll)
+
+            #if primary_monitor:
+            #    glfw.set_window_monitor(self.window, primary_monitor, 0, 0, int(50), int(50))
 
         try:
             midiin = rtmidi.RtMidiIn()
@@ -1022,7 +1063,10 @@ class Renderer():
         except:
             self.midis = []
         
-        self.context = skia.GrDirectContext.MakeGL()
+        if skia:
+            self.context = skia.GrDirectContext.MakeGL()
+        else:
+            self.context = None
 
         #self.watch_file_changes()
 
@@ -1109,7 +1153,12 @@ class Renderer():
                     return
             self.on_start()
             if not self.args.no_watch:
-                self.listen_to_glfw()
+                if glfw:
+                    self.listen_to_glfw()
+                elif self.args.webviewer:
+                    while True:
+                        self.turn_over()
+                        sleep(0.25)
             else:
                 self.on_exit()
     
@@ -1663,7 +1712,10 @@ class Renderer():
             print("Malformed message")
     
     def listen_to_glfw(self):
-        while not self.dead and not glfw.window_should_close(self.window):
+        should_close = False
+        if glfw:
+            should_close = glfw.window_should_close(self.window)
+        while not self.dead and not should_close:
             scale_x = self.get_content_scale()
             if scale_x != self._prev_scale:
                 self._prev_scale = scale_x
@@ -1742,6 +1794,127 @@ class Renderer():
             skia.ColorSpace.MakeSRGB())
         assert self.surface is not None
     
+    def turn_over_webviewer(self):
+        renders = []
+        for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
+            # do something with each one
+            print(render)
+            renders.append(idx)
+    
+        if renders:
+            for _, client in self.server.connections.items():
+                if hasattr(client, "webviewer") and client.webviewer:
+                    client.sendMessage(json.dumps({"render":renders}))
+    
+    def turn_over_glfw(self):
+        dscale = self.preview_scale()
+        rects = []
+
+        render_previews = len(self.previews_waiting_to_paint) > 0
+        if render_previews:
+            if pyaudio and self.paudio_source:
+                if self.paudio_preview == 1:
+                    self.preview_audio()
+                    if self.playing == 0:
+                        self.paudio_preview = 0
+
+        w = 0
+        llh = -1
+        lh = -1
+        h = 0
+        for render, result, rp in self.previews_waiting_to_paint:
+            if hasattr(render, "show_error"):
+                sr = render.rect
+            else:
+                sr = render.rect.scale(dscale, "mnx", "mny").round()
+            w = max(sr.w, w)
+            if render.layer:
+                rects.append(Rect(0, llh, sr.w, sr.h))
+            else:
+                rects.append(Rect(0, lh+1, sr.w, sr.h))
+                llh = lh+1
+                lh += sr.h + 1
+                h += sr.h + 1
+        h -= 1
+        
+        frect = Rect(0, 0, w, h)
+        if frect != self.last_rect:
+            self.create_surface(frect)
+
+        if not self.last_rect or frect != self.last_rect:
+            m_scale = self.get_content_scale()
+            scale_x, scale_y = m_scale, m_scale
+            #if not DARWIN:
+            #    scale_x, scale_y = 1.0, 1.0
+
+            ww = int(w/scale_x)
+            wh = int(h/scale_y)
+            glfw.set_window_size(self.window, ww, wh)
+
+            pin = self.py_config.get("WINDOW_PIN", None)
+            if self.args.window_pin:
+                pin = self.args.window_pin
+            
+            if not isinstance(pin, str):
+                print("--window-pin must be compass direction")
+                pin = "NE"
+
+            primary_monitor = None
+            if self.args.monitor_name:
+                remn = self.args.monitor_name
+                monitors = glfw.get_monitors()
+                matches = []
+                for monitor in monitors:
+                    mn = glfw.get_monitor_name(monitor)
+                    print(">>> MONITOR >>>", mn)
+                    if remn in str(mn):
+                        matches.append(monitor)
+                if len(matches) > 0:
+                    primary_monitor = matches[0]
+
+            if pin:
+                if primary_monitor:
+                    monitor = primary_monitor
+                else:
+                    monitor = glfw.get_primary_monitor()
+                work_rect = Rect(glfw.get_monitor_workarea(monitor))
+                edges = Edge.PairFromCompass(pin)
+                pinned = work_rect.take(ww, edges[0]).take(wh, edges[1]).round()
+                if edges[1] == "mdy":
+                    pinned = pinned.offset(0, -30)
+                pinned = pinned.flip(work_rect.h+46)
+                if self.args.window_pin_inset:
+                    x, y = [int(n) for n in self.args.window_pin_inset.split(",")]
+                    pinned = pinned.offset(-x, y)
+                glfw.set_window_pos(self.window, pinned.x, pinned.y)
+            else:
+                glfw.set_window_pos(self.window, 0, 0)
+
+        self.last_rect = frect
+
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+
+        with self.surface as canvas:
+            canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 1))
+            if self.transparent:
+                canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 0))
+            
+            for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
+                rect = rects[idx].offset((w-rects[idx].w)/2, 0).round()
+                try:
+                    self.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
+                except Exception as e:
+                    stack = traceback.format_exc()
+                    print(stack)
+                    paint = skia.Paint(AntiAlias=True, Color=skia.ColorRED)
+                    canvas.drawString(stack.split("\n")[-2], 10, 32, skia.Font(None, 36), paint)
+        
+            if self.state.keylayer != Keylayer.Default and not self.args.hide_keybuffer:
+                self.state.draw_keylayer(canvas, self.last_rect, self.typeface)
+        
+        self.surface.flushAndSubmit()
+        glfw.swap_buffers(self.window)
+    
     def turn_over(self):
         if self.dead:
             self.on_exit()
@@ -1769,7 +1942,6 @@ class Renderer():
             msgs = []
             for k, v in self.server.connections.items():
                 if hasattr(v, "messages") and len(v.messages) > 0:
-                    #print(k, v.messages)
                     for msg in v.messages:
                         msgs.append(msg)
                         #self.process_ws_message(msg)
@@ -1786,113 +1958,11 @@ class Renderer():
         #        self.reload_and_render(action, path)
         #    self.waiting_to_render = []
         
-        dscale = self.preview_scale()
-        rects = []
-
-        render_previews = len(self.previews_waiting_to_paint) > 0
-        if render_previews:
-            if pyaudio and self.paudio_source:
-                if self.paudio_preview == 1:
-                    self.preview_audio()
-                    if self.playing == 0:
-                        self.paudio_preview = 0
-
-            w = 0
-            llh = -1
-            lh = -1
-            h = 0
-            for render, result, rp in self.previews_waiting_to_paint:
-                if hasattr(render, "show_error"):
-                    sr = render.rect
-                else:
-                    sr = render.rect.scale(dscale, "mnx", "mny").round()
-                w = max(sr.w, w)
-                if render.layer:
-                    rects.append(Rect(0, llh, sr.w, sr.h))
-                else:
-                    rects.append(Rect(0, lh+1, sr.w, sr.h))
-                    llh = lh+1
-                    lh += sr.h + 1
-                    h += sr.h + 1
-            h -= 1
-            
-            frect = Rect(0, 0, w, h)
-            if frect != self.last_rect:
-                self.create_surface(frect)
-
-            if not self.last_rect or frect != self.last_rect:
-                m_scale = self.get_content_scale()
-                scale_x, scale_y = m_scale, m_scale
-                #if not DARWIN:
-                #    scale_x, scale_y = 1.0, 1.0
-
-                ww = int(w/scale_x)
-                wh = int(h/scale_y)
-                glfw.set_window_size(self.window, ww, wh)
-
-                pin = self.py_config.get("WINDOW_PIN", None)
-                if self.args.window_pin:
-                    pin = self.args.window_pin
-                
-                if not isinstance(pin, str):
-                    print("--window-pin must be compass direction")
-                    pin = "NE"
-
-                primary_monitor = None
-                if self.args.monitor_name:
-                    remn = self.args.monitor_name
-                    monitors = glfw.get_monitors()
-                    matches = []
-                    for monitor in monitors:
-                        mn = glfw.get_monitor_name(monitor)
-                        print(">>> MONITOR >>>", mn)
-                        if remn in str(mn):
-                            matches.append(monitor)
-                    if len(matches) > 0:
-                        primary_monitor = matches[0]
-
-                if pin:
-                    if primary_monitor:
-                        monitor = primary_monitor
-                    else:
-                        monitor = glfw.get_primary_monitor()
-                    work_rect = Rect(glfw.get_monitor_workarea(monitor))
-                    edges = Edge.PairFromCompass(pin)
-                    pinned = work_rect.take(ww, edges[0]).take(wh, edges[1]).round()
-                    if edges[1] == "mdy":
-                        pinned = pinned.offset(0, -30)
-                    pinned = pinned.flip(work_rect.h+46)
-                    if self.args.window_pin_inset:
-                        x, y = [int(n) for n in self.args.window_pin_inset.split(",")]
-                        pinned = pinned.offset(-x, y)
-                    glfw.set_window_pos(self.window, pinned.x, pinned.y)
-                else:
-                    glfw.set_window_pos(self.window, 0, 0)
-
-            self.last_rect = frect
-
-            GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-
-            with self.surface as canvas:
-                canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 1))
-                if self.transparent:
-                    canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 0))
-                
-                for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
-                    rect = rects[idx].offset((w-rects[idx].w)/2, 0).round()
-                    try:
-                        self.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
-                    except Exception as e:
-                        stack = traceback.format_exc()
-                        print(stack)
-                        paint = skia.Paint(AntiAlias=True, Color=skia.ColorRED)
-                        canvas.drawString(stack.split("\n")[-2], 10, 32, skia.Font(None, 36), paint)
-            
-                if self.state.keylayer != Keylayer.Default and not self.args.hide_keybuffer:
-                    self.state.draw_keylayer(canvas, self.last_rect, self.typeface)
-            
-            self.surface.flushAndSubmit()
-            glfw.swap_buffers(self.window)
+        if glfw:
+            self.turn_over_glfw()
+        
+        if self.args.webviewer:
+            self.turn_over_webviewer()
         
         self.state.needs_display = 0
         self.previews_waiting_to_paint = []
@@ -2122,7 +2192,8 @@ class Renderer():
     def on_exit(self, restart=False):
         #if self.args.watch:
         #   print(f"<EXIT(restart:{restart})>")
-        glfw.terminate()
+        if glfw:
+            glfw.terminate()
         if self.context:
             self.context.abandonContext()
         if self.hotkeys:

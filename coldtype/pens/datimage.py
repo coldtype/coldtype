@@ -1,7 +1,12 @@
 from pathlib import Path
 from coldtype.pens.datpen import DATPen, DATPens
 from drafting.geometry import Rect
-import skia, math
+import math
+
+try:
+    import skia
+except ImportError:
+    skia = None
 
 
 class DATImage(DATPen):

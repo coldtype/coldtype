@@ -1,9 +1,19 @@
 from enum import Enum
 from pathlib import Path
-import json, glfw, skia, re, base64
+import json, re, base64
 from coldtype import hsl, Action, Keylayer, Point, Rect, DATPen, Overlay
 from typing import Callable, List
 from time import sleep
+
+try:
+    import skia
+except ImportError:
+    skia = None
+
+try:
+    import glfw
+except ImportError:
+    glfw = None
 
 class RendererStateEncoder(json.JSONEncoder):
     def default(self, o):
