@@ -26,6 +26,7 @@ from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.pens.svgpen import SVGPen
 from coldtype.renderer.keyboard import KeyboardShortcut, SHORTCUTS, REPEATABLE_SHORTCUTS
 
 try:
@@ -902,7 +903,6 @@ class Renderer():
             else:
                 print("> Skia render not supported for ", render.fmt)
         elif rasterizer == "svg":
-            from coldtype.pens.svgpen import SVGPen
             path.write_text(SVGPen.Composite(content, render.rect, viewBox=render.viewBox))
         elif rasterizer == "pickle":
             pickle.dump(content, open(path, "wb"))
@@ -1797,9 +1797,7 @@ class Renderer():
     def turn_over_webviewer(self):
         renders = []
         for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
-            # do something with each one
-            print(render)
-            renders.append(idx)
+            renders.append(SVGPen.Composite(result, render.rect, viewBox=render.viewBox))
     
         if renders:
             for _, client in self.server.connections.items():
