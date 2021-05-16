@@ -26,7 +26,10 @@ from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
+
 from coldtype.pens.svgpen import SVGPen
+from drafting.pens.jsonpen import JSONPen
+
 from coldtype.renderer.keyboard import KeyboardShortcut, SHORTCUTS, REPEATABLE_SHORTCUTS
 
 try:
@@ -1685,6 +1688,10 @@ class Renderer():
     def process_ws_message(self, message):
         try:
             jdata = json.loads(message)
+            if "webviewer" in jdata:
+                self.action_waiting = Action.PreviewStoryboard
+                return
+
             action = jdata.get("action")
             if action:
                 self.on_message(jdata, jdata.get("action"))
@@ -1797,12 +1804,15 @@ class Renderer():
     def turn_over_webviewer(self):
         renders = []
         for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
-            renders.append(SVGPen.Composite(result, render.rect, viewBox=render.viewBox))
+            if self.args.format == "canvas":
+                renders.append(dict(fmt="canvas", jsonpen=JSONPen.Composite(result, render.rect), rect=[*render.rect]))
+            else:
+                renders.append(dict(fmt="svg", svg=SVGPen.Composite(result, render.rect, viewBox=render.viewBox), rect=[*render.rect]))
     
         if renders:
             for _, client in self.server.connections.items():
                 if hasattr(client, "webviewer") and client.webviewer:
-                    client.sendMessage(json.dumps({"render":renders}))
+                    client.sendMessage(json.dumps({"renders":renders}))
     
     def turn_over_glfw(self):
         dscale = self.preview_scale()
