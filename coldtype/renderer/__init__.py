@@ -17,7 +17,7 @@ from more_itertools import distribute
 from docutils.core import publish_doctree
 from functools import partial, partialmethod
 
-from http.server import HTTPServer, SimpleHTTPRequestHandler, CGIHTTPRequestHandler
+from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import TCPServer
 
 import coldtype
@@ -106,6 +106,9 @@ class WebViewerHandler(SimpleHTTPRequestHandler):
         if self.path == '/':
             self.path = 'coldtype/webserver/webviewer.html'
         return SimpleHTTPRequestHandler.do_GET(self)
+    
+    def log_message(self, format, *args):
+        pass
 
 class DataSourceThread(threading.Thread):
     def __init__(self, filepath):
@@ -647,8 +650,6 @@ class Renderer():
         rps = []
         for rp in render.passes(trigger, self.state, indices):
             output_path = output_folder / f"{prefix}{rp.suffix}.{fmt}"
-            print(output_path)
-
             rp.output_path = output_path
             rp.action = trigger
             rps.append(rp)
