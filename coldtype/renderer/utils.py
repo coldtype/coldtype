@@ -1,4 +1,4 @@
-import ast
+import ast, json
 from enum import Enum
 
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
@@ -33,16 +33,22 @@ class bcolors:
 
 class SimpleEcho(WebSocket):
     def handleMessage(self):
-        print("INCOMING!")
-        #print("INCOMING", self, self.data)
+        if "webviewer" in self.data:
+            data = json.loads(self.data)
+            if data.get("webviewer") == True:
+                self.webviewer = True
+        #print("INCOMING!", self, self.address, self.data)
         self.messages.append(self.data)
 
     def handleConnected(self):
-        print(self.address, 'connected')
+        #if not str(self.address).startswith("('::ffff"):
+        #    print(self.address, "connected")
         self.messages = []
+        self.webviewer = False
 
     def handleClose(self):
-        print(self.address, 'closed')
+        #print(self.address, "closed")
+        pass
 
 
 def echo_server(port):

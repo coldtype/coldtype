@@ -1,4 +1,4 @@
-import inspect, platform, re, tempfile, skia, math, os, wave
+import math, os
 from typing import Tuple
 
 from enum import Enum
@@ -21,6 +21,11 @@ from drafting.color import normalize_color, hsl, bw
 
 from coldtype.renderable.renderable import renderable, drawbot_script, Action, RenderPass, Overlay
 
+
+try:
+    import skia
+except ImportError:
+    skia = None
 
 try:
     import drawBot as db

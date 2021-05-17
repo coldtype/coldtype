@@ -4,6 +4,6 @@ from coldtype import *
 def render(r):
     return (StyledString("COLDTYPE",
         Style("assets/MutatorSans.ttf", 300))
-        .pens()
+        .pen()
         .align(r, tv=1)
-        .f(hsl(0.95)))
+        .f(hsl(0.85)))

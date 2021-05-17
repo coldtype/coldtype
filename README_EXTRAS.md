@@ -17,6 +17,7 @@ PYGLFW_LIBRARY=/usr/local/Cellar/glfw/HEAD-0b9e48f/lib/libglfw.3.4.dylib
 ### GCP
 
 PyTorch images seem to work nicely (`c2-deeplearning-pytorch-1-8-cu110-v20210512-debian-10`), not sure this is a real link: https://console.cloud.google.com/compute/imagesDetail/projects/ml-images/global/images/c2-deeplearning-pytorch-1-8-cu110-v20210512-debian-10?folder=&organizationId=&project=uplifted-sol-90414
+https://console.cloud.google.com/compute/imagesDetail/projects/ml-images/global/images/c2-deeplearning-pytorch-1-8-cu110-v20210512-debian-10
 
 SSH w/ cloud console, then:
 
@@ -25,3 +26,14 @@ SSH w/ cloud console, then:
 - `cd coldtype`
 - `pip install -e .`
 - `coldtype examples/animations/house.py -a -mp -cpu -ns`
+
+```
+#! /bin/bash
+sudo apt-get update
+sudo apt-get install git
+sudo apt-get install python3-pip
+sudo apt install libgl1-mesa-glx
+git clone https://github.com/goodhertz/coldtype
+cd coldtype
+pip install -e .
+```

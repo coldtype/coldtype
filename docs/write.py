@@ -7,7 +7,6 @@ import subprocess
 all_docs = []
 
 sources = list(Path("docs").glob("**/*.rst"))
-#sources.extend(list(Path("docs").glob("test_*.md")))
 
 for p in sources:
     print(">", p)

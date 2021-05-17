@@ -13,7 +13,7 @@ If you want to try coldtype in the coldtype repo itself (**recommended**):
 * ``cd`` into the the cloned coldtype repository on your computer
 * Create a virtual environment, ala ``python3.9 -m venv venv --prompt=coldtype`` on the command line
 * Then ``source venv/bin/activate`` to start your venv
-* Then ``pip install -e .`` (This adds the ``coldtype`` command to your virtual environment)
+* Then ``pip install -e .[viewer]`` (This adds the ``coldtype`` command to your virtual environment)
 * Then ``coldtype``
 
 That last command should pop up a window that is a random gradient, along with the letters CT and a little message that says ``NOTHING FOUND``.

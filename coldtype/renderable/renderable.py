@@ -1,5 +1,12 @@
-import inspect, platform, re, tempfile, skia, math, datetime
+import inspect, platform, re, tempfile, math, datetime
 from drafting.pens.draftingpens import DraftingPens
+
+try:
+    import skia
+    from coldtype.pens.skiapen import SkiaPen
+except ImportError:
+    skia = None
+    SkiaPen = None
 
 from enum import Enum
 from subprocess import run
@@ -11,7 +18,6 @@ from drafting.text.reader import normalize_font_prefix, Font
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.pens.datimage import DATImage
-from coldtype.pens.skiapen import SkiaPen
 
 try:
     import drawBot as db
@@ -190,7 +196,7 @@ class renderable():
         else:
             return result
     
-    def draw_preview(self, scale, canvas:skia.Canvas, rect, result, render_pass):
+    def draw_preview(self, scale, canvas, rect, result, render_pass): # canvas:skia.Canvas
         sr = self.rect.scale(scale, "mnx", "mxx")
         SkiaPen.CompositeToCanvas(result, sr, canvas, scale, style=self.style)
     

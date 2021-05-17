@@ -3,9 +3,10 @@ from coldtype import *
 @renderable((1580, 350))
 def render(r):
     c1 = hsl(0.65, 0.7)
-    c2 = hsl(0.53, 0.6)
+    c2 = hsl(0.93, 0.6)
 
     return DATPens([
+        (DATPen(r).f(1)),
         (DATPen()
             .rect(r.inset(10))
             .outline(10)

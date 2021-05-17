@@ -38,7 +38,7 @@ Here’s a somewhat complex animation — made entirely with coldtype — demons
    <div id="video" style="max-width:500px;margin-bottom:20px"><div style="padding:100% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/479376752?loop=1&title=0&byline=0&portrait=0" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div><script src="https://player.vimeo.com/api/player.js"></script></div>
 
 
-The code for that video is available here: https://github.com/goodhertz/coldtype/tree/main/examples/animations/808.md
+The code for that video is available here: https://github.com/goodhertz/coldtype/tree/main/examples/animations/808.py
 
 
 Table of Contents
@@ -65,7 +65,7 @@ Table of Contents
    :maxdepth: 2
    :caption: Examples
 
-   808.md <https://github.com/goodhertz/coldtype/tree/main/examples/animations/808.md>
+   808.py <https://github.com/goodhertz/coldtype/tree/main/examples/animations/808.py>
    banner.py <https://github.com/goodhertz/coldtype/tree/main/examples/animations/banner.py>
    digestive_wind.py <https://github.com/goodhertz/coldtype/tree/main/examples/animations/digestive_wind.py>
    metaprogramming.py <https://github.com/goodhertz/coldtype/tree/main/examples/animations/metaprogramming.py>
