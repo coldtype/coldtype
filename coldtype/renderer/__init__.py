@@ -138,6 +138,8 @@ class Renderer():
 
             no_watch=parser.add_argument("-nw", "--no-watch", action="store_true", default=False, help="Preventing watching for changes to source files"),
 
+            no_viewer=parser.add_argument("-nv", "--no-viewer", action="store_true", default=False, help="Prevent showing skia/glfw viewer"),
+
             websocket=parser.add_argument("-ws", "--websocket", action="store_true", default=False, help="Should the server run a web socket?"),
 
             webviewer=parser.add_argument("-wv", "--webviewer", action="store_true", default=False, help="Do you want to live-preview in a webviewer instead of with a glfw-skia window?"),
@@ -953,7 +955,7 @@ class Renderer():
         sys.exit(self.exit_code)
     
     def set_title(self, text):
-        if glfw:
+        if glfw and not self.args.no_viewer:
             glfw.set_window_title(self.window, text)
     
     def get_content_scale(self):
@@ -962,7 +964,7 @@ class Renderer():
         if self.args.window_content_scale == None:
             if u_scale:
                 return u_scale
-            elif glfw:
+            elif glfw and not self.args.no_viewer:
                 return glfw.get_window_content_scale(self.window)[0]
             else:
                 return 1
@@ -999,8 +1001,10 @@ class Renderer():
                     target=start_server, args=(port,))
                 daemon.setDaemon(True)
                 daemon.start()
+        elif not glfw and not skia:
+            print("\n\n>>> To view a coldtype program, you either need to install with the [viewer] optional package, or run coldtype in --webviewer mode (aka -wv)\n\n")
 
-        if glfw:
+        if glfw and not self.args.no_viewer:
             if not glfw.init():
                 raise RuntimeError('glfw.init() failed')
             glfw.window_hint(glfw.STENCIL_BITS, 8)
@@ -1069,7 +1073,7 @@ class Renderer():
         except:
             self.midis = []
         
-        if skia:
+        if skia and glfw and not self.args.no_viewer:
             self.context = skia.GrDirectContext.MakeGL()
         else:
             self.context = None
@@ -1159,7 +1163,7 @@ class Renderer():
                     return
             self.on_start()
             if not self.args.no_watch:
-                if glfw:
+                if glfw and not self.args.no_viewer:
                     self.listen_to_glfw()
                 elif self.args.webviewer:
                     while True:
@@ -1986,7 +1990,7 @@ class Renderer():
         #        self.reload_and_render(action, path)
         #    self.waiting_to_render = []
         
-        if glfw:
+        if glfw and not self.args.no_viewer:
             self.turn_over_glfw()
         
         if self.args.webviewer:
@@ -2222,7 +2226,7 @@ class Renderer():
         #   print(f"<EXIT(restart:{restart})>")
         #if self.webviewer_thread:
         #    self.webviewer_thread.terminate()
-        if glfw:
+        if glfw and not self.args.no_viewer:
             glfw.terminate()
         if self.context:
             self.context.abandonContext()
