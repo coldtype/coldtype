@@ -1354,9 +1354,11 @@ class Renderer():
             return {}
         keyed = {}
         for k, v in SHORTCUTS.items():
-            for cut in v:
-                for mods, symbol in cut:
-                    keyed[k] = [[symbol_to_glfw(s) for s in mods], symbol_to_glfw(symbol)]
+            modded = []
+            for mods, symbol in v:
+                #print([symbol_to_glfw(s) for s in mods])
+                modded.append([[symbol_to_glfw(s) for s in mods], symbol_to_glfw(symbol)])
+            keyed[k] = modded
         return keyed
     
     def repeatable_shortcuts(self):
@@ -1791,7 +1793,7 @@ class Renderer():
                     self.playing_preloaded_frame = 0
                 ptime.sleep(0.01)
             else:
-                ptime.sleep(0.25)
+                ptime.sleep(0.025)
                 self.glfw_last_time = t
                 self.turn_over()
                 global last_line
@@ -1850,14 +1852,15 @@ class Renderer():
         rects = []
 
         render_previews = len(self.previews_waiting_to_paint) > 0
+        if not render_previews:
+            return
+
         if render_previews:
             if pyaudio and self.paudio_source:
                 if self.paudio_preview == 1:
                     self.preview_audio()
                     if self.playing == 0:
                         self.paudio_preview = 0
-
-        print(len(self.previews_waiting_to_paint))
 
         w = 0
         llh = -1
@@ -1880,7 +1883,6 @@ class Renderer():
         
         frect = Rect(0, 0, w, h)
         if frect != self.last_rect:
-            print("CREATE SURFACE", frect)
             self.create_surface(frect)
 
         if not self.last_rect or frect != self.last_rect:
