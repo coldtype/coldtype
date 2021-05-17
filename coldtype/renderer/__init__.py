@@ -1016,8 +1016,6 @@ class Renderer():
                     target=start_server, args=(port,))
                 daemon.setDaemon(True)
                 daemon.start()
-        
-        self._prev_scale = self.get_content_scale()
 
         if glfw:
             if not glfw.init():
@@ -1056,6 +1054,8 @@ class Renderer():
             if self.args.window_opacity is not None:
                 o = self.args.window_opacity
             glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
+
+            self._prev_scale = self.get_content_scale()
             
             glfw.make_context_current(self.window)
             glfw.set_key_callback(self.window, self.on_key)
@@ -1747,8 +1747,7 @@ class Renderer():
     
     def listen_to_glfw(self):
         should_close = False
-        if glfw:
-            should_close = glfw.window_should_close(self.window)
+        should_close = glfw.window_should_close(self.window)
         while not self.dead and not should_close:
             scale_x = self.get_content_scale()
             if scale_x != self._prev_scale:
@@ -1792,7 +1791,7 @@ class Renderer():
                     self.playing_preloaded_frame = 0
                 ptime.sleep(0.01)
             else:
-                ptime.sleep(0.025)
+                ptime.sleep(0.25)
                 self.glfw_last_time = t
                 self.turn_over()
                 global last_line
@@ -1858,6 +1857,8 @@ class Renderer():
                     if self.playing == 0:
                         self.paudio_preview = 0
 
+        print(len(self.previews_waiting_to_paint))
+
         w = 0
         llh = -1
         lh = -1
@@ -1879,11 +1880,13 @@ class Renderer():
         
         frect = Rect(0, 0, w, h)
         if frect != self.last_rect:
+            print("CREATE SURFACE", frect)
             self.create_surface(frect)
 
         if not self.last_rect or frect != self.last_rect:
             m_scale = self.get_content_scale()
             scale_x, scale_y = m_scale, m_scale
+            
             #if not DARWIN:
             #    scale_x, scale_y = 1.0, 1.0
 
