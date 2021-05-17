@@ -47,7 +47,8 @@ class SimpleEcho(WebSocket):
         self.webviewer = False
 
     def handleClose(self):
-        print(self.address, "closed")
+        #print(self.address, "closed")
+        pass
 
 
 def echo_server(port):

@@ -33,7 +33,7 @@ from coldtype.pens.datpen import DATPen, DATPens
 from drafting.pens.svgpen import SVGPen
 from drafting.pens.jsonpen import JSONPen
 
-from coldtype.renderer.keyboard import KeyboardShortcut, SHORTCUTS, REPEATABLE_SHORTCUTS
+from coldtype.renderer.keyboard import KeyboardShortcut, SHORTCUTS, REPEATABLE_SHORTCUTS, symbol_to_glfw
 
 try:
     import skia
@@ -557,13 +557,13 @@ class Renderer():
         if self.args.rasterizer:
             render.rasterizer = self.args.rasterizer
 
-        if render.rasterizer == "skia" and skia is None:
+        if render.rasterizer == "skia" and render.fmt in ["png", "pdf"] and skia is None:
             if not self.rasterizer_warning:
                 self.rasterizer_warning = True
-                print(f"RENDERER> SVG (no skia)")
+                print(f"RENDERER> SVG (skia-python not installed)")
             render.rasterizer = "svg"
             render.fmt = "svg"
-        elif render.rasterizer == "drawbot" and db is None:
+        elif render.rasterizer == "drawbot" and render.fmt in ["png", "pdf"] and db is None:
             if not self.rasterizer_warning:
                 self.rasterizer_warning = True
                 print(f"RENDERER> SVG (no drawbot)")
@@ -993,7 +993,7 @@ class Renderer():
 
         if self.args.websocket or self.args.webviewer:
             try:
-                print("WEBSOCKET>", self.args.port)
+                print("WEBSOCKET>", f"localhost:{self.args.port}")
                 self.server = echo_server(self.args.port)
                 daemon = threading.Thread(name="daemon_websocket", target=self.server.serveforever)
                 daemon.setDaemon(True)
@@ -1005,21 +1005,17 @@ class Renderer():
         
         if self.args.webviewer:
             port = self.args.webviewer_port
-            print("WEBVIEWER>", port)
+            if port != 0:
+                print("WEBVIEWER>", f"localhost:{port}")
 
-            def start_server(port):
-                httpd = HTTPServer(('', port), WebViewerHandler)
-                httpd.serve_forever()
+                def start_server(port):
+                    httpd = HTTPServer(('', port), WebViewerHandler)
+                    httpd.serve_forever()
 
-            daemon = threading.Thread(name='daemon_server',
-                target=start_server, args=(port,))
-            daemon.setDaemon(True)
-            daemon.start()
-
-            #os.chdir("..")
-
-            # Open the web browser 
-            #webbrowser.open('http://localhost:{}'.format(port))
+                daemon = threading.Thread(name='daemon_server',
+                    target=start_server, args=(port,))
+                daemon.setDaemon(True)
+                daemon.start()
         
         self._prev_scale = self.get_content_scale()
 
@@ -1354,7 +1350,14 @@ class Renderer():
                 self.action_waiting = requested_action
             
     def shortcuts(self):
-        return SHORTCUTS
+        if not glfw:
+            return {}
+        keyed = {}
+        for k, v in SHORTCUTS.items():
+            for cut in v:
+                for mods, symbol in cut:
+                    keyed[k] = [[symbol_to_glfw(s) for s in mods], symbol_to_glfw(symbol)]
+        return keyed
     
     def repeatable_shortcuts(self):
         return REPEATABLE_SHORTCUTS
