@@ -41,8 +41,8 @@ class SimpleEcho(WebSocket):
         self.messages.append(self.data)
 
     def handleConnected(self):
-        if not str(self.address).startswith("('::ffff"):
-            print(self.address, "connected")
+        #if not str(self.address).startswith("('::ffff"):
+        #    print(self.address, "connected")
         self.messages = []
         self.webviewer = False
 

@@ -1,5 +1,5 @@
 from coldtype.pens.datimage import DATImage
-import tempfile, traceback, threading
+import tempfile, traceback, threading, multiprocessing
 import argparse, importlib, inspect, json, math
 import sys, os, re, signal, tracemalloc, shutil
 import platform, pickle, string, datetime
@@ -17,6 +17,9 @@ from more_itertools import distribute
 from docutils.core import publish_doctree
 from functools import partial, partialmethod
 
+from http.server import HTTPServer, SimpleHTTPRequestHandler, CGIHTTPRequestHandler
+from socketserver import TCPServer
+
 import coldtype
 from coldtype.helpers import *
 from drafting.geometry import Rect, Point, Edge
@@ -27,7 +30,7 @@ from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
 
-from coldtype.pens.svgpen import SVGPen
+from drafting.pens.svgpen import SVGPen
 from drafting.pens.jsonpen import JSONPen
 
 from coldtype.renderer.keyboard import KeyboardShortcut, SHORTCUTS, REPEATABLE_SHORTCUTS
@@ -98,18 +101,11 @@ def show_tail(p):
     for line in p.stdout:
         print(line.decode("utf-8").split(">>")[-1].strip().strip("\n"))
 
-class WebSocketThread(threading.Thread):
-    def __init__(self, server):
-        self.server = server
-        self.should_run = True
-        threading.Thread.__init__(self)
-    
-    def run(self):
-        print("Running a server...")
-        while self.should_run:
-            self.server.serveonce()
-            ptime.sleep(0.025)
-
+class WebViewerHandler(SimpleHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/':
+            self.path = 'coldtype/webserver/webviewer.html'
+        return SimpleHTTPRequestHandler.do_GET(self)
 
 class DataSourceThread(threading.Thread):
     def __init__(self, filepath):
@@ -142,6 +138,8 @@ class Renderer():
             websocket=parser.add_argument("-ws", "--websocket", action="store_true", default=False, help="Should the server run a web socket?"),
 
             webviewer=parser.add_argument("-wv", "--webviewer", action="store_true", default=False, help="Do you want to live-preview in a webviewer instead of with a glfw-skia window?"),
+
+            webviewer_port=parser.add_argument("-wvp", "--webviewer-port", type=int, default=8008, help="What port should the webviewer run on? (provided -wv is passed)"),
 
             port=parser.add_argument("-p", "--port", type=int, default=8007, help="What port should the websocket run on (provided -ws is passed)"),
         
@@ -261,7 +259,6 @@ class Renderer():
 
         self.observers = []
         self.watchees = []
-        self.server_thread = None
         self.sidecar_threads = []
         self.tails = []
         self.watchee_mods = {}
@@ -551,11 +548,31 @@ class Renderer():
                 candidate = v
         return candidate
     
+    def normalize_fmt(self, render):
+        if self.args.format:
+            render.fmt = self.args.format
+        if self.args.rasterizer:
+            render.rasterizer = self.args.rasterizer
+
+        if render.rasterizer == "skia" and skia is None:
+            if not self.rasterizer_warning:
+                self.rasterizer_warning = True
+                print(f"RENDERER> SVG (no skia)")
+            render.rasterizer = "svg"
+            render.fmt = "svg"
+        elif render.rasterizer == "drawbot" and db is None:
+            if not self.rasterizer_warning:
+                self.rasterizer_warning = True
+                print(f"RENDERER> SVG (no drawbot)")
+            render.rasterizer = "svg"
+            render.fmt = "svg"
+    
     def renderables(self, trigger):
         _rs = []
         for k, v in self.program.items():
             if isinstance(v, renderable) and not v.hidden:
                 if v not in _rs:
+                    self.normalize_fmt(v)
                     _rs.append(v)
         
         for r in _rs:
@@ -626,25 +643,11 @@ class Renderer():
         else:
             prefix = render.prefix
 
-        fmt = self.args.format or render.fmt
-        rasterizer = self.args.rasterizer or render.rasterizer
-
-        if rasterizer == "skia" and skia is None:
-            if not self.rasterizer_warning:
-                self.rasterizer_warning = True
-                print(f"\n! Skia not installed; changing renderer to svg\n")
-            render.rasterizer = "svg"
-            fmt = "svg"
-        elif rasterizer == "drawbot" and db is None:
-            if not self.rasterizer_warning:
-                self.rasterizer_warning = True
-                print(f"\n! DrawBot not installed; changing renderer to svg\n")
-            render.rasterizer = "svg"
-            fmt = "svg"
-        
+        fmt = render.fmt
         rps = []
         for rp in render.passes(trigger, self.state, indices):
             output_path = output_folder / f"{prefix}{rp.suffix}.{fmt}"
+            print(output_path)
 
             rp.output_path = output_path
             rp.action = trigger
@@ -987,16 +990,35 @@ class Renderer():
             self.state.external_url = f"ws://{self.args.websocket_external}"
             print(self.state.external_url)
 
-        if self.args.websocket:
+        if self.args.websocket or self.args.webviewer:
             try:
-                print("WEBSOCKET!", self.args.port)
+                print("WEBSOCKET>", self.args.port)
                 self.server = echo_server(self.args.port)
-                self.server_thread = WebSocketThread(self.server)
-                self.server_thread.start()
+                daemon = threading.Thread(name="daemon_websocket", target=self.server.serveforever)
+                daemon.setDaemon(True)
+                daemon.start()
             except OSError:
                 self.server = None
         else:
             self.server = None
+        
+        if self.args.webviewer:
+            port = self.args.webviewer_port
+            print("WEBVIEWER>", port)
+
+            def start_server(port):
+                httpd = HTTPServer(('', port), WebViewerHandler)
+                httpd.serve_forever()
+
+            daemon = threading.Thread(name='daemon_server',
+                target=start_server, args=(port,))
+            daemon.setDaemon(True)
+            daemon.start()
+
+            #os.chdir("..")
+
+            # Open the web browser 
+            #webbrowser.open('http://localhost:{}'.format(port))
         
         self._prev_scale = self.get_content_scale()
 
@@ -1062,7 +1084,8 @@ class Renderer():
                     mi.openPort(lookup[device])
                     self.midis.append([device, mi])
                 else:
-                    print(f">>> no midi port found with that name ({device}) <<<")
+                    if self.args.midi_info:
+                        print(f">>> no midi port found with that name ({device}) <<<")
         except:
             self.midis = []
         
@@ -2205,6 +2228,8 @@ class Renderer():
     def on_exit(self, restart=False):
         #if self.args.watch:
         #   print(f"<EXIT(restart:{restart})>")
+        #if self.webviewer_thread:
+        #    self.webviewer_thread.terminate()
         if glfw:
             glfw.terminate()
         if self.context:
@@ -2222,9 +2247,6 @@ class Renderer():
                 self.paudio.terminate()
             if hasattr(self, "paudio_source") and self.paudio_source:
                 self.paudio_source.close()
-        
-        if self.server_thread:
-            self.server_thread.should_run = False
         
         for t in self.sidecar_threads:
             t.should_run = False

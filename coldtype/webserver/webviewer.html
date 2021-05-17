@@ -8,6 +8,7 @@
         }
         #svg {
             border-bottom: 1px solid white;
+            width: 100%;
         }
         #canvas {
 
@@ -111,7 +112,7 @@
                         if (render.fmt == "canvas") {
                             drawPensToCanvas(render.bg, render.rect, render.jsonpen);
                         } else {
-                            $("#svg").empty().css("background", rgba(render.bg), append(render.svg));
+                            $("#svg").empty().css("background", rgba(render.bg)).append(render.svg);
                         }
                     });
                 }
