@@ -340,12 +340,8 @@ class Renderer():
                 if not self.filepath.exists():
                     print(">>> That rst file does not exist")
                     return False
-            elif self.filepath.suffix == ".md":
-                if not self.filepath.exists():
-                    print(">>> That md file does not exist")
-                    return False
             else:
-                print(">>> Coldtype can only read .py, .rst, and .md files")
+                print(">>> Coldtype can only read .py and .rst files")
                 return False
             self.codepath = None
             self._codepath_offset = 0
@@ -460,19 +456,6 @@ class Renderer():
                     self.codepath.unlink()
                 with tempfile.NamedTemporaryFile("w", prefix="coldtype_rst_src", suffix=".py", delete=False) as tf:
                     tf.write("\n".join(source_code))
-                    self.codepath = Path(tf.name)
-            
-            elif self.filepath.suffix == ".md":
-                try:
-                    import exdown
-                except ImportError:
-                    raise Exception("pip install exdown")
-                blocks = [c[0] for c in exdown.extract(str(self.filepath), syntax_filter="python")]
-                source_code = "\n".join(blocks)
-                if self.codepath:
-                    self.codepath.unlink()
-                with tempfile.NamedTemporaryFile("w", prefix="coldtype_md_src", suffix=".py", delete=False) as tf:
-                    tf.write(self.apply_syntax_mods(source_code))
                     self.codepath = Path(tf.name)
             
             elif self.filepath.suffix == ".py":
