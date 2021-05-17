@@ -83,7 +83,7 @@
             if (connected) {
                 return;
             }
-            const WS_URL = "ws://localhost:8007"; // TODO needs to be configurable
+            const WS_URL = "ws://localhost:8007"; // hardcoded here but changed by renderer
             var websocket = new WebSocket(WS_URL);
             websocket.onopen = function (evt) { onOpen(evt) };
             websocket.onclose = function (evt) { onClose(evt) };

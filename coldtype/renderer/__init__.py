@@ -101,24 +101,21 @@ def show_tail(p):
     for line in p.stdout:
         print(line.decode("utf-8").split(">>")[-1].strip().strip("\n"))
 
+WEBSOCKET_PORT = None
+
 class WebViewerHandler(SimpleHTTPRequestHandler):
     def _set_headers(self):
         self.send_response(200)
         self.send_header("Content-type", "text/html")
         self.end_headers()
 
-    def _html(self, message):
-        """This just generates an HTML document that includes `message`
-        in the body. Override, or re-write this do do more interesting stuff.
-        """
-        content = f"<html><body><h1>{message}</h1></body></html>"
-        return content.encode("utf8")  # NOTE: must return a bytes object!
-
     def do_GET(self):
         self._set_headers()
         self.wfile.write(
             (Path(__file__).parent.parent / "webserver/webviewer.html")
-                .read_text().encode("utf8"))
+                .read_text()
+                .replace("localhost:8007", f"localhost:{WEBSOCKET_PORT}")
+                .encode("utf8"))
 
     def do_HEAD(self):
         self._set_headers()
@@ -993,9 +990,11 @@ class Renderer():
             print(self.state.external_url)
 
         if self.args.websocket or self.args.webviewer:
+            global WEBSOCKET_PORT
+            WEBSOCKET_PORT = self.args.port
             try:
-                print("WEBSOCKET>", f"localhost:{self.args.port}")
-                self.server = echo_server(self.args.port)
+                print("WEBSOCKET>", f"localhost:{WEBSOCKET_PORT}")
+                self.server = echo_server(WEBSOCKET_PORT)
                 daemon = threading.Thread(name="daemon_websocket", target=self.server.serveforever)
                 daemon.setDaemon(True)
                 daemon.start()
