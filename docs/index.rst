@@ -7,6 +7,13 @@ Put another way: do you want to make typographic graphics and animations with co
 
 🌋 **Disclaimer**: coldtype is alpha-quality software 🌋
 
+TLDR (if you're using a python >= 3.7)
+
+.. code:: bash
+   
+   pip install coldtype[viewer]
+   coldtype test.py
+
 Here’s an example:
 
 .. code:: python

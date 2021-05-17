@@ -41,7 +41,7 @@ I’d recommend Option B.2 for now if your goal is experimentation, since Coldty
 
 Option B.1:
 
-* ``pip install coldtype``
+* ``pip install coldtype[viewer]``
 * ``coldtype``
 
 Option B.2:
