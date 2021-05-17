@@ -102,10 +102,26 @@ def show_tail(p):
         print(line.decode("utf-8").split(">>")[-1].strip().strip("\n"))
 
 class WebViewerHandler(SimpleHTTPRequestHandler):
+    def _set_headers(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+
+    def _html(self, message):
+        """This just generates an HTML document that includes `message`
+        in the body. Override, or re-write this do do more interesting stuff.
+        """
+        content = f"<html><body><h1>{message}</h1></body></html>"
+        return content.encode("utf8")  # NOTE: must return a bytes object!
+
     def do_GET(self):
-        if self.path == '/':
-            self.path = 'coldtype/webserver/webviewer.html'
-        return SimpleHTTPRequestHandler.do_GET(self)
+        self._set_headers()
+        self.wfile.write(
+            (Path(__file__).parent.parent / "webserver/webviewer.html")
+                .read_text().encode("utf8"))
+
+    def do_HEAD(self):
+        self._set_headers()
     
     def log_message(self, format, *args):
         pass

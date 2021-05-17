@@ -30,6 +30,10 @@ setuptools.setup(
         "coldtype.renderable",
         "coldtype.webserver",
     ],
+    include_package_data=True,
+    package_data={
+        "": "webserver/webviewer.html",
+    },
     entry_points={
         'console_scripts': [
             'coldtype = coldtype.renderer:main'
