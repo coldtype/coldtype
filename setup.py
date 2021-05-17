@@ -32,7 +32,7 @@ setuptools.setup(
     ],
     include_package_data=True,
     package_data={
-        "": "webserver/webviewer.html",
+        "": ["webserver/webviewer.html"],
     },
     entry_points={
         'console_scripts': [
