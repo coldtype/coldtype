@@ -1759,7 +1759,7 @@ class Renderer():
         while not self.dead and not should_close:
             scale_x = self.get_content_scale()
             if scale_x != self._prev_scale:
-                print(self._prev_scale, scale_x)
+                #print(self._prev_scale, scale_x)
                 self._prev_scale = scale_x
                 self.on_action(Action.PreviewStoryboard)
             
