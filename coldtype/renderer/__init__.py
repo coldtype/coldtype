@@ -282,6 +282,7 @@ class Renderer():
         self.watchee_mods = {}
         
         self.rasterizer_warning = None
+        self.primary_monitor = None
         
         if not self.reset_filepath(self.args.file if hasattr(self.args, "file") else None):
             self.dead = True
@@ -978,7 +979,10 @@ class Renderer():
             if u_scale:
                 return u_scale
             elif glfw and not self.args.no_viewer:
-                return glfw.get_window_content_scale(self.window)[0]
+                if self.primary_monitor:
+                    return glfw.get_monitor_content_scale(self.primary_monitor)[0]
+                else:
+                    return glfw.get_window_content_scale(self.window)[0]
             else:
                 return 1
         else:
@@ -1755,6 +1759,7 @@ class Renderer():
         while not self.dead and not should_close:
             scale_x = self.get_content_scale()
             if scale_x != self._prev_scale:
+                print(self._prev_scale, scale_x)
                 self._prev_scale = scale_x
                 self.on_action(Action.PreviewStoryboard)
             
@@ -1888,6 +1893,24 @@ class Renderer():
             self.create_surface(frect)
 
         if not self.last_rect or frect != self.last_rect:
+            primary_monitor = None
+            if self.args.monitor_name:
+                remn = self.args.monitor_name
+                monitors = glfw.get_monitors()
+                matches = []
+                for monitor in monitors:
+                    mn = glfw.get_monitor_name(monitor)
+                    if remn == "list":
+                        print(">>> MONITOR >>>", mn)
+                    elif remn in str(mn):
+                        matches.append(monitor)
+                if len(matches) > 0:
+                    primary_monitor = matches[0]
+                if primary_monitor:
+                    self.primary_monitor = primary_monitor
+                else:
+                    self.primary_monitor = glfw.get_primary_monitor()
+
             m_scale = self.get_content_scale()
             scale_x, scale_y = m_scale, m_scale
             
@@ -1906,33 +1929,20 @@ class Renderer():
                 print("--window-pin must be compass direction")
                 pin = "NE"
 
-            primary_monitor = None
-            if self.args.monitor_name:
-                remn = self.args.monitor_name
-                monitors = glfw.get_monitors()
-                matches = []
-                for monitor in monitors:
-                    mn = glfw.get_monitor_name(monitor)
-                    if remn == "list":
-                        print(">>> MONITOR >>>", mn)
-                    elif remn in str(mn):
-                        matches.append(monitor)
-                if len(matches) > 0:
-                    primary_monitor = matches[0]
-
             if pin:
                 if primary_monitor:
                     monitor = primary_monitor
                 else:
                     monitor = glfw.get_primary_monitor()
+                self.primary_monitor = monitor
                 work_rect = Rect(glfw.get_monitor_workarea(monitor))
                 wrz = work_rect.zero()
-                print(work_rect, wrz)
+                #print(work_rect, wrz)
                 edges = Edge.PairFromCompass(pin)
                 pinned = wrz.take(ww, edges[0]).take(wh, edges[1]).round()
                 if edges[1] == "mdy":
                     pinned = pinned.offset(0, -30)
-                pinned = pinned.flip(wrz.h+46)
+                pinned = pinned.flip(wrz.h)
                 pinned = pinned.offset(*work_rect.origin())
                 if self.args.window_pin_inset:
                     x, y = [int(n) for n in self.args.window_pin_inset.split(",")]
