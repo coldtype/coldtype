@@ -209,6 +209,8 @@ class Renderer():
 
             window_transparent=parser.add_argument("-wt", "--window-transparent", action="store_true", default=False, help="should the window background be transparent?"),
 
+            window_background=parser.add_argument("-wb", "--window-background", action="store_true", default=False, help="should the window not take focus when its first opened?"),
+
             window_passthrough=parser.add_argument("-wpass", "--window-passthrough", action="store_true", default=False, help="should the window ignore all mouse interaction?"),
             
             format=parser.add_argument("-fmt", "--format", type=str, default=None, help="What image format should be saved to disk?"),
@@ -342,7 +344,9 @@ class Renderer():
 
         if filepath:
             self.filepath = Path(filepath).expanduser().resolve()
-            if self.filepath.suffix == ".py":
+            if self.filepath.name == "demo":
+                self.filepath = Path(__file__).parent.parent / "demo/demo.py"
+            elif self.filepath.suffix == ".py":
                 if not self.filepath.exists(): # write some default code there after a prompt
                     print(">>> That python file does not exist...")
                     create = input(">>> Do you want to create it and add some coldtype boilerplate? (y/n): ")
@@ -1043,7 +1047,7 @@ class Renderer():
                 except glfw.GLFWError:
                     print("failed to hint window for mouse-passthrough")
 
-            if self.py_config.get("WINDOW_BACKGROUND"):
+            if self.py_config.get("WINDOW_BACKGROUND", self.args.window_background):
                 glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
             
             if self.py_config.get("WINDOW_FLOAT", self.args.window_float):
