@@ -25,15 +25,10 @@ SSH w/ cloud console, then:
 - `git clone https://github.com/goodhertz/coldtype`
 - `cd coldtype`
 - `pip install -e .`
-- `coldtype examples/animations/house.py -a -mp -cpu -ns`
+- `coldtype examples/animations/house.py -a -mp -cpu -ns` # -tc 32 (if it’s a big 32-instance)
 
-```
-#! /bin/bash
-sudo apt-get update
-sudo apt-get install git
-sudo apt-get install python3-pip
-sudo apt install libgl1-mesa-glx
-git clone https://github.com/goodhertz/coldtype
-cd coldtype
-pip install -e .
-```
+### Second Monitor
+
+`coldtype examples/simplest.py -mn list`
+should print out names of monitors, then you match then (can be a substring) like this:
+`coldtype examples/simplest.py -mn SAM -wcs 1.0 -wp C`

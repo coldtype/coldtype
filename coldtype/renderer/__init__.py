@@ -1913,8 +1913,9 @@ class Renderer():
                 matches = []
                 for monitor in monitors:
                     mn = glfw.get_monitor_name(monitor)
-                    print(">>> MONITOR >>>", mn)
-                    if remn in str(mn):
+                    if remn == "list":
+                        print(">>> MONITOR >>>", mn)
+                    elif remn in str(mn):
                         matches.append(monitor)
                 if len(matches) > 0:
                     primary_monitor = matches[0]
@@ -1925,11 +1926,14 @@ class Renderer():
                 else:
                     monitor = glfw.get_primary_monitor()
                 work_rect = Rect(glfw.get_monitor_workarea(monitor))
+                wrz = work_rect.zero()
+                print(work_rect, wrz)
                 edges = Edge.PairFromCompass(pin)
-                pinned = work_rect.take(ww, edges[0]).take(wh, edges[1]).round()
+                pinned = wrz.take(ww, edges[0]).take(wh, edges[1]).round()
                 if edges[1] == "mdy":
                     pinned = pinned.offset(0, -30)
-                pinned = pinned.flip(work_rect.h+46)
+                pinned = pinned.flip(wrz.h+46)
+                pinned = pinned.offset(*work_rect.origin())
                 if self.args.window_pin_inset:
                     x, y = [int(n) for n in self.args.window_pin_inset.split(",")]
                     pinned = pinned.offset(-x, y)
