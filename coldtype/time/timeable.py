@@ -147,6 +147,10 @@ class Timeable():
             loop_t, loop_index = self._loop(t, times=loops, cyclic=cyclic, negative=negative)
             return Timing(t, loop_t, loop_index, easefn)
     
+    def halfover(self, i):
+        e = self.progress(i, to1=1).e
+        return e >= 0.5
+    
     #prg = progress
 
 

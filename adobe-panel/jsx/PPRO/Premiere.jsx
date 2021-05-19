@@ -17,7 +17,6 @@ $._PPP_={
 		var seq = app.project.activeSequence;
 		var seqName = seq.name;
 		var validSeq = seqName.match(/_coldtype$/);
-		//alert(validSeq);
 		//validSeq = true;
 
 		if (seq && validSeq) {

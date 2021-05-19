@@ -101,8 +101,8 @@ def symbol_to_glfw(s):
 
 SHORTCUTS = {
     KeyboardShortcut.PreviewPrevMany: [
-        ["shift", "j"],
-        ["shift", "<left>"]
+        [["shift"], "j"],
+        [["shift"], "<left>"]
     ],
     KeyboardShortcut.PreviewPrev: [
         [[], "j"],

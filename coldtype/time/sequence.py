@@ -667,6 +667,27 @@ class ClipTrack():
             if clip.start <= fi and fi < clip.end:
                 return clip
     
+    def now(self, fi, text):
+        for idx, clip in enumerate(self.clips):
+            clip:Clip
+            if clip.text == text and clip.start <= fi and fi < clip.end:
+                return clip
+        return False
+
+    def now_or_past(self, fi, text):
+        for idx, clip in enumerate(self.clips):
+            clip:Clip
+            if clip.text == text and clip.start <= fi:
+                return clip
+        return False
+    
+    def over(self, fi, text):
+        for idx, clip in enumerate(self.clips):
+            clip:Clip
+            if clip.text == text and fi >= clip.end:
+                return True
+        return False
+    
     def duration(self):
         duration = 0
         for c in self.clips:

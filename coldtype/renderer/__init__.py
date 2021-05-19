@@ -303,6 +303,7 @@ class Renderer():
 
         self.program = None
         self.exit_code = 0
+        self.all_shortcuts = self.shortcuts()
 
         self.line_number = -1
         self.last_renders = []
@@ -931,7 +932,6 @@ class Renderer():
             window = glfw.create_window(640, 480, '', None, None)
             glfw.make_context_current(window)
             self.context = skia.GrDirectContext.MakeGL()
-            print("SUB GLFW")
 
         wl = len(self.watchees)
         self.window_scrolly = 0
@@ -1515,7 +1515,7 @@ class Renderer():
             self.action_waiting = Action.PreviewStoryboard
     
     def on_potential_shortcut(self, key, action, mods):
-        for shortcut, options in self.shortcuts().items():
+        for shortcut, options in self.all_shortcuts.items():
             for modifiers, skey in options:
                 if key != skey:
                     continue
