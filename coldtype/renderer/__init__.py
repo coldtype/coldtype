@@ -367,6 +367,7 @@ class Renderer():
             self._codepath_offset = 0
             self.watchees = [[Watchable.Source, self.filepath, None]]
             if not self.args.is_subprocess:
+
                 self.watch_file_changes()
                 for line in self.filepath.read_text().splitlines():
                     if line.startswith("#coldtype"):
@@ -2165,6 +2166,9 @@ class Renderer():
             #self.waiting_to_render = [[Action.Resave, self.watchees[idx][0]]]
 
     def watch_file_changes(self):
+        if self.args.no_watch:
+            return None
+
         self.observers = []
         dirs = set([w[1].parent for w in self.watchees])
         for d in dirs:

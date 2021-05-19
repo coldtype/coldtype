@@ -7,7 +7,7 @@ states = [
     dict(wdth=1, rotate=25, tu=50)
 ]
 
-loop = Loop(90, len(states), 10)
+loop = Loop(70, len(states), 12)
 co = Font.Cacheable(__sibling__("ColdtypeObviously-VF.ttf"))
 
 @animation(timeline=loop, storyboard=[0], bg=0)
@@ -20,4 +20,5 @@ def render(f):
         .f(1)
         .reversePens()
         .understroke(sw=20)
-        .phototype(f.a.r, blur=2.5, cutw=25))
+        .phototype(f.a.r, blur=2.5, cutw=25)
+        )

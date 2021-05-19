@@ -25,7 +25,7 @@ class LoopPhase():
         state = loopidx(states, self.t.index)
         if self.is_transition:
             next_state = loopidx(states, self.t.index+1)
-            e = self.t.progress(self.i, easefn=e).e
+            e = self.t.progress(self.i, easefn=e, to1=1).e
             state = interp_dict(e, state.copy(), next_state)
         return state
 
