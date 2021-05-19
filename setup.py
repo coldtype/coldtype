@@ -10,7 +10,7 @@ More info available at: [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
 
 setuptools.setup(
     name="coldtype",
-    version="0.3.6",
+    version="0.3.7",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",
@@ -60,7 +60,7 @@ setuptools.setup(
         ]
     },
     install_requires=[
-        "drafting[text]>=0.1.8",
+        "drafting[text]>=0.1.9",
         "srt",
         "mido",
         "numpy",
