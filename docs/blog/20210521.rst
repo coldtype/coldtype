@@ -1,0 +1,46 @@
+.. post:: 21 May, 2021
+    :tags: glfw
+    :category: glfw
+    :author: Rob Stenson
+    :location: Los Angeles
+
+A transparent & unclickable window
+==================================
+
+One thing that's very fun, particularly on smaller screens, is to run a Coldtype viewer window with a transparent background directly on top of some code that you’re working on. That’s exactly what’s happening in the video below — it’s not a composite of a video and some code, it’s just literally what appears on the screen as I program.
+
+.. raw:: html
+
+    <blockquote class="twitter-tweet"><p lang="en" dir="ltr">a little bit of realtime python<br>&amp; a realtime animation<br><br>13 lines of coldtype + <a href="https://twitter.com/OHnoTypeCo?ref_src=twsrc%5Etfw">@ohnotypeco</a>’s latest ttf <a href="https://t.co/2BRClOjore">pic.twitter.com/2BRClOjore</a></p>&mdash; Rob Stenson (@robstenson) <a href="https://twitter.com/robstenson/status/1395538382919409664?ref_src=twsrc%5Etfw">May 21, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+To get something like that to work, there are two steps, because there are actually two different things happening: (1) the window is transparent (this is easy), and (2) the window ignores all mouse interaction (not as easy).
+
+You can see the correct invocation for both at the beginning of that video, but here it is again:
+
+.. code-block:: bash
+
+    coldtype examples/animations/simplevarfont.py -wt -wp NW -wpass
+
+
+- **-wt** stands for :code:`--window-transparent` — this should work right out of the box
+- **-wp NW** means :code:`--window-pin` is set to :code:`NW`, meaning the window should initially appear at the top-left of the monitor (this can have any compass value (i.e. N, S, SW, SE, etc.) or C for Center).
+- **-wpass** is the tricky one — it means :code:`window-passthrough` and relies on a feature of the glfw library that hasn't made it to the stable released yet.
+
+
+The unclickable window
+----------------------
+
+We’re leaving the main road here and headed onto dirt. Unfortunately, I don't know how to do this on Windows, so these instructions are just for Mac OS.
+
+All you need to do ("all you need to do") is install the "head" of glfw, via `brew <https://brew.sh/>`_.
+
+.. code-block:: bash
+
+    brew install glfw --HEAD
+
+Now the -wpass argument should work.
+
+A semi-transparent window
+-------------------------
+
+One other thing you can do is set the opacity of the window itself to something other than the usual fully-opaque. I probably should’ve done this in the video above, where I briefly made my own code invisible because of the blue text overlaying it. I could’ve avoided that by adding :code:`-wo 0.5` to the command-line invocation, which would’ve cut the transparency of the whole window in half, meaning even a full-alpha color in the rendered viewer would've been transparen (and I could’ve seen all of the code).
