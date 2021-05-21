@@ -1823,6 +1823,7 @@ class Renderer():
             
             self.state.reset_keystate()
             glfw.poll_events()
+            should_close = glfw.window_should_close(self.window)
         self.on_exit(restart=False)
     
     def preview_scale(self):
