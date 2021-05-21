@@ -1,10 +1,9 @@
 Blog
 ====
 
-.. postlist:: 15
+.. postlist::
     :language: en
-    :date: %A, %B %d, %Y
-    :format: “{title}” by {author} on {date}
+    :format: “{title}” — {date}
     :list-style: circle
+    :date: %B %d, %Y
     :excerpts:
-    :sort:

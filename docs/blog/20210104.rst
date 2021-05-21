@@ -1,4 +1,4 @@
-.. post:: 4 Jan, 2021
+.. post:: Jan 4, 2021
     :tags: meta
     :category: meta
     :author: Rob Stenson

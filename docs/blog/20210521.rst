@@ -1,4 +1,4 @@
-.. post:: 21 May, 2021
+.. post:: May 21, 2021
     :tags: glfw
     :category: glfw
     :author: Rob Stenson
@@ -24,7 +24,7 @@ You can see the correct invocation for both at the beginning of that video, but 
 
 - **-wt** stands for :code:`--window-transparent` — this should work right out of the box
 - **-wp NW** means :code:`--window-pin` is set to :code:`NW`, meaning the window should initially appear at the top-left of the monitor (this can have any compass value (i.e. N, S, SW, SE, etc.) or C for Center).
-- **-wpass** is the tricky one — it means :code:`window-passthrough` and relies on a feature of the glfw library that hasn't made it to the stable released yet.
+- **-wpass** is the tricky one — it means :code:`window-passthrough` and relies on a feature of the glfw library that hasn't made it to the stable release yet.
 
 
 The unclickable window

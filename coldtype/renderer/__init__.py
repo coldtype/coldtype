@@ -2182,18 +2182,23 @@ class Renderer():
             print(f"... no file specified, showing generic window ...")
     
     def monitor_midi(self):
-        def execute_shortcut(shortcut):
+        def execute_shortcut(shortcut, nn):
             try:
                 ksc = KeyboardShortcut(shortcut)
                 ea = None
             except ValueError:
-                ksc = None
-                ea = EditAction(shortcut)
+                try:
+                    ksc = None
+                    ea = EditAction(shortcut)
+                except ValueError:
+                    ea = None
             
             if ksc:
                 self.on_shortcut(KeyboardShortcut(shortcut))
             elif ea:
                 self.on_action(EditAction(shortcut), {})
+            elif not ea:
+                print("No action", nn)
 
         controllers = {}
         for device, mi in self.midis:
@@ -2204,7 +2209,7 @@ class Renderer():
                 if msg.isNoteOn(): # Maybe not forever?
                     nn = msg.getNoteNumber()
                     shortcut = self.midi_mapping[device]["note_on"].get(nn)
-                    execute_shortcut(shortcut)
+                    execute_shortcut(shortcut, nn)
                 if msg.isController():
                     cn = msg.getControllerNumber()
                     cv = msg.getControllerValue()
@@ -2212,7 +2217,7 @@ class Renderer():
                     if shortcut:
                         if cv in shortcut:
                             print("shortcut!", shortcut, cv)
-                            execute_shortcut(shortcut.get(cv))
+                            execute_shortcut(shortcut.get(cv), cn)
 
                             #if self.server:
                             #    print("shortcut!", shortcut, cv)
