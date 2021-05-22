@@ -91,7 +91,7 @@ def ease(style, x):
     * elei = ElasticEaseIn,
     * eleio = ElasticEaseInOut
     """
-    if style == "linear":
+    if style == "linear" or style == "lin" or style == "l":
         return x, 0.5
     e = eases.get(style)
     if e:

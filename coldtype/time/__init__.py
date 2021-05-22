@@ -20,3 +20,6 @@ class Frame():
     def __init__(self, i, animation):
         self.i = i #: index of the frame
         self.a = animation #: the animation (or subclass of animation) associated with the frame
+    
+    def e(self, easefn="eeio", loops=0, cyclic=True):
+        return self.a.progress(self.i, loops=loops, easefn=easefn, cyclic=cyclic, to1=True).e

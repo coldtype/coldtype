@@ -16,6 +16,6 @@ b = build(mdpl)
 
 @animation(r, timeline=Timeline(120))
 def nonvarinterp(f):
-    e = f.a.progress(f.i, loops=1, easefn="eeio").e
-    e2 = f.a.progress(f.i, loops=3, cyclic=0, easefn="linear").e
-    return (a.interpolate(e, b).f(None).s(hsl(0.9, 1)).sw(5))
+    return (a.interpolate(f.e("eeio", 2), b).f(None).s(hsl(0.9, 1)).sw(5)
+        .mod_contour(18, lambda p:
+            p.rotate(-360*f.e("l", 7, 0))))
