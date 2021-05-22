@@ -108,7 +108,7 @@ def test_rich_code(r):
     for line in rt:
         out += DATPen().rect(line.getFrame()).f(hsl(0.3, a=0.1))
 
-    out += rt#DPS(rt.pens)
+    out += rt
     return out
 
 txt3 = """H [h]

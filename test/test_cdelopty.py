@@ -15,8 +15,7 @@ def scratch(r):
             .f(hsl(0.6, s=1))
             .align(r)),
         (StSt("Cold!", "co", 500,
-            wdth=0.25, wght=1, tu=-80, r=1, ro=1)
-            .fit(r.w)
+            wdth=0.25, wght=1, tu=-80, r=1, ro=1, fit=r.w)
             .pens()
             .align(r)
             .f(1)
@@ -38,9 +37,8 @@ test = [
         ["f", ["hsl", 0.6, {"s":1}]],
         ["align", "®"]],
     ["S", "Cold!", "co", 500,
-        {"wdth":0.25, "wght":1, "tu":-80, "r":1, "ro": 1},
+        {"wdth":0.25, "wght":1, "tu":-80, "r":1, "ro": 1, "fit": 500},
         ".",
-        ["fit", "®", ".w"],
         ["pens"],
         ["align", "®"],
         ["f", 1],

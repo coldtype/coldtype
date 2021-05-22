@@ -49,7 +49,7 @@ class DrawBotPen(DrawBotPen1):
                     db.translate(-150, -150)
                     db.image(im, (x, y))
         
-        if not hasattr(pens, "pens"):
+        if not hasattr(pens, "_pens"):
             pens = [pens]
         
         for dps in pens:

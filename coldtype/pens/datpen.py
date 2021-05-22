@@ -142,12 +142,6 @@ class DATPen(DraftingPen):
     def connect(self):
         return self.map(lambda i, mv, pts: ("lineTo" if i > 0 and mv == "moveTo" else mv, pts))
     
-    # def collapse(self, levels=100, onself=False):
-    #     """For compatibility with calls to a DATPens"""
-    #     if hasattr(self, "pens"):
-    #         super().collapse(levels=levels, onself=onself)
-    #     return DATPens([self])
-    
     def smooth(self):
         """Runs a catmull spline on the datpen, useful in combination as flatten+roughen+smooth"""
         dp = DATPen()
@@ -672,10 +666,10 @@ class DATPens(DraftingPens, DATPen):
     
     def __str__(self):
         v = "" if self.visible else "ø-"
-        return f"<{v}DPS:{len(self.pens)}——tag:{self._tag}/data{self.data})>"
+        return f"<{v}DPS:{len(self._pens)}——tag:{self._tag}/data{self.data})>"
     
     def __len__(self):
-        return len(self.pens)
+        return len(self._pens)
     
     def to_code(self):
         out = "(DATPens()"
@@ -689,7 +683,7 @@ class DATPens(DraftingPens, DATPen):
         if self.data:
             out += f"\n    .add_data({repr(self.data)})"
 
-        for pen in self.pens:
+        for pen in self._pens:
             for idx, line in enumerate(pen.to_code().split("\n")):
                 if idx == 0:
                     out += f"\n    .append{line}"
@@ -705,23 +699,23 @@ class DATPens(DraftingPens, DATPen):
         usually done so you can duplicate and further modify a
         DATPens without mutating the original"""
         dps = DATPens()
-        for p in self.pens:
+        for p in self._pens:
             dps.append(p.copy(with_data=with_data))
         return dps
     
     def __getitem__(self, index):
-        return self.pens[index]
+        return self._pens[index]
     
     def indexed_subset(self, indices):
         """Take only the pens at the given indices"""
         dps = DATPens()
-        for idx, p in enumerate(self.pens):
+        for idx, p in enumerate(self._pens):
             if idx in indices:
                 dps.append(p.copy())
         return dps
     
     def __setitem__(self, index, pen):
-        self.pens[index] = pen
+        self._pens[index] = pen
     
     def __iadd__(self, item):
         return self.append(item)
@@ -734,7 +728,7 @@ class DATPens(DraftingPens, DATPen):
     
     def insert(self, index, pen):
         if pen:
-            self.pens.insert(index, pen)
+            self._pens.insert(index, pen)
         return self
     
     def append(self, pen, allow_blank=False):
@@ -742,28 +736,28 @@ class DATPens(DraftingPens, DATPen):
             pen = pen(self)
         if pen or allow_blank:
             if isinstance(pen, Geometrical):
-                self.pens.append(DATPen(pen))
+                self._pens.append(DATPen(pen))
             elif isinstance(pen, DATPen):
-                self.pens.append(pen)
+                self._pens.append(pen)
             elif isinstance(pen, DraftingPens):
-                self.pens.append(DATPens(pen.pens))
+                self._pens.append(DATPens(pen._pens))
             elif isinstance(pen, DraftingPen):
-                self.pens.append(DATPen(pen))
+                self._pens.append(DATPen(pen))
             else:
                 try:
                     for p in pen:
                         if p:
-                            self.pens.append(p)
+                            self._pens.append(p)
                 except TypeError:
                     #print("appending non-pen", type(pen))
-                    self.pens.append(pen)
+                    self._pens.append(pen)
                     #print(">>> append rejected", pen)
         return self
     
     ap = append
     
     def extend(self, pens):
-        if hasattr(pens, "pens"):
+        if hasattr(pens, "_pens"):
             self.append(pens)
         else:
             for p in pens:
@@ -776,7 +770,7 @@ class DATPens(DraftingPens, DATPen):
         
     def reversePens(self):
         """Reverse the order of the pens; useful for overlapping glyphs from the left-to-right rather than right-to-left (as is common in OpenType applications)"""
-        self.pens = list(reversed(self.pens))
+        self._pens = list(reversed(self._pens))
         return self
     
     rp = reversePens
@@ -784,23 +778,23 @@ class DATPens(DraftingPens, DATPen):
     def removeBlanks(self):
         """Remove blank pens from the set"""
         nonblank_pens = []
-        for pen in self.pens:
+        for pen in self._pens:
             if not pen.removeBlanks():
                 nonblank_pens.append(pen)
-        self.pens = nonblank_pens
+        self._pens = nonblank_pens
         return self
     
     def clearFrames(self):
         """Get rid of any non-bounds-derived pen frames;
         i.e. frames set by Harfbuzz"""
-        for p in self.pens:
+        for p in self._pens:
             p.clearFrame()
         return self
     
     def addFrame(self, frame, typographic=False, passthru=False):
         """Add a frame that isn't derived from the bounds"""
         if passthru:
-            for p in self.pens:
+            for p in self._pens:
                 p.addFrame(frame, typographic=typographic)
         else:
             self._frame = frame
@@ -817,8 +811,8 @@ class DATPens(DraftingPens, DATPen):
             return self._frame
         else:
             try:
-                union = self.pens[0].ambit(th=th, tv=tv)
-                for p in self.pens[1:]:
+                union = self._pens[0].ambit(th=th, tv=tv)
+                for p in self._pens[1:]:
                     union = union.union(p.ambit(th=th, tv=tv))
                 return union
             except Exception as e:
@@ -832,10 +826,10 @@ class DATPens(DraftingPens, DATPen):
     #     """A flat representation of this set as a single pen"""
     #     dp = DATPen()
     #     fps = self.collapse()
-    #     for p in fps.pens:
+    #     for p in fps._pens:
     #         dp.record(p)
-    #     if len(fps.pens) > 0:
-    #         for k, attrs in fps.pens[0].attrs.items():
+    #     if len(fps._pens) > 0:
+    #         for k, attrs in fps._pens[0].attrs.items():
     #             dp.attr(tag=k, **attrs)
     #     dp.addFrame(self.getFrame())
     #     return dp
@@ -849,7 +843,7 @@ class DATPens(DraftingPens, DATPen):
     #     return super().align(rect, x, y, th, tv, transformFrame)
     
     def alignToRects(self, rects, x=Edge.CenterX, y=Edge.CenterY, th=1, tv=1):
-        for idx, p in enumerate(self.pens):
+        for idx, p in enumerate(self._pens):
             p.align(rects[idx], x, y, th=th, tv=tv)
     
     def implode(self):
@@ -862,7 +856,7 @@ class DATPens(DraftingPens, DATPen):
     def skel(self, pts=None, start=0):
         _pts = pts or DPS()
         for idx, pen in enumerate(self):
-            if hasattr(pen, "pens"):
+            if hasattr(pen, "_pens"):
                 pen.skel(pts=_pts)
             else:
                 c = (start + idx)*0.37

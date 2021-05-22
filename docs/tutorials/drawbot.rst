@@ -118,34 +118,20 @@ Because the default behavior of DrawBot is to display a PDF of the result of you
 Coldtype-in-DrawBot
 -------------------
 
-Not quite sure why this would be useful, but if you're willing to do a little spelunking, Coldtype can also be used from within the DrawBot editing/viewing app.
+Using Coldtype in DrawBot isn’t too useful, but Drafting + DrawBot does make a lot of sense. Drafting is a library that contains the core vector/text functionality of Coldtype, but without any of the Coldtype viewer technology. This makes it easier to embed in applications like DrawBot and Blender.
 
-To install the coldtype library, you'll need to locate the python binary used by DrawBot itself. As of this writing, that’s available on my computer at:
+To install the drafting library in DrawBot, open up DrawBot and then navigate via the top bar to Python > Install Python Packages. There you can switch the input selector to "Install" and then type in "drafting".
 
-.. code:: bash
-
-    /Applications/DrawBot.app/Contents/MacOS/python
-
-If that’s the same on your computer (you can verify that by copying that path into your terminal and hitting enter), then you can install coldtype like this:
-
-.. code:: bash
-
-    /Applications/DrawBot.app/Contents/MacOS/python -m pip install coldtype
-
-(Unfortunately you can’t install coldtype via the integrated PIP GUI in DrawBot because it times out too soon, and because there’s an issue with a missing Python.h file in the bundled DrawBot python.)
-
-If you do all that and restart DrawBot, you should now be able to use Coldtype directly within DrawBot itself.
+Now you should be able to access Drafting-in-DrawBot.
 
 .. code:: python
 
-    import coldtype as ct
+    from drafting.text import StSt
+    from drafting.geometry import Rect
+    from drafting.drawbot import dbdraw
 
-    r = ct.Rect(width(), height())
+    r = Rect(width(), height())
 
-    (ct.StyledString("Hello!",
-        ct.Style("~/Type/fonts/fonts/_script/ChocStd.otf", 400))
-        .pens()
-        .align(r)
+    (StSt("Hello!", "~/Type/fonts/fonts/_script/ChocStd.otf", 400, r))
         .f(ct.Gradient.H(r.inset(100), ct.hsl(0.5), ct.hsl(0.9)))
-        .cast(DrawBotPens)
-        .draw())
+        .chain(dbdraw))

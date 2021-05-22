@@ -211,9 +211,9 @@ class renderable():
     def normalize_result(self, pens):
         if not pens:
             return DATPens()
-        elif hasattr(pens, "pens"):
+        elif hasattr(pens, "_pens"):
             if isinstance(pens, DraftingPens):
-                return DATPens(pens.pens)
+                return DATPens(pens._pens)
             return pens
         elif isinstance(pens, DATPen):
             return DATPens([pens])
