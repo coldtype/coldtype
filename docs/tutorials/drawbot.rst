@@ -120,18 +120,19 @@ Coldtype-in-DrawBot
 
 Using Coldtype in DrawBot isn’t too useful, but Drafting + DrawBot does make a lot of sense. Drafting is a library that contains the core vector/text functionality of Coldtype, but without any of the Coldtype viewer technology. This makes it easier to embed in applications like DrawBot and Blender.
 
-To install the drafting library in DrawBot, open up DrawBot and then navigate via the top bar to Python > Install Python Packages. There you can switch the input selector to "Install" and then type in "drafting".
+To install the drafting library in DrawBot, open up DrawBot and then navigate via the top bar to Python > Install Python Packages. There you can switch the input selector to "Install" and then type in "drafting[text]". (If that fails, maybe just try "drafting")
 
 Now you should be able to access Drafting-in-DrawBot.
 
 .. code:: python
 
-    from drafting.text import StSt
-    from drafting.geometry import Rect
-    from drafting.drawbot import dbdraw
+    from drafting.drawbot import *
 
-    r = Rect(width(), height())
+    r = page_rect()
+    fp = "/System/Library/Fonts/SFCompactRounded.ttf"
+    f = Font.Cacheable(fp)
 
-    (StSt("Hello!", "~/Type/fonts/fonts/_script/ChocStd.otf", 400, r))
-        .f(ct.Gradient.H(r.inset(100), ct.hsl(0.5), ct.hsl(0.9)))
+    (StSt("Drafting", f, 200, r, wght=1)
+        .f(hsl(0.8))
+        .align(r)
         .chain(dbdraw))
