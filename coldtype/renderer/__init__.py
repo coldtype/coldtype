@@ -181,8 +181,6 @@ class Renderer():
 
             multiplex=parser.add_argument("-mp", "--multiplex", action="store_true", default=False, help="Render in multiple processes"),
 
-            composite=parser.add_argument("-c", "--composite", action="store_true", default=False, help="Should the next render composite onto the previous render?"),
-
             memory=parser.add_argument("-mm", "--memory", action="store_true", default=False, help="Show statistics about memory usage?"),
 
             midi_info=parser.add_argument("-mi", "--midi-info", action="store_true", default=False, help="Show available MIDI devices"),
@@ -307,6 +305,7 @@ class Renderer():
 
         self.line_number = -1
         self.last_renders = []
+        self.last_render_cleared = False
 
         # for multiplex mode
         self.running_renderers = []
@@ -728,8 +727,6 @@ class Renderer():
                                         if pr.name == render.name and pr.last_result:
                                             render.last_result = pr.last_result
                             result = render.normalize_result(render.run(rp, self.state))
-                            if self.args.composite and not render.composites:
-                                result = DATPens([render.last_result, result])
                         
                         if self.state.request:
                             self.requests_waiting.append([render, str(self.state.request), None])
@@ -1507,6 +1504,7 @@ class Renderer():
             self.send_to_external("jump_to_def", info=self.last_animation.frame_to_fn(frame))
     
     def on_shortcut(self, shortcut):
+        #print(shortcut)
         waiting = self.shortcut_to_action(shortcut)
         if waiting:
             if waiting != -1:
@@ -1680,6 +1678,7 @@ class Renderer():
             self.multiplexing = not self.multiplexing
             print(">>> MULTIPLEXING?", self.multiplexing)
         elif action == Action.ClearLastRender:
+            self.last_render_cleared = True
             for r in self.renderables(Action.PreviewStoryboard):
                 r.last_result = None
             self.action_waiting = Action.PreviewStoryboard
@@ -2033,6 +2032,7 @@ class Renderer():
         
         self.state.needs_display = 0
         self.previews_waiting_to_paint = []
+        self.last_render_cleared = False
     
         for render, request, action in self.requests_waiting:
             if action == "callback":
@@ -2086,9 +2086,12 @@ class Renderer():
                 render.show_error = stack.split("\n")[-2]
                 error_color = coldtype.rgb(0, 0, 0).skia()
         else:
-            if self.args.composite or render.composites:
+            if render.composites:
                 comp = result.precompose(render.rect)
-                render.last_result = comp
+                if not self.last_render_cleared:
+                    render.last_result = comp
+                else:
+                    render.last_result = None
             else:
                 comp = result
             render.draw_preview(1.0, canvas, render.rect, comp, rp)
