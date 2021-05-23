@@ -55,7 +55,10 @@ class animation(renderable, Timeable):
         self.storyboard = storyboard
         if timeline:
             if not isinstance(timeline, Timeline):
-                timeline = Timeline(timeline)
+                try:
+                    timeline = Timeline(timeline[0], fps=timeline[1])
+                except:
+                    timeline = Timeline(timeline)
             self.timeline = timeline
             self.t = timeline
             self.start = timeline.start
