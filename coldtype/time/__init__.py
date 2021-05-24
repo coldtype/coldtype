@@ -22,4 +22,15 @@ class Frame():
         self.a = animation #: the animation (or subclass of animation) associated with the frame
     
     def e(self, easefn="eeio", loops=0, cyclic=True):
-        return self.a.progress(self.i, loops=loops, easefn=easefn, cyclic=cyclic, to1=True).e
+        if not isinstance(easefn, str):
+            loops = easefn
+            easefn = "eeio"
+        return self.a.progress(self .i, loops=loops, easefn=easefn, cyclic=cyclic, to1=True).e
+    
+    def last_render(self, modfn=lambda p: p):
+        if not self.a.composites:
+            raise Exception("set `composites=1` on your @animation")
+        if self.a.last_result:
+            return modfn(self.a.last_result.copy())
+        else:
+            return None

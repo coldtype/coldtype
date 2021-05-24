@@ -639,6 +639,11 @@ class DATPen(DraftingPen):
     
     def Unpickle(self, src):
         return pickle.load(open(str(src), "rb"))
+    
+    def sk_fill(self, c):
+        import coldtype.filtering as fl
+        c = normalize_color(c)
+        return self.attr(skp=dict(ColorFilter=fl.fill(c)))
 
 
 class DATPens(DraftingPens, DATPen):

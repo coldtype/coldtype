@@ -20,17 +20,16 @@ Here’s an example:
 
    from coldtype import *
 
-   @renderable((700, 350))
-   def coldtype(r):
-      return (StyledString("COLDTYPE",
-         Style("assets/ColdtypeObviously-VF.ttf",
-            350, wdth=0, tu=20, r=1, rotate=10, ro=1))
-         .pens()
-         .align(r)
-         .f(Gradient.Horizontal(r, hsl(0.69, s=1, l=0.55), hsl(0.55, s=1, l=0.6)))
-         .translate(0, 5))
+   fnt = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 
-.. image:: /_static/renders/index_coldtype.png
+   @renderable((700, 350))
+   def coldtype_simple(r):
+      return (StSt("COLDTYPE", fnt, 350,
+            wdth=0, tu=20, r=1, rotate=10)
+         .align(r)
+         .f(hsl(0.65, 0.6)))
+
+.. image:: /_static/renders/index_coldtype_simple.png
    :width: 350
 
 If you’re familiar with other graphics programming libraries, that code snippet might seem a little odd, given that it’s **canvas-less** & highly **abbreviated**, with a idiomatic emphasis on **method-chaining** & **structured data** (which can make programming **animations** a lot easier and faster). `More on those bold words on the about page.`
