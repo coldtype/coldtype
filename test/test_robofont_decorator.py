@@ -10,10 +10,7 @@ class RoboFontData():
         self.ufo = None
     
     def read(self):
-        #try:
         self.ufo = raw_ufo(self.ufo_path)
-        #except:
-        #    pass
         try:
             self.data = json.loads(self.path.read_text())
         except json.JSONDecodeError:
