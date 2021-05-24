@@ -20,5 +20,5 @@ def render(f):
         .f(1)
         .reversePens()
         .understroke(sw=20)
-        .phototype(f.a.r, blur=2.5, cutw=25)
+        #.phototype(f.a.r, blur=2.5, cutw=25)
         )
