@@ -15,7 +15,7 @@ def cilati_wave(f:Frame):
             wght=fa.e(ease, 1)).f(0)
     return (chrs.distribute().align(f.a.r))
 
-@animation((1080, 1080/2), timeline=50, solo=1)
+@animation((1080, 1080/2), timeline=50, solo=0)
 def fatface_wave(f):
     chrs = DATPens()
     for idx, c in enumerate("WAVEFORM"):
@@ -25,7 +25,7 @@ def fatface_wave(f):
             wdth=fa.e(ease, 1),
             opsz=fa.ie(ease, 1),
             rotate=-10+20*fa.e(ease, 1),
-            ).f(hsl(0.65, 1)))
+            ).f(0))
     return (chrs.distribute().align(f.a.r, h=200))
 
 
