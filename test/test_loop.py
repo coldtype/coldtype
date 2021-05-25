@@ -8,7 +8,7 @@ states = [
     dict(wdth=0.25, rotate=-180, tu=-800)
 ]
 
-loop = Loop(120, len(states), 8)
+loop = Loop(120, 8, len(states))
 
 @animation(timeline=loop, storyboard=[0], bg=0)
 def render(f):

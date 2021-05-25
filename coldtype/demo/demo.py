@@ -7,7 +7,7 @@ states = [
     dict(wdth=1, rotate=25, tu=50)
 ]
 
-loop = Loop(70, len(states), 12)
+loop = Loop(70, 12, len(states))
 co = Font.Cacheable(__sibling__("ColdtypeObviously-VF.ttf"))
 
 @animation(timeline=loop, storyboard=[0], bg=0)

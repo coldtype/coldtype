@@ -9,7 +9,7 @@ states = [
 ]
 
 obvs = Font("assets/ColdtypeObviously-VF.ttf")
-loop = Loop(200, len(states), 10)
+loop = Loop(200, 10, len(states))
 
 @animation(timeline=loop, storyboard=[0], bg=1, rect=(1500, 300))
 def render(f):

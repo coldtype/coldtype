@@ -36,11 +36,20 @@ class Loop(Timeline):
     
     Can be used as a ``timeline=`` for an ``@animation``
     """
-    def __init__(self, duration, segment_count, transition_length, loop=1, fps=30, storyboard=[0]):
+    def __init__(self, duration, transition_length, states,
+        loop=1, fps=30, storyboard=[0]):
+
         self.timeables = []
         self.transitions = []
 
         super().__init__(duration, fps=fps, storyboard=storyboard)
+
+        try:
+            segment_count = len(states)
+            self.states = states
+        except:
+            segment_count = states
+            self.states = None
 
         idx = 0
         segment_count = int(math.floor(segment_count))
@@ -105,3 +114,9 @@ class Loop(Timeline):
         Get current phase of the Loop as a ``LoopPhase``
         """
         return LoopPhase(*self.current_on_loop(i))
+    
+    def current_state(self, i, e="eeio") -> LoopPhase:
+        """
+        Get current state of the Loop as a dict (provided states were passed to init)
+        """
+        return LoopPhase(*self.current_on_loop(i)).calc_state(self.states, e)

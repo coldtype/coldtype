@@ -961,7 +961,6 @@ class Renderer():
             tracemalloc.start(10)
             self._last_memory = -1
         try:
-            #asyncio.get_event_loop().run_until_complete(self.start())
             self.start()
         except KeyboardInterrupt:
             #print("INTERRUPT")

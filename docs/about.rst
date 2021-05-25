@@ -59,7 +59,7 @@ Here’s the code for a somewhat complex animation:
     ]
 
     obvs = Font("assets/ColdtypeObviously.designspace")
-    loop = Loop(200, len(states), 10)
+    loop = Loop(200, 10, len(states))
 
     @animation(timeline=loop, storyboard=[130], bg=1, rect=(700, 300))
     def banner(f):
