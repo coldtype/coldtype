@@ -1,6 +1,6 @@
 from coldtype import *
 
-@animation((1920, 1080), timeline=Timeline(3500, 24))
+@animation((1080, 1080), timeline=Timeline(3500, 24))
 def timer(f):
     e = f.a.progress(f.i, easefn="linear").e
     c = f.a.r.inset(50).take(d:=150, "mxx").take(d, "mny")
