@@ -14,6 +14,6 @@ def warp(f):
         .align(f.a.r)
         .pen()
         .f(Gradient.V(ß.ambit(), hsl(0.7), hsl(0.9)))
-        .flatten(10)
+        .flatten(5)
         .nlt(warp_fn(f.i*30, f.i, mult=1+f.e(1)*100))
         )

@@ -1431,9 +1431,12 @@ class Renderer():
         elif shortcut == KeyboardShortcut.RestartApp:
             self.on_action(Action.RestartRenderer)
             return -1
-        elif shortcut == KeyboardShortcut.Quit:
+        elif shortcut == KeyboardShortcut.Kill:
             os.kill(os.getpid(), signal.SIGINT)
-            #self.dead = True
+            os.system(f"kill {os.getpid()}")
+            return -1
+        elif shortcut == KeyboardShortcut.Quit:
+            self.dead = True
             return -1
         
         elif shortcut == KeyboardShortcut.Release:

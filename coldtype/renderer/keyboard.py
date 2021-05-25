@@ -22,6 +22,7 @@ class KeyboardShortcut(Enum):
     ReloadSource = "reload_source"
     RestartApp = "restart_app"
     Quit = "quit"
+    Kill = "kill"
 
     Release = "release"
     RenderAll = "render_all"

@@ -11,7 +11,7 @@ TLDR (if you're using a python >= 3.7)
 
 .. code:: bash
    
-   pip install coldtype[viewer]
+   pip install "coldtype[viewer]"
    coldtype demo
 
 Here’s an example:
