@@ -334,6 +334,7 @@ class Renderer():
         self._should_reload = False
 
         self.recurring_actions = {}
+        self.viewer_solos = []
     
     def reset_filepath(self, filepath):
         self.line_number = -1
@@ -588,6 +589,13 @@ class Renderer():
 
         if any([r.solo for r in _rs]):
             _rs = [r for r in _rs if r.solo]
+        
+        if len(self.viewer_solos) > 0:
+            solos = []
+            for i, r in enumerate(_rs):
+                if i in self.viewer_solos:
+                    solos.append(r)
+            _rs = solos
             
         if self.function_filters:
             function_patterns = self.function_filters
@@ -1504,6 +1512,21 @@ class Renderer():
         elif shortcut == KeyboardShortcut.JumpToFrameFunctionDef:
             frame = self.last_animation._active_frames(self.state)[0]
             self.send_to_external("jump_to_def", info=self.last_animation.frame_to_fn(frame))
+        
+        elif shortcut == KeyboardShortcut.ViewerSoloNone:
+            self.viewer_solos = []
+        elif shortcut in [
+            KeyboardShortcut.ViewerSolo1,
+            KeyboardShortcut.ViewerSolo2,
+            KeyboardShortcut.ViewerSolo3,
+            KeyboardShortcut.ViewerSolo4,
+            KeyboardShortcut.ViewerSolo5,
+            KeyboardShortcut.ViewerSolo6,
+            KeyboardShortcut.ViewerSolo7,
+            KeyboardShortcut.ViewerSolo8,
+            KeyboardShortcut.ViewerSolo9
+            ]:
+            self.viewer_solos = [int(str(shortcut)[-1])-1]
     
     def on_shortcut(self, shortcut):
         #print(shortcut)

@@ -34,7 +34,7 @@ loop = Loop(120, 8, [
     dict(grvt=1, yest=1, rotate=0),
     dict(grvt=0, yest=0, rotate=180)])
 
-@animation((1080, 1080/2), timeline=loop, solo=1)
+@animation((1080, 1080/2), timeline=loop, solo=0)
 def cheee_wild(f):
     chrs = DATPens()
     for idx, c in enumerate("CHEEE"):

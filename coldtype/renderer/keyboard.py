@@ -61,6 +61,16 @@ class KeyboardShortcut(Enum):
 
     JumpToFrameFunctionDef = "jump_to_function_def"
 
+    ViewerSoloNone = "viewer_solo_none",
+    ViewerSolo1 = "viewer_solo_1",
+    ViewerSolo2 = "viewer_solo_2",
+    ViewerSolo3 = "viewer_solo_3",
+    ViewerSolo4 = "viewer_solo_4",
+    ViewerSolo5 = "viewer_solo_5",
+    ViewerSolo6 = "viewer_solo_6",
+    ViewerSolo7 = "viewer_solo_7",
+    ViewerSolo8 = "viewer_solo_8",
+    ViewerSolo9 = "viewer_solo_9",
 
 REPEATABLE_SHORTCUTS = [
     KeyboardShortcut.PreviewPrev,
@@ -97,6 +107,8 @@ def symbol_to_glfw(s):
         k = f"KEY_{s.upper()}"
         if hasattr(glfw, k):
             return getattr(glfw, k)
+        elif "np" in s:
+            return getattr(glfw, f"KEY_KP_{s[2:]}")
         else:
             raise Exception("Invalid keyboard shortcut symbol", s)
 
@@ -217,7 +229,7 @@ SHORTCUTS = {
         [["cmd"], "="]
     ],
     KeyboardShortcut.PreviewScaleDefault: [
-        [[], "0"]
+        [["cmd"], "0"]
     ],
 
     KeyboardShortcut.WindowOpacityDown: [
@@ -235,5 +247,10 @@ SHORTCUTS = {
 
     KeyboardShortcut.JumpToFrameFunctionDef: [
         [[], "f"],
-    ]
+    ],
+
+    KeyboardShortcut.ViewerSoloNone: [[[], "np0"]],
+    KeyboardShortcut.ViewerSolo1: [[[], "np1"]],
+    KeyboardShortcut.ViewerSolo2: [[[], "np2"]],
+    KeyboardShortcut.ViewerSolo3: [[[], "np3"]],
 }
