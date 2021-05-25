@@ -926,6 +926,12 @@ class DATPens(DraftingPens, DATPen):
                 except IndexError:
                     pass
         return self
+    
+    def Enumerate(enumerable, enumerator):
+        out = DATPens()
+        for idx, item in enumerate(enumerable):
+            out.append(enumerator(idx, item))
+        return out
 
 DATPenSet = DATPens
 DPS = DATPens

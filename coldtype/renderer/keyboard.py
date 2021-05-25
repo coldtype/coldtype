@@ -61,16 +61,18 @@ class KeyboardShortcut(Enum):
 
     JumpToFrameFunctionDef = "jump_to_function_def"
 
-    ViewerSoloNone = "viewer_solo_none",
-    ViewerSolo1 = "viewer_solo_1",
-    ViewerSolo2 = "viewer_solo_2",
-    ViewerSolo3 = "viewer_solo_3",
-    ViewerSolo4 = "viewer_solo_4",
-    ViewerSolo5 = "viewer_solo_5",
-    ViewerSolo6 = "viewer_solo_6",
-    ViewerSolo7 = "viewer_solo_7",
-    ViewerSolo8 = "viewer_solo_8",
-    ViewerSolo9 = "viewer_solo_9",
+    ViewerTakeFocus = "viewer_take_focus"
+
+    ViewerSoloNone = "viewer_solo_none"
+    ViewerSolo1 = "viewer_solo_1"
+    ViewerSolo2 = "viewer_solo_2"
+    ViewerSolo3 = "viewer_solo_3"
+    ViewerSolo4 = "viewer_solo_4"
+    ViewerSolo5 = "viewer_solo_5"
+    ViewerSolo6 = "viewer_solo_6"
+    ViewerSolo7 = "viewer_solo_7"
+    ViewerSolo8 = "viewer_solo_8"
+    ViewerSolo9 = "viewer_solo_9"
 
 REPEATABLE_SHORTCUTS = [
     KeyboardShortcut.PreviewPrev,
@@ -249,8 +251,20 @@ SHORTCUTS = {
         [[], "f"],
     ],
 
-    KeyboardShortcut.ViewerSoloNone: [[[], "np0"]],
-    KeyboardShortcut.ViewerSolo1: [[[], "np1"]],
-    KeyboardShortcut.ViewerSolo2: [[[], "np2"]],
-    KeyboardShortcut.ViewerSolo3: [[[], "np3"]],
+    KeyboardShortcut.ViewerSoloNone: [
+        [[], "np0"],
+        [[], "0"]
+    ],
+    KeyboardShortcut.ViewerSolo1: [
+        [[], "np1"],
+        [[], "1"]
+    ],
+    KeyboardShortcut.ViewerSolo2: [
+        [[], "np2"],
+        [[], "2"]
+    ],
+    KeyboardShortcut.ViewerSolo3: [
+        [[], "np3"],
+        [[], "3"]
+    ],
 }

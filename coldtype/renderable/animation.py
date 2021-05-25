@@ -40,7 +40,7 @@ class animation(renderable, Timeable):
     """
     def __init__(self, rect=(1080, 1080), duration=10, storyboard=[0], timeline:Timeline=None, audio=None, show_frame=True, overlay=True, **kwargs):
         super().__init__(**kwargs)
-        self.rect = Rect(rect)
+        self.rect = Rect(rect).round()
         self.r = self.rect
         self.audio = audio
         self.overlay = overlay

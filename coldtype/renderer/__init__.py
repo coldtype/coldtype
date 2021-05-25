@@ -322,6 +322,7 @@ class Renderer():
         self.last_rect = None
         self.playing = 0
         self.hotkeys = None
+        self.hotkey_waiting = None
         self.context = None
         self.surface = None
         self.transparent = False
@@ -1210,7 +1211,7 @@ class Renderer():
         print("request (noop)>", render, request, action)
 
     def on_hotkey(self, key_combo, action):
-        self.execute_string_as_shortcut_or_action(action, key_combo)
+        self.hotkey_waiting = (action, key_combo)
     
     def on_message(self, message, action):
         if action:
@@ -1512,6 +1513,9 @@ class Renderer():
         elif shortcut == KeyboardShortcut.JumpToFrameFunctionDef:
             frame = self.last_animation._active_frames(self.state)[0]
             self.send_to_external("jump_to_def", info=self.last_animation.frame_to_fn(frame))
+        
+        elif shortcut == KeyboardShortcut.ViewerTakeFocus:
+            glfw.focus_window(self.window)
         
         elif shortcut == KeyboardShortcut.ViewerSoloNone:
             self.viewer_solos = []
@@ -2011,6 +2015,10 @@ class Renderer():
             self.on_exit()
             return
         
+        if self.hotkey_waiting:
+            self.execute_string_as_shortcut_or_action(*self.hotkey_waiting)
+            self.hotkey_waiting = None
+        
         now = ptime.time()
         for k, v in self.watchee_mods.items():
             if v and (now - v) > 1:
@@ -2225,7 +2233,7 @@ class Renderer():
         elif ea:
             self.on_action(EditAction(shortcut), {})
         elif not ea:
-            print("No shortcut/action", key)
+            print("No shortcut/action", key, shortcut)
 
     
     def monitor_midi(self):
