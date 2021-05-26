@@ -21,7 +21,7 @@ def fatface_wave(f):
             150+(fa:=f.adj(i*4)).ie(ease:="seio", 1)*150,
             wdth=fa.e(ease, 1),
             opsz=fa.ie(ease, 1),
-            rotate=-10+20*fa.e(ease, 1),
+            rotate=-15+30*fa.e(ease, 1),
             ).f(0)))
         .distribute()
         .align(f.a.r, h=200))
