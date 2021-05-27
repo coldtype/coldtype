@@ -4,7 +4,7 @@ from subprocess import run
 from defcon import Font as DFont
 from drafting.geometry.rect import Rect
 from coldtype.helpers import glyph_to_uni
-from coldtype.time.timeline import Timeline
+from drafting.time.timeline import Timeline
 from coldtype.renderable import renderable, animation
 from drafting.text.reader import Style, StyledString, Font
 from coldtype.pens.datpen import DATPen, DATPens

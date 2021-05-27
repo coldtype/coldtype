@@ -31,9 +31,4 @@ Much of the documentation for core text-setting and geometry classes in Coldtype
     :toctree: reference
     :template: module.rst
 
-    coldtype.time.Frame
-    coldtype.time.Timeable
-    coldtype.time.Timeline
-    coldtype.time.Timing
-    coldtype.time.loop.Loop
-    coldtype.time.easing.ease
+    drafting.time.timeline

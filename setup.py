@@ -60,16 +60,14 @@ setuptools.setup(
         ]
     },
     install_requires=[
-        "drafting[text]>=0.2.3",
+        "drafting[text]==0.2.3",
         "srt",
         "mido",
         "numpy",
         "noise",
         "defcon",
         "docutils",
-        "timecode",
         "more-itertools",
-        "easing-functions",
         "SimpleWebSocketServer",
         "watchdog<2.0.0", # https://github.com/gorakhargosh/watchdog/issues/702
     ],
