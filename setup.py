@@ -60,7 +60,7 @@ setuptools.setup(
         ]
     },
     install_requires=[
-        "drafting[text]==0.2.3",
+        "drafting[text]==0.2.4",
         "srt",
         "mido",
         #"numpy",
