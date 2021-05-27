@@ -1,6 +1,6 @@
 from coldtype import *
 from coldtype.warping import warp_fn
-from coldtype.time.easing import ease
+from drafting.time.easing import ease
 from drafting.text.richtext import PythonCode
 
 ### Code that is

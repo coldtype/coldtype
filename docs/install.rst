@@ -8,7 +8,7 @@ If you want to try coldtype in a blank virtual environment:
 
 Using a virtualenv (based on a python >= 3.7) (aka ``python3.9 -m venv venv --prompt=<your prompt here>`` + ``source venv/bin/activate``), run:
 
-* ``pip install coldtype[viewer]``
+* ``pip install "coldtype[viewer]"``
 * ``coldtype demo``
 
 That last command should pop up a window. If you hit the spacebar with that window focused, you should see an animation start playing.

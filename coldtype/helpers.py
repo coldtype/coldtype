@@ -2,12 +2,9 @@ from pathlib import Path
 from defcon import Font as DefconFont
 from drafting.text.reader import normalize_font_path, StyledString
 from coldtype.pens.datpen import DATPens
-from drafting.interpolation import norm, interp_dict, lerp
+from drafting.interpolation import norm, interp_dict, lerp, loopidx
 from random import Random
 
-
-def loopidx(lst, idx):
-    return lst[idx % len(lst)]
 
 def sibling(root, file):
     return Path(root).parent.joinpath(file)
