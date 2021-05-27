@@ -2,6 +2,7 @@ import math, tempfile, pickle, inspect
 from pathlib import Path
 
 from typing import Optional, Callable, Tuple
+from drafting.geometry.primitives import add
 #from collections.abc import Callable
 
 from fontTools.misc.transform import Transform
@@ -82,11 +83,11 @@ class DATPen(DraftingPen):
     def __sub__(self, item):
         return DATPens([self])
     
-    def to_code(self):
+    def to_code(self, classname="DATPen", additional_lines=[]):
         t = None
         if self._tag and self._tag != "?":
             t = self._tag
-        out = "(DATPen()"
+        out = f"({classname}()"
         if t:
             out += f"\n    .tag(\"{t}\")"
 
@@ -109,6 +110,10 @@ class DATPen(DraftingPen):
                     out += f"\n    .sw({v['weight']})"
                 else:
                     print("No code", k, v)
+        
+        for la in additional_lines:
+            out += f"\n    {la}"
+
         out += ")"
         return out
     
