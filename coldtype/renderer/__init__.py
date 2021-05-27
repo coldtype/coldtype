@@ -3,7 +3,11 @@ import tempfile, traceback, threading, multiprocessing
 import argparse, importlib, inspect, json, math
 import sys, os, re, signal, tracemalloc, shutil
 import platform, pickle, string, datetime
-import numpy as np
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 import time as ptime
 from pathlib import Path

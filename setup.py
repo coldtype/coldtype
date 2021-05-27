@@ -63,7 +63,7 @@ setuptools.setup(
         "drafting[text]==0.2.3",
         "srt",
         "mido",
-        "numpy",
+        #"numpy",
         "noise",
         "defcon",
         "docutils",

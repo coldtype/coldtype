@@ -1,6 +1,11 @@
 import math
 import os.path
-import numpy as np
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
+
 try:
     import soundfile as sf
 except:
