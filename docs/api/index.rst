@@ -24,11 +24,3 @@ Much of the documentation for core text-setting and geometry classes in Coldtype
 
     coldtype.renderable.renderable
     coldtype.renderable.animation.animation
-
-.. rubric:: Time/Timing Classes
-
-.. autosummary::
-    :toctree: reference
-    :template: module.rst
-
-    drafting.time.timeline

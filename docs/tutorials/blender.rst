@@ -7,7 +7,9 @@ Anyway the point is that you can avoid setting text in Blender itself by writing
 
 That is, the idea here is to work in a more hybrid style. You want a gigantic piece of 3d type that uses the second stylistic set of a font? Blender won't help you, but Coldtype can: write a short script in Python, using Coldtype to create the vector, and — voila — you have a gigantic piece of 3d type that you can move around and add materials to, etc.
 
-__N.B.__ This means the point of a Coldtype script in Blender is not to return a ``DATPen`` or ``DATPens`` to a renderer, but to work interactively, creating or mutating existing objects available in the Blender data hierarchy in your project file.
+__N.B.__ This means the point of a Coldtype script in Blender is not to return a ``DATPen`` or ``DATPens`` from a Coldtype rendering function, but to work interactively, creating or mutating existing objects available in the Blender data hierarchy in your project file.
+
+__N.B.2__ Because Blender is the de-facto "renderer" in this situation, and because much of Coldtype’s codebase and dependencies are centered around rendering, it makes more sense to not use Coldtype in Blender, but to instead use __drafting__, a library that implements most of the core vector and text functionality of Coldtype.
 
 Getting it all set up is a bit of a pain, but worth it (if you’re doing anything with typography in Blender).
 
@@ -18,7 +20,7 @@ Installing packages in Blender requires locating the bundled python binary inclu
 
 .. code:: bash
 
-    /Applications/Blender.app/Contents/Resources/2.90/python/bin/python3.7m
+    /Applications/Blender.app/Contents/Resources/2.92/python/bin/python3.7m
 
 The ``2.90`` and the ``3.7m`` might be different depending on your installation.
 
@@ -40,29 +42,7 @@ Once you have all that out of the way, you can `pip install` things using that e
 
 .. code:: bash
 
-    b3d -m pip install coldtype
-
-Or, if you’re installing a local cloned version of Coldtype (which is what I do):
-    
-.. code:: bash
-
-    b3d -m pip install -e ~/path/to/coldtype
-
-**However**, that probably does not work, because of some C-build requirements in certain Coldtype dependencies. `This part is weird & annoying`.
-
-We’re going to follow the strategy outlined in `this Stack Overflow answer <https://blender.stackexchange.com/questions/81740/python-h-missing-in-blender-python>`_: basically, we need to add some missing files to Blender’s installation, which means you'll need to download the source of the exact version of Python used in the Blender you have on your machine.
-
-To find that, run ``b3d_python --version``
-
-For Blender 3.9, that’s python 3.7.7 — you can find the source for that here: https://www.python.org/downloads/release/python-377/
-
-Once you’ve downloaded and unzipped the source, copy the `Include` files from the python 3.7.7 source into the ``/Applications/Blender.app/Contents/Resources/2.90/python/`` (or equivalent), something like:
-
-.. code:: bash
-    
-    cp Include/* /Applications/Blender.app/Contents/Resources/2.90/python/include/python3.7m/
-
-Once you’ve done that, you should be able to install coldtype in the normal way described above, with ``b3d -m pip install coldtype``
+    b3d -m pip install "drafting[text]"
 
 Running Code in Blender
 -----------------------
@@ -71,58 +51,32 @@ This code must be run from within Blender itself (see blender/README.md in this 
 
 .. code:: python
 
-    from coldtype import *
-    from coldtype.pens.blenderpen import BlenderPen, BPH
+    from drafting.blender import *
 
     BPH.Clear()
 
     r = Rect(0, 0, 1000, 1000)
-    tc = BPH.Collection("Test")
+    tc = BPH.Collection("Text")
+    fnt = Font.Cacheable("~/Type/fonts/fonts/CheeeVariable.ttf")
 
-    mutator = Font.Cacheable("~/Goodhertz/coldtype/assets/MutatorSans.ttf")
-
-    (DATPen()
-        .rect(r)
-        .f(hsl(0.9, s=1))
+    (DraftingPen(r)
+        .f(hsl(0.9))
         .tag("Frame")
         .cast(BlenderPen)
         .draw(tc, plane=1))
 
-    (StyledString("COLD",
-        Style(mutator, 180, wdth=0.5, wght=1))
-        .pen()
-        .f(hsl(0.65, l=0.5, s=1))
-        .align(r)
-        .translate(0, 80)
-        .tag("COLD")
-        .cast(BlenderPen)
-        .draw(tc))
-
-    (StyledString("TYPE",
-        Style(mutator, 210, wdth=0.35, wght=0.25))
-        .pen()
-        .f(hsl(0.15, s=1))
-        .align(r)
-        .translate(0, -80)
-        .tag("TYPE")
-        .cast(BlenderPen)
-        .draw(tc))
-
-    (StyledString("IN BLENDER",
-        Style(mutator, 100, wdth=0.35, wght=0.25))
-        .pen()
-        .f(hsl(0.95, s=1))
-        .align(r)
-        .translate(0, -380)
-        .tag("Blender")
-        .cast(BlenderPen)
-        .draw(tc))
+    @b3d_animation(30)
+    def draw_txt(f):
+        (StSt("HEY", fnt, 500, yest=f.ie("qeio", 2), grvt=f.e(1))
+            .pen()
+            .align(r)
+            .tag("HEY")
+            .cast(BlenderPen)
+            .draw(tc))
 
 Running that code will add some objects to your scene — objects which you can move around and modify as much as you’d like — the goal here is not so much to craft a finished image with code, but to help you quickly and precisely get some good looking typographic vectors in your scene.
 
 So some code like that should result (if you render it via Cycles) in an image similar to this:
 
-.. image:: /_static/blenderrender.gif
-    :width: 435
-
-This code is, like DrawBot, not particularly like a standard Coldtype program, because nothing is returned to a renderer. Instead, here we are procedurally building up vectors and manually appending them to Blender. The difference between Blender and normal Coldtype is that rasterization/rendering really only happens very late, when you render your entire Blender composition. So the workflow here is not to create artifacts straight-away, but to aide in building complex vector data with Python, rather than with the poor typography / type tools made available to you in the Blender GUI.
+.. image:: /_static/blender_hey2.gif
+    :width: 540
