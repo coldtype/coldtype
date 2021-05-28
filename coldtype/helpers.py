@@ -80,6 +80,16 @@ def uni_to_glyph(u):
     return _by_uni.get(u)
     
 def glyph_to_uni(g):
+    if g.lower() in [
+        "gcommaaccent",
+        "kcommaaccent",
+        "lcommaaccent",
+        "ncommaaccent",
+        "rcommaaccent",
+        ]:
+        g = g.replace("commaaccent", "cedilla")
+    elif g.lower() == "kgreenlandic":
+        g = g.replace("greenlandic", "ra")
     if not _by_glyph:
         _populate_glyphs_unis()
     return _by_glyph.get(g)

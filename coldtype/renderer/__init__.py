@@ -183,6 +183,10 @@ class Renderer():
             
             all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
 
+            build=parser.add_argument("-b", "--build", action="store_true", default=False, help="Should the build function be run and the renderer quit immediately?"),
+
+            release=parser.add_argument("-rls", "--release", action="store_true", default=False, help="Should the release function be run and the renderer quit immediately?"),
+
             multiplex=parser.add_argument("-mp", "--multiplex", action="store_true", default=False, help="Render in multiple processes"),
 
             memory=parser.add_argument("-mm", "--memory", action="store_true", default=False, help="Show statistics about memory usage?"),
@@ -272,7 +276,7 @@ class Renderer():
 
         self.parser = parser
         self.args = parser.parse_args()
-        if self.args.is_subprocess or self.args.all:
+        if self.args.is_subprocess or self.args.all or self.args.release or self.args.build:
             self.args.no_watch = True
         
         self.disable_syntax_mods = self.args.disable_syntax_mods
@@ -554,10 +558,10 @@ class Renderer():
             if isinstance(r, animation):
                 return r
     
-    def release_fn(self):
+    def buildrelease_fn(self, fnname="release"):
         candidate = None
         for k, v in self.program.items():
-            if k == "release":
+            if k == fnname:
                 candidate = v
         return candidate
     
@@ -1186,6 +1190,18 @@ class Renderer():
         else:
             if self.args.all:
                 self.reload_and_render(Action.RenderAll)
+                if self.args.build:
+                    self.on_release(build=1)
+                if self.args.release:
+                    self.on_release()
+            elif self.args.build:
+                self.reload_and_render(Action.RenderIndices, indices=[0])
+                self.on_release(build=1)
+                if self.args.release:
+                    self.on_release()
+            elif self.args.release:
+                self.reload_and_render(Action.RenderIndices, indices=[0])
+                self.on_release()
             elif self.args.indices:
                 indices = [int(x.strip()) for x in self.args.indices.split(",")]
                 self.reload_and_render(Action.RenderIndices, indices=indices)
@@ -1312,10 +1328,11 @@ class Renderer():
         #print(xoff, yoff)
         #pass # TODO!
     
-    def on_release(self):
-        release_fn = self.release_fn()
+    def on_release(self, build=False):
+        fnname = "build" if build else "release"
+        release_fn = self.buildrelease_fn(fnname)
         if not release_fn:
-            print("No `release` fn defined in source")
+            print(f"No `{fnname}` fn defined in source")
             return
         trigger = Action.RenderAll
         renders = self.renderables(trigger)
@@ -1453,6 +1470,9 @@ class Renderer():
         
         elif shortcut == KeyboardShortcut.Release:
             self.on_action(Action.Release)
+            return -1
+        elif shortcut == KeyboardShortcut.Build:
+            self.on_action(Action.Build)
             return -1
         elif shortcut == KeyboardShortcut.RenderAll:
             self.on_action(Action.RenderAll)
@@ -1697,6 +1717,8 @@ class Renderer():
                 anm = self.animation()
                 passes = self.add_paths_to_passes(Action.RenderAll, anm, anm.all_frames())[-1]
                 self.preload_frames(passes)
+        elif action == Action.Build:
+            self.on_release(build=True)
         elif action == Action.Release:
             self.on_release()
         elif action == Action.ArbitraryCommand:

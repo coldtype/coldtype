@@ -24,6 +24,7 @@ class KeyboardShortcut(Enum):
     Quit = "quit"
     Kill = "kill"
 
+    Build = "build"
     Release = "release"
     RenderAll = "render_all"
     RenderWorkarea = "render_workarea"
@@ -163,7 +164,11 @@ SHORTCUTS = {
     ],
 
     KeyboardShortcut.Release: [
+        [["cmd"], "r"],
         [["cmd"], "l"]
+    ],
+    KeyboardShortcut.Build: [
+        [["cmd"], "b"],
     ],
     KeyboardShortcut.RenderAll: [
         [[], "a"],

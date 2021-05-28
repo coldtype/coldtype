@@ -41,6 +41,7 @@ class Action(Enum):
     RenderAll = "render_all"
     RenderWorkarea = "render_workarea"
     RenderIndices = "render_indices"
+    Build = "build"
     Release = "release"
     PreviewStoryboard = "preview_storyboard"
     PreviewStoryboardReload = "preview_storyboard_reload"
@@ -103,7 +104,7 @@ class renderable():
         layer=False):
         """Base configuration for a renderable function"""
 
-        self.rect = Rect(rect)
+        self.rect = Rect(rect).round()
         self.bg = normalize_color(bg)
         self.fmt = fmt
         self.prefix = prefix
