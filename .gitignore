@@ -3,10 +3,10 @@
 env
 venv
 venv2
-test/artifacts/*
-test/*.blend1
-test/test_media
-test/pdfs
+test/visuals/artifacts/*
+test/visuals/*.blend1
+test/visuals/test_media
+test/visuals/pdfs
 build
 dist
 coldtype.egg-info
@@ -23,3 +23,5 @@ recordings
 preserved
 generative_font.ufo
 fontmakes
+test_cairo.pdf
+test/ignorables/
