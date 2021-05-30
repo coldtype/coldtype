@@ -8,7 +8,10 @@ from coldtype.geometry.primitives import add
 from fontTools.misc.transform import Transform
 
 from random import randint, Random
-from noise import pnoise1
+try:
+    from noise import pnoise1
+except ImportError:
+    pnoise1 = None
 
 from coldtype.sh import sh
 from coldtype.pens.draftingpens import DraftingPen, DraftingPens
@@ -508,6 +511,8 @@ class DATPen(DraftingPen):
         """
         An easy way to make something move in a way reminiscent of misregistered film
         """
+        if not pnoise1:
+            raise Exception("No noise installation")
         nx = pnoise1(doneness*speed[0], base=base, octaves=octaves)
         ny = pnoise1(doneness*speed[1], base=base+10, octaves=octaves)
         return self.translate(nx * scale[0], ny * scale[1])

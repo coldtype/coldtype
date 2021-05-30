@@ -63,6 +63,7 @@ setuptools.setup(
             "skia-python>=86.0",
             "SimpleWebSocketServer",
             "watchdog<2.0.0", # https://github.com/gorakhargosh/watchdog/issues/702
+            "noise",
         ],
         "webviewer": [
             "SimpleWebSocketServer",
@@ -71,7 +72,12 @@ setuptools.setup(
         "experimental": [
             "pynput",
             "pyaudio",
-            "rtmidi"
+            "rtmidi",
+            "noise",
+        ],
+        "c": [
+            "srt",
+            "noise",
         ]
     },
     install_requires=[
@@ -83,10 +89,8 @@ setuptools.setup(
         "easing-functions",
         "timecode",
         # /drafting
-        "srt",
         "mido",
         #"numpy",
-        "noise",
         "defcon",
         "docutils",
         # drafting-text
