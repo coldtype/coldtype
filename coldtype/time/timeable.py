@@ -1,4 +1,4 @@
-from drafting.time.easing import ease
+from coldtype.time.easing import ease
 from copy import copy
 import math
 
@@ -130,7 +130,7 @@ class Timeable():
         """
         Given an easing function (``easefn=``), calculate the amount of progress as a Timing object
 
-        ``easefn=`` takes a mnemonic as enumerated in :func:`drafting.time.easing.ease`
+        ``easefn=`` takes a mnemonic as enumerated in :func:`coldtype.time.easing.ease`
         """
         if i < self.start:
             return Timing(0, 0, 0, easefn)

@@ -2,14 +2,14 @@ import datetime
 
 from subprocess import run
 from defcon import Font as DFont
-from drafting.geometry.rect import Rect
+from coldtype.geometry.rect import Rect
 from coldtype.helpers import glyph_to_uni
-from drafting.time.timeline import Timeline
+from coldtype.time.timeline import Timeline
 from coldtype.renderable import renderable, animation
-from drafting.text.reader import Style, StyledString, Font
+from coldtype.text.reader import Style, StyledString, Font
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
-from drafting.color import hsl
+from coldtype.color import hsl
 from pathlib import Path
 
 

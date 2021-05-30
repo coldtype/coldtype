@@ -1,9 +1,9 @@
 import math
 from fontTools.misc.transform import Transform
-from drafting.geometry.geometrical import Geometrical
-from drafting.geometry.point import Point
-from drafting.geometry.primitives import line_intersection, calc_angle, polar_coord
-from drafting.interpolation import norm
+from coldtype.geometry.geometrical import Geometrical
+from coldtype.geometry.point import Point
+from coldtype.geometry.primitives import line_intersection, calc_angle, polar_coord
+from coldtype.interpolation import norm
 
 
 class Line(Geometrical):
@@ -190,7 +190,7 @@ class Line(Geometrical):
         return self.intersection(other)
     
     def join(self, other):
-        from drafting.geometry.rect import Rect
+        from coldtype.geometry.rect import Rect
         return Rect.FromPoints(self.start, self.end, other.end, other.start)
     
     def interp(self, x, other):

@@ -1,10 +1,10 @@
 from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.basePen import BasePen
 
-from drafting.color import Gradient, Color
-from drafting.pens.drawablepen import DrawablePenMixin
+from coldtype.color import Gradient, Color
+from coldtype.pens.drawablepen import DrawablePenMixin
 
-from drafting.color import Color
+from coldtype.color import Color
 from lxml import etree
 import base64
 

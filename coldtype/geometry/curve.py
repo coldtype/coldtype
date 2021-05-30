@@ -1,5 +1,5 @@
-from drafting.geometry.line import Line
-from drafting.geometry.point import Point
+from coldtype.geometry.line import Line
+from coldtype.geometry.point import Point
 from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT
 
 class Curve(Line):

@@ -26,16 +26,16 @@ from socketserver import TCPServer
 
 import coldtype
 from coldtype.helpers import *
-from drafting.geometry import Rect, Point, Edge
-from drafting.text.reader import Font as DraftingFont
+from coldtype.geometry import Rect, Point, Edge
+from coldtype.text.reader import Font
 
 from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
 
-from drafting.pens.svgpen import SVGPen
-from drafting.pens.jsonpen import JSONPen
+from coldtype.pens.svgpen import SVGPen
+from coldtype.pens.jsonpen import JSONPen
 
 from coldtype.renderer.keyboard import KeyboardShortcut, SHORTCUTS, REPEATABLE_SHORTCUTS, symbol_to_glfw
 
@@ -697,7 +697,7 @@ class Renderer():
                 render.filepath = self.filepath
 
                 for watch, flag in render.watch:
-                    if isinstance(watch, DraftingFont) and not watch.cacheable:
+                    if isinstance(watch, Font) and not watch.cacheable:
                         if watch.path not in self.watchee_paths():
                             self.watchees.append([Watchable.Font, watch.path, flag])
                         for ext in watch.font.getExternalFiles():

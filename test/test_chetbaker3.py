@@ -1,6 +1,6 @@
 from coldtype import *
 from coldtype.warping import warp_fn
-from drafting.text.richtext import RichText
+from coldtype.text.richtext import RichText
 
 r = Rect(1080, 1080)
 

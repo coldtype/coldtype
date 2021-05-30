@@ -20,15 +20,24 @@ setuptools.setup(
     #package_dir={"": "coldtype"},
     packages=[
         "coldtype",
+        "coldtype.sh",
         "coldtype.time",
         "coldtype.midi",
         "coldtype.pens",
         "coldtype.text",
+        "coldtype.grid",
+        "coldtype.color",
         "coldtype.capture",
+        "coldtype.geometry",
         "coldtype.time.nle",
         "coldtype.renderer",
         "coldtype.renderable",
         "coldtype.webserver",
+        "coldtype.fontgoggles",
+        "coldtype.interpolation",
+        "coldtype.fontgoggles.font",
+        "coldtype.fontgoggles.misc",
+        "coldtype.fontgoggles.compile",
     ],
     include_package_data=True,
     package_data={
@@ -52,24 +61,43 @@ setuptools.setup(
             "PyOpenGL",
             "PyOpenGL-accelerate",
             "skia-python>=86.0",
-            #"rtmidi",
+            "SimpleWebSocketServer",
+            "watchdog<2.0.0", # https://github.com/gorakhargosh/watchdog/issues/702
+        ],
+        "webviewer": [
+            "SimpleWebSocketServer",
+            "watchdog<2.0.0", # https://github.com/gorakhargosh/watchdog/issues/702
         ],
         "experimental": [
             "pynput",
             "pyaudio",
+            "rtmidi"
         ]
     },
     install_requires=[
-        "drafting[text]==0.2.4",
+        # drafting
+        "lxml",
+        "fonttools[ufo]",
+        "fontPens",
+        "more-itertools",
+        "easing-functions",
+        "timecode",
+        # /drafting
         "srt",
         "mido",
         #"numpy",
         "noise",
         "defcon",
         "docutils",
+        # drafting-text
+        "skia-pathops",
+        "freetype-py",
+        "uharfbuzz>=0.14.0",
+        "unicodedata2",
+        "ufo2ft",
+        "python-bidi",
+        # /drafting-text
         "more-itertools",
-        "SimpleWebSocketServer",
-        "watchdog<2.0.0", # https://github.com/gorakhargosh/watchdog/issues/702
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

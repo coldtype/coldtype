@@ -1,8 +1,8 @@
 import re
 from pprint import pprint
 from more_itertools import split_at, split_before
-from drafting.geometry import Point, Line, Rect
-from drafting.sh.context import SHLookup, SHContext
+from coldtype.geometry import Point, Line, Rect
+from coldtype.sh.context import SHLookup, SHContext
 
 
 SH_UNARY_SUFFIX_FUNCS = {
@@ -210,7 +210,7 @@ def shgroup(s):
     return shphrase(s)
 
 def sh(s, ctx:SHContext=None, dps=None, subs={}):
-    from drafting.pens.draftingpen import DraftingPen
+    from coldtype.pens.draftingpen import DraftingPen
 
     #print("SH>", s, subs)
 

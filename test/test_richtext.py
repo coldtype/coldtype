@@ -1,5 +1,5 @@
 from coldtype.test import *
-from drafting.text.richtext import RichText, PythonCode
+from coldtype.text.richtext import RichText, PythonCode
 from functools import reduce
 
 

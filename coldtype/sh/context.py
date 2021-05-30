@@ -61,7 +61,7 @@ class SHLookup():
             #    cb(k, value)
 
     def record_many(self, ctx, cb, *args, **kwargs):
-        from drafting.grid import Grid
+        from coldtype.grid import Grid
         
         if len(args) > 0 and isinstance(args[0], Grid):
             kwargs = args[0].keyed
@@ -98,5 +98,5 @@ class SHContext():
         return self
     
     def sh(self, s):
-        from drafting.sh import sh
+        from coldtype.sh import sh
         return sh(s, self)

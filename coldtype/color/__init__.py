@@ -1,6 +1,6 @@
 from random import random
-from drafting.color.html import NAMED_COLORS
-from drafting.interpolation import norm
+from coldtype.color.html import NAMED_COLORS
+from coldtype.interpolation import norm
 
 try:
     import skia

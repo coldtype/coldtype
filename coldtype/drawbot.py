@@ -1,12 +1,12 @@
 import contextlib
 import drawBot as db
-from drafting.geometry import Point, Line, Rect
-from drafting.pens.drawbotpen import DrawBotPen
-from drafting.pens.draftingpen import DraftingPen
-from drafting.pens.draftingpens import DraftingPens
-from drafting.text.reader import StyledString, Style, Font
-from drafting.text.composer import StSt
-from drafting.color import hsl, bw
+from coldtype.geometry import Point, Line, Rect
+from coldtype.pens.drawbotpen import DrawBotPen
+from coldtype.pens.draftingpen import DraftingPen
+from coldtype.pens.draftingpens import DraftingPens
+from coldtype.text.reader import StyledString, Style, Font
+from coldtype.text.composer import StSt
+from coldtype.color import hsl, bw
 from pathlib import Path
 
 def dbdraw(p:DraftingPen):

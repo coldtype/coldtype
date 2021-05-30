@@ -1,12 +1,12 @@
 import math
-from drafting.interpolation import loopidx, interp_dict
-from drafting.time.timeable import Timing, Timeable, TimeableSet
-from drafting.time.timeline import Timeline
+from coldtype.interpolation import loopidx, interp_dict
+from coldtype.time.timeable import Timing, Timeable, TimeableSet
+from coldtype.time.timeline import Timeline
 
 
 class LoopPhase():
     """
-    Clip-like representation of a segment of a Loop, most likely retrieved from :meth:`~drafting.time.loop.Loop.current_phase`
+    Clip-like representation of a segment of a Loop, most likely retrieved from :meth:`~coldtype.time.loop.Loop.current_phase`
 
     * Standard ``Timeable`` available as ``.t``
     * ``.is_transition`` indicates if phase represents a transition
@@ -20,7 +20,7 @@ class LoopPhase():
         """
         Calculate progress of the loop phase, based on an easing fuction, ``e``
 
-        * ``e=`` takes a mnemonic as enumerated in :func:`drafting.time.easing.ease`
+        * ``e=`` takes a mnemonic as enumerated in :func:`coldtype.time.easing.ease`
         """
         state = loopidx(states, self.t.index)
         if self.is_transition:

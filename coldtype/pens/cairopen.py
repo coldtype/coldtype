@@ -8,9 +8,9 @@ except:
     print(">>> No cairo installation found!")
 
 
-from drafting.pens.drawablepen import DrawablePenMixin
-from drafting.color import Color, Gradient
-from drafting.beziers import raise_quadratic
+from coldtype.pens.drawablepen import DrawablePenMixin
+from coldtype.color import Color, Gradient
+from coldtype.beziers import raise_quadratic
 
 
 class CairoPen(DrawablePenMixin, BasePen):

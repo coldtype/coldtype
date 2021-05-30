@@ -3,10 +3,10 @@ from typing import Callable, Optional
 
 from fontTools.misc.transform import Transform
 
-from drafting.sh import sh
-from drafting.geometry import Geometrical, Rect
-from drafting.pens.draftingpen import DraftingPen
-from drafting.beziers import CurveCutter
+from coldtype.sh import sh
+from coldtype.geometry import Geometrical, Rect
+from coldtype.pens.draftingpen import DraftingPen
+from coldtype.beziers import CurveCutter
 
 
 class DraftingPens(DraftingPen):

@@ -1,7 +1,7 @@
 import math
-from drafting.geometry.geometrical import Geometrical
-from drafting.interpolation import norm
-from drafting.geometry.primitives import polar_coord, line_intersection, calc_angle, calc_vector
+from coldtype.geometry.geometrical import Geometrical
+from coldtype.interpolation import norm
+from coldtype.geometry.primitives import polar_coord, line_intersection, calc_angle, calc_vector
 
 
 class Point(Geometrical):
@@ -52,7 +52,7 @@ class Point(Geometrical):
 
     def rect(self, w, h):
         "Create a rect from this point as center, with w and h dimensions provided"
-        from drafting.geometry.rect import Rect
+        from coldtype.geometry.rect import Rect
         return Rect((self.x-w/2, self.y-h/2, w, h))
 
     def xy(self):
@@ -88,7 +88,7 @@ class Point(Geometrical):
         return Point((self.x * x, self.y * y))
     
     def join(self, other):
-        from drafting.geometry.line import Line
+        from coldtype.geometry.line import Line
         return Line(self, other)
     
     def interp(self, v, other):
@@ -167,7 +167,7 @@ class Point(Geometrical):
         return self.sety(other)
     
     def __or__(self, other):
-        from drafting.geometry.line import Line
+        from coldtype.geometry.line import Line
         return Line(self, other)
     
     #def as3d(self):

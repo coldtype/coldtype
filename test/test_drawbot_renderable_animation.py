@@ -1,5 +1,5 @@
 from coldtype import *
-from drafting.drawbot import dbdraw, dbdraw_with_filters
+from coldtype.drawbot import dbdraw, dbdraw_with_filters
 
 co = Font("assets/ColdtypeObviously.designspace")
 tl = Timeline(50, storyboard=[0])

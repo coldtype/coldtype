@@ -7,17 +7,17 @@ from pathlib import Path
 from datetime import datetime
 
 from coldtype.helpers import loopidx, interp_dict
-from drafting.time.timeable import Timing, Timeable, TimeableSet
+from coldtype.time.timeable import Timing, Timeable, TimeableSet
 from coldtype.time import Frame
-from drafting.time.timeline import Timeline
-from drafting.time.loop import Loop, LoopPhase
+from coldtype.time.timeline import Timeline
+from coldtype.time.loop import Loop, LoopPhase
 
-from drafting.text.reader import normalize_font_prefix, Font, Style
+from coldtype.text.reader import normalize_font_prefix, Font, Style
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.time.audio import Wavfile, sf
-from drafting.geometry import Rect, Point
-from drafting.color import normalize_color, hsl, bw
+from coldtype.geometry import Rect, Point
+from coldtype.color import normalize_color, hsl, bw
 
 from coldtype.renderable.renderable import renderable, drawbot_script, Action, RenderPass, Overlay
 

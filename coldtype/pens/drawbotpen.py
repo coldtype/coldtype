@@ -3,11 +3,11 @@ try:
 except:
     pass
 
-from drafting.pens.draftingpen import DraftingPen
-from drafting.pens.draftingpens import DraftingPens
-from drafting.geometry import Rect, Edge, Point
-from drafting.pens.drawablepen import DrawablePenMixin
-from drafting.color import Color, Gradient
+from coldtype.pens.draftingpen import DraftingPen
+from coldtype.pens.draftingpens import DraftingPens
+from coldtype.geometry import Rect, Edge, Point
+from coldtype.pens.drawablepen import DrawablePenMixin
+from coldtype.color import Color, Gradient
 
 
 def get_image_rect(src):

@@ -1,7 +1,7 @@
 # Mixin for attribute-application
 
-from drafting.pens.draftingpen import DraftingPen
-from drafting.color import Gradient, Color
+from coldtype.pens.draftingpen import DraftingPen
+from coldtype.color import Gradient, Color
 
 class DrawablePenMixin(object):
     def fill(self, el, color):

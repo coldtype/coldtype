@@ -2,7 +2,7 @@ import math, tempfile, pickle, inspect
 from pathlib import Path
 
 from typing import Optional, Callable, Tuple
-from drafting.geometry.primitives import add
+from coldtype.geometry.primitives import add
 #from collections.abc import Callable
 
 from fontTools.misc.transform import Transform
@@ -10,12 +10,12 @@ from fontTools.misc.transform import Transform
 from random import randint, Random
 from noise import pnoise1
 
-from drafting.sh import sh
-from drafting.pens.draftingpens import DraftingPen, DraftingPens
-from drafting.interpolation import norm
+from coldtype.sh import sh
+from coldtype.pens.draftingpens import DraftingPen, DraftingPens
+from coldtype.interpolation import norm
 
-from drafting.geometry import Rect, Edge, Point, Line, Geometrical
-from drafting.color import normalize_color, hsl
+from coldtype.geometry import Rect, Edge, Point, Line, Geometrical
+from coldtype.color import normalize_color, hsl
 
 
 def _random_series(start=0, end=1, seed=0, count=5000):

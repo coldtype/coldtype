@@ -1,17 +1,17 @@
-from drafting.geometry import Rect, Edge, Point
-from drafting.beziers import CurveCutter, raise_quadratic
-from drafting.pens.drawablepen import DrawablePenMixin
+from coldtype.geometry import Rect, Edge, Point
+from coldtype.beziers import CurveCutter, raise_quadratic
+from coldtype.pens.drawablepen import DrawablePenMixin
 from fontTools.pens.basePen import BasePen
-from drafting.color import Gradient, Color, normalize_color
+from coldtype.color import Gradient, Color, normalize_color
 
 """
 import math
 from random import random, randint, seed
 
-from drafting.text.reader import StyledString, Style
-from drafting.pens.blenderpen import BlenderPen, BPH
-from drafting.geometry import Rect
-from drafting.pens.draftingpen import DraftingPen
+from coldtype.text.reader import StyledString, Style
+from coldtype.pens.blenderpen import BlenderPen, BPH
+from coldtype.geometry import Rect
+from coldtype.pens.draftingpen import DraftingPen
 
 BPH.Clear()
 

@@ -1,10 +1,10 @@
 import re
 
-from drafting.pens.draftingpen import DraftingPen
-from drafting.pens.draftingpens import DraftingPens
-from drafting.text.composer import Graf, GrafStyle, Lockup
-from drafting.text.reader import StyledString, Style
-from drafting.color import hsl
+from coldtype.pens.draftingpen import DraftingPen
+from coldtype.pens.draftingpens import DraftingPens
+from coldtype.text.composer import Graf, GrafStyle, Lockup
+from coldtype.text.reader import StyledString, Style
+from coldtype.color import hsl
 
 from pathlib import PurePath
 from typing import Optional, List, Callable, Tuple, Union

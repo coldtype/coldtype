@@ -1,5 +1,5 @@
 import re, math
-from drafting.geometry import Rect, Edge, Point
+from coldtype.geometry import Rect, Edge, Point
 
 
 def parse_line(d, line):

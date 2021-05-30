@@ -1,6 +1,6 @@
 from pathlib import Path
 from coldtype.pens.datpen import DATPen, DATPens
-from drafting.geometry import Rect
+from coldtype.geometry import Rect
 import math
 
 try:

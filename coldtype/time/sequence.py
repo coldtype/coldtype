@@ -2,12 +2,12 @@ import re, math, copy
 from enum import Enum
 
 from coldtype.time import Timeable, Frame
-from drafting.time.easing import ease
-from drafting.time.timeline import Timeline
+from coldtype.time.easing import ease
+from coldtype.time.timeline import Timeline
 
 from coldtype.text import StyledString, Lockup, Graf, GrafStyle, Style
 from coldtype.pens.datpen import DATPen, DATPens
-from drafting.color import *
+from coldtype.color import *
 
 from typing import Optional, Union, Callable, Tuple
 

@@ -1,9 +1,9 @@
-#from drafting.pens.draftingpens import DraftingPen, DraftingPens
-from drafting.pens.draftingpens import DraftingPens
-from drafting.geometry import Rect, Point
+#from coldtype.pens.draftingpens import DraftingPen, DraftingPens
+from coldtype.pens.draftingpens import DraftingPens
+from coldtype.geometry import Rect, Point
 
-from drafting.text.shaper import segment
-from drafting.text.reader import Style, StyledString, FittableMixin, Font, normalize_font_path, SegmentedString,  _PenClass, _PensClass
+from coldtype.text.shaper import segment
+from coldtype.text.reader import Style, StyledString, FittableMixin, Font, normalize_font_path, SegmentedString,  _PenClass, _PensClass
 
 
 class GrafStyle():

@@ -1,4 +1,4 @@
-from drafting.geometry.geometrical import Geometrical
+from coldtype.geometry.geometrical import Geometrical
 
 
 class Atom(Geometrical):

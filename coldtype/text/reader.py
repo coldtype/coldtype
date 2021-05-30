@@ -11,15 +11,16 @@ from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.ttLib.ttFont import TTFont
 
-from drafting.color import normalize_color
-from drafting.pens.draftingpen import DraftingPen
-from drafting.pens.draftingpens import DraftingPens
-from drafting.geometry import Rect, Point
+from coldtype.color import normalize_color
+from coldtype.pens.draftingpen import DraftingPen
+from coldtype.pens.draftingpens import DraftingPens
+from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.geometry import Rect, Point
 
 from typing import Optional, Callable, Union
 
-_PenClass = DraftingPen
-_PensClass = DraftingPens
+_PenClass = DATPen
+_PensClass = DATPens
 
 # try:
 #     from fontgoggles.font import getOpener
@@ -28,10 +29,10 @@ _PensClass = DraftingPens
 #     from fontgoggles.misc.textInfo import TextInfo
 # except ModuleNotFoundError:
 
-from drafting.fontgoggles.font import getOpener
-from drafting.fontgoggles.font.baseFont import BaseFont
-from drafting.fontgoggles.font.otfFont import OTFFont
-from drafting.fontgoggles.misc.textInfo import TextInfo
+from coldtype.fontgoggles.font import getOpener
+from coldtype.fontgoggles.font.baseFont import BaseFont
+from coldtype.fontgoggles.font.otfFont import OTFFont
+from coldtype.fontgoggles.misc.textInfo import TextInfo
 
 
 class FittableMixin():
@@ -115,7 +116,7 @@ class Style():
 
     **Keyword arguments**
 
-    * ``font``: can either be a ``drafting.text.Font`` object, a ``pathlib.Path``, or a plain string path
+    * ``font``: can either be a ``coldtype.text.Font`` object, a ``pathlib.Path``, or a plain string path
     * ``fontSize``: standard point-based font-size, expressed as integer
     * ``tracking`` (aka ``tu``): set the tracking, by default **in font-source-point-size** aka as if the font-size was always 1000; this means tracking is by default done relatively rather than absolutely (aka the relative tracking will not change when you change the fontSize)
     * ``trackingMode``: set to 0 to set tracking in a classic fontSize-based (defaults to 1, as described just above)

@@ -1,11 +1,11 @@
 import math, re
 
-from drafting.geometry.geometrical import Geometrical
-from drafting.geometry.point import Point
-from drafting.geometry.line import Line
-from drafting.geometry.edge import Edge, txt_to_edge
-from drafting.interpolation import norm
-from drafting.geometry.primitives import *
+from coldtype.geometry.geometrical import Geometrical
+from coldtype.geometry.point import Point
+from coldtype.geometry.line import Line
+from coldtype.geometry.edge import Edge, txt_to_edge
+from coldtype.interpolation import norm
+from coldtype.geometry.primitives import *
 
 try:
     from fontTools.misc.transform import Transform
@@ -720,5 +720,5 @@ class Rect(Geometrical):
         return rs
     
     def to_pen(self):
-        from drafting.pens.draftingpen import DraftingPen
+        from coldtype.pens.draftingpen import DraftingPen
         return DraftingPen(self)

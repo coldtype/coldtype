@@ -1,5 +1,5 @@
 import math
-from drafting.geometry.edge import Edge
+from coldtype.geometry.edge import Edge
 from fontTools.misc.arrayTools import sectRect, unionRect
 
 

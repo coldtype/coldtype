@@ -3,9 +3,9 @@ import os
 from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.basePen import BasePen
 
-from drafting.pens.drawablepen import DrawablePenMixin
-from drafting.color import Gradient
-from drafting.color import Color
+from coldtype.pens.drawablepen import DrawablePenMixin
+from coldtype.color import Gradient
+from coldtype.color import Color
 import base64
 
 def path_str(*ps):

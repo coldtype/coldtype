@@ -1,7 +1,7 @@
 import skia
 from functools import reduce
 from random import Random, randint
-from drafting.color import bw
+from coldtype.color import bw
 
 
 def contrast_cut(mp=127, w=5):

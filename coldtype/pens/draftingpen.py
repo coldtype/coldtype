@@ -13,18 +13,18 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.reverseContourPen import ReverseContourPen
 
 from fontPens.flattenPen import FlattenPen
-from drafting.geometry import Atom, Point, Line, Edge, Rect, Curve, align
-from drafting.color import normalize_color
-from drafting.sh import SH_UNARY_SUFFIX_PROPS, sh, SHContext
+from coldtype.geometry import Atom, Point, Line, Edge, Rect, Curve, align
+from coldtype.color import normalize_color
+from coldtype.sh import SH_UNARY_SUFFIX_PROPS, sh, SHContext
 
-from drafting.pens.misc import BooleanOp, calculate_pathop, ExplodingPen, SmoothPointsPen
+from coldtype.pens.misc import BooleanOp, calculate_pathop, ExplodingPen, SmoothPointsPen
 
-from drafting.pens.outlinepen import OutlinePen
-from drafting.pens.translationpen import TranslationPen, polarCoord
+from coldtype.pens.outlinepen import OutlinePen
+from coldtype.pens.translationpen import TranslationPen, polarCoord
 
-from drafting.beziers import CurveCutter, splitCubicAtT
-from drafting.interpolation import norm
-from drafting.grid import Grid
+from coldtype.beziers import CurveCutter, splitCubicAtT
+from coldtype.interpolation import norm
+from coldtype.grid import Grid
 
 
 class DraftingPen(RecordingPen, SHContext):
@@ -34,7 +34,7 @@ class DraftingPen(RecordingPen, SHContext):
         SHContext.__init__(self)
         RecordingPen.__init__(self)
 
-        from drafting.pens.draftingpens import DraftingPens
+        from coldtype.pens.draftingpens import DraftingPens
 
         self.single_pen_class = DraftingPen
         self.multi_pen_class = DraftingPens

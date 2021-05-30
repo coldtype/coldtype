@@ -126,16 +126,16 @@ def getSortInfoTTX(fontPath: PathLike, fontNum: int):
 
 
 fontOpeners = {
-    "ttf": (numFontsOne, "drafting.fontgoggles.font.otfFont.OTFFont", getSortInfoOTF),
-    "otf": (numFontsOne, "drafting.fontgoggles.font.otfFont.OTFFont", getSortInfoOTF),
-    "woff": (numFontsOne, "drafting.fontgoggles.font.otfFont.OTFFont", getSortInfoOTF),
-    "woff2": (numFontsOne, "drafting.fontgoggles.font.otfFont.OTFFont", getSortInfoOTF),
-    "ufo": (numFontsOne, "drafting.fontgoggles.font.ufoFont.UFOFont", getSortInfoUFO),
-    "ufoz": (numFontsOne, "drafting.fontgoggles.font.ufoFont.UFOFont", getSortInfoUFO),
-    "ttc": (numFontsTTC, "drafting.fontgoggles.font.otfFont.OTFFont", getSortInfoOTF),
-    "otc": (numFontsTTC, "drafting.fontgoggles.font.otfFont.OTFFont", getSortInfoOTF),
-    "designspace": (numFontsOne, "drafting.fontgoggles.font.dsFont.DSFont", getSortInfoDS),
-    "ttx": (numFontsOne, "drafting.fontgoggles.font.otfFont.TTXFont", getSortInfoTTX),
+    "ttf": (numFontsOne, "coldtype.fontgoggles.font.otfFont.OTFFont", getSortInfoOTF),
+    "otf": (numFontsOne, "coldtype.fontgoggles.font.otfFont.OTFFont", getSortInfoOTF),
+    "woff": (numFontsOne, "coldtype.fontgoggles.font.otfFont.OTFFont", getSortInfoOTF),
+    "woff2": (numFontsOne, "coldtype.fontgoggles.font.otfFont.OTFFont", getSortInfoOTF),
+    "ufo": (numFontsOne, "coldtype.fontgoggles.font.ufoFont.UFOFont", getSortInfoUFO),
+    "ufoz": (numFontsOne, "coldtype.fontgoggles.font.ufoFont.UFOFont", getSortInfoUFO),
+    "ttc": (numFontsTTC, "coldtype.fontgoggles.font.otfFont.OTFFont", getSortInfoOTF),
+    "otc": (numFontsTTC, "coldtype.fontgoggles.font.otfFont.OTFFont", getSortInfoOTF),
+    "designspace": (numFontsOne, "coldtype.fontgoggles.font.dsFont.DSFont", getSortInfoDS),
+    "ttx": (numFontsOne, "coldtype.fontgoggles.font.otfFont.TTXFont", getSortInfoTTX),
 }
 
 fileTypes = sorted(fontOpeners)

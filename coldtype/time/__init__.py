@@ -1,6 +1,6 @@
-from drafting.time.timeable import Timing, Timeable, TimeableSet
-from drafting.time.timeline import Timeline
-from drafting.time.loop import Loop, LoopPhase
+from coldtype.time.timeable import Timing, Timeable, TimeableSet
+from coldtype.time.timeline import Timeline
+from coldtype.time.loop import Loop, LoopPhase
 
 class Frame():
     """

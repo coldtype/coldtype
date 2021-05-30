@@ -1,5 +1,5 @@
 from coldtype import *
-from drafting.text.composer import Glyphwise
+from coldtype.text.composer import Glyphwise
 
 fnt = Font.Cacheable("~/Type/fonts/fonts/OhnoFatfaceVariable.ttf")
 #fnt = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")

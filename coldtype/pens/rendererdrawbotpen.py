@@ -3,7 +3,7 @@ try:
 except:
     pass
 
-from drafting.pens.drawbotpen import DrawBotPen
+from coldtype.pens.drawbotpen import DrawBotPen
 
 class RendererDrawBotPen(DrawBotPen):
 

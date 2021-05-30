@@ -2,7 +2,7 @@ import time, math
 
 from fontTools.pens.basePen import BasePen
 from fontTools.pens.transformPen import TransformPen
-from drafting.geometry import Rect
+from coldtype.geometry import Rect
 
 try:
     from pyaxidraw import axidraw

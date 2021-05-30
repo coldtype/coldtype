@@ -1,13 +1,12 @@
 # to be loaded from within Blender
 
-from drafting.geometry import Point, Line, Rect
-from drafting.pens.drawbotpen import DrawBotPen
-from drafting.pens.draftingpen import DraftingPen
-from drafting.pens.draftingpens import DraftingPens
-from drafting.pens.blenderpen import BlenderPen, BPH
-from drafting.text.reader import StyledString, Style, Font
-from drafting.text.composer import StSt
-from drafting.color import hsl, bw
+from coldtype.geometry import Point, Line, Rect
+from coldtype.pens.drawbotpen import DrawBotPen
+from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.pens.blenderpen import BlenderPen, BPH
+from coldtype.text.reader import StyledString, Style, Font
+from coldtype.text.composer import StSt
+from coldtype.color import hsl, bw
 from pathlib import Path
 try:
     import bpy
@@ -15,9 +14,9 @@ except ImportError:
     print("no bpy")
     pass
 
-from drafting.time.timeline import Timeline
-from drafting.time.timeable import Timeable
-from drafting.time import Frame
+from coldtype.time.timeline import Timeline
+from coldtype.time.timeable import Timeable
+from coldtype.time import Frame
 
 class b3d_animation(Timeable):
     def __init__(self, duration=10): # TODO possible to read from project?

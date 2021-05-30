@@ -1,11 +1,11 @@
-from drafting.geometry.primitives import calc_angle
-from drafting.geometry.geometrical import Geometrical
-from drafting.geometry.atom import Atom
-from drafting.geometry.point import Point
-from drafting.geometry.line import Line
-from drafting.geometry.curve import Curve
-from drafting.geometry.edge import Edge, txt_to_edge
-from drafting.geometry.rect import Rect, align
+from coldtype.geometry.primitives import calc_angle
+from coldtype.geometry.geometrical import Geometrical
+from coldtype.geometry.atom import Atom
+from coldtype.geometry.point import Point
+from coldtype.geometry.line import Line
+from coldtype.geometry.curve import Curve
+from coldtype.geometry.edge import Edge, txt_to_edge
+from coldtype.geometry.rect import Rect, align
 
 
 def Geo(*args):

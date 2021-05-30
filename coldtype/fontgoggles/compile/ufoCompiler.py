@@ -116,7 +116,7 @@ def fetchCharacterMappingAndAnchors(glyphSet, ufoPath, glyphNames=None):
     if duplicateUnicodes:
         dupMessage = "; ".join(f"U+{codePoint:04X}:{','.join(glyphNames)}"
                                for codePoint, glyphNames in sorted(duplicateUnicodes.items()))
-        logger = logging.getLogger("drafting.fontgoggles.font.ufoFont")
+        logger = logging.getLogger("coldtype.fontgoggles.font.ufoFont")
         logger.warning("Some code points in '%s' are assigned to multiple glyphs: %s",
                        ufoPath, dupMessage)
     return cmap, revCmap, anchors
