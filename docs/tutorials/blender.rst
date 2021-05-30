@@ -9,7 +9,7 @@ That is, the idea here is to work in a more hybrid style. You want a gigantic pi
 
 __N.B.__ This means the point of a Coldtype script in Blender is not to return a ``DATPen`` or ``DATPens`` from a Coldtype rendering function, but to work interactively, creating or mutating existing objects available in the Blender data hierarchy in your project file.
 
-__N.B.2__ Because Blender is the de-facto "renderer" in this situation, and because much of Coldtype’s codebase and dependencies are centered around rendering, it makes more sense to not use Coldtype in Blender, but to instead use __drafting__, a library that implements most of the core vector and text functionality of Coldtype.
+__N.B.2__ Because Blender is the de-facto "renderer" in this situation, and because much of Coldtype’s codebase and dependencies are centered around rendering, it makes more sense to install only the core python dependencies of Coldtype in Blender.
 
 Getting it all set up is a bit of a pain, but worth it (if you’re doing anything with typography in Blender).
 
@@ -42,7 +42,7 @@ Once you have all that out of the way, you can `pip install` things using that e
 
 .. code:: bash
 
-    b3d -m pip install "drafting[text]"
+    b3d -m pip install "coldtype"
 
 Running Code in Blender
 -----------------------
@@ -51,7 +51,7 @@ This code must be run from within Blender itself (see blender/README.md in this 
 
 .. code:: python
 
-    from drafting.blender import *
+    from coldtype.blender import *
 
     BPH.Clear()
 
@@ -59,7 +59,7 @@ This code must be run from within Blender itself (see blender/README.md in this 
     tc = BPH.Collection("Text")
     fnt = Font.Cacheable("~/Type/fonts/fonts/CheeeVariable.ttf")
 
-    (DraftingPen(r)
+    (DATPen(r)
         .f(hsl(0.9))
         .tag("Frame")
         .cast(BlenderPen)

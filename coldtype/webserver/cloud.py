@@ -4,9 +4,9 @@ from coldtype.renderable import renderable
 from coldtype.webserver.cdelopty import evalcdel
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.skiapen import SkiaPen
-from drafting.text.reader import Font #, StyledString, Style
-from drafting.geometry import Rect
-from drafting.color import hsl
+from coldtype.text.reader import Font #, StyledString, Style
+from coldtype.geometry import Rect
+from coldtype.color import hsl
 from flask import send_file
 
 cottf_path = "https://blog.robstenson.com/assets/ColdtypeObviously-VF.ttf"

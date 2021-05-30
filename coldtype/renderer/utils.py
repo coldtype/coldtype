@@ -1,7 +1,12 @@
 import ast, json
+from http.server import SimpleHTTPRequestHandler
 from enum import Enum
 
-from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
+try:
+    from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
+except ImportError:
+    SimpleWebSocketServer = object
+    WebSocket = object
 
 
 class Watchable(Enum):

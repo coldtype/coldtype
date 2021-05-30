@@ -26,18 +26,22 @@ from socketserver import TCPServer
 
 import coldtype
 from coldtype.helpers import *
-from drafting.geometry import Rect, Point, Edge
-from drafting.text.reader import Font as DraftingFont
+from coldtype.geometry import Rect, Point, Edge
+from coldtype.text.reader import Font
 
-from coldtype.renderer.watchdog import AsyncWatchdog
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
 
-from drafting.pens.svgpen import SVGPen
-from drafting.pens.jsonpen import JSONPen
+from coldtype.pens.svgpen import SVGPen
+from coldtype.pens.jsonpen import JSONPen
 
 from coldtype.renderer.keyboard import KeyboardShortcut, SHORTCUTS, REPEATABLE_SHORTCUTS, symbol_to_glfw
+
+try:
+    from coldtype.renderer.watchdog import AsyncWatchdog
+except ImportError:
+    AsyncWatchdog = None
 
 try:
     import skia
@@ -278,6 +282,12 @@ class Renderer():
         self.args = parser.parse_args()
         if self.args.is_subprocess or self.args.all or self.args.release or self.args.build:
             self.args.no_watch = True
+        
+        if not self.args.webviewer and not skia and not glfw:
+            print("No viewing renderer installed — rendering all...")
+            sleep(1)
+            #self.args.no_watch = True
+            #self.args.all = True
         
         self.disable_syntax_mods = self.args.disable_syntax_mods
         self.filepath = None
@@ -697,7 +707,7 @@ class Renderer():
                 render.filepath = self.filepath
 
                 for watch, flag in render.watch:
-                    if isinstance(watch, DraftingFont) and not watch.cacheable:
+                    if isinstance(watch, Font) and not watch.cacheable:
                         if watch.path not in self.watchee_paths():
                             self.watchees.append([Watchable.Font, watch.path, flag])
                         for ext in watch.font.getExternalFiles():
@@ -908,8 +918,8 @@ class Renderer():
         rasterizer = self.args.rasterizer or render.rasterizer
 
         if rasterizer == "drawbot":
-            from coldtype.pens.drawbotpen import DrawBotPen
-            DrawBotPen.Composite(content, render.rect, str(path), scale=scale)
+            from coldtype.pens.rendererdrawbotpen import RendererDrawBotPen
+            RendererDrawBotPen.Composite(content, render.rect, str(path), scale=scale)
         elif rasterizer == "skia":
             if not skia:
                 raise Exception("pip install skia-python")
@@ -1039,7 +1049,7 @@ class Renderer():
                 daemon.setDaemon(True)
                 daemon.start()
         elif not glfw and not skia:
-            print("\n\n>>> To view a coldtype program, you either need to install with the [viewer] optional package, or run coldtype in --webviewer mode (aka -wv)\n\n")
+            print("\n\n>>> To view a coldtype program, you either need to (1) install with the [viewer] optional package or (2) install with the [webviewer] optional package and run with the --webviewer flag (aka -wv)\n\n")
 
         if glfw and not self.args.no_viewer:
             if not glfw.init():
@@ -2230,6 +2240,10 @@ class Renderer():
 
     def watch_file_changes(self):
         if self.args.no_watch:
+            return None
+        
+        if not AsyncWatchdog:
+            print("> must install watchdog to watch files")
             return None
 
         self.observers = []

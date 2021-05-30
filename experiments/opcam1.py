@@ -4,7 +4,7 @@ from coldtype.test import *
 from coldtype.warping import warp_fn
 from random import randint
 from coldtype.pens.datimage import DATImage
-from drafting.text.richtext import RichText
+from coldtype.text.richtext import RichText
 from time import sleep
 
 fnt1 = Font.Cacheable("~/Type/fonts/fonts/_script/BancoPro.otf")

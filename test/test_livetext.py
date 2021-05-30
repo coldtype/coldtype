@@ -1,7 +1,7 @@
 #coldtype -wt -wp C -hkb
 
 from coldtype.test import *
-from drafting.text.richtext import RichText
+from coldtype.text.richtext import RichText
 
 @renderable((1200, 500), rstate=1)
 def stub(r, rs):

@@ -1,5 +1,5 @@
 import json
-from drafting.geometry import Rect
+from coldtype.geometry import Rect
 
 def _parse(el, depth=0, chain=False):
     out = []
@@ -78,7 +78,7 @@ def evalcdel(tree,
     r=Rect(1080, 1080),
     font_cache={},
     DEFAULT_FONT=None):
-    from drafting.color import hsl, rgb
+    from coldtype.color import hsl, rgb
     from coldtype.pens.datpen import DATPen, DATPens
     from coldtype.text import StSt, StyledString, Style
     return eval(parse(tree))

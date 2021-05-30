@@ -21,7 +21,7 @@ Now that you’ve got the module version of DrawBot installed, with just a littl
 
     from coldtype import *
     from drawBot import *
-    from drafting.pens.drawbotpen import DrawBotPen, DrawBotPens
+    from coldtype.pens.drawbotpen import DrawBotPen, DrawBotPens
 
     @drawbot_script((500, 300))
     def db_text(r):
@@ -118,21 +118,21 @@ Because the default behavior of DrawBot is to display a PDF of the result of you
 Coldtype-in-DrawBot
 -------------------
 
-Using Coldtype in DrawBot isn’t too useful, but Drafting + DrawBot does make a lot of sense. Drafting is a library that contains the core vector/text functionality of Coldtype, but without any of the Coldtype viewer technology. This makes it easier to embed in applications like DrawBot and Blender.
+If you’re used to Coldtype idioms but want to use DrawBot, you can install the core functionality of Coldtype in DrawBot and use it like a normal Python package.
 
-To install the drafting library in DrawBot, open up DrawBot and then navigate via the top bar to Python > Install Python Packages. There you can switch the input selector to "Install" and then type in "drafting[text]". (If that fails, maybe just try "drafting")
+To install Coldtype in DrawBot, open up DrawBot and then navigate via the top bar to Python > Install Python Packages. There you can switch the input selector to "Install" and then type in "coldtype".
 
-Now you should be able to access Drafting-in-DrawBot.
+Now you should be able to access Coldtype-in-DrawBot.
 
 .. code:: python
 
-    from drafting.drawbot import *
+    from coldtype.drawbot import *
 
     r = page_rect()
     fp = "/System/Library/Fonts/SFCompactRounded.ttf"
     f = Font.Cacheable(fp)
 
-    (StSt("Drafting", f, 200, r, wght=1)
+    (StSt("Coldtype", f, 200, r, wght=1)
         .f(hsl(0.8))
         .align(r)
         .chain(dbdraw))

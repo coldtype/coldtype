@@ -2,20 +2,23 @@ import math, tempfile, pickle, inspect
 from pathlib import Path
 
 from typing import Optional, Callable, Tuple
-from drafting.geometry.primitives import add
+from coldtype.geometry.primitives import add
 #from collections.abc import Callable
 
 from fontTools.misc.transform import Transform
 
 from random import randint, Random
-from noise import pnoise1
+try:
+    from noise import pnoise1
+except ImportError:
+    pnoise1 = None
 
-from drafting.sh import sh
-from drafting.pens.draftingpens import DraftingPen, DraftingPens
-from drafting.interpolation import norm
+from coldtype.sh import sh
+from coldtype.pens.draftingpens import DraftingPen, DraftingPens
+from coldtype.interpolation import norm
 
-from drafting.geometry import Rect, Edge, Point, Line, Geometrical
-from drafting.color import normalize_color, hsl
+from coldtype.geometry import Rect, Edge, Point, Line, Geometrical
+from coldtype.color import normalize_color, hsl
 
 
 def _random_series(start=0, end=1, seed=0, count=5000):
@@ -508,6 +511,8 @@ class DATPen(DraftingPen):
         """
         An easy way to make something move in a way reminiscent of misregistered film
         """
+        if not pnoise1:
+            raise Exception("No noise installation")
         nx = pnoise1(doneness*speed[0], base=base, octaves=octaves)
         ny = pnoise1(doneness*speed[1], base=base+10, octaves=octaves)
         return self.translate(nx * scale[0], ny * scale[1])

@@ -1,5 +1,5 @@
 from coldtype import *
-from drafting.drawbot import dbdraw, dbdraw_with_filters, db
+from coldtype.drawbot import dbdraw, dbdraw_with_filters, db
 
 co = Font("assets/ColdtypeObviously-VF.ttf")
 

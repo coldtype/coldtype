@@ -9,10 +9,10 @@ from fontTools.pens.basePen import BasePen
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.pens.datimage import DATImage
-from drafting.geometry import Rect, Edge, Point
-from drafting.pens.drawablepen import DrawablePenMixin, Gradient
-from drafting.color import Color
-from drafting.text.reader import Style
+from coldtype.geometry import Rect, Edge, Point
+from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
+from coldtype.color import Color
+from coldtype.text.reader import Style
 
 
 class SkiaPathPen(BasePen):

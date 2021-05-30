@@ -1,6 +1,6 @@
 from coldtype.test import *
 
-from drafting.time.easing import ease
+from coldtype.time.easing import ease
 from time import time, sleep
 
 class Animator():

@@ -1,8 +1,8 @@
 import mido, math
 from pathlib import Path
 
-from drafting.time.timeline import Timeline
-from drafting.time.easing import ease
+from coldtype.time.timeline import Timeline
+from coldtype.time.easing import ease
 
 
 class MidiNote():

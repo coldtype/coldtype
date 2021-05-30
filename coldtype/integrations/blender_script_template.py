@@ -1,8 +1,8 @@
 import sys, os
 sys.path.insert(0, "/Applications/Blender.app/Contents/Resources/$BLENDER_VERSION/python/lib/python3.7/site-packages")
-sys.path.insert(0, "/Users/robstenson/Goodhertz/drafting")
+sys.path.insert(0, "/Users/robstenson/Goodhertz/coldtype")
 
-from drafting.blender import *
+from coldtype.blender import *
 import pickle
 
 BPH.Clear()

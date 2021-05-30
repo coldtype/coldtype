@@ -1,5 +1,5 @@
 import inspect, platform, re, tempfile, math, datetime
-from drafting.pens.draftingpens import DraftingPens
+from coldtype.pens.draftingpens import DraftingPens
 
 try:
     import skia
@@ -12,9 +12,9 @@ from enum import Enum
 from subprocess import run
 from pathlib import Path
 
-from drafting.geometry import Rect, Point
-from drafting.color import normalize_color
-from drafting.text.reader import normalize_font_prefix, Font
+from coldtype.geometry import Rect, Point
+from coldtype.color import normalize_color
+from coldtype.text.reader import normalize_font_prefix, Font
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.pens.datimage import DATImage
@@ -250,7 +250,7 @@ class drawbot_script(renderable):
         return pens
     
     def run(self, render_pass, renderer_state):
-        from drafting.pens.drawbotpen import DrawBotPen
+        from coldtype.pens.drawbotpen import DrawBotPen
         use_pool = True
         if use_pool:
             pool = AppKit.NSAutoreleasePool.alloc().init()

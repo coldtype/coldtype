@@ -1,5 +1,5 @@
 from coldtype import *
-import drafting.drawbot as drdb
+import coldtype.drawbot as drdb
 
 db = drdb.db
 co = Font("assets/ColdtypeObviously.designspace")
