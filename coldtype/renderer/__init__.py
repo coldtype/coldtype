@@ -908,8 +908,8 @@ class Renderer():
         rasterizer = self.args.rasterizer or render.rasterizer
 
         if rasterizer == "drawbot":
-            from coldtype.pens.drawbotpen import DrawBotPen
-            DrawBotPen.Composite(content, render.rect, str(path), scale=scale)
+            from coldtype.pens.rendererdrawbotpen import RendererDrawBotPen
+            RendererDrawBotPen.Composite(content, render.rect, str(path), scale=scale)
         elif rasterizer == "skia":
             if not skia:
                 raise Exception("pip install skia-python")
