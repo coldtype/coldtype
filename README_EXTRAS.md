@@ -32,3 +32,7 @@ SSH w/ cloud console, then:
 `coldtype examples/simplest.py -mn list`
 should print out names of monitors, then you match then (can be a substring) like this:
 `coldtype examples/simplest.py -mn SAM -wcs 1.0 -wp C`
+
+### Installing with extras directly from git
+
+`pip install git+https://github.com/goodhertz/coldtype#egg=coldtype[viewer,experimental]`
