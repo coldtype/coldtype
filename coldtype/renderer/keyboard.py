@@ -65,6 +65,8 @@ class KeyboardShortcut(Enum):
     ViewerTakeFocus = "viewer_take_focus"
 
     ViewerSoloNone = "viewer_solo_none"
+    ViewerSoloNext = "viewer_solo_next",
+    ViewerSoloPrev = "viewer_solo_prev",
     ViewerSolo1 = "viewer_solo_1"
     ViewerSolo2 = "viewer_solo_2"
     ViewerSolo3 = "viewer_solo_3"
@@ -259,6 +261,12 @@ SHORTCUTS = {
         [[], "np0"],
         [[], "0"]
     ],
+    KeyboardShortcut.ViewerSoloNext: [
+        [["cmd"], "<right>"]
+    ],
+    KeyboardShortcut.ViewerSoloPrev: [
+        [["cmd"], "<left>"]
+    ],
     KeyboardShortcut.ViewerSolo1: [
         [[], "np1"],
         [[], "1"]
@@ -270,5 +278,29 @@ SHORTCUTS = {
     KeyboardShortcut.ViewerSolo3: [
         [[], "np3"],
         [[], "3"]
+    ],
+    KeyboardShortcut.ViewerSolo4: [
+        [[], "np4"],
+        [[], "4"]
+    ],
+    KeyboardShortcut.ViewerSolo5: [
+        [[], "np5"],
+        [[], "5"]
+    ],
+    KeyboardShortcut.ViewerSolo6: [
+        [[], "np6"],
+        [[], "6"]
+    ],
+    KeyboardShortcut.ViewerSolo7: [
+        [[], "np7"],
+        [[], "7"]
+    ],
+    KeyboardShortcut.ViewerSolo8: [
+        [[], "np8"],
+        [[], "8"]
+    ],
+    KeyboardShortcut.ViewerSolo9: [
+        [[], "np9"],
+        [[], "9"]
     ],
 }

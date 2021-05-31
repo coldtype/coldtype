@@ -20,10 +20,7 @@ Let’s start with a simple Hello World, except in this case, let’s just say C
 
     @renderable((1000, 200))
     def basic(r):
-        return (StyledString("COLDTYPE",
-            Style(co, 150))
-            .pens()
-            .align(r))
+        return (StSt("COLDTYPE", co, 150).align(r))
 
 Which should get you this:
 
@@ -37,9 +34,8 @@ You might be wondering why the text is blue — that’s the default fill color
 
     @renderable((1000, 200))
     def lessbasic(r):
-        return (StyledString("COLDTYPE",
-            Style(co, 150, wdth=0.5, rotate=10, tu=150))
-            .pens()
+        return (StSt("COLDTYPE", co, 150,
+            wdth=0.5, rotate=10, tu=150)
             .align(r)
             .f(hsl(0.8, s=0.75)))
 
@@ -47,17 +43,16 @@ You might be wondering why the text is blue — that’s the default fill color
     :width: 500
     :class: add-border
 
-What’s interesting (and different) about setting text with Coldtype is that you aren’t telling the computer to draw text, you're asking for information about the individual glyphs and where they sit, given the parameters you’re passing into the combination of ``StyledString`` and ``Style``.
+What’s interesting (and different) about setting text with Coldtype is that you aren’t telling the computer to draw text, you're asking for information about the individual glyphs and where they sit, given the parameters you’re passing into ``StSt`` function.
 
-Put another way, what you get back from calling ``(StyledString, Style(...)).pens()`` is a rich set of data that can be inspected and manipulated.
+Put another way, what you get back from calling ``(StSt...)`` is a rich set of data that can be inspected and manipulated.
 
 .. code:: python
 
     @renderable((1000, 200))
     def print_tree(r):
-        pens = (StyledString("COLDTYPE",
-            Style(co, 150, wdth=0.5, rotate=10, tu=150))
-            .pens()
+        pens = (StSt("COLDTYPE", co, 150,
+            wdth=0.5, rotate=10, tu=150)
             .align(r)
             .f(Gradient.Vertical(r, hsl(0.5, s=0.8), hsl(0.8, s=0.75))))
         
@@ -71,16 +66,15 @@ Because of the line ``print(pens.tree())``, you should see something like this i
 
 .. code:: text
 
-    <DPS:pens:8:tag(?)>
-        <DP(typo:int(True)(C))/tag:(?)>
-        <DP(typo:int(True)(O))/tag:(?)>
-        <DP(typo:int(True)(L))/tag:(?)>
-        <DP(typo:int(True)(D))/tag:(?)>
-        <DP(typo:int(True)(T))/tag:(?)>
-        <DP(typo:int(True)(Y))/tag:(?)>
-        <DP(typo:int(True)(P))/tag:(?)>
-        <DP(typo:int(True)(E))/tag:(?)>
-    </DPS>
+    <DPS:8——tag:?/data{})>
+    | <DP(typo:int(True)(C))——tag:?/data:{}>
+    | <DP(typo:int(True)(O))——tag:?/data:{}>
+    | <DP(typo:int(True)(L))——tag:?/data:{}>
+    | <DP(typo:int(True)(D))——tag:?/data:{}>
+    | <DP(typo:int(True)(T))——tag:?/data:{}>
+    | <DP(typo:int(True)(Y))——tag:?/data:{}>
+    | <DP(typo:int(True)(P))——tag:?/data:{}>
+    | <DP(typo:int(True)(E))——tag:?/data:{}>
 
 And because of the lines with calls to `rotate`, you should see this on your screen:
 
@@ -97,7 +91,7 @@ But for lots of graphic design, what you actually want is very precise control o
 
 Of course, there’s a big downside to having direct control: it is excruciatingly slow. And more than that, even when you’re working with just a few letters, you might need to change those letters at the last minute, right before a project is due.
 
-Which is where code really shines. All the manipulations I’ve done so far are not "destructive," like Convert to Outlines. As far as we’re concerned, the "textbox" (so to speak) is still intact, ``StyledString("COLDTYPE"...``
+Which is where code really shines. All the manipulations I’ve done so far are not "destructive," like Convert to Outlines. As far as we’re concerned, the "textbox" (so to speak) is still intact, ``StSt("COLDTYPE"...``
 
 To illustrate that point, let’s change the text:
 
@@ -105,9 +99,8 @@ To illustrate that point, let’s change the text:
 
     @renderable((1000, 200))
     def typecold(r):
-        pens = (StyledString("TYPECOLD",
-            Style(co, 150, wdth=0.5, rotate=10, tu=150))
-            .pens()
+        pens = (StSt("TYPECOLD", co, 150,
+            wdth=0.5, rotate=10, tu=150)
             .align(r)
             .f(Gradient.Vertical(r, hsl(0.5, s=0.8), hsl(0.8, s=0.75))))
         
@@ -128,9 +121,8 @@ This also means that sometimes it is very necessary to ``copy`` pens in order to
 
     @renderable((1000, 200))
     def simpledrop(r):
-        pens = (StyledString("TYPECOLD",
-            Style(co, 150, wdth=0.5, rotate=10, tu=250))
-            .pens()
+        pens = (StSt("TYPECOLD", co, 150,
+            wdth=0.5, rotate=10, tu=250)
             .align(r)
             .f(1))
         return DATPens([
@@ -142,15 +134,14 @@ This also means that sometimes it is very necessary to ``copy`` pens in order to
     :width: 500
     :class: add-border
 
-I’ll admit the impact of the interesting dropshadow here is lessened somewhat by the appearance of the strange pink lines in the top layer of text. When I added the code stroking the pens (``.s(hsl(0.9)).sw(3)``), I thought it would look like a standard stroked shape. But if you’re familiar with how variable fonts are constructed, those lines might not seem all that strange to you — they indicate that the letters are constructed in order to interpolate cleanly. That said, we probably don’t want to see them! So there’s a special ``ro=1`` flag that you can pass to any ``Style`` constructor, and that’ll ``(r)emove (o)verlaps`` on all the glyphs before they come back to you in their correct positions.
+I’ll admit the impact of the interesting dropshadow here is lessened somewhat by the appearance of the strange pink lines in the top layer of text. When I added the code stroking the pens (``.s(hsl(0.9)).sw(3)``), I thought it would look like a standard stroked shape. But if you’re familiar with how variable fonts are constructed, those lines might not seem all that strange to you — they indicate that the letters are constructed in order to interpolate cleanly. That said, we probably don’t want to see them! So there’s a special ``ro=1`` flag that you can pass to any ``StSt`` function, and that’ll ``(r)emove (o)verlaps`` on all the glyphs before they come back to you in their correct positions. (Or you could chain a call to ``removeOverlaps`` on the pens.)
 
 .. code:: python
 
     @renderable((1000, 200))
     def ro(r):
-        pens = (StyledString("TYPECOLD",
-            Style(co, 150, wdth=0.5, rotate=10, tu=100, ro=1))
-            .pens()
+        pens = (StSt("TYPECOLD", co, 150,
+            wdth=0.5, rotate=10, tu=100, ro=1)
             .align(r)
             .f(1))
         return DATPens([
@@ -174,9 +165,8 @@ One additional refinement you may want to make in an example like this is that y
 
     @renderable((1000, 200))
     def stroke_shadow(r):
-        pens = (StyledString("COLDTYPE",
-            Style(co, 150, wdth=0.5, rotate=10, tu=100, ro=1))
-            .pens()
+        pens = (StSt("COLDTYPE", co, 150,
+            wdth=1, rotate=10, tu=100, ro=1)
             .align(r)
             .f(1))
         return DATPens([
@@ -201,15 +191,13 @@ Dang, you know I thought that example would just work, but it looks like there a
 
     @renderable((1000, 500))
     def stroke_shadow_cleanup(r):
-        pens = (StyledString("O",
-            Style(co, 500, wdth=0.5, rotate=10, tu=100, ro=1))
-            .pens()
+        pens = (StSt("O", co, 500,
+            wdth=0.5, rotate=10, tu=100, ro=1)
             .align(r)
             .f(1))
         
         return DATPens([
-            (pens
-                .copy()
+            (pens.copy()
                 .pmap(lambda i, p:
                     (p.outline(10)
                         .reverse()
@@ -234,9 +222,8 @@ Two suggestions to help you better understand code or find weird looks: try comm
 
     @renderable((1000, 250))
     def stroke_shadow_random(r):
-        pens = (StyledString("COLDTYPE",
-            Style(co, 150, wdth=0.5, rotate=10, tu=100, ro=1))
-            .pens()
+        pens = (StSt("COLDTYPE", co, 150,
+            wdth=0.5, rotate=10, tu=100, ro=1)
             .align(r)
             .f(1))
         return DATPens([
@@ -262,9 +249,7 @@ Multi-line Text
 
     @renderable ((1000, 550))
     def multiline(r):
-        return (Composer(r, "COLDTYPE\nTYPECOLD", Style(co, 300, wdth=1), fit=800)
-            .pens()
-            .xa() # a shortcut to x-align each line in this set
+        return (StSt("COLDTYPE\nTYPECOLD", co, 300, wdth=1, fit=500)
             .align(r)
             .f(0))
 
@@ -275,16 +260,14 @@ Multi-line Text
 Text-on-a-path
 --------------
 
-Once you convert a ``StyledString`` to a ``DATPens`` via ``.pens()``, you can use the DATPens’s ``distribute_on_path`` method to set the glyphs onto an arbitrary path.
+If you like to align glyphs along an arbitrary path, you can use the DATPens’s ``distribute_on_path`` method to set the glyphs returned from a ``StSt``.
 
 .. code:: python
 
     @renderable((1000, 1000))
     def on_a_path(r):
         circle = DATPen().oval(r.inset(250)).reverse()
-        return (StyledString("COLDTYPE",
-            Style(co, 200, wdth=1))
-            .pens()
+        return (StSt("COLDTYPE", co, 200, wdth=1)
             .distribute_on_path(circle, offset=275)
             .f(0))
 
@@ -292,17 +275,15 @@ Once you convert a ``StyledString`` to a ``DATPens`` via ``.pens()``, you can us
     :width: 500
     :class: add-border
 
-What if we want more text on the circle and we want it to fit automatically to the length of the curve on which it’s set — without overlapping? Before we convert the text to a ``DATPens`` (via ``.pens()``), we can employ the ``fit`` method on our ``StyledString`` to fit the text to the length of the curve that we'll end up setting the pens on.
+What if we want more text on the circle and we want it to fit automatically to the length of the curve on which it’s set — without overlapping? Simple append a ``fit=`` keyword argument to fit the text to the length of the curve that we'll end up setting the pens on.
 
 .. code:: python
 
     @renderable((1000, 1000))
     def text_on_a_path_fit(r):
         circle = DATPen().oval(r.inset(250)).reverse()
-        dps = (StyledString("COLDTYPE COLDTYPE COLDTYPE ", # <-- note the trailing space
-            Style(co, 200, wdth=1, tu=100, space=500))
-            .fit(circle.length()) # <-- the fit & length methods
-            .pens()
+        dps = (StSt("COLDTYPE COLDTYPE COLDTYPE ", co, 200,
+            wdth=1, tu=100, space=500, fit=circle.length())
             .distribute_on_path(circle)
             .f(Gradient.H(circle.bounds(), hsl(0.5, s=0.6), hsl(0.85, s=0.6))))
         return dps
@@ -322,10 +303,8 @@ Let’s see what that looks like.
     @renderable((1000, 500))
     def text_on_a_path_understroke(r):
         sine = DATPen().sine(r.inset(0, 180), 3)
-        return (StyledString("COLDTYPE COLDTYPE COLDTYPE",
-            Style(co, 100, wdth=1, tu=-50, space=500))
-            .fit(sine.length()) # <-- the fit & length methods
-            .pens()
+        return (StSt("COLDTYPE COLDTYPE COLDTYPE", co, 100,
+            wdth=1, tu=-50, space=500, fit=sine.length())
             .distribute_on_path(sine)
             .understroke(sw=10)
             .f(Gradient.H(sine.bounds(), hsl(0.7, l=0.6, s=0.65), hsl(0.05, l=0.6, s=0.65)))
@@ -342,15 +321,12 @@ Interesting! But there’s one thing to correct if we want better legibility. Yo
     @renderable((1000, 500))
     def text_on_a_path_understroke_reversed(r):
         sine = DATPen().sine(r.inset(0, 180), 3)
-        dps = (StyledString("COLDTYPE COLDTYPE COLDTYPE",
-            Style(co, 100, wdth=1, tu=-50, space=500, r=1))
-            .fit(sine.length())
-            .pens()
+        return (StSt("COLDTYPE COLDTYPE COLDTYPE", co, 100,
+            wdth=1, tu=-50, space=500, r=1, fit=sine.length())
             .distribute_on_path(sine)
             .understroke(sw=10)
             .f(Gradient.H(sine.bounds(), hsl(0.7, l=0.7, s=0.65), hsl(0.05, l=0.6, s=0.65)))
             .translate(0, -20))
-        return dps
 
 .. image:: /_static/renders/text_text_on_a_path_understroke_reversed.png
     :width: 500

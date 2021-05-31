@@ -610,6 +610,8 @@ class Renderer():
             _rs = [r for r in _rs if r.solo]
         
         if len(self.viewer_solos) > 0:
+            self.viewer_solos = [vs%len(_rs) for vs in self.viewer_solos]
+
             solos = []
             for i, r in enumerate(_rs):
                 if i in self.viewer_solos:
@@ -1561,6 +1563,14 @@ class Renderer():
         
         elif shortcut == KeyboardShortcut.ViewerSoloNone:
             self.viewer_solos = []
+        elif shortcut == KeyboardShortcut.ViewerSoloNext:
+            if len(self.viewer_solos):
+                for i, solo in enumerate(self.viewer_solos):
+                    self.viewer_solos[i] = solo + 1
+        elif shortcut == KeyboardShortcut.ViewerSoloPrev:
+            if len(self.viewer_solos):
+                for i, solo in enumerate(self.viewer_solos):
+                    self.viewer_solos[i] = solo - 1
         elif shortcut in [
             KeyboardShortcut.ViewerSolo1,
             KeyboardShortcut.ViewerSolo2,
