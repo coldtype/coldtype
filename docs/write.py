@@ -54,8 +54,8 @@ class DocsWriter(Renderer):
         self.webserver.terminate()
         super().on_exit(restart=restart)
     
-    def release_fn(self):
-        candidate = super().release_fn()
+    def buildrelease_fn(self, fnname="release"):
+        candidate = super().buildrelease_fn(fnname=fnname)
 
         def build_docs(passes):
             from shutil import copy2
