@@ -157,18 +157,17 @@ SHORTCUTS = {
         [[], "p"],
     ],
     KeyboardShortcut.RestartApp: [
-        [[], "r"]
+        [["cmd"], "r"]
     ],
     KeyboardShortcut.Quit: [
         [[], "q"]
     ],
 
     KeyboardShortcut.Release: [
-        [["cmd"], "r"],
-        [["cmd"], "l"]
+        [[], "r"],
     ],
     KeyboardShortcut.Build: [
-        [["cmd"], "b"],
+        [[], "b"],
     ],
     KeyboardShortcut.RenderAll: [
         [[], "a"],

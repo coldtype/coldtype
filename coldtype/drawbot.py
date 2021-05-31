@@ -7,6 +7,7 @@ from coldtype.pens.draftingpens import DraftingPens
 from coldtype.text.reader import StyledString, Style, Font
 from coldtype.text.composer import StSt
 from coldtype.color import hsl, bw
+from coldtype.time import Frame
 from pathlib import Path
 
 def dbdraw(p:DraftingPen):
@@ -43,7 +44,7 @@ def new_drawing(rect:Rect=Rect(1000, 1000), count=1, save_to=None):
         db.saveImage(str(save_to))
     db.endDrawing()
 
-def releaser(fn, path, frame_class=None):
+def pdfdoc(fn, path, frame_class=Frame):
     db.newDrawing()
     r = fn.rect
     w, h = r.wh()

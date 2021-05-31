@@ -25,3 +25,4 @@ generative_font.ufo
 fontmakes
 test_cairo.pdf
 test/ignorables/
+examples/*.pdf

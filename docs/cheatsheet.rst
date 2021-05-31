@@ -14,8 +14,8 @@ Cheatsheet
     "``shift+space``", "play rendered animation", "at specified fps (default 30 fps)"
     "``a``", "``render_all``", "render/rasterize all renderables and frames in renderables"
     "``w``", "``render_workarea``", "for partial animation rendering"
-    "``r``", "``restart_renderer``", "to reload code not in source file"
-    "``l``", "``release``", "to call special ``release`` fn"
+    "``cmd+r``", "``restart_renderer``", "to reload code not in source file"
+    "``r``", "``release``", "to call special ``release`` fn"
     "``m``", "``toggle_multiplex``", "turn multiplexing on/off"
     "``\``", "``clear_last_render``", "if compositing, clears the last render / feedback"
 
@@ -26,7 +26,7 @@ All of those single-key shortcuts also work as single-letter actions in the comm
     :widths: 50, 100, 200
 
     "``q``", "Quit", ""
-    "``0``", "Set zoom to 100%", ""
+    "``cmd+0``", "Set zoom to 100%", ""
     "``c``", "(C)ommand", "enter the command buffer layer"
     "``d``", "e(D)iting", "enter the editing layer (if available)"
 

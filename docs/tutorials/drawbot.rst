@@ -21,7 +21,6 @@ Now that you’ve got the module version of DrawBot installed, with just a littl
 
     from coldtype import *
     from drawBot import *
-    from coldtype.pens.drawbotpen import DrawBotPen, DrawBotPens
 
     @drawbot_script((500, 300))
     def db_text(r):
@@ -45,7 +44,9 @@ You might be wondering why you’d want to use DrawBot in Coldtype. To me, one b
 
     long_txt1 = "Here is a long string which needs line-breaks to be typeset correctly — something Coldtype can’t do but DrawBot (by leveraging the CoreText APIs on macOS) can handle with aplomb."
     
-    long_txt2 = "Here is another long string, this time set into an oval, made possible by sending textBox a BezierPath generated from a DATPen via the .bezierPath method available on the DrawBotPen."
+    long_txt2 = "Here is another long string, this time set into an oval, made possible by sending textBox a BezierPath generated from a DATPen via the tobp method available in the coldtype.drawbot helpers module."
+
+    import coldtype.drawbot as ctdb
 
     @drawbot_script((500, 500))
     def combined_idioms(r):
@@ -53,9 +54,17 @@ You might be wondering why you’d want to use DrawBot in Coldtype. To me, one b
         textBox(long_txt1, r.inset(10))
         # Coldtype Rect's can be passed anywhere a rectangle-like list would be passed in DrawBot
 
-        oval = DATPen().oval(r.take(0.75, "mny").inset(20).square())
-        oval.copy().outline(20).f(hsl(0.95, 1, 0.8, a=0.25)).cast(DrawBotPen).draw()
-        textBox(long_txt2, oval.cast(DrawBotPen).bezierPath(), align="right")
+        oval = (DATPen()
+            .oval(r.take(0.75, "mny")
+                .inset(20).square()))
+
+        (oval.copy()
+            .outline(20)
+            .f(hsl(0.95, 1, 0.8, a=0.25))
+            .chain(ctdb.dbdraw))
+        
+        textBox(long_txt2,
+            ctdb.tobp(oval), align="right")
     
 .. image:: /_static/renders/drawbot_combined_idioms.png
     :width: 250
@@ -70,28 +79,20 @@ All that said, it is still quite possible to do normal DrawBot things in a Coldt
 
 .. code:: python
 
-    tl = Timeline(10) # a 10-page document
-
     @drawbot_animation((500, 200))
     def multipage_doc(f):
         c = hsl(f.a.progress(f.i).e, s=0.5, l=0.5)
-        DATPen().rect(f.a.r).f(c).cast(DrawBotPen).draw()
+        (DATPen(f.a.r)
+            .f(c)
+            .chain(ctdb.dbdraw))
         fontSize(50)
         fill(1)
         textBox("Page " + str(f.i), f.a.r.inset(50))
-    
+
+
     def release(passes):
-        newDrawing()
-        r = multipage_doc.rect
-        w, h = r.wh()
-        for idx in range(0, multipage_doc.duration):
-            print(f"Saving page {idx}...")
-            newPage(w, h)
-            multipage_doc.func(Frame(idx, multipage_doc, []))
-        pdf_path = "docs/tutorials/drawbot_multipage.pdf"
-        saveImage(pdf_path)
-        print("Saved pdf", pdf_path)
-        endDrawing()
+        ctdb.pdfdoc(multipage_doc,
+            "examples/drawbot/drawbot_multipage.pdf")
 
 .. code:: ruby
 
@@ -103,7 +104,7 @@ All that said, it is still quite possible to do normal DrawBot things in a Coldt
 
 The key to making this work is the magic function ``release``, which can be defined once in any Coldtype source file, and provides a "second chance" to create artifacts based on what's been rendered by the coldtype renderer. The salient point here is that you can write your own special code to run whenever the ``release`` action is called, which can be outside the standard save/reload/render workflow of Coldtype. This can be useful for all kinds of things (it’s how this documentation is generated, for example), but here it's useful because we're saying, `OK`, the graphics look good, let's now use DrawBot to bake a PDF, using the same code that we've been editing and previewing via the Coldtype viewer.
 
-How to trigger the release code? I trigger it via a MIDI trigger + a .coldtype.py configuration file, but it’s as easy as typing "release" into the running command line prompt, or hitting L with the viewer app focused.
+How to trigger the release code? I trigger it via a MIDI trigger + a .coldtype.py configuration file, but it’s as easy as typing "release" into the running command line prompt, or hitting the R key with the viewer app focused.
 
 
 Scaling

@@ -1677,8 +1677,8 @@ class Renderer():
                 return None, None
 
     def on_stdin(self, stdin):
-        if self.jump_to_fn(stdin):
-            return
+        #if self.jump_to_fn(stdin):
+        #    return
         action, data = self.stdin_to_action(stdin)
         if action:
             if action == Action.PreviewIndices:
