@@ -1546,7 +1546,15 @@ class Renderer():
         
         elif shortcut == KeyboardShortcut.JumpToFrameFunctionDef:
             frame = self.last_animation._active_frames(self.state)[0]
-            self.send_to_external("jump_to_def", info=self.last_animation.frame_to_fn(frame))
+            fn_prefix, fn_context = self.last_animation.frame_to_fn(frame)
+            original_code = self.filepath.read_text().splitlines()
+            found_line = -1
+            for li, line in enumerate(original_code):
+                if line.strip().startswith(fn_prefix):
+                    found_line = li
+            editor_cmd = self.py_config.get("EDITOR_COMMAND")
+            if editor_cmd:
+                os.system(editor_cmd + " -g " + str(self.filepath.relative_to(Path.cwd())) + ":" + str(found_line))
         
         elif shortcut == KeyboardShortcut.ViewerTakeFocus:
             glfw.focus_window(self.window)

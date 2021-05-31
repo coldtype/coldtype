@@ -12,6 +12,8 @@ from coldtype.pens.dattext import DATText
 from coldtype.color import hsl
 from pathlib import Path
 
+from typing import Tuple
+
 
 class glyphfn():
     def __init__(self, width=1000, lsb=0, rsb=0):
@@ -34,8 +36,9 @@ class glyphfn():
         return self
 
 
-class GenerativeFont:
+class generativefont(animation):
     def __init__(self,
+        lookup,
         ufo_path:Path,
         font_name="Test",
         style_name="Regular",
@@ -44,6 +47,9 @@ class GenerativeFont:
         descender=-250,
         units_per_em=1000,
         preview_size=(1000, None)):
+
+        pw, ph = preview_size
+        self.preview_frame = Rect(pw, ph if ph else (-descender*2) + cap_height)
 
         if not ufo_path.exists():
             ufo = DFont()
@@ -60,8 +66,9 @@ class GenerativeFont:
         
         self.ufo = ufo
 
-        pw, ph = preview_size
-        self.preview_frame = Rect(pw, ph if ph else (-descender*2) + cap_height)
+        super().__init__(
+            self.preview_frame, timeline=self.timeline(lookup),
+            postfn=generativefont.ShowGrid)
     
     def _find_glyph_fns(self, lookup):
         """
@@ -76,6 +83,11 @@ class GenerativeFont:
     def timeline(self, lookup):
         self._find_glyph_fns(lookup)
         return Timeline(len(self.glyph_fns))
+    
+    def frame_to_fn(self, fi) -> Tuple[str, dict]:
+        return [
+            f"def {self.glyph_fns[fi].glyph_name}(",
+            dict(decorator="@glyphfn")]
     
     def ShowGrid(render, result):
         if False: # flip to true if you don't want to see the grid
@@ -97,40 +109,34 @@ class GenerativeFont:
                 (DATText(gfn.glyph_name, Style("Times", 48, load_font=0),
                     render.rect.inset(50)))])
     
-    def viewer(self, lookup):
-        @animation(self.preview_frame, timeline=self.timeline(lookup), postfn=GenerativeFont.ShowGrid)
-        def glyph_viewer(f):
-            glyph_fn = self.glyph_fns[f.i]
-            glyph_fn.add_font(self)
+    def glyph_viewer(self, f):
+        glyph_fn = self.glyph_fns[f.i]
+        glyph_fn.add_font(self)
 
-            print(f"> drawing :{glyph_fn.glyph_name}:")
-            glyph_pen = glyph_fn.func(glyph_fn.frame).f(0)
+        print(f"> drawing :{glyph_fn.glyph_name}:")
+        glyph_pen = glyph_fn.func(glyph_fn.frame).f(0)
 
-            # shift over by the left-side-bearing
-            glyph_pen.translate(glyph_fn.lsb, 0)
-            glyph = glyph_pen.to_glyph(
-                name=glyph_fn.glyph_name,
-                width=glyph_fn.frame.w + glyph_fn.lsb + glyph_fn.rsb,
-                allow_blank = True)
-            glyph.unicode = glyph_to_uni(glyph_fn.glyph_name)
-            self.ufo.insertGlyph(glyph)
-            self.ufo.save()
-            return glyph_pen.add_data("gfn", glyph_fn)
-        return glyph_viewer
+        # shift over by the left-side-bearing
+        glyph_pen.translate(glyph_fn.lsb, 0)
+        glyph = glyph_pen.to_glyph(
+            name=glyph_fn.glyph_name,
+            width=glyph_fn.frame.w + glyph_fn.lsb + glyph_fn.rsb,
+            allow_blank = True)
+        glyph.unicode = glyph_to_uni(glyph_fn.glyph_name)
+        self.ufo.insertGlyph(glyph)
+        self.ufo.save()
+        return glyph_pen.add_data("gfn", glyph_fn)
     
-    def spacecenter(self, text):
-        @renderable((1080, 300))
-        def spacecenter(r):
-            """
-            This function loads the ufo that’s been created by the code above and displays it "as a font" (i.e. it compiles the ufo to a font and then uses the actual font to do standard font-display logic)
-            """
-            ufo = Font(self.ufo.path)
-            return (StyledString("ABC CBA",
-                Style(ufo, 150))
-                .pens()
-                .align(r)
-                .f(0))
-        return spacecenter
+    def spacecenter(self, r, text):
+        """
+        This function loads the ufo that’s been created by the code above and displays it "as a font" (i.e. it compiles the ufo to a font and then uses the actual font to do standard font-display logic)
+        """
+        ufo = Font(self.ufo.path)
+        return (StyledString("ABC CBA",
+            Style(ufo, 150))
+            .pens()
+            .align(r)
+            .f(0))
 
     def fontmake(self):
         ufo = DFont(self.ufo.path)

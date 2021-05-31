@@ -2,12 +2,7 @@ from subprocess import run
 
 from coldtype import *
 from coldtype.pens.dattext import DATText
-from coldtype.renderable.font import GenerativeFont, glyphfn
-
-gufo = GenerativeFont(
-    __sibling__("generative_font.ufo"),
-    "Generative",
-    "Regular")
+from coldtype.renderable.font import generativefont, glyphfn
 
 # individual functions to draw glyphs
 # the function names should be canonical
@@ -50,8 +45,19 @@ def C(r):
         .difference(DP(r.take(0.5, "mxx")
             .take(20, "mdy"))))
 
-viewer = gufo.viewer(globals())
-spacecenter = gufo.spacecenter("ABC CBA")
+@generativefont(globals(),
+    __sibling__("generative_font.ufo"),
+    "Generative",
+    "Regular")
+def gufo(f):
+    return gufo.glyph_viewer(f)
+
+@renderable((1080, 300))
+def spacecenter(r):
+    return gufo.spacecenter(r, "ABC CBA")
+
+#viewer = gufo.viewer(globals())
+#spacecenter = gufo.spacecenter("ABC CBA")
 
 # to run this code, go to the viewer
 # app while it’s running, then hit cmd+l
