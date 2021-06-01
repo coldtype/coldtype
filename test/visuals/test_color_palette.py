@@ -3,6 +3,7 @@ from random import randint
 from noise import pnoise1
 import numpy as np
 import PIL.Image
+from coldtype.fx.skia import Skfi
 
 def r10(x):
     return int(round(x / 150.0)) * 150
@@ -70,25 +71,14 @@ def restricted_colors(f):
             #Shader=skia.PerlinNoiseShader.MakeImprovedNoise(0.01, 0.01, 1, t.e*2),
             #Shader=improved(t.e, 500, 100)
         ))
-        -.precompose(f.a.r)
-        -.attr(skp=dict(
-            AntiAlias=True,
-            ImageFilter=skia.BlurImageFilter.Make(10, 10)
-        ))
         .precompose(f.a.r)
         .attr(skp=dict(
             ImageFilter=skia.BlurImageFilter.Make(5, 5),
-            ColorFilter=fl.as_filter(contrast_cut(100+pnoise1(t.e)*30, 10), a=0, r=1, g=1, b=1),
+            ColorFilter=Skfi.as_filter(contrast_cut(100+pnoise1(t.e)*30, 10), a=0, r=1, g=1, b=1),
             #ColorFilter=skia.TableColorFilter.MakeARGB(ct, ct, ct, ct)
         ))
         #.mod_pixels(f.a.r, 0.1, lambda rgba: lut(rgba))
-        .mod_pixels(f.a.r, 0.1, lambda c: [r10(x) for x in c])
-        -.precompose(f.a.r)
-        -.attr(skp=dict(
-            ImageFilter=skia.BlurImageFilter.Make(10, 10)
-        ))
-        -.phototype(f.a.r, cut=10)
-        -.potrace(f.a.r))
+        .mod_pixels(f.a.r, 0.1, lambda c: [r10(x) for x in c]))
 
     return cap_c + DATPen().rect(f.a.r).difference(c.f(None)).f(0)
     

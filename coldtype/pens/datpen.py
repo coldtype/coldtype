@@ -593,10 +593,6 @@ class DATPen(DraftingPen):
             svgp.draw(dp)
             return dp.f(0)
     
-    def phototype(self, rect, blur=5, cut=127, cutw=3, fill=1, pen_class=None, context=None, rgba=[0, 0, 0, 1], luma=True):
-        print("DEPRECATED")
-        return self
-    
     def DiskCached(path:Path, build_fn: Callable[[], "DATPen"]):
         dpio = None
         fn_src = inspect.getsource(build_fn)

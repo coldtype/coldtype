@@ -38,7 +38,6 @@ def fontview(p:DATPen, r:Rect):
         DATPen().line([[0, 1000], [r.w, 1000]]).f(None).s(0),
         DATPen().line([[0, 250], [r.w, 250]]).f(None).s(0),
         p.copy().removeOverlap().f(None).s(hsl(0.9, s=1, a=0.5)).sw(5),
-        #p.copy().removeOverlap().f(None).s(hsl(0)).sw(15).color_phototype(r)
         ])
 
 @renderable((2000, 1200), watch_soft=[rfd.path])

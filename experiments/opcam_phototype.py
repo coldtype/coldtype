@@ -1,6 +1,7 @@
 from coldtype.test import *
 from coldtype.pens.datimage import DATImage
 from coldtype.capture import capture_frame
+from coldtype.fx.skia import phototype
 
 tl = Timeline(120)
 
@@ -18,10 +19,10 @@ def opcam8(f):
         (DATImage(img)
             .align(f.a.r)
             .precompose(f.a.r, as_image=False)
-            .phototype(f.a.r, blur=2, cutw=50, cut=60)
+            .ch(phototype(f.a.r, blur=2, cutw=50, cut=60))
             )])
     
     return DPS([
         DP(r).f(1),
         txt.precompose(f.a.r).blendmode(skia.BlendMode.kDifference)
-    ]).precompose(f.a.r)#.phototype(r, fill=0, cutw=30)
+    ]).precompose(f.a.r)

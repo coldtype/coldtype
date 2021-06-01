@@ -1,5 +1,5 @@
 from coldtype.test import *
-from coldtype.fx.skia import fill
+from coldtype.fx.skia import fill, phototype
 
 @animation((1000, 500), timeline=Timeline(120), bg=0, solo=0, composites=1)
 def simple(f):
@@ -24,7 +24,7 @@ def interpolation(f):
             .align(f.a.r, x="mnx")
             .translate(30+790*f.e("ceio", 1), 100)
             .f(0).s(1).sw(10))
-        ]).phototype(f.a.r, fill=0, blur=3, cut=130, cutw=25))
+        ]).ch(phototype(f.a.r, fill=0, blur=3, cut=130, cutw=25)))
 
 def release(passes):
     (FFMPEGExport(interpolation, passes, loops=4)

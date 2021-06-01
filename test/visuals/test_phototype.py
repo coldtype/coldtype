@@ -1,5 +1,6 @@
 from coldtype.test import *
 from coldtype.midi.controllers import LaunchControlXL
+from coldtype.fx.skia import phototype, color_phototype
 
 # TODO scale in addition to translate?
 
@@ -13,14 +14,14 @@ def phototype_shift(r, rs):
             .f(1)
             .flatten(5)
             .roughen(200)
-            .phototype(r, blur=15, cutw=nxl(10)*15, fill=bw(0))
+            .ch(phototype(r, blur=15, cutw=nxl(10)*15, fill=bw(0)))
             #.precompose(r)
             .translate(500, 0)),
         (StyledString("FILM", Style(mutator, 300, wght=1))
             .pen()
             .f(1)
             .align(r)
-            .phototype(r, blur=nxl(10)*15, fill=hsl(0.9)))])
+            .ch(phototype(r, blur=nxl(10)*15, fill=hsl(0.9))))])
 
 @renderable(solo=0)
 def phototype_no_luma(r):
@@ -30,4 +31,4 @@ def phototype_no_luma(r):
         .align(r)
         .f(1)
         .understroke(sw=50)
-        .color_phototype(r))
+        .ch(color_phototype(r)))

@@ -47,28 +47,6 @@ def test_leibeheide(r):
         #DP(imgs[0].bounds()).f(hsl(0.3, a=0.3)),
         imgs.precompose(r)
     ])
-
-    # return (DPS([
-    #     DP(r).f(1),
-    #     DPS([
-    #             DP(r).f(0),
-    #             imgs.precompose(r).blendmode(skia.BlendMode.kXor)
-    #         ]).precompose(r)
-    #     ])  
-    #     .precompose(r)
-    #     .phototype(r, blur=0, cut=50)
-    #     #.attr(skp=dict(ColorFilter=skia.LumaColorFilter.Make()))
-    #     #.precompose(r)
-    #     )
-
-    # return (DP(r).f(hsl(0.9)) + (DPS([
-            
-    #     ])
-    #     )).precompose(r)
-    #     .attr(skp=dict(
-    #         #ImageFilter=skia.BlurImageFilter.Make(10, 10),
-    #         ColorFilter=skia.LumaColorFilter.Make()
-    #     )))
     
     #return txt[0].align(r).skeleton()
     return txt.translate(0, 660).f(0)#.align(r)

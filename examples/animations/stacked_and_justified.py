@@ -1,4 +1,5 @@
 from coldtype import *
+from coldtype.fx.skia import phototype
 
 # This font does not come w/ Coldtype — but it’s an incredibly cool font worth buying
 fatface = Font("~/Type/fonts/fonts/OhnoFatfaceVariable.ttf")
@@ -21,4 +22,4 @@ def render(f):
         ])
         .f(1)
         .understroke(sw=10)
-        .phototype(f.a.r, blur=3, cut=150, cutw=25))
+        .ch(phototype(f.a.r, blur=3, cut=150, cutw=25)))
