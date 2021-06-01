@@ -535,28 +535,6 @@ class DATPen(DraftingPen):
         img = pc.Precompose(self, rect, context=ctx, scale=scale, disk=DATPen._precompose_save)
         return self.single_pen_class().rect(placement or rect).img(img, (placement or rect), False, opacity).f(None)
     
-    def rasterized(self, rect, scale=1, pen_class=None, context=None):
-        """
-        Same as precompose but returns the Image created rather
-        than setting that image as the attr-image of this pen
-        """
-        pc, ctx = self._get_renderer_state(pen_class, context)
-        return pc.Precompose(self, rect, scale=scale, context=ctx, disk=DATPen._precompose_save)
-    
-    def mod_pixels(self, rect, scale=0.1, mod=lambda rgba: None, pen_class=None, context=None):
-        import skia
-        import PIL.Image
-        rasterized = self.rasterized(rect, scale=scale, pen_class=pen_class, context=context)
-        pi = PIL.Image.fromarray(rasterized, "RGBa")
-        for x in range(pi.width):
-            for y in range(pi.height):
-                r, g, b, a = pi.getpixel((x, y))
-                res = mod((r, g, b, a))
-                if res:
-                    pi.putpixel((x, y), tuple(res))
-        out = skia.Image.frombytes(pi.convert('RGBA').tobytes(), pi.size, skia.kRGBA_8888_ColorType)
-        return self.single_pen_class().rect(rect).img(out, rect, False).f(None)
-    
     def DiskCached(path:Path, build_fn: Callable[[], "DATPen"]):
         dpio = None
         fn_src = inspect.getsource(build_fn)

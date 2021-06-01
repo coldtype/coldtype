@@ -63,25 +63,6 @@ def displacement(f):
         spots.insert(2, DATPen().rect(f.a.r).f(0 if f.i != 90 else hsl(0.7, l=0.3)))
     return spots.ch(color_phototype(r.inset(0), cut=110 , blur=1.5, cutw=50, rgba=[1, 1, 1, 1]))
     
-    spots_img = spots.attrs["default"]["image"]["src"]
-    spots_img_filter = skia.ImageFilters.Image(spots_img)
-
-    grade = DATPen().rect(r).f(Gradient.Vertical(r, hsl(0), hsl(0.5)))
-    color_img_filter = skia.ImageFilters.Image(grade.rasterized(r))
-
-    oval = DATPen().oval(r.inset(300)).f(hsl(0.5)).precompose(r)
-    oval_img = oval.attrs["default"]["image"]["src"]
-    (oval
-        #.precompose(r)
-        .attr(skp=dict(
-            ImageFilter=skia.ImageFilters.DisplacementMap(
-                skia.ColorChannel.kA,
-                skia.ColorChannel.kG,
-                50.0,
-                skia.ImageFilters.Image(spots_img),
-                skia.ImageFilters.Image(oval_img),
-                skia.IRect(r.x, r.y, r.w, r.h)))))
-    
     return oval
 
 def release(passes):

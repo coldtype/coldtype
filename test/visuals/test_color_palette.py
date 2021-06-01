@@ -3,7 +3,7 @@ from random import randint
 from noise import pnoise1
 import numpy as np
 import PIL.Image
-from coldtype.fx.skia import Skfi
+from coldtype.fx.skia import Skfi, mod_pixels
 
 def r10(x):
     return int(round(x / 150.0)) * 150
@@ -78,7 +78,7 @@ def restricted_colors(f):
             #ColorFilter=skia.TableColorFilter.MakeARGB(ct, ct, ct, ct)
         ))
         #.mod_pixels(f.a.r, 0.1, lambda rgba: lut(rgba))
-        .mod_pixels(f.a.r, 0.1, lambda c: [r10(x) for x in c]))
+        .ch(mod_pixels(f.a.r, 0.1, lambda c: [r10(x) for x in c])))
 
     return cap_c + DATPen().rect(f.a.r).difference(c.f(None)).f(0)
     

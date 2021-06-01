@@ -183,3 +183,34 @@ def potrace(rect, poargs=[], invert=True):
             return dp.f(0)
         
     return _potrace
+
+
+def rasterized(rect, scale=1):
+    """
+    Same as precompose but returns the Image created rather
+    than setting that image as the attr-image of this pen
+    """
+    def _rasterized(pen):
+        return SkiaPen.Precompose(pen, rect, scale=scale, context=SKIA_CONTEXT, disk=False)
+    return _rasterized
+
+
+def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
+    import PIL.Image
+    
+    def _mod_pixels(pen):
+        raster = pen.ch(rasterized(rect, scale=scale))
+        pi = PIL.Image.fromarray(raster, "RGBa")
+        for x in range(pi.width):
+            for y in range(pi.height):
+                r, g, b, a = pi.getpixel((x, y))
+                res = mod((r, g, b, a))
+                if res:
+                    pi.putpixel((x, y), tuple(res))
+        out = skia.Image.frombytes(pi.convert('RGBA').tobytes(), pi.size, skia.kRGBA_8888_ColorType)
+        return (DATPen()
+            .rect(rect)
+            .img(out, rect, False)
+            .f(None))
+    
+    return _mod_pixels
