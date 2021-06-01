@@ -556,42 +556,6 @@ class DATPen(DraftingPen):
                     pi.putpixel((x, y), tuple(res))
         out = skia.Image.frombytes(pi.convert('RGBA').tobytes(), pi.size, skia.kRGBA_8888_ColorType)
         return self.single_pen_class().rect(rect).img(out, rect, False).f(None)
-
-    def potrace(self, rect, poargs=[], invert=True, pen_class=None, context=None):
-        import skia
-        from PIL import Image
-        from pathlib import Path
-        from subprocess import run
-        from fontTools.svgLib import SVGPath
-
-        pc, ctx = self._get_renderer_state(pen_class, context)
-
-        img = pc.Precompose(self, rect, context=ctx)
-        pilimg = Image.fromarray(img.convert(alphaType=skia.kUnpremul_AlphaType))
-        binpo = Path("bin/potrace")
-        if not binpo.exists():
-            binpo = Path(__file__).parent.parent.parent / "bin/potrace"
-
-        with tempfile.NamedTemporaryFile(prefix="coldtype_tmp", suffix=".bmp") as tmp_bmp:
-            pilimg.save(tmp_bmp.name)
-            rargs = [str(binpo), "-s"]
-            if invert:
-                rargs.append("--invert")
-            rargs.extend([str(x) for x in poargs])
-            rargs.extend(["-o", "-", "--", tmp_bmp.name])
-            if False:
-                print(">>>", " ".join(rargs))
-            result = run(rargs, capture_output=True)
-            if False:
-                print(result)
-            t = Transform()
-            t = t.scale(0.1, 0.1)
-            svgp = SVGPath.fromstring(result.stdout, transform=t)
-            if False:
-                print(svgp)
-            dp = self.single_pen_class()
-            svgp.draw(dp)
-            return dp.f(0)
     
     def DiskCached(path:Path, build_fn: Callable[[], "DATPen"]):
         dpio = None

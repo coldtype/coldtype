@@ -1,7 +1,13 @@
-from os import stat
-import skia
+from coldtype.pens.datpen import DATPen
+import skia, tempfile
+from subprocess import run
 from functools import reduce
 from random import Random, randint
+from pathlib import Path
+
+from fontTools.svgLib import SVGPath
+from fontTools.misc.transform import Transform
+
 from coldtype.color import normalize_color, bw
 from coldtype.pens.skiapen import SkiaPen
 
@@ -62,6 +68,7 @@ class Skfi():
         matrix.setScaleX(xs)
         matrix.setScaleY(ys)
         return noise.makeWithLocalMatrix(matrix)
+
 
 # CHAINABLES
 
@@ -132,9 +139,47 @@ def spackle(xo=None, yo=None,
                         skia.LumaColorFilter.Make()))))))
     return _spackle
 
+
 def fill(c):
     c = normalize_color(c)
     def _fill(pen):
         return pen.attr(skp=dict(
             ColorFilter=Skfi.fill(c)))
     return _fill
+
+
+def potrace(rect, poargs=[], invert=True):
+    from PIL import Image
+
+    pc = SkiaPen
+    ctx = SKIA_CONTEXT
+
+    def _potrace(pen):
+        img = pc.Precompose(pen, rect, context=ctx)
+        pilimg = Image.fromarray(img.convert(alphaType=skia.kUnpremul_AlphaType))
+        binpo = Path("bin/potrace")
+        if not binpo.exists():
+            binpo = Path(__file__).parent.parent.parent / "bin/potrace"
+
+        with tempfile.NamedTemporaryFile(prefix="coldtype_tmp", suffix=".bmp") as tmp_bmp:
+            pilimg.save(tmp_bmp.name)
+            rargs = [str(binpo), "-s"]
+            if invert:
+                rargs.append("--invert")
+            rargs.extend([str(x) for x in poargs])
+            rargs.extend(["-o", "-", "--", tmp_bmp.name])
+            if False:
+                print(">>>", " ".join(rargs))
+            result = run(rargs, capture_output=True)
+            if False:
+                print(result)
+            t = Transform()
+            t = t.scale(0.1, 0.1)
+            svgp = SVGPath.fromstring(result.stdout, transform=t)
+            if False:
+                print(svgp)
+            dp = DATPen()
+            svgp.draw(dp)
+            return dp.f(0)
+        
+    return _potrace
