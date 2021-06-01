@@ -26,7 +26,8 @@ def nameplate(r, fontSize=500, wdth=0.25, rotate=0):
             .flatten(5)
             .nlt(warp_fn(mult=90))
             .ch(color_phototype(r, blur=8))
-            .blendmode(skia.BlendMode.kMultiply))])
+            .blendmode(BlendMode.Multiply)
+            )])
         .ch(color_phototype(r, blur=1, cutw=50)))
 
 @renderable()

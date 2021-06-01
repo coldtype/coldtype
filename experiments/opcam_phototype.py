@@ -24,5 +24,5 @@ def opcam8(f):
     
     return DPS([
         DP(r).f(1),
-        txt.ch(precompose(f.a.r).blendmode(skia.BlendMode.kDifference))
+        txt.ch(precompose(f.a.r).blendmode(BlendMode.Difference))
     ]).ch(precompose(f.a.r))

@@ -56,7 +56,7 @@ def displacement(f):
                 .s(1)
                 .sw(15)
                 .align(r, th=1)
-                .blendmode(skia.BlendMode.kXor))
+                .blendmode(BlendMode.Xor))
         
     #return spots
     if f.i == 0:

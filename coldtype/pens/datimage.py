@@ -1,6 +1,7 @@
 from pathlib import Path
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.geometry import Rect
+from coldtype.img.blendmode import BlendMode
 import math
 
 try:
@@ -84,7 +85,7 @@ class DATImage(DATPen):
                 .rect(self.bounds())
                 .difference(crop)
                 .f(0, 1)
-                .blendmode(skia.BlendMode.kClear)
+                .blendmode(BlendMode.Clear)
                 .translate(xo, yo))
             ]).ch(precompose(crop.bounds().zero()))
         

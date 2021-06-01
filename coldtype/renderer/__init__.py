@@ -1,4 +1,3 @@
-from coldtype.pens.datimage import DATImage
 import tempfile, traceback, threading, multiprocessing
 import argparse, importlib, inspect, json, math
 import sys, os, re, signal, tracemalloc, shutil
@@ -13,16 +12,14 @@ import time as ptime
 from pathlib import Path
 from typing import Tuple
 from pprint import pprint
-from random import random
 from runpy import run_path
-from subprocess import call, Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE, STDOUT
 from random import shuffle, Random
 from more_itertools import distribute
 from docutils.core import publish_doctree
-from functools import partial, partialmethod
+from functools import partial
 
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-from socketserver import TCPServer
 
 import coldtype
 from coldtype.helpers import *

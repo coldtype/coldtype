@@ -8,7 +8,7 @@ def clear(r):
             .f(hsl(0.3))),
         (DATPen()
             .rect(r.inset(50))
-            .blendmode(skia.BlendMode.kClear)
+            .blendmode(BlendMode.Clear)
             .f(hsl(0.8)))])
 
 @test()
@@ -19,7 +19,7 @@ def overlay(r):
             .f(hsl(0.3))),
         (DATPen()
             .rect(r.inset(50))
-            .blendmode(skia.BlendMode.kOverlay)
+            .blendmode(BlendMode.Overlay)
             .f(hsl(0.8)))])
 
 @test()
@@ -30,5 +30,5 @@ def modulate(r):
             .f(hsl(0.3))),
         (DATPen()
             .rect(r.inset(50))
-            .blendmode(skia.BlendMode.kModulate)
+            .blendmode(BlendMode.Modulate)
             .f(hsl(0.8)))])

@@ -1,7 +1,6 @@
 from pathlib import Path
 from subprocess import run
 from tempfile import NamedTemporaryFile
-from coldtype.pens.draftingpen import DraftingPen
 from coldtype.pens.datpen import DATPens
 from coldtype.pens.datimage import DATImage
 from functools import partial
@@ -46,22 +45,6 @@ class BlenderRenderConfig():
                         coda.append(f".{k}({','.join(vs)})")
                 coded = p.to_code("DraftingPen", coda)
                 codeds.append(coded)
-                # if "_preserve" in _p.data:
-                #     p = _p.cast(DraftingPen)
-                #     d = _p.data.get("_preserve")
-                #     pickle_path = d.get("pickle")
-                #     calls = d.get("calls")
-                #     call_str = ""
-                #     for k, v in calls.items():
-                #         cargs = ",".join([str(x) for x in v])
-                #         call_str += f".{k}({cargs})"
-                #     #print(">", pickle_path)
-                #     if not Path(pickle_path).exists():
-                #         raise FileNotFoundError
-                #     code += f"""pickle.load(open("{pickle_path}", "rb")).cast(BlenderPen).draw(tc){call_str}\n\n"""
-                #     #lines += f"""Path("{pickle_path.name}").unlink()\n\n"""
-                # else:
-                #     print("no preserve")
                 
             pens.pmap(write_pen)
             code += "\n".join(codeds)
