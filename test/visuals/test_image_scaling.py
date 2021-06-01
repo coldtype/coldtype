@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.fx.skia import phototype
+from coldtype.fx.skia import phototype, precompose
 
 tl = Timeline(30)
 
@@ -13,7 +13,7 @@ def test_scaling(f):
         .scale(px/1000)
         .align(pr)
         .f(0)
-        .precompose(pr, f.a.r))
+        .ch(precompose(pr, f.a.r)))
 
 @animation((1000, 1000), timeline=tl)
 def test_precomposed_scaling(f):
@@ -26,4 +26,4 @@ def test_precomposed_scaling(f):
         .understroke(sw=20)
         .align(f.a.r)
         .ch(phototype(f.a.r, blur=10, cut=230, cutw=3, fill=bw(0)))
-        .precompose(f.a.r, scale=px/1000))
+        .ch(precompose(f.a.r, scale=px/1000)))

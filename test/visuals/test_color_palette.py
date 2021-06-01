@@ -3,7 +3,7 @@ from random import randint
 from noise import pnoise1
 import numpy as np
 import PIL.Image
-from coldtype.fx.skia import Skfi, mod_pixels
+from coldtype.fx.skia import Skfi, mod_pixels, precompose
 
 def r10(x):
     return int(round(x / 150.0)) * 150
@@ -71,7 +71,7 @@ def restricted_colors(f):
             #Shader=skia.PerlinNoiseShader.MakeImprovedNoise(0.01, 0.01, 1, t.e*2),
             #Shader=improved(t.e, 500, 100)
         ))
-        .precompose(f.a.r)
+        .ch(precompose(f.a.r))
         .attr(skp=dict(
             ImageFilter=skia.BlurImageFilter.Make(5, 5),
             ColorFilter=Skfi.as_filter(contrast_cut(100+pnoise1(t.e)*30, 10), a=0, r=1, g=1, b=1),

@@ -1,4 +1,3 @@
-from coldtype.pens.datpen import DATPen
 import skia, tempfile
 from subprocess import run
 from functools import reduce
@@ -10,6 +9,7 @@ from fontTools.misc.transform import Transform
 
 from coldtype.color import normalize_color, bw
 from coldtype.pens.skiapen import SkiaPen
+from coldtype.pens.datpen import DATPen
 
 SKIA_CONTEXT = None
 
@@ -71,48 +71,6 @@ class Skfi():
 
 
 # CHAINABLES
-
-def phototype(rect,
-    blur=5,
-    cut=127,
-    cutw=3,
-    fill=1,
-    rgba=[0, 0, 0, 1],
-    luma=True
-    ):
-    def _phototype(pen):
-        r, g, b, a = rgba
-
-        first_pass = dict(ImageFilter=Skfi.blur(blur))
-        
-        if luma:
-            first_pass["ColorFilter"] = skia.LumaColorFilter.Make()
-
-        cut_filters = [
-            Skfi.as_filter(
-                Skfi.contrast_cut(cut, cutw),
-                a=a, r=r, g=g, b=b)]
-            
-        if fill is not None:
-            cut_filters.append(Skfi.fill(normalize_color(fill)))
-
-        return (pen
-            .precompose(rect, pen_class=SkiaPen, context=SKIA_CONTEXT)
-            .attr(skp=first_pass)
-            .precompose(rect, pen_class=SkiaPen, context=SKIA_CONTEXT)
-            .attr(skp=dict(
-                ColorFilter=Skfi.compose(*cut_filters))))
-    return _phototype
-
-
-def color_phototype(rect,
-    blur=5,
-    cut=127,
-    cutw=15,
-    rgba=[1, 1, 1, 1]
-    ):
-    return phototype(rect, blur, 255-cut, cutw, fill=None, rgba=rgba, luma=False)
-
 
 def spackle(xo=None, yo=None,
     xs=0.85, ys=0.85, base=None,
@@ -181,8 +139,24 @@ def potrace(rect, poargs=[], invert=True):
             dp = DATPen()
             svgp.draw(dp)
             return dp.f(0)
-        
     return _potrace
+
+
+def precompose(rect,
+    placement=None,
+    opacity=1,
+    scale=1
+    ):
+    def _precompose(pen):
+        img = SkiaPen.Precompose(pen, rect,             
+            context=SKIA_CONTEXT,
+            scale=scale,
+            disk=False)    
+        return (DATPen()
+            .rect(placement or rect)
+            .img(img, (placement or rect), False, opacity)
+            .f(None))
+    return _precompose
 
 
 def rasterized(rect, scale=1):
@@ -192,7 +166,7 @@ def rasterized(rect, scale=1):
     """
     def _rasterized(pen):
         return SkiaPen.Precompose(pen, rect, scale=scale, context=SKIA_CONTEXT, disk=False)
-    return _rasterized
+    return _rasterized, dict(returns=skia.Image)
 
 
 def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
@@ -214,3 +188,45 @@ def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
             .f(None))
     
     return _mod_pixels
+
+
+def phototype(rect,
+    blur=5,
+    cut=127,
+    cutw=3,
+    fill=1,
+    rgba=[0, 0, 0, 1],
+    luma=True
+    ):
+    def _phototype(pen):
+        r, g, b, a = rgba
+
+        first_pass = dict(ImageFilter=Skfi.blur(blur))
+        
+        if luma:
+            first_pass["ColorFilter"] = skia.LumaColorFilter.Make()
+
+        cut_filters = [
+            Skfi.as_filter(
+                Skfi.contrast_cut(cut, cutw),
+                a=a, r=r, g=g, b=b)]
+            
+        if fill is not None:
+            cut_filters.append(Skfi.fill(normalize_color(fill)))
+
+        return (pen
+            .ch(precompose(rect))
+            .attr(skp=first_pass)
+            .ch(precompose(rect))
+            .attr(skp=dict(
+                ColorFilter=Skfi.compose(*cut_filters))))
+    return _phototype
+
+
+def color_phototype(rect,
+    blur=5,
+    cut=127,
+    cutw=15,
+    rgba=[1, 1, 1, 1]
+    ):
+    return phototype(rect, blur, 255-cut, cutw, fill=None, rgba=rgba, luma=False)

@@ -1,7 +1,7 @@
 from coldtype.test import *
 from coldtype.pens.datimage import DATImage
 
-src = "test/renders/test_chetbaker3/stub/stub_0000.png"
+src = "test/visuals/renders/test_chetbaker3/stub/stub_0000.png"
 
 @renderable()
 def crop_image(r):
@@ -17,17 +17,14 @@ def translate_images(r):
         DP(r).f(hsl(0.3)),
         (DATImage(src)
             .resize(0.5)
-            #.precompose(r)
             .align(r)
             .rotate(25)
             .to_pen(r)
             .translate(-170, -100)),
         (DATImage(src)
             .resize(0.25)
-            #.precompose(r)
             .align(r)
             .rotate(-25)
-            #.precompose(r)
             .to_pen(r)
             .translate(0, 100))
     ]).translate(250, 0)

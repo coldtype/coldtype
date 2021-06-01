@@ -64,13 +64,15 @@ class DATImage(DATPen):
         return self
     
     def precompose(self, rect, as_image=True):
-        res = DATPens([self]).precompose(rect)
+        from coldtype.fx.skia import precompose
+        res = DATPens([self]).ch(precompose(rect))
         if as_image:
             return DATImage.FromPen(res, original_src=self.src)
         else:
             return res
     
     def crop(self, crop, mutate=True):
+        from coldtype.fx.skia import precompose
         if callable(crop):
             crop = crop(self)
         
@@ -84,7 +86,7 @@ class DATImage(DATPen):
                 .f(0, 1)
                 .blendmode(skia.BlendMode.kClear)
                 .translate(xo, yo))
-            ]).precompose(crop.bounds().zero())
+            ]).ch(precompose(crop.bounds().zero()))
         
         
         if mutate:

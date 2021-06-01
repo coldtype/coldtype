@@ -2,7 +2,7 @@ from random import randint
 from coldtype import *
 from fontTools.ttLib import TTFont
 from coldtype.pens.datimage import DATImage
-import skia
+from coldtype.fx.skia import skia, precompose
 
 lh = Font.Cacheable("~/Type/fonts/fonts/liebeheide-color.otf")
 ttfont = TTFont(lh.path)
@@ -45,7 +45,7 @@ def test_leibeheide(r):
         txt,
         DP(txt[0].ambit(th=1, tv=1)).f(0, 0.1),
         #DP(imgs[0].bounds()).f(hsl(0.3, a=0.3)),
-        imgs.precompose(r)
+        imgs.ch(precompose(r))
     ])
     
     #return txt[0].align(r).skeleton()

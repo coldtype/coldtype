@@ -475,8 +475,6 @@ class Renderer():
 
     def reload(self, trigger):
         if skia and SkiaPen:
-            DATPen._pen_class = SkiaPen
-            DATPen._context = self.context
             skfx.SKIA_CONTEXT = self.context
 
         if not self.filepath:
@@ -928,7 +926,7 @@ class Renderer():
             if not skia:
                 raise Exception("pip install skia-python")
             if render.fmt == "png":
-                content = content.precompose(render.rect)
+                content = content.ch(skfx.precompose(render.rect))
                 render.last_result = content
                 if render.bg_render:
                     content = DATPens([
@@ -2176,7 +2174,7 @@ class Renderer():
                 error_color = coldtype.rgb(0, 0, 0).skia()
         else:
             if render.composites:
-                comp = result.precompose(render.rect)
+                comp = result.ch(skfx.precompose(render.rect))
                 if not self.last_render_cleared:
                     render.last_result = comp
                 else:

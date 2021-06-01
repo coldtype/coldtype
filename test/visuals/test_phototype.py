@@ -15,7 +15,6 @@ def phototype_shift(r, rs):
             .flatten(5)
             .roughen(200)
             .ch(phototype(r, blur=15, cutw=nxl(10)*15, fill=bw(0)))
-            #.precompose(r)
             .translate(500, 0)),
         (StyledString("FILM", Style(mutator, 300, wght=1))
             .pen()

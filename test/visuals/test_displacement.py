@@ -1,5 +1,5 @@
 from coldtype.test import *
-from coldtype.fx.skia import Skfi, color_phototype
+from coldtype.fx.skia import Skfi, color_phototype, precompose
 from coldtype.warping import warp_fn
 
 fonts = [Font.Cacheable(f"~/Type/fonts/fonts/{f}") for f in [
@@ -25,7 +25,7 @@ def displacement(f):
     spots = (DATPen()
         .f(1)
         #.oval(r.inset(300))
-        .precompose(r)
+        .ch(precompose(r))
         .attr(skp=dict(
             #PathEffect=skia.DiscretePathEffect.Make(5.0, 15.0, 0),
             Shader=improved(1, xo=300, yo=200, xs=0.35, ys=0.5, base=bases[f.i]/2).makeWithColorFilter(Skfi.compose(

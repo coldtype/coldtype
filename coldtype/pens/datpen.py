@@ -449,10 +449,6 @@ class DATPen(DraftingPen):
         self.data["_preserve"] = dict(calls=calls, pickle=str(tmp.absolute()))
         pickle.dump(self, open(str(tmp), "wb"))
         return self
-    
-    _context = None
-    _pen_class = None
-    _precompose_save = None
 
     def add_data(self, key, value=None):
         if value is None:
@@ -516,24 +512,6 @@ class DATPen(DraftingPen):
         nx = pnoise1(doneness*speed[0], base=base, octaves=octaves)
         ny = pnoise1(doneness*speed[1], base=base+10, octaves=octaves)
         return self.translate(nx * scale[0], ny * scale[1])
-    
-    def _get_renderer_state(self, pen_class, context):
-        if not pen_class:
-            pen_class = DATPen._pen_class
-        if not pen_class:
-            raise Exception("No _pen_class")
-
-        if not context:
-            context = DATPen._context
-        elif context == -1:
-            context = None
-        
-        return pen_class, context
-    
-    def precompose(self, rect, placement=None, opacity=1, scale=1, pen_class=None, context=None):
-        pc, ctx = self._get_renderer_state(pen_class, context)
-        img = pc.Precompose(self, rect, context=ctx, scale=scale, disk=DATPen._precompose_save)
-        return self.single_pen_class().rect(placement or rect).img(img, (placement or rect), False, opacity).f(None)
     
     def DiskCached(path:Path, build_fn: Callable[[], "DATPen"]):
         dpio = None
