@@ -354,11 +354,15 @@ class Renderer():
         self.viewer_solos = []
     
     def reset_filepath(self, filepath):
+        for k, cv2cap in self.state.cv2caps.items():
+            cv2cap.release()
+
         self.line_number = -1
         self.stop_watching_file_changes()
         self.state.input_history.clear()
         self.state._frame_offsets = {}
         self.state._initial_frame_offsets = {}
+        self.state.cv2caps = {}
 
         if filepath:
             self.filepath = Path(filepath).expanduser().resolve()
@@ -614,6 +618,15 @@ class Renderer():
                 if i in self.viewer_solos:
                     solos.append(r)
             _rs = solos
+        
+        for _r in _rs:
+            caps = _r.cv2caps
+            if caps is not None:
+                import cv2
+                for cap in caps:
+                    if cap not in self.state.cv2caps:
+                        print("CAP", cap)
+                        self.state.cv2caps[cap] = cv2.VideoCapture(cap)
             
         if self.function_filters:
             function_patterns = self.function_filters
