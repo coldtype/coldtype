@@ -17,7 +17,7 @@ from coldtype.color import normalize_color
 from coldtype.text.reader import normalize_font_prefix, Font
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
-from coldtype.pens.datimage import DATImage
+from coldtype.img.datimage import DATImage
 
 try:
     import drawBot as db

@@ -2,7 +2,7 @@ from pathlib import Path
 from subprocess import run
 from tempfile import NamedTemporaryFile
 from coldtype.pens.datpen import DATPens
-from coldtype.pens.datimage import DATImage
+from coldtype.img.skiaimage import SkiaImage
 from functools import partial
 
 class BlenderRenderConfig():
@@ -43,7 +43,7 @@ class BlenderRenderConfig():
                     for k, v in p.data.get("blenderpen").items():
                         vs = [str(v) for v in v]
                         coda.append(f".{k}({','.join(vs)})")
-                coded = p.to_code("DraftingPen", coda)
+                coded = p.to_code("DATPen", coda)
                 codeds.append(coded)
                 
             pens.pmap(write_pen)
@@ -71,7 +71,7 @@ class BlenderRenderConfig():
             #print(output)
             file = out_dir / "frame_{:04d}.png".format(index)
             print(file)
-            return DATImage(file)
+            return SkiaImage(file)
             return pens[0]
         
         return blend

@@ -1,5 +1,5 @@
 from coldtype.test import *
-from coldtype.pens.datimage import DATImage
+from coldtype.img.skiaimage import SkiaImage
 from coldtype.capture import capture_frame
 from coldtype.fx.skia import phototype, precompose
 
@@ -16,7 +16,7 @@ def opcam8(f):
 
     txt = DPS([
         DP(f.a.r).f(0),
-        (DATImage(img)
+        (SkiaImage(img)
             .align(f.a.r)
             .ch(precompose(f.a.r, as_image=False))
             .ch(phototype(f.a.r, blur=2, cutw=50, cut=60))

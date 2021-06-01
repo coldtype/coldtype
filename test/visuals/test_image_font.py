@@ -1,7 +1,7 @@
 from random import randint
 from coldtype import *
 from fontTools.ttLib import TTFont
-from coldtype.pens.datimage import DATImage
+from coldtype.img.skiaimage import SkiaImage
 from coldtype.fx.skia import skia, precompose
 
 lh = Font.Cacheable("~/Type/fonts/fonts/liebeheide-color.otf")
@@ -17,7 +17,7 @@ for bitmap in strike.glyphs.values():
     if bitmap.graphicType == "png ":
         glyphs[bitmap.glyphName] = bitmap
 
-@renderable(bg=0.5)
+@renderable(bg=0.85)
 def test_leibeheide(r):
     txt = (StyledString("Okey",
         Style(lh, int(512)))
@@ -35,7 +35,7 @@ def test_leibeheide(r):
             raise Exception("non-zero origin")
         print(g.glyphName)
         img = skia.Image.MakeFromEncoded(g.imageData)
-        di = DATImage(img)
+        di = SkiaImage(img)
         imgs.append(di.translate(pen.ambit(th=1).x, 500))
     
     #print(txt[1].ambit(th=1, tv=1).w, imgs[1].bounds().w)

@@ -3,13 +3,12 @@ import skia, struct, tempfile
 from pathlib import Path
 
 from fontTools.pens.transformPen import TransformPen
-from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
 
-from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.pens.datpen import DATPen
 from coldtype.pens.dattext import DATText
-from coldtype.pens.datimage import DATImage
-from coldtype.geometry import Rect, Edge, Point
+from coldtype.img.datimage import DATImage
+from coldtype.geometry import Rect, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 from coldtype.color import Color
 from coldtype.text.reader import Style
