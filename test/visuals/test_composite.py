@@ -1,4 +1,5 @@
 from coldtype.test import *
+from coldtype.fx.skia import fill
 
 @animation((1000, 500), timeline=Timeline(120), bg=0, solo=0, composites=1)
 def simple(f):
@@ -17,7 +18,8 @@ def simple(f):
 @animation((1200, 800), timeline=90, bg=1, composites=1, solo=1)
 def interpolation(f):
     return (DATPens([
-        f.last_render(lambda p: p.translate(2, -2).sk_fill(1)),
+        f.last_render(lambda p:
+            p.translate(2, -2).ch(fill(1))),
         (StSt("C", co, 500-f.e("qeio", 1)*300, wdth=1, ro=1, tu=0)
             .align(f.a.r, x="mnx")
             .translate(30+790*f.e("ceio", 1), 100)

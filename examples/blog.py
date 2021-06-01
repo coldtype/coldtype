@@ -1,5 +1,6 @@
 from coldtype import *
 from coldtype.warping import warp_fn
+from coldtype.fx.skia import color_phototype
 
 """If you add this code to a file in the coldtype repo, you can run it as `coldtype name-of-file.py`"""
 
@@ -16,7 +17,7 @@ def nameplate(r, fontSize=500, wdth=0.25, rotate=0):
             .f(1)
             .understroke(sw=35)
             .align(r)
-            .color_phototype(r, cutw=10)),
+            .ch(color_phototype(r, cutw=10))),
         (DATPen()
             .glyph(logos["goodhertz_logo_2019"])
             .scale(0.5)
@@ -24,9 +25,9 @@ def nameplate(r, fontSize=500, wdth=0.25, rotate=0):
             .f(hsl(0.61, s=0.7, l=0.6))
             .flatten(5)
             .nlt(warp_fn(mult=90))
-            .color_phototype(r, blur=8)
+            .ch(color_phototype(r, blur=8))
             .blendmode(skia.BlendMode.kMultiply))])
-        .color_phototype(r, blur=1, cutw=50))
+        .ch(color_phototype(r, blur=1, cutw=50)))
 
 @renderable()
 def square(r):

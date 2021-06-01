@@ -46,6 +46,7 @@ except ImportError:
 try:
     import skia
     from coldtype.pens.skiapen import SkiaPen
+    import coldtype.fx.skia as skfx
 except ImportError:
     skia = None
     SkiaPen = None
@@ -476,6 +477,7 @@ class Renderer():
         if skia and SkiaPen:
             DATPen._pen_class = SkiaPen
             DATPen._context = self.context
+            skfx.SKIA_CONTEXT = self.context
 
         if not self.filepath:
             self.program = dict(no_filepath=True)

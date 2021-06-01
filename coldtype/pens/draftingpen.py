@@ -1036,6 +1036,8 @@ class DraftingPen(RecordingPen, SHContext):
                 return res
         return self
     
+    ch = chain
+    
     def replace(self, fn:Callable[["DraftingPen"], None], *args):
         """
         For simple take-one callback functions in a chain, to return what the function returns (not the element itself)

@@ -1,5 +1,6 @@
 from coldtype import *
 from coldtype.time.midi import MidiReader
+from coldtype.fx.skia import color_phototype
 
 """
 Run as `coldtype examples/animation/vulfbach.py`
@@ -45,7 +46,8 @@ def build_line():
 
 line = build_line()
 
-@animation(duration=organ.duration, rect=r, storyboard=[0], audio=Path("examples/animations/media/organ.wav"))
+#audio=Path("examples/animations/media/organ.wav")
+@animation(duration=organ.duration, rect=r, storyboard=[0])
 def render(f):
     time_offset = -f.i * note_width + r.w - note_width * 3
     time_offset += 10 # fudge
@@ -62,6 +64,6 @@ def render(f):
     return DATPens([
         DATPen().rect(f.a.r).f(0),
         (looped_line.pen()
-            .color_phototype(f.a.r, blur=20, cut=215, cutw=40)),
+            .ch(color_phototype(f.a.r, blur=20, cut=215, cutw=40))),
         (looped_line.pen()
-            .color_phototype(f.a.r, blur=3, cut=200, cutw=25))])
+            .ch(color_phototype(f.a.r, blur=3, cut=200, cutw=25)))])

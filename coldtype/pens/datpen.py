@@ -594,34 +594,8 @@ class DATPen(DraftingPen):
             return dp.f(0)
     
     def phototype(self, rect, blur=5, cut=127, cutw=3, fill=1, pen_class=None, context=None, rgba=[0, 0, 0, 1], luma=True):
-        r, g, b, a = rgba
-        pc, ctx = self._get_renderer_state(pen_class, context)
-
-        import skia
-        import coldtype.filtering as fl
-
-        first_pass = dict(ImageFilter=fl.blur(blur))
-        
-        if luma:
-            first_pass["ColorFilter"] = skia.LumaColorFilter.Make()
-
-        cut_filters = [
-            fl.as_filter(
-                fl.contrast_cut(cut, cutw),
-                a=a, r=r, g=g, b=b)]
-            
-        if fill is not None:
-            cut_filters.append(fl.fill(normalize_color(fill)))
-
-        return (self
-            .precompose(rect, pen_class=pc, context=ctx)
-            .attr(skp=first_pass)
-            .precompose(rect, pen_class=pc, context=ctx)
-            .attr(skp=dict(
-                ColorFilter=fl.compose(*cut_filters))))
-    
-    def color_phototype(self, rect, blur=5, cut=127, cutw=15, pen_class=None, context=None, rgba=[1, 1, 1, 1]):
-        return self.phototype(rect, blur, 255-cut, cutw, fill=None, pen_class=pen_class, context=context, rgba=rgba, luma=False)
+        print("DEPRECATED")
+        return self
     
     def DiskCached(path:Path, build_fn: Callable[[], "DATPen"]):
         dpio = None
@@ -649,11 +623,6 @@ class DATPen(DraftingPen):
     
     def Unpickle(self, src):
         return pickle.load(open(str(src), "rb"))
-    
-    def sk_fill(self, c):
-        import coldtype.filtering as fl
-        c = normalize_color(c)
-        return self.attr(skp=dict(ColorFilter=fl.fill(c)))
 
 
 class DATPens(DraftingPens, DATPen):

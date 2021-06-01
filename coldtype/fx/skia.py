@@ -1,0 +1,140 @@
+from os import stat
+import skia
+from functools import reduce
+from random import Random, randint
+from coldtype.color import normalize_color, bw
+from coldtype.pens.skiapen import SkiaPen
+
+SKIA_CONTEXT = None
+
+class Skfi():
+    @staticmethod
+    def contrast_cut(mp=127, w=5):
+        ct = bytearray(256)
+        for i in range(256):
+            if i < mp - w:
+                ct[i] = 0
+            elif i < mp:
+                ct[i] = int((255.0/2)*(1-(mp-i)/w))
+            elif i == mp:
+                ct[i] = 127
+            elif i < mp + w:
+                ct[i] = int(127+(255.0/2)*((i-mp)/w))
+            else:
+                ct[i] = 255
+        return ct
+
+    @staticmethod
+    def as_filter(lut, a=1, r=0, g=0, b=0):
+        args = [lut if x else None for x in [a, r, g, b]]
+        return skia.TableColorFilter.MakeARGB(*args)
+
+    @staticmethod
+    def compose(*filters):
+        # TODO check if ColorFilter or something else?
+        return reduce(lambda acc, el: skia.ColorFilters.Compose(el, acc) if acc else el, reversed(filters), None)
+
+    @staticmethod
+    def fill(color):
+        r, g, b, a = color
+        return skia.ColorFilters.Matrix([
+            0, 0, 0, 0, r,
+            0, 0, 0, 0, g,
+            0, 0, 0, 0, b,
+            0, 0, 0, a, 0,
+        ])
+
+    @staticmethod
+    def blur(blur):
+        try:
+            xblur, yblur = blur
+        except:
+            xblur, yblur = blur, blur
+
+        return skia.BlurImageFilter.Make(xblur, yblur)
+
+    @staticmethod
+    def improved_noise(e, xo=0, yo=0, xs=1, ys=1, base=1):
+        noise = skia.PerlinNoiseShader.MakeImprovedNoise(0.015, 0.015, 3, base)
+        matrix = skia.Matrix()
+        matrix.setTranslate(e*xo, e*yo)
+        #matrix.setRotate(45, 0, 0)
+        matrix.setScaleX(xs)
+        matrix.setScaleY(ys)
+        return noise.makeWithLocalMatrix(matrix)
+
+# CHAINABLES
+
+def phototype(rect,
+    blur=5,
+    cut=127,
+    cutw=3,
+    fill=1,
+    rgba=[0, 0, 0, 1],
+    luma=True
+    ):
+    def _phototype(pen):
+        r, g, b, a = rgba
+
+        first_pass = dict(ImageFilter=Skfi.blur(blur))
+        
+        if luma:
+            first_pass["ColorFilter"] = skia.LumaColorFilter.Make()
+
+        cut_filters = [
+            Skfi.as_filter(
+                Skfi.contrast_cut(cut, cutw),
+                a=a, r=r, g=g, b=b)]
+            
+        if fill is not None:
+            cut_filters.append(Skfi.fill(normalize_color(fill)))
+
+        return (pen
+            .precompose(rect, pen_class=SkiaPen, context=SKIA_CONTEXT)
+            .attr(skp=first_pass)
+            .precompose(rect, pen_class=SkiaPen, context=SKIA_CONTEXT)
+            .attr(skp=dict(
+                ColorFilter=Skfi.compose(*cut_filters))))
+    return _phototype
+
+
+def color_phototype(rect,
+    blur=5,
+    cut=127,
+    cutw=15,
+    rgba=[1, 1, 1, 1]
+    ):
+    return phototype(rect, blur, 255-cut, cutw, fill=None, rgba=rgba, luma=False)
+
+
+def spackle(xo=None, yo=None,
+    xs=0.85, ys=0.85, base=None,
+    cut=240, cutw=5
+    ):
+    r1 = Random()
+    r1.seed(0)
+
+    if not xo:
+        xo = r1.randint(-500, 500)
+    if not yo:
+        yo = r1.randint(-500, 500)
+    if base is None:
+        base = randint(0, 5000)
+    
+    def _spackle(pen):
+        return (pen.f(1)
+            .attr(skp=dict(
+                Shader=(Skfi.improved_noise(1,
+                    xo=xo, yo=yo, xs=xs, ys=ys, base=base)
+                    .makeWithColorFilter(Skfi.compose(
+                        Skfi.fill(bw(1)),
+                        Skfi.as_filter(Skfi.contrast_cut(cut, cutw)),
+                        skia.LumaColorFilter.Make()))))))
+    return _spackle
+
+def fill(c):
+    c = normalize_color(c)
+    def _fill(pen):
+        return pen.attr(skp=dict(
+            ColorFilter=Skfi.fill(c)))
+    return _fill

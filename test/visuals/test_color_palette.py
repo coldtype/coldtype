@@ -1,5 +1,4 @@
 from coldtype.test import *
-import coldtype.filtering as fl
 from random import randint
 from noise import pnoise1
 import numpy as np

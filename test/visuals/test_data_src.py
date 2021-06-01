@@ -17,5 +17,4 @@ def stub(r):
             Style(recmono, 100))
             .pen()
             .f(hsl(0.17, 1, 0.8))
-            .align(r, th=0))])
-        .color_phototype(r, blur=7, cut=170, cutw=3))
+            .align(r, th=0))]))

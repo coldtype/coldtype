@@ -1,5 +1,5 @@
 from coldtype.test import *
-import coldtype.filtering as fl
+from coldtype.fx.skia import Skfi, color_phototype
 from coldtype.warping import warp_fn
 
 fonts = [Font.Cacheable(f"~/Type/fonts/fonts/{f}") for f in [
@@ -28,9 +28,9 @@ def displacement(f):
         .precompose(r)
         .attr(skp=dict(
             #PathEffect=skia.DiscretePathEffect.Make(5.0, 15.0, 0),
-            Shader=improved(1, xo=300, yo=200, xs=0.35, ys=0.5, base=bases[f.i]/2).makeWithColorFilter(fl.compose(
-                fl.fill(bw(0)),
-                fl.as_filter(fl.contrast_cut(230, 1)), # heighten contrast
+            Shader=improved(1, xo=300, yo=200, xs=0.35, ys=0.5, base=bases[f.i]/2).makeWithColorFilter(Skfi.compose(
+                Skfi.fill(bw(0)),
+                Skfi.as_filter(Skfi.contrast_cut(230, 1)), # heighten contrast
                 skia.LumaColorFilter.Make(), # knock out
             )),
         )))
@@ -61,7 +61,7 @@ def displacement(f):
     #return spots
     if f.i == 0:
         spots.insert(2, DATPen().rect(f.a.r).f(0 if f.i != 90 else hsl(0.7, l=0.3)))
-    return spots.color_phototype(r.inset(0), cut=110, blur=1.5, cutw=50, rgba=[1, 1, 1, 1])
+    return spots.ch(color_phototype(r.inset(0), cut=110 , blur=1.5, cutw=50, rgba=[1, 1, 1, 1]))
     
     spots_img = spots.attrs["default"]["image"]["src"]
     spots_img_filter = skia.ImageFilters.Image(spots_img)
