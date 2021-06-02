@@ -17,7 +17,7 @@ from coldtype.color import normalize_color
 from coldtype.text.reader import normalize_font_prefix, Font
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
-from coldtype.pens.datimage import DATImage
+from coldtype.img.datimage import DATImage
 
 try:
     import drawBot as db
@@ -98,6 +98,7 @@ class renderable():
         direct_draw=False,
         clip=False,
         composites=False,
+        cv2caps=None,
         bg_render=False,
         style="default",
         viewBox=True,
@@ -116,6 +117,7 @@ class renderable():
         self.last_result = None
         self.style = style
         self.composites = composites
+        self.cv2caps = cv2caps
 
         self.watch = []
         for w in watch:

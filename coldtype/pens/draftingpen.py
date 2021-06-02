@@ -2,7 +2,7 @@ import enum
 import math, re
 
 from time import sleep
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple, Type
 from collections import OrderedDict
 from copy import deepcopy
 
@@ -1026,15 +1026,27 @@ class DraftingPen(RecordingPen, SHContext):
         sleep(time)
         return self
 
-    def chain(self, fn:Callable[["DraftingPen"], None], *args):
+    def chain(self,
+        fn:Callable[["DraftingPen"], None],
+        *args
+        ):
         """
         For simple take-one callback functions in a chain
         """
         if fn:
+            try:
+                fn, metadata = fn
+            except TypeError:
+                metadata = {}
+            
             res = fn(self, *args)
-            if isinstance(res, DraftingPen):
+            if "returns" in metadata:
+                return res
+            elif isinstance(res, DraftingPen):
                 return res
         return self
+    
+    ch = chain
     
     def replace(self, fn:Callable[["DraftingPen"], None], *args):
         """

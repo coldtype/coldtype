@@ -21,6 +21,8 @@ setuptools.setup(
     packages=[
         "coldtype",
         "coldtype.sh",
+        "coldtype.fx",
+        "coldtype.img",
         "coldtype.time",
         "coldtype.midi",
         "coldtype.pens",

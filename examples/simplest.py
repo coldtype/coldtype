@@ -1,9 +1,7 @@
 from coldtype import *
 
-@renderable(rect=(1200, 300))
+@renderable(rect=(1200, 300), bg=0)
 def render(r):
-    return (StyledString("COLDTYPE",
-        Style("assets/MutatorSans.ttf", 300))
-        .pen()
+    return (StSt("COLDTYPE", "assets/MutatorSans.ttf", 300)
         .align(r, tv=1)
-        .f(hsl(0.85)))
+        .f(1))

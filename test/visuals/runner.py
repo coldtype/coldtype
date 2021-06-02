@@ -7,8 +7,8 @@ import glfw
 
 all_tests = []
 
-sources = list(Path("test").glob("test_*.py"))
-sources.extend(list(Path("test").glob("test_*.md")))
+sources = list(Path("test/visuals").glob("test_*.py"))
+sources.extend(list(Path("test/visuals").glob("test_*.md")))
 
 for p in sources:
     if not p.name.startswith("_"):

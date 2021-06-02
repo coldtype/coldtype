@@ -1,6 +1,7 @@
 from coldtype import *
 from fontTools.pens.recordingPen import RecordingPen
 from coldtype.midi.controllers import LaunchControlXL
+from coldtype.fx.skia import phototype
 import json
 
 datafile = Path("~/robofont-coldtype.json").expanduser()
@@ -36,11 +37,11 @@ def stub(f, rs):
         .f(1)
         .scale(0.5, point=r.point("SW"))
         .translate(50, 100)
-        .phototype(r,
+        .ch(phototype(r,
             blur=1+nxl(10)*30,
             cut=int(nxl(20)*250),
             cutw=int(nxl(30)*30),
-            fill=bw(0)))
+            fill=bw(0))))
 
 if __name__ == "__main__":
     cg = CurrentGlyph()

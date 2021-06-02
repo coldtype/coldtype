@@ -1,12 +1,7 @@
 from pathlib import Path
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.geometry import Rect
-import math
-
-try:
-    import skia
-except ImportError:
-    skia = None
+from coldtype.img.blendmode import BlendMode
 
 
 class DATImage(DATPen):
@@ -18,7 +13,7 @@ class DATImage(DATPen):
             if img:
                 self._img = img
             else:
-                self._img = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(self.src)))
+                self._img = self.load_image(self.src)
         else:
             self.src = None
             self._img = src
@@ -27,8 +22,11 @@ class DATImage(DATPen):
         super().__init__()
         self.addFrame(self.rect())
     
+    def load_image(self, src):
+        raise NotImplementedError()
+    
     def rect(self):
-        return Rect(self._img.width(), self._img.height())
+        return Rect(self.width(), self.height())
     
     def bounds(self):
         return self._frame
@@ -37,14 +35,17 @@ class DATImage(DATPen):
         return None
     
     def width(self):
-        return self._img.width()
+        raise NotImplementedError()
     
     def height(self):
-        return self._img.height()
+        raise NotImplementedError()
     
     def align(self, rect, x="mdx", y="mdy"):
         self.addFrame(self.rect().align(rect, x, y))
         return self
+    
+    def _resize(self, fx, fy):
+        raise NotImplementedError()
     
     def resize(self, factor, factor_y=None):
         fx, fy = factor, factor
@@ -53,20 +54,23 @@ class DATImage(DATPen):
         
         if fx == 1 and fy == 1:
             return self
-        self._img = self._img.resize(
-            int(self._img.width()*fx),
-            int(self._img.height()*fy))
-        self.addFrame(self.rect().align(self._frame, "mnx", "mny"))
+
+        self._resize(fx, fy)
+        self.addFrame(
+            self.rect().align(self._frame, "mnx", "mny"))
         return self
     
     def rotate(self, degrees, point=None):
         self.transforms.append(["rotate", degrees, point or self._frame.pc])
         return self
     
+    def _precompose_fn(self):
+        raise NotImplementedError()
+    
     def precompose(self, rect, as_image=True):
-        res = DATPens([self]).precompose(rect)
+        res = DATPens([self]).ch(self._precompose_fn()(rect))
         if as_image:
-            return DATImage.FromPen(res, original_src=self.src)
+            return type(self).FromPen(res, original_src=self.src)
         else:
             return res
     
@@ -82,10 +86,10 @@ class DATImage(DATPen):
                 .rect(self.bounds())
                 .difference(crop)
                 .f(0, 1)
-                .blendmode(skia.BlendMode.kClear)
+                .blendmode(BlendMode.Clear)
                 .translate(xo, yo))
-            ]).precompose(crop.bounds().zero())
-        
+            ]).ch(self._precompose_fn()(
+                crop.bounds().zero()))
         
         if mutate:
             self._img = cropped.img().get("src")

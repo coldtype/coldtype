@@ -1,4 +1,5 @@
 import math
+from re import L
 from typing import Callable, Optional
 
 from fontTools.misc.transform import Transform
@@ -111,11 +112,21 @@ class DraftingPens(DraftingPen):
         in either dimension"""
         if self._frame and (th == False and tv == False):
             return self._frame
+        elif self._frame and (th or tv) and not (th and tv):
+            f = self._frame
+            b = self.bounds()
+            if th and tv:
+                return b
+            elif th:
+                return Rect(b.x, f.y, b.w, f.h)
+            else:
+                return Rect(f.x, b.y, f.w, b.h)
         else:
             try:
                 union = self._pens[0].ambit(th=th, tv=tv)
                 for p in self._pens[1:]:
-                    union = union.union(p.ambit(th=th, tv=tv))
+                    if hasattr(p, "_pens") or len(p.value) > 0:
+                        union = union.union(p.ambit(th=th, tv=tv))
                 return union
             except Exception as e:
                 return Rect(0,0,0,0)

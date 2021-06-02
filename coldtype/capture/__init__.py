@@ -1,22 +1,14 @@
 try:
     import cv2
 except ImportError:
-    print("You need to install opencv-python")
+    raise Exception("pip install opencv-python")
 
-import tempfile
-from pathlib import Path
+import numpy as np
+from coldtype.img.skiaimage import skia, SkiaImage
 
-
-def capture_frame(device_id=0, to=None):
-    cam = cv2.VideoCapture(device_id)
+def read_frame(cam):
     _, frame = cam.read()
-    tf = None
-    if to:
-        tf = to
-    else:
-        with tempfile.NamedTemporaryFile(suffix=".jpg") as tf:
-            pass
-    
-    cv2.imwrite(tf.name, frame)
-    cam.release()
-    return Path(tf.name)
+    r_channel, g_channel, b_channel = cv2.split(frame)
+    alpha_channel = np.ones(b_channel.shape, dtype=b_channel.dtype) * 255
+    img_BGRA = cv2.merge((b_channel, g_channel, r_channel, alpha_channel))
+    return SkiaImage(skia.Image.fromarray(img_BGRA))

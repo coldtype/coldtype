@@ -1,5 +1,5 @@
 from coldtype.test import *
-import coldtype.filtering as fl
+from coldtype.fx.skia import Skfi, color_phototype, precompose
 from coldtype.warping import warp_fn
 
 fonts = [Font.Cacheable(f"~/Type/fonts/fonts/{f}") for f in [
@@ -25,12 +25,12 @@ def displacement(f):
     spots = (DATPen()
         .f(1)
         #.oval(r.inset(300))
-        .precompose(r)
+        .ch(precompose(r))
         .attr(skp=dict(
             #PathEffect=skia.DiscretePathEffect.Make(5.0, 15.0, 0),
-            Shader=improved(1, xo=300, yo=200, xs=0.35, ys=0.5, base=bases[f.i]/2).makeWithColorFilter(fl.compose(
-                fl.fill(bw(0)),
-                fl.as_filter(fl.contrast_cut(230, 1)), # heighten contrast
+            Shader=improved(1, xo=300, yo=200, xs=0.35, ys=0.5, base=bases[f.i]/2).makeWithColorFilter(Skfi.compose(
+                Skfi.fill(bw(0)),
+                Skfi.as_filter(Skfi.contrast_cut(230, 1)), # heighten contrast
                 skia.LumaColorFilter.Make(), # knock out
             )),
         )))
@@ -56,31 +56,12 @@ def displacement(f):
                 .s(1)
                 .sw(15)
                 .align(r, th=1)
-                .blendmode(skia.BlendMode.kXor))
+                .blendmode(BlendMode.Xor))
         
     #return spots
     if f.i == 0:
         spots.insert(2, DATPen().rect(f.a.r).f(0 if f.i != 90 else hsl(0.7, l=0.3)))
-    return spots.color_phototype(r.inset(0), cut=110, blur=1.5, cutw=50, rgba=[1, 1, 1, 1])
-    
-    spots_img = spots.attrs["default"]["image"]["src"]
-    spots_img_filter = skia.ImageFilters.Image(spots_img)
-
-    grade = DATPen().rect(r).f(Gradient.Vertical(r, hsl(0), hsl(0.5)))
-    color_img_filter = skia.ImageFilters.Image(grade.rasterized(r))
-
-    oval = DATPen().oval(r.inset(300)).f(hsl(0.5)).precompose(r)
-    oval_img = oval.attrs["default"]["image"]["src"]
-    (oval
-        #.precompose(r)
-        .attr(skp=dict(
-            ImageFilter=skia.ImageFilters.DisplacementMap(
-                skia.ColorChannel.kA,
-                skia.ColorChannel.kG,
-                50.0,
-                skia.ImageFilters.Image(spots_img),
-                skia.ImageFilters.Image(oval_img),
-                skia.IRect(r.x, r.y, r.w, r.h)))))
+    return spots.ch(color_phototype(r.inset(0), cut=110 , blur=1.5, cutw=50, rgba=[1, 1, 1, 1]))
     
     return oval
 

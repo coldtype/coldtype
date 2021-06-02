@@ -189,6 +189,7 @@ class RendererState():
         self.watch_soft_mods = {}
         self.watch_mods = {}
         self.external_url = None
+        self.cv2caps = {}
         self.reset()
     
     def reset(self, ignore_current_state=False):

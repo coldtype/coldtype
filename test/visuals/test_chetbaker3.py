@@ -1,6 +1,7 @@
 from coldtype import *
 from coldtype.warping import warp_fn
 from coldtype.text.richtext import RichText
+from coldtype.fx.skia import phototype
 
 r = Rect(1080, 1080)
 
@@ -100,4 +101,4 @@ def stub(f, rs):
             .f(1)
             .scale(0.65)
             #.rotate(5)
-            .phototype(f.a.r, blur=2, cut=150, cutw=25, fill=bw(1)))])
+            .ch(phototype(f.a.r, blur=2, cut=150, cutw=25, fill=bw(1))))])

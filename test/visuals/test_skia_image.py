@@ -1,7 +1,8 @@
 from coldtype import *
+from coldtype.fx.skia import precompose
 
 co = Font("assets/ColdtypeObviously.designspace")
-img = Path("test/renders/test_skia_image_is_image.png")
+img = Path("test/visuals/renders/test_skia_image_is_image.png")
 
 @renderable(rect=(1000, 1000))
 def uses_image(r):
@@ -51,8 +52,8 @@ def uses_shadow(r):
 @renderable(rect=(500, 500), solo=0)
 def placed_precompose(r):
     dp = DATPen().oval(r.inset(140)).f(hsl(0.5))
-    dpr = dp.precompose(
+    dpr = dp.ch(precompose(
         r.inset(150)#.zero(),
         #r.inset(150)
-        )
+        ))
     return dpr

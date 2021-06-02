@@ -1,6 +1,6 @@
 from coldtype.test import *
 from coldtype.midi.controllers import LaunchControlXL
-
+from coldtype.fx.skia import color_phototype
 
 @renderable(bg=1, rstate=1)
 def draw1(r, rs):
@@ -54,5 +54,5 @@ def draw1(r, rs):
         spines,
         (DATPens([strokes])
             .s(hsl(0.7) if editing else 0)
-            .color_phototype(r, blur=5, cut=190)
+            .ch(color_phototype(r, blur=5, cut=190))
             .img_opacity(0.5 if editing else 1))]))

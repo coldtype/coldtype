@@ -1,4 +1,3 @@
-from coldtype.pens.datimage import DATImage
 import tempfile, traceback, threading, multiprocessing
 import argparse, importlib, inspect, json, math
 import sys, os, re, signal, tracemalloc, shutil
@@ -13,16 +12,14 @@ import time as ptime
 from pathlib import Path
 from typing import Tuple
 from pprint import pprint
-from random import random
 from runpy import run_path
-from subprocess import call, Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE, STDOUT
 from random import shuffle, Random
 from more_itertools import distribute
 from docutils.core import publish_doctree
-from functools import partial, partialmethod
+from functools import partial
 
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-from socketserver import TCPServer
 
 import coldtype
 from coldtype.helpers import *
@@ -46,6 +43,7 @@ except ImportError:
 try:
     import skia
     from coldtype.pens.skiapen import SkiaPen
+    import coldtype.fx.skia as skfx
 except ImportError:
     skia = None
     SkiaPen = None
@@ -356,11 +354,15 @@ class Renderer():
         self.viewer_solos = []
     
     def reset_filepath(self, filepath):
+        for k, cv2cap in self.state.cv2caps.items():
+            cv2cap.release()
+
         self.line_number = -1
         self.stop_watching_file_changes()
         self.state.input_history.clear()
         self.state._frame_offsets = {}
         self.state._initial_frame_offsets = {}
+        self.state.cv2caps = {}
 
         if filepath:
             self.filepath = Path(filepath).expanduser().resolve()
@@ -474,8 +476,7 @@ class Renderer():
 
     def reload(self, trigger):
         if skia and SkiaPen:
-            DATPen._pen_class = SkiaPen
-            DATPen._context = self.context
+            skfx.SKIA_CONTEXT = self.context
 
         if not self.filepath:
             self.program = dict(no_filepath=True)
@@ -617,6 +618,14 @@ class Renderer():
                 if i in self.viewer_solos:
                     solos.append(r)
             _rs = solos
+        
+        for _r in _rs:
+            caps = _r.cv2caps
+            if caps is not None:
+                import cv2
+                for cap in caps:
+                    if cap not in self.state.cv2caps:
+                        self.state.cv2caps[cap] = cv2.VideoCapture(cap)
             
         if self.function_filters:
             function_patterns = self.function_filters
@@ -926,7 +935,7 @@ class Renderer():
             if not skia:
                 raise Exception("pip install skia-python")
             if render.fmt == "png":
-                content = content.precompose(render.rect)
+                content = content.ch(skfx.precompose(render.rect))
                 render.last_result = content
                 if render.bg_render:
                     content = DATPens([
@@ -2174,7 +2183,7 @@ class Renderer():
                 error_color = coldtype.rgb(0, 0, 0).skia()
         else:
             if render.composites:
-                comp = result.precompose(render.rect)
+                comp = result.ch(skfx.precompose(render.rect))
                 if not self.last_render_cleared:
                     render.last_result = comp
                 else:
@@ -2328,7 +2337,8 @@ class Renderer():
             for device, numbers in nested.items():
                 self.state.controller_values[device] = {**self.state.controller_values.get(device, {}), **numbers}
 
-            self.action_waiting = Action.PreviewStoryboard
+            if not self.playing:
+                self.action_waiting = Action.PreviewStoryboard
             #self.on_action(Action.PreviewStoryboard, {})
     
     def stop_watching_file_changes(self):

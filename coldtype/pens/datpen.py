@@ -449,10 +449,6 @@ class DATPen(DraftingPen):
         self.data["_preserve"] = dict(calls=calls, pickle=str(tmp.absolute()))
         pickle.dump(self, open(str(tmp), "wb"))
         return self
-    
-    _context = None
-    _pen_class = None
-    _precompose_save = None
 
     def add_data(self, key, value=None):
         if value is None:
@@ -517,112 +513,6 @@ class DATPen(DraftingPen):
         ny = pnoise1(doneness*speed[1], base=base+10, octaves=octaves)
         return self.translate(nx * scale[0], ny * scale[1])
     
-    def _get_renderer_state(self, pen_class, context):
-        if not pen_class:
-            pen_class = DATPen._pen_class
-        if not pen_class:
-            raise Exception("No _pen_class")
-
-        if not context:
-            context = DATPen._context
-        elif context == -1:
-            context = None
-        
-        return pen_class, context
-    
-    def precompose(self, rect, placement=None, opacity=1, scale=1, pen_class=None, context=None):
-        pc, ctx = self._get_renderer_state(pen_class, context)
-        img = pc.Precompose(self, rect, context=ctx, scale=scale, disk=DATPen._precompose_save)
-        return self.single_pen_class().rect(placement or rect).img(img, (placement or rect), False, opacity).f(None)
-    
-    def rasterized(self, rect, scale=1, pen_class=None, context=None):
-        """
-        Same as precompose but returns the Image created rather
-        than setting that image as the attr-image of this pen
-        """
-        pc, ctx = self._get_renderer_state(pen_class, context)
-        return pc.Precompose(self, rect, scale=scale, context=ctx, disk=DATPen._precompose_save)
-    
-    def mod_pixels(self, rect, scale=0.1, mod=lambda rgba: None, pen_class=None, context=None):
-        import skia
-        import PIL.Image
-        rasterized = self.rasterized(rect, scale=scale, pen_class=pen_class, context=context)
-        pi = PIL.Image.fromarray(rasterized, "RGBa")
-        for x in range(pi.width):
-            for y in range(pi.height):
-                r, g, b, a = pi.getpixel((x, y))
-                res = mod((r, g, b, a))
-                if res:
-                    pi.putpixel((x, y), tuple(res))
-        out = skia.Image.frombytes(pi.convert('RGBA').tobytes(), pi.size, skia.kRGBA_8888_ColorType)
-        return self.single_pen_class().rect(rect).img(out, rect, False).f(None)
-
-    def potrace(self, rect, poargs=[], invert=True, pen_class=None, context=None):
-        import skia
-        from PIL import Image
-        from pathlib import Path
-        from subprocess import run
-        from fontTools.svgLib import SVGPath
-
-        pc, ctx = self._get_renderer_state(pen_class, context)
-
-        img = pc.Precompose(self, rect, context=ctx)
-        pilimg = Image.fromarray(img.convert(alphaType=skia.kUnpremul_AlphaType))
-        binpo = Path("bin/potrace")
-        if not binpo.exists():
-            binpo = Path(__file__).parent.parent.parent / "bin/potrace"
-
-        with tempfile.NamedTemporaryFile(prefix="coldtype_tmp", suffix=".bmp") as tmp_bmp:
-            pilimg.save(tmp_bmp.name)
-            rargs = [str(binpo), "-s"]
-            if invert:
-                rargs.append("--invert")
-            rargs.extend([str(x) for x in poargs])
-            rargs.extend(["-o", "-", "--", tmp_bmp.name])
-            if False:
-                print(">>>", " ".join(rargs))
-            result = run(rargs, capture_output=True)
-            if False:
-                print(result)
-            t = Transform()
-            t = t.scale(0.1, 0.1)
-            svgp = SVGPath.fromstring(result.stdout, transform=t)
-            if False:
-                print(svgp)
-            dp = self.single_pen_class()
-            svgp.draw(dp)
-            return dp.f(0)
-    
-    def phototype(self, rect, blur=5, cut=127, cutw=3, fill=1, pen_class=None, context=None, rgba=[0, 0, 0, 1], luma=True):
-        r, g, b, a = rgba
-        pc, ctx = self._get_renderer_state(pen_class, context)
-
-        import skia
-        import coldtype.filtering as fl
-
-        first_pass = dict(ImageFilter=fl.blur(blur))
-        
-        if luma:
-            first_pass["ColorFilter"] = skia.LumaColorFilter.Make()
-
-        cut_filters = [
-            fl.as_filter(
-                fl.contrast_cut(cut, cutw),
-                a=a, r=r, g=g, b=b)]
-            
-        if fill is not None:
-            cut_filters.append(fl.fill(normalize_color(fill)))
-
-        return (self
-            .precompose(rect, pen_class=pc, context=ctx)
-            .attr(skp=first_pass)
-            .precompose(rect, pen_class=pc, context=ctx)
-            .attr(skp=dict(
-                ColorFilter=fl.compose(*cut_filters))))
-    
-    def color_phototype(self, rect, blur=5, cut=127, cutw=15, pen_class=None, context=None, rgba=[1, 1, 1, 1]):
-        return self.phototype(rect, blur, 255-cut, cutw, fill=None, pen_class=pen_class, context=context, rgba=rgba, luma=False)
-    
     def DiskCached(path:Path, build_fn: Callable[[], "DATPen"]):
         dpio = None
         fn_src = inspect.getsource(build_fn)
@@ -649,11 +539,6 @@ class DATPen(DraftingPen):
     
     def Unpickle(self, src):
         return pickle.load(open(str(src), "rb"))
-    
-    def sk_fill(self, c):
-        import coldtype.filtering as fl
-        c = normalize_color(c)
-        return self.attr(skp=dict(ColorFilter=fl.fill(c)))
 
 
 class DATPens(DraftingPens, DATPen):
@@ -681,7 +566,10 @@ class DATPens(DraftingPens, DATPen):
     
     def __str__(self):
         v = "" if self.visible else "ø-"
-        return f"<{v}DPS:{len(self._pens)}——tag:{self._tag}/data{self.data})>"
+        out = f"<{v}DPS:{len(self._pens)}——tag:{self._tag}/data{self.data})>"
+        if hasattr(self, "glyphName"):
+            return out[:-1] + f":::glyphName:{self.glyphName}>"
+        return out
     
     def __len__(self):
         return len(self._pens)

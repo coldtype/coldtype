@@ -6,6 +6,7 @@
 from coldtype import *
 from coldtype.time.midi import MidiReader
 from coldtype.warping import warp_fn
+from coldtype.fx.skia import phototype
 
 # Though it’s not necessary to load the font directly from the `.designspace` file (since we could always load an actual variable ttf file), it is fun to demonstrate.
 
@@ -46,13 +47,11 @@ def drummachine(f):
         r=1,
         kp={"T/Y":-25})
 
-    # Now with the `style` variable settled, we can construct a multi-line text lockup with the `Composer` class, by passing in a rectangle to hold the lockup, then the text itself, and the style object we created above.
+    # Now with the `style` variable settled, we can construct a multi-line text lockup with the `StSt` class, by passing in a rectangle to hold the lockup, then the text itself, and the style object we created above.
 
     # We can also set the leading of the multi-line setting here, by specifying `leading=` as a function of the kick signal.
 
-    pens = (Composer(f.a.r,
-        "COLD\nTYPE",
-        style,
+    pens = (StSt("COLD\nTYPE", style,
         leading=math.floor(10+kick.ease()*50))
         .pens()
         .align(f.a.r))
@@ -178,4 +177,4 @@ def drummachine(f):
             #    (p.flatten(3)
             #        .nlt(warp_fn(f.i*10, f.i*10, mult=30))))
             .understroke(s=0, sw=15)
-            .phototype(f.a.r, cut=190, cutw=8))])
+            .ch(phototype(f.a.r, cut=190, cutw=8)))])

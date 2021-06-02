@@ -102,8 +102,11 @@ def show_grid(render, result):
                 .line(bbox.es.extr(-100))
                 .line(bbox.en.extr(-100))
                 .line(bbox.ee.extr(-100))
-                .f(None).s(hsl(0.9, 1, a=0.5)).sw(4)),
-            (DATText(gfn.glyph_name, Style("Times", 48, load_font=0),
+                .f(None)
+                .s(hsl(0.9, 1, a=0.5))
+                .sw(4)),
+            (DATText(gfn.glyph_name,
+                Style("Times", 48, load_font=0),
                 render.rect.inset(50)))
         ])
 

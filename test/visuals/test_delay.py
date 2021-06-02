@@ -1,5 +1,6 @@
 from coldtype import *
 from coldtype.warping import warp_fn
+from coldtype.fx.skia import color_phototype
 
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 
@@ -16,9 +17,9 @@ def var(f, depth=0):
         .pmap(lambda i, p: p.nlt(warp_fn(0, 0, mult=30))))
     
     cold = (cold
-        .color_phototype(f.a.r, blur=2+depth*5, cut=120+depth*5, rgba=[1, 0, 1, 1])
+        .ch(color_phototype(f.a.r, blur=2+depth*5, cut=120+depth*5, rgba=[1, 0, 1, 1]))
         .ups()
-        .blendmode(skia.BlendMode.kDifference))
+        .blendmode(BlendMode.Difference))
     
     if depth < 5:
         cold.insert(0, var.func(Frame((f.i-3)%var.duration, f.a), depth=depth+1))
@@ -26,6 +27,6 @@ def var(f, depth=0):
     if depth == 0:
         return DATPens([
             #DATPen().rect(f.a.r).f(1),
-            cold.color_phototype(f.a.r, blur=5)])
+            cold.ch(color_phototype(f.a.r, blur=5))])
     else:
         return cold

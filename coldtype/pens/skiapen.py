@@ -3,13 +3,12 @@ import skia, struct, tempfile
 from pathlib import Path
 
 from fontTools.pens.transformPen import TransformPen
-from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
 
-from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.pens.datpen import DATPen
 from coldtype.pens.dattext import DATText
-from coldtype.pens.datimage import DATImage
-from coldtype.geometry import Rect, Edge, Point
+from coldtype.img.datimage import DATImage
+from coldtype.geometry import Rect, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 from coldtype.color import Color
 from coldtype.text.reader import Style
@@ -59,7 +58,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 if "AntiAlias" not in skia_paint_kwargs:
                     skia_paint_kwargs["AntiAlias"] = True
             elif method == "blendmode":
-                self.blendmode = args[0]
+                self.blendmode = args[0].to_skia()
 
         for attrs, attr in all_attrs:
             filtered_paint_kwargs = {}
@@ -177,7 +176,6 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 self.canvas.clipPath(sp.path, doAntiAlias=True)
         self.paint.setColor(skia.ColorBLACK)
         self.paint.setImageFilter(skia.ImageFilters.DropShadow(0, 0, radius, radius, color.skia()))
-        #self.paint.setBlendMode(skia.BlendMode.kClear)
         return
     
     def Composite(pens, rect, save_to, scale=1, context=None, style=None):

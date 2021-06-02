@@ -1,6 +1,7 @@
 from coldtype import *
 from coldtype.warping import warp_fn
 from functools import partial
+from coldtype.fx.skia import phototype
 
 ds = Font("assets/ColdtypeObviously.designspace")
 
@@ -21,6 +22,6 @@ def dswatch(f):
                 .flatten(15)
                 .nlt(warp_fn(f.i*20, mult=10)))
             .chain(partial(shake, f.i)))])
-        .phototype(f.a.r, blur=2,
+        .ch(phototype(f.a.r, blur=2,
             cut=125, cutw=20,
-            fill=hsl(0.65)))
+            fill=hsl(0.65))))

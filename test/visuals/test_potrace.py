@@ -1,6 +1,5 @@
 from coldtype import *
-import coldtype.filtering as fl
-import skia
+from coldtype.fx.skia import phototype, potrace
 
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 
@@ -11,20 +10,11 @@ def render(f):
         .pens()
         .align(f.a.r)
         .f(1))
-    letter = (raw
-        .copy()
-        .precompose(f.a.r)
-        .attr(skp=dict(
-            ImageFilter=skia.BlurImageFilter.Make(10, 10),
-            ColorFilter=skia.LumaColorFilter.Make()
-        ))
-        .precompose(f.a.r)
-        .attr(skp=dict(
-            ColorFilter=fl.compose(
-                fl.as_filter(fl.contrast_cut(250, 3)),
-                fl.fill(bw(1)),
-            ))))
+    
+    letter = (raw.copy()
+        .ch(phototype(f.a.r, 10, 250)))
+    
     return [
         (letter.copy()
-            .potrace(f.a.r, ["-O", 1])
+            .ch(potrace(f.a.r, ["-O", 1]))
             .f(Gradient.Vertical(f.a.r, hsl(0.5), hsl(0.7))))]
