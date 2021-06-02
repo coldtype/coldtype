@@ -14,7 +14,7 @@ def pickled(r):
 @renderable()
 def unpickle(r):
     try:
-        return pickle.load(open("test/renders/test_pickle_pickled.pickle", "rb")).rotate(180)
+        return pickle.load(open("test/visuals/renders/test_pickle_pickled.pickle", "rb")).rotate(180)
     except:
         return None
     #return DATPen().oval(r.inset(100))
