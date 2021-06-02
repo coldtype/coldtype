@@ -566,7 +566,10 @@ class DATPens(DraftingPens, DATPen):
     
     def __str__(self):
         v = "" if self.visible else "ø-"
-        return f"<{v}DPS:{len(self._pens)}——tag:{self._tag}/data{self.data})>"
+        out = f"<{v}DPS:{len(self._pens)}——tag:{self._tag}/data{self.data})>"
+        if hasattr(self, "glyphName"):
+            return out[:-1] + f":::glyphName:{self.glyphName}>"
+        return out
     
     def __len__(self):
         return len(self._pens)
