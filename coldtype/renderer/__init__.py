@@ -625,7 +625,6 @@ class Renderer():
                 import cv2
                 for cap in caps:
                     if cap not in self.state.cv2caps:
-                        print("CAP", cap)
                         self.state.cv2caps[cap] = cv2.VideoCapture(cap)
             
         if self.function_filters:
@@ -2338,7 +2337,8 @@ class Renderer():
             for device, numbers in nested.items():
                 self.state.controller_values[device] = {**self.state.controller_values.get(device, {}), **numbers}
 
-            #self.action_waiting = Action.PreviewStoryboard
+            if not self.playing:
+                self.action_waiting = Action.PreviewStoryboard
             #self.on_action(Action.PreviewStoryboard, {})
     
     def stop_watching_file_changes(self):
