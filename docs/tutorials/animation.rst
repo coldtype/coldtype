@@ -58,9 +58,7 @@ A letter flying
             (DATPen()
                 .rect(f.a.r)
                 .f(hsl(qeio))),
-            (StyledString("A",
-                Style("assets/MutatorSans.ttf", 50, wght=0.2))
-                .pen()
+            (StSt("A", "assets/MutatorSans.ttf", 50, wght=0.2)
                 .align(f.a.r)
                 .scale(1+50*eei)
                 .rotate(360*qeio)

@@ -18,17 +18,13 @@ An example:
         c2 = hsl(0.53, 0.6)
 
         return DATPens([
-            (DATPen()
-                .rect(r.inset(10))
+            (DATPen(r.inset(10))
                 .outline(10)
                 .f(Gradient.Horizontal(r,
                     c2.lighter(0.3),
                     c1.lighter(0.3)))),
-            (StyledString("COLDTYPE",
-                Style("assets/ColdtypeObviously-VF.ttf", 250,
-                    wdth=1, tu=-170, r=1, rotate=15,
-                    kp={"P/E":-150, "T/Y":-50}))
-                .pens()
+            (StSt("COLDTYPE", "assets/ColdtypeObviously-VF.ttf", 250,
+                    wdth=1, tu=-170, r=1, rotate=15, kp={"P/E":-150, "T/Y":-50})
                 .align(r)
                 .f(Gradient.Horizontal(r, c1, c2))
                 .understroke(s=1, sw=5))
@@ -65,9 +61,7 @@ Here’s the code for a somewhat complex animation:
     def banner(f):
         phase = f.a.t.current_phase(f.i)
         state = phase.calc_state(states)
-        return (StyledString("COLDTYPE",
-            Style(obvs, 150, fill=0, **state, r=1, ro=1))
-            .pens()
+        return (StSt("COLDTYPE", obvs, 150, fill=0, **state, r=1, ro=1)
             .align(f.a.r)
             .f(0)
             .understroke(s=1, sw=10))

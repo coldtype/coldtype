@@ -22,9 +22,7 @@ Anyway, to celebrate the founding of this blog, here is some code to generate th
 
     @renderable((1000, 500))
     def blog(r):
-        return (StyledString("Blog!",
-            Style("~/Type/fonts/fonts/_script/MistralD.otf", 350))
-            .pen()
+        return (StSt("Blog!", "~/Type/fonts/fonts/_script/MistralD.otf", 350)
             .f(Gradient.Horizontal(r, hsl(0.7), hsl(0.9)))
             .align(r)
             .nlt(warp_fn(0, 0, 100, 100, mult=30)))

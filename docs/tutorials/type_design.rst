@@ -18,9 +18,7 @@ Here’s an example of creating a somewhat complex text setting using the ``asse
     def ufo_monitor(r):
         return [
             DATPen().rect(r).f(0),
-            (StyledString("CDELOPTY",
-                Style(ufo_ttf, 250, tu=-150, r=1))
-                .pens()
+            (StSt("CDELOPTY", ufo_ttf, 250, tu=-150, r=1)
                 .f(Gradient.H(r, hsl(0.05, s=0.75), hsl(0.8, s=0.75)))
                 .understroke(s=0, sw=15)
                 .align(r))]
@@ -63,9 +61,8 @@ If you want to address glyphs in a UFO directly by their glyph names, you can al
     @renderable((800, 200), watch=[generic_txt])
     def txt(r):
         return DATPens([
-            (StyledString("> " + generic_txt.read_text() + " <",
-                Style("assets/RecMono-CasualItalic.ttf", 50))
-                .pens()
+            (StSt("> " + generic_txt.read_text() + " <",
+                "assets/RecMono-CasualItalic.ttf", 50)
                 .f(0.25)
                 .align(r))])
 
@@ -88,12 +85,9 @@ If you click around in the coldtype window that pops up when you run code like t
     def ds_mouse(r, rs):
         ri = r.inset(50)
         sx, sy = ri.ipos(rs.mouse, (0.5, 1))
-        return [
-            (StyledString("COLDTYPE",
-                Style(obv_ds, 150+sy*100, wdth=sx))
-                .pens()
-                .align(r)
-                .f(0))]
+        return (StSt("COLDTYPE", obv_ds, 150+sy*100, wdth=sx)
+            .align(r)
+            .f(0))
 
 .. image:: /_static/renders/type_design_ds_mouse.png
     :width: 600
