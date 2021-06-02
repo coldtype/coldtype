@@ -1,22 +1,22 @@
 from coldtype import *
 
-fnt1 = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
-fnt = Font.Cacheable("~/Type/fonts/fonts/PappardelleParty-VF.ttf")
+ppvf = Font.Cacheable("~/Type/fonts/fonts/PappardelleParty-VF.ttf")
 
-@animation((1080, 1920), bg=1)
+def spin(fa, g):
+    y = 150
+    g[2].translate(0, fa.e(1, rng=(0, y)))
+    g[0].translate(0, fa.e(1, rng=(0, -y)))
+    g[1].rotate(fa.e(rng=(0, -360)))
+
+@animation((1080, 1920), timeline=120)
 def pappardelle(f):
-
-    wave = (StyledString("wave",
-        Style(fnt, 700, palette=0))
-        .pens()
-        .align(f.a.r)
-        )
+    wave = (StSt("SPIN", ppvf, 500,
+        palette=0, SPIN=f.e("l"))
+        .align(f.a.r.take(0.4, "mny")))
     
-    #print(wave.tree())
-    print(wave[0].ambit(th=1))
+    r_wave = wave.ambit(th=1, tv=1)
 
-    return DPS([
-        DP(wave.ambit(th=1).inset(-10, -10)).f(None).s(0).sw(5),
-        wave,
-        wave.frameSet()
-    ]).align(f.a.r)#.translate(200, 200)
+    for idx, g in enumerate(wave):
+        spin(f.adj(-idx*4), g)
+    
+    return wave#.rotate(f.e(to1=1)*360, point=r_wave.pc)
