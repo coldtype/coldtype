@@ -2338,7 +2338,7 @@ class Renderer():
             for device, numbers in nested.items():
                 self.state.controller_values[device] = {**self.state.controller_values.get(device, {}), **numbers}
 
-            self.action_waiting = Action.PreviewStoryboard
+            #self.action_waiting = Action.PreviewStoryboard
             #self.on_action(Action.PreviewStoryboard, {})
     
     def stop_watching_file_changes(self):
