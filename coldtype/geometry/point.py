@@ -16,11 +16,11 @@ class Point(Geometrical):
                 x, y = point
                 self.x = x
                 self.y = y
-            except:
+            except TypeError:
                 try:
                     self.x = point.x
                     self.y = point.y
-                except:
+                except AttributeError:
                     self.x = 0
                     self.y = 0
     

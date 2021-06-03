@@ -4,7 +4,6 @@ fnt = Font.Cacheable("assets/ColdtypeObviously_CompressedBlackItalic.otf")
 
 def lines_to_curves(pen):
     # is the closePath case unnecessary if preceded by fully_close_path?
-    
     mvpt = None
     lstpt = None
     for idx, (mv, pts) in enumerate(pen.value):
@@ -25,18 +24,21 @@ def lines_to_curves(pen):
                 line = Line(lstpt, mvpt)
                 pen.value[idx] = ("curveTo",
                     (line.t(0.25), line.t(0.75), line.end))
-    return pen
 
 @animation(timeline=60)
 def test_lines_to_curves_simple(f):
     #rpo = DP
     r = f.a.r
     rpo = DP().oval(r.inset(300))
+    rpo.add_pt_t(0, 0.5)
     rp = DP(r.inset(250))#.record(rpi.reverse())
+    rp.add_pt_t(0, 0.5)
     rp.ch(lines_to_curves)
+    rpi = rp.interpolate(f.e(1), rpo)
     return DPS([
-        rp.interpolate(f.e(1), rpo).f(hsl(0.8, 1, 0.8)),
-        rp.copy().skeleton(scale=3).f(hsl(0.6, 1))
+        rpi.f(hsl(0.8, 1, 0.8)),
+        rpi.copy().f(None).s(0).sw(1),
+        rpi.copy().skeleton(scale=3).f(hsl(0.6, 1))
     ])
 
 @animation(timeline=60)
