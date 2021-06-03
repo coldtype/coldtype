@@ -1337,10 +1337,23 @@ class DraftingPen(RecordingPen, SHContext):
                     b, c, d = pts
                     c1, c2 = splitCubicAtT(a, b, c, d, t)
                 cidx += 1
+            elif mv == "lineTo":
+                if cidx == cuidx:
+                    insert_idx = idx
+                    a = self.value[idx-1][-1][-1]
+                    b = pts[0]
+                    l = Line(a, b)
+                    c1 = [a]
+                    c2 = [l.t(0.5)]
+                cidx += 1
         
         if c2:
-            self.value[insert_idx] = ("curveTo", c1[1:])
-            self.value.insert(insert_idx+1, ("curveTo", c2[1:]))
+            if len(c2) > 1:
+                self.value[insert_idx] = ("curveTo", c1[1:])
+                self.value.insert(insert_idx+1, ("curveTo", c2[1:]))
+            else:
+                self.value[insert_idx] = ("lineTo", c1)
+                self.value.insert(insert_idx+1, ("lineTo", c2))
         return self
     
     def length(self, t=1):
