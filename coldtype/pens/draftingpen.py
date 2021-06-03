@@ -831,9 +831,11 @@ class DraftingPen(RecordingPen, SHContext):
         """If this is blank, `return True` (for recursive calls from DATPens)."""
         return len(self.value) == 0
     
-    def interpolate(self, value, other):
+    def interpolate(self, value, other, ignore_close=False):
         vl = []
         for idx, (mv, pts) in enumerate(self.value):
+            if ignore_close and mv in ["closePath", "endPath"]:
+                continue
             ipts = []
             for jdx, p in enumerate(pts):
                 pta = Point(p)

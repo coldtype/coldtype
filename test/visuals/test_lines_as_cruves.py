@@ -3,6 +3,8 @@ from coldtype.test import *
 fnt = Font.Cacheable("assets/ColdtypeObviously_CompressedBlackItalic.otf")
 
 def lines_to_curves(pen):
+    # is the closePath case unnecessary if preceded by fully_close_path?
+    
     mvpt = None
     lstpt = None
     for idx, (mv, pts) in enumerate(pen.value):
@@ -25,7 +27,7 @@ def lines_to_curves(pen):
                     (line.t(0.25), line.t(0.75), line.end))
     return pen
 
-#@animation(timeline=60)
+@animation(timeline=60)
 def test_lines_to_curves_simple(f):
     #rpo = DP
     r = f.a.r
@@ -39,18 +41,20 @@ def test_lines_to_curves_simple(f):
 
 @animation(timeline=60)
 def test_lines_to_curves_complex(f):
-    dpa = StSt("Y", fnt, 500).align(f.a.r)[0]
-    dpb = StSt("C", fnt, 1000).align(f.a.r)[0]
+    dpa = StSt("Y", fnt, 1000).align(f.a.r)[0].fully_close_path()
+    dpb = StSt("C", fnt, 1000).align(f.a.r)[0].fully_close_path()
+    
     ml = max([len(dpa.value), len(dpb.value)])
-
+    #print(">", ml)
     for dp in [dpa, dpb]:
         while len(dp.value) < ml:
             #print(dp.glyphName, len(dp.value))
             dp.add_pt_t(0, 0.5)
     
-    print(len(dpa), len(dpb))
-    dpa.ch(lines_to_curves)
-    dpb.ch(lines_to_curves)
+    dpa.ch(lines_to_curves).pvl()
+    dpb.ch(lines_to_curves).pvl()
+    #pprint(dpa.value[-1])
+    #pprint(dpb.value[-1])
     return DPS([
         dpa.copy().skeleton(scale=1).translate(-300, 0),
         dpb.copy().skeleton(scale=1).translate(300, 0),
