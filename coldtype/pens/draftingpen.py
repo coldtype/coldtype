@@ -832,13 +832,20 @@ class DraftingPen(RecordingPen, SHContext):
         return len(self.value) == 0
     
     def interpolate(self, value, other):
+        if len(self.value) != len(other.value):
+            raise Exception("Cannot interpolate / diff lens")
         vl = []
         for idx, (mv, pts) in enumerate(self.value):
             ipts = []
             for jdx, p in enumerate(pts):
                 pta = Point(p)
-                ptb = Point(other.value[idx][-1][jdx])
-                ipts.append(pta.interp(value, ptb))
+                try:
+                    ptb = Point(other.value[idx][-1][jdx])
+                except IndexError:
+                    print(">>>>>>>>>>>>> Can’t interpolate", idx, mv, "///", other.value[idx])
+                    raise IndexError
+                ipt = pta.interp(value, ptb)
+                ipts.append(ipt)
             vl.append((mv, ipts))
         return type(self)().vl(vl)
     
