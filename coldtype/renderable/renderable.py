@@ -95,6 +95,8 @@ class renderable():
         solo=False,
         rstate=False,
         preview_only=False,
+        momentary=False,
+        deferred=False,
         direct_draw=False,
         clip=False,
         composites=False,
@@ -138,6 +140,8 @@ class renderable():
         self.hidden = solo == -1
         self.solo = solo
         self.preview_only = preview_only
+        self.momentary = momentary
+        self.deferred = deferred
         self.rstate = rstate
         self.clip = clip
         self.viewBox = viewBox

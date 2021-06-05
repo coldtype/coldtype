@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Tuple
 from pprint import pprint
 from runpy import run_path
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE, STDOUT, call
 from random import shuffle, Random
 from more_itertools import distribute
 from docutils.core import publish_doctree
@@ -764,7 +764,10 @@ class Renderer():
                                     for pr in prev_renders:
                                         if pr.name == render.name and pr.last_result:
                                             render.last_result = pr.last_result
-                            result = render.normalize_result(render.run(rp, self.state))
+                            if render.deferred:
+                                result = lambda _: render.normalize_result(render.run(rp, self.state))
+                            else:
+                                result = render.normalize_result(render.run(rp, self.state))
                         
                         if self.state.request:
                             self.requests_waiting.append([render, str(self.state.request), None])
@@ -782,7 +785,11 @@ class Renderer():
                             if render.direct_draw:
                                 self.previews_waiting_to_paint.append([render, None, rp])
                             else:
-                                preview_result = render.normalize_result(render.runpost(result, rp, self.state))
+                                if render.deferred:
+                                    preview_result = lambda _: render.normalize_result(render.runpost(result, rp, self.state))
+                                else:
+                                    preview_result = render.normalize_result(render.runpost(result, rp, self.state))
+                                
                                 preview_count += 1
                                 if preview_result:
                                     self.previews_waiting_to_paint.append([render, preview_result, rp])
@@ -2058,6 +2065,9 @@ class Renderer():
                 canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 0))
             
             for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
+                if callable(result):
+                    print("CALLABLE!")
+                    continue
                 rect = rects[idx].offset((w-rects[idx].w)/2, 0).round()
                 try:
                     self.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
