@@ -77,6 +77,8 @@ class KeyboardShortcut(Enum):
     ViewerSolo8 = "viewer_solo_8"
     ViewerSolo9 = "viewer_solo_9"
 
+    ToggleCapturing = "toggle_capturing"
+
 REPEATABLE_SHORTCUTS = [
     KeyboardShortcut.PreviewPrev,
     KeyboardShortcut.PreviewPrevMany,
@@ -303,4 +305,8 @@ SHORTCUTS = {
         [[], "np9"],
         [[], "9"]
     ],
+
+    KeyboardShortcut.ToggleCapturing: [
+        [["shift"], "c"]
+    ]
 }

@@ -172,6 +172,10 @@ class Renderer():
             no_midi=parser.add_argument("-nm", "--no-midi", action="store_true", default=False, help="Midi is on by default, do you want to turn it off?"),
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
+
+            capture_previews=parser.add_argument("-cp", "--capture-previews", action="store_true", default=False, help="Should the viewer self-capture via connected cv2 camera?"),
+
+            capture_previews_delay=parser.add_argument("-cpd", "--capture-previews-delay", type=float, default=0.35, help="How long should the rendering loop hang between displaying and capturing?"),
             
             rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default=None, choices=["drawbot", "cairo", "svg", "skia", "pickle"], help="Which rasterization engine should coldtype use to create artifacts?"),
 
@@ -290,6 +294,7 @@ class Renderer():
         self.disable_syntax_mods = self.args.disable_syntax_mods
         self.filepath = None
         self.state = RendererState(self)
+        self.state.capturing_previews = self.args.capture_previews
 
         self.observers = []
         self.watchees = []
@@ -322,6 +327,7 @@ class Renderer():
         self.line_number = -1
         self.last_renders = []
         self.last_render_cleared = False
+        self.last_previews = []
 
         # for multiplex mode
         self.running_renderers = []
@@ -1592,6 +1598,8 @@ class Renderer():
             KeyboardShortcut.ViewerSolo9
             ]:
             self.viewer_solos = [int(str(shortcut)[-1])-1]
+        elif shortcut == KeyboardShortcut.ToggleCapturing:
+            self.state.capturing_previews = not self.state.capturing_previews
     
     def on_shortcut(self, shortcut):
         #print(shortcut)
@@ -1898,7 +1906,7 @@ class Renderer():
             else:
                 ptime.sleep(0.025)
                 self.glfw_last_time = t
-                self.turn_over()
+                self.last_previews = self.turn_over()
                 global last_line
                 if self.state.cmd:
                     cmd = self.state.cmd
@@ -1914,6 +1922,7 @@ class Renderer():
             
             self.state.reset_keystate()
             glfw.poll_events()
+
             should_close = glfw.window_should_close(self.window)
         self.on_exit(restart=False)
     
@@ -1950,14 +1959,29 @@ class Renderer():
             for _, client in self.server.connections.items():
                 if hasattr(client, "webviewer") and client.webviewer:
                     client.sendMessage(json.dumps({"renders":renders, "title":title}))
+        
+        return []
     
     def turn_over_glfw(self):
+        if self.state.capturing_previews and len(self.last_previews) > 0:
+            if not skia or len(self.state.cv2caps) == 0:
+                print("> capturing enabled but no skia or cameras found")
+            else:
+                from coldtype.capture import read_frame
+                sleep(self.args.capture_previews_delay)
+                for rp in self.last_previews:
+                    rf = read_frame(self.state.cv2caps[0]).align(rp.render.rect)
+                    rp.output_path.parent.mkdir(exist_ok=1, parents=1)
+                    # TODO could defer this until after a capture-all action?
+                    SkiaPen.Composite(DATPens([rf]), rp.render.rect, str(rp.output_path), 1, self.context)
+                    print("CAPTURE:", rp.output_path)
+
         dscale = self.preview_scale()
         rects = []
 
         render_previews = len(self.previews_waiting_to_paint) > 0
         if not render_previews:
-            return
+            return []
 
         if render_previews:
             if pyaudio and self.paudio_source:
@@ -2052,6 +2076,8 @@ class Renderer():
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
+        did_preview = []
+
         with self.surface as canvas:
             canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 1))
             if self.transparent:
@@ -2061,6 +2087,7 @@ class Renderer():
                 rect = rects[idx].offset((w-rects[idx].w)/2, 0).round()
                 try:
                     self.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
+                    did_preview.append(rp)
                 except Exception as e:
                     stack = traceback.format_exc()
                     print(stack)
@@ -2072,6 +2099,7 @@ class Renderer():
         
         self.surface.flushAndSubmit()
         glfw.swap_buffers(self.window)
+        return did_preview
     
     def turn_over(self):
         if self.dead:
@@ -2121,10 +2149,10 @@ class Renderer():
         #    self.waiting_to_render = []
         
         if glfw and not self.args.no_viewer:
-            self.turn_over_glfw()
+            did_preview = self.turn_over_glfw()
         
         if self.args.webviewer:
-            self.turn_over_webviewer()
+            did_preview = self.turn_over_webviewer()
         
         self.state.needs_display = 0
         self.previews_waiting_to_paint = []
@@ -2146,6 +2174,8 @@ class Renderer():
                 ra["last"] = now
                 print("RECURRING ACTION", k)
                 self.on_shortcut(ra.get("action"))
+        
+        return did_preview
 
     def draw_preview(self, idx, scale, canvas, rect, waiter):
         if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
