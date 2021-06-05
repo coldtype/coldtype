@@ -2260,8 +2260,11 @@ class Renderer():
     
     def on_modified(self, event):
         path = Path(event.src_path)
-        #print("!", path)
         #return
+        actual_path = path
+        if path.parent in self.watchee_paths():
+            actual_path = path
+            path = path.parent
         if path in self.watchee_paths():
             if path.suffix == ".json":
                 last = self.watchee_mods.get(path)
@@ -2296,7 +2299,7 @@ class Renderer():
             idx = self.watchee_paths().index(path)
             wpath, wtype, wflag = self.watchees[idx]
             if wflag == "soft":
-                self.state.watch_soft_mods[path] = True
+                self.state.watch_soft_mods[actual_path] = True
                 self.action_waiting = Action.PreviewStoryboard
                 return
 
@@ -2323,7 +2326,8 @@ class Renderer():
             return None
 
         self.observers = []
-        dirs = set([w[1].parent for w in self.watchees])
+        dirs = set([w[1] if w[1].is_dir() else w[1].parent for w in self.watchees])
+        print(">>>", dirs)
         for d in dirs:
             o = AsyncWatchdog(str(d), on_modified=self.on_modified, recursive=True)
             o.start()

@@ -38,7 +38,25 @@ class animation(renderable, Timeable):
     """
     Base class for any frame-wise animation animatable by Coldtype
     """
-    def __init__(self, rect=(1080, 1080), duration=10, storyboard=[0], timeline:Timeline=None, audio=None, show_frame=True, overlay=True, **kwargs):
+    def __init__(self,
+        rect=(1080, 1080),
+        duration=10, # deprecated? redundant to timeline=10
+        storyboard=[0],
+        timeline:Timeline=None,
+        audio=None,
+        show_frame=True,
+        overlay=True,
+        watch_render=None,
+        **kwargs
+        ):
+        if watch_render:
+            ws = kwargs.get("watch_soft", [])
+            ws.append(watch_render)
+            kwargs["watch_soft"] = ws
+            self.watch_render = Path(watch_render).expanduser().absolute()
+        else:
+            self.watch_render = None
+
         super().__init__(**kwargs)
         self.rect = Rect(rect).round()
         self.r = self.rect
@@ -83,6 +101,12 @@ class animation(renderable, Timeable):
         return list(range(0, self.duration))
     
     def _active_frames(self, renderer_state):
+        if self.watch_render:
+            for k, v in renderer_state.watch_soft_mods.items():
+                if k.parent == self.watch_render.absolute():
+                    fi = int(k.stem.split("_")[-1])
+                    renderer_state.adjust_keyed_frame_offsets(self.name, lambda x, y: fi)
+
         frames = []
         for f in renderer_state.get_frame_offsets(self.name):
             frames.append(f % self.duration)
