@@ -14,7 +14,7 @@ def captured_display(f):
         DP(f.a.r).f(hsl(0.7, 1, 0.3)),
         (SkiaImage(src)
             .align(f.a.r)
-            .ch(phototype(f.a.r, blur=2, cut=220, cutw=30, fill=hsl(0.8, 1, 0.8)))),
+            .ch(phototype(f.a.r, blur=5, cut=210, cutw=13, fill=hsl(0.8, 1, 0.8)))),
         ßhide(StSt(ascii_uppercase[f.i], fnt, 200)
             .align(f.a.r.inset(100), "mnx", "mxy")
             .f(0))])

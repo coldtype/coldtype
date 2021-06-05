@@ -191,6 +191,8 @@ class RendererState():
         self.external_url = None
         self.cv2caps = {}
         self.capturing_previews = False
+        self.capturing_previews_once = False
+        self.captured_previews = []
         self.reset()
     
     def reset(self, ignore_current_state=False):

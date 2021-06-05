@@ -78,6 +78,7 @@ class KeyboardShortcut(Enum):
     ViewerSolo9 = "viewer_solo_9"
 
     ToggleCapturing = "toggle_capturing"
+    CaptureOnce = "capture_once"
 
 REPEATABLE_SHORTCUTS = [
     KeyboardShortcut.PreviewPrev,
@@ -308,5 +309,8 @@ SHORTCUTS = {
 
     KeyboardShortcut.ToggleCapturing: [
         [["shift"], "c"]
+    ],
+    KeyboardShortcut.CaptureOnce: [
+        [["cmd", "shift"], "c"]
     ]
 }
