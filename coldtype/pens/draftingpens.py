@@ -511,6 +511,14 @@ class DraftingPens(DraftingPen):
             if p.tag() == tag:
                 yield p
     
+    def find(self, tag):
+        matches = []
+        def finder(p, a, b):
+            if p.tag() == tag:
+                matches.append(p)
+        self.walk(finder)
+        return matches
+    
     def get(self, k):
         tagged = self.fft(k)
         if tagged:
