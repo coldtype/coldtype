@@ -1,4 +1,5 @@
 import inspect, platform, re, tempfile, math, datetime
+
 from coldtype.pens.draftingpens import DraftingPens
 
 try:
@@ -215,7 +216,8 @@ class renderable():
         if not pens:
             return DATPens()
         elif hasattr(pens, "_pens"):
-            if isinstance(pens, DraftingPens):
+            if (isinstance(pens, DraftingPens)
+                and not isinstance(pens, DATPens)):
                 return DATPens(pens._pens)
             return pens
         elif isinstance(pens, DATPen):

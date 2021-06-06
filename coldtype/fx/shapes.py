@@ -25,6 +25,7 @@ def sine(r, periods):
         pen.record(dp)
     return _record
     
+
 def standingwave(r, periods, direction=1):
     """Standing-wave primitive"""
     def _record(pen):
@@ -52,6 +53,7 @@ def standingwave(r, periods, direction=1):
         dp.endPath()
         pen.record(dp)
     return _record
+
 
 def polygon(sides, rect):
     """Polygon primitive; WIP"""

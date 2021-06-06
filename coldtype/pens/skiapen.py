@@ -160,7 +160,10 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             else:
                 # TODO scale the image, or maybe that shouldn't be here? this scaling method is horrible for image quality
                 self.canvas.scale(sx, sy)
+            was_alpha = self.paint.getAlphaf()
+            self.paint.setAlphaf(was_alpha*self.alpha)
             self.canvas.drawImage(image, bx/sx, by/sy, self.paint)
+            self.paint.setAlphaf(was_alpha)
             self.canvas.restore()
             return True
     
@@ -220,11 +223,17 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             pens.scale(scale, scale, Point((0, 0)))
         
         if not pens.visible:
-            print("HERE!")
             return
         
+        agg_alpha = 1
+        
         def draw(pen, state, data):
+            nonlocal agg_alpha
             if state != 0:
+                if state == -1:
+                    agg_alpha = agg_alpha * pen._alpha
+                elif state == 1:
+                    agg_alpha = agg_alpha / pen._alpha
                 return
 
             if not pen.visible:
@@ -264,16 +273,18 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                         deg, pt = args
                         canvas.rotate(-deg, pt.x, pt.y)
                     #print(action, args)
+                paint.setAlphaf(paint.getAlphaf()*agg_alpha)
                 canvas.drawImage(pen._img, f.x, f.y, paint)
                 canvas.restore()
                 #pen = DATPen().rect(pen.bounds()).img(pen._img, rect=pen.bounds(), pattern=False)
                 return
             
             if state == 0:
-                #print("DRAWING", pen)
-                SkiaPen(pen, rect, canvas, scale, style=style, alpha=pen.calc_alpha())
+                #SkiaPen(pen, rect, canvas, scale, style=style, alpha=pen.calc_alpha())
+                agg_alpha = agg_alpha * pen._alpha
+                SkiaPen(pen, rect, canvas, scale, style=style, alpha=agg_alpha)
+                agg_alpha = agg_alpha / pen._alpha
         
-        #print("COMPTOCANV >>>>>>>>>>>>>>>>")
         pens.walk(draw, visible_only=True)
     
     def Precompose(pens, rect, fmt=None, context=None, scale=1, disk=False):

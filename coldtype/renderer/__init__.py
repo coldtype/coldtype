@@ -2239,6 +2239,8 @@ class Renderer():
                     render.last_result = None
             else:
                 comp = result
+            
+            #print("DRAW---\n", comp.tree())
             render.draw_preview(1.0, canvas, render.rect, comp, rp)
         
         if hasattr(render, "blank_renderable"):
@@ -2327,7 +2329,6 @@ class Renderer():
 
         self.observers = []
         dirs = set([w[1] if w[1].is_dir() else w[1].parent for w in self.watchees])
-        print(">>>", dirs)
         for d in dirs:
             o = AsyncWatchdog(str(d), on_modified=self.on_modified, recursive=True)
             o.start()

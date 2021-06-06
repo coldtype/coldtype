@@ -1055,12 +1055,6 @@ class DraftingPen(RecordingPen, SHContext):
     
     ch = chain
     
-    def replace(self, fn:Callable[["DraftingPen"], None], *args):
-        """
-        For simple take-one callback functions in a chain, to return what the function returns (not the element itself)
-        """
-        return fn(self, *args)
-    
     def cond(self, condition, if_true:Callable[["DraftingPen"], None], if_false:Callable[["DraftingPen"], None]=None):
         if callable(condition):
             condition = condition(self)
@@ -1369,38 +1363,6 @@ class DraftingPen(RecordingPen, SHContext):
         start = 0
         tv = t * cc.calcCurveLength()
         return tv
-
-    def bend(self, curve, tangent=True):
-        cc = CurveCutter(curve)
-        ccl = cc.length
-        dpl = self.bounds().point("SE").x
-        xf = ccl/dpl
-        def bender(x, y):
-            p, tan = cc.subsegmentPoint(end=x*xf)
-            px, py = p
-            if tangent:
-                a = math.sin(math.radians(180+tan)) * y
-                b = math.cos(math.radians(180+tan)) * y
-                return (px+a, py+b)
-                #return (px, y+py)
-            else:
-                return (px, y+py)
-        return self.nonlinear_transform(bender)
-    
-    def bend2(self, curve, tangent=True, offset=(0, 1)):
-        bw = self.bounds().w
-        a = curve.value[0][-1][0]
-        b, c, d = curve.value[1][-1]
-        def bender(x, y):
-            c1, c2 = splitCubicAtT(a, b, c, d, offset[0] + (x/bw)*offset[1])
-            _, _a, _b, _c = c1
-            if tangent:
-                tan = math.degrees(math.atan2(_c[1] - _b[1], _c[0] - _b[0]) + math.pi*.5)
-                ax = math.sin(math.radians(90-tan)) * y
-                by = math.cos(math.radians(90-tan)) * y
-                return _c[0]+ax, (y+_c[1])+by
-            return _c[0], y+_c[1]
-        return self.nonlinear_transform(bender)
     
     def nonlinear_transform(self, fn):
         for idx, (move, pts) in enumerate(self.value):
@@ -1413,19 +1375,3 @@ class DraftingPen(RecordingPen, SHContext):
         return self
     
     nlt = nonlinear_transform
-    
-    def bend3(self, curve, tangent=False, offset=(0, 1)):
-        a = curve.value[0][-1][0]
-        b, c, d = curve.value[1][-1]
-        bh = self.bounds().h
-        
-        def bender(x, y):
-            c1, c2 = splitCubicAtT(a, b, c, d, offset[0] + (y/bh)*offset[1])
-            _, _a, _b, _c = c1
-            if tangent:
-                tan = math.degrees(math.atan2(_c[1] - _b[1], _c[0] - _b[0]) + math.pi*.5)
-                ax = math.sin(math.radians(90-tan)) * y
-                by = math.cos(math.radians(90-tan)) * y
-                return x+_c[0]+ax, (y+_c[1])+by
-            return x+_c[0], _c[1]
-        return self.nonlinear_transform(bender)

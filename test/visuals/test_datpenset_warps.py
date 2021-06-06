@@ -1,5 +1,5 @@
 from coldtype.test import *
-from importlib import reload
+from coldtype.fx.warping import bend2, bend3
 
 @test()
 def test_text_on_a_curve(r):
@@ -13,7 +13,7 @@ def test_text_on_a_curve(r):
             .repeat())
         .understroke(s=0, sw=5))
 
-@test(rstate=1, solo=0, watch_restarts=["coldtype/pens/datpen.py"])
+#@test(rstate=1, solo=0, watch_restarts=["coldtype/pens/datpen.py"])
 def test_text_warped_to_curve(r, rs):
     text:DATPens = (StyledString("WARPTOUR",
         Style(mutator, 164, tu=-250, r=1, ro=1, wght=1))
@@ -40,10 +40,10 @@ def test_text_warped_to_curve(r, rs):
         (text.pen()
             .flatten(10)
             #.scale(1, 2)
-            .bend2(sine, tangent=0, offset=[-1, 2])
+            .ch(bend2(sine, tangent=0, offset=[-1, 2]))
             .scale(0.5, point=r.point("C")))]
 
-@test((1000, 1000), solo=1, rstate=1, watch_restarts=["coldtype/pens/datpen.py"])
+#@test((1000, 1000), solo=0, rstate=1, watch_restarts=["coldtype/pens/datpen.py"])
 def test_text_warped_to_vertical_curve(r, rs):
     text:DATPens = (StyledString("COLDTYPE",
         Style(co, 600, tu=-10, r=1, ro=1, wdth=0))
@@ -71,7 +71,7 @@ def test_text_warped_to_vertical_curve(r, rs):
         (text.pen()
             .flatten(10)
             .translate(0, 0)
-            .bend3(sine, tangent=1, offset=[0, 1]))
+            .ch(bend3(sine, tangent=1, offset=[0, 1])))
             .f(hsl(0.9, a=0.3))])
         .scale(0.5, point=r.point("C"))
         .translate(50, 200))
