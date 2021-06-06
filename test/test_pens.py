@@ -2,6 +2,7 @@ import unittest
 from coldtype.geometry import Rect, Point
 from coldtype.pens.draftingpen import DraftingPen
 from coldtype.pens.draftingpens import DraftingPens
+from coldtype.color import hsl
 
 class TestDraftingPens(unittest.TestCase):
     def test_gs(self):
@@ -115,6 +116,15 @@ class TestDraftingPens(unittest.TestCase):
         self.assertEqual(len(dps), 2)
         self.assertNotIsInstance(dps[0], DraftingPens)
         self.assertNotIsInstance(dps[1], DraftingPens)
+    
+    def test_find(self):
+        dps = DraftingPens([
+            DraftingPens([DraftingPens([DraftingPen().tag("find-me").f(hsl(0.9))])]),
+            DraftingPen().tag("not-me"),
+            DraftingPens([DraftingPen().tag("find-me").f(hsl(0.3))])])
+
+        self.assertEqual(dps.find("find-me")[0].f().h/360, 0.9)
+        self.assertAlmostEqual(dps.find("find-me")[1].f().h/360, 0.3)
 
 if __name__ == "__main__":
     unittest.main()
