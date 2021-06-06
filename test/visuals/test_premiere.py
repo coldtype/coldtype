@@ -1,7 +1,7 @@
 from coldtype import *
 from coldtype.time.nle.premiere import PremiereTimeline
 
-pp = Path("test/media/test_premiere_coldtype.json")
+pp = Path("test/visuals/media/test_premiere_coldtype.json")
 tl = PremiereTimeline(pp)
 
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")

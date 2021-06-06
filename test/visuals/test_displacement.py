@@ -1,6 +1,7 @@
 from coldtype.test import *
 from coldtype.fx.skia import Skfi, color_phototype, precompose
 from coldtype.warping import warp_fn
+from coldtype.fx.motion import filmjitter
 
 fonts = [Font.Cacheable(f"~/Type/fonts/fonts/{f}") for f in [
     "MDNichrome0.7-Bold.otf",
@@ -37,7 +38,7 @@ def displacement(f):
     
 
     spots = (DATPens([
-            displacement.last_result.filmjitter(f.a.progress(f.i).e, speed=(50, 50), scale=(3, 5)) if f.i != -1 and displacement.last_result else None,
+            displacement.last_result.ch(filmjitter(f.a.progress(f.i).e, speed=(50, 50), scale=(3, 5))) if f.i != -1 and displacement.last_result else None,
             DATPen().rect(r).f(1, 0.1),
             spots,
             #Composer(f.a.r, "Inkblot\nTest".upper(), Style(obv, 250, ro=1, slnt=1, wght=0.75, wdth=0.2+0.4*f.a.progress(f.i, easefn=["ceio"], loops=5).e)).pens().xa().pen().f(0).s(1).sw(7).align(f.a.r).translate(0, -600+f.i*10),

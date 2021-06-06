@@ -4,8 +4,8 @@ from coldtype.time.nle.subtitler import Subtitler, lyric_editor
 
 
 tl = Subtitler(
-    "test/lyric_data.json",
-    "test/media/helloworld.wav",
+    "test/visuals/lyric_data.json",
+    "test/visuals/media/helloworld.wav",
     storyboard=[3])
 
 

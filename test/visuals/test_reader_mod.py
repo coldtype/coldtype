@@ -51,5 +51,4 @@ def test_ystretch_slnt(r):
         .f(hsl(0.2, a=0.1))
         .s(hsl(0.5))
         .sw(2)
-        -.removeOverlap()
         )

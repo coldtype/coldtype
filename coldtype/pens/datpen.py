@@ -8,10 +8,6 @@ from coldtype.geometry.primitives import add
 from fontTools.misc.transform import Transform
 
 from random import randint, Random
-try:
-    from noise import pnoise1
-except ImportError:
-    pnoise1 = None
 
 from coldtype.sh import sh
 from coldtype.pens.draftingpens import DraftingPen, DraftingPens
@@ -254,74 +250,6 @@ class DATPen(DraftingPen):
         self.closePath()
         return self
     
-    def polygon(self, sides, rect):
-        """Polygon primitive; WIP"""
-        radius = rect.square().w / 2
-        c = rect.center()
-        one_segment = math.pi * 2 / sides
-        points = [(math.sin(one_segment * i) * radius, math.cos(one_segment * i) * radius) for i in range(sides)]
-        dp = DATPen()
-        points.reverse()
-        dp.moveTo(points[0])
-        for p in points[1:]:
-            dp.lineTo(p)
-        dp.closePath()
-        dp.align(rect)
-        self.record(dp)
-        return self
-    
-    def sine(self, r, periods):
-        """Sine-wave primitive"""
-        dp = DATPen()
-        pw = r.w / periods
-        p1 = r.point("SW")
-        end = r.point("SE")
-        dp.moveTo(p1)
-        done = False
-        up = True
-        while not done:
-            h = r.h if up else -r.h
-            c1 = p1.offset(pw/2, 0)
-            c2 = p1.offset(pw/2, h)
-            p2 = p1.offset(pw, h)
-            dp.curveTo(c1, c2, p2)
-            p1 = p2
-            if p1.x >= end.x:
-                done = True
-            else:
-                done = False
-            up = not up
-        self.record(dp)
-        return self
-    
-    def standingwave(self, r, periods, direction=1):
-        """Standing-wave primitive"""
-        dp = DATPen()
-        pw = r.w / periods
-
-        blocks = r.subdivide(periods, "minx")
-        for idx, block in enumerate(blocks):
-            n, e, s, w = block.take(1, "centery").cardinals()
-            if idx == 0:
-                dp.moveTo(w)
-            if direction == 1:
-                if idx%2 == 0:
-                    dp.lineTo(n)
-                else:
-                    dp.lineTo(s)
-            else:
-                if idx%2 == 0:
-                    dp.lineTo(s)
-                else:
-                    dp.lineTo(n)
-            if idx == len(blocks) - 1:
-                dp.lineTo(e)
-        dp.endPath().smooth()
-        dp.value = dp.value[:-1]
-        dp.endPath()
-        self.record(dp)
-        return self
-    
     def points(self):
         """Returns a list of points grouped by contour from the DATPen’s original contours; useful for drawing bezier skeletons; does not modify the DATPen"""
         contours = []
@@ -502,16 +430,6 @@ class DATPen(DraftingPen):
     #     self.scale()
     #     # TODO
     #     return self
-    
-    def filmjitter(self, doneness, base=0, speed=(10, 20), scale=(2, 3), octaves=16):
-        """
-        An easy way to make something move in a way reminiscent of misregistered film
-        """
-        if not pnoise1:
-            raise Exception("No noise installation")
-        nx = pnoise1(doneness*speed[0], base=base, octaves=octaves)
-        ny = pnoise1(doneness*speed[1], base=base+10, octaves=octaves)
-        return self.translate(nx * scale[0], ny * scale[1])
     
     def DiskCached(path:Path, build_fn: Callable[[], "DATPen"]):
         dpio = None

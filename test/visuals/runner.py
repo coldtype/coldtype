@@ -33,7 +33,7 @@ class TestRunner(Renderer):
         
     def shortcuts(self):
         xs = super().shortcuts()
-        xs["prev_test"] = [[[], glfw.KEY_B]]
+        xs["prev_test"] = [[[glfw.MOD_SUPER], glfw.KEY_B]]
         xs["next_test"] = [[[], glfw.KEY_N]]
         return xs
     

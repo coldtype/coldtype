@@ -1,7 +1,7 @@
 from coldtype.test import *
 from coldtype.time.nle.premiere import PremiereTimeline, ClipGroup
 
-json = Path("test/media/test_premiere_multi_coldtype.json")
+json = Path("test/visuals/media/test_premiere_multi_coldtype.json")
 
 pt1 = PremiereTimeline(json)
 pt2 = PremiereTimeline(json).retime_for_symbol("aaa")
