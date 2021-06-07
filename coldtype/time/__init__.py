@@ -39,6 +39,9 @@ class Frame():
             rb, ra = ra, rb
         return ra + e*(rb - ra)
     
+    def ie(self, *args, **kwargs):
+        return self.e(*args, **kwargs, rng=(1, 0))
+    
     def te(self, clip_idx, easefn="eeio", loops=0, rng=(0, 1), cyclic=True, to1=False, out1=False):
         if not isinstance(easefn, str):
             loops = easefn
@@ -57,9 +60,6 @@ class Frame():
             e = 1 - e
             rb, ra = ra, rb
         return ra + e*(rb - ra)
-    
-    def ie(self, *args, **kwargs):
-        return self.e(*args, **kwargs, rng=(1, 0))
     
     def last_render(self, modfn=lambda p: p):
         if not self.a.composites:

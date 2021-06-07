@@ -108,6 +108,51 @@ class Timeable():
                 return -a
             else:
                 return a
+    
+    def io2(self, fi, length, easefn="eeio", negative=False):
+        try:
+            length_i, length_o = length
+        except:
+            length_i = length
+            length_o = length
+        
+        if isinstance(length_i, float):
+            length_i = int(self.duration*(length_i/2))
+        if isinstance(length_o, float):
+            length_o = int(self.duration*(length_o/2))
+        
+        if fi < self.start or fi > self.end:
+            return 0
+        
+        try:
+            ei, eo = easefn
+        except ValueError:
+            ei, eo = easefn, easefn
+
+        to_end = self.end - fi
+        to_start = fi - self.start
+        easefn = None
+        in_end = False
+
+        if to_end < length_o and eo:
+            in_end = True
+            v = to_end/length_o
+            easefn = eo
+        elif to_start <= length_i and ei:
+            v = to_start/length_i
+            easefn = ei
+        else:
+            v = 1
+
+        if v == 1 or not easefn:
+            return 1
+        else:
+            a, _ = ease(easefn, v)
+            return a
+            if negative and in_end:
+                return -a
+            else:
+                return a
 
     def _loop(self, t, times=1, cyclic=True, negative=False):
         lt = t*times*2
