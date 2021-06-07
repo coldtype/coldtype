@@ -1,6 +1,7 @@
 from coldtype.time.timeable import Timing, Timeable, TimeableSet
 from coldtype.time.timeline import Timeline
 from coldtype.time.loop import Loop, LoopPhase
+from coldtype.time.clip import Clip
 
 class Frame():
     """
@@ -33,6 +34,22 @@ class Frame():
         if on:
             if tl not in on:
                 e = 0
+        ra, rb = rng
+        if ra > rb:
+            e = 1 - e
+            rb, ra = ra, rb
+        return ra + e*(rb - ra)
+    
+    def ce(self, clip_idx, easefn="eeio", loops=0, rng=(0, 1), cyclic=True, to1=False, out1=False):
+        if not isinstance(easefn, str):
+            loops = easefn
+            easefn = "eeio"
+        try:
+            clip:Clip = self.a.t[clip_idx]
+        except:
+            return 0
+        t = clip.progress(self.i%self.a.duration, loops=loops, easefn=easefn, cyclic=cyclic, to1=to1, out1=out1)
+        e = t.e
         ra, rb = rng
         if ra > rb:
             e = 1 - e

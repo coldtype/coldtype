@@ -126,7 +126,7 @@ class Timeable():
                 lt = 1 - lt
         return lt, ltf
     
-    def progress(self, i, loops=0, cyclic=True, negative=False, easefn="linear", to1=False) -> Timing:
+    def progress(self, i, loops=0, cyclic=True, negative=False, easefn="linear", to1=False, out1=True) -> Timing:
         """
         Given an easing function (``easefn=``), calculate the amount of progress as a Timing object
 
@@ -135,7 +135,10 @@ class Timeable():
         if i < self.start:
             return Timing(0, 0, 0, easefn)
         if i > self.end:
-            return Timing(1, 1, 0, easefn)
+            if out1:
+                return Timing(1, 1, 0, easefn)
+            else:
+                return Timing(0, 0, 0, easefn)
         d = self.duration
         if to1:
             d = d - 1
