@@ -1,5 +1,5 @@
 from coldtype.test import *
-from coldtype.time.ascii import AsciiTimeline
+from coldtype.time.nle.ascii import AsciiTimeline
 from coldtype.text.composer import Glyphwise
 
 at = AsciiTimeline(2, """
