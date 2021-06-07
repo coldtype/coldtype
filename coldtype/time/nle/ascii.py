@@ -1,5 +1,4 @@
-from coldtype.time.timeline import Timeline
-from coldtype.time.clip import Clip
+from coldtype.time.timeline import Timeline, Timeable
 
 
 class AsciiTimeline(Timeline):
@@ -26,13 +25,14 @@ class AsciiTimeline(Timeline):
         for l in lines:
             clip_start = None
             clip_name = None
+            looped_clip_end = None
             for idx, c in enumerate(l):
                 if c == "]":
                     if clip_start is not None and clip_name is not None:
-                        clips.append(Clip(
-                            clip_name,
-                            clip_start,
-                            idx*multiplier))
+                        clips.append(Timeable(clip_start, idx*multiplier,
+                            name=clip_name))
+                    else:
+                        looped_clip_end = idx*multiplier
                     clip_start = None
                     clip_name = None
                 elif c == "[":
@@ -40,6 +40,11 @@ class AsciiTimeline(Timeline):
                     clip_name = ""
                 elif c not in [" ", "-", "|"]:
                     clip_name += c
+            
+            if looped_clip_end:
+                if clip_start is not None and clip_name is not None:
+                    clips.append(Timeable(clip_start, self.duration+looped_clip_end,
+                        name=clip_name))
         
         if sort_keys:
             self.clips = sorted(clips, key=lambda c: c.text)
