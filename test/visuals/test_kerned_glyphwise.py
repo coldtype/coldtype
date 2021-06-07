@@ -77,7 +77,7 @@ def test_kerned(r):
 
 @animation((2400, 1080), timeline=60, solo=1, bg=0)
 def test_kerned_animation(f):
-    return (Glyphwise("WAV", lambda i,c:
+    return (Glyphwise("WAVEFORM", lambda i,c:
         Style(fnt, (fa:=f.adj(-i*10)).e("seio", 1, (250, 500)),
             kern=1, opsz=0, wdth=fa.e("seio", 1)))
         .align(f.a.r, y="mny")
