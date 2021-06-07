@@ -23,11 +23,16 @@ class Frame():
     def adj(self, off):
         return Frame(self.i+off, self.a)
     
-    def e(self, easefn="eeio", loops=0, rng=(0, 1), cyclic=True, to1=False):
+    def e(self, easefn="eeio", loops=0, rng=(0, 1), on=None, cyclic=True, to1=False):
         if not isinstance(easefn, str):
             loops = easefn
             easefn = "eeio"
-        e = self.a.progress(self.i%self.a.duration, loops=loops, easefn=easefn, cyclic=cyclic, to1=to1).e
+        t = self.a.progress(self.i%self.a.duration, loops=loops, easefn=easefn, cyclic=cyclic, to1=to1)
+        tl = t.loop // (2 if cyclic else 1)
+        e = t.e
+        if on:
+            if tl not in on:
+                e = 0
         ra, rb = rng
         if ra > rb:
             e = 1 - e
