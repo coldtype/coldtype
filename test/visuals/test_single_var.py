@@ -1,36 +1,33 @@
-from coldtype.test import *
+from coldtype import *
 from coldtype.text.composer import Glyphwise
+from coldtype.time.nle.ascii import AsciiTimeline
 
-tl = Timeline(180, fps=30)
+fnt = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
+at = AsciiTimeline(4, 30, """
+                                                <
+[0     ][1     ][2     ][3     ]   [ro   ]
+[4         ]    [6       ]         [tu       ]
+        [5         ]    [7           ]
+            [slnt                    ]
+""", sort=1)
 
-@animation((1080, 1080), timeline=tl, bg=0)
-def test_multi_var(f):
-    fs = 200
-    
-    # TODO rewrite w/ an asciitimeline?
+@animation((1080, 1080), timeline=at, bg=hsl(0.9, 1, 0.9))
+def test_glyphwise(f):
+    nows = at.now(f.i, 1)
+    now = nows[0] if nows else None
 
-    lookup = dict(
-        T=dict(wght=f.e(4, on=[0]), wdth=f.e(4, on=[0])),
-        Y=dict(wght=f.e(4, on=[1]), wdth=f.e(4, on=[1])),
-        P=dict(wght=f.e(4, on=[2]), wdth=f.e(4, on=[2])),
-        E=dict(wght=f.e(4, on=[3]), wdth=f.e(4, on=[3])))
-    
-    pens = (Glyphwise("TYPE",
-        lambda i, c: Style(mutator, fs, **lookup[c]))
+    return (Glyphwise("TYPE",
+        lambda i, c: Style(fnt, 300,
+            wght=at[i].e(f.i),
+            wdth=at[i+4].e(f.i, "ceio"),
+            slnt=at["slnt"].e(f.i, "seio")))
+        .track(150*at["tu"].e(f.i, "eeio", 1))
         .align(f.a.r)
-        .f(1))
-    
-    ero = 360*f.e(4, on=[3])
-    pens[-1].rotate(ero)
-
-    if True:
-        zoom = f.a.progress(f.i, loops=4, easefn="eeio")
-        cidx = math.floor(zoom.loop/2)
-        pe = zoom.e
-        (pens.center_on_point(f.a.r, pens[cidx].bounds().point("C"), interp=pe)
-            .scale(1+pe*2, point=pens[cidx].bounds().point("C")))
-
-    return DPS([
-        pens,
-        #StSt("TYPE", mutator, fs).align(f.a.r)
-    ])
+        .f(hsl(0.7, 1))
+        .pmap(lambda _, p: p.rotate(-360*at["ro"].e(f.i, 0)))
+        .cond(True and now and now.index < 4, lambda pens:
+            (pens.center_on_point(f.a.r,
+                    pens[now.index].bounds().point("C"),
+                    interp=now.e(f.i))
+                .scale(1+now.e(f.i)*1.5,
+                    point=pens[now.index].bounds().point("C")))))

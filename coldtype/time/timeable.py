@@ -69,6 +69,22 @@ class Timeable():
     
     def now(self, i):
         return self.start <= i < self.end
+    
+    def e(self, fi, easefn="eeio", loops=1, rng=(0, 1), on=None, cyclic=True, to1=False, out1=False):
+        if not isinstance(easefn, str):
+            loops = easefn
+            easefn = "eeio"
+        t = self.progress(fi, loops=loops, easefn=easefn, cyclic=cyclic, to1=to1, out1=out1)
+        tl = t.loop // (2 if cyclic else 1)
+        e = t.e
+        if on:
+            if tl not in on:
+                e = 0
+        ra, rb = rng
+        if ra > rb:
+            e = 1 - e
+            rb, ra = ra, rb
+        return ra + e*(rb - ra)
 
     def io(self, fi, length, ei="eei", eo="eei", negative=False):
         """

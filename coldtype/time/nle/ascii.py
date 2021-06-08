@@ -1,3 +1,4 @@
+import enum
 from coldtype.time.timeline import Timeline, Timeable
 
 
@@ -8,14 +9,14 @@ class AsciiTimeline(Timeline):
         multiplier:int,
         fps:float,
         ascii:str=None,
-        sort_keys=False,
+        sort=False,
         **kwargs
         ):
         if isinstance(fps, str):
             ascii = fps
             fps = 30
         lines = [l.rstrip() for l in ascii.splitlines() if l.strip()]
-        ml = max([len(l) for l in lines])
+        ml = max([len(l) for l in lines]) - 1
         super().__init__(multiplier*ml, fps=fps, **kwargs)
 
         self.multiplier = multiplier
@@ -23,7 +24,7 @@ class AsciiTimeline(Timeline):
         clips = []
 
         unclosed_clip = None
-        for l in lines:
+        for lidx, l in enumerate(lines):
             clip_start = None
             clip_name = None
             if unclosed_clip:
@@ -33,8 +34,11 @@ class AsciiTimeline(Timeline):
             for idx, c in enumerate(l):
                 if c == "]":
                     if clip_start is not None and clip_name is not None:
-                        clips.append(Timeable(clip_start, idx*multiplier,
-                            name=clip_name))
+                        clips.append(Timeable(
+                            clip_start,
+                            (idx+1)*multiplier,
+                            name=clip_name,
+                            data=dict(line=lidx)))
                     else:
                         looped_clip_end = idx*multiplier
                     clip_start = None
@@ -47,18 +51,24 @@ class AsciiTimeline(Timeline):
             
             if looped_clip_end:
                 if clip_start is not None and clip_name is not None:
-                    clips.append(Timeable(clip_start, self.duration+looped_clip_end,
-                        name=clip_name))
+                    clips.append(Timeable(
+                        clip_start,
+                        self.duration+looped_clip_end,
+                        name=clip_name,
+                        data=dict(line=idx)))
                     clip_start = None
                     clip_name = None
             
             if clip_start is not None and clip_name is not None:
                 unclosed_clip = (clip_start, clip_name)
         
-        if sort_keys:
-            self.clips = sorted(clips, key=lambda c: c.text)
+        if sort:
+            self.clips = sorted(clips, key=lambda c: c.name)
         else:
             self.clips = clips
+        
+        for cidx, clip in enumerate(self.clips):
+            clip.index = cidx
 
     def __getitem__(self, item):
         if isinstance(item, str):
@@ -67,3 +77,13 @@ class AsciiTimeline(Timeline):
                     return c
         else:
             return self.clips[item]
+    
+    def now(self, fi, line=None):
+        matches = []
+        for clip in self.clips:
+            if clip.start <= fi < clip.end:
+                if line is not None:
+                    if clip.data["line"] != line:
+                        continue
+                matches.append(clip)
+        return matches
