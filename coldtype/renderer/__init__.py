@@ -55,10 +55,31 @@ except ImportError:
 
 try:
     import glfw
-    from OpenGL import GL
 except ImportError:
     glfw = None
-    GL = None
+
+def monkeypatch_ctypes():
+    import os
+    import ctypes.util
+    uname = os.uname()
+    if uname.sysname == "Darwin" and uname.release >= "20.":
+        real_find_library = ctypes.util.find_library
+        def find_library(name):
+            if name in {"OpenGL", "GLUT"}:  # add more names here if necessary
+                return f"/System/Library/Frameworks/{name}.framework/{name}"
+            return real_find_library(name)
+        ctypes.util.find_library = find_library
+    return
+
+try:
+    from OpenGL import GL
+except ImportError:
+    monkeypatch_ctypes()
+    try:
+        from OpenGL import GL
+    except:
+        print("pip install PyOpenGL")
+        GL = None
 
 from coldtype.renderer.utils import *
 
