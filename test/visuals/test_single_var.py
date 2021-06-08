@@ -1,18 +1,19 @@
-from coldtype.text.composer import Glyphwise
 from coldtype.test import *
-from coldtype.text.richtext import RichText
+from coldtype.text.composer import Glyphwise
 
 tl = Timeline(180, fps=30)
 
 @animation((1080, 1080), timeline=tl, bg=0)
 def test_multi_var(f):
     fs = 200
+    
+    # TODO rewrite w/ an asciitimeline?
 
     lookup = dict(
-        T=dict(wdth=f.e(4, on=[0])),
-        Y=dict(wdth=f.e(4, on=[1])),
-        P=dict(wdth=f.e(4, on=[2])),
-        E=dict(wdth=f.e(4, on=[3])))
+        T=dict(wght=f.e(4, on=[0]), wdth=f.e(4, on=[0])),
+        Y=dict(wght=f.e(4, on=[1]), wdth=f.e(4, on=[1])),
+        P=dict(wght=f.e(4, on=[2]), wdth=f.e(4, on=[2])),
+        E=dict(wght=f.e(4, on=[3]), wdth=f.e(4, on=[3])))
     
     pens = (Glyphwise("TYPE",
         lambda i, c: Style(mutator, fs, **lookup[c]))
