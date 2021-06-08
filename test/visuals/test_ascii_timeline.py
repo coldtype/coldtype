@@ -6,11 +6,11 @@ from coldtype.text.composer import Glyphwise
 fnt = Font.Cacheable("~/Type/fonts/fonts/CheeeVariable.ttf")
 
 at = AsciiTimeline(1, """
-                                                               <
-        [a                                   ]
+                                                              <
+          [a                                 ]
                       [b                     ]
-                                [c                ]
-[e                                                         ]
+                                [c                   ]
+[e                                                           ]
 """)
 
 @animation(timeline=at)
@@ -24,5 +24,5 @@ def test_ascii(f):
         .scale(io*2))
     
     return DPS([
-        DP(word.ambit(tv=1).inset(-50)).f(hsl(0.07, 1, 0.8, a=0.5)),
+        #DP(word.ambit(tv=1).inset(-50)).f(hsl(0.07, 1, 0.8, a=0.5)),
         word])
