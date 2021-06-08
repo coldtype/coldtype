@@ -92,7 +92,7 @@ setuptools.setup(
         "timecode",
         # /drafting
         "mido",
-        #"numpy",
+        "numpy",
         "defcon",
         "docutils",
         # drafting-text
