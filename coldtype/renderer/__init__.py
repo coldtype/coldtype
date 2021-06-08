@@ -58,6 +58,8 @@ try:
 except ImportError:
     glfw = None
 
+# source: https://github.com/PixarAnimationStudios/USD/issues/1372
+
 def monkeypatch_ctypes():
     import os
     import ctypes.util
