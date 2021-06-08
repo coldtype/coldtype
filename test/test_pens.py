@@ -143,7 +143,22 @@ class TestDraftingPens(unittest.TestCase):
         self.assertEqual(_build(False)[0].f().r, 1)
     
     def test_alpha(self):
-        pass
+        dps = (DraftingPens([
+            (DraftingPens([
+                (DraftingPen().a(0.5))
+            ]).a(0.5))
+        ]).a(0.25))
+
+        def walker(p, pos, data):
+            if pos == 0:
+                self.assertEqual(data["alpha"], 0.0625)
+            elif pos == 1 and data["depth"] == 0:
+                self.assertEqual(data["alpha"], 0.25)
+            elif pos == 1 and data["depth"] == 1:
+                self.assertEqual(data["alpha"], 0.125)
+
+        dps.walk(walker)
+        print(dps)
 
 if __name__ == "__main__":
     unittest.main()

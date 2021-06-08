@@ -810,21 +810,29 @@ class DraftingPen(RecordingPen, SHContext):
             self.value[cidx] = (move, pts)
         return self
     
-    def walk(self, callback:Callable[["DraftingPen", int, dict], None], depth=0, visible_only=False, parent=None):
+    def walk(self,
+        callback:Callable[["DraftingPen", int, dict], None],
+        depth=0,
+        visible_only=False,
+        parent=None,
+        alpha=1
+        ):
         if visible_only and not self._visible:
             return
         
         if parent:
             self._parent = parent
         
+        alpha = self._alpha * alpha
+        
         is_dps = hasattr(self, "_pens")
         if is_dps:
-            callback(self, -1, dict(depth=depth))
+            callback(self, -1, dict(depth=depth, alpha=alpha))
             for pen in self._pens:
-                pen.walk(callback, depth=depth+1, visible_only=visible_only, parent=self)
-            callback(self, 1, dict(depth=depth))
+                pen.walk(callback, depth=depth+1, visible_only=visible_only, parent=self, alpha=alpha)
+            callback(self, 1, dict(depth=depth, alpha=alpha))
         else:
-            callback(self, 0, dict(depth=depth))
+            callback(self, 0, dict(depth=depth, alpha=alpha))
     
     def remove_blanks(self):
         print("REMOVE BLANKS PEN", self)
@@ -1169,13 +1177,13 @@ class DraftingPen(RecordingPen, SHContext):
         self._current_attr_tag = was_tag
         return self
     
-    def calc_alpha(self):
-        a = self._alpha
-        p = self._parent
-        while p:
-            a = a * p._alpha
-            p = p._parent
-        return a
+    # def calc_alpha(self):
+    #     a = self._alpha
+    #     p = self._parent
+    #     while p:
+    #         a = a * p._alpha
+    #         p = p._parent
+    #     return a
     
     def v(self, v):
         self.visible(bool(v))

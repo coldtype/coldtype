@@ -225,15 +225,8 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         if not pens.visible:
             return
         
-        agg_alpha = 1
-        
         def draw(pen, state, data):
-            nonlocal agg_alpha
             if state != 0:
-                if state == -1:
-                    agg_alpha = agg_alpha * pen._alpha
-                elif state == 1:
-                    agg_alpha = agg_alpha / pen._alpha
                 return
 
             if not pen.visible:
@@ -273,17 +266,14 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                         deg, pt = args
                         canvas.rotate(-deg, pt.x, pt.y)
                     #print(action, args)
-                paint.setAlphaf(paint.getAlphaf()*agg_alpha)
+                paint.setAlphaf(paint.getAlphaf()*data["alpha"])
                 canvas.drawImage(pen._img, f.x, f.y, paint)
                 canvas.restore()
                 #pen = DATPen().rect(pen.bounds()).img(pen._img, rect=pen.bounds(), pattern=False)
                 return
             
             if state == 0:
-                #SkiaPen(pen, rect, canvas, scale, style=style, alpha=pen.calc_alpha())
-                agg_alpha = agg_alpha * pen._alpha
-                SkiaPen(pen, rect, canvas, scale, style=style, alpha=agg_alpha)
-                agg_alpha = agg_alpha / pen._alpha
+                SkiaPen(pen, rect, canvas, scale, style=style, alpha=data["alpha"])
         
         pens.walk(draw, visible_only=True)
     
