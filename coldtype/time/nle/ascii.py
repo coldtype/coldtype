@@ -63,7 +63,7 @@ class AsciiTimeline(Timeline):
     def __getitem__(self, item):
         if isinstance(item, str):
             for c in self.clips:
-                if c.text == item:
+                if c.name == item:
                     return c
         else:
             return self.clips[item]
