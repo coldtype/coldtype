@@ -158,7 +158,32 @@ class TestDraftingPens(unittest.TestCase):
                 self.assertEqual(data["alpha"], 0.125)
 
         dps.walk(walker)
-        print(dps)
+    
+    def test_visibility(self):
+        dps = (DraftingPens([
+            (DraftingPens([
+                (DraftingPen().v(1).tag("visible")),
+                (DraftingPen().v(0).tag("invisible"))
+            ]))
+        ]))
+
+        def walker(p, pos, data):
+            nonlocal visible_pen_count
+            if pos == 0:
+                visible_pen_count += 1
+
+        visible_pen_count = 0
+        dps.walk(walker, visible_only=True)
+        self.assertEqual(visible_pen_count, 1)
+
+        visible_pen_count = 0
+        dps.walk(walker, visible_only=False)
+        self.assertEqual(visible_pen_count, 2)
+
+        visible_pen_count = 0
+        dps[0][0].v(0)
+        dps.walk(walker, visible_only=True)
+        self.assertEqual(visible_pen_count, 0)
 
 if __name__ == "__main__":
     unittest.main()

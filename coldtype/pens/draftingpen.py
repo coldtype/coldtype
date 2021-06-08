@@ -102,7 +102,7 @@ class DraftingPen(RecordingPen, SHContext):
             return self._frame
     
     def visible(self, value=None):
-        if value:
+        if value is not None:
             self._visible = value
             return self
         else:
