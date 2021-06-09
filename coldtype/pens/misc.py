@@ -8,12 +8,14 @@ USE_SKIA_PATHOPS = True
 
 try:
     from pathops import Path, OpBuilder, PathOp
-except:
-    pass
+except ImportError:
+    USE_SKIA_PATHOPS = False
+
 try:
     from booleanOperations.booleanGlyph import BooleanGlyph
-except:
-    pass
+except ImportError:
+    if not USE_SKIA_PATHOPS:
+        print(">>> NO PATHOPS FOUND; please install either skia-pathops or booleanOperations")
 
 
 class BooleanOp(Enum):
