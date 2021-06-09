@@ -43,4 +43,4 @@ Now the -wpass argument should work.
 A semi-transparent window
 -------------------------
 
-One other thing you can do is set the opacity of the window itself to something other than the usual fully-opaque. I probably should’ve done this in the video above, where I briefly made my own code invisible because of the blue text overlaying it. I could’ve avoided that by adding :code:`-wo 0.5` to the command-line invocation, which would’ve cut the transparency of the whole window in half, meaning even a full-alpha color in the rendered viewer would've been transparen (and I could’ve seen all of the code).
+One other thing you can do is set the opacity of the window itself to something other than the usual fully-opaque. I probably should’ve done this in the video above, where I briefly made my own code invisible because of the blue text overlaying it. I could’ve avoided that by adding :code:`-wo 0.5` to the command-line invocation, which would’ve cut the transparency of the whole window in half, meaning even a full-alpha color in the rendered viewer would've been transparent (and I could’ve seen all of the code).
