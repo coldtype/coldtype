@@ -13,6 +13,7 @@ except ImportError:
 
 try:
     from booleanOperations.booleanGlyph import BooleanGlyph
+    from booleanOperations.exceptions import UnsupportedContourError
 except ImportError:
     if not USE_SKIA_PATHOPS:
         print(">>> NO PATHOPS FOUND; please install either skia-pathops or booleanOperations")
@@ -67,11 +68,21 @@ def calculate_pathop(pen1, pen2, operation):
         result.draw(d0)
         return d0.value
     else:
+        bg = BooleanGlyph()
+        pen1.replay(bg.getPen())
+        if operation == BooleanOp.Simplify:
+            # ignore pen2
+            try:
+                bg.removeOverlap()
+            except UnsupportedContourError:
+                pass
+            dp = RecordingPen()
+            bg.draw(dp)
+            return dp.value
+
         bg2 = BooleanGlyph()
         if pen2:
             pen2.replay(bg2.getPen())
-        bg = BooleanGlyph()
-        pen1.replay(bg.getPen())
         bg = bg._booleanMath(BooleanOp.BooleanGlyphMethod(operation), bg2)
         dp = RecordingPen()
         bg.draw(dp)
