@@ -38,7 +38,8 @@ class AsciiTimeline(Timeline):
                             clip_start,
                             (idx+1)*multiplier,
                             name=clip_name,
-                            data=dict(line=lidx)))
+                            data=dict(line=lidx),
+                            timeline=self))
                     else:
                         looped_clip_end = idx*multiplier
                     clip_start = None
@@ -55,7 +56,8 @@ class AsciiTimeline(Timeline):
                         clip_start,
                         self.duration+looped_clip_end,
                         name=clip_name,
-                        data=dict(line=idx)))
+                        data=dict(line=idx),
+                        timeline=self))
                     clip_start = None
                     clip_name = None
             
@@ -78,7 +80,7 @@ class AsciiTimeline(Timeline):
         else:
             return self.clips[item]
     
-    def now(self, fi, line=None):
+    def now(self, fi, line=None, first=False, filter_fn=None):
         matches = []
         for clip in self.clips:
             if clip.start <= fi < clip.end:
@@ -86,4 +88,8 @@ class AsciiTimeline(Timeline):
                     if clip.data["line"] != line:
                         continue
                 matches.append(clip)
+        if filter_fn:
+            matches = list(filter(filter_fn, matches))
+        if first:
+            return matches[0] if matches else None
         return matches

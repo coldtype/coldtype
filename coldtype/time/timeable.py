@@ -37,13 +37,14 @@ class Timeable():
 
     Implements additional methods to make it easier to work with time-based concepts
     """
-    def __init__(self, start, end, index=0, name=None, data={}):
+    def __init__(self, start, end, index=0, name=None, data={}, timeline=None):
         self.start = start
         self.end = end
         self.index = index
         self.name = name
         self.feedback = 0
         self.data = data
+        self.timeline = timeline
     
     @property
     def duration(self):
@@ -69,17 +70,20 @@ class Timeable():
     
     def now(self, i):
         return self.start <= i < self.end
+
+    def _normalize_fi(self, fi):
+        if self.timeline:
+            if self.end > self.timeline.duration and fi < self.start:
+                return fi + self.timeline.duration
+        return fi
     
-    def e(self, fi, easefn="eeio", loops=1, rng=(0, 1), on=None, cyclic=True, to1=False, out1=False):
+    def e(self, fi, easefn="eeio", loops=1, rng=(0, 1), cyclic=True, to1=False, out1=False):
         if not isinstance(easefn, str):
             loops = easefn
             easefn = "eeio"
+        fi = self._normalize_fi(fi)
         t = self.progress(fi, loops=loops, easefn=easefn, cyclic=cyclic, to1=to1, out1=out1)
-        tl = t.loop // (2 if cyclic else 1)
         e = t.e
-        if on:
-            if tl not in on:
-                e = 0
         ra, rb = rng
         if ra > rb:
             e = 1 - e
@@ -99,6 +103,9 @@ class Timeable():
         except:
             length_i = length
             length_o = length
+        
+        fi = self._normalize_fi(fi)
+
         if fi < self.start:
             return 1
         if fi > self.end:
