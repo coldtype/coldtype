@@ -3,6 +3,7 @@
 env
 venv
 venv2
+venv37
 test/visuals/artifacts/*
 test/visuals/*.blend1
 test/visuals/test_media

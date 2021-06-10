@@ -67,6 +67,8 @@ setuptools.setup(
             "SimpleWebSocketServer",
             "watchdog<2.0.0", # https://github.com/gorakhargosh/watchdog/issues/702
             "noise",
+            "ufo2ft",
+            "numpy",
         ],
         "webviewer": [
             "SimpleWebSocketServer",
@@ -84,26 +86,18 @@ setuptools.setup(
         ]
     },
     install_requires=[
-        # drafting
         "lxml",
         "fonttools[ufo]",
         "fontPens",
         "more-itertools",
         "easing-functions",
         "timecode",
-        # /drafting
         "mido",
-        "numpy",
         "defcon",
-        "docutils",
-        # drafting-text
         "freetype-py",
         "uharfbuzz>=0.14.0",
         "unicodedata2",
-        "ufo2ft",
         "python-bidi",
-        # /drafting-text
-        "more-itertools",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

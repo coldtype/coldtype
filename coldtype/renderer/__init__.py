@@ -16,7 +16,6 @@ from runpy import run_path
 from subprocess import Popen, PIPE, STDOUT
 from random import shuffle, Random
 from more_itertools import distribute
-from docutils.core import publish_doctree
 from functools import partial
 
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -57,6 +56,11 @@ try:
     import glfw
 except ImportError:
     glfw = None
+
+try:
+    from docutils.core import publish_doctree
+except ImportError:
+    publish_doctree = None
 
 # source: https://github.com/PixarAnimationStudios/USD/issues/1372
 
@@ -513,6 +517,8 @@ class Renderer():
             pass # ?
         else:
             if self.filepath.suffix == ".rst":
+                if not publish_doctree:
+                    raise Exception("pip install docutils")
                 doctree = publish_doctree(self.filepath.read_text())
                 def is_code_block(node):
                     if node.tagname == "literal_block":
@@ -1090,7 +1096,7 @@ class Renderer():
                 daemon.setDaemon(True)
                 daemon.start()
         elif not glfw and not skia:
-            print("\n\n>>> To view a coldtype program, you either need to (1) install with the [viewer] optional package or (2) install with the [webviewer] optional package and run with the --webviewer flag (aka -wv)\n\n")
+            print("\n\n>>> To run the coldtype viewer, you’ll need to install with the [viewer] optional package, ala `pip install coldtype[viewer]`\n\n")
 
         if glfw and not self.args.no_viewer:
             if not glfw.init():

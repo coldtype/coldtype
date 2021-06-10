@@ -12,7 +12,11 @@ from fontTools.fontBuilder import FontBuilder
 from fontTools.ttLib import newTable
 from fontTools.ufoLib import UFOReader
 from fontTools.ufoLib.glifLib import _BaseParser as BaseGlifParser
-from ufo2ft.featureCompiler import FeatureCompiler
+
+try:
+    from ufo2ft.featureCompiler import FeatureCompiler
+except ImportError:
+    FeatureCompiler = None
 
 
 def compileUFOToFont(ufoPath):
@@ -46,6 +50,8 @@ def compileUFOToFont(ufoPath):
     ttFont["FGAx"] = newTable("FGAx")
     ttFont["FGAx"].data = pickle.dumps(anchors)
     ufo = MinimalFontObject(ufoPath, reader, revCmap, anchors)
+    if not FeatureCompiler:
+        raise Exception("pip install ufo2ft")
     feaComp = FeatureCompiler(ufo, ttFont)
     try:
         feaComp.compile()

@@ -3,7 +3,11 @@ try:
 except ImportError:
     raise Exception("pip install opencv-python")
 
-import numpy as np
+try:
+    import numpy as np
+except ImportError:
+    pass
+
 from coldtype.img.skiaimage import skia, SkiaImage
 
 def read_frame(cam):

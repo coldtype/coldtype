@@ -1,5 +1,3 @@
-import numpy as np
-import soundfile as sf
 from coldtype import *
 from coldtype.time.audio import Wavfile
 from coldtype.fx.skia import phototype
@@ -11,6 +9,7 @@ You'll need to `pip install soundfile` in yourt virtualenv to get this to work
 audio = Wavfile("examples/animations/media/coldtype.wav")
 obvs = Font("assets/ColdtypeObviously.designspace")
 
+#audio=audio.path
 @animation(duration=audio.framelength, bg=0)
 def render(f):
     amp = audio.amp(f.i)

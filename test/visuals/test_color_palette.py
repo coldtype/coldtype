@@ -1,7 +1,6 @@
 from coldtype.test import *
 from random import randint
 from noise import pnoise1
-import numpy as np
 import PIL.Image
 from coldtype.fx.skia import Skfi, mod_pixels, precompose
 
