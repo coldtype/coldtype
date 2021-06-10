@@ -371,6 +371,7 @@ class Renderer():
         self.context = None
         self.surface = None
         self.transparent = False
+        self.copy_previews_to_clipboard = False
 
         if self.args.filter_functions:
             self.function_filters = [f.strip() for f in self.args.filter_functions.split(",")]
@@ -1628,6 +1629,11 @@ class Renderer():
             self.state.capturing_previews = True
             self.state.capturing_previews_once = True
             self.playing = 1
+        elif shortcut == KeyboardShortcut.CopySVGToClipboard:
+            self.copy_previews_to_clipboard = True
+            return Action.PreviewStoryboard
+        else:
+            print(shortcut, "not recognized")
     
     def on_shortcut(self, shortcut):
         #print(shortcut)
@@ -2127,6 +2133,19 @@ class Renderer():
             
             for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
                 rect = rects[idx].offset((w-rects[idx].w)/2, 0).round()
+
+                if self.copy_previews_to_clipboard:
+                    try:
+                        svg = SVGPen.Composite(result, render.rect, viewBox=render.viewBox)
+                        print(svg)
+                        process = Popen(
+                            'pbcopy', env={'LANG': 'en_US.UTF-8'}, stdin=PIPE)
+                        process.communicate(svg.encode('utf-8'))
+
+                    except:
+                        print("failed to copy to clipboard")
+
+
                 try:
                     self.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
                     did_preview.append(rp)
@@ -2135,6 +2154,8 @@ class Renderer():
                     print(stack)
                     paint = skia.Paint(AntiAlias=True, Color=skia.ColorRED)
                     canvas.drawString(stack.split("\n")[-2], 10, 32, skia.Font(None, 36), paint)
+            
+            self.copy_previews_to_clipboard = False
         
             if self.state.keylayer != Keylayer.Default and not self.args.hide_keybuffer:
                 self.state.draw_keylayer(canvas, self.last_rect, self.typeface)

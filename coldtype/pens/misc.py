@@ -73,8 +73,9 @@ def calculate_pathop(pen1, pen2, operation):
         if operation == BooleanOp.Simplify:
             # ignore pen2
             try:
-                bg.removeOverlap()
+                bg = bg.removeOverlap()
             except UnsupportedContourError:
+                print("booleanOperations could not removeOverlap (qcurve present)")
                 pass
             dp = RecordingPen()
             bg.draw(dp)

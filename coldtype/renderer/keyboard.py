@@ -80,6 +80,9 @@ class KeyboardShortcut(Enum):
     ToggleCapturing = "toggle_capturing"
     CaptureOnce = "capture_once"
 
+    CopySVGToClipboard = "copy_svg_to_clipboard"
+
+
 REPEATABLE_SHORTCUTS = [
     KeyboardShortcut.PreviewPrev,
     KeyboardShortcut.PreviewPrevMany,
@@ -312,5 +315,9 @@ SHORTCUTS = {
     ],
     KeyboardShortcut.CaptureOnce: [
         [["cmd", "shift"], "c"]
+    ],
+
+    KeyboardShortcut.CopySVGToClipboard: [
+        [["cmd"], "c"]
     ]
 }

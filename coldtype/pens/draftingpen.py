@@ -10,6 +10,7 @@ from fontTools.misc.transform import Transform
 from fontTools.pens.boundsPen import BoundsPen
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.transformPen import TransformPen
+from fontTools.pens.basePen import decomposeQuadraticSegment
 from fontTools.pens.reverseContourPen import ReverseContourPen
 
 from fontPens.flattenPen import FlattenPen
@@ -1389,3 +1390,19 @@ class DraftingPen(RecordingPen, SHContext):
         return self
     
     nlt = nonlinear_transform
+
+    def q2c(self):
+        new_vl = []
+        for mv, pts in self.value:
+            if mv == "qCurveTo":
+                decomposed = decomposeQuadraticSegment(pts)
+                for dpts in decomposed:
+                    qp1, qp2 = [Point(pt) for pt in dpts]
+                    qp0 = Point(new_vl[-1][-1][-1])
+                    cp1 = qp0 + (qp1 - qp0)*(2.0/3.0)
+                    cp2 = qp2 + (qp1 - qp2)*(2.0/3.0)
+                    new_vl.append(["curveTo", (cp1, cp2, qp2)])
+            else:
+                new_vl.append([mv, pts])
+        self.value = new_vl
+        return self

@@ -151,6 +151,7 @@ class Style():
             rotate=0,
             reverse=False,
             removeOverlap=False,
+            q2c=False,
             lang=None,
             narrower=None,
             include_blanks=False,
@@ -195,6 +196,7 @@ class Style():
         self.layer = layer
         self.reverse = kwargs.get("r", reverse)
         self.removeOverlap = kwargs.get("ro", removeOverlap)
+        self.q2c = q2c
         self.rotate = rotate
         self.include_blanks = include_blanks
         self.scaleVariations = scaleVariations
@@ -722,6 +724,8 @@ class StyledString(FittableMixin):
                 dp_atom.typographic = True
                 dp_atom.addFrame(g.frame)
                 dp_atom.glyphName = g.name
+                if self.style.q2c:
+                    dp_atom.q2c()
                 if self.style.removeOverlap:
                     dp_atom.removeOverlap()
             else:

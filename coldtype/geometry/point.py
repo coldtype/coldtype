@@ -148,44 +148,20 @@ class Point(Geometrical):
             raise IndexError(
                 "Invalid index for point assignment, must be 0 or 1")
     
-    def __floordiv__(self, other):
-        return self.offset(0, other)
-    
-    def __truediv__(self, other):
-        return self.offset(other, 0)
-    
     def setx(self, x):
         return Point([x, self.y])
-    
-    def __mul__(self, other):
-        return self.setx(other)
     
     def sety(self, y):
         return Point([self.x, y])
     
-    def __matmul__(self, other):
-        return self.sety(other)
-    
-    def __or__(self, other):
-        from coldtype.geometry.line import Line
-        return Line(self, other)
-    
-    #def as3d(self):
-    #    return Point3D(self)
-    
     def reverse(self):
         return Point(self.y, self.x)
-
-
-# class Point3D(Point):
-#     def __init__(self, p):
-#         super().__init__(p)
-#         self.z = 0
     
-#     def __len__(self):
-#         return 3
+    def __add__(self, o):
+        return Point(self.x + o.x, self.y + o.y)
     
-#     def __getitem__(self, idx):
-#         if idx == 2:
-#             return self.z
-#         return super().__getitem__(idx)
+    def __sub__(self, o):
+        return Point(self.x - o.x, self.y - o.y)
+    
+    def __mul__(self, o):
+        return Point(self.x * o, self.y * o)
