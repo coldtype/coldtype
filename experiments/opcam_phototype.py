@@ -5,10 +5,10 @@ from coldtype.midi.controllers import LaunchControlXL
 
 tl = Timeline(120, fps=30)
 
-@animation((1080, 1080), timeline=tl, cv2caps=[0, 1], composites=1, rstate=1)
-def opcam8(f:Frame, rs):
+@animation((1080, 1080), timeline=tl, cv2caps=[0, 1], composites=0, rstate=1)
+def opcam8(f:Frame, rs): 
     nxl = LaunchControlXL(rs.midi)
-    webcam = (read_frame(rs.cv2caps[round(nxl(11, 0.5))])
+    webcam = (read_frame(rs.cv2caps[round(nxl(11, 0))])
         .align(f.a.r))
     if nxl(10, 0.5) > 0.5:
         return webcam
