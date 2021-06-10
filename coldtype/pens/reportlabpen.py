@@ -52,10 +52,13 @@ class ReportLabPen(DrawablePenMixin):
         for attrs, attr in all_attrs:
             method, *args = attr
             do_stroke = 0
+            do_fill = 0
             if method == "stroke" and args[0].get("weight") != 0:
                 do_stroke = 1
+            elif method == "fill" and args[0].a > 0:
+                do_fill = 1
             self.applyDATAttribute(attrs, attr)
-            canvas.drawPath(self.path, fill=1, stroke=do_stroke)
+            canvas.drawPath(self.path, fill=do_fill, stroke=do_stroke)
         canvas.restoreState()
     
     def fill(self, color):
@@ -70,9 +73,12 @@ class ReportLabPen(DrawablePenMixin):
         self.canvas.setStrokeColorRGB(color.r, color.g, color.b)
         self.canvas.setLineWidth(weight)
     
-    def PDF(pens, rect, save_to, scale=1, style=None):
+    def PDF(pens, rect, save_to, scale=1, style=None, title=None):
         c = Canvas(save_to, pagesize=letter)
         ReportLabPen.CompositeToCanvas(pens, rect, c, scale=scale, style=style)
+        if title:
+            c.setTitle(title)
+        c.showPage()
         c.save() # necessary?
     
     def CompositeToCanvas(pens, rect, canvas, scale=1, style=None):

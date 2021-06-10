@@ -13,6 +13,10 @@ class TestReportLabPen(unittest.TestCase):
             (DP(r.inset(20))
                 .align(r)
                 .f(0.9)),
+            (DP(r.inset(40))
+                .align(r)
+                .f(None)
+                .s(0).sw(5)),
             (StSt("COLD", co, 150, wdth=1)
                 .align(r)
                 .f(hsl(0.3))
