@@ -274,6 +274,8 @@ class Renderer():
 
             frame_offsets=parser.add_argument("-fo", "--frame-offsets", type=str, default=None, help=argparse.SUPPRESS),
 
+            inline=parser.add_argument("-in", "--inline", type=str, default=None, help="other source code to inline, as file paths"),
+
             disable_syntax_mods=parser.add_argument("-dsm", "--disable-syntax-mods", action="store_true", default=False, help="Coldtype has some optional syntax modifications that require copying the source to a new tempfile before running — would you like to skip this to preserve __file__ in your sources?")),
         return pargs, parser
     
@@ -416,8 +418,12 @@ class Renderer():
                 if not self.filepath.exists():
                     print(">>> That rst file does not exist")
                     return False
+            elif self.filepath.suffix == ".md":
+                if not self.filepath.exists():
+                    print(">>> That md file does not exist")
+                    return False
             else:
-                print(">>> Coldtype can only read .py and .rst files")
+                print(">>> Coldtype can only read .py, .rst, and .md files")
                 return False
             self.codepath = None
             self._codepath_offset = 0
@@ -468,6 +474,14 @@ class Renderer():
             return source_code
         
         self._codepath_offset = 0
+
+        def inline_arg(p):
+            path = Path(inline.strip()).expanduser().absolute()
+            if path not in self.watchee_paths():
+                self.watchees.append([Watchable.Source, path, None])
+            src = path.read_text()
+            self._codepath_offset = len(src.split("\n"))
+            return src
         
         def inline_other(x):
             #cwd = self.filepath.relative_to(Path.cwd())
@@ -479,6 +493,10 @@ class Renderer():
             src = path.read_text()
             self._codepath_offset = len(src.split("\n"))
             return src
+
+        if self.args.inline:
+            for inline in self.args.inline.split(","):
+                source_code = inline_arg(inline) + "\n" + source_code
 
         source_code = re.sub(r"from ([^\s]+) import \* \#INLINE", inline_other, source_code)
         source_code = re.sub(r"\-\.[A-Za-z_ƒ]+([A-Za-z_0-9]+)?\(", ".nerp(", source_code)
@@ -534,6 +552,32 @@ class Renderer():
                     self.codepath.unlink()
                 with tempfile.NamedTemporaryFile("w", prefix="coldtype_rst_src", suffix=".py", delete=False) as tf:
                     tf.write("\n".join(source_code))
+                    self.codepath = Path(tf.name)
+            
+            elif self.filepath.suffix == ".md":
+                from lxml.html import fragment_fromstring, tostring
+                try:
+                    import markdown
+                except ImportError:
+                    raise Exception("pip install markdown")
+                try:
+                    import frontmatter
+                except ImportError:
+                    frontmatter = None
+                    print("> pip install python-frontmatter")
+                md = markdown.markdown(self.filepath.read_text(),
+                    extensions=["fenced_code"])
+                fm = frontmatter.loads(self.filepath.read_text())
+                self.state.frontmatter = fm
+                frag = fragment_fromstring(md, create_parent=True)
+                blocks = []
+                for python in frag.findall("./pre/code[@class='python']"):
+                    blocks.append(python.text)
+                source_code = "\n".join(blocks)
+                if self.codepath:
+                    self.codepath.unlink()
+                with tempfile.NamedTemporaryFile("w", prefix="coldtype_md_src", suffix=".py", delete=False) as tf:
+                    tf.write(self.apply_syntax_mods(source_code))
                     self.codepath = Path(tf.name)
             
             elif self.filepath.suffix == ".py":
