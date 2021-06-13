@@ -17,12 +17,14 @@ from fontTools.ufoLib import UFOReader, UFOFileStructure
 from fontTools.ufoLib import (FONTINFO_FILENAME, GROUPS_FILENAME, KERNING_FILENAME,
                               FEATURES_FILENAME, LIB_FILENAME)
 from fontTools.ufoLib.glifLib import Glyph as GLIFGlyph, CONTENTS_FILENAME
+
 try:
     from ufo2ft.constants import COLOR_LAYER_MAPPING_KEY, COLOR_PALETTES_KEY
 except ImportError:
     COLOR_LAYER_MAPPING_KEY = None
     COLOR_PALETTES_KEY = None
     pass
+
 from .baseFont import BaseFont
 from .glyphDrawing import GlyphDrawing
 from ..compile.compilerPool import compileUFOToBytes
@@ -362,8 +364,8 @@ class UFOState:
     def __init__(self, reader, glyphSet, anchors=None, unicodes=None,
                  getUnicodesAndAnchors=None, includedFeatureFiles=(),
                  previousState=None):
-        if not COLOR_LAYER_MAPPING_KEY or COLOR_PALETTES_KEY:
-            raise Exception("pip install ufo2ft")
+        if COLOR_LAYER_MAPPING_KEY is None or COLOR_PALETTES_KEY is None:
+            raise Exception("pip install ufo2ft (note: constants)")
 
         self.reader = reader
         self.glyphSet = glyphSet
