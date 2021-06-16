@@ -1,17 +1,15 @@
 # to be loaded from within Blender
 
 from coldtype.geometry import Point, Line, Rect
-from coldtype.pens.drawbotpen import DrawBotPen
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.blenderpen import BlenderPen, BPH
 from coldtype.text.reader import StyledString, Style, Font
 from coldtype.text.composer import StSt
 from coldtype.color import hsl, bw
-from runpy import run_path
 from pathlib import Path
 
+from coldtype.renderable import renderable
 from coldtype.renderable.animation import animation
-
 
 try:
     import bpy
@@ -25,13 +23,48 @@ from coldtype.time import Frame
 def b3d(collection,
     extrude=None,
     rotate=None,
+    plane=False,
     ):
     def _annotate(pen:DATPen):
         pen.add_data("b3d", dict(
             collection=collection,
             extrude=extrude,
-            rotate=rotate))
+            rotate=rotate,
+            plane=plane))
     return _annotate
+
+
+def _walk_to_b3d(result:DATPens):
+    def walker(p:DATPen, pos, data):
+        if pos == 0:
+            bdata = p.data.get("b3d")
+            if bdata:
+                coll = BPH.Collection(bdata["collection"])
+                if bdata.get("plane"):
+                    bp = p.cast(BlenderPen).draw(coll, plane=True)
+                else:
+                    bp = p.cast(BlenderPen).draw(coll)
+                    if bdata.get("extrude"):
+                        bp.extrude(bdata.get("extrude"))
+                    if bdata.get("rotate"):
+                        bp.rotate(*bdata.get("rotate"))
+    result.walk(walker)
+
+
+class b3d_renderable(renderable):
+    def update(self):
+        _walk_to_b3d(self.func(self.rect))
+
+    def __call__(self, func):
+        if not bpy:
+            return super().__call__(func)
+
+        self.func = func
+        if not self.name:
+            self.name = self.func.__name__
+        
+        self.update()
+        return self
 
 
 class b3d_animation(animation):
@@ -41,20 +74,9 @@ class b3d_animation(animation):
         self.current_frame = -1
         super().__init__(**kwargs)
     
-    def update(self):
-        def walker(p:DATPen, pos, data):
-            if pos == 0:
-                bdata = p.data.get("b3d")
-                print(p)
-                if bdata:
-                    bp = p.cast(BlenderPen).draw(BPH.Collection(bdata["collection"]))
-                    if bdata.get("extrude"):
-                        bp.extrude(bdata.get("extrude"))
-                    if bdata.get("rotate"):
-                        bp.rotate(*bdata.get("rotate"))
-        
+    def update(self):        
         result:DATPens = self.func(Frame(self.current_frame, self))
-        result.walk(walker)
+        _walk_to_b3d(result)
     
     def __call__(self, func):
         if not bpy:
@@ -76,28 +98,36 @@ class b3d_animation(animation):
         self.update()
         return self
 
-r = Rect(0, 0, 1000, 1000)
-fnt = Font.Cacheable("~/Type/fonts/fonts/CheeeVariable.ttf")
 
-if bpy:
-    BPH.Clear() # does this not even work?
+if __name__ == "<run_path>":
+    fnt = Font.Cacheable("~/Type/fonts/fonts/CheeeVariable.ttf")
+    fnt2 = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
 
-@b3d_animation(rect=r, timeline=30)
-def draw_txt(f):
-    return DATPens([
-        (StSt("COLDTYPE IN", fnt, 100, yest=0, grvt=0)
-            .pen()
-            .align(r.take(0.5, "mxy"))
-            .f(hsl(0.8, 1))
-            .tag("CLD")
-            .chain(b3d("Text",
-                extrude=f.e(1, rng=(0.05, 2))))),
-        (StSt("3D", fnt, 500,
-            yest=f.ie("eeio", 2),
-            grvt=f.e(1))
-            .pen()
-            .align(r.take(0.85, "mny"))
-            .tag("3D")
-            .chain(b3d("Text",
-                extrude=f.e(1, rng=(0.05, 3)),
-                rotate=(f.e(1, rng=(0, 15)), None, None))))])
+    @b3d_renderable()
+    def draw_bg(r):
+        return DATPens([
+            (DATPen(r.inset(-500, -500)).f(hsl(0.07, 1, 0.3))
+                .tag("BG2")
+                .chain(b3d("Text", plane=1)))])
+
+    @b3d_animation(timeline=30, layer=1)
+    def draw_txt(f):
+        return DATPens([
+            (StSt("THREEE", fnt2, 100, tu=f.e(1, rng=(0, 1000)),
+                wdth=f.e(1, rng=(0.25, 1)), wght=1, slnt=f.e(1),
+                rotate=f.e(1, rng=(0, 360)))
+                .pen()
+                .align(f.a.r.take(0.5, "mxy"))
+                .f(hsl(0.7, 1))
+                .tag("CLD")
+                .chain(b3d("Text",
+                    extrude=f.e(1, rng=(0.05, 2))))),
+            (StSt("DEEE", fnt, 500 - f.ie("eeio", 2)*200,
+                yest=f.ie("eeio", 2),
+                grvt=f.e(1))
+                .pen()
+                .align(f.a.r.take(0.85, "mny"))
+                .tag("3D")
+                .chain(b3d("Text",
+                    extrude=f.e(1, rng=(0.05, 7)),
+                    rotate=(f.e(1, rng=(0, 15)), None, None))))])
