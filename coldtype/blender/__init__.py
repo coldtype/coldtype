@@ -40,6 +40,7 @@ def _walk_to_b3d(result:DATPens):
             bdata = p.data.get("b3d")
             if bdata:
                 coll = BPH.Collection(bdata["collection"])
+
                 if bdata.get("plane"):
                     bp = p.cast(BlenderPen).draw(coll, plane=True)
                 else:
@@ -68,10 +69,11 @@ class b3d_renderable(renderable):
 
 
 class b3d_animation(animation):
-    def __init__(self, **kwargs): # TODO possible to read from project? or alternatively to set this duration on the project? feel like that'd be more coldtype-y
+    def __init__(self, hidden=False, **kwargs): # TODO possible to read from project? or alternatively to set this duration on the project? feel like that'd be more coldtype-y
         self.func = None
         self.name = None
         self.current_frame = -1
+        self.hidden = hidden
         super().__init__(**kwargs)
     
     def update(self):        
@@ -87,6 +89,7 @@ class b3d_animation(animation):
             self.name = self.func.__name__
 
         def _frame_update_handler(scene):
+            #print("UPDATE", self.name)
             if scene.frame_current != self.current_frame:
                 self.current_frame = scene.frame_current
                 self.update()
@@ -100,17 +103,30 @@ class b3d_animation(animation):
 
 
 if __name__ == "<run_path>":
+    from coldtype.text.composer import Glyphwise
+
     fnt = Font.Cacheable("~/Type/fonts/fonts/CheeeVariable.ttf")
     fnt2 = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
+
+    if bpy:
+        bpy.app.handlers.frame_change_post.clear()
 
     @b3d_renderable()
     def draw_bg(r):
         return DATPens([
-            (DATPen(r.inset(-500, -500)).f(hsl(0.07, 1, 0.3))
+            (DATPen(r.inset(0, 0)).f(hsl(0.07, 1, 0.3))
                 .tag("BG2")
                 .chain(b3d("Text", plane=1)))])
+    
+    @b3d_animation(timeline=120, layer=1)
+    def draw_dps(f):
+        return (Glyphwise("Wavey", lambda i,c: Style(fnt2, 300, wdth=f.adj(-i*5).e("seio", 1, rng=(0, 0.75)), slnt=1))
+            .align(f.a.r)
+            .pmap(lambda i,p: p
+                .tag(f"Hello{i}")
+                .chain(b3d("Text", extrude=f.adj(-i*5).e("seio", 1, rng=(0, 5))))))
 
-    @b3d_animation(timeline=30, layer=1)
+    #@b3d_animation(timeline=30, layer=1)
     def draw_txt(f):
         return DATPens([
             (StSt("THREEE", fnt2, 100, tu=f.e(1, rng=(0, 1000)),
