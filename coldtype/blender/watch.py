@@ -5,6 +5,8 @@ import traceback
 
 #from coldtype.blender.watch import watch; watch()
 
+# original idea: https://blender.stackexchange.com/questions/15670/send-instructions-to-blender-from-external-application
+
 class ColdtypeWatchingOperator(bpy.types.Operator):
     bl_idname = "wm.coldtype_watching_operator"
     bl_label = "Coldtype Watching Operator"
