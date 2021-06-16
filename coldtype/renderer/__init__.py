@@ -276,7 +276,10 @@ class Renderer():
 
             inline=parser.add_argument("-in", "--inline", type=str, default=None, help="other source code to inline, as file paths"),
 
-            disable_syntax_mods=parser.add_argument("-dsm", "--disable-syntax-mods", action="store_true", default=False, help="Coldtype has some optional syntax modifications that require copying the source to a new tempfile before running — would you like to skip this to preserve __file__ in your sources?")),
+            disable_syntax_mods=parser.add_argument("-dsm", "--disable-syntax-mods", action="store_true", default=False, help="Coldtype has some optional syntax modifications that require copying the source to a new tempfile before running — would you like to skip this to preserve __file__ in your sources?"),
+
+            blender_watch=parser.add_argument("-bw", "--blender-watch", action="store_true", default=False, help="Experimental blender live-coding integration"),
+        )
         return pargs, parser
     
     def read_configs(self):
@@ -592,6 +595,12 @@ class Renderer():
                         self.codepath = Path(tf.name)
             else:
                 raise Exception("No code found in file!")
+            
+            if self.args.blender_watch:
+                cb = Path("~/.coldtype-blender.txt").expanduser()
+                if cb.exists():
+                    cb.unlink()
+                cb.write_text(f"import,{str(self.codepath)}")
             
             try:
                 self.state.reset()
