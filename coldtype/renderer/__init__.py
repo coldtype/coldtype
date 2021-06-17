@@ -601,6 +601,8 @@ class Renderer():
                 if cb.exists():
                     cb.unlink()
                 cb.write_text(f"import,{str(self.codepath)}")
+
+                blend_file = self.filepath.with_suffix(".blend")
             
             try:
                 self.state.reset()

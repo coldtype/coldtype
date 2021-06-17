@@ -13,6 +13,8 @@ from coldtype.time import Frame
 from coldtype.renderable import renderable
 from coldtype.renderable.animation import animation
 
+from coldtype.blender.render import blend_pickle
+
 try:
     import bpy
 except ImportError:
@@ -114,10 +116,7 @@ class b3d_animation(animation):
         output_dir = self.blender_output_dir()
         for a in artifacts[:5]:
             if a.render == self:
-                fi = a.args[0].i
-                expr = f"from coldtype.blender import DATPen, _walk_to_b3d; _walk_to_b3d(DATPen().Unpickle('{a.output_path}'), dn=True)"
-                #print(expr)
-                os.system(f"/Applications/Blender.app/Contents/MacOS/blender -b scratch.blend --python-expr \"{expr}\" -o {output_dir}/ -f {fi}")
+                blend_pickle("scratch.blend", a.output_path, output_dir, samples=16)
         os.system("afplay /System/Library/Sounds/Pop.aiff")
 
 
