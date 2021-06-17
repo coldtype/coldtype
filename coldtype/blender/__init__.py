@@ -53,8 +53,8 @@ def _walk_to_b3d(result:DATPens, dn=False):
                         bp.extrude(bdata.get("extrude"))
                     if bdata.get("rotate"):
                         bp.rotate(*bdata.get("rotate"))
-                    #if bdata.get("metallic"):
-                    #    bp.metallic(bdata.get("metallic"))
+                    if bdata.get("metallic"):
+                        bp.metallic(bdata.get("metallic"))
     result.walk(walker)
 
 
@@ -112,11 +112,11 @@ class b3d_animation(animation):
         output_dir.mkdir(parents=True, exist_ok=True)
         return output_dir
     
-    def blender_render(self, artifacts):
+    def blender_render(self, blend_file, artifacts):
         output_dir = self.blender_output_dir()
-        for a in artifacts[:5]:
+        for a in artifacts[:]:
             if a.render == self:
-                blend_pickle("scratch.blend", a.output_path, output_dir, samples=16)
+                blend_pickle(blend_file, a.output_path, output_dir, samples=16)
         os.system("afplay /System/Library/Sounds/Pop.aiff")
 
 
@@ -154,12 +154,12 @@ if __name__ == "<run_path>":
     
     @b3d_animation(timeline=50, bg=0, layer=0)
     def draw_dps(f):
-        return DATPen(f.a.r).f(1).tag("BG").ch(b3d("Text", plane=1)) + (Glyphwise("Metal Type", lambda i,c:
-            Style(fnt3, 100,
+        return DATPen(f.a.r).f(1).tag("BG").ch(b3d("Text", plane=1)) + (Glyphwise("Metal", lambda i,c:
+            Style(fnt3, 250,
                 wght=f.adj(-i*5).e("seio", 2, rng=(0, 1)),
                 opsz=f.adj(-i*5).e("seio", 1, rng=(0, 1))))
             .align(f.a.r)
-            .f(hsl(0.15, 1, 0.4))
+            .f(hsl(0.1, 1, 0.6))
             .pmap(lambda i,p: p
                 .tag(f"Hello{i}")
                 .chain(b3d("Text",
@@ -176,8 +176,11 @@ if __name__ == "<run_path>":
         except:
             pass
     
+    def build(artifacts):
+        draw_dps.blender_render("scratch.blend", artifacts[:2])
+
     def release(artifacts):
-        draw_dps.blender_render(artifacts)
+        draw_dps.blender_render("scratch.blend", artifacts)
 
     #@b3d_animation(timeline=30, layer=1)
     def draw_txt(f):
