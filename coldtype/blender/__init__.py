@@ -24,17 +24,19 @@ def b3d(collection,
     extrude=None,
     rotate=None,
     plane=False,
+    metallic=None,
     ):
     def _annotate(pen:DATPen):
         pen.add_data("b3d", dict(
             collection=collection,
             extrude=extrude,
             rotate=rotate,
+            metallic=metallic,
             plane=plane))
     return _annotate
 
 
-def _walk_to_b3d(result:DATPens):
+def _walk_to_b3d(result:DATPens, dn=False):
     def walker(p:DATPen, pos, data):
         if pos == 0:
             bdata = p.data.get("b3d")
@@ -44,11 +46,13 @@ def _walk_to_b3d(result:DATPens):
                 if bdata.get("plane"):
                     bp = p.cast(BlenderPen).draw(coll, plane=True)
                 else:
-                    bp = p.cast(BlenderPen).draw(coll)
+                    bp = p.cast(BlenderPen).draw(coll, dn=dn)
                     if bdata.get("extrude"):
                         bp.extrude(bdata.get("extrude"))
                     if bdata.get("rotate"):
                         bp.rotate(*bdata.get("rotate"))
+                    #if bdata.get("metallic"):
+                    #    bp.metallic(bdata.get("metallic"))
     result.walk(walker)
 
 
@@ -108,10 +112,11 @@ class b3d_animation(animation):
     
     def blender_render(self, artifacts):
         output_dir = self.blender_output_dir()
-        for a in artifacts:
+        for a in artifacts[:5]:
             if a.render == self:
                 fi = a.args[0].i
-                expr = f"from coldtype.blender import DATPen, _walk_to_b3d; _walk_to_b3d(DATPen().Unpickle('{a.output_path}'))"
+                expr = f"from coldtype.blender import DATPen, _walk_to_b3d; _walk_to_b3d(DATPen().Unpickle('{a.output_path}'), dn=True)"
+                #print(expr)
                 os.system(f"/Applications/Blender.app/Contents/MacOS/blender -b scratch.blend --python-expr \"{expr}\" -o {output_dir}/ -f {fi}")
         os.system("afplay /System/Library/Sounds/Pop.aiff")
 
@@ -136,6 +141,7 @@ if __name__ == "<run_path>":
 
     fnt = Font.Cacheable("~/Type/fonts/fonts/CheeeVariable.ttf")
     fnt2 = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
+    fnt3 = Font.Cacheable("~/Type/fonts/fonts/SwearCilatiVariable.ttf")
 
     if bpy:
         bpy.app.handlers.frame_change_post.clear()
@@ -147,18 +153,19 @@ if __name__ == "<run_path>":
                 .tag("BG2")
                 .chain(b3d("Text", plane=1)))])
     
-    @b3d_animation(timeline=20, bg=0, layer=0)
+    @b3d_animation(timeline=50, bg=0, layer=0)
     def draw_dps(f):
-        return (Glyphwise("Fluid", lambda i,c:
-            Style(fnt2, 300,
-                wght=1,
-                wdth=f.adj(-i*25).e("seio", 1, rng=(0, 0.25)),
-                slnt=1))
+        return DATPen(f.a.r).f(1).tag("BG").ch(b3d("Text", plane=1)) + (Glyphwise("Metal Type", lambda i,c:
+            Style(fnt3, 100,
+                wght=f.adj(-i*5).e("seio", 2, rng=(0, 1)),
+                opsz=f.adj(-i*5).e("seio", 1, rng=(0, 1))))
             .align(f.a.r)
-            .f(hsl(0.6, 1, 0.4))
+            .f(hsl(0.15, 1, 0.4))
             .pmap(lambda i,p: p
                 .tag(f"Hello{i}")
-                .chain(b3d("Text", extrude=round(f.adj(-i*5).e("seio", 1, rng=(0, 10)), 2)))))
+                .chain(b3d("Text",
+                    extrude=round(f.adj(-i*5).e("seio", 1, rng=(0.1, 10)), 2),
+                    metallic=1))))
     
     if not bpy:
         from coldtype.img.skiaimage import SkiaImage
