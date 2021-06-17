@@ -456,7 +456,9 @@ class DATPen(DraftingPen):
         return self
     
     def Unpickle(self, src):
-        return pickle.load(open(str(src), "rb"))
+        if isinstance(src, str):
+            src = Path(src)
+        return pickle.load(open(str(src.expanduser()), "rb"))
 
 
 class DATPens(DraftingPens, DATPen):

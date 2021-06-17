@@ -843,6 +843,9 @@ class Renderer():
                 for rp in passes:
                     output_path = rp.output_path
 
+                    if rendering and render.preview_only:
+                        continue
+
                     try:
                         if render.direct_draw:
                             result = None

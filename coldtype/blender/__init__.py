@@ -1,5 +1,6 @@
 # to be loaded from within Blender
 
+import os
 from coldtype.geometry import Point, Line, Rect
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.blenderpen import BlenderPen, BPH
@@ -8,6 +9,7 @@ from coldtype.text.composer import StSt
 from coldtype.color import hsl, bw
 from pathlib import Path
 
+from coldtype.time import Frame
 from coldtype.renderable import renderable
 from coldtype.renderable.animation import animation
 
@@ -16,8 +18,6 @@ try:
 except ImportError:
     bpy = None
     pass
-
-from coldtype.time import Frame
 
 
 def b3d(collection,
@@ -74,7 +74,7 @@ class b3d_animation(animation):
         self.name = None
         self.current_frame = -1
         self.hidden = hidden
-        super().__init__(**kwargs)
+        super().__init__(**kwargs, fmt="pickle")
     
     def update(self):        
         result:DATPens = self.func(Frame(self.current_frame, self))
@@ -100,6 +100,35 @@ class b3d_animation(animation):
         self.current_frame = bpy.context.scene.frame_current
         self.update()
         return self
+    
+    def blender_output_dir(self):
+        output_dir = self.output_folder / "_blender"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        return output_dir
+    
+    def blender_render(self, artifacts):
+        output_dir = self.blender_output_dir()
+        for a in artifacts:
+            if a.render == self:
+                fi = a.args[0].i
+                expr = f"from coldtype.blender import DATPen, _walk_to_b3d; _walk_to_b3d(DATPen().Unpickle('{a.output_path}'))"
+                os.system(f"/Applications/Blender.app/Contents/MacOS/blender -b scratch.blend --python-expr \"{expr}\" -o {output_dir}/ -f {fi}")
+        os.system("afplay /System/Library/Sounds/Pop.aiff")
+
+
+class b3d_animation_render(animation):
+    def __init__(self, b3danim:b3d_animation):
+        self.b3danim = b3danim
+        super().__init__(rect=b3danim.rect, timeline=b3danim.timeline)
+    
+    def passes(self, action, renderer_state, indices=[]):
+        passes = super().passes(action, renderer_state, indices)
+        for p in passes:
+            f = p.args[0]
+            outf = self.b3danim.output_folder
+            pickle = outf / "{:s}_{:04d}.pickle".format(outf.stem, f.i)
+            p.args.append(pickle)
+        return passes
 
 
 if __name__ == "<run_path>":
@@ -111,20 +140,38 @@ if __name__ == "<run_path>":
     if bpy:
         bpy.app.handlers.frame_change_post.clear()
 
-    @b3d_renderable()
+    #@b3d_renderable()
     def draw_bg(r):
         return DATPens([
             (DATPen(r.inset(0, 0)).f(hsl(0.07, 1, 0.3))
                 .tag("BG2")
                 .chain(b3d("Text", plane=1)))])
     
-    @b3d_animation(timeline=120, layer=1)
+    @b3d_animation(timeline=20, bg=0, layer=0)
     def draw_dps(f):
-        return (Glyphwise("Wavey", lambda i,c: Style(fnt2, 300, wdth=f.adj(-i*5).e("seio", 1, rng=(0, 0.75)), slnt=1))
+        return (Glyphwise("Fluid", lambda i,c:
+            Style(fnt2, 300,
+                wght=1,
+                wdth=f.adj(-i*25).e("seio", 1, rng=(0, 0.25)),
+                slnt=1))
             .align(f.a.r)
+            .f(hsl(0.6, 1, 0.4))
             .pmap(lambda i,p: p
                 .tag(f"Hello{i}")
-                .chain(b3d("Text", extrude=f.adj(-i*5).e("seio", 1, rng=(0, 5))))))
+                .chain(b3d("Text", extrude=round(f.adj(-i*5).e("seio", 1, rng=(0, 10)), 2)))))
+    
+    if not bpy:
+        from coldtype.img.skiaimage import SkiaImage
+    
+    @animation(draw_dps.rect, timeline=draw_dps.timeline, preview_only=1)
+    def draw_dps_blender_version(f):
+        try:
+            return SkiaImage(draw_dps.blender_output_dir() / "{:04d}.png".format(f.i))
+        except:
+            pass
+    
+    def release(artifacts):
+        draw_dps.blender_render(artifacts)
 
     #@b3d_animation(timeline=30, layer=1)
     def draw_txt(f):
