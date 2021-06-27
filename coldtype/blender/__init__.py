@@ -142,6 +142,7 @@ if __name__ == "<run_path>":
     fnt2 = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
     fnt3 = Font.Cacheable("~/Type/fonts/fonts/SwearCilatiVariable.ttf")
     fnt4 = Font.Cacheable("~/Type/fonts/fonts/PappardelleParty-VF.ttf")
+    fnt5 = Font.Cacheable("~/Type/fonts/fonts/JobClarendonVariable-VF.ttf")
 
     if bpy:
         bpy.app.handlers.frame_change_post.clear()
@@ -155,7 +156,7 @@ if __name__ == "<run_path>":
     
     @b3d_animation(timeline=60, bg=0, layer=0)
     def draw_dps(f):
-        return DATPen(f.a.r.inset(-500)).f(1).tag("BG").ch(b3d("Text", plane=1)) + (StSt("MOVEABLE", #lambda i,c:
+        txt = (StSt("MOVEABLE", #lambda i,c:
             Style(fnt4, 330,
                 palette=0,
                 #SPIN=f.e("l"),
@@ -174,10 +175,29 @@ if __name__ == "<run_path>":
                 #.scale(f.adj(-i*1).e("eeio", 1, rng=(0.5, 1)))
                 #.rotate(f.adj(-i*1).e("eeio", 1, rng=(0, 360)))
                 .chain(b3d("Text",
-                    extrude=f.adj(-i*1).e("ceio", 1, rng=(1, 7)),
+                    extrude=f.adj(-i*1).e("eeio", 1, rng=(0.05, 7)),
                     #extrude=7,
                     metallic=0.1
                     ))))
+        
+        txt2 = (Glyphwise("TYPE", lambda i,c:
+            Style(fnt5, 90, wght=f.e(1)))
+            .align(f.a.r.take(0.5, "mny"))
+            .f(1)
+            .collapse()
+            .pmap(lambda i,p: p
+                .tag(f"Type{i}")
+                .chain(b3d("Text",
+                    extrude=f.e("seio", 1, rng=(0.05, 2)),
+                    #extrude=7,
+                    metallic=0.1
+                    ))))
+        
+        return DATPens([
+            DATPen(f.a.r.inset(-500)).f(1).tag("BG").ch(b3d("Text", plane=1)),
+            #txt2.rotate(45).translate(-100, -10),
+            txt
+            ])
     
     if not bpy:
         from coldtype.img.skiaimage import SkiaImage
@@ -193,7 +213,7 @@ if __name__ == "<run_path>":
         draw_dps.blender_render("scratch.blend", artifacts[:2], samples=16)
 
     def release(artifacts):
-        draw_dps.blender_render("scratch.blend", artifacts, samples=64)
+        draw_dps.blender_render("scratch.blend", artifacts, samples=16)
 
     #@b3d_animation(timeline=30, layer=1)
     def draw_txt(f):
