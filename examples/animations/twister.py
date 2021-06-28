@@ -16,10 +16,10 @@ def pair(tx, f, i, _):
             .rotate(-ro+270)
             .translate(tx, 0))])
 
-@animation((1080, 1920), timeline=240)
+@animation((1080, 1080), timeline=240)
 def twister(f:Frame):
     tx = 250
-    return (DPS.Enumerate(range(0, 20),
+    return (DPS.Enumerate(range(0, 30),
         partial(pair, tx, f))
         .translate(-tx*0.5, 300)
         .reversePens())

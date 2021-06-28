@@ -447,9 +447,14 @@ class Renderer():
     def watchee_paths(self):
         return [w[1] for w in self.watchees]
     
-    def renderable_error(self):
+    def print_error(self):
+        self.state.console.print_exception()
         stack = traceback.format_exc()
-        print(stack)
+        return stack.split("\n")[-2]
+    
+    def renderable_error(self):
+        short_error = self.print_error()
+        
         r = Rect(1200, 300)
         render = renderable(r)
         res = DATPens([
@@ -457,7 +462,7 @@ class Renderer():
             coldtype.hsl(_random.random(), l=0.3),
             coldtype.hsl(_random.random(), l=0.3))),
         ])
-        render.show_error = stack.split("\n")[-2]
+        render.show_error = short_error
         return render, res
 
     def show_error(self):
@@ -1462,9 +1467,8 @@ class Renderer():
 
             release_fn(all_passes)
         except Exception as e:
-            stack = traceback.format_exc()
-            print(stack)
-            print("Release failed", str(e))
+            self.print_error()
+            print("! Release failed !")
     
     def allow_mouse(self):
         return True
@@ -2214,10 +2218,9 @@ class Renderer():
                     self.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
                     did_preview.append(rp)
                 except Exception as e:
-                    stack = traceback.format_exc()
-                    print(stack)
+                    short_error = self.print_error()
                     paint = skia.Paint(AntiAlias=True, Color=skia.ColorRED)
-                    canvas.drawString(stack.split("\n")[-2], 10, 32, skia.Font(None, 36), paint)
+                    canvas.drawString(short_error, 10, 32, skia.Font(None, 36), paint)
             
             self.copy_previews_to_clipboard = False
         
@@ -2334,9 +2337,8 @@ class Renderer():
             try:
                 render.run(rp, self.state, canvas)
             except Exception as e:
-                stack = traceback.format_exc()
-                print(stack)
-                render.show_error = stack.split("\n")[-2]
+                short_error = self.print_error()
+                render.show_error = short_error
                 error_color = coldtype.rgb(0, 0, 0).skia()
         else:
             if render.composites:

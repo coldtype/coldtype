@@ -4,6 +4,7 @@ import json, re, base64
 from coldtype import hsl, Action, Keylayer, Point, Rect, DATPen, Overlay
 from typing import Callable, List
 from time import sleep
+from rich.console import Console
 
 try:
     import skia
@@ -193,6 +194,7 @@ class RendererState():
         self.capturing_previews = False
         self.capturing_previews_once = False
         self.captured_previews = []
+        self.console = Console()
         self.reset()
     
     def reset(self, ignore_current_state=False):
