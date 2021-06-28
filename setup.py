@@ -98,6 +98,7 @@ setuptools.setup(
         "uharfbuzz>=0.14.0",
         "unicodedata2",
         "python-bidi",
+        "rich",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
