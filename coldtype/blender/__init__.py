@@ -22,20 +22,12 @@ except ImportError:
     pass
 
 
-def b3d(collection,
-    extrude=None,
-    rotate=None,
-    plane=False,
-    metallic=None,
-    ):
-    def _annotate(pen:DATPen):
+def b3d(collection, callback=None, plane=False, dn=False):
+    def _cast(pen:DATPen):
         pen.add_data("b3d", dict(
             collection=collection,
-            extrude=extrude,
-            rotate=rotate,
-            metallic=metallic,
-            plane=plane))
-    return _annotate
+            callback=callback))
+    return _cast
 
 
 def _walk_to_b3d(result:DATPens, dn=False):
@@ -49,12 +41,15 @@ def _walk_to_b3d(result:DATPens, dn=False):
                     bp = p.cast(BlenderPen).draw(coll, plane=True)
                 else:
                     bp = p.cast(BlenderPen).draw(coll, dn=dn)
-                    if bdata.get("extrude"):
-                        bp.extrude(bdata.get("extrude"))
-                    if bdata.get("rotate"):
-                        bp.rotate(*bdata.get("rotate"))
-                    if bdata.get("metallic"):
-                        bp.metallic(bdata.get("metallic"))
+                
+                if bdata.get("callback"):
+                    bdata.get("callback")(bp)
+                    # if bdata.get("extrude"):
+                    #     bp.extrude(bdata.get("extrude"))
+                    # if bdata.get("rotate"):
+                    #     bp.rotate(*bdata.get("rotate"))
+                    # if bdata.get("metallic"):
+                    #     bp.metallic(bdata.get("metallic"))
     result.walk(walker)
 
 
@@ -112,11 +107,11 @@ class b3d_animation(animation):
         output_dir.mkdir(parents=True, exist_ok=True)
         return output_dir
     
-    def blender_render(self, blend_file, artifacts):
+    def blender_render(self, blend_file, artifacts, samples=4):
         output_dir = self.blender_output_dir()
         for a in artifacts[:]:
             if a.render == self:
-                blend_pickle(blend_file, a.output_path, output_dir, samples=16)
+                blend_pickle(blend_file, a.output_path, output_dir, samples=samples)
         os.system("afplay /System/Library/Sounds/Pop.aiff")
 
 
@@ -141,6 +136,8 @@ if __name__ == "<run_path>":
     fnt = Font.Cacheable("~/Type/fonts/fonts/CheeeVariable.ttf")
     fnt2 = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
     fnt3 = Font.Cacheable("~/Type/fonts/fonts/SwearCilatiVariable.ttf")
+    fnt4 = Font.Cacheable("~/Type/fonts/fonts/PappardelleParty-VF.ttf")
+    fnt5 = Font.Cacheable("~/Type/fonts/fonts/JobClarendonVariable-VF.ttf")
 
     if bpy:
         bpy.app.handlers.frame_change_post.clear()
@@ -152,19 +149,32 @@ if __name__ == "<run_path>":
                 .tag("BG2")
                 .chain(b3d("Text", plane=1)))])
     
-    @b3d_animation(timeline=50, bg=0, layer=0)
+    @b3d_animation(timeline=60, bg=0, layer=0)
     def draw_dps(f):
-        return DATPen(f.a.r).f(1).tag("BG").ch(b3d("Text", plane=1)) + (Glyphwise("Metal", lambda i,c:
-            Style(fnt3, 250,
-                wght=f.adj(-i*5).e("seio", 2, rng=(0, 1)),
-                opsz=f.adj(-i*5).e("seio", 1, rng=(0, 1))))
+        txt = (StSt("BLENDER", fnt4, 330, palette=4)
             .align(f.a.r)
-            .f(hsl(0.1, 1, 0.6))
+            .collapse()
+            .map(lambda i, p: p.explode())
+            .collapse()
             .pmap(lambda i,p: p
+                .declare(fa:=f.adj(-i*1))
+                .cond(p.ambit().y > 570, lambda pp:
+                    pp.translate(0, fa.e("eeio", 1, rng=(50, 0))))
+                .cond(p.ambit().mxy < 490, lambda pp:
+                    pp.translate(0, fa.e("eeio", 1, rng=(-50, 0))))
                 .tag(f"Hello{i}")
-                .chain(b3d("Text",
-                    extrude=round(f.adj(-i*5).e("seio", 1, rng=(0.1, 10)), 2),
-                    metallic=1))))
+                .chain(b3d("Text", lambda bp: bp
+                    .extrude(fa.e("eeio", 1, rng=(0.25, 7)))
+                    .metallic(0.1)))))
+        
+        return DATPens([
+            (DATPen(f.a.r.inset(-500))
+                .f(hsl(0.9))
+                .tag("BG")
+                .ch(b3d("Text", plane=1))),
+            #txt2.rotate(45).translate(-100, -10),
+            txt
+            ])
     
     if not bpy:
         from coldtype.img.skiaimage import SkiaImage
@@ -177,10 +187,10 @@ if __name__ == "<run_path>":
             pass
     
     def build(artifacts):
-        draw_dps.blender_render("scratch.blend", artifacts[:2])
+        draw_dps.blender_render("scratch.blend", artifacts[:2], samples=2)
 
     def release(artifacts):
-        draw_dps.blender_render("scratch.blend", artifacts)
+        draw_dps.blender_render("scratch.blend", artifacts, samples=2)
 
     #@b3d_animation(timeline=30, layer=1)
     def draw_txt(f):

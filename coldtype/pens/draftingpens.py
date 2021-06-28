@@ -1,4 +1,5 @@
 import math
+from random import Random
 from re import L
 from typing import Callable, Optional
 
@@ -217,16 +218,14 @@ class DraftingPens(DraftingPen):
     
     def collapse(self, levels=100, onself=False):
         """AKA `flatten` in some programming contexts, though
-        `flatten` is a totally different function here that flattens
-        outlines; this function flattens nested collections into
-        one-dimensional collections"""
+        `flatten` is a totally different function here that flattens outlines; this function flattens nested collections into one-dimensional collections"""
         pens = []
         for idx, p in enumerate(self._pens):
             if hasattr(p, "_pens") and levels > 0:
                 pens.extend(p.collapse(levels=levels-1)._pens)
             else:
                 pens.append(p)
-        dps = self.multi_pen_class(self)(pens)
+        dps = self.multi_pen_class(pens)
         if self.layered:
             dps.layered = True
         if onself:
@@ -234,6 +233,12 @@ class DraftingPens(DraftingPen):
             return self
         else:
             return dps
+    
+    def shuffle(self, seed=0):
+        r = Random()
+        r.seed(seed)
+        r.shuffle(self._pens)
+        return self
         
     def copy(self, with_data=False):
         """Get a completely new copy of this whole set of pens,
