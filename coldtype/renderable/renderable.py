@@ -147,6 +147,9 @@ class renderable():
         self.layer = layer
         if self.layer:
             self.bg = normalize_color(None)
+        
+        self.output_folder = None
+        self.filepath = None
 
         if not rasterizer:
             if self.fmt == "svg":
@@ -185,7 +188,7 @@ class renderable():
     def passes(self, action, renderer_state, indices=[]):
         return [RenderPass(self, self.pass_suffix(), [self.rect])]
 
-    def package(self, filepath, output_folder):
+    def package(self):
         pass
 
     def run(self, render_pass, renderer_state):
@@ -344,15 +347,15 @@ class iconset(renderable):
             sizes = self.valid_sizes
         return [RenderPass(self, str(size), [self.rect, size]) for size in sizes]
     
-    def package(self, filepath, output_folder):
+    def package(self):
         # inspired by https://retifrav.github.io/blog/2018/10/09/macos-convert-png-to-icns/
-        iconset = output_folder.parent / f"{filepath.stem}.iconset"
+        iconset = self.output_folder.parent / f"{self.filepath.stem}.iconset"
         iconset.mkdir(parents=True, exist_ok=True)
 
         system = platform.system()
         
         if system == "Darwin":
-            for png in output_folder.glob("*.png"):
+            for png in self.output_folder.glob("*.png"):
                 d = int(png.stem.split("_")[1])
                 for x in [1, 2]:
                     if x == 2 and d == 16:
@@ -367,8 +370,8 @@ class iconset(renderable):
         
         if True: # can be done windows or mac
             from PIL import Image
-            output = output_folder.parent / f"{filepath.stem}.ico"
-            largest = list(output_folder.glob("*_1024.png"))[0]
+            output = self.output_folder.parent / f"{filepath.stem}.ico"
+            largest = list(self.output_folder.glob("*_1024.png"))[0]
             img = Image.open(str(largest))
             icon_sizes = [(x, x) for x in self.valid_sizes]
             img.save(str(output), sizes=icon_sizes)

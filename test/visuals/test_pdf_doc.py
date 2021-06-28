@@ -9,8 +9,8 @@ class pdfdoc(animation):
     def __init__(self, rect=Rect("letter"), **kwargs):
         super().__init__(rect=rect, fmt="pickle", rasterizer="pickle", **kwargs)
 
-    def package(self, filepath, output_folder):
-        pdf_path = filepath.parent / ("pdfs/" + filepath.stem + ".pdf")
+    def package(self):
+        pdf_path = self.filepath.parent / ("pdfs/" + self.filepath.stem + ".pdf")
         pdf_path.parent.mkdir(parents=True, exist_ok=True)
         pickles = list(sorted(self.output_folder.glob("*.pickle")))
         pages = DATPens()

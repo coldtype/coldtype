@@ -44,12 +44,6 @@ def _walk_to_b3d(result:DATPens, dn=False):
                 
                 if bdata.get("callback"):
                     bdata.get("callback")(bp)
-                    # if bdata.get("extrude"):
-                    #     bp.extrude(bdata.get("extrude"))
-                    # if bdata.get("rotate"):
-                    #     bp.rotate(*bdata.get("rotate"))
-                    # if bdata.get("metallic"):
-                    #     bp.metallic(bdata.get("metallic"))
     result.walk(walker)
 
 
@@ -151,7 +145,7 @@ if __name__ == "<run_path>":
     
     @b3d_animation(timeline=60, bg=0, layer=0)
     def draw_dps(f):
-        txt = (StSt("BLENDER", fnt4, 330, palette=4)
+        txt = (StSt("CHROMATIC", fnt4, 330, palette=4)
             .align(f.a.r)
             .collapse()
             .map(lambda i, p: p.explode())
@@ -159,9 +153,9 @@ if __name__ == "<run_path>":
             .pmap(lambda i,p: p
                 .declare(fa:=f.adj(-i*1))
                 .cond(p.ambit().y > 570, lambda pp:
-                    pp.translate(0, fa.e("eeio", 1, rng=(50, 0))))
+                    pp.translate(0, fa.e("seio", 2, rng=(100, 0))))
                 .cond(p.ambit().mxy < 490, lambda pp:
-                    pp.translate(0, fa.e("eeio", 1, rng=(-50, 0))))
+                    pp.translate(0, fa.e("seio", 2, rng=(-100, 0))))
                 .tag(f"Hello{i}")
                 .chain(b3d("Text", lambda bp: bp
                     .extrude(fa.e("eeio", 1, rng=(0.25, 7)))
@@ -172,9 +166,7 @@ if __name__ == "<run_path>":
                 .f(hsl(0.9))
                 .tag("BG")
                 .ch(b3d("Text", plane=1))),
-            #txt2.rotate(45).translate(-100, -10),
-            txt
-            ])
+            txt])
     
     if not bpy:
         from coldtype.img.skiaimage import SkiaImage
@@ -191,25 +183,3 @@ if __name__ == "<run_path>":
 
     def release(artifacts):
         draw_dps.blender_render("scratch.blend", artifacts, samples=2)
-
-    #@b3d_animation(timeline=30, layer=1)
-    def draw_txt(f):
-        return DATPens([
-            (StSt("THREEE", fnt2, 100, tu=f.e(1, rng=(0, 1000)),
-                wdth=f.e(1, rng=(0.25, 1)), wght=1, slnt=f.e(1),
-                rotate=f.e(1, rng=(0, 360)))
-                .pen()
-                .align(f.a.r.take(0.5, "mxy"))
-                .f(hsl(0.7, 1))
-                .tag("CLD")
-                .chain(b3d("Text",
-                    extrude=f.e(1, rng=(0.05, 2))))),
-            (StSt("DEEE", fnt, 500 - f.ie("eeio", 2)*200,
-                yest=f.ie("eeio", 2),
-                grvt=f.e(1))
-                .pen()
-                .align(f.a.r.take(0.85, "mny"))
-                .tag("3D")
-                .chain(b3d("Text",
-                    extrude=f.e(1, rng=(0.05, 7)),
-                    rotate=(f.e(1, rng=(0, 15)), None, None))))])

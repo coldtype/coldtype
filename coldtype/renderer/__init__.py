@@ -25,6 +25,7 @@ from coldtype.helpers import *
 from coldtype.geometry import Rect, Point, Edge
 from coldtype.text.reader import Font
 
+from coldtype.renderer.reader import find_renderables, read_source_to_tempfile, renderable_to_output_folder, run_source
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
@@ -56,11 +57,6 @@ try:
     import glfw
 except ImportError:
     glfw = None
-
-try:
-    from docutils.core import publish_doctree
-except ImportError:
-    publish_doctree = None
 
 # source: https://github.com/PixarAnimationStudios/USD/issues/1372
 
@@ -471,63 +467,6 @@ class Renderer():
     
     def show_message(self, message, scale=1):
         print(message)
-    
-    def apply_syntax_mods(self, source_code):
-        if self.disable_syntax_mods:
-            return source_code
-        
-        self._codepath_offset = 0
-
-        def inline_arg(p):
-            path = Path(inline.strip()).expanduser().absolute()
-            if path not in self.watchee_paths():
-                self.watchees.append([Watchable.Source, path, None])
-            src = path.read_text()
-            self._codepath_offset = len(src.split("\n"))
-            return src
-        
-        def inline_other(x):
-            #cwd = self.filepath.relative_to(Path.cwd())
-            cwd = Path.cwd()
-            #print(">>>>>>>>>>>>>>>>>>>>>>>", cwd)
-            path = Path(cwd / (x.group(1).replace(".", "/")+".py"))
-            if path not in self.watchee_paths():
-                self.watchees.append([Watchable.Source, path, None])
-            src = path.read_text()
-            self._codepath_offset = len(src.split("\n"))
-            return src
-
-        if self.args.inline:
-            for inline in self.args.inline.split(","):
-                source_code = inline_arg(inline) + "\n" + source_code
-
-        source_code = re.sub(r"from ([^\s]+) import \* \#INLINE", inline_other, source_code)
-        source_code = re.sub(r"\-\.[A-Za-z_ƒ]+([A-Za-z_0-9]+)?\(", ".nerp(", source_code)
-        source_code = re.sub(r"([\s]+)Ƨ\(", r"\1nerp(", source_code)
-        source_code = re.sub(r"λ\s?([/\.\@]{1,2})", r"lambda xxx: xxx\1", source_code)
-        #source_code = re.sub(r"λ\.", "lambda x: x.", source_code)
-        source_code = re.sub(r"λ", "lambda ", source_code)
-        #source_code = re.sub(r"ßDPS\(([^\)]+)\)", r"(ß:=DPS(\1))", source_code)
-
-        while "nerp(" in source_code:
-            start = source_code.find("nerp(")
-            end = -1
-            i = 5
-            depth = 1
-            c = source_code[start+i]
-            while depth > 0 and c:
-                #print(c, depth)
-                if c == "(":
-                    depth += 1
-                elif c== ")":
-                    depth -= 1
-                i += 1
-                c = source_code[start+i]
-            end = start+i
-            source_code = source_code[:start] + "noop()" + source_code[end:]
-            #print(start, end)
-        
-        return source_code
 
     def reload(self, trigger):
         if skia and SkiaPen:
@@ -537,81 +476,18 @@ class Renderer():
             self.program = dict(no_filepath=True)
             pass # ?
         else:
-            if self.filepath.suffix == ".rst":
-                if not publish_doctree:
-                    raise Exception("pip install docutils")
-                doctree = publish_doctree(self.filepath.read_text())
-                def is_code_block(node):
-                    if node.tagname == "literal_block":
-                        classes = node.attributes["classes"]
-                        # ok the "ruby" here is an ugly hack but it's so I can hide certain code
-                        # from a printed rst
-                        if "code" in classes and ("python" in classes or "ruby" in classes):
-                            return True
-                    return False
-                code_blocks = doctree.traverse(condition=is_code_block)
-                source_code = [block.astext() for block in code_blocks]
-                if self.codepath:
-                    self.codepath.unlink()
-                with tempfile.NamedTemporaryFile("w", prefix="coldtype_rst_src", suffix=".py", delete=False) as tf:
-                    tf.write("\n".join(source_code))
-                    self.codepath = Path(tf.name)
-            
-            elif self.filepath.suffix == ".md":
-                from lxml.html import fragment_fromstring, tostring
-                try:
-                    import markdown
-                except ImportError:
-                    raise Exception("pip install markdown")
-                try:
-                    import frontmatter
-                except ImportError:
-                    frontmatter = None
-                    print("> pip install python-frontmatter")
-                md = markdown.markdown(self.filepath.read_text(),
-                    extensions=["fenced_code"])
-                fm = frontmatter.loads(self.filepath.read_text())
-                self.state.frontmatter = fm
-                frag = fragment_fromstring(md, create_parent=True)
-                blocks = []
-                for python in frag.findall("./pre/code[@class='python']"):
-                    blocks.append(python.text)
-                source_code = "\n".join(blocks)
-                if self.codepath:
-                    self.codepath.unlink()
-                with tempfile.NamedTemporaryFile("w", prefix="coldtype_md_src", suffix=".py", delete=False) as tf:
-                    tf.write(self.apply_syntax_mods(source_code))
-                    self.codepath = Path(tf.name)
-            
-            elif self.filepath.suffix == ".py":
-                if self.disable_syntax_mods:
-                    self.codepath = self.filepath
-                else:
-                    source_code = self.apply_syntax_mods(self.filepath.read_text())
-                    if self.codepath:
-                        self.codepath.unlink()
-                    with tempfile.NamedTemporaryFile("w", prefix="coldtype_py_mod", suffix=".py", delete=False) as tf:
-                        tf.write(source_code)
-                        self.codepath = Path(tf.name)
-            else:
-                raise Exception("No code found in file!")
+            self.codepath = read_source_to_tempfile(self.filepath, self.codepath, disable_syntax_mods=self.disable_syntax_mods, renderer=self)
             
             if self.args.blender_watch:
                 cb = Path("~/.coldtype-blender.txt").expanduser()
                 if cb.exists():
                     cb.unlink()
                 cb.write_text(f"import,{str(self.codepath)}")
-
-                blend_file = self.filepath.with_suffix(".blend")
+                #blend_file = self.filepath.with_suffix(".blend")
             
             try:
                 self.state.reset()
-                self.program = run_path(str(self.codepath), init_globals={
-                    "__COLDTYPE__": True,
-                    "__CONTEXT__": self.context,
-                    "__FILE__": self.filepath,
-                    "__sibling__": partial(sibling, self.filepath)
-                })
+                self.program = run_source(self.filepath, self.codepath, __CONTEXT__=self.context)
 
                 full_restart = False
 
@@ -687,59 +563,21 @@ class Renderer():
             render.fmt = "svg"
     
     def renderables(self, trigger):
-        _rs = []
-        for k, v in self.program.items():
-            if isinstance(v, renderable) and not v.hidden:
-                if v not in _rs:
-                    self.normalize_fmt(v)
-                    _rs.append(v)
+        _rs = find_renderables(self.filepath,
+            self.program,
+            self.viewer_solos,
+            self.function_filters,
+            self.args.output_folder)
         
         for r in _rs:
-            output_folder = self.render_to_output_folder(r)
-            r.output_folder = output_folder
+            self.normalize_fmt(r)
 
-        if any([r.solo for r in _rs]):
-            _rs = [r for r in _rs if r.solo]
-        
-        if len(self.viewer_solos) > 0:
-            self.viewer_solos = [vs%len(_rs) for vs in self.viewer_solos]
-
-            solos = []
-            for i, r in enumerate(_rs):
-                if i in self.viewer_solos:
-                    solos.append(r)
-            _rs = solos
-        
-        for _r in _rs:
-            caps = _r.cv2caps
+            caps = r.cv2caps
             if caps is not None:
                 import cv2
                 for cap in caps:
                     if cap not in self.state.cv2caps:
                         self.state.cv2caps[cap] = cv2.VideoCapture(cap)
-            
-        if self.function_filters:
-            function_patterns = self.function_filters
-            print(">>>", function_patterns)
-            matches = []
-            for r in _rs:
-                for fp in function_patterns:
-                    try:
-                        if re.match(fp, r.name) and r not in matches:
-                            matches.append(r)
-                    except re.error as e:
-                        print("ff regex compilation error", e)
-            if len(matches) > 0:
-                _rs = matches
-            else:
-                print(">>> no matches for ff")
-        
-        if self.args.monitor_lines and trigger != Action.RenderAll:
-            func_name = file_and_line_to_def(self.codepath, self.line_number)
-            matches = [r for r in _rs if r.name == func_name]
-            print(">", matches)
-            if len(matches) > 0:
-                return matches
 
         if len(_rs) == 0:
             r = renderable((500, 500))
@@ -760,17 +598,7 @@ class Renderer():
 
         return _rs
     
-    def render_to_output_folder(self, render):
-        if self.args.output_folder:
-            return Path(self.args.output_folder).expanduser().resolve()
-        elif render.dst:
-            return render.dst / (render.custom_folder or render.folder(self.filepath))
-        else:
-            return (self.filepath.parent if self.filepath else Path(os.getcwd())) / "renders" / (render.custom_folder or render.folder(self.filepath))
-    
     def add_paths_to_passes(self, trigger, render, indices):
-        output_folder = self.render_to_output_folder(render)
-        
         if render.prefix is None:
             if self.filepath is not None:
                 prefix = f"{self.filepath.stem}_"
@@ -782,13 +610,12 @@ class Renderer():
         fmt = render.fmt
         rps = []
         for rp in render.passes(trigger, self.state, indices):
-            output_path = output_folder / f"{prefix}{rp.suffix}.{fmt}"
+            output_path = render.output_folder / f"{prefix}{rp.suffix}.{fmt}"
             rp.output_path = output_path
             rp.action = trigger
             rps.append(rp)
         
-        return output_folder, prefix, fmt, rps
-
+        return render.output_folder, prefix, fmt, rps
     
     def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
         if not self.args.is_subprocess:
@@ -948,7 +775,7 @@ class Renderer():
         
         if not self.args.is_subprocess and render_count > 0:
             for render in renders:
-                result = render.package(self.filepath, self.render_to_output_folder(render))
+                result = render.package()
                 if result:
                     self.previews_waiting_to_paint.append([render, result, None])
                 else:

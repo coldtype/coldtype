@@ -175,7 +175,7 @@ class animation(renderable, Timeable):
             ])
         return res
     
-    def package(self, filepath, output_folder):
+    def package(self):
         pass
 
     def fn_to_frame(self, fn_name):
