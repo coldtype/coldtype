@@ -1,4 +1,4 @@
-import re, os
+import re, os, contextlib
 from pathlib import Path
 from runpy import run_path
 from functools import partial
@@ -164,7 +164,9 @@ def renderable_to_output_folder(filepath, renderable, override=None):
         return (filepath.parent if filepath else Path(os.getcwd())) / "renders" / (renderable.custom_folder or renderable.folder(filepath))
 
 
-def find_renderables(filepath:Path,
+def find_renderables(
+    filepath:Path,
+    codepath:Path,
     program:dict,
     viewer_solos=[],
     function_filters=[],
@@ -180,6 +182,7 @@ def find_renderables(filepath:Path,
     
     for r in all_rs:
         r.filepath = filepath
+        r.codepath = codepath
         r.output_folder = renderable_to_output_folder(
             filepath, r, override=output_folder_override)
 
@@ -211,3 +214,63 @@ def find_renderables(filepath:Path,
         filtered_rs = solos
     
     return filtered_rs
+
+
+class SourceReader():
+    def __init__(self,
+        filepath:Path,
+        code:str=None,
+        unlink:bool=False,
+        ):
+        
+        if not filepath and code:
+            with NamedTemporaryFile("w", prefix="coldtype_", suffix=".py", delete=False) as tf:
+                tf.write(code)
+            filepath = Path(tf.name)
+            unlink = True
+
+        self.filepath = filepath
+        self.should_unlink = unlink
+        
+        if not filepath:
+            if code:
+                self.write_code_to_tmpfile(code)
+            else:
+                raise Exception("Must provide filepath or code")
+
+        self.codepath = None
+        self.program = None
+        self.reload()
+    
+    def write_code_to_tmpfile(self, code):
+        if self.filepath:
+            self.filepath.unlink()
+
+        with NamedTemporaryFile("w", prefix="coldtype_", suffix=".py", delete=False) as tf:
+            tf.write(code)
+        
+        self.filepath = Path(tf.name)
+        self.should_unlink = True
+    
+    def reload(self, code:str=None):
+        if code:
+            self.write_code_to_tmpfile(code)
+        self.codepath = read_source_to_tempfile(self.filepath, self.codepath)
+        self.program = run_source(self.filepath, self.codepath)
+    
+    def renderables(self,
+        viewer_solos=[],
+        function_filters=[],
+        output_folder_override=None,
+        ):
+        return find_renderables(
+            self.filepath,
+            self.codepath,
+            self.program,
+            viewer_solos,
+            function_filters,
+            output_folder_override)
+    
+    def unlink(self):
+        self.filepath.unlink()
+        self.codepath.unlink()

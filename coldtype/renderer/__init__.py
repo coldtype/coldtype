@@ -568,7 +568,9 @@ class Renderer():
             render.fmt = "svg"
     
     def renderables(self, trigger):
-        _rs = find_renderables(self.filepath,
+        _rs = find_renderables(
+            self.filepath,
+            self.codepath,
             self.program,
             self.viewer_solos,
             self.function_filters,
@@ -603,25 +605,6 @@ class Renderer():
 
         return _rs
     
-    def add_paths_to_passes(self, trigger, render, indices):
-        if render.prefix is None:
-            if self.filepath is not None:
-                prefix = f"{self.filepath.stem}_"
-            else:
-                prefix = None
-        else:
-            prefix = render.prefix
-
-        fmt = render.fmt
-        rps = []
-        for rp in render.passes(trigger, self.state, indices):
-            output_path = render.output_folder / f"{prefix}{rp.suffix}.{fmt}"
-            rp.output_path = output_path
-            rp.action = trigger
-            rps.append(rp)
-        
-        return render.output_folder, prefix, fmt, rps
-    
     def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
         if not self.args.is_subprocess:
             start = ptime.time()
@@ -637,8 +620,8 @@ class Renderer():
         output_folder = None
         try:
             for render in renders:
-                render.codepath = self.codepath
-                render.filepath = self.filepath
+                #render.codepath = self.codepath
+                #render.filepath = self.filepath
 
                 for watch, flag in render.watch:
                     if isinstance(watch, Font) and not watch.cacheable:
@@ -651,7 +634,7 @@ class Renderer():
                         self.watchees.append([Watchable.Generic, watch, flag])
                 
                 did_render = False
-                output_folder, prefix, fmt, passes = self.add_paths_to_passes(trigger, render, indices)
+                passes = render.passes(trigger, self.state, indices)
                 render.last_passes = passes
 
                 #if trigger == Action.RenderAll:
@@ -1283,14 +1266,11 @@ class Renderer():
             return
         trigger = Action.RenderAll
         renders = self.renderables(trigger)
-        output_folder = None
         all_passes = []
         try:
             for render in renders:
                 if not render.preview_only:
-                    output_folder, prefix, fmt, passes = self.add_paths_to_passes(trigger, render, [0])
-                    for rp in passes:
-                        all_passes.append(rp)
+                    all_passes.extend(render.passes(trigger, self.state, [0]))
 
             release_fn(all_passes)
         except Exception as e:
@@ -1689,7 +1669,7 @@ class Renderer():
                 self.preloaded_frames = []
             else:
                 anm = self.animation()
-                passes = self.add_paths_to_passes(Action.RenderAll, anm, anm.all_frames())[-1]
+                passes = anm.passes(Action.RenderAll, self.state, anm.all_frames())
                 self.preload_frames(passes)
         elif action == Action.Build:
             self.on_release(build=True)

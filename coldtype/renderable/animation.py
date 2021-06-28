@@ -108,8 +108,9 @@ class animation(renderable, Timeable):
                     renderer_state.adjust_keyed_frame_offsets(self.name, lambda x, y: fi)
 
         frames = []
-        for f in renderer_state.get_frame_offsets(self.name):
-            frames.append(f % self.duration)
+        if renderer_state:
+            for f in renderer_state.get_frame_offsets(self.name):
+                frames.append(f % self.duration)
         return frames
     
     def active_frames(self, action, renderer_state, indices):
@@ -153,7 +154,7 @@ class animation(renderable, Timeable):
     
     def passes(self, action, renderer_state, indices=[]):
         frames = self.active_frames(action, renderer_state, indices)
-        return [RenderPass(self, self.pass_suffix(i), [Frame(i, self)]) for i in frames]
+        return [RenderPass(self, action, self.pass_suffix(i), [Frame(i, self)]) for i in frames]
     
     def runpost(self, result, render_pass, renderer_state):
         res = super().runpost(result, render_pass, renderer_state)
@@ -223,7 +224,7 @@ class drawbot_animation(drawbot_script, animation):
             frames = super().active_frames(action, renderer_state, indices)
             passes = []
             for i in frames:
-                p = RenderPass(self, "{:04d}".format(i), [Frame(i, self)])
+                p = RenderPass(self, action, "{:04d}".format(i), [Frame(i, self)])
                 passes.append(p)
             return passes
         else:

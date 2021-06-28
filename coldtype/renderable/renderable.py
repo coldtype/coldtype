@@ -63,13 +63,16 @@ class Action(Enum):
 
 
 class RenderPass():
-    def __init__(self, render, suffix, args):
+    def __init__(self, render:"renderable", action, suffix, args):
         self.render = render
+        self.action = action
         self.fn = self.render.func
         self.args = args
-        self.suffix = suffix
         self.path = None
-        self.output_path = None
+        
+        self.prefix = render.pass_prefix()
+        self.suffix = suffix
+        self.output_path = render.output_folder / f"{self.prefix}{self.suffix}.{render.fmt}"
     
     def __repr__(self):
         return f"<RenderPass:f{self.output_path}/>"
@@ -185,8 +188,18 @@ class renderable():
     def pass_suffix(self):
         return self.name
     
+    def pass_prefix(self):
+        if self.prefix is None:
+            if self.filepath is not None:
+                prefix = f"{self.filepath.stem}_"
+            else:
+                prefix = None
+        else:
+            prefix = self.prefix
+        return prefix
+    
     def passes(self, action, renderer_state, indices=[]):
-        return [RenderPass(self, self.pass_suffix(), [self.rect])]
+        return [RenderPass(self, action, self.pass_suffix(), [self.rect])]
 
     def package(self):
         pass
@@ -233,6 +246,10 @@ class renderable():
             return DATPens(pens)
         else:
             return pens
+    
+    def run_normal(self, render_pass, renderer_state=None):
+        return self.normalize_result(
+            self.run(render_pass, renderer_state))
 
 
 class skia_direct(renderable):
@@ -310,7 +327,7 @@ class glyph(renderable):
         super().__init__(rect=r, **kwargs)
     
     def passes(self, action, renderer_state, indices=[]):
-        return [RenderPass(self, self.glyphName, [])]
+        return [RenderPass(self, action, self.glyphName, [])]
 
 
 class fontpreview(renderable):
@@ -328,7 +345,7 @@ class fontpreview(renderable):
         self.matches.sort()
     
     def passes(self, action, renderer_state, indices=[]):
-        return [RenderPass(self, "{:s}".format(m.name), [self.rect, m]) for m in self.matches]
+        return [RenderPass(self, action, "{:s}".format(m.name), [self.rect, m]) for m in self.matches]
 
 
 class iconset(renderable):
@@ -345,7 +362,7 @@ class iconset(renderable):
         sizes = self.sizes
         if action == Action.RenderAll:
             sizes = self.valid_sizes
-        return [RenderPass(self, str(size), [self.rect, size]) for size in sizes]
+        return [RenderPass(self, action, str(size), [self.rect, size]) for size in sizes]
     
     def package(self):
         # inspired by https://retifrav.github.io/blog/2018/10/09/macos-convert-png-to-icns/

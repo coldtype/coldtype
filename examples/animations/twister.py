@@ -3,7 +3,7 @@ from functools import partial
 
 def pair(tx, f, i, _):
     fa = f.adj(-i*4)
-    ro = fa.e("lin", rng=(0, -360))
+    ro = fa.e("eeio", rng=(0, -360))
     dp = (DP((f.a.r
             .take(350, "mdx")
             .take(30, "mny")))
