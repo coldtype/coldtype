@@ -217,41 +217,59 @@ def find_renderables(
 
 
 class SourceReader():
-    def __init__(self, filepath:Path, code:str=None):
+    def __init__(self,
+        filepath:Path=None,
+        code:str=None,
+        renderer=None,
+        disable_syntax_mods:bool=False,
+        ):
         self.filepath = None
         self.codepath = None
         self.should_unlink = False
-        self.reset_filepath(filepath, code)
-    
-    def reset_filepath(self, filepath:Path, code:str=None):
-        self.unlink()
-        self.should_unlink = False
+        self.program = None
+        self.disable_syntax_mods = disable_syntax_mods
+        self.renderer = renderer
 
+        if filepath or code:
+            self.reset_filepath(filepath, code)
+    
+    @staticmethod
+    def normalize_filepath(filepath:Path):
         if isinstance(filepath, str):
             filepath = Path(filepath)
         
+        filepath = filepath.expanduser().resolve()
+        if not filepath.exists():
+            with_py = (filepath.parent / (filepath.stem + ".py"))
+            if with_py.exists():
+                filepath = with_py
+        if filepath.suffix not in [".md", ".rst", ".py"]:
+            raise Exception("Coldtype can only read .py, .md, and .rst files")
+        
+        return filepath
+    
+    def reset_filepath(self, filepath:Path, code:str=None, reload:bool=True):
+        self.unlink()
+        self.should_unlink = False
+        
         if filepath:
-            self.filepath = filepath.expanduser().resolve()
+            self.filepath = SourceReader.normalize_filepath(filepath)
             if not self.filepath.exists():
-                with_py = (self.filepath.parent / (self.filepath.stem + ".py"))
-                if with_py.exists():
-                    self.filepath = with_py
-                else:
-                    raise Exception(f"That file does not exist")
-            if self.filepath.suffix not in [".md", ".rst", ".py"]:
-                raise Exception("Coldtype can only read .py, .md, and .rst files")
+                raise Exception("Source file does not exist")
         else:
             if code:
                 self.write_code_to_tmpfile(code)
             else:
                 raise Exception("Must provide filepath or code")
             
-        self.reload()
+        if reload:
+            self.reload()
     
     def reload(self, code:str=None):
         if code:
             self.write_code_to_tmpfile(code)
-        self.codepath = read_source_to_tempfile(self.filepath, self.codepath)
+        
+        self.codepath = read_source_to_tempfile(self.filepath, self.codepath, renderer=self.renderer)
         self.program = run_source(self.filepath, self.codepath)
     
     def write_code_to_tmpfile(self, code):

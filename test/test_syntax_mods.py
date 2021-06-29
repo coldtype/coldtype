@@ -24,11 +24,20 @@ def test_src_animation(f):
 class TestSyntaxMods(unittest.TestCase):
     def setUp(self) -> None:
         self.sr = SourceReader(None, test_src)
+        self.sr2 = SourceReader()
         return super().setUp()
 
     def tearDown(self) -> None:
         self.sr.unlink()
+        self.sr2.unlink()
         return super().tearDown()
+    
+    def test_empty_reader(self):
+        self.assertEqual(self.sr2.filepath, None)
+        self.assertEqual(self.sr2.codepath, None)
+        self.sr2.reset_filepath("test/source_file.py")
+        self.assertEqual(self.sr2.filepath.stem, "source_file")
+        self.assertEqual(len(self.sr2.renderables()), 1)
 
     def test_syntax_mods(self):
         sr = self.sr

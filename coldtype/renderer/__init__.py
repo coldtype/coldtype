@@ -25,7 +25,7 @@ from coldtype.helpers import *
 from coldtype.geometry import Rect, Point, Edge
 from coldtype.text.reader import Font
 
-from coldtype.renderer.reader import find_renderables, read_source_to_tempfile, run_source
+from coldtype.renderer.reader import SourceReader, find_renderables, read_source_to_tempfile, run_source
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
@@ -152,6 +152,7 @@ class WebViewerHandler(SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
+# TODO get rid of this, use a daemon
 class DataSourceThread(threading.Thread):
     def __init__(self, filepath):
         self.filepath = filepath
@@ -319,8 +320,7 @@ class Renderer():
             #self.args.no_watch = True
             #self.args.all = True
         
-        self.disable_syntax_mods = self.args.disable_syntax_mods
-        self.filepath = None
+        self.source_reader = SourceReader(disable_syntax_mods=self.args.disable_syntax_mods, renderer=self)
         self.state = RendererState(self)
         self.state.capturing_previews = self.args.capture_previews
 
@@ -348,7 +348,6 @@ class Renderer():
             self.dead = True
             return
 
-        self.program = None
         self.exit_code = 0
         self.all_shortcuts = self.shortcuts()
 
@@ -399,45 +398,37 @@ class Renderer():
         self.state._initial_frame_offsets = {}
         self.state.cv2caps = {}
 
-        if filepath:
-            self.filepath = Path(filepath).expanduser().resolve()
-            if self.filepath.name == "demo":
-                self.filepath = Path(__file__).parent.parent / "demo/demo.py"
-            elif self.filepath.suffix == ".py":
-                if not self.filepath.exists(): # write some default code there after a prompt
-                    print(">>> That python file does not exist...")
-                    create = input(">>> Do you want to create it and add some coldtype boilerplate? (y/n): ")
-                    if create.lower() == "y":
-                        self.filepath.parent.mkdir(exist_ok=True, parents=True)
-                        self.filepath.write_text("from coldtype import *\n\n@renderable()\ndef stub(r):\n    return (DATPen()\n        .oval(r.inset(50))\n        .f(0.8))\n")
-                        editor_cmd = self.py_config.get("EDITOR_COMMAND")
-                        if editor_cmd:
-                            os.system(editor_cmd + " " + str(self.filepath.relative_to(Path.cwd())))
-            elif self.filepath.suffix == ".rst":
-                if not self.filepath.exists():
-                    print(">>> That rst file does not exist")
-                    return False
-            elif self.filepath.suffix == ".md":
-                if not self.filepath.exists():
-                    print(">>> That md file does not exist")
-                    return False
-            else:
-                print(">>> Coldtype can only read .py, .rst, and .md files")
-                return False
-            self.codepath = None
-            self._codepath_offset = 0
-            self.watchees = [[Watchable.Source, self.filepath, None]]
-            if not self.args.is_subprocess:
+        root = Path(__file__).parent.parent
 
-                self.watch_file_changes()
-                for line in self.filepath.read_text().splitlines():
-                    if line.startswith("#coldtype"):
-                        print("> Overriding command-line args with:\n    >", line)
-                        self.args = self.parser.parse_args(line.replace("#coldtype", "").strip().split(" "))
-        else:
-            self.watchees = []
-            self.filepath = None
-            self.codepath = None
+        if not filepath:
+            filepath = root / "demo/demo.py" # should not be demo
+        elif filepath == "demo": # TODO more of these
+            filepath = root / "demo/demo.py"
+        
+        filepath = SourceReader.normalize_filepath(filepath)
+        if not filepath.exists():
+            if filepath.suffix == ".py":
+                print(">>> That python file does not exist...")
+                create = input(">>> Do you want to create it and add some coldtype boilerplate? (y/n): ")
+                if create.lower() == "y":
+                    filepath.parent.mkdir(exist_ok=True, parents=True)
+                    filepath.write_text("from coldtype import *\n\n@renderable()\ndef stub(r):\n    return (DATPen()\n        .oval(r.inset(50))\n        .f(0.8))\n")
+                    editor_cmd = self.py_config.get("EDITOR_COMMAND")
+                    if editor_cmd:
+                        os.system(editor_cmd + " " + str(filepath.relative_to(Path.cwd())))
+            else:
+                raise Exception("That file does not exist")
+        
+        self._codepath_offset = 0
+        self.source_reader.reset_filepath(filepath, reload=False)
+        self.watchees = [[Watchable.Source, self.source_reader.filepath, None]]
+
+        if not self.args.is_subprocess:
+            self.watch_file_changes()
+            for line in filepath.read_text().splitlines():
+                if line.startswith("#coldtype"):
+                    print("> Overriding command-line args with:\n    >", line)
+                    self.args = self.parser.parse_args(line.replace("#coldtype", "").strip().split(" "))
         return True
 
     def watchee_paths(self):
@@ -477,23 +468,17 @@ class Renderer():
         if skia and SkiaPen:
             skfx.SKIA_CONTEXT = self.context
 
-        if not self.filepath:
-            self.program = dict(no_filepath=True)
-            pass # ?
-        else:
-            self.codepath = read_source_to_tempfile(self.filepath, self.codepath, disable_syntax_mods=self.disable_syntax_mods, renderer=self)
+        if True:
+            self.state.reset()
+            self.source_reader.reload()
             
             if self.args.blender_watch:
                 cb = Path("~/.coldtype-blender.txt").expanduser()
                 if cb.exists():
                     cb.unlink()
-                cb.write_text(f"import,{str(self.codepath)}")
-                #blend_file = self.filepath.with_suffix(".blend")
+                cb.write_text(f"import,{str(self.source_reader.codepath)}")
             
             try:
-                self.state.reset()
-                self.program = run_source(self.filepath, self.codepath, __CONTEXT__=self.context)
-
                 full_restart = False
 
                 for r in self.renderables(Action.PreviewStoryboardReload):
@@ -526,13 +511,12 @@ class Renderer():
                         for k, v in fos.items():
                             self.state.adjust_keyed_frame_offsets(k, lambda i, o: v[i])
                     
-                if self.program.get("COLDTYPE_NO_WATCH"):
+                if self.source_reader.program.get("COLDTYPE_NO_WATCH"):
                     return True
             except SystemExit:
                 self.on_exit(restart=False)
                 return True
             except Exception as e:
-                self.program = None
                 self.show_error()
     
     def animation(self):
@@ -543,7 +527,7 @@ class Renderer():
     
     def buildrelease_fn(self, fnname="release"):
         candidate = None
-        for k, v in self.program.items():
+        for k, v in self.source_reader.program.items():
             if k == fnname:
                 candidate = v
         return candidate
@@ -568,10 +552,7 @@ class Renderer():
             render.fmt = "svg"
     
     def renderables(self, trigger):
-        _rs = find_renderables(
-            self.filepath,
-            self.codepath,
-            self.program,
+        _rs = self.source_reader.renderables(
             self.viewer_solos,
             self.function_filters,
             self.args.output_folder)
@@ -617,12 +598,8 @@ class Renderer():
         self.last_renders = renders
         preview_count = 0
         render_count = 0
-        output_folder = None
         try:
             for render in renders:
-                #render.codepath = self.codepath
-                #render.filepath = self.filepath
-
                 for watch, flag in render.watch:
                     if isinstance(watch, Font) and not watch.cacheable:
                         if watch.path not in self.watchee_paths():
@@ -884,7 +861,7 @@ class Renderer():
             should_halt = self.reload(trigger)
             if should_halt:
                 return True
-            if self.program:
+            if self.source_reader.program:
                 preview_count, render_count = self.render(trigger, indices=indices)
                 if self.args.show_render_count:
                     print("render>", preview_count, "/", render_count)
@@ -1075,7 +1052,7 @@ class Renderer():
     
         if self.args.sidecar:
             if self.args.sidecar == ".":
-                self.args.sidecar = self.filepath
+                self.args.sidecar = self.source_reader.filepath
             dst = DataSourceThread(Path(self.args.sidecar).expanduser().resolve())
             dst.start()
             self.sidecar_threads.append(dst)
@@ -1198,7 +1175,7 @@ class Renderer():
 
         if context:
             if cmd == "show_function":
-                lines = self.codepath.read_text().split("\n")
+                lines = self.source_reader.codepath.read_text().split("\n")
                 lidx = int(context)
                 lidx += self._codepath_offset
                 line = lines[lidx]
@@ -1463,14 +1440,14 @@ class Renderer():
         elif shortcut == KeyboardShortcut.JumpToFrameFunctionDef:
             frame = self.last_animation._active_frames(self.state)[0]
             fn_prefix, fn_context = self.last_animation.frame_to_fn(frame)
-            original_code = self.filepath.read_text().splitlines()
+            original_code = self.source_reader.filepath.read_text().splitlines()
             found_line = -1
             for li, line in enumerate(original_code):
                 if line.strip().startswith(fn_prefix):
                     found_line = li
             editor_cmd = self.py_config.get("EDITOR_COMMAND")
             if editor_cmd:
-                os.system(editor_cmd + " -g " + str(self.filepath.relative_to(Path.cwd())) + ":" + str(found_line))
+                os.system(editor_cmd + " -g " + str(self.source_reader.filepath.relative_to(Path.cwd())) + ":" + str(found_line))
         
         elif shortcut == KeyboardShortcut.ViewerTakeFocus:
             glfw.focus_window(self.window)
@@ -1720,7 +1697,7 @@ class Renderer():
 
         if action in ["save", "jump_to_def"]:
             for _, client in self.server.connections.items():
-                client.sendMessage(json.dumps({"midi_shortcut":action, "file":str(self.filepath), **kwargs}))
+                client.sendMessage(json.dumps({"midi_shortcut":action, "file":str(self.source_reader.filepath), **kwargs}))
             return
         
         animation = self.animation()
@@ -1728,7 +1705,7 @@ class Renderer():
             print("EVENT", action, kwargs)
             if action:
                 kwargs["action"] = action.value
-            kwargs["prefix"] = self.filepath.stem
+            kwargs["prefix"] = self.source_reader.filepath.stem
             kwargs["fps"] = animation.timeline.fps
             for _, client in self.server.connections.items():
                 client.sendMessage(json.dumps(kwargs))
@@ -1743,11 +1720,6 @@ class Renderer():
             action = jdata.get("action")
             if action:
                 self.on_message(jdata, jdata.get("action"))
-            elif jdata.get("metadata") and jdata.get("path"):
-                path = Path(jdata.get("path"))
-                if path == self.filepath:
-                    if self.args.monitor_lines:
-                        self.line_number = jdata.get("line_number")
             elif jdata.get("command"):
                 cmd = jdata.get("command")
                 context = jdata.get("context")
@@ -2250,10 +2222,8 @@ class Renderer():
             o = AsyncWatchdog(str(d), on_modified=self.on_modified, recursive=True)
             o.start()
             self.observers.append(o)
-        if self.filepath:
-            print(f"... watching {self.filepath.name} for changes ...")
-        else:
-            print(f"... no file specified, showing generic window ...")
+        if self.source_reader.filepath:
+            print(f"... watching {self.source_reader.filepath.relative_to(Path.cwd())} for changes ...")
     
     def execute_string_as_shortcut_or_action(self, shortcut, key):
         try:
@@ -2337,6 +2307,8 @@ class Renderer():
         os.execl(sys.executable, *(["-m"]+args))
 
     def on_exit(self, restart=False):
+        self.source_reader.unlink()
+
         #if self.args.watch:
         #   print(f"<EXIT(restart:{restart})>")
         #if self.webviewer_thread:
