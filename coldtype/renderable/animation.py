@@ -114,6 +114,9 @@ class animation(renderable, Timeable):
         return frames
     
     def active_frames(self, action, renderer_state, indices):
+        if not action:
+            return indices
+        
         frames = self._active_frames(renderer_state)
 
         if action == Action.RenderAll:
@@ -128,6 +131,8 @@ class animation(renderable, Timeable):
                     frames = self.all_frames()
                 #if hasattr(self.timeline, "find_workarea"):
                 #    frames = self.timeline.find_workarea()
+        #else:
+        #    frames = indices
         return frames
     
     def workarea(self):

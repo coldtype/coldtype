@@ -73,6 +73,10 @@ class RenderPass():
         self.prefix = render.pass_prefix()
         self.suffix = suffix
         self.output_path = render.output_folder / f"{self.prefix}{self.suffix}.{render.fmt}"
+
+        self.i = None
+        if hasattr(args[0], "i"):
+            self.i = args[0].i
     
     def __repr__(self):
         return f"<RenderPass:f{self.output_path}/>"
@@ -161,6 +165,9 @@ class renderable():
                 self.rasterizer = "pickle"
             else:
                 self.rasterizer = "skia"
+    
+    def __repr__(self):
+        return f"<{self.__class__.__name__}:{self.name}/>"
     
     def add_watchee(self, w, flag=None):
         try:

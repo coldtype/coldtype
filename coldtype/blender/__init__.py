@@ -1,19 +1,14 @@
 # to be loaded from within Blender
 
 import os
-from coldtype.geometry import Point, Line, Rect
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.blenderpen import BlenderPen, BPH
-from coldtype.text.reader import StyledString, Style, Font
-from coldtype.text.composer import StSt
-from coldtype.color import hsl, bw
-from pathlib import Path
 
 from coldtype.time import Frame
 from coldtype.renderable import renderable
 from coldtype.renderable.animation import animation
 
-from coldtype.blender.render import blend_pickle
+from coldtype.blender.render import blend_source
 
 try:
     import bpy
@@ -69,14 +64,17 @@ class b3d_animation(animation):
         self.name = None
         self.current_frame = -1
         self.hidden = hidden
-        super().__init__(**kwargs, fmt="pickle")
+        super().__init__(**kwargs)
+
+        if bpy:
+            bpy.data.scenes[0].frame_end = self.t.duration-1
     
     def update(self):        
         result:DATPens = self.func(Frame(self.current_frame, self))
         _walk_to_b3d(result)
     
     def __call__(self, func):
-        if not bpy:
+        if not bpy or __RUNNER__ != "blender_watch":
             return super().__call__(func)
 
         self.func = func
@@ -105,7 +103,13 @@ class b3d_animation(animation):
         output_dir = self.blender_output_dir()
         for a in artifacts[:]:
             if a.render == self:
-                blend_pickle(blend_file, a.output_path, output_dir, samples=samples)
+                print(">", a.i)
+                blend_source(
+                    __FILE__,
+                    blend_file,
+                    a.i,
+                    output_dir,
+                    samples=samples)
         os.system("afplay /System/Library/Sounds/Pop.aiff")
 
 
@@ -125,7 +129,8 @@ class b3d_animation_render(animation):
 
 
 if __name__ == "<run_path>":
-    from coldtype.text.composer import Glyphwise
+    from coldtype.text.composer import StSt, Font
+    from coldtype.color import hsl
 
     fnt = Font.Cacheable("~/Type/fonts/fonts/CheeeVariable.ttf")
     fnt2 = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
@@ -145,7 +150,7 @@ if __name__ == "<run_path>":
     
     @b3d_animation(timeline=60, bg=0, layer=0)
     def draw_dps(f):
-        txt = (StSt("CHROMATIC", fnt4, 330, palette=4)
+        txt = (StSt("CHROMATICA", fnt4, 330, palette=4)
             .align(f.a.r)
             .collapse()
             .map(lambda i, p: p.explode())
@@ -158,7 +163,7 @@ if __name__ == "<run_path>":
                     pp.translate(0, fa.e("seio", 2, rng=(-100, 0))))
                 .tag(f"Hello{i}")
                 .chain(b3d("Text", lambda bp: bp
-                    .extrude(fa.e("eeio", 1, rng=(0.25, 7)))
+                    .extrude(fa.e("eeio", 1, rng=(0.25, 5)))
                     .metallic(0.1)))))
         
         return DATPens([
@@ -179,7 +184,7 @@ if __name__ == "<run_path>":
             pass
     
     def build(artifacts):
-        draw_dps.blender_render("scratch.blend", artifacts[:2], samples=2)
+        draw_dps.blender_render("scratch.blend", artifacts[:2], samples=8)
 
     def release(artifacts):
-        draw_dps.blender_render("scratch.blend", artifacts, samples=2)
+        draw_dps.blender_render("scratch.blend", artifacts, samples=8)

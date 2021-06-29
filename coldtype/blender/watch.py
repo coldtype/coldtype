@@ -3,6 +3,8 @@ from pathlib import Path
 from runpy import run_path
 import traceback
 
+from coldtype.renderer.reader import SourceReader
+
 #from coldtype.blender.watch import watch; watch()
 
 # original idea: https://blender.stackexchange.com/questions/15670/send-instructions-to-blender-from-external-application
@@ -24,7 +26,9 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                 cmd,arg = line.split(",")
                 if cmd == 'import':
                     try:
-                        run_path(Path(arg).expanduser())
+                        sr = SourceReader(arg, runner="blender_watch")
+                        sr.unlink()
+                        #run_path(Path(arg).expanduser())
                     except Exception as e:
                         stack = traceback.format_exc()
                         print("---"*10)

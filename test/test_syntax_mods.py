@@ -15,7 +15,7 @@ def test_src_function(r):
 
 @animation()
 def test_src_animation(f):
-    return (StSt("CDELOPTY", "assets/ColdtypeObviously-VF.ttf",
+    return (StSt("CDELOPT", "assets/ColdtypeObviously-VF.ttf",
         wdth=f.e("linear", 1))
         .align(f.a.r))
 """
@@ -24,7 +24,7 @@ def test_src_animation(f):
 class TestSyntaxMods(unittest.TestCase):
     def setUp(self) -> None:
         self.sr = SourceReader(None, test_src)
-        self.sr2 = SourceReader()
+        self.sr2 = SourceReader(runner="special")
         return super().setUp()
 
     def tearDown(self) -> None:
@@ -38,6 +38,13 @@ class TestSyntaxMods(unittest.TestCase):
         self.sr2.reset_filepath("test/source_file.py")
         self.assertEqual(self.sr2.filepath.stem, "source_file")
         self.assertEqual(len(self.sr2.renderables()), 1)
+        self.assertEqual(self.sr2.program["__RUNNER__"], "special")
+    
+    def test_frame_read(self):
+        result = self.sr.frame_results(1)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(len(result[0]), 2)
+        self.assertEqual(len(result[0][1]), 8)
 
     def test_syntax_mods(self):
         sr = self.sr
@@ -46,6 +53,8 @@ class TestSyntaxMods(unittest.TestCase):
         self.assertIn(".align(r.inset(50))", test_src)
         self.assertNotIn(".align(r.inset(50))", mod_src)
         self.assertIn(".noop()", mod_src)
+
+        self.assertEqual(sr.program["__RUNNER__"], "default")
 
         renderables = sr.renderables(output_folder_override="test/renders")
         self.assertEqual(len(renderables), 2)

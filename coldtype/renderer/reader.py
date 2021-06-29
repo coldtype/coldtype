@@ -5,6 +5,8 @@ from functools import partial
 from tempfile import NamedTemporaryFile
 
 from coldtype.renderable import renderable
+from coldtype.renderable.animation import animation
+
 from coldtype.renderer.utils import Watchable
 from coldtype.helpers import sibling
 
@@ -222,6 +224,7 @@ class SourceReader():
         code:str=None,
         renderer=None,
         disable_syntax_mods:bool=False,
+        runner:str="default",
         ):
         self.filepath = None
         self.codepath = None
@@ -229,6 +232,7 @@ class SourceReader():
         self.program = None
         self.disable_syntax_mods = disable_syntax_mods
         self.renderer = renderer
+        self.runner = runner
 
         if filepath or code:
             self.reset_filepath(filepath, code)
@@ -270,7 +274,10 @@ class SourceReader():
             self.write_code_to_tmpfile(code)
         
         self.codepath = read_source_to_tempfile(self.filepath, self.codepath, renderer=self.renderer)
-        self.program = run_source(self.filepath, self.codepath)
+        self.program = run_source(
+            self.filepath,
+            self.codepath,
+            __RUNNER__=self.runner)
     
     def write_code_to_tmpfile(self, code):
         if self.filepath:
@@ -294,6 +301,15 @@ class SourceReader():
             viewer_solos,
             function_filters,
             output_folder_override)
+    
+    def frame_results(self, frame):
+        rs = self.renderables()
+        res = []
+        for r in rs:
+            ps = r.passes(None, None, indices=[frame])
+            for p in ps:
+                res.append([r, r.run_normal(p)])
+        return res
     
     def unlink(self):
         if self.should_unlink and self.filepath:
