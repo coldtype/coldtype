@@ -199,6 +199,7 @@ class renderable():
         return prefix
     
     def passes(self, action, renderer_state, indices=[]):
+        print(self.filepath, self.pass_prefix(), self.pass_suffix())
         return [RenderPass(self, action, self.pass_suffix(), [self.rect])]
 
     def package(self):

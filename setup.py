@@ -45,7 +45,9 @@ setuptools.setup(
     package_data={
         "": [
             "webserver/webviewer.html",
+            "demo/RecMono-CasualItalic.ttf",
             "demo/ColdtypeObviously-VF.ttf",
+            "demo/MutatorSans.ttf",
             "demo/demo.py",
         ],
     },

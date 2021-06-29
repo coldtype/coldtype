@@ -138,7 +138,7 @@ def read_source_to_tempfile(filepath:Path,
             source_code, _ = apply_syntax_mods(filepath.read_text(), renderer)
             if codepath and codepath.exists():
                 codepath.unlink()
-            with NamedTemporaryFile("w", prefix="coldtype_py_mod", suffix=".py", delete=False) as tf:
+            with NamedTemporaryFile("w", prefix=f"coldtype__{filepath.stem}_", suffix=".py", delete=False) as tf:
                 tf.write(source_code)
                 codepath = Path(tf.name)
     else:
