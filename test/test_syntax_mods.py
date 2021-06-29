@@ -92,5 +92,26 @@ class TestSyntaxMods(unittest.TestCase):
         self.assertNotIn(".noop()", mod_src)
         self.assertIn(".align(r.inset(50))", mod_src)
 
+        prev_codepath = sr.codepath
+        prev_filepath = sr.filepath
+        test_source_file = Path("test/source_file.py")
+        sr.reset_filepath("test/source_file.py")
+
+        self.assertEqual(sr.filepath.absolute(), test_source_file.absolute())
+        self.assertNotEqual(sr.codepath, prev_codepath)
+
+        self.assertTrue(not prev_filepath.exists())
+        self.assertTrue(not prev_codepath.exists())
+        self.assertTrue(sr.codepath.exists())
+
+        sr.unlink()
+
+        self.assertTrue(not sr.codepath.exists())
+        self.assertTrue(test_source_file.exists())
+
+        sr.reset_filepath("test/source_file")
+        self.assertEqual(sr.filepath.suffix, ".py")
+        self.assertEqual(sr.filepath, test_source_file.absolute())
+
 if __name__ == "__main__":
     unittest.main()

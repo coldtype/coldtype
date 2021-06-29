@@ -95,7 +95,7 @@ def read_source_to_tempfile(filepath:Path,
             return False
         code_blocks = doctree.traverse(condition=is_code_block)
         source_code = [block.astext() for block in code_blocks]
-        if codepath:
+        if codepath and codepath.exists():
             codepath.unlink()
         with NamedTemporaryFile("w", prefix="coldtype_rst_src", suffix=".py", delete=False) as tf:
             tf.write("\n".join(source_code))
@@ -121,7 +121,7 @@ def read_source_to_tempfile(filepath:Path,
         for python in frag.findall("./pre/code[@class='python']"):
             blocks.append(python.text)
         source_code = "\n".join(blocks)
-        if codepath:
+        if codepath and codepath.exists():
             codepath.unlink()
         with NamedTemporaryFile("w", prefix="coldtype_md_src", suffix=".py", delete=False) as tf:
             if disable_syntax_mods:
@@ -136,7 +136,7 @@ def read_source_to_tempfile(filepath:Path,
             codepath = filepath
         else:
             source_code, _ = apply_syntax_mods(filepath.read_text(), renderer)
-            if codepath:
+            if codepath and codepath.exists():
                 codepath.unlink()
             with NamedTemporaryFile("w", prefix="coldtype_py_mod", suffix=".py", delete=False) as tf:
                 tf.write(source_code)
@@ -217,30 +217,42 @@ def find_renderables(
 
 
 class SourceReader():
-    def __init__(self,
-        filepath:Path,
-        code:str=None,
-        unlink:bool=False,
-        ):
-        
-        if not filepath and code:
-            with NamedTemporaryFile("w", prefix="coldtype_", suffix=".py", delete=False) as tf:
-                tf.write(code)
-            filepath = Path(tf.name)
-            unlink = True
+    def __init__(self, filepath:Path, code:str=None):
+        self.filepath = None
+        self.codepath = None
+        self.should_unlink = False
+        self.reset_filepath(filepath, code)
+    
+    def reset_filepath(self, filepath:Path, code:str=None):
+        self.unlink()
+        self.should_unlink = False
 
-        self.filepath = filepath
-        self.should_unlink = unlink
+        if isinstance(filepath, str):
+            filepath = Path(filepath)
         
-        if not filepath:
+        if filepath:
+            self.filepath = filepath.expanduser().resolve()
+            if not self.filepath.exists():
+                with_py = (self.filepath.parent / (self.filepath.stem + ".py"))
+                if with_py.exists():
+                    self.filepath = with_py
+                else:
+                    raise Exception(f"That file does not exist")
+            if self.filepath.suffix not in [".md", ".rst", ".py"]:
+                raise Exception("Coldtype can only read .py, .md, and .rst files")
+        else:
             if code:
                 self.write_code_to_tmpfile(code)
             else:
                 raise Exception("Must provide filepath or code")
-
-        self.codepath = None
-        self.program = None
+            
         self.reload()
+    
+    def reload(self, code:str=None):
+        if code:
+            self.write_code_to_tmpfile(code)
+        self.codepath = read_source_to_tempfile(self.filepath, self.codepath)
+        self.program = run_source(self.filepath, self.codepath)
     
     def write_code_to_tmpfile(self, code):
         if self.filepath:
@@ -251,12 +263,6 @@ class SourceReader():
         
         self.filepath = Path(tf.name)
         self.should_unlink = True
-    
-    def reload(self, code:str=None):
-        if code:
-            self.write_code_to_tmpfile(code)
-        self.codepath = read_source_to_tempfile(self.filepath, self.codepath)
-        self.program = run_source(self.filepath, self.codepath)
     
     def renderables(self,
         viewer_solos=[],
@@ -272,5 +278,9 @@ class SourceReader():
             output_folder_override)
     
     def unlink(self):
-        self.filepath.unlink()
-        self.codepath.unlink()
+        if self.should_unlink and self.filepath:
+            if self.filepath.exists():
+                self.filepath.unlink()
+        if self.codepath:
+            if self.codepath.exists():
+                self.codepath.unlink()

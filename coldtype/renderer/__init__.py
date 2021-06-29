@@ -25,7 +25,7 @@ from coldtype.helpers import *
 from coldtype.geometry import Rect, Point, Edge
 from coldtype.text.reader import Font
 
-from coldtype.renderer.reader import find_renderables, read_source_to_tempfile, renderable_to_output_folder, run_source
+from coldtype.renderer.reader import find_renderables, read_source_to_tempfile, run_source
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
