@@ -109,6 +109,9 @@ class b3d_animation(animation):
                     output_dir,
                     samples=samples)
         os.system("afplay /System/Library/Sounds/Pop.aiff")
+    
+    def blender_render_frame(self, blend_file, fi, samples=4):
+        blend_source(__FILE__, blend_file, fi, self.blender_output_dir(), samples)
 
 
 class b3d_animation_render(animation):
@@ -146,8 +149,11 @@ if __name__ == "<run_path>":
                 .tag("BG2")
                 .chain(b3d("Text", plane=1)))])
     
-    @b3d_animation(timeline=60, bg=0, layer=0)
-    def draw_dps(f):
+    @b3d_animation(timeline=60, bg=0, layer=0, rstate=1)
+    def draw_dps(f, rs):
+        if not bpy and not rs.previewing:
+            draw_dps.blender_render_frame("scratch.blend", f.i)
+
         txt = (StSt("CHROMATIC", fnt4, 330, palette=0)
             .align(f.a.r)
             .collapse()
