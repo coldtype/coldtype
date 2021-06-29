@@ -406,6 +406,8 @@ class Renderer():
             filepath = root / "demo/demo.py"
         elif filepath == "blank":
             filepath = root / "demo/blank.py"
+        elif filepath == "boiler":
+            filepath = root / "demo/boiler.py"
         
         filepath = SourceReader.normalize_filepath(filepath)
         if not filepath.exists():
@@ -414,7 +416,7 @@ class Renderer():
                 create = input(">>> Do you want to create it and add some coldtype boilerplate? (y/n): ")
                 if create.lower() == "y":
                     filepath.parent.mkdir(exist_ok=True, parents=True)
-                    filepath.write_text("from coldtype import *\n\n@renderable()\ndef stub(r):\n    return (DATPen()\n        .oval(r.inset(50))\n        .f(0.8))\n")
+                    filepath.write_text((root / "demo/boiler.py").read_text())
                     editor_cmd = self.py_config.get("EDITOR_COMMAND")
                     if editor_cmd:
                         os.system(editor_cmd + " " + str(filepath.relative_to(Path.cwd())))
