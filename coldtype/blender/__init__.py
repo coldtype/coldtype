@@ -16,7 +16,6 @@ except ImportError:
     bpy = None
     pass
 
-
 def b3d(collection, callback=None, plane=False, dn=False):
     def _cast(pen:DATPen):
         pen.add_data("b3d", dict(
@@ -103,7 +102,6 @@ class b3d_animation(animation):
         output_dir = self.blender_output_dir()
         for a in artifacts[:]:
             if a.render == self:
-                print(">", a.i)
                 blend_source(
                     __FILE__,
                     blend_file,
@@ -150,7 +148,7 @@ if __name__ == "<run_path>":
     
     @b3d_animation(timeline=60, bg=0, layer=0)
     def draw_dps(f):
-        txt = (StSt("CHROMATICA", fnt4, 330, palette=4)
+        txt = (StSt("CHROMATIC", fnt4, 330, palette=0)
             .align(f.a.r)
             .collapse()
             .map(lambda i, p: p.explode())
@@ -164,11 +162,12 @@ if __name__ == "<run_path>":
                 .tag(f"Hello{i}")
                 .chain(b3d("Text", lambda bp: bp
                     .extrude(fa.e("eeio", 1, rng=(0.25, 5)))
-                    .metallic(0.1)))))
+                    .metallic(1)))))
         
         return DATPens([
             (DATPen(f.a.r.inset(-500))
-                .f(hsl(0.9))
+                .f(hsl(0.5, 0.7, 0.3))
+                .f(0)
                 .tag("BG")
                 .ch(b3d("Text", plane=1))),
             txt])
@@ -184,7 +183,7 @@ if __name__ == "<run_path>":
             pass
     
     def build(artifacts):
-        draw_dps.blender_render("scratch.blend", artifacts[:2], samples=8)
+        draw_dps.blender_render("scratch.blend", artifacts[:1], samples=8)
 
     def release(artifacts):
         draw_dps.blender_render("scratch.blend", artifacts, samples=8)

@@ -1,18 +1,23 @@
-import os
-
-from numpy.lib.arraysetops import isin
+import subprocess
 
 BLENDER = "/Applications/Blender.app/Contents/MacOS/blender"
 
 def blend_frame(py_file, blend_file, expr, output_dir, fi):
     call = f"{BLENDER} -b {blend_file} --python-expr \"{expr}\" -o {output_dir}/ -f {fi}"
-    #print(call)
-    os.system(call)
-
-# def blend_pickle(file, pickle, output_dir, samples=2):
-#     fi = int(pickle.stem.split("_")[-1])
-#     expr = f"import bpy; bpy.data.scenes[0].cycles.samples = {samples}; from coldtype.blender import DATPen, _walk_to_b3d; _walk_to_b3d(DATPen().Unpickle('{pickle}'), dn=True)"
-#     blend_frame(file, expr, output_dir, fi)
+    print(f"Blending frame {fi}...")
+    #os.system(call)
+    process = subprocess.Popen(call, stdout=subprocess.PIPE, shell=True)
+    log = ""
+    while True:
+        out = process.stdout.read(1).decode("utf-8")
+        log += out
+        if out == "" and process.poll() != None:
+            break
+        if "Error: Python:" in log:
+            print(log)
+            process.kill()
+            process.terminate()
+            break
 
 def blend_source(py_file, blend_file, frame, output_dir, samples=2):
     expr = f"from coldtype.blender.render import frame_render; frame_render('{py_file}', {frame}, {samples})"
