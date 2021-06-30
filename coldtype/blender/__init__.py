@@ -154,7 +154,7 @@ if __name__ == "<run_path>":
         if not bpy and not rs.previewing:
             draw_dps.blender_render_frame("scratch.blend", f.i)
 
-        txt = (StSt("CHROMATIC", fnt4, 330, palette=0)
+        txt = (StSt("CHROMATIC", fnt4, 330, palette=4)
             .align(f.a.r)
             .collapse()
             .map(lambda i, p: p.explode())
@@ -162,9 +162,9 @@ if __name__ == "<run_path>":
             .pmap(lambda i,p: p
                 .declare(fa:=f.adj(-i*1))
                 .cond(p.ambit().y > 570, lambda pp:
-                    pp.translate(0, fa.e("seio", 2, rng=(100, 0))))
+                    pp.translate(0, fa.e("seio", 2, rng=(50, 0))))
                 .cond(p.ambit().mxy < 490, lambda pp:
-                    pp.translate(0, fa.e("seio", 2, rng=(-100, 0))))
+                    pp.translate(0, fa.e("seio", 2, rng=(-50, 0))))
                 .tag(f"Hello{i}")
                 .chain(b3d("Text", lambda bp: bp
                     .extrude(fa.e("eeio", 1, rng=(0.25, 5)))
