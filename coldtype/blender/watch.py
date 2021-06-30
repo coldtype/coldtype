@@ -26,9 +26,8 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                 cmd,arg = line.split(",")
                 if cmd == 'import':
                     try:
-                        sr = SourceReader(arg, runner="blender_watch")
+                        sr = SourceReader(arg)
                         sr.unlink()
-                        #run_path(Path(arg).expanduser())
                     except Exception as e:
                         stack = traceback.format_exc()
                         print("---"*10)

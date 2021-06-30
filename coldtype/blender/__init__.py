@@ -17,7 +17,14 @@ except ImportError:
     pass
 
 def b3d(collection, callback=None, plane=False, dn=False):
+    pen_mod = None
+    if callback and not callable(callback):
+        pen_mod = callback[0]
+        callback = callback[1]
+
     def _cast(pen:DATPen):
+        if bpy and pen_mod:
+            pen_mod(pen)
         pen.add_data("b3d", dict(
             collection=collection,
             callback=callback))
@@ -58,12 +65,11 @@ class b3d_renderable(renderable):
 
 
 class b3d_animation(animation):
-    def __init__(self, hidden=False, **kwargs): # TODO possible to read from project? or alternatively to set this duration on the project? feel like that'd be more coldtype-y
+    def __init__(self, rect=(1080, 1080), **kwargs): # TODO possible to read from project? or alternatively to set this duration on the project? feel like that'd be more coldtype-y
         self.func = None
         self.name = None
         self.current_frame = -1
-        self.hidden = hidden
-        super().__init__(**kwargs)
+        super().__init__(rect=rect, **kwargs)
 
         if bpy:
             bpy.data.scenes[0].frame_end = self.t.duration-1
@@ -73,7 +79,7 @@ class b3d_animation(animation):
         _walk_to_b3d(result)
     
     def __call__(self, func):
-        if not bpy or __RUNNER__ != "blender_watch":
+        if not bpy or bpy.app.background:
             return super().__call__(func)
 
         self.func = func

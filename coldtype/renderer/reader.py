@@ -182,6 +182,8 @@ def find_renderables(
             if v not in all_rs:
                 all_rs.append(v)
     
+    all_rs = sorted(all_rs, key=lambda r: r.layer)
+
     for r in all_rs:
         r.filepath = filepath
         r.codepath = codepath
