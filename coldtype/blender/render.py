@@ -22,11 +22,17 @@ def blend_frame(py_file, blend_file, expr, output_dir, fi):
             break
 
 def blend_source(py_file, blend_file, frame, output_dir, samples=2):
+    """
+    A facility for telling Blender to render a single frame in a background process
+    """
     expr = f"from coldtype.blender.render import frame_render; frame_render('{py_file}', {frame}, {samples})"
     #print(expr)
     blend_frame(py_file, blend_file, expr, output_dir, frame)
 
 def frame_render(file, frame, samples):
+    """
+    A facility for easy-rendering from within a backgrounded blender
+    """
     import bpy
     from coldtype.renderer.reader import SourceReader
     from coldtype.blender import _walk_to_b3d
