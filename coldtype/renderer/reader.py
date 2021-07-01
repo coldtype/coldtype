@@ -184,12 +184,14 @@ def find_renderables(
                 all_rs.append(v)
     
     all_rs = sorted(all_rs, key=lambda r: r.layer)
+    all_rs = sorted(all_rs, key=lambda r: r.sort)
 
     for r in all_rs:
         r.filepath = filepath
         r.codepath = codepath
         r.output_folder = renderable_to_output_folder(
             filepath, r, override=output_folder_override)
+        r.post_read()
 
     if any([r.solo for r in all_rs]):
         filtered_rs = [r for r in all_rs if r.solo]

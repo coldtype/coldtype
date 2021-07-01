@@ -19,11 +19,14 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
     sr = None
     current_frame = -1
 
-    def render_current_frame(self):
+    def render_current_frame(self, statics=False):
+        cfs = [r"^b3d_.*$"]
+        if not statics:
+            cfs.append(r".*animation$")
+        
         for r, res in self.sr.frame_results(
             self.current_frame,
-            class_filters=[r"^b3d_.*$"]
-            ):
+            class_filters=cfs):
             print(">", r)
             _walk_to_b3d(res)
 
@@ -43,12 +46,12 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                         def _frame_update_handler(scene):
                             if scene.frame_current != self.current_frame:
                                 self.current_frame = scene.frame_current
-                                self.render_current_frame()
+                                self.render_current_frame(statics=False)
                         
                         bpy.app.handlers.frame_change_post.clear()
                         bpy.app.handlers.frame_change_post.append(_frame_update_handler)
                         self.current_frame = bpy.context.scene.frame_current
-                        self.render_current_frame()
+                        self.render_current_frame(statics=True)
                     
                     except Exception as e:
                         self.current_frame = -1

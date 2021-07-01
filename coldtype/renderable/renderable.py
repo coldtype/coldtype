@@ -110,7 +110,8 @@ class renderable():
         bg_render=False,
         style="default",
         viewBox=True,
-        layer=False):
+        layer=False,
+        sort=0):
         """Base configuration for a renderable function"""
 
         self.rect = Rect(rect).round()
@@ -151,6 +152,7 @@ class renderable():
         self.viewBox = viewBox
         self.direct_draw = direct_draw
         self.bg_render = bg_render
+        self.sort = sort
         self.layer = layer
         if self.layer:
             self.bg = normalize_color(None)
@@ -165,6 +167,9 @@ class renderable():
                 self.rasterizer = "pickle"
             else:
                 self.rasterizer = "skia"
+    
+    def post_read(self):
+        pass
     
     def __repr__(self):
         return f"<{self.__class__.__name__}:{self.name}/>"

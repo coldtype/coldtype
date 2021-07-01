@@ -477,7 +477,7 @@ class Renderer():
                 cb = Path("~/.coldtype-blender.txt").expanduser()
                 if cb.exists():
                     cb.unlink()
-                cb.write_text(f"import,{str(self.source_reader.codepath)}")
+                cb.write_text(f"import,{str(self.source_reader.filepath)}")
             
             try:
                 full_restart = False
