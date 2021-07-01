@@ -54,7 +54,7 @@ def bendr(self, r:Rect, curves, cx:DATPen=None, tangent=None, offset=(0, 1)):
 
 DATPen.bendr = bendr
 
-@animation(r, timeline=tl, bg=0, rstate=1)
+@animation((2800, 2800), timeline=tl, bg=0, rstate=1)
 def stub(f, rs):
     ri = r
     e = f.a.progress(f.i, loops=0, easefn="eeio").e
@@ -93,6 +93,7 @@ def stub(f, rs):
             .addFrame(r)
             .cast(DATPen)
             .bendr(r, [by], bx, tangent=[e, e+0.15])
+            .scale(3)
             #.scale(0.5)
             #.at_rotation(e*360, λp: p.bendr(r, [by], bx))
             #.rotate(25)
@@ -100,5 +101,6 @@ def stub(f, rs):
             #.rotate(-25)
             .f(1)
             .scale(0.65)
+            .align(f.a.r)
             #.rotate(5)
-            .ch(phototype(f.a.r, blur=2, cut=150, cutw=25, fill=bw(1))))])
+            .ch(phototype(f.a.r, blur=2, cut=150, cutw=35, fill=bw(1))))])
