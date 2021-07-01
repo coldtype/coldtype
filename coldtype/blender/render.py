@@ -32,7 +32,6 @@ def frame_render(file, frame, samples):
     from coldtype.blender import _walk_to_b3d
     bpy.data.scenes[0].cycles.samples = samples
     sr = SourceReader(file)
-    for r, res in sr.frame_results(frame):
-        if "b3d" in r.__class__.__name__:
-            _walk_to_b3d(res)
+    for _, res in sr.frame_results(frame, class_filters=[r"^b3d_.*$"]):
+        _walk_to_b3d(res)
     sr.unlink()

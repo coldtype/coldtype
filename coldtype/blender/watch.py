@@ -4,6 +4,7 @@ from runpy import run_path
 import traceback
 
 from coldtype.renderer.reader import SourceReader
+from coldtype.blender import _walk_to_b3d
 
 #from coldtype.blender.watch import watch; watch()
 
@@ -15,6 +16,16 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
     _timer = None
     file = Path("~/.coldtype-blender.txt").expanduser()
+    sr = None
+    current_frame = -1
+
+    def render_current_frame(self):
+        for r, res in self.sr.frame_results(
+            self.current_frame,
+            class_filters=[r"^b3d_.*$"]
+            ):
+            print(">", r)
+            _walk_to_b3d(res)
 
     def modal(self, context, event):
         if event.type == 'TIMER':
@@ -24,14 +35,28 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             for line in self.file.read_text().splitlines():
                 line = line.rstrip("\n")
                 cmd,arg = line.split(",")
-                if cmd == 'import':
+                if cmd == 'import':                    
                     try:
-                        sr = SourceReader(arg)
-                        sr.unlink()
+                        self.sr = SourceReader(arg)
+                        self.sr.unlink()
+
+                        def _frame_update_handler(scene):
+                            if scene.frame_current != self.current_frame:
+                                self.current_frame = scene.frame_current
+                                self.render_current_frame()
+                        
+                        bpy.app.handlers.frame_change_post.clear()
+                        bpy.app.handlers.frame_change_post.append(_frame_update_handler)
+                        self.current_frame = bpy.context.scene.frame_current
+                        self.render_current_frame()
+                    
                     except Exception as e:
+                        self.current_frame = -1
+                        bpy.app.handlers.frame_change_post.clear()
                         stack = traceback.format_exc()
                         print("---"*10)
                         print(stack)
+                    
                     print(f"ran {arg}")
                 elif cmd == 'cancel':
                     self.cancel( context )

@@ -25,7 +25,7 @@ from coldtype.helpers import *
 from coldtype.geometry import Rect, Point, Edge
 from coldtype.text.reader import Font
 
-from coldtype.renderer.reader import SourceReader, find_renderables, read_source_to_tempfile, run_source
+from coldtype.renderer.reader import SourceReader
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
@@ -554,9 +554,10 @@ class Renderer():
     
     def renderables(self, trigger):
         _rs = self.source_reader.renderables(
-            self.viewer_solos,
-            self.function_filters,
-            self.args.output_folder)
+            viewer_solos=self.viewer_solos,
+            function_filters=self.function_filters,
+            class_filters=[],
+            output_folder_override=self.args.output_folder)
         
         for r in _rs:
             self.normalize_fmt(r)

@@ -172,6 +172,7 @@ def find_renderables(
     program:dict,
     viewer_solos=[],
     function_filters=[],
+    class_filters=[],
     output_folder_override=None,
     ):
     all_rs = []
@@ -207,6 +208,17 @@ def find_renderables(
                     print("ff regex compilation error", e)
         if len(matches) > 0:
             filtered_rs = matches
+    
+    if class_filters:
+        matches = []
+        for r in filtered_rs:
+            for cf in class_filters:
+                try:
+                    if re.match(cf, r.__class__.__name__) and r not in matches:
+                        matches.append(r)
+                except re.error as e:
+                    print("cf regex compilation error", e)
+        filtered_rs = matches
     
     if len(viewer_solos) > 0:
         viewer_solos = [vs%len(filtered_rs) for vs in viewer_solos]
@@ -294,6 +306,7 @@ class SourceReader():
     def renderables(self,
         viewer_solos=[],
         function_filters=[],
+        class_filters=[],
         output_folder_override=None,
         ):
         return find_renderables(
@@ -302,10 +315,11 @@ class SourceReader():
             self.program,
             viewer_solos,
             function_filters,
+            class_filters,
             output_folder_override)
     
-    def frame_results(self, frame):
-        rs = self.renderables()
+    def frame_results(self, frame, class_filters=[]):
+        rs = self.renderables(class_filters=class_filters)
         res = []
         for r in rs:
             ps = r.passes(None, None, indices=[frame])

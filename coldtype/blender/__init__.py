@@ -4,7 +4,7 @@ import os
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.blenderpen import BlenderPen, BPH
 
-from coldtype.time import Frame
+from coldtype.time import Frame, Timeline
 from coldtype.renderable import renderable
 from coldtype.renderable.animation import animation
 
@@ -65,7 +65,7 @@ class b3d_renderable(renderable):
 
 
 class b3d_animation(animation):
-    def __init__(self, rect=(1080, 1080), **kwargs): # TODO possible to read from project? or alternatively to set this duration on the project? feel like that'd be more coldtype-y
+    def __init__(self, rect=(1080, 1080), **kwargs):
         self.func = None
         self.name = None
         self.current_frame = -1
@@ -73,31 +73,17 @@ class b3d_animation(animation):
 
         if bpy:
             bpy.data.scenes[0].frame_end = self.t.duration-1
+            # don't think this is totally accurate but good enough for now
+            if isinstance(self.t.fps, float):
+                bpy.data.scenes[0].render.fps = round(self.t.fps)
+                bpy.data.scenes[0].render.fps_base = 1.001
+            else:
+                bpy.data.scenes[0].render.fps = self.t.fps
+                bpy.data.scenes[0].render.fps_base = 1
     
-    def update(self):        
+    def update(self):
         result:DATPens = self.func(Frame(self.current_frame, self))
         _walk_to_b3d(result)
-    
-    def __call__(self, func):
-        if not bpy or bpy.app.background:
-            return super().__call__(func)
-
-        self.func = func
-        if not self.name:
-            self.name = self.func.__name__
-
-        def _frame_update_handler(scene):
-            #print("UPDATE", self.name)
-            if scene.frame_current != self.current_frame:
-                self.current_frame = scene.frame_current
-                self.update()
-        
-        bpy.app.handlers.frame_change_post.clear() # TODO look for closure one only?
-        bpy.app.handlers.frame_change_post.append(_frame_update_handler)
-
-        self.current_frame = bpy.context.scene.frame_current
-        self.update()
-        return self
     
     def blender_output_dir(self):
         output_dir = self.output_folder / "_blender"
@@ -120,21 +106,6 @@ class b3d_animation(animation):
         blend_source(__FILE__, blend_file, fi, self.blender_output_dir(), samples)
 
 
-class b3d_animation_render(animation):
-    def __init__(self, b3danim:b3d_animation):
-        self.b3danim = b3danim
-        super().__init__(rect=b3danim.rect, timeline=b3danim.timeline)
-    
-    def passes(self, action, renderer_state, indices=[]):
-        passes = super().passes(action, renderer_state, indices)
-        for p in passes:
-            f = p.args[0]
-            outf = self.b3danim.output_folder
-            pickle = outf / "{:s}_{:04d}.pickle".format(outf.stem, f.i)
-            p.args.append(pickle)
-        return passes
-
-
 if __name__ == "<run_path>":
     from coldtype.text.composer import StSt, Font
     from coldtype.color import hsl
@@ -155,12 +126,12 @@ if __name__ == "<run_path>":
                 .tag("BG2")
                 .chain(b3d("Text", plane=1)))])
     
-    @b3d_animation(timeline=60, bg=0, layer=0, rstate=1)
+    @b3d_animation(timeline=Timeline(60, 30), bg=0, layer=0, rstate=1)
     def draw_dps(f, rs):
         if not bpy and not rs.previewing:
             draw_dps.blender_render_frame("scratch.blend", f.i)
 
-        txt = (StSt("CHROMATIC", fnt4, 330, palette=4)
+        txt = (StSt("ABCDE", fnt4, 330, palette=4)
             .align(f.a.r)
             .collapse()
             .map(lambda i, p: p.explode())
@@ -179,7 +150,7 @@ if __name__ == "<run_path>":
         return DATPens([
             (DATPen(f.a.r.inset(-500))
                 .f(hsl(0.5, 0.7, 0.3))
-                .f(0)
+                .f(1)
                 .tag("BG")
                 .ch(b3d("Text", plane=1))),
             txt])

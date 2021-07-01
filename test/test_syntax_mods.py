@@ -101,6 +101,13 @@ class TestSyntaxMods(unittest.TestCase):
         self.assertEqual(len(renderables), 1)
         self.assertNotEqual(renderables[0].name, "test_src_function")
 
+        renderables = sr.renderables(class_filters=[r".*asdf$"])
+        self.assertEqual(len(renderables), 0)
+
+        renderables = sr.renderables(class_filters=[r".*ation$"])
+        self.assertEqual(len(renderables), 1)
+        self.assertEqual(renderables[0].__class__.__name__, "animation")
+
         # when the pattern matches nothing, all renderables returned
         renderables = sr.renderables(function_filters=[r".*_should_be_nothing"])
         self.assertEqual(len(renderables), 2)
