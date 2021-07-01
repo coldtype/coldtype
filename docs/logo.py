@@ -6,8 +6,8 @@ class logo(renderable):
     def __init__(self, **kwargs):
         super().__init__(rect=(500, 150), fmt="svg", rasterizer="svg", viewBox=False, **kwargs)
     
-    def package(self, filepath, output_folder):
-        src = output_folder / f"{filepath.stem}_{self.name}.svg"
+    def package(self):
+        src = self.output_folder / f"{self.filepath.stem}_{self.name}.svg"
         dst = "docs/_static/coldtype_logo.svg"
         copy2(src, dst)
 

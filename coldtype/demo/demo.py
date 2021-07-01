@@ -10,13 +10,12 @@ states = [
 loop = Loop(70, 12, len(states))
 co = Font.Cacheable(__sibling__("ColdtypeObviously-VF.ttf"))
 
-@animation(timeline=loop, storyboard=[0], bg=0)
+@animation((1080, 1080/2), timeline=loop, storyboard=[0], bg=1)
 def render(f):
     state = f.a.t.current_phase(f.i).calc_state(states)
-    return (StSt("COLD\nTYPE",
+    return (StSt("COLD",
         co, 350, fill=0, **state, r=1, leading=80)
         .pens()
         .align(f.a.r)
-        .f(1)
-        .reversePens()
-        .understroke(sw=20))
+        .f(0)
+        .understroke(s=1, sw=20))

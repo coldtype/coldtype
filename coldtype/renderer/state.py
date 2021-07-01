@@ -4,6 +4,7 @@ import json, re, base64
 from coldtype import hsl, Action, Keylayer, Point, Rect, DATPen, Overlay
 from typing import Callable, List
 from time import sleep
+from rich.console import Console
 
 try:
     import skia
@@ -193,6 +194,7 @@ class RendererState():
         self.capturing_previews = False
         self.capturing_previews_once = False
         self.captured_previews = []
+        self.console = Console()
         self.reset()
     
     def reset(self, ignore_current_state=False):
@@ -218,8 +220,8 @@ class RendererState():
     
     @property
     def filepath(self):
-        if self.renderer.filepath:
-            return Path(str(self.renderer.filepath).replace(".py", "") + "_state.json")
+        if self.renderer.source_reader.filepath:
+            return Path(str(self.renderer.source_reader.filepath).replace(".py", "") + "_state.json")
         else:
             return None
     

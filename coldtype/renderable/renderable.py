@@ -63,13 +63,20 @@ class Action(Enum):
 
 
 class RenderPass():
-    def __init__(self, render, suffix, args):
+    def __init__(self, render:"renderable", action, suffix, args):
         self.render = render
+        self.action = action
         self.fn = self.render.func
         self.args = args
-        self.suffix = suffix
         self.path = None
-        self.output_path = None
+        
+        self.prefix = render.pass_prefix()
+        self.suffix = suffix
+        self.output_path = render.output_folder / f"{self.prefix}{self.suffix}.{render.fmt}"
+
+        self.i = None
+        if hasattr(args[0], "i"):
+            self.i = args[0].i
     
     def __repr__(self):
         return f"<RenderPass:f{self.output_path}/>"
@@ -103,7 +110,8 @@ class renderable():
         bg_render=False,
         style="default",
         viewBox=True,
-        layer=False):
+        layer=False,
+        sort=0):
         """Base configuration for a renderable function"""
 
         self.rect = Rect(rect).round()
@@ -144,9 +152,13 @@ class renderable():
         self.viewBox = viewBox
         self.direct_draw = direct_draw
         self.bg_render = bg_render
+        self.sort = sort
         self.layer = layer
         if self.layer:
             self.bg = normalize_color(None)
+        
+        self.output_folder = None
+        self.filepath = None
 
         if not rasterizer:
             if self.fmt == "svg":
@@ -155,6 +167,12 @@ class renderable():
                 self.rasterizer = "pickle"
             else:
                 self.rasterizer = "skia"
+    
+    def post_read(self):
+        pass
+    
+    def __repr__(self):
+        return f"<{self.__class__.__name__}:{self.name}/>"
     
     def add_watchee(self, w, flag=None):
         try:
@@ -182,10 +200,20 @@ class renderable():
     def pass_suffix(self):
         return self.name
     
+    def pass_prefix(self):
+        if self.prefix is None:
+            if self.filepath is not None:
+                prefix = f"{self.filepath.stem}_"
+            else:
+                prefix = None
+        else:
+            prefix = self.prefix
+        return prefix
+    
     def passes(self, action, renderer_state, indices=[]):
-        return [RenderPass(self, self.pass_suffix(), [self.rect])]
+        return [RenderPass(self, action, self.pass_suffix(), [self.rect])]
 
-    def package(self, filepath, output_folder):
+    def package(self):
         pass
 
     def run(self, render_pass, renderer_state):
@@ -230,6 +258,10 @@ class renderable():
             return DATPens(pens)
         else:
             return pens
+    
+    def run_normal(self, render_pass, renderer_state=None):
+        return self.normalize_result(
+            self.run(render_pass, renderer_state))
 
 
 class skia_direct(renderable):
@@ -307,7 +339,7 @@ class glyph(renderable):
         super().__init__(rect=r, **kwargs)
     
     def passes(self, action, renderer_state, indices=[]):
-        return [RenderPass(self, self.glyphName, [])]
+        return [RenderPass(self, action, self.glyphName, [])]
 
 
 class fontpreview(renderable):
@@ -325,7 +357,7 @@ class fontpreview(renderable):
         self.matches.sort()
     
     def passes(self, action, renderer_state, indices=[]):
-        return [RenderPass(self, "{:s}".format(m.name), [self.rect, m]) for m in self.matches]
+        return [RenderPass(self, action, "{:s}".format(m.name), [self.rect, m]) for m in self.matches]
 
 
 class iconset(renderable):
@@ -342,17 +374,17 @@ class iconset(renderable):
         sizes = self.sizes
         if action == Action.RenderAll:
             sizes = self.valid_sizes
-        return [RenderPass(self, str(size), [self.rect, size]) for size in sizes]
+        return [RenderPass(self, action, str(size), [self.rect, size]) for size in sizes]
     
-    def package(self, filepath, output_folder):
+    def package(self):
         # inspired by https://retifrav.github.io/blog/2018/10/09/macos-convert-png-to-icns/
-        iconset = output_folder.parent / f"{filepath.stem}.iconset"
+        iconset = self.output_folder.parent / f"{self.filepath.stem}.iconset"
         iconset.mkdir(parents=True, exist_ok=True)
 
         system = platform.system()
         
         if system == "Darwin":
-            for png in output_folder.glob("*.png"):
+            for png in self.output_folder.glob("*.png"):
                 d = int(png.stem.split("_")[1])
                 for x in [1, 2]:
                     if x == 2 and d == 16:
@@ -367,8 +399,8 @@ class iconset(renderable):
         
         if True: # can be done windows or mac
             from PIL import Image
-            output = output_folder.parent / f"{filepath.stem}.ico"
-            largest = list(output_folder.glob("*_1024.png"))[0]
+            output = self.output_folder.parent / f"{filepath.stem}.ico"
+            largest = list(self.output_folder.glob("*_1024.png"))[0]
             img = Image.open(str(largest))
             icon_sizes = [(x, x) for x in self.valid_sizes]
             img.save(str(output), sizes=icon_sizes)

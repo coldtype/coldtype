@@ -19,14 +19,14 @@ class sonification(animation):
         self.samples_per_frame = samples_per_frame
         super().__init__(fmt="pickle", timeline=timeline, **kwargs)
     
-    def package(self, filepath, output_folder:Path):
+    def package(self):
         sampleRate = 48000.0 # hertz
-        obj = wave.open(str(output_folder.parent / self.filename), 'w')
+        obj = wave.open(str(self.output_folder.parent / self.filename), 'w')
         obj.setnchannels(2)
         obj.setsampwidth(2)
         obj.setframerate(sampleRate)
 
-        for pp in sorted(output_folder.glob("*.pickle")):
+        for pp in sorted(self.output_folder.glob("*.pickle")):
             pen:DATPen = (pickle
                 .load(open(pp, "rb"))
                 .scale(-1, 1)

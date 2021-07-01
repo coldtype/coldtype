@@ -45,7 +45,9 @@ setuptools.setup(
     package_data={
         "": [
             "webserver/webviewer.html",
+            "demo/RecMono-CasualItalic.ttf",
             "demo/ColdtypeObviously-VF.ttf",
+            "demo/MutatorSans.ttf",
             "demo/demo.py",
         ],
     },
@@ -98,6 +100,7 @@ setuptools.setup(
         "uharfbuzz>=0.14.0",
         "unicodedata2",
         "python-bidi",
+        "rich",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

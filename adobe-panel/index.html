@@ -9,14 +9,16 @@
 	<link id="ppstyle" href="css/style.css" rel="stylesheet" type="text/css">
 	<script type="text/javascript">
 		$(document).ready(function () {
-			//$("#btn_PPRO6").on("click", function() {
-			//	evalScript('$._PPP_.exportFCPXML()');
-			//});
+			$("#clear-caches").on("click", function() {
+				var csInterface = new CSInterface();
+				csInterface.evalScript('$._generic_.refreshAnimations(null, null, null)');
+			});
 		});
 	</script>
 </head>
 <body onLoad="onLoaded()" style="background:#222">
 	<a href="javascript:history.go(0)">Refresh</a>
+	<button id="clear-caches">Clear Caches</button>
 	<!--<button id="btn_PPRO6">Export FCP XML</button>&nbsp;<input type="text" value="where-to"/>-->
 	<div id="container">
         <div class="plain">welcome</div>
