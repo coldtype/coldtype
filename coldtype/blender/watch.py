@@ -4,7 +4,7 @@ from runpy import run_path
 import traceback
 
 from coldtype.renderer.reader import SourceReader
-from coldtype.blender import _walk_to_b3d
+from coldtype.blender import walk_to_b3d
 
 #from coldtype.blender.watch import watch; watch()
 
@@ -24,11 +24,10 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         if not statics:
             cfs.append(r".*animation$")
         
-        for r, res in self.sr.frame_results(
+        for _, res in self.sr.frame_results(
             self.current_frame,
             class_filters=cfs):
-            print(">", r)
-            _walk_to_b3d(res)
+            walk_to_b3d(res)
 
     def modal(self, context, event):
         if event.type == 'TIMER':
@@ -89,3 +88,4 @@ def unregister_watcher():
 def watch():
     register_watcher()
     bpy.ops.wm.coldtype_watching_operator()
+    print("...waiting for coldtype...")

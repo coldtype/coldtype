@@ -4,25 +4,6 @@ from coldtype.pens.drawablepen import DrawablePenMixin
 from fontTools.pens.basePen import BasePen
 from coldtype.color import Gradient, Color, normalize_color
 
-"""
-import math
-from random import random, randint, seed
-
-from coldtype.text.reader import StyledString, Style
-from coldtype.pens.blenderpen import BlenderPen, BPH
-from coldtype.geometry import Rect
-from coldtype.pens.draftingpen import DraftingPen
-
-BPH.Clear()
-
-r = Rect(0, 0, 1000, 1000)
-tc = BPH.Collection("Text")
-
-DraftingPen().f(1).rect(r).tag("Frame").cast(BlenderPen).draw(tc, plane=1)
-
-StyledString("Yoy", Style("~/Type/fonts/fonts/Nonplus_Black.otf", 200, fill=(1, 0, 0.5))).pen().align(r).tag("Yoy").cast(BlenderPen).draw(tc)
-"""
-
 import math
 import random
 try:
@@ -66,6 +47,26 @@ class BPH():
             else:
                 bpy.context.scene.collection.children.link(coll)
         return bpy.data.collections.get(name)
+
+    def CheckExists(name, dn=False):
+        if dn and name in bpy.context.scene.objects:
+            obj = bpy.context.scene.objects[name]
+            bpy.data.objects.remove(obj, do_unlink=True)
+            return False
+        return name in bpy.context.scene.objects
+    
+    def AddOrFind(name, add_fn, dn=False):
+        if dn and name in bpy.context.scene.objects:
+            obj = bpy.context.scene.objects[name]
+            bpy.data.objects.remove(obj, do_unlink=True)
+            
+        if name not in bpy.context.scene.objects:
+            add_fn()
+            bc = bpy.context.active_object
+            bc.name = name
+            return bc
+        else:
+            return bpy.context.scene.objects[name]
 
     def Primitive(_type, coll, name, dn=False, container=None):
         created = False

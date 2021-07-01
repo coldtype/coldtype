@@ -1,6 +1,6 @@
 # to be loaded from within Blender
 
-import os
+import os, math
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.blenderpen import BlenderPen, BPH
 
@@ -31,7 +31,7 @@ def b3d(collection, callback=None, plane=False, dn=False):
     return _cast
 
 
-def _walk_to_b3d(result:DATPens, dn=False):
+def walk_to_b3d(result:DATPens, dn=False):
     def walker(p:DATPen, pos, data):
         if pos == 0:
             bdata = p.data.get("b3d")
@@ -73,7 +73,6 @@ class b3d_animation(animation):
         super().post_read()
         if bpy:
             bpy.data.scenes[0].render.filepath = str(self.blender_output_dir()) + "/"
-            #print(">>>", bpy.data.scenes[0].render.filepath)
     
     def blender_output_dir(self):
         output_dir = self.output_folder / "_blender"
@@ -126,6 +125,14 @@ if __name__ == "<run_path>":
     
     @b3d_animation(timeline=Timeline(60, 30), bg=0, layer=1, rstate=1)
     def draw_dps(f, rs):
+        if bpy:
+            bpy.data.objects['Light'].rotation_euler[2] = f.e("l", rng=(0, math.radians(360)), to1=0)
+            
+            centroid = BPH.AddOrFind("Centroid",
+                lambda: bpy.ops.object.empty_add(type="PLAIN_AXES"))
+            centroid.location = (5.4, 5.4, 0)
+            centroid.rotation_euler[2] = f.e("l", rng=(0, math.radians(360)), to1=0)
+
         if False: # if you want to render in a multi-plexed fashion
             if not bpy and not rs.previewing:
                 draw_dps.blender_render_frame("scratch.blend", f.i)
@@ -143,7 +150,7 @@ if __name__ == "<run_path>":
                     pp.translate(0, fa.e("seio", 2, rng=(-50, 0))))
                 .tag(f"Hello{i}")
                 .chain(b3d("Text", lambda bp: bp
-                    .extrude(fa.e("eeio", 1, rng=(0.25, 5)))
+                    .extrude(fa.e("eeio", 1, rng=(0.25, 2)))
                     .metallic(1)))))
         
         return DATPens([txt])

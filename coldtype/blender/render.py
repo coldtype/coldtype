@@ -2,6 +2,12 @@ import subprocess
 
 BLENDER = "/Applications/Blender.app/Contents/MacOS/blender"
 
+def blender_launch_livecode(file):
+    #call = f"{BLENDER} {file}"
+    print(f"Opening blend file: {file}...")
+    return subprocess.Popen([BLENDER, file, "--python-expr", "from coldtype.blender.watch import watch; watch()"])
+
+
 def blend_frame(py_file, blend_file, expr, output_dir, fi):
     call = f"{BLENDER} -b {blend_file} --python-expr \"{expr}\" -o {output_dir}/ -f {fi}"
     print(f"Blending frame {fi}...")
@@ -35,9 +41,9 @@ def frame_render(file, frame, samples):
     """
     import bpy
     from coldtype.renderer.reader import SourceReader
-    from coldtype.blender import _walk_to_b3d
+    from coldtype.blender import walk_to_b3d
     bpy.data.scenes[0].cycles.samples = samples
     sr = SourceReader(file)
     for _, res in sr.frame_results(frame, class_filters=[r"^b3d_.*$"]):
-        _walk_to_b3d(res)
+        walk_to_b3d(res)
     sr.unlink()

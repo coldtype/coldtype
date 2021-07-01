@@ -29,6 +29,7 @@ from coldtype.renderer.reader import SourceReader
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.blender.render import blender_launch_livecode
 
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.jsonpen import JSONPen
@@ -275,7 +276,7 @@ class Renderer():
 
             disable_syntax_mods=parser.add_argument("-dsm", "--disable-syntax-mods", action="store_true", default=False, help="Coldtype has some optional syntax modifications that require copying the source to a new tempfile before running — would you like to skip this to preserve __file__ in your sources?"),
 
-            blender_watch=parser.add_argument("-bw", "--blender-watch", action="store_true", default=False, help="Experimental blender live-coding integration"),
+            blender_watch=parser.add_argument("-bw", "--blender-watch", default=None, type=str, help="Experimental blender live-coding integration"),
         )
         return pargs, parser
     
@@ -309,8 +310,10 @@ class Renderer():
 
         self.read_configs()
 
+        self.subprocesses = []
         self.parser = parser
         self.args = parser.parse_args()
+
         if self.args.is_subprocess or self.args.all or self.args.release or self.args.build:
             self.args.no_watch = True
         
@@ -386,6 +389,10 @@ class Renderer():
 
         self.recurring_actions = {}
         self.viewer_solos = []
+
+        if self.args.blender_watch:
+            blend_file = self.args.blender_watch
+            self.subprocesses.append(blender_launch_livecode(blend_file))
     
     def reset_filepath(self, filepath):
         for k, cv2cap in self.state.cv2caps.items():
@@ -2292,6 +2299,9 @@ class Renderer():
 
     def on_exit(self, restart=False):
         self.source_reader.unlink()
+
+        for p in self.subprocesses:
+            p.kill()
 
         #if self.args.watch:
         #   print(f"<EXIT(restart:{restart})>")
