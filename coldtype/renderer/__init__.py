@@ -29,7 +29,6 @@ from coldtype.renderer.reader import SourceReader
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
-from coldtype.blender.render import blender_launch_livecode
 
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.jsonpen import JSONPen
@@ -391,6 +390,7 @@ class Renderer():
         self.viewer_solos = []
 
         if self.args.blender_watch:
+            from coldtype.blender.render import blender_launch_livecode
             blend_file = self.args.blender_watch
             self.subprocesses.append(blender_launch_livecode(blend_file))
     

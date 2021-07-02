@@ -3,6 +3,8 @@ from coldtype.geometry import Rect, Point
 from coldtype.pens.draftingpen import DraftingPen
 from coldtype.pens.draftingpens import DraftingPens
 from coldtype.color import hsl, rgb
+from coldtype.renderer.reader import SourceReader
+
 
 class TestDraftingPens(unittest.TestCase):
     def test_gs(self):
@@ -184,6 +186,33 @@ class TestDraftingPens(unittest.TestCase):
         dps[0][0].v(0)
         dps.walk(walker, visible_only=True)
         self.assertEqual(visible_pen_count, 0)
+    
+    def test_style(self):
+        src = """
+from coldtype import *
+
+def two_styles(r):
+    return (DATPen()
+        .oval(r.inset(50).square())
+        .f(hsl(0.8))
+        .attr("alt", fill=hsl(0.3)))
+
+@renderable()
+def no_style_set(r):
+    return two_styles(r)
+
+@renderable(style="alt")
+def style_set(r):
+    return two_styles(r)
+        """
+
+        sr = SourceReader(None, code=src)
+        rs = sr.frame_results(0)
+        sr.unlink()
+
+        print(rs[0][-1][0].f())
+        print(rs[1][-1][0].f())
+        
 
 if __name__ == "__main__":
     unittest.main()
