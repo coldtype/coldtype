@@ -3,6 +3,7 @@ from coldtype.geometry import Rect, Point
 from coldtype.pens.draftingpen import DraftingPen
 from coldtype.pens.draftingpens import DraftingPens
 from coldtype.color import hsl, rgb
+from coldtype.pens.drawablepen import DrawablePenMixin
 from coldtype.renderer.reader import SourceReader
 
 
@@ -204,14 +205,42 @@ def no_style_set(r):
 @renderable(style="alt")
 def style_set(r):
     return two_styles(r)
-        """
+
+def lattr_styles(r):
+    return (DATPen()
+        .oval(r.inset(50).square())
+        .f(hsl(0.5)).s(hsl(0.7)).sw(5)
+        .lattr("alt", lambda p: p.f(hsl(0.7)).s(hsl(0.5)).sw(15)))
+
+@renderable()
+def lattr_no_style(r):
+    return lattr_styles(r)
+
+@renderable(style="alt")
+def lattr_style_set(r):
+    return lattr_styles(r)
+"""
 
         sr = SourceReader(None, code=src)
         rs = sr.frame_results(0)
         sr.unlink()
 
-        print(rs[0][-1][0].f())
-        print(rs[1][-1][0].f())
+        self.assertNotEqual(
+            rs[0][-1][0].attr(rs[0][0].style, "fill"),
+            rs[1][-1][0].attr(rs[1][0].style, "fill"))
+        
+        self.assertNotEqual(
+            rs[2][-1][0].attr(rs[2][0].style, "fill"),
+            rs[3][-1][0].attr(rs[3][0].style, "fill"))
+        
+        self.assertEqual(rs[2][-1][0].attr(rs[2][0].style, "stroke").get("weight"), 5)
+        self.assertEqual(rs[3][-1][0].attr(rs[3][0].style, "stroke").get("weight"), 15)
+
+        dpm = DrawablePenMixin()
+        dpm.dat = rs[3][-1][0]
+        attrs = [x for _, x in list(dpm.findStyledAttrs(rs[3][0].style))]
+        self.assertEqual(len(attrs), 2)
+        self.assertEqual(attrs[1][1].get("weight"), 15)
         
 
 if __name__ == "__main__":
