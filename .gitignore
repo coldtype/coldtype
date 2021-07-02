@@ -28,3 +28,4 @@ fontmakes
 test_cairo.pdf
 test/ignorables/
 examples/*.pdf
+*.blend1

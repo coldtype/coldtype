@@ -11,7 +11,8 @@ try:
     import bpy
     from mathutils import Vector, Matrix
 except:
-    print(">>> Not a blender environment")
+    #print(">>> Not a blender environment")
+    pass
 
 
 class BPH():
