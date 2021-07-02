@@ -5,6 +5,7 @@ from coldtype.pens.draftingpens import DraftingPens
 from coldtype.color import hsl, rgb
 from coldtype.pens.drawablepen import DrawablePenMixin
 from coldtype.renderer.reader import SourceReader
+from coldtype.text.composer import StSt, Font
 
 
 class TestDraftingPens(unittest.TestCase):
@@ -241,7 +242,35 @@ def lattr_style_set(r):
         attrs = [x for _, x in list(dpm.findStyledAttrs(rs[3][0].style))]
         self.assertEqual(len(attrs), 2)
         self.assertEqual(attrs[1][1].get("weight"), 15)
+
+    def test_subsegmenting(self):
+        f1 = Font.Cacheable("assets/ColdtypeObviously_BlackItalic.ufo")
+
+        shape = (StSt("C", f1, 1000, wght=0.5)[0]
+            .explode()[0])
+
+        self.assertAlmostEqual(
+            shape.length()/2,
+            shape.copy().subsegment(0, 0.5).length(),
+            delta=1)
         
+        self.assertAlmostEqual(
+            shape.length(),
+            shape.copy().subsegment(0, 1).length(),
+            delta=1)
+        
+        shape1 = (StSt("D", f1, 1000, wght=0.5)[0]
+            .explode()[0])
+        
+        shape2 = shape1.copy().fully_close_path()
+
+        self.assertLess(shape1.length(), shape2.length())
+
+        self.assertAlmostEqual(
+            shape2.length()/2,
+            shape2.copy().subsegment(0, 0.5).length(),
+            delta=1)
+
 
 if __name__ == "__main__":
     unittest.main()
