@@ -9,13 +9,15 @@ from coldtype import *
 
 @renderable()
 def test_src_function(r):
-    return (StSt("CDELOPTY", "assets/ColdtypeObviously-VF.ttf")
+    return (StSt("CDELOPTY",
+        "assets/ColdtypeObviously-VF.ttf")
         -.align(r.inset(50))
         .f(hsl(0.5, 0.7, 0.9)))
 
 @animation()
 def test_src_animation(f):
-    return (StSt("CDELOPT", "assets/ColdtypeObviously-VF.ttf",
+    return (StSt("CDELOPT",
+        "assets/ColdtypeObviously-VF.ttf",
         wdth=f.e("linear", 1))
         .align(f.a.r))
 """
