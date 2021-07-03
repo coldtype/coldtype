@@ -1,6 +1,6 @@
 from coldtype.test import *
 
-@test()
+#@test()
 def test_distribute_and_track(r):
     dps = DATPens()
     rnd = Random(0)
@@ -9,16 +9,21 @@ def test_distribute_and_track(r):
             .rect(Rect(100, 100))
             .f(hsl(rnd.random(), s=0.6))
             .rotate(rnd.randint(-45, 45)))
-    return (dps
+    dps = (dps
         .distribute()
         .track(-50)
         .reversePens()
         .understroke(s=0.2).align(r))
+    
+    print(dps.ambit().w)
+    return dps
 
-@test()
+#@test()
 def test_track_to_rect(r):
-    text:DATPens = StyledString("COLD", Style(co, 300, wdth=0, r=1)).pens().align(r)
-    return text.track_to_rect(r.inset(50, 0), r=1)
+    text = StSt("COLD", co, 300, wdth=0, r=1).align(r)
+    text.track_to_rect(r.inset(50, 0), r=1)
+    print(text[0].ambit())
+    return text
 
 
 @test()
@@ -39,38 +44,36 @@ def test_map_points(r):
     return e.f(hsl(random())), pt_labels.f(0, 0.5)
 
 
-@test()
+#@test()
 def test_explode(r):
-    o = StyledString("O", Style(co, 500, wdth=1)).pen().explode()
-    o[1].rotate(90)
-    return o.implode().f(hsl(random())).align(r)
+    return (StSt("O", co, 500, wdth=1)
+        .pen()
+        .explode()
+        .index(1, lambda p: p.rotate(90))
+        .implode().f(hsl(0.3)).align(r))
 
 
-@test()
+#@test()
 def test_scaleToRect(r):
     return DATPens([
-        DATPen().oval(r).scaleToRect(r.take(0.5, "mdx").inset(0, 30), False).f(hsl(0.2, a=0.1)),
-        (StyledString("SPACEFILLING",
-            Style(mutator, 50))
-            .pens()
+        (DATPen().oval(r)
+            .scaleToRect(r.take(0.5, "mdx")
+            .inset(0, 30), False)
+            .f(hsl(0.2, a=0.1))),
+        (StSt("SPACEFILLING", mutator, 50)
             .align(r)
             .f(hsl(0.8))
             .scaleToRect(r.inset(100, 100), False)),
-        (StyledString("SQUASH",
-            Style(mutator, 50))
-            .pens()
+        (StSt("SPACEFILLING", mutator, 50)
             .align(r)
             .f(hsl(0.5))
             .scaleToWidth(r.w-20)),
-        (StyledString("STRETCH",
-            Style(mutator, 50))
-            .pens()
+        (StSt("SPACEFILLING", mutator, 50)
             .align(r)
             .f(hsl(0.3))
-            .scaleToHeight(r.h-50))
-    ])
+            .scaleToHeight(r.h-50))])
 
-@test()
+#@test()
 def test_photoblique(r):
     return (StyledString("OBLQ",
         Style(mutator, 300, wght=0.5))

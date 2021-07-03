@@ -7,14 +7,14 @@ AND A LONGER LINE, TO TEST TRACKING
 ISNT THIS WILD"""
 
 
-@test()
+#@test()
 def test_multiline_fit(r):
     # This is pretty janky atm
     lockups = Slug.LineSlugs(text, Style(mutator, 120, wdth=1, wght=1, varyFontSize=1, ro=1))
     return Graf(lockups, r, leading=20).fit(r.w-100).pens().map(lambda i,p: p.align(p.getFrame(), th=1, tv=1).track_to_rect(p.getFrame().inset(50, 0), pullToEdges=1).reversePens()).align(r).f(0)
 
 
-@test()
+#@test()
 def test_headline(r):
     s = Style("assets/SourceSerifPro-Black.ttf", 150)
     g = Graf(Slug.LineSlugs("HEADLINES\nUSED TO\nDO THIS", s), r, leading=10).pens().f(0)
@@ -44,11 +44,17 @@ except FontNotFoundException:
 
 @test()
 def test_multidir_seg_string(r):
-    _s = ["(جاف + رطب (ما قبل", "+بوابة", "Left الملخبط Right", "90رقمي: سنوات ال", "ميد/سايد"]
+    _s = [
+        "(جاف + رطب (ما قبل",
+        "+بوابة",
+        "Left الملخبط Right",
+        "90رقمي: سنوات ال",
+        "ميد/سايد"]
     
     latin = Style(latin_font, 130, fill=("hr", 0.5, 0.5))
     arabic = Style(arabic_font, 150, lang="ar", fill=Gradient.Random(r), bs=-1)
     txt = _s[1]
+    print(_s)
     seg = SegmentedString(txt, dict(Arab=arabic, Latn=latin)).pens()
     slug = Slug(txt, arabic, latin).pens()
     return [

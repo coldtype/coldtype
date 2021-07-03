@@ -1,4 +1,5 @@
 import unittest
+from random import Random
 from coldtype.geometry import Rect, Point
 from coldtype.pens.draftingpen import DraftingPen
 from coldtype.pens.draftingpens import DraftingPens
@@ -7,6 +8,8 @@ from coldtype.pens.drawablepen import DrawablePenMixin
 from coldtype.renderer.reader import SourceReader
 from coldtype.text.composer import StSt, Font
 
+co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
+mutator = Font.Cacheable("assets/MutatorSans.ttf")
 
 class TestDraftingPens(unittest.TestCase):
     def test_gs(self):
@@ -270,6 +273,78 @@ def lattr_style_set(r):
             shape2.length()/2,
             shape2.copy().subsegment(0, 0.5).length(),
             delta=1)
+    
+    def test_explode(self):
+        r = Rect(1000, 500)
+        
+        o1 = (StSt("O", co, 500, wdth=1).pen())
+        o2 = (StSt("O", co, 500, wdth=1)
+            .pen()
+            .explode()
+            .index(1, lambda p: p.rotate(90))
+            .implode().f(hsl(0.3)).align(r))
+        
+        self.assertEqual(
+            o1.explode()[0].ambit().w,
+            o2.explode()[0].ambit().w)
+
+        self.assertAlmostEqual(
+            o1.explode()[1].ambit().h,
+            o2.explode()[1].ambit().w)
+    
+    def test_scaleToRect(self):
+        r = Rect(1000, 500)
+        dps = DraftingPens([
+            (StSt("SPACEFILLING", mutator, 50)
+                .align(r)
+                .f(hsl(0.8))
+                .scaleToRect(r.inset(100, 100), False)),
+            (StSt("SPACEFILLING", mutator, 50)
+                .align(r)
+                .f(hsl(0.5))
+                .scaleToWidth(r.w-20)),
+            (StSt("SPACEFILLING", mutator, 50)
+                .align(r)
+                .f(hsl(0.3))
+                .scaleToHeight(r.h-50))])
+        
+        self.assertAlmostEqual(
+            dps[0].ambit(th=1).w, r.inset(100).w)
+        self.assertAlmostEqual(
+            dps[0].ambit(tv=1).h, r.inset(100).h)
+        self.assertAlmostEqual(
+            dps[1].ambit(th=1).w, r.w-20)
+        self.assertAlmostEqual(
+            dps[2].ambit(tv=1).h, r.h-50)
+    
+    def test_distribute_and_track(self):
+        dps = DraftingPens()
+        rnd = Random(0)
+        r = Rect(1000, 500)
+
+        for _ in range(0, 11):
+            dps += (DraftingPen()
+                .rect(Rect(100, 100))
+                .f(hsl(rnd.random(), s=0.6))
+                .rotate(rnd.randint(-45, 45)))
+        dps = (dps
+            .distribute()
+            .track(-50)
+            .reversePens()
+            .understroke(s=0.2).align(r))
+        
+        self.assertEqual(len(dps), 22)
+        self.assertEqual(dps.ambit(th=1).round().w, 830)
+    
+    def test_track_to_rect(self):
+        r = Rect(1000, 500)
+        text = (StSt("COLD", co, 300, wdth=0, r=1)
+            .align(r)
+            .track_to_rect(r.inset(50, 0), r=1))
+        
+        self.assertEqual(text[0].glyphName, "D")
+        self.assertEqual(text[-1].ambit().round().x, 50)
+        self.assertEqual(text[0].ambit().round().x, 883)
 
 
 if __name__ == "__main__":
