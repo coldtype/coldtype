@@ -20,16 +20,18 @@ def test_headline(r):
     g = Graf(Slug.LineSlugs("HEADLINES\nUSED TO\nDO THIS", s), r, leading=10).pens().f(0)
     g[1].xAlignToFrame("mdx")
     g[2].xAlignToFrame("mxx")
-    return g.align(r, th=0)
+    return g.align(r, th=1)
 
 
-@test()
+#@test()
 def test_combine_slugs(r):
     s1 = Slug("YO", Style(co, 300, wdth=1)).pens()
     line = DATPen().rect(Rect(100, 20))
     s2 = Slug("OY", Style(co, 300, wdth=0)).pens()
     shape = DATPen().oval(Rect(100, 100))
-    return DATPens([s1, line, s2, shape]).distribute().align(r)
+    dps = DATPens([s1, line, s2, shape]).distribute().align(r)
+    print(dps[1].ambit().round())
+    return dps
 
 
 try:
@@ -55,18 +57,21 @@ def test_multidir_seg_string(r):
     ]
 
 
-@test()
+#@test()
 def test_hebrew(r):
     hebrew = Style(hebrew_font, 130, fill=hsl(0.5))
     slug = Slug('קומפרסיה ועוד', hebrew, fallback=Style(latin_font, 130))
-    return slug.pens().align(r)
+    dps = slug.pens().align(r)
+    print(dps[-1].ambit().round())
+    return dps
 
 
-@test()
+#@test()
 def test_cjk_multilang(r):
     obv = Style(co, 300, wdth=1, wght=0, fill=("hr",0.5,0.5))
     style = Style("assets/NotoSansCJKsc-Black.otf", 300, lang="zh", fill=Gradient.Random(r))
     dps = Slug("CO同步", style, obv).fit(r.w-100).pens().align(r)
+    print(dps[-1].ambit().round())
     return [dps.frameSet().attr(fill=None, stroke=0), dps]
 
 
@@ -76,7 +81,7 @@ def xa(dps, x=Edge.CenterX, th=0):
     else:
         raise Exception("No Frame")
 
-@test()
+#@test()
 def test_ar_multiline(r):
     ar = 'Limmmm/Satلل\nوصل الإستيرِو'
     lines = ar.split("\n")
@@ -87,20 +92,20 @@ def test_ar_multiline(r):
         Slug(lines[1], arabic, latin)
     ]
     graf = Graf(slugs, r, leading=30)
-    dps = graf.pens()
-    dps.map(lambda i,p: xa(p.pen()))
+    dps = graf.pens().xa()
     #xa(dps[0])
     #xa(dps[1])
     #dps[0].xAlignToFrame("mdx")
     #dps[1].xAlignToFrame("mdx")
     dps.align(r)
+    print(dps[-1][-1].ambit().round())
     return [
-        DATPen().rect(dps[0].getFrame()).f("random", 0.2),
-        DATPen().rect(dps[1].getFrame()).f("random", 0.2),
+        DATPen().rect(dps[0].ambit(th=1)).f("random", 0.2),
+        DATPen().rect(dps[1].ambit(th=1)).f("random", 0.2),
         dps
     ]
 
-@test()
+#@test()
 def test_composer(r):
     return (Composer(r,
         "Hello\nWorld".upper(),

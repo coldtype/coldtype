@@ -336,3 +336,4 @@ class SourceReader():
         if self.codepath:
             if self.codepath.exists():
                 self.codepath.unlink()
+        return self

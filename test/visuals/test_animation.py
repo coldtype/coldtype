@@ -9,15 +9,12 @@ Timeline.find_workarea = find_workarea
 
 @animation(rect=(1920, 1080), timeline=tl, bg=0)
 def render(f):
-    pe = f.a.t.progress(f.i, loops=1, easefn="qeio").e
-    return DATPens([
-        (StyledString(chr(65+f.i),
-            Style(mutator, 1000, wdth=1-pe, wght=pe))
-            .pen()
+    pe = f.e("qeio", 1)
+    return DPS([
+        (StSt(chr(65+f.i), mutator, 1000, wdth=1-pe, wght=pe)
             .f(hsl(pe, s=0.6, l=0.6))
             .align(f.a.r)),
-        (StyledString("{:02d}".format(f.i),
-            Style(recmono, 72, wdth=1))
-            .pens()
+        (StSt("{:02d}".format(f.i), recmono, 72, wdth=1)
+            .pen()
             .align(f.a.r.take(150, "mny"), th=0)
             .f(hsl((1-pe)+0.5)))])
