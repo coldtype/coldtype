@@ -45,5 +45,5 @@ def frame_render(file, frame, samples):
     bpy.data.scenes[0].cycles.samples = samples
     sr = SourceReader(file)
     for _, res in sr.frame_results(frame, class_filters=[r"^b3d_.*$"]):
-        walk_to_b3d(res)
+        walk_to_b3d(res, dn=True)
     sr.unlink()

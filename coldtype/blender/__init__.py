@@ -1,6 +1,8 @@
 # to be loaded from within Blender
 
 import os, math
+
+from coldtype.geometry.rect import Rect
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.blenderpen import BlenderPen, BPH
 
@@ -29,6 +31,20 @@ def b3d(collection, callback=None, plane=False, dn=False):
             collection=collection,
             callback=callback))
     return _cast
+
+
+def b3d_mod(callback):
+    def _cast(pen:DATPen):
+        if bpy:
+            callback(pen)
+    return _cast
+
+
+class b3d_mods():
+    @staticmethod
+    def center(r:Rect):
+        return b3d_mod(lambda p:
+            p.translate(-r.w/2, -r.h/2))
 
 
 def walk_to_b3d(result:DATPens, dn=False):
@@ -79,20 +95,20 @@ class b3d_animation(animation):
         output_dir.mkdir(parents=True, exist_ok=True)
         return output_dir
     
-    def blender_render(self, blend_file, artifacts, samples=4):
+    def blender_render(self, file, blend_file, artifacts, samples=4):
         output_dir = self.blender_output_dir()
         for a in artifacts[:]:
             if a.render == self:
                 blend_source(
-                    __FILE__,
+                    file,
                     blend_file,
                     a.i,
                     output_dir,
                     samples=samples)
         os.system("afplay /System/Library/Sounds/Pop.aiff")
     
-    def blender_render_frame(self, blend_file, fi, samples=4):
-        blend_source(__FILE__, blend_file, fi, self.blender_output_dir(), samples)
+    def blender_render_frame(self, file, blend_file, fi, samples=4):
+        blend_source(file, blend_file, fi, self.blender_output_dir(), samples)
     
     def blender_rendered_preview(self):
         if bpy: return
@@ -149,6 +165,7 @@ if __name__ == "<run_path>":
                 .cond(p.ambit().mxy < 490, lambda pp:
                     pp.translate(0, fa.e("seio", 2, rng=(-50, 0))))
                 .tag(f"Hello{i}")
+                .chain(b3d_mods.center(f.a.r))
                 .chain(b3d("Text", lambda bp: bp
                     .extrude(fa.e("eeio", 1, rng=(0.25, 2)))
                     .metallic(1)))))

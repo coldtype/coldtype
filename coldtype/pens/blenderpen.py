@@ -286,7 +286,10 @@ class BlenderPen(DrawablePenMixin, BasePen):
             self.bez, self.created = BPH.Primitive("Bezier", collection, self.tag, dn=dn)
             self.bez.data.fill_mode = "BOTH"
             self.record(self.dat.copy().removeOverlap().scale(scale, point=False))
-            self.drawOnBezierCurve(self.bez.data, cyclic=cyclic)
+            try:
+                self.drawOnBezierCurve(self.bez.data, cyclic=cyclic)
+            except:
+                pass
         for attrs, attr in self.findStyledAttrs(style):
             self.applyDATAttribute(attrs, attr)
         return self

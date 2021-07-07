@@ -72,7 +72,7 @@ class Timeable():
         return self.start <= i < self.end
 
     def _normalize_fi(self, fi):
-        if self.timeline:
+        if hasattr(self, "timeline") and self.timeline:
             if self.end > self.timeline.duration and fi < self.start:
                 return fi + self.timeline.duration
         return fi
