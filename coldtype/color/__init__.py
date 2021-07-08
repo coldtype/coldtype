@@ -90,6 +90,7 @@ class Color:
             self.a = 1
         h, s, l = rgb_to_hsl(r, g, b)
         self.h = h
+        self.hp = h/360
         self.s = s
         self.l = l
         self.html = self.to_html()
