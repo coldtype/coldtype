@@ -735,7 +735,10 @@ class StyledString(FittableMixin):
                     dp_layer = self._emptyPenWithAttrs()
                     #dp_layer.value = layer[0].value
                     dp_layer.value = self.scalePenToStyle(g, layer[0]).value
-                    dp_layer.f(self.style.font.font.colorPalettes[self.style.palette][layer[1]])
+                    if isinstance(self.style.palette, int):
+                        dp_layer.f(self.style.font.font.colorPalettes[self.style.palette][layer[1]])
+                    else:
+                        dp_layer.f(self.style.palette[layer[1]])
                     dp_atom += dp_layer
                 dp_atom.addFrame(g.frame, typographic=True)
                 dp_atom.glyphName = g.name
