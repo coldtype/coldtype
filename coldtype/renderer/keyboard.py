@@ -27,6 +27,7 @@ class KeyboardShortcut(Enum):
     Build = "build"
     Release = "release"
     RenderAll = "render_all"
+    RenderOne = "render_one"
     RenderWorkarea = "render_workarea"
     ToggleMultiplex = "toggle_multiplex"
 
@@ -179,6 +180,9 @@ SHORTCUTS = {
     ],
     KeyboardShortcut.RenderAll: [
         [[], "a"],
+    ],
+    KeyboardShortcut.RenderOne: [
+        [["cmd"], "a"],
     ],
     KeyboardShortcut.RenderWorkarea: [
         [[], "w"]

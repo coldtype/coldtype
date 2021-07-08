@@ -219,9 +219,10 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.bsdf().inputs[1].default_value = amount
         return self
 
-    def emission(self, color=None):
+    def emission(self, color=None, strength=1):
         if color is not None:
             self.setColorValue(self.bsdf().inputs[17].default_value, normalize_color(color))
+            self.bsdf().inputs[18].default_value = strength
         return self
     
     def image(self, path):

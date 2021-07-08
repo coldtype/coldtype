@@ -45,6 +45,14 @@ class b3d_mods():
     def center(r:Rect):
         return b3d_mod(lambda p:
             p.translate(-r.w/2, -r.h/2))
+    
+    def centerx(r:Rect):
+        return b3d_mod(lambda p:
+            p.translate(-r.w/2, 0))
+    
+    def centery(r:Rect):
+        return b3d_mod(lambda p:
+            p.translate(0, -r.h/2))
 
 
 def walk_to_b3d(result:DATPens, dn=False):

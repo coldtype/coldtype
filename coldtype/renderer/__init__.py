@@ -1376,6 +1376,9 @@ class Renderer():
         elif shortcut == KeyboardShortcut.RenderAll:
             self.on_action(Action.RenderAll)
             return -1
+        elif shortcut == KeyboardShortcut.RenderOne:
+            self.on_action(Action.RenderIndices, [0])
+            return -1
         elif shortcut == KeyboardShortcut.RenderWorkarea:
             self.on_action(Action.RenderWorkarea)
             return -1
@@ -1612,6 +1615,8 @@ class Renderer():
         if action in [Action.RenderAll, Action.RenderWorkarea, Action.PreviewStoryboardReload]:
             self.reload_and_render(action)
             return True
+        elif action in [Action.RenderIndices]:
+            self.reload_and_render(action, indices=message)
         elif action in [Action.PreviewStoryboard]:
             self.render(Action.PreviewStoryboard)
         elif action in [

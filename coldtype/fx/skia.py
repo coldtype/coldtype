@@ -145,13 +145,13 @@ def potrace(rect, poargs=[], invert=True):
 def precompose(rect,
     placement=None,
     opacity=1,
-    scale=1
+    scale=1,
     ):
     def _precompose(pen):
         img = SkiaPen.Precompose(pen, rect,             
             context=SKIA_CONTEXT,
             scale=scale,
-            disk=False)    
+            disk=False)
         return (DATPen()
             .rect(placement or rect)
             .img(img, (placement or rect), False, opacity)
