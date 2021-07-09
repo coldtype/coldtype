@@ -1,17 +1,33 @@
 Blender
 =======
 
-I'll admit, using Coldtype in Blender is not a very normal or standard application of Coldtype, but if you've ever tried to set text in Blender, you may understand why you'd never want to set text in Blender again using their typography GUI tools. Those tools are... bad. Worse-than-After-Effects bad. (Maybe not even any kerning if I remember correctly?)
+Behind the scenes, Coldtype uses the Skia library to rasterize two-dimensional vectors. But what if we want to rasterize *three-dimensional* graphics? One very fun option is to use Blender.
 
-Anyway the point is that you can avoid setting text in Blender itself by writing Python scripts that run inside Blender.
+Because Blender has an incredible Python API, it's not too difficult to use it programmatically — i.e. to write a normal Coldtype script, mark a few things (specific to Blender), and then let Blender & Coldtype take care of the translation to three dimensions. Here's an example:
 
-That is, the idea here is to work in a more hybrid style. You want a gigantic piece of 3d type that uses the second stylistic set of a font? Blender won't help you, but Coldtype can: write a short script in Python, using Coldtype to create the vector, and — voila — you have a gigantic piece of 3d type that you can move around and add materials to, etc.
+.. code:: python
 
-__N.B.__ This means the point of a Coldtype script in Blender is not to return a ``DATPen`` or ``DATPens`` from a Coldtype rendering function, but to work interactively, creating or mutating existing objects available in the Blender data hierarchy in your project file.
+    from coldtype import *
+    from coldtype.blender import b3d, b3d_animation
+    from coldtype.text.composer import Glyphwise
 
-__N.B.2__ Because Blender is the de-facto "renderer" in this situation, and because much of Coldtype’s codebase and dependencies are centered around rendering, it makes more sense to install only the core python dependencies of Coldtype in Blender.
+    fnt = Font.Cacheable("~/Type/fonts/fonts/SwearCilatiVariable.ttf")
 
-Getting it all set up is a bit of a pain, but worth it (if you’re doing anything with typography in Blender).
+    @b3d_animation(timeline=60)
+    def varfont(f):
+        return (Glyphwise("Variable", lambda i,c:
+            Style(fnt, 325,
+                opsz=f.adj(-i*5).e("seio", 1, rng=(0.98, 0)),
+                wght=f.adj(-i*15).e("seio", 1, rng=(0.98, 0))
+                ))
+            .align(f.a.r)
+            .pmap(lambda i,p: p.tag(f"L{i}")
+                .chain(b3d("Text", lambda bp: bp
+                    .metallic(0)
+                    .extrude(f.adj(-i*5)
+                        .e("ceio", 1, rng=(0.015, 3)))))))
+
+But before you can begin, you'll need to install Coldtype using the python bundled with Blender.
 
 Installing
 ----------
@@ -20,15 +36,15 @@ Installing packages in Blender requires locating the bundled python binary inclu
 
 .. code:: bash
 
-    /Applications/Blender.app/Contents/Resources/2.92/python/bin/python3.7m
+    /Applications/Blender.app/Contents/Resources/2.93/python/bin/python3.9
 
-The ``2.90`` and the ``3.7m`` might be different depending on your installation.
+The ``2.93`` and the ``3.9`` might be different depending on your installation.
 
 On my computer, I’ve aliased that path to something I call `b3d_python`, so there’s a line like this in my `~/.bash_profile`:
 
 .. code:: bash
 
-    alias b3d_python='/Applications/Blender.app/Contents/Resources/2.90/python/bin/python3.7m'
+    alias b3d_python='/Applications/Blender.app/Contents/Resources/2.93/python/bin/python3.9'
 
 I also have a line to address the Blender executable itself:
 
@@ -42,41 +58,25 @@ Once you have all that out of the way, you can `pip install` things using that e
 
 .. code:: bash
 
-    b3d -m pip install "coldtype"
+    b3d -m pip install "coldtype[viewer]"
 
 Running Code in Blender
 -----------------------
 
-This code must be run from within Blender itself (see blender/README.md in this repo), using the "Text Editor" window, then run with the play button (aka ``alt+p``):
+To get a Blender window to show up, you'll need to pass a ``-bw`` (``--blender-watch``) option to coldtype command-line invocation, along with the name of a Blender file (which can exist or not — if it doesn't exist, Blender will make the file with that name and path).
 
-.. code:: python
+So, to use an example from the Coldtype repo, you could run:
 
-    from coldtype.blender import *
+.. code:: bash
 
-    BPH.Clear()
+    coldtype examples/blender/varfont.py -bw scratch.blend
 
-    r = Rect(0, 0, 1000, 1000)
-    tc = BPH.Collection("Text")
-    fnt = Font.Cacheable("~/Type/fonts/fonts/CheeeVariable.ttf")
+This should launch both a standard Coldtype window (with a 2D Skia render) and a Blender GUI window, which should automatically render the same thing as the 2D window, except in 3D.
 
-    (DATPen(r)
-        .f(hsl(0.9))
-        .tag("Frame")
-        .cast(BlenderPen)
-        .draw(tc, plane=1))
+What's different in Blender is that the contents of the scene aren’t re-created from scratch every time you render; instead, you annotate specific elements in your returned result, then those annotated results are displayed in Blender, as persistent objects. This means you can use Blender in a hybrid fashion, creating objects using the GUI, saving the file, and then re-saving your Coldtype source file for automatic updates in Blender itself.
 
-    @b3d_animation(30)
-    def draw_txt(f):
-        (StSt("HEY", fnt, 500, yest=f.ie("qeio", 2), grvt=f.e(1))
-            .pen()
-            .align(r)
-            .tag("HEY")
-            .cast(BlenderPen)
-            .draw(tc))
+Here's a short video demonstrating what's being described above:
 
-Running that code will add some objects to your scene — objects which you can move around and modify as much as you’d like — the goal here is not so much to craft a finished image with code, but to help you quickly and precisely get some good looking typographic vectors in your scene.
+.. raw:: html
 
-So some code like that should result (if you render it via Cycles) in an image similar to this:
-
-.. image:: /_static/blender_hey2.gif
-    :width: 540
+    <blockquote class="twitter-tweet"><p lang="en" dir="ltr">livecoding with coldtype &amp; blender — been attempting to get something like this workflow working for a while now — finally making some progress! (not yet released in coldtype but coming soon) <a href="https://t.co/TiXF4FBnDU">pic.twitter.com/TiXF4FBnDU</a></p>&mdash; Rob Stenson (@robstenson) <a href="https://twitter.com/robstenson/status/1411005246709526530?ref_src=twsrc%5Etfw">July 2, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
