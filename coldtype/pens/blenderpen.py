@@ -235,6 +235,10 @@ class BlenderPen(DrawablePenMixin, BasePen):
             mat.node_tree.links.new(bsdf.inputs["Base Color"], imgtex.outputs["Color"])
         imgtex.image = bpy.data.images.load(path)
         return self
+
+    def hide(self, hide):
+        self.bez.hide_viewport = hide
+        self.bez.hide_render = hide
     
     def convertToMesh(self):
         self.bez.select_set(True)

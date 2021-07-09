@@ -69,6 +69,8 @@ def walk_to_b3d(result:DATPens, dn=False):
                 
                 if bdata.get("callback"):
                     bdata.get("callback")(bp)
+
+                bp.hide(not p._visible)
     result.walk(walker)
 
 
