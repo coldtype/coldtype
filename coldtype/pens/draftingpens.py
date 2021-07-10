@@ -498,7 +498,13 @@ class DraftingPens(DraftingPen):
             return self.multi_pen_class(to_keep)
     
     def index(self, idx, fn):
-        fn(self[idx])
+        try:
+            p = self
+            for x in idx:
+                p = p[x]
+        except:
+            p = self[idx]
+        fn(p)
         return self
     
     def glyphs_named(self, glyph_name):
