@@ -10,12 +10,11 @@ at = AsciiTimeline(1, """
           [a                                 ]
                       [b                     ]
                                 [c                   ]
-[e                                                           ]
 """)
 
-@animation(timeline=at)
+@animation((1080, 540), timeline=at)
 def test_ascii(f):
-    io = at[-1].io2(f.i, 20, "eeio")
+    io = at.io2(f.i, 20, "eeio")
     word = (Glyphwise("ASCII", lambda i, c:
         Style(fnt, 100,
             grvt=(at[i > 1].io2(f.i, 10, "eeio")),
@@ -24,5 +23,5 @@ def test_ascii(f):
         .scale(io*2))
     
     return DPS([
-        #DP(word.ambit(tv=1).inset(-50)).f(hsl(0.07, 1, 0.8, a=0.5)),
+        DP(word.ambit(tv=1).inset(-50)).f(hsl(0.07, 1, 0.8, a=0.5)),
         word])

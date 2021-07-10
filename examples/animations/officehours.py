@@ -7,7 +7,7 @@ at = AsciiTimeline(1, """
                                                         <
         [L                                   ]
                      [F                              ]
-    ]                          [H                              
+               [H                 ]             
 """)
 
 @animation(timeline=at)
