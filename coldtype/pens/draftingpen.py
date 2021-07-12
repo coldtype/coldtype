@@ -1193,7 +1193,10 @@ class DraftingPen(RecordingPen, SHContext):
     #     return a
     
     def v(self, v):
-        self.visible(bool(v))
+        if callable(v):
+            self.visible(bool(v(self)))
+        else:
+            self.visible(bool(v))
         return self
     
     def a(self, v):
