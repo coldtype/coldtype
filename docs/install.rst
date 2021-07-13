@@ -6,7 +6,7 @@ Install
 
 If you want to try coldtype in a blank virtual environment:
 
-Using a virtualenv (based on a python >= 3.7) (aka ``python3.9 -m venv venv --prompt=<your prompt here>`` + ``source venv/bin/activate``), run:
+Using a virtualenv (based on a python >= 3.7) (aka ``python3.9 -m venv venv`` and then ``source venv/bin/activate``), run:
 
 * ``pip install "coldtype[viewer]"``
 * ``coldtype demo``
