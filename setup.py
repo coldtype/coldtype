@@ -49,6 +49,7 @@ setuptools.setup(
             "demo/ColdtypeObviously-VF.ttf",
             "demo/MutatorSans.ttf",
             "demo/demo.py",
+            "demo/blank.py",
             "demo/boiler.py",
         ],
     },
