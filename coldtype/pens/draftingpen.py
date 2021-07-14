@@ -595,6 +595,7 @@ class DraftingPen(RecordingPen, SHContext):
         return self.transform(Transform(1, 0, 0, 1, x, y), transformFrame=transformFrame)
     
     offset = translate
+    t = translate
 
     def offset_x(self, x):
         return self.translate(x, 0)
@@ -714,6 +715,18 @@ class DraftingPen(RecordingPen, SHContext):
         if times > 1:
             self.repeat(times-1)
         return self
+    
+    def layer(self, *layers):
+        dps = self.multi_pen_class()
+        for layer in layers:
+            if callable(layer):
+                dps.append(layer(self.copy()))
+            elif isinstance(layer, str):
+                dp = self.copy()
+                dps.append(dp.sh("ctx" + layer)[0])
+            else:
+                dps.append(self.copy())
+        return dps
     
     # Iteration-manipulation
     
@@ -1229,6 +1242,17 @@ class DraftingPen(RecordingPen, SHContext):
             return self.attr(field="strokeWidth")
     
     strokeWidth = sw
+
+    def ssw(self, s, sw):
+        self.s(s)
+        self.sw(sw)
+        return self
+    
+    def fssw(self, f, s, sw):
+        self.f(f)
+        self.s(s)
+        self.sw(sw)
+        return self
 
     def img(self, src=None, rect=Rect(0, 0, 500, 500), pattern=True, opacity=1.0):
         """Get/set an image fill"""

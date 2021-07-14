@@ -60,6 +60,9 @@ SH_BINARY_OPS = {
     "∏": "project",
     "π": "pinch",
     "†": "take_curve",
+    "Ⓕ": "f",
+    "Ⓢ": "ssw",
+    "Ⓣ": "translate",
 }
 
 SH_BINARY_OPS_EDGEAWARE = {
@@ -211,6 +214,7 @@ def shgroup(s):
 
 def sh(s, ctx:SHContext=None, dps=None, subs={}):
     from coldtype.pens.draftingpen import DraftingPen
+    from coldtype.color import hsl, rgb
 
     #print("SH>", s, subs)
 
@@ -253,6 +257,8 @@ def sh(s, ctx:SHContext=None, dps=None, subs={}):
                 ctx=ctx,
                 _last=evaled[-1] if len(evaled) > 0 else None,
                 _dps=dps,
+                hsl=hsl,
+                rgb=rgb,
                 Point=Point,
                 Line=Line,
                 Rect=Rect,

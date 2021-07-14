@@ -446,8 +446,9 @@ class Renderer():
         return [w[1] for w in self.watchees]
     
     def print_error(self):
-        self.state.console.print_exception(extra_lines=2)
+        #self.state.console.print_exception(extra_lines=2)
         stack = traceback.format_exc()
+        print(stack)
         return stack.split("\n")[-2]
     
     def renderable_error(self):

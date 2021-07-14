@@ -189,6 +189,13 @@ def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
     
     return _mod_pixels
 
+def luma(rect):
+    def _luma(pen):
+        return (pen
+            .ch(precompose(rect))
+            .attr(skp=dict(
+                ColorFilter=skia.LumaColorFilter.Make())))
+    return _luma
 
 def phototype(rect,
     blur=5,

@@ -274,8 +274,14 @@ def normalize_color(v):
 def hsl(h, s=0.5, l=0.5, a=1):
     return Color.from_hsl(h*360, s, l, a)
 
+def hsl_(hsla):
+    return hsl(*hsla)
+
 def rgb(r, g, b, a=1):
     return Color.from_rgb(r, g, b, a)
+
+def rgb_(rgba):
+    return hsl(*rgba)
 
 def bw(c, a=1):
     return Color.from_rgb(c, c, c, a)
