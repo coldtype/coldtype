@@ -2220,7 +2220,10 @@ class Renderer():
             o.start()
             self.observers.append(o)
         if self.source_reader.filepath:
-            print(f"... watching {self.source_reader.filepath.relative_to(Path.cwd())} for changes ...")
+            try:
+                print(f"... watching {self.source_reader.filepath.relative_to(Path.cwd())} for changes ...")
+            except:
+                print(f"... watching {self.source_reader.filepath} for changes ...")
     
     def execute_string_as_shortcut_or_action(self, shortcut, key):
         try:
