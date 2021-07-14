@@ -425,6 +425,15 @@ class DATPen(DraftingPen):
         self.rotate(-degrees)
         return self
     
+    def layer(self, *layers):
+        dps = DATPens()
+        for layer in layers:
+            if callable(layer):
+                dps.append(layer(self.copy()))
+            else:
+                dps.append(self.copy().tag(layer))
+        return dps
+    
     # def at_scale(self, scale, fn:Callable[["DATPen"], None]):
     #     self.scale(scale)
     #     self.scale()
