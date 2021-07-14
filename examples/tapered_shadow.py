@@ -5,7 +5,7 @@ from coldtype.warping import warp_fn
 fnt = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 
 rs = random_series(0, 1000)
-shake = 1
+shake = 0
 
 @animation(bg=0, timeline=Timeline(90, 23.976))
 def taper(f):
@@ -23,7 +23,7 @@ def taper(f):
                             .nlt(warp_fn(rs[f.i//4], mult=3))),
                     lambda p: p.fssw(0, 0, f.e(1, rng=(7, 11))))
                 .ch(phototype(f.a.r, blur=5, cut=183, cutw=8,
-                    #fill=hsl(0.75, 0.94, 0.68)
+                    fill=hsl(0.75, 0.94, 0.68)
                     #fill=rgb(0, 0, 1)
                     ))),
             lambda p: p.pen().f(1)
@@ -33,6 +33,6 @@ def taper(f):
                 .ch(phototype(f.a.r, blur=3,
                     cut=230+f.e(1, rng=(-30, 5)),
                     cutw=15,
-                    #fill=hsl(0.2, 0.86, 0.63)
+                    fill=hsl(0.2, 0.86, 0.63)
                     #fill=rgb(1, 0, 0)
                     ))))
