@@ -136,6 +136,13 @@ class DraftingPen(RecordingPen, SHContext):
                 else:
                     return Rect(f.x, b.y, f.w, b.h)
             else:
+                if len(self.value) == 0:
+                    f = self._frame
+                    if th:
+                        f = f.setw(0)
+                    elif tv:
+                        f = f.seth(0)
+                    return f
                 return self._frame
         else:
             return self.bounds()

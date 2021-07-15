@@ -116,7 +116,7 @@ class Lockup(FittableMixin):
                 dps = s.pen()
                 dps.translate(x_off, 0)
                 pens.append(dps)
-            x_off += dps.ambit().w
+            x_off += dps.ambit(th=0).w
             try:
                 x_off += s.margin[1]
                 x_off += s.strings[-1].tracking
