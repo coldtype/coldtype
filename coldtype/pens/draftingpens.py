@@ -618,3 +618,8 @@ class DraftingPens(DraftingPen):
     #    res = _class(self, *args)
     #    res.attrs = deepcopy(self.attrs)
     #    return res
+
+    def hide(self, *indices):
+        for idx in indices:
+            self[idx].v(False)
+        return self
