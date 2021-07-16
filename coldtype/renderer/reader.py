@@ -178,10 +178,13 @@ def find_renderables(
     all_rs = []
     filtered_rs = []
     
-    for _, v in program.items():
+    for k, v in program.items():
         if isinstance(v, renderable) and not v.hidden:
             if v not in all_rs:
                 all_rs.append(v)
+        elif k == "RENDERABLES":
+            for r in v:
+                all_rs.append(r)
     
     #all_rs = sorted(all_rs, key=lambda r: r.layer)
     all_rs = sorted(all_rs, key=lambda r: r.sort)

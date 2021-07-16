@@ -51,6 +51,7 @@ setuptools.setup(
             "demo/demo.py",
             "demo/blank.py",
             "demo/boiler.py",
+            "renderer/picklejar.py",
         ],
     },
     entry_points={

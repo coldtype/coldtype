@@ -449,16 +449,6 @@ class DATPen(DraftingPen):
         dpio.data["fn_src"] = fn_src
         pickle.dump(dpio, open(path, "wb"))
         return dpio
-    
-    def pickle(self, dst):
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        pickle.dump(self, open(str(dst), "wb"))
-        return self
-    
-    def Unpickle(self, src):
-        if isinstance(src, str):
-            src = Path(src)
-        return pickle.load(open(str(src.expanduser()), "rb"))
 
 
 class DATPens(DraftingPens, DATPen):

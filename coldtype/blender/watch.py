@@ -15,7 +15,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
     bl_label = "Coldtype Watching Operator"
 
     _timer = None
-    file = Path("~/.coldtype-blender.txt").expanduser()
+    file = Path("~/.coldtype/blender.txt").expanduser()
     sr = None
     current_frame = -1
 

@@ -277,6 +277,8 @@ class Renderer():
 
             blender_watch=parser.add_argument("-bw", "--blender-watch", default=None, type=str, help="Experimental blender live-coding integration"),
 
+            debounce_time=parser.add_argument("-dt", "--debounce-time", default=0.1, type=float, help="how long to wait before acting on a debounced action"),
+
             disable_rich=parser.add_argument("-dr", "--disable-rich", action="store_true", default=False, help="Do not print exceptions with the rich library"),
         )
         return pargs, parser
@@ -365,6 +367,7 @@ class Renderer():
         self.completed_renderers = []
 
         self.action_waiting = None
+        self.debounced_actions = {}
         self.requests_waiting = []
         self.waiting_to_render = []
         self.previews_waiting_to_paint = []
@@ -408,6 +411,7 @@ class Renderer():
         self.state.cv2caps = {}
 
         root = Path(__file__).parent.parent
+        pj = False
 
         if not filepath:
             filepath = root / "demo/demo.py" # should not be demo
@@ -417,6 +421,9 @@ class Renderer():
             filepath = root / "demo/blank.py"
         elif filepath == "boiler":
             filepath = root / "demo/boiler.py"
+        elif filepath == "pj":
+            pj = True
+            filepath = root / "renderer/picklejar.py"
         
         filepath = SourceReader.normalize_filepath(filepath)
         if not filepath.exists():
@@ -435,6 +442,11 @@ class Renderer():
         self._codepath_offset = 0
         self.source_reader.reset_filepath(filepath, reload=False)
         self.watchees = [[Watchable.Source, self.source_reader.filepath, None]]
+
+        self.watchees.append([Watchable.Generic, Path("~/.coldtype/command.json").expanduser(), None])
+
+        if pj:
+            self.watchees.append([Watchable.Generic, Path("~/.coldtype/picklejar"), None])
 
         if not self.args.is_subprocess:
             self.watch_file_changes()
@@ -486,7 +498,7 @@ class Renderer():
             self.source_reader.reload()
             
             if self.args.blender_watch:
-                cb = Path("~/.coldtype-blender.txt").expanduser()
+                cb = Path("~/.coldtype/blender.txt").expanduser()
                 if cb.exists():
                     cb.unlink()
                 cb.write_text(f"import,{str(self.source_reader.filepath)}")
@@ -2031,8 +2043,17 @@ class Renderer():
                 #print("CAUGHT ONE")
                 self.action_waiting = Action.PreviewStoryboard
                 self.watchee_mods[k] = None
+        
+        if self.debounced_actions:
+            now = ptime.time()
+            for k, v in self.debounced_actions.items():
+                if v:
+                    if (now - v) > self.args.debounce_time:
+                        self.action_waiting = Action.PreviewStoryboardReload
+                        self.debounced_actions[k] = None
 
         if self.action_waiting:
+            #print("ACTION_WAITING", self.action_waiting)
             action_in = self.action_waiting
             self.on_action(self.action_waiting)
             if action_in != self.action_waiting:
@@ -2152,6 +2173,13 @@ class Renderer():
     
     def on_modified(self, event):
         path = Path(event.src_path)
+        #print(path, path.parent, path.parent.stem)
+
+        if path.parent.stem == "picklejar":
+            if path.exists():
+                self.debounced_actions["picklejar"] = ptime.time()
+            return
+
         #return
         actual_path = path
         if path.parent in self.watchee_paths():
@@ -2159,6 +2187,13 @@ class Renderer():
             path = path.parent
         if path in self.watchee_paths():
             if path.suffix == ".json":
+                if path.stem == "command":
+                    data = json.loads(path.read_text())
+                    if "action" in data:
+                        action = data.get("action")
+                        self.execute_string_as_shortcut_or_action(action, None)
+                    return
+
                 last = self.watchee_mods.get(path)
                 now = ptime.time()
                 self.watchee_mods[path] = now
@@ -2359,6 +2394,7 @@ class Renderer():
 
 
 def main():
+    Path("~/.coldtype").expanduser().mkdir(exist_ok=True)
     pargs, parser = Renderer.Argparser()
     Renderer(parser).main()
 

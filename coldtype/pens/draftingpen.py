@@ -1,7 +1,7 @@
-import enum
-import math, re
+import math, re, pickle
 
 from time import sleep
+from pathlib import Path
 from typing import Callable, Optional, Tuple, Type
 from collections import OrderedDict
 from copy import deepcopy
@@ -1440,3 +1440,27 @@ class DraftingPen(RecordingPen, SHContext):
                 new_vl.append([mv, pts])
         self.value = new_vl
         return self
+    
+    def pickle(self, dst):
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        fh = open(str(dst), "wb")
+        pickle.dump(self, fh)
+        fh.close()
+        return self
+    
+    def picklejar(self, rect=Rect(1000, 1000), name=None):
+        if not name:
+            from uuid import uuid4
+            name = str(uuid4())
+        #print(rect, name)
+        #return
+        p = Path(f"~/.coldtype/picklejar/{name}.pickle").expanduser()
+        p.parent.mkdir(exist_ok=True)
+        (self.add_data("rect", rect)
+            .pickle(Path(p)))
+        return self
+    
+    def Unpickle(self, src):
+        if isinstance(src, str):
+            src = Path(src)
+        return pickle.load(open(str(src.expanduser()), "rb"))

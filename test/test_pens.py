@@ -316,6 +316,8 @@ def lattr_style_set(r):
             dps[1].ambit(th=1).w, r.w-20)
         self.assertAlmostEqual(
             dps[2].ambit(tv=1).h, r.h-50)
+        
+        dps.picklejar(r)
     
     def test_distribute_and_track(self):
         dps = DraftingPens()
@@ -335,6 +337,8 @@ def lattr_style_set(r):
         
         self.assertEqual(len(dps), 22)
         self.assertEqual(dps.ambit(th=1).round().w, 830)
+    
+        dps.picklejar(r)
     
     def test_track_to_rect(self):
         r = Rect(1000, 500)
