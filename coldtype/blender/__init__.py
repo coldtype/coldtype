@@ -18,7 +18,7 @@ except ImportError:
     bpy = None
     pass
 
-def b3d(collection, callback=None, plane=False, dn=False):
+def b3d(collection, callback=None, plane=False, dn=False, material="auto"):
     pen_mod = None
     if callback and not callable(callback):
         pen_mod = callback[0]
@@ -29,7 +29,8 @@ def b3d(collection, callback=None, plane=False, dn=False):
             pen_mod(pen)
         pen.add_data("b3d", dict(
             collection=collection,
-            callback=callback))
+            callback=callback,
+            material=material))
     return _cast
 
 
@@ -61,11 +62,12 @@ def walk_to_b3d(result:DATPens, dn=False):
             bdata = p.data.get("b3d")
             if bdata:
                 coll = BPH.Collection(bdata["collection"])
+                material = bdata.get("material", "auto")
 
                 if bdata.get("plane"):
-                    bp = p.cast(BlenderPen).draw(coll, plane=True)
+                    bp = p.cast(BlenderPen).draw(coll, plane=True, material=material)
                 else:
-                    bp = p.cast(BlenderPen).draw(coll, dn=dn)
+                    bp = p.cast(BlenderPen).draw(coll, dn=dn, material=material)
                 
                 if bdata.get("callback"):
                     bdata.get("callback")(bp)

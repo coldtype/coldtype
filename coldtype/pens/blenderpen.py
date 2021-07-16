@@ -69,7 +69,7 @@ class BPH():
         else:
             return bpy.context.scene.objects[name]
 
-    def Primitive(_type, coll, name, dn=False, container=None):
+    def Primitive(_type, coll, name, dn=False, container=None, material="auto"):
         created = False
         
         if dn and name in bpy.context.scene.objects:
@@ -97,9 +97,12 @@ class BPH():
                     bc.location[1] = container.y + container.h/2
                     bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
                     bpy.ops.object.transform_apply()
-            mat = bpy.data.materials.new(f"Material_{name}")
-            mat.use_nodes = True
-            bc.data.materials.append(mat)
+            
+            if material:
+                if material == "auto":
+                    mat = bpy.data.materials.new(f"Material_{name}")
+                    mat.use_nodes = True
+                    bc.data.materials.append(mat)
         
         bc = bpy.context.scene.objects[name]
         bc_coll = BPH.FindCollectionForItem(bc)
@@ -120,6 +123,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
         super().__init__(None)
         self.dat = dat
         tag = self.dat.tag()
+        self.material = None
         self.tag = tag if tag and tag != "Unknown" else f"Curve_{random.randint(0, 1000000)}"
     
     def record(self, dat):
@@ -163,7 +167,11 @@ class BlenderPen(DrawablePenMixin, BasePen):
         return self.bez.data.materials
 
     def bsdf(self):
-        return self.materials()[0].node_tree.nodes["Principled BSDF"]
+        if self.material:
+            try:
+                return self.materials()[0].node_tree.nodes["Principled BSDF"]
+            except:
+                return None
     
     def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
         pass
@@ -181,6 +189,8 @@ class BlenderPen(DrawablePenMixin, BasePen):
             #value[3] = 1
     
     def fill(self, color):
+        if not self.material == "auto" or not self.bsdf():
+            return
         if color:
             if isinstance(color, Gradient):
                 self.fill(color.stops[0][0])
@@ -191,6 +201,8 @@ class BlenderPen(DrawablePenMixin, BasePen):
                 self.setColorValue(dv, color)
     
     def stroke(self, weight=1, color=None, dash=None):
+        if not self.material == "auto" or not self.bsdf():
+            return
         if weight and color and color.a > 0:
             #print("STROKE>>>", self.tag, weight, color)
             self.bez.data.fill_mode = "NONE"
@@ -208,18 +220,26 @@ class BlenderPen(DrawablePenMixin, BasePen):
         return self
     
     def metallic(self, amount=1):
+        if not self.material == "auto" or not self.bsdf():
+            return
         self.bsdf().inputs[4].default_value = amount
         return self
     
     def transmission(self, amount=1):
+        if not self.material == "auto" or not self.bsdf():
+            return
         self.bsdf().inputs[15].default_value = amount
         return self
     
     def subsurface(self, amount=0.01):
+        if not self.material == "auto" or not self.bsdf():
+            return
         self.bsdf().inputs[1].default_value = amount
         return self
 
     def emission(self, color=None, strength=1):
+        if not self.material == "auto" or not self.bsdf():
+            return
         if color is not None:
             self.setColorValue(self.bsdf().inputs[17].default_value, normalize_color(color))
             self.bsdf().inputs[18].default_value = strength
@@ -284,11 +304,20 @@ class BlenderPen(DrawablePenMixin, BasePen):
             self.bez.location[2] = z
         return self
     
-    def draw(self, collection, style=None, scale=0.01, cyclic=True, dn=False, plane=False):
+    def draw(self, collection, style=None, scale=0.01, cyclic=True, dn=False, plane=False, material="auto"):
+        self.material = material
+
         if plane:
-            self.bez, self.created = BPH.Primitive("Plane", collection, self.tag, dn=dn, container=self.dat.ambit().scale(scale))
+            self.bez, self.created = BPH.Primitive("Plane", collection, self.tag, dn=dn, material=material, container=self.dat.ambit().scale(scale))
         else:
-            self.bez, self.created = BPH.Primitive("Bezier", collection, self.tag, dn=dn)
+            self.bez, self.created = BPH.Primitive("Bezier", collection, self.tag, dn=dn, material=material)
+
+            if material and material != "auto":
+                mat = bpy.data.materials[material]
+                #print(">MAT", mat)
+                self.bez.data.materials.clear()
+                self.bez.data.materials.append(mat)
+
             self.bez.data.fill_mode = "BOTH"
             self.record(self.dat.copy().removeOverlap().scale(scale, point=False))
             try:
