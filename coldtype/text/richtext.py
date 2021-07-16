@@ -34,6 +34,7 @@ class RichText(DraftingPens):
         blankfill="¶",
         strip=True,
         strip_lines=False):
+
         super().__init__()
         self.tag_delimiters = tag_delimiters
         self.visible_boundary_chars = visible_boundaries

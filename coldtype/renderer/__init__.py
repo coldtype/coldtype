@@ -276,6 +276,8 @@ class Renderer():
             disable_syntax_mods=parser.add_argument("-dsm", "--disable-syntax-mods", action="store_true", default=False, help="Coldtype has some optional syntax modifications that require copying the source to a new tempfile before running — would you like to skip this to preserve __file__ in your sources?"),
 
             blender_watch=parser.add_argument("-bw", "--blender-watch", default=None, type=str, help="Experimental blender live-coding integration"),
+
+            disable_rich=parser.add_argument("-dr", "--disable-rich", action="store_true", default=False, help="Do not print exceptions with the rich library"),
         )
         return pargs, parser
     
@@ -446,9 +448,11 @@ class Renderer():
         return [w[1] for w in self.watchees]
     
     def print_error(self):
-        #self.state.console.print_exception(extra_lines=2)
         stack = traceback.format_exc()
-        print(stack)
+        if self.args.disable_rich:
+            print(stack)
+        else:
+            self.state.console.print_exception(extra_lines=2)
         return stack.split("\n")[-2]
     
     def renderable_error(self):
