@@ -1,21 +1,39 @@
 from coldtype import *
+from coldtype.blender import *
 
-mdpb = Font.Cacheable("~/Type/fonts/fonts/MDNichrome0.7-Black.otf")
-mdpl = Font.Cacheable("~/Type/fonts/fonts/MDNichrome0.7-Light.otf")
+Style.RegisterShorthandPrefix("≈", "~/Type/fonts/fonts")
+mdpb = Font.Cacheable("≈/MDNichrome0.7-Black.otf")
+mdpl = Font.Cacheable("≈/MDNichrome0.7-Light.otf")
+mdiob = Font.Cacheable("≈/MDIO0.2-Bold.otf")
+mdior = Font.Cacheable("≈/MDIO0.2-Regular.otf")
 
 r = Rect(1080, 1080)
 
 def build(font, **kwargs):
     return (StSt("Inter-\npolation",
         font, 250, leading=50, **kwargs)
-        .align(r)
+        .align(r.take(0.85, "mxy"))
         .pen())
 
-a = build(mdpb)
-b = build(mdpl)
+a = build(mdpl)
+b = build(mdpb)
 
-@animation(r, timeline=Timeline(120))
+@b3d_animation(r, timeline=Timeline(90))
 def nonvarinterp(f):
-    return (a.interpolate(0, b).f(None).s(hsl(0.9, 1)).sw(3)
-        .mod_contour(8, lambda p:
-            p.rotate(-360*f.e("l", 7, 0))))
+    i = "{:.2f}".format(f.e("eeio", 1))
+
+    return DPS([
+        (StSt(i, mdiob, 150)
+            .align(f.a.r.take(0.4, "mny"))
+            .pen()
+            .f(1)
+            .tag("Num")
+            .ch(b3d("Text", lambda bp:
+                bp.extrude(0.5)))),
+        (a.interpolate(f.e("eeio", 1), b)
+            .f(hsl(0.4, 1, 0.3))
+            .mod_contour(18, lambda p:
+                p.rotate(-360*f.e("l", 5, cyclic=0)))
+            .tag("Interpolation")
+            .ch(b3d("Text", lambda bp:
+                bp.extrude(f.e("eeio", 1, rng=(0.1, 2))))))])

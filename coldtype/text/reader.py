@@ -731,7 +731,7 @@ class StyledString(FittableMixin):
             else:
                 dp_atom = _PensClass()
                 dp_atom.layered = True
-                for layer in g.glyphDrawing.layers:
+                for lidx, layer in enumerate(g.glyphDrawing.layers):
                     dp_layer = self._emptyPenWithAttrs()
                     #dp_layer.value = layer[0].value
                     dp_layer.value = self.scalePenToStyle(g, layer[0]).value
@@ -739,7 +739,10 @@ class StyledString(FittableMixin):
                         dp_layer.f(self.style.font.font.colorPalettes[self.style.palette][layer[1]])
                     else:
                         dp_layer.f(self.style.palette[layer[1]])
-                    dp_atom += dp_layer
+                    if len(dp_layer.value) > 0:
+                        #dp_layer.addFrame(g.frame, typographic=True)
+                        dp_layer.glyphName = f"{g.name}_layer_{lidx}"
+                        dp_atom += dp_layer
                 dp_atom.addFrame(g.frame, typographic=True)
                 dp_atom.glyphName = g.name
             pens.append(dp_atom, allow_blank=self.style.include_blanks)

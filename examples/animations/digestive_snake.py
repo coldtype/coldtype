@@ -1,54 +1,47 @@
 from coldtype import *
-from defcon import Font
 
-curves = Font(__sibling__("media/digestivecurves.ufo"))
-df = "~/Type/fonts/fonts/_wdths/DigestiveVariable.ttf"
+curves = DefconFont(__sibling__("media/digestivecurves.ufo"))
+df = Font.Cacheable("~/Type/fonts/fonts/_wdths/DigestiveVariable.ttf")
 
-def ds(e1, e2):
-    # 128, -50 on size
-    return StyledString("Digestive", Style(df, 186-0*e2, fill=1, tu=0+0*e1, wdth=e1, ro=1, bs=0*(1-e2))).pens()
+r = Rect(1920, 500)
+track = DATPen()
+curves["path1"].draw(track)
+track_path = track.scale(0.25)
+track = (track_path.copy()
+    .fssw(None, 1, 1)
+    .repeat(3)
+    .align(r)
+    .translate(0, -20))
+
+def ds(e1):
+    # 52.998 is a magic number for this string
+    return StSt("Digestive", df, 52.98, wdth=e1, ro=1)
+
+minw = ds(0).getFrame(th=1).point("SE").x
+maxw = ds(1).getFrame(th=1).point("SE").x
 
 def render_snake(f, fi):
-    a:Animation = f.a
-    at1 = a.progress(fi, loops=10, easefn="ceio")
-    at2 = a.progress(fi, loops=10, easefn="ceio")
-
-    track = DATPen()
-    curves["path1"].draw(track)
-    track.scaleToRect(f.a.r).align(f.a.r, th=1, tv=1).translate(0, -20).f(None).s(1).sw(1).scale(1.15)
-    t = track.copy()
-    track.repeat(3)#.scale(1.15)
-    dps:DATPens = ds(at1.e, at2.e)
-
-    minw = ds(0, 0).getFrame(th=1).point("SE").x
-    maxw = ds(1, 1).getFrame(th=1).point("SE").x
+    at1 = f.a.progress(fi, loops=2, easefn="ceio")
+    dps = ds(at1.e)
 
     if at1.loop_phase == 1:
-        offset = maxw-dps.getFrame(th=1).point("SE").x
+        offset = maxw - dps.getFrame(th=1).point("SE").x
     else:
         offset = 0
     
     offset += math.floor(at1.loop/2)*(maxw-minw)
+    dps.distributeOnPath(track, offset=offset)
+    return dps
 
-    dps.distributeOnPath(track, offset=offset).reversePens()
-
-    return t, dps
-
-t = Timeline(350, storyboard=[0, 20, 349])
-
-@animation(rect=(1920,500), timeline=t)
+@animation(rect=(1920,500), timeline=120, bg=hsl(0, l=0.97))
 def render(f):
-    test = False
-    if test:
-        _, zero = render_snake(f, 0)
-    track, now = render_snake(f, f.i)
-    bg = hsl(0, l=0.97)
-    return DATPens([
-        DATPen().rect(f.a.r).f(bg),
-        DATPens([
-            zero.f(hsl(0.1, l=0.8)) if test else DATPen(),
-            track.f(None).s(hsl(0.65, l=0.9)).sw(15).translate(0, -8),
-            now.f(hsl(0.9, l=0.6, s=0.7))#.understroke(s=bg, sw=5),
-            #track.copy().translate(0, 180),
-        ]).translate(0, -30)
-    ])
+    now = render_snake(f, f.i)
+    return DPS([
+        DP(f.a.r).scale(0.3).fssw(None, 0, 2),
+        DP(f.a.r).scale(0.25).fssw(None, 0, 2),
+        (track.copy()
+            .fssw(None, hsl(0.65, l=0.9), 15)
+            .translate(0, -8)),
+        #render_snake(f, 119).f(0),
+        now.f(hsl(0.9, l=0.6, s=0.7)),
+    ]).translate(0, -30).scale(4.1).align(f.a.r)

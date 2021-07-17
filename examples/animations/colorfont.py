@@ -21,11 +21,15 @@ def pappardelle(f):
     wave = (StSt("SPIN", ppvf, 500,
         palette=custom_palette,
         SPIN=f.e("l"))
-        .align(f.a.r))
+        .align(f.a.r)
+        )
 
     r_wave = wave.ambit(th=1, tv=1)
 
     for idx, g in enumerate(wave):
         spin(f.adj(-idx*4), g)
     
-    return wave.rotate(f.e(to1=1)*360, point=r_wave.pc)
+    return [
+        DP(r_wave).f(hsl(0.3, a=0.3)),
+        wave.rotate(f.e(to1=1)*360, point=r_wave.pc)
+    ]
