@@ -83,6 +83,9 @@ class KeyboardShortcut(Enum):
 
     CopySVGToClipboard = "copy_svg_to_clipboard"
 
+    LoadNextInDirectory = "load_next_in_directory"
+    LoadPrevInDirectory = "load_prev_in_directory"
+
 
 REPEATABLE_SHORTCUTS = [
     KeyboardShortcut.PreviewPrev,
@@ -100,6 +103,7 @@ def symbol_to_glfw(s):
         "cmd": glfw.MOD_SUPER,
         "ctrl": glfw.MOD_CONTROL,
         "shift": glfw.MOD_SHIFT,
+        "alt": glfw.MOD_ALT,
         "<up>": glfw.KEY_UP,
         "<down>": glfw.KEY_DOWN,
         "<left>": glfw.KEY_LEFT,
@@ -323,5 +327,12 @@ SHORTCUTS = {
 
     KeyboardShortcut.CopySVGToClipboard: [
         [["cmd"], "c"]
+    ],
+
+    KeyboardShortcut.LoadNextInDirectory: [
+        [["cmd", "alt"], "<right>"]
+    ],
+    KeyboardShortcut.LoadPrevInDirectory: [
+        [["cmd", "alt"], "<left>"]
     ]
 }

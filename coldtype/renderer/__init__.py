@@ -399,7 +399,12 @@ class Renderer():
             blend_file = self.args.blender_watch
             self.subprocesses.append(blender_launch_livecode(blend_file))
     
-    def reset_filepath(self, filepath):
+    def reset_filepath(self, filepath, reload=False):
+        dirdirection = 0
+        if isinstance(filepath, int):
+            dirdirection = filepath
+            filepath = self.source_reader.filepath
+
         for k, cv2cap in self.state.cv2caps.items():
             cv2cap.release()
 
@@ -425,22 +430,24 @@ class Renderer():
             pj = True
             filepath = root / "renderer/picklejar.py"
         
-        filepath = SourceReader.normalize_filepath(filepath)
-        if not filepath.exists():
-            if filepath.suffix == ".py":
-                print(">>> That python file does not exist...")
-                create = input(">>> Do you want to create it and add some coldtype boilerplate? (y/n): ")
-                if create.lower() == "y":
-                    filepath.parent.mkdir(exist_ok=True, parents=True)
-                    filepath.write_text((root / "demo/boiler.py").read_text())
-                    editor_cmd = self.py_config.get("EDITOR_COMMAND")
-                    if editor_cmd:
-                        os.system(editor_cmd + " " + str(filepath.relative_to(Path.cwd())))
-            else:
-                raise Exception("That file does not exist")
+        filepath = self.source_reader.normalize_filepath(filepath)
+
+        # if not self.source_reader.dirpath and not filepath.exists():
+        #     if filepath.suffix == ".py":
+        #         print(">>> That python file does not exist...")
+        #         create = input(">>> Do you want to create it and add some coldtype boilerplate? (y/n): ")
+        #         if create.lower() == "y":
+        #             filepath.parent.mkdir(exist_ok=True, parents=True)
+        #             filepath.write_text((root / "demo/boiler.py").read_text())
+        #             editor_cmd = self.py_config.get("EDITOR_COMMAND")
+        #             if editor_cmd:
+        #                 os.system(editor_cmd + " " + str(filepath.relative_to(Path.cwd())))
+        #     else:
+        #         raise Exception("That file does not exist")
         
         self._codepath_offset = 0
-        self.source_reader.reset_filepath(filepath, reload=False)
+        filepath = self.source_reader.reset_filepath(filepath, reload=False, dirdirection=dirdirection)
+        # TODO check exists here on filepath
         self.watchees = [[Watchable.Source, self.source_reader.filepath, None]]
 
         self.watchees.append([Watchable.Generic, Path("~/.coldtype/command.json").expanduser(), None])
@@ -454,6 +461,11 @@ class Renderer():
                 if line.startswith("#coldtype"):
                     print("> Overriding command-line args with:\n    >", line)
                     self.args = self.parser.parse_args(line.replace("#coldtype", "").strip().split(" "))
+        
+        if reload:
+            self.reload_and_render(Action.PreviewStoryboard)
+            self.set_title(filepath.name)
+
         return True
 
     def watchee_paths(self):
@@ -1500,6 +1512,10 @@ class Renderer():
         elif shortcut == KeyboardShortcut.CopySVGToClipboard:
             self.copy_previews_to_clipboard = True
             return Action.PreviewStoryboard
+        elif shortcut == KeyboardShortcut.LoadNextInDirectory:
+            self.reset_filepath(+1, reload=True)
+        elif shortcut == KeyboardShortcut.LoadPrevInDirectory:
+            self.reset_filepath(-1, reload=True)
         else:
             print(shortcut, "not recognized")
     

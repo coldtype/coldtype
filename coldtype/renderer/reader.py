@@ -248,6 +248,7 @@ class SourceReader():
         ):
         self.filepath = None
         self.codepath = None
+        self.dirpath = None
         self.should_unlink = False
         self.program = None
         self.disable_syntax_mods = disable_syntax_mods
@@ -257,12 +258,18 @@ class SourceReader():
         if filepath or code:
             self.reset_filepath(filepath, code)
     
-    @staticmethod
-    def normalize_filepath(filepath:Path):
+    def normalize_filepath(self, filepath:Path, dirindex=0):
         if isinstance(filepath, str):
             filepath = Path(filepath)
         
         filepath = filepath.expanduser().resolve()
+
+        if filepath.is_dir():
+            self.dirpath = filepath
+            filepath = sorted(list(filepath.glob("*.py")), key=lambda p: p.stem)[dirindex]
+        else:
+            self.dirpath = filepath.parent
+
         if not filepath.exists():
             with_py = (filepath.parent / (filepath.stem + ".py"))
             if with_py.exists():
@@ -272,12 +279,21 @@ class SourceReader():
         
         return filepath
     
-    def reset_filepath(self, filepath:Path, code:str=None, reload:bool=True):
+    def reset_filepath(self, filepath:Path, code:str=None, reload:bool=True, dirdirection=0):
         self.unlink()
         self.should_unlink = False
+
+        dirindex = 0
+        if self.dirpath and dirdirection != 0:
+            # find index of existing filepath, increment by dirdirection?
+            pys = sorted(list(self.dirpath.glob("*.py")), key=lambda p: p.stem)
+            curr = pys.index(self.filepath)
+            adj = (curr + dirdirection) % len(pys)
+            print(curr, adj)
+            filepath = pys[adj]
         
         if filepath:
-            self.filepath = SourceReader.normalize_filepath(filepath)
+            self.filepath = self.normalize_filepath(filepath, dirindex)
             if not self.filepath.exists():
                 raise Exception("Source file does not exist")
         else:
@@ -288,6 +304,8 @@ class SourceReader():
             
         if reload:
             self.reload()
+        
+        return self.filepath
     
     def reload(self, code:str=None):
         if code:
