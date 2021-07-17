@@ -47,9 +47,10 @@ def apply_syntax_mods(source_code, renderer=None):
     source_code = re.sub(r"from ([^\s]+) import \* \#INLINE", inline_other, source_code)
     source_code = re.sub(r"\-\.[A-Za-z_ƒ]+([A-Za-z_0-9]+)?\(", ".nerp(", source_code)
     source_code = re.sub(r"([\s]+)Ƨ\(", r"\1nerp(", source_code)
-    source_code = re.sub(r"λ\s?([/\.\@]{1,2})", r"lambda xxx: xxx\1", source_code)
+    #source_code = re.sub(r"λ[\s]{0,3}\.", "lambda p: p.", source_code)
+    #source_code = re.sub(r"λ\s?([/\.\@]{1,2})", r"lambda xxx: xxx\1", source_code)
     #source_code = re.sub(r"λ\.", "lambda x: x.", source_code)
-    source_code = re.sub(r"λ", "lambda ", source_code)
+    #source_code = re.sub(r"λ", "lambda ", source_code)
     #source_code = re.sub(r"ßDPS\(([^\)]+)\)", r"(ß:=DPS(\1))", source_code)
 
     while "nerp(" in source_code:

@@ -17,6 +17,7 @@ name = "coldtype"
 __version__ = "0.5.9"
 
 __sibling__ = lambda x: x # will be redefined contextually
+#λ = None
 
 def debug_txt(r, txt, font_size=42, **kwargs):
     return DATText(txt, Style("Times", font_size, load_font=0, **kwargs), r.inset(20))

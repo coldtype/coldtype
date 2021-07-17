@@ -506,6 +506,11 @@ class DraftingPens(DraftingPen):
         fn(p)
         return self
     
+    def hide(self, *indices):
+        for idx in indices:
+            self.index(idx, lambda p: p.v(False))
+        return self
+    
     def glyphs_named(self, glyph_name):
         """Pluck glyphs named `glyph_name`"""
         #return self.pfilter(lambda i, p: p.glyphName == glyph_name).pmap(lambda idx, p: mod_fn(p))
@@ -617,8 +622,3 @@ class DraftingPens(DraftingPen):
     #    res = _class(self, *args)
     #    res.attrs = deepcopy(self.attrs)
     #    return res
-
-    def hide(self, *indices):
-        for idx in indices:
-            self[idx].v(False)
-        return self

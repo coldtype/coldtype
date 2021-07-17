@@ -111,7 +111,8 @@ class renderable():
         style="default",
         viewBox=True,
         layer=False,
-        sort=0):
+        sort=0,
+        hide=[]):
         """Base configuration for a renderable function"""
 
         self.rect = Rect(rect).round()
@@ -127,6 +128,7 @@ class renderable():
         self.style = style
         self.composites = composites
         self.cv2caps = cv2caps
+        self._hide = hide
 
         self.watch = []
         for w in watch:
@@ -240,7 +242,7 @@ class renderable():
         self.hidden = False
         return self
     
-    def normalize_result(self, pens):
+    def _normalize_result(self, pens):
         if not pens:
             return DATPens()
         elif hasattr(pens, "_pens"):
@@ -258,6 +260,12 @@ class renderable():
             return DATPens(pens)
         else:
             return pens
+    
+    def normalize_result(self, pens):
+        normalized = self._normalize_result(pens)
+        if self._hide:
+            normalized.hide(*self._hide)
+        return normalized
     
     def run_normal(self, render_pass, renderer_state=None):
         return self.normalize_result(
