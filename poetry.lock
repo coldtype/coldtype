@@ -472,10 +472,17 @@ python-versions = ">=3.6"
 [package.extras]
 watchmedo = ["PyYAML (>=3.10)", "argh (>=0.24.1)"]
 
+[extras]
+c = ["srt", "noise"]
+experimental = ["pynput", "PyAudio", "rtmidi", "noise"]
+skia = ["skia-python"]
+viewer = ["glfw", "PyOpenGL", "PyOpenGL-accelerate", "skia-python", "skia-pathops", "SimpleWebSocketServer", "watchdog", "noise", "ufo2ft", "numpy"]
+webviewer = ["SimpleWebSocketServer", "watchdog"]
+
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "7057e770449ec590eda8b76a2f9355e318365e6c6e31d0429b7b556363291a55"
+content-hash = "1e0909ce1eedcd92a6f7f363286b00055b07a06f6924830390593b884f73dee6"
 
 [metadata.files]
 appdirs = [

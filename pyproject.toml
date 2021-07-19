@@ -56,20 +56,9 @@ viewer = [
   "ufo2ft",
   "numpy"
 ]
-webviewer = [
-  "SimpleWebSocketServer",
-  "watchdog",
-]
-experimental = [
-  "pynput",
-  "pyaudio",
-  "rtmidi",
-  "noise"
-]
-c = [
-  "srt"
-  "noise"
-]
+c = ["srt", "noise"]
+webviewer = ["SimpleWebSocketServer", "watchdog"]
+experimental = ["pynput", "pyaudio", "rtmidi", "noise"]
 
 
 [tool.poetry.dev-dependencies]
