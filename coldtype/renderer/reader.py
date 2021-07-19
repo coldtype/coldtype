@@ -147,7 +147,7 @@ def read_source_to_tempfile(filepath:Path,
     else:
         raise Exception("No code found in file!")
     
-    return codepath
+    return codepath, data_out
 
 
 def run_source(filepath, codepath, **kwargs):
@@ -248,6 +248,7 @@ class SourceReader():
         ):
         self.filepath = None
         self.codepath = None
+        self.data_out = None
         self.dirpath = None
         self.should_unlink = False
         self.program = None
@@ -311,7 +312,7 @@ class SourceReader():
         if code:
             self.write_code_to_tmpfile(code)
         
-        self.codepath = read_source_to_tempfile(self.filepath, self.codepath, renderer=self.renderer)
+        self.codepath, self.data_out = read_source_to_tempfile(self.filepath, self.codepath, renderer=self.renderer)
         self.program = run_source(
             self.filepath,
             self.codepath,
