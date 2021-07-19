@@ -62,6 +62,7 @@ experimental = ["pynput", "pyaudio", "rtmidi", "noise"]
 
 
 [tool.poetry.dev-dependencies]
+better-exceptions = "^0.3.3"
 
 
 [tool.poetry.scripts]
