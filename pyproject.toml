@@ -1,0 +1,84 @@
+[tool.poetry]
+name = "coldtype"
+version = "0.5.9"
+readme = "README.md"
+description = "Functions for manual vectorized typesetting"
+authors = [
+  "Rob Stenson <rob.stenson@gmail.com>"
+]
+license = "Apache License 2.0"
+
+
+[tool.poetry.dependencies]
+python = "^3.7"
+lxml = "^4.6.3"
+fonttools = {extras = ["ufo"], version = "^4.25.1"}
+fontPens = "^0.2.4"
+more-itertools = "^8.8.0"
+easing-functions = "^1.0.4"
+timecode = "^1.3.1"
+mido = "^1.2.10"
+defcon = "^0.8.1"
+freetype-py = "^2.2.0"
+uharfbuzz = ">=0.14.0"
+unicodedata2 = "^13.0.0"
+python-bidi = "^0.4.2"
+rich = "^10.6.0"
+
+# Optional dependencies used by extras:
+skia-python = {version = ">=86.0", optional = true}
+glfw = {version = "^2.1.0", optional = true}
+PyOpenGL = {version = "^3.1.5", optional = true}
+PyOpenGL-accelerate = {version = "^3.1.5", optional = true}
+skia-pathops = {version = "^0.6.0", optional = true}
+SimpleWebSocketServer = {version = "^0.1.1", optional = true}
+watchdog = {version = "<2.0.0", optional = true}
+noise = {version = "^1.2.2", optional = true}
+ufo2ft = {version = "^2.23.0", optional = true}
+numpy = {version = "^1.21.1", optional = true}
+pynput = {version = "^1.7.3", optional = true}
+PyAudio = {version = "^0.2.11", optional = true}
+rtmidi = {version = "^2.3.4", optional = true}
+srt = {version = "^3.4.1", optional = true}
+
+
+[tool.poetry.extras]
+skia = ["skia-python"]
+viewer = [
+  "glfw",
+  "PyOpenGL",
+  "PyOpenGL-accelerate",
+  "skia-python",
+  "skia-pathops",
+  "SimpleWebSocketServer",
+  "watchdog",
+  "noise",
+  "ufo2ft",
+  "numpy"
+]
+webviewer = [
+  "SimpleWebSocketServer",
+  "watchdog",
+]
+experimental = [
+  "pynput",
+  "pyaudio",
+  "rtmidi",
+  "noise"
+]
+c = [
+  "srt"
+  "noise"
+]
+
+
+[tool.poetry.dev-dependencies]
+
+
+[tool.poetry.scripts]
+coldtype = "coldtype.renderer:main"
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
