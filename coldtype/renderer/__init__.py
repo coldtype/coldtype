@@ -313,7 +313,7 @@ class Renderer():
 
         self.read_configs()
 
-        self.subprocesses = []
+        self.subprocesses = {}
         self.parser = parser
         self.args = parser.parse_args()
 
@@ -395,9 +395,12 @@ class Renderer():
         self.viewer_solos = []
 
         if self.args.blender_watch:
-            from coldtype.blender.render import blender_launch_livecode
-            blend_file = self.args.blender_watch
-            self.subprocesses.append(blender_launch_livecode(blend_file))
+            self.launch_blender_watch()
+    
+    def launch_blender_watch(self):
+        from coldtype.blender.render import blender_launch_livecode
+        blend_file = self.args.blender_watch
+        self.subprocesses["blender_watch"] = blender_launch_livecode(blend_file)
     
     def reset_filepath(self, filepath, reload=False):
         dirdirection = 0
@@ -2045,6 +2048,19 @@ class Renderer():
         return did_preview
     
     def turn_over(self):
+        to_delete = []
+        for k, sb in self.subprocesses.items():
+            returncode = sb.poll()
+            if returncode is not None:
+                if k == "blender_watch": #and returncode != 0:
+                    self.launch_blender_watch()
+                    self.action_waiting = Action.PreviewStoryboardReload
+                else:
+                    to_delete.append(k)
+        
+        for k in to_delete:
+            del self.subprocesses[k]
+
         if self.dead:
             self.on_exit()
             return
@@ -2364,7 +2380,7 @@ class Renderer():
     def on_exit(self, restart=False):
         self.source_reader.unlink()
 
-        for p in self.subprocesses:
+        for _, p in self.subprocesses.items():
             p.kill()
 
         #if self.args.watch:
