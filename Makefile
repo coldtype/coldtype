@@ -1,0 +1,5 @@
+.EXPORT_ALL_VARIABLES:
+BETTER_EXCEPTIONS=1
+
+test:
+	pytest test
