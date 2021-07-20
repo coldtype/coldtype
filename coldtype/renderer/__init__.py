@@ -2223,7 +2223,8 @@ class Renderer():
                     data = json.loads(path.read_text())
                     if "action" in data:
                         action = data.get("action")
-                        self.execute_string_as_shortcut_or_action(action, None)
+                        self.hotkey_waiting = (action, None)
+                        #self.execute_string_as_shortcut_or_action(action, None)
                     return
 
                 last = self.watchee_mods.get(path)
