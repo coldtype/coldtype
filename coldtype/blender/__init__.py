@@ -100,7 +100,7 @@ class b3d_animation(animation):
     def post_read(self):
         super().post_read()
         if bpy:
-            bpy.data.scenes[0].render.filepath = str(self.blender_output_dir()) + "/"
+            bpy.data.scenes[0].render.filepath = str(self.blender_output_dir()) + "/" + self.name + "_"
     
     def blender_output_dir(self):
         output_dir = self.output_folder / "_blender"

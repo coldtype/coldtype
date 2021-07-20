@@ -1,6 +1,12 @@
 Install
 =======
 
+.. raw:: html
+
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/hCGF6FZCSqc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+------------------
+
 * Install a Python >= 3.7
 * If you don’t have a Python >= 3.7, I’d recommend the latest Python (available from `python.org/downloads <https://python.org/downloads>`_)
 
