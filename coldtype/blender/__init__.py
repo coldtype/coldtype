@@ -57,6 +57,9 @@ class b3d_mods():
 
 
 def walk_to_b3d(result:DATPens, dn=False):
+    #from time import sleep
+    #sleep(1)
+
     def walker(p:DATPen, pos, data):
         if pos == 0:
             bdata = p.data.get("b3d")
@@ -100,12 +103,12 @@ class b3d_animation(animation):
     def post_read(self):
         super().post_read()
         if bpy:
-            bpy.data.scenes[0].render.filepath = str(self.blender_output_dir()) + "/" + self.name + "_"
+            bpy.data.scenes[0].render.filepath = str(self.blender_output_dir())# + "/" + self.name + "_"
     
     def blender_output_dir(self):
         output_dir = self.output_folder / "_blender"
         output_dir.mkdir(parents=True, exist_ok=True)
-        return output_dir
+        return str(output_dir) + "/" + self.name + "_"
     
     def blender_render(self, file, blend_file, artifacts, samples=4):
         output_dir = self.blender_output_dir()

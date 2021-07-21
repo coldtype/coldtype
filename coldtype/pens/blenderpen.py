@@ -82,7 +82,7 @@ class BPH():
                 bpy.ops.curve.primitive_bezier_curve_add()
             elif _type == "Plane":
                 bpy.ops.mesh.primitive_plane_add()
-            bc = bpy.context.active_object
+            bc = bpy.context.object
             bc.name = name
             bc.data.name = name
             if _type == "Bezier":

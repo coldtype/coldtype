@@ -478,7 +478,10 @@ class DraftingPens(DraftingPen):
             if hasattr(p, "_pens"):
                 p.pmap(fn)
             else:
-                fn(idx, p)
+                try:
+                    fn(idx, p)
+                except TypeError:
+                    fn(p)
         return self
     
     def pfilter(self, fn):

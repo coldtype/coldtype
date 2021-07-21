@@ -9,9 +9,9 @@ def blender_launch_livecode(file):
 
 
 def blend_frame(py_file, blend_file, expr, output_dir, fi):
-    call = f"{BLENDER} -b {blend_file} --python-expr \"{expr}\" -o {output_dir}/ -f {fi}"
+    call = f"{BLENDER} -b {blend_file} --python-expr \"{expr}\" -o {output_dir}####.png -f {fi}"
     print(f"Blending frame {fi}...")
-    #print(call)
+    print(call)
     #return
     #os.system(call)
     process = subprocess.Popen(call, stdout=subprocess.PIPE, shell=True)
@@ -26,6 +26,8 @@ def blend_frame(py_file, blend_file, expr, output_dir, fi):
             process.kill()
             process.terminate()
             break
+    print(log)
+    print(f"/Blended frame {fi}.")
 
 def blend_source(py_file, blend_file, frame, output_dir, samples=2):
     """

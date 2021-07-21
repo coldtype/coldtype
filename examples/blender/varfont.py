@@ -16,5 +16,5 @@ def varfont(f):
             .chain(b3d_mod(lambda p: p.f(None)))
             .chain(b3d("Text", lambda bp: bp
                 .extrude(f.adj(-i*5)
-                    .e("ceio", 1, rng=(0.5, 3.75))),
+                    .e("ceio", 1, rng=(0.5, 1.75))),
                 material="EdgeShader"))))
