@@ -229,7 +229,23 @@ def Glyphwise(st, styler):
     prev = 0
     tracks = []
 
+    # TODO possible to have an implementation
+    # aware of a non-1-to-1 mapping of characters
+    # to glyphs? seems very difficult if not impossible,
+    # since it requires mapping the string to glyphs
+    # and then somehow mapping the glyphs back to the
+    # equivalent string (?) in order to get the proper
+    # kerning information for the sub-strings —
+    # it maybe possible to pass glyph-id's directly
+    # to harfbuzz, which would solve the problem,
+    # though that does seem kind of hard to believe
+
+    #glyphs = StyledString(st, styler(0, st[0])).glyphs
+    #print(glyphs)
+    #print([g.name for g in glyphs])
+
     for idx, c in enumerate(st):
+        #c = gi.name
         test = c
         target = 0
         if idx < len(st) - 1:

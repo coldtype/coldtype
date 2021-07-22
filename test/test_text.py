@@ -1,12 +1,12 @@
 import unittest
 from pathlib import Path
-from coldtype.grid import Grid
 from coldtype.geometry import *
-from coldtype.text.composer import StSt, Font
+from coldtype.text.composer import StSt, Font, Glyphwise, Style
 from coldtype.pens.svgpen import SVGPen
 
 tf = Path(__file__).parent
 mutator = Font.Cacheable("assets/MutatorSans.ttf")
+clarette = Font.Cacheable("~/Type/fonts/fonts/_wdths/ClaretteGX.ttf")
 
 class TestText(unittest.TestCase):
     def _test_glyph_names(self, font_path):
@@ -44,6 +44,8 @@ class TestText(unittest.TestCase):
         txt.align(r)
         self.assertEqual(space.ambit().x, 863.5)
 
+        #txt.picklejar(r)
+
         txt = StSt("A B", mutator, 1000, space=500)
         space = txt[1]
         self.assertEqual(space.glyphName, "space")
@@ -52,6 +54,19 @@ class TestText(unittest.TestCase):
         self.assertEqual(space.ambit().x, 400)
         txt.align(r)
         self.assertEqual(space.ambit().x, 863.5-(250/2))
+    
+        #txt.picklejar(r)
+    
+    def test_glyphwise(self):
+        r = Rect(1080, 300)
+        gl = (Glyphwise(["fi", "f", "o"], lambda i, c:
+            Style(clarette, 300, wdth=1))
+            .align(r))
+        
+        self.assertEqual(len(gl), 3)
+        self.assertEqual(gl[0].glyphName, "f_i")
+        gl.picklejar(r)
+
 
 if __name__ == "__main__":
     unittest.main()
