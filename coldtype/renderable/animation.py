@@ -218,6 +218,20 @@ class animation(renderable, Timeable):
             return dps
         
         return contactsheet
+    
+    def export(self, fmt, date=False, loops=1, open=1):
+        def _export(passes):
+            fe = FFMPEGExport(self, passes,
+                date=date, loops=loops)
+            if fmt == "gif":
+                fe.gif()
+            elif fmt == "h264":
+                fe.h264()
+            fe.write()
+            if open:
+                fe.open()
+            return fe
+        return _export
 
 
 class drawbot_animation(drawbot_script, animation):
