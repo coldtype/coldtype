@@ -59,12 +59,13 @@ class TestText(unittest.TestCase):
     
     def test_glyphwise(self):
         r = Rect(1080, 300)
-        gl = (Glyphwise(["fi", "f", "o"], lambda i, c:
-            Style(clarette, 300, wdth=1))
+        gl = (Glyphwise(["fi", "j", "o", "ff"],
+            lambda i, c: Style(clarette, 300, wdth=1))
             .align(r))
         
-        self.assertEqual(len(gl), 3)
+        self.assertEqual(len(gl), 4)
         self.assertEqual(gl[0].glyphName, "f_i")
+        self.assertEqual(gl[-1].glyphName, "f_f")
         gl.picklejar(r)
 
 

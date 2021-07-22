@@ -5,6 +5,8 @@ from coldtype.geometry import Rect, Point
 from coldtype.text.shaper import segment
 from coldtype.text.reader import Style, StyledString, FittableMixin, Font, normalize_font_path, SegmentedString,  _PenClass, _PensClass
 
+from more_itertools import flatten
+
 
 class GrafStyle():
     def __init__(self, leading=10, x="centerx", xp=0, width=0, **kwargs):
@@ -249,16 +251,19 @@ def Glyphwise(st, styler):
         test = c
         target = 0
         if idx < len(st) - 1:
-            test = test + st[idx+1]
+            test = [test, st[idx+1]]
         if idx > 0:
-            test = st[idx-1] + test
+            test = [st[idx-1], test]
             target = 1
+        if isinstance(test, str):
+            test = [test]
         
         skon = styler(idx, c)
         skoff = skon.mod(kern=0)
 
-        tkon = StSt(test, skon)
-        tkoff = StSt(test, skoff)
+        test_str = "".join([t if isinstance(t, str) else "".join(t) for t in test])
+        tkon = StSt(test_str, skon)
+        tkoff = StSt(test_str, skoff)
 
         if idx == 0:
             dps.append(tkoff[0])
