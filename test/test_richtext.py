@@ -30,6 +30,28 @@ class TestRichText(unittest.TestCase):
             rt[0][1].ambit(th=1).w)
         
         rt.picklejar(r)
+    
+    def test_ligature(self):
+        clarette = Font.Cacheable("~/Type/fonts/fonts/_wdths/ClaretteGX.ttf")
+
+        txt = "fi¬joff≤asdf≥"
+        r = Rect(1080, 300)
+        
+        gl = (RichText(r, txt,
+            dict(
+                default=Style(clarette, 200),
+                asdf=Style(clarette, 200, wdth=1)),
+            tag_delimiters=["≤", "≥"],
+            visible_boundaries=["¶"],
+            invisible_boundaries=["¬"])
+            .align(r))
+        
+        self.assertEqual(gl[0][0].data["style_names"][0], "asdf")
+        self.assertEqual(len(gl[0][1].data["style_names"]), 0)
+        self.assertEqual(gl[0][0][0].glyphName, "f_f")
+        self.assertEqual(gl[0][1][0].glyphName, "f_i")
+        
+        gl.picklejar(r)
 
 if __name__ == "__main__":
     unittest.main()

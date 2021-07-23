@@ -277,7 +277,7 @@ class Renderer():
 
             blender_watch=parser.add_argument("-bw", "--blender-watch", default=None, type=str, help="Experimental blender live-coding integration"),
 
-            debounce_time=parser.add_argument("-dt", "--debounce-time", default=0.1, type=float, help="how long to wait before acting on a debounced action"),
+            debounce_time=parser.add_argument("-dt", "--debounce-time", default=0.25, type=float, help="how long to wait before acting on a debounced action"),
 
             disable_rich=parser.add_argument("-dr", "--disable-rich", action="store_true", default=False, help="Do not print exceptions with the rich library"),
         )
