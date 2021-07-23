@@ -1480,6 +1480,11 @@ class Renderer():
             if editor_cmd:
                 os.system(editor_cmd + " -g " + str(self.source_reader.filepath.relative_to(Path.cwd())) + ":" + str(found_line))
         
+        elif shortcut == KeyboardShortcut.OpenInEditor:
+            editor_cmd = self.py_config.get("EDITOR_COMMAND")
+            if editor_cmd:
+                os.system(editor_cmd + " -g " + str(self.source_reader.filepath.relative_to(Path.cwd())))
+        
         elif shortcut == KeyboardShortcut.ViewerTakeFocus:
             glfw.focus_window(self.window)
         

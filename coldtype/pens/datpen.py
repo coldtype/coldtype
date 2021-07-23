@@ -549,17 +549,25 @@ class DATPens(DraftingPens, DATPen):
             pen = pen(self)
         if pen or allow_blank:
             if isinstance(pen, Geometrical):
-                self._pens.append(DATPen(pen))
+                dp = DATPen(pen)
+                dp._parent = self
+                self._pens.append(dp)
             elif isinstance(pen, DATPen):
+                pen._parent = self
                 self._pens.append(pen)
             elif isinstance(pen, DraftingPens):
-                self._pens.append(DATPens(pen._pens))
+                dps = DATPens(pen._pens)
+                dps._parent = self
+                self._pens.append(dps)
             elif isinstance(pen, DraftingPen):
-                self._pens.append(DATPen(pen))
+                dp = DATPen(pen)
+                dp._parent = self
+                self._pens.append(dp)
             else:
                 try:
                     for p in pen:
                         if p:
+                            p._parent = self
                             self._pens.append(p)
                 except TypeError:
                     #print("appending non-pen", type(pen))

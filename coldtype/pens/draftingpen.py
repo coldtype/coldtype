@@ -86,6 +86,13 @@ class DraftingPen(RecordingPen, SHContext):
         s += "/>"
         return s
     
+    def parent(self):
+        if self._parent:
+            return self._parent
+        else:
+            print("no parent set")
+            return None
+    
     def tag(self, value=None):
         if value:
             if isinstance(value, str):

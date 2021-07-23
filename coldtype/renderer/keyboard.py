@@ -62,6 +62,7 @@ class KeyboardShortcut(Enum):
     MIDIControllersReset = "midi_controllers_reset"
 
     JumpToFrameFunctionDef = "jump_to_function_def"
+    OpenInEditor = "open_in_editor"
 
     ViewerTakeFocus = "viewer_take_focus"
 
@@ -269,6 +270,9 @@ SHORTCUTS = {
 
     KeyboardShortcut.JumpToFrameFunctionDef: [
         [[], "f"],
+    ],
+    KeyboardShortcut.OpenInEditor: [
+        [[], "o"]
     ],
 
     KeyboardShortcut.ViewerSoloNone: [

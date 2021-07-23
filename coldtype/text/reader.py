@@ -745,6 +745,8 @@ class StyledString(FittableMixin):
                         dp_atom += dp_layer
                 dp_atom.addFrame(g.frame, typographic=True)
                 dp_atom.glyphName = g.name
+            
+            #dp_atom._parent = pens
             pens.append(dp_atom, allow_blank=self.style.include_blanks)
 
         if self.style.reverse:

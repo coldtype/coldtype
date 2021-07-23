@@ -1,21 +1,21 @@
 from coldtype import *
-from coldtype.warping import warp_fn
+from coldtype.warping import warp
 
-font = Font("assets/ColdtypeObviously.designspace")
+font = Font.Cacheable("assets/ColdtypeObviously.designspace")
 
 @renderable(rect=(900, 500))
 def coldtype(r):
-    kp = kern_pairs={("L","D"):-5, ("T","Y"):-20, ("Y","P"):10,("P","E"):-100}
-    style = Style(font, 650, fill="random", wdth=1, tu=-50, r=1, ro=1, kp=kp)
-    pens = (StyledString("COLDTYPE", style)
-        .fit(1250)
-        .pens()
-        .align(r))
-    pens.pmap(lambda idx, p: (p
-        .f(hsl(0.05+idx/len(pens)*0.75, s=0.6, l=0.55))
-        .flatten(5)
-        .nonlinear_transform(warp_fn(mult=35))))
-    return (pens
-        .understroke()
+    return (StSt("COLDTYPE", font, 450,
+        wdth=1, tu=-50,
+        r=1, ro=1, fit=r.w,
+        kp={("L","D"): -5,
+            ("T","Y"): -20,
+            ("Y","P"): 10,
+            ("P","E"): -100})
+        .align(r)
+        .pmap(lambda idx, p: (p
+            .f(hsl(0.5+idx/len(p.parent())*0.15, s=0.6, l=0.55))
+            .ch(warp(5, mult=25))))
+        .understroke(sw=30)
         .rotate(5)
-        .scale(0.4))
+        .scale(0.75))
