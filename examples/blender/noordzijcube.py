@@ -11,20 +11,16 @@ def entry(f, i, g, x, y, z):
         wdth=(y/(d-1)),
         slnt=(z/(d-1)))
         .pen()
-        #.f(None).s(0).sw(1)
-        #.f(hsl(random(), 0.7, 0.4))
+        .f(None).s(0).sw(1)
         .f(1)
         .align(g)
         .tag(f"{x}{y}{z}")
-        #.ch(b3d_mod(lambda p: p
-        #    .f(1).s(None).sw(0)))
+        .ch(b3d_mod(lambda p: p
+            .f(1).s(None).sw(0)))
         .ch(b3d("Cube", lambda bp: (bp
             .extrude(0.1+x/(d-1)*0.1)
             .rotate(90)
-            .locate(-5.4, -5.4 + 10.8*(z/d), 0)),
-            material="auto",
-            #material="NoordzijMaterial"
-            )))
+            .locate(-5.4, -5.4 + 10.8*(z/d), 0)))))
 
 @b3d_animation(timeline=120)
 def cube(f):
