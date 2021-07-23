@@ -259,6 +259,18 @@ class SourceReader():
         if filepath or code:
             self.reset_filepath(filepath, code)
     
+    def find_sources(self, dirpath):
+        sources = list(dirpath.glob("*.py"))
+        sources.extend(list(dirpath.glob("*.md")))
+
+        valid_sources = []
+        for p in sources:
+            if not p.name.startswith("_"):
+                valid_sources.append(p)
+            valid_sources = sorted(valid_sources, key=lambda p: p.stem)
+        
+        return valid_sources
+    
     def normalize_filepath(self, filepath:Path, dirindex=0):
         if isinstance(filepath, str):
             filepath = Path(filepath)
@@ -267,7 +279,8 @@ class SourceReader():
 
         if filepath.is_dir():
             self.dirpath = filepath
-            filepath = sorted(list(filepath.glob("*.py")), key=lambda p: p.stem)[dirindex]
+            #filepath = sorted(list(filepath.glob("*.py")), key=lambda p: p.stem)[dirindex]
+            filepath = self.find_sources(self.dirpath)[dirindex]
         else:
             self.dirpath = filepath.parent
 
@@ -287,7 +300,8 @@ class SourceReader():
         dirindex = 0
         if self.dirpath and dirdirection != 0:
             # find index of existing filepath, increment by dirdirection?
-            pys = sorted(list(self.dirpath.glob("*.py")), key=lambda p: p.stem)
+            pys = self.find_sources(self.dirpath)
+            #pys = sorted(list(self.dirpath.glob("*.py")), key=lambda p: p.stem)
             curr = pys.index(self.filepath)
             adj = (curr + dirdirection) % len(pys)
             print(curr, adj)

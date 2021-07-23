@@ -6,7 +6,6 @@ from coldtype.pens.svgpen import SVGPen
 
 tf = Path(__file__).parent
 mutator = Font.Cacheable("assets/MutatorSans.ttf")
-clarette = Font.Cacheable("~/Type/fonts/fonts/_wdths/ClaretteGX.ttf")
 
 class TestText(unittest.TestCase):
     def _test_glyph_names(self, font_path):
@@ -56,17 +55,6 @@ class TestText(unittest.TestCase):
         self.assertEqual(space.ambit().x, 863.5-(250/2))
     
         #txt.picklejar(r)
-    
-    def test_glyphwise(self):
-        r = Rect(1080, 300)
-        gl = (Glyphwise(["fi", "j", "o", "ff"],
-            lambda i, c: Style(clarette, 300, wdth=1))
-            .align(r))
-        
-        self.assertEqual(len(gl), 4)
-        self.assertEqual(gl[0].glyphName, "f_i")
-        self.assertEqual(gl[-1].glyphName, "f_f")
-        gl.picklejar(r)
 
 
 if __name__ == "__main__":

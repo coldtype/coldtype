@@ -13,7 +13,7 @@ def test_text_on_a_curve(r):
             .repeat())
         .understroke(s=0, sw=5))
 
-#@test(rstate=1, solo=0, watch_restarts=["coldtype/pens/datpen.py"])
+#@test(rstate=1, solo=0)
 def test_text_warped_to_curve(r, rs):
     text:DATPens = (StyledString("WARPTOUR",
         Style(mutator, 164, tu=-250, r=1, ro=1, wght=1))
@@ -43,7 +43,7 @@ def test_text_warped_to_curve(r, rs):
             .ch(bend2(sine, tangent=0, offset=[-1, 2]))
             .scale(0.5, point=r.point("C")))]
 
-#@test((1000, 1000), solo=0, rstate=1, watch_restarts=["coldtype/pens/datpen.py"])
+#@test((1000, 1000), solo=0, rstate=1)
 def test_text_warped_to_vertical_curve(r, rs):
     text:DATPens = (StyledString("COLDTYPE",
         Style(co, 600, tu=-10, r=1, ro=1, wdth=0))

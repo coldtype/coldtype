@@ -567,7 +567,8 @@ class DATPens(DraftingPens, DATPen):
                 try:
                     for p in pen:
                         if p:
-                            p._parent = self
+                            if hasattr(p, "_parent"):
+                                p._parent = self
                             self._pens.append(p)
                 except TypeError:
                     #print("appending non-pen", type(pen))

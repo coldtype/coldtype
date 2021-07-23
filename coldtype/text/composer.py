@@ -221,16 +221,6 @@ def StSt(text,
     return lockup
 
 def Glyphwise(st, styler):
-    def kx(dps, idx):
-        return dps[idx].ambit().x
-    
-    def krn(off, on, idx):
-        return kx(off, idx) - kx(on, idx)
-
-    dps = DraftingPens()
-    prev = 0
-    tracks = []
-
     # TODO possible to have an implementation
     # aware of a non-1-to-1 mapping of characters
     # to glyphs? seems very difficult if not impossible,
@@ -246,22 +236,39 @@ def Glyphwise(st, styler):
     #print(glyphs)
     #print([g.name for g in glyphs])
 
+    def kx(dps, idx):
+        return dps[idx].ambit().x
+    
+    def krn(off, on, idx):
+        return kx(off, idx) - kx(on, idx)
+
+    dps = DraftingPens()
+    prev = 0
+    tracks = []
+
     for idx, c in enumerate(st):
         #c = gi.name
         test = c
         target = 0
+        tcount = 1
         if idx < len(st) - 1:
             test = [test, st[idx+1]]
+            tcount += 1
         if idx > 0:
             test = [st[idx-1], test]
             target = 1
+            tcount += 1
         if isinstance(test, str):
             test = [test]
         
         skon = styler(idx, c)
         skoff = skon.mod(kern=0)
 
+        #test_list = [t for sublist in test for t in sublist]
+        #print(test_list)
         test_str = "".join([t if isinstance(t, str) else "".join(t) for t in test])
+        #print(c, test_str, target, test, tcount)
+
         tkon = StSt(test_str, skon)
         tkoff = StSt(test_str, skoff)
 
@@ -277,7 +284,7 @@ def Glyphwise(st, styler):
                 .translate(-kx(tkoff, 1), 0))
             tracks.append(-prev_av)
 
-            if len(test) > 2:
+            if tcount > 2:
                 #print("_PREV", _prev)
                 _next = krn(tkoff, tkon, 2) - _prev #tkoff[0].ambit().w
                 #print("next", _next)

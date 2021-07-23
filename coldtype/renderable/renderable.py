@@ -98,7 +98,6 @@ class renderable():
         custom_folder=None,
         postfn=None,
         watch=[],
-        watch_restarts=[],
         watch_soft=[],
         solo=False,
         rstate=False,
@@ -133,10 +132,6 @@ class renderable():
         self.watch = []
         for w in watch:
             self.add_watchee(w)
-
-        self.watch_restarts = []
-        for w in watch_restarts:
-            self.watch_restarts.append(self.add_watchee(w, "restart"))
         
         self.watch_soft = []
         for w in watch_soft:

@@ -1984,7 +1984,7 @@ class Renderer():
                 pin = self.args.window_pin
             
             if not isinstance(pin, str):
-                print("--window-pin must be compass direction")
+                #print("--window-pin must be compass direction")
                 pin = "NE"
 
             if pin:
@@ -2250,17 +2250,6 @@ class Renderer():
                     #print(path.read_text())
                     return
             
-            if path.suffix == ".py":
-                try:
-                    for render in self.renderables(Action.Resave):
-                        for wr in render.watch_restarts:
-                            if str(path) == str(wr):
-                                importlib.reload(coldtype)
-                                importlib.reload(coldtype.pens.datpen)
-                                #self.action_waiting = Action.RestartRenderer
-                except AttributeError:
-                    pass
-            
             idx = self.watchee_paths().index(path)
             wpath, wtype, wflag = self.watchees[idx]
             if wflag == "soft":
@@ -2371,6 +2360,8 @@ class Renderer():
     def restart(self):
         print("> RESTARTING...")
         args = sys.argv
+
+        args[1] = str(self.source_reader.filepath)
         
         # attempt to preserve state across reload
         fo = str(self.state._frame_offsets)
@@ -2381,6 +2372,7 @@ class Renderer():
             args.append("-fo")
             args.append(fo)
         
+        print("> RESTART:", args)
         os.execl(sys.executable, *(["-m"]+args))
 
     def on_exit(self, restart=False):
