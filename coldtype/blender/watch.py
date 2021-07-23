@@ -71,7 +71,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                         bpy.data.scenes[0].frame_start = 0
 
                         def _frame_update_handler(scene):
-                            print("UPDATE", scene.frame_current, self.current_frame)
+                            #print("UPDATE", scene.frame_current, self.current_frame)
 
                             if scene.frame_current != self.current_frame:
                                 self.current_frame = scene.frame_current
