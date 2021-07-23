@@ -6,20 +6,23 @@ fnt = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
 d = 5
 
 def entry(f, i, g, x, y, z):
-    return (StSt("n", fnt, 250, ro=1,
+    return (StSt("E", fnt, 250, ro=1,
         wght=x/(d-1),
         wdth=(y/(d-1)),
         slnt=(z/(d-1)))
         .pen()
-        .f(None).s(0).sw(1)
+        #.f(None).s(0).sw(1)
+        #.f(hsl(random(), 0.7, 0.4))
+        .f(1)
         .align(g)
         .tag(f"{x}{y}{z}")
-        .ch(b3d_mod(lambda p: p
-            .f(1).s(None).sw(0)))
+        #.ch(b3d_mod(lambda p: p
+        #    .f(1).s(None).sw(0)))
         .ch(b3d("Cube", lambda bp: (bp
-            .extrude(0.05)
+            .extrude(0.1+x/(d-1)*0.1)
             .rotate(90)
             .locate(-5.4, -5.4 + 10.8*(z/d), 0)),
+            material="auto",
             #material="NoordzijMaterial"
             )))
 
