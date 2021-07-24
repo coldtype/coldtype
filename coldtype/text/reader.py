@@ -105,10 +105,23 @@ class Font():
             self._loaded = True
             return self
     
+    @staticmethod
     def Cacheable(path):
         if path not in FontCache:
             FontCache[path] = Font(path, cacheable=True).load()
         return FontCache[path]
+    
+    @staticmethod
+    def ColdtypeObviously():
+        return Font.Cacheable(Path(__file__).parent.parent / "demo/ColdtypeObviously-VF.ttf")
+
+    @staticmethod
+    def MutatorSans():
+        return Font.Cacheable(Path(__file__).parent.parent / "demo/MutatorSans.ttf")
+    
+    @staticmethod
+    def RecursiveMono():
+        return Font.Cacheable(Path(__file__).parent.parent / "demo/RecMono-CasualItalic.ttf")
 
 class Style():
     """
