@@ -24,10 +24,8 @@ def floating(f):
                     -.5+pnoise1(2+f.adj(-x*5)
                         .e("l")*5)*5.5))))
     
-    out = DPS()
-    for x in range(0, 10):
-        out += square(x)
-    return out
+    return DPS.Enumerate(range(0, 10),
+        lambda _, x: square(x))
 
 def _release(artifacts):
     for a in artifacts[:]:
