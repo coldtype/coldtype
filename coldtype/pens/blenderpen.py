@@ -225,6 +225,12 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.bsdf().inputs[4].default_value = amount
         return self
     
+    def roughness(self, amount=0.5):
+        if not self.material == "auto" or not self.bsdf():
+            return
+        self.bsdf().inputs[7].default_value = amount
+        return self
+    
     def transmission(self, amount=1):
         if not self.material == "auto" or not self.bsdf():
             return
