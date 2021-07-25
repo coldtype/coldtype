@@ -1,7 +1,7 @@
 from coldtype import *
 
 curves = DefconFont(__sibling__("media/digestivecurves.ufo"))
-df = Font.Cacheable("~/Type/fonts/fonts/_wdths/DigestiveVariable.ttf")
+df = Font.Find("Digestive")
 
 r = Rect(1920, 500)
 track = DATPen()

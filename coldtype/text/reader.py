@@ -1,8 +1,8 @@
 from pathlib import Path
 from collections import OrderedDict
-from functools import partial
+from functools import partial, lru_cache
 
-import unicodedata, math
+import unicodedata, math, os, re
 
 from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
@@ -65,6 +65,13 @@ _prefixes = [
     ["", "/Library/Fonts"]
 ]
 
+# TODO windows & linux?
+ALL_FONT_DIRS = [
+    "/System/Library/Fonts",
+    "/Library/Fonts",
+    "~/Library/Fonts",
+]
+
 class FontNotFoundException(Exception):
     pass
 
@@ -110,6 +117,27 @@ class Font():
         if path not in FontCache:
             FontCache[path] = Font(path, cacheable=True).load()
         return FontCache[path]
+
+    @lru_cache()
+    def List(regex, regex_dir=None):
+        results = []
+        for dir in ALL_FONT_DIRS:
+            dir = normalize_font_prefix(dir)
+            if regex_dir:
+                if not re.search(regex_dir, str(dir)):
+                    continue
+            for root, _, files in os.walk(dir):
+                for file in files:
+                    if re.search(regex, file):
+                        results.append(Path(root + "/" + file))
+        return results
+
+    def Find(regex, regex_dir=None, index=0):
+        found = Font.List(regex, regex_dir)
+        try:
+            return Font.Cacheable(found[index])
+        except:
+            raise FontNotFoundException()
     
     @staticmethod
     def ColdtypeObviously():

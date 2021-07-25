@@ -23,7 +23,7 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 import coldtype
 from coldtype.helpers import *
 from coldtype.geometry import Rect, Point, Edge
-from coldtype.text.reader import Font
+from coldtype.text.reader import Font, ALL_FONT_DIRS
 
 from coldtype.renderer.reader import SourceReader
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
@@ -307,6 +307,9 @@ class Renderer():
                 except Exception as e:
                     print("Failed to load config", p)
                     print("Exception:", e)
+        
+        for f in self.py_config.get("FONT_DIRS", []):
+            ALL_FONT_DIRS.append(f)
 
     def __init__(self, parser, no_socket_ok=False):
         sys.path.insert(0, os.getcwd())
@@ -476,7 +479,7 @@ class Renderer():
     
     def print_error(self):
         stack = traceback.format_exc()
-        if self.args.disable_rich:
+        if self.args.disable_rich or True:
             print(stack)
         else:
             self.state.console.print_exception(extra_lines=2)

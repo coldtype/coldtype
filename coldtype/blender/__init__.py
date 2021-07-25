@@ -84,10 +84,11 @@ class b3d_renderable(renderable):
 
 
 class b3d_animation(animation):
-    def __init__(self, rect=(1080, 1080), **kwargs):
+    def __init__(self, rect=(1080, 1080), blender_file=None, **kwargs):
         self.func = None
         self.name = None
         self.current_frame = -1
+        self.blender_file = blender_file
         super().__init__(rect=rect, **kwargs)
 
         if bpy:
@@ -139,6 +140,28 @@ class b3d_animation(animation):
                 pass
         
         return blender_preview
+    
+    def build_release(self, b=None, r=None):
+        def _release(frames):
+            for fi in frames:
+                self.blender_render_frame(self.filepath, self.blender_file, fi, samples=32)
+            os.system("afplay /System/Library/Sounds/Pop.aiff")
+
+        def build(_):
+            frames = list(range(0, self.duration))
+            if b:
+                _release(frames[b])
+            else:
+                _release(frames[0:1])
+
+        def release(_):
+            frames = list(range(0, self.duration))
+            if r:
+                _release(frames[r])
+            else:
+                _release(frames)
+        
+        return build, release
 
 
 if __name__ == "<run_path>":
