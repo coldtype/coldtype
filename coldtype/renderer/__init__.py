@@ -282,43 +282,15 @@ class Renderer():
             disable_rich=parser.add_argument("-dr", "--disable-rich", action="store_true", default=False, help="Do not print exceptions with the rich library"),
         )
         return pargs, parser
-    
-    def read_configs(self):
-        proj = Path(".coldtype.py")
-        user = Path("~/.coldtype.py").expanduser()
-        self.midi_mapping = {}
-        self.hotkey_mapping = {}
-        self.py_config = {}
-        self.many_increment = 10
-
-        for p in [user, proj]:
-            if p.exists():
-                try:
-                    self.py_config = {
-                        **self.py_config,
-                        **run_path(str(p), init_globals={
-                            "__MIDI__": self.midi_mapping,
-                            "__HOTKEYS__": self.hotkey_mapping,
-                        })
-                    }
-                    self.midi_mapping = self.py_config.get("MIDI", self.midi_mapping)
-                    self.hotkey_mapping = self.py_config.get("HOTKEYS", self.hotkey_mapping)
-                    self.many_increment = self.py_config.get("MANY_INCREMENT", self.many_increment)
-                except Exception as e:
-                    print("Failed to load config", p)
-                    print("Exception:", e)
-        
-        for f in self.py_config.get("FONT_DIRS", []):
-            ALL_FONT_DIRS.insert(0, f)
 
     def __init__(self, parser, no_socket_ok=False):
         sys.path.insert(0, os.getcwd())
 
-        self.read_configs()
-
         self.subprocesses = {}
         self.parser = parser
         self.args = parser.parse_args()
+
+        self.source_reader = SourceReader(disable_syntax_mods=self.args.disable_syntax_mods, renderer=self, cli_args=self.args)
 
         if self.args.is_subprocess or self.args.all or self.args.release or self.args.build:
             self.args.no_watch = True
@@ -329,7 +301,6 @@ class Renderer():
             #self.args.no_watch = True
             #self.args.all = True
         
-        self.source_reader = SourceReader(disable_syntax_mods=self.args.disable_syntax_mods, renderer=self)
         self.state = RendererState(self)
         self.state.capturing_previews = self.args.capture_previews
 
@@ -384,7 +355,6 @@ class Renderer():
         self.hotkey_waiting = None
         self.context = None
         self.surface = None
-        self.transparent = False
         self.copy_previews_to_clipboard = False
 
         if self.args.filter_functions:
@@ -445,7 +415,7 @@ class Renderer():
                 if create.lower() == "y":
                     filepath.parent.mkdir(exist_ok=True, parents=True)
                     filepath.write_text((root / "demo/boiler.py").read_text())
-                    editor_cmd = self.py_config.get("EDITOR_COMMAND")
+                    editor_cmd = self.source_reader.config.editor_command
                     if editor_cmd:
                         os.system(editor_cmd + " " + str(filepath.relative_to(Path.cwd())))
             else:
@@ -930,20 +900,17 @@ class Renderer():
             glfw.set_window_title(self.window, text)
     
     def get_content_scale(self):
-        u_scale = self.py_config.get("WINDOW_SCALE")
+        u_scale = self.source_reader.config.window_content_scale
         
-        if self.args.window_content_scale == None:
-            if u_scale:
-                return u_scale
-            elif glfw and not self.args.no_viewer:
-                if self.primary_monitor:
-                    return glfw.get_monitor_content_scale(self.primary_monitor)[0]
-                else:
-                    return glfw.get_window_content_scale(self.window)[0]
+        if u_scale:
+            return u_scale
+        elif glfw and not self.args.no_viewer:
+            if self.primary_monitor:
+                return glfw.get_monitor_content_scale(self.primary_monitor)[0]
             else:
-                return 1
+                return glfw.get_window_content_scale(self.window)[0]
         else:
-            return self.args.window_content_scale
+            return 1
     
     def initialize_gui_and_server(self):
         if self.args.websocket_external:
@@ -985,25 +952,23 @@ class Renderer():
                 raise RuntimeError('glfw.init() failed')
             glfw.window_hint(glfw.STENCIL_BITS, 8)
             
-            self.transparent = self.py_config.get("WINDOW_TRANSPARENT", self.args.window_transparent)
-            if self.transparent:
+            if self.source_reader.config.window_transparent:
                 glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.TRUE)
                 glfw.window_hint(glfw.DECORATED, glfw.FALSE)
             else:
                 glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.FALSE)
             
-            self.passthrough = self.py_config.get("WINDOW_PASSTHROUGH", self.args.window_passthrough)
-            if self.passthrough:
+            if self.source_reader.config.window_passthrough:
                 try:
                     glfw.window_hint(0x0002000D, glfw.TRUE)
                     #glfw.window_hint(glfw.MOUSE_PASSTHROUGH, glfw.TRUE)
                 except glfw.GLFWError:
                     print("failed to hint window for mouse-passthrough")
 
-            if self.py_config.get("WINDOW_BACKGROUND", self.args.window_background):
+            if self.source_reader.config.window_background:
                 glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
             
-            if self.py_config.get("WINDOW_FLOAT", self.args.window_float):
+            if self.source_reader.config.window_float:
                 glfw.window_hint(glfw.FLOATING, glfw.TRUE)
 
             self.window = glfw.create_window(int(50), int(50), '', None, None)
@@ -1012,10 +977,9 @@ class Renderer():
             recp = sibling(__file__, "../demo/RecMono-CasualItalic.ttf")
             self.typeface = skia.Typeface.MakeFromFile(str(recp))
             
-            o = self.py_config.get("WINDOW_OPACITY", 1)
-            if self.args.window_opacity is not None:
-                o = self.args.window_opacity
-            glfw.set_window_opacity(self.window, max(0.1, min(1, o)))
+            window_opacity = self.source_reader.config.window_opacity
+            glfw.set_window_opacity(self.window,
+                max(0.1, min(1, window_opacity)))
 
             self._prev_scale = self.get_content_scale()
             
@@ -1036,7 +1000,7 @@ class Renderer():
             for p in range(midiin.getPortCount()):
                 lookup[midiin.getPortName(p)] = p
 
-            for device, mapping in self.midi_mapping.items():
+            for device, mapping in self.source_reader.midi_mapping.items():
                 if device in lookup:
                     mapping["port"] = lookup[device]
                     mi = rtmidi.RtMidiIn()
@@ -1062,10 +1026,10 @@ class Renderer():
 
         self.hotkeys = None
         try:
-            if self.hotkey_mapping:
+            if self.source_reader.hotkey_mapping:
                 from pynput import keyboard
                 mapping = {}
-                for k, v in self.hotkey_mapping.items():
+                for k, v in self.source_reader.hotkey_mapping.items():
                     mapping[k] = partial(self.on_hotkey, k, v)
                 #self.hotkeys = keyboard.GlobalHotKeys({
                 #    "<cmd>+<f8>": self.on_hotkey
@@ -1480,12 +1444,12 @@ class Renderer():
             for li, line in enumerate(original_code):
                 if line.strip().startswith(fn_prefix):
                     found_line = li
-            editor_cmd = self.py_config.get("EDITOR_COMMAND")
+            editor_cmd = self.source_reader.config.editor_command
             if editor_cmd:
                 os.system(editor_cmd + " -g " + str(self.source_reader.filepath.relative_to(Path.cwd())) + ":" + str(found_line))
         
         elif shortcut == KeyboardShortcut.OpenInEditor:
-            editor_cmd = self.py_config.get("EDITOR_COMMAND")
+            editor_cmd = self.source_reader.config.editor_command
             if editor_cmd:
                 os.system(editor_cmd + " -g " + str(self.source_reader.filepath.relative_to(Path.cwd())))
         
@@ -1684,11 +1648,11 @@ class Renderer():
                 else:
                     self.playing = 0
             if action == Action.PreviewStoryboardPrevMany:
-                self.state.adjust_all_frame_offsets(-self.many_increment)
+                self.state.adjust_all_frame_offsets(-self.source_reader.many_increment)
             elif action == Action.PreviewStoryboardPrev:
                 self.state.adjust_all_frame_offsets(-1)
             elif action == Action.PreviewStoryboardNextMany:
-                self.state.adjust_all_frame_offsets(+self.many_increment)
+                self.state.adjust_all_frame_offsets(+self.source_reader.many_increment)
             elif action == Action.PreviewStoryboardNext:
                 self.state.adjust_all_frame_offsets(+1)
             self.render(Action.PreviewStoryboard)
@@ -1990,14 +1954,7 @@ class Renderer():
             wh = int(h/scale_y)
             glfw.set_window_size(self.window, ww, wh)
 
-            pin = self.py_config.get("WINDOW_PIN", None)
-            if self.args.window_pin:
-                pin = self.args.window_pin
-            
-            if not isinstance(pin, str):
-                #print("--window-pin must be compass direction")
-                pin = "NE"
-
+            pin = self.source_reader.config.window_pin
             if pin:
                 if primary_monitor:
                     monitor = primary_monitor
@@ -2013,9 +1970,8 @@ class Renderer():
                     pinned = pinned.offset(0, -30)
                 pinned = pinned.flip(wrz.h)
                 pinned = pinned.offset(*work_rect.origin())
-                if self.args.window_pin_inset:
-                    x, y = [int(n) for n in self.args.window_pin_inset.split(",")]
-                    pinned = pinned.offset(-x, y)
+                wpi = self.source_reader.config.window_pin_inset
+                pinned = pinned.inset(-wpi[0], wpi[1])
                 glfw.set_window_pos(self.window, pinned.x, pinned.y)
             else:
                 glfw.set_window_pos(self.window, 0, 0)
@@ -2028,7 +1984,7 @@ class Renderer():
 
         with self.surface as canvas:
             canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 1))
-            if self.transparent:
+            if self.source_reader.config.window_transparent:
                 canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 0))
             
             for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
@@ -2174,7 +2130,7 @@ class Renderer():
         canvas.translate(0, self.window_scrolly)
         canvas.translate(rect.x, rect.y)
         
-        if not self.transparent:
+        if not self.source_reader.config.window_transparent:
             canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
         
         if not hasattr(render, "show_error"):
@@ -2330,12 +2286,12 @@ class Renderer():
                     print(device, msg)
                 if msg.isNoteOn(): # Maybe not forever?
                     nn = msg.getNoteNumber()
-                    shortcut = self.midi_mapping[device]["note_on"].get(nn)
+                    shortcut = self.source_reader.midi_mapping[device]["note_on"].get(nn)
                     self.execute_string_as_shortcut_or_action(shortcut, nn)
                 if msg.isController():
                     cn = msg.getControllerNumber()
                     cv = msg.getControllerValue()
-                    shortcut = self.midi_mapping[device].get("controller", {}).get(cn)
+                    shortcut = self.source_reader.midi_mapping[device].get("controller", {}).get(cn)
                     if shortcut:
                         if cv in shortcut:
                             print("shortcut!", shortcut, cv)

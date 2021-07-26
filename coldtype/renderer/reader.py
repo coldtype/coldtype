@@ -1,4 +1,5 @@
 import re, os, contextlib
+from enum import Enum
 from pathlib import Path
 from runpy import run_path
 from functools import partial
@@ -9,6 +10,7 @@ from coldtype.renderable.animation import animation
 
 from coldtype.renderer.utils import Watchable
 from coldtype.helpers import sibling
+from coldtype.text.reader import ALL_FONT_DIRS
 
 try:
     from docutils.core import publish_doctree
@@ -238,6 +240,41 @@ def find_renderables(
     return filtered_rs
 
 
+class ConfigOption(Enum):
+    WindowPassthrough = ("window_passthrough", False)
+    WindowTransparent = ("window_transparent", False)
+    WindowBackground = ("window_background", False)
+    WindowFloat = ("window_float", False)
+    WindowOpacity = ("window_opacity", 1)
+    WindowPin = ("window_pin", "NE")
+    WindowPinInset = ("window_pin_inset", (0, 0),
+        lambda x: [int(n) for n in x.split(",")])
+    WindowContentScale = ("window_content_scale", None)
+    EditorCommand = ("editor_command", None)
+    ManyIncrement = ("many_increment", None)
+    FontDirs = ("font_dirs", [])
+
+
+class ColdtypeConfig():
+    def __init__(self,
+        config,
+        prev_config:"ColdtypeConfig"=None,
+        args=None
+        ):
+        for co in ConfigOption:
+            if len(co.value) > 2:
+                prop, default_value, cli_mod = co.value
+            else:
+                prop, default_value = co.value
+                cli_mod = lambda x: x
+            #print(co.name, prop, default_value)
+            setattr(self, prop, config.get(prop.upper(), getattr(prev_config, prop) if prev_config else default_value))
+            if args and hasattr(args, prop) and getattr(args, prop):
+                setattr(self, prop, cli_mod(getattr(args, prop)))
+        
+        self.midi = config.get("MIDI")
+        self.hotkeys = config.get("HOTKEYS")
+
 class SourceReader():
     def __init__(self,
         filepath:Path=None,
@@ -245,6 +282,7 @@ class SourceReader():
         renderer=None,
         disable_syntax_mods:bool=False,
         runner:str="default",
+        cli_args=None,
         ):
         self.filepath = None
         self.codepath = None
@@ -256,8 +294,38 @@ class SourceReader():
         self.renderer = renderer
         self.runner = runner
 
+        self.config = None
+        self.midi_mapping = {}
+        self.hotkey_mapping = {}
+        self.read_configs(cli_args)
+
         if filepath or code:
             self.reset_filepath(filepath, code)
+    
+    def read_configs(self, args):
+        proj = Path(".coldtype.py")
+        user = Path("~/.coldtype.py").expanduser()
+
+        py_config = {}
+        for p in [user, proj]:
+            if p.exists():
+                try:
+                    py_config = {
+                        **py_config,
+                        **run_path(str(p), init_globals={
+                            "__MIDI__": self.midi_mapping,
+                            "__HOTKEYS__": self.hotkey_mapping,
+                        })
+                    }
+                    self.midi_mapping = py_config.get("MIDI", self.midi_mapping)
+                    self.hotkey_mapping = py_config.get("HOTKEYS", self.hotkey_mapping)
+                    self.config = ColdtypeConfig(py_config, self.config if self.config else None, args)
+                except Exception as e:
+                    print("Failed to load config", p)
+                    print("Exception:", e)
+        
+        for f in self.config.font_dirs:
+            ALL_FONT_DIRS.insert(0, f)
     
     def find_sources(self, dirpath):
         sources = list(dirpath.glob("*.py"))
