@@ -20,6 +20,7 @@ renders
 media
 scratch
 scratch.py
+scratch*
 .coldtype.py
 recordings
 preserved
@@ -29,3 +30,4 @@ test_cairo.pdf
 test/ignorables/
 examples/*.pdf
 *.blend1
+*.blend
