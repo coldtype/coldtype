@@ -1376,8 +1376,9 @@ class Renderer():
             self.on_action(Action.RenderAll)
             return -1
         elif shortcut == KeyboardShortcut.RenderOne:
-            # current frame, not zero
-            self.on_action(Action.RenderIndices, [0])
+            fo = self.state.get_frame_offsets(self.last_animation.name)
+            # TODO should iterate over all animations, not just "last" (but infra isn't there for this yet)
+            self.on_action(Action.RenderIndices, fo)
             return -1
         elif shortcut == KeyboardShortcut.RenderWorkarea:
             self.on_action(Action.RenderWorkarea)
@@ -1648,11 +1649,11 @@ class Renderer():
                 else:
                     self.playing = 0
             if action == Action.PreviewStoryboardPrevMany:
-                self.state.adjust_all_frame_offsets(-self.source_reader.many_increment)
+                self.state.adjust_all_frame_offsets(-self.source_reader.config.many_increment)
             elif action == Action.PreviewStoryboardPrev:
                 self.state.adjust_all_frame_offsets(-1)
             elif action == Action.PreviewStoryboardNextMany:
-                self.state.adjust_all_frame_offsets(+self.source_reader.many_increment)
+                self.state.adjust_all_frame_offsets(+self.source_reader.config.many_increment)
             elif action == Action.PreviewStoryboardNext:
                 self.state.adjust_all_frame_offsets(+1)
             self.render(Action.PreviewStoryboard)
