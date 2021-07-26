@@ -127,12 +127,15 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.tag = tag if tag and tag != "Unknown" else f"Curve_{random.randint(0, 1000000)}"
     
     def record(self, dat):
+        self.set_origin(0, 0, 0)
         self._spline = None
         self.splines = []
         self._value = []
         dat.replay(self)
         if self._spline and len(self._spline) > 0 and self._spline not in self.splines:
             self.splines.append(self._spline)
+        x, y = self.dat.ambit().pc
+        #self.set_origin(x/100, y/100, 0)
 
     def _moveTo(self, p):
         if self._spline and len(self._spline) > 0 and self._spline not in self.splines:
@@ -299,6 +302,21 @@ class BlenderPen(DrawablePenMixin, BasePen):
             self.bez.rotation_euler[1] = math.radians(y)
         if z is not None:
             self.bez.rotation_euler[2] = math.radians(z)
+        return self
+    
+    def set_origin(self, x, y, z):
+        #saved_location = bpy.context.scene.cursor.location
+        bpy.context.scene.cursor.location = Vector((x, y, z))
+        self.bez.select_set(True)
+        bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+        self.bez.select_set(False)
+        bpy.context.scene.cursor.location = Vector((0, 0, 0))
+        return self
+    
+    def with_origin(self, xyz, fn):
+        self.set_origin(*xyz)
+        fn(self)
+        self.set_origin(0, 0, 0)
         return self
     
     def locate(self, x=None, y=None, z=None):

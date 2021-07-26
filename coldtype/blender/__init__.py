@@ -89,6 +89,9 @@ class b3d_animation(animation):
         self.name = None
         self.current_frame = -1
         self.blender_file = blender_file
+        if "timeline" not in kwargs:
+            kwargs["timeline"] = Timeline(30)
+        
         super().__init__(rect=rect, **kwargs)
 
         if bpy:
