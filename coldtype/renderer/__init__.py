@@ -309,7 +309,7 @@ class Renderer():
                     print("Exception:", e)
         
         for f in self.py_config.get("FONT_DIRS", []):
-            ALL_FONT_DIRS.append(f)
+            ALL_FONT_DIRS.insert(0, f)
 
     def __init__(self, parser, no_socket_ok=False):
         sys.path.insert(0, os.getcwd())
@@ -1412,6 +1412,7 @@ class Renderer():
             self.on_action(Action.RenderAll)
             return -1
         elif shortcut == KeyboardShortcut.RenderOne:
+            # current frame, not zero
             self.on_action(Action.RenderIndices, [0])
             return -1
         elif shortcut == KeyboardShortcut.RenderWorkarea:
@@ -1643,7 +1644,12 @@ class Renderer():
     def on_stdin(self, stdin):
         #if self.jump_to_fn(stdin):
         #    return
+        self.hotkey_waiting = (stdin, None)
+        return
+
+
         action, data = self.stdin_to_action(stdin)
+        print(">", action, data)
         if action:
             if action == Action.PreviewIndices:
                 self.render(action, indices=data)
@@ -1651,6 +1657,8 @@ class Renderer():
                 self.on_exit(restart=True)
             else:
                 self.on_action(action)
+        else:
+            self.execute_string_as_shortcut_or_action(stdin, None)
 
     def on_action(self, action, message=None) -> bool:
         #if action != Action.PreviewStoryboardNext:

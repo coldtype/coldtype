@@ -742,6 +742,15 @@ class DraftingPen(RecordingPen, SHContext):
                 dps.append(self.copy())
         return dps
     
+    def layerfn(self, times, fn=None):
+        dps = self.multi_pen_class()
+        for x in range(0, times):
+            if fn:
+                dps.append(fn(x, self.copy()))
+            else:
+                dps.append(self.copy())
+        return dps
+    
     # Iteration-manipulation
     
     def take(self, slice):

@@ -60,7 +60,7 @@ def spacecenter(r):
 #spacecenter = gufo.spacecenter("ABC CBA")
 
 # to run this code, go to the viewer
-# app while it’s running, then hit cmd+l
+# app while it’s running, then hit R
 # N.B. you'll need to have `fontmake`
 # available in your virtualenv, which
 # should be as easy as `pip install fontmake`
