@@ -1,7 +1,7 @@
 from coldtype import *
 from coldtype.text.composer import Glyphwise
 
-cheee = Font.Cacheable("~/Type/fonts/fonts/CheeeVariable.ttf")
+cheee = Font.Find("CheeeVar")
 
 @animation((1080, 290), timeline=Timeline(90))
 def welcome(f):

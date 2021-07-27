@@ -447,8 +447,6 @@ class Renderer():
         print(message)
 
     def reload(self, trigger):
-        print("TRIGGER", trigger)
-
         if skia and SkiaPen:
             skfx.SKIA_CONTEXT = self.context
 
