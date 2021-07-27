@@ -3,7 +3,7 @@ from coldtype.blender import *
 from coldtype.text.composer import Glyphwise
 
 @b3d_animation(timeline=90, blender_file="examples/blender/coldtype.blend")
-def coldtype3(f):
+def coldtype5(f):
     return (StSt("COLD\nTYPE",
         Font.ColdtypeObviously(),
         font_size=550,
@@ -21,14 +21,14 @@ def coldtype3(f):
             .f(hsl(0.65, 1))
             .tag(f"letter{i}")
             .ch(b3d("Text", lambda bp: bp
-                .extrude(f.e("eeio", 1, rng=(3.5, 0.5)))
+                .extrude(f.e("seio", 1, rng=(2.5, 0.25)))
                 .locate(0, f.e("ceo", 0, rng=(30, 0)), 0)
                 .rotate(90, 0, 0)
                 #.rotate(90, 0, 0)
                 .with_origin((bp.dat.ambit().pc.x/100, 0, bp.dat.ambit().pc.y/100), lambda bp2: bp2
-                    .rotate(90, 0, f.adj(-i).e("eeio", 0, rng=(0, 360), to1=False)))
+                    .rotate(90, f.adj(-i).e("eeio", 0, rng=(0, 360), to1=False), f.adj(-i).e("ceio", 0, rng=(0, 360), to1=False)))
                 #.rotate(i*10)
                 #.rotate(0)
                 , material="letter"))))
 
-build, release = coldtype3.build_release()
+build, release = coldtype5.build_release()

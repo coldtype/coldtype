@@ -129,7 +129,9 @@ class Font():
             for root, _, files in os.walk(dir):
                 for file in files:
                     if re.search(regex, file):
-                        results.append(Path(root + "/" + file))
+                        path = Path(root + "/" + file)
+                        if path.suffix in [".ttf", ".otf", ".ttc", ".ufo"]:
+                            results.append(path)
         return results
 
     def Find(regex, regex_dir=None, index=0):
