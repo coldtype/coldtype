@@ -189,7 +189,7 @@ class Renderer():
 
             webviewer_port=parser.add_argument("-wvp", "--webviewer-port", type=int, default=8008, help="What port should the webviewer run on? (provided -wv is passed)"),
 
-            port=parser.add_argument("-p", "--port", type=int, default=8007, help="What port should the websocket run on (provided -ws is passed)"),
+            port=parser.add_argument("-wsp", "--port", type=int, default=8007, help="What port should the websocket run on (provided -ws is passed)"),
         
             websocket_external=parser.add_argument("-wse", "--websocket-external", type=str, default=None, help="What address should a websocket connection be made to, for control of external coldtype program?"),
 
@@ -207,7 +207,7 @@ class Renderer():
             
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
 
-            preview_scale=parser.add_argument("-ps", "--preview-scale", type=float, default=1.0, help="What size should previews be shown at?"),
+            preview_scale=parser.add_argument("-ps", "--preview-scale", type=float, default=None, help="What size should previews be shown at?"),
 
             #preview_audio=parser.add_argument("-pa", "--preview-audio", action="store_true", default=False, help="Should the renderer attempt to playback audio?"),
             
@@ -248,6 +248,10 @@ class Renderer():
             window_background=parser.add_argument("-wb", "--window-background", action="store_true", default=False, help="should the window not take focus when its first opened?"),
 
             window_passthrough=parser.add_argument("-wpass", "--window-passthrough", action="store_true", default=False, help="should the window ignore all mouse interaction?"),
+
+            config=parser.add_argument("-c", "--config", type=str, default=None, help="By default, Coldtype looks for a .coldtype.py file in ~ and the cwd; use this to override that and look at a specific file instead"),
+
+            profile=parser.add_argument("-p", "--profile", type=str, default=None, help="What config profile do you want to use? Default is no profile"),
             
             format=parser.add_argument("-fmt", "--format", type=str, default=None, help="What image format should be saved to disk?"),
 
@@ -319,7 +323,8 @@ class Renderer():
         else:
             self.dead = False
         
-        self.state.preview_scale = self.args.preview_scale
+        self.state.preview_scale = self.source_reader.config.preview_scale
+        #self.state.preview_scale = self.args.preview_scale
         
         monitor_stdin()
         

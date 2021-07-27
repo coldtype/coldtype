@@ -252,6 +252,7 @@ class ConfigOption(Enum):
     WindowContentScale = ("window_content_scale", None)
     EditorCommand = ("editor_command", None)
     ManyIncrement = ("many_increment", None)
+    PreviewScale = ("preview_scale", 1)
     FontDirs = ("font_dirs", [])
 
 
@@ -261,6 +262,10 @@ class ColdtypeConfig():
         prev_config:"ColdtypeConfig"=None,
         args=None
         ):
+        self.profile = None
+        if args and hasattr(args, "profile") and args.profile:
+            self.profile = args.profile
+        
         for co in ConfigOption:
             if len(co.value) > 2:
                 prop, default_value, cli_mod = co.value
@@ -268,12 +273,30 @@ class ColdtypeConfig():
                 prop, default_value = co.value
                 cli_mod = lambda x: x
             #print(co.name, prop, default_value)
-            setattr(self, prop, config.get(prop.upper(), getattr(prev_config, prop) if prev_config else default_value))
+            setattr(self,
+                prop,
+                config.get(prop.upper(),
+                    getattr(prev_config, prop) if prev_config else default_value))
+            
+            if self.profile and "PROFILES" in config and self.profile in config["PROFILES"]:
+                v = config["PROFILES"][self.profile].get(prop.upper())
+                if v:
+                    setattr(self, prop, v)
+            
             if args and hasattr(args, prop) and getattr(args, prop):
                 setattr(self, prop, cli_mod(getattr(args, prop)))
         
         self.midi = config.get("MIDI")
         self.hotkeys = config.get("HOTKEYS")
+    
+    def values(self):
+        out = "<ColdtypeConfig:"
+        if self.profile:
+            out += f"({self.profile})"
+        for co in ConfigOption:
+            out += f"\n   {co.name}:{getattr(self, co.value[0])}"
+        out += "/>"
+        return out
 
 class SourceReader():
     def __init__(self,
@@ -305,9 +328,12 @@ class SourceReader():
     def read_configs(self, args):
         proj = Path(".coldtype.py")
         user = Path("~/.coldtype.py").expanduser()
+        files = [user, proj]
+        if args and hasattr(args, "config") and args.config:
+            files = [Path(args.config).expanduser()]
 
         py_config = {}
-        for p in [user, proj]:
+        for p in files:
             if p.exists():
                 try:
                     py_config = {
