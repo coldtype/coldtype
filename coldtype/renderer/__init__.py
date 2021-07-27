@@ -25,6 +25,7 @@ from coldtype.helpers import *
 from coldtype.geometry import Rect, Point, Edge
 from coldtype.text.reader import Font, ALL_FONT_DIRS
 
+from coldtype.renderer.config import ConfigOption
 from coldtype.renderer.reader import SourceReader
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
@@ -207,8 +208,6 @@ class Renderer():
             
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
 
-            preview_scale=parser.add_argument("-ps", "--preview-scale", type=float, default=None, help="What size should previews be shown at?"),
-
             #preview_audio=parser.add_argument("-pa", "--preview-audio", action="store_true", default=False, help="Should the renderer attempt to playback audio?"),
             
             all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
@@ -231,23 +230,7 @@ class Renderer():
 
             no_sound=parser.add_argument("-ns", "--no-sound", action="store_true", default=False, help="Don’t make sound"),
 
-            window_opacity=parser.add_argument("-wo", "--window-opacity", type=float, help="opacity of the window, from >0 to 1 (defaults to 1 unless overridden in .coldtype.py file)"),
-
             monitor_name=parser.add_argument("-mn", "--monitor-name", type=str, help="the name of the monitor to open the window in; pass 'list' to list all monitor names"),
-
-            window_pin=parser.add_argument("-wp", "--window-pin", type=str, help="where to pin the window, if you want to pin the window"),
-
-            window_pin_inset=parser.add_argument("-wpi", "--window-pin-inset", type=str, help="how much to 'inset' the pin of the window"),
-
-            window_content_scale=parser.add_argument("-wcs", "--window-content-scale", type=float, default=None, help="do you want to override the reported content-scale?"),
-
-            window_float=parser.add_argument("-wf", "--window-float", action="store_true", default=False, help="should the window float on top of everything?"),
-
-            window_transparent=parser.add_argument("-wt", "--window-transparent", action="store_true", default=False, help="should the window background be transparent?"),
-
-            window_background=parser.add_argument("-wb", "--window-background", action="store_true", default=False, help="should the window not take focus when its first opened?"),
-
-            window_passthrough=parser.add_argument("-wpass", "--window-passthrough", action="store_true", default=False, help="should the window ignore all mouse interaction?"),
 
             config=parser.add_argument("-c", "--config", type=str, default=None, help="By default, Coldtype looks for a .coldtype.py file in ~ and the cwd; use this to override that and look at a specific file instead"),
 
@@ -258,8 +241,6 @@ class Renderer():
             indices=parser.add_argument("-i", "--indices", type=str, default=None),
 
             output_folder=parser.add_argument("-of", "--output-folder", type=str, default=None, help="If you don’t want to render to the default output location, specify that here."),
-
-            monitor_lines=parser.add_argument("-ml", "--monitor-lines", action="store_true", default=False, help=argparse.SUPPRESS),
 
             filter_functions=parser.add_argument("-ff", "--filter-functions", type=str, default=None, help="Names of functions to render"),
 
@@ -285,6 +266,8 @@ class Renderer():
 
             disable_rich=parser.add_argument("-dr", "--disable-rich", action="store_true", default=False, help="Do not print exceptions with the rich library"),
         )
+
+        ConfigOption.AddCommandLineArgs(pargs, parser)
         return pargs, parser
 
     def __init__(self, parser, no_socket_ok=False):
@@ -1005,7 +988,7 @@ class Renderer():
             for p in range(midiin.getPortCount()):
                 lookup[midiin.getPortName(p)] = p
 
-            for device, mapping in self.source_reader.midi_mapping.items():
+            for device, mapping in self.source_reader.config.midi.items():
                 if device in lookup:
                     mapping["port"] = lookup[device]
                     mi = rtmidi.RtMidiIn()
@@ -1014,7 +997,8 @@ class Renderer():
                 else:
                     if self.args.midi_info:
                         print(f">>> no midi port found with that name ({device}) <<<")
-        except:
+        except Exception as e:
+            print(">", e)
             self.midis = []
         
         if skia and glfw and not self.args.no_viewer:
@@ -1031,10 +1015,10 @@ class Renderer():
 
         self.hotkeys = None
         try:
-            if self.source_reader.hotkey_mapping:
+            if self.source_reader.config.hotkeys:
                 from pynput import keyboard
                 mapping = {}
-                for k, v in self.source_reader.hotkey_mapping.items():
+                for k, v in self.source_reader.config.hotkeys.items():
                     mapping[k] = partial(self.on_hotkey, k, v)
                 #self.hotkeys = keyboard.GlobalHotKeys({
                 #    "<cmd>+<f8>": self.on_hotkey
@@ -2292,12 +2276,12 @@ class Renderer():
                     print(device, msg)
                 if msg.isNoteOn(): # Maybe not forever?
                     nn = msg.getNoteNumber()
-                    shortcut = self.source_reader.midi_mapping[device]["note_on"].get(nn)
+                    shortcut = self.source_reader.config.midi[device]["note_on"].get(nn)
                     self.execute_string_as_shortcut_or_action(shortcut, nn)
                 if msg.isController():
                     cn = msg.getControllerNumber()
                     cv = msg.getControllerValue()
-                    shortcut = self.source_reader.midi_mapping[device].get("controller", {}).get(cn)
+                    shortcut = self.source_reader.config.midi[device].get("controller", {}).get(cn)
                     if shortcut:
                         if cv in shortcut:
                             print("shortcut!", shortcut, cv)
