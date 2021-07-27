@@ -191,9 +191,6 @@ class RendererState():
         self.watch_mods = {}
         self.external_url = None
         self.cv2caps = {}
-        self.capturing_previews = False
-        self.capturing_previews_once = False
-        self.captured_previews = []
         self.console = Console()
         self.reset()
     

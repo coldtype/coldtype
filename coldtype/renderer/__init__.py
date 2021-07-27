@@ -197,10 +197,6 @@ class Renderer():
             no_midi=parser.add_argument("-nm", "--no-midi", action="store_true", default=False, help="Midi is on by default, do you want to turn it off?"),
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
-
-            capture_previews=parser.add_argument("-cp", "--capture-previews", action="store_true", default=False, help="Should the viewer self-capture via connected cv2 camera?"),
-
-            capture_previews_delay=parser.add_argument("-cpd", "--capture-previews-delay", type=float, default=0.35, help="How long should the rendering loop hang between displaying and capturing?"),
             
             rasterizer=parser.add_argument("-r", "--rasterizer", type=str, default=None, choices=["drawbot", "cairo", "svg", "skia", "pickle"], help="Which rasterization engine should coldtype use to create artifacts?"),
 
@@ -289,7 +285,6 @@ class Renderer():
             #self.args.all = True
         
         self.state = RendererState(self)
-        self.state.capturing_previews = self.args.capture_previews
 
         self.observers = []
         self.watchees = []
@@ -1468,13 +1463,6 @@ class Renderer():
             KeyboardShortcut.ViewerSolo9
             ]:
             self.viewer_solos = [int(str(shortcut)[-1])-1]
-        elif shortcut == KeyboardShortcut.ToggleCapturing:
-            self.state.capturing_previews = not self.state.capturing_previews
-        elif shortcut == KeyboardShortcut.CaptureOnce:
-            self.state.adjust_all_frame_offsets(0, absolute=True)
-            self.state.capturing_previews = True
-            self.state.capturing_previews_once = True
-            self.playing = 1
         elif shortcut == KeyboardShortcut.CopySVGToClipboard:
             self.copy_previews_to_clipboard = True
             return Action.PreviewStoryboard
@@ -1810,33 +1798,6 @@ class Renderer():
             
             self.state.reset_keystate()
             glfw.poll_events()
-
-            if self.state.capturing_previews and len(self.last_previews) > 0:
-                if not skia or len(self.state.cv2caps) == 0:
-                    print("> capturing enabled but no skia or cameras found")
-                else:
-                    from coldtype.capture import read_frame
-                    #print(self.last_animation)
-                    fo = self.state.get_frame_offsets(self.last_animation.name)
-
-                    if self.state.capturing_previews_once:
-                        fo = self.state.get_frame_offsets(self.last_animation.name)
-                        #print(fo)
-                        if fo[0]%self.last_animation.duration == 0:
-                            self.playing = 0
-                            self.state.capturing_previews = False
-                            self.state.capturing_previews_once = False
-                            self.state.adjust_all_frame_offsets(0, absolute=True)
-                            print("/captured-once")
-
-                    sleep(self.args.capture_previews_delay)
-                    for rp in self.last_previews:
-                        rf = read_frame(self.state.cv2caps[0]).align(rp.render.rect)
-                        rp.output_path.parent.mkdir(exist_ok=1, parents=1)
-                        if True:
-                            # TODO could defer this until after a capture-all action?
-                            SkiaPen.Composite(DATPens([rf]), rp.render.rect, str(rp.output_path), 1, self.context)
-                            print("CAPTURE:", rp.output_path)
 
             should_close = glfw.window_should_close(self.window)
         self.on_exit(restart=False)
