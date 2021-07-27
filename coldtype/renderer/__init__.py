@@ -335,14 +335,6 @@ class Renderer():
 
         self.recurring_actions = {}
         self.viewer_solos = []
-
-        if self.args.blender_watch:
-            self.launch_blender_watch()
-    
-    def launch_blender_watch(self):
-        from coldtype.blender.render import blender_launch_livecode
-        blend_file = self.args.blender_watch
-        self.subprocesses["blender_watch"] = blender_launch_livecode(blend_file)
     
     def reset_filepath(self, filepath, reload=False):
         dirdirection = 0
@@ -412,6 +404,17 @@ class Renderer():
             self.set_title(filepath.name)
 
         return True
+    
+    def launch_blender_watch(self, blend_files):
+        if "blender_watch" in self.subprocesses:
+            self.subprocesses["blender_watch"].kill()
+            del self.subprocesses["blender_watch"]
+
+        from coldtype.blender.render import blender_launch_livecode
+        blend_file = self.args.blender_watch
+        if blend_file == ".":
+            blend_file = blend_files[0]
+        self.subprocesses["blender_watch"] = blender_launch_livecode(blend_file)
 
     def watchee_paths(self):
         return [w[1] for w in self.watchees]
@@ -444,6 +447,8 @@ class Renderer():
         print(message)
 
     def reload(self, trigger):
+        print("TRIGGER", trigger)
+
         if skia and SkiaPen:
             skfx.SKIA_CONTEXT = self.context
 
@@ -459,8 +464,12 @@ class Renderer():
             
             try:
                 full_restart = False
+                blend_files = []
 
                 for r in self.renderables(Action.PreviewStoryboardReload):
+                    if hasattr(r, "blender_file"):
+                        blend_files.append(r.blender_file)
+
                     if isinstance(r, animation):
                         if r.name not in self.state._frame_offsets:
                             full_restart = True
@@ -492,6 +501,10 @@ class Renderer():
                     
                 if self.source_reader.program.get("COLDTYPE_NO_WATCH"):
                     return True
+                                
+                if self.args.blender_watch and trigger == Action.Initial:
+                    self.launch_blender_watch(blend_files)
+                
             except SystemExit:
                 self.on_exit(restart=False)
                 return True
