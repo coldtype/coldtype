@@ -212,8 +212,6 @@ class Renderer():
 
             release=parser.add_argument("-rls", "--release", action="store_true", default=False, help="Should the release function be run and the renderer quit immediately?"),
 
-            multiplex=parser.add_argument("-mp", "--multiplex", action="store_true", default=False, help="Render in multiple processes"),
-
             memory=parser.add_argument("-mm", "--memory", action="store_true", default=False, help="Show statistics about memory usage?"),
 
             midi_info=parser.add_argument("-mi", "--midi-info", action="store_true", default=False, help="Show available MIDI devices"),
@@ -222,11 +220,7 @@ class Renderer():
 
             is_subprocess=parser.add_argument("-isp", "--is-subprocess", action="store_true", default=False, help=argparse.SUPPRESS),
 
-            thread_count=parser.add_argument("-tc", "--thread-count", type=int, default=defaults.get("thread_count", 8), help="How many threads when multiplexing?"),
-
             no_sound=parser.add_argument("-ns", "--no-sound", action="store_true", default=False, help="Don’t make sound"),
-
-            monitor_name=parser.add_argument("-mn", "--monitor-name", type=str, help="the name of the monitor to open the window in; pass 'list' to list all monitor names"),
 
             config=parser.add_argument("-c", "--config", type=str, default=None, help="By default, Coldtype looks for a .coldtype.py file in ~ and the cwd; use this to override that and look at a specific file instead"),
 
@@ -252,15 +246,7 @@ class Renderer():
 
             frame_offsets=parser.add_argument("-fo", "--frame-offsets", type=str, default=None, help=argparse.SUPPRESS),
 
-            inline=parser.add_argument("-in", "--inline", type=str, default=None, help="other source code to inline, as file paths"),
-
-            disable_syntax_mods=parser.add_argument("-dsm", "--disable-syntax-mods", action="store_true", default=False, help="Coldtype has some optional syntax modifications that require copying the source to a new tempfile before running — would you like to skip this to preserve __file__ in your sources?"),
-
             blender_watch=parser.add_argument("-bw", "--blender-watch", default=None, type=str, help="Experimental blender live-coding integration"),
-
-            debounce_time=parser.add_argument("-dt", "--debounce-time", default=0.25, type=float, help="how long to wait before acting on a debounced action"),
-
-            disable_rich=parser.add_argument("-dr", "--disable-rich", action="store_true", default=False, help="Do not print exceptions with the rich library"),
         )
 
         ConfigOption.AddCommandLineArgs(pargs, parser)
@@ -273,7 +259,8 @@ class Renderer():
         self.parser = parser
         self.args = parser.parse_args()
 
-        self.source_reader = SourceReader(disable_syntax_mods=self.args.disable_syntax_mods, renderer=self, cli_args=self.args)
+        self.source_reader = SourceReader(
+            renderer=self, cli_args=self.args)
 
         if self.args.is_subprocess or self.args.all or self.args.release or self.args.build:
             self.args.no_watch = True
@@ -344,7 +331,6 @@ class Renderer():
             self.function_filters = [f.strip() for f in self.args.filter_functions.split(",")]
         else:
             self.function_filters = []
-        self.multiplexing = self.args.multiplex
         self._should_reload = False
 
         self.recurring_actions = {}
@@ -432,10 +418,7 @@ class Renderer():
     
     def print_error(self):
         stack = traceback.format_exc()
-        if self.args.disable_rich or True:
-            print(stack)
-        else:
-            self.state.console.print_exception(extra_lines=2)
+        print(stack)
         return stack.split("\n")[-2]
     
     def renderable_error(self):
@@ -700,7 +683,7 @@ class Renderer():
                 self.exit_code = 5 # mark as child-process
                 return p, r
         
-        elif self.multiplexing and self.animation():
+        elif self.source_reader.config.multiplex and self.animation():
             if trigger in [Action.RenderAll, Action.RenderWorkarea]:
                 all_frames = self.animation().all_frames()
                 if trigger == Action.RenderAll:
@@ -738,13 +721,14 @@ class Renderer():
     def render_multiplexed(self, frames):
         start = ptime.time()
 
-        print("TC", self.args.thread_count)
+        tc = self.source_reader.config.thread_count
+        print(">>> THREAD_COUNT", tc)
         
-        group = math.floor(len(frames) / self.args.thread_count)
+        group = math.floor(len(frames) / tc)
         ordered_frames = list(frames) #list(range(frames[0], frames[0]+len(frames)))
         shuffle(ordered_frames)
         #subslices = list(chunks(ordered_frames, group))
-        subslices = [list(s) for s in distribute(self.args.thread_count, ordered_frames)]
+        subslices = [list(s) for s in distribute(tc, ordered_frames)]
 
         print(subslices)
         
@@ -992,8 +976,8 @@ class Renderer():
                 else:
                     if self.args.midi_info:
                         print(f">>> no midi port found with that name ({device}) <<<")
-        except Exception as e:
-            print(">", e)
+        except ArithmeticError as e:
+            print("MIDI SETUP EXCEPTION >", e)
             self.midis = []
         
         if skia and glfw and not self.args.no_viewer:
@@ -1584,23 +1568,7 @@ class Renderer():
                 return None, None
 
     def on_stdin(self, stdin):
-        #if self.jump_to_fn(stdin):
-        #    return
         self.hotkey_waiting = (stdin, None)
-        return
-
-
-        action, data = self.stdin_to_action(stdin)
-        print(">", action, data)
-        if action:
-            if action == Action.PreviewIndices:
-                self.render(action, indices=data)
-            elif action == Action.RestartRenderer:
-                self.on_exit(restart=True)
-            else:
-                self.on_action(action)
-        else:
-            self.execute_string_as_shortcut_or_action(stdin, None)
 
     def on_action(self, action, message=None) -> bool:
         #if action != Action.PreviewStoryboardNext:
@@ -1656,8 +1624,8 @@ class Renderer():
             os.kill(os.getpid(), signal.SIGINT)
             #self.on_exit(restart=False)
         elif action == Action.ToggleMultiplex:
-            self.multiplexing = not self.multiplexing
-            print(">>> MULTIPLEXING?", self.multiplexing)
+            self.source_reader.config.multiplex = not self.source_reader.config.multiplex
+            print(">>> MULTIPLEXING?", self.source_reader.config.multiplex)
         elif action == Action.ClearLastRender:
             self.last_render_cleared = True
             for r in self.renderables(Action.PreviewStoryboard):
@@ -1878,14 +1846,16 @@ class Renderer():
 
         if not self.last_rect or frect != self.last_rect:
             primary_monitor = None
-            if self.args.monitor_name:
-                remn = self.args.monitor_name
+            if self.source_reader.config.monitor_name:
+                remn = self.source_reader.config.monitor_name
                 monitors = glfw.get_monitors()
                 matches = []
+                if remn == "list":
+                    print("> MONITORS")
                 for monitor in monitors:
                     mn = glfw.get_monitor_name(monitor)
                     if remn == "list":
-                        print(">>> MONITOR >>>", mn)
+                        print("    -", mn.decode("utf-8"))
                     elif remn in str(mn):
                         matches.append(monitor)
                 if len(matches) > 0:
@@ -2003,7 +1973,7 @@ class Renderer():
             now = ptime.time()
             for k, v in self.debounced_actions.items():
                 if v:
-                    if (now - v) > self.args.debounce_time:
+                    if (now - v) > self.source_reader.config.debounce_time:
                         self.action_waiting = Action.PreviewStoryboardReload
                         self.debounced_actions[k] = None
 

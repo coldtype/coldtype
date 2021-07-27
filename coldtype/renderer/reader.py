@@ -42,8 +42,8 @@ def apply_syntax_mods(source_code, renderer=None):
         codepath_offset = len(src.split("\n"))
         return src
 
-    if renderer and renderer.args.inline:
-        for inline in renderer.args.inline.split(","):
+    if renderer and renderer.source_reader.config.inline_files:
+        for inline in renderer.source_reader.config.inline_files:
             source_code = inline_arg(inline) + "\n" + source_code
 
     source_code = re.sub(r"from ([^\s]+) import \* \#INLINE", inline_other, source_code)
@@ -81,7 +81,6 @@ def apply_syntax_mods(source_code, renderer=None):
 
 def read_source_to_tempfile(filepath:Path,
     codepath:Path=None,
-    disable_syntax_mods=False,
     renderer=None
     ):
     data_out = {}
@@ -129,23 +128,17 @@ def read_source_to_tempfile(filepath:Path,
         if codepath and codepath.exists():
             codepath.unlink()
         with NamedTemporaryFile("w", prefix="coldtype_md_src", suffix=".py", delete=False) as tf:
-            if disable_syntax_mods:
-                tf.write(source_code)
-            else:
-                mod_src, _ = apply_syntax_mods(source_code, renderer)
-                tf.write(mod_src)
+            mod_src, _ = apply_syntax_mods(source_code, renderer)
+            tf.write(mod_src)
             codepath = Path(tf.name)
     
     elif filepath.suffix == ".py":
-        if disable_syntax_mods:
-            codepath = filepath
-        else:
-            source_code, _ = apply_syntax_mods(filepath.read_text(), renderer)
-            if codepath and codepath.exists():
-                codepath.unlink()
-            with NamedTemporaryFile("w", prefix=f"coldtype__{filepath.stem}_", suffix=".py", delete=False) as tf:
-                tf.write(source_code)
-                codepath = Path(tf.name)
+        source_code, _ = apply_syntax_mods(filepath.read_text(), renderer)
+        if codepath and codepath.exists():
+            codepath.unlink()
+        with NamedTemporaryFile("w", prefix=f"coldtype__{filepath.stem}_", suffix=".py", delete=False) as tf:
+            tf.write(source_code)
+            codepath = Path(tf.name)
     else:
         raise Exception("No code found in file!")
     
@@ -245,7 +238,6 @@ class SourceReader():
         filepath:Path=None,
         code:str=None,
         renderer=None,
-        disable_syntax_mods:bool=False,
         runner:str="default",
         cli_args=None,
         ):
@@ -255,13 +247,10 @@ class SourceReader():
         self.dirpath = None
         self.should_unlink = False
         self.program = None
-        self.disable_syntax_mods = disable_syntax_mods
         self.renderer = renderer
         self.runner = runner
 
         self.config = None
-        #self.midi_mapping = {}
-        #self.hotkey_mapping = {}
         self.read_configs(cli_args)
 
         if filepath or code:

@@ -1,4 +1,5 @@
 from enum import Enum
+from runpy import run_path
 import argparse
 
 
@@ -12,12 +13,18 @@ class ConfigOption(Enum):
     WindowPinInset = ("window_pin_inset", (0, 0), "wpi",
         lambda x: [int(n) for n in x.split(",")])
     WindowContentScale = ("window_content_scale", None, "wcs")
+    MonitorName = ("monitor_name", None, "mn")
     EditorCommand = ("editor_command", None, "ec")
     ManyIncrement = ("many_increment", None, "minc")
     PreviewScale = ("preview_scale", 1, "ps")
     FontDirs = ("font_dirs", [], "fd")
     Midi = ("midi", {}, None)
     Hotkeys = ("hotkeys", {}, None)
+    ThreadCount = ("thread_count", 8, "tc")
+    Multiplex = ("multiplex", False, "mp")
+    DebounceTime = ("debounce_time", 0.25, "dt")
+    InlineFiles = ("inline_files", [], "in",
+        lambda x: x.split(","))
 
     @staticmethod
     def Help(e):
@@ -37,6 +44,8 @@ class ConfigOption(Enum):
             return "Experimental; offset window pin from edge"
         elif e == ConfigOption.WindowContentScale:
             return "Experimental; override auto-calculated window scale"
+        elif e == ConfigOption.MonitorName:
+            return "The name of the monitor to open the window in; pass 'list' to list all monitor names"
         elif e == ConfigOption.EditorCommand:
             return "If your text editor provides a command-line invocation, set it here for automated opening"
         elif e == ConfigOption.ManyIncrement:
@@ -45,6 +54,12 @@ class ConfigOption(Enum):
             return "What preview scale should the window open at?"
         elif e == ConfigOption.FontDirs:
             return "What additional directories would you like to search for fonts?"
+        elif e == ConfigOption.ThreadCount:
+            return "How many threads when multiplexing?"
+        elif e == ConfigOption.Multiplex:
+            return "Should the renderer run multiple processes (determined by --thread-count)?"
+        elif e == ConfigOption.DebounceTime:
+            return "How long should the rendering loop wait before acting on a debounced action?"
 
     @staticmethod
     def AddCommandLineArgs(pargs:dict,
@@ -90,8 +105,8 @@ class ColdtypeConfig():
             if args and hasattr(args, prop) and getattr(args, prop):
                 setattr(self, prop, cli_mod(getattr(args, prop)))
         
-        self.midi = config.get("MIDI")
-        self.hotkeys = config.get("HOTKEYS")
+        #self.midi = config.get("MIDI")
+        #self.hotkeys = config.get("HOTKEYS")
     
     def values(self):
         out = "<ColdtypeConfig:"

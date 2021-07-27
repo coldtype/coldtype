@@ -1,3 +1,4 @@
+# TODO accomplish this by treating the source file as the config file itself, and so would require no special syntax except to say like, WINDOW_PIN = "SE" in this file and then `coldtype this_file.py -c this_file.py`
 #coldtype -wp SE -wt
 
 """

@@ -4,7 +4,6 @@ import json, re, base64
 from coldtype import hsl, Action, Keylayer, Point, Rect, DATPen, Overlay
 from typing import Callable, List
 from time import sleep
-from rich.console import Console
 
 try:
     import skia
@@ -191,7 +190,6 @@ class RendererState():
         self.watch_mods = {}
         self.external_url = None
         self.cv2caps = {}
-        self.console = Console()
         self.reset()
     
     def reset(self, ignore_current_state=False):
