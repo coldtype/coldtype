@@ -394,10 +394,6 @@ class Renderer():
 
         if not self.args.is_subprocess:
             self.watch_file_changes()
-            for line in filepath.read_text().splitlines():
-                if line.startswith("#coldtype"):
-                    print("> Overriding command-line args with:\n    >", line)
-                    self.args = self.parser.parse_args(line.replace("#coldtype", "").strip().split(" "))
         
         if reload:
             self.reload_and_render(Action.PreviewStoryboard)

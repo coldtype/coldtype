@@ -6,12 +6,16 @@ A circle appears with no background
 at the bottom right of your screen
 """
 
+WINDOW_PIN = "SE"
+WINDOW_PASSTHROUGH = True
+WINDOW_TRANSPARENT = True
+
 from coldtype import *
 
-@renderable((500, 500))
-def stub(r):
+@animation(timeline=120)
+def stub(f):
     return (DATPen()
-        .oval(r.inset(50))
+        .oval(f.a.r.inset(f.e("eeio", 1, rng=(50, 250))))
         .f(0, 0.25)
         .s(0)
         .sw(5))

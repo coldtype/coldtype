@@ -261,7 +261,9 @@ class SourceReader():
         user = Path("~/.coldtype.py").expanduser()
         files = [user, proj]
         if args and hasattr(args, "config") and args.config:
-            files = [Path(args.config).expanduser()]
+            if args.config == ".":
+                args.config = args.file
+            files.append(Path(args.config).expanduser())
 
         py_config = {}
         for p in files:
