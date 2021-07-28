@@ -121,7 +121,6 @@ class b3d_animation(animation):
     
     def run(self, render_pass, renderer_state):
         fi = render_pass.args[0].i
-        print("FI", fi)
         if renderer_state and not bpy:
             if not renderer_state.previewing:
                 if self.blend:
@@ -129,9 +128,7 @@ class b3d_animation(animation):
             else:
                 if Overlay.Rendered in renderer_state.overlays:
                     from coldtype.img.skiaimage import SkiaImage
-                    src = "{:s}{:04d}.png".format(self.blender_output_dir(), fi)
-                    return SkiaImage(src)
-                    #return DATPen(self.rect).img(src, self.rect, pattern=False)
+                    return SkiaImage(self.blender_rendered_frame(fi))
         return super().run(render_pass, renderer_state)
     
     def post_read(self):
@@ -143,6 +140,10 @@ class b3d_animation(animation):
         output_dir = self.output_folder / "_blender"
         output_dir.mkdir(parents=True, exist_ok=True)
         return str(output_dir) + "/" + self.name + "_"
+    
+    def blender_rendered_frame(self, fi):
+        return "{:s}{:04d}.png".format(
+            self.blender_output_dir(), fi)
     
     def blender_render(self, file, blend_file, artifacts, samples=4):
         output_dir = self.blender_output_dir()
