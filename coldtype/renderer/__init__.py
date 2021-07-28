@@ -88,7 +88,7 @@ from coldtype.renderer.utils import *
 
 _random = Random()
 
-from time import sleep
+from time import sleep, time
 
 try:
     import rtmidi
@@ -278,6 +278,8 @@ class Renderer():
         self.sidecar_threads = []
         self.tails = []
         self.watchee_mods = {}
+        self.refresh_delay = self.source_reader.config.refresh_delay
+        self.backoff_refresh_delay = self.refresh_delay
         
         self.rasterizer_warning = None
         self.primary_monitor = None
@@ -1755,7 +1757,7 @@ class Renderer():
                     self.playing_preloaded_frame = 0
                 ptime.sleep(0.01)
             else:
-                ptime.sleep(0.02)
+                ptime.sleep(self.backoff_refresh_delay)
                 self.glfw_last_time = t
                 self.last_previews = self.turn_over()
                 global last_line
@@ -1819,7 +1821,12 @@ class Renderer():
 
         render_previews = len(self.previews_waiting_to_paint) > 0
         if not render_previews:
+            self.backoff_refresh_delay += 0.01
+            if self.backoff_refresh_delay >= 0.25:
+                self.backoff_refresh_delay = 0.25
             return []
+        
+        self.backoff_refresh_delay = self.refresh_delay
 
         if render_previews:
             if pyaudio and self.paudio_source:
@@ -1948,6 +1955,8 @@ class Renderer():
         return did_preview
     
     def turn_over(self):
+        #print("TURNOVER", ptime.time())
+
         to_delete = []
         for k, sb in self.subprocesses.items():
             returncode = sb.poll()

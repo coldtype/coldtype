@@ -37,6 +37,7 @@ class ConfigOption(Enum):
     Multiplex = ("multiplex", None, "mp",
         true_false_or_none)
     DebounceTime = ("debounce_time", 0.25, "dt")
+    RefreshDelay = ("refresh_delay", 0.025, "rd")
     InlineFiles = ("inline_files", [], "in",
         lambda x: x.split(","))
     BlenderWatch = ("blender_watch", None, "bw",
@@ -76,6 +77,8 @@ class ConfigOption(Enum):
             return "Should the renderer run multiple processes (determined by --thread-count)?"
         elif e == ConfigOption.DebounceTime:
             return "How long should the rendering loop wait before acting on a debounced action?"
+        elif e == ConfigOption.RefreshDelay:
+            return "How long should the renderer delay between rendering frames?"
         elif e == ConfigOption.BlenderWatch:
             return "Enable experimental blender live-coding integration?"
 
