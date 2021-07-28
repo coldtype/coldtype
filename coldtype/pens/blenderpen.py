@@ -314,6 +314,9 @@ class BlenderPen(DrawablePenMixin, BasePen):
         return self
     
     def with_origin(self, xyz, fn):
+        if xyz == "C":
+            pc = self.dat.ambit().pc
+            xyz = (pc.x/100, pc.y/100, 0)
         self.set_origin(*xyz)
         fn(self)
         self.set_origin(0, 0, 0)
