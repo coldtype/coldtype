@@ -93,6 +93,7 @@ from time import sleep, time
 try:
     import rtmidi
 except ImportError:
+    rtmidi = None
     pass
 
 try:
@@ -967,24 +968,27 @@ class Renderer():
             #if primary_monitor:
             #    glfw.set_window_monitor(self.window, primary_monitor, 0, 0, int(50), int(50))
 
-        try:
-            midiin = rtmidi.RtMidiIn()
-            lookup = {}
-            self.midis = []
-            for p in range(midiin.getPortCount()):
-                lookup[midiin.getPortName(p)] = p
+        if rtmidi:
+            try:
+                midiin = rtmidi.RtMidiIn()
+                lookup = {}
+                self.midis = []
+                for p in range(midiin.getPortCount()):
+                    lookup[midiin.getPortName(p)] = p
 
-            for device, mapping in self.source_reader.config.midi.items():
-                if device in lookup:
-                    mapping["port"] = lookup[device]
-                    mi = rtmidi.RtMidiIn()
-                    mi.openPort(lookup[device])
-                    self.midis.append([device, mi])
-                else:
-                    if self.args.midi_info:
-                        print(f">>> no midi port found with that name ({device}) <<<")
-        except ArithmeticError as e:
-            print("MIDI SETUP EXCEPTION >", e)
+                for device, mapping in self.source_reader.config.midi.items():
+                    if device in lookup:
+                        mapping["port"] = lookup[device]
+                        mi = rtmidi.RtMidiIn()
+                        mi.openPort(lookup[device])
+                        self.midis.append([device, mi])
+                    else:
+                        if self.args.midi_info:
+                            print(f">>> no midi port found with that name ({device}) <<<")
+            except Exception as e:
+                print("MIDI SETUP EXCEPTION >", e)
+                self.midis = []
+        else:
             self.midis = []
         
         if skia and glfw and not self.args.no_viewer:
