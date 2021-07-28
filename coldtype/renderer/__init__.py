@@ -494,7 +494,7 @@ class Renderer():
                 if self.source_reader.program.get("COLDTYPE_NO_WATCH"):
                     return True
                                 
-                if self.source_reader.config.blender_watch and trigger == Action.Initial:
+                if self.source_reader.config.blender_watch and trigger == Action.Initial and len(blend_files) > 0:
                     self.launch_blender_watch(blend_files)
                 
             except SystemExit:

@@ -261,9 +261,12 @@ class SourceReader():
         user = Path("~/.coldtype.py").expanduser()
         files = [user, proj]
         if args and hasattr(args, "config") and args.config:
-            if args.config == ".":
-                args.config = args.file
-            files.append(Path(args.config).expanduser())
+            if args.config == "0":
+                files = []
+            else:
+                if args.config == ".":
+                    args.config = args.file
+                files.append(Path(args.config).expanduser())
 
         py_config = {}
         for p in files:
@@ -277,8 +280,13 @@ class SourceReader():
                     print("Failed to load config", p)
                     print("Exception:", e)
         
+        if len(files) == 0:
+            self.config = ColdtypeConfig({}, None, args)
+        
         for f in self.config.font_dirs:
             ALL_FONT_DIRS.insert(0, f)
+        
+        #print(self.config.values())
     
     def find_sources(self, dirpath):
         sources = list(dirpath.glob("*.py"))

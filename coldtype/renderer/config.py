@@ -88,8 +88,8 @@ class ConfigOption(Enum):
                 short = co.value[2]
                 arg = co.value[0].replace("_", "-")
                 type_spec = dict(default=None)
-                if co.value[1] is False:
-                    type_spec = dict(action="store_true", default=False)
+                #if co.value[1] is False:
+                #    type_spec = dict(action="store_true", default=False)
                 pargs[co.value[0]] = parser.add_argument(f"-{short}", f"--{arg}", help=ConfigOption.Help(co), **type_spec)
 
 
@@ -109,7 +109,7 @@ class ColdtypeConfig():
             else:
                 prop, default_value, _ = co.value
                 cli_mod = lambda x: x
-            #print(co.name, prop, default_value)
+            
             setattr(self,
                 prop,
                 config.get(prop.upper(),
@@ -118,11 +118,13 @@ class ColdtypeConfig():
             if self.profile and "PROFILES" in config and self.profile in config["PROFILES"]:
                 v = config["PROFILES"][self.profile].get(prop.upper())
                 if v:
+                    #print("PROFILE", self.profile, prop, v)
                     setattr(self, prop, v)
             
             if args and hasattr(args, prop):
                 value = getattr(args, prop)
                 if value is not None:
+                    #print("CLI", prop, value)
                     setattr(self, prop, cli_mod(value))
         
         #self.midi = config.get("MIDI")
