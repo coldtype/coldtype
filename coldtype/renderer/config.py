@@ -2,13 +2,26 @@ from enum import Enum
 from runpy import run_path
 import argparse
 
+def true_false_or_none(x):
+    if x in ["0", "false", "False", "n", "no", "N"]:
+        return False
+    elif x in ["1", "true", "True", "y", "yes", "Y"]:
+        return True
+    else:
+        return None
+
 
 class ConfigOption(Enum):
-    WindowPassthrough = ("window_passthrough", False, "wpass")
-    WindowTransparent = ("window_transparent", False, "wt")
-    WindowBackground = ("window_background", False, "wb")
-    WindowFloat = ("window_float", False, "wf")
-    WindowOpacity = ("window_opacity", 1, "wo")
+    WindowPassthrough = ("window_passthrough", None, "wpass",
+        true_false_or_none)
+    WindowTransparent = ("window_transparent", None, "wt",
+        true_false_or_none)
+    WindowBackground = ("window_background", None, "wb",
+        true_false_or_none)
+    WindowFloat = ("window_float", None, "wf",
+        true_false_or_none)
+    WindowOpacity = ("window_opacity", 1, "wo",
+        lambda x: float(x))
     WindowPin = ("window_pin", "NE", "wp")
     WindowPinInset = ("window_pin_inset", (0, 0), "wpi",
         lambda x: [int(n) for n in x.split(",")])
@@ -21,10 +34,13 @@ class ConfigOption(Enum):
     Midi = ("midi", {}, None)
     Hotkeys = ("hotkeys", {}, None)
     ThreadCount = ("thread_count", 8, "tc")
-    Multiplex = ("multiplex", False, "mp")
+    Multiplex = ("multiplex", None, "mp",
+        true_false_or_none)
     DebounceTime = ("debounce_time", 0.25, "dt")
     InlineFiles = ("inline_files", [], "in",
         lambda x: x.split(","))
+    BlenderWatch = ("blender_watch", None, "bw",
+        true_false_or_none)
 
     @staticmethod
     def Help(e):
@@ -60,6 +76,8 @@ class ConfigOption(Enum):
             return "Should the renderer run multiple processes (determined by --thread-count)?"
         elif e == ConfigOption.DebounceTime:
             return "How long should the rendering loop wait before acting on a debounced action?"
+        elif e == ConfigOption.BlenderWatch:
+            return "Enable experimental blender live-coding integration?"
 
     @staticmethod
     def AddCommandLineArgs(pargs:dict,
@@ -102,8 +120,10 @@ class ColdtypeConfig():
                 if v:
                     setattr(self, prop, v)
             
-            if args and hasattr(args, prop) and getattr(args, prop):
-                setattr(self, prop, cli_mod(getattr(args, prop)))
+            if args and hasattr(args, prop):
+                value = getattr(args, prop)
+                if value is not None:
+                    setattr(self, prop, cli_mod(value))
         
         #self.midi = config.get("MIDI")
         #self.hotkeys = config.get("HOTKEYS")

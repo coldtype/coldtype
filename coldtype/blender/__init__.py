@@ -97,12 +97,7 @@ class b3d_animation(animation):
         self.current_frame = -1
         self.samples = samples
         self.denoise = denoise
-        
-        if blend:
-            self.blend = Path(blend).expanduser()
-            self.blend.parent.mkdir(exist_ok=True, parents=True)
-        else:
-            self.blend = None
+        self.blend = blend
         
         if "timeline" not in kwargs:
             kwargs["timeline"] = Timeline(30)
@@ -132,6 +127,13 @@ class b3d_animation(animation):
         return super().run(render_pass, renderer_state)
     
     def post_read(self):
+        if not self.blend:
+            self.blend = self.filepath.parent / "blends" / (self.filepath.stem + ".blend")
+
+        if self.blend:
+            self.blend = Path(self.blend).expanduser()
+            self.blend.parent.mkdir(exist_ok=True, parents=True)
+
         super().post_read()
         if bpy:
             bpy.data.scenes[0].render.filepath = str(self.blender_output_dir())# + "/" + self.name + "_"

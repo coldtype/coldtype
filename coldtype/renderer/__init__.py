@@ -246,7 +246,7 @@ class Renderer():
 
             frame_offsets=parser.add_argument("-fo", "--frame-offsets", type=str, default=None, help=argparse.SUPPRESS),
 
-            blender_watch=parser.add_argument("-bw", "--blender-watch", default=None, type=str, help="Experimental blender live-coding integration"),
+            #blender_watch=parser.add_argument("-bw", "--blender-watch", default=None, type=str, help="Experimental blender live-coding integration"),
         )
 
         ConfigOption.AddCommandLineArgs(pargs, parser)
@@ -407,9 +407,7 @@ class Renderer():
             del self.subprocesses["blender_watch"]
 
         from coldtype.blender.render import blender_launch_livecode
-        blend_file = self.args.blender_watch
-        if blend_file == ".":
-            blend_file = blend_files[0]
+        blend_file = blend_files[0]
         self.subprocesses["blender_watch"] = blender_launch_livecode(blend_file)
 
     def watchee_paths(self):
@@ -450,7 +448,7 @@ class Renderer():
             self.state.reset()
             self.source_reader.reload()
             
-            if self.args.blender_watch:
+            if self.source_reader.config.blender_watch:
                 cb = Path("~/.coldtype/blender.txt").expanduser()
                 if cb.exists():
                     cb.unlink()
@@ -496,7 +494,7 @@ class Renderer():
                 if self.source_reader.program.get("COLDTYPE_NO_WATCH"):
                     return True
                                 
-                if self.args.blender_watch and trigger == Action.Initial:
+                if self.source_reader.config.blender_watch and trigger == Action.Initial:
                     self.launch_blender_watch(blend_files)
                 
             except SystemExit:
