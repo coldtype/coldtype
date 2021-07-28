@@ -31,3 +31,4 @@ test/ignorables/
 examples/*.pdf
 *.blend1
 *.blend
+examples/blender/blends
