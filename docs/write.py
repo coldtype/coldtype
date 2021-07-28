@@ -47,7 +47,7 @@ class DocsWriter(Renderer):
         self.reload_and_render(Action.PreviewStoryboard)
     
     def initialize_gui_and_server(self):
-        self.webserver = subprocess.Popen(["python", "-m", "http.server", "-d", "docs/_build/html"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        self.webserver = subprocess.Popen(["python", "-m", "http.server", "8003", "-d", "docs/_build/html"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         super().initialize_gui_and_server()
     
     def on_exit(self, restart=False):
