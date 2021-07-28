@@ -461,8 +461,8 @@ class Renderer():
                 blend_files = []
 
                 for r in self.renderables(Action.PreviewStoryboardReload):
-                    if hasattr(r, "blender_file"):
-                        blend_files.append(r.blender_file)
+                    if hasattr(r, "blend"):
+                        blend_files.append(r.blend)
 
                     if isinstance(r, animation):
                         if r.name not in self.state._frame_offsets:
@@ -1351,7 +1351,7 @@ class Renderer():
             self.on_action(Action.RenderAll)
             return -1
         elif shortcut == KeyboardShortcut.RenderOne:
-            fo = self.state.get_frame_offsets(self.last_animation.name)
+            fo = [abs(o%self.last_animation.duration) for o in self.state.get_frame_offsets(self.last_animation.name)]
             # TODO should iterate over all animations, not just "last" (but infra isn't there for this yet)
             self.on_action(Action.RenderIndices, fo)
             return -1
@@ -1382,6 +1382,8 @@ class Renderer():
             self.state.toggle_overlay(Overlay.Info)
         elif shortcut == KeyboardShortcut.OverlayTimeline:
             self.state.toggle_overlay(Overlay.Timeline)
+        elif shortcut == KeyboardShortcut.OverlayRendered:
+            self.state.toggle_overlay(Overlay.Rendered)
         
         elif shortcut == KeyboardShortcut.PreviewScaleUp:
             self.state.mod_preview_scale(+0.1)
@@ -1755,7 +1757,7 @@ class Renderer():
                     self.playing_preloaded_frame = 0
                 ptime.sleep(0.01)
             else:
-                ptime.sleep(0.025)
+                ptime.sleep(0.02)
                 self.glfw_last_time = t
                 self.last_previews = self.turn_over()
                 global last_line

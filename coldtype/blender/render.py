@@ -29,15 +29,15 @@ def blend_frame(py_file, blend_file, expr, output_dir, fi):
     print(log)
     print(f"/Blended frame {fi}.")
 
-def blend_source(py_file, blend_file, frame, output_dir, samples=2):
+def blend_source(py_file, blend_file, frame, output_dir, samples=2, denoise=True):
     """
     A facility for telling Blender to render a single frame in a background process
     """
-    expr = f"from coldtype.blender.render import frame_render; frame_render('{py_file}', {frame}, {samples})"
+    expr = f"from coldtype.blender.render import frame_render; frame_render('{py_file}', {frame}, {samples}, {denoise})"
     #print(expr)
     blend_frame(py_file, blend_file, expr, output_dir, frame)
 
-def frame_render(file, frame, samples):
+def frame_render(file, frame, samples, denoise=True):
     """
     A facility for easy-rendering from within a backgrounded blender
     """
@@ -45,6 +45,12 @@ def frame_render(file, frame, samples):
     from coldtype.renderer.reader import SourceReader
     from coldtype.blender import walk_to_b3d
     bpy.data.scenes[0].cycles.samples = samples
+    if denoise:
+        bpy.data.scenes[0].cycles.denoiser = "OPENIMAGEDENOISE"
+        bpy.data.scenes[0].cycles.use_denoising = True
+    else:
+        bpy.data.scenes[0].cycles.use_denoising = False
+
     sr = SourceReader(file)
     for _, res in sr.frame_results(frame, class_filters=[r"^b3d_.*$"]):
         walk_to_b3d(res, dn=True)

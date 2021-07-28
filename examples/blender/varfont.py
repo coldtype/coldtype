@@ -1,20 +1,19 @@
 from coldtype import *
-from coldtype.blender import b3d, b3d_animation, b3d_mod
-from coldtype.text.composer import Glyphwise
+from coldtype.blender import *
 
-fnt = Font.Cacheable("~/Type/fonts/fonts/SwearCilatiVariable.ttf")
+fnt = Font.Find("SwearCilatiVariable")
 
-@b3d_animation(timeline=60)
+@b3d_animation(timeline=60,
+    samples=4,
+    denoise=False,
+    blend=__sibling__("blends/varfont.blend"))
 def varfont(f):
-    return (Glyphwise("Light", lambda i,c:
+    return (Glyphwise("Vary", lambda i,_:
         Style(fnt, 475,
             opsz=f.adj(-i*5).e("seio", 1, rng=(0.98, 0)),
-            wght=f.adj(-i*15).e("seio", 1, rng=(0.98, 0))
-            ))
+            wght=f.adj(-i*15).e("seio", 1, rng=(0.98, 0))))
         .align(f.a.r)
         .pmap(lambda i,p: p.tag(f"L{i}")
-            .chain(b3d_mod(lambda p: p.f(None)))
             .chain(b3d("Text", lambda bp: bp
                 .extrude(f.adj(-i*5)
-                    .e("ceio", 1, rng=(0.5, 1.75))),
-                material="EdgeShader"))))
+                    .e("ceio", 1, rng=(0.5, 1.75)))))))

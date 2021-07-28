@@ -4,9 +4,7 @@ import math
 
 fnt = Font.Find("NaNJauneMaxi")
 
-@b3d_animation(
-    timeline=240,
-    blender_file="examples/blender/geometry2.blend")
+@b3d_animation(timeline=240, blend_file="examples/blender/geometry2.blend")
 def jaune(f):
     if bpy:
         bpy.data.objects["Camera.002"].location[2] = f.e("eeio", 1, rng=(5.4, 9))

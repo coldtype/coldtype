@@ -45,6 +45,7 @@ class KeyboardShortcut(Enum):
     KeylayerText = "keylayer_text"
     OverlayInfo = "overlay_info"
     OverlayTimeline = "overlay_timeline"
+    OverlayRendered = "overlay_rendered"
 
     PreviewScaleDown = "preview_scale_down"
     PreviewScaleUp = "preview_scale_up"
@@ -116,6 +117,7 @@ def symbol_to_glfw(s):
         "-": glfw.KEY_MINUS,
         "=": glfw.KEY_EQUAL,
         "/": glfw.KEY_SLASH,
+        "'": glfw.KEY_APOSTROPHE,
         "<backslash>": glfw.KEY_BACKSLASH,
     }
     if s in lookup:
@@ -237,6 +239,9 @@ SHORTCUTS = {
     ],
     KeyboardShortcut.OverlayTimeline: [
         [["cmd"], "t"]
+    ],
+    KeyboardShortcut.OverlayRendered: [
+        [[], "'"]
     ],
 
     KeyboardShortcut.PreviewScaleUp: [
