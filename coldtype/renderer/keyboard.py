@@ -1,7 +1,5 @@
 from enum import Enum
 
-from pynput.keyboard import Key
-
 try:
     import glfw
 except ImportError:
