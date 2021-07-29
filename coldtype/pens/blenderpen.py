@@ -371,3 +371,6 @@ class BlenderPen(DrawablePenMixin, BasePen):
                 pt.co = BPH.Vector(c)
                 pt.handle_left = BPH.Vector(l)
                 pt.handle_right = BPH.Vector(r)
+
+    def noop(self, *args, **kwargs):
+        return self

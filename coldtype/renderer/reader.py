@@ -276,15 +276,15 @@ class SourceReader():
                     #self.midi_mapping = py_config.get("MIDI", self.midi_mapping)
                     #self.hotkey_mapping = py_config.get("HOTKEYS", self.hotkey_mapping)
                     self.config = ColdtypeConfig(py_config, self.config if self.config else None, args)
+
+                    for f in self.config.font_dirs:
+                        ALL_FONT_DIRS.insert(0, f)
                 except Exception as e:
                     print("Failed to load config", p)
                     print("Exception:", e)
         
-        if len(files) == 0:
+        if len(files) == 0 or not self.config:
             self.config = ColdtypeConfig({}, None, args)
-        
-        for f in self.config.font_dirs:
-            ALL_FONT_DIRS.insert(0, f)
         
         #print(self.config.values())
     
