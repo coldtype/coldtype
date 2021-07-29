@@ -1,5 +1,7 @@
 from enum import Enum
 
+from pynput.keyboard import Key
+
 try:
     import glfw
 except ImportError:
@@ -87,6 +89,84 @@ class KeyboardShortcut(Enum):
 
     LoadNextInDirectory = "load_next_in_directory"
     LoadPrevInDirectory = "load_prev_in_directory"
+
+
+KeyboardShortcutExplainers = {
+    KeyboardShortcut.PreviewPrev:
+        "Go to the previous frame",
+    KeyboardShortcut.PreviewPrevMany:
+        "Go n-frames backward (cycling)",
+    KeyboardShortcut.PreviewNext:
+        "Go to the next frame",
+    KeyboardShortcut.PreviewNextMany:
+        "Go n-frames forward (cycling)",
+    KeyboardShortcut.ClearLastRender:
+        "When compositing, delete the existing framebuffer",
+    KeyboardShortcut.ClearRenderedFrames:
+        "Delete all the rendered frames on disk for this animation",
+    KeyboardShortcut.PlayRendered:
+        "Play the rendered-to-disk version of this animation",
+    KeyboardShortcut.PlayPreview:
+        "Play the current animation as fast as possible, evaluating the code live",
+    KeyboardShortcut.RestartApp:
+        "Restart the app (a shortcut for when you've modified code that isn't reloaded automatically on save)",
+    KeyboardShortcut.Quit:
+        "Quit the app and stop the renderer completely (alias of hitting the window X or hitting Ctrl-C in the terminal)",
+    KeyboardShortcut.Build:
+        "Trigger the custom ``build`` function (if there’s one defined in your code)",
+    KeyboardShortcut.Release:
+        "Trigger the custom ``release`` function (if there's one defined in your code)",
+    KeyboardShortcut.RenderAll:
+        "Render all the frames in this animation to disk",
+    KeyboardShortcut.RenderOne:
+        "Render just the current frame to disk",
+    KeyboardShortcut.RenderWorkarea:
+        "Render the workarea to disk (if a workarea is defined)",
+    KeyboardShortcut.ToggleMultiplex:
+        "Toggle multiplexing (multicore rendering) on and off",
+    KeyboardShortcut.OverlayInfo:
+        "Turn on the “info” overlay",
+    KeyboardShortcut.OverlayRendered:
+        "Turn on the “rendered” overlay (only used in the blender workflow for previewing a blender-rendered frame)",
+    KeyboardShortcut.PreviewScaleDown:
+        "Shrink the viewer",
+    KeyboardShortcut.PreviewScaleUp:
+        "Enlarge the viewer",
+    KeyboardShortcut.PreviewScaleMin:
+        "Make the viewer as small as possible",
+    KeyboardShortcut.PreviewScaleMax:
+        "Make the viewer as large as possible",
+    KeyboardShortcut.PreviewScaleDefault:
+        "Make the viewer the standard size (100%)",
+    KeyboardShortcut.WindowOpacityDown:
+        "Make the viewer more transparent",
+    KeyboardShortcut.WindowOpacityUp:
+        "Make the viewer less transparent",
+    KeyboardShortcut.WindowOpacityMin:
+        "Make the viewer as transparent as possible",
+    KeyboardShortcut.WindowOpacityMax:
+        "Make the viewer fully opaque",
+    KeyboardShortcut.OpenInEditor:
+        "Open the currently-rendered file in your code editor",
+    KeyboardShortcut.ViewerSoloNone:
+        "View all defined renderables and animations",
+    KeyboardShortcut.ViewerSoloNext:
+        "Solo the “next” animation/renderable in the file",
+    KeyboardShortcut.ViewerSoloPrev:
+        "Solo the “previous” animation/renderable in the file",
+    KeyboardShortcut.ViewerSolo1:
+        "Solo the first animation/renderable in the file",
+    KeyboardShortcut.ViewerSolo2:
+        "Solo the second animation/renderable in the file",
+    KeyboardShortcut.ViewerSolo3:
+        "Solo the third animation/renderable in the file",
+    KeyboardShortcut.CopySVGToClipboard:
+        "Copy the current vector to the clipboard as SVG (can be pasted into Illustrator)",
+    KeyboardShortcut.LoadNextInDirectory:
+        "If you have a directory of coldtype .py files, this will load the next one in the directory (alphabetically), so you can skip stopping and restarting the command-line process with different arguments",
+    KeyboardShortcut.LoadPrevInDirectory:
+        "If you have a directory of coldtype .py files, this will load the previous one in the directory (alphabetically), so you can skip stopping and restarting the command-line process with different arguments"
+}
 
 
 REPEATABLE_SHORTCUTS = [
@@ -345,3 +425,29 @@ SHORTCUTS = {
         [["cmd", "alt"], "<left>"]
     ]
 }
+
+if __name__ == "__main__":
+    from subprocess import Popen, PIPE
+
+    out = """
+Cheatsheet
+==========
+
+"""
+
+    for shortcut, key_combos in list(SHORTCUTS.items())[:]:
+        name = str(shortcut).split(".")[-1]
+        explain = KeyboardShortcutExplainers.get(shortcut)
+        if not explain:
+            continue
+        out += f"* **{name}** (``\"{KeyboardShortcut(shortcut).value}\"``)\n"
+        out += ("\n  " + explain + "\n\n")
+        for mods, key in key_combos:
+            kc = " ".join([*mods, key])
+            out += ("  * " + f"``{kc}``\n")
+        out += "\n\n"
+    
+    print(out)
+
+    process = Popen('pbcopy', env={'LANG': 'en_US.UTF-8'}, stdin=PIPE)
+    process.communicate(out.encode("utf-8"))
