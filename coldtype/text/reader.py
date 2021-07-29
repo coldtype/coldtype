@@ -135,7 +135,6 @@ class Font():
                 for file in files:
                     if re.search(regex, file):
                         path = Path(root + "/" + file)
-                        print(">", path)
                         if path.suffix in [".ttf", ".otf", ".ttc"]:
                             results.append(path)
         return results
