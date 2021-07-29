@@ -5,8 +5,8 @@ from coldtype.geometry import Rect, Point
 from coldtype.text.shaper import segment
 from coldtype.text.reader import Style, StyledString, FittableMixin, Font, normalize_font_path, SegmentedString,  _PenClass, _PensClass
 
-from more_itertools import flatten
-
+import inspect
+from collections import namedtuple
 
 class GrafStyle():
     def __init__(self, leading=10, x="centerx", xp=0, width=0, **kwargs):
@@ -220,6 +220,8 @@ def StSt(text,
         lockup = lockup.pens()
     return lockup
 
+GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e"])
+
 def Glyphwise(st, styler):
     # TODO possible to have an implementation
     # aware of a non-1-to-1 mapping of characters
@@ -242,6 +244,7 @@ def Glyphwise(st, styler):
     def krn(off, on, idx):
         return kx(off, idx) - kx(on, idx)
 
+    arg_count = len(inspect.signature(styler).parameters)
     dps = DraftingPens()
     prev = 0
     tracks = []
@@ -261,7 +264,14 @@ def Glyphwise(st, styler):
         if isinstance(test, str):
             test = [test]
         
-        skon = styler(idx, c)
+        e = idx / (len(st)-1)
+        gg = GlyphwiseGlyph(idx, c, e)
+
+        if arg_count == 1:
+            skon = styler(gg)
+        else:
+            skon = styler(idx, gg)
+        
         skoff = skon.mod(kern=0)
 
         #test_list = [t for sublist in test for t in sublist]

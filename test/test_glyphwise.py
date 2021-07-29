@@ -14,8 +14,8 @@ class TestGlyphwise(unittest.TestCase):
         txt = "AVAMANAV"
         #txt = "AVAV"
         ss = StSt(txt, font_path, 100, wdth=0, kern=kern)
-        gw = Glyphwise(txt, lambda i, c: Style(font_path, 100, wdth=0, kern=kern, ro=1))
-        gwo = Glyphwise(txt, lambda i, c: Style(font_path, 100, wdth=0, kern=(not kern), ro=1))
+        gw = Glyphwise(txt, lambda g: Style(font_path, 100, wdth=0, kern=kern, ro=1))
+        gwo = Glyphwise(txt, lambda g: Style(font_path, 100, wdth=0, kern=(not kern), ro=1))
 
         self.assertEqual(len(ss), len(txt))
         self.assertEqual(ss[0].glyphName, "A")
@@ -51,7 +51,7 @@ class TestGlyphwise(unittest.TestCase):
         clarette = Font.Cacheable("~/Type/fonts/fonts/_wdths/ClaretteGX.ttf")
         r = Rect(1080, 300)
         gl = (Glyphwise(["fi", "j", "o", "ff"],
-            lambda i, c: Style(clarette, 200, wdth=i/3))
+            lambda g: Style(clarette, 200, wdth=g.i/3))
             .align(r))
         
         self.assertEqual(len(gl), 4)
@@ -62,11 +62,32 @@ class TestGlyphwise(unittest.TestCase):
     # def test_grouped(self):
     #     fnt = "~/Type/fonts/fonts/OhnoFatfaceVariable.ttf"
     #     r = Rect(1000, 200)
-    #     gw = (Glyphwise(["AB", "CD"], lambda i, c:
+    #     gw = (Glyphwise(["AB", "CD"], lambda g:
     #         Style(fnt, 250, wdth=i, opsz=i))
     #         .align(r))
         
     #     gw.picklejar(r)
+
+    def test_variable_args(self):
+        fnt = Font.Find("OhnoFatfaceV")
+        r = Rect(1080, 300)
+        
+        (Glyphwise("FATFACE 1 ARG", lambda g:
+            Style(fnt, 200, wdth=g.e))
+            .align(r)
+            .picklejar(r))
+        
+        es = []
+        def print_e(i, g):
+            es.append(g.e)
+            return Style(fnt, 200, opsz=g.e, wdth=1-g.e)
+        
+        (Glyphwise("FATFACE 2 ARG", print_e)
+            .align(r)
+            .picklejar(r))
+        
+        self.assertEqual(es[0], 0)
+        self.assertEqual(es[-1], 1)
 
 if __name__ == "__main__":
     unittest.main()

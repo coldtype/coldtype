@@ -15,9 +15,9 @@ at = AsciiTimeline(1, """
 @animation((1080, 540), timeline=at)
 def test_ascii(f):
     io = at.io2(f.i, 20, "eeio")
-    word = (Glyphwise("ASCII", lambda i, c:
+    word = (Glyphwise("ASCII", lambda g:
         Style(fnt, 100,
-            grvt=(at[i > 1].io2(f.i, 10, "eeio")),
+            grvt=(at[g.i > 1].io2(f.i, 10, "eeio")),
             yest=at["c"].io2(f.i, 8, "eeio")))
         .align(f.a.r)
         .scale(io*2))

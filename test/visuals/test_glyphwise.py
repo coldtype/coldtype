@@ -13,10 +13,10 @@ at = AsciiTimeline(3, 30, """
 
 @animation((1080, 1080), timeline=at, bg=hsl(0.9, 1, 0.9))
 def test_glyphwise(f):
-    return (Glyphwise("TYPE",
-        lambda i, _: Style(fnt, 200,
-            wght=at[i].e(f.i),
-            wdth=at[i+4].e(f.i, "qeio"),
+    return (Glyphwise("TYPE", lambda g:
+        Style(fnt, 200,
+            wght=at[g.i].e(f.i),
+            wdth=at[g.i+4].e(f.i, "qeio"),
             slnt=at["slnt"].e(f.i, "seio")))
         .track(150*at["tu"].e(f.i, "eeio", 1))
         .align(f.a.r)
