@@ -667,7 +667,8 @@ class Renderer():
                                         self.rasterize(result or DATPen(), render, output_path)
                                     # TODO a progress bar?
                                     print(">>> saved...", str(output_path.relative_to(Path.cwd())))
-                    except:
+                    except Exception as e:
+                        #print(type(e))
                         self.show_error()
         except:
             self.show_error()
