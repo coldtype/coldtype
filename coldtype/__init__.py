@@ -14,7 +14,7 @@ from coldtype.img.blendmode import BlendMode
 #from coldtype.renderer.state import RendererState, Keylayer
 
 name = "coldtype"
-__version__ = "0.5.12"
+__version__ = "0.5.13"
 
 __sibling__ = lambda x: x # will be redefined contextually
 #λ = None
