@@ -103,8 +103,7 @@ setuptools.setup(
         "freetype-py",
         "uharfbuzz>=0.14.0",
         "unicodedata2",
-        "python-bidi",
-        "rich",
+        "python-bidi"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

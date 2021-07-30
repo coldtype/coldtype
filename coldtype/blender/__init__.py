@@ -69,6 +69,9 @@ def walk_to_b3d(result:DATPens, dn=False):
                 coll = BPH.Collection(bdata["collection"])
                 material = bdata.get("material", "auto")
 
+                if len(p.value) == 0:
+                    p.v(0)
+
                 if bdata.get("plane"):
                     bp = p.cast(BlenderPen).draw(coll, plane=True, material=material)
                 else:

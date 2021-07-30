@@ -277,11 +277,17 @@ def hsl(h, s=0.5, l=0.5, a=1):
 def hsl_(hsla):
     return hsl(*hsla)
 
+def hsl360(h, s=50, l=50, a=1):
+    return hsl(h/360, s/100, l/100, a)
+
 def rgb(r, g, b, a=1):
     return Color.from_rgb(r, g, b, a)
 
 def rgb_(rgba):
     return hsl(*rgba)
+
+def rgb255(r, g, b, a=1):
+    return rgb(r/255, g/255, b/255, a)
 
 def bw(c, a=1):
     return Color.from_rgb(c, c, c, a)
