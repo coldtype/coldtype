@@ -11,6 +11,7 @@ from coldtype.renderable import *
 from coldtype.helpers import loopidx, sibling, raw_ufo, ßhide, ßshow, cycle_idx, random_series, show_points, glyph_to_uni, uni_to_glyph, glyph_to_class, DefconFont
 from coldtype.time import *
 from coldtype.img.blendmode import BlendMode
+from coldtype.grid import Grid
 #from coldtype.renderer.state import RendererState, Keylayer
 
 name = "coldtype"

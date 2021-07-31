@@ -449,13 +449,21 @@ class DraftingPen(RecordingPen, SHContext):
         return self.curveTo(b, c, d)
     
     def boxCurveTo(self, point, factor, pt, po=(0, 0), mods={}, flatten=False):
+        #print("BOX", point, factor, pt, po, mods)
+
         if flatten:
             self.lineTo(pt)
             return self
         
         a = Point(self.value[-1][-1][-1])
         d = Point(pt)
-        box = Rect.FromMnMnMxMx([min(a.x, d.x), min(a.y, d.y), max(a.x, d.x), max(a.y, d.y)])
+        box = Rect.FromMnMnMxMx([
+            min(a.x, d.x),
+            min(a.y, d.y),
+            max(a.x, d.x),
+            max(a.y, d.y)
+        ])
+
         try:
             f1, f2 = factor
         except TypeError:
@@ -465,8 +473,18 @@ class DraftingPen(RecordingPen, SHContext):
                 f1, f2 = (factor, factor)
 
         if isinstance(point, str):
-            p = box.point(point)
-            p1, p2 = (p, p)
+            if point == "cx":
+                if a.y < d.y:
+                    p1 = box.pse
+                    p2 = box.pnw
+                elif a.y > d.y:
+                    p1 = box.pne
+                    p2 = box.psw
+                else:
+                    p1 = p2 = a.interp(0.5, d)
+            else:
+                p = box.point(point)
+                p1, p2 = (p, p)
         elif isinstance(point, Point):
             p1, p2 = point, point
         else:

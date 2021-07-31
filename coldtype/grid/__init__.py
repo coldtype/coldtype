@@ -1,5 +1,6 @@
 import re, math
 from coldtype.geometry import Rect, Edge, Point
+from string import ascii_lowercase
 
 
 def parse_line(d, line):
@@ -49,11 +50,41 @@ def union_rect(r1, r2):
     return Rect(ox, oy, ex-ox, ey-oy)
     
 class Grid():
-    def __init__(self, r, columns="auto", rows="auto", areas=None):
+    def __init__(self,
+        r,
+        columns="auto",
+        rows="auto",
+        areas=None
+        ):
         self._rect = r
-        self.columns = columns
-        self.rows = rows
+
+        if isinstance(columns, str):
+            self.columns = columns
+        else:
+            self.columns = ("a "*columns).strip()
+
+        if isinstance(rows, str):
+            self.rows = rows
+        else:
+            self.rows = ("a "*rows).strip()
+        
+        #print("ROWS", self.rows)
+        
         self.areas = areas
+        if not self.areas:
+            ls = ascii_lowercase
+            cs = []
+            cw = len(re.sub(r"\s", "", self.columns))
+            if len(self.rows) == 1:
+                cs = [" ".join(ls[0:cw])]
+            else:
+                for ridx, r in enumerate(re.sub(r"\s", "", self.rows)):
+                    #print("ROW", r, li, ls[li:cw+li])
+                    pre = ls[ridx]
+                    cs.append(pre + f" {pre}".join(ls[0:cw]))
+            self.areas = " / ".join(cs)
+            #print(self.areas)
+
         self.cells = None
         self.keyed = None
         self.update()

@@ -1,19 +1,43 @@
+from coldtype.grid import Grid
 from coldtype import *
 
-@animation((1080, 1080), timeline=60, composites=1)
+blc_font = Font.Cacheable("~/Downloads/BLC_Animated_Wordmarks.ttf")
+
+@animation((1080, 1080), timeline=320, composites=1)
 def scratch(f):
-    a, b, c, d, e = f.a.r.subdivide(5, "⊢")
+    g = Grid(f.a.r, 4, 3)
+
+    e2 = (DP().define(Grid(f.a.r, 4, 3))
+        .gs("""$ca↙ ⌶|95|$ca↗ ⌶|95|$bb• ⌶|75|$bb↗
+            $bc↗ ⌶|95|$ad• ⌶|95|$ad↗ ɜ"""))
+    
+    e3 = (DP().define(Grid(f.a.r, 4, 1))
+        .gs("$a↙ $b↓ ⌶|95|$b↗ $c↗ ⌶|65|$d↓ $d↘ ɜ"))
+    
+    return DPS([
+        e2.fssw(None, 0, 2),
+        e3.fssw(None, hsl(0.3), 2),
+        DP(f.a.r.take(f.e("l"), "mnx")).f(0, 0.1),
+        (StSt("BA L CT", blc_font,
+            font_size=f.e(e3, rng=(120, 300)),
+            #font_size=200,
+            anim=f.e(e2))
+            .align(f.a.r))
+    ])
+    
+    print(g.keyed["k"])
+
     ec = (DP()
-        .define(r=f.a.r, a=a, b=b, c=c, d=d, e=e)
-        .gs("$a↙ ↘↖|75|$a→ $b→ ↘↖|75|$c↗ ↗↙|95|$d↘ $e↘ ɜ"))
+        .define(Grid(f.a.r, 5, 1))
+        .gs("$a↙ ⌶|95|$a→ $b→ ⌶|75|$c↑ ⌶|95|$d↓ $e↘ ɜ"))
     
     sc = (DP()
-        .define(r=f.a.r, a=a, b=b, c=c, d=d, e=e)
-        .gs("$a↙ $a↘ ↘↖|95|$b↗ $c↗ ↗↙|95|$d↘ $e↘ ɜ"))
+        .define(Grid(f.a.r, 5, 1))
+        .gs("$a↖ $a↗ ⌶|85|$b↘ $c↘ ⌶|95|$d↗ $e↗ ɜ"))
     
     txt = (StSt("COLD", Font.ColdtypeObviously(),
-        f.e(sc, 0, rng=(500, 300)),
-        100,
+        f.e(sc, 0, rng=(300, 500)),
+        #300,
         wdth=f.e(ec, 0),
         ro=1)
         .align(f.a.r))
@@ -26,7 +50,8 @@ def scratch(f):
         ])
 
     return DPS([
-        ec.copy().scale(0.95).fssw(None, hsl(0.6), 5),
-        sc.copy().scale(0.95).fssw(None, hsl(0.7), 5),
-        txt.fssw(hsl(0.2), 0, 0)
+        ec.copy().scale(1, 0.5).fssw(None, hsl(0.6), 5),
+        sc.copy().scale(1, 0.5).fssw(None, hsl(0.7), 5),
+        txt.fssw(bw(1, 0.9), hsl(0.9), 5),
+        DP(f.a.r.take(f.e("l"), "mnx")).f(0, 0.1),
     ])
