@@ -55,7 +55,7 @@ Table of Contents
 
    about
    install
-   cheatsheet
+   cheatsheets/index
    tutorials/index
    api/index
 

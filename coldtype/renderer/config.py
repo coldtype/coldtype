@@ -29,7 +29,8 @@ class ConfigOption(Enum):
     MonitorName = ("monitor_name", None, "mn")
     EditorCommand = ("editor_command", None, "ec")
     ManyIncrement = ("many_increment", None, "minc")
-    PreviewScale = ("preview_scale", 1, "ps")
+    PreviewScale = ("preview_scale", 1, "ps",
+        lambda x: float(x))
     FontDirs = ("font_dirs", [], "fd")
     Midi = ("midi", {}, None)
     Hotkeys = ("hotkeys", {}, None)
