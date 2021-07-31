@@ -14,6 +14,8 @@ from fontTools.pens.basePen import decomposeQuadraticSegment
 from fontTools.pens.reverseContourPen import ReverseContourPen
 
 from fontPens.flattenPen import FlattenPen
+from fontPens.marginPen import MarginPen
+
 from coldtype.geometry import Atom, Point, Line, Edge, Rect, Curve, align
 from coldtype.color import normalize_color
 from coldtype.sh import SH_UNARY_SUFFIX_PROPS, sh, SHContext
@@ -1456,6 +1458,18 @@ class DraftingPen(RecordingPen, SHContext):
                 new_vl.append([mv, pts])
         self.value = new_vl
         return self
+
+    def ease_t(self, e):
+        _, _, w, h = self.ambit()
+        pen = MarginPen(None, e*w, isHorizontal=False)
+        self.replay(pen)
+        try:
+            return pen.getAll()[0]/h
+        except IndexError:
+            # HACK for now but I guess works?
+            #print("INDEX ERROR", e)
+            return self.ease_t(e-0.01)
+            return 0
     
     def pickle(self, dst):
         dst.parent.mkdir(parents=True, exist_ok=True)

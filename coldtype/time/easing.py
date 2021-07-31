@@ -1,6 +1,7 @@
 import math
 import easing_functions as ef
 from fontTools.misc.bezierTools import splitCubic, splitLine
+from fontPens.marginPen import MarginPen
 
 from typing import List
 
@@ -94,6 +95,7 @@ def ease(style, x):
     if e:
         return e().ease(x), 0.5
     elif hasattr(style, "moveTo"):
+        return style.ease_t(x), 0.5
         return curve_pos_and_speed(style, x)
     elif False:
         if style in easer_ufo:

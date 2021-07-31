@@ -1,3 +1,4 @@
+from coldtype.pens.draftingpen import DraftingPen
 from coldtype.time.timeable import Timing, Timeable, TimeableSet
 from coldtype.time.timeline import Timeline
 from coldtype.time.loop import Loop, LoopPhase
@@ -24,7 +25,7 @@ class Frame():
         return Frame(self.i+off, self.a)
     
     def e(self, easefn="eeio", loops=0, rng=(0, 1), on=None, cyclic=True, to1=False):
-        if not isinstance(easefn, str):
+        if not isinstance(easefn, str) and not isinstance(easefn, DraftingPen):
             loops = easefn
             easefn = "eeio"
         t = self.a.progress(self.i%self.a.duration, loops=loops, easefn=easefn, cyclic=cyclic, to1=to1)
