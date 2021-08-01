@@ -369,10 +369,10 @@ class DATPen(DraftingPen):
             self.skeleton().f(None).s(hsl(0.9)).sw(4)
         ])
     
-    def all_guides(self, field="defs", sw=6, l=0):
+    def all_guides(self, field="defs", sw=1, l=0, a=0.15):
         dps = DATPens()
         for idx, (k, x) in enumerate(getattr(self, field).values.items()):
-            c = hsl(idx/2.3, 1, l=0.35, a=0.35)
+            c = hsl(idx/2.3, 1, l=0.35, a=a)
             if isinstance(x, Geometrical) or isinstance(x, DraftingPen):
                 g = (DATPen(x)
                     .translate(l, 0)
@@ -382,7 +382,7 @@ class DATPen(DraftingPen):
                     c = hsl(0.6, 1, 0.5, 0.25)
                     g.s(c).sw(2)
                 dps += g
-                dps += DATText(k, ["Helvetica", 24, dict(fill=c.with_alpha(0.5).darker(0.2))], Rect.FromCenter(g.bounds().pc, 24))
+                dps += DATText(k, ["Helvetica", 24, dict(fill=c.with_alpha(a).darker(0.2))], Rect.FromCenter(g.bounds().pc, 24))
         return dps
     
     def preserve(self, tag, calls, dir=None):

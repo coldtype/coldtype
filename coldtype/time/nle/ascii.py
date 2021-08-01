@@ -94,7 +94,10 @@ class AsciiTimeline(Timeline):
             return matches[0] if matches else None
         return matches
     
-    def map(self, r):
+    def rmap(self, r):
+        """
+        Rect-map, i.e. a representation of this ascii timeline as a 2D map of rectangles
+        """
         from coldtype.geometry.rect import Rect
         out = {}
         for clip in self.clips:
