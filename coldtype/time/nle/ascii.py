@@ -93,3 +93,11 @@ class AsciiTimeline(Timeline):
         if first:
             return matches[0] if matches else None
         return matches
+    
+    def map(self, r):
+        from coldtype.geometry.rect import Rect
+        out = {}
+        for clip in self.clips:
+            sc = r.w / self.duration
+            out[clip.name] = Rect(clip.start * sc, 0, clip.duration * sc, r.h)
+        return out

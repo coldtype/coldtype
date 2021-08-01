@@ -212,7 +212,14 @@ class DraftingPen(RecordingPen, SHContext):
             self.record(p)
         return self
     
-    def gs(self, s, fn=None, tag=None, writer=None, ctx=None, dps=None, macros={}):
+    def ez(self, r, start_y, end_y, s):
+        self.moveTo(r.edge("W").t(start_y))
+        self.gs(s, do_close=False, first_move="lineTo")
+        self.lineTo(r.edge("E").t(end_y))
+        self.endPath()
+        return self
+    
+    def gs(self, s, fn=None, tag=None, writer=None, ctx=None, dps=None, macros={}, do_close=True, first_move="moveTo"):
         ctx = ctx or self
         macros = {**self.macros, **macros}
 
@@ -238,6 +245,7 @@ class DraftingPen(RecordingPen, SHContext):
         #print("MOVES", moves)
         
         def one_move(_e, move="lineTo"):
+            #print("ONE_MOVE", _e, move)
             if _e is None:
                 return
             elif isinstance(_e, Point):
@@ -268,7 +276,7 @@ class DraftingPen(RecordingPen, SHContext):
             res = sh(mvs[0], ctx, dps)
         else:
             res = [mvs[0]]
-        one_move(res[0], move="moveTo")
+        one_move(res[0], move=first_move)
 
         try:
             start = self.value[0][1][-1]
@@ -285,7 +293,7 @@ class DraftingPen(RecordingPen, SHContext):
             if res:
                 one_move(res[0], move="lineTo")
         
-        if self.unended():
+        if self.unended() and do_close:
             self.closePath()
 
         if tag:
@@ -475,13 +483,28 @@ class DraftingPen(RecordingPen, SHContext):
                 f1, f2 = (factor, factor)
 
         if isinstance(point, str):
-            if point == "cx":
+            #print("POINT", point)
+            if point == "cx": # ease-in-out
                 if a.y < d.y:
                     p1 = box.pse
                     p2 = box.pnw
                 elif a.y > d.y:
                     p1 = box.pne
                     p2 = box.psw
+                else:
+                    p1 = p2 = a.interp(0.5, d)
+            elif point == "e": # ease-in
+                if a.y < d.y:
+                    p1 = p2 = box.pse
+                elif a.y > d.y:
+                    p1 = p2 = box.pne
+                else:
+                    p1 = p2 = a.interp(0.5, d)
+            elif point == "w": # ease-out
+                if a.y < d.y:
+                    p1 = p2 = box.pnw
+                elif a.y > d.y:
+                    p1 = p2 = box.psw
                 else:
                     p1 = p2 = a.interp(0.5, d)
             else:
@@ -1479,7 +1502,7 @@ class DraftingPen(RecordingPen, SHContext):
         self.value = new_vl
         return self
 
-    def ease_t(self, e):
+    def ease_t(self, e, tries=0):
         _, _, w, h = self.ambit()
         pen = MarginPen(None, e*w, isHorizontal=False)
         self.replay(pen)
@@ -1488,7 +1511,8 @@ class DraftingPen(RecordingPen, SHContext):
         except IndexError:
             # HACK for now but I guess works?
             #print("INDEX ERROR", e)
-            return self.ease_t(e-0.01)
+            if tries < 500:
+                return self.ease_t(e-0.01, tries=tries+1)
             return 0
     
     def pickle(self, dst):

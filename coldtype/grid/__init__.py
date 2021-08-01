@@ -99,6 +99,10 @@ class Grid():
         return self
     
     @property
+    def r(self):
+        return self.rect
+    
+    @property
     def rect(self):
         return self._rect
     

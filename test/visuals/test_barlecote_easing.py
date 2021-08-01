@@ -1,47 +1,51 @@
 from coldtype.grid import Grid
+from coldtype.time.nle.ascii import AsciiTimeline
 from coldtype import *
 
 blc_font = Font.Cacheable("~/Downloads/BLC_Animated_Wordmarks.ttf")
 
+at = AsciiTimeline(4, 30, """
+[a     ][b  ][c      ][d   ][e  ][f    ]
+""")
+
 @animation((1080, 1080), timeline=90, composites=1)
 def scratch(f):
 
-    g = Grid(f.a.r, "a 100 a 320 a", "a", "a b c d e")
-    e1 = (P().define(g)
-        .gs("""$a↙ ⌶|95|$b⊢τ0.33 $c⊢τ0.33
-            ⌶|95|$d⊢τ0.6666 $e⊢τ0.6666 ⌶|65|$e↗ ɜ"""))
+    g = Grid(f.a.r,
+        "150 100 250 a 100 100",
+        areas="a b c d e f")
+
+    #print(at.map(f.a.r))
+    
+    e1 = (P().define(g, A=1/3, B=2/3)
+        .ez(g.r, 0, 1,
+            """⌶|95|$b⊢τ$A $c⊢τ$A
+            ⌶|75|$d⊢τ$B $e⊢τ$B ⌶|65|$e↗"""))
+    
+    e1 = (P().define(at.map(f.a.r), A=1/3, B=2/3)
+        .ez(f.a.r, 0, 1,
+            """⌶|95|$b⊢τ$A $c⊢τ$A
+            ⌶|75|$d⊢τ$B $e⊢τ$B ⌶|65|$e↗"""))
+
     e2 = (P().define(g)
-        .gs("""$a↙ $c↓ ⌶|95|$c↗ $d↗ ⌶|65|$e↘ ɜ"""))
+        .ez(g.r, 0, 0,
+            "$c↓ ⌶|85|$c↗OX200 $d↗ ⌶|95|$f↘"))
+        
+    e2 = (P().define(at.map(f.a.r))
+        .ez(f.a.r, 0, 0,
+            "$c↓ ⌶|65|$c↗ $d↑ ⌶|95|$e↘"))
     
     return PS([
-        #e1.all_guides(),
-        e1.fssw(None, hsl(0.3, 0.5), 5),
-        e2.fssw(None, hsl(0.9, 0.5), 5),
+        #e2.all_guides(),
         (StSt("BA L CT", blc_font,
             font_size=f.e(e2, rng=(120, 360)),
-            anim=f.e(e1))
-            .align(f.a.r))
+            anim=f.e(e1),
+            kp={"C/T":-3})
+            .align(f.a.r)),
+        e1.fssw(None, hsl(0.3, 0.5, a=0.2), 10),
+        e2.fssw(None, hsl(0.9, 0.5, a=0.2), 10),
+        #e3.fssw(None, hsl(0.5, 0.5, a=0.2), 10),
     ])
-
-    e2 = (P().define(Grid(f.a.r, 4, 3))
-        .gs("""$ca↙ ↘|75|$ca↗ ⌶|95|$bb• ↖|65|$bc↖ ⌶|75|$bc↑
-            $bc↗ ⌶|95|$ad• ⌶|65|$ad↗ ɜ"""))
-    
-    e3 = (P().define(Grid(f.a.r, 4, 1))
-        .gs("$a↙ $b↓ ⌶|95|$c↖OX80 $c↑ ⌶|95|$d↙ $d↘ ɜ"))
-    
-    return PS([
-        e2.all_guides(),
-        e2.fssw(None, 0, 2),
-        #e3.fssw(None, hsl(0.3), 2),
-        #DP(f.a.r.take(f.e("l"), "mnx")).f(0, 0.1),
-        ßhide(StSt("BA L CT", blc_font,
-            font_size=f.e(e3, rng=(120, 300)),
-            #font_size=120,
-            anim=f.e(e2))
-            .align(f.a.r))])
-    
-    print(g.keyed["k"])
 
     ec = (DP()
         .define(Grid(f.a.r, 5, 1))

@@ -63,9 +63,14 @@ class SHLookup():
     def record_many(self, ctx, cb, *args, **kwargs):
         from coldtype.grid import Grid
         
-        if len(args) > 0 and isinstance(args[0], Grid):
-            kwargs = args[0].keyed
-            args = []
+        if len(args) > 0:
+            if isinstance(args[0], Grid):
+                kwargs = {**args[0].keyed, **kwargs}
+                kwargs["r"] = args[0].rect
+                args = []
+            elif isinstance(args[0], dict):
+                kwargs = {**args[0], **kwargs}
+                args = []
         
         for arg in args:
             kwargs[str(random())] = arg
