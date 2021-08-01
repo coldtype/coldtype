@@ -3,27 +3,43 @@ from coldtype import *
 
 blc_font = Font.Cacheable("~/Downloads/BLC_Animated_Wordmarks.ttf")
 
-@animation((1080, 1080), timeline=320, composites=1)
+@animation((1080, 1080), timeline=90, composites=1)
 def scratch(f):
-    g = Grid(f.a.r, 4, 3)
 
-    e2 = (DP().define(Grid(f.a.r, 4, 3))
-        .gs("""$ca↙ ⌶|95|$ca↗ ⌶|95|$bb• ⌶|75|$bb↗
-            $bc↗ ⌶|95|$ad• ⌶|95|$ad↗ ɜ"""))
+    g = Grid(f.a.r, "a 100 a 320 a", "a", "a b c d e")
+    e1 = (P().define(g)
+        .gs("""$a↙ ⌶|95|$b⊢τ0.33 $c⊢τ0.33
+            ⌶|95|$d⊢τ0.6666 $e⊢τ0.6666 ⌶|65|$e↗ ɜ"""))
+    e2 = (P().define(g)
+        .gs("""$a↙ $c↓ ⌶|95|$c↗ $d↗ ⌶|65|$e↘ ɜ"""))
     
-    e3 = (DP().define(Grid(f.a.r, 4, 1))
-        .gs("$a↙ $b↓ ⌶|95|$b↗ $c↗ ⌶|65|$d↓ $d↘ ɜ"))
-    
-    return DPS([
-        e2.fssw(None, 0, 2),
-        e3.fssw(None, hsl(0.3), 2),
-        DP(f.a.r.take(f.e("l"), "mnx")).f(0, 0.1),
+    return PS([
+        #e1.all_guides(),
+        e1.fssw(None, hsl(0.3, 0.5), 5),
+        e2.fssw(None, hsl(0.9, 0.5), 5),
         (StSt("BA L CT", blc_font,
-            font_size=f.e(e3, rng=(120, 300)),
-            #font_size=200,
-            anim=f.e(e2))
+            font_size=f.e(e2, rng=(120, 360)),
+            anim=f.e(e1))
             .align(f.a.r))
     ])
+
+    e2 = (P().define(Grid(f.a.r, 4, 3))
+        .gs("""$ca↙ ↘|75|$ca↗ ⌶|95|$bb• ↖|65|$bc↖ ⌶|75|$bc↑
+            $bc↗ ⌶|95|$ad• ⌶|65|$ad↗ ɜ"""))
+    
+    e3 = (P().define(Grid(f.a.r, 4, 1))
+        .gs("$a↙ $b↓ ⌶|95|$c↖OX80 $c↑ ⌶|95|$d↙ $d↘ ɜ"))
+    
+    return PS([
+        e2.all_guides(),
+        e2.fssw(None, 0, 2),
+        #e3.fssw(None, hsl(0.3), 2),
+        #DP(f.a.r.take(f.e("l"), "mnx")).f(0, 0.1),
+        ßhide(StSt("BA L CT", blc_font,
+            font_size=f.e(e3, rng=(120, 300)),
+            #font_size=120,
+            anim=f.e(e2))
+            .align(f.a.r))])
     
     print(g.keyed["k"])
 

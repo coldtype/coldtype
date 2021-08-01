@@ -13,7 +13,7 @@ class Timing():
     
     def ease(self, easefn):
         easer = easefn
-        if not isinstance(easer, str) and not hasattr(easer, "value"):
+        if not isinstance(easer, str) and not hasattr(easer, "value") and not type(easefn).__name__ == "Glyph":
             try:
                 iter(easefn) # is-iterable
                 if len(easefn) > self.loop:

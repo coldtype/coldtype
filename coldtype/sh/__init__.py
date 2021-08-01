@@ -60,6 +60,7 @@ SH_BINARY_OPS = {
     "∏": "project",
     "π": "pinch",
     "†": "take_curve",
+    "τ": "t",
     "Ⓕ": "f",
     "Ⓢ": "ssw",
     "Ⓣ": "translate",

@@ -25,7 +25,7 @@ class Frame():
         return Frame(self.i+off, self.a)
     
     def e(self, easefn="eeio", loops=0, rng=(0, 1), on=None, cyclic=True, to1=False):
-        if not isinstance(easefn, str) and not isinstance(easefn, DraftingPen):
+        if not isinstance(easefn, str) and not isinstance(easefn, DraftingPen) and not type(easefn).__name__ == "Glyph":
             loops = easefn
             easefn = "eeio"
         t = self.a.progress(self.i%self.a.duration, loops=loops, easefn=easefn, cyclic=cyclic, to1=to1)

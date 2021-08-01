@@ -369,6 +369,22 @@ class DATPen(DraftingPen):
             self.skeleton().f(None).s(hsl(0.9)).sw(4)
         ])
     
+    def all_guides(self, field="defs", sw=6, l=0):
+        dps = DATPens()
+        for idx, (k, x) in enumerate(getattr(self, field).values.items()):
+            c = hsl(idx/2.3, 1, l=0.35, a=0.35)
+            if isinstance(x, Geometrical) or isinstance(x, DraftingPen):
+                g = (DATPen(x)
+                    .translate(l, 0)
+                    .f(None)
+                    .s(c).sw(sw))
+                if k in ["gb", "gc", "gs", "gxb"]:
+                    c = hsl(0.6, 1, 0.5, 0.25)
+                    g.s(c).sw(2)
+                dps += g
+                dps += DATText(k, ["Helvetica", 24, dict(fill=c.with_alpha(0.5).darker(0.2))], Rect.FromCenter(g.bounds().pc, 24))
+        return dps
+    
     def preserve(self, tag, calls, dir=None):
         self.tag(tag)
         pdir = Path("preserved" or dir)
@@ -687,22 +703,6 @@ class DATPens(DraftingPens, DATPen):
         if not pts:
             self.append(_pts)
         return self
-    
-    def all_guides(self, field="defs", sw=6, l=0):
-        dps = DATPens()
-        for idx, (k, x) in enumerate(getattr(self, field).values.items()):
-            c = hsl(idx/2.3, 1, l=0.35, a=0.35)
-            if isinstance(x, Geometrical) or isinstance(x, DraftingPen):
-                g = (DATPen(x)
-                    .translate(l, 0)
-                    .f(None)
-                    .s(c).sw(sw))
-                if k in ["gb", "gc", "gs", "gxb"]:
-                    c = hsl(0.6, 1, 0.5, 0.25)
-                    g.s(c).sw(2)
-                dps += g
-                dps += DATText(k, ["Helvetica", 24, dict(fill=c.with_alpha(0.5).darker(0.2))], Rect.FromCenter(g.bounds().pc, 24))
-        return dps
     
     def addOverlaps(self, idx1, idx2, which, outline=3, scale=1, xray=0):
         c1 = self[idx1]

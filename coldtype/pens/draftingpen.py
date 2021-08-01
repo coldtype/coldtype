@@ -235,6 +235,8 @@ class DraftingPen(RecordingPen, SHContext):
             e = s
             moves = e
         
+        #print("MOVES", moves)
+        
         def one_move(_e, move="lineTo"):
             if _e is None:
                 return
