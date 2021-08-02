@@ -106,6 +106,23 @@ class TestI18N(unittest.TestCase):
             Rect([127,138,737,225]))
         self.assertEqual(dps[1].ambit().round(),
             Rect([540,138,100,20]))
+    
+    def test_language_specific_forms(self):
+        fnt = "assets/SourceSerifPro-Black.ttf"
+        txt = StSt("ríjks", fnt, 350, lang="NLD")
+        self.assertEqual(txt[1].glyphName, "iacute")
+        self.assertEqual(txt[2].glyphName, "uni0237")
+        print(txt.tree())
+        txt = StSt("ríjks", fnt, 350)
+        self.assertEqual(txt[1].glyphName, "iacute")
+        self.assertEqual(txt[2].glyphName, "j")
+    
+    def test_language_specific_ufo(self):
+        hershey_gothic = Font.Cacheable("~/Type/fonts/fonts/hershey/Hershey-TriplexGothicGerman.ufo")
+        txt = StSt("Grieß".upper(), hershey_gothic, 200, tu=-100)
+        self.assertEqual(len(txt), 6)
+        self.assertEqual(txt[-1].glyphName, "S")
+        self.assertEqual(txt[-2].glyphName, "S")
 
 
 if __name__ == "__main__":
