@@ -1,5 +1,6 @@
 import enum
 from coldtype.time.timeline import Timeline, Timeable
+from coldtype.geometry.rect import Rect
 
 
 class AsciiTimeline(Timeline):
@@ -94,7 +95,7 @@ class AsciiTimeline(Timeline):
             return matches[0] if matches else None
         return matches
     
-    def rmap(self, r):
+    def rmap(self, r=Rect(1000, 1000)):
         """
         Rect-map, i.e. a representation of this ascii timeline as a 2D map of rectangles
         """

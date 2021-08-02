@@ -54,7 +54,7 @@ class TestCairoPen(unittest.TestCase):
             rr = Rect(0, 0, 100, 100)
             dp = (DATPen()
                 .define(r=rr, c=75)
-                .gs("$r↗ ↘|$c|$r↓ ↙|$c|$r↖")
+                .gs("$r↗ $r↓|↘|$c $r↖|↙|$c")
                 .align(r)
                 .scale(1.2)
                 .rotate(180)

@@ -27,10 +27,10 @@ def test2(r):
 def test3(r):
     def sqc(c, cc):
         return f"""{c}↑
-            ↗|{cc}_|{c}→
-            ↘|{cc}~|{c}↓
-            ↙|{cc}_|{c}←
-            ↖|{cc}~|{c}↑"""
+            {c}→|↗|{cc}_
+            {c}↓|↘|{cc}~
+            {c}←|↙|{cc}_
+            {c}↑|↖|{cc}~"""
     
     return (DPS()
         .record(StyledString("o", Style("~/Type/fonts/fonts/vulf/VulfMonoRegular.otf", 700)).pen().align(r, tv=1))

@@ -26,6 +26,7 @@ SH_UNARY_TO_STRING = {
     "↘": "SE",
     "↙": "SW",
     "•": "C",
+    "∫": "eio",
 }
 
 SH_UNARY_SUFFIX_PROPS = {

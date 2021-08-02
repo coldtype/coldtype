@@ -17,7 +17,7 @@ class TestDraftingPens(unittest.TestCase):
         dps = DraftingPens()
         dp = (DraftingPen()
             .define(r=r)
-            .gs("$r↖ $r↗ ↘|65|$r↙ ɜ"))
+            .gs("$r↖ $r↗ $r↙|↘|65 ɜ"))
         self.assertEqual(len(dp.value), 4)
         self.assertEqual(dp.value[-2][-1][0], Point(100, 35))
         self.assertEqual(dp.value[-1][0], "endPath")

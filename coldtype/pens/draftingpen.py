@@ -231,7 +231,7 @@ class DraftingPen(RecordingPen, SHContext):
             return " ".join(out)
 
         def sp(_s):
-            return [x.strip() for x in re.split(r"\s|\n", _s)]
+            return [x.strip() for x in re.split(r"[\s\n]+", _s)]
 
         if isinstance(s, str):
             s = s
@@ -240,9 +240,7 @@ class DraftingPen(RecordingPen, SHContext):
             moves = sp(s)
         else:
             e = s
-            moves = e
-        
-        #print("MOVES", moves)
+            moves = sp(e)
         
         def one_move(_e, move="lineTo"):
             #print("ONE_MOVE", _e, move)
@@ -264,6 +262,8 @@ class DraftingPen(RecordingPen, SHContext):
                         macro_fn(self, *_e[1:])
                     else:
                         raise Exception("unrecognized macro '" + macro + "'")
+            elif _e[0] == "eio":
+                self.ioEaseCurveTo(*_e[1:])
             elif len(_e) >= 3:
                 if len(_e) >= 5:
                     self.interpCurveTo(*_e)
@@ -464,7 +464,7 @@ class DraftingPen(RecordingPen, SHContext):
         self.endPath()
         return self
     
-    def ioEaseCurveTo(self, pt, angle=1, fA=0.5, fB=0.9):
+    def ioEaseCurveTo(self, pt, slope=0, fA=0, fB=85):
         a = Point(self.value[-1][-1][-1])
         d = Point(pt)
         box = Rect.FromMnMnMxMx([
@@ -475,7 +475,11 @@ class DraftingPen(RecordingPen, SHContext):
         ])
 
         if a.y < d.y:
-            angle = -angle
+            line_vertical = Line(box.ps, box.pn)
+        else:
+            line_vertical = Line(box.pn, box.ps)
+
+        angle = Line(a, d).angle() - line_vertical.angle()
 
         try:
             fA1, fA2 = fA
@@ -487,7 +491,7 @@ class DraftingPen(RecordingPen, SHContext):
         except TypeError:
             fB1, fB2 = fB, fB
 
-        rotated = Line(box.ps, box.pn).rotate(angle)
+        rotated = line_vertical.rotate(math.degrees(angle*(slope/100)))
         vertical = Line(rotated.intersection(box.es), rotated.intersection(box.en))
 
         if a.y > d.y:
@@ -510,7 +514,7 @@ class DraftingPen(RecordingPen, SHContext):
         self.lineTo(d)
         return self
     
-    def boxCurveTo(self, point, factor, pt, po=(0, 0), mods={}, flatten=False):
+    def boxCurveTo(self, pt, point, factor=65, po=(0, 0), mods={}, flatten=False):
         #print("BOX", point, factor, pt, po, mods)
 
         if flatten:

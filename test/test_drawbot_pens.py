@@ -40,7 +40,7 @@ class TestDrawbotPens(unittest.TestCase):
             rr = Rect(0, 0, 100, 100)
             dp = (DraftingPen()
                 .define(r=rr, c=75)
-                .gs("$r↗ ↘|$c|$r↓ ↙|$c|$r↖")
+                .gs("$r↗ $r↓|↘|$c $r↖|↙|$c")
                 .align(r)
                 .scale(1.2)
                 .f(hsl(0.8, a=0.1))

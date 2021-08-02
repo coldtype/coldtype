@@ -15,9 +15,9 @@ def test(r):
 def test2(r):
     return (DPS()
         .define(r=r.inset(50), cf="65")
-        .gs("""$r←↓↑ $r↓|45|$r→
-            ↙|$cf|$r↑
-            $r→|$cf+10|$r↓OX-130 ɜ""")
+        .gs("""$r←↓↑ $r→|$r↓|45
+            $r↑|↙|$cf
+            $r↓OX-130|$r→|$cf+10 ɜ""")
         .f(hsl(0.9,l=0.8)).s(0).sw(4)
         .define(
             a="$r↖⨝$r↘",
@@ -28,7 +28,7 @@ def test2(r):
 def test3(r):
     return (DPS()
         .define(r=r.inset(180))
-        .gs("$r← $r↑|x:=335|$r→ $r↓|x|$r←")
+        .gs("$r← $r→|$r↑|x:=335 $r←|$r↓|x")
         .f(hsl(0.7, l=0.9)).s(0).sw(4)
         .rotate(90))
 
@@ -37,5 +37,5 @@ def test4(r):
     return (DPS()
         .define(r=r.inset(150))
         .gss("x:=$r⊣ y:=xOX50 ($r⊤∩(y))OY50")
-        .gs("(r:=$rI-20)↖ ↙↗|175|r↓")
+        .gs("(r:=$rI-20)↖ r↓|↙↗|175")
         .f(None).s(0).sw(4))

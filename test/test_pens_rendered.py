@@ -45,7 +45,7 @@ class TestCairoPen(unittest.TestCase):
                     r=r,
                     nx=100,
                     a="$rIX100SY+200")
-                .gs("$a↙ $a↖OX+$nx|65|$a↑ $a↗OX-$nx|65|$a↘ ɜ")
+                .gs("$a↙ $a↑|$a↖OX+$nx|65 $a↘|$a↗OX-$nx|65 ɜ")
                 .f(None).s(0).sw(4)
                 .append(StSt("Coldtype Cdelopty".upper(),
                     co, 100, wdth=0.5)
