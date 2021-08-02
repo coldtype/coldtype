@@ -1,4 +1,5 @@
 import math, tempfile, pickle, inspect
+from os import stat
 from pathlib import Path
 
 from typing import Optional, Callable, Tuple
@@ -142,9 +143,6 @@ class DATPen(DraftingPen):
         return self.intersection(DATPen().fence(*lines))
     
     ƒ = fenced
-    
-    def connect(self):
-        return self.map(lambda i, mv, pts: ("lineTo" if i > 0 and mv == "moveTo" else mv, pts))
     
     def smooth(self):
         """Runs a catmull spline on the datpen, useful in combination as flatten+roughen+smooth"""
@@ -465,6 +463,20 @@ class DATPen(DraftingPen):
         dpio.data["fn_src"] = fn_src
         pickle.dump(dpio, open(path, "wb"))
         return dpio
+    
+    @staticmethod
+    def WithRect(rect, fn):
+        dp = DATPen()
+        return fn(rect, dp)
+    
+    @staticmethod
+    def With1000(fn):
+        return DATPen.WithRect(Rect(1000, 1000), fn)
+    
+    # @staticmethod
+    # def Easer(angle=1, fA=0.5, fB=0.9):
+    #     return DATPen.With1000(lambda r, p:
+    #         p.ease_curve(r.psw, r.pne, angle, fA, fB))
 
 
 class DATPens(DraftingPens, DATPen):

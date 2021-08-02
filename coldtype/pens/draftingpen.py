@@ -458,6 +458,58 @@ class DraftingPen(RecordingPen, SHContext):
         c = Line(d, pl.end).t(f2/100)
         return self.curveTo(b, c, d)
     
+    def io_ease_curve(self, start, pt, angle=1, fA=0.5, fB=0.9):
+        self.moveTo(start)
+        self.ioEaseCurveTo(pt, angle, fA, fB)
+        self.endPath()
+        return self
+    
+    def ioEaseCurveTo(self, pt, angle=1, fA=0.5, fB=0.9):
+        a = Point(self.value[-1][-1][-1])
+        d = Point(pt)
+        box = Rect.FromMnMnMxMx([
+            min(a.x, d.x),
+            min(a.y, d.y),
+            max(a.x, d.x),
+            max(a.y, d.y)
+        ])
+
+        if a.y < d.y:
+            angle = -angle
+
+        try:
+            fA1, fA2 = fA
+        except TypeError:
+            fA1, fA2 = fA, fA
+        
+        try:
+            fB1, fB2 = fB
+        except TypeError:
+            fB1, fB2 = fB, fB
+
+        rotated = Line(box.ps, box.pn).rotate(angle)
+        vertical = Line(rotated.intersection(box.es), rotated.intersection(box.en))
+
+        if a.y > d.y:
+            vertical = vertical.reverse()
+
+        c1 = Line(a, vertical.start).t(fA1)
+        c2 = Line(vertical.mid, vertical.start).t(fA1)
+        self.lineTo(c1)
+        self.curveTo(
+            Line(c1, vertical.start).t(fB1),
+            Line(c2, vertical.start).t(fB1),
+            c2)
+        c1 = Line(vertical.mid, vertical.end).t(fA2)
+        c2 = Line(d, vertical.end).t(fA2)
+        self.lineTo(c1)
+        self.curveTo(
+            Line(c1, vertical.end).t(fB2),
+            Line(c2, vertical.end).t(fB2),
+            c2)
+        self.lineTo(d)
+        return self
+    
     def boxCurveTo(self, point, factor, pt, po=(0, 0), mods={}, flatten=False):
         #print("BOX", point, factor, pt, po, mods)
 
@@ -1191,6 +1243,10 @@ class DraftingPen(RecordingPen, SHContext):
     def removeOverlap(self):
         """Remove overlaps within this shape and return itself."""
         return self._pathop(otherPen=None, operation=BooleanOp.Simplify)
+    
+    def connect(self, *others):
+        ps = self.multi_pen_class([self, *others]).distribute().pen()
+        return ps
     
     # ATTRIBUTES
 
