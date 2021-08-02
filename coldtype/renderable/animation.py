@@ -1,4 +1,4 @@
-import math, os
+import math, os, re
 from typing import Tuple
 
 from enum import Enum
@@ -47,6 +47,7 @@ class animation(renderable, Timeable):
         show_frame=True,
         overlay=True,
         watch_render=None,
+        write_start=0,
         **kwargs
         ):
         if watch_render:
@@ -69,8 +70,11 @@ class animation(renderable, Timeable):
         self.start = 0
         self.end = duration
         self.show_frame = show_frame
-        
+        self.write_start = write_start
         self.storyboard = storyboard
+        if self.write_start and self.storyboard == [0]:
+            self.storyboard = [self.write_start]
+
         if timeline:
             if not isinstance(timeline, Timeline):
                 try:
@@ -152,16 +156,21 @@ class animation(renderable, Timeable):
         return current
     
     def pass_suffix(self, index):
+        idx_offset = (index - self.write_start) % self.duration
         if self.suffix:
-            return "{:s}_{:04d}".format(self.suffix, index)
+            return "{:s}_{:04d}".format(self.suffix, idx_offset)
         else:
-            return "{:04d}".format(index)
+            return "{:04d}".format(idx_offset)
     
     def passes(self, action, renderer_state, indices=[]):
         frames = self.active_frames(action, renderer_state, indices)
         return [RenderPass(self, action, self.pass_suffix(i), [Frame(i, self)]) for i in frames]
     
     def runpost(self, result, render_pass, renderer_state):
+        #if Overlay.Rendered in renderer_state.overlays:
+        #    from coldtype.img.skiaimage import SkiaImage
+        #    return SkiaImage(render_pass.output_path)
+
         res = super().runpost(result, render_pass, renderer_state)
         if Overlay.Info in renderer_state.overlays and self.overlay:
             t = self.rect.take(50, "mny")
@@ -262,7 +271,8 @@ class FFMPEGExport():
         self.fmt = None
 
         passes = [p for p in self.passes if p.render == self.a]
-        template = str(passes[0].output_path).replace("0000.png", "%4d.png")
+        template = re.sub(r"[0-9]{4}\.png", "%4d.png", str(passes[0].output_path))
+        #template = str(passes[0].output_path).replace("0000.png", "%4d.png")
 
         self.folder = passes[0].output_path.parent.parent
 

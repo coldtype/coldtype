@@ -458,11 +458,11 @@ class DraftingPen(RecordingPen, SHContext):
         c = Line(d, pl.end).t(f2/100)
         return self.curveTo(b, c, d)
     
-    def io_ease_curve(self, start, pt, angle=1, fA=0.5, fB=0.9):
-        self.moveTo(start)
-        self.ioEaseCurveTo(pt, angle, fA, fB)
-        self.endPath()
-        return self
+    # def io_ease_curve(self, start, pt, slope=0, fA=0, fB=85):
+    #     self.moveTo(start)
+    #     self.ioEaseCurveTo(pt, slope, fA, fB)
+    #     self.endPath()
+    #     return self
     
     def ioEaseCurveTo(self, pt, slope=0, fA=0, fB=85):
         a = Point(self.value[-1][-1][-1])
