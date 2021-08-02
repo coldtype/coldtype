@@ -112,7 +112,6 @@ class TestI18N(unittest.TestCase):
         txt = StSt("ríjks", fnt, 350, lang="NLD")
         self.assertEqual(txt[1].glyphName, "iacute")
         self.assertEqual(txt[2].glyphName, "uni0237")
-        print(txt.tree())
         txt = StSt("ríjks", fnt, 350)
         self.assertEqual(txt[1].glyphName, "iacute")
         self.assertEqual(txt[2].glyphName, "j")
