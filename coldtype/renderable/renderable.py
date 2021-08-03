@@ -20,12 +20,6 @@ from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.img.datimage import DATImage
 
-try:
-    import drawBot as db
-    import AppKit
-except ImportError:
-    db = None
-
 class Keylayer(Enum):
     Default = 0
     Cmd = 1
@@ -277,52 +271,6 @@ class skia_direct(renderable):
             return render_pass.fn(*render_pass.args, renderer_state, canvas)
         else:
             return render_pass.fn(*render_pass.args, canvas)
-
-
-class drawbot_script(renderable):
-    def __init__(self, rect=(1080, 1080), scale=1, **kwargs):
-        if not db:
-            raise Exception("DrawBot not installed!")
-        super().__init__(rect=Rect(rect).scale(scale), rasterizer="drawbot", **kwargs)
-        self.self_rasterizing = True
-    
-    def normalize_result(self, pens):
-        return pens
-    
-    def run(self, render_pass, renderer_state):
-        from coldtype.pens.drawbotpen import DrawBotPen
-        use_pool = True
-        if use_pool:
-            pool = AppKit.NSAutoreleasePool.alloc().init()
-        try:
-            db.newDrawing()
-            if renderer_state.previewing:
-                ps = renderer_state.preview_scale
-                db.size(self.rect.w*ps, self.rect.h*ps)
-                db.scale(ps, ps)
-                DATPen().rect(self.rect).f(self.bg).cast(DrawBotPen).draw()
-            else:
-                db.size(self.rect.w, self.rect.h)
-            if self.rstate:
-                render_pass.fn(*render_pass.args, renderer_state)
-            else:
-                render_pass.fn(*render_pass.args)
-            result = None
-            if renderer_state.previewing:
-                previews = (render_pass.output_path.parent / "_previews")
-                previews.mkdir(exist_ok=True, parents=True)
-                preview_frame = previews / render_pass.output_path.name
-                db.saveImage(str(preview_frame))
-                result = preview_frame
-            else:
-                render_pass.output_path.parent.mkdir(exist_ok=True, parents=True)
-                db.saveImage(str(render_pass.output_path))
-                result = render_pass.output_path
-            db.endDrawing()
-        finally:
-            if use_pool:
-                del pool
-        return result
 
 
 class svgicon(renderable):

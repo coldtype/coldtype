@@ -666,7 +666,10 @@ class Renderer():
                                     else:
                                         self.rasterize(result or DATPen(), render, output_path)
                                     # TODO a progress bar?
-                                    print(">>> saved...", str(output_path.relative_to(Path.cwd())))
+                                    try:
+                                        print(">>> saved...", str(output_path.relative_to(Path.cwd())))
+                                    except ValueError:
+                                        print(">>> saved...", str(output_path))
                     except Exception as e:
                         #print(type(e))
                         self.show_error()
@@ -1439,6 +1442,9 @@ class Renderer():
         elif shortcut == KeyboardShortcut.OpenInEditor:
             self.open_in_editor()
         
+        elif shortcut == KeyboardShortcut.ShowInFinder:
+            os.system(f"open {self.last_animation.output_folder}")
+        
         elif shortcut == KeyboardShortcut.ViewerTakeFocus:
             if self.window_focus == 0:
                 glfw.focus_window(self.window)
@@ -1758,8 +1764,9 @@ class Renderer():
 
                 with self.surface as canvas:
                     path = self.preloaded_frames[self.playing_preloaded_frame]
-                    c = self.last_animation.bg
-                    canvas.clear(c.skia())
+                    if not self.source_reader.config.window_transparent:
+                        c = self.last_animation.bg
+                        canvas.clear(c.skia())
                     image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(path)))
                     canvas.drawImage(image, 0, 0)
                 

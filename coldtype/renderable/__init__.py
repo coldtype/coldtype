@@ -1,2 +1,2 @@
-from coldtype.renderable.renderable import Keylayer, Overlay, Action, RenderPass, renderable, skia_direct, drawbot_script, svgicon, glyph, fontpreview, iconset, SkiaPen
-from coldtype.renderable.animation import animation, FFMPEGExport, drawbot_animation
+from coldtype.renderable.renderable import Keylayer, Overlay, Action, RenderPass, renderable, skia_direct, svgicon, glyph, fontpreview, iconset, SkiaPen
+from coldtype.renderable.animation import animation, FFMPEGExport

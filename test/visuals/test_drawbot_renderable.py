@@ -6,7 +6,7 @@ co = Font("assets/ColdtypeObviously.designspace")
 
 long_txt = """This code is a mix of DrawBot and Coldtype, meant to demonstrate that Coldtype primitives (like designspace-reading) can be combined with DrawBot primitives like multi-line text support and the Mac Font library."""
 
-@drawbot_script(rect=(900, 500), scale=1, bg=0)
+@drdb.drawbot_script(rect=(900, 500), scale=1, bg=0)
 def db_script_test(r):
     ri = r.inset(20, 20)
 

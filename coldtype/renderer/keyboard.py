@@ -64,6 +64,7 @@ class KeyboardShortcut(Enum):
 
     JumpToFrameFunctionDef = "jump_to_function_def"
     OpenInEditor = "open_in_editor"
+    ShowInFinder = "show_in_finder"
 
     ViewerTakeFocus = "viewer_take_focus"
 
@@ -146,6 +147,8 @@ KeyboardShortcutExplainers = {
         "Make the viewer fully opaque",
     KeyboardShortcut.OpenInEditor:
         "Open the currently-rendered file in your code editor",
+    KeyboardShortcut.ShowInFinder:
+        "Show the renders directory associated with this animation in the finder/explorer/fileviewer",
     KeyboardShortcut.ViewerSoloNone:
         "View all defined renderables and animations",
     KeyboardShortcut.ViewerSoloNext:
@@ -163,7 +166,7 @@ KeyboardShortcutExplainers = {
     KeyboardShortcut.LoadNextInDirectory:
         "If you have a directory of coldtype .py files, this will load the next one in the directory (alphabetically), so you can skip stopping and restarting the command-line process with different arguments",
     KeyboardShortcut.LoadPrevInDirectory:
-        "If you have a directory of coldtype .py files, this will load the previous one in the directory (alphabetically), so you can skip stopping and restarting the command-line process with different arguments"
+        "If you have a directory of coldtype .py files, this will load the previous one in the directory (alphabetically), so you can skip stopping and restarting the command-line process with different arguments",
 }
 
 
@@ -357,6 +360,9 @@ SHORTCUTS = {
     KeyboardShortcut.OpenInEditor: [
         [[], "o"]
     ],
+    KeyboardShortcut.ShowInFinder: [
+        [[], "s"]
+    ],
 
     KeyboardShortcut.ViewerSoloNone: [
         [[], "np0"],
@@ -421,7 +427,7 @@ SHORTCUTS = {
     ],
     KeyboardShortcut.LoadPrevInDirectory: [
         [["cmd", "alt"], "<left>"]
-    ]
+    ],
 }
 
 if __name__ == "__main__":

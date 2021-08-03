@@ -19,7 +19,7 @@ from coldtype.time.audio import Wavfile, sf
 from coldtype.geometry import Rect, Point
 from coldtype.color import normalize_color, hsl, bw
 
-from coldtype.renderable.renderable import renderable, drawbot_script, Action, RenderPass, Overlay
+from coldtype.renderable.renderable import renderable, Action, RenderPass, Overlay
 
 
 try:
@@ -241,22 +241,6 @@ class animation(renderable, Timeable):
                 fe.open()
             return fe
         return _export
-
-
-class drawbot_animation(drawbot_script, animation):
-    def passes(self, action, renderer_state, indices=[]):
-        if action in [
-            Action.RenderAll,
-            Action.RenderIndices,
-            Action.RenderWorkarea]:
-            frames = super().active_frames(action, renderer_state, indices)
-            passes = []
-            for i in frames:
-                p = RenderPass(self, action, "{:04d}".format(i), [Frame(i, self)])
-                passes.append(p)
-            return passes
-        else:
-            return super().passes(action, renderer_state, indices)
 
 
 class FFMPEGExport():
