@@ -949,6 +949,7 @@ class Renderer():
 
             self.window = glfw.create_window(int(50), int(50), '', None, None)
             self.window_scrolly = 0
+            self.window_focus = 0
 
             recp = sibling(__file__, "../demo/RecMono-CasualItalic.ttf")
             self.typeface = skia.Typeface.MakeFromFile(str(recp))
@@ -965,6 +966,7 @@ class Renderer():
             glfw.set_mouse_button_callback(self.window, self.on_mouse_button)
             glfw.set_cursor_pos_callback(self.window, self.on_mouse_move)
             glfw.set_scroll_callback(self.window, self.on_scroll)
+            glfw.set_window_focus_callback(self.window, self.on_focus)
 
             #if primary_monitor:
             #    glfw.set_window_monitor(self.window, primary_monitor, 0, 0, int(50), int(50))
@@ -1210,6 +1212,9 @@ class Renderer():
         #print(xoff, yoff)
         #pass # TODO!
     
+    def on_focus(self, win, focus):
+        self.window_focus = focus
+    
     def on_release(self, build=False):
         fnname = "build" if build else "release"
         release_fn = self.buildrelease_fn(fnname)
@@ -1432,12 +1437,13 @@ class Renderer():
                 os.system(editor_cmd + " -g " + str(self.source_reader.filepath.relative_to(Path.cwd())) + ":" + str(found_line))
         
         elif shortcut == KeyboardShortcut.OpenInEditor:
-            editor_cmd = self.source_reader.config.editor_command
-            if editor_cmd:
-                os.system(editor_cmd + " -g " + str(self.source_reader.filepath.relative_to(Path.cwd())))
+            self.open_in_editor()
         
         elif shortcut == KeyboardShortcut.ViewerTakeFocus:
-            glfw.focus_window(self.window)
+            if self.window_focus == 0:
+                glfw.focus_window(self.window)
+            else:
+                self.open_in_editor()
         
         elif shortcut == KeyboardShortcut.ViewerSoloNone:
             self.viewer_solos = []
@@ -1470,6 +1476,11 @@ class Renderer():
             self.reset_filepath(-1, reload=True)
         else:
             print(shortcut, "not recognized")
+    
+    def open_in_editor(self):
+        editor_cmd = self.source_reader.config.editor_command
+        if editor_cmd:
+            os.system(editor_cmd + " -g " + str(self.source_reader.filepath.relative_to(Path.cwd())))
     
     def on_shortcut(self, shortcut):
         #print(shortcut)

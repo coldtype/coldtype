@@ -20,7 +20,7 @@ def scratch(f):
     
     e2 = (P().define(at.rmap(f.a.r))
         .ez(f.a.r, 0, 0,
-            "$c↓ ∫|$c↗OX150|0|0 $d↗ ∫|$f↘|0|0"))
+            "$c↓ $c↗OX150|∫|0|0 $d↗ $f↘|∫"))
     
     return PS([
         e2.all_guides(sw=1),

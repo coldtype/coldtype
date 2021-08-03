@@ -262,9 +262,12 @@ class DraftingPen(RecordingPen, SHContext):
                         macro_fn(self, *_e[1:])
                     else:
                         raise Exception("unrecognized macro '" + macro + "'")
-            elif _e[0] == "eio":
-                self.ioEaseCurveTo(*_e[1:])
-            elif len(_e) >= 3:
+            elif _e[1] == "eio":
+                if len(_e) > 2:
+                    self.ioEaseCurveTo(_e[0], *_e[2:])
+                else:
+                    self.ioEaseCurveTo(_e[0])
+            else:
                 if len(_e) >= 5:
                     self.interpCurveTo(*_e)
                 else:
@@ -939,7 +942,7 @@ class DraftingPen(RecordingPen, SHContext):
             pts = list(pts)
             for pidx, p in enumerate(pts):
                 x, y = p
-                if filter_fn and not filter_fn(*p):
+                if filter_fn and not filter_fn(Point(p)):
                     continue
                 result = fn(idx, x, y)
                 if result:
