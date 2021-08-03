@@ -112,6 +112,9 @@ class DATImage(DATPen):
     
     def __str__(self):
         if self.src:
-            return f"<DATImage({self.src.relative_to(Path.cwd())})/>"
+            try:
+                return f"<DATImage({self.src.relative_to(Path.cwd())})/>"
+            except ValueError:
+                return f"<DATImage({self.src})/>"
         else:
             return f"<DATImage(in-memory)/>"

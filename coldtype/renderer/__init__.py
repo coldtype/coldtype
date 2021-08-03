@@ -379,9 +379,7 @@ class Renderer():
                 if create.lower() == "y":
                     filepath.parent.mkdir(exist_ok=True, parents=True)
                     filepath.write_text((root / "demo/boiler.py").read_text())
-                    editor_cmd = self.source_reader.config.editor_command
-                    if editor_cmd:
-                        os.system(editor_cmd + " " + str(filepath.relative_to(Path.cwd())))
+                    self.open_in_editor(filepath)
             else:
                 raise Exception("That file does not exist")
         
@@ -659,7 +657,10 @@ class Renderer():
                                 render_count += 1
                                 output_path.parent.mkdir(exist_ok=True, parents=True)
                                 if render.self_rasterizing:
-                                    print(">>> self-rasterized...", output_path.relative_to(Path.cwd()))
+                                    try:
+                                        print(">>> self-rasterized...", output_path.relative_to(Path.cwd()))
+                                    except ValueError:
+                                        print(">>> self-rasterized...", output_path)
                                 else:
                                     if render.direct_draw:
                                         self.rasterize(partial(render.run, rp, self.state), render, output_path)
@@ -1435,9 +1436,7 @@ class Renderer():
             for li, line in enumerate(original_code):
                 if line.strip().startswith(fn_prefix):
                     found_line = li
-            editor_cmd = self.source_reader.config.editor_command
-            if editor_cmd:
-                os.system(editor_cmd + " -g " + str(self.source_reader.filepath.relative_to(Path.cwd())) + ":" + str(found_line))
+            self.open_in_editor(line=found_line)
         
         elif shortcut == KeyboardShortcut.OpenInEditor:
             self.open_in_editor()
@@ -1483,10 +1482,21 @@ class Renderer():
         else:
             print(shortcut, "not recognized")
     
-    def open_in_editor(self):
+    def open_in_editor(self, filepath=None, line=None):
+        if filepath is None:
+            filepath = self.source_reader.filepath
+        
+        try:
+            path = filepath.relative_to(Path.cwd())
+        except ValueError:
+            path = filepath
+        
         editor_cmd = self.source_reader.config.editor_command
         if editor_cmd:
-            os.system(editor_cmd + " -g " + str(self.source_reader.filepath.relative_to(Path.cwd())))
+            if line is not None:
+                os.system(editor_cmd + " -g " + str(path) + ":" + str(line))
+            else:
+                os.system(editor_cmd + " -g " + str(path))
     
     def on_shortcut(self, shortcut):
         #print(shortcut)
@@ -2215,7 +2225,7 @@ class Renderer():
         if self.source_reader.filepath:
             try:
                 print(f"... watching {self.source_reader.filepath.relative_to(Path.cwd())} for changes ...")
-            except:
+            except ValueError:
                 print(f"... watching {self.source_reader.filepath} for changes ...")
     
     def execute_string_as_shortcut_or_action(self, shortcut, key):

@@ -31,9 +31,7 @@ def apply_syntax_mods(source_code, renderer=None):
         return src
     
     def inline_other(x):
-        #cwd = self.filepath.relative_to(Path.cwd())
         cwd = Path.cwd()
-        #print(">>>>>>>>>>>>>>>>>>>>>>>", cwd)
         path = Path(cwd / (x.group(1).replace(".", "/")+".py"))
         if renderer:
             if path not in renderer.watchee_paths():
