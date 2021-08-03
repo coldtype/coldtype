@@ -1,10 +1,10 @@
 from coldtype import *
-from coldtype.drawbot import dbdraw, dbdraw_with_filters
+from coldtype.drawbot import *
 
 co = Font("assets/ColdtypeObviously.designspace")
 tl = Timeline(50, storyboard=[0])
 
-@drawbot_animation(rect=(900, 500), bg=0.5, timeline=tl)
+@drawbot_animation(rect=(900, 500), bg=0.8, timeline=tl)
 def db_script_test(f):
     e = f.a.progress(f.i, loops=1, easefn="eeio").e
     (StyledString("COLDTYPE",

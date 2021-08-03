@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.drawbot import db, dbdraw, pdfdoc
+from coldtype.drawbot import *
 
 
 @drawbot_animation("letter")
@@ -11,6 +11,7 @@ def multipage_doc(f):
     
     db.fontSize(50)
     db.fill(1)
+    db.font("Times")
     db.textBox("This is page " + str(f.i), f.a.r.inset(50))
 
 
