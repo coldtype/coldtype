@@ -10,7 +10,7 @@ More info available at: [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
 
 setuptools.setup(
     name="coldtype",
-    version="0.5.15",
+    version="0.5.16",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",
@@ -95,6 +95,7 @@ setuptools.setup(
         "lxml",
         "fonttools[ufo]",
         "fontPens",
+        "fontParts",
         "more-itertools",
         "easing-functions",
         "timecode",

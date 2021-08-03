@@ -15,7 +15,7 @@ from coldtype.grid import Grid
 #from coldtype.renderer.state import RendererState, Keylayer
 
 name = "coldtype"
-__version__ = "0.5.15"
+__version__ = "0.5.16"
 
 __sibling__ = lambda x: x # will be redefined contextually
 #λ = None

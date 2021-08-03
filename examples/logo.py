@@ -31,3 +31,21 @@ def logo(r, rs):
                 cut=50+200*nxl(20),
                 cutw=1+10*nxl(30),
                 fill=bw(1))))])
+        
+@renderable()
+def logo2(r):
+    return DPS([
+        DP(r).f(hsl(0.65)),
+        (DP().oval(r.inset(-20))
+            .f(None).s(1).sw(2)
+            .ch(phototype(r, blur=10, cut=23, cutw=5))),
+        (StSt("CT", obv, 670,
+            wdth=1, tu=20, r=1)
+            .align(r)
+            .translate(0, 5)
+            .f(1)
+            .ch(phototype(r,
+                blur=2,
+                cut=150,
+                cutw=25,
+                fill=bw(1))))])
