@@ -281,9 +281,7 @@ class Renderer():
         self.watchee_mods = {}
         self.refresh_delay = self.source_reader.config.refresh_delay
         self.backoff_refresh_delay = self.refresh_delay
-        
         self.rasterizer_warning = None
-        self.primary_monitor = None
         
         if not self.reset_filepath(self.args.file if hasattr(self.args, "file") else None):
             self.dead = True
@@ -292,7 +290,6 @@ class Renderer():
             self.dead = False
         
         self.state.preview_scale = self.source_reader.config.preview_scale
-        #self.state.preview_scale = self.args.preview_scale
         
         monitor_stdin()
         
@@ -322,7 +319,6 @@ class Renderer():
         self.playing_preloaded_frame = -1
         self.glfw_last_time = -1
         self.last_animation = None
-        self.last_rect = None
         self.playing = 0
         self.hotkeys = None
         self.hotkey_waiting = None
@@ -606,7 +602,7 @@ class Renderer():
                 ])
 
                 self.state.previewing = previewing # TODO too janky?
-                self.state.preview_scale = self.preview_scale()
+                self.state.preview_scale = self.window_manager.preview_scale()
                 
                 for rp in passes:
                     output_path = rp.output_path
@@ -931,15 +927,9 @@ class Renderer():
                 glfw.window_hint(glfw.FLOATING, glfw.TRUE)
 
             self.window_manager = WindowManager(self.source_reader.config, self)
-            self.window = self.window_manager.window
 
             recp = sibling(__file__, "../demo/RecMono-CasualItalic.ttf")
             self.typeface = skia.Typeface.MakeFromFile(str(recp))
-
-            self.window_manager.prev_scale = self.window_manager.get_content_scale()
-
-            #if primary_monitor:
-            #    glfw.set_window_monitor(self.window, primary_monitor, 0, 0, int(50), int(50))
 
         if rtmidi:
             try:
@@ -968,8 +958,6 @@ class Renderer():
             self.context = skia.GrDirectContext.MakeGL()
         else:
             self.context = None
-
-        #self.watch_file_changes()
 
         if len(self.watchees) > 0:
             self.window_manager.set_title(self.watchees[0][1].name)
@@ -1036,7 +1024,6 @@ class Renderer():
         if not self.args.no_watch:
             self.initialize_gui_and_server()
         else:
-            self.window = None
             self.server = None
         
         if should_halt:
@@ -1312,9 +1299,7 @@ class Renderer():
             os.system(f"open {self.last_animation.output_folder}")
         
         elif shortcut == KeyboardShortcut.ViewerTakeFocus:
-            if self.window_manager.window_focus == 0:
-                glfw.focus_window(self.window)
-            else:
+            if not self.window_manager.focus():
                 self.open_in_editor()
         
         elif shortcut == KeyboardShortcut.ViewerSoloNone:
@@ -1599,12 +1584,10 @@ class Renderer():
             print("Malformed message")
     
     def listen_to_glfw(self):
-        should_close = False
-        should_close = glfw.window_should_close(self.window)
+        should_close = self.window_manager.should_close()
+
         while not self.dead and not should_close:
-            scale_x = self.window_manager.get_content_scale()
-            if scale_x != self.window_manager.prev_scale:
-                self.window_manager.prev_scale = scale_x
+            if self.window_manager.content_scale_changed():
                 self.on_action(Action.PreviewStoryboard)
             
             if self._should_reload:
@@ -1636,7 +1619,7 @@ class Renderer():
                     canvas.drawImage(image, 0, 0)
                 
                 self.surface.flushAndSubmit()
-                glfw.swap_buffers(self.window)
+                glfw.swap_buffers(self.window_manager.window)
 
                 self.preview_audio(frame=(self.playing_preloaded_frame+1)%len(self.preloaded_frames))
 
@@ -1666,11 +1649,8 @@ class Renderer():
             self.state.reset_keystate()
             glfw.poll_events()
 
-            should_close = glfw.window_should_close(self.window)
+            should_close = self.window_manager.should_close()
         self.on_exit(restart=False)
-    
-    def preview_scale(self):
-        return self.state.preview_scale
     
     def create_surface(self, rect):
         #print("NEW SURFACE", rect)
@@ -1706,9 +1686,6 @@ class Renderer():
         return []
     
     def turn_over_glfw(self):
-        dscale = self.preview_scale()
-        rects = []
-
         render_previews = len(self.previews_waiting_to_paint) > 0
         if not render_previews:
             self.backoff_refresh_delay += 0.01
@@ -1725,83 +1702,11 @@ class Renderer():
                     if self.playing == 0:
                         self.paudio_preview = 0
 
-        w = 0
-        llh = -1
-        lh = -1
-        h = 0
-        for render, result, rp in self.previews_waiting_to_paint:
-            if hasattr(render, "show_error"):
-                sr = render.rect
-            else:
-                sr = render.rect.scale(dscale, "mnx", "mny").round()
-            w = max(sr.w, w)
-            if render.layer:
-                rects.append(Rect(0, llh, sr.w, sr.h))
-            else:
-                rects.append(Rect(0, lh+1, sr.w, sr.h))
-                llh = lh+1
-                lh += sr.h + 1
-                h += sr.h + 1
-        h -= 1
-        
-        frect = Rect(0, 0, w, h)
-        if frect != self.last_rect:
+        frect, rects, dscale, needs_new_context = self.window_manager.calculate_window_size(self.previews_waiting_to_paint)
+
+        if needs_new_context:
             self.create_surface(frect)
-
-        if not self.last_rect or frect != self.last_rect:
-            primary_monitor = None
-            if self.source_reader.config.monitor_name:
-                remn = self.source_reader.config.monitor_name
-                monitors = glfw.get_monitors()
-                matches = []
-                if remn == "list":
-                    print("> MONITORS")
-                for monitor in monitors:
-                    mn = glfw.get_monitor_name(monitor)
-                    if remn == "list":
-                        print("    -", mn.decode("utf-8"))
-                    elif remn in str(mn):
-                        matches.append(monitor)
-                if len(matches) > 0:
-                    primary_monitor = matches[0]
-                if primary_monitor:
-                    self.primary_monitor = primary_monitor
-                else:
-                    self.primary_monitor = glfw.get_primary_monitor()
-
-            m_scale = self.window_manager.get_content_scale()
-            scale_x, scale_y = m_scale, m_scale
-            
-            #if not DARWIN:
-            #    scale_x, scale_y = 1.0, 1.0
-
-            ww = int(w/scale_x)
-            wh = int(h/scale_y)
-            glfw.set_window_size(self.window, ww, wh)
-
-            pin = self.source_reader.config.window_pin
-            if pin:
-                if primary_monitor:
-                    monitor = primary_monitor
-                else:
-                    monitor = glfw.get_primary_monitor()
-                self.primary_monitor = monitor
-                work_rect = Rect(glfw.get_monitor_workarea(monitor))
-                wrz = work_rect.zero()
-                #print(work_rect, wrz)
-                edges = Edge.PairFromCompass(pin)
-                pinned = wrz.take(ww, edges[0]).take(wh, edges[1]).round()
-                if edges[1] == "mdy":
-                    pinned = pinned.offset(0, -30)
-                pinned = pinned.flip(wrz.h)
-                pinned = pinned.offset(*work_rect.origin())
-                wpi = self.source_reader.config.window_pin_inset
-                pinned = pinned.inset(-wpi[0], wpi[1])
-                glfw.set_window_pos(self.window, pinned.x, pinned.y)
-            else:
-                glfw.set_window_pos(self.window, 0, 0)
-
-        self.last_rect = frect
+            self.window_manager.update_window(frect)
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
@@ -1813,7 +1718,7 @@ class Renderer():
                 canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 0))
             
             for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
-                rect = rects[idx].offset((w-rects[idx].w)/2, 0).round()
+                rect = rects[idx].offset((frect.w-rects[idx].w)/2, 0).round()
 
                 if self.copy_previews_to_clipboard:
                     try:
@@ -1826,7 +1731,6 @@ class Renderer():
                     except:
                         print("failed to copy to clipboard")
 
-
                 try:
                     self.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
                     did_preview.append(rp)
@@ -1838,10 +1742,10 @@ class Renderer():
             self.copy_previews_to_clipboard = False
         
             if self.state.keylayer != Keylayer.Default and not self.args.hide_keybuffer:
-                self.state.draw_keylayer(canvas, self.last_rect, self.typeface)
+                self.state.draw_keylayer(canvas, self.window_manager.last_rect, self.typeface)
         
         self.surface.flushAndSubmit()
-        glfw.swap_buffers(self.window)
+        glfw.swap_buffers(self.window_manager.window)
         return did_preview
     
     def turn_over(self):
