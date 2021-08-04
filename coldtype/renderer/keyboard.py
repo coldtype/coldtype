@@ -212,6 +212,7 @@ def symbol_to_glfw(s):
         else:
             raise Exception("Invalid keyboard shortcut symbol", s)
 
+
 SHORTCUTS = {
     KeyboardShortcut.PreviewPrevMany: [
         [["shift"], "j"],
@@ -429,6 +430,15 @@ SHORTCUTS = {
         [["cmd", "alt"], "<left>"]
     ],
 }
+
+def shortcuts_keyed():
+    keyed = {}
+    for k, v in SHORTCUTS.items():
+        modded = []
+        for mods, symbol in v:
+            modded.append([[symbol_to_glfw(s) for s in mods], symbol_to_glfw(symbol)])
+        keyed[k] = modded
+    return keyed
 
 if __name__ == "__main__":
     from subprocess import Popen, PIPE

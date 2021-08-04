@@ -3,16 +3,72 @@ try:
 except ImportError:
     glfw = None
 
-from coldtype.renderer.config import ConfigOption, ColdtypeConfig
-from coldtype.renderer.state import Keylayer, Action
+try:
+    import skia
+except ImportError:
+    skia = None
+
+# source: https://github.com/PixarAnimationStudios/USD/issues/1372
+
+def monkeypatch_ctypes():
+    import os
+    import ctypes.util
+    uname = os.uname()
+    if uname.sysname == "Darwin" and uname.release >= "20.":
+        real_find_library = ctypes.util.find_library
+        def find_library(name):
+            if name in {"OpenGL", "GLUT"}:  # add more names here if necessary
+                return f"/System/Library/Frameworks/{name}.framework/{name}"
+            return real_find_library(name)
+        ctypes.util.find_library = find_library
+    return
+
+try:
+    from OpenGL import GL
+except ImportError:
+    monkeypatch_ctypes()
+    try:
+        from OpenGL import GL
+    except:
+        print("pip install PyOpenGL")
+        GL = None
+
 from coldtype.geometry import Point, Rect, Edge
+from coldtype.renderer.state import Keylayer, Action
+from coldtype.renderer.config import ConfigOption, ColdtypeConfig
+from coldtype.renderer.keyboard import KeyboardShortcut, REPEATABLE_SHORTCUTS, shortcuts_keyed
+
 
 class WindowManagerPassthrough():
     def __init__(self):
-        pass
+        self.context = None
 
     def set_title(self, text):
         print("TITLE", text)
+    
+    def terminate(self):
+        pass
+
+    def reset(self):
+        pass
+
+    def preview_scale(self):
+        return 1
+
+
+class WindowManagerBackgroundRender(WindowManagerPassthrough):
+    def __init__(self, config:ColdtypeConfig, renderer):
+        # TODO is the glfw stuff here actually necessary?
+
+        if not glfw.init():
+            raise RuntimeError('glfw.init() failed')
+        
+        glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
+        glfw.window_hint(glfw.STENCIL_BITS, 8)
+        window = glfw.create_window(640, 480, '', None, None)
+        glfw.make_context_current(window)
+
+        self.context = skia.GrDirectContext.MakeGL()
 
 
 class WindowManager():
@@ -23,8 +79,33 @@ class WindowManager():
         self.renderer = renderer
         self.primary_monitor = None
         self.last_rect = None
-
+        self.all_shortcuts = shortcuts_keyed()
         self.prev_scale = 0
+        self.surface = None
+
+        if not glfw.init():
+            raise RuntimeError('glfw.init() failed')
+        
+        glfw.window_hint(glfw.STENCIL_BITS, 8)
+        
+        if self.config.window_transparent:
+            glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.TRUE)
+            glfw.window_hint(glfw.DECORATED, glfw.FALSE)
+        else:
+            glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.FALSE)
+        
+        if self.config.window_passthrough:
+            try:
+                glfw.window_hint(0x0002000D, glfw.TRUE)
+                # glfw.window_hint(glfw.MOUSE_PASSTHROUGH, glfw.TRUE)
+            except glfw.GLFWError:
+                print("failed to hint window for mouse-passthrough")
+
+        if self.config.window_background:
+            glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
+        
+        if self.config.window_float:
+            glfw.window_hint(glfw.FLOATING, glfw.TRUE)
 
         if not self.background:
             self.window = glfw.create_window(int(10), int(10), '', None, None)
@@ -45,6 +126,8 @@ class WindowManager():
 
         self.set_window_opacity()
         self.prev_scale = self.get_content_scale()
+
+        self.context = skia.GrDirectContext.MakeGL()
     
     def find_primary_monitor(self):
         self.primary_monitor = glfw.get_primary_monitor()
@@ -65,6 +148,20 @@ class WindowManager():
                 found_primary = matches[0]
             if found_primary:
                 self.primary_monitor = found_primary
+    
+    def create_surface(self, rect):
+        backend_render_target = skia.GrBackendRenderTarget(
+            int(rect.w), int(rect.h), 0, 0,
+            skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
+        
+        self.surface = skia.Surface.MakeFromBackendRenderTarget(
+            self.context,
+            backend_render_target,
+            skia.kBottomLeft_GrSurfaceOrigin,
+            skia.kRGBA_8888_ColorType,
+            skia.ColorSpace.MakeSRGB())
+        
+        assert self.surface is not None
 
     def get_content_scale(self):
         u_scale = self.config.window_content_scale
@@ -223,4 +320,44 @@ class WindowManager():
                 self.renderer.action_waiting = requested_action
             return
         
-        self.renderer.on_potential_shortcut(key, action, mods)
+        self.on_potential_shortcut(key, action, mods)
+    
+    def repeatable_shortcuts(self):
+        return REPEATABLE_SHORTCUTS
+    
+    def on_potential_shortcut(self, key, action, mods):
+        for shortcut, options in self.all_shortcuts.items():
+            for modifiers, skey in options:
+                if key != skey:
+                    continue
+
+                if isinstance(mods, list):
+                    mod_matches = mods
+                else:
+                    mod_matches = [0, 0, 0, 0]
+                    for idx, mod in enumerate([glfw.MOD_SUPER, glfw.MOD_ALT, glfw.MOD_SHIFT, glfw.MOD_CONTROL]):
+                        if mod in modifiers:
+                            if mods & mod:
+                                mod_matches[idx] = 1
+                        elif mod not in modifiers:
+                            if not (mods & mod):
+                                mod_matches[idx] = 1
+                
+                mod_match = all(mod_matches)
+                
+                if not mod_match and len(modifiers) == 0 and isinstance(mods, list):
+                    mod_match = True
+                
+                if len(modifiers) == 0 and mods != 0 and not isinstance(mods, list):
+                    mod_match = False
+                
+                if mod_match and key == skey:
+                    if (action == glfw.REPEAT and shortcut in self.repeatable_shortcuts()) or action == glfw.PRESS:
+                        #print(shortcut, modifiers, skey, mod_match)
+                        return self.renderer.on_shortcut(shortcut)
+    
+    def terminate(self):
+        glfw.terminate()
+
+        if self.context:
+            self.context.abandonContext()

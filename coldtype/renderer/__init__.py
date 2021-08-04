@@ -1,7 +1,7 @@
-import tempfile, traceback, threading, multiprocessing
-import argparse, importlib, inspect, json, math
-import sys, os, re, signal, tracemalloc, shutil
-import platform, pickle, string, datetime
+import traceback, threading
+import argparse, json, math
+import sys, os, signal, tracemalloc, shutil
+import platform, pickle
 
 try:
     import numpy as np
@@ -22,12 +22,12 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 import coldtype
 from coldtype.helpers import *
-from coldtype.geometry import Rect, Point, Edge
-from coldtype.text.reader import Font, ALL_FONT_DIRS
+from coldtype.geometry import Rect
+from coldtype.text.reader import Font
 
 from coldtype.renderer.config import ConfigOption
 from coldtype.renderer.reader import SourceReader
-from coldtype.renderer.windowmanager import WindowManager, WindowManagerPassthrough
+from coldtype.renderer.windowmanager import WindowManager, WindowManagerBackgroundRender, WindowManagerPassthrough, GL, glfw
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
@@ -35,7 +35,7 @@ from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.jsonpen import JSONPen
 
-from coldtype.renderer.keyboard import KeyboardShortcut, SHORTCUTS, REPEATABLE_SHORTCUTS, symbol_to_glfw
+from coldtype.renderer.keyboard import KeyboardShortcut
 
 try:
     from coldtype.renderer.watchdog import AsyncWatchdog
@@ -54,36 +54,6 @@ try:
     import drawBot as db
 except ImportError:
     db = None
-
-try:
-    import glfw
-except ImportError:
-    glfw = None
-
-# source: https://github.com/PixarAnimationStudios/USD/issues/1372
-
-def monkeypatch_ctypes():
-    import os
-    import ctypes.util
-    uname = os.uname()
-    if uname.sysname == "Darwin" and uname.release >= "20.":
-        real_find_library = ctypes.util.find_library
-        def find_library(name):
-            if name in {"OpenGL", "GLUT"}:  # add more names here if necessary
-                return f"/System/Library/Frameworks/{name}.framework/{name}"
-            return real_find_library(name)
-        ctypes.util.find_library = find_library
-    return
-
-try:
-    from OpenGL import GL
-except ImportError:
-    monkeypatch_ctypes()
-    try:
-        from OpenGL import GL
-    except:
-        print("pip install PyOpenGL")
-        GL = None
 
 from coldtype.renderer.utils import *
 
@@ -245,8 +215,6 @@ class Renderer():
             show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS),
 
             frame_offsets=parser.add_argument("-fo", "--frame-offsets", type=str, default=None, help=argparse.SUPPRESS),
-
-            #blender_watch=parser.add_argument("-bw", "--blender-watch", default=None, type=str, help="Experimental blender live-coding integration"),
         )
 
         ConfigOption.AddCommandLineArgs(pargs, parser)
@@ -269,8 +237,6 @@ class Renderer():
         if not self.args.webviewer and not skia and not glfw:
             print("No viewing renderer installed — rendering all...")
             sleep(1)
-            #self.args.no_watch = True
-            #self.args.all = True
         
         self.state = RendererState(self)
 
@@ -299,7 +265,6 @@ class Renderer():
             return
 
         self.exit_code = 0
-        self.all_shortcuts = self.shortcuts()
 
         self.line_number = -1
         self.last_renders = []
@@ -322,8 +287,6 @@ class Renderer():
         self.playing = 0
         self.hotkeys = None
         self.hotkey_waiting = None
-        self.context = None
-        self.surface = None
         self.copy_previews_to_clipboard = False
 
         if self.args.filter_functions:
@@ -439,7 +402,7 @@ class Renderer():
 
     def reload(self, trigger):
         if skia and SkiaPen:
-            skfx.SKIA_CONTEXT = self.context
+            skfx.SKIA_CONTEXT = self.window_manager.context
 
         if True:
             self.state.reset()
@@ -580,12 +543,8 @@ class Renderer():
                     elif watch not in self.watchee_paths():
                         self.watchees.append([Watchable.Generic, watch, flag])
                 
-                did_render = False
                 passes = render.passes(trigger, self.state, indices)
                 render.last_passes = passes
-
-                #if trigger == Action.RenderAll:
-                #    shutil.rmtree(output_folder, ignore_errors=True)
 
                 previewing = (trigger in [
                     Action.Initial,
@@ -644,7 +603,6 @@ class Renderer():
                                     self.previews_waiting_to_paint.append([render, preview_result, rp])
                         
                         if rendering:
-                            did_render = True
                             if False:
                                 pass
                             else:
@@ -806,7 +764,7 @@ class Renderer():
                         DATPen().rect(render.rect).f(render.bg),
                         content
                     ])
-                SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=None if self.args.cpu_render else self.context, style=render.style)
+                SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=None if self.args.cpu_render else self.window_manager.context, style=render.style)
             elif render.fmt == "pdf":
                 SkiaPen.PDFOnePage(content, render.rect, str(path), scale=scale)
             elif render.fmt == "svg":
@@ -824,13 +782,7 @@ class Renderer():
         #self.playing = 0
 
         if self.args.is_subprocess and not self.args.cpu_render:
-            if not glfw.init():
-                raise RuntimeError('glfw.init() failed')
-            glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
-            glfw.window_hint(glfw.STENCIL_BITS, 8)
-            window = glfw.create_window(640, 480, '', None, None)
-            glfw.make_context_current(window)
-            self.context = skia.GrDirectContext.MakeGL()
+            self.window_manager = WindowManagerBackgroundRender(self.source_reader.config, self)
 
         wl = len(self.watchees)
         self.window_manager.reset()
@@ -903,33 +855,8 @@ class Renderer():
             print("\n\n>>> To run the coldtype viewer, you’ll need to install with the [viewer] optional package, ala `pip install coldtype[viewer]`\n\n")
 
         if glfw and not self.args.no_viewer:
-            if not glfw.init():
-                raise RuntimeError('glfw.init() failed')
-            glfw.window_hint(glfw.STENCIL_BITS, 8)
-            
-            if self.source_reader.config.window_transparent:
-                glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.TRUE)
-                glfw.window_hint(glfw.DECORATED, glfw.FALSE)
-            else:
-                glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.FALSE)
-            
-            if self.source_reader.config.window_passthrough:
-                try:
-                    glfw.window_hint(0x0002000D, glfw.TRUE)
-                    #glfw.window_hint(glfw.MOUSE_PASSTHROUGH, glfw.TRUE)
-                except glfw.GLFWError:
-                    print("failed to hint window for mouse-passthrough")
-
-            if self.source_reader.config.window_background:
-                glfw.window_hint(glfw.FOCUSED, glfw.FALSE)
-            
-            if self.source_reader.config.window_float:
-                glfw.window_hint(glfw.FLOATING, glfw.TRUE)
-
             self.window_manager = WindowManager(self.source_reader.config, self)
-
-            recp = sibling(__file__, "../demo/RecMono-CasualItalic.ttf")
-            self.typeface = skia.Typeface.MakeFromFile(str(recp))
+            self.typeface = skia.Typeface.MakeFromFile(str(sibling(__file__, "../demo/RecMono-CasualItalic.ttf")))
 
         if rtmidi:
             try:
@@ -953,11 +880,6 @@ class Renderer():
                 self.midis = []
         else:
             self.midis = []
-        
-        if skia and glfw and not self.args.no_viewer:
-            self.context = skia.GrDirectContext.MakeGL()
-        else:
-            self.context = None
 
         if len(self.watchees) > 0:
             self.window_manager.set_title(self.watchees[0][1].name)
@@ -1127,24 +1049,9 @@ class Renderer():
         except Exception as e:
             self.print_error()
             print("! Release failed !")
-            
-    def shortcuts(self):
-        if not glfw:
-            return {}
-        keyed = {}
-        for k, v in SHORTCUTS.items():
-            modded = []
-            for mods, symbol in v:
-                #print([symbol_to_glfw(s) for s in mods])
-                modded.append([[symbol_to_glfw(s) for s in mods], symbol_to_glfw(symbol)])
-            keyed[k] = modded
-        return keyed
-    
-    def repeatable_shortcuts(self):
-        return REPEATABLE_SHORTCUTS
     
     def shortcut_to_action(self, shortcut):
-        if shortcut in self.repeatable_shortcuts():
+        if shortcut in self.window_manager.repeatable_shortcuts():
             self.paudio_preview = 1
         
         if shortcut == KeyboardShortcut.PreviewPrevMany:
@@ -1358,38 +1265,6 @@ class Renderer():
                 self.action_waiting = waiting
         else:
             self.action_waiting = Action.PreviewStoryboard
-    
-    def on_potential_shortcut(self, key, action, mods):
-        for shortcut, options in self.all_shortcuts.items():
-            for modifiers, skey in options:
-                if key != skey:
-                    continue
-
-                if isinstance(mods, list):
-                    mod_matches = mods
-                else:
-                    mod_matches = [0, 0, 0, 0]
-                    for idx, mod in enumerate([glfw.MOD_SUPER, glfw.MOD_ALT, glfw.MOD_SHIFT, glfw.MOD_CONTROL]):
-                        if mod in modifiers:
-                            if mods & mod:
-                                mod_matches[idx] = 1
-                        elif mod not in modifiers:
-                            if not (mods & mod):
-                                mod_matches[idx] = 1
-                
-                #print(shortcut, mod_matches, all(mod_matches))
-                mod_match = all(mod_matches)
-                
-                if not mod_match and len(modifiers) == 0 and isinstance(mods, list):
-                    mod_match = True
-                
-                if len(modifiers) == 0 and mods != 0 and not isinstance(mods, list):
-                    mod_match = False
-                
-                if mod_match and key == skey:
-                    if (action == glfw.REPEAT and shortcut in self.repeatable_shortcuts()) or action == glfw.PRESS:
-                        #print(shortcut, modifiers, skey, mod_match)
-                        return self.on_shortcut(shortcut)
         
     def preview_audio(self, frame=None):
         #if not self.args.preview_audio:
@@ -1610,7 +1485,7 @@ class Renderer():
             if self.last_animation and self.playing_preloaded_frame >= 0 and len(self.preloaded_frames) > 0:
                 GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-                with self.surface as canvas:
+                with self.window_manager.surface as canvas:
                     path = self.preloaded_frames[self.playing_preloaded_frame]
                     if not self.source_reader.config.window_transparent:
                         c = self.last_animation.bg
@@ -1618,7 +1493,7 @@ class Renderer():
                     image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(path)))
                     canvas.drawImage(image, 0, 0)
                 
-                self.surface.flushAndSubmit()
+                self.window_manager.surface.flushAndSubmit()
                 glfw.swap_buffers(self.window_manager.window)
 
                 self.preview_audio(frame=(self.playing_preloaded_frame+1)%len(self.preloaded_frames))
@@ -1641,29 +1516,12 @@ class Renderer():
                     if lls:
                         self.on_stdin(lls)
                     last_line = None
-                
-                #if self.playing != 0:
-                    #self.action_waiting = Action.PreviewStoryboardNext
-                    #self.on_action(Action.PreviewStoryboardNext)
             
             self.state.reset_keystate()
             glfw.poll_events()
 
             should_close = self.window_manager.should_close()
         self.on_exit(restart=False)
-    
-    def create_surface(self, rect):
-        #print("NEW SURFACE", rect)
-        backend_render_target = skia.GrBackendRenderTarget(
-            int(rect.w), int(rect.h), 0, 0,
-            skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
-        self.surface = skia.Surface.MakeFromBackendRenderTarget(
-            self.context,
-            backend_render_target,
-            skia.kBottomLeft_GrSurfaceOrigin,
-            skia.kRGBA_8888_ColorType,
-            skia.ColorSpace.MakeSRGB())
-        assert self.surface is not None
     
     def turn_over_webviewer(self):
         renders = []
@@ -1705,14 +1563,14 @@ class Renderer():
         frect, rects, dscale, needs_new_context = self.window_manager.calculate_window_size(self.previews_waiting_to_paint)
 
         if needs_new_context:
-            self.create_surface(frect)
+            self.window_manager.create_surface(frect)
             self.window_manager.update_window(frect)
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         did_preview = []
 
-        with self.surface as canvas:
+        with self.window_manager.surface as canvas:
             canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 1))
             if self.source_reader.config.window_transparent:
                 canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 0))
@@ -1744,7 +1602,7 @@ class Renderer():
             if self.state.keylayer != Keylayer.Default and not self.args.hide_keybuffer:
                 self.state.draw_keylayer(canvas, self.window_manager.last_rect, self.typeface)
         
-        self.surface.flushAndSubmit()
+        self.window_manager.surface.flushAndSubmit()
         glfw.swap_buffers(self.window_manager.window)
         return did_preview
     
@@ -1795,9 +1653,6 @@ class Renderer():
                 # TODO should be recursive?
                 self.on_action(self.action_waiting)
             self.action_waiting = None
-
-        #if self.playing > 0:
-        #    self.on_action(Action.PreviewStoryboardNext)
         
         if self.server:
             msgs = []
@@ -1813,11 +1668,6 @@ class Renderer():
 
         if not self.args.no_midi:
             self.monitor_midi()
-        
-        #if len(self.waiting_to_render) > 0:
-        #    for action, path in self.waiting_to_render:
-        #        self.reload_and_render(action, path)
-        #    self.waiting_to_render = []
         
         if glfw and not self.args.no_viewer:
             did_preview = self.turn_over_glfw()
@@ -2053,7 +1903,6 @@ class Renderer():
 
             if not self.playing:
                 self.action_waiting = Action.PreviewStoryboard
-            #self.on_action(Action.PreviewStoryboard, {})
     
     def stop_watching_file_changes(self):
         for o in self.observers:
@@ -2088,16 +1937,11 @@ class Renderer():
         for _, p in self.subprocesses.items():
             p.kill()
 
-        #if self.args.watch:
-        #   print(f"<EXIT(restart:{restart})>")
-        #if self.webviewer_thread:
-        #    self.webviewer_thread.terminate()
-        if glfw and not self.args.no_viewer:
-            glfw.terminate()
-        if self.context:
-            self.context.abandonContext()
+        self.window_manager.terminate()
+        
         if self.hotkeys:
             self.hotkeys.stop()
+        
         self.reset_renderers()
         self.stop_watching_file_changes()
 
