@@ -22,6 +22,8 @@ class WindowManager():
         self.background = background
         self.renderer = renderer
 
+        self.prev_scale = 0
+
         if not self.background:
             self.window = glfw.create_window(int(10), int(10), '', None, None)
         
@@ -38,6 +40,19 @@ class WindowManager():
         glfw.set_window_focus_callback(self.window, self.on_focus)
 
         self.set_window_opacity()
+
+    def get_content_scale(self):
+        u_scale = self.config.window_content_scale
+        
+        if u_scale:
+            return u_scale
+        elif glfw and not self.renderer.args.no_viewer:
+            if self.renderer.primary_monitor:
+                return glfw.get_monitor_content_scale(self.renderer.primary_monitor)[0]
+            else:
+                return glfw.get_window_content_scale(self.window)[0]
+        else:
+            return 1
     
     def set_title(self, text):
         glfw.set_window_title(self.window, text)

@@ -193,8 +193,6 @@ class Renderer():
             webviewer_port=parser.add_argument("-wvp", "--webviewer-port", type=int, default=8008, help="What port should the webviewer run on? (provided -wv is passed)"),
 
             port=parser.add_argument("-wsp", "--port", type=int, default=8007, help="What port should the websocket run on (provided -ws is passed)"),
-        
-            websocket_external=parser.add_argument("-wse", "--websocket-external", type=str, default=None, help="What address should a websocket connection be made to, for control of external coldtype program?"),
 
             no_midi=parser.add_argument("-nm", "--no-midi", action="store_true", default=False, help="Midi is on by default, do you want to turn it off?"),
             
@@ -877,24 +875,7 @@ class Renderer():
             print("exit>", self.exit_code)
         sys.exit(self.exit_code)
     
-    def get_content_scale(self):
-        u_scale = self.source_reader.config.window_content_scale
-        
-        if u_scale:
-            return u_scale
-        elif glfw and not self.args.no_viewer:
-            if self.primary_monitor:
-                return glfw.get_monitor_content_scale(self.primary_monitor)[0]
-            else:
-                return glfw.get_window_content_scale(self.window)[0]
-        else:
-            return 1
-    
     def initialize_gui_and_server(self):
-        if self.args.websocket_external:
-            self.state.external_url = f"ws://{self.args.websocket_external}"
-            print(self.state.external_url)
-
         if self.args.websocket or self.args.webviewer:
             global WEBSOCKET_PORT
             WEBSOCKET_PORT = self.args.port
@@ -955,7 +936,7 @@ class Renderer():
             recp = sibling(__file__, "../demo/RecMono-CasualItalic.ttf")
             self.typeface = skia.Typeface.MakeFromFile(str(recp))
 
-            self._prev_scale = self.get_content_scale()
+            self.window_manager.prev_scale = self.window_manager.get_content_scale()
 
             #if primary_monitor:
             #    glfw.set_window_monitor(self.window, primary_monitor, 0, 0, int(50), int(50))
@@ -1621,10 +1602,9 @@ class Renderer():
         should_close = False
         should_close = glfw.window_should_close(self.window)
         while not self.dead and not should_close:
-            scale_x = self.get_content_scale()
-            if scale_x != self._prev_scale:
-                #print(self._prev_scale, scale_x)
-                self._prev_scale = scale_x
+            scale_x = self.window_manager.get_content_scale()
+            if scale_x != self.window_manager.prev_scale:
+                self.window_manager.prev_scale = scale_x
                 self.on_action(Action.PreviewStoryboard)
             
             if self._should_reload:
@@ -1789,7 +1769,7 @@ class Renderer():
                 else:
                     self.primary_monitor = glfw.get_primary_monitor()
 
-            m_scale = self.get_content_scale()
+            m_scale = self.window_manager.get_content_scale()
             scale_x, scale_y = m_scale, m_scale
             
             #if not DARWIN:
