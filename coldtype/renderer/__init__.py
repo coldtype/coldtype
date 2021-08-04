@@ -27,6 +27,7 @@ from coldtype.text.reader import Font, ALL_FONT_DIRS
 
 from coldtype.renderer.config import ConfigOption
 from coldtype.renderer.reader import SourceReader
+from coldtype.renderer.windowmanager import WindowManager, WindowManagerPassthrough
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
@@ -260,6 +261,7 @@ class Renderer():
         self.parser = parser
         self.args = parser.parse_args()
 
+        self.window_manager = WindowManagerPassthrough()
         self.source_reader = SourceReader(
             renderer=self, cli_args=self.args)
 
@@ -398,7 +400,7 @@ class Renderer():
         
         if reload:
             self.reload_and_render(Action.PreviewStoryboard)
-            self.set_title(filepath.name)
+            self.window_manager.set_title(filepath.name)
 
         return True
     
@@ -837,7 +839,7 @@ class Renderer():
             self.context = skia.GrDirectContext.MakeGL()
 
         wl = len(self.watchees)
-        self.window_scrolly = 0
+        self.window_manager.reset()
 
         try:
             should_halt = self.reload(trigger)
@@ -874,10 +876,6 @@ class Renderer():
         if self.args.show_exit_code:
             print("exit>", self.exit_code)
         sys.exit(self.exit_code)
-    
-    def set_title(self, text):
-        if glfw and not self.args.no_viewer:
-            glfw.set_window_title(self.window, text)
     
     def get_content_scale(self):
         u_scale = self.source_reader.config.window_content_scale
@@ -951,26 +949,13 @@ class Renderer():
             if self.source_reader.config.window_float:
                 glfw.window_hint(glfw.FLOATING, glfw.TRUE)
 
-            self.window = glfw.create_window(int(10), int(10), '', None, None)
-            self.window_scrolly = 0
-            self.window_focus = 0
+            self.window_manager = WindowManager(self.source_reader.config, self)
+            self.window = self.window_manager.window
 
             recp = sibling(__file__, "../demo/RecMono-CasualItalic.ttf")
             self.typeface = skia.Typeface.MakeFromFile(str(recp))
-            
-            window_opacity = self.source_reader.config.window_opacity
-            glfw.set_window_opacity(self.window,
-                max(0.1, min(1, window_opacity)))
 
             self._prev_scale = self.get_content_scale()
-            
-            glfw.make_context_current(self.window)
-            glfw.set_key_callback(self.window, self.on_key)
-            glfw.set_char_callback(self.window, self.on_character)
-            glfw.set_mouse_button_callback(self.window, self.on_mouse_button)
-            glfw.set_cursor_pos_callback(self.window, self.on_mouse_move)
-            glfw.set_scroll_callback(self.window, self.on_scroll)
-            glfw.set_window_focus_callback(self.window, self.on_focus)
 
             #if primary_monitor:
             #    glfw.set_window_monitor(self.window, primary_monitor, 0, 0, int(50), int(50))
@@ -1006,9 +991,9 @@ class Renderer():
         #self.watch_file_changes()
 
         if len(self.watchees) > 0:
-            self.set_title(self.watchees[0][1].name)
+            self.window_manager.set_title(self.watchees[0][1].name)
         else:
-            self.set_title("coldtype")
+            self.window_manager.set_title("coldtype")
 
         self.hotkeys = None
         try:
@@ -1119,7 +1104,7 @@ class Renderer():
         print("request (noop)>", render, request, action)
 
     def on_hotkey(self, key_combo, action):
-        self.hotkey_waiting = (action, key_combo)
+        self.hotkey_waiting = (action, key_combo, None)
     
     def on_message(self, message, action):
         if action:
@@ -1143,60 +1128,6 @@ class Renderer():
                 self.last_animation.name, lambda i, o: fi)
             self.action_waiting = Action.PreviewStoryboard
             return True
-    
-    def on_remote_command(self, cmd, context):
-        #print(">>>>>", cmd, context)
-        try:
-            kbs = KeyboardShortcut(cmd)
-            if kbs:
-                self.on_shortcut(kbs)
-                return
-        except ValueError:
-            pass
-
-        if context:
-            if cmd == "show_function":
-                lines = self.source_reader.codepath.read_text().split("\n")
-                lidx = int(context)
-                lidx += self._codepath_offset
-                line = lines[lidx]
-                while not line.startswith("@"):
-                    lidx -= 1
-                    line = lines[lidx]
-                fn_name = lines[lidx+1].strip("def ").split("(")[0].strip()
-                self.jump_to_fn(fn_name)
-        else:
-            if cmd == "∑":
-                self.state.exit_keylayer()
-                self.action_waiting = Action.PreviewStoryboard
-                return
-            if self.state.keylayer == Keylayer.Cmd:
-                self.state.keybuffer = cmd
-                self.action_waiting = Action.PreviewStoryboard
-                return
-
-            mods = [0, 0, 0, 0]
-            char = None
-            i = 0
-            while i < len(cmd):
-                c = cmd[i]
-                if c == "∆": # shift
-                    mods[2] = 1
-                elif c == "˚": # control
-                    mods[3] = 1
-                elif c == "¬": # alt
-                    mods[1] = 1
-                elif c == "…": # super
-                    mods[0] = 1
-                elif c == "∑":
-                    char = glfw.KEY_ESCAPE
-                else:
-                    char = ord(c.upper())
-                i += 1
-            
-            #print(">", cmd, context, char, mods)
-            if char:
-                self.on_potential_shortcut(char, glfw.PRESS, mods)
 
     def lookup_action(self, action):
         try:
@@ -1209,15 +1140,6 @@ class Renderer():
     
     def additional_actions(self):
         return []
-    
-    def on_scroll(self, win, xoff, yoff):
-        self.window_scrolly += yoff
-        #self.on_action(Action.PreviewStoryboard)
-        #print(xoff, yoff)
-        #pass # TODO!
-    
-    def on_focus(self, win, focus):
-        self.window_focus = focus
     
     def on_release(self, build=False):
         fnname = "build" if build else "release"
@@ -1237,40 +1159,6 @@ class Renderer():
         except Exception as e:
             self.print_error()
             print("! Release failed !")
-    
-    def allow_mouse(self):
-        return True
-        #return self.state.keylayer == Keylayer.Editing
-    
-    def on_mouse_button(self, _, btn, action, mods):
-        if not self.allow_mouse():
-            return
-        
-        pos = Point(glfw.get_cursor_pos(self.window)).scale(2) # TODO should this be preview-scale?
-        pos[1] = self.last_rect.h - pos[1]
-        requested_action = self.state.on_mouse_button(pos, btn, action, mods)
-        if requested_action:
-            self.action_waiting = requested_action
-    
-    def on_mouse_move(self, _, xpos, ypos):
-        if not self.allow_mouse():
-            return
-        
-        pos = Point((xpos, ypos)).scale(2)
-        pos[1] = self.last_rect.h - pos[1]
-        requested_action = self.state.on_mouse_move(pos)
-        if requested_action:
-            self.action_waiting = requested_action
-
-    def on_character(self, _, codepoint):
-        if self.state.keylayer != Keylayer.Default:
-            if self.state.keylayer_shifting:
-                self.state.keylayer_shifting = False
-                self.on_action(Action.PreviewStoryboard)
-                return
-            requested_action = self.state.on_character(codepoint)
-            if requested_action:
-                self.action_waiting = requested_action
             
     def shortcuts(self):
         if not glfw:
@@ -1411,15 +1299,13 @@ class Renderer():
             self.state.mod_preview_scale(0, 1)
 
         elif shortcut == KeyboardShortcut.WindowOpacityDown:
-            o = glfw.get_window_opacity(self.window)
-            glfw.set_window_opacity(self.window, min(1, o-0.1))
+            self.window_manager.set_window_opacity(relative=-0.1)
         elif shortcut == KeyboardShortcut.WindowOpacityUp:
-            o = glfw.get_window_opacity(self.window)
-            glfw.set_window_opacity(self.window, min(1, o+0.1))
+            self.window_manager.set_window_opacity(relative=+0.1)
         elif shortcut == KeyboardShortcut.WindowOpacityMin:
-            glfw.set_window_opacity(self.window, 0.1)
+            self.window_manager.set_window_opacity(absolute=0.1)
         elif shortcut == KeyboardShortcut.WindowOpacityMax:
-            glfw.set_window_opacity(self.window, 1)
+            self.window_manager.set_window_opacity(absolute=1)
         
         elif shortcut == KeyboardShortcut.MIDIControllersPersist:
             self.state.persist()
@@ -1445,7 +1331,7 @@ class Renderer():
             os.system(f"open {self.last_animation.output_folder}")
         
         elif shortcut == KeyboardShortcut.ViewerTakeFocus:
-            if self.window_focus == 0:
+            if self.window_manager.window_focus == 0:
                 glfw.focus_window(self.window)
             else:
                 self.open_in_editor()
@@ -1538,15 +1424,6 @@ class Renderer():
                     if (action == glfw.REPEAT and shortcut in self.repeatable_shortcuts()) or action == glfw.PRESS:
                         #print(shortcut, modifiers, skey, mod_match)
                         return self.on_shortcut(shortcut)
-
-    def on_key(self, win, key, scan, action, mods):
-        if self.state.keylayer != Keylayer.Default:
-            requested_action = self.state.on_key(win, key, scan, action, mods)
-            if requested_action:
-                self.action_waiting = requested_action
-            return
-        
-        self.on_potential_shortcut(key, action, mods)
         
     def preview_audio(self, frame=None):
         #if not self.args.preview_audio:
@@ -1580,6 +1457,7 @@ class Renderer():
     
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
+
         if action_abbrev == "ps":
             self.state.preview_scale = max(0.1, min(5, float(data[0])))
             return Action.PreviewStoryboard, None
@@ -1609,7 +1487,8 @@ class Renderer():
                 return None, None
 
     def on_stdin(self, stdin):
-        self.hotkey_waiting = (stdin, None)
+        cmd, *args = stdin.split(" ")
+        self.hotkey_waiting = (cmd, None, args)
 
     def on_action(self, action, message=None) -> bool:
         #if action != Action.PreviewStoryboardNext:
@@ -1724,10 +1603,6 @@ class Renderer():
             action = jdata.get("action")
             if action:
                 self.on_message(jdata, jdata.get("action"))
-            elif jdata.get("command"):
-                cmd = jdata.get("command")
-                context = jdata.get("context")
-                self.on_remote_command(cmd, context)
             elif jdata.get("rendered") is not None:
                 idx = jdata.get("rendered")
                 print("IDX>>>>>>>", idx)
@@ -1799,7 +1674,9 @@ class Renderer():
                     self.state.reset_keystate()
                     self.on_stdin(cmd)
                 elif last_line:
-                    self.on_stdin(last_line.strip())
+                    lls = last_line.strip()
+                    if lls:
+                        self.on_stdin(lls)
                     last_line = None
                 
                 #if self.playing != 0:
@@ -2097,7 +1974,7 @@ class Renderer():
         render, result, rp = waiter
         error_color = coldtype.rgb(1, 1, 1).skia()
         canvas.save()
-        canvas.translate(0, self.window_scrolly)
+        canvas.translate(0, self.window_manager.window_scrolly)
         canvas.translate(rect.x, rect.y)
         
         if not self.source_reader.config.window_transparent:
@@ -2165,7 +2042,7 @@ class Renderer():
                     data = json.loads(path.read_text())
                     if "action" in data:
                         action = data.get("action")
-                        self.hotkey_waiting = (action, None)
+                        self.hotkey_waiting = (action, None, None)
                         #self.execute_string_as_shortcut_or_action(action, None)
                     return
 
@@ -2228,7 +2105,16 @@ class Renderer():
             except ValueError:
                 print(f"... watching {self.source_reader.filepath} for changes ...")
     
-    def execute_string_as_shortcut_or_action(self, shortcut, key):
+    def execute_string_as_shortcut_or_action(self, shortcut, key, args):
+        print("SHORTCUT", shortcut, key, args)
+        co = ConfigOption.ShortToConfigOption(shortcut)
+        if co:
+            if co == ConfigOption.WindowOpacity:
+                self.window_manager.set_window_opacity(absolute=args[0])
+            else:
+                print("> Unhandled ConfigOption", co, key)
+            return
+
         try:
             ksc = KeyboardShortcut(shortcut)
             ea = None

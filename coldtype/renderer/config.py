@@ -95,6 +95,12 @@ class ConfigOption(Enum):
                 #if co.value[1] is False:
                 #    type_spec = dict(action="store_true", default=False)
                 pargs[co.value[0]] = parser.add_argument(f"-{short}", f"--{arg}", help=ConfigOption.Help(co), **type_spec)
+    
+    @staticmethod
+    def ShortToConfigOption(short):
+        for co in ConfigOption:
+            if short == co.value[2]:
+                return co
 
 
 class ColdtypeConfig():
