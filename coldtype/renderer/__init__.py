@@ -951,7 +951,7 @@ class Renderer():
             if self.source_reader.config.window_float:
                 glfw.window_hint(glfw.FLOATING, glfw.TRUE)
 
-            self.window = glfw.create_window(int(50), int(50), '', None, None)
+            self.window = glfw.create_window(int(10), int(10), '', None, None)
             self.window_scrolly = 0
             self.window_focus = 0
 
