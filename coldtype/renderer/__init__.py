@@ -514,9 +514,6 @@ class Renderer():
         except:
             self.show_error()
         
-        #if render_count > 0:
-        #    self.show_message(f"Rendered {render_count}")
-        
         if not self.args.is_subprocess and not previewing:
             print(f"<coldtype: render: {render_count}(" + str(round(ptime.time() - start, 3)) + "ms)>")
         
@@ -529,7 +526,7 @@ class Renderer():
         return preview_count, render_count, renders
 
     def render(self, trigger, indices=[]) -> Tuple[int, int]:
-        if self.args.is_subprocess: # is a child process of a multiplexed render
+        if self.args.is_subprocess:
             if trigger != Action.RenderIndices:
                 raise Exception("Invalid child process render action", trigger)
             else:
