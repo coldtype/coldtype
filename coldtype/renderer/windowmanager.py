@@ -70,7 +70,8 @@ class WindowManagerPassthrough():
         self.context = None
 
     def set_title(self, text):
-        print("TITLE", text)
+        #print("TITLE", text)
+        pass
     
     def terminate(self):
         pass

@@ -27,7 +27,7 @@ from coldtype.text.reader import Font
 
 from coldtype.renderer.config import ConfigOption
 from coldtype.renderer.reader import SourceReader
-from coldtype.renderer.windowmanager import WindowManager, WindowManagerBackgroundRender, WindowManagerPassthrough, GL, glfw
+from coldtype.renderer.windowmanager import WindowManager, WindowManagerBackgroundRender, WindowManagerPassthrough, glfw
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
@@ -201,6 +201,11 @@ class Renderer():
         self.parser = parser
         self.args = parser.parse_args()
 
+        if self.args.version:
+            print(">>>", coldtype.__version__)
+            self.dead = True
+            return
+
         self.window_manager = WindowManagerPassthrough()
         self.source_reader = SourceReader(
             renderer=self, cli_args=self.args)
@@ -228,14 +233,7 @@ class Renderer():
             self.dead = False
         
         self.state.preview_scale = self.source_reader.config.preview_scale
-        
-        if self.args.version:
-            print(">>>", coldtype.__version__)
-            self.dead = True
-            return
-
         self.exit_code = 0
-
         self.line_number = -1
         self.last_renders = []
         self.last_render_cleared = False
@@ -316,7 +314,7 @@ class Renderer():
         if pj:
             self.watchees.append([Watchable.Generic, Path("~/.coldtype/picklejar"), None])
 
-        if not self.args.is_subprocess:
+        if not self.args.is_subprocess and not self.args.no_viewer:
             self.watch_file_changes()
         
         if reload:
