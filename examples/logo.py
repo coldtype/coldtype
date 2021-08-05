@@ -35,7 +35,7 @@ def logo(r, rs):
 @renderable()
 def logo2(r):
     return DPS([
-        DP(r).f(hsl(0.65)).f(0),
+        DP(r).f(hsl(0.65)).f(0).f(hsl(0.65, 0.6, 0.45)),
         (DP().oval(r.inset(-20))
             .f(None).s(1).sw(2)
             .ch(phototype(r, blur=10, cut=23, cutw=5))),

@@ -50,8 +50,6 @@ class Action(Enum):
     ClearLastRender = "clear_last_render"
     ClearRenderedFrames = "clear_rendered_frames"
     RenderedPlay = "rendered_play"
-    ArbitraryTyping = "arbitrary_typing"
-    ArbitraryCommand = "arbitrary_command"
     RestartRenderer = "restart_renderer"
     ToggleMultiplex = "toggle_multiplex"
     Kill = "kill"
@@ -351,7 +349,7 @@ class iconset(renderable):
         
         if True: # can be done windows or mac
             from PIL import Image
-            output = self.output_folder.parent / f"{filepath.stem}.ico"
+            output = self.output_folder.parent / f"{self.filepath.stem}.ico"
             largest = list(self.output_folder.glob("*_1024.png"))[0]
             img = Image.open(str(largest))
             icon_sizes = [(x, x) for x in self.valid_sizes]

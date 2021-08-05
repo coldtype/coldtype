@@ -53,6 +53,10 @@ class ConfigOption(Enum):
         lambda x: int(x))
     NoViewer = ("no_viewer", None, "nv",
         true_false_or_none)
+    NoMIDI = ("no_midi", None, "nm",
+        true_false_or_none)
+    MIDIInfo = ("midi_info", None, "mi",
+        true_false_or_none)
 
     @staticmethod
     def Help(e):
@@ -96,6 +100,10 @@ class ConfigOption(Enum):
             return "What port should the webviewer run on?"
         elif e == ConfigOption.WebsocketPort:
             return "What port should the websocket run on?"
+        elif e == ConfigOption.NoViewer:
+            return "Should there be no viewer at all?"
+        elif e == ConfigOption.NoMIDI:
+            return "Should MIDI be disabled?"
         
 
     @staticmethod

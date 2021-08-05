@@ -36,6 +36,7 @@ from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.jsonpen import JSONPen
 
+from coldtype.renderer.midi import rtmidi, MIDIWatcher
 from coldtype.renderer.keyboard import KeyboardShortcut
 
 try:
@@ -63,37 +64,11 @@ _random = Random()
 from time import sleep, time
 
 try:
-    import rtmidi
-except ImportError:
-    rtmidi = None
-    pass
-
-try:
     import psutil
     process = psutil.Process(os.getpid())
 except ImportError:
     process = None
 
-DARWIN = platform.system() == "Darwin"
-
-def show_tail(p):
-    for line in p.stdout:
-        print(line.decode("utf-8").split(">>")[-1].strip().strip("\n"))
-
-# TODO get rid of this, use a daemon
-class DataSourceThread(threading.Thread):
-    def __init__(self, filepath):
-        self.filepath = filepath
-        self.program = run_path(self.filepath)
-        self.should_run = True
-        threading.Thread.__init__(self)
-    
-    def run(self):
-        print("Running data thread for:", self.filepath.relative_to(Path.cwd()))
-        while self.should_run:
-            g["run"]()
-            self.interval = self.program.get("INTERVAL", 0.5)
-            ptime.sleep(self.interval)
 
 class Renderer():
     def Argparser(name="coldtype", file=True, defaults={}, nargs=[]):
@@ -108,8 +83,6 @@ class Renderer():
             version=parser.add_argument("-v", "--version", action="store_true", default=False, help="Display version"),
 
             no_watch=parser.add_argument("-nw", "--no-watch", action="store_true", default=False, help="Preventing watching for changes to source files"),
-
-            no_midi=parser.add_argument("-nm", "--no-midi", action="store_true", default=False, help="Midi is on by default, do you want to turn it off?"),
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
             
@@ -127,7 +100,7 @@ class Renderer():
 
             memory=parser.add_argument("-mm", "--memory", action="store_true", default=False, help="Show statistics about memory usage?"),
 
-            midi_info=parser.add_argument("-mi", "--midi-info", action="store_true", default=False, help="Show available MIDI devices"),
+            #midi_info=parser.add_argument("-mi", "--midi-info", action="store_true", default=False, help="Show available MIDI devices"),
 
             show_time=parser.add_argument("-st", "--show-time", action="store_true", default=False, help="Show time for each render"),
 
@@ -146,10 +119,6 @@ class Renderer():
             output_folder=parser.add_argument("-of", "--output-folder", type=str, default=None, help="If you don’t want to render to the default output location, specify that here."),
 
             filter_functions=parser.add_argument("-ff", "--filter-functions", type=str, default=None, help="Names of functions to render"),
-
-            sidecar=parser.add_argument("-sc", "--sidecar", type=str, default=None, help="A file to run alongside your coldtype source file (like a file that processes data or keystrokes), that will run in a managed thread"),
-
-            tails=parser.add_argument("-tl", "--tails", type=str, default=None, help="File to tail, comma-separated (no whitespace); results will print output to the normal process output"),
 
             hide_keybuffer=parser.add_argument("-hkb", "--hide-keybuffer", action="store_true", default=False, help="Should the keybuffer be shown?"),
 
@@ -190,8 +159,6 @@ class Renderer():
 
         self.observers = []
         self.watchees = []
-        self.sidecar_threads = []
-        self.tails = []
         self.watchee_mods = {}
         self.rasterizer_warning = None
         
@@ -764,28 +731,10 @@ class Renderer():
             self.winman = WinmanGLFWSkia(self.source_reader.config, self)
             self.typeface = skia.Typeface.MakeFromFile(str(sibling(__file__, "../demo/RecMono-CasualItalic.ttf")))
 
-        if rtmidi:
-            try:
-                midiin = rtmidi.RtMidiIn()
-                lookup = {}
-                self.midis = []
-                for p in range(midiin.getPortCount()):
-                    lookup[midiin.getPortName(p)] = p
-
-                for device, mapping in self.source_reader.config.midi.items():
-                    if device in lookup:
-                        mapping["port"] = lookup[device]
-                        mi = rtmidi.RtMidiIn()
-                        mi.openPort(lookup[device])
-                        self.midis.append([device, mi])
-                    else:
-                        if self.args.midi_info:
-                            print(f">>> no midi port found with that name ({device}) <<<")
-            except Exception as e:
-                print("MIDI SETUP EXCEPTION >", e)
-                self.midis = []
-        else:
-            self.midis = []
+        self.midi = MIDIWatcher(
+            self.source_reader.config,
+            self.state,
+            self.execute_string_as_shortcut_or_action)
 
         if len(self.watchees) > 0:
             self.winman.set_title(self.watchees[0][1].name)
@@ -799,49 +748,13 @@ class Renderer():
                 mapping = {}
                 for k, v in self.source_reader.config.hotkeys.items():
                     mapping[k] = partial(self.on_hotkey, k, v)
-                #self.hotkeys = keyboard.GlobalHotKeys({
-                #    "<cmd>+<f8>": self.on_hotkey
-                #})
                 self.hotkeys = keyboard.GlobalHotKeys(mapping)
                 self.hotkeys.start()
         except:
             pass
-    
-        if self.args.sidecar:
-            if self.args.sidecar == ".":
-                self.args.sidecar = self.source_reader.filepath
-            dst = DataSourceThread(Path(self.args.sidecar).expanduser().resolve())
-            dst.start()
-            self.sidecar_threads.append(dst)
-        
-        if self.args.tails:
-            ts = self.args.tails.split(",")
-            for t in ts:
-                if t in ["rf", "robofont"]:
-                    t = "~/Library/Application Support/RoboFont/robofont-3-py3.log"
-                tp = Path(t.strip()).expanduser().absolute()
-                proc = Popen(["tail", "-f", str(tp)], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
-                t = threading.Thread(target=show_tail, args=(proc,), daemon=True)
-                t.start()
-                self.tails.append(t)
 
     def start(self):
-        if self.args.midi_info:
-            try:
-                midiin = rtmidi.RtMidiIn()
-                ports = range(midiin.getPortCount())
-                for p in ports:
-                    print(p, midiin.getPortName(p))
-            except:
-                print("Please run `pip install rtmidi` in your venv")
-                self.on_exit()
-                return
-            if self.args.no_watch:
-                should_halt = True
-            else:
-                should_halt = self.before_start()
-        else:
-            should_halt = self.before_start()
+        should_halt = self.before_start()
         
         if not self.args.no_watch:
             self.initialize_gui_and_server()
@@ -1157,37 +1070,6 @@ class Renderer():
                 self.action_waiting = waiting
         else:
             self.action_waiting = Action.PreviewStoryboard
-    
-    def stdin_to_action(self, stdin):
-        action_abbrev, *data = stdin.split(" ")
-
-        if action_abbrev == "ps":
-            self.state.preview_scale = max(0.1, min(5, float(data[0])))
-            return Action.PreviewStoryboard, None
-        elif action_abbrev == "a":
-            return Action.RenderAll, None
-        elif action_abbrev == "w":
-            return Action.RenderWorkarea, None
-        elif action_abbrev == "pf":
-            return Action.PreviewIndices, [int(i.strip()) for i in data]
-        elif action_abbrev == "r":
-            return Action.RestartRenderer, None
-        elif action_abbrev == "l":
-            return Action.Release, None
-        elif action_abbrev == "m":
-            return Action.ToggleMultiplex, None
-        elif action_abbrev == "rp":
-            self.reset_filepath(data[0])
-            return Action.Resave, None
-        elif action_abbrev == "ff":
-            self.function_filters = data
-            return Action.PreviewStoryboard, None
-        else:
-            enum_action = self.lookup_action(action_abbrev)
-            if enum_action:
-                return enum_action, None
-            else:
-                return None, None
 
     def on_stdin(self, stdin):
         cmd, *args = stdin.split(" ")
@@ -1233,9 +1115,6 @@ class Renderer():
             self.on_release(build=True)
         elif action == Action.Release:
             self.on_release()
-        elif action == Action.ArbitraryCommand:
-            self.on_stdin(message.get("input"))
-            return True
         elif action == Action.RestartRenderer:
             self.on_exit(restart=True)
         elif action == Action.Kill:
@@ -1274,11 +1153,6 @@ class Renderer():
     
     def send_to_external(self, action, **kwargs):
         if not self.server:
-            return
-
-        if action in ["save", "jump_to_def"]:
-            for _, client in self.server.connections.items():
-                client.sendMessage(json.dumps({"midi_shortcut":action, "file":str(self.source_reader.filepath), **kwargs}))
             return
         
         animation = self.animation()
@@ -1391,8 +1265,8 @@ class Renderer():
             for msg in msgs:
                 self.process_ws_message(msg)
 
-        if not self.args.no_midi:
-            self.monitor_midi()
+        if self.midi.monitor(self.playing):
+            self.action_waiting = Action.PreviewStoryboard
         
         if glfw and not self.source_reader.config.no_viewer:
             did_preview = self.winman.turn_over()
@@ -1584,44 +1458,6 @@ class Renderer():
             self.on_action(EditAction(shortcut), {})
         elif not ea:
             print("No shortcut/action", key, shortcut)
-
-    
-    def monitor_midi(self):
-        controllers = {}
-        for device, mi in self.midis:
-            msg = mi.getMessage(0)
-            while msg:
-                if self.args.midi_info:
-                    print(device, msg)
-                if msg.isNoteOn(): # Maybe not forever?
-                    nn = msg.getNoteNumber()
-                    shortcut = self.source_reader.config.midi[device]["note_on"].get(nn)
-                    self.execute_string_as_shortcut_or_action(shortcut, nn)
-                if msg.isController():
-                    cn = msg.getControllerNumber()
-                    cv = msg.getControllerValue()
-                    shortcut = self.source_reader.config.midi[device].get("controller", {}).get(cn)
-                    if shortcut:
-                        if cv in shortcut:
-                            print("shortcut!", shortcut, cv)
-                            self.execute_string_as_shortcut_or_action(shortcut.get(cv), cn)
-                    else:
-                        controllers[device + "_" + str(cn)] = cv/127
-                msg = mi.getMessage(0)
-        
-        if len(controllers) > 0:
-            nested = {}
-            for k, v in controllers.items():
-                device, number = k.split("_")
-                if not nested.get(device):
-                    nested[device] = {}
-                nested[device][str(number)] = v
-            
-            for device, numbers in nested.items():
-                self.state.controller_values[device] = {**self.state.controller_values.get(device, {}), **numbers}
-
-            if not self.playing:
-                self.action_waiting = Action.PreviewStoryboard
     
     def stop_watching_file_changes(self):
         for o in self.observers:
@@ -1663,12 +1499,6 @@ class Renderer():
         
         self.reset_renderers()
         self.stop_watching_file_changes()
-        
-        for t in self.sidecar_threads:
-            t.should_run = False
-        
-        #for t in self.tails:
-        #    t.terminate()
         
         if self.args.memory:
             snapshot = tracemalloc.take_snapshot()
