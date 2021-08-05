@@ -1,4 +1,4 @@
-import ast, json
+import ast, json, threading
 from http.server import SimpleHTTPRequestHandler
 from enum import Enum
 
@@ -59,6 +59,17 @@ class SimpleEcho(WebSocket):
 def echo_server(port):
     return SimpleWebSocketServer('', port, SimpleEcho)
 
+def run_echo_server(port, name):
+    try:
+        print("WEBSOCKET>", f"localhost:{port}")
+        server = echo_server(port)
+        daemon = threading.Thread(name=name,
+            target=server.serveforever)
+        daemon.setDaemon(True)
+        daemon.start()
+        return server
+    except OSError:
+        return None
 
 def bytesto(bytes):
     r = float(bytes)

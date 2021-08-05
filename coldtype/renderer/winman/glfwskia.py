@@ -1,3 +1,5 @@
+from coldtype.renderer.winman.passthrough import WinmanPassthrough
+
 import time as ptime
 import sys, threading, random
 from subprocess import Popen, PIPE
@@ -65,25 +67,7 @@ from coldtype.renderer.keyboard import KeyboardShortcut, REPEATABLE_SHORTCUTS, s
 from coldtype.pens.svgpen import SVGPen
 
 
-class WindowManagerPassthrough():
-    def __init__(self):
-        self.context = None
-
-    def set_title(self, text):
-        #print("TITLE", text)
-        pass
-    
-    def terminate(self):
-        pass
-
-    def reset(self):
-        pass
-
-    def preview_scale(self):
-        return 1
-
-
-class WindowManagerBackgroundRender(WindowManagerPassthrough):
+class WinmanGLFWSkiaBackground(WinmanPassthrough):
     def __init__(self, config:ColdtypeConfig, renderer):
         # TODO is the glfw stuff here actually necessary?
 
@@ -98,7 +82,7 @@ class WindowManagerBackgroundRender(WindowManagerPassthrough):
         self.context = skia.GrDirectContext.MakeGL()
 
 
-class WindowManager():
+class WinmanGLFWSkia():
     def __init__(self, config:ColdtypeConfig, renderer, background=False):
         self.config = config
         self.window = None

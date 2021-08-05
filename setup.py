@@ -38,6 +38,7 @@ setuptools.setup(
         "coldtype.renderable",
         "coldtype.fontgoggles",
         "coldtype.interpolation",
+        "coldtype.renderer.winman",
         "coldtype.fontgoggles.font",
         "coldtype.fontgoggles.misc",
         "coldtype.fontgoggles.compile",

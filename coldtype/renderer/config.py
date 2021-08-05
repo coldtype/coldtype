@@ -43,6 +43,16 @@ class ConfigOption(Enum):
         lambda x: x.split(","))
     BlenderWatch = ("blender_watch", None, "bw",
         true_false_or_none)
+    Webviewer = ("webviewer", None, "wv",
+        true_false_or_none)
+    Websocket = ("websocket", None, "ws",
+        true_false_or_none)
+    WebviewerPort = ("webviewer_port", 8008, "wvp",
+        lambda x: int(x))
+    WebsocketPort = ("websocket_port", 8007, "wsp",
+        lambda x: int(x))
+    NoViewer = ("no_viewer", None, "nv",
+        true_false_or_none)
 
     @staticmethod
     def Help(e):
@@ -82,6 +92,11 @@ class ConfigOption(Enum):
             return "How long should the renderer delay between rendering frames?"
         elif e == ConfigOption.BlenderWatch:
             return "Enable experimental blender live-coding integration?"
+        elif e == ConfigOption.WebviewerPort:
+            return "What port should the webviewer run on?"
+        elif e == ConfigOption.WebsocketPort:
+            return "What port should the websocket run on?"
+        
 
     @staticmethod
     def AddCommandLineArgs(pargs:dict,
