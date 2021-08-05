@@ -160,7 +160,6 @@ class b3d_animation(animation):
                     a.i,
                     output_dir,
                     samples=samples)
-        os.system("afplay /System/Library/Sounds/Pop.aiff")
     
     def blender_render_frame(self, file, blend_file, fi, samples=4, denoise=True):
         blend_source(file, blend_file, fi, self.blender_output_dir(), samples, denoise=denoise)
@@ -184,7 +183,6 @@ class b3d_animation(animation):
         def _release(frames):
             for fi in frames:
                 self.blender_render_frame(self.filepath, self.blend, fi, samples=32)
-            os.system("afplay /System/Library/Sounds/Pop.aiff")
 
         def build(_):
             frames = list(range(0, self.duration))

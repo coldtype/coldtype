@@ -16,7 +16,6 @@ class KeyboardShortcut(Enum):
     
     PlayRendered = "play_rendered"
     PlayPreview = "play_preview"
-    PlayPreviewSlow = "play_preview_slow"
 
     ReloadSource = "reload_source"
     RestartApp = "restart_app"

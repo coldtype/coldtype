@@ -1,24 +1,16 @@
-import traceback, threading
+import traceback
 import argparse, json, math
 import sys, os, signal, tracemalloc, shutil
-import platform, pickle
-
-try:
-    import numpy as np
-except ImportError:
-    np = None
+import pickle
 
 import time as ptime
 from pathlib import Path
 from typing import Tuple
 from pprint import pprint
-from runpy import run_path
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen
 from random import shuffle, Random
 from more_itertools import distribute
 from functools import partial
-
-from http.server import HTTPServer
 
 import coldtype
 from coldtype.helpers import *
@@ -103,8 +95,6 @@ class Renderer():
             show_time=parser.add_argument("-st", "--show-time", action="store_true", default=False, help="Show time for each render"),
 
             is_subprocess=parser.add_argument("-isp", "--is-subprocess", action="store_true", default=False, help=argparse.SUPPRESS),
-
-            no_sound=parser.add_argument("-ns", "--no-sound", action="store_true", default=False, help="Don’t make sound"),
 
             config=parser.add_argument("-c", "--config", type=str, default=None, help="By default, Coldtype looks for a .coldtype.py file in ~ and the cwd; use this to override that and look at a specific file instead"),
 
@@ -191,7 +181,6 @@ class Renderer():
         else:
             self.function_filters = []
 
-        self.recurring_actions = {}
         self.viewer_solos = []
     
     def reset_filepath(self, filepath, reload=False):
@@ -295,6 +284,10 @@ class Renderer():
     
     def show_message(self, message, scale=1):
         print(message)
+    
+    def play_sound(self, sound_name):
+        if not self.source_reader.config.no_sound:
+            play_sound(sound_name)
 
     def reload(self, trigger):
         if skia and SkiaPen:
@@ -519,11 +512,15 @@ class Renderer():
                         self.show_error()
         except:
             self.show_error()
-        if render_count > 0:
-            self.show_message(f"Rendered {render_count}")
         
-        if not self.args.is_subprocess and self.args.show_time:
-            print("TIME >>>", ptime.time() - start)
+        #if render_count > 0:
+        #    self.show_message(f"Rendered {render_count}")
+        
+        if not self.args.is_subprocess and not previewing:
+            print(f"<render:{render_count}(" + str(round(ptime.time() - start, 3)) + "ms)>")
+        
+        if not previewing:
+            self.play_sound("Pop")
         
         return preview_count, render_count, renders
 
@@ -531,11 +528,8 @@ class Renderer():
         if self.args.is_subprocess: # is a child process of a multiplexed render
             if trigger != Action.RenderIndices:
                 raise Exception("Invalid child process render action", trigger)
-                return 0, 0
             else:
                 p, r, _ = self._single_thread_render(trigger, indices=indices)
-                if not self.args.no_sound:
-                    os.system("afplay /System/Library/Sounds/Pop.aiff")
                 self.exit_code = 5 # mark as child-process
                 return p, r
         
@@ -609,8 +603,8 @@ class Renderer():
             r = self.args.rasterizer
             if r:
                 sargs.append("-r", r)
-            if self.args.no_sound:
-                sargs.append("-ns")
+            if self.source_reader.config.no_sound:
+                sargs.append("-ns", "1")
             if self.args.cpu_render or skia is None:
                 sargs.append("-cpu")
             #print(sys.argv)
@@ -627,9 +621,8 @@ class Renderer():
                         self.running_renderers[idx] = None
             ptime.sleep(.1)
 
-        print("TIME >>>", ptime.time() - start)
-        if not self.args.no_sound:
-            os.system("afplay /System/Library/Sounds/Frog.aiff")
+        print(f"<multi-render({str(round(ptime.time() - start, 3))})>")
+        self.play_sound("Frog")
     
     def rasterize(self, content, render, path):
         if render.self_rasterizing:
@@ -900,14 +893,6 @@ class Renderer():
         elif shortcut == KeyboardShortcut.PlayPreview:
             self.winman.stop_playing_preloaded()
             return Action.PreviewPlay
-        elif shortcut == KeyboardShortcut.PlayPreviewSlow:
-            if shortcut not in self.recurring_actions:
-                self.recurring_actions[shortcut] = dict(
-                    interval=0.5,
-                    action=KeyboardShortcut.PreviewNext,
-                    last=0)
-            else:
-                del self.recurring_actions[shortcut]
         
         elif shortcut == KeyboardShortcut.ReloadSource:
             return Action.PreviewStoryboardReload
@@ -1175,14 +1160,10 @@ class Renderer():
                 self.on_message(jdata, jdata.get("action"))
             elif jdata.get("rendered") is not None:
                 idx = jdata.get("rendered")
-                print("IDX>>>>>>>", idx)
                 self.state.adjust_keyed_frame_offsets(
                     self.last_animation.name,
                     lambda i, o: idx)
                 self.action_waiting = Action.PreviewStoryboard
-                
-        #except TypeError:
-        #    raise TypeError("Huh")
         except:
             self.show_error()
             print("Malformed message")
@@ -1286,13 +1267,6 @@ class Renderer():
         if self.playing > 0:
             self.on_action(Action.PreviewStoryboardNext)
         
-        for k, ra in self.recurring_actions.items():
-            interval = ra.get("interval")
-            if now - ra.get("last") > interval:
-                ra["last"] = now
-                print("RECURRING ACTION", k)
-                self.on_shortcut(ra.get("action"))
-        
         return did_preview
 
     def draw_preview(self, idx, scale, canvas, rect, waiter):
@@ -1377,16 +1351,13 @@ class Renderer():
                 if last is not None:
                     diff = now - last
                     if diff < 1:
-                        #print("SKIP")
                         return
                     else:
-                        #print("CONTINUE")
                         pass
                 try:
                     json.loads(path.read_text())
                 except json.JSONDecodeError:
                     print("Error decoding watched json", path)
-                    #print(path.read_text())
                     return
             
             idx = self.watchee_paths().index(path)
@@ -1408,7 +1379,6 @@ class Renderer():
                 print(">>> pid:{:d}/new:{:04.2f}MB/total:{:4.2f}".format(os.getpid(), diff, memory))
             
             self.action_waiting = Action.PreviewStoryboardReload
-            #self.waiting_to_render = [[Action.Resave, self.watchees[idx][0]]]
 
     def watch_file_changes(self):
         if self.args.no_watch:
@@ -1431,7 +1401,7 @@ class Renderer():
                 print(f"... watching {self.source_reader.filepath} for changes ...")
     
     def execute_string_as_shortcut_or_action(self, shortcut, key, args=[]):
-        print("SHORTCUT", shortcut, key, args)
+        #print("SHORTCUT", shortcut, key, args)
         co = ConfigOption.ShortToConfigOption(shortcut)
         if co:
             if co == ConfigOption.WindowOpacity:

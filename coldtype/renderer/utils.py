@@ -1,4 +1,4 @@
-import ast, json, threading
+import ast, json, threading, platform, os
 from http.server import SimpleHTTPRequestHandler
 from enum import Enum
 
@@ -99,3 +99,7 @@ def file_and_line_to_def(filepath, lineno):
                 candidate = item
     if candidate:
         return candidate.name
+    
+def play_sound(name="Pop"):
+    if platform.system() == "Darwin":
+        os.system(f"afplay /System/Library/Sounds/{name}.aiff")
