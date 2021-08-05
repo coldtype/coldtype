@@ -249,12 +249,12 @@ class SourceReader():
         self.runner = runner
 
         self.config = None
-        self.read_configs(cli_args)
+        self.read_configs(cli_args, filepath)
 
         if filepath or code:
             self.reset_filepath(filepath, code)
     
-    def read_configs(self, args):
+    def read_configs(self, args, filepath):
         proj = Path(".coldtype.py")
         user = Path("~/.coldtype.py").expanduser()
         files = [user, proj]
@@ -266,11 +266,22 @@ class SourceReader():
                     args.config = args.file
                 files.append(Path(args.config).expanduser())
 
+        if filepath:
+            files.append(filepath)
+        
+        if args.file:
+            fp = Path(args.file).expanduser()
+            if fp.exists() and not fp.is_dir():
+                files.append(fp)
+
         py_config = {}
         for p in files:
             if p.exists():
                 try:
-                    py_config = run_path(str(p))
+                    py_config = run_path(str(p), init_globals={
+                        "__FILE__": p,
+                        "__sibling__": partial(sibling, p),
+                    })
                     #self.midi_mapping = py_config.get("MIDI", self.midi_mapping)
                     #self.hotkey_mapping = py_config.get("HOTKEYS", self.hotkey_mapping)
                     self.config = ColdtypeConfig(py_config, self.config if self.config else None, args)

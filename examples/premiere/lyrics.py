@@ -1,4 +1,6 @@
-# coldtype examples/premiere/lyrics.py -ws 1
+WINDOW_PIN = "SE"
+WEBSOCKET = 1
+MULTIPLEX = 1
 
 from coldtype import *
 from coldtype.time.nle.premiere import PremiereTimeline

@@ -36,7 +36,7 @@ from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.svgpen import SVGPen
 from coldtype.pens.jsonpen import JSONPen
 
-from coldtype.renderer.midi import rtmidi, MIDIWatcher
+from coldtype.renderer.midi import MIDIWatcher
 from coldtype.renderer.keyboard import KeyboardShortcut
 
 try:
@@ -99,8 +99,6 @@ class Renderer():
             release=parser.add_argument("-rls", "--release", action="store_true", default=False, help="Should the release function be run and the renderer quit immediately?"),
 
             memory=parser.add_argument("-mm", "--memory", action="store_true", default=False, help="Show statistics about memory usage?"),
-
-            #midi_info=parser.add_argument("-mi", "--midi-info", action="store_true", default=False, help="Show available MIDI devices"),
 
             show_time=parser.add_argument("-st", "--show-time", action="store_true", default=False, help="Show time for each render"),
 

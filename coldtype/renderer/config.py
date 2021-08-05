@@ -1,5 +1,4 @@
 from enum import Enum
-from runpy import run_path
 import argparse
 
 def true_false_or_none(x):
@@ -151,7 +150,6 @@ class ColdtypeConfig():
             if self.profile and "PROFILES" in config and self.profile in config["PROFILES"]:
                 v = config["PROFILES"][self.profile].get(prop.upper())
                 if v:
-                    #print("PROFILE", self.profile, prop, v)
                     setattr(self, prop, v)
             
             if args and hasattr(args, prop):
@@ -159,9 +157,6 @@ class ColdtypeConfig():
                 if value is not None:
                     #print("CLI", prop, value)
                     setattr(self, prop, cli_mod(value))
-        
-        #self.midi = config.get("MIDI")
-        #self.hotkeys = config.get("HOTKEYS")
     
     def values(self):
         out = "<ColdtypeConfig:"
