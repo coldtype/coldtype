@@ -63,20 +63,27 @@ Once you have all that out of the way, you can `pip install` things using that e
 Running Code in Blender
 -----------------------
 
-To get a Blender window to show up, you'll need to pass a ``-bw`` (``--blender-watch``) option to coldtype command-line invocation, along with the name of a Blender file (which can exist or not — if it doesn't exist, Blender will make the file with that name and path).
+To get a Blender window to show up, all you need to do is use the ``@b3d_animation`` decorator in place of the standard @animation decorator.
 
 So, to use an example from the Coldtype repo, you could run:
 
 .. code:: bash
 
-    coldtype examples/blender/varfont.py -bw scratch.blend
+    coldtype examples/blender/varfont.py
 
 This should launch both a standard Coldtype window (with a 2D Skia render) and a Blender GUI window, which should automatically render the same thing as the 2D window, except in 3D.
 
 What's different in Blender is that the contents of the scene aren’t re-created from scratch every time you render; instead, you annotate specific elements in your returned result, then those annotated results are displayed in Blender, as persistent objects. This means you can use Blender in a hybrid fashion, creating objects using the GUI, saving the file, and then re-saving your Coldtype source file for automatic updates in Blender itself.
 
-Here's a short video demonstrating what's being described above:
+Here's a short video demonstrating what's being described above (all of which is now part of the released public Coldtype (despite what the tweet says)):
 
 .. raw:: html
 
     <blockquote class="twitter-tweet"><p lang="en" dir="ltr">livecoding with coldtype &amp; blender — been attempting to get something like this workflow working for a while now — finally making some progress! (not yet released in coldtype but coming soon) <a href="https://t.co/TiXF4FBnDU">pic.twitter.com/TiXF4FBnDU</a></p>&mdash; Rob Stenson (@robstenson) <a href="https://twitter.com/robstenson/status/1411005246709526530?ref_src=twsrc%5Etfw">July 2, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+-------------------
+
+Caveats
+-------
+
+If you’ve attempted to install Coldtype into Blender but are seeing an error about ``Python.h``, you’ll need to download the `Python 3.9.2 source tarball <https://www.python.org/ftp/python/3.9.2/Python-3.9.2.tgz>`_, unzip it, then manually copy the files in the python ``Include`` folder into the blender embedded python ``/Applications/Blender.app/Contents/Resources/2.93/python/include/python3.9/`` folder. (This requires Blender 2.93 or 2.93.2)
