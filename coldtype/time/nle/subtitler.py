@@ -280,7 +280,6 @@ class lyric_editor(animation):
         super().__init__(
             rect=rect,
             timeline=timeline,
-            audio=timeline.audio_path,
             rstate=1,
             watch=[timeline.path],
             **kwargs)

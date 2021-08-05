@@ -1,3 +1,7 @@
+import time as ptime
+import sys, threading
+from subprocess import Popen, PIPE
+
 try:
     import glfw
 except ImportError:
@@ -33,10 +37,32 @@ except ImportError:
         print("pip install PyOpenGL")
         GL = None
 
+
+last_line = ''
+new_line_event = threading.Event()
+
+def monitor_stdin():
+    # https://stackoverflow.com/questions/27174736/how-to-read-most-recent-line-from-stdin-in-python
+    global last_line
+    global new_line_event
+
+    def keep_last_line():
+        global last_line, new_line_event
+        for line in sys.stdin:
+            last_line = line
+            new_line_event.set()
+
+    keep_last_line_thread = threading.Thread(target=keep_last_line)
+    keep_last_line_thread.daemon = True
+    keep_last_line_thread.start()
+
+
 from coldtype.geometry import Point, Rect, Edge
 from coldtype.renderer.state import Keylayer, Action
 from coldtype.renderer.config import ConfigOption, ColdtypeConfig
 from coldtype.renderer.keyboard import KeyboardShortcut, REPEATABLE_SHORTCUTS, shortcuts_keyed
+
+from coldtype.pens.svgpen import SVGPen
 
 
 class WindowManagerPassthrough():
@@ -82,6 +108,12 @@ class WindowManager():
         self.all_shortcuts = shortcuts_keyed()
         self.prev_scale = 0
         self.surface = None
+        self._should_reload = False
+
+        self.glfw_last_time = -1
+        self.refresh_delay = self.config.refresh_delay
+        self.backoff_refresh_delay = self.refresh_delay
+        self.copy_previews_to_clipboard = False
 
         if not glfw.init():
             raise RuntimeError('glfw.init() failed')
@@ -125,9 +157,11 @@ class WindowManager():
         glfw.set_window_focus_callback(self.window, self.on_focus)
 
         self.set_window_opacity()
-        self.prev_scale = self.get_content_scale()
 
+        self.prev_scale = self.get_content_scale()
         self.context = skia.GrDirectContext.MakeGL()
+
+        monitor_stdin()
     
     def find_primary_monitor(self):
         self.primary_monitor = glfw.get_primary_monitor()
@@ -356,6 +390,125 @@ class WindowManager():
                         #print(shortcut, modifiers, skey, mod_match)
                         return self.renderer.on_shortcut(shortcut)
     
+    def turn_over(self):
+        render_previews = len(self.renderer.previews_waiting_to_paint) > 0
+        if not render_previews:
+            self.backoff_refresh_delay += 0.01
+            if self.backoff_refresh_delay >= 0.25:
+                self.backoff_refresh_delay = 0.25
+            return []
+        
+        self.backoff_refresh_delay = self.refresh_delay
+
+        frect, rects, dscale, needs_new_context = self.calculate_window_size(self.renderer.previews_waiting_to_paint)
+
+        if needs_new_context:
+            self.create_surface(frect)
+            self.update_window(frect)
+
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+
+        did_preview = []
+
+        with self.surface as canvas:
+            canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 1))
+            if self.config.window_transparent:
+                canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 0))
+            
+            for idx, (render, result, rp) in enumerate(self.renderer.previews_waiting_to_paint):
+                rect = rects[idx].offset((frect.w-rects[idx].w)/2, 0).round()
+
+                if self.copy_previews_to_clipboard:
+                    try:
+                        svg = SVGPen.Composite(result, render.rect, viewBox=render.viewBox)
+                        print(svg)
+                        process = Popen(
+                            'pbcopy', env={'LANG': 'en_US.UTF-8'}, stdin=PIPE)
+                        process.communicate(svg.encode('utf-8'))
+                    except:
+                        print("failed to copy to clipboard")
+
+                try:
+                    self.renderer.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
+                    did_preview.append(rp)
+                except Exception as e:
+                    short_error = self.renderer.print_error()
+                    paint = skia.Paint(AntiAlias=True, Color=skia.ColorRED)
+                    canvas.drawString(short_error, 10, 32, skia.Font(None, 36), paint)
+            
+            self.copy_previews_to_clipboard = False
+        
+            if self.renderer.state.keylayer != Keylayer.Default and not self.renderer.args.hide_keybuffer:
+                self.renderer.state.draw_keylayer(canvas, self.last_rect, self.renderer.typeface)
+        
+        self.surface.flushAndSubmit()
+        glfw.swap_buffers(self.window)
+        return did_preview
+    
+    def listen(self):
+        should_close = self.should_close()
+
+        while not self.renderer.dead and not should_close:
+            if self.content_scale_changed():
+                self.renderer.on_action(Action.PreviewStoryboard)
+            
+            if self._should_reload:
+                self._should_reload = False
+                self.renderer.on_action(Action.PreviewStoryboard)
+            
+            t = glfw.get_time()
+            td = t - self.glfw_last_time
+
+            spf = 0.1
+            if self.renderer.last_animation:
+                spf = 1 / float(self.renderer.last_animation.timeline.fps)
+
+                if td >= spf:
+                    self.glfw_last_time = t
+                else:
+                    glfw.poll_events()
+                    continue
+
+            if self.renderer.last_animation and self.renderer.playing_preloaded_frame >= 0 and len(self.preloaded_frames) > 0:
+                GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+
+                with self.surface as canvas:
+                    path = self.renderer.preloaded_frames[self.renderer.playing_preloaded_frame]
+                    if not self.config.window_transparent:
+                        c = self.renderer.last_animation.bg
+                        canvas.clear(c.skia())
+                    image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(path)))
+                    canvas.drawImage(image, 0, 0)
+                
+                self.surface.flushAndSubmit()
+                glfw.swap_buffers(self.window)
+
+                self.renderer.playing_preloaded_frame += 1
+                if self.renderer.playing_preloaded_frame == len(self.renderer.preloaded_frames):
+                    self.renderer.playing_preloaded_frame = 0
+                ptime.sleep(0.01)
+            else:
+                ptime.sleep(self.backoff_refresh_delay)
+                self.glfw_last_time = t
+                self.last_previews = self.renderer.turn_over()
+                global last_line
+                if self.renderer.state.cmd:
+                    cmd = self.renderer.state.cmd
+                    self.renderer.state.reset_keystate()
+                    self.renderer.on_stdin(cmd)
+                elif last_line:
+                    lls = last_line.strip()
+                    if lls:
+                        self.renderer.on_stdin(lls)
+                    last_line = None
+            
+            self.renderer.state.reset_keystate()
+            glfw.poll_events()
+
+            should_close = self.should_close()
+        
+        self.renderer.on_exit(restart=False)
+
     def terminate(self):
         glfw.terminate()
 

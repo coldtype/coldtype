@@ -10,7 +10,7 @@ r = (1080, 1080)
 def render_clip_fn(f, idx, clip, ftext):
     return ftext, Style(recmono, 50)
 
-@animation(r, timeline=srt, watch=[path], audio=wav)
+@animation(r, timeline=srt, watch=[path])
 def stub(f):
     def render_clip_fn(f, idx, clip, ftext):
         return ftext, Style(recmono, 50)

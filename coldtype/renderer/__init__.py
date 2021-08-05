@@ -68,36 +68,12 @@ except ImportError:
     pass
 
 try:
-    import pyaudio, wave, soundfile
-except ImportError:
-    pyaudio = None
-    wave = None
-
-try:
     import psutil
     process = psutil.Process(os.getpid())
 except ImportError:
     process = None
 
 DARWIN = platform.system() == "Darwin"
-
-last_line = ''
-new_line_event = threading.Event()
-
-def monitor_stdin():
-    # https://stackoverflow.com/questions/27174736/how-to-read-most-recent-line-from-stdin-in-python
-    global last_line
-    global new_line_event
-
-    def keep_last_line():
-        global last_line, new_line_event
-        for line in sys.stdin:
-            last_line = line
-            new_line_event.set()
-
-    keep_last_line_thread = threading.Thread(target=keep_last_line)
-    keep_last_line_thread.daemon = True
-    keep_last_line_thread.start()
 
 def show_tail(p):
     for line in p.stdout:
@@ -173,8 +149,6 @@ class Renderer():
             cpu_render=parser.add_argument("-cpu", "--cpu-render", action="store_true", default=False, help="Should final rasters be performed without a GPU context?"),
             
             scale=parser.add_argument("-s", "--scale", type=float, default=1.0, help="When save-renders is engaged, what scale should images be rasterized at? (Useful for up-rezing)"),
-
-            #preview_audio=parser.add_argument("-pa", "--preview-audio", action="store_true", default=False, help="Should the renderer attempt to playback audio?"),
             
             all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
 
@@ -245,8 +219,6 @@ class Renderer():
         self.sidecar_threads = []
         self.tails = []
         self.watchee_mods = {}
-        self.refresh_delay = self.source_reader.config.refresh_delay
-        self.backoff_refresh_delay = self.refresh_delay
         self.rasterizer_warning = None
         
         if not self.reset_filepath(self.args.file if hasattr(self.args, "file") else None):
@@ -256,8 +228,6 @@ class Renderer():
             self.dead = False
         
         self.state.preview_scale = self.source_reader.config.preview_scale
-        
-        monitor_stdin()
         
         if self.args.version:
             print(">>>", coldtype.__version__)
@@ -269,7 +239,6 @@ class Renderer():
         self.line_number = -1
         self.last_renders = []
         self.last_render_cleared = False
-        self.last_previews = []
 
         # for multiplex mode
         self.running_renderers = []
@@ -282,18 +251,15 @@ class Renderer():
         self.previews_waiting_to_paint = []
         self.preloaded_frames = []
         self.playing_preloaded_frame = -1
-        self.glfw_last_time = -1
         self.last_animation = None
         self.playing = 0
         self.hotkeys = None
         self.hotkey_waiting = None
-        self.copy_previews_to_clipboard = False
 
         if self.args.filter_functions:
             self.function_filters = [f.strip() for f in self.args.filter_functions.split(",")]
         else:
             self.function_filters = []
-        self._should_reload = False
 
         self.recurring_actions = {}
         self.viewer_solos = []
@@ -436,13 +402,6 @@ class Renderer():
                                     self.state.add_frame_offset(r.name, s)
                         
                         self.last_animation = r
-                        if pyaudio and not self.args.is_subprocess and r.audio:
-                            self.paudio_source = soundfile.SoundFile(r.audio, "r+")
-                            #self.paudio_source = wave.open(str(r.audio), "rb")
-                            self.paudio_preview = 0
-                        
-                        if not r.audio:
-                            self.paudio_source = None
                 
                 if full_restart:
                     fos = {}
@@ -901,12 +860,6 @@ class Renderer():
         except:
             pass
     
-        if pyaudio:
-            self.paudio = pyaudio.PyAudio()
-            self.paudio_source:soundfile.SoundFile = None
-            self.paudio_stream = None
-            self.paudio_rate = 0
-    
         if self.args.sidecar:
             if self.args.sidecar == ".":
                 self.args.sidecar = self.source_reader.filepath
@@ -976,7 +929,7 @@ class Renderer():
             self.on_start()
             if not self.args.no_watch:
                 if glfw and not self.args.no_viewer:
-                    self.listen_to_glfw()
+                    self.window_manager.listen()
                 elif self.args.webviewer:
                     while True:
                         self.turn_over()
@@ -1051,9 +1004,6 @@ class Renderer():
             print("! Release failed !")
     
     def shortcut_to_action(self, shortcut):
-        if shortcut in self.window_manager.repeatable_shortcuts():
-            self.paudio_preview = 1
-        
         if shortcut == KeyboardShortcut.PreviewPrevMany:
             return Action.PreviewStoryboardPrevMany
         elif shortcut == KeyboardShortcut.PreviewPrev:
@@ -1087,11 +1037,9 @@ class Renderer():
             return Action.ClearRenderedFrames
         
         elif shortcut == KeyboardShortcut.PlayRendered:
-            self.paudio_preview = 1
             self.on_action(Action.RenderedPlay)
             return -1
         elif shortcut == KeyboardShortcut.PlayPreview:
-            self.paudio_preview = 1
             self.playing_preloaded_frame = -1
             return Action.PreviewPlay
         elif shortcut == KeyboardShortcut.PlayPreviewSlow:
@@ -1102,8 +1050,6 @@ class Renderer():
                     last=0)
             else:
                 del self.recurring_actions[shortcut]
-        elif shortcut == KeyboardShortcut.PlayAudioFrame:
-            self.paudio_preview = 1
         
         elif shortcut == KeyboardShortcut.ReloadSource:
             return Action.PreviewStoryboardReload
@@ -1232,7 +1178,7 @@ class Renderer():
             ]:
             self.viewer_solos = [int(str(shortcut)[-1])-1]
         elif shortcut == KeyboardShortcut.CopySVGToClipboard:
-            self.copy_previews_to_clipboard = True
+            self.window_manager.copy_previews_to_clipboard = True
             return Action.PreviewStoryboard
         elif shortcut == KeyboardShortcut.LoadNextInDirectory:
             self.reset_filepath(+1, reload=True)
@@ -1265,36 +1211,6 @@ class Renderer():
                 self.action_waiting = waiting
         else:
             self.action_waiting = Action.PreviewStoryboard
-        
-    def preview_audio(self, frame=None):
-        #if not self.args.preview_audio:
-        #    return
-        
-        if pyaudio and self.paudio_source:
-            hz = self.paudio_source.samplerate
-            width = self.paudio_source.channels
-
-            if not self.paudio_stream or hz != self.paudio_rate:
-                self.paudio_rate = hz
-                self.paudio_stream = self.paudio.open(
-                    format=pyaudio.paFloat32,
-                    channels=width,
-                    rate=hz,
-                    output=True)
-
-            if frame is None:
-                audio_frame = self.last_animation._active_frames(self.state)[0]
-            else:
-                audio_frame = frame
-            chunk = int(hz / self.last_animation.timeline.fps)
-
-            try:
-                self.paudio_source.seek(chunk*audio_frame)
-                data = self.paudio_source.read(chunk)
-                data = data.astype(np.float32).tostring()
-                self.paudio_stream.write(data)
-            except wave.Error:
-                print(">>> Could not read audio at frame", audio_frame)
     
     def stdin_to_action(self, stdin):
         action_abbrev, *data = stdin.split(" ")
@@ -1458,71 +1374,6 @@ class Renderer():
             self.show_error()
             print("Malformed message")
     
-    def listen_to_glfw(self):
-        should_close = self.window_manager.should_close()
-
-        while not self.dead and not should_close:
-            if self.window_manager.content_scale_changed():
-                self.on_action(Action.PreviewStoryboard)
-            
-            if self._should_reload:
-                self._should_reload = False
-                self.on_action(Action.PreviewStoryboard)
-            
-            t = glfw.get_time()
-            td = t - self.glfw_last_time
-
-            spf = 0.1
-            if self.last_animation:
-                spf = 1 / float(self.last_animation.timeline.fps)
-
-                if td >= spf:
-                    self.glfw_last_time = t
-                else:
-                    glfw.poll_events()
-                    continue
-
-            if self.last_animation and self.playing_preloaded_frame >= 0 and len(self.preloaded_frames) > 0:
-                GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-
-                with self.window_manager.surface as canvas:
-                    path = self.preloaded_frames[self.playing_preloaded_frame]
-                    if not self.source_reader.config.window_transparent:
-                        c = self.last_animation.bg
-                        canvas.clear(c.skia())
-                    image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(path)))
-                    canvas.drawImage(image, 0, 0)
-                
-                self.window_manager.surface.flushAndSubmit()
-                glfw.swap_buffers(self.window_manager.window)
-
-                self.preview_audio(frame=(self.playing_preloaded_frame+1)%len(self.preloaded_frames))
-
-                self.playing_preloaded_frame += 1
-                if self.playing_preloaded_frame == len(self.preloaded_frames):
-                    self.playing_preloaded_frame = 0
-                ptime.sleep(0.01)
-            else:
-                ptime.sleep(self.backoff_refresh_delay)
-                self.glfw_last_time = t
-                self.last_previews = self.turn_over()
-                global last_line
-                if self.state.cmd:
-                    cmd = self.state.cmd
-                    self.state.reset_keystate()
-                    self.on_stdin(cmd)
-                elif last_line:
-                    lls = last_line.strip()
-                    if lls:
-                        self.on_stdin(lls)
-                    last_line = None
-            
-            self.state.reset_keystate()
-            glfw.poll_events()
-
-            should_close = self.window_manager.should_close()
-        self.on_exit(restart=False)
-    
     def turn_over_webviewer(self):
         renders = []
         try:
@@ -1542,69 +1393,6 @@ class Renderer():
                     client.sendMessage(json.dumps({"renders":renders, "title":title}))
         
         return []
-    
-    def turn_over_glfw(self):
-        render_previews = len(self.previews_waiting_to_paint) > 0
-        if not render_previews:
-            self.backoff_refresh_delay += 0.01
-            if self.backoff_refresh_delay >= 0.25:
-                self.backoff_refresh_delay = 0.25
-            return []
-        
-        self.backoff_refresh_delay = self.refresh_delay
-
-        if render_previews:
-            if pyaudio and self.paudio_source:
-                if self.paudio_preview == 1:
-                    self.preview_audio()
-                    if self.playing == 0:
-                        self.paudio_preview = 0
-
-        frect, rects, dscale, needs_new_context = self.window_manager.calculate_window_size(self.previews_waiting_to_paint)
-
-        if needs_new_context:
-            self.window_manager.create_surface(frect)
-            self.window_manager.update_window(frect)
-
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-
-        did_preview = []
-
-        with self.window_manager.surface as canvas:
-            canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 1))
-            if self.source_reader.config.window_transparent:
-                canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 0))
-            
-            for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
-                rect = rects[idx].offset((frect.w-rects[idx].w)/2, 0).round()
-
-                if self.copy_previews_to_clipboard:
-                    try:
-                        svg = SVGPen.Composite(result, render.rect, viewBox=render.viewBox)
-                        print(svg)
-                        process = Popen(
-                            'pbcopy', env={'LANG': 'en_US.UTF-8'}, stdin=PIPE)
-                        process.communicate(svg.encode('utf-8'))
-
-                    except:
-                        print("failed to copy to clipboard")
-
-                try:
-                    self.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
-                    did_preview.append(rp)
-                except Exception as e:
-                    short_error = self.print_error()
-                    paint = skia.Paint(AntiAlias=True, Color=skia.ColorRED)
-                    canvas.drawString(short_error, 10, 32, skia.Font(None, 36), paint)
-            
-            self.copy_previews_to_clipboard = False
-        
-            if self.state.keylayer != Keylayer.Default and not self.args.hide_keybuffer:
-                self.state.draw_keylayer(canvas, self.window_manager.last_rect, self.typeface)
-        
-        self.window_manager.surface.flushAndSubmit()
-        glfw.swap_buffers(self.window_manager.window)
-        return did_preview
     
     def turn_over(self):
         #print("TURNOVER", ptime.time())
@@ -1670,7 +1458,7 @@ class Renderer():
             self.monitor_midi()
         
         if glfw and not self.args.no_viewer:
-            did_preview = self.turn_over_glfw()
+            did_preview = self.window_manager.turn_over()
         
         if self.args.webviewer:
             did_preview = self.turn_over_webviewer()
@@ -1944,15 +1732,6 @@ class Renderer():
         
         self.reset_renderers()
         self.stop_watching_file_changes()
-
-        if pyaudio:
-            if hasattr(self, "paudio_stream") and self.paudio_stream:
-                self.paudio_stream.stop_stream()
-                self.paudio_stream.close()
-            if hasattr(self, "paudio") and self.paudio:
-                self.paudio.terminate()
-            if hasattr(self, "paudio_source") and self.paudio_source:
-                self.paudio_source.close()
         
         for t in self.sidecar_threads:
             t.should_run = False

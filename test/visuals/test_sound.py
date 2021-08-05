@@ -3,9 +3,8 @@ from coldtype.time.audio import Wavfile
 
 audio = Wavfile(__sibling__("media/helloworld.wav"))
 audio = Wavfile(__sibling__("media/20210106.wav"))
-#audio = Wavfile(__sibling__("media/ratchet.wav"))
 
-@animation(timeline=Timeline(audio.framelength), audio=audio.path)
+@animation(timeline=Timeline(audio.framelength))
 def playback(f):
     wh = 700
     wave = (audio

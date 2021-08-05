@@ -15,7 +15,6 @@ from coldtype.time.loop import Loop, LoopPhase
 from coldtype.text.reader import normalize_font_prefix, Font, Style
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
-from coldtype.time.audio import Wavfile, sf
 from coldtype.geometry import Rect, Point
 from coldtype.color import normalize_color, hsl, bw
 
@@ -43,7 +42,6 @@ class animation(renderable, Timeable):
         duration=10, # deprecated? redundant to timeline=10
         storyboard=[0],
         timeline:Timeline=None,
-        audio=None,
         show_frame=True,
         overlay=True,
         watch_render=None,
@@ -61,12 +59,7 @@ class animation(renderable, Timeable):
         super().__init__(**kwargs)
         self.rect = Rect(rect).round()
         self.r = self.rect
-        self.audio = audio
         self.overlay = overlay
-        if self.audio and sf:
-            self.wavfile = Wavfile(audio)
-        else:
-            self.wavfile = None
         self.start = 0
         self.end = duration
         self.show_frame = show_frame
@@ -175,19 +168,10 @@ class animation(renderable, Timeable):
         if Overlay.Info in renderer_state.overlays and self.overlay:
             t = self.rect.take(50, "mny")
             frame:Frame = render_pass.args[0]
-            wave = DATPen()
-            if self.audio and sf:
-                wave = (self.wavfile
-                    .frame_waveform(frame.i, self.rect.inset(0, 300), 20)
-                    .translate(0, self.rect.h/2)
-                    .s(1)
-                    .sw(5))
             return DATPens([
-                wave,
                 res,
                 DATPen().rect(t).f(bw(0, 0.75)) if self.show_frame else None,
-                DATText(f"{frame.i} / {self.duration}", Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10)) if self.show_frame else None
-            ])
+                DATText(f"{frame.i} / {self.duration}", Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10)) if self.show_frame else None])
         return res
     
     def package(self):

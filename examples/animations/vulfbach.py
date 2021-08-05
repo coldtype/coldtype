@@ -46,7 +46,6 @@ def build_line():
 
 line = build_line()
 
-#audio=Path("examples/animations/media/organ.wav")
 @animation(duration=organ.duration, rect=r, storyboard=[0])
 def render(f):
     time_offset = -f.i * note_width + r.w - note_width * 3

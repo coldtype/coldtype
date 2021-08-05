@@ -17,7 +17,6 @@ class KeyboardShortcut(Enum):
     PlayRendered = "play_rendered"
     PlayPreview = "play_preview"
     PlayPreviewSlow = "play_preview_slow"
-    PlayAudioFrame = "play_audio_frame"
 
     ReloadSource = "reload_source"
     RestartApp = "restart_app"
@@ -245,9 +244,6 @@ SHORTCUTS = {
     KeyboardShortcut.PlayPreview: [
         [[], "<space>"],
         #[[], glfw.KEY_K]
-    ],
-    KeyboardShortcut.PlayAudioFrame: [
-        [[], "h"]
     ],
 
     KeyboardShortcut.ReloadSource: [

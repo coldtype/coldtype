@@ -82,7 +82,6 @@ setuptools.setup(
         ],
         "experimental": [
             "pynput",
-            "pyaudio",
             "rtmidi",
             "noise",
         ],
