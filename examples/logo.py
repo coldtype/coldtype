@@ -12,18 +12,18 @@ obv = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 def logo(r, rs):
     nxl = LaunchControlXL(rs.midi)
     return DPS([
-        DP(r).f(hsl(0.65)),
+        DP(r).f(hsl(0.65)).f(hsl(0.65, 0.6, 0.45)),
         (DP().oval(r.inset(-20))
             .f(None).s(1).sw(2)
             .ch(phototype(r, blur=10, cut=23, cutw=5))),
         (StSt("COLD\nTYPE", obv, 500,
             wdth=0.5, tu=-50, r=1,
-            kp={"P/E":-100}, leading=5)
-            .index(0, lambda p: p.translate(-10, 0))
+            kp={"P/E":-100}, leading=-10)
+            .index(0, lambda p: p.translate(-130, 0))
             .reversePens()
             .align(r, th=1, tv=1)
             .rotate(15)
-            .translate(3, 10)
+            .translate(-3, 3)
             .understroke(sw=25)
             .f(1)
             .ch(phototype(r,
@@ -35,17 +35,18 @@ def logo(r, rs):
 @renderable()
 def logo2(r):
     return DPS([
-        DP(r).f(hsl(0.65)),
+        DP(r).f(hsl(0.65)).f(0),
         (DP().oval(r.inset(-20))
             .f(None).s(1).sw(2)
             .ch(phototype(r, blur=10, cut=23, cutw=5))),
-        (StSt("CT", obv, 670,
+        (StSt("C", obv, 850,
             wdth=1, tu=20, r=1)
             .align(r)
-            .translate(0, 5)
             .f(1)
+            .rotate(10)
+            .translate(-15, -10)
             .ch(phototype(r,
-                blur=2,
+                blur=5,
                 cut=150,
                 cutw=25,
                 fill=bw(1))))])

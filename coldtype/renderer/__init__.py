@@ -109,16 +109,6 @@ class Renderer():
 
             no_watch=parser.add_argument("-nw", "--no-watch", action="store_true", default=False, help="Preventing watching for changes to source files"),
 
-            #no_viewer=parser.add_argument("-nv", "--no-viewer", action="store_true", default=False, help="Prevent showing skia/glfw viewer"),
-
-            #websocket=parser.add_argument("-ws", "--websocket", action="store_true", default=False, help="Should the server run a web socket?"),
-
-            #webviewer=parser.add_argument("-wv", "--webviewer", action="store_true", default=False, help="Do you want to live-preview in a webviewer instead of with a glfw-skia window?"),
-
-            #webviewer_port=parser.add_argument("-wvp", "--webviewer-port", type=int, default=8008, help="What port should the webviewer run on? (provided -wv is passed)"),
-
-            #port=parser.add_argument("-wsp", "--port", type=int, default=8007, help="What port should the websocket run on (provided -ws is passed)"),
-
             no_midi=parser.add_argument("-nm", "--no-midi", action="store_true", default=False, help="Midi is on by default, do you want to turn it off?"),
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
@@ -1507,7 +1497,6 @@ class Renderer():
                     if "action" in data:
                         action = data.get("action")
                         self.hotkey_waiting = (action, None, None)
-                        #self.execute_string_as_shortcut_or_action(action, None)
                     return
 
                 last = self.watchee_mods.get(path)
@@ -1569,7 +1558,7 @@ class Renderer():
             except ValueError:
                 print(f"... watching {self.source_reader.filepath} for changes ...")
     
-    def execute_string_as_shortcut_or_action(self, shortcut, key, args):
+    def execute_string_as_shortcut_or_action(self, shortcut, key, args=[]):
         print("SHORTCUT", shortcut, key, args)
         co = ConfigOption.ShortToConfigOption(shortcut)
         if co:
