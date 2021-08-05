@@ -34,7 +34,6 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
-    'ablog',
 ]
 
 autosummary_generate = False
