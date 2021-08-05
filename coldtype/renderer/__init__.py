@@ -53,8 +53,6 @@ from coldtype.renderer.utils import *
 
 _random = Random()
 
-from time import sleep, time
-
 try:
     import psutil
     process = psutil.Process(os.getpid())
@@ -128,7 +126,7 @@ class Renderer():
         self.args = parser.parse_args()
 
         if self.args.version:
-            print(">>>", coldtype.__version__)
+            print(coldtype.__version__)
             self.dead = True
             return
 
@@ -141,7 +139,7 @@ class Renderer():
         
         if not self.source_reader.config.webviewer and not skia and not glfw:
             print("No viewing renderer installed — rendering all...")
-            sleep(1)
+            ptime.sleep(1)
         
         self.state = RendererState(self)
 
@@ -298,10 +296,13 @@ class Renderer():
             self.source_reader.reload()
             
             if self.source_reader.config.blender_watch:
-                cb = Path("~/.coldtype/blender.txt").expanduser()
-                if cb.exists():
-                    cb.unlink()
-                cb.write_text(f"import,{str(self.source_reader.filepath)}")
+                try:
+                    cb = Path("~/.coldtype/blender.txt").expanduser()
+                    if cb.exists():
+                        cb.unlink()
+                    cb.write_text(f"import,{str(self.source_reader.filepath)}")
+                except FileNotFoundError:
+                    pass
             
             try:
                 full_restart = False
@@ -504,7 +505,7 @@ class Renderer():
                                         self.rasterize(result or DATPen(), render, output_path)
                                     # TODO a progress bar?
                                     try:
-                                        print(">>> saved...", str(output_path.relative_to(Path.cwd())))
+                                        print("<coldtype: saved: " + str(output_path.relative_to(Path.cwd())) + ">")
                                     except ValueError:
                                         print(">>> saved...", str(output_path))
                     except Exception as e:
@@ -517,10 +518,13 @@ class Renderer():
         #    self.show_message(f"Rendered {render_count}")
         
         if not self.args.is_subprocess and not previewing:
-            print(f"<render:{render_count}(" + str(round(ptime.time() - start, 3)) + "ms)>")
+            print(f"<coldtype: render: {render_count}(" + str(round(ptime.time() - start, 3)) + "ms)>")
         
         if not previewing:
-            self.play_sound("Pop")
+            if self.args.is_subprocess:
+                self.play_sound("Morse")
+            else:
+                self.play_sound("Pop")
         
         return preview_count, render_count, renders
 
@@ -572,25 +576,20 @@ class Renderer():
         start = ptime.time()
 
         tc = self.source_reader.config.thread_count
-        print(">>> THREAD_COUNT", tc)
+        print(f"<coldtype: thread-count:{tc}>")
         
         group = math.floor(len(frames) / tc)
         ordered_frames = list(frames) #list(range(frames[0], frames[0]+len(frames)))
         shuffle(ordered_frames)
-        #subslices = list(chunks(ordered_frames, group))
         subslices = [list(s) for s in distribute(tc, ordered_frames)]
-
-        print(subslices)
+        #print(subslices)
         
         self.reset_renderers()
         self.running_renderers = []
         self.completed_renderers = []
 
-        #logfile = filepath.parent.joinpath(f"{filepath.stem}-log.txt")
-        #log = open(logfile, "w")
-
         for subslice in subslices:
-            print("slice >", len(subslice))
+            print(f"<coldtype: multiplex-slice:{len(subslice)}>")
             if len(subslice) == 0:
                 continue
             sargs = [
@@ -621,7 +620,7 @@ class Renderer():
                         self.running_renderers[idx] = None
             ptime.sleep(.1)
 
-        print(f"<multi-render({str(round(ptime.time() - start, 3))})>")
+        print(f"<coldtype: multiplex-render ({str(round(ptime.time() - start, 3))})>")
         self.play_sound("Frog")
     
     def rasterize(self, content, render, path):
@@ -784,7 +783,7 @@ class Renderer():
                 elif self.source_reader.config.webviewer:
                     while True:
                         self.turn_over()
-                        sleep(0.25)
+                        ptime.sleep(0.25)
             else:
                 self.on_exit()
     
@@ -1105,7 +1104,7 @@ class Renderer():
             #self.on_exit(restart=False)
         elif action == Action.ToggleMultiplex:
             self.source_reader.config.multiplex = not self.source_reader.config.multiplex
-            print(">>> MULTIPLEXING?", self.source_reader.config.multiplex)
+            print(f"<coldtype: multiplexing={self.source_reader.config.multiplex}>")
         elif action == Action.ClearLastRender:
             self.last_render_cleared = True
             for r in self.renderables(Action.PreviewStoryboard):
@@ -1140,7 +1139,7 @@ class Renderer():
         
         animation = self.animation()
         if animation and animation.timeline:
-            print("EVENT", action, kwargs)
+            #print("EVENT", action, kwargs)
             if action:
                 kwargs["action"] = action.value
             kwargs["prefix"] = self.source_reader.filepath.stem
@@ -1154,6 +1153,9 @@ class Renderer():
             if "webviewer" in jdata:
                 self.action_waiting = Action.PreviewStoryboard
                 return
+            
+            if "adobe" in jdata:
+                print("<coldtype: adobe-panel-connected>")
 
             action = jdata.get("action")
             if action:

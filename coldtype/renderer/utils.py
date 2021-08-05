@@ -61,12 +61,12 @@ def echo_server(port):
 
 def run_echo_server(port, name):
     try:
-        print("WEBSOCKET>", f"localhost:{port}")
         server = echo_server(port)
         daemon = threading.Thread(name=name,
             target=server.serveforever)
         daemon.setDaemon(True)
         daemon.start()
+        print(f"<coldtype: websocket-opened@localhost:{port}>")
         return server
     except OSError:
         return None

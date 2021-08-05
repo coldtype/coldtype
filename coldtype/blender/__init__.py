@@ -15,7 +15,7 @@ from coldtype.renderable.animation import animation
 from coldtype.blender.render import blend_source
 
 try:
-    import bpy
+    import bpy # noqa
 except ImportError:
     bpy = None
     pass
