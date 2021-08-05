@@ -1,5 +1,5 @@
 import time as ptime
-import sys, threading
+import sys, threading, random
 from subprocess import Popen, PIPE
 
 try:
@@ -108,12 +108,14 @@ class WindowManager():
         self.all_shortcuts = shortcuts_keyed()
         self.prev_scale = 0
         self.surface = None
-        self._should_reload = False
 
         self.glfw_last_time = -1
         self.refresh_delay = self.config.refresh_delay
         self.backoff_refresh_delay = self.refresh_delay
         self.copy_previews_to_clipboard = False
+
+        self.preloaded_frames = []
+        self.playing_preloaded_frame = -1
 
         if not glfw.init():
             raise RuntimeError('glfw.init() failed')
@@ -390,6 +392,24 @@ class WindowManager():
                         #print(shortcut, modifiers, skey, mod_match)
                         return self.renderer.on_shortcut(shortcut)
     
+    def preload_frames(self, passes):
+        for rp in passes:
+            self.preloaded_frames.append(rp.output_path)
+        self.playing_preloaded_frame = 0
+    
+    def stop_playing_preloaded(self):
+        self.playing_preloaded_frame = -1
+    
+    def toggle_play_preloaded(self):
+
+        if self.playing_preloaded_frame >= 0:
+            self.playing_preloaded_frame = -1
+            self.preloaded_frames = []
+        else:
+            anm = self.renderer.animation()
+            passes = anm.passes(Action.RenderAll, self.renderer.state, anm.all_frames())
+            self.preload_frames(passes)
+    
     def turn_over(self):
         render_previews = len(self.renderer.previews_waiting_to_paint) > 0
         if not render_previews:
@@ -452,10 +472,6 @@ class WindowManager():
             if self.content_scale_changed():
                 self.renderer.on_action(Action.PreviewStoryboard)
             
-            if self._should_reload:
-                self._should_reload = False
-                self.renderer.on_action(Action.PreviewStoryboard)
-            
             t = glfw.get_time()
             td = t - self.glfw_last_time
 
@@ -469,11 +485,11 @@ class WindowManager():
                     glfw.poll_events()
                     continue
 
-            if self.renderer.last_animation and self.renderer.playing_preloaded_frame >= 0 and len(self.preloaded_frames) > 0:
+            if self.renderer.last_animation and self.playing_preloaded_frame >= 0 and len(self.preloaded_frames) > 0:
                 GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
                 with self.surface as canvas:
-                    path = self.renderer.preloaded_frames[self.renderer.playing_preloaded_frame]
+                    path = self.preloaded_frames[self.playing_preloaded_frame]
                     if not self.config.window_transparent:
                         c = self.renderer.last_animation.bg
                         canvas.clear(c.skia())
@@ -483,9 +499,9 @@ class WindowManager():
                 self.surface.flushAndSubmit()
                 glfw.swap_buffers(self.window)
 
-                self.renderer.playing_preloaded_frame += 1
-                if self.renderer.playing_preloaded_frame == len(self.renderer.preloaded_frames):
-                    self.renderer.playing_preloaded_frame = 0
+                self.playing_preloaded_frame += 1
+                if self.playing_preloaded_frame == len(self.preloaded_frames):
+                    self.playing_preloaded_frame = 0
                 ptime.sleep(0.01)
             else:
                 ptime.sleep(self.backoff_refresh_delay)

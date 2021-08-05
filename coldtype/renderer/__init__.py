@@ -249,8 +249,6 @@ class Renderer():
         self.requests_waiting = []
         self.waiting_to_render = []
         self.previews_waiting_to_paint = []
-        self.preloaded_frames = []
-        self.playing_preloaded_frame = -1
         self.last_animation = None
         self.playing = 0
         self.hotkeys = None
@@ -1040,7 +1038,7 @@ class Renderer():
             self.on_action(Action.RenderedPlay)
             return -1
         elif shortcut == KeyboardShortcut.PlayPreview:
-            self.playing_preloaded_frame = -1
+            self.window_manager.stop_playing_preloaded()
             return Action.PreviewPlay
         elif shortcut == KeyboardShortcut.PlayPreviewSlow:
             if shortcut not in self.recurring_actions:
@@ -1204,7 +1202,6 @@ class Renderer():
                 os.system(editor_cmd + " -g " + str(path))
     
     def on_shortcut(self, shortcut):
-        #print(shortcut)
         waiting = self.shortcut_to_action(shortcut)
         if waiting:
             if waiting != -1:
@@ -1248,10 +1245,11 @@ class Renderer():
         self.hotkey_waiting = (cmd, None, args)
 
     def on_action(self, action, message=None) -> bool:
-        #if action != Action.PreviewStoryboardNext:
-        #    print("ACTION", action)
-
-        if action in [Action.RenderAll, Action.RenderWorkarea, Action.PreviewStoryboardReload]:
+        if action in [
+            Action.RenderAll,
+            Action.RenderWorkarea,
+            Action.PreviewStoryboardReload
+            ]:
             self.reload_and_render(action)
             return True
         elif action in [Action.RenderIndices]:
@@ -1265,7 +1263,7 @@ class Renderer():
             Action.PreviewStoryboardPrev,
             Action.PreviewPlay]:
             if action == Action.PreviewPlay:
-                self.playing_preloaded_frame = -1
+                self.window_manager.stop_playing_preloaded()
                 if self.playing == 0:
                     self.playing = 1
                 else:
@@ -1281,13 +1279,7 @@ class Renderer():
             self.render(Action.PreviewStoryboard)
         elif action == Action.RenderedPlay:
             self.playing = 0
-            if self.playing_preloaded_frame >= 0:
-                self.playing_preloaded_frame = -1
-                self.preloaded_frames = []
-            else:
-                anm = self.animation()
-                passes = anm.passes(Action.RenderAll, self.state, anm.all_frames())
-                self.preload_frames(passes)
+            self.window_manager.toggle_play_preloaded()
         elif action == Action.Build:
             self.on_release(build=True)
         elif action == Action.Release:
@@ -1395,8 +1387,6 @@ class Renderer():
         return []
     
     def turn_over(self):
-        #print("TURNOVER", ptime.time())
-
         to_delete = []
         for k, sb in self.subprocesses.items():
             returncode = sb.poll()
@@ -1434,7 +1424,6 @@ class Renderer():
                         self.debounced_actions[k] = None
 
         if self.action_waiting:
-            #print("ACTION_WAITING", self.action_waiting)
             action_in = self.action_waiting
             self.on_action(self.action_waiting)
             if action_in != self.action_waiting:
@@ -1448,7 +1437,6 @@ class Renderer():
                 if hasattr(v, "messages") and len(v.messages) > 0:
                     for msg in v.messages:
                         msgs.append(msg)
-                        #self.process_ws_message(msg)
                     v.messages = []
             
             for msg in msgs:
@@ -1538,11 +1526,6 @@ class Renderer():
             canvas.drawString("> See process in terminal for traceback", 30, 120, skia.Font(self.typeface, 32), paint)
         
         canvas.restore()
-    
-    def preload_frames(self, passes):
-        for rp in passes:
-            self.preloaded_frames.append(rp.output_path)
-        self.playing_preloaded_frame = 0
     
     def on_modified(self, event):
         path = Path(event.src_path)
