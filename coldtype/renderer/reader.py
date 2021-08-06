@@ -267,9 +267,9 @@ class SourceReader():
                 files.append(Path(args.config).expanduser())
 
         if filepath:
-            files.append(filepath)
+            files.append(Path(filepath).expanduser())
         
-        if args.file:
+        if args and args.file:
             fp = Path(args.file).expanduser()
             if fp.exists() and not fp.is_dir():
                 files.append(fp)
