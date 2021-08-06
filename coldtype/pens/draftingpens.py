@@ -320,6 +320,8 @@ class DraftingPens(DraftingPen):
             else:
                 if frame.x < 0:
                     p.translate(-frame.x, 0)
+                if frame.x > 0 and th:
+                    p.translate(-frame.x, 0)
                 p.translate(off, 0)
                 off += frame.w
         return self
