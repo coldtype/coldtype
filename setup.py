@@ -10,7 +10,7 @@ More info available at: [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
 
 setuptools.setup(
     name="coldtype",
-    version="0.5.16",
+    version="0.5.17",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",
@@ -89,6 +89,9 @@ setuptools.setup(
         "c": [
             "srt",
             "noise",
+        ],
+        "unicode": [
+            "unicodedata2"
         ]
     },
     install_requires=[
@@ -103,7 +106,6 @@ setuptools.setup(
         "defcon",
         "freetype-py",
         "uharfbuzz>=0.14.0",
-        "unicodedata2",
         "python-bidi"
     ],
     classifiers=[

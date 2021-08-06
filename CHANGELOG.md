@@ -14,3 +14,9 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 - Minor improvements to the self-rasterizing/drawbot-renderer, to support transparent backgrounds
 ### Removed
 - `@drawbot_script` and `@drawbot_animation` from the global import; now reside and can be imported from `coldtype.drawbot` module
+
+## [0.5.17] - 2021-08-06
+### Fixed
+- Quoting paths in `blend_frame`
+### Removed
+- `unicodedata2` from primary installation requirements, in order to make blender installation smoother (i.e. not require Include header-copying from python source tarball) — thanks @colinmford!

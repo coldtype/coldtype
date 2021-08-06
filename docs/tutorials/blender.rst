@@ -11,7 +11,7 @@ Because Blender has an incredible Python API, it's not too difficult to use it p
     from coldtype.blender import b3d, b3d_animation
     from coldtype.text.composer import Glyphwise
 
-    fnt = Font.Cacheable("~/Type/fonts/fonts/SwearCilatiVariable.ttf")
+    fnt = Font.Find("SwearCilatiVariable")
 
     @b3d_animation(timeline=60)
     def varfont(f):
@@ -58,7 +58,7 @@ Once you have all that out of the way, you can `pip install` things using that e
 
 .. code:: bash
 
-    b3d_python -m pip install "coldtype[viewer]"
+    b3d_python -m pip install "coldtype"
 
 Running Code in Blender
 -----------------------
@@ -71,9 +71,9 @@ So, to use an example from the Coldtype repo, you could run:
 
     coldtype examples/blender/varfont.py -bw 1
 
-This should launch both a standard Coldtype window (with a 2D Skia render) and a Blender GUI window, which should automatically render the same thing as the 2D window, except in 3D.
+This should launch both a standard Coldtype window (with a 2D Skia render) and a Blender GUI window, which should automatically render the same thing as the 2D window, except in 3D. Put another way: you do not need to open Blender yourself, since Coldtype launches it as a background process (necessary to connect the live-code-reloading part of Coldtype to Blender). To quit both Coldtype and Blender, just hit ctrl-c in the terminal.
 
-What's different in Blender is that the contents of the scene aren’t re-created from scratch every time you render; instead, you annotate specific elements in your returned result, then those annotated results are displayed in Blender, as persistent objects. This means you can use Blender in a hybrid fashion, creating objects using the GUI, saving the file, and then re-saving your Coldtype source file for automatic updates in Blender itself.
+What's different in Blender is that the contents of the scene aren’t re-created from scratch every time you render; instead, you annotate specific elements in your returned result, then those annotated results are displayed in Blender, as persistent objects. This means you can use Blender in a hybrid fashion, creating objects using the GUI, saving the file, and then re-saving your Coldtype source file for automatic updates in Blender itself. (It also means you might need to periodically delete some things that Coldtype creates in Blender, if you no longer want those things to exist and the Coldtype program no longer references them.)
 
 Here's a short video demonstrating what's being described above (all of which is now part of the released public Coldtype (despite what the tweet says)):
 
