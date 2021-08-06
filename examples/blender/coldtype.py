@@ -27,5 +27,4 @@ def coldtype5(f):
                 .locate(0, f.e("ceo", 0, rng=(30, 0)), 0)
                 .rotate(90, 0, 0)
                 .with_origin((bp.dat.ambit().pc.x/100, 0, bp.dat.ambit().pc.y/100), lambda bp2: bp2
-                    .rotate(90, f.adj(-i).e("eeio", 0, rng=(0, 360), to1=False), f.adj(-i).e("ceio", 0, rng=(0, 360), to1=False)))
-                , material="letter"))))
+                    .rotate(90, f.adj(-i).e("eeio", 0, rng=(0, 360), to1=False), f.adj(-i).e("ceio", 0, rng=(0, 360), to1=False)))))))
