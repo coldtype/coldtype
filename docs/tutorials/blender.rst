@@ -58,7 +58,7 @@ Once you have all that out of the way, you can `pip install` things using that e
 
 .. code:: bash
 
-    b3d_python -m pip install "coldtype[viewer]"
+    b3d_python -m pip install "coldtype"
 
 Running Code in Blender
 -----------------------
