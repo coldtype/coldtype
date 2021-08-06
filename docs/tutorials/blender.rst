@@ -63,13 +63,13 @@ Once you have all that out of the way, you can `pip install` things using that e
 Running Code in Blender
 -----------------------
 
-To get a Blender window to show up, all you need to do is use the ``@b3d_animation`` decorator in place of the standard @animation decorator.
+To get a Blender window to show up, all you need to do is use the ``@b3d_animation`` decorator in place of the standard @animation decorator, and add `-bw 1` to the command-line invocation.
 
 So, to use an example from the Coldtype repo, you could run:
 
 .. code:: bash
 
-    coldtype examples/blender/varfont.py
+    coldtype examples/blender/varfont.py -bw 1
 
 This should launch both a standard Coldtype window (with a 2D Skia render) and a Blender GUI window, which should automatically render the same thing as the 2D window, except in 3D.
 
