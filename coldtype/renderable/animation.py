@@ -227,6 +227,16 @@ class animation(renderable, Timeable):
         return _export
 
 
+class aframe(animation):
+    def __init__(self,
+        rect=(1080, 1080),
+        **kwargs
+        ):
+        super().__init__(rect,
+            timeline=Timeline(1),
+            **kwargs)
+
+
 class FFMPEGExport():
     def __init__(self, a:animation,
         passes:list,

@@ -64,7 +64,7 @@ Table of Contents
    :caption: Links
 
    the coldtype blog <https://blog.coldtype.xyz>
-   the coldtype discord <https://discord.gg/XH9AVAVN>
+   the coldtype discord <https://discord.gg/rWaJDqb8jE>
    github <https://github.com/goodhertz/coldtype>
    goodhertz.com <https://goodhertz.com>
 

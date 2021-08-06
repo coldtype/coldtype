@@ -304,14 +304,14 @@ class DraftingPens(DraftingPen):
             pen.xAlignToFrame(x)
         return self
     
-    def distribute(self, v=False, tracks=None):
+    def distribute(self, v=False, tracks=None, th=0, tv=0):
         off = 0
         for idx, p in enumerate(self):
             if tracks is not None and idx > 0:
                 t = tracks[idx-1]
                 #print(t)
                 off += t
-            frame = p.ambit()
+            frame = p.ambit(th=th, tv=tv)
             if v:
                 if frame.y < 0:
                     p.translate(0, -frame.y)

@@ -3,6 +3,8 @@ from coldtype.midi.controllers import LaunchControlXL, LaunchkeyMini
 
 obv = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
 
+from pprint import pprint
+
 @renderable((1080, 1080), bg=1, rstate=1)
 def render(r, rstate):
     nxl = LaunchControlXL(rstate.midi)

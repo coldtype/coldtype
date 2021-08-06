@@ -63,27 +63,34 @@ class MIDIWatcher():
                     shortcut = self.config.midi[device]["note_on"].get(nn)
                     self.on_shortcut(shortcut, nn)
                 if msg.isController():
+                    #print(">>>", msg)
                     cn = msg.getControllerNumber()
                     cv = msg.getControllerValue()
+                    cc = msg.getChannel()
                     shortcut = self.config.midi[device].get("controller", {}).get(cn)
                     if shortcut:
                         if cv in shortcut:
                             print("shortcut!", shortcut, cv)
                             self.on_shortcut(shortcut.get(cv), cn)
                     else:
-                        controllers[device + "_" + str(cn)] = cv/127
+                        controllers["_".join([device, str(cc), str(cn)])] = cv
                 msg = mi.getMessage(0)
         
         if len(controllers) > 0:
             nested = {}
             for k, v in controllers.items():
-                device, number = k.split("_")
+                device, channel, number = k.split("_")
                 if not nested.get(device):
                     nested[device] = {}
-                nested[device][str(number)] = v
+                if not nested[device].get(channel):
+                    nested[device][channel] = {}
+                nested[device][channel][str(number)] = v
             
-            for device, numbers in nested.items():
-                self.state.controller_values[device] = {**self.state.controller_values.get(device, {}), **numbers}
+            for device, channels in nested.items():
+                if not self.state.controller_values.get(device):
+                    self.state.controller_values[device] = {}
+                for channel, numbers in channels.items():
+                    self.state.controller_values[device][channel] = {**self.state.controller_values.get(device, {}).get(channel, {}), **numbers}
 
             if not playing:
                 return True

@@ -424,6 +424,16 @@ SHORTCUTS = {
     KeyboardShortcut.LoadPrevInDirectory: [
         [["cmd", "alt"], "<left>"]
     ],
+
+    KeyboardShortcut.MIDIControllersPersist: [
+        [["cmd"], "m"],
+    ],
+    KeyboardShortcut.MIDIControllersClear: [
+        [["alt"], "m"],
+    ],
+    KeyboardShortcut.MIDIControllersReset: [
+        [["ctrl"], "m"],
+    ]
 }
 
 def shortcuts_keyed():
