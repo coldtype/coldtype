@@ -1,13 +1,16 @@
 import itertools
 from fontTools.unicodedata import script
-from unicodedata2 import category
 
 # Monkeypatch bidi to use unicodedata2
-import unicodedata2
+try:
+    import unicodedata2 as ucd
+except ImportError:
+    import unicodedata as ucd
+    
 import bidi.algorithm
-bidi.algorithm.bidirectional = unicodedata2.bidirectional
-bidi.algorithm.category = unicodedata2.category
-bidi.algorithm.mirrored = unicodedata2.mirrored
+bidi.algorithm.bidirectional = ucd.bidirectional
+bidi.algorithm.category = ucd.category
+bidi.algorithm.mirrored = ucd.mirrored
 from bidi.algorithm import (get_empty_storage, get_base_level, get_embedding_levels,
                             explicit_embed_and_overrides, resolve_weak_types,
                             resolve_neutral_types, resolve_implicit_levels,
@@ -61,7 +64,7 @@ def detectScript(txt):
                 scr = charScript[i-1]
             else:
                 scr = None
-            cat = category(ch)
+            cat = ucd.category(ch)
             if ch in MIRRORED and cat == "Pe":
                 scr = None
         charScript[i] = scr
