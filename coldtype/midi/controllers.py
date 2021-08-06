@@ -17,7 +17,7 @@ def midi_controller_lookup_fn(name, column_starts=[], cmc={}, channel="9"):
             mnum = column_starts[row]+(column-1)
         else:
             mnum = ctrl
-        return scoped.get(str(mnum), 63.5 if default == None else default) / 127
+        return scoped.get(str(mnum), 63.5 if default == None else default*127) / 127
     return lookup
 
 
