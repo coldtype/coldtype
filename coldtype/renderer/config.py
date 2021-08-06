@@ -24,7 +24,8 @@ class ConfigOption(Enum):
     WindowPin = ("window_pin", "NE", "wp")
     WindowPinInset = ("window_pin_inset", (0, 0), "wpi",
         lambda x: [int(n) for n in x.split(",")])
-    WindowContentScale = ("window_content_scale", None, "wcs")
+    WindowContentScale = ("window_content_scale", None, "wcs",
+        lambda x: float(x))
     MonitorName = ("monitor_name", None, "mn")
     EditorCommand = ("editor_command", None, "ec")
     ManyIncrement = ("many_increment", None, "minc")
