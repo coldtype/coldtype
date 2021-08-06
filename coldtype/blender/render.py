@@ -9,7 +9,7 @@ def blender_launch_livecode(file):
 
 
 def blend_frame(py_file, blend_file, expr, output_dir, fi):
-    call = f"{BLENDER} -b {blend_file} --python-expr \"{expr}\" -o {output_dir}####.png -f {fi}"
+    call = f"{BLENDER} -b \"{blend_file}\" --python-expr \"{expr}\" -o \"{output_dir}####.png\" -f {fi}"
     print(f"Blending frame {fi}...")
     print(call)
     #return

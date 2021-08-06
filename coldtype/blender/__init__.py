@@ -203,52 +203,52 @@ class b3d_animation(animation):
         return build, release
 
 
-if __name__ == "<run_path>":
-    from coldtype.text.composer import StSt, Font
-    from coldtype.color import hsl
+# if __name__ == "<run_path>":
+#     from coldtype.text.composer import StSt, Font
+#     from coldtype.color import hsl
 
-    fnt = Font.Cacheable("~/Type/fonts/fonts/PappardelleParty-VF.ttf")
+#     fnt = Font.Cacheable("~/Type/fonts/fonts/PappardelleParty-VF.ttf")
 
-    @b3d_renderable()
-    def draw_bg(r):
-        return DATPens([
-            (DATPen(r.inset(0, 0)).f(hsl(0.85, 1, 0.7))
-                .tag("BG2")
-                .chain(b3d("Text", plane=1)))])
+#     @b3d_renderable()
+#     def draw_bg(r):
+#         return DATPens([
+#             (DATPen(r.inset(0, 0)).f(hsl(0.85, 1, 0.7))
+#                 .tag("BG2")
+#                 .chain(b3d("Text", plane=1)))])
     
-    @b3d_animation(timeline=Timeline(60, 30), bg=0, layer=1, rstate=1)
-    def draw_dps(f, rs):
-        if bpy:
-            bpy.data.objects['Light'].rotation_euler[2] = f.e("l", rng=(0, math.radians(360)), to1=0)
+#     @b3d_animation(timeline=Timeline(60, 30), bg=0, layer=1, rstate=1)
+#     def draw_dps(f, rs):
+#         if bpy:
+#             bpy.data.objects['Light'].rotation_euler[2] = f.e("l", rng=(0, math.radians(360)), to1=0)
             
-            centroid = BPH.AddOrFind("Centroid",
-                lambda: bpy.ops.object.empty_add(type="PLAIN_AXES"))
-            centroid.location = (5.4, 5.4, 0)
-            centroid.rotation_euler[2] = f.e("l", rng=(0, math.radians(360)), to1=0)
+#             centroid = BPH.AddOrFind("Centroid",
+#                 lambda: bpy.ops.object.empty_add(type="PLAIN_AXES"))
+#             centroid.location = (5.4, 5.4, 0)
+#             centroid.rotation_euler[2] = f.e("l", rng=(0, math.radians(360)), to1=0)
 
-        txt = (StSt("ABCDEFG", fnt, 330, palette=0)
-            .align(f.a.r)
-            .collapse()
-            .map(lambda i, p: p.explode())
-            .collapse()
-            .pmap(lambda i,p: p
-                .declare(fa:=f.adj(-i*1))
-                .cond(p.ambit().y > 570, lambda pp:
-                    pp.translate(0, fa.e("seio", 2, rng=(50, 0))))
-                .cond(p.ambit().mxy < 490, lambda pp:
-                    pp.translate(0, fa.e("seio", 2, rng=(-50, 0))))
-                .tag(f"Hello{i}")
-                .chain(b3d_mods.center(f.a.r))
-                .chain(b3d("Text", lambda bp: bp
-                    .extrude(fa.e("eeio", 1, rng=(0.25, 2)))
-                    .metallic(1)))))
+#         txt = (StSt("ABCDEFG", fnt, 330, palette=0)
+#             .align(f.a.r)
+#             .collapse()
+#             .map(lambda i, p: p.explode())
+#             .collapse()
+#             .pmap(lambda i,p: p
+#                 .declare(fa:=f.adj(-i*1))
+#                 .cond(p.ambit().y > 570, lambda pp:
+#                     pp.translate(0, fa.e("seio", 2, rng=(50, 0))))
+#                 .cond(p.ambit().mxy < 490, lambda pp:
+#                     pp.translate(0, fa.e("seio", 2, rng=(-50, 0))))
+#                 .tag(f"Hello{i}")
+#                 .chain(b3d_mods.center(f.a.r))
+#                 .chain(b3d("Text", lambda bp: bp
+#                     .extrude(fa.e("eeio", 1, rng=(0.25, 2)))
+#                     .metallic(1)))))
         
-        return DATPens([txt])
+#         return DATPens([txt])
     
-    previewer = draw_dps.blender_rendered_preview()
+#     previewer = draw_dps.blender_rendered_preview()
     
-    #def build(artifacts):
-    #    draw_dps.blender_render("scratch.blend", artifacts[:1], samples=8)
+#     #def build(artifacts):
+#     #    draw_dps.blender_render("scratch.blend", artifacts[:1], samples=8)
 
-    #def release(artifacts):
-    #    draw_dps.blender_render("scratch.blend", artifacts, samples=8)
+#     #def release(artifacts):
+#     #    draw_dps.blender_render("scratch.blend", artifacts, samples=8)
