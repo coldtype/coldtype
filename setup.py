@@ -89,6 +89,9 @@ setuptools.setup(
         "c": [
             "srt",
             "noise",
+        ],
+        "unicode": [
+            "unicodedata2"
         ]
     },
     install_requires=[
@@ -103,7 +106,6 @@ setuptools.setup(
         "defcon",
         "freetype-py",
         "uharfbuzz>=0.14.0",
-        "unicodedata2",
         "python-bidi"
     ],
     classifiers=[
