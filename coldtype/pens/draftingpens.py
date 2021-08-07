@@ -501,6 +501,18 @@ class DraftingPens(DraftingPen):
         except TypeError:
             return self.multi_pen_class(to_keep)
     
+    def interpose(self, el_or_fn):
+        new_pens = []
+        for idx, el in enumerate(self._pens):
+            if idx > 0:
+                if callable(el_or_fn):
+                    new_pens.append(el_or_fn(idx-1))
+                else:
+                    new_pens.append(el_or_fn.copy())
+            new_pens.append(el)
+        self._pens = new_pens
+        return self
+    
     def index(self, idx, fn):
         try:
             p = self
