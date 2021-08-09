@@ -38,9 +38,6 @@ class KeyboardShortcut(Enum):
     JumpEnd = "jump_end"
     JumpStoryboard = "jump_storyboard"
 
-    KeylayerEditing = "keylayer_editing"
-    KeylayerCmd = "keylayer_command"
-    KeylayerText = "keylayer_text"
     OverlayInfo = "overlay_info"
     OverlayTimeline = "overlay_timeline"
     OverlayRendered = "overlay_rendered"
@@ -299,16 +296,6 @@ SHORTCUTS = {
     ],
     KeyboardShortcut.JumpStoryboard: [
         [["cmd"], "<home>"]
-    ],
-
-    KeyboardShortcut.KeylayerEditing: [
-        [[], "d"]
-    ],
-    KeyboardShortcut.KeylayerCmd: [
-        [[], "c"],
-    ],
-    KeyboardShortcut.KeylayerText: [
-        [[], "t"],
     ],
 
     KeyboardShortcut.OverlayInfo: [

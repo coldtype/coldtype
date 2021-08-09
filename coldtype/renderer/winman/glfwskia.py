@@ -64,7 +64,7 @@ def monitor_stdin():
 
 
 from coldtype.geometry import Point, Rect, Edge
-from coldtype.renderer.state import Keylayer, Action
+from coldtype.renderer.state import Action
 from coldtype.renderer.config import ConfigOption, ColdtypeConfig
 from coldtype.renderer.keyboard import KeyboardShortcut, REPEATABLE_SHORTCUTS, shortcuts_keyed
 
@@ -143,7 +143,6 @@ class WinmanGLFWSkia():
         glfw.make_context_current(self.window)
 
         glfw.set_key_callback(self.window, self.on_key)
-        glfw.set_char_callback(self.window, self.on_character)
         glfw.set_mouse_button_callback(self.window, self.on_mouse_button)
         glfw.set_cursor_pos_callback(self.window, self.on_mouse_move)
         glfw.set_scroll_callback(self.window, self.on_scroll)
@@ -296,7 +295,6 @@ class WinmanGLFWSkia():
     
     def allow_mouse(self):
         return True
-        #return self.state.keylayer == Keylayer.Editing
         
     def on_scroll(self, win, xoff, yoff):
         self.window_scrolly += yoff
@@ -327,23 +325,7 @@ class WinmanGLFWSkia():
         if requested_action:
             self.renderer.action_waiting = requested_action
     
-    def on_character(self, _, codepoint):
-        if self.renderer.state.keylayer != Keylayer.Default:
-            if self.renderer.state.keylayer_shifting:
-                self.renderer.state.keylayer_shifting = False
-                self.renderer.on_action(Action.PreviewStoryboard)
-                return
-            requested_action = self.renderer.state.on_character(codepoint)
-            if requested_action:
-                self.renderer.action_waiting = requested_action
-    
     def on_key(self, win, key, scan, action, mods):
-        if self.renderer.state.keylayer != Keylayer.Default:
-            requested_action = self.renderer.state.on_key(win, key, scan, action, mods)
-            if requested_action:
-                self.renderer.action_waiting = requested_action
-            return
-        
         self.on_potential_shortcut(key, action, mods)
     
     def repeatable_shortcuts(self):
@@ -445,9 +427,6 @@ class WinmanGLFWSkia():
             
             self.copy_previews_to_clipboard = False
         
-            if self.renderer.state.keylayer != Keylayer.Default and not self.renderer.args.hide_keybuffer:
-                self.renderer.state.draw_keylayer(canvas, self.last_rect, self.typeface)
-        
         self.surface.flushAndSubmit()
         glfw.swap_buffers(self.window)
         return did_preview
@@ -461,6 +440,7 @@ class WinmanGLFWSkia():
             
             t = glfw.get_time()
             td = t - self.glfw_last_time
+            #print(td)
 
             spf = 0.1
             if self.renderer.last_animation:

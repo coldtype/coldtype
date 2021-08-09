@@ -21,7 +21,7 @@ from coldtype.renderer.winman import WinmanGLFWSkia, WinmanGLFWSkiaBackground, W
 
 from coldtype.renderer.config import ConfigOption
 from coldtype.renderer.reader import SourceReader
-from coldtype.renderer.state import RendererState, Keylayer, Overlay
+from coldtype.renderer.state import RendererState, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.svgpen import SVGPen
@@ -190,7 +190,6 @@ class Renderer():
 
         self.line_number = -1
         self.stop_watching_file_changes()
-        self.state.input_history.clear()
         self.state._frame_offsets = {}
         self.state._initial_frame_offsets = {}
         self.state.cv2caps = {}
@@ -458,14 +457,6 @@ class Renderer():
                                         if pr.name == render.name and pr.last_result:
                                             render.last_result = pr.last_result
                             result = render.normalize_result(render.run(rp, self.state))
-                        
-                        if self.state.request:
-                            self.requests_waiting.append([render, str(self.state.request), None])
-                            self.state.request = None
-                        
-                        if self.state.callback:
-                            self.requests_waiting.append([render, self.state.callback, "callback"])
-                            self.state.callback = None
 
                         if not result and not render.direct_draw:
                             #print(">>> No result")
@@ -912,19 +903,6 @@ class Renderer():
         elif shortcut == KeyboardShortcut.ToggleMultiplex:
             self.on_action(Action.ToggleMultiplex)
             return -1
-        
-        elif shortcut == KeyboardShortcut.KeylayerEditing:
-            self.state.keylayer = Keylayer.Editing
-            self.state.keylayer_shifting = True
-            return -1
-        elif shortcut == KeyboardShortcut.KeylayerText:
-            if self.last_animation:
-                fi = self.last_animation._active_frames(self.state)[0]
-                txt = self.last_animation.timeline.text_for_frame(fi)
-                if txt:
-                    self.state.keybuffer = list(txt)
-            self.state.keylayer = Keylayer.Text
-            self.state.keylayer_shifting = True
         
         elif shortcut == KeyboardShortcut.OverlayInfo:
             self.state.toggle_overlay(Overlay.Info)

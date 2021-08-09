@@ -20,12 +20,6 @@ from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.img.datimage import DATImage
 
-class Keylayer(Enum):
-    Default = 0
-    Cmd = 1
-    Editing = 2
-    Text = 3
-
 class Overlay(Enum):
     Info = "info"
     Timeline = "timeline"

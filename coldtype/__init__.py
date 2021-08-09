@@ -12,7 +12,6 @@ from coldtype.helpers import loopidx, sibling, raw_ufo, ßhide, ßshow, cycle_id
 from coldtype.time import *
 from coldtype.img.blendmode import BlendMode
 from coldtype.grid import Grid
-#from coldtype.renderer.state import RendererState, Keylayer
 
 name = "coldtype"
 __version__ = "0.5.17"
