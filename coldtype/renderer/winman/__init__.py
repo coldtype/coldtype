@@ -3,6 +3,7 @@ import time, threading, sys
 from coldtype.renderer.config import ColdtypeConfig
 from coldtype.renderer.winman.passthrough import WinmanPassthrough
 from coldtype.renderer.winman.glfwskia import glfw, skia, WinmanGLFWSkia, WinmanGLFWSkiaBackground
+from coldtype.renderer.winman.midi import MIDIWatcher, rtmidi
 from coldtype.renderer.winman.webview import WinmanWebview
 from coldtype.renderer.winman.websocket import WinmanWebsocket
 from coldtype.renderable import Action
@@ -37,17 +38,24 @@ class Winmans():
         self.glsk:WinmanGLFWSkia = None
         self.ws:WinmanWebsocket = None
         self.wv:WinmanWebview = None
+        self.midi:MIDIWatcher = None
         self.b3d = None
 
         self.last_time = -1
         self.refresh_delay = self.config.refresh_delay
         self.backoff_refresh_delay = self.refresh_delay
 
+        self.playing = 0
         self.preloaded_frames = []
         self.playing_preloaded_frame = -1
 
-        if not config.args.no_watch:
-            monitor_stdin()
+        self.bg = False
+        if (config.args.is_subprocess
+            or config.args.all
+            or config.args.release
+            or config.args.build
+            ):
+            self.bg = True
 
     def should_glfwskia(self):
         return glfw is not None and skia is not None and not self.config.no_viewer
@@ -55,7 +63,13 @@ class Winmans():
     def should_webviewer(self):
         return self.config.webviewer
     
+    def should_midi(self):
+        return rtmidi and not self.config.no_midi
+    
     def add_viewers(self):
+        if not self.bg:
+            monitor_stdin()
+
         if self.config.websocket or self.should_webviewer():
             self.ws = WinmanWebsocket(self.config, self.renderer)
 
@@ -64,6 +78,15 @@ class Winmans():
         
         if self.should_webviewer():
             self.wv = WinmanWebview(self.config, self.renderer)
+        
+        if self.should_midi():
+            self.midi = MIDIWatcher(self.config,
+                self.renderer.state,
+                self.renderer.execute_string_as_shortcut_or_action)
+        
+        elif self.config.args.midi_info:
+            print(">>> pip install rtmidi")
+
     
     def all(self):
         return [self.pt, self.glsk, self.wv, self.b3d]
@@ -81,6 +104,12 @@ class Winmans():
     
     def terminate(self):
         [wm.terminate() for wm in self.map()]
+    
+    def toggle_playback(self):
+        if self.playing == 0:
+            self.playing = 1
+        else:
+            self.playing = 0
     
     def preload_frames(self, passes):
         for rp in passes:
@@ -111,6 +140,10 @@ class Winmans():
             self.glsk.poll()
     
     def turn_over(self):
+        if self.midi:
+            if self.midi.monitor(self.playing):
+                self.renderer.action_waiting = Action.PreviewStoryboard
+
         if self.ws:
             self.ws.read_messages()
 

@@ -10,46 +10,39 @@ class MIDIWatcher():
         self.config = config
         self.state = state
         self.on_shortcut = on_shortcut
+        self.failed = False
         self.devices = []
-        self.no_midi = self.config.no_midi
 
-        if self.no_midi:
-            return
+        try:
+            midiin = rtmidi.RtMidiIn()
+            lookup = {}
+            for p in range(midiin.getPortCount()):
+                lookup[midiin.getPortName(p)] = p
 
-        if self.config.midi_info and not rtmidi:
-            print("Please run `pip install rtmidi` in your venv")
-            self.no_midi = True
-
-        if rtmidi and not self.no_midi:
-            try:
+            for device, mapping in self.config.midi.items():
+                if device in lookup:
+                    mapping["port"] = lookup[device]
+                    mi = rtmidi.RtMidiIn()
+                    mi.openPort(lookup[device])
+                    self.devices.append([device, mi])
+                else:
+                    if self.config.midi_info:
+                        print(f">>> no midi port found with that name ({device}) <<<")
+            
+            if self.config.midi_info:
+                print("\nMIDI DEVICES:::")
                 midiin = rtmidi.RtMidiIn()
-                lookup = {}
-                for p in range(midiin.getPortCount()):
-                    lookup[midiin.getPortName(p)] = p
+                ports = range(midiin.getPortCount())
+                for p in ports:
+                    print(">", f"\"{midiin.getPortName(p)}\"")
+                print("\n")
 
-                for device, mapping in self.config.midi.items():
-                    if device in lookup:
-                        mapping["port"] = lookup[device]
-                        mi = rtmidi.RtMidiIn()
-                        mi.openPort(lookup[device])
-                        self.devices.append([device, mi])
-                    else:
-                        if self.config.midi_info:
-                            print(f">>> no midi port found with that name ({device}) <<<")
-                
-                if self.config.midi_info:
-                    print("\nMIDI DEVICES:::")
-                    midiin = rtmidi.RtMidiIn()
-                    ports = range(midiin.getPortCount())
-                    for p in ports:
-                        print(">", f"\"{midiin.getPortName(p)}\"")
-                    print("\n")
-
-            except Exception as e:
-                print("MIDI SETUP EXCEPTION >", e)
+        except Exception as e:
+            self.failed = True
+            print("MIDI SETUP EXCEPTION >", e)
     
     def monitor(self, playing):
-        if self.no_midi:
+        if self.failed:
             return
 
         controllers = {}

@@ -1,5 +1,5 @@
 from enum import Enum
-import argparse
+import argparse, re
 
 def true_false_or_none(x):
     if x in ["0", "false", "False", "n", "no", "N"]:
@@ -32,6 +32,8 @@ class ConfigOption(Enum):
     PreviewScale = ("preview_scale", 1, "ps",
         lambda x: float(x))
     FontDirs = ("font_dirs", [], "fd")
+    FunctionFilters = ("function_filters", "", "ff",
+        lambda x: [re.compile(f.strip()) for f in x.split(",")])
     Midi = ("midi", {}, None)
     Hotkeys = ("hotkeys", {}, None)
     ThreadCount = ("thread_count", 8, "tc")
@@ -88,6 +90,8 @@ class ConfigOption(Enum):
             return "What preview scale should the window open at?"
         elif e == ConfigOption.FontDirs:
             return "What additional directories would you like to search for fonts?"
+        elif e == ConfigOption.FunctionFilters:
+            return "Do you want to restrict renderable functions to those that match these comma-delimited patterns?"
         elif e == ConfigOption.ThreadCount:
             return "How many threads when multiplexing?"
         elif e == ConfigOption.Multiplex:

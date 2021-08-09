@@ -26,7 +26,6 @@ from coldtype.renderable import renderable, animation, Action, Overlay
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.svgpen import SVGPen
 
-from coldtype.renderer.midi import MIDIWatcher
 from coldtype.renderer.keyboard import KeyboardShortcut
 
 try:
@@ -69,8 +68,6 @@ class Renderer():
         
         pargs = dict(
             version=parser.add_argument("-v", "--version", action="store_true", default=False, help="Display version"),
-
-            no_watch=parser.add_argument("-nw", "--no-watch", action="store_true", default=False, help="Preventing watching for changes to source files"),
             
             save_renders=parser.add_argument("-sv", "--save-renders", action="store_true", default=False, help="Should the renderer create image artifacts?"),
             
@@ -88,8 +85,6 @@ class Renderer():
 
             memory=parser.add_argument("-mm", "--memory", action="store_true", default=False, help="Show statistics about memory usage?"),
 
-            show_time=parser.add_argument("-st", "--show-time", action="store_true", default=False, help="Show time for each render"),
-
             is_subprocess=parser.add_argument("-isp", "--is-subprocess", action="store_true", default=False, help=argparse.SUPPRESS),
 
             config=parser.add_argument("-c", "--config", type=str, default=None, help="By default, Coldtype looks for a .coldtype.py file in ~ and the cwd; use this to override that and look at a specific file instead"),
@@ -102,13 +97,7 @@ class Renderer():
 
             output_folder=parser.add_argument("-of", "--output-folder", type=str, default=None, help="If you don’t want to render to the default output location, specify that here."),
 
-            filter_functions=parser.add_argument("-ff", "--filter-functions", type=str, default=None, help="Names of functions to render"),
-
-            hide_keybuffer=parser.add_argument("-hkb", "--hide-keybuffer", action="store_true", default=False, help="Should the keybuffer be shown?"),
-
             show_exit_code=parser.add_argument("-sec", "--show-exit-code", action="store_true", default=False, help=argparse.SUPPRESS),
-
-            show_render_count=parser.add_argument("-src", "--show-render-count", action="store_true", default=False, help=argparse.SUPPRESS),
 
             frame_offsets=parser.add_argument("-fo", "--frame-offsets", type=str, default=None, help=argparse.SUPPRESS),
         )
@@ -132,10 +121,6 @@ class Renderer():
             renderer=self,
             cli_args=self.args)
         
-        self.bg = False
-        if self.args.is_subprocess or self.args.all or self.args.release or self.args.build or self.args.no_watch:
-            self.bg = True
-        
         self.winmans = None
         self.winmans = Winmans(self, self.source_reader.config)
         
@@ -154,7 +139,6 @@ class Renderer():
         
         self.state.preview_scale = self.source_reader.config.preview_scale
         self.exit_code = 0
-        self.line_number = -1
         self.last_renders = []
         self.last_render_cleared = False
 
@@ -164,18 +148,10 @@ class Renderer():
 
         self.action_waiting = None
         self.debounced_actions = {}
-        self.requests_waiting = []
-        self.waiting_to_render = []
         self.previews_waiting_to_paint = []
         self.last_animation = None
-        self.playing = 0
         self.hotkeys = None
         self.hotkey_waiting = None
-
-        if self.args.filter_functions:
-            self.function_filters = [f.strip() for f in self.args.filter_functions.split(",")]
-        else:
-            self.function_filters = []
 
         self.viewer_solos = []
     
@@ -185,10 +161,9 @@ class Renderer():
             dirdirection = filepath
             filepath = self.source_reader.filepath
 
-        for k, cv2cap in self.state.cv2caps.items():
+        for _, cv2cap in self.state.cv2caps.items():
             cv2cap.release()
 
-        self.line_number = -1
         self.stop_watching_file_changes()
         self.state._frame_offsets = {}
         self.state._initial_frame_offsets = {}
@@ -272,8 +247,8 @@ class Renderer():
         return render, res
 
     def show_error(self):
-        if self.playing > 0:
-            self.playing = -1
+        if self.winmans.playing > 0:
+            self.winmans.playing = -1
         render, res = self.renderable_error()
         self.previews_waiting_to_paint.append([render, res, None])
     
@@ -375,7 +350,6 @@ class Renderer():
     def renderables(self, trigger):
         _rs = self.source_reader.renderables(
             viewer_solos=self.viewer_solos,
-            function_filters=self.function_filters,
             class_filters=[],
             output_folder_override=self.args.output_folder)
         
@@ -621,8 +595,9 @@ class Renderer():
             if not skia:
                 raise Exception("pip install skia-python")
             if render.fmt == "png":
-                content = content.ch(skfx.precompose(render.rect))
-                render.last_result = content
+                if render.composites:
+                    content = content.ch(skfx.precompose(render.rect, scale=scale))
+                    render.last_result = content
                 if render.bg_render:
                     content = DATPens([
                         DATPen().rect(render.rect).f(render.bg),
@@ -643,7 +618,9 @@ class Renderer():
             raise Exception(f"rasterizer ({rasterizer}) not supported")
     
     def reload_and_render(self, trigger, watchable=None, indices=None):
-        if self.bg and not self.args.cpu_render:
+        if (self.winmans.bg
+            and not self.args.cpu_render
+            ):
             self.winmans.glsk = WinmanGLFWSkiaBackground(self.source_reader.config, self)
 
         wl = len(self.watchees)
@@ -655,10 +632,8 @@ class Renderer():
                 return True
             if self.source_reader.program:
                 preview_count, render_count = self.render(trigger, indices=indices)
-                if self.args.show_render_count:
-                    print("render>", preview_count, "/", render_count)
-                if self.playing < 0:
-                    self.playing = 1
+                if self.winmans.playing < 0:
+                    self.winmans.playing = 1
             else:
                 print(">>>>>>>>>>>> No program loaded! <<<<<<<<<<<<<<")
         except:
@@ -687,7 +662,7 @@ class Renderer():
     def start(self):
         should_halt = self.before_start()
         
-        if not self.bg:
+        if not self.winmans.bg:
             self.initialize_gui_and_server()
         
         if should_halt:
@@ -716,7 +691,7 @@ class Renderer():
                     self.on_exit()
                     return
             self.on_start()
-            if not self.bg:
+            if not self.winmans.bg:
                 self.winmans.run_loop()
             else:
                 self.on_exit()
@@ -726,11 +701,6 @@ class Renderer():
 
     def initialize_gui_and_server(self):
         self.winmans.add_viewers()
-
-        self.midi = MIDIWatcher(
-            self.source_reader.config,
-            self.state,
-            self.execute_string_as_shortcut_or_action)
 
         if len(self.watchees) > 0:
             self.winmans.set_title(self.watchees[0][1].name)
@@ -934,7 +904,8 @@ class Renderer():
             self.open_in_editor()
         
         elif shortcut == KeyboardShortcut.ShowInFinder:
-            os.system(f"open {self.last_animation.output_folder}")
+            folder = self.renderables(Action.PreviewStoryboard)[0].output_folder
+            os.system(f"open {folder}")
         
         elif shortcut == KeyboardShortcut.ViewerTakeFocus:
             if not self.winmans.glsk.focus():
@@ -1020,10 +991,7 @@ class Renderer():
             Action.PreviewPlay]:
             if action == Action.PreviewPlay:
                 self.winmans.stop_playing_preloaded()
-                if self.playing == 0:
-                    self.playing = 1
-                else:
-                    self.playing = 0
+                self.winmans.toggle_playback()
             if action == Action.PreviewStoryboardPrevMany:
                 self.state.adjust_all_frame_offsets(-self.source_reader.config.many_increment)
             elif action == Action.PreviewStoryboardPrev:
@@ -1034,7 +1002,7 @@ class Renderer():
                 self.state.adjust_all_frame_offsets(+1)
             self.render(Action.PreviewStoryboard)
         elif action == Action.RenderedPlay:
-            self.playing = 0
+            self.winmans.playing = 0
             self.winmans.toggle_play_preloaded()
         elif action == Action.Build:
             self.on_release(build=True)
@@ -1122,23 +1090,13 @@ class Renderer():
                 # TODO should be recursive?
                 self.on_action(self.action_waiting)
             self.action_waiting = None
-
-        if self.midi.monitor(self.playing):
-            self.action_waiting = Action.PreviewStoryboard
         
         did_preview = self.winmans.turn_over()
         
         self.previews_waiting_to_paint = []
         self.last_render_cleared = False
-    
-        for render, request, action in self.requests_waiting:
-            if action == "callback":
-                self.action_waiting = Action.PreviewStoryboard
-            else:
-                self.on_request_from_render(render, request, action)
-            self.requests_waiting = []
 
-        if self.playing > 0:
+        if self.winmans.playing > 0:
             self.on_action(Action.PreviewStoryboardNext)
         
         return did_preview
@@ -1200,7 +1158,7 @@ class Renderer():
             self.action_waiting = Action.PreviewStoryboardReload
 
     def watch_file_changes(self):
-        if self.bg:
+        if self.winmans.bg:
             return None
         
         if not AsyncWatchdog:

@@ -201,7 +201,7 @@ def find_renderables(
         for r in filtered_rs:
             for fp in function_patterns:
                 try:
-                    if re.match(fp, r.name) and r not in matches:
+                    if re.search(fp, r.name) and r not in matches:
                         matches.append(r)
                 except re.error as e:
                     print("ff regex compilation error", e)
@@ -387,6 +387,8 @@ class SourceReader():
         class_filters=[],
         output_folder_override=None,
         ):
+        if not function_filters and self.config.function_filters:
+            function_filters = self.config.function_filters
         return find_renderables(
             self.filepath,
             self.codepath,
