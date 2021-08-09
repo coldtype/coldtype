@@ -215,15 +215,6 @@ class Renderer():
             self.winmans.set_title(filepath.name)
 
         return True
-    
-    def launch_blender_watch(self, blend_files):
-        if "blender_watch" in self.subprocesses:
-            self.subprocesses["blender_watch"].kill()
-            del self.subprocesses["blender_watch"]
-
-        from coldtype.blender.render import blender_launch_livecode
-        blend_file = blend_files[0]
-        self.subprocesses["blender_watch"] = blender_launch_livecode(blend_file)
 
     def watchee_paths(self):
         return [w[1] for w in self.watchees]
@@ -267,14 +258,7 @@ class Renderer():
             self.state.reset()
             self.source_reader.reload()
             
-            if self.source_reader.config.blender_watch:
-                try:
-                    cb = Path("~/.coldtype/blender.txt").expanduser()
-                    if cb.exists():
-                        cb.unlink()
-                    cb.write_text(f"import,{str(self.source_reader.filepath)}")
-                except FileNotFoundError:
-                    pass
+            self.winmans.did_reload(self.source_reader.filepath)
             
             try:
                 full_restart = False
@@ -305,9 +289,9 @@ class Renderer():
                         fos = eval(self.args.frame_offsets)
                         for k, v in fos.items():
                             self.state.adjust_keyed_frame_offsets(k, lambda i, o: v[i])
-                                
-                if self.source_reader.config.blender_watch and trigger == Action.Initial and len(blend_files) > 0:
-                    self.launch_blender_watch(blend_files)
+                
+                if trigger == Action.Initial:
+                    self.winmans.found_blend_files(blend_files)
                 
             except SystemExit:
                 self.on_exit(restart=False)
@@ -1047,19 +1031,6 @@ class Renderer():
     
     
     def turn_over(self):
-        to_delete = []
-        for k, sb in self.subprocesses.items():
-            returncode = sb.poll()
-            if returncode is not None:
-                if k == "blender_watch": #and returncode != 0:
-                    self.launch_blender_watch()
-                    self.action_waiting = Action.PreviewStoryboardReload
-                else:
-                    to_delete.append(k)
-        
-        for k in to_delete:
-            del self.subprocesses[k]
-
         if self.dead:
             self.on_exit()
             return

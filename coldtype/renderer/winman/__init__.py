@@ -6,6 +6,7 @@ from coldtype.renderer.winman.glfwskia import glfw, skia, WinmanGLFWSkia, Winman
 from coldtype.renderer.winman.midi import MIDIWatcher, rtmidi
 from coldtype.renderer.winman.webview import WinmanWebview
 from coldtype.renderer.winman.websocket import WinmanWebsocket
+from coldtype.renderer.winman.blender import WinmanBlender
 from coldtype.renderable import Action
 
 
@@ -39,7 +40,7 @@ class Winmans():
         self.ws:WinmanWebsocket = None
         self.wv:WinmanWebview = None
         self.midi:MIDIWatcher = None
-        self.b3d = None
+        self.b3d:WinmanBlender = None
 
         self.last_time = -1
         self.refresh_delay = self.config.refresh_delay
@@ -66,6 +67,9 @@ class Winmans():
     def should_midi(self):
         return rtmidi and not self.config.no_midi
     
+    def should_blender(self):
+        return self.config.blender_watch
+    
     def add_viewers(self):
         if not self.bg:
             monitor_stdin()
@@ -79,14 +83,24 @@ class Winmans():
         if self.should_webviewer():
             self.wv = WinmanWebview(self.config, self.renderer)
         
+        if self.should_blender():
+            self.b3d = WinmanBlender()
+        
         if self.should_midi():
             self.midi = MIDIWatcher(self.config,
                 self.renderer.state,
                 self.renderer.execute_string_as_shortcut_or_action)
-        
         elif self.config.args.midi_info:
             print(">>> pip install rtmidi")
 
+    def did_reload(self, filepath):
+        if self.b3d:
+            self.b3d.reload(filepath)
+    
+    def found_blend_files(self, blend_files):
+        if len(blend_files) > 0:
+            if self.b3d:
+                self.b3d.launch(blend_files[0])
     
     def all(self):
         return [self.pt, self.glsk, self.wv, self.b3d]
