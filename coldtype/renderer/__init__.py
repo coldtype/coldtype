@@ -207,7 +207,7 @@ class Renderer():
         if pj:
             self.watchees.append([Watchable.Generic, Path("~/.coldtype/picklejar"), None])
 
-        if not self.args.is_subprocess and not self.source_reader.config.no_viewer:
+        if not self.args.is_subprocess:
             self.watch_file_changes()
         
         if reload:
@@ -587,7 +587,17 @@ class Renderer():
                         DATPen().rect(render.rect).f(render.bg),
                         content
                     ])
-                SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=None if self.args.cpu_render else self.winmans.glsk.context, style=render.style)
+                
+                ctx = None
+                if self.winmans.glsk and self.winmans.glsk.context and not self.args.cpu_render:
+                    ctx = self.winmans.glsk.context
+
+                SkiaPen.Composite(content,
+                    render.rect,
+                    str(path),
+                    scale=scale,
+                    context=ctx,
+                    style=render.style)
             elif render.fmt == "pdf":
                 SkiaPen.PDFOnePage(content, render.rect, str(path), scale=scale)
             elif render.fmt == "svg":
