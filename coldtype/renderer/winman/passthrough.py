@@ -18,3 +18,6 @@ class WinmanPassthrough():
     
     def turn_over(self):
         print("turning")
+    
+    def should_close(self):
+        return False

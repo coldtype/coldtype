@@ -719,12 +719,7 @@ class Renderer():
                     return
             self.on_start()
             if not self.bg:
-                if self.winmans.glsk:
-                    self.winmans.glsk.listen()
-                elif self.winmans.wv:
-                    while True:
-                        self.turn_over()
-                        ptime.sleep(0.25)
+                self.winmans.run_loop()
             else:
                 self.on_exit()
     
@@ -867,7 +862,7 @@ class Renderer():
             self.on_action(Action.RenderedPlay)
             return -1
         elif shortcut == KeyboardShortcut.PlayPreview:
-            self.winmans.glsk.stop_playing_preloaded()
+            self.winmans.stop_playing_preloaded()
             return Action.PreviewPlay
         
         elif shortcut == KeyboardShortcut.ReloadSource:
@@ -1037,7 +1032,7 @@ class Renderer():
             Action.PreviewStoryboardPrev,
             Action.PreviewPlay]:
             if action == Action.PreviewPlay:
-                self.winmans.glsk.stop_playing_preloaded()
+                self.winmans.stop_playing_preloaded()
                 if self.playing == 0:
                     self.playing = 1
                 else:
@@ -1053,7 +1048,7 @@ class Renderer():
             self.render(Action.PreviewStoryboard)
         elif action == Action.RenderedPlay:
             self.playing = 0
-            self.winmans.glsk.toggle_play_preloaded()
+            self.winmans.toggle_play_preloaded()
         elif action == Action.Build:
             self.on_release(build=True)
         elif action == Action.Release:
@@ -1190,13 +1185,8 @@ class Renderer():
         if self.midi.monitor(self.playing):
             self.action_waiting = Action.PreviewStoryboard
         
-        if self.winmans.should_glfwskia():
-            did_preview = self.winmans.glsk.turn_over()
+        did_preview = self.winmans.turn_over()
         
-        if self.source_reader.config.webviewer:
-            did_preview = self.turn_over_webviewer()
-        
-        self.state.needs_display = 0
         self.previews_waiting_to_paint = []
         self.last_render_cleared = False
     
@@ -1214,14 +1204,12 @@ class Renderer():
     
     def on_modified(self, event):
         path = Path(event.src_path)
-        #print(path, path.parent, path.parent.stem)
 
         if path.parent.stem == "picklejar":
             if path.exists():
                 self.debounced_actions["picklejar"] = ptime.time()
             return
 
-        #return
         actual_path = path
         if path.parent in self.watchee_paths():
             actual_path = path

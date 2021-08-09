@@ -1,7 +1,6 @@
 from coldtype.renderer.winman.passthrough import WinmanPassthrough
 
 import time as ptime
-import sys, threading, random
 from subprocess import Popen, PIPE
 from pathlib import Path
 
@@ -44,25 +43,6 @@ except ImportError:
         GL = None
 
 
-last_line = ''
-new_line_event = threading.Event()
-
-def monitor_stdin():
-    # https://stackoverflow.com/questions/27174736/how-to-read-most-recent-line-from-stdin-in-python
-    global last_line
-    global new_line_event
-
-    def keep_last_line():
-        global last_line, new_line_event
-        for line in sys.stdin:
-            last_line = line
-            new_line_event.set()
-
-    keep_last_line_thread = threading.Thread(target=keep_last_line)
-    keep_last_line_thread.daemon = True
-    keep_last_line_thread.start()
-
-
 from coldtype.geometry import Point, Rect, Edge
 from coldtype.renderable import Action
 from coldtype.renderer.config import ConfigOption, ColdtypeConfig
@@ -99,14 +79,6 @@ class WinmanGLFWSkia():
         self.surface = None
 
         self.typeface = skia.Typeface.MakeFromFile(str(Path(__file__).parent / "../../demo/RecMono-CasualItalic.ttf"))
-
-        self.glfw_last_time = -1
-        self.refresh_delay = self.config.refresh_delay
-        self.backoff_refresh_delay = self.refresh_delay
-        self.copy_previews_to_clipboard = False
-
-        self.preloaded_frames = []
-        self.playing_preloaded_frame = -1
 
         if not glfw.init():
             raise RuntimeError('glfw.init() failed')
@@ -152,8 +124,8 @@ class WinmanGLFWSkia():
 
         self.prev_scale = self.get_content_scale()
         self.context = skia.GrDirectContext.MakeGL()
-
-        monitor_stdin()
+        
+        self.copy_previews_to_clipboard = False
     
     def find_primary_monitor(self):
         self.primary_monitor = glfw.get_primary_monitor()
@@ -362,33 +334,7 @@ class WinmanGLFWSkia():
                         #print(shortcut, modifiers, skey, mod_match)
                         return self.renderer.on_shortcut(shortcut)
     
-    def preload_frames(self, passes):
-        for rp in passes:
-            self.preloaded_frames.append(rp.output_path)
-        self.playing_preloaded_frame = 0
-    
-    def stop_playing_preloaded(self):
-        self.playing_preloaded_frame = -1
-    
-    def toggle_play_preloaded(self):
-        if self.playing_preloaded_frame >= 0:
-            self.playing_preloaded_frame = -1
-            self.preloaded_frames = []
-        else:
-            anm = self.renderer.animation()
-            passes = anm.passes(Action.RenderAll, self.renderer.state, anm.all_frames())
-            self.preload_frames(passes)
-    
     def turn_over(self):
-        render_previews = len(self.renderer.previews_waiting_to_paint) > 0
-        if not render_previews:
-            self.backoff_refresh_delay += 0.01
-            if self.backoff_refresh_delay >= 0.25:
-                self.backoff_refresh_delay = 0.25
-            return []
-        
-        self.backoff_refresh_delay = self.refresh_delay
-
         frect, rects, dscale, needs_new_context = self.calculate_window_size(self.renderer.previews_waiting_to_paint)
 
         if needs_new_context:
@@ -431,60 +377,21 @@ class WinmanGLFWSkia():
         glfw.swap_buffers(self.window)
         return did_preview
     
-    def listen(self):
-        should_close = self.should_close()
+    def poll(self):
+        glfw.poll_events()
+    
+    def show_preloaded_frame(self, path):
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-        while not self.renderer.dead and not should_close:
-            if self.content_scale_changed():
-                self.renderer.on_action(Action.PreviewStoryboard)
-            
-            t = glfw.get_time()
-            td = t - self.glfw_last_time
-            #print(td)
-
-            spf = 0.1
-            if self.renderer.last_animation:
-                spf = 1 / float(self.renderer.last_animation.timeline.fps)
-
-                if td >= spf:
-                    self.glfw_last_time = t
-                else:
-                    glfw.poll_events()
-                    continue
-
-            if self.renderer.last_animation and self.playing_preloaded_frame >= 0 and len(self.preloaded_frames) > 0:
-                GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-
-                with self.surface as canvas:
-                    path = self.preloaded_frames[self.playing_preloaded_frame]
-                    if not self.config.window_transparent:
-                        c = self.renderer.last_animation.bg
-                        canvas.clear(c.skia())
-                    image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(path)))
-                    canvas.drawImage(image, 0, 0)
-                
-                self.surface.flushAndSubmit()
-                glfw.swap_buffers(self.window)
-
-                self.playing_preloaded_frame += 1
-                if self.playing_preloaded_frame == len(self.preloaded_frames):
-                    self.playing_preloaded_frame = 0
-                ptime.sleep(0.01)
-            else:
-                ptime.sleep(self.backoff_refresh_delay)
-                self.glfw_last_time = t
-                self.last_previews = self.renderer.turn_over()
-                global last_line
-                if last_line:
-                    lls = last_line.strip()
-                    if lls:
-                        self.renderer.on_stdin(lls)
-                    last_line = None
-            
-            glfw.poll_events()
-            should_close = self.should_close()
+        with self.surface as canvas:
+            if not self.config.window_transparent:
+                c = self.renderer.last_animation.bg
+                canvas.clear(c.skia())
+            image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(path)))
+            canvas.drawImage(image, 0, 0)
         
-        self.renderer.on_exit(restart=False)
+        self.surface.flushAndSubmit()
+        glfw.swap_buffers(self.window)
 
     def draw_preview(self, idx, scale, canvas, rect, waiter):
         if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
@@ -507,10 +414,6 @@ class WinmanGLFWSkia():
         
         if render.clip:
             canvas.clipRect(skia.Rect(0, 0, rect.w, rect.h))
-        
-        #canvas.clear(coldtype.bw(0, 0).skia())
-        #print("BG", render.func.__name__, render.bg)
-        #canvas.clear(render.bg.skia())
         
         if render.direct_draw:
             try:
