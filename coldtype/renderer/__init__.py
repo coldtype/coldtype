@@ -21,8 +21,8 @@ from coldtype.renderer.winman import WinmanGLFWSkia, WinmanGLFWSkiaBackground, W
 
 from coldtype.renderer.config import ConfigOption
 from coldtype.renderer.reader import SourceReader
-from coldtype.renderer.state import RendererState, Overlay
-from coldtype.renderable import renderable, Action, animation
+from coldtype.renderer.state import RendererState
+from coldtype.renderable import renderable, animation, Action, Overlay
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.svgpen import SVGPen
 

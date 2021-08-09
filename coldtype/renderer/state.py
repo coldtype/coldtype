@@ -1,25 +1,14 @@
-from enum import Enum
+import json
 from pathlib import Path
-import json, re, base64
-from coldtype import hsl, Action, Point, Rect, DATPen, Overlay
-from typing import Callable, List
-from time import sleep
+from coldtype.geometry import Point
 
-try:
-    import skia
-except ImportError:
-    skia = None
-
-try:
-    import glfw
-except ImportError:
-    glfw = None
 
 class RendererStateEncoder(json.JSONEncoder):
     def default(self, o):
         return {
             "controller_values": o.controller_values
         }
+
 
 class RendererState():
     def __init__(self, renderer):
@@ -33,8 +22,6 @@ class RendererState():
         self._initial_frame_offsets = {}
         self.canvas = None
         self._last_filepath = None
-        self.watch_soft_mods = {}
-        self.watch_mods = {}
         self.cv2caps = {}
         self.reset()
     
@@ -121,10 +108,6 @@ class RendererState():
         offs = self.get_frame_offsets(key)
         for i, o in enumerate(offs):
             offs[i] = fn(i, o)
-    
-    def reset_keystate(self):
-        self.watch_mods = {}
-        self.watch_soft_mods = {}
     
     def toggle_overlay(self, overlay):
         v = not self.overlays.get(overlay, False)

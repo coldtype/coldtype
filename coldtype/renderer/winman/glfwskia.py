@@ -64,7 +64,7 @@ def monitor_stdin():
 
 
 from coldtype.geometry import Point, Rect, Edge
-from coldtype.renderer.state import Action
+from coldtype.renderable import Action
 from coldtype.renderer.config import ConfigOption, ColdtypeConfig
 from coldtype.renderer.keyboard import KeyboardShortcut, REPEATABLE_SHORTCUTS, shortcuts_keyed
 
@@ -481,9 +481,7 @@ class WinmanGLFWSkia():
                         self.renderer.on_stdin(lls)
                     last_line = None
             
-            self.renderer.state.reset_keystate()
             glfw.poll_events()
-
             should_close = self.should_close()
         
         self.renderer.on_exit(restart=False)
