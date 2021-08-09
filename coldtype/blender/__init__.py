@@ -21,6 +21,10 @@ except ImportError:
     pass
 
 def b3d(collection, callback=None, plane=False, dn=False, material="auto"):
+    if not isinstance(collection, str):
+        callback = collection
+        collection = "Coldtype"
+
     pen_mod = None
     if callback and not callable(callback):
         pen_mod = callback[0]
@@ -65,6 +69,13 @@ def walk_to_b3d(result:DATPens, dn=False):
     def walker(p:DATPen, pos, data):
         if pos == 0:
             bdata = p.data.get("b3d")
+            if not bdata:
+                p.ch(b3d(lambda bp: bp.extrude(0.01)))
+                bdata = p.data.get("b3d")
+            
+            if p.tag() == "?" and data.get("idx"):
+               p.tag("ct_autotag_" + "_".join([str(i) for i in data["idx"]]))
+
             if bdata:
                 coll = BPH.Collection(bdata["collection"])
                 material = bdata.get("material", "auto")
@@ -94,7 +105,8 @@ class b3d_animation(animation):
         samples=16,
         denoise=True,
         blend=None,
-        **kwargs):
+        **kwargs
+        ):
         self.func = None
         self.name = None
         self.current_frame = -1
@@ -127,6 +139,7 @@ class b3d_animation(animation):
                 if Overlay.Rendered in renderer_state.overlays:
                     from coldtype.img.skiaimage import SkiaImage
                     return SkiaImage(self.blender_rendered_frame(fi))
+        
         return super().run(render_pass, renderer_state)
     
     def post_read(self):

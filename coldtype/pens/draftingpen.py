@@ -956,7 +956,8 @@ class DraftingPen(RecordingPen, SHContext):
         depth=0,
         visible_only=False,
         parent=None,
-        alpha=1
+        alpha=1,
+        idx=None
         ):
         if visible_only and not self._visible:
             return
@@ -968,12 +969,12 @@ class DraftingPen(RecordingPen, SHContext):
         
         is_dps = hasattr(self, "_pens")
         if is_dps:
-            callback(self, -1, dict(depth=depth, alpha=alpha))
-            for pen in self._pens:
-                pen.walk(callback, depth=depth+1, visible_only=visible_only, parent=self, alpha=alpha)
-            callback(self, 1, dict(depth=depth, alpha=alpha))
+            callback(self, -1, dict(depth=depth, alpha=alpha, idx=idx))
+            for pidx, pen in enumerate(self._pens):
+                pen.walk(callback, depth=depth+1, visible_only=visible_only, parent=self, alpha=alpha, idx=idx.append(pidx) if idx else [pidx])
+            callback(self, 1, dict(depth=depth, alpha=alpha, idx=idx))
         else:
-            callback(self, 0, dict(depth=depth, alpha=alpha))
+            callback(self, 0, dict(depth=depth, alpha=alpha, idx=idx))
     
     def remove_blanks(self):
         print("REMOVE BLANKS PEN", self)
