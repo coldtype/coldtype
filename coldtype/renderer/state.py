@@ -132,8 +132,6 @@ class InputHistory():
                 xs.append(InputHistoryGroup("down", i.keylayer, []))
             elif i.action == "up":
                 xs.append(InputHistoryGroup("up", i.keylayer, []))
-            elif i.action == "cmd":
-                xs.append(InputHistoryGroup("cmd", i.keylayer, []))
             
             if len(xs) == 0 and i.action == "move":
                 continue
@@ -172,7 +170,6 @@ class RendererState():
         #self.needs_display = 0
         self.request = None
         self.callback = None
-        self.cmd = None
         self.text = ""
         self.clear_text = False
         self.arrow = None
@@ -301,15 +298,11 @@ class RendererState():
         polygon.f(None).s(hsl(0.75, s=1, a=0.5)).sw(5)
         #polygon.closePath()
 
-        if self.cmd == clear_on:
-            self.input_history.clear()
-            return True, polygon
-        else:
-            return False, polygon
+        return False, polygon
     
     def on_character(self, codepoint):
         cc = chr(codepoint)
-        if self.keylayer == Keylayer.Cmd or self.keylayer == Keylayer.Text:
+        if self.keylayer == Keylayer.Text:
             self.keybuffer.append(cc)
             return Action.PreviewStoryboard
         
@@ -322,8 +315,6 @@ class RendererState():
                 self.zoom += 0.25
             elif cc == "-":
                 self.zoom -= 0.25
-            #else:
-            #    self.cmd = cc
             self.zoom = max(0.25, min(10, self.zoom))
             return Action.PreviewStoryboard
         #self.needs_display = 1
@@ -336,9 +327,7 @@ class RendererState():
         
         if key == glfw.KEY_ENTER:
             cmd = "".join(self.keybuffer)
-            if self.keylayer == Keylayer.Cmd:
-                self.cmd = cmd
-            elif self.keylayer == Keylayer.Text:
+            if self.keylayer == Keylayer.Text:
                 self.text = cmd
             self.keybuffer = []
             #print(">>> KB-CMD:", cmd)
@@ -392,10 +381,6 @@ class RendererState():
             elif key == glfw.KEY_C and self.keylayer == Keylayer.Editing:
                 self.input_history.record(InputHistoryItem(key, "cmd", self.keylayer, self.controller_values.copy()))
 
-        
-        if key == glfw.KEY_S and mods & glfw.MOD_SUPER:
-            self.cmd = "save"
-            return Action.PreviewStoryboard
         return
     
     def exit_keylayer(self):
@@ -405,22 +390,7 @@ class RendererState():
     def draw_keylayer(self, canvas, rect, typeface):
         canvas.save()
 
-        if self.keylayer == Keylayer.Cmd:
-            canvas.drawRect(
-                skia.Rect.MakeXYWH(0, rect.h-50, rect.w, 50),
-                skia.Paint(
-                    AntiAlias=True,
-                    Color=hsl(0.9, l=0.25, a=0.85).skia()))
-            canvas.drawString(
-                "".join(self.keybuffer),
-                10,
-                rect.h-14,
-                skia.Font(typeface, 30),
-                skia.Paint(
-                    AntiAlias=True,
-                    Color=skia.ColorWHITE))
-        
-        elif self.keylayer == Keylayer.Text:
+        if self.keylayer == Keylayer.Text:
             canvas.drawRect(
                 skia.Rect.MakeXYWH(0, 0, rect.w, 50),
                 skia.Paint(
@@ -491,7 +461,6 @@ class RendererState():
             return None
     
     def reset_keystate(self):
-        self.cmd = None
         if self.clear_text:
             self.text = ""
             self.clear_text = False

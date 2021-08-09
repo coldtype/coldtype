@@ -214,34 +214,6 @@ class Subtitler(Sequence):
     def process_state(self, rs, fi, clips=None):
         if not clips:
             clips = self.clips()
-
-        if rs.text:
-            self.add_clip(fi, rs.text, clips)
-        elif rs.cmd:
-            if rs.cmd == "d":
-                self.delete_clip(fi, clips)
-            elif rs.cmd == "c":
-                self.cut_clip(fi, clips)
-            elif rs.cmd == "p":
-                self.persist()
-            elif rs.cmd == "q":
-                #print(self.closest(fi, -1, clips))
-                self.closest_to_playhead(fi, -1, clips)
-            elif rs.cmd == "w":
-                #print(self.closest(fi, +1, clips))
-                self.closest_to_playhead(fi, +1, clips)
-            elif rs.cmd == "ts":
-                self.mod_clip_text(fi, clips,
-                    lambda s, t: "*" + t if s != "*" else t)
-            elif rs.cmd == "tl":
-                self.mod_clip_text(fi, clips,
-                    lambda s, t: "≈" + t if s != "≈" else t)
-            elif rs.cmd == "tc":
-                self.mod_clip_text(fi, clips,
-                    lambda s, t: "+" + t if s != "+" else t)
-            elif re.match(r"[0-9]{1}", rs.cmd):
-                self.data["workarea_track"] = int(rs.cmd)
-                self.persist()
     
     def clip_timeline(self, fi, far, sw=30, sh=50, font_name=None):
         seq = DATPens()

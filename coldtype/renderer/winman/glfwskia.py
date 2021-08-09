@@ -3,6 +3,10 @@ from coldtype.renderer.winman.passthrough import WinmanPassthrough
 import time as ptime
 import sys, threading, random
 from subprocess import Popen, PIPE
+from pathlib import Path
+
+import coldtype.fx.skia as skfx
+from coldtype.color import rgb
 
 try:
     import glfw
@@ -93,6 +97,8 @@ class WinmanGLFWSkia():
         self.all_shortcuts = shortcuts_keyed()
         self.prev_scale = 0
         self.surface = None
+
+        self.typeface = skia.Typeface.MakeFromFile(str(Path(__file__).parent / "../../demo/RecMono-CasualItalic.ttf"))
 
         self.glfw_last_time = -1
         self.refresh_delay = self.config.refresh_delay
@@ -204,12 +210,9 @@ class WinmanGLFWSkia():
             return True
         return False
     
-    def preview_scale(self):
-        return self.renderer.state.preview_scale
-    
     def calculate_window_size(self, previews):
         rects = []
-        dscale = self.preview_scale()
+        dscale = self.renderer.state.preview_scale
         w = 0
         llh = -1
         lh = -1
@@ -386,7 +389,6 @@ class WinmanGLFWSkia():
         self.playing_preloaded_frame = -1
     
     def toggle_play_preloaded(self):
-
         if self.playing_preloaded_frame >= 0:
             self.playing_preloaded_frame = -1
             self.preloaded_frames = []
@@ -434,7 +436,7 @@ class WinmanGLFWSkia():
                         print("failed to copy to clipboard")
 
                 try:
-                    self.renderer.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
+                    self.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
                     did_preview.append(rp)
                 except Exception as e:
                     short_error = self.renderer.print_error()
@@ -444,7 +446,7 @@ class WinmanGLFWSkia():
             self.copy_previews_to_clipboard = False
         
             if self.renderer.state.keylayer != Keylayer.Default and not self.renderer.args.hide_keybuffer:
-                self.renderer.state.draw_keylayer(canvas, self.last_rect, self.renderer.typeface)
+                self.renderer.state.draw_keylayer(canvas, self.last_rect, self.typeface)
         
         self.surface.flushAndSubmit()
         glfw.swap_buffers(self.window)
@@ -493,11 +495,7 @@ class WinmanGLFWSkia():
                 self.glfw_last_time = t
                 self.last_previews = self.renderer.turn_over()
                 global last_line
-                if self.renderer.state.cmd:
-                    cmd = self.renderer.state.cmd
-                    self.renderer.state.reset_keystate()
-                    self.renderer.on_stdin(cmd)
-                elif last_line:
+                if last_line:
                     lls = last_line.strip()
                     if lls:
                         self.renderer.on_stdin(lls)
@@ -509,6 +507,58 @@ class WinmanGLFWSkia():
             should_close = self.should_close()
         
         self.renderer.on_exit(restart=False)
+
+    def draw_preview(self, idx, scale, canvas, rect, waiter):
+        if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
+            image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(waiter[1])))
+            if image:
+                canvas.drawImage(image, rect.x, rect.y)
+            return
+        
+        render, result, rp = waiter
+        error_color = rgb(1, 1, 1).skia()
+        canvas.save()
+        canvas.translate(0, self.window_scrolly)
+        canvas.translate(rect.x, rect.y)
+        
+        if not self.config.window_transparent:
+            canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
+        
+        if not hasattr(render, "show_error"):
+            canvas.scale(scale, scale)
+        
+        if render.clip:
+            canvas.clipRect(skia.Rect(0, 0, rect.w, rect.h))
+        
+        #canvas.clear(coldtype.bw(0, 0).skia())
+        #print("BG", render.func.__name__, render.bg)
+        #canvas.clear(render.bg.skia())
+        
+        if render.direct_draw:
+            try:
+                render.run(rp, self.renderer.state, canvas)
+            except Exception as e:
+                short_error = self.renderer.print_error()
+                render.show_error = short_error
+                error_color = rgb(0, 0, 0).skia()
+        else:
+            if render.composites:
+                comp = result.ch(skfx.precompose(render.rect))
+                if not self.renderer.last_render_cleared:
+                    render.last_result = comp
+                else:
+                    render.last_result = None
+            else:
+                comp = result
+            
+            render.draw_preview(1.0, canvas, render.rect, comp, rp)
+        
+        if hasattr(render, "show_error"):
+            paint = skia.Paint(AntiAlias=True, Color=error_color)
+            canvas.drawString(render.show_error, 30, 70, skia.Font(self.typeface, 50), paint)
+            canvas.drawString("> See process in terminal for traceback", 30, 120, skia.Font(self.typeface, 32), paint)
+        
+        canvas.restore()
 
     def terminate(self):
         glfw.terminate()

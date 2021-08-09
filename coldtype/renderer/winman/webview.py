@@ -1,10 +1,13 @@
-import threading
+import threading, json
 
 from pathlib import Path
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 
 from coldtype.renderer.winman.passthrough import WinmanPassthrough
 from coldtype.renderer.config import ConfigOption, ColdtypeConfig
+
+from coldtype.pens.svgpen import SVGPen
+from coldtype.pens.jsonpen import JSONPen
 
 WEBSOCKET_PORT = None
 
@@ -48,3 +51,36 @@ class WinmanWebview(WinmanPassthrough):
                 target=start_server, args=(wv_port,))
             daemon.setDaemon(True)
             daemon.start()
+    
+    def turn_over(self):
+        renders = []
+        try:
+            title = self.renderer.watchees[0][1].name
+        except:
+            title = "coldtype"
+
+        for idx, (render, result, rp) in enumerate(self.renderer.previews_waiting_to_paint):
+            if self.renderer.args.format == "canvas": # TODO config?
+                renders.append(dict(
+                    fmt="canvas",
+                    jsonpen=JSONPen.Composite(result, render.rect),
+                    rect=[*render.rect],
+                    bg=[*render.bg]))
+            else:
+                renders.append(dict(
+                    fmt="svg", svg=SVGPen.Composite(
+                        result,
+                        render.rect,
+                        viewBox=render.viewBox),
+                    rect=[*render.rect],
+                    bg=[*render.bg]))
+    
+        if renders:
+            for _, client in self.renderer.server.connections.items():
+                if hasattr(client, "webviewer") and client.webviewer:
+                    client.sendMessage(json.dumps({
+                        "renders":renders,
+                        "title":title
+                    }))
+        
+        return []

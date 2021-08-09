@@ -17,16 +17,14 @@ from coldtype.helpers import *
 from coldtype.geometry import Rect
 from coldtype.text.reader import Font
 
-from coldtype.renderer.winman import WinmanGLFWSkia, WinmanGLFWSkiaBackground, WinmanPassthrough, glfw, WinmanWebview
+from coldtype.renderer.winman import WinmanGLFWSkia, WinmanGLFWSkiaBackground, WinmanWebview, Winmans
 
 from coldtype.renderer.config import ConfigOption
 from coldtype.renderer.reader import SourceReader
 from coldtype.renderer.state import RendererState, Keylayer, Overlay
 from coldtype.renderable import renderable, Action, animation
 from coldtype.pens.datpen import DATPen, DATPens
-
 from coldtype.pens.svgpen import SVGPen
-from coldtype.pens.jsonpen import JSONPen
 
 from coldtype.renderer.midi import MIDIWatcher
 from coldtype.renderer.keyboard import KeyboardShortcut
@@ -130,16 +128,16 @@ class Renderer():
             self.dead = True
             return
 
-        self.winman = WinmanPassthrough()
         self.source_reader = SourceReader(
-            renderer=self, cli_args=self.args)
-
-        if self.args.is_subprocess or self.args.all or self.args.release or self.args.build:
-            self.args.no_watch = True
+            renderer=self,
+            cli_args=self.args)
         
-        if not self.source_reader.config.webviewer and not skia and not glfw:
-            print("No viewing renderer installed — rendering all...")
-            ptime.sleep(1)
+        self.bg = False
+        if self.args.is_subprocess or self.args.all or self.args.release or self.args.build or self.args.no_watch:
+            self.bg = True
+        
+        self.winmans = None
+        self.winmans = Winmans(self, self.source_reader.config)
         
         self.state = RendererState(self)
 
@@ -240,7 +238,7 @@ class Renderer():
         
         if reload:
             self.reload_and_render(Action.PreviewStoryboard)
-            self.winman.set_title(filepath.name)
+            self.winmans.set_title(filepath.name)
 
         return True
     
@@ -288,8 +286,8 @@ class Renderer():
             play_sound(sound_name)
 
     def reload(self, trigger):
-        if skia and SkiaPen:
-            skfx.SKIA_CONTEXT = self.winman.context
+        if self.winmans.glsk:
+            skfx.SKIA_CONTEXT = self.winmans.glsk.context
 
         if True:
             self.state.reset()
@@ -333,9 +331,6 @@ class Renderer():
                         fos = eval(self.args.frame_offsets)
                         for k, v in fos.items():
                             self.state.adjust_keyed_frame_offsets(k, lambda i, o: v[i])
-                    
-                if self.source_reader.program.get("COLDTYPE_NO_WATCH"):
-                    return True
                                 
                 if self.source_reader.config.blender_watch and trigger == Action.Initial and len(blend_files) > 0:
                     self.launch_blender_watch(blend_files)
@@ -444,7 +439,7 @@ class Renderer():
                 ])
 
                 self.state.previewing = previewing # TODO too janky?
-                self.state.preview_scale = self.winman.preview_scale()
+                #self.state.preview_scale = self.preview_scale()
                 
                 for rp in passes:
                     output_path = rp.output_path
@@ -505,7 +500,7 @@ class Renderer():
                                         self.rasterize(result or DATPen(), render, output_path)
                                     # TODO a progress bar?
                                     try:
-                                        print("<coldtype: saved: " + str(output_path.relative_to(Path.cwd())) + ">")
+                                        print("<coldtype: saved: " + str(output_path.relative_to(Path.cwd())) + " >")
                                     except ValueError:
                                         print(">>> saved...", str(output_path))
                     except Exception as e:
@@ -642,7 +637,7 @@ class Renderer():
                         DATPen().rect(render.rect).f(render.bg),
                         content
                     ])
-                SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=None if self.args.cpu_render else self.winman.context, style=render.style)
+                SkiaPen.Composite(content, render.rect, str(path), scale=scale, context=None if self.args.cpu_render else self.winmans.glsk.context, style=render.style)
             elif render.fmt == "pdf":
                 SkiaPen.PDFOnePage(content, render.rect, str(path), scale=scale)
             elif render.fmt == "svg":
@@ -657,13 +652,11 @@ class Renderer():
             raise Exception(f"rasterizer ({rasterizer}) not supported")
     
     def reload_and_render(self, trigger, watchable=None, indices=None):
-        #self.playing = 0
-
-        if self.args.is_subprocess and not self.args.cpu_render:
-            self.winman = WinmanGLFWSkiaBackground(self.source_reader.config, self)
+        if self.bg and not self.args.cpu_render:
+            self.winmans.glsk = WinmanGLFWSkiaBackground(self.source_reader.config, self)
 
         wl = len(self.watchees)
-        self.winman.reset()
+        self.winmans.reset()
 
         try:
             should_halt = self.reload(trigger)
@@ -699,51 +692,11 @@ class Renderer():
         if self.args.show_exit_code:
             print("exit>", self.exit_code)
         sys.exit(self.exit_code)
-    
-    def initialize_gui_and_server(self):
-        ws_port = self.source_reader.config.websocket_port
-
-        if self.source_reader.config.websocket or self.source_reader.config.webviewer:
-            self.server = run_echo_server(ws_port, "daemon_websocket")
-        else:
-            self.server = None
-        
-        if self.source_reader.config.webviewer:
-            WinmanWebview(self.source_reader.config, self)
-        
-        elif not glfw and not skia:
-            print("\n\n>>> To run the coldtype viewer, you’ll need to install with the [viewer] optional package, ala `pip install coldtype[viewer]`\n\n")
-
-        if glfw and not self.source_reader.config.no_viewer:
-            self.winman = WinmanGLFWSkia(self.source_reader.config, self)
-            self.typeface = skia.Typeface.MakeFromFile(str(sibling(__file__, "../demo/RecMono-CasualItalic.ttf")))
-
-        self.midi = MIDIWatcher(
-            self.source_reader.config,
-            self.state,
-            self.execute_string_as_shortcut_or_action)
-
-        if len(self.watchees) > 0:
-            self.winman.set_title(self.watchees[0][1].name)
-        else:
-            self.winman.set_title("coldtype")
-
-        self.hotkeys = None
-        try:
-            if self.source_reader.config.hotkeys:
-                from pynput import keyboard
-                mapping = {}
-                for k, v in self.source_reader.config.hotkeys.items():
-                    mapping[k] = partial(self.on_hotkey, k, v)
-                self.hotkeys = keyboard.GlobalHotKeys(mapping)
-                self.hotkeys.start()
-        except:
-            pass
 
     def start(self):
         should_halt = self.before_start()
         
-        if not self.args.no_watch:
+        if not self.bg:
             self.initialize_gui_and_server()
         else:
             self.server = None
@@ -774,10 +727,10 @@ class Renderer():
                     self.on_exit()
                     return
             self.on_start()
-            if not self.args.no_watch:
-                if glfw and not self.source_reader.config.no_viewer:
-                    self.winman.listen()
-                elif self.source_reader.config.webviewer:
+            if not self.bg:
+                if self.winmans.glsk:
+                    self.winmans.glsk.listen()
+                elif self.winmans.wv:
                     while True:
                         self.turn_over()
                         ptime.sleep(0.25)
@@ -786,6 +739,42 @@ class Renderer():
     
     def before_start(self):
         pass
+
+    def initialize_gui_and_server(self):
+        ws_port = self.source_reader.config.websocket_port
+
+        if self.source_reader.config.websocket or self.source_reader.config.webviewer:
+            self.server = run_echo_server(ws_port, "daemon_websocket")
+        else:
+            self.server = None
+        
+        if self.source_reader.config.webviewer:
+            self.winmans.wv = WinmanWebview(self.source_reader.config, self)
+
+        if self.winmans.should_glfwskia():
+            self.winmans.glsk = WinmanGLFWSkia(self.source_reader.config, self)
+
+        self.midi = MIDIWatcher(
+            self.source_reader.config,
+            self.state,
+            self.execute_string_as_shortcut_or_action)
+
+        if len(self.watchees) > 0:
+            self.winmans.set_title(self.watchees[0][1].name)
+        else:
+            self.winmans.set_title("coldtype")
+
+        self.hotkeys = None
+        try:
+            if self.source_reader.config.hotkeys:
+                from pynput import keyboard
+                mapping = {}
+                for k, v in self.source_reader.config.hotkeys.items():
+                    mapping[k] = partial(self.on_hotkey, k, v)
+                self.hotkeys = keyboard.GlobalHotKeys(mapping)
+                self.hotkeys.start()
+        except:
+            pass
 
     def on_start(self):
         pass
@@ -887,7 +876,7 @@ class Renderer():
             self.on_action(Action.RenderedPlay)
             return -1
         elif shortcut == KeyboardShortcut.PlayPreview:
-            self.winman.stop_playing_preloaded()
+            self.winmans.glsk.stop_playing_preloaded()
             return Action.PreviewPlay
         
         elif shortcut == KeyboardShortcut.ReloadSource:
@@ -928,9 +917,6 @@ class Renderer():
             self.state.keylayer = Keylayer.Editing
             self.state.keylayer_shifting = True
             return -1
-        elif shortcut == KeyboardShortcut.KeylayerCmd:
-            self.state.keylayer = Keylayer.Cmd
-            self.state.keylayer_shifting = True
         elif shortcut == KeyboardShortcut.KeylayerText:
             if self.last_animation:
                 fi = self.last_animation._active_frames(self.state)[0]
@@ -959,13 +945,13 @@ class Renderer():
             self.state.mod_preview_scale(0, 1)
 
         elif shortcut == KeyboardShortcut.WindowOpacityDown:
-            self.winman.set_window_opacity(relative=-0.1)
+            self.winmans.glsk.set_window_opacity(relative=-0.1)
         elif shortcut == KeyboardShortcut.WindowOpacityUp:
-            self.winman.set_window_opacity(relative=+0.1)
+            self.winmans.glsk.set_window_opacity(relative=+0.1)
         elif shortcut == KeyboardShortcut.WindowOpacityMin:
-            self.winman.set_window_opacity(absolute=0.1)
+            self.winmans.glsk.set_window_opacity(absolute=0.1)
         elif shortcut == KeyboardShortcut.WindowOpacityMax:
-            self.winman.set_window_opacity(absolute=1)
+            self.winmans.glsk.set_window_opacity(absolute=1)
         
         elif shortcut == KeyboardShortcut.MIDIControllersPersist:
             self.state.persist()
@@ -991,7 +977,7 @@ class Renderer():
             os.system(f"open {self.last_animation.output_folder}")
         
         elif shortcut == KeyboardShortcut.ViewerTakeFocus:
-            if not self.winman.focus():
+            if not self.winmans.glsk.focus():
                 self.open_in_editor()
         
         elif shortcut == KeyboardShortcut.ViewerSoloNone:
@@ -1017,7 +1003,7 @@ class Renderer():
             ]:
             self.viewer_solos = [int(str(shortcut)[-1])-1]
         elif shortcut == KeyboardShortcut.CopySVGToClipboard:
-            self.winman.copy_previews_to_clipboard = True
+            self.winmans.glsk.copy_previews_to_clipboard = True
             return Action.PreviewStoryboard
         elif shortcut == KeyboardShortcut.LoadNextInDirectory:
             self.reset_filepath(+1, reload=True)
@@ -1073,7 +1059,7 @@ class Renderer():
             Action.PreviewStoryboardPrev,
             Action.PreviewPlay]:
             if action == Action.PreviewPlay:
-                self.winman.stop_playing_preloaded()
+                self.winmans.glsk.stop_playing_preloaded()
                 if self.playing == 0:
                     self.playing = 1
                 else:
@@ -1089,7 +1075,7 @@ class Renderer():
             self.render(Action.PreviewStoryboard)
         elif action == Action.RenderedPlay:
             self.playing = 0
-            self.winman.toggle_play_preloaded()
+            self.winmans.glsk.toggle_play_preloaded()
         elif action == Action.Build:
             self.on_release(build=True)
         elif action == Action.Release:
@@ -1167,26 +1153,6 @@ class Renderer():
             self.show_error()
             print("Malformed message")
     
-    def turn_over_webviewer(self):
-        renders = []
-        try:
-            title = self.watchees[0][1].name
-        except:
-            title = "coldtype"
-
-        for idx, (render, result, rp) in enumerate(self.previews_waiting_to_paint):
-            if self.args.format == "canvas":
-                renders.append(dict(fmt="canvas", jsonpen=JSONPen.Composite(result, render.rect), rect=[*render.rect], bg=[*render.bg]))
-            else:
-                renders.append(dict(fmt="svg", svg=SVGPen.Composite(result, render.rect, viewBox=render.viewBox), rect=[*render.rect], bg=[*render.bg]))
-    
-        if renders:
-            for _, client in self.server.connections.items():
-                if hasattr(client, "webviewer") and client.webviewer:
-                    client.sendMessage(json.dumps({"renders":renders, "title":title}))
-        
-        return []
-    
     def turn_over(self):
         to_delete = []
         for k, sb in self.subprocesses.items():
@@ -1246,8 +1212,8 @@ class Renderer():
         if self.midi.monitor(self.playing):
             self.action_waiting = Action.PreviewStoryboard
         
-        if glfw and not self.source_reader.config.no_viewer:
-            did_preview = self.winman.turn_over()
+        if self.winmans.should_glfwskia():
+            did_preview = self.winmans.glsk.turn_over()
         
         if self.source_reader.config.webviewer:
             did_preview = self.turn_over_webviewer()
@@ -1267,59 +1233,6 @@ class Renderer():
             self.on_action(Action.PreviewStoryboardNext)
         
         return did_preview
-
-    def draw_preview(self, idx, scale, canvas, rect, waiter):
-        if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
-            image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(waiter[1])))
-            if image:
-                canvas.drawImage(image, rect.x, rect.y)
-            return
-        
-        render, result, rp = waiter
-        error_color = coldtype.rgb(1, 1, 1).skia()
-        canvas.save()
-        canvas.translate(0, self.winman.window_scrolly)
-        canvas.translate(rect.x, rect.y)
-        
-        if not self.source_reader.config.window_transparent:
-            canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
-        
-        if not hasattr(render, "show_error"):
-            canvas.scale(scale, scale)
-        
-        if render.clip:
-            canvas.clipRect(skia.Rect(0, 0, rect.w, rect.h))
-        
-        #canvas.clear(coldtype.bw(0, 0).skia())
-        #print("BG", render.func.__name__, render.bg)
-        #canvas.clear(render.bg.skia())
-        
-        if render.direct_draw:
-            try:
-                render.run(rp, self.state, canvas)
-            except Exception as e:
-                short_error = self.print_error()
-                render.show_error = short_error
-                error_color = coldtype.rgb(0, 0, 0).skia()
-        else:
-            if render.composites:
-                comp = result.ch(skfx.precompose(render.rect))
-                if not self.last_render_cleared:
-                    render.last_result = comp
-                else:
-                    render.last_result = None
-            else:
-                comp = result
-            
-            #print("DRAW---\n", comp.tree())
-            render.draw_preview(1.0, canvas, render.rect, comp, rp)
-        
-        if hasattr(render, "show_error"):
-            paint = skia.Paint(AntiAlias=True, Color=error_color)
-            canvas.drawString(render.show_error, 30, 70, skia.Font(self.typeface, 50), paint)
-            canvas.drawString("> See process in terminal for traceback", 30, 120, skia.Font(self.typeface, 32), paint)
-        
-        canvas.restore()
     
     def on_modified(self, event):
         path = Path(event.src_path)
@@ -1380,7 +1293,7 @@ class Renderer():
             self.action_waiting = Action.PreviewStoryboardReload
 
     def watch_file_changes(self):
-        if self.args.no_watch:
+        if self.bg:
             return None
         
         if not AsyncWatchdog:
@@ -1404,7 +1317,7 @@ class Renderer():
         co = ConfigOption.ShortToConfigOption(shortcut)
         if co:
             if co == ConfigOption.WindowOpacity:
-                self.winman.set_window_opacity(absolute=args[0])
+                self.winmans.glsk.set_window_opacity(absolute=args[0])
             else:
                 print("> Unhandled ConfigOption", co, key)
             return
@@ -1459,7 +1372,7 @@ class Renderer():
         for _, p in self.subprocesses.items():
             p.kill()
 
-        self.winman.terminate()
+        self.winmans.terminate()
         
         if self.hotkeys:
             self.hotkeys.stop()

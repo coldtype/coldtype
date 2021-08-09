@@ -15,3 +15,6 @@ class WinmanPassthrough():
 
     def preview_scale(self):
         return 1
+    
+    def turn_over(self):
+        print("turning")

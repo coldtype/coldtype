@@ -295,6 +295,7 @@ class SourceReader():
         if len(files) == 0 or not self.config:
             self.config = ColdtypeConfig({}, None, args)
         
+        self.config.args = args
         #print(self.config.values())
     
     def find_sources(self, dirpath):
