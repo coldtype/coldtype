@@ -14,23 +14,23 @@ class Edge(Enum):
             return None
         if isinstance(cmp, str):
             cmp = cmp.upper()
-        if cmp == "C":
+        if cmp in ["C", "•"]:
             return (Edge.CenterX, Edge.CenterY)
-        elif cmp == "W":
+        elif cmp in ["W", "←"]:
             return (Edge.MinX, Edge.CenterY)
-        elif cmp == "NW":
+        elif cmp in ["NW", "↖"]:
             return (Edge.MinX, Edge.MaxY)
-        elif cmp == "N":
+        elif cmp in ["N", "↑"]:
             return (Edge.CenterX, Edge.MaxY)
-        elif cmp == "NE":
+        elif cmp in ["NE", "↗"]:
             return (Edge.MaxX, Edge.MaxY)
-        elif cmp == "E":
+        elif cmp in ["E", "→"]:
             return (Edge.MaxX, Edge.CenterY)
-        elif cmp == "SE":
+        elif cmp in ["SE", "↘"]:
             return (Edge.MaxX, Edge.MinY)
-        elif cmp == "S":
+        elif cmp in ["S", "↓"]:
             return (Edge.CenterX, Edge.MinY)
-        elif cmp == "SW":
+        elif cmp in ["SW", "↙"]:
             return (Edge.MinX, Edge.MinY)
 
 
