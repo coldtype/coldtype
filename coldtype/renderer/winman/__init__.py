@@ -4,6 +4,7 @@ from coldtype.renderer.config import ColdtypeConfig
 from coldtype.renderer.winman.passthrough import WinmanPassthrough
 from coldtype.renderer.winman.glfwskia import glfw, skia, WinmanGLFWSkia, WinmanGLFWSkiaBackground
 from coldtype.renderer.winman.webview import WinmanWebview
+from coldtype.renderer.winman.websocket import WinmanWebsocket
 from coldtype.renderable import Action
 
 
@@ -32,7 +33,9 @@ class Winmans():
         self.config = config
 
         self.pt = WinmanPassthrough()
+
         self.glsk:WinmanGLFWSkia = None
+        self.ws:WinmanWebsocket = None
         self.wv:WinmanWebview = None
         self.b3d = None
 
@@ -48,6 +51,19 @@ class Winmans():
 
     def should_glfwskia(self):
         return glfw is not None and skia is not None and not self.config.no_viewer
+    
+    def should_webviewer(self):
+        return self.config.webviewer
+    
+    def add_viewers(self):
+        if self.config.websocket or self.should_webviewer():
+            self.ws = WinmanWebsocket(self.config, self.renderer)
+
+        if self.should_glfwskia():
+            self.glsk = WinmanGLFWSkia(self.config, self.renderer)
+        
+        if self.should_webviewer():
+            self.wv = WinmanWebview(self.config, self.renderer)
     
     def all(self):
         return [self.pt, self.glsk, self.wv, self.b3d]
@@ -86,11 +102,18 @@ class Winmans():
     def should_close(self):
         return any([wm.should_close() for wm in self.map()])
     
+    def send_to_external(self, action, **kwargs):
+        if self.ws:
+            self.ws.send_to_external(action, **kwargs)
+    
     def poll(self):
         if self.glsk:
             self.glsk.poll()
     
     def turn_over(self):
+        if self.ws:
+            self.ws.read_messages()
+
         render_previews = len(self.renderer.previews_waiting_to_paint) > 0
         if not render_previews:
             self.backoff_refresh_delay += 0.01

@@ -17,7 +17,7 @@ from coldtype.helpers import *
 from coldtype.geometry import Rect
 from coldtype.text.reader import Font
 
-from coldtype.renderer.winman import WinmanGLFWSkia, WinmanGLFWSkiaBackground, WinmanWebview, Winmans
+from coldtype.renderer.winman import Winmans, WinmanGLFWSkiaBackground
 
 from coldtype.renderer.config import ConfigOption
 from coldtype.renderer.reader import SourceReader
@@ -551,7 +551,7 @@ class Renderer():
                 else:
                     self.action_waiting = Action.PreviewStoryboard
 
-            self.send_to_external(None, rendered=True)
+            self.winmans.send_to_external(None, rendered=True)
 
         return preview_count, render_count
     
@@ -689,8 +689,6 @@ class Renderer():
         
         if not self.bg:
             self.initialize_gui_and_server()
-        else:
-            self.server = None
         
         if should_halt:
             self.on_exit()
@@ -727,18 +725,7 @@ class Renderer():
         pass
 
     def initialize_gui_and_server(self):
-        ws_port = self.source_reader.config.websocket_port
-
-        if self.source_reader.config.websocket or self.source_reader.config.webviewer:
-            self.server = run_echo_server(ws_port, "daemon_websocket")
-        else:
-            self.server = None
-        
-        if self.source_reader.config.webviewer:
-            self.winmans.wv = WinmanWebview(self.source_reader.config, self)
-
-        if self.winmans.should_glfwskia():
-            self.winmans.glsk = WinmanGLFWSkia(self.source_reader.config, self)
+        self.winmans.add_viewers()
 
         self.midi = MIDIWatcher(
             self.source_reader.config,
@@ -1078,53 +1065,18 @@ class Renderer():
             print("WORKAREA", cw)
             if cw:
                 start, end = cw
-                self.send_to_external(None, workarea_update=True, start=start, end=end)
+                self.winmans.send_to_external(None, workarea_update=True, start=start, end=end)
             else:
                 print("No CTI/trackGroups found")
         elif action in EditAction:
             if action in [EditAction.SelectWorkarea]:
-                self.send_to_external(action, serialization_request=True)
+                self.winmans.send_to_external(action, serialization_request=True)
             else:
-                self.send_to_external(action, edit_action=True)
+                self.winmans.send_to_external(action, edit_action=True)
         else:
             return False
     
-    def send_to_external(self, action, **kwargs):
-        if not self.server:
-            return
-        
-        animation = self.animation()
-        if animation and animation.timeline:
-            #print("EVENT", action, kwargs)
-            if action:
-                kwargs["action"] = action.value
-            kwargs["prefix"] = self.source_reader.filepath.stem
-            kwargs["fps"] = animation.timeline.fps
-            for _, client in self.server.connections.items():
-                client.sendMessage(json.dumps(kwargs))
     
-    def process_ws_message(self, message):
-        try:
-            jdata = json.loads(message)
-            if "webviewer" in jdata:
-                self.action_waiting = Action.PreviewStoryboard
-                return
-            
-            if "adobe" in jdata:
-                print("<coldtype: adobe-panel-connected>")
-
-            action = jdata.get("action")
-            if action:
-                self.on_message(jdata, jdata.get("action"))
-            elif jdata.get("rendered") is not None:
-                idx = jdata.get("rendered")
-                self.state.adjust_keyed_frame_offsets(
-                    self.last_animation.name,
-                    lambda i, o: idx)
-                self.action_waiting = Action.PreviewStoryboard
-        except:
-            self.show_error()
-            print("Malformed message")
     
     def turn_over(self):
         to_delete = []
@@ -1170,17 +1122,6 @@ class Renderer():
                 # TODO should be recursive?
                 self.on_action(self.action_waiting)
             self.action_waiting = None
-        
-        if self.server:
-            msgs = []
-            for k, v in self.server.connections.items():
-                if hasattr(v, "messages") and len(v.messages) > 0:
-                    for msg in v.messages:
-                        msgs.append(msg)
-                    v.messages = []
-            
-            for msg in msgs:
-                self.process_ws_message(msg)
 
         if self.midi.monitor(self.playing):
             self.action_waiting = Action.PreviewStoryboard
