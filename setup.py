@@ -92,6 +92,9 @@ setuptools.setup(
         ],
         "unicode": [
             "unicodedata2"
+        ],
+        "blender": [
+            "skia-pathops"
         ]
     },
     install_requires=[
