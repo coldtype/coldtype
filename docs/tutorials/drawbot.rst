@@ -20,6 +20,7 @@ Now that you’ve got the module version of DrawBot installed, with just a littl
 .. code:: python
 
     from coldtype import *
+    from coldtype.drawbot import *
     from drawBot import *
 
     @drawbot_script((500, 300))
@@ -114,7 +115,6 @@ Because the default behavior of DrawBot is to display a PDF of the result of you
 
 * You can zoom in with +/- on your keyboard in the viewer app
 * You can specify a `preview-scale` argument to the renderer itself when you start it on the command-line, ala ``coldtype drawbot_script.py -ps 2``
-* You can type `ps 2` into a running renderer CLI prompt, to set the scale programmatically
 
 Coldtype-in-DrawBot
 -------------------
