@@ -1150,7 +1150,7 @@ class Renderer():
             return None
         
         if not AsyncWatchdog:
-            print("> must install watchdog to watch files")
+            print('> pip install "watchdog<2.0.0"')
             return None
 
         self.observers = []

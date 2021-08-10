@@ -4,7 +4,6 @@ import time as ptime
 from subprocess import Popen, PIPE
 from pathlib import Path
 
-import coldtype.fx.skia as skfx
 from coldtype.color import rgb
 
 try:
@@ -14,8 +13,10 @@ except ImportError:
 
 try:
     import skia
+    import coldtype.fx.skia as skfx
 except ImportError:
     skia = None
+    skfx = None
 
 # source: https://github.com/PixarAnimationStudios/USD/issues/1372
 
@@ -39,7 +40,6 @@ except ImportError:
     try:
         from OpenGL import GL
     except:
-        print("pip install PyOpenGL")
         GL = None
 
 

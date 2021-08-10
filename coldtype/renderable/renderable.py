@@ -253,7 +253,7 @@ class renderable():
         return self.normalize_result(
             self.run(render_pass, renderer_state))
     
-    def rasterize(self, content):
+    def rasterize(self, content, render_pass):
         return False
 
 
