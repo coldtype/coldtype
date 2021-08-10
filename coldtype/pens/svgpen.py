@@ -313,17 +313,24 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
             g.append(u)
         return g
     
-    def Composite(pens, rect, offset=False, style=None, viewBox=False, fitWidth=False):
-        docroot = etree.Element("svg")
-        docroot.set("xmlns", "http://www.w3.org/2000/svg")
-        if fitWidth:
-            docroot.set("width", "100%")
-        elif not viewBox:
+    def Composite(pens, rect,
+        offset=False,
+        style=None,
+        viewBox=False,
+        wrap="svg",
+        to_string=True,
+        ):
+        docroot = etree.Element(wrap)
+        if wrap == "svg":
+            docroot.set("xmlns", "http://www.w3.org/2000/svg")
+        
+        if not viewBox:
             docroot.set("width", str(rect.w))
             docroot.set("height", str(rect.h))
         else:
             docroot.set("viewBox", f"0 0 {rect.w} {rect.h}")
             docroot.set("width", "100%")
+        
         if offset:
             docroot.set("style", f"left:{rect.x}px;bottom:{rect.y}px;")
         
@@ -331,4 +338,44 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
             sp = SVGPen(pen, rect.h)
             docroot.append(sp.asSVG(style=style))
         
+        if to_string:
+            return etree.tostring(docroot, pretty_print=True).decode("utf-8").replace("image-href", "xlink:href")
+        else:
+            return docroot
+    
+    def Animation(frames, rect, fps):
+        docroot = etree.Element("svg")
+        docroot.set("xmlns", "http://www.w3.org/2000/svg")
+        docroot.set("width", str(rect.w))
+        docroot.set("height", str(rect.h))
+        docroot.set("data-fps", str(fps))
+        docroot.set("data-duration", str(len(frames)))
+
+        for idx, frame in enumerate(frames):
+            g = SVGPen.Composite(frame, rect, wrap="g", to_string=False)
+            g.set("id", f"frame_{idx}")
+            g.set("class", "frame")
+            docroot.append(g)
+
         return etree.tostring(docroot, pretty_print=True).decode("utf-8").replace("image-href", "xlink:href")
+    
+if __name__ == "__main__":
+    from pathlib import Path
+    from coldtype.renderable.animation import animation, Action
+    from coldtype.text import StSt, Font, Rect
+
+    def show_animation(a:animation):
+        a.output_folder = Path(".")
+        idxs = range(0, a.duration+1)
+        passes = a.passes(Action.PreviewIndices, None, idxs)
+        results = [a.run_normal(rp) for rp in passes]
+        Path("test.svg").write_text(
+            SVGPen.Animation(results, a.rect, a.timeline.fps))
+
+    @animation(Rect(540, 540/2), timeline=30)
+    def a1(f):
+        return (StSt("CDELOPTY", Font.MutatorSans(), 50,
+            wdth=f.e("eeio", 1), wght=f.e("seio", 1))
+            .align(f.a.r))
+
+    show_animation(a1)

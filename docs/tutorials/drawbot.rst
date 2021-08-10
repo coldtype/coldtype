@@ -10,7 +10,7 @@ DrawBot is not installed by default with Coldtype, so you’ll need to install D
 
 .. code:: bash
 
-    pip install pip install git+https://github.com/typemytype/drawbot
+    pip install git+https://github.com/typemytype/drawbot
 
 @drawbot_script
 ---------------

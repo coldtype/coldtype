@@ -1,11 +1,13 @@
-from IPython.display import display, SVG
+from IPython.display import display, SVG, Image
 from coldtype.geometry import Rect
 from coldtype.pens.svgpen import SVGPen
 
 try:
-    from coldtype.fx.skia import precompose
+    from coldtype.fx.skia import precompose, skia
+    import PIL.Image
 except ImportError:
     precompose = None
+
 
 def show(fmt=None, rect=None, align=False, padding=[60, 50], th=0, tv=0):
     if not precompose and fmt == "img":
@@ -30,7 +32,8 @@ def show(fmt=None, rect=None, align=False, padding=[60, 50], th=0, tv=0):
         
         if fmt == "img":
             src = pen.ch(precompose(rect)).img().get("src")
-            display(src)
+            pil_img = PIL.Image.fromarray(src.convert(alphaType=skia.kUnpremul_AlphaType))
+            display(Image(pil_img.convert('RGBX').tobytes()))
         elif fmt == "svg":
             svg = SVGPen.Composite(pen, rect, viewBox=False)
             #print(svg)
