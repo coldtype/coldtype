@@ -213,6 +213,8 @@ def StSt(text,
         lockup = Composer(rect, text, style, fit=fit, leading=leading).pens()
         if xa:
             lockup = lockup.xa(xa)
+        for l in lockup:
+            l._frame = None
     else:
         lockup = StyledString(text, style)
         if fit:
