@@ -105,6 +105,7 @@ class b3d_animation(animation):
         samples=16,
         denoise=True,
         blend=None,
+        use_blender=True,
         **kwargs
         ):
         self.func = None
@@ -113,6 +114,7 @@ class b3d_animation(animation):
         self.samples = samples
         self.denoise = denoise
         self.blend = blend
+        self.use_blender = use_blender
         
         if "timeline" not in kwargs:
             kwargs["timeline"] = Timeline(30)
@@ -132,15 +134,19 @@ class b3d_animation(animation):
     def run(self, render_pass, renderer_state):
         fi = render_pass.args[0].i
         if renderer_state and not bpy:
-            if not renderer_state.previewing:
-                if self.blend:
-                    self.blender_render_frame(self.filepath, self.blend, fi, samples=self.samples, denoise=self.denoise)
-            else:
+            if renderer_state.previewing:
                 if Overlay.Rendered in renderer_state.overlays:
                     from coldtype.img.skiaimage import SkiaImage
                     return SkiaImage(self.blender_rendered_frame(fi))
         
         return super().run(render_pass, renderer_state)
+    
+    def rasterize(self, _, rp):
+        if not self.use_blender:
+            return False
+        fi = rp.args[0].i
+        self.blender_render_frame(self.filepath, self.blend, fi, samples=self.samples, denoise=self.denoise)
+        return True
     
     def post_read(self):
         if not self.blend:

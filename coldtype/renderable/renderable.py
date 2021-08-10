@@ -252,6 +252,9 @@ class renderable():
     def run_normal(self, render_pass, renderer_state=None):
         return self.normalize_result(
             self.run(render_pass, renderer_state))
+    
+    def rasterize(self, content):
+        return False
 
 
 class skia_direct(renderable):

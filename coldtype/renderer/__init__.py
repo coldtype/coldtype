@@ -444,14 +444,15 @@ class Renderer():
                                         print(">>> self-rasterized...", output_path)
                                 else:
                                     if render.direct_draw:
-                                        self.rasterize(partial(render.run, rp, self.state), render, output_path)
+                                        show_render = self.rasterize(partial(render.run, rp, self.state), render, output_path, rp)
                                     else:
-                                        self.rasterize(result or DATPen(), render, output_path)
+                                        show_render = self.rasterize(result or DATPen(), render, output_path, rp)
                                     # TODO a progress bar?
-                                    try:
-                                        print("<coldtype: saved: " + str(output_path.relative_to(Path.cwd())) + " >")
-                                    except ValueError:
-                                        print(">>> saved...", str(output_path))
+                                    if show_render:
+                                        try:
+                                            print("<coldtype: saved: " + str(output_path.relative_to(Path.cwd())) + " >")
+                                        except ValueError:
+                                            print(">>> saved...", str(output_path))
                     except Exception as e:
                         #print(type(e))
                         self.show_error()
@@ -564,10 +565,14 @@ class Renderer():
         print(f"<coldtype: multiplex-render ({str(round(ptime.time() - start, 3))})>")
         self.play_sound("Frog")
     
-    def rasterize(self, content, render, path):
+    def rasterize(self, content, render, path, rp):
         if render.self_rasterizing:
             print("Self rasterizing")
-            return
+            return True
+        
+        did_rasterize = render.rasterize(content, rp)
+        if did_rasterize:
+            return False
         
         scale = int(self.args.scale)
         rasterizer = self.args.rasterizer or render.rasterizer
@@ -610,6 +615,8 @@ class Renderer():
             pickle.dump(content, open(path, "wb"))
         else:
             raise Exception(f"rasterizer ({rasterizer}) not supported")
+        
+        return True
     
     def reload_and_render(self, trigger, watchable=None, indices=None):
         if (self.winmans.bg
