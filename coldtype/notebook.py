@@ -34,8 +34,7 @@ def show(fmt=None, rect=None, align=False, padding=[60, 50], th=0, tv=0):
         
         if fmt == "img":
             src = pen.ch(precompose(rect)).img().get("src")
-            pil_img = PIL.Image.fromarray(src.convert(alphaType=skia.kUnpremul_AlphaType))
-            display(Image(pil_img.convert('RGBX').tobytes()))
+            display(src)
         elif fmt == "svg":
             svg = SVGPen.Composite(pen, rect, viewBox=False)
             #print(svg)
