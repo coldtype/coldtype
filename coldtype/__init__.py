@@ -14,7 +14,7 @@ from coldtype.img.blendmode import BlendMode
 from coldtype.grid import Grid
 
 name = "coldtype"
-__version__ = "0.5.17"
+__version__ = "0.5.18"
 
 __sibling__ = lambda x: x # will be redefined contextually
 #λ = None
