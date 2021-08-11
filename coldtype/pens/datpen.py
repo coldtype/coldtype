@@ -567,41 +567,49 @@ class DATPens(DraftingPens, DATPen):
     def __sub__(self, item):
         return self
     
-    def insert(self, index, pen):
-        if pen:
-            self._pens.insert(index, pen)
-        return self
-    
-    def append(self, pen, allow_blank=False):
+    def _appendable(self, pen, allow_blank=False):
         if callable(pen):
             pen = pen(self)
+        
         if pen or allow_blank:
             if isinstance(pen, Geometrical):
                 dp = DATPen(pen)
                 dp._parent = self
-                self._pens.append(dp)
+                return [dp]
             elif isinstance(pen, DATPen):
                 pen._parent = self
-                self._pens.append(pen)
+                return [pen]
             elif isinstance(pen, DraftingPens):
                 dps = DATPens(pen._pens)
                 dps._parent = self
-                self._pens.append(dps)
+                return [dps]
             elif isinstance(pen, DraftingPen):
                 dp = DATPen(pen)
                 dp._parent = self
-                self._pens.append(dp)
+                return [dp]
             else:
                 try:
+                    out = []
                     for p in pen:
                         if p:
                             if hasattr(p, "_parent"):
                                 p._parent = self
-                            self._pens.append(p)
+                            out.append(p)
+                    return out
                 except TypeError:
                     #print("appending non-pen", type(pen))
-                    self._pens.append(pen)
+                    return [pen]
                     #print(">>> append rejected", pen)
+        return []
+    
+    def insert(self, index, pen):
+        for app in self._appendable(pen):
+            self._pens.insert(index, app)
+        return self
+    
+    def append(self, pen, allow_blank=False):
+        for app in self._appendable(pen, allow_blank):
+            self._pens.append(app)
         return self
     
     ap = append

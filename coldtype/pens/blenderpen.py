@@ -254,7 +254,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
             self.bsdf().inputs[18].default_value = strength
         return self
     
-    def image(self, path):
+    def image(self, src=None, opacity=1, rect=None, pattern=True):
         mat = self.materials()[0]
         bsdf = self.bsdf()
         if "Image Texture" in mat.node_tree.nodes:
@@ -262,7 +262,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
         else:
             imgtex = mat.node_tree.nodes.new("ShaderNodeTexImage")
             mat.node_tree.links.new(bsdf.inputs["Base Color"], imgtex.outputs["Color"])
-        imgtex.image = bpy.data.images.load(path)
+        imgtex.image = bpy.data.images.load(str(src))
         return self
 
     def hide(self, hide):

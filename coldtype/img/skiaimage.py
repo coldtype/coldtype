@@ -21,3 +21,7 @@ class SkiaImage(DATImage):
     
     def _precompose_fn(self):
         return precompose
+    
+    def write(self, path):
+        self._img.save(str(path), skia.kPNG)
+        return self

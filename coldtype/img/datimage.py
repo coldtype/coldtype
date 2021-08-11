@@ -25,6 +25,9 @@ class DATImage(DATPen):
     def load_image(self, src):
         raise NotImplementedError()
     
+    def write(self, path):
+        raise NotImplementedError()
+    
     def rect(self):
         return Rect(self.width(), self.height())
     

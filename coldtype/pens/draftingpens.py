@@ -393,7 +393,7 @@ class DraftingPens(DraftingPen):
         self._pens = pens
         return self
     
-    def understroke(self, s=0, sw=5, outline=False, dofill=0):
+    def understroke(self, s=0, sw=5, outline=False, dofill=0, miterLimit=None):
         if sw == 0:
             return self
         if not outline:
@@ -402,7 +402,7 @@ class DraftingPens(DraftingPen):
             def mod(idx, p):
                 if dofill:
                     pf = p.copy()
-                p.f(s).outline(sw*2)
+                p.f(s).outline(sw*2, miterLimit=miterLimit)
                 if dofill:
                     p.reverse().record(pf)
                 return p

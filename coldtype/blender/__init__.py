@@ -36,7 +36,8 @@ def b3d(collection, callback=None, plane=False, dn=False, material="auto"):
         pen.add_data("b3d", dict(
             collection=collection,
             callback=callback,
-            material=material))
+            material=material,
+            plane=plane))
     return _cast
 
 
