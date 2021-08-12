@@ -85,7 +85,7 @@ def walk_to_b3d(result:DATPens, dn=False):
                     p.v(0)
 
                 if bdata.get("plane"):
-                    bp = p.cast(BlenderPen).draw(coll, plane=True, material=material)
+                    bp = p.cast(BlenderPen).draw(coll, plane=True, material=material, dn=True)
                 else:
                     bp = p.cast(BlenderPen).draw(coll, dn=dn, material=material)
                 
