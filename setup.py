@@ -95,6 +95,9 @@ setuptools.setup(
         ],
         "blender": [
             "skia-pathops"
+        ],
+        "notebook": [
+            "skia-pathops"
         ]
     },
     install_requires=[
