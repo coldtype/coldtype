@@ -53,6 +53,36 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         self.rendering = True
         bpy.ops.render.render('INVOKE_DEFAULT',animation=True)
 
+    def reimport(self, arg):
+        try:
+            self.sr = SourceReader(arg)
+            self.sr.unlink()
+            
+            bpy.data.scenes[0].frame_start = 0
+
+            def _frame_update_handler(scene):
+                #print("UPDATE", scene.frame_current, self.current_frame)
+                if scene.frame_current != self.current_frame:
+                    self.current_frame = scene.frame_current
+                    self.render_current_frame(statics=False)
+            
+            bpy.app.handlers.frame_change_post.clear()
+            bpy.app.handlers.frame_change_post.append(_frame_update_handler)
+            self.current_frame = bpy.context.scene.frame_current
+            self.render_current_frame(statics=True)
+        
+        except Exception as e:
+            self.current_frame = -1
+            bpy.app.handlers.frame_change_post.clear()
+            stack = traceback.format_exc()
+            print("---"*10)
+            print(stack)
+        
+        print(f"ran {arg}")
+
+        if self.state_file.exists():
+            self.start_full_render()
+
     def modal(self, context, event):
         if event.type == 'TIMER':
             if not self.file.exists():
@@ -64,37 +94,13 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                 line = line.rstrip("\n")
                 cmd, arg = line.split(",")
                 if cmd == 'import':
-                    try:
-                        self.sr = SourceReader(arg)
-                        self.sr.unlink()
-                        
-                        bpy.data.scenes[0].frame_start = 0
-
-                        def _frame_update_handler(scene):
-                            #print("UPDATE", scene.frame_current, self.current_frame)
-
-                            if scene.frame_current != self.current_frame:
-                                self.current_frame = scene.frame_current
-                                self.render_current_frame(statics=False)
-                        
-                        bpy.app.handlers.frame_change_post.clear()
-                        bpy.app.handlers.frame_change_post.append(_frame_update_handler)
-                        self.current_frame = bpy.context.scene.frame_current
-                        self.render_current_frame(statics=True)
-                    
-                    except Exception as e:
-                        self.current_frame = -1
-                        bpy.app.handlers.frame_change_post.clear()
-                        stack = traceback.format_exc()
-                        print("---"*10)
-                        print(stack)
-                    
-                    print(f"ran {arg}")
-
-                    if self.state_file.exists():
-                        self.start_full_render()
+                    self.reimport(arg)
                 elif cmd == 'render':
                     self.start_full_render()
+                elif cmd == "play_preview":
+                    bpy.ops.screen.animation_play()
+                elif cmd == "frame_offset":
+                    bpy.ops.screen.frame_offset(delta=int(arg))
                 elif cmd == 'cancel':
                     self.cancel( context )
                 else:
@@ -105,7 +111,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
     def execute(self, context):
         wm = context.window_manager
-        self._timer = wm.event_timer_add(0.5, window=context.window)
+        self._timer = wm.event_timer_add(0.1, window=context.window)
         wm.modal_handler_add(self)
 
         def on_render_complete(scene):

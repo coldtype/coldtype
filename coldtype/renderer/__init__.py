@@ -994,13 +994,17 @@ class Renderer():
                 self.winmans.stop_playing_preloaded()
                 self.winmans.toggle_playback()
             if action == Action.PreviewStoryboardPrevMany:
-                self.state.adjust_all_frame_offsets(-self.source_reader.config.many_increment)
+                self.winmans.frame_offset(-self.source_reader.config.many_increment)
+                #self.state.adjust_all_frame_offsets(-self.source_reader.config.many_increment)
             elif action == Action.PreviewStoryboardPrev:
-                self.state.adjust_all_frame_offsets(-1)
+                self.winmans.frame_offset(-1)
+                #self.state.adjust_all_frame_offsets(-1)
             elif action == Action.PreviewStoryboardNextMany:
-                self.state.adjust_all_frame_offsets(+self.source_reader.config.many_increment)
+                self.winmans.frame_offset(+self.source_reader.config.many_increment)
+                #self.state.adjust_all_frame_offsets(+self.source_reader.config.many_increment)
             elif action == Action.PreviewStoryboardNext:
-                self.state.adjust_all_frame_offsets(+1)
+                self.winmans.frame_offset(+1)
+                #self.state.adjust_all_frame_offsets(+1)
             self.render(Action.PreviewStoryboard)
         elif action == Action.RenderedPlay:
             self.winmans.playing = 0

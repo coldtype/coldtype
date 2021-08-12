@@ -24,6 +24,8 @@ class Graf():
             self.container = container
         if style and isinstance(style, GrafStyle):
             self.style = style
+        elif style and isinstance(style, int):
+            self.style = GrafStyle(leading=style)
         else:
             self.style = GrafStyle(**kwargs)
         self.lines = lines

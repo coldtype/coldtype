@@ -107,3 +107,13 @@ def ease(style, x):
             raise Exception("No easing function with that mnemonic")
     else:
         raise Exception("No easing function with that mnemonic")
+
+def ez(t, easefn="eeio", rng=(0, 1)):
+    t = max(0, min(1, t))
+    e, _ = ease(easefn, t)
+
+    ra, rb = rng
+    if ra > rb:
+        e = 1 - e
+        rb, ra = ra, rb
+    return ra + e*(rb - ra)

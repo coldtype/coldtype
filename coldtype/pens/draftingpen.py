@@ -971,7 +971,9 @@ class DraftingPen(RecordingPen, SHContext):
         if is_dps:
             callback(self, -1, dict(depth=depth, alpha=alpha, idx=idx))
             for pidx, pen in enumerate(self._pens):
-                pen.walk(callback, depth=depth+1, visible_only=visible_only, parent=self, alpha=alpha, idx=idx.append(pidx) if idx else [pidx])
+                idxs = [*idx] if idx else []
+                idxs.append(pidx)
+                pen.walk(callback, depth=depth+1, visible_only=visible_only, parent=self, alpha=alpha, idx=idxs)
             callback(self, 1, dict(depth=depth, alpha=alpha, idx=idx))
         else:
             callback(self, 0, dict(depth=depth, alpha=alpha, idx=idx))

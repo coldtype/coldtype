@@ -124,6 +124,17 @@ class Winmans():
             self.playing = 1
         else:
             self.playing = 0
+        
+        if not self.glsk:
+            if self.b3d:
+                self.b3d.toggle_playback(self.playing)
+    
+    def frame_offset(self, offset):
+        self.renderer.state.adjust_all_frame_offsets(offset)
+
+        if not self.glsk:
+            if self.b3d:
+                self.b3d.frame_offset(offset)
     
     def preload_frames(self, passes):
         for rp in passes:

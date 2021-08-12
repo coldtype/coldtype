@@ -26,7 +26,8 @@ class RichText(DraftingPens):
         text,
         render_text_fn:Union[dict, Callable[[str, List[str]], Tuple[str, Style]]],
         fit=None,
-        graf_style=GrafStyle(leading=20),
+        graf_style=None,
+        leading=20,
         tag_delimiters=["[", "]"],
         visible_boundaries=[" "],
         invisible_boundaries=[],
@@ -50,7 +51,7 @@ class RichText(DraftingPens):
         if strip_lines:
             text = "\n".join([l.strip() for l in text.split("\n")])
         
-        self._pens = self.parse_block(text, render_text_fn, rect, fit, graf_style)._pens
+        self._pens = self.parse_block(text, render_text_fn, rect, fit, graf_style or leading)._pens
 
     def parse_block(self, txt, render_text_fn, rect, fit, graf_style):
         parsed_lines = []
@@ -222,7 +223,8 @@ if highlight:
             text,
             render_text_fn:Callable[[str, List[str]], Tuple[str, Style]],
             fit=None,
-            graf_style=GrafStyle(leading=20)):
+            graf_style=None,
+            leading=20):
 
             if isinstance(text, PurePath):
                 text = text.read_text()
@@ -230,7 +232,8 @@ if highlight:
             txt = highlight(text, PythonLexer(), ColdtypeFormatter())
             super().__init__(
                 rect, txt, render_text_fn,
-                fit=fit, graf_style=graf_style,
+                fit=fit,
+                graf_style=graf_style or leading,
                 tag_delimiters=["≤", "≥"],
                 visible_boundaries=[],
                 invisible_boundaries=["¬"])
