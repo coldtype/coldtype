@@ -31,9 +31,9 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             class_filters=cfs):
             walk_to_b3d(res)
         
-        if self.rendering:
-            self.state_file.write_text(str(self.current_frame))
-            print(">>>ANIMATIONRENDER", self.current_frame)
+        #if self.rendering:
+        #    self.state_file.write_text(str(self.current_frame))
+        #    print(">>>ANIMATIONRENDER", self.current_frame)
     
     def on_render_complete(self, canceled, scene):
         self.rendering = False
@@ -46,9 +46,9 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         bpy.data.scenes[0].frame_start = 0
     
     def start_full_render(self):
-        if self.state_file.exists():
-            last_frame = int(self.state_file.read_text())
-            bpy.data.scenes[0].frame_start = last_frame
+        #if self.state_file.exists():
+        #    last_frame = int(self.state_file.read_text())
+        #    bpy.data.scenes[0].frame_start = last_frame
 
         self.rendering = True
         bpy.ops.render.render('INVOKE_DEFAULT',animation=True)
@@ -62,6 +62,8 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
             def _frame_update_handler(scene):
                 #print("UPDATE", scene.frame_current, self.current_frame)
+                if bpy.context.workspace.name == "Video Editing":
+                    return
                 if scene.frame_current != self.current_frame:
                     self.current_frame = scene.frame_current
                     self.render_current_frame(statics=False)
@@ -80,8 +82,8 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         
         print(f"ran {arg}")
 
-        if self.state_file.exists():
-            self.start_full_render()
+        #if self.state_file.exists():
+        #    self.start_full_render()
 
     def modal(self, context, event):
         if event.type == 'TIMER':
