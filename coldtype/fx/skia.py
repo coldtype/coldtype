@@ -197,7 +197,7 @@ def luma(rect):
                 ColorFilter=skia.LumaColorFilter.Make())))
     return _luma
 
-def phototype(rect,
+def phototype(rect=None,
     blur=5,
     cut=127,
     cutw=3,
@@ -206,6 +206,10 @@ def phototype(rect,
     luma=True
     ):
     def _phototype(pen):
+        nonlocal rect
+        if rect is None:
+            rect = pen.ambit().inset(-50)
+
         r, g, b, a = rgba
 
         first_pass = dict(ImageFilter=Skfi.blur(blur))

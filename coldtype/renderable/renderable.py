@@ -141,7 +141,7 @@ class renderable():
         if self.layer:
             self.bg = normalize_color(None)
         
-        self.output_folder = None
+        self.output_folder = Path(".")
         self.filepath = None
 
         if not rasterizer:

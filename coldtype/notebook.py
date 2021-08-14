@@ -1,4 +1,5 @@
 from pathlib import Path
+from base64 import b64encode, encodebytes
 from IPython.display import display, SVG, Image, HTML
 from coldtype.renderable.animation import animation, Action
 from coldtype.pens.svgpen import SVGPen
@@ -6,7 +7,8 @@ from coldtype.geometry import Rect
 
 try:
     from coldtype.fx.skia import precompose, skia
-    import PIL.Image
+    from PIL import Image
+    from io import BytesIO
 except ImportError:
     precompose = None
 
@@ -34,14 +36,21 @@ def show(fmt=None, rect=None, align=False, padding=[60, 50], th=0, tv=0):
         
         if fmt == "img":
             src = pen.ch(precompose(rect)).img().get("src")
-            display(src)
+            with BytesIO(src.encodeToData()) as f:
+                f.seek(0)  # necessary?
+                b64 = b64encode(f.read()).decode("utf-8")
+                display(HTML(f"<img width={rect.w/2} src='data:image/png;base64,{b64}'/>"))
         elif fmt == "svg":
             svg = SVGPen.Composite(pen, rect, viewBox=False)
-            #print(svg)
             display(SVG(svg))
         return pen
     
     return _display
+
+
+def showpng(rect=None, align=False, padding=[60, 50], th=0, tv=0):
+    return show("img", rect, align, padding, th, tv)
+
 
 js = """
 function animate(name, start_playing) {
