@@ -1454,8 +1454,8 @@ class DraftingPen(RecordingPen, SHContext):
         self.value = out.value
         return self
 
-    def grow(self, outline=10):
-        out = self.copy().outline(outline)
+    def grow(self, outline=10, miterLimit=None):
+        out = self.copy().outline(outline, miterLimit=miterLimit)
         return self.record(out.reverse())
     
     def gridlines(self, rect, x=20, y=None, absolute=False):
