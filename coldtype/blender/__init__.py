@@ -106,7 +106,6 @@ class b3d_animation(animation):
         samples=16,
         denoise=True,
         blend=None,
-        use_blender=True,
         **kwargs
         ):
         self.func = None
@@ -115,7 +114,6 @@ class b3d_animation(animation):
         self.samples = samples
         self.denoise = denoise
         self.blend = blend
-        self.use_blender = use_blender
         
         if "timeline" not in kwargs:
             kwargs["timeline"] = Timeline(30)
@@ -138,15 +136,13 @@ class b3d_animation(animation):
             if renderer_state.previewing:
                 if Overlay.Rendered in renderer_state.overlays:
                     from coldtype.img.skiaimage import SkiaImage
-                    return SkiaImage(self.blender_rendered_frame(fi))
+                    return SkiaImage(self.pass_path(fi))
         
         return super().run(render_pass, renderer_state)
     
     def rasterize(self, _, rp):
-        if not self.use_blender:
-            return False
         fi = rp.args[0].i
-        self.blender_render_frame(self.filepath, self.blend, fi, samples=self.samples, denoise=self.denoise)
+        blend_source(self.filepath, self.blend, fi, self.pass_path(""), self.samples, denoise=self.denoise)
         return True
     
     def post_read(self):
@@ -159,66 +155,21 @@ class b3d_animation(animation):
 
         super().post_read()
         if bpy:
-            bpy.data.scenes[0].render.filepath = str(self.blender_output_dir())# + "/" + self.name + "_"
+            bpy.data.scenes[0].render.filepath = str(self.pass_path(""))
     
-    def blender_output_dir(self):
-        output_dir = self.output_folder / "_blender"
-        output_dir.mkdir(parents=True, exist_ok=True)
-        return str(output_dir) + "/" + self.name + "_"
-    
-    def blender_rendered_frame(self, fi):
-        return "{:s}{:04d}.png".format(
-            self.blender_output_dir(), fi)
-    
-    def blender_render(self, file, blend_file, artifacts, samples=4):
-        output_dir = self.blender_output_dir()
-        for a in artifacts[:]:
-            if a.render == self:
-                blend_source(
-                    file,
-                    blend_file,
-                    a.i,
-                    output_dir,
-                    samples=samples)
-    
-    def blender_render_frame(self, file, blend_file, fi, samples=4, denoise=True):
-        blend_source(file, blend_file, fi, self.blender_output_dir(), samples, denoise=denoise)
-    
-    def blender_rendered_preview(self):
+    def blender_rendered_preview(self, solo=0):
         if bpy: return
         
         from coldtype.img.skiaimage import SkiaImage
         
-        @animation(self.rect, timeline=self.timeline, preview_only=1, sort=1000)
+        @animation(self.rect, timeline=self.timeline, preview_only=1, sort=1000, solo=solo)
         def blender_preview(f):
             try:
-                out = self.blender_output_dir()
-                return SkiaImage(out / "{:04d}.png".format(f.i))
+                return SkiaImage(self.pass_path(f.i))
             except:
                 pass
         
         return blender_preview
-    
-    def build_release(self, b=None, r=None):
-        def _release(frames):
-            for fi in frames:
-                self.blender_render_frame(self.filepath, self.blend, fi, samples=32)
-
-        def build(_):
-            frames = list(range(0, self.duration))
-            if b:
-                _release(frames[b])
-            else:
-                _release(frames[0:1])
-
-        def release(_):
-            frames = list(range(0, self.duration))
-            if r:
-                _release(frames[r])
-            else:
-                _release(frames)
-        
-        return build, release
 
 
 # if __name__ == "<run_path>":

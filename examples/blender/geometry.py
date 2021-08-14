@@ -31,5 +31,3 @@ def jaune(f):
                 .locate(0, x*5, 0))))
 
     return DPS.Enumerate(range(0, 10), layer)
-
-build, release = jaune.build_release()

@@ -68,14 +68,14 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     self.current_frame = scene.frame_current
                     self.render_current_frame(statics=False)
             
-            bpy.app.handlers.frame_change_post.clear()
-            bpy.app.handlers.frame_change_post.append(_frame_update_handler)
+            bpy.app.handlers.frame_change_pre.clear()
+            bpy.app.handlers.frame_change_pre.append(_frame_update_handler)
             self.current_frame = bpy.context.scene.frame_current
             self.render_current_frame(statics=True)
         
         except Exception as e:
             self.current_frame = -1
-            bpy.app.handlers.frame_change_post.clear()
+            bpy.app.handlers.frame_change_pre.clear()
             stack = traceback.format_exc()
             print("---"*10)
             print(stack)

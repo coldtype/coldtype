@@ -148,12 +148,17 @@ class animation(renderable, Timeable):
                     return j
         return current
     
-    def pass_suffix(self, index):
-        idx_offset = (index - self.write_start) % self.duration
+    def pass_suffix(self, index=0):
         if self.suffix:
-            return "{:s}_{:04d}".format(self.suffix, idx_offset)
+            pf = self.suffix + "_"
         else:
-            return "{:04d}".format(idx_offset)
+            pf = ""
+        
+        if isinstance(index, int):
+            idx = (index - self.write_start) % self.duration
+            return pf + "{:04d}".format(idx)
+        else:
+            return pf + index
     
     def passes(self, action, renderer_state, indices=[]):
         frames = self.active_frames(action, renderer_state, indices)

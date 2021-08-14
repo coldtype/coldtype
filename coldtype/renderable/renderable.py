@@ -181,7 +181,7 @@ class renderable():
     def folder(self, filepath):
         return ""
     
-    def pass_suffix(self):
+    def pass_suffix(self, index=0):
         return self.name
     
     def pass_prefix(self):
@@ -193,6 +193,12 @@ class renderable():
         else:
             prefix = self.prefix
         return prefix
+    
+    def pass_path(self, index=0):
+        if isinstance(index, int):
+            return self.output_folder / f"{self.pass_prefix()}{self.pass_suffix(index)}.{self.fmt}"
+        else:
+            return self.output_folder / f"{self.pass_prefix()}{self.pass_suffix(index)}"
     
     def passes(self, action, renderer_state, indices=[]):
         return [RenderPass(self, action, self.pass_suffix(), [self.rect])]
