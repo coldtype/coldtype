@@ -4,6 +4,7 @@ from IPython.display import display, SVG, Image, HTML
 from coldtype.renderable.animation import animation, Action
 from coldtype.pens.svgpen import SVGPen
 from coldtype.geometry import Rect
+from coldtype.renderable.animation import FFMPEGExport
 
 try:
     from coldtype.fx.skia import precompose, skia
@@ -57,7 +58,7 @@ def showlocalpng(rect, src):
         encoded_string = b64encode(img_file.read()).decode("utf-8")
         display(HTML(f"<img width={rect.w/2} src='data:image/png;base64,{encoded_string}'/>"))
 
-def showframe(a, idx):
+def show_frame(a, idx):
     rp = a.passes(Action.PreviewIndices, None, [idx])[0]
     res = a.run_normal(rp)
     rp.output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -120,7 +121,7 @@ def show_animation(a:animation, start=False):
     js_call = f"<script type='text/javascript'>{js}; animate('{a.name}', {int(start)})</script>";
     display(HTML(html + js_call), display_id=a.name)
 
-def render_animation(a, show="*"):
+def render_animation(a, show="*", print=False):
     idxs = list(range(0, a.duration+1))
     passes = a.passes(Action.PreviewIndices, None, idxs)
     passes[0].output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -129,3 +130,19 @@ def render_animation(a, show="*"):
         SkiaPen.Composite(res, a.rect, str(rp.output_path))
         if show == "*" or idx in show:
             showlocalpng(a.rect, rp.output_path)
+        if print:
+            print(">", rp.output_path)
+
+def render_video(a, loops=2):
+    render_animation(a, show=[], print=True)
+    ffex = FFMPEGExport(a, loops=loops)
+    ffex.h264()
+    ffex.write()
+    compressed_path = str(ffex.output_path.absolute())
+    mp4 = open(compressed_path, 'rb').read()
+    data_url = "data:video/mp4;base64," + b64encode(mp4).decode()
+    HTML(f"""
+    <video width={a.rect.w/2} controls loop=true>
+        <source src="%s" type="video/mp4">
+    </video>
+    """ % data_url)
