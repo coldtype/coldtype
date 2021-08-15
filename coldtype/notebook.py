@@ -124,16 +124,13 @@ def show_animation(a:animation, start=False):
     js_call = f"<script type='text/javascript'>{js}; animate('{a.name}', {int(start)})</script>";
     display(HTML(html + js_call), display_id=a.name)
 
-def render_animation(a, show="*"):
-    try:
-        from tqdm.notebook import tqdm
-    except ImportError:
-        tqdm = lambda x: x
+def render_animation(a, show=[]):
+    from tqdm.notebook import tqdm
 
     idxs = list(range(0, a.duration))
     passes = a.passes(Action.PreviewIndices, None, idxs)
     passes[0].output_path.parent.mkdir(parents=True, exist_ok=True)
-    for idx, rp in enumerate(tqdm(passes)):
+    for idx, rp in enumerate(tqdm(passes, leave=False)):
         res = a.run_normal(rp)
         SkiaPen.Composite(res, a.rect, str(rp.output_path))
         if show == "*" or idx in show:
