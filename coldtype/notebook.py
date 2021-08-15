@@ -120,11 +120,12 @@ def show_animation(a:animation, start=False):
     js_call = f"<script type='text/javascript'>{js}; animate('{a.name}', {int(start)})</script>";
     display(HTML(html + js_call), display_id=a.name)
 
-def render_animation(a):
+def render_animation(a, show="*"):
     idxs = list(range(0, a.duration+1))
     passes = a.passes(Action.PreviewIndices, None, idxs)
     passes[0].output_path.parent.mkdir(parents=True, exist_ok=True)
-    for rp in passes:
+    for idx, rp in enumerate(passes):
         res = a.run_normal(rp)
         SkiaPen.Composite(res, a.rect, str(rp.output_path))
-        showlocalpng(a.rect, rp.output_path)
+        if show == "*" or idx in show:
+            showlocalpng(a.rect, rp.output_path)

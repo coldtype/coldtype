@@ -219,8 +219,7 @@ class animation(renderable, Timeable):
     
     def export(self, fmt, date=False, loops=1, open=1):
         def _export(passes):
-            fe = FFMPEGExport(self, passes,
-                date=date, loops=loops)
+            fe = FFMPEGExport(self, date=date, loops=loops)
             if fmt == "gif":
                 fe.gif()
             elif fmt == "h264":
@@ -244,20 +243,16 @@ class aframe(animation):
 
 class FFMPEGExport():
     def __init__(self, a:animation,
-        passes:list,
         date=False,
-        loops=1):
+        loops=1,
+        ):
         self.a = a
-        self.passes = passes
         self.date = date
         self.loops = loops
         self.fmt = None
 
-        passes = [p for p in self.passes if p.render == self.a]
-        template = re.sub(r"[0-9]{4}\.png", "%4d.png", str(passes[0].output_path))
-        #template = str(passes[0].output_path).replace("0000.png", "%4d.png")
-
-        self.folder = passes[0].output_path.parent.parent
+        template = a.pass_path(f"%4d.{a.fmt}")
+        self.folder = template.parent.parent
 
         # https://github.com/typemytype/drawbot/blob/master/drawBot/context/tools/mp4Tools.py
         self.args = [

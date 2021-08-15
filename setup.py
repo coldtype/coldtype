@@ -97,7 +97,8 @@ setuptools.setup(
             "skia-pathops"
         ],
         "notebook": [
-            "skia-pathops"
+            "skia-pathops",
+            "skia-python",
         ]
     },
     install_requires=[
