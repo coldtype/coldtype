@@ -124,7 +124,7 @@ def show_animation(a:animation, start=False):
     display(HTML(html + js_call), display_id=a.name)
 
 def render_animation(a, show="*", _print=False):
-    idxs = list(range(0, a.duration+1))
+    idxs = list(range(0, a.duration))
     passes = a.passes(Action.PreviewIndices, None, idxs)
     passes[0].output_path.parent.mkdir(parents=True, exist_ok=True)
     for idx, rp in enumerate(passes):
@@ -142,11 +142,11 @@ def show_video(a, loops=1):
     compressed_path = str(ffex.output_path.absolute())
     mp4 = open(compressed_path, 'rb').read()
     data_url = "data:video/mp4;base64," + b64encode(mp4).decode()
-    HTML(f"""
+    display(HTML(f"""
     <video width={a.rect.w/2} controls loop=true>
         <source src="%s" type="video/mp4">
     </video>
-    """ % data_url)
+    """ % data_url))
 
 
 class notebook_animation(animation):
@@ -176,7 +176,7 @@ class notebook_animation(animation):
         return self
     
     def render(self):
-        render_animation(self, show=[], _print=False)
+        render_animation(self, show=[], _print=True)
         return self
     
     def show(self, loops=1):
@@ -184,7 +184,7 @@ class notebook_animation(animation):
         return self
     
     def zip(self, download=False):
-        zipfile = f"{str(self.output_folder.parent)}.zip"
+        zipfile = f"{str(self.output_folder)}.zip"
         run(["zip", "-j", "-r", zipfile, str(self.output_folder)])
         print("> zipped:", zipfile)
         if download:
