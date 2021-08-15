@@ -1,5 +1,5 @@
 from pathlib import Path
-from base64 import b64encode, encodebytes
+from base64 import b64encode
 from IPython.display import display, SVG, Image, HTML
 from coldtype.renderable.animation import animation, Action
 from coldtype.pens.svgpen import SVGPen
@@ -7,6 +7,7 @@ from coldtype.geometry import Rect
 
 try:
     from coldtype.fx.skia import precompose, skia
+    from coldtype.pens.skiapen import SkiaPen
     from PIL import Image
     from io import BytesIO
 except ImportError:
@@ -50,6 +51,18 @@ def show(fmt=None, rect=None, align=False, padding=[60, 50], th=0, tv=0):
 
 def showpng(rect=None, align=False, padding=[60, 50], th=0, tv=0):
     return show("img", rect, align, padding, th, tv)
+
+def showlocalpng(rect, src):
+    with open(src, "rb") as img_file:
+        encoded_string = b64encode(img_file.read()).decode("utf-8")
+        display(HTML(f"<img width={rect.w/2} src='data:image/png;base64,{encoded_string}'/>"))
+
+def showframe(a, idx):
+    rp = a.passes(Action.PreviewIndices, None, [idx])[0]
+    res = a.run_normal(rp)
+    rp.output_path.parent.mkdir(parents=True, exist_ok=True)
+    SkiaPen.Composite(res, a.rect, str(rp.output_path))
+    showlocalpng(a.rect, rp.output_path)
 
 
 js = """
@@ -99,7 +112,6 @@ function animate(name, start_playing) {
 """
 
 def show_animation(a:animation, start=False):
-    a.output_folder = Path(".")
     idxs = range(0, a.duration+1)
     passes = a.passes(Action.PreviewIndices, None, idxs)
     results = [a.run_normal(rp) for rp in passes]

@@ -141,7 +141,6 @@ class renderable():
         if self.layer:
             self.bg = normalize_color(None)
         
-        self.output_folder = Path(".")
         self.filepath = None
 
         if not rasterizer:
@@ -176,6 +175,7 @@ class renderable():
         self.func = func
         if not self.name:
             self.name = self.func.__name__
+        self.output_folder = Path(f"renders/{self.name}")
         return self
     
     def folder(self, filepath):

@@ -365,7 +365,6 @@ if __name__ == "__main__":
     from coldtype.text import StSt, Font, Rect
 
     def show_animation(a:animation):
-        a.output_folder = Path(".")
         idxs = range(0, a.duration+1)
         passes = a.passes(Action.PreviewIndices, None, idxs)
         results = [a.run_normal(rp) for rp in passes]
