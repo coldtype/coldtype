@@ -1,7 +1,7 @@
 from pathlib import Path
 from base64 import b64encode
 from IPython.display import display, SVG, Image, HTML
-from coldtype.renderable.animation import animation, Action
+from coldtype.renderable.animation import aframe, animation, Action, Timeline
 from coldtype.pens.svgpen import SVGPen
 from coldtype.geometry import Rect
 from coldtype.renderable.animation import FFMPEGExport
@@ -152,9 +152,17 @@ def show_video(a, loops=1):
 class notebook_animation(animation):
     def __init__(self,
         rect=(540, 540),
+        preview=[0],
         **kwargs
         ):
+        self._preview = preview
         super().__init__(rect, **kwargs)
+    
+    def __call__(self, func):
+        res = super().__call__(func)
+        if self._preview:
+            self.preview(*self._preview)
+        return res
     
     def preview(self, *frames):
         if len(frames) == 0:
@@ -187,3 +195,14 @@ class notebook_animation(animation):
                 print("download= arg is for colab")
                 pass
         return self
+
+
+class notebook_aframe(aframe):
+    def __init__(self,
+        rect=(540, 540),
+        **kwargs
+        ):
+        self._preview = [0]
+        super().__init__(rect,
+            timeline=Timeline(1),
+            **kwargs)
