@@ -224,6 +224,8 @@ class notebook_aframe(aframe):
         **kwargs
         ):
         self._preview = [0]
+        
         super().__init__(rect,
             timeline=Timeline(1),
+            interactive=False,
             **kwargs)
