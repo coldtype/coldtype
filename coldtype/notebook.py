@@ -124,10 +124,15 @@ def show_animation(a:animation, start=False):
     display(HTML(html + js_call), display_id=a.name)
 
 def render_animation(a, show="*", _print=False):
+    try:
+        from tqdm.notebook import tqdm
+    except ImportError:
+        tqdm = lambda x: x
+
     idxs = list(range(0, a.duration))
     passes = a.passes(Action.PreviewIndices, None, idxs)
     passes[0].output_path.parent.mkdir(parents=True, exist_ok=True)
-    for idx, rp in enumerate(passes):
+    for idx, rp in enumerate(tqdm(passes)):
         res = a.run_normal(rp)
         SkiaPen.Composite(res, a.rect, str(rp.output_path))
         if show == "*" or idx in show:
@@ -135,10 +140,10 @@ def render_animation(a, show="*", _print=False):
         if _print:
             print(">", rp.output_path)
 
-def show_video(a, loops=1):
+def show_video(a, loops=1, verbose=False, download=False):
     ffex = FFMPEGExport(a, loops=loops)
     ffex.h264()
-    ffex.write()
+    ffex.write(verbose=verbose)
     compressed_path = str(ffex.output_path.absolute())
     mp4 = open(compressed_path, 'rb').read()
     data_url = "data:video/mp4;base64," + b64encode(mp4).decode()
@@ -147,6 +152,13 @@ def show_video(a, loops=1):
         <source src="%s" type="video/mp4">
     </video>
     """ % data_url))
+    if download:
+        try:
+            from google.colab import files
+            files.download(ffex.output_path)
+        except ImportError:
+            print("download= arg is for colab")
+            pass
 
 
 class notebook_animation(animation):
@@ -179,8 +191,8 @@ class notebook_animation(animation):
         render_animation(self, show=[], _print=True)
         return self
     
-    def show(self, loops=1):
-        show_video(self, loops=loops)
+    def show(self, loops=1, verbose=False, download=False):
+        show_video(self, loops=loops, verbose=verbose, download=download)
         return self
     
     def zip(self, download=False):
