@@ -1,3 +1,4 @@
+from coldtype import interpolation
 from pathlib import Path
 from base64 import b64encode
 from IPython.display import display, SVG, Image, HTML
@@ -123,7 +124,7 @@ def show_animation(a:animation, start=False):
     js_call = f"<script type='text/javascript'>{js}; animate('{a.name}', {int(start)})</script>";
     display(HTML(html + js_call), display_id=a.name)
 
-def render_animation(a, show="*", _print=False):
+def render_animation(a, show="*"):
     try:
         from tqdm.notebook import tqdm
     except ImportError:
@@ -137,8 +138,6 @@ def render_animation(a, show="*", _print=False):
         SkiaPen.Composite(res, a.rect, str(rp.output_path))
         if show == "*" or idx in show:
             showlocalpng(a.rect, rp.output_path)
-        if _print:
-            print(">", rp.output_path)
 
 def show_video(a, loops=1, verbose=False, download=False):
     ffex = FFMPEGExport(a, loops=loops)
@@ -165,16 +164,29 @@ class notebook_animation(animation):
     def __init__(self,
         rect=(540, 540),
         preview=[0],
+        interactive=True,
         **kwargs
         ):
         self._preview = preview
+        self._interactive = interactive
         super().__init__(rect, **kwargs)
     
     def __call__(self, func):
         res = super().__call__(func)
         if self._preview:
-            self.preview(*self._preview)
+            if self._interactive:
+                self.interactive_preview(self._preview[0])
+            else:
+                self.preview(*self._preview)
         return res
+    
+    def interactive_preview(self, start):
+        from ipywidgets import IntSlider, interact
+
+        def show_anim(i):
+            self.preview(i)
+
+        interact(show_anim, i=IntSlider(min=0, max=self.duration-1, continuous_update=False, description="f.i"))
     
     def preview(self, *frames):
         if len(frames) == 0:
@@ -188,7 +200,7 @@ class notebook_animation(animation):
         return self
     
     def render(self):
-        render_animation(self, show=[], _print=True)
+        render_animation(self, show=[])
         return self
     
     def show(self, loops=1, verbose=False, download=False):
