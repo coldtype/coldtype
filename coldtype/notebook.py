@@ -5,6 +5,8 @@ from coldtype.renderable.animation import animation, Action
 from coldtype.pens.svgpen import SVGPen
 from coldtype.geometry import Rect
 from coldtype.renderable.animation import FFMPEGExport
+from subprocess import run
+
 
 try:
     from coldtype.fx.skia import precompose, skia
@@ -121,7 +123,7 @@ def show_animation(a:animation, start=False):
     js_call = f"<script type='text/javascript'>{js}; animate('{a.name}', {int(start)})</script>";
     display(HTML(html + js_call), display_id=a.name)
 
-def render_animation(a, show="*", print=False):
+def render_animation(a, show="*", _print=False):
     idxs = list(range(0, a.duration+1))
     passes = a.passes(Action.PreviewIndices, None, idxs)
     passes[0].output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -130,11 +132,10 @@ def render_animation(a, show="*", print=False):
         SkiaPen.Composite(res, a.rect, str(rp.output_path))
         if show == "*" or idx in show:
             showlocalpng(a.rect, rp.output_path)
-        if print:
+        if _print:
             print(">", rp.output_path)
 
-def render_video(a, loops=2):
-    render_animation(a, show=[], print=True)
+def show_video(a, loops=1):
     ffex = FFMPEGExport(a, loops=loops)
     ffex.h264()
     ffex.write()
@@ -146,3 +147,43 @@ def render_video(a, loops=2):
         <source src="%s" type="video/mp4">
     </video>
     """ % data_url)
+
+
+class notebook_animation(animation):
+    def __init__(self,
+        rect=(540, 540),
+        **kwargs
+        ):
+        super().__init__(rect, **kwargs)
+    
+    def preview(self, *frames):
+        if len(frames) == 0:
+            frames = [0]
+        elif len(frames) == 1:
+            if frames[0] == "*":
+                frames = list(range(self.start, self.end))
+        
+        for frame in frames:
+            show_frame(self, frame)
+        return self
+    
+    def render(self):
+        render_animation(self, show=[], _print=False)
+        return self
+    
+    def show(self, loops=1):
+        show_video(self, loops=loops)
+        return self
+    
+    def zip(self, download=False):
+        zipfile = f"{str(self.output_folder.parent)}.zip"
+        run(["zip", "-j", "-r", zipfile, str(self.output_folder)])
+        print("> zipped:", zipfile)
+        if download:
+            try:
+                from google.colab import files
+                files.download(zipfile)
+            except ImportError:
+                print("download= arg is for colab")
+                pass
+        return self

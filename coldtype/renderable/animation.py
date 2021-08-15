@@ -39,9 +39,9 @@ class animation(renderable, Timeable):
     """
     def __init__(self,
         rect=(1080, 1080),
-        duration=10, # deprecated? redundant to timeline=10
+        #duration=10, # deprecated? redundant to timeline=10
         storyboard=[0],
-        timeline:Timeline=None,
+        timeline:Timeline=10,
         show_frame=True,
         overlay=True,
         watch_render=None,
@@ -61,30 +61,29 @@ class animation(renderable, Timeable):
         self.r = self.rect
         self.overlay = overlay
         self.start = 0
-        self.end = duration
         self.show_frame = show_frame
         self.write_start = write_start
         self.storyboard = storyboard
         if self.write_start and self.storyboard == [0]:
             self.storyboard = [self.write_start]
+        
+        if timeline is None:
+            raise Exception("timeline= cannot be None")
 
-        if timeline:
-            if not isinstance(timeline, Timeline):
-                try:
-                    timeline = Timeline(timeline[0], fps=timeline[1])
-                except:
-                    timeline = Timeline(timeline)
-            self.timeline = timeline
-            self.t = timeline
-            self.start = timeline.start
-            self.end = timeline.end
-            
-            if self.storyboard != [0] and timeline.storyboard == [0]:
-                pass
-            else:
-                self.storyboard = timeline.storyboard.copy()
+        if not isinstance(timeline, Timeline):
+            try:
+                timeline = Timeline(timeline[0], fps=timeline[1])
+            except:
+                timeline = Timeline(timeline)
+        self.timeline = timeline
+        self.t = timeline
+        self.start = timeline.start
+        self.end = timeline.end
+        
+        if self.storyboard != [0] and timeline.storyboard == [0]:
+            pass
         else:
-            self.timeline = Timeline(duration)
+            self.storyboard = timeline.storyboard.copy()
     
     def __call__(self, func):
         res = super().__call__(func)
