@@ -125,7 +125,7 @@ def show_animation(a:animation, start=False):
     js_call = f"<script type='text/javascript'>{js}; animate('{a.name}', {int(start)})</script>";
     display(HTML(html + js_call), display_id=a.name)
 
-def render_animation(a, show=[], scale=0.5):
+def render_animation(a, show=[], preview_scale=0.5, scale=1):
     from tqdm.notebook import tqdm
 
     idxs = list(range(0, a.duration))
@@ -134,11 +134,11 @@ def render_animation(a, show=[], scale=0.5):
     for idx, rp in enumerate(tqdm(passes, leave=False)):
         res = a.run_normal(rp)
         if a.fmt == "png":
-            SkiaPen.Composite(res, a.rect, str(rp.output_path))
+            SkiaPen.Composite(res, a.rect, str(rp.output_path), scale=scale)
             if show == "*" or idx in show:
-                showlocalpng(a.rect, rp.output_path, scale=scale)
+                showlocalpng(a.rect, rp.output_path, scale=preview_scale)
         elif a.fmt == "svg":
-            SkiaPen.SVG(res, a.rect, str(rp.output_path))
+            SkiaPen.SVG(res, a.rect, str(rp.output_path), scale=scale)
 
 def show_video(a, loops=1, verbose=False, download=False, scale=0.5):
     ffex = FFMPEGExport(a, loops=loops)
@@ -204,8 +204,8 @@ class notebook_animation(animation):
             show_frame(self, frame, scale=self.preview_scale)
         return self
     
-    def render(self):
-        render_animation(self, show=[])
+    def render(self, scale=1):
+        render_animation(self, show=[], scale=scale)
         return self
     
     def show(self, loops=1, verbose=False, download=False, scale=0.5):
