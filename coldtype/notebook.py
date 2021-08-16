@@ -132,7 +132,8 @@ def render_animation(a, show=[], preview_scale=0.5, scale=1):
     idxs = list(range(0, a.duration))
     passes = a.passes(Action.PreviewIndices, None, idxs)
     output_dir = passes[0].output_path.parent
-    rmtree(output_dir)
+    if output_dir.exists():
+        rmtree(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     for idx, rp in enumerate(tqdm(passes, leave=False)):
