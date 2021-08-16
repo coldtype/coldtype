@@ -18,8 +18,8 @@ except ImportError:
     precompose = None
 
 
-def show(fmt=None, rect=None, align=False, padding=[60, 50], th=0, tv=0):
-    if not precompose and fmt == "img":
+def show(fmt=None, rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=0.5):
+    if not precompose and fmt == "png":
         raise Exception("pip install skia-python")
     
     def _display(pen):
@@ -28,7 +28,7 @@ def show(fmt=None, rect=None, align=False, padding=[60, 50], th=0, tv=0):
         if fmt is None:
             img = pen.img()
             if img and img.get("src"):
-                fmt = "img"
+                fmt = "png"
             else:
                 fmt = "svg"
 
@@ -39,12 +39,12 @@ def show(fmt=None, rect=None, align=False, padding=[60, 50], th=0, tv=0):
             rect = Rect(amb.w+padding[0], amb.h+padding[1])
             pen.align(rect)
         
-        if fmt == "img":
+        if fmt == "png":
             src = pen.ch(precompose(rect)).img().get("src")
             with BytesIO(src.encodeToData()) as f:
                 f.seek(0)  # necessary?
                 b64 = b64encode(f.read()).decode("utf-8")
-                display(HTML(f"<img width={rect.w/2} src='data:image/png;base64,{b64}'/>"))
+                display(HTML(f"<img width={rect.w*scale} src='data:image/png;base64,{b64}'/>"))
         elif fmt == "svg":
             svg = SVGPen.Composite(pen, rect, viewBox=False)
             display(SVG(svg))
@@ -53,20 +53,21 @@ def show(fmt=None, rect=None, align=False, padding=[60, 50], th=0, tv=0):
     return _display
 
 
-def showpng(rect=None, align=False, padding=[60, 50], th=0, tv=0):
-    return show("img", rect, align, padding, th, tv)
+def showpng(rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=0.5):
+    return show("png", rect, align, padding, th, tv, scale)
 
-def showlocalpng(rect, src):
+def showlocalpng(rect, src, scale=0.5):
     with open(src, "rb") as img_file:
         encoded_string = b64encode(img_file.read()).decode("utf-8")
-        display(HTML(f"<img width={rect.w/2} src='data:image/png;base64,{encoded_string}'/>"))
+        display(HTML(f"<img width={rect.w*scale} src='data:image/png;base64,{encoded_string}'/>"))
 
-def show_frame(a, idx):
+def show_frame(a, idx, scale=0.5):
     rp = a.passes(Action.PreviewIndices, None, [idx])[0]
     res = a.run_normal(rp)
-    rp.output_path.parent.mkdir(parents=True, exist_ok=True)
-    SkiaPen.Composite(res, a.rect, str(rp.output_path))
-    showlocalpng(a.rect, rp.output_path)
+    show(a.fmt, a.rect, padding=[0, 0], scale=scale)(res)
+    #rp.output_path.parent.mkdir(parents=True, exist_ok=True)
+    #SkiaPen.Composite(res, a.rect, str(rp.output_path))
+    #showlocalpng(a.rect, rp.output_path)
 
 
 js = """
@@ -124,7 +125,7 @@ def show_animation(a:animation, start=False):
     js_call = f"<script type='text/javascript'>{js}; animate('{a.name}', {int(start)})</script>";
     display(HTML(html + js_call), display_id=a.name)
 
-def render_animation(a, show=[]):
+def render_animation(a, show=[], scale=0.5):
     from tqdm.notebook import tqdm
 
     idxs = list(range(0, a.duration))
@@ -132,11 +133,14 @@ def render_animation(a, show=[]):
     passes[0].output_path.parent.mkdir(parents=True, exist_ok=True)
     for idx, rp in enumerate(tqdm(passes, leave=False)):
         res = a.run_normal(rp)
-        SkiaPen.Composite(res, a.rect, str(rp.output_path))
-        if show == "*" or idx in show:
-            showlocalpng(a.rect, rp.output_path)
+        if a.fmt == "png":
+            SkiaPen.Composite(res, a.rect, str(rp.output_path))
+            if show == "*" or idx in show:
+                showlocalpng(a.rect, rp.output_path, scale=scale)
+        elif a.fmt == "svg":
+            SkiaPen.SVG(res, a.rect, str(rp.output_path))
 
-def show_video(a, loops=1, verbose=False, download=False):
+def show_video(a, loops=1, verbose=False, download=False, scale=0.5):
     ffex = FFMPEGExport(a, loops=loops)
     ffex.h264()
     ffex.write(verbose=verbose)
@@ -144,7 +148,7 @@ def show_video(a, loops=1, verbose=False, download=False):
     mp4 = open(compressed_path, 'rb').read()
     data_url = "data:video/mp4;base64," + b64encode(mp4).decode()
     display(HTML(f"""
-    <video width={a.rect.w/2} controls loop=true>
+    <video width={a.rect.w*scale} controls loop=true>
         <source src="%s" type="video/mp4">
     </video>
     """ % data_url))
@@ -162,11 +166,15 @@ class notebook_animation(animation):
         rect=(540, 540),
         preview=[0],
         interactive=True,
+        preview_scale=0.5,
+        render_bg=True,
         **kwargs
         ):
         self._preview = preview
         self._interactive = interactive
-        super().__init__(rect, **kwargs)
+        self.preview_scale = preview_scale
+
+        super().__init__(rect, render_bg=render_bg, **kwargs)
     
     def __call__(self, func):
         res = super().__call__(func)
@@ -193,15 +201,18 @@ class notebook_animation(animation):
                 frames = list(range(self.start, self.end))
         
         for frame in frames:
-            show_frame(self, frame)
+            show_frame(self, frame, scale=self.preview_scale)
         return self
     
     def render(self):
         render_animation(self, show=[])
         return self
     
-    def show(self, loops=1, verbose=False, download=False):
-        show_video(self, loops=loops, verbose=verbose, download=download)
+    def show(self, loops=1, verbose=False, download=False, scale=0.5):
+        if self.fmt == "svg":
+            show_animation(self, start=False)
+        else:
+            show_video(self, loops=loops, verbose=verbose, download=download, scale=scale)
         return self
     
     def zip(self, download=False):
@@ -224,7 +235,7 @@ class notebook_aframe(aframe):
         **kwargs
         ):
         self._preview = [0]
-        
+
         super().__init__(rect,
             timeline=Timeline(1),
             interactive=False,

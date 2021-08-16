@@ -6,7 +6,7 @@ SHAKE = 1
 fnt = Font.ColdtypeObviously()
 rs = random_series(0, 1000)
 
-@animation(bg=0, timeline=Timeline(92, 23.976), solo=0, hide=[])
+@animation(bg=0, timeline=Timeline(92, 23.976))
 def taper(f):
     return (StSt("COLD\nTYPE", fnt, 330,
         rotate=f.e(1, rng=(5, 10)),
@@ -30,4 +30,4 @@ def taper(f):
                 .ch(phototype(f.a.r,
                     blur=3, cutw=15,
                     cut=230+f.e(1, rng=(-30, 5)),
-                    fill=hsl(0.30, 0.86, 0.63)))))
+                    fill=hsl(0.17, 0.86, 0.63)))))
