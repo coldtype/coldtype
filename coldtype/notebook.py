@@ -1,7 +1,8 @@
-from coldtype import interpolation
+import json
+
 from pathlib import Path
 from base64 import b64encode
-from IPython.display import display, SVG, Image, HTML
+from IPython.display import display, SVG, HTML
 from coldtype.renderable.animation import aframe, animation, Action, Timeline
 from coldtype.pens.svgpen import SVGPen
 from coldtype.geometry import Rect
@@ -10,9 +11,8 @@ from subprocess import run
 
 
 try:
-    from coldtype.fx.skia import precompose, skia
+    from coldtype.fx.skia import precompose
     from coldtype.pens.skiapen import SkiaPen
-    from PIL import Image
     from io import BytesIO
 except ImportError:
     precompose = None
@@ -168,30 +168,57 @@ class notebook_animation(animation):
         interactive=True,
         preview_scale=0.5,
         render_bg=True,
+        vars={},
         **kwargs
         ):
         self._preview = preview
         self._interactive = interactive
         self.preview_scale = preview_scale
+        self.vars = vars
 
         super().__init__(rect, render_bg=render_bg, **kwargs)
     
     def __call__(self, func):
         res = super().__call__(func)
+
+        self._interaction_file = Path(self.name + "_tmp_state.json")
+        self._interaction_state = {}
+
         if self._preview:
             if self._interactive:
+                if not self._interaction_file.exists():
+                    self._interaction_file.write_text("{}")
                 self.interactive_preview(self._preview[0])
             else:
                 self.preview(*self._preview)
         return res
     
     def interactive_preview(self, start):
-        from ipywidgets import IntSlider, interact
+        from ipywidgets import IntSlider, FloatSlider, interact
+        self._interaction_state = json.loads(self._interaction_file.read_text())
 
-        def show_anim(i):
-            self.preview(i)
+        def show_anim(**kwargs):
+            self._interaction_state = kwargs
+            self._interaction_file.write_text(json.dumps(kwargs))
+            self.preview(kwargs["i"])
 
-        interact(show_anim, i=IntSlider(min=0, max=self.duration-1, continuous_update=False, description="f.i"))
+        vars = dict(i=IntSlider(
+            min=0,
+            max=self.duration-1,
+            continuous_update=False,
+            value=self._interaction_state.get("i", 0),
+            description="f.i"))
+    
+        for v, val in self.vars.items():
+            vars[v] = FloatSlider(min=0,
+                max=1, step=1e-2,
+                continuous_update=False,
+                value=self._interaction_state.get(v, val))
+        
+        interact(show_anim, **vars)
+    
+    def iv(self, k):
+        return self._interaction_state.get(k, 0)
     
     def preview(self, *frames):
         if len(frames) == 0:
