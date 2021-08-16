@@ -148,7 +148,7 @@ def show_video(a, loops=1, verbose=False, download=False, scale=0.5):
     mp4 = open(compressed_path, 'rb').read()
     data_url = "data:video/mp4;base64," + b64encode(mp4).decode()
     display(HTML(f"""
-    <video width={a.rect.w*scale} controls loop=true>
+    <video width={a.rect.w*scale} controls loop=true autoplay>
         <source src="%s" type="video/mp4">
     </video>
     """ % data_url))
