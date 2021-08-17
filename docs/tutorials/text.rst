@@ -299,10 +299,12 @@ Is there a solution? Probably many but the one I like a lot is the ``understroke
 Let’s see what that looks like.
 
 .. code:: python
+    
+    import coldtype.fx.shapes as shapes
 
     @renderable((1000, 500))
     def text_on_a_path_understroke(r):
-        sine = DATPen().sine(r.inset(0, 180), 3)
+        sine = DATPen().ch(shapes.sine(r.inset(0, 180), 3))
         return (StSt("COLDTYPE COLDTYPE COLDTYPE", co, 100,
             wdth=1, tu=-50, space=500, fit=sine.length())
             .distribute_on_path(sine)
@@ -320,7 +322,7 @@ Interesting! But there’s one thing to correct if we want better legibility. Yo
 
     @renderable((1000, 500))
     def text_on_a_path_understroke_reversed(r):
-        sine = DATPen().sine(r.inset(0, 180), 3)
+        sine = DATPen().ch(shapes.sine(r.inset(0, 180), 3))
         return (StSt("COLDTYPE COLDTYPE COLDTYPE", co, 100,
             wdth=1, tu=-50, space=500, r=1, fit=sine.length())
             .distribute_on_path(sine)

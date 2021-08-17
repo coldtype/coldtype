@@ -104,7 +104,9 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     self.cancel( context )
                 else:
                     print('unknown request=%s arg=%s' % (cmd,arg))
-            self.file.unlink()
+            
+            if self.file.exists():
+                self.file.unlink()
 
         return {'PASS_THROUGH'}
 

@@ -850,6 +850,12 @@ class Renderer():
             # TODO should iterate over all animations, not just "last" (but infra isn't there for this yet)
             self.on_action(Action.RenderIndices, fo)
             return -1
+        elif shortcut == KeyboardShortcut.RenderFrom:
+            la = self.last_animation
+            fo = [abs(o%la.duration) for o in self.state.get_frame_offsets(la.name)]
+            idxs = list(range(fo[0], la.duration))
+            self.on_action(Action.RenderIndices, idxs)
+            return -1
         elif shortcut == KeyboardShortcut.RenderWorkarea:
             self.on_action(Action.RenderWorkarea)
             return -1

@@ -26,6 +26,7 @@ class KeyboardShortcut(Enum):
     Release = "release"
     RenderAll = "render_all"
     RenderOne = "render_one"
+    RenderFrom = "render_from"
     RenderWorkarea = "render_workarea"
     ToggleMultiplex = "toggle_multiplex"
 
@@ -114,6 +115,8 @@ KeyboardShortcutExplainers = {
         "Render all the frames in this animation to disk",
     KeyboardShortcut.RenderOne:
         "Render just the current frame to disk",
+    KeyboardShortcut.RenderFrom:
+        "Render all the frames starting with the current one",
     KeyboardShortcut.RenderWorkarea:
         "Render the workarea to disk (if a workarea is defined)",
     KeyboardShortcut.ToggleMultiplex:
@@ -264,6 +267,9 @@ SHORTCUTS = {
     ],
     KeyboardShortcut.RenderOne: [
         [["cmd"], "a"],
+    ],
+    KeyboardShortcut.RenderFrom: [
+        [["alt"], "a"],
     ],
     KeyboardShortcut.RenderWorkarea: [
         [[], "w"]
