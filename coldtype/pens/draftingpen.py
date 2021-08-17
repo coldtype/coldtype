@@ -1425,9 +1425,9 @@ class DraftingPen(RecordingPen, SHContext):
     
     # Fun pen manipulations
 
-    def outline(self, offset=1, drawInner=True, drawOuter=True, cap="square", miterLimit=None):
+    def outline(self, offset=1, drawInner=True, drawOuter=True, cap="square", miterLimit=None, closeOpenPaths=True):
         """AKA expandStroke"""
-        op = OutlinePen(None, offset=offset, optimizeCurve=True, cap=cap, miterLimit=miterLimit)
+        op = OutlinePen(None, offset=offset, optimizeCurve=True, cap=cap, miterLimit=miterLimit, closeOpenPaths=closeOpenPaths)
         self.replay(op)
         op.drawSettings(drawInner=drawInner, drawOuter=drawOuter)
         g = op.getGlyph()

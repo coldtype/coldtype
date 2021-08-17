@@ -99,6 +99,7 @@ def spackle(xo=None, yo=None,
 
 
 def fill(c):
+    """Chainable function for filling everything in pen/image-on-pen with a single color"""
     c = normalize_color(c)
     def _fill(pen):
         return pen.attr(skp=dict(
@@ -107,6 +108,7 @@ def fill(c):
 
 
 def potrace(rect, poargs=[], invert=True):
+    """Chainable function for tracing a pen/image-on-pen ; can be combined with a previous call to phototype for better control of blurring/edges"""
     from PIL import Image
 
     pc = SkiaPen
@@ -190,6 +192,7 @@ def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
     return _mod_pixels
 
 def luma(rect):
+    """Chainable function for converting light part of pen/image-on-pen into an alpha channel; see `LumaColorFilter <https://kyamagu.github.io/skia-python/reference/skia.LumaColorFilter.html>`_"""
     def _luma(pen):
         return (pen
             .ch(precompose(rect))
@@ -205,6 +208,7 @@ def phototype(rect=None,
     rgba=[0, 0, 0, 1],
     luma=True
     ):
+    """Chainable function for “exposing” a pen/image-on-pen in the manner of lithofilm, i.e. light-parts are kept, dark parts are thrown away (turned into alpha)"""
     def _phototype(pen):
         nonlocal rect
         if rect is None:
