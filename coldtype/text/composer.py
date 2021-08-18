@@ -226,7 +226,7 @@ def StSt(text,
 
 GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e"])
 
-def Glyphwise(st, styler):
+def Glyphwise(st, styler, start=0):
     # TODO possible to have an implementation
     # aware of a non-1-to-1 mapping of characters
     # to glyphs? seems very difficult if not impossible,
@@ -241,6 +241,19 @@ def Glyphwise(st, styler):
     #glyphs = StyledString(st, styler(0, st[0])).glyphs
     #print(glyphs)
     #print([g.name for g in glyphs])
+
+    try:
+        lines = st.split("\n")
+        if len(lines) > 1:
+            gs = []
+            for l in lines:
+                start = 0
+                if len(gs) > 0:
+                    start = len(gs[-1])
+                gs.append(Glyphwise(l, styler, start=start))
+            return _PensClass(gs).reversePens().distribute(v=True).reversePens()
+    except AttributeError:
+        pass
 
     def kx(dps, idx):
         return dps[idx].ambit().x
@@ -269,12 +282,12 @@ def Glyphwise(st, styler):
             test = [test]
         
         e = idx / (len(st)-1)
-        gg = GlyphwiseGlyph(idx, c, e)
+        gg = GlyphwiseGlyph(idx+start, c, e)
 
         if arg_count == 1:
             skon = styler(gg)
         else:
-            skon = styler(idx, gg)
+            skon = styler(idx+start, gg)
         
         skoff = skon.mod(kern=0)
 

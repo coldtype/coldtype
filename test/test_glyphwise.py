@@ -88,6 +88,22 @@ class TestGlyphwise(unittest.TestCase):
         
         self.assertEqual(es[0], 0)
         self.assertEqual(es[-1], 1)
+    
+    def test_newline(self):
+        fnt = Font.Find("OhnoFatfaceV")
+        r = Rect(1080, 300)
+        
+        gs = (Glyphwise("FATFACE\nFACEFAT", lambda g:
+            Style(fnt, g.i*10+50, wdth=g.e))
+            .align(r)
+            .picklejar(r))
+        
+        self.assertEqual(gs[0][0].ambit().xy(),
+            [305.21250000000003, 172.05])
+        self.assertEqual(gs[1][-1].ambit().xy(),
+            [656.3775, 58.650000000000006])
+        self.assertEqual(gs[0][-1].glyphName, "E")
+        self.assertEqual(gs[1][-1].glyphName, "T")
 
 if __name__ == "__main__":
     unittest.main()

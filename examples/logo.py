@@ -44,7 +44,7 @@ def logo2(r):
             .align(r)
             .f(1)
             .rotate(10)
-            .translate(-10, -8)
+            .translate(-5, -7)
             .ch(phototype(r,
                 blur=5,
                 cut=150,
