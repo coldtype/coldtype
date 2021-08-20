@@ -216,6 +216,8 @@ def find_random(v):
 
 
 def normalize_color(v):
+    if v == -1:
+        return Color.from_rgb(0,0,0,0)
     if v is None:
         return Color.from_rgb(0,0,0,0)
     elif isinstance(v, Color):
@@ -235,6 +237,8 @@ def normalize_color(v):
             return Color.from_html(v)
     else:
         if len(v) == 1:
+            if v[0] == -1:
+                return Color.from_rgb(0,0,0,0)
             if v[0] == "random":
                 return Color.from_rgb(random(), random(), random(), 1)
             if v[0] == None:

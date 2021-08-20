@@ -30,6 +30,19 @@ from coldtype.interpolation import norm
 from coldtype.grid import Grid
 
 
+class CurveSample():
+    def __init__(self, idx, pt, e, tan):
+        self.idx = idx
+        self.pt = pt
+        self.e = e
+        self.tan = tan
+    
+    def neighbors(self, prev, next):
+        self.prevt = prev
+        self.nextt = next
+        self.difft = ((next-prev) + 180) % 360 - 180
+
+
 class DraftingPen(RecordingPen, SHContext):
     """Fluent subclass of RecordingPen"""
 
@@ -1532,6 +1545,25 @@ class DraftingPen(RecordingPen, SHContext):
                 self.value[insert_idx] = ("lineTo", c1)
                 self.value.insert(insert_idx+1, ("lineTo", c2))
         return self
+    
+    def samples(self, interval=10):
+        cc = CurveCutter(self)
+        samples = []
+        length = cc.calcCurveLength()
+        inc = 1
+        idx = 0
+        while inc < length:
+            pt, tan = cc.subsegmentPoint(start=0, end=inc)
+            samples.append(CurveSample(idx, pt, inc / length, tan))
+            inc += interval
+            idx += 1
+        
+        for i, s in enumerate(samples):
+            next = samples[i+1].tan if i < len(samples)-1 else s.tan
+            prev = samples[i-1].tan if i > 0 else s.tan
+            s.neighbors(prev, next)
+        
+        return samples
     
     def length(self, t=1):
         """Get the length of the curve for time `t`"""

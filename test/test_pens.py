@@ -349,6 +349,17 @@ def lattr_style_set(r):
         self.assertEqual(text[0].glyphName, "D")
         self.assertEqual(text[-1].ambit().round().x, 50)
         self.assertEqual(text[0].ambit().round().x, 883)
+    
+    def test_sample(self):
+        r = Rect(1000, 500)
+        dp = (DraftingPen()
+            .define(r=r)
+            .gs("$r↖ $r↗ $r↙|↘|65 ɜ"))
+        # dp = (DraftingPen()
+        #     .define(r=r)
+        #     .gs("$r↙ $r↗ ɜ")
+        #     .fssw(None, 0, 5))
+        dp.picklejar(r)
 
 
 if __name__ == "__main__":
