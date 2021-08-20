@@ -41,6 +41,8 @@ class Timeable():
         self.start = start
         self.end = end
         self.index = index
+        self.idx = index
+        self.i = index
         self.name = name
         self.feedback = 0
         self.data = data

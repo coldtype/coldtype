@@ -10,6 +10,7 @@ Before we begin, let’s run some code needed to setup all the examples below. (
     from coldtype import *
 
     co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
+    # also available via shortcut as Font.ColdtypeObviously()
 
 Basic Text
 ----------

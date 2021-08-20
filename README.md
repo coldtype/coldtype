@@ -22,8 +22,9 @@ def render(r):
         (DATPen(r.inset(10))
             .outline(10)
             .f(Gradient.H(r, c2.lighter(0.3), c1.lighter(0.3)))),
-        (StSt("COLDTYPE", "assets/ColdtypeObviously-VF.ttf", 250,
-                wdth=1, tu=-170, r=1, rotate=15)
+        (StSt("COLDTYPE",
+            Font.ColdtypeObviously(), 250,
+            wdth=1, tu=-170, r=1, rotate=15)
             .align(r)
             .f(Gradient.H(r, c1, c2))
             .understroke(s=1, sw=5))
