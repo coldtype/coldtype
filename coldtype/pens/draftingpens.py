@@ -299,9 +299,14 @@ class DraftingPens(DraftingPen):
             p.round_to(rounding)
         return self
     
+    def xalign(self, rect=None, x="centerx", th=1, tv=0):
+        for pen in self:
+            pen.align(rect, x=x, y=None, th=th, tv=tv)
+        return self
+    
     def xa(self, x="centerx"):
         for pen in self:
-            pen.xAlignToFrame(x)
+            pen.x_align_to_frame(x)
         return self
     
     def distribute(self, v=False, tracks=None, th=0, tv=0):
