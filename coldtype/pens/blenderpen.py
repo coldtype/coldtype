@@ -85,6 +85,7 @@ class BPH():
             bc = bpy.context.object
             bc.name = name
             bc.data.name = name
+            #name = bc.name
             if _type == "Bezier":
                 bc.data.dimensions = "2D"
                 bc.data.fill_mode = "BOTH"
@@ -270,9 +271,12 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.bez.hide_render = hide
     
     def convertToMesh(self):
+        bpy.context.view_layer.objects.active = None
+        bpy.context.view_layer.objects.active = self.bez
         self.bez.select_set(True)
         bpy.ops.object.convert(target="MESH")
         self.bez.select_set(False)
+        bpy.context.view_layer.objects.active = None
         return self
     
     def solidify(self, thickness=1):
@@ -286,12 +290,46 @@ class BlenderPen(DrawablePenMixin, BasePen):
         bpy.context.view_layer.objects.active = None
         return self
     
-    def applyModifier(self):
+    def remesh(self, octree_depth=7):
         bpy.context.view_layer.objects.active = None
         bpy.context.view_layer.objects.active = self.bez
         self.bez.select_set(True)
-        bpy.ops.object.modifier_apply(apply_as="DATA")
+        if "Remesh" not in self.bez.modifiers:
+            bpy.ops.object.modifier_add(type="REMESH")
+        self.bez.modifiers["Remesh"].mode = "SHARP"
+        self.bez.modifiers["Remesh"].octree_depth = octree_depth
+        self.bez.modifiers["Remesh"].use_remove_disconnected = False
         self.bez.select_set(False)
+        bpy.context.view_layer.objects.active = None
+        return self
+    
+    def rigidbody(self, mode="active", kinematic=False, mesh=False, restitution=0, mass=1):
+        bpy.context.view_layer.objects.active = None
+        bpy.context.view_layer.objects.active = self.bez
+        self.bez.select_set(True)
+        bpy.ops.rigidbody.object_add()
+        if mesh:
+            self.bez.rigid_body.collision_shape = "MESH"
+        self.bez.rigid_body.type = mode.upper()
+        self.bez.rigid_body.kinematic = kinematic
+        self.bez.rigid_body.restitution = restitution
+        self.bez.rigid_body.mass = mass
+        self.bez.select_set(False)
+        bpy.data.objects["ct_autotag_0_0"].rigid_body.mass
+        bpy.context.view_layer.objects.active = None
+        return self
+    
+    def applyModifier(self, name):
+        bpy.context.view_layer.objects.active = None
+        bpy.context.view_layer.objects.active = self.bez
+        
+        self.bez.select_set(True)
+        #bpy.ops.object.modifier_set_active(modifier=name)
+        bpy.ops.object.modifier_apply(modifier="Remesh")
+        #print(self.bez)
+        self.bez.to_mesh(preserve_all_data_layers=True)
+        self.bez.select_set(False)
+
         bpy.context.view_layer.objects.active = None
         return self
     

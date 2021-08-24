@@ -24,7 +24,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
     def render_current_frame(self, statics=False):
         cfs = [r"^b3d_.*$"]
         if not statics:
-            cfs.append(r".*animation$")
+            cfs = [r"^b3d_animation$"]
         
         for _, res in self.sr.frame_results(
             self.current_frame,

@@ -20,7 +20,14 @@ except ImportError:
     bpy = None
     pass
 
-def b3d(collection, callback=None, plane=False, dn=False, material="auto"):
+def b3d(collection,
+    callback=None,
+    plane=False,
+    dn=False,
+    material="auto",
+    zero=False,
+    upright=False,
+    ):
     if not isinstance(collection, str):
         callback = collection
         collection = "Coldtype"
@@ -33,11 +40,19 @@ def b3d(collection, callback=None, plane=False, dn=False, material="auto"):
     def _cast(pen:DATPen):
         if bpy and pen_mod:
             pen_mod(pen)
+
+        c = pen.ambit().pc
+        if zero:
+            pen.translate(-c.x, -c.y)
+
         pen.add_data("b3d", dict(
             collection=collection,
             callback=callback,
             material=material,
-            plane=plane))
+            dn=dn,
+            plane=plane,
+            reposition=c,
+            upright=upright))
     return _cast
 
 
@@ -64,9 +79,6 @@ class b3d_mods():
 
 
 def walk_to_b3d(result:DATPens, dn=False):
-    #from time import sleep
-    #sleep(1)
-
     def walker(p:DATPen, pos, data):
         if pos == 0:
             bdata = p.data.get("b3d")
@@ -83,21 +95,41 @@ def walk_to_b3d(result:DATPens, dn=False):
 
                 if len(p.value) == 0:
                     p.v(0)
+                
+                denovo = bdata.get("dn", dn)
 
                 if bdata.get("plane"):
                     bp = p.cast(BlenderPen).draw(coll, plane=True, material=material, dn=True)
                 else:
-                    bp = p.cast(BlenderPen).draw(coll, dn=dn, material=material)
+                    bp = p.cast(BlenderPen).draw(coll, dn=denovo, material=material)
                 
                 if bdata.get("callback"):
                     bdata.get("callback")(bp)
 
                 bp.hide(not p._visible)
+
+                if bdata.get("reposition"):
+                    p = bdata.get("reposition")
+                    if bdata.get("upright"):
+                        bp.locate(p.x/100, 0, p.y/100)
+                    else:
+                        bp.locate(p.x/100, p.y/100)
+                
     result.walk(walker)
 
 
 class b3d_renderable(renderable):
-    pass
+    def post_read(self):
+        if not hasattr(self, "blend"):
+            self.blend = self.filepath.parent / "blends" / (self.filepath.stem + ".blend")
+
+        if self.blend:
+            self.blend = Path(self.blend).expanduser()
+            self.blend.parent.mkdir(exist_ok=True, parents=True)
+
+        super().post_read()
+        # if bpy:
+        #     bpy.data.scenes[0].render.filepath = str(self.pass_path(""))
 
 
 class b3d_animation(animation):
