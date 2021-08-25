@@ -72,9 +72,21 @@ class BPH():
     def Primitive(_type, coll, name, dn=False, container=None, material="auto"):
         created = False
         
-        if dn and name in bpy.context.scene.objects:
-            obj = bpy.context.scene.objects[name]
-            bpy.data.objects.remove(obj, do_unlink=True)
+        if dn: #and name in bpy.context.scene.objects:
+            # obj = bpy.context.scene.objects[name]
+            # bpy.data.objects.remove(obj)
+
+            for m in bpy.data.objects:
+                if name in m.name:
+                    bpy.data.objects.remove(m)
+
+            for m in bpy.data.meshes:
+                if name in m.name:
+                    bpy.data.meshes.remove(m)
+            
+            for m in bpy.data.materials:
+                if name in m.name:
+                    bpy.data.materials.remove(m)
 
         if name not in bpy.context.scene.objects:
             created = True
@@ -112,6 +124,8 @@ class BPH():
             bc_coll.objects.unlink(bc)
         bc.select_set(False)
 
+        bc.data.name = name
+        #print(bc.name, bc.data.name)
         return bc, created
     
     def Vector(pt, z=0):
@@ -303,7 +317,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
         bpy.context.view_layer.objects.active = None
         return self
     
-    def rigidbody(self, mode="active", kinematic=False, mesh=False, restitution=0, mass=1):
+    def rigidbody(self, mode="active", kinematic=False, mesh=False, restitution=0, mass=1, deactivated=True):
         bpy.context.view_layer.objects.active = None
         bpy.context.view_layer.objects.active = self.bez
         self.bez.select_set(True)
@@ -314,8 +328,10 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.bez.rigid_body.kinematic = kinematic
         self.bez.rigid_body.restitution = restitution
         self.bez.rigid_body.mass = mass
+        if deactivated:
+            self.bez.rigid_body.use_deactivation = True
+            self.bez.rigid_body.use_start_deactivated = True
         self.bez.select_set(False)
-        bpy.data.objects["ct_autotag_0_0"].rigid_body.mass
         bpy.context.view_layer.objects.active = None
         return self
     

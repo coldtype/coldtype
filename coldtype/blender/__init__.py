@@ -41,8 +41,9 @@ def b3d(collection,
         if bpy and pen_mod:
             pen_mod(pen)
 
-        c = pen.ambit().pc
+        c = None
         if zero:
+            c = pen.ambit().pc
             pen.translate(-c.x, -c.y)
 
         pen.add_data("b3d", dict(
