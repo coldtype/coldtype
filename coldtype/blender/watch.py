@@ -28,8 +28,6 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             self.current_frame,
             class_filters=cfs):
             walk_to_b3d(res)
-            print(r)
-
 
     def reimport(self, arg):
         try:

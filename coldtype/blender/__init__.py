@@ -28,6 +28,9 @@ def b3d(collection,
     zero=False,
     upright=False,
     ):
+    if not bpy: # short-circuit if this is meaningless
+        return lambda x: x
+
     if not isinstance(collection, str):
         callback = collection
         collection = "Coldtype"
@@ -80,6 +83,8 @@ class b3d_mods():
 
 
 def walk_to_b3d(result:DATPens, dn=False):
+    built = {}
+
     def walker(p:DATPen, pos, data):
         if pos == 0:
             bdata = p.data.get("b3d")
@@ -110,14 +115,15 @@ def walk_to_b3d(result:DATPens, dn=False):
                 bp.hide(not p._visible)
 
                 if bdata.get("reposition"):
-                    p = bdata.get("reposition")
+                    pt = bdata.get("reposition")
                     if bdata.get("upright"):
-                        bp.locate(p.x/100, 0, p.y/100)
+                        bp.locate(pt.x/100, 0, pt.y/100)
                     else:
-                        bp.locate(p.x/100, p.y/100)
+                        bp.locate(pt.x/100, pt.y/100)
+                
+                built[p.tag()] = (p, bp)
                 
     result.walk(walker)
-
 
 class b3d_renderable(renderable):
     def post_read(self):
@@ -139,6 +145,8 @@ class b3d_animation(animation):
         samples=16,
         denoise=True,
         blend=None,
+        match_length=True,
+        match_output=True,
         **kwargs
         ):
         self.func = None
@@ -147,13 +155,15 @@ class b3d_animation(animation):
         self.samples = samples
         self.denoise = denoise
         self.blend = blend
+        self.match_length = match_length
+        self.match_output = match_output
         
         if "timeline" not in kwargs:
             kwargs["timeline"] = Timeline(30)
         
         super().__init__(rect=rect, **kwargs)
 
-        if bpy:
+        if bpy and self.match_length:
             bpy.data.scenes[0].frame_end = self.t.duration-1
             # don't think this is totally accurate but good enough for now
             if isinstance(self.t.fps, float):
@@ -187,7 +197,7 @@ class b3d_animation(animation):
             self.blend.parent.mkdir(exist_ok=True, parents=True)
 
         super().post_read()
-        if bpy:
+        if bpy and self.match_output:
             bpy.data.scenes[0].render.filepath = str(self.pass_path(""))
     
     def blender_rendered_preview(self, solo=0):

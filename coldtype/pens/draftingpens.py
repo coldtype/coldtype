@@ -1,4 +1,4 @@
-import math
+import math, inspect
 from random import Random
 from re import L
 from typing import Callable, Optional
@@ -518,14 +518,34 @@ class DraftingPens(DraftingPen):
         self._pens = new_pens
         return self
     
-    def index(self, idx, fn):
+    def return_replace(self):
+        return self.add_data("replace", 1)
+    
+    def index(self, idx, fn, enum_idx=None):
         try:
             p = self
             for x in idx:
                 p = p[x]
         except:
             p = self[idx]
-        fn(p)
+        if enum_idx is None:
+            res = fn(p)
+        else:
+            arg_count = len(inspect.signature(fn).parameters)
+            if arg_count > 1:
+                res = fn(enum_idx, p)
+            else:
+                res = fn(p)
+        
+
+        if hasattr(res, "data"):
+            if res.data.get("replace", 0):
+                self[idx] = res
+        return self
+    
+    def indices(self, idxs, fn):
+        for eidx, idx in enumerate(idxs):
+            self.index(idx, fn, enum_idx=eidx)
         return self
     
     def hide(self, *indices):

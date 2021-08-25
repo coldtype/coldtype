@@ -283,6 +283,16 @@ class BlenderPen(DrawablePenMixin, BasePen):
     def hide(self, hide):
         self.bez.hide_viewport = hide
         self.bez.hide_render = hide
+        return self
+    
+    def make_invisible(self):
+        self.bez.cycles_visibility.camera = False
+        self.bez.cycles_visibility.diffuse = False
+        self.bez.cycles_visibility.glossy = False
+        self.bez.cycles_visibility.transmission = False
+        self.bez.cycles_visibility.scatter = False
+        self.bez.cycles_visibility.shadow = False
+        return self
     
     def convertToMesh(self):
         bpy.context.view_layer.objects.active = None
