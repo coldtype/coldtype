@@ -327,7 +327,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
         bpy.context.view_layer.objects.active = None
         return self
     
-    def rigidbody(self, mode="active", kinematic=False, mesh=False, restitution=0, mass=1, deactivated=True):
+    def rigidbody(self, mode="active", kinematic=False, mesh=False, restitution=0, mass=1, deactivated=True, friction=0.5):
         bpy.context.view_layer.objects.active = None
         bpy.context.view_layer.objects.active = self.bez
         self.bez.select_set(True)
@@ -338,6 +338,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.bez.rigid_body.kinematic = kinematic
         self.bez.rigid_body.restitution = restitution
         self.bez.rigid_body.mass = mass
+        self.bez.rigid_body.friction = friction
         if deactivated:
             self.bez.rigid_body.use_deactivation = True
             self.bez.rigid_body.use_start_deactivated = True
