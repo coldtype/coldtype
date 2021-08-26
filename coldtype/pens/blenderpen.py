@@ -285,6 +285,19 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.bez.hide_render = hide
         return self
     
+    def set_visibility_at_frame(self, frame, visibility):
+        bpy.data.scenes[0].frame_set(frame)
+        self.hide(not visibility)
+        self.bez.keyframe_insert(data_path="hide_render")
+        self.bez.keyframe_insert(data_path="hide_viewport")
+        return self
+    
+    def show_on_frame(self, frame):
+        self.set_visibility_at_frame(0, False)
+        self.set_visibility_at_frame(frame, True)
+        self.set_visibility_at_frame(frame+1, False)
+        return self
+    
     def make_invisible(self):
         self.bez.cycles_visibility.camera = False
         self.bez.cycles_visibility.diffuse = False
@@ -294,7 +307,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.bez.cycles_visibility.shadow = False
         return self
     
-    def convertToMesh(self):
+    def convert_to_mesh(self):
         bpy.context.view_layer.objects.active = None
         bpy.context.view_layer.objects.active = self.bez
         self.bez.select_set(True)
@@ -302,6 +315,8 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.bez.select_set(False)
         bpy.context.view_layer.objects.active = None
         return self
+
+    convertToMesh = convert_to_mesh
     
     def solidify(self, thickness=1):
         bpy.context.view_layer.objects.active = None
@@ -346,7 +361,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
         bpy.context.view_layer.objects.active = None
         return self
     
-    def applyModifier(self, name):
+    def apply_modifier(self, name):
         bpy.context.view_layer.objects.active = None
         bpy.context.view_layer.objects.active = self.bez
         
@@ -359,6 +374,8 @@ class BlenderPen(DrawablePenMixin, BasePen):
 
         bpy.context.view_layer.objects.active = None
         return self
+    
+    applyModifier = apply_modifier
     
     def rotate(self, x=None, y=None, z=None):
         if x is not None:
@@ -413,14 +430,14 @@ class BlenderPen(DrawablePenMixin, BasePen):
             self.bez.data.fill_mode = "BOTH"
             self.record(self.dat.copy().removeOverlap().scale(scale, point=False))
             try:
-                self.drawOnBezierCurve(self.bez.data, cyclic=cyclic)
+                self.draw_on_bezier_curve(self.bez.data, cyclic=cyclic)
             except:
                 pass
         for attrs, attr in self.findStyledAttrs(style):
             self.applyDATAttribute(attrs, attr)
         return self
 
-    def drawOnBezierCurve(self, bez, cyclic=True):
+    def draw_on_bezier_curve(self, bez, cyclic=True):
         for spline in reversed(bez.splines): # clear existing splines
             bez.splines.remove(spline)
 

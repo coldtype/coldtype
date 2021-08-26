@@ -24,7 +24,7 @@ def b3d(collection,
     callback=None,
     plane=False,
     dn=False,
-    material="auto",
+    material=None,
     zero=False,
     upright=False,
     ):
@@ -40,9 +40,15 @@ def b3d(collection,
         pen_mod = callback[0]
         callback = callback[1]
 
-    def _cast(pen:DATPen):
+    def annotate(pen:DATPen):
         if bpy and pen_mod:
             pen_mod(pen)
+        
+        prev = pen.data.get("b3d", {})
+        if prev:
+            callbacks = [*prev.callbacks, callback]
+        else:
+            callbacks = [callback]
 
         c = None
         if zero:
@@ -50,14 +56,17 @@ def b3d(collection,
             pen.translate(-c.x, -c.y)
 
         pen.add_data("b3d", dict(
-            collection=collection,
-            callback=callback,
-            material=material,
+            collection=(collection
+                or prev.get("collection", "Coldtype")),
+            callbacks=callbacks,
+            material=(material
+                or prev.get("material", "auto")),
             dn=dn,
             plane=plane,
             reposition=c,
             upright=upright))
-    return _cast
+    
+    return annotate
 
 
 def b3d_mod(callback):
@@ -109,8 +118,9 @@ def walk_to_b3d(result:DATPens, dn=False):
                 else:
                     bp = p.cast(BlenderPen).draw(coll, dn=denovo, material=material)
                 
-                if bdata.get("callback"):
-                    bdata.get("callback")(bp)
+                if bdata.get("callbacks"):
+                    for cb in bdata.get("callbacks"):
+                        cb(bp)
 
                 bp.hide(not p._visible)
 
@@ -135,8 +145,6 @@ class b3d_renderable(renderable):
             self.blend.parent.mkdir(exist_ok=True, parents=True)
 
         super().post_read()
-        # if bpy:
-        #     bpy.data.scenes[0].render.filepath = str(self.pass_path(""))
 
 
 class b3d_animation(animation):
