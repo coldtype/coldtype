@@ -485,10 +485,11 @@ class DraftingPens(DraftingPen):
             if hasattr(p, "_pens"):
                 p.pmap(fn)
             else:
-                try:
-                    fn(idx, p)
-                except TypeError:
+                arg_count = len(inspect.signature(fn).parameters)
+                if arg_count == 1:
                     fn(p)
+                else:
+                    fn(idx, p)
         return self
     
     def pfilter(self, fn):

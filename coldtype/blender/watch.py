@@ -26,14 +26,18 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         
         for r, res in self.sr.frame_results(
             self.current_frame,
-            class_filters=cfs):
-            walk_to_b3d(res)
+            class_filters=cfs
+            ):
+            if r.bake:
+                if statics:
+                    walk_to_b3d(r.baked_frames())
+            else:
+                walk_to_b3d(res)
 
     def reimport(self, arg):
         try:
             self.sr = SourceReader(arg)
             self.sr.unlink()
-            
             #bpy.data.scenes[0].frame_start = 0
 
             def _frame_update_handler(scene):

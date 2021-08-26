@@ -990,6 +990,8 @@ class DraftingPen(RecordingPen, SHContext):
             callback(self, 1, dict(depth=depth, alpha=alpha, idx=idx))
         else:
             callback(self, 0, dict(depth=depth, alpha=alpha, idx=idx))
+        
+        return self
     
     def remove_blanks(self):
         print("REMOVE BLANKS PEN", self)

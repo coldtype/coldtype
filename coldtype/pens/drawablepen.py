@@ -4,6 +4,14 @@ from coldtype.pens.draftingpen import DraftingPen
 from coldtype.color import Gradient, Color
 
 class DrawablePenMixin(object):
+    def print(self, *args):
+        for a in args:
+            if callable(a):
+                print(a(self))
+            else:
+                print(a)
+        return self
+
     def fill(self, el, color):
         raise Exception("Pen does not implement fill function")
     

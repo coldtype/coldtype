@@ -9,7 +9,7 @@ from coldtype.pens.blenderpen import BlenderPen, BPH
 from coldtype.color import hsl
 
 from coldtype.time import Frame, Timeline
-from coldtype.renderable import renderable, Overlay
+from coldtype.renderable import renderable, Overlay, Action
 from coldtype.renderable.animation import animation
 
 from coldtype.blender.render import blend_source
@@ -27,6 +27,7 @@ def b3d(collection,
     material=None,
     zero=False,
     upright=False,
+    tag_prefix=None,
     ):
     if not bpy: # short-circuit if this is meaningless
         return lambda x: x
@@ -46,7 +47,7 @@ def b3d(collection,
         
         prev = pen.data.get("b3d", {})
         if prev:
-            callbacks = [*prev.callbacks, callback]
+            callbacks = [*prev.get("callbacks"), callback]
         else:
             callbacks = [callback]
 
@@ -61,6 +62,7 @@ def b3d(collection,
             callbacks=callbacks,
             material=(material
                 or prev.get("material", "auto")),
+            tag_prefix=(tag_prefix or prev.get("tag_prefix")),
             dn=dn,
             plane=plane,
             reposition=c,
@@ -102,7 +104,12 @@ def walk_to_b3d(result:DATPens, dn=False):
                 bdata = p.data.get("b3d")
             
             if p.tag() == "?" and data.get("idx"):
-               p.tag("ct_autotag_" + "_".join([str(i) for i in data["idx"]]))
+                tag = "_".join([str(i) for i in data["idx"]])
+                if bdata.get("tag_prefix"):
+                    tag = bdata.get("tag_prefix") + tag
+                else:
+                    tag = "ct_autotag_" + tag
+                p.tag(tag)
 
             if bdata:
                 coll = BPH.Collection(bdata["collection"])
@@ -155,6 +162,7 @@ class b3d_animation(animation):
         blend=None,
         match_length=True,
         match_output=True,
+        bake=False,
         **kwargs
         ):
         self.func = None
@@ -163,6 +171,7 @@ class b3d_animation(animation):
         self.samples = samples
         self.denoise = denoise
         self.blend = blend
+        self.bake = bake
         self.match_length = match_length
         self.match_output = match_output
         
@@ -208,20 +217,22 @@ class b3d_animation(animation):
         if bpy and self.match_output:
             bpy.data.scenes[0].render.filepath = str(self.pass_path(""))
     
-    def blender_rendered_preview(self, solo=0):
-        if bpy: return
+    def baked_frames(self):
+        def bakewalk(p, pos, data):
+            if pos == 0:
+                fi = data["idx"][0]
+                (p.ch(b3d(f"CTBakedAnimation_{self.name}",
+                    lambda bp: bp
+                        .show_on_frame(fi)
+                        .print(f"Baking frame {fi}..."),
+                    dn=True,
+                    tag_prefix=f"ct_baked_frame_{fi}_{self.name}")))
         
-        from coldtype.img.skiaimage import SkiaImage
+        to_bake = DATPens([])
+        for ps in self.passes(Action.RenderAll, None)[:]:
+            to_bake += self.run_normal(ps, None)
         
-        @animation(self.rect, timeline=self.timeline, preview_only=1, sort=1000, solo=solo)
-        def blender_preview(f):
-            try:
-                return SkiaImage(self.pass_path(f.i))
-            except:
-                pass
-        
-        return blender_preview
-
+        return to_bake.walk(bakewalk)
 
 # if __name__ == "<run_path>":
 #     from coldtype.text.composer import StSt, Font
