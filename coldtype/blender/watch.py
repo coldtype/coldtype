@@ -4,7 +4,7 @@ from runpy import run_path
 import traceback
 
 from coldtype.renderer.reader import SourceReader
-from coldtype.blender import walk_to_b3d
+from coldtype.blender import b3d_animation, walk_to_b3d
 
 #from coldtype.blender.watch import watch; watch()
 
@@ -20,6 +20,8 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
     current_frame = -1
 
     def render_current_frame(self, statics=False):
+        animation_found = False
+
         cfs = [r"^b3d_.*$"]
         if not statics:
             cfs = [r"^b3d_animation$"]
@@ -28,11 +30,17 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             self.current_frame,
             class_filters=cfs
             ):
-            if r.bake:
-                if statics:
-                    walk_to_b3d(r.baked_frames())
-            else:
+            if isinstance(r, b3d_animation):
+                if r.bake:
+                    if statics:
+                        walk_to_b3d(r.baked_frames())
+                else:
+                    animation_found = True
+                    walk_to_b3d(res)
+            elif statics:
                 walk_to_b3d(res)
+        
+        return animation_found
 
     def reimport(self, arg):
         try:
@@ -40,15 +48,20 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             self.sr.unlink()
             #bpy.data.scenes[0].frame_start = 0
 
+            bpy.app.handlers.frame_change_pre.clear()
+
+            self.current_frame = bpy.context.scene.frame_current
+            animation_found = self.render_current_frame(statics=True)
+            
+            if not animation_found:
+                return
+
             def _frame_update_handler(scene):
                 if scene.frame_current != self.current_frame:
                     self.current_frame = scene.frame_current
                     self.render_current_frame(statics=False)
             
-            bpy.app.handlers.frame_change_pre.clear()
             bpy.app.handlers.frame_change_pre.append(_frame_update_handler)
-            self.current_frame = bpy.context.scene.frame_current
-            self.render_current_frame(statics=True)
         
         except Exception as e:
             self.current_frame = -1
