@@ -69,7 +69,7 @@ class BPH():
         else:
             return bpy.context.scene.objects[name]
 
-    def Primitive(_type, coll, name, dn=False, container=None, material="auto"):
+    def Primitive(_type, coll, name, dn=False, container=None, material="ColdtypeDefault"):
         created = False
         
         if dn: #and name in bpy.context.scene.objects:
@@ -279,6 +279,17 @@ class BlenderPen(DrawablePenMixin, BasePen):
             mat.node_tree.links.new(bsdf.inputs["Base Color"], imgtex.outputs["Color"])
         imgtex.image = bpy.data.images.load(str(src))
         return self
+    
+    def at_frame(self, frame, path, value=None):
+        bpy.data.scenes[0].frame_set(frame)
+        if value is not None:
+            if callable(value):
+                value(self)
+            else:
+                exec(f"self.bez.{path} = {value}")
+        self.bez.keyframe_insert(data_path=path)
+        return self
+        #setattr(self.bez, path, value)
 
     def hide(self, hide):
         self.bez.hide_viewport = hide
@@ -329,7 +340,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
         bpy.context.view_layer.objects.active = None
         return self
     
-    def remesh(self, octree_depth=7):
+    def remesh(self, octree_depth=7, smooth=False):
         bpy.context.view_layer.objects.active = None
         bpy.context.view_layer.objects.active = self.bez
         self.bez.select_set(True)
@@ -338,11 +349,12 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.bez.modifiers["Remesh"].mode = "SHARP"
         self.bez.modifiers["Remesh"].octree_depth = octree_depth
         self.bez.modifiers["Remesh"].use_remove_disconnected = False
+        self.bez.modifiers["Remesh"].use_smooth_shade = smooth
         self.bez.select_set(False)
         bpy.context.view_layer.objects.active = None
         return self
     
-    def rigidbody(self, mode="active", kinematic=False, mesh=False, restitution=0, mass=1, deactivated=True, friction=0.5):
+    def rigidbody(self, mode="active", kinematic=False, mesh=False, bounce=0, mass=1, deactivated=True, friction=0.5):
         bpy.context.view_layer.objects.active = None
         bpy.context.view_layer.objects.active = self.bez
         self.bez.select_set(True)
@@ -351,7 +363,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
             self.bez.rigid_body.collision_shape = "MESH"
         self.bez.rigid_body.type = mode.upper()
         self.bez.rigid_body.kinematic = kinematic
-        self.bez.rigid_body.restitution = restitution
+        self.bez.rigid_body.restitution = bounce
         self.bez.rigid_body.mass = mass
         self.bez.rigid_body.friction = friction
         if deactivated:
@@ -413,6 +425,15 @@ class BlenderPen(DrawablePenMixin, BasePen):
             self.bez.location[2] = z
         return self
     
+    def locate_relative(self, x=None, y=None, z=None):
+        if x is not None:
+            self.bez.location[0] = self.bez.location[0] + x
+        if y is not None:
+            self.bez.location[1] = self.bez.location[1] + y
+        if z is not None:
+            self.bez.location[2] = self.bez.location[2] + z
+        return self
+    
     def draw(self, collection, style=None, scale=0.01, cyclic=True, dn=False, plane=False, material="auto"):
         self.material = material
 
@@ -422,8 +443,12 @@ class BlenderPen(DrawablePenMixin, BasePen):
             self.bez, self.created = BPH.Primitive("Bezier", collection, self.tag, dn=dn, material=material)
 
             if material and material != "auto":
-                mat = bpy.data.materials[material]
-                #print(">MAT", mat)
+                try:
+                    mat = bpy.data.materials[material]
+                except KeyError:
+                    mat = bpy.data.materials.new(material)
+                    mat.use_nodes = True
+                    
                 self.bez.data.materials.clear()
                 self.bez.data.materials.append(mat)
 

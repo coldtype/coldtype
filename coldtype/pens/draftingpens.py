@@ -336,7 +336,7 @@ class DraftingPens(DraftingPen):
         for idx, p in enumerate(self._pens):
             frame = p.ambit()
             if v:
-                p.translate(0, t*idx)
+                p.translate(0, -t*idx)
             else:
                 p.translate(t*idx, 0)
         return self

@@ -40,6 +40,8 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             elif statics:
                 walk_to_b3d(res)
         
+        if not animation_found:
+            bpy.data.scenes[0].frame_set(0)
         return animation_found
 
     def reimport(self, arg):

@@ -144,7 +144,7 @@ class DATPen(DraftingPen):
     
     ƒ = fenced
     
-    def smooth(self):
+    def smoothen(self):
         """Runs a catmull spline on the datpen, useful in combination as flatten+roughen+smooth"""
         dp = DATPen()
         for pts in self.skeletonPoints():

@@ -61,7 +61,7 @@ def b3d(collection,
                 or prev.get("collection", "Coldtype")),
             callbacks=callbacks,
             material=(material
-                or prev.get("material", "auto")),
+                or prev.get("material", "ColdtypeDefault")),
             tag_prefix=(tag_prefix or prev.get("tag_prefix")),
             dn=dn,
             plane=plane,
@@ -69,6 +69,21 @@ def b3d(collection,
             upright=upright))
     
     return annotate
+
+
+def b3d_post(callback):
+    if not bpy: # short-circuit for non-bpy
+        return lambda x: x
+
+    def _b3d_post(pen:DATPen):
+        prev = pen.data.get("b3d_post")
+        if prev:
+            callbacks = [*prev, callback]
+        else:
+            callbacks = [callback]
+        pen.data["b3d_post"] = callbacks
+    
+    return _b3d_post
 
 
 def b3d_mod(callback):
@@ -113,7 +128,7 @@ def walk_to_b3d(result:DATPens, dn=False):
 
             if bdata:
                 coll = BPH.Collection(bdata["collection"])
-                material = bdata.get("material", "auto")
+                material = bdata.get("material", "ColdtypeDefault")
 
                 if len(p.value) == 0:
                     p.v(0)
@@ -134,11 +149,16 @@ def walk_to_b3d(result:DATPens, dn=False):
                 if bdata.get("reposition"):
                     pt = bdata.get("reposition")
                     if bdata.get("upright"):
-                        bp.locate(pt.x/100, 0, pt.y/100)
+                        bp.locate_relative(pt.x/100, 0, pt.y/100)
                     else:
-                        bp.locate(pt.x/100, pt.y/100)
+                        bp.locate_relative(pt.x/100, pt.y/100)
                 
                 built[p.tag()] = (p, bp)
+
+                b3d_post = p.data.get("b3d_post")
+                if b3d_post:
+                    for post in b3d_post:
+                        post(bp)
                 
     result.walk(walker)
 
