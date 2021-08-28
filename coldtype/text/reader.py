@@ -397,7 +397,7 @@ class Style():
                     variations[k] = max(axis.minValue, min(axis.maxValue, v))
                     print("----------------------")
                     print("Invalid Font Variation")
-                    print(self.fontFile, self.axes[k].axisTag, v)
+                    print(self.font.path, self.axes[k].axisTag, v)
                     print("> setting", v, "<to>", variations[k])
                     print("----------------------")
                 else:
