@@ -38,9 +38,9 @@ class CurveSample():
         self.tan = tan
     
     def neighbors(self, prev, next):
-        self.prevt = prev
-        self.nextt = next
-        self.difft = ((next-prev) + 180) % 360 - 180
+        self.prev = prev
+        self.next = next
+        #self.difft = ((next-prev) + 180) % 360 - 180
 
 
 class DraftingPen(RecordingPen, SHContext):
@@ -1561,8 +1561,8 @@ class DraftingPen(RecordingPen, SHContext):
             idx += 1
         
         for i, s in enumerate(samples):
-            next = samples[i+1].tan if i < len(samples)-1 else s.tan
-            prev = samples[i-1].tan if i > 0 else s.tan
+            next = samples[i+1] if i < len(samples)-1 else s
+            prev = samples[i-1] if i > 0 else s
             s.neighbors(prev, next)
         
         return samples
