@@ -108,7 +108,11 @@ class b3d_pres():
             p.translate(0, -r.h/2))
 
 
-def walk_to_b3d(result:DATPens, dn=False, center=False):
+def walk_to_b3d(result:DATPens,
+    dn=False,
+    center=None,
+    center_rect=None,
+    ):
     built = {}
 
     def walker(p:DATPen, pos, data):
@@ -119,7 +123,9 @@ def walk_to_b3d(result:DATPens, dn=False, center=False):
                 bdata = p.data.get("b3d")
                         
             if center:
-                p.translate(-center.w/2, -center.h/2)
+                p.translate(
+                    -center_rect.w/2*(1-center[0]),
+                    -center_rect.h/2*(1-center[1]))
             
             if p.tag() == "?" and data.get("idx"):
                 tag = "_".join([str(i) for i in data["idx"]])
@@ -168,7 +174,7 @@ def walk_to_b3d(result:DATPens, dn=False, center=False):
 class b3d_renderable(renderable):
     def __init__(self,
         rect=(1080, 1080),
-        center=False,
+        center=(0, 0),
         **kwargs
         ):
         self.center = center
@@ -194,7 +200,7 @@ class b3d_animation(animation):
         match_length=True,
         match_output=True,
         bake=False,
-        center=False,
+        center=(0, 0),
         **kwargs
         ):
         self.func = None

@@ -30,16 +30,16 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             self.current_frame,
             class_filters=cfs
             ):
-            c = r.rect if r.center else None
+
             if isinstance(r, b3d_animation):
                 if r.bake:
                     if statics:
-                        walk_to_b3d(r.baked_frames(), center=c)
+                        walk_to_b3d(r.baked_frames(), center=r.center, center_rect=r.rect)
                 else:
                     animation_found = True
-                    walk_to_b3d(res, center=c)
+                    walk_to_b3d(res, center=r.center, center_rect=r.rect)
             elif statics:
-                walk_to_b3d(res, center=c)
+                walk_to_b3d(res, center=r.center, center_rect=r.rect)
         
         if not animation_found:
             bpy.data.scenes[0].frame_set(0)

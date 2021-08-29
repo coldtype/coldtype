@@ -53,5 +53,5 @@ def frame_render(file, frame, samples, denoise=True):
 
     sr = SourceReader(file)
     for r, res in sr.frame_results(frame, class_filters=[r"^b3d_.*$"]):
-        walk_to_b3d(res, dn=True, center=r.rect if r.center else None)
+        walk_to_b3d(res, dn=True, center=r.center, center_rect=r.rect)
     sr.unlink()
