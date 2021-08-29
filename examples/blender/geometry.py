@@ -20,7 +20,7 @@ def jaune(f):
             .pen()
             .tag(f"l{x}")
             .outline(2)
-            .ch(b3d_mod(lambda p: p
+            .ch(b3d_pre(lambda p: p
                 .fssw(hsl(0.23, 1, 0.6), None, None)
                 .f(hsl(f.adj(-x*5).e("seio", 1)))))
             .ch(b3d("Text", lambda bp: bp

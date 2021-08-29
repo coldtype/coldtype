@@ -86,29 +86,29 @@ def b3d_post(callback):
     return _b3d_post
 
 
-def b3d_mod(callback):
+def b3d_pre(callback):
     def _cast(pen:DATPen):
         if bpy:
             callback(pen)
     return _cast
 
 
-class b3d_mods():
+class b3d_pres():
     @staticmethod
     def center(r:Rect):
-        return b3d_mod(lambda p:
+        return b3d_pre(lambda p:
             p.translate(-r.w/2, -r.h/2))
     
     def centerx(r:Rect):
-        return b3d_mod(lambda p:
+        return b3d_pre(lambda p:
             p.translate(-r.w/2, 0))
     
     def centery(r:Rect):
-        return b3d_mod(lambda p:
+        return b3d_pre(lambda p:
             p.translate(0, -r.h/2))
 
 
-def walk_to_b3d(result:DATPens, dn=False):
+def walk_to_b3d(result:DATPens, dn=False, center=False):
     built = {}
 
     def walker(p:DATPen, pos, data):
@@ -117,6 +117,9 @@ def walk_to_b3d(result:DATPens, dn=False):
             if not bdata:
                 p.ch(b3d(lambda bp: bp.extrude(0.01)))
                 bdata = p.data.get("b3d")
+                        
+            if center:
+                p.translate(-center.w/2, -center.h/2)
             
             if p.tag() == "?" and data.get("idx"):
                 tag = "_".join([str(i) for i in data["idx"]])
@@ -163,6 +166,14 @@ def walk_to_b3d(result:DATPens, dn=False):
     result.walk(walker)
 
 class b3d_renderable(renderable):
+    def __init__(self,
+        rect=(1080, 1080),
+        center=False,
+        **kwargs
+        ):
+        self.center = center
+        super().__init__(rect, **kwargs)
+
     def post_read(self):
         if not hasattr(self, "blend"):
             self.blend = self.filepath.parent / "blends" / (self.filepath.stem + ".blend")
@@ -183,6 +194,7 @@ class b3d_animation(animation):
         match_length=True,
         match_output=True,
         bake=False,
+        center=False,
         **kwargs
         ):
         self.func = None
@@ -192,6 +204,7 @@ class b3d_animation(animation):
         self.denoise = denoise
         self.blend = blend
         self.bake = bake
+        self.center = center
         self.match_length = match_length
         self.match_output = match_output
         

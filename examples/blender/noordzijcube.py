@@ -18,7 +18,7 @@ def cube(f):
             .f(1)
             .align(g)
             .tag(f"{x}{y}{z}")
-            .ch(b3d_mod(lambda p: p
+            .ch(b3d_pre(lambda p: p
                 .f(1).s(None).sw(0)))
             .ch(b3d("Cube", lambda bp: (bp
                 .extrude(0.1+x/(d-1)*0.1)

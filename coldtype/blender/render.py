@@ -52,6 +52,6 @@ def frame_render(file, frame, samples, denoise=True):
         bpy.data.scenes[0].cycles.use_denoising = False
 
     sr = SourceReader(file)
-    for _, res in sr.frame_results(frame, class_filters=[r"^b3d_.*$"]):
-        walk_to_b3d(res, dn=True)
+    for r, res in sr.frame_results(frame, class_filters=[r"^b3d_.*$"]):
+        walk_to_b3d(res, dn=True, center=r.rect if r.center else None)
     sr.unlink()
