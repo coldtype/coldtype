@@ -108,10 +108,25 @@ def ease(style, x):
     else:
         raise Exception("No easing function with that mnemonic")
 
-def ez(t, easefn="eeio", rng=(0, 1)):
-    t = max(0, min(1, t))
-    e, _ = ease(easefn, t)
+def _loop(t, times=1, cyclic=True, negative=False):
+    lt = t*times*2
+    ltf = math.floor(lt)
+    ltc = math.ceil(lt)
+    lt = lt - ltf
+    if cyclic and ltf%2 == 1:
+        if negative:
+            lt = -lt
+        else:
+            lt = 1 - lt
+    return lt, ltf
 
+def ez(t, easefn="eeio", loops=0, cyclic=True, rng=(0, 1)):
+    t = max(0, min(1, t))
+    if loops > 0:
+        t, _ = _loop(t, times=loops, cyclic=cyclic)
+
+    e, _ = ease(easefn, t)
+    
     ra, rb = rng
     if ra > rb:
         e = 1 - e
