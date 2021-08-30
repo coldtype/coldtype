@@ -8,12 +8,11 @@ def letters(f):
         Font.Find("CompadreV"), 1000, wdth=0)
         .align(f.a.r)
         .f(1)
-        .pmap(lambda p: p
-            .ch(b3d(lambda bp: bp
-                .extrude(0.01)
-                .rotate(45)
-                , zero=True
-                ))))
+        .pen()
+        .ch(b3d(lambda bp: bp
+            .extrude(0.01)
+            .rotate(45)
+            )))
 
 #@animation(timeline=26)
 def letters_potrace(f):

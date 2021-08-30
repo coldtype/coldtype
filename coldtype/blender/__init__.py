@@ -143,6 +143,8 @@ def walk_to_b3d(result:DATPens,
                 else:
                     bp = p.cast(BlenderPen).draw(coll, dn=denovo, material=material)
                 
+                bp.rotate(0)
+                
                 if bdata.get("callbacks"):
                     for cb in bdata.get("callbacks"):
                         cb(bp)
@@ -154,7 +156,6 @@ def walk_to_b3d(result:DATPens,
                 #     cy = -center_rect.h/2*(1-center[1])
                 #     bp.locate_relative(cx/100, cy/100)
 
-                bp.rotate(0)
                 if renderable:
                     if renderable.upright:
                         bp.rotate(90)
