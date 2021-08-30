@@ -54,6 +54,7 @@ setuptools.setup(
             "demo/blank.py",
             "demo/boiler.py",
             "renderer/picklejar.py",
+            "renderer/.coldtype.py"
         ],
     },
     entry_points={

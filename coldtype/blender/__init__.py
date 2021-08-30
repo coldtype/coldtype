@@ -51,10 +51,10 @@ def b3d(collection,
         else:
             callbacks = [callback]
 
-        c = None
-        if zero:
-            c = pen.ambit().pc
-            pen.translate(-c.x, -c.y)
+        #c = None
+        #if zero:
+        #    c = pen.ambit().pc
+        #    pen.translate(-c.x, -c.y)
 
         pen.add_data("b3d", dict(
             collection=(collection
@@ -65,7 +65,8 @@ def b3d(collection,
             tag_prefix=(tag_prefix or prev.get("tag_prefix")),
             dn=dn,
             plane=plane,
-            reposition=c,
+            zero=zero,
+            #reposition=c,
             upright=upright))
     
     return annotate
@@ -93,21 +94,6 @@ def b3d_pre(callback):
     return _cast
 
 
-class b3d_pres():
-    @staticmethod
-    def center(r:Rect):
-        return b3d_pre(lambda p:
-            p.translate(-r.w/2, -r.h/2))
-    
-    def centerx(r:Rect):
-        return b3d_pre(lambda p:
-            p.translate(-r.w/2, 0))
-    
-    def centery(r:Rect):
-        return b3d_pre(lambda p:
-            p.translate(0, -r.h/2))
-
-
 def walk_to_b3d(result:DATPens,
     dn=False,
     center=None,
@@ -121,11 +107,17 @@ def walk_to_b3d(result:DATPens,
             if not bdata:
                 p.ch(b3d(lambda bp: bp.extrude(0.01)))
                 bdata = p.data.get("b3d")
-                        
-            if center:
-                p.translate(
-                    -center_rect.w/2*(1-center[0]),
-                    -center_rect.h/2*(1-center[1]))
+            
+            zero = bdata.get("zero", False)
+
+            if center and True:
+                cx = -center_rect.w/2*(1-center[0])
+                cy = -center_rect.h/2*(1-center[1])
+                p.translate(cx, cy)
+
+            pc = p.ambit().pc
+            if zero:
+                p.translate(-pc.x, -pc.y)
             
             if p.tag() == "?" and data.get("idx"):
                 tag = "_".join([str(i) for i in data["idx"]])
@@ -155,8 +147,13 @@ def walk_to_b3d(result:DATPens,
 
                 bp.hide(not p._visible)
 
-                if bdata.get("reposition"):
-                    pt = bdata.get("reposition")
+                if center and False:
+                    cx = -center_rect.w/2*(1-center[0])
+                    cy = -center_rect.h/2*(1-center[1])
+                    bp.locate_relative(cx/100, cy/100)
+
+                if zero: #bdata.get("reposition"):
+                    pt = pc #bdata.get("reposition")
                     if bdata.get("upright"):
                         bp.locate_relative(pt.x/100, 0, pt.y/100)
                     else:
@@ -228,14 +225,17 @@ class b3d_animation(animation):
             else:
                 bpy.data.scenes[0].render.fps = self.t.fps
                 bpy.data.scenes[0].render.fps_base = 1
+            
+    def frame_img(self, fi):
+        from coldtype.img.skiaimage import SkiaImage
+        return SkiaImage(self.pass_path(fi))
     
     def run(self, render_pass, renderer_state):
         fi = render_pass.args[0].i
         if renderer_state and not bpy:
             if renderer_state.previewing:
                 if Overlay.Rendered in renderer_state.overlays:
-                    from coldtype.img.skiaimage import SkiaImage
-                    return SkiaImage(self.pass_path(fi))
+                    return self.frame_img(fi)
         
         return super().run(render_pass, renderer_state)
     

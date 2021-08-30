@@ -255,9 +255,10 @@ class SourceReader():
             self.reset_filepath(filepath, code)
     
     def read_configs(self, args, filepath):
+        embedded = Path(__file__).parent / ".coldtype.py"
         proj = Path(".coldtype.py")
         user = Path("~/.coldtype.py").expanduser()
-        files = [user, proj]
+        files = [embedded, user, proj]
         if args and hasattr(args, "config") and args.config:
             if args.config == "0":
                 files = []

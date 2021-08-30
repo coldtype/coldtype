@@ -136,12 +136,17 @@ class ConfigOption(Enum):
                 return co
 
 
+_set_paths = {}
+
+
 class ColdtypeConfig():
     def __init__(self,
         config,
         prev_config:"ColdtypeConfig"=None,
         args=None
         ):
+        global _set_paths
+
         self.profile = None
         if args and hasattr(args, "profile") and args.profile:
             self.profile = args.profile
@@ -153,14 +158,18 @@ class ColdtypeConfig():
                 prop, default_value, _ = co.value
                 cli_mod = lambda x: x
             
-            setattr(self,
-                prop,
-                config.get(prop.upper(),
-                    getattr(prev_config, prop) if prev_config else default_value))
+            if prop in _set_paths:
+                setattr(self, prop, getattr(prev_config, prop))
+            else:
+                setattr(self,
+                    prop,
+                    config.get(prop.upper(),
+                        getattr(prev_config, prop) if prev_config else default_value))
             
             if self.profile and "PROFILES" in config and self.profile in config["PROFILES"]:
                 v = config["PROFILES"][self.profile].get(prop.upper())
                 if v:
+                    _set_paths[prop] = "PROFILE"
                     setattr(self, prop, v)
             
             if args and hasattr(args, prop):
