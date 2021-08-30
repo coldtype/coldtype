@@ -13,4 +13,5 @@ def varfont2(f):
         .pmap(lambda i, p: p
             .ch(b3d(lambda bp: bp
                 .extrude(f.adj(-i*5)
-                    .e("ceio", 1, rng=(0.15, 0.75)))))))
+                    .e("ceio", 1,
+                        rng=(0.15, 0.75)))))))
