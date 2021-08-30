@@ -1403,9 +1403,12 @@ class DraftingPen(RecordingPen, SHContext):
         self.sw(sw)
         return self
 
-    def img(self, src=None, rect=Rect(0, 0, 500, 500), pattern=True, opacity=1.0):
+    def img(self, src=None, rect=Rect(0, 0, 500, 500), pattern=False, opacity=1.0):
         """Get/set an image fill"""
         if src:
+            from coldtype.img.datimage import DATImage
+            if isinstance(src, DATImage):
+                return self.attr(image=dict(src=src.src, rect=rect, pattern=pattern, opacity=opacity))
             return self.attr(image=dict(src=src, rect=rect, pattern=pattern, opacity=opacity))
         else:
             return self.attr(field="image")
