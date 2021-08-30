@@ -375,6 +375,25 @@ class BlenderPen(DrawablePenMixin, BasePen):
         bpy.context.view_layer.objects.active = None
         return self
     
+    def apply_transform(self,
+        location=True,
+        rotation=True,
+        scale=True,
+        properties=True
+        ):
+        bpy.context.view_layer.objects.active = None
+        bpy.context.view_layer.objects.active = self.bez
+        
+        self.bez.select_set(True)
+        bpy.ops.object.transform_apply(location=location,
+            rotation=rotation,
+            scale=scale,
+            properties=properties)
+        self.bez.select_set(False)
+
+        bpy.context.view_layer.objects.active = None
+        return self
+    
     def apply_modifier(self, name):
         bpy.context.view_layer.objects.active = None
         bpy.context.view_layer.objects.active = self.bez
@@ -400,6 +419,18 @@ class BlenderPen(DrawablePenMixin, BasePen):
             self.bez.rotation_euler[2] = math.radians(z)
         return self
     
+    def origin_to_geometry(self):
+        self.bez.select_set(True)
+        bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
+        self.bez.select_set(False)
+        return self
+    
+    def origin_to_cursor(self):
+        self.bez.select_set(True)
+        bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+        self.bez.select_set(False)
+        return self
+    
     def set_origin(self, x, y, z):
         #saved_location = bpy.context.scene.cursor.location
         bpy.context.scene.cursor.location = Vector((x, y, z))
@@ -416,6 +447,22 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.set_origin(*xyz)
         fn(self)
         self.set_origin(0, 0, 0)
+        return self
+    
+    def center_origin(self):
+        c = self.dat.ambit().pc
+        self.locate_relative(x=-c.x/100, y=-c.y/100)
+        
+        bpy.context.view_layer.objects.active = None
+        bpy.context.view_layer.objects.active = self.bez
+        
+        self.bez.select_set(True)
+        bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
+        self.bez.select_set(False)
+
+        bpy.context.view_layer.objects.active = None
+
+        self.locate_relative(x=+c.x/100, y=+c.y/100)
         return self
     
     def locate(self, x=None, y=None, z=None):
@@ -455,6 +502,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
                 self.bez.data.materials.append(mat)
 
             self.bez.data.fill_mode = "BOTH"
+            self.origin_to_cursor()
             self.record(self.dat.copy().removeOverlap().scale(scale, point=False))
             try:
                 self.draw_on_bezier_curve(self.bez.data, cyclic=cyclic)

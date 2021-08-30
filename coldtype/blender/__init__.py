@@ -96,10 +96,12 @@ def b3d_pre(callback):
 
 def walk_to_b3d(result:DATPens,
     dn=False,
-    center=None,
-    center_rect=None,
+    renderable=None,
     ):
     built = {}
+
+    center = renderable.center
+    center_rect = renderable.rect
 
     def walker(p:DATPen, pos, data):
         if pos == 0:
@@ -147,10 +149,15 @@ def walk_to_b3d(result:DATPens,
 
                 bp.hide(not p._visible)
 
-                if center and False:
-                    cx = -center_rect.w/2*(1-center[0])
-                    cy = -center_rect.h/2*(1-center[1])
-                    bp.locate_relative(cx/100, cy/100)
+                # if center and False:
+                #     cx = -center_rect.w/2*(1-center[0])
+                #     cy = -center_rect.h/2*(1-center[1])
+                #     bp.locate_relative(cx/100, cy/100)
+
+                bp.rotate(0)
+                if renderable:
+                    if renderable.upright:
+                        bp.rotate(90)
 
                 if zero: #bdata.get("reposition"):
                     pt = pc #bdata.get("reposition")
@@ -172,9 +179,11 @@ class b3d_renderable(renderable):
     def __init__(self,
         rect=(1080, 1080),
         center=(0, 0),
+        upright=False,
         **kwargs
         ):
         self.center = center
+        self.upright = upright
         super().__init__(rect, **kwargs)
 
     def post_read(self):
@@ -198,6 +207,7 @@ class b3d_animation(animation):
         match_output=True,
         bake=False,
         center=(0, 0),
+        upright=False,
         **kwargs
         ):
         self.func = None
@@ -208,6 +218,7 @@ class b3d_animation(animation):
         self.blend = blend
         self.bake = bake
         self.center = center
+        self.upright = upright
         self.match_length = match_length
         self.match_output = match_output
         

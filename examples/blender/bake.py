@@ -1,7 +1,7 @@
 from coldtype import *
 from coldtype.blender import *
 
-@b3d_animation(timeline=60, bake=True)
+@b3d_animation(timeline=60, bake=False) # switch to True
 def baketest2(f):
     return (StSt("AV", Font.MutatorSans(), 200,
         wdth=f.e("eeio", 1),
