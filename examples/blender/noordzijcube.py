@@ -18,8 +18,7 @@ def cube(f):
             .f(None).s(0).sw(1)
             .f(1)
             .align(g)
-            .ch(b3d_pre(lambda p: p
-                .f(1).s(None).sw(0)))
+            .ch(b3d_pre(lambda p: p.fssw(1, -1, 0)))
             .ch(b3d(lambda bp: (bp
                 .extrude(0.1+x/(d-1)*0.1)
                 .rotate(90)
