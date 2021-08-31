@@ -46,7 +46,7 @@ def build_line():
 
 line = build_line()
 
-@animation(duration=organ.duration, rect=r, storyboard=[0])
+@animation(timeline=organ.duration, rect=r, storyboard=[0])
 def render(f):
     time_offset = -f.i * note_width + r.w - note_width * 3
     time_offset += 10 # fudge

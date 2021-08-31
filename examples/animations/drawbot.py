@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.drawbot import db
+from coldtype.drawbot import *
 
 co = Font("assets/ColdtypeObviously-VF.ttf")
 

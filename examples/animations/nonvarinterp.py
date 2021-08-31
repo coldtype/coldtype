@@ -39,10 +39,3 @@ def nonvarinterp(f):
             .tag("Interpolation")
             .ch(b3d("Text", lambda bp: bp
                 .extrude(f.e("eeio", 1, rng=(0.01, 3))))))])
-
-def build(_):
-    # sketchy for now but works
-    cb = Path("~/.coldtype/blender.txt").expanduser()
-    if cb.exists():
-        cb.unlink()
-    cb.write_text(f"render,{str(__FILE__)}")
