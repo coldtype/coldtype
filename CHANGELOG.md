@@ -20,3 +20,10 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 - Quoting paths in `blend_frame`
 ### Removed
 - `unicodedata2` from primary installation requirements, in order to make blender installation smoother (i.e. not require Include header-copying from python source tarball) — thanks @colinmford!
+
+## [0.6.0] - 2021-08-30
+### Added
+- New features for managing meshes in BlenderPen
+- embedded profiles, so `-p b3d` should now work globally
+### Removed
+- `duration` keyword for `@animation`, since it’s redundant to `timeline=<int>` shortcut

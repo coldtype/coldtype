@@ -21,7 +21,7 @@ copyright = '2021, Rob Stenson, Goodhertz'
 author = 'Rob Stenson, Goodhertz'
 
 # The full version, including alpha/beta/rc tags
-release = "0.5.21"
+release = "0.6.0"
 
 
 # -- General configuration ---------------------------------------------------
