@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.beziers import CurveCutter, raise_quadratic
 from coldtype.pens.drawablepen import DrawablePenMixin
@@ -352,6 +353,37 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.bez.modifiers["Remesh"].use_smooth_shade = smooth
         self.bez.select_set(False)
         bpy.context.view_layer.objects.active = None
+        return self
+    
+    @contextmanager
+    def obj_selected(self):
+        bpy.context.view_layer.objects.active = None
+        bpy.context.view_layer.objects.active = self.bez
+        self.bez.select_set(True)
+        yield self.bez
+        self.bez.select_set(False)
+        bpy.context.view_layer.objects.active = None
+        return self
+    
+    def remesh_smooth(self, octree_depth=7, smooth=False):
+        with self.obj_selected() as o:
+            if "Remesh" not in o.modifiers:
+                bpy.ops.object.modifier_add(type="REMESH")
+            rm = o.modifiers["Remesh"]
+            rm.mode = "SMOOTH"
+            rm.octree_depth = octree_depth
+            rm.use_remove_disconnected = False
+            rm.use_smooth_shade = smooth
+        return self
+    
+    def cloth(self, pressure=5):
+        with self.obj_selected() as o:
+            bpy.ops.object.modifier_add(type='CLOTH')
+            cl = o.modifiers["Cloth"]
+            cl.settings.effector_weights.gravity = 0
+            cl.settings.use_pressure = True
+            cl.settings.uniform_pressure_force = pressure
+            cl.settings.collision_settings.use_self_collision = True
         return self
     
     def rigidbody(self, mode="active", kinematic=False, mesh=False, bounce=0, mass=1, deactivated=False, friction=0.5, linear_damping=0.04, angular_damping=0.1):
