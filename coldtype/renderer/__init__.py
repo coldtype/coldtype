@@ -915,8 +915,7 @@ class Renderer():
             os.system(f"open {folder}")
         
         elif shortcut == KeyboardShortcut.ViewerTakeFocus:
-            if not self.winmans.glsk.focus():
-                self.open_in_editor()
+            self.winmans.glsk.focus(force=True)
         
         elif shortcut == KeyboardShortcut.ViewerSoloNone:
             self.viewer_solos = []

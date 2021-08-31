@@ -289,7 +289,7 @@ def Glyphwise(st, styler, start=0):
         else:
             skon = styler(idx+start, gg)
         
-        skoff = skon.mod(kern=0)
+        skoff = skon.mod(kern=0, kern_pairs={}, kp={}, tu=0)
 
         #test_list = [t for sublist in test for t in sublist]
         #print(test_list)

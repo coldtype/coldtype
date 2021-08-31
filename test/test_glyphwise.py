@@ -104,6 +104,46 @@ class TestGlyphwise(unittest.TestCase):
             [656.3775, 58.650000000000006])
         self.assertEqual(gs[0][-1].glyphName, "E")
         self.assertEqual(gs[1][-1].glyphName, "T")
+    
+    def test_kp(self):
+        fnt = Font.Find("OhnoFatfaceV")
+        r = Rect(1080, 300)
+
+        gs_no_kp = (Glyphwise("FATFACE", lambda g:
+            Style(fnt, 250, wdth=1-g.e, ro=1))
+            .align(r)
+            .fssw(-1, 0, 1)
+            .picklejar(r))
+        
+        gs_kp = (Glyphwise("FATFACE", lambda g:
+            Style(fnt, 250, wdth=1-g.e, kp={"A/T":-250}, ro=1))
+            .align(r)
+            .fssw(-1, 0, 1)
+            .picklejar(r))
+        
+        kp_sw = gs_kp[2].ambit().psw
+        no_kp_sw = gs_no_kp[2].ambit().psw
+    
+        self.assertNotEqual(kp_sw, no_kp_sw)
+        self.assertEqual(kp_sw.y, no_kp_sw.y)
+    
+    def test_tu(self):
+        fnt = Font.Find("OhnoFatfaceV")
+        r = Rect(1080, 300)
+
+        gs_no_tu = (Glyphwise("FATFACE", lambda g:
+            Style(fnt, 250, wdth=1-g.e, ro=1))
+            .align(r)
+            .fssw(-1, 0, 1)
+            .picklejar(r))
+        
+        gs_tu = (Glyphwise("FATFACE", lambda g:
+            Style(fnt, 250, wdth=1-g.e, tu=-50, ro=1))
+            .align(r)
+            .fssw(-1, 0, 1)
+            .picklejar(r))
+    
+        self.assertLess(gs_tu.ambit().w, gs_no_tu.ambit().w)
 
 if __name__ == "__main__":
     unittest.main()
