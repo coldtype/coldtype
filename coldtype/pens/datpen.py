@@ -626,12 +626,10 @@ class DATPens(DraftingPens, DATPen):
                         self.extend(p)
         return self
         
-    def reversePens(self):
-        """Reverse the order of the pens; useful for overlapping glyphs from the left-to-right rather than right-to-left (as is common in OpenType applications)"""
-        self._pens = list(reversed(self._pens))
-        return self
-    
-    rp = reversePens
+    # def reversePens(self):
+    #     """Reverse the order of the pens; useful for overlapping glyphs from the left-to-right rather than right-to-left (as is common in OpenType applications)"""
+    #     self._pens = list(reversed(self._pens))
+    #     return self
     
     def removeBlanks(self):
         """Remove blank pens from the set"""

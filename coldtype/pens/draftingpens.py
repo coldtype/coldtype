@@ -103,6 +103,10 @@ class DraftingPens(DraftingPen):
         self._pens = list(reversed(self._pens))
         return self
     
+    rp = reversePens
+
+    reverse_pens = reversePens
+    
     # Sizing
     
     def ambit(self, th=False, tv=False):

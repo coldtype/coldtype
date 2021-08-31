@@ -1,4 +1,5 @@
 #from coldtype.pens.draftingpens import DraftingPen, DraftingPens
+from coldtype.pens.datpen import DATPens
 from coldtype.pens.draftingpens import DraftingPens
 from coldtype.geometry import Rect, Point
 
@@ -262,7 +263,7 @@ def Glyphwise(st, styler, start=0):
         return kx(off, idx) - kx(on, idx)
 
     arg_count = len(inspect.signature(styler).parameters)
-    dps = DraftingPens()
+    dps = DATPens()
     prev = 0
     tracks = []
 
