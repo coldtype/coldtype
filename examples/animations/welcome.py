@@ -1,18 +1,13 @@
 from coldtype import *
-from coldtype.text.composer import Glyphwise
 
-cheee = Font.Find("CheeeVar")
-
-@animation((1080, 290), timeline=Timeline(90))
+@animation((1080, 290), timeline=Timeline(90), render_bg=True, bg=hsl(0.65))
 def welcome(f):
-    return DPS([
-        (DP(f.a.r).f(hsl(0.7))),
-        (Glyphwise("A", lambda g:
-            Style(cheee, 250,
-                yest=f.e("ceio", 1),
-                grvt=f.adj(g.i*10).e("seio", 3)))
-            .f(None).s(1).sw(2)
-            #.track(f.e("eeio", 1, rng=(0, -100)))
-            .align(f.a.r, tv=1))])
+    return (Glyphwise("ABC", lambda g:
+        Style(Font.Find("CheeeVar"), 250,
+            tu=f.e("eeio", 1, rng=(0, -350)),
+            yest=f.e("ceio", 1),
+            grvt=f.adj(g.i*10).e("seio", 3)))
+        .fssw(-1, 1, 3)
+        .align(f.a.r, tv=1))
 
 release = welcome.export("gif")
