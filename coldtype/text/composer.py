@@ -243,6 +243,9 @@ def Glyphwise(st, styler, start=0):
     #print(glyphs)
     #print([g.name for g in glyphs])
 
+    if len(st) == 1:
+        return StSt(st, styler(GlyphwiseGlyph(0, st, 0)))
+
     try:
         lines = st.split("\n")
         if len(lines) > 1:

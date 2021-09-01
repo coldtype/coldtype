@@ -8,22 +8,20 @@ Because Blender has an incredible Python API, it's not too difficult to use it p
 .. code:: python
 
     from coldtype import *
-    from coldtype.blender import b3d, b3d_animation
-    from coldtype.text.composer import Glyphwise
+    from coldtype.blender import *
 
     fnt = Font.Find("SwearCilatiVariable")
 
     @b3d_animation(timeline=60)
     def varfont(f):
-        return (Glyphwise("Variable", lambda i,c:
+        return (Glyphwise("Vari", lambda g:
             Style(fnt, 325,
-                opsz=f.adj(-i*5).e("seio", 1, rng=(0.98, 0)),
-                wght=f.adj(-i*15).e("seio", 1, rng=(0.98, 0))
+                opsz=f.adj(-g.i*5).e("seio", 1, rng=(0.98, 0)),
+                wght=f.adj(-g.i*15).e("seio", 1, rng=(0.98, 0))
                 ))
             .align(f.a.r)
-            .pmap(lambda i,p: p.tag(f"L{i}")
-                .chain(b3d("Text", lambda bp: bp
-                    .metallic(0)
+            .pmap(lambda i, p: p
+                .ch(b3d(lambda bp: bp
                     .extrude(f.adj(-i*5)
                         .e("ceio", 1, rng=(0.015, 3)))))))
 

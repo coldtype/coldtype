@@ -277,7 +277,7 @@ class SourceReader():
 
         py_config = {}
         for p in files:
-            if p.exists():
+            if p.exists() and p.suffix == ".py":
                 try:
                     py_config = run_path(str(p), init_globals={
                         "__FILE__": p,
