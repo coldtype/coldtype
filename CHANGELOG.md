@@ -31,3 +31,8 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ## [0.6.1] - 2021-08-31
 ### Added
 - Support for `kp` and `tu` in `Glyphwise`
+
+## [0.6.2] - 2021-09-01
+### Added
+- Support for single-char `Glyphwise`
+- `Glyphwise` now returns `DATPens`, not `DraftingPens`
