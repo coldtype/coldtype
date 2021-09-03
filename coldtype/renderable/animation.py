@@ -46,7 +46,6 @@ class animation(renderable, Timeable):
         overlay=True,
         watch_render=None,
         write_start=0,
-        render_bg=False,
         **kwargs
         ):
         if watch_render:
@@ -66,7 +65,6 @@ class animation(renderable, Timeable):
         self.show_frame = show_frame
         self.write_start = write_start
         self.storyboard = storyboard
-        self.render_bg = render_bg
         self.reset_timeline(timeline)
     
     def __call__(self, func):
@@ -169,16 +167,6 @@ class animation(renderable, Timeable):
     def passes(self, action, renderer_state, indices=[]):
         frames = self.active_frames(action, renderer_state, indices)
         return [RenderPass(self, action, self.pass_suffix(i), [Frame(i, self)]) for i in frames]
-    
-    def run(self, render_pass, renderer_state):
-        res = super().run(render_pass, renderer_state)
-        if self.render_bg:
-            return DATPens([
-                DATPen(self.rect).f(self.bg),
-                res
-            ])
-        else:
-            return res
     
     def runpost(self, result, render_pass, renderer_state):
         #if Overlay.Rendered in renderer_state.overlays:

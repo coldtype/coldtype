@@ -20,7 +20,7 @@ bases = random_series(0, 1000)
 adj_x = random_series(-500, 500)
 adj_y = random_series(-0.1, 0.1)
 
-@animation((1080, 1080), bg=0, timeline=Timeline(100, fps=22), composites=1, bg_render=True)
+@animation((1080, 1080), bg=0, timeline=Timeline(100, fps=22), composites=1, render_bg=1)
 def displacement(f):
     r = f.a.r
     spots = (DATPen()

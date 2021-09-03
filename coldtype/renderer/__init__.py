@@ -587,11 +587,6 @@ class Renderer():
                 if render.composites:
                     content = content.ch(skfx.precompose(render.rect, scale=scale))
                     render.last_result = content
-                if render.bg_render:
-                    content = DATPens([
-                        DATPen().rect(render.rect).f(render.bg),
-                        content
-                    ])
                 
                 ctx = None
                 if self.winmans.glsk and self.winmans.glsk.context and not self.args.cpu_render:
@@ -960,10 +955,13 @@ class Renderer():
         
         editor_cmd = self.source_reader.config.editor_command
         if editor_cmd:
-            if line is not None:
-                os.system(editor_cmd + " -g " + str(path) + ":" + str(line))
+            if editor_cmd == "code":
+                if line is not None:
+                    os.system(editor_cmd + " -g " + str(path) + ":" + str(line))
+                else:
+                    os.system(editor_cmd + " -g " + str(path))
             else:
-                os.system(editor_cmd + " -g " + str(path))
+                os.system(editor_cmd + " " + str(path))
     
     def on_shortcut(self, shortcut):
         waiting = self.shortcut_to_action(shortcut)

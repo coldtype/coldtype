@@ -15,6 +15,8 @@ class ConfigOption(Enum):
         true_false_or_none)
     WindowTransparent = ("window_transparent", None, "wt",
         true_false_or_none)
+    WindowChromeless = ("window_chromeless", None, "wc", 
+        true_false_or_none)
     WindowBackground = ("window_background", None, "wb",
         true_false_or_none)
     WindowFloat = ("window_float", None, "wf",
@@ -27,7 +29,7 @@ class ConfigOption(Enum):
     WindowContentScale = ("window_content_scale", None, "wcs",
         lambda x: float(x))
     MonitorName = ("monitor_name", None, "mn")
-    EditorCommand = ("editor_command", None, "ec")
+    EditorCommand = ("editor_command", "code", "ec")
     ManyIncrement = ("many_increment", None, "minc")
     PreviewScale = ("preview_scale", 1, "ps",
         lambda x: float(x))
@@ -68,6 +70,8 @@ class ConfigOption(Enum):
             return "Should the window ignore all interaction?"
         elif e == ConfigOption.WindowTransparent:
             return "Should the window have no background?"
+        elif e == ConfigOption.WindowChromeless:
+            return "Should the window have no chrome?"
         elif e == ConfigOption.WindowBackground:
             return "Should the window open as a background process?"
         elif e == ConfigOption.WindowFloat:

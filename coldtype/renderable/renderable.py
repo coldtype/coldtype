@@ -93,7 +93,7 @@ class renderable():
         clip=False,
         composites=False,
         cv2caps=None,
-        bg_render=False,
+        render_bg=False,
         style="default",
         viewBox=True,
         layer=False,
@@ -135,7 +135,7 @@ class renderable():
         self.clip = clip
         self.viewBox = viewBox
         self.direct_draw = direct_draw
-        self.bg_render = bg_render
+        self.render_bg = render_bg
         self.sort = sort
         self.layer = layer
         if self.layer:
@@ -208,9 +208,17 @@ class renderable():
 
     def run(self, render_pass, renderer_state):
         if self.rstate:
-            return render_pass.fn(*render_pass.args, renderer_state)
+            res = render_pass.fn(*render_pass.args, renderer_state)
         else:
-            return render_pass.fn(*render_pass.args)
+            res = render_pass.fn(*render_pass.args)
+        
+        if self.render_bg:
+            return DATPens([
+                DATPen(self.rect).f(self.bg),
+                res
+            ])
+        else:
+            return res
     
     def runpost(self, result, render_pass, renderer_state):
         if self.postfn:

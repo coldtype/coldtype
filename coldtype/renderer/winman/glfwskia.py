@@ -85,9 +85,13 @@ class WinmanGLFWSkia():
         
         glfw.window_hint(glfw.STENCIL_BITS, 8)
         
+        if self.config.window_chromeless:
+            glfw.window_hint(glfw.DECORATED, glfw.FALSE)
+        else:
+            glfw.window_hint(glfw.DECORATED, glfw.TRUE)
+
         if self.config.window_transparent:
             glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.TRUE)
-            glfw.window_hint(glfw.DECORATED, glfw.FALSE)
         else:
             glfw.window_hint(glfw.TRANSPARENT_FRAMEBUFFER, glfw.FALSE)
         
