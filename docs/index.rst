@@ -63,8 +63,8 @@ Table of Contents
    :maxdepth: 2
    :caption: Links
 
-   the coldtype blog <https://blog.coldtype.xyz>
-   the coldtype discord <https://discord.gg/rWaJDqb8jE>
+   blog <https://blog.coldtype.xyz>
+   youtube <https://www.youtube.com/channel/UCIRaiGAVFaM-pSErJG1UZFA>
    github <https://github.com/goodhertz/coldtype>
    goodhertz.com <https://goodhertz.com>
 
