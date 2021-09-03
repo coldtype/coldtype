@@ -6,7 +6,7 @@ def text_in_channel(se, c, sort=True):
     for s in se.sequences:
         if hasattr(s, "text") and s.channel == c:
             matches.append(s)
-    if sort:
+    if sort: 
         return sorted(matches, key=lambda s: s.frame_start)
     return matches
 
@@ -59,6 +59,10 @@ class TimedTextSplitter(bpy.types.Operator):
             next.text = " ".join(txts[1:])
             curr.name = txts[0]
             next.name = txts[1]
+            curr.select = False
+            next.select = True
+            se.active_strip = next
+            bpy.ops.sequencer.refresh_all()
         
         return {'FINISHED'}
 
@@ -67,6 +71,7 @@ class TimedTextSplitter(bpy.types.Operator):
             frame=bpy.data.scenes[0].frame_current,
             channel=bpy.data.scenes[0].sequence_editor.active_strip.channel,
             side="RIGHT")
+        bpy.ops.sequencer.refresh_all()
         return self.execute(context)
 
 
@@ -99,9 +104,11 @@ def unregister():
         km.keymap_items.remove(kmi)
     
     addon_keymaps.clear()
-    
-    
     bpy.utils.unregister_class(TimedTextEditorOperator)
+
+
+def add_shortcuts():
+    register(testing=False)
 
 if __name__ == "__main__":
     register(testing=0)

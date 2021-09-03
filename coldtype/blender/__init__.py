@@ -1,6 +1,6 @@
 # to be loaded from within Blender
 
-import os, math
+import os, math, json
 from pathlib import Path
 
 from coldtype.geometry.rect import Rect
@@ -13,12 +13,39 @@ from coldtype.renderable import renderable, Overlay, Action
 from coldtype.renderable.animation import animation
 
 from coldtype.blender.render import blend_source
+from coldtype.time.sequence import ClipTrack, Clip, Sequence
+
 
 try:
     import bpy # noqa
 except ImportError:
     bpy = None
     pass
+
+
+class BlenderTimeline(Sequence):
+    __name__ = "Blender"
+    
+    def __init__(self, duration, fps, data):
+        tracks = []
+        for t in data["tracks"]:
+            clips = []
+            for cidx, clip in enumerate(t["clips"]):
+                clips.append(Clip(
+                    clip["text"],
+                    clip["start"],
+                    clip["end"],
+                    idx=cidx,
+                    track=t["index"]))
+            
+            tracks.append(ClipTrack(self, clips, []))
+
+        super().__init__(
+            duration,
+            fps,
+            [data["current_frame"]],
+            tracks)
+
 
 def b3d(collection,
     callback=None,
@@ -209,6 +236,8 @@ class b3d_animation(animation):
         bake=False,
         center=(0, 0),
         upright=False,
+        no_render=False,
+        sequence=False,
         **kwargs
         ):
         self.func = None
@@ -222,11 +251,35 @@ class b3d_animation(animation):
         self.upright = upright
         self.match_length = match_length
         self.match_output = match_output
-        
+        self.no_render = no_render
+        self.sequence = sequence
+
         if "timeline" not in kwargs:
             kwargs["timeline"] = Timeline(30)
         
         super().__init__(rect=rect, **kwargs)
+    
+    def post_read(self):
+        if not self.blend:
+            self.blend = self.filepath.parent / "blends" / (self.filepath.stem + ".blend")
+
+        if self.blend:
+            self.blend = Path(self.blend).expanduser()
+            self.blend.parent.mkdir(exist_ok=True, parents=True)
+            if self.blend.exists():
+                if self.data_path().exists():
+                    bt = BlenderTimeline(
+                        self.timeline.duration,
+                        self.timeline.fps,
+                        self.data())
+                    self.reset_timeline(bt)
+
+        super().post_read()
+        if bpy and self.match_output:
+            bpy.data.scenes[0].render.filepath = str(self.pass_path(""))
+    
+    def reset_timeline(self, timeline):
+        super().reset_timeline(timeline)
 
         if bpy and self.match_length:
             bpy.data.scenes[0].frame_end = self.t.duration-1
@@ -251,22 +304,12 @@ class b3d_animation(animation):
         
         return super().run(render_pass, renderer_state)
     
-    def rasterize(self, _, rp):
+    def rasterize(self, content, rp):
+        if self.no_render:
+            return super().rasterize(content, rp)
         fi = rp.args[0].i
         blend_source(self.filepath, self.blend, fi, self.pass_path(""), self.samples, denoise=self.denoise)
         return True
-    
-    def post_read(self):
-        if not self.blend:
-            self.blend = self.filepath.parent / "blends" / (self.filepath.stem + ".blend")
-
-        if self.blend:
-            self.blend = Path(self.blend).expanduser()
-            self.blend.parent.mkdir(exist_ok=True, parents=True)
-
-        super().post_read()
-        if bpy and self.match_output:
-            bpy.data.scenes[0].render.filepath = str(self.pass_path(""))
     
     def baked_frames(self):
         def bakewalk(p, pos, data):
@@ -284,3 +327,9 @@ class b3d_animation(animation):
             to_bake += self.run_normal(ps, None)
         
         return to_bake.walk(bakewalk)
+    
+    def data_path(self):
+        return Path(str(self.blend) + ".json")
+    
+    def data(self):
+        return json.loads(self.data_path().read_text())

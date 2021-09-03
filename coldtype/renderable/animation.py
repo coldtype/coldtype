@@ -67,10 +67,14 @@ class animation(renderable, Timeable):
         self.write_start = write_start
         self.storyboard = storyboard
         self.render_bg = render_bg
+        self.reset_timeline(timeline)
+    
+    def __call__(self, func):
+        res = super().__call__(func)
+        self.prefix = self.name + "_"
+        return res
 
-        if self.write_start and self.storyboard == [0]:
-            self.storyboard = [self.write_start]
-        
+    def reset_timeline(self, timeline):
         if timeline is None:
             raise Exception("timeline= cannot be None")
 
@@ -79,6 +83,7 @@ class animation(renderable, Timeable):
                 timeline = Timeline(timeline[0], fps=timeline[1])
             except:
                 timeline = Timeline(timeline)
+        
         self.timeline = timeline
         self.t = timeline
         self.start = timeline.start
@@ -88,11 +93,9 @@ class animation(renderable, Timeable):
             pass
         else:
             self.storyboard = timeline.storyboard.copy()
-    
-    def __call__(self, func):
-        res = super().__call__(func)
-        self.prefix = self.name + "_"
-        return res
+        
+        if self.write_start and self.storyboard == [0]:
+            self.storyboard = [self.write_start]
     
     def folder(self, filepath):
         return filepath.stem + "/" + self.name # TODO necessary?

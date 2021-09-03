@@ -222,7 +222,7 @@ class ClipGroup(Timeable):
             if clip.position == 0:
                 return clip
     
-    def currentWord(self):
+    def current_word(self):
         for clip in self.clips:
             if clip.position == 0:
                 clips = [clip]
@@ -281,6 +281,7 @@ class ClipGroup(Timeable):
         graf_style=GrafStyle(leading=20),
         fit=None,
         ignore_newlines=False,
+        use_lines=None,
         removeOverlap=False) -> ClipGroupPens:
         """
         render_clip_fn: frame, line index, clip, clip text — you must return a tuple of text to render and the Style to render it with
@@ -290,7 +291,12 @@ class ClipGroup(Timeable):
         group_pens = ClipGroupPens(self)
         lines = []
         groupings = []
-        for idx, _line in enumerate(self.lines(ignore_newlines=ignore_newlines)):
+        if not use_lines:
+            use_lines = self.lines(ignore_newlines=ignore_newlines)
+        
+        for idx, _line in enumerate(use_lines):
+            if not _line:
+                continue
             slugs = []
             texts = []
             for clip in _line:

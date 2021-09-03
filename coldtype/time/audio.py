@@ -1,5 +1,5 @@
 import math
-import os.path
+from pathlib import Path
 
 try:
     import numpy as np
@@ -15,7 +15,8 @@ from coldtype.pens.datpen import DATPen
 
 class Wavfile():
     def __init__(self, path, fps=30):
-        self.sf, self.sf_fs = sf.read(str(path))
+        p = Path(str(path)).expanduser()
+        self.sf, self.sf_fs = sf.read(str(p))
         self.fps = fps
         self.hz = self.sf_fs
         self.samples_per_frame = self.hz / fps

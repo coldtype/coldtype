@@ -1,10 +1,45 @@
-import bpy
+import bpy, traceback, json
 from pathlib import Path
-from runpy import run_path
-import traceback
+from collections import defaultdict
 
 from coldtype.renderer.reader import SourceReader
 from coldtype.blender import b3d_animation, walk_to_b3d
+from coldtype.blender.timedtext import add_shortcuts
+
+
+def persist_sequence():
+    channels = defaultdict(lambda: [])
+
+    scene = bpy.data.scenes[0]
+    for s in scene.sequence_editor.sequences:
+        channels[s.channel].append(s)
+    
+    tracks = []
+    for c, clips in channels.items():
+        track = dict(index=c)
+        _clips = []
+        for clip in clips:
+            if hasattr(clip, "text"):
+                _clips.append(dict(
+                    name=clip.name,
+                    text=clip.text,
+                    start=clip.frame_start,
+                    end=clip.frame_final_end))
+        track["clips"] = sorted(_clips, key=lambda c: c["start"])
+        if len(_clips) > 0:
+            tracks.append(track)
+    
+    if len(tracks) == 0:
+        return
+    
+    jpath = str(Path(bpy.data.filepath)) + ".json"
+    out = dict(
+        start=scene.frame_start,
+        end=scene.frame_end,
+        current_frame=scene.frame_current,
+        tracks=tracks)
+    
+    Path(jpath).write_text(json.dumps(out, indent=4))
 
 #from coldtype.blender.watch import watch; watch()
 
@@ -77,6 +112,8 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
     def modal(self, context, event):
         if event.type == 'TIMER':
+            persist_sequence()
+
             if not self.file.exists():
                 return {'PASS_THROUGH'}
             
@@ -101,7 +138,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
     def execute(self, context):
         wm = context.window_manager
-        self._timer = wm.event_timer_add(0.1, window=context.window)
+        self._timer = wm.event_timer_add(0.25, window=context.window)
         wm.modal_handler_add(self)
 
         return {'RUNNING_MODAL'}
@@ -120,4 +157,5 @@ def unregister_watcher():
 def watch():
     register_watcher()
     bpy.ops.wm.coldtype_watching_operator()
+    add_shortcuts()
     print("...waiting for coldtype...")

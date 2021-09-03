@@ -1269,6 +1269,8 @@ class DraftingPen(RecordingPen, SHContext):
         """Remove overlaps within this shape and return itself."""
         return self._pathop(otherPen=None, operation=BooleanOp.Simplify)
     
+    remove_overlap = removeOverlap
+    
     def connect(self, *others):
         ps = self.multi_pen_class([self, *others]).distribute().pen()
         return ps
