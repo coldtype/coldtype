@@ -256,7 +256,8 @@ class Renderer():
 
         if True:
             self.state.reset()
-            self.source_reader.reload()
+            self.source_reader.reload(
+                output_folder_override=self.args.output_folder)
             
             self.winmans.did_reload(self.source_reader.filepath)
             
@@ -334,8 +335,7 @@ class Renderer():
     def renderables(self, trigger):
         _rs = self.source_reader.renderables(
             viewer_solos=self.viewer_solos,
-            class_filters=[],
-            output_folder_override=self.args.output_folder)
+            class_filters=[])
         
         for r in _rs:
             self.normalize_fmt(r)

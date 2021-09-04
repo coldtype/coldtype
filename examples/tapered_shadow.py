@@ -25,9 +25,11 @@ def taper(f):
                     .fssw(0, 0, f.e(1, rng=(7, 11))))
                 .ch(phototype(f.a.r,
                     blur=5, cut=183, cutw=8,
-                    fill=hsl(0.75, 0.94, 0.68)))),
+                    fill=hsl(0.75, 0.94, 0.68)))
+                ._null()),
             lambda p: p.f(1)
                 .ch(phototype(f.a.r,
                     blur=3, cutw=15,
                     cut=230+f.e(1, rng=(-30, 5)),
-                    fill=hsl(0.17, 0.86, 0.63)))))
+                    fill=hsl(0.15, 0.86, 0.63)))
+                ._null()))

@@ -1195,6 +1195,14 @@ class DraftingPen(RecordingPen, SHContext):
         """Does nothing"""
         return self
     
+    def null(self):
+        """For chaining; return an empty instead of this pen"""
+        return self.single_pen_class()
+    
+    def _null(self):
+        """For chaining; quickly disable a .null() call"""
+        return self
+    
     def sleep(self, time):
         """Sleep call within the chain (if you want to measure something)"""
         sleep(time)

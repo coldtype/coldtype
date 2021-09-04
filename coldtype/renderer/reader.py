@@ -164,9 +164,6 @@ def find_renderables(
     filepath:Path,
     codepath:Path,
     program:dict,
-    viewer_solos=[],
-    function_filters=[],
-    class_filters=[],
     output_folder_override=None,
     ):
     all_rs = []
@@ -194,6 +191,15 @@ def find_renderables(
         filtered_rs = [r for r in all_rs if r.solo]
     else:
         filtered_rs = all_rs
+    
+    return filtered_rs
+
+
+def filter_renderables(filtered_rs,
+    viewer_solos=[],
+    function_filters=[],
+    class_filters=[],
+    ):
         
     if function_filters:
         function_patterns = function_filters
@@ -245,6 +251,7 @@ class SourceReader():
         self.dirpath = None
         self.should_unlink = False
         self.program = None
+        self.candidates = None
         self.renderer = renderer
         self.runner = runner
 
@@ -362,7 +369,10 @@ class SourceReader():
         
         return self.filepath
     
-    def reload(self, code:str=None):
+    def reload(self,
+        code:str=None,
+        output_folder_override=None
+        ):
         if code:
             self.write_code_to_tmpfile(code)
         
@@ -371,6 +381,9 @@ class SourceReader():
             self.filepath,
             self.codepath,
             __RUNNER__=self.runner)
+        
+        self.candidates = self.renderable_candidates(
+            output_folder_override)
     
     def write_code_to_tmpfile(self, code):
         if self.filepath:
@@ -382,22 +395,27 @@ class SourceReader():
         self.filepath = Path(tf.name)
         self.should_unlink = True
     
-    def renderables(self,
-        viewer_solos=[],
-        function_filters=[],
-        class_filters=[],
+    def renderable_candidates(self,
         output_folder_override=None,
         ):
-        if not function_filters and self.config.function_filters:
-            function_filters = self.config.function_filters
         return find_renderables(
             self.filepath,
             self.codepath,
             self.program,
-            viewer_solos,
-            function_filters,
-            class_filters,
             output_folder_override)
+    
+    def renderables(self,
+        viewer_solos=[],
+        function_filters=[],
+        class_filters=[],
+        ):
+        if not function_filters and self.config.function_filters:
+            function_filters = self.config.function_filters
+        
+        return filter_renderables(self.candidates,
+            viewer_solos=viewer_solos,
+            function_filters=function_filters,
+            class_filters=class_filters)
     
     def frame_results(self, frame, class_filters=[]):
         rs = self.renderables(class_filters=class_filters)

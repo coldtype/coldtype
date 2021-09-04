@@ -233,11 +233,11 @@ class b3d_animation(animation):
         blend=None,
         match_length=True,
         match_output=True,
+        match_fps=True,
         bake=False,
         center=(0, 0),
         upright=False,
         no_render=False,
-        sequence=False,
         **kwargs
         ):
         self.func = None
@@ -251,8 +251,9 @@ class b3d_animation(animation):
         self.upright = upright
         self.match_length = match_length
         self.match_output = match_output
+        self.match_fps = match_fps
         self.no_render = no_render
-        self.sequence = sequence
+        self._bt = False
 
         if "timeline" not in kwargs:
             kwargs["timeline"] = Timeline(30)
@@ -268,6 +269,7 @@ class b3d_animation(animation):
             self.blend.parent.mkdir(exist_ok=True, parents=True)
             if self.blend.exists():
                 if self.data_path().exists():
+                    self._bt = True
                     bt = BlenderTimeline(
                         self.timeline.duration,
                         self.timeline.fps,
@@ -283,6 +285,8 @@ class b3d_animation(animation):
 
         if bpy and self.match_length:
             bpy.data.scenes[0].frame_end = self.t.duration-1
+        
+        if bpy and self.match_fps:
             # don't think this is totally accurate but good enough for now
             if isinstance(self.t.fps, float):
                 bpy.data.scenes[0].render.fps = round(self.t.fps)
@@ -333,3 +337,24 @@ class b3d_animation(animation):
     
     def data(self):
         return json.loads(self.data_path().read_text())
+
+
+class b3d_sequencer(b3d_animation):
+    def __init__(self,
+        rect=Rect(1080, 1080),
+        **kwargs
+        ):
+        print("HELLO THERE")
+        super().__init__(
+            rect=rect,
+            match_fps=True,
+            match_length=False,
+            match_output=False,
+            no_render=True,
+            **kwargs)
+    
+    def post_read(self):
+        super().post_read()
+
+        if self._bt:
+            print("YES BT", self.data_path())

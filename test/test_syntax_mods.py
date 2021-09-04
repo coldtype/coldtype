@@ -50,6 +50,7 @@ class TestSyntaxMods(unittest.TestCase):
 
     def test_syntax_mods(self):
         sr = self.sr
+        sr.reload(output_folder_override="test/renders")
         mod_src = sr.codepath.read_text()
 
         self.assertIn(".align(r.inset(50))", test_src)
@@ -58,7 +59,7 @@ class TestSyntaxMods(unittest.TestCase):
 
         self.assertEqual(sr.program["__RUNNER__"], "default")
 
-        renderables = sr.renderables(output_folder_override="test/renders")
+        renderables = sr.renderables()
         self.assertEqual(len(renderables), 2)
         self.assertEqual(renderables[0].codepath, sr.codepath)
 

@@ -54,7 +54,7 @@ class TimedTextSplitter(bpy.types.Operator):
                 return {'FINISHED'}
             curr = se.active_strip
             txts = curr.text.split(" ")
-            print(curr.name, next.name, txts)
+            #print(curr.name, next.name, txts)
             curr.text = txts[0]
             next.text = " ".join(txts[1:])
             curr.name = txts[0]
@@ -75,12 +75,38 @@ class TimedTextSplitter(bpy.types.Operator):
         return self.execute(context)
 
 
+
+class TimedTextSelector(bpy.types.Operator):
+    bl_idname = "wm.timed_text_selector"
+    bl_label = "Timed Text Selector"
+
+    def invoke(self, context, event):
+        se = bpy.data.scenes[0].sequence_editor
+        fc = bpy.data.scenes[0].frame_current
+        
+        if hasattr(se.active_strip, "text"):
+            curr = se.active_strip
+            all = text_in_channel(se, curr.channel)
+            next = None
+            for s in all:
+                if s.frame_start <= fc < s.frame_final_end:
+                    next = s
+            if next:
+                curr.select = False
+                next.select = True
+                se.active_strip = next
+                bpy.ops.sequencer.refresh_all()
+        return {'FINISHED'}
+
+
 addon_keymaps = []
 
 
 def register(testing=False):
     bpy.utils.register_class(TimedTextEditorOperator)
     bpy.utils.register_class(TimedTextSplitter)
+    bpy.utils.register_class(TimedTextSelector)
+    
     if testing:
         bpy.ops.wm.timed_text_splitter('EXEC_DEFAULT')
         #bpy.ops.wm.timed_text_editor_operator('INVOKE_DEFAULT')
@@ -96,6 +122,10 @@ def register(testing=False):
         addon_keymaps.append([
             km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
             km.keymap_items.new("wm.timed_text_splitter", type='V', value='PRESS', shift=True)
+        ])
+        addon_keymaps.append([
+            km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
+            km.keymap_items.new("wm.timed_text_selector", type='D', value='PRESS')
         ])
  
  

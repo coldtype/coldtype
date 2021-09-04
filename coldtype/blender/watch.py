@@ -7,7 +7,7 @@ from coldtype.blender import b3d_animation, walk_to_b3d
 from coldtype.blender.timedtext import add_shortcuts
 
 
-def persist_sequence():
+def persist_sequence(last_persisted):
     channels = defaultdict(lambda: [])
 
     scene = bpy.data.scenes[0]
@@ -30,7 +30,7 @@ def persist_sequence():
             tracks.append(track)
     
     if len(tracks) == 0:
-        return
+        return None
     
     jpath = str(Path(bpy.data.filepath)) + ".json"
     out = dict(
@@ -39,7 +39,12 @@ def persist_sequence():
         current_frame=scene.frame_current,
         tracks=tracks)
     
-    Path(jpath).write_text(json.dumps(out, indent=4))
+    if out == last_persisted:
+        return out
+    else:
+        print("NEW CHANGES")
+        Path(jpath).write_text(json.dumps(out, indent=4))
+        return out
 
 #from coldtype.blender.watch import watch; watch()
 
@@ -53,6 +58,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
     file = Path("~/.coldtype/blender.txt").expanduser()
     sr = None
     current_frame = -1
+    persisted = None
 
     def render_current_frame(self, statics=False):
         animation_found = False
@@ -70,6 +76,8 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                 if r.bake:
                     if statics:
                         walk_to_b3d(r.baked_frames(), renderable=r)
+                elif r.no_render:
+                    pass
                 else:
                     animation_found = True
                     walk_to_b3d(res, renderable=r)
@@ -112,7 +120,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
     def modal(self, context, event):
         if event.type == 'TIMER':
-            persist_sequence()
+            self.persisted = persist_sequence(self.persisted)
 
             if not self.file.exists():
                 return {'PASS_THROUGH'}
