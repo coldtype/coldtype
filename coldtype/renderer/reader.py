@@ -421,7 +421,10 @@ class SourceReader():
         rs = self.renderables(class_filters=class_filters)
         res = []
         for r in rs:
-            if r.no_render_if and r.no_render_if(r):
+            if (hasattr(r, "no_render_if")
+                and r.no_render_if
+                and r.no_render_if(r)
+                ):
                 continue
             ps = r.passes(None, None, indices=[frame])
             for p in ps:
