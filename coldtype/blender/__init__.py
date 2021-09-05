@@ -237,7 +237,7 @@ class b3d_animation(animation):
         bake=False,
         center=(0, 0),
         upright=False,
-        no_render=False,
+        no_render_if=None,
         **kwargs
         ):
         self.func = None
@@ -252,7 +252,7 @@ class b3d_animation(animation):
         self.match_length = match_length
         self.match_output = match_output
         self.match_fps = match_fps
-        self.no_render = no_render
+        self.no_render_if = no_render_if
         self._bt = False
 
         if "timeline" not in kwargs:
@@ -261,6 +261,8 @@ class b3d_animation(animation):
         super().__init__(rect=rect, **kwargs)
     
     def post_read(self):
+        out = None
+
         if not self.blend:
             self.blend = self.filepath.parent / "blends" / (self.filepath.stem + ".blend")
 
@@ -275,10 +277,14 @@ class b3d_animation(animation):
                         self.timeline.fps,
                         self.data())
                     self.reset_timeline(bt)
+                    out = bt.storyboard
 
         super().post_read()
+
         if bpy and self.match_output:
             bpy.data.scenes[0].render.filepath = str(self.pass_path(""))
+        
+        return out
     
     def reset_timeline(self, timeline):
         super().reset_timeline(timeline)
@@ -309,7 +315,7 @@ class b3d_animation(animation):
         return super().run(render_pass, renderer_state)
     
     def rasterize(self, content, rp):
-        if self.no_render:
+        if self.no_render_if:
             return super().rasterize(content, rp)
         fi = rp.args[0].i
         blend_source(self.filepath, self.blend, fi, self.pass_path(""), self.samples, denoise=self.denoise)
@@ -344,17 +350,16 @@ class b3d_sequencer(b3d_animation):
         rect=Rect(1080, 1080),
         **kwargs
         ):
-        print("HELLO THERE")
         super().__init__(
             rect=rect,
             match_fps=True,
             match_length=False,
             match_output=False,
-            no_render=True,
+            no_render_if=lambda _: bool(bpy),
             **kwargs)
     
     def post_read(self):
-        super().post_read()
-
+        out = super().post_read()
         if self._bt:
-            print("YES BT", self.data_path())
+            self.add_watchee(self.data_path(), "soft")
+        return out

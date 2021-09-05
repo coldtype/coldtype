@@ -42,7 +42,7 @@ def persist_sequence(last_persisted):
     if out == last_persisted:
         return out
     else:
-        print("NEW CHANGES")
+        #print("NEW CHANGES")
         Path(jpath).write_text(json.dumps(out, indent=4))
         return out
 
@@ -76,16 +76,15 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                 if r.bake:
                     if statics:
                         walk_to_b3d(r.baked_frames(), renderable=r)
-                elif r.no_render:
-                    pass
                 else:
                     animation_found = True
                     walk_to_b3d(res, renderable=r)
             elif statics:
                 walk_to_b3d(res, renderable=r)
+                bpy.data.scenes[0].frame_set(0)
         
-        if not animation_found:
-            bpy.data.scenes[0].frame_set(0)
+        #if not animation_found:
+        #    bpy.data.scenes[0].frame_set(0)
         return animation_found
 
     def reimport(self, arg):
@@ -120,7 +119,8 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
     def modal(self, context, event):
         if event.type == 'TIMER':
-            self.persisted = persist_sequence(self.persisted)
+            if not bpy.context.screen.is_animation_playing:
+                self.persisted = persist_sequence(self.persisted)
 
             if not self.file.exists():
                 return {'PASS_THROUGH'}

@@ -1064,11 +1064,13 @@ class Renderer():
             self.hotkey_waiting = None
         
         now = ptime.time()
-        for k, v in self.watchee_mods.items():
-            if v and (now - v) > 1:
-                #print("CAUGHT ONE")
-                self.action_waiting = Action.PreviewStoryboard
-                self.watchee_mods[k] = None
+        # TODO what is this about?
+        if False:
+            for k, v in self.watchee_mods.items():
+                if v and (now - v) > 1:
+                    print("CAUGHT ONE")
+                    self.action_waiting = Action.PreviewStoryboard
+                    self.watchee_mods[k] = None
         
         if self.debounced_actions:
             now = ptime.time()
@@ -1135,7 +1137,11 @@ class Renderer():
             idx = self.watchee_paths().index(path)
             wpath, wtype, wflag = self.watchees[idx]
             if wflag == "soft":
-                self.state.watch_soft_mods[actual_path] = True
+                if self.last_animation:
+                    storyboard = self.last_animation.post_read()
+                    if storyboard:
+                        self.state.adjust_keyed_frame_offsets(
+                            self.last_animation.name, lambda i, o: storyboard[0])
                 self.action_waiting = Action.PreviewStoryboard
                 return
 
