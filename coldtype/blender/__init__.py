@@ -238,6 +238,7 @@ class b3d_animation(animation):
         center=(0, 0),
         upright=False,
         no_render_if=None,
+        renderer="b3d",
         **kwargs
         ):
         self.func = None
@@ -253,6 +254,7 @@ class b3d_animation(animation):
         self.match_output = match_output
         self.match_fps = match_fps
         self.no_render_if = no_render_if
+        self.renderer = renderer
         self._bt = False
 
         if "timeline" not in kwargs:
@@ -315,8 +317,9 @@ class b3d_animation(animation):
         return super().run(render_pass, renderer_state)
     
     def rasterize(self, content, rp):
-        if self.no_render_if:
+        if self.renderer == "skia":
             return super().rasterize(content, rp)
+        
         fi = rp.args[0].i
         blend_source(self.filepath, self.blend, fi, self.pass_path(""), self.samples, denoise=self.denoise)
         return True
@@ -355,7 +358,8 @@ class b3d_sequencer(b3d_animation):
             match_fps=True,
             match_length=False,
             match_output=False,
-            no_render_if=lambda _: bool(bpy),
+            #no_render_if=lambda _: bool(bpy),
+            renderer="skia",
             **kwargs)
     
     def post_read(self):

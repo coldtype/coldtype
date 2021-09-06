@@ -99,6 +99,35 @@ class TimedTextSelector(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class TimedTextImporter(bpy.types.Operator):
+    bl_idname = "wm.timed_text_importer"
+    bl_label = "Timed Text Importer"
+
+    def invoke(self, context, event):
+        from coldtype.blender import b3d_sequencer, Action
+
+        se = bpy.data.scenes[0].sequence_editor
+        fc = bpy.data.scenes[0].frame_current
+        
+        rs = bpy.app.driver_namespace.get("_coldtypes", [])
+        sq = None
+        for r in rs:
+            if isinstance(r, b3d_sequencer):
+                sq = r
+        
+        if sq:
+            bpy.ops.sequencer.image_strip_add(
+                directory=str(sq.output_folder) + "/",
+                files=[dict(name=str(p.output_path.name)) for p in sq.passes(Action.RenderAll, None)],
+                relative_path=True,
+                frame_start=0,
+                frame_end=sq.duration-1,
+                channel=3)
+        
+        bpy.ops.sequencer.refresh_all()
+        return {'FINISHED'}
+
+
 addon_keymaps = []
 
 
@@ -106,11 +135,13 @@ def register(testing=False):
     bpy.utils.register_class(TimedTextEditorOperator)
     bpy.utils.register_class(TimedTextSplitter)
     bpy.utils.register_class(TimedTextSelector)
+    bpy.utils.register_class(TimedTextImporter)
     
     if testing:
         bpy.ops.wm.timed_text_splitter('EXEC_DEFAULT')
         #bpy.ops.wm.timed_text_editor_operator('INVOKE_DEFAULT')
         return
+    
     wm = bpy.context.window_manager
     kc = wm.keyconfigs.addon
     
@@ -126,6 +157,10 @@ def register(testing=False):
         addon_keymaps.append([
             km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
             km.keymap_items.new("wm.timed_text_selector", type='D', value='PRESS')
+        ])
+        addon_keymaps.append([
+            km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
+            km.keymap_items.new("wm.timed_text_importer", type='I', value='PRESS')
         ])
  
  

@@ -1124,7 +1124,7 @@ class Renderer():
                 self.watchee_mods[path] = now
                 if last is not None:
                     diff = now - last
-                    if diff < 1:
+                    if diff < 0.25:
                         return
                     else:
                         pass

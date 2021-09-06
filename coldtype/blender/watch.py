@@ -45,6 +45,20 @@ def persist_sequence(last_persisted):
         #print("NEW CHANGES")
         Path(jpath).write_text(json.dumps(out, indent=4))
         return out
+    
+
+def render_as_image(r, res):
+    from coldtype.pens.skiapen import SkiaPen
+    import skia
+
+    pimg = SkiaPen.Precompose(res, r.rect, disk=False)
+
+    if r.name not in bpy.data.images.keys():
+        bpy.data.images.new(r.name, width=r.rect.w, height=r.rect.h, alpha=True, float_buffer=True)
+
+    img = bpy.data.images[r.name]
+    img.pixels = pimg.toarray(colorType=skia.ColorType.kRGBA_F32_ColorType).ravel()
+
 
 #from coldtype.blender.watch import watch; watch()
 
@@ -67,10 +81,14 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         if not statics:
             cfs = [r"^b3d_animation$"]
         
+        out = []
+        
         for r, res in self.sr.frame_results(
             self.current_frame,
             class_filters=cfs
             ):
+
+            out.append(r)
 
             if isinstance(r, b3d_animation):
                 if r.bake:
@@ -78,13 +96,23 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                         walk_to_b3d(r.baked_frames(), renderable=r)
                 else:
                     animation_found = True
-                    walk_to_b3d(res, renderable=r)
+                    if r.renderer == "b3d":
+                        walk_to_b3d(res, renderable=r)
+                    elif r.renderer == "skia":
+                        #render_as_image(r, res)
+                        pass
+                    else:
+                        raise Exception("r.renderer not supported", r.renderer)
+
             elif statics:
                 walk_to_b3d(res, renderable=r)
                 bpy.data.scenes[0].frame_set(0)
         
         #if not animation_found:
         #    bpy.data.scenes[0].frame_set(0)
+
+        if statics:
+            bpy.app.driver_namespace["_coldtypes"] = out
         return animation_found
 
     def reimport(self, arg):
