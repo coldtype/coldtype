@@ -97,6 +97,10 @@ class Winmans():
         if self.b3d:
             self.b3d.reload(filepath)
     
+    def did_render(self, count):
+        if self.b3d:
+            self.b3d.did_render(count)
+    
     def found_blend_files(self, blend_files):
         if len(blend_files) > 0:
             if self.b3d:

@@ -162,8 +162,10 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     bpy.ops.screen.animation_play()
                 elif cmd == "frame_offset":
                     bpy.ops.screen.frame_offset(delta=int(arg))
+                elif cmd == "refresh_sequencer":
+                    bpy.ops.sequencer.refresh_all()
                 elif cmd == 'cancel':
-                    self.cancel( context )
+                    self.cancel(context)
                 else:
                     print('unknown request=%s arg=%s' % (cmd,arg))
             

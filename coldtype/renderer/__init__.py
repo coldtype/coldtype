@@ -511,6 +511,7 @@ class Renderer():
                     self.action_waiting = Action.PreviewStoryboard
 
             self.winmans.send_to_external(None, rendered=True)
+            self.winmans.did_render(render_count)
 
         return preview_count, render_count
     

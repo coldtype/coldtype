@@ -21,6 +21,9 @@ class WinmanBlender(WinmanPassthrough):
             cb.write_text(f"{cmd},{str(arg)}")
         except FileNotFoundError:
             pass
+
+    def did_render(self, count):
+        self.write_command("refresh_sequencer", count)
     
     def reload(self, filepath):
         self.write_command("import", filepath)

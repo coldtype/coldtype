@@ -105,9 +105,6 @@ class TimedTextImporter(bpy.types.Operator):
 
     def invoke(self, context, event):
         from coldtype.blender import b3d_sequencer, Action
-
-        se = bpy.data.scenes[0].sequence_editor
-        fc = bpy.data.scenes[0].frame_current
         
         rs = bpy.app.driver_namespace.get("_coldtypes", [])
         sq = None
@@ -122,10 +119,32 @@ class TimedTextImporter(bpy.types.Operator):
                 relative_path=True,
                 frame_start=0,
                 frame_end=sq.duration-1,
-                channel=3)
+                channel=2)
         
         bpy.ops.sequencer.refresh_all()
         return {'FINISHED'}
+
+
+class TimedTextRenderer(bpy.types.Operator):
+    bl_idname = "wm.timed_text_renderer"
+    bl_label = "Timed Text Renderer"
+    
+    action: bpy.props.EnumProperty(
+        items=[
+            ('RENDER_ONE', 'Render Frame', 'Render Frame'),
+            ('RENDER_WORK', 'Render Work', 'Render Work'),
+            ('RENDER_ALL', 'Render All', 'Render All'),
+        ]
+    )
+
+    def execute(self, context):
+        if self.action == "RENDER_ONE":
+            print("RENDER ONE!")
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
 
 
 addon_keymaps = []
@@ -136,6 +155,7 @@ def register(testing=False):
     bpy.utils.register_class(TimedTextSplitter)
     bpy.utils.register_class(TimedTextSelector)
     bpy.utils.register_class(TimedTextImporter)
+    bpy.utils.register_class(TimedTextRenderer)
     
     if testing:
         bpy.ops.wm.timed_text_splitter('EXEC_DEFAULT')
@@ -160,7 +180,11 @@ def register(testing=False):
         ])
         addon_keymaps.append([
             km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
-            km.keymap_items.new("wm.timed_text_importer", type='I', value='PRESS')
+            km.keymap_items.new("wm.timed_text_importer", type='I', value='PRESS', shift=True)
+        ])
+        addon_keymaps.append([
+            km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
+            km.keymap_items.new("wm.timed_text_renderer", type='R', value='PRESS')
         ])
  
  
