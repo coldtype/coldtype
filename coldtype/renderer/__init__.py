@@ -460,7 +460,7 @@ class Renderer():
             self.show_error()
         
         if not self.args.is_subprocess and not previewing:
-            print(f"<coldtype: render: {render_count}(" + str(round(ptime.time() - start, 3)) + "ms)>")
+            print(f"<coldtype: render: {render_count}(" + str(round(ptime.time() - start, 3)) + "s)>")
         
         if not previewing:
             if self.args.is_subprocess:

@@ -1,5 +1,5 @@
-import bpy
-
+import bpy, json
+from pathlib import Path
 
 def text_in_channel(se, c, sort=True):
     matches = []
@@ -125,26 +125,77 @@ class TimedTextImporter(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class TimedTextRenderer(bpy.types.Operator):
-    bl_idname = "wm.timed_text_renderer"
-    bl_label = "Timed Text Renderer"
-    
-    action: bpy.props.EnumProperty(
-        items=[
-            ('RENDER_ONE', 'Render Frame', 'Render Frame'),
-            ('RENDER_WORK', 'Render Work', 'Render Work'),
-            ('RENDER_ALL', 'Render All', 'Render All'),
-        ]
-    )
+def remote(command):
+    (Path("~/.coldtype/command.json")
+        .expanduser()
+        .write_text(json.dumps(dict(action=command if isinstance(command, str) else command.value))))
 
-    def execute(self, context):
-        if self.action == "RENDER_ONE":
-            print("RENDER ONE!")
+
+class ColdtypeRenderOne(bpy.types.Operator):
+    bl_idname = "wm.coldtype_render_one"
+    bl_label = "Coldtype Render One"
+
+    def execute(self, _):
+        print("RENDER ONE")
+        remote("render_one")
         return {'FINISHED'}
 
-    def invoke(self, context, event):
-        wm = context.window_manager
-        return wm.invoke_props_dialog(self)
+class ColdtypeRenderWorkarea(bpy.types.Operator):
+    bl_idname = "wm.coldtype_render_workarea"
+    bl_label = "Coldtype Render Workarea"
+
+    def execute(self, _):
+        print("RENDER WORKAREA")
+        remote("render_workarea")
+        return {'FINISHED'}
+
+class ColdtypeRenderAll(bpy.types.Operator):
+    bl_idname = "wm.coldtype_render_all"
+    bl_label = "Coldtype Render All"
+
+    def execute(self, _):
+        print("RENDER ALL")
+        remote("render_all")
+        return {'FINISHED'}
+
+
+class COLDTYPE_PT_Panel(bpy.types.Panel):
+    bl_idname = 'COLDTYPE_PT_panel'
+    bl_label = 'Coldtype'
+    bl_space_type = 'SEQUENCE_EDITOR'
+    bl_region_type = 'UI'
+    bl_category = 'Tool'
+ 
+    def draw(self, context):
+        layout = self.layout
+        #layout.operator('wm.timed_text_renderer', text='Render One').action = 'RENDER_ONE'
+        #layout.operator('wm.timed_text_renderer', text='Render Workarea').action = 'RENDER_WORKAREA'
+        #layout.operator('wm.timed_text_renderer', text='Render All').action = 'RENDER_ALL'
+        layout.operator(ColdtypeRenderOne.bl_idname, text="Render One", icon="RENDER_ANIMATION", )
+        layout.operator(ColdtypeRenderWorkarea.bl_idname, text="Render Workarea", icon="RENDER_ANIMATION", )
+        layout.operator(ColdtypeRenderAll.bl_idname, text="Render All", icon="RENDER_ANIMATION", )
+
+
+# class TimedTextRenderer(bpy.types.Operator):
+#     bl_idname = "wm.timed_text_renderer"
+#     bl_label = "Timed Text Renderer"
+    
+#     action: bpy.props.EnumProperty(
+#         items=[
+#             ('RENDER_ONE', 'Render One', 'Render One'),
+#             ('RENDER_WORKAREA', 'Render Workarea', 'Render Workarea'),
+#             ('RENDER_ALL', 'Render All', 'Render All'),
+#         ]
+#     )
+
+#     def execute(self, context):
+#         if self.action == "RENDER_ONE":
+#             print("RENDER ONE!")
+#         return {'FINISHED'}
+
+#     def invoke(self, context, event):
+#         wm = context.window_manager
+#         return wm.invoke_props_dialog(self)
 
 
 addon_keymaps = []
@@ -155,7 +206,11 @@ def register(testing=False):
     bpy.utils.register_class(TimedTextSplitter)
     bpy.utils.register_class(TimedTextSelector)
     bpy.utils.register_class(TimedTextImporter)
-    bpy.utils.register_class(TimedTextRenderer)
+    
+    bpy.utils.register_class(ColdtypeRenderOne)
+    bpy.utils.register_class(ColdtypeRenderWorkarea)
+    bpy.utils.register_class(ColdtypeRenderAll)
+    bpy.utils.register_class(COLDTYPE_PT_Panel)
     
     if testing:
         bpy.ops.wm.timed_text_splitter('EXEC_DEFAULT')
@@ -184,7 +239,7 @@ def register(testing=False):
         ])
         addon_keymaps.append([
             km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
-            km.keymap_items.new("wm.timed_text_renderer", type='R', value='PRESS')
+            km.keymap_items.new(ColdtypeRenderOne.bl_idname, type='R', value='PRESS')
         ])
  
  
