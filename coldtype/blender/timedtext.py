@@ -16,6 +16,16 @@ def next_neighbor(se, curr):
         if curr.frame_final_end == c.frame_start:
             return c
 
+def find_sequence():
+    from coldtype.blender import b3d_sequencer
+
+    rs = bpy.app.driver_namespace.get("_coldtypes", [])
+    sq = None
+    for r in rs:
+        if isinstance(r, b3d_sequencer):
+            sq = r
+    return sq
+
 
 class TimedTextEditorOperator(bpy.types.Operator):
     bl_idname = "wm.timed_text_editor_operator"
@@ -99,19 +109,49 @@ class TimedTextSelector(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class TimedTextImporter(bpy.types.Operator):
-    bl_idname = "wm.timed_text_importer"
-    bl_label = "Timed Text Importer"
+class TimedTextRoller(bpy.types.Operator):
+    bl_idname = "wm.timed_text_roller"
+    bl_label = "Timed Text Roller"
 
     def invoke(self, context, event):
-        from coldtype.blender import b3d_sequencer, Action
+        se = bpy.data.scenes[0].sequence_editor
+        fc = bpy.data.scenes[0].frame_current
         
-        rs = bpy.app.driver_namespace.get("_coldtypes", [])
-        sq = None
-        for r in rs:
-            if isinstance(r, b3d_sequencer):
-                sq = r
+        if hasattr(se.active_strip, "text"):
+            curr = se.active_strip
+            all = text_in_channel(se, curr.channel)
+            next = None
+            prev = None
+            for s in all:
+                s.select = False
+                s.select_right_handle = False
+                s.select_left_handle = False
+
+                if fc == s.frame_start:
+                    next = s
+                if fc == s.frame_final_end:
+                    prev = s
+            
+            if prev:
+                prev.select = True
+                prev.select_right_handle = True
+            if next:
+                next.select = True
+                next.select_left_handle = True
+                se.active_strip = next
+            
+            bpy.ops.sequencer.refresh_all()
+        return {'FINISHED'}
+
+
+class ColdtypeImporter(bpy.types.Operator):
+    bl_idname = "wm.coldtype_importer"
+    bl_label = "Coldtype Importer"
+
+    def invoke(self, context, event):
+        from coldtype.blender import Action
         
+        sq = find_sequence()
         if sq:
             bpy.ops.sequencer.image_strip_add(
                 directory=str(sq.output_folder) + "/",
@@ -158,6 +198,44 @@ class ColdtypeRenderAll(bpy.types.Operator):
         remote("render_all")
         return {'FINISHED'}
 
+class ColdtypeSetWorkarea(bpy.types.Operator):
+    bl_idname = "wm.coldtype_set_workarea"
+    bl_label = "Coldtype Set Workarea"
+
+    def execute(self, context):
+        sq = find_sequence()
+        if sq:
+            fc = context.scene.frame_current
+            work = sq.t.find_workarea(fc)
+            if work:
+                start, end = work
+                context.scene.frame_start = start
+                context.scene.frame_end = end-1
+            else:
+                context.scene.frame_start = 0
+                context.scene.frame_end = sq.t.duration-1
+        
+        return {'FINISHED'}
+
+class ColdtypeUnsetWorkarea(bpy.types.Operator):
+    bl_idname = "wm.coldtype_unset_workarea"
+    bl_label = "Coldtype Unset Workarea"
+
+    def execute(self, context):
+        sq = find_sequence()
+        if sq:
+            context.scene.frame_start = 0
+            context.scene.frame_end = sq.t.duration-1
+        return {'FINISHED'}
+
+class ColdtypeOpenInEditor(bpy.types.Operator):
+    bl_idname = "wm.coldtype_open_in_editor"
+    bl_label = "Coldtype Open-in-editor"
+
+    def execute(self, _):
+        remote("open_in_editor")
+        return {'FINISHED'}
+
 
 class COLDTYPE_PT_Panel(bpy.types.Panel):
     bl_idname = 'COLDTYPE_PT_panel'
@@ -168,48 +246,34 @@ class COLDTYPE_PT_Panel(bpy.types.Panel):
  
     def draw(self, context):
         layout = self.layout
-        #layout.operator('wm.timed_text_renderer', text='Render One').action = 'RENDER_ONE'
-        #layout.operator('wm.timed_text_renderer', text='Render Workarea').action = 'RENDER_WORKAREA'
-        #layout.operator('wm.timed_text_renderer', text='Render All').action = 'RENDER_ALL'
-        layout.operator(ColdtypeRenderOne.bl_idname, text="Render One", icon="RENDER_ANIMATION", )
-        layout.operator(ColdtypeRenderWorkarea.bl_idname, text="Render Workarea", icon="RENDER_ANIMATION", )
-        layout.operator(ColdtypeRenderAll.bl_idname, text="Render All", icon="RENDER_ANIMATION", )
-
-
-# class TimedTextRenderer(bpy.types.Operator):
-#     bl_idname = "wm.timed_text_renderer"
-#     bl_label = "Timed Text Renderer"
-    
-#     action: bpy.props.EnumProperty(
-#         items=[
-#             ('RENDER_ONE', 'Render One', 'Render One'),
-#             ('RENDER_WORKAREA', 'Render Workarea', 'Render Workarea'),
-#             ('RENDER_ALL', 'Render All', 'Render All'),
-#         ]
-#     )
-
-#     def execute(self, context):
-#         if self.action == "RENDER_ONE":
-#             print("RENDER ONE!")
-#         return {'FINISHED'}
-
-#     def invoke(self, context, event):
-#         wm = context.window_manager
-#         return wm.invoke_props_dialog(self)
+        layout.operator(ColdtypeImporter.bl_idname, text="Import Frames", icon="DOCUMENTS",)
+        layout.separator()
+        layout.operator(ColdtypeRenderOne.bl_idname, text="Render One", icon="IMAGE_DATA",)
+        layout.operator(ColdtypeRenderWorkarea.bl_idname, text="Render Workarea", icon="RENDERLAYERS",)
+        layout.operator(ColdtypeRenderAll.bl_idname, text="Render All", icon="RENDER_ANIMATION",)
+        layout.separator()
+        layout.operator(ColdtypeSetWorkarea.bl_idname, text="Set Workarea", icon="STICKY_UVS_VERT",)
+        layout.operator(ColdtypeUnsetWorkarea.bl_idname, text="Unset Workarea", icon="STICKY_UVS_LOC",)
+        layout.separator()
+        layout.operator(ColdtypeOpenInEditor.bl_idname, text="Open in Editor", icon="SCRIPT",)
 
 
 addon_keymaps = []
-
 
 def register(testing=False):
     bpy.utils.register_class(TimedTextEditorOperator)
     bpy.utils.register_class(TimedTextSplitter)
     bpy.utils.register_class(TimedTextSelector)
-    bpy.utils.register_class(TimedTextImporter)
+    bpy.utils.register_class(TimedTextRoller)
     
+    bpy.utils.register_class(ColdtypeImporter)
     bpy.utils.register_class(ColdtypeRenderOne)
     bpy.utils.register_class(ColdtypeRenderWorkarea)
     bpy.utils.register_class(ColdtypeRenderAll)
+    bpy.utils.register_class(ColdtypeSetWorkarea)
+    bpy.utils.register_class(ColdtypeUnsetWorkarea)
+    bpy.utils.register_class(ColdtypeOpenInEditor)
+    
     bpy.utils.register_class(COLDTYPE_PT_Panel)
     
     if testing:
@@ -235,11 +299,35 @@ def register(testing=False):
         ])
         addon_keymaps.append([
             km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
-            km.keymap_items.new("wm.timed_text_importer", type='I', value='PRESS', shift=True)
+            km.keymap_items.new("wm.timed_text_roller", type='F', value='PRESS')
+        ])
+        addon_keymaps.append([
+            km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
+            km.keymap_items.new(ColdtypeImporter.bl_idname, type='I', value='PRESS', shift=True)
         ])
         addon_keymaps.append([
             km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
             km.keymap_items.new(ColdtypeRenderOne.bl_idname, type='R', value='PRESS')
+        ])
+        addon_keymaps.append([
+            km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
+            km.keymap_items.new(ColdtypeRenderWorkarea.bl_idname, type='R', value='PRESS', shift=True)
+        ])
+        addon_keymaps.append([
+            km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
+            km.keymap_items.new(ColdtypeRenderAll.bl_idname, type='R', value='PRESS', shift=True, oskey=True)
+        ])
+        addon_keymaps.append([
+            km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
+            km.keymap_items.new(ColdtypeOpenInEditor.bl_idname, type='E', value='PRESS')
+        ])
+        addon_keymaps.append([
+            km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
+            km.keymap_items.new(ColdtypeSetWorkarea.bl_idname, type='W', value='PRESS', shift=True)
+        ])
+        addon_keymaps.append([
+            km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
+            km.keymap_items.new(ColdtypeUnsetWorkarea.bl_idname, type='W', value='PRESS', shift=True, oskey=True)
         ])
  
  

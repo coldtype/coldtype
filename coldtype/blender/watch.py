@@ -44,6 +44,9 @@ def persist_sequence(last_persisted):
     else:
         #print("NEW CHANGES")
         Path(jpath).write_text(json.dumps(out, indent=4))
+        for r in bpy.app.driver_namespace.get("_coldtypes", []):
+            if hasattr(r, "reread_timeline"):
+                r.reread_timeline()
         return out
     
 

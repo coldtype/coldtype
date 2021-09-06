@@ -121,7 +121,12 @@ class animation(renderable, Timeable):
         return frames
     
     def workarea(self):
-        return list(self.timeline.workareas[0])
+        if hasattr(self.timeline, "workarea"):
+            return list(self.timeline.workarea)
+        elif hasattr(self.timeline, "workareas"):
+            return list(self.timeline.workareas[0])
+        else:
+            return list(range(0, self.duration))
     
     def jump(self, current, direction):
         c = current % self.duration

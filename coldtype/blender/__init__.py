@@ -26,7 +26,9 @@ except ImportError:
 class BlenderTimeline(Sequence):
     __name__ = "Blender"
     
-    def __init__(self, duration, fps, data):
+    def __init__(self, duration, fps, data,
+        workarea_track=1,
+        ):
         tracks = []
         for t in data["tracks"]:
             clips = []
@@ -39,12 +41,16 @@ class BlenderTimeline(Sequence):
                     track=t["index"]))
             
             tracks.append(ClipTrack(self, clips, []))
+        
+        workarea = range(data["start"], data["end"]+1)
+        self.workarea = workarea
 
         super().__init__(
             duration,
             fps,
             [data["current_frame"]],
-            tracks)
+            tracks,
+            workarea_track=workarea_track-1)
 
 
 def b3d(collection,
@@ -271,15 +277,7 @@ class b3d_animation(animation):
         if self.blend:
             self.blend = Path(self.blend).expanduser()
             self.blend.parent.mkdir(exist_ok=True, parents=True)
-            if self.blend.exists():
-                if self.data_path().exists():
-                    self._bt = True
-                    bt = BlenderTimeline(
-                        self.timeline.duration,
-                        self.timeline.fps,
-                        self.data())
-                    self.reset_timeline(bt)
-                    out = bt.storyboard
+            out = self.reread_timeline(reset=True)
 
         super().post_read()
 
@@ -287,6 +285,21 @@ class b3d_animation(animation):
             bpy.data.scenes[0].render.filepath = str(self.pass_path(""))
         
         return out
+    
+    def reread_timeline(self, reset=False):
+        if self.blend.exists():
+            if self.data_path().exists():
+                self._bt = True
+                bt = BlenderTimeline(
+                    self.timeline.duration,
+                    self.timeline.fps,
+                    self.data())
+                if reset:
+                    self.reset_timeline(bt)
+                else:
+                    self.timeline = bt
+                    self.t = self.timeline
+                return bt.storyboard
     
     def reset_timeline(self, timeline):
         super().reset_timeline(timeline)
