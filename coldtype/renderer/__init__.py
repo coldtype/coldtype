@@ -1114,6 +1114,11 @@ class Renderer():
                     data = json.loads(path.read_text())
                     if "action" in data:
                         action = data.get("action")
+                        if "filepath" in data:
+                            path = data.get("filepath")
+                            if path != str(self.last_animation.filepath):
+                                print("IGNORING COMMAND")
+                                return
                         self.hotkey_waiting = (action, None, None)
                     return
 

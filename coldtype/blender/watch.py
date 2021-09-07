@@ -62,9 +62,6 @@ def render_as_image(r, res):
     img = bpy.data.images[r.name]
     img.pixels = pimg.toarray(colorType=skia.ColorType.kRGBA_F32_ColorType).ravel()
 
-
-#from coldtype.blender.watch import watch; watch()
-
 # original idea: https://blender.stackexchange.com/questions/15670/send-instructions-to-blender-from-external-application
 
 class ColdtypeWatchingOperator(bpy.types.Operator):
@@ -72,7 +69,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
     bl_label = "Coldtype Watching Operator"
 
     _timer = None
-    file = Path("~/.coldtype/blender.txt").expanduser()
+    file = None
     sr = None
     current_frame = -1
     persisted = None
@@ -178,6 +175,10 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def execute(self, context):
+        ccf = bpy.app.driver_namespace.get("_coldtype_command_file")
+        self.file = Path(ccf)
+        print(">>>>>>>>>>>>", self.file)
+
         wm = context.window_manager
         self._timer = wm.event_timer_add(0.25, window=context.window)
         wm.modal_handler_add(self)
@@ -195,7 +196,9 @@ def register_watcher():
 def unregister_watcher():
     bpy.utils.unregister_class(ColdtypeWatchingOperator)
 
-def watch():
+def watch(command_file):
+    bpy.app.driver_namespace["_coldtype_command_file"] = command_file
+    
     register_watcher()
     bpy.ops.wm.coldtype_watching_operator()
     add_shortcuts()

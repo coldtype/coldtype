@@ -5,17 +5,17 @@ from coldtype.blender.render import blender_launch_livecode
 
 class WinmanBlender(WinmanPassthrough):
     def __init__(self):
-        pass
         self.subp = None
+        self.command_file = None
     
     def launch(self, blend_file):
         if self.subp:
             self.subp.kill()
-        self.subp = blender_launch_livecode(blend_file)
+        self.subp = blender_launch_livecode(blend_file, self.command_file)
     
     def write_command(self, cmd, arg):
         try:
-            cb = Path("~/.coldtype/blender.txt").expanduser()
+            cb = self.command_file
             if cb.exists():
                 cb.unlink()
             cb.write_text(f"{cmd},{str(arg)}")
@@ -26,6 +26,7 @@ class WinmanBlender(WinmanPassthrough):
         self.write_command("refresh_sequencer", count)
     
     def reload(self, filepath):
+        self.command_file = Path(f"~/.coldtype/{filepath.stem}.txt").expanduser()
         self.write_command("import", filepath)
     
     def toggle_playback(self, toggle):

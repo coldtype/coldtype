@@ -145,6 +145,8 @@ class TimedTextRoller(bpy.types.Operator):
 
 
 class ColdtypeImporter(bpy.types.Operator):
+    """Import the current Coldtype animation as a PNG frame sequence in the Blender sequence editor"""
+
     bl_idname = "wm.coldtype_importer"
     bl_label = "Coldtype Importer"
 
@@ -166,12 +168,31 @@ class ColdtypeImporter(bpy.types.Operator):
 
 
 def remote(command):
+    sq = find_sequence()
     (Path("~/.coldtype/command.json")
         .expanduser()
-        .write_text(json.dumps(dict(action=command if isinstance(command, str) else command.value))))
+        .write_text(json.dumps(dict(
+            action=command if isinstance(command, str) else command.value,
+            filepath=str(sq.filepath)))))
+
+
+class ColdtypeSequenceDefaults(bpy.types.Operator):
+    """Some good defaults for editing and rendering a 2D sequence based on PNG images"""
+
+    bl_idname = "wm.coldtype_sequence_defaults"
+    bl_label = "Coldtype Sequence Defaults"
+
+    def execute(self, context):
+        context.scene.render.use_compositing = False
+        context.scene.render.use_sequencer = True
+        context.scene.use_audio_scrub = True
+        context.scene.view_settings.view_transform = "Standard"
+        return {'FINISHED'}
 
 
 class ColdtypeRenderOne(bpy.types.Operator):
+    """Render the current frame with the Coldtype renderer"""
+
     bl_idname = "wm.coldtype_render_one"
     bl_label = "Coldtype Render One"
 
@@ -181,6 +202,8 @@ class ColdtypeRenderOne(bpy.types.Operator):
         return {'FINISHED'}
 
 class ColdtypeRenderWorkarea(bpy.types.Operator):
+    """Render the current workarea with the Coldtype renderer; if not workarea is set, this will render the entire animation"""
+
     bl_idname = "wm.coldtype_render_workarea"
     bl_label = "Coldtype Render Workarea"
 
@@ -190,6 +213,8 @@ class ColdtypeRenderWorkarea(bpy.types.Operator):
         return {'FINISHED'}
 
 class ColdtypeRenderAll(bpy.types.Operator):
+    """Render the entire animation with the Coldtype renderer"""
+
     bl_idname = "wm.coldtype_render_all"
     bl_label = "Coldtype Render All"
 
@@ -199,6 +224,8 @@ class ColdtypeRenderAll(bpy.types.Operator):
         return {'FINISHED'}
 
 class ColdtypeSetWorkarea(bpy.types.Operator):
+    """Set a workarea based on the current frame and the text data in the sequence"""
+
     bl_idname = "wm.coldtype_set_workarea"
     bl_label = "Coldtype Set Workarea"
 
@@ -218,6 +245,8 @@ class ColdtypeSetWorkarea(bpy.types.Operator):
         return {'FINISHED'}
 
 class ColdtypeUnsetWorkarea(bpy.types.Operator):
+    """Set the workarea to the entire length of the animation"""
+
     bl_idname = "wm.coldtype_unset_workarea"
     bl_label = "Coldtype Unset Workarea"
 
@@ -229,6 +258,8 @@ class ColdtypeUnsetWorkarea(bpy.types.Operator):
         return {'FINISHED'}
 
 class ColdtypeOpenInEditor(bpy.types.Operator):
+    """Open the current Coldtype source file in your configured text editor"""
+
     bl_idname = "wm.coldtype_open_in_editor"
     bl_label = "Coldtype Open-in-editor"
 
@@ -246,6 +277,7 @@ class COLDTYPE_PT_Panel(bpy.types.Panel):
  
     def draw(self, context):
         layout = self.layout
+        layout.operator(ColdtypeSequenceDefaults.bl_idname, text="Set Defaults", icon="SETTINGS",)
         layout.operator(ColdtypeImporter.bl_idname, text="Import Frames", icon="DOCUMENTS",)
         layout.separator()
         layout.operator(ColdtypeRenderOne.bl_idname, text="Render One", icon="IMAGE_DATA",)
@@ -260,12 +292,13 @@ class COLDTYPE_PT_Panel(bpy.types.Panel):
 
 addon_keymaps = []
 
-def register(testing=False):
+def register():
     bpy.utils.register_class(TimedTextEditorOperator)
     bpy.utils.register_class(TimedTextSplitter)
     bpy.utils.register_class(TimedTextSelector)
     bpy.utils.register_class(TimedTextRoller)
     
+    bpy.utils.register_class(ColdtypeSequenceDefaults)
     bpy.utils.register_class(ColdtypeImporter)
     bpy.utils.register_class(ColdtypeRenderOne)
     bpy.utils.register_class(ColdtypeRenderWorkarea)
@@ -275,11 +308,6 @@ def register(testing=False):
     bpy.utils.register_class(ColdtypeOpenInEditor)
     
     bpy.utils.register_class(COLDTYPE_PT_Panel)
-    
-    if testing:
-        bpy.ops.wm.timed_text_splitter('EXEC_DEFAULT')
-        #bpy.ops.wm.timed_text_editor_operator('INVOKE_DEFAULT')
-        return
     
     wm = bpy.context.window_manager
     kc = wm.keyconfigs.addon
@@ -319,7 +347,7 @@ def register(testing=False):
         ])
         addon_keymaps.append([
             km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
-            km.keymap_items.new(ColdtypeOpenInEditor.bl_idname, type='E', value='PRESS')
+            km.keymap_items.new(ColdtypeOpenInEditor.bl_idname, type='O', value='PRESS')
         ])
         addon_keymaps.append([
             km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
@@ -340,7 +368,4 @@ def unregister():
 
 
 def add_shortcuts():
-    register(testing=False)
-
-if __name__ == "__main__":
-    register(testing=0)
+    register()
