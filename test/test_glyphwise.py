@@ -78,7 +78,7 @@ class TestGlyphwise(unittest.TestCase):
             .picklejar(r))
         
         es = []
-        def print_e(i, g):
+        def print_e(g):
             es.append(g.e)
             return Style(fnt, 200, opsz=g.e, wdth=1-g.e)
         

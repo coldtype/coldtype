@@ -2,7 +2,7 @@ import mido, math
 from pathlib import Path
 
 from coldtype.time.timeline import Timeline
-from coldtype.time.easing import ease
+from coldtype.time.easing import ease, ez
 
 
 class MidiNote():
@@ -47,13 +47,18 @@ class MidiNoteValue():
     def valid(self):
         return self.note and self.note.note >= 0
     
-    def ease(self, eo="eei", ei="eei", negative=False):
+    def ease(self, eo="eei", ei="eei", negative=False, rng=(0, 1)):
         if negative and self.position > 0:
-            return -ease(ei, self.value)[0]
+            return -ez(self.value, ei, rng=rng)
+            #return -ease(ei, self.value)[0]
         elif self.position > 0:
-            return ease(ei, self.value)[0]
+            return ez(self.value, ei, rng=rng)
+            #return ease(ei, self.value)[0]
         else:
+            return ez(self.value, eo, rng=rng)
             return ease(eo, self.value)[0]
+    
+    e = ease
 
 
 class MidiTrack():

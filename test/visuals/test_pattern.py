@@ -15,4 +15,4 @@ def test_pattern_use(r):
     return (DATPen()
         .rect(r)
         .f(1)
-        .img(imgp, r.take(50, "mdx").square()))
+        .img(imgp, r.take(50, "mdx").square(), pattern=1))

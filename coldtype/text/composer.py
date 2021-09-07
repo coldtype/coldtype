@@ -1,5 +1,5 @@
 #from coldtype.pens.draftingpens import DraftingPen, DraftingPens
-from coldtype.pens.datpen import DATPens
+from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.draftingpens import DraftingPens
 from coldtype.geometry import Rect, Point
 
@@ -225,9 +225,9 @@ def StSt(text,
         lockup = lockup.pens()
     return lockup
 
-GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e"])
+GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e", "l"])
 
-def Glyphwise(st, styler, start=0):
+def Glyphwise(st, styler, start=0, line=0):
     # TODO possible to have an implementation
     # aware of a non-1-to-1 mapping of characters
     # to glyphs? seems very difficult if not impossible,
@@ -243,18 +243,25 @@ def Glyphwise(st, styler, start=0):
     #print(glyphs)
     #print([g.name for g in glyphs])
 
+    def run_styler(g):
+        styles = styler(g)
+        if isinstance(styles, Style):
+            return styles, None
+        else:
+            return styles
+
     if len(st) == 1:
-        return StSt(st, styler(GlyphwiseGlyph(0, st, 0)))
+        return StSt(st, run_styler(GlyphwiseGlyph(0, st, 0, 0, line))[0])
 
     try:
         lines = st.split("\n")
         if len(lines) > 1:
             gs = []
-            for l in lines:
+            for lidx, l in enumerate(lines):
                 start = 0
                 if len(gs) > 0:
                     start = len(gs[-1])
-                gs.append(Glyphwise(l, styler, start=start))
+                gs.append(Glyphwise(l, styler, start=start, line=lidx))
             return _PensClass(gs).reversePens().distribute(v=True).reversePens()
     except AttributeError:
         pass
@@ -265,7 +272,6 @@ def Glyphwise(st, styler, start=0):
     def krn(off, on, idx):
         return kx(off, idx) - kx(on, idx)
 
-    arg_count = len(inspect.signature(styler).parameters)
     dps = DATPens()
     prev = 0
     tracks = []
@@ -286,13 +292,9 @@ def Glyphwise(st, styler, start=0):
             test = [test]
         
         e = idx / (len(st)-1)
-        gg = GlyphwiseGlyph(idx+start, c, e)
+        gg = GlyphwiseGlyph(idx+start, c, e, line)
 
-        if arg_count == 1:
-            skon = styler(gg)
-        else:
-            skon = styler(idx+start, gg)
-        
+        skon, skon_tweak = run_styler(gg)
         skoff = skon.mod(kern=0, kern_pairs={}, kp={}, tu=0)
 
         #test_list = [t for sublist in test for t in sublist]
@@ -302,17 +304,34 @@ def Glyphwise(st, styler, start=0):
 
         tkon = StSt(test_str, skon)
         tkoff = StSt(test_str, skoff)
+        if skon_tweak is None:
+            tkoff_tweak = None
+        else:
+            skoff_tweak = skon_tweak.mod(kern=0, kern_pairs={}, kp={}, tu=0)
+            tkoff_tweak = StSt(test_str, skoff_tweak)
 
         if idx == 0:
-            dps.append(tkoff[0])
+            if tkoff_tweak:
+                tkoff_frame = tkoff[0]._frame
+                tkoff_glyph = tkoff_tweak[0].align(tkoff_frame)
+                tkoff_glyph._frame = tkoff_frame
+            else:
+                tkoff_glyph = tkoff[0]#.copy(with_data=True)
+            
+            dps.append(tkoff_glyph)
             prev = krn(tkoff, tkon, 1)
         if target > 0:
             _prev = krn(tkoff, tkon, 1)
             prev_av = (prev+_prev)/2
-            #print(prev_av, kx(tkoff, 1))
 
-            dps.append(tkoff[1].copy(with_data=True)
-                .translate(-kx(tkoff, 1), 0))
+            if tkoff_tweak:
+                tkoff_frame = tkoff[1]._frame
+                tkoff_glyph = tkoff_tweak[1].align(tkoff_frame)
+                tkoff_glyph._frame = tkoff_frame
+            else:
+                tkoff_glyph = tkoff[1].copy(with_data=True)
+            
+            dps.append(tkoff_glyph.translate(-kx(tkoff, 1), 0))
             tracks.append(-prev_av)
 
             if tcount > 2:
