@@ -3,7 +3,7 @@ from coldtype.fx.skia import phototype
 
 fnt = Font.MutatorSans()
 
-@animation(timeline=90, bg=0)
+@animation(timeline=Timeline(90, 24), bg=0, render_bg=1)
 def glyphwise(f):
     def styler(g):
         return [
@@ -22,4 +22,6 @@ def glyphwise(f):
         .reverse_pens()
         .f(1)
         .understroke(sw=5)
-        .ch(phototype(f.a.r, 3, 190, cutw=20)))
+        .ch(phototype(f.a.r, 3, 190, cutw=15)))
+
+release = glyphwise.export("h264", loops=4)
