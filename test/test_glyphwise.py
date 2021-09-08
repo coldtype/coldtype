@@ -144,6 +144,34 @@ class TestGlyphwise(unittest.TestCase):
             .picklejar(r))
     
         self.assertLess(gs_tu.ambit().w, gs_no_tu.ambit().w)
+    
+    def test_multistyle(self):
+        def styler1(g):
+            return Style(Font.MutatorSans(), 100, wdth=0)
+        
+        def styler2(g):
+            return [
+                Style(Font.MutatorSans(), 100, wdth=0),
+                Style(Font.MutatorSans(), 100, wdth=g.e),
+            ]
+        
+        r = Rect(300, 100)
+        g1 = (Glyphwise("ASDF", styler1)
+            .fssw(-1, 0, 1)
+            .picklejar(r))
+        
+        g2 = (Glyphwise("ASDF", styler2)
+            .fssw(-1, 0, 1)
+            .picklejar(r))
+        
+        self.assertEqual(g1.ambit().w, g2.ambit().w)
+        self.assertNotEqual(g1.ambit(th=1).w, g2.ambit(th=1).w)
+
+        self.assertEqual(g1[-1].glyphName, "F")
+        self.assertEqual(g2[-1].glyphName, "F")
+        self.assertEqual(g2[-1]._frame.w, g1[-1]._frame.w)
+        self.assertEqual(g1[-1].ambit(th=1).w, 28.0)
+        self.assertEqual(g2[-1].ambit(th=1).w, 86.0)
 
 if __name__ == "__main__":
     unittest.main()

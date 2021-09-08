@@ -36,3 +36,8 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ### Added
 - Support for single-char `Glyphwise`
 - `Glyphwise` now returns `DATPens`, not `DraftingPens`
+
+## [0.6.3] - 2021-09-07
+### Added
+- Support for multi-return styler fn for `Glyphwise`
+- Coldtype panel for `@b3d_sequencer`
