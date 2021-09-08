@@ -227,6 +227,7 @@ def StSt(text,
 
 GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e", "l"])
 
+
 def Glyphwise(st, styler, start=0, line=0):
     # TODO possible to have an implementation
     # aware of a non-1-to-1 mapping of characters

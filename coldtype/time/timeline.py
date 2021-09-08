@@ -17,6 +17,7 @@ class Timeline(Timeable):
         self.fps = fps
         self.start = 0
         self.end = duration
+
         self.tracks = tracks or []
         self._jumps = [self.start, *(jumps or []), self.end-1]
         

@@ -21,7 +21,7 @@ def warp(flatten=10, xa=0, ya=-1, xs=300, ys=300, speed=5, base=0, octaves=1, mu
     """Chainable function for warping a pen"""
 
     def _warp(pen):
-        if flatten > 0:
+        if flatten is not None and flatten > 0:
             pen.flatten(flatten)
         pen.nlt(warp_fn(xa, ya, xs, ys, speed, base, octaves, mult, rz))
     return _warp

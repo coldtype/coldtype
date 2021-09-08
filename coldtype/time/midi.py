@@ -155,7 +155,7 @@ class MidiTrack():
                 return max(notes_on, key=lambda n: n.value)
 
 
-class MidiReader():
+class MidiReader(Timeline):
     def __init__(self, path, duration=None, fps=30, bpm=None, rounded=True, note_names={}):
         note_names_reversed = {v:k for (k,v) in note_names.items()}
         midi_path = path if isinstance(path, Path) else Path(path).expanduser()
@@ -193,8 +193,6 @@ class MidiReader():
         self.midi_file = mid
         self.bpm = bpm
         self.fps = fps
-        self.start = 0
-        self.end = 0
         
         tracks = []
         for track_name, es in events.items():
@@ -205,7 +203,7 @@ class MidiReader():
             for note in t.notes:
                 all_notes.append(note)
         
-        self.duration = int(duration or all_notes[-1].off)
+        self._duration = int(duration or all_notes[-1].off)
 
         for t in tracks:
             t.duration = self.duration
@@ -214,6 +212,12 @@ class MidiReader():
         self.max = max([n.note for n in all_notes])
         self.spread = self.max - self.min
         self.tracks = tracks
+
+        super().__init__(self._duration, self.fps, tracks=self.tracks)
+
+    @property
+    def duration(self):
+        return self._duration
     
     def find_tempo(self):
         for track in self.mid.tracks:
