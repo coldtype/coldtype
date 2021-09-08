@@ -18,6 +18,8 @@ name = "coldtype"
 __version__ = "0.6.3"
 
 __sibling__ = lambda x: x # will be redefined contextually
+__inputs__ = [] # will be redefined contextually
+__as_config__ = False # will be redefined contextually
 #λ = None
 
 def debug_txt(r, txt, font_size=42, **kwargs):

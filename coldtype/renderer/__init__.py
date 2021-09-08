@@ -63,6 +63,7 @@ class Renderer():
         
         if file:
             parser.add_argument("file", type=str, nargs="?", help="The source file for a coldtype render")
+            parser.add_argument("inputs", nargs="*", help="Additional input files passed to renderable")
         for narg in nargs:
             parser.add_argument(narg[0], nargs="?", default=narg[1])
         
@@ -116,6 +117,9 @@ class Renderer():
             print(coldtype.__version__)
             self.dead = True
             return
+        
+        if self.args.file:
+            self.args.file = str(self.prenormalize_filepath(self.args.file))
 
         self.source_reader = SourceReader(
             renderer=self,
@@ -138,6 +142,7 @@ class Renderer():
             self.dead = False
         
         self.state.preview_scale = self.source_reader.config.preview_scale
+        self.state.inputs = self.args.inputs
         self.exit_code = 0
         self.last_renders = []
         self.last_render_cleared = False
@@ -155,6 +160,22 @@ class Renderer():
 
         self.viewer_solos = []
     
+    def prenormalize_filepath(self, filepath):
+        root = Path(__file__).parent.parent
+        if not filepath:
+            return root / "demo/demo.py"
+        elif filepath == "demo": # TODO more of these
+            return root / "demo/demo.py"
+        elif filepath == "blank":
+            return root / "demo/blank.py"
+        elif filepath == "boiler":
+            return root / "demo/boiler.py"
+        elif filepath == "midi":
+            return root / "demo/midi.py"
+        elif filepath == "pj":
+            return root / "renderer/picklejar.py"
+        return filepath
+    
     def reset_filepath(self, filepath, reload=False):
         dirdirection = 0
         if isinstance(filepath, int):
@@ -171,18 +192,8 @@ class Renderer():
 
         root = Path(__file__).parent.parent
         pj = False
-
-        if not filepath:
-            filepath = root / "demo/demo.py" # should not be demo
-        elif filepath == "demo": # TODO more of these
-            filepath = root / "demo/demo.py"
-        elif filepath == "blank":
-            filepath = root / "demo/blank.py"
-        elif filepath == "boiler":
-            filepath = root / "demo/boiler.py"
-        elif filepath == "pj":
+        if "picklejar.py" in filepath:
             pj = True
-            filepath = root / "renderer/picklejar.py"
         
         filepath = self.source_reader.normalize_filepath(filepath)
 
@@ -1220,7 +1231,6 @@ class Renderer():
     def restart(self):
         print("> RESTARTING...")
         args = sys.argv
-
         args[1] = str(self.source_reader.filepath)
         
         # attempt to preserve state across reload

@@ -23,6 +23,7 @@ class RendererState():
         self.canvas = None
         self._last_filepath = None
         self.cv2caps = {}
+        self.inputs = []
         self.reset()
     
     def reset(self, ignore_current_state=False):

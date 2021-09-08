@@ -6,7 +6,7 @@ from coldtype.time.easing import ease, ez
 
 
 class MidiNote():
-    def __init__(self, note, on, off, fps, rounded, idx):
+    def __init__(self, note, on, off, fps, rounded, idx, msg):
         self.fps = fps
         self.note = note
         self.on_seconds = on
@@ -16,6 +16,7 @@ class MidiNote():
         self.off = self.offf(rounded=rounded)
         self.duration = self.off - self.on
         self.idx = idx
+        self.msg = msg
 
     def s_to_f(self, value, rounded=True, fps=None):
         _fps = fps or self.fps
@@ -155,12 +156,23 @@ class MidiTrack():
 
 
 class MidiReader():
-    def __init__(self, path, duration=None, fps=30, bpm=120, rounded=True, note_names={}):
+    def __init__(self, path, duration=None, fps=30, bpm=None, rounded=True, note_names={}):
         note_names_reversed = {v:k for (k,v) in note_names.items()}
         midi_path = path if isinstance(path, Path) else Path(path).expanduser()
+        self.midi_path = midi_path
         mid = mido.MidiFile(str(midi_path))
         events = {}
         open_notes = {}
+
+        self.mid = mid
+        self.time_signature = (4, 4)
+
+        if fps is None:
+            fps = 30
+
+        if bpm is None:
+            bpm = float(mido.tempo2bpm(self.find_tempo()))
+
         for i, track in enumerate(mid.tracks):
             time = 0
             cumulative_time = 0
@@ -173,12 +185,13 @@ class MidiReader():
                     o = open_notes.get(track.name).get(msg.note)
                     if o != None:
                         open_notes[track.name][msg.note] = None
-                        events[track.name].append(MidiNote(msg.note, o, cumulative_time, fps, rounded, idx))
+                        events[track.name].append(MidiNote(msg.note, o, cumulative_time, fps, rounded, idx, msg))
                     if msg.type == "note_on" and msg.velocity > 0:
                         open_notes[track.name][msg.note] = cumulative_time
 
         self.note_names = note_names
         self.midi_file = mid
+        self.bpm = bpm
         self.fps = fps
         self.start = 0
         self.end = 0
@@ -192,7 +205,7 @@ class MidiReader():
             for note in t.notes:
                 all_notes.append(note)
         
-        self.duration = duration or all_notes[-1].off
+        self.duration = int(duration or all_notes[-1].off)
 
         for t in tracks:
             t.duration = self.duration
@@ -201,6 +214,15 @@ class MidiReader():
         self.max = max([n.note for n in all_notes])
         self.spread = self.max - self.min
         self.tracks = tracks
+    
+    def find_tempo(self):
+        for track in self.mid.tracks:
+            for msg in track:
+                if msg.type == "set_tempo":
+                    return msg.tempo
+                elif msg.type == "time_signature":
+                    self.time_signature = (msg.numerator, msg.denominator)
+        return 500000 # 120 equivalent
     
     def __getitem__(self, item):
         if isinstance(item, str):

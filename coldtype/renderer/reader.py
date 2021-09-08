@@ -1,10 +1,11 @@
+from coldtype import ColdtypeCeaseConfigException
 import re, os
 from pathlib import Path
 from runpy import run_path
 from functools import partial
 from tempfile import NamedTemporaryFile
 
-from coldtype.renderable import renderable
+from coldtype.renderable import renderable, ColdtypeCeaseConfigException
 from coldtype.renderable.animation import animation
 
 from coldtype.renderer.utils import Watchable
@@ -143,10 +144,12 @@ def read_source_to_tempfile(filepath:Path,
     return codepath, data_out
 
 
-def run_source(filepath, codepath, **kwargs):
+def run_source(filepath, codepath, inputs, **kwargs):
     return run_path(str(codepath), init_globals={
         "__COLDTYPE__": True,
         "__FILE__": filepath,
+        "__inputs__": inputs,
+        "__as_config__": False,
         "__sibling__": partial(sibling, filepath),
         **kwargs})
 
@@ -255,6 +258,11 @@ class SourceReader():
         self.renderer = renderer
         self.runner = runner
 
+        if cli_args and "inputs" in cli_args:
+            self.inputs = cli_args.inputs
+        else:
+            self.inputs = []
+
         self.config = None
         self.read_configs(cli_args, filepath)
 
@@ -277,7 +285,7 @@ class SourceReader():
         if filepath:
             files.append(Path(filepath).expanduser())
         
-        if args and args.file:
+        if args and args.file and args.config != "0":
             fp = Path(args.file).expanduser()
             if fp.exists() and not fp.is_dir():
                 files.append(fp)
@@ -288,6 +296,8 @@ class SourceReader():
                 try:
                     py_config = run_path(str(p), init_globals={
                         "__FILE__": p,
+                        "__inputs__": self.inputs,
+                        "__as_config__": True,
                         "__sibling__": partial(sibling, p),
                     })
                     #self.midi_mapping = py_config.get("MIDI", self.midi_mapping)
@@ -297,8 +307,11 @@ class SourceReader():
                     for f in self.config.font_dirs:
                         ALL_FONT_DIRS.insert(0, f)
                 except Exception as e:
-                    print("Failed to load config", p)
-                    print("Exception:", e)
+                    if isinstance(e, ColdtypeCeaseConfigException):
+                        pass
+                    else:
+                        print("Failed to load config", p)
+                        print("Exception:", e)
         
         if len(files) == 0 or not self.config:
             self.config = ColdtypeConfig({}, None, args)
@@ -380,6 +393,7 @@ class SourceReader():
         self.program = run_source(
             self.filepath,
             self.codepath,
+            self.inputs,
             __RUNNER__=self.runner)
         
         self.candidates = self.renderable_candidates(

@@ -20,6 +20,9 @@ from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.img.datimage import DATImage
 
+class ColdtypeCeaseConfigException(Exception):
+    pass
+
 class Overlay(Enum):
     Info = "info"
     Timeline = "timeline"
