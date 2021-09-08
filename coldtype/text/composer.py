@@ -313,7 +313,9 @@ def Glyphwise(st, styler, start=0, line=0):
         if idx == 0:
             if tkoff_tweak:
                 tkoff_frame = tkoff[0]._frame
-                tkoff_glyph = tkoff_tweak[0].align(tkoff_frame)
+                th = skon_tweak.input["kwargs"].get("th", 0)
+                tv = skon_tweak.input["kwargs"].get("tv", 0)
+                tkoff_glyph = tkoff_tweak[0].align(tkoff_frame, th=th, tv=tv)
                 tkoff_glyph._frame = tkoff_frame
             else:
                 tkoff_glyph = tkoff[0]#.copy(with_data=True)
@@ -326,7 +328,9 @@ def Glyphwise(st, styler, start=0, line=0):
 
             if tkoff_tweak:
                 tkoff_frame = tkoff[1]._frame
-                tkoff_glyph = tkoff_tweak[1].align(tkoff_frame)
+                th = skon_tweak.input["kwargs"].get("th", 0)
+                tv = skon_tweak.input["kwargs"].get("tv", 0)
+                tkoff_glyph = tkoff_tweak[1].align(tkoff_frame, th=th, tv=tv)
                 tkoff_glyph._frame = tkoff_frame
             else:
                 tkoff_glyph = tkoff[1].copy(with_data=True)
