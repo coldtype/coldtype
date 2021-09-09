@@ -19,7 +19,7 @@ def plus(f):
     
     return PS([
         lockup(0, hsl(f.e("l"))),
-        lockup(0.25, hsl(f.adj(-5).e("l"))),
-        lockup(0.5, hsl(f.adj(-20).e("l")))])
+        lockup(1.25, hsl(f.adj(-5).e("l"))),
+        lockup(3.5, hsl(f.adj(-20).e("l")))])
 
 release = plus.export("h264", loops=6)
