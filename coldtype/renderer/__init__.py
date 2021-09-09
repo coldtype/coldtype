@@ -550,6 +550,11 @@ class Renderer():
                 "-isp",
                 "-s", str(self.args.scale),
             ]
+            
+            if len(self.args.inputs) > 0:
+                sargs = [*sargs[:2], *self.args.inputs, *sargs[2:]]
+                print(sargs)
+
             r = self.args.rasterizer
             if r:
                 sargs.append("-r", r)
