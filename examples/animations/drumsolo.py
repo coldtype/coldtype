@@ -5,7 +5,7 @@ from coldtype.fx.skia import phototype
 midi = MidiReader(__sibling__("media/68.mid"), bpm=151)
 drums = midi[0]
 
-@animation(timeline=midi, bg=0)
+@animation(timeline=midi, bg=0, render_bg=1)
 def drumsolo(f):
     def d(notes, inn, out):
         return drums.fv(f.i, notes, [inn, out])
@@ -36,12 +36,18 @@ def drumsolo(f):
         .f(1)
         .pen()
         .layer(
-            lambda p: p
-                .outline(10, miterLimit=10)
-                .remove_overlap()
-                .explode()[0]
-                .fssw(-1, 1, 10)
-                .ch(phototype(f.a.r,
-                    blur=3, cut=190, cutw=25, fill=hsl(f.e("l"), 1, 0.7))),
+            # lambda p: p
+            #     .outline(10, miterLimit=10)
+            #     .remove_overlap()
+            #     .explode()[0]
+            #     .fssw(-1, 1, 10)
+            #     .ch(phototype(f.a.r,
+            #         blur=3, cut=190, cutw=25, fill=hsl(f.e("l"), 1, 0.7))),
             lambda p: p
                 .ch(phototype(f.a.r, blur=2, cut=190, cutw=25))))
+
+release = drumsolo.export("h264",
+    #audio=__sibling__("media/68.wav"),
+    audio=Path("~/Audio/loops/20210908.wav"),
+    audio_loops=2,
+    loops=4)

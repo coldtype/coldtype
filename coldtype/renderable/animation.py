@@ -210,9 +210,9 @@ class animation(renderable, Timeable):
         
         return contactsheet
     
-    def export(self, fmt, date=False, loops=1, open=1):
+    def export(self, fmt, date=False, loops=1, open=1, audio=None, audio_loops=None):
         def _export(passes):
-            fe = FFMPEGExport(self, date=date, loops=loops)
+            fe = FFMPEGExport(self, date=date, loops=loops, audio=audio, audio_loops=audio_loops)
             if fmt == "gif":
                 fe.gif()
             elif fmt == "h264":
@@ -238,11 +238,21 @@ class FFMPEGExport():
     def __init__(self, a:animation,
         date=False,
         loops=1,
+        audio=None,
+        audio_loops=None,
         ):
         self.a = a
         self.date = date
         self.loops = loops
         self.fmt = None
+        if audio:
+            self.audio = Path(audio).expanduser()
+            self.audio_loops = audio_loops if audio_loops is not None else loops
+            if not self.audio.exists():
+                raise Exception("Audio file does not exist")
+        else:
+            self.audio = None
+            self.audio_loops = loops
 
         template = a.pass_path(f"%4d.{a.fmt}")
         self.folder = template.parent.parent
@@ -253,9 +263,23 @@ class FFMPEGExport():
             "-y", # overwrite existing files
             "-loglevel", "16", # 'error, 16' Show all errors
             "-r", str(self.a.timeline.fps),
+            "-stream_loop", str(self.loops-1),
             "-i", template, # input sequence
-            "-filter_complex", f"loop=loop={self.loops-1}:size={self.a.timeline.duration}:start=0"
         ]
+
+        if self.audio:
+            self.args.extend([
+                "-stream_loop", str(self.loops-1),
+                "-i", template, # input sequence
+                "-stream_loop", str(self.audio_loops-1),
+                "-i", str(self.audio),
+                #"-stream_loop", "-1",
+            ])
+        else:
+            self.args.extend([
+                "-i", template, # input sequence
+                "-filter_complex", f"loop=loop={self.loops-1}:size={self.a.timeline.duration}:start=0"
+            ])
     
     def h264(self):
         self.fmt = "mp4"
@@ -290,8 +314,8 @@ class FFMPEGExport():
         self.output_path = self.folder / f"{self.a.name}{d}.{self.fmt}"
 
         self.args.append(self.output_path)
-        if verbose:
-            print(self.args)
+        if verbose or True:
+            print(" ".join([str(s) for s in self.args]))
         run(self.args)
 
         if verbose:
