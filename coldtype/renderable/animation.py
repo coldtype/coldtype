@@ -210,9 +210,9 @@ class animation(renderable, Timeable):
         
         return contactsheet
     
-    def export(self, fmt, date=False, loops=1, open=1, audio=None, audio_loops=None):
+    def export(self, fmt, date=False, loops=1, open=1, audio=None, audio_loops=None, vf=None):
         def _export(passes):
-            fe = FFMPEGExport(self, date=date, loops=loops, audio=audio, audio_loops=audio_loops)
+            fe = FFMPEGExport(self, date=date, loops=loops, audio=audio, audio_loops=audio_loops, vf=vf)
             if fmt == "gif":
                 fe.gif()
             elif fmt == "h264":
@@ -240,6 +240,7 @@ class FFMPEGExport():
         loops=1,
         audio=None,
         audio_loops=None,
+        vf=None,
         ):
         self.a = a
         self.date = date
@@ -280,6 +281,11 @@ class FFMPEGExport():
                 "-i", template, # input sequence
                 "-filter_complex", f"loop=loop={self.loops-1}:size={self.a.timeline.duration}:start=0"
             ])
+        
+        if vf:
+           self.args.extend([
+               "-vf", vf
+           ])
     
     def h264(self):
         self.fmt = "mp4"

@@ -71,8 +71,13 @@ class MidiTrack():
 
     def all_notes(self):
         return set([n.note for n in self.notes])
+
+    def fifv(self, fi):
+        def _fv(note_numbers, preverb, postverb):
+            return self.fv(fi, note_numbers, reverb=[preverb, postverb])
+        return _fv
     
-    def curried_fve(self, fi):
+    def fifve(self, fi):
         def _fv(note_numbers, preverb, postverb, eo="eei", ei="eei", rng=(0, 1)):
             return self.fv(fi, note_numbers, reverb=[preverb, postverb]).ease(eo, ei, rng=rng)
         return _fv
