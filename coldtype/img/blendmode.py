@@ -40,6 +40,14 @@ class BlendMode(Enum):
     def to_skia(self):
         return _SKIA_MAPPING[self.value-1]
 
+    @staticmethod
+    def Cycle(i, show=False):
+        bms = list(BlendMode)
+        match = bms[i%len(bms)]
+        if show:
+            print(match)
+        return match
+
 if not skia:
     _SKIA_MAPPING = []
 else:
