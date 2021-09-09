@@ -249,6 +249,7 @@ class Style():
         self.include_blanks = include_blanks
         self.scaleVariations = scaleVariations
         self.tag = tag
+        capHeight = kwargs.get("ch", capHeight)
 
         try:        
             if "OS/2" in self.font.font.ttFont:

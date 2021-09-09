@@ -5,6 +5,7 @@ try:
 except ImportError:
     skia = None
 
+
 class BlendMode(Enum):
     Clear = auto()
     Src = auto()
