@@ -41,3 +41,7 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ### Added
 - Support for multi-return styler fn for `Glyphwise`
 - Coldtype panel for `@b3d_sequencer`
+
+## [0.6.5] - 2021-09-09
+### Added
+- Better MIDI primitives
