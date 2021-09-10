@@ -78,6 +78,16 @@ class KeyboardShortcut(Enum):
     ViewerSolo8 = "viewer_solo_8"
     ViewerSolo9 = "viewer_solo_9"
 
+    ViewerSampleFrames1 = "viewer_sample_frames_1"
+    ViewerSampleFrames2 = "viewer_sample_frames_2"
+    ViewerSampleFrames3 = "viewer_sample_frames_3"
+    ViewerSampleFrames4 = "viewer_sample_frames_4"
+    ViewerSampleFrames5 = "viewer_sample_frames_5"
+    ViewerSampleFrames6 = "viewer_sample_frames_6"
+    ViewerSampleFrames7 = "viewer_sample_frames_7"
+    ViewerSampleFrames8 = "viewer_sample_frames_8"
+    ViewerSampleFrames9 = "viewer_sample_frames_9"
+
     ToggleCapturing = "toggle_capturing"
     CaptureOnce = "capture_once"
 
@@ -404,6 +414,43 @@ SHORTCUTS = {
     KeyboardShortcut.ViewerSolo9: [
         [[], "np9"],
         [[], "9"]
+    ],
+
+    KeyboardShortcut.ViewerSampleFrames1: [
+        [["cmd"], "np1"],
+        [["cmd"], "1"]
+    ],
+    KeyboardShortcut.ViewerSampleFrames2: [
+        [["cmd"], "np2"],
+        [["cmd"], "2"]
+    ],
+    KeyboardShortcut.ViewerSampleFrames3: [
+        [["cmd"], "np3"],
+        [["cmd"], "3"]
+    ],
+    KeyboardShortcut.ViewerSampleFrames4: [
+        [["cmd"], "np4"],
+        [["cmd"], "4"]
+    ],
+    KeyboardShortcut.ViewerSampleFrames5: [
+        [["cmd"], "np5"],
+        [["cmd"], "5"]
+    ],
+    KeyboardShortcut.ViewerSampleFrames6: [
+        [["cmd"], "np6"],
+        [["cmd"], "6"]
+    ],
+    KeyboardShortcut.ViewerSampleFrames7: [
+        [["cmd"], "np7"],
+        [["cmd"], "7"]
+    ],
+    KeyboardShortcut.ViewerSampleFrames8: [
+        [["cmd"], "np8"],
+        [["cmd"], "8"]
+    ],
+    KeyboardShortcut.ViewerSampleFrames9: [
+        [["cmd"], "np9"],
+        [["cmd"], "9"]
     ],
 
     KeyboardShortcut.ToggleCapturing: [

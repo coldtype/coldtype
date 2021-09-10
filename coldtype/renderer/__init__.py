@@ -163,6 +163,8 @@ class Renderer():
             self.viewer_solos = [int(x.strip()) for x in self.args.viewer_solos.split(",")]
         else:
             self.viewer_solos = []
+        
+        self.viewer_sample_frames = 1
     
     def prenormalize_filepath(self, filepath):
         root = Path(__file__).parent.parent
@@ -962,6 +964,8 @@ class Renderer():
             KeyboardShortcut.ViewerSolo9
             ]:
             self.viewer_solos = [int(str(shortcut)[-1])-1]
+        elif shortcut.value.startswith("viewer_sample_frames"):
+            self.viewer_sample_frames = int(shortcut.value.split("_")[-1])
         elif shortcut == KeyboardShortcut.CopySVGToClipboard:
             self.winmans.glsk.copy_previews_to_clipboard = True
             return Action.PreviewStoryboard
@@ -1028,13 +1032,13 @@ class Renderer():
                 self.winmans.frame_offset(-self.source_reader.config.many_increment)
                 #self.state.adjust_all_frame_offsets(-self.source_reader.config.many_increment)
             elif action == Action.PreviewStoryboardPrev:
-                self.winmans.frame_offset(-1)
+                self.winmans.frame_offset(-self.viewer_sample_frames)
                 #self.state.adjust_all_frame_offsets(-1)
             elif action == Action.PreviewStoryboardNextMany:
                 self.winmans.frame_offset(+self.source_reader.config.many_increment)
                 #self.state.adjust_all_frame_offsets(+self.source_reader.config.many_increment)
             elif action == Action.PreviewStoryboardNext:
-                self.winmans.frame_offset(+1)
+                self.winmans.frame_offset(+self.viewer_sample_frames)
                 #self.state.adjust_all_frame_offsets(+1)
             self.render(Action.PreviewStoryboard)
         elif action == Action.RenderedPlay:
