@@ -1,16 +1,15 @@
 Text
 ====
 
-To run any of these examples, you'll want to save a bit of code in a python file, with any name, e.g. ``text.py``, and then run that file by navigating to it on the command line and constructing a call like, ``coldtype shape.py``
+To run any of these examples, you'll want to save a bit of code in a python file, with any name, e.g. ``text.py``, and then run that file by navigating to it on the command line and constructing a call like, ``coldtype text.py``
 
-Before we begin, let’s run some code needed to setup all the examples below. (If you’re copying just the code from one block below, you'll need to also copy this code and put it at the top of your source file.)
+Before we begin, let’s run some code needed to setup all the examples below. (If you’re copying just the code from one of the blocks below, you'll need to also copy this code and put it at the top of your source file.)
 
 .. code:: python
 
     from coldtype import *
 
-    co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
-    # also available via shortcut as Font.ColdtypeObviously()
+    co = Font.ColdtypeObviously()
 
 Basic Text
 ----------
@@ -29,7 +28,7 @@ Which should get you this:
     :width: 500
     :class: add-border
 
-You might be wondering why the text is blue — that’s the default fill color for any text in coldtype. Let’s mess w/ the color and set some variable font axis values:
+You might be wondering why the text is blue — that’s the default fill color for any text in coldtype. Let’s mess with the color and set some variable font axis values:
 
 .. code:: python
 
@@ -55,12 +54,16 @@ Put another way, what you get back from calling ``(StSt...)`` is a rich set of d
         pens = (StSt("COLDTYPE", co, 150,
             wdth=0.5, rotate=10, tu=150)
             .align(r)
-            .f(Gradient.Vertical(r, hsl(0.5, s=0.8), hsl(0.8, s=0.75))))
+            .f(Gradient.Vertical(r,
+                hsl(0.5, s=0.8),
+                hsl(0.8, s=0.75))))
         
         print(pens.tree())
+        
         pens[0].rotate(180)
         pens[-1].rotate(180)
         pens[-2].rotate(10)
+
         return pens
 
 Because of the line ``print(pens.tree())``, you should see something like this in your terminal when you run that example:
@@ -88,7 +91,7 @@ Less Basic Text
 
 Usually, glyph-wise structured representation of text is not a feature of software or software libraries, because when programmers sit down to implement support for text, they do it with the understanding that if you want text, you usually want a `lot` of text, set in large blocks, like this paragraph that you’re reading now.
 
-But for lots of graphic design, what you actually want is very precise control over only a few glyphs, maybe a line or two. That was the magic of technologies like moveable type, or especially Letraset; those technologies gave designers direct control over letterforms. A lot like when you hit "Convert to Outlines" in Illustrator today.
+But for lots of graphic design (particularly animation), what you actually want is very precise control over only a few glyphs, maybe a line or two. That was the magic of technologies like moveable type, or especially Letraset; those technologies gave designers direct control over letterforms. A lot like when you hit "Convert to Outlines" in Illustrator today.
 
 Of course, there’s a big downside to having direct control: it is excruciatingly slow. And more than that, even when you’re working with just a few letters, you might need to change those letters at the last minute, right before a project is due.
 
@@ -141,14 +144,15 @@ I’ll admit the impact of the interesting dropshadow here is lessened somewhat 
 
     @renderable((1000, 200))
     def ro(r):
-        pens = (StSt("TYPECOLD", co, 150,
+        return (StSt("TYPECOLD", co, 150,
             wdth=0.5, rotate=10, tu=100, ro=1)
             .align(r)
-            .f(1))
-        return DATPens([
-            pens.copy().pen().castshadow(-45, 50).f(0),
-            pens.s(hsl(0.9)).sw(3)
-        ]).align(r, th=1, tv=1)
+            .f(1)
+            .pen()
+            .layer(
+                lambda p: p.castshadow(-45, 50).f(0),
+                lambda p: p.s(hsl(0.9)).sw(3))
+            .align(r, th=1, tv=1))
 
 .. image:: /_static/renders/text_ro.png
     :width: 500
@@ -160,56 +164,59 @@ Fixed! Also I did some completely unrelated things there.
 
 * When you cast a shadow like that, your text might look a little un-centered, so to fix that we’ve added an additional ``align`` call at the end, passing ``th=1`` and ``tv=1`` to indicate that we want the whole thing centered perfectly (true-horizontal and true-vertical) within the bounding rectangle ``r``. (Those flags are useful for a type-centric graphics engine, because up until now we’ve relied on the pre-set cap-height of the letters to vertically align glyphs, rather than their "true height" which varies from letter to letter.)
 
+* Instead of ``copy``ing anything, the example now uses the ``.layer`` method, which does the copying for you, and also removes the "original" in favor of the two lambda functions provided. Basically, this is a copy-and-replace operation, where we've provided two "replace" operations. So to recap: via ``StSt``, we created a set of pens (aka vectors aka shapes), then we reduced that to a single pen, then we layered that pen, resulting in two new pens (one for the shadow, one for the filled and stroked shape on top). The layer function also allows us to directly return the "chain," without having to declare intermediate variables.
+
 One additional refinement you may want to make in an example like this is that you'd want to individually cast shadows based on a glyph + a little bit of stroke set around it, in the style of the 19th-century type designers. So let’s do that:
 
 .. code:: python
 
     @renderable((1000, 200))
     def stroke_shadow(r):
-        pens = (StSt("COLDTYPE", co, 150,
+        return (StSt("COLDTYPE", co, 150,
             wdth=1, rotate=10, tu=100, ro=1)
             .align(r)
-            .f(1))
-        return DATPens([
-            (pens.copy()
-                .pmap(lambda i, p: (p
+            .f(1)
+            .layer(
+                lambda ps: ps.pmap(lambda p: p
                     .outline(10)
                     .removeOverlap()
                     .castshadow(-45, 50)
                     .f(None)
                     .s(hsl(0.6, s=1, l=0.4))
-                    .sw(4)))),
-            pens.s(hsl(0.9)).sw(4)
-        ]).align(r, th=1, tv=1)
+                    .sw(4)),
+                lambda ps: ps.s(hsl(0.9)).sw(4))
+            .align(r, th=1, tv=1))
 
 .. image:: /_static/renders/text_stroke_shadow.png
     :width: 500
     :class: add-border
 
-Dang, you know I thought that example would just work, but it looks like there are some tiny little dots present, which I think are artifacts of the ``castshadow`` call. I didn’t write the guts of that (Loïc Sander wrote something called a ``TranslationPen`` which is used by coldtype internally), so I don’t understand it completely, but it shouldn’t be difficult to devise a way to clean up those tiny specks by testing the ``bounds`` of each of the contours created by the ``TranslationPen``. We can do that by iterating over the individual contours with the ``filter_contours`` method provided by the ``DATPen`` class. We can also use the opportunity demonstrate some debugging techniques, like isolating a single letter and blowing it up.
+Dang, you know I thought that example would just work, but it looks like there are some tiny little dots present, which I think are artifacts of the ``castshadow`` call. I didn’t write the guts of that (Loïc Sander wrote something called a ``TranslationPen`` which is used by coldtype internally), so I don’t understand it completely, but it shouldn’t be difficult to devise a way to clean up those tiny specks by testing the ``bounds`` of each of the contours created by the ``TranslationPen``. We can do that by iterating over the individual contours with the ``filter_contours`` method provided by the ``DATPen`` class (idiomatically called via the ``P`` shortcut). We can also use the opportunity demonstrate some debugging techniques, like isolating a single letter and blowing it up.
 
 .. code:: python
 
     @renderable((1000, 500))
     def stroke_shadow_cleanup(r):
-        pens = (StSt("O", co, 500,
+        def shadow_and_clean(p):
+            return (p
+                .outline(10)
+                .reverse()
+                .removeOverlap()
+                .castshadow(-5, 500)
+                .filter_contours(lambda j, c:
+                    c.bounds().w > 50)
+                .f(None)
+                .s(hsl(0.6, s=1, l=0.4))
+                .sw(4))
+
+        return (StSt("O", co, 500,
             wdth=0.5, rotate=10, tu=100, ro=1)
             .align(r)
-            .f(1))
-        
-        return DATPens([
-            (pens.copy()
-                .pmap(lambda i, p:
-                    (p.outline(10)
-                        .reverse()
-                        .removeOverlap()
-                        .castshadow(-5, 500)
-                        .filter_contours(lambda j, c: c.bounds().w > 50)
-                        .f(None)
-                        .s(hsl(0.6, s=1, l=0.4))
-                        .sw(4)))),
-            pens.s(hsl(0.9)).sw(4)
-        ]).align(r, th=1, tv=1)
+            .f(1)
+            .layer(
+                lambda ps: ps.pmap(shadow_and_clean),
+                lambda ps: ps.s(hsl(0.9)).sw(4))
+            .align(r, th=1, tv=1))
 
 .. image:: /_static/renders/text_stroke_shadow_cleanup.png
     :width: 500
@@ -217,27 +224,29 @@ Dang, you know I thought that example would just work, but it looks like there a
 
 Got it! If you comment out the ``.filter_contours`` line, you should see the little speck show up again.
 
+N.B. We pulled the lambda being passed to ``pmap`` (pens-map) out into its own function, ``shadow_and_clean``. It’s not really a "reusable" function, but it is a little clearer in this instance to have that logic separated from the main chained expression.
+
 Two suggestions to help you better understand code or find weird looks: try commenting out various stuff and using random colors.
 
 .. code:: python
 
     @renderable((1000, 250))
     def stroke_shadow_random(r):
-        pens = (StSt("COLDTYPE", co, 150,
+        return (StSt("COLDTYPE", co, 150,
             wdth=0.5, rotate=10, tu=100, ro=1)
             .align(r)
-            .f(1))
-        return DATPens([
-            (pens.copy()
-                .pmap(lambda i, p: (p
+            .f(1)
+            .layer(
+                lambda ps: ps.pmap(lambda p: p
                     .outline(10)
-                    #.removeOverlap() # commented out
+                    #.remove_overlap()
                     .castshadow(-45, 50)
                     .f(hsl(random(), s=1, a=0.1))
                     .s(hsl(random(), s=1, l=0.4))
-                    .sw(4)))),
-            pens.pmap(lambda i, p: p.s(hsl(random())).sw(4))
-        ]).align(r, th=1, tv=1)
+                    .sw(4)),
+                lambda ps: ps.pmap(lambda p: p
+                    .s(hsl(random())).sw(4)))
+            .align(r, th=1, tv=1))
 
 .. image:: /_static/renders/text_stroke_shadow_random.png
     :width: 500
@@ -250,7 +259,8 @@ Multi-line Text
 
     @renderable ((1000, 550))
     def multiline(r):
-        return (StSt("COLDTYPE\nTYPECOLD", co, 300, wdth=1, fit=500)
+        return (StSt("COLDTYPE\nTYPECOLD", co, 300, 
+            wdth=1, fit=500)
             .align(r)
             .f(0))
 
@@ -261,13 +271,13 @@ Multi-line Text
 Text-on-a-path
 --------------
 
-If you like to align glyphs along an arbitrary path, you can use the DATPens’s ``distribute_on_path`` method to set the glyphs returned from a ``StSt``.
+If you like to align glyphs along an arbitrary path, you can use the DATPens’ ``distribute_on_path`` method to set the glyphs returned from a ``StSt``.
 
 .. code:: python
 
     @renderable((1000, 1000))
     def on_a_path(r):
-        circle = DATPen().oval(r.inset(250)).reverse()
+        circle = P().oval(r.inset(250)).reverse()
         return (StSt("COLDTYPE", co, 200, wdth=1)
             .distribute_on_path(circle, offset=275)
             .f(0))
@@ -282,12 +292,14 @@ What if we want more text on the circle and we want it to fit automatically to t
 
     @renderable((1000, 1000))
     def text_on_a_path_fit(r):
-        circle = DATPen().oval(r.inset(250)).reverse()
-        dps = (StSt("COLDTYPE COLDTYPE COLDTYPE ", co, 200,
+        circle = P().oval(r.inset(250)).reverse()
+        return (StSt("COLDTYPE COLDTYPE COLDTYPE ",
+            co, 200,
             wdth=1, tu=100, space=500, fit=circle.length())
             .distribute_on_path(circle)
-            .f(Gradient.H(circle.bounds(), hsl(0.5, s=0.6), hsl(0.85, s=0.6))))
-        return dps
+            .f(Gradient.H(circle.bounds(),
+                hsl(0.5, s=0.6),
+                hsl(0.85, s=0.6))))
 
 .. image:: /_static/renders/text_text_on_a_path_fit.png
     :width: 500
@@ -305,12 +317,16 @@ Let’s see what that looks like.
 
     @renderable((1000, 500))
     def text_on_a_path_understroke(r):
-        sine = DATPen().ch(shapes.sine(r.inset(0, 180), 3))
-        return (StSt("COLDTYPE COLDTYPE COLDTYPE", co, 100,
-            wdth=1, tu=-50, space=500, fit=sine.length())
+        sine = P().ch(shapes.sine(r.inset(0, 180), 3))
+        return (StSt("COLDTYPE COLDTYPE COLDTYPE",
+            co, 100,
+            wdth=1, tu=-50, space=500,
+            fit=sine.length())
             .distribute_on_path(sine)
             .understroke(sw=10)
-            .f(Gradient.H(sine.bounds(), hsl(0.7, l=0.6, s=0.65), hsl(0.05, l=0.6, s=0.65)))
+            .f(Gradient.H(sine.bounds(),
+                hsl(0.7, l=0.6, s=0.65),
+                hsl(0.05, l=0.6, s=0.65)))
             .translate(0, -20))
 
 .. image:: /_static/renders/text_text_on_a_path_understroke.png
@@ -323,16 +339,23 @@ Interesting! But there’s one thing to correct if we want better legibility. Yo
 
     @renderable((1000, 500))
     def text_on_a_path_understroke_reversed(r):
-        sine = DATPen().ch(shapes.sine(r.inset(0, 180), 3))
-        return (StSt("COLDTYPE COLDTYPE COLDTYPE", co, 100,
-            wdth=1, tu=-50, space=500, r=1, fit=sine.length())
+        sine = P().ch(shapes.sine(r.inset(0, 180), 3))
+        return (StSt("COLDTYPE COLDTYPE COLDTYPE",
+            co, 100,
+            wdth=1,
+            tu=-50,
+            space=500,
+            r=1,
+            fit=sine.length())
             .distribute_on_path(sine)
             .understroke(sw=10)
-            .f(Gradient.H(sine.bounds(), hsl(0.7, l=0.7, s=0.65), hsl(0.05, l=0.6, s=0.65)))
+            .f(Gradient.H(sine.bounds(),
+                hsl(0.7, l=0.7, s=0.65),
+                hsl(0.05, l=0.6, s=0.65)))
             .translate(0, -20))
 
 .. image:: /_static/renders/text_text_on_a_path_understroke_reversed.png
     :width: 500
     :class: add-border
 
-It’s a subtle difference, but one that (to me) makes a huge difference. I also lightened the purple in the gradient, I think it looks a little better that way, right?
+It’s a subtle change, but one that (to me) makes a huge difference. I also lightened the purple in the gradient, I think it looks a little better that way, right?

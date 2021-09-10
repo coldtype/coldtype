@@ -14,7 +14,7 @@ Let’s start with a classic rectangle.
 
     @renderable((300, 300))
     def rectangle(r):
-        return DATPen().rect(r.inset(50)).f(hsl(0.9))
+        return P().rect(r.inset(50)).f(hsl(0.9))
 
 .. image:: /_static/renders/shapes_rectangle.png
     :width: 150
@@ -28,7 +28,7 @@ How about an oval?
 
     @renderable((300, 300))
     def oval(r):
-        return DATPen().oval(r.inset(45)).f(hsl(0.6))
+        return P().oval(r.inset(45)).f(hsl(0.6))
 
 .. image:: /_static/renders/shapes_oval.png
     :width: 150
@@ -42,10 +42,10 @@ What if you want to combine an oval and a rect?
 
     @renderable((300, 300))
     def ovalrect(r):
-        return (DATPen()
+        return (P()
             .oval(r.inset(60))
             .translate(30, 30)
-            .union(DATPen()
+            .union(P()
                 .rect(r.inset(65))
                 .translate(-30, -30))
             .f(hsl(0.05, l=0.6, s=0.75)))
@@ -60,10 +60,10 @@ Or maybe you want just the parts of those two shapes that don’t overlap? And m
 
     @renderable((300, 300))
     def ovalrect_diff(r):
-        return (DATPen()
+        return (P()
             .oval(r.inset(60))
             .translate(30, 30)
-            .xor(DATPen()
+            .xor(P()
                 .rect(r.inset(65))
                 .translate(-30, -30)
                 .rotate(-5))
@@ -85,7 +85,7 @@ Here’s an example of building up a chain of effects to modify a simple vector 
 
     @renderable((300, 300))
     def ovalmod(r):
-        return (DATPen()
+        return (P()
             .oval(r.inset(60))
             .flatten(5) # <- breaks the oval down into non-curves, 5 is the length of the segment
             .roughen(15) # <- randomizes the vertices of the shape

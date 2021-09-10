@@ -55,7 +55,7 @@ You might be wondering why you’d want to use DrawBot in Coldtype. To me, one b
         textBox(long_txt1, r.inset(10))
         # Coldtype Rect's can be passed anywhere a rectangle-like list would be passed in DrawBot
 
-        oval = (DATPen()
+        oval = (P()
             .oval(r.take(0.75, "mny")
                 .inset(20).square()))
 
@@ -83,7 +83,7 @@ All that said, it is still quite possible to do normal DrawBot things in a Coldt
     @drawbot_animation((500, 200))
     def multipage_doc(f):
         c = hsl(f.a.progress(f.i).e, s=0.5, l=0.5)
-        (DATPen(f.a.r)
+        (P(f.a.r)
             .f(c)
             .chain(ctdb.dbdraw))
         fontSize(50)

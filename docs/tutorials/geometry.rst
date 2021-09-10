@@ -16,7 +16,7 @@ The most basic rectangle is the one passed to a renderable, i.e. the ``r`` varia
 
     @renderable((700, 300))
     def rect(r):
-        return DATPen().rect(r).f(hsl(random()))
+        return P(r).f(hsl(random()))
 
 .. image:: /_static/renders/geometry_rect.png
     :width: 350
@@ -28,17 +28,19 @@ But we’re getting ahead of ourselves.
 
 A ``Rect`` has lots of methods, though the most useful ones are ``inset``, ``offset``, ``take``, ``divide``, and ``subdivide``.
 
-Here’s a simple example that insets, offsets, and takes.
+Here’s a simple example that insets, offsets, subtracts, and then subtracts again. (Probably not something I’d write in reality, but good for demonstration purposes.)
 
 .. code:: python
 
     @renderable((700, 300))
     def iot(r):
-        return (DATPen()
+        return (P()
             .rect(r
-                .take(0.5, "mnx") # "mnx" refers to the edge of the rectangle "minimum x"
+                .take(0.5, "W") # "W" for "West"
                 .inset(20, 20)
-                .offset(0, 10))
+                .offset(0, 10)
+                .subtract(20, "E")
+                .subtract(10, "N"))
             .f(hsl(0.5)))
 
 .. image:: /_static/renders/geometry_iot.png
@@ -48,7 +50,7 @@ Here’s a simple example that insets, offsets, and takes.
 More complex slicing & dicing
 -----------------------------
 
-**N.B.** You may have noticed that the rect functions that a mix of float and int arguments. That’s because a value less than 1.0 will be treated, by the dividing-series of rect functions, as percentages of the dimension implied by the edge argument. So in that ``take(0.5, "mnx")`` above, the ``0.5`` specifies 50% of the width of the rectangle (width because of the ``mnx`` edge argument).
+**N.B.** You may have noticed that the rect functions that a mix of float and int arguments. That’s because a value less than 1.0 will be treated, by the dividing-series of rect functions, as percentages of the dimension implied by the edge argument. So in that ``take(0.5, "W")`` above, the ``0.5`` specifies 50% of the width of the rectangle (width because of the ``W`` edge argument).
 
 Here’s an example that divides a rectangle into left and right rectangles, and shows another useful method, ``square`` (which takes the largest square possible from the center of the given rectangle).
 
@@ -57,20 +59,17 @@ Here’s an example that divides a rectangle into left and right rectangles, and
     @renderable((700, 300))
     def lr(r):
         ri = r.inset(50, 50)
-        left, right = ri.divide(0.5, "mnx")
-        return DATPens([
-            (DATPen()
-                .rect(ri)
+        left, right = ri.divide(0.5, "W")
+        return PS([
+            (P().rect(ri)
                 .f(None)
                 .s(0.75)
                 .sw(2)),
-            (DATPen()
-                .oval(left
+            (P().oval(left
                     .square()
                     .offset(100, 0))
                 .f(hsl(0.6, a=0.5))),
-            (DATPen()
-                .oval(right
+            (P().oval(right
                     .square()
                     .inset(-50))
                 .f(hsl(0, a=0.5)))])
@@ -85,10 +84,9 @@ Here’s an example using ``subdivide`` to subdivide a larger rectangle into sma
 
     @renderable((700, 300))
     def columns(r):
-        dps = DATPens()
-        for c in r.inset(10).subdivide(5, "mnx"):
-            dps += DATPen().rect(c.inset(10)).f(hsl(random()))
-        return dps
+        cs = r.inset(10).subdivide(5, "W")
+        return PS.Enumerate(cs, lambda i, c:
+            P(c.inset(10)).f(hsl(random())))
 
 .. image:: /_static/renders/geometry_columns.png
     :width: 350
@@ -100,10 +98,9 @@ Of course, columns like that aren’t very typographic. Here’s an example usin
 
     @renderable((700, 500))
     def columns_leading(r):
-        dps = DATPens()
-        for c in r.subdivide_with_leading(5, 20, "mxy"):
-            dps += DATPen().rect(c).f(hsl(random()))
-        return dps
+        cs = r.subdivide_with_leading(5, 20, "N")
+        return PS.Enumerate(cs, lambda i, c:
+            P(c).f(hsl(random())))
 
 .. image:: /_static/renders/geometry_columns_leading.png
     :width: 350

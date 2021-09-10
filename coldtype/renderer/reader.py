@@ -121,7 +121,7 @@ def read_source_to_tempfile(filepath:Path,
         data_out["frontmatter"] = fm
         frag = fragment_fromstring(md, create_parent=True)
         blocks = []
-        for python in frag.findall("./pre/code[@class='python']"):
+        for python in frag.findall("./pre/code[@class='language-python']"):
             blocks.append(python.text)
         source_code = "\n".join(blocks)
         if codepath and codepath.exists():

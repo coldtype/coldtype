@@ -14,12 +14,11 @@ A circle moving
 
     @animation((250, 250), timeline=tl, bg=1)
     def circle(f):
-        e = f.a.progress(f.i, easefn="qeio").e
-        return [
-            DATPen().rect(f.a.r).f(1),
-            (DATPen()
-                .oval(f.a.r.offset(-f.a.r.w+f.a.r.w*2*e, 0))
-                .f(hsl(e, s=0.75)))]
+        return PS([
+            P(f.a.r).f(1),
+            (P().oval(f.a.r
+                    .offset(f.e("qeio", rng=(-f.a.r.w, f.a.r.w)), 0))
+                .f(hsl(f.e("qeio"), s=0.75)))])
     
 .. code:: ruby
 
@@ -29,11 +28,11 @@ Save that code in a file called ``animation.py``, then run it ala ``coldtype ani
 
 If you **hold down the arrow keys**, you can preview the animation; depending on how complex your animation is, "previewing" might be exactly the same as viewing the final animation, if the frames render as fast as real-time. (Even if they don’t, holding down the right arrow key should still give you a good sense of the mechanics of the animation in time.)
 
-To see the animation come to life, hit the space bar. If your animation renders faster than real-time (i.e. faster than the frame-rate defined in the Timeline associated with the ``@animation`` decorator), when you hit the spacebar, the animation will play back at the defined frame rate (which defaults to 30fps). If not, not a big deal, it'll just be a little slower than the intended frame rate.
+To see the animation come to life, hit the space bar. If your animation can render faster than real-time (i.e. faster than the frame-rate defined in the Timeline associated with the ``@animation`` decorator), when you hit the spacebar, the animation will play back at the defined frame rate (which defaults to 30fps). If not, not a big deal, it'll just be a little slower than the intended frame rate.
 
 One cool thing to note — once you hit the space bar, if you make changes to the source file and hit save, the animation will update and keeping playing back.
 
-If you want to see the full animation played back at it's true frame rate regardless of how intensive the rendering is, hit the key "a" on your keyboard, and you should see some text appear in your terminal, noting that the frames of the animation are being saved to disk. When it finishes (it’ll say something like ``rendered``), the animation will automatically start playing back. You can hit ``shift+space`` in the viewer to stop that playback.
+If you want to see the full animation played back at its true frame rate regardless of how intensive the rendering is, hit the key "a" on your keyboard, and you should see some text appear in your terminal, noting that the frames of the animation are being saved to disk. When it finishes (it’ll say something like ``rendered``), the animation will automatically start playing back. You can hit ``shift+space`` in the viewer to stop that playback.
 
 Here’re all the frames of that animation (a circle moving across the frame, and changing colors):
 
@@ -48,21 +47,17 @@ A letter flying
 
     from coldtype import *
 
-    tl2 = Timeline(24)
-
-    @animation((250, 250), storyboard=[0], bg=0, timeline=tl2)
+    @animation((250, 250), bg=0, timeline=24)
     def flyinga(f):
-        qeio = f.a.progress(f.i, easefn="qeio").e
-        eei = f.a.progress(f.i, easefn="eei").e
-        return [
-            (DATPen()
-                .rect(f.a.r)
-                .f(hsl(qeio))),
-            (StSt("A", "assets/MutatorSans.ttf", 50, wght=0.2)
+        return PS([
+            (P().rect(f.a.r)
+                .f(hsl(f.e("qeio")))),
+            (StSt("A", Font.MutatorSans(),
+                50, wght=0.2)
                 .align(f.a.r)
-                .scale(1+50*eei)
-                .rotate(360*qeio)
-                .f(1))]
+                .scale(f.e("eei", rng=(1, 51)))
+                .rotate(f.e("qeio", rng=(0, 360)))
+                .f(1))])
 
 .. code:: ruby
 
@@ -74,7 +69,7 @@ A letter flying
 
 And here’s a little bit of code to generate gifs, using ffmpeg, which will need to be installed on your computer independently of coldtype (via something like `brew install ffmpeg`) (or you can, as described below, import the pngs as an image sequence into something like Premiere).
 
-To get this code to run, you want to trigger the ``Release`` KeyboardShortcut, by hitting `cmd+L` in the viewing app.
+To get this code to run, you want to trigger the ``Release`` KeyboardShortcut, by hitting `R` in the viewing app.
 
 .. code:: python
 

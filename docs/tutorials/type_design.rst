@@ -14,14 +14,14 @@ Here’s an example of creating a somewhat complex text setting using the ``asse
 
     ufo_ttf = Font("assets/ColdtypeObviously_BlackItalic.ufo")
 
-    @renderable((1200, 300), watch=[ufo_ttf])
+    @renderable((1200, 300), watch=[ufo_ttf], bg=0)
     def ufo_monitor(r):
-        return [
-            DATPen().rect(r).f(0),
-            (StSt("CDELOPTY", ufo_ttf, 250, tu=-150, r=1)
-                .f(Gradient.H(r, hsl(0.05, s=0.75), hsl(0.8, s=0.75)))
-                .understroke(s=0, sw=15)
-                .align(r))]
+        return (StSt("CDELOPTY", ufo_ttf, 250, tu=-150, r=1)
+            .f(Gradient.H(r,
+                hsl(0.05, s=0.75),
+                hsl(0.8, s=0.75)))
+            .understroke(s=0, sw=15)
+            .align(r))
 
 .. image:: /_static/renders/type_design_ufo_monitor.png
     :width: 600
@@ -40,13 +40,11 @@ If you want to address glyphs in a UFO directly by their glyph names, you can al
 
     @renderable((500, 500), watch=[ufo.path])
     def defcon_monitor(r):
-        return [
-            DATPen().rect(r).f(1),
-            (DATPen()
-                .glyph(ufo["C"])
-                .scale(0.5)
-                .align(r)
-                .f(0))]
+        return (P()
+            .glyph(ufo["C"])
+            .scale(0.5)
+            .align(r)
+            .f(0))
 
 .. image:: /_static/renders/type_design_defcon_monitor.png
     :width: 250
@@ -60,35 +58,13 @@ If you want to address glyphs in a UFO directly by their glyph names, you can al
 
     @renderable((800, 200), watch=[generic_txt])
     def txt(r):
-        return DATPens([
-            (StSt("> " + generic_txt.read_text() + " <",
+        return PS([
+            (StSt(
+                "> " + generic_txt.read_text() + " <",
                 "assets/RecMono-CasualItalic.ttf", 50)
                 .f(0.25)
                 .align(r))])
 
 .. image:: /_static/renders/type_design_txt.png
     :width: 400
-    :class: add-border
-
-Live Reload Designspaces
-------------------------
-
-You can also quickly get an interactive designspace preview going, by reading from a designspace file.
-
-If you click around in the coldtype window that pops up when you run code like the code below, you'll see the font change size & ``wdth``.
-
-.. code:: python
-
-    obv_ds = Font("assets/ColdtypeObviously.designspace")
-
-    @renderable((1200, 350), rstate=1)
-    def ds_mouse(r, rs):
-        ri = r.inset(50)
-        sx, sy = ri.ipos(rs.mouse, (0.5, 1))
-        return (StSt("COLDTYPE", obv_ds, 150+sy*100, wdth=sx)
-            .align(r)
-            .f(0))
-
-.. image:: /_static/renders/type_design_ds_mouse.png
-    :width: 600
     :class: add-border

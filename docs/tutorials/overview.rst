@@ -24,7 +24,7 @@ For the second requirement – **defining a renderable function** — all you n
 .. code:: python
 
     def show_something(r:Rect):
-        return DATPen().rect(r)
+        return P.rect(r)
 
 If you followed the install instructions and have activated your virtual environment, you can now run this file from the command-line, like so:
 
@@ -42,7 +42,7 @@ So let’s create a new function and mark it as renderable.
 
     @renderable()
     def really_show_something(r:Rect):
-        return DATPen().rect(r)
+        return P().rect(r)
 
 .. image:: /_static/renders/overview_really_show_something.png
     :width: 540
@@ -59,10 +59,11 @@ You can specify as many renderables in a source file as you’d like. So if you 
 
     @renderable((1440, 1080))
     def sample_text(r):
-        return DATPens([
-            DATPen().oval(r.inset(20)).f(hsl(random())),
-            (StSt("COLDTYPE", "assets/ColdtypeObviously-VF.ttf", 
-                500, wdth=0, tu=100, rotate=10)
+        return PS([
+            P().oval(r.inset(20)).f(hsl(random())),
+            (StSt("COLDTYPE",
+                Font.ColdtypeObviously(), 500,
+                wdth=0, tu=100, rotate=10)
                 .align(r)
                 .f(1))])
 
