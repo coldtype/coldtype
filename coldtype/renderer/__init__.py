@@ -192,7 +192,7 @@ class Renderer():
         root = Path(__file__).parent.parent
         pj = False
         if filepath:
-            if "picklejar.py" in filepath:
+            if "picklejar.py" in str(filepath):
                 pj = True
         
         filepath = self.source_reader.normalize_filepath(filepath)
