@@ -28,6 +28,7 @@ class KeyboardShortcut(Enum):
     RenderOne = "render_one"
     RenderFrom = "render_from"
     RenderWorkarea = "render_workarea"
+    RenderAllAndPlay = "render_all_and_play"
     ToggleMultiplex = "toggle_multiplex"
 
     SetWorkareaIn = "set_workarea_in"
@@ -113,6 +114,8 @@ KeyboardShortcutExplainers = {
         "Trigger the custom ``release`` function (if there's one defined in your code)",
     KeyboardShortcut.RenderAll:
         "Render all the frames in this animation to disk",
+    KeyboardShortcut.RenderAllAndPlay:
+        "Render all the frames in this animation to disk, then start a looped playback of the rendered frames",
     KeyboardShortcut.RenderOne:
         "Render just the current frame to disk",
     KeyboardShortcut.RenderFrom:
@@ -264,6 +267,9 @@ SHORTCUTS = {
     ],
     KeyboardShortcut.RenderAll: [
         [[], "a"],
+    ],
+    KeyboardShortcut.RenderAllAndPlay: [
+        [["shift"], "a"],
     ],
     KeyboardShortcut.RenderOne: [
         [["cmd"], "a"],

@@ -203,6 +203,9 @@ def StSt(text,
     rect=Rect(1080, 1080),
     xa="mdx",
     **kwargs):
+
+    if not isinstance(text, str):
+        text = "\n".join(text)
     
     if isinstance(font, Style):
         style = font
@@ -225,7 +228,7 @@ def StSt(text,
         lockup = lockup.pens()
     return lockup
 
-GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e", "l"])
+GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e", "l", "li"])
 
 
 def Glyphwise(st, styler, start=0, line=0):
@@ -252,7 +255,7 @@ def Glyphwise(st, styler, start=0, line=0):
             return styles
 
     if len(st) == 1:
-        return StSt(st, run_styler(GlyphwiseGlyph(0, st, 0, 0, line))[0])
+        return StSt(st, run_styler(GlyphwiseGlyph(0, st, 0, 0, line, 0))[0])
 
     try:
         lines = st.split("\n")
@@ -293,7 +296,7 @@ def Glyphwise(st, styler, start=0, line=0):
             test = [test]
         
         e = idx / (len(st)-1)
-        gg = GlyphwiseGlyph(idx+start, c, e, line)
+        gg = GlyphwiseGlyph(idx+start, c, e, line, idx)
 
         skon, skon_tweak = run_styler(gg)
         skoff = skon.mod(kern=0, kern_pairs={}, kp={}, tu=0)

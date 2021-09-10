@@ -278,8 +278,9 @@ class FFMPEGExport():
             ])
         else:
             self.args.extend([
+                "-stream_loop", str(self.loops-1),
                 "-i", template, # input sequence
-                "-filter_complex", f"loop=loop={self.loops-1}:size={self.a.timeline.duration}:start=0"
+                #"-filter_complex", f"loop=loop={self.loops-1}:size={self.a.timeline.duration}:start=0"
             ])
         
         if vf:
