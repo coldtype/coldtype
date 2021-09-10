@@ -320,7 +320,7 @@ class FFMPEGExport():
         self.output_path = self.folder / f"{self.a.name}{d}.{self.fmt}"
 
         self.args.append(self.output_path)
-        if verbose or True:
+        if verbose:
             print(" ".join([str(s) for s in self.args]))
         run(self.args)
 

@@ -176,6 +176,8 @@ class DraftingPen(RecordingPen, SHContext):
             self.typographic = True
         return self
     
+    add_frame = addFrame
+    
     def unended(self):
         if len(self.value) == 0:
             return True
@@ -1253,6 +1255,8 @@ class DraftingPen(RecordingPen, SHContext):
     # BOOLEAN OPERATIONS
 
     def _pathop(self, otherPen=None, operation=BooleanOp.XOR):
+        if hasattr(self, "pmap"):
+            return self.pmap(lambda p: p._pathop(otherPen, operation))
         self.value = calculate_pathop(self, otherPen, operation)
         return self
     
@@ -1281,6 +1285,7 @@ class DraftingPen(RecordingPen, SHContext):
         return self._pathop(otherPen=None, operation=BooleanOp.Simplify)
     
     remove_overlap = removeOverlap
+    ro = removeOverlap
     
     def connect(self, *others):
         ps = self.multi_pen_class([self, *others]).distribute().pen()
@@ -1458,6 +1463,9 @@ class DraftingPen(RecordingPen, SHContext):
 
     def outline(self, offset=1, drawInner=True, drawOuter=True, cap="square", miterLimit=None, closeOpenPaths=True):
         """AKA expandStroke"""
+        if hasattr(self, "pmap"):
+            return self.pmap(lambda p: p.outline(offset=offset, drawInner=drawInner, drawOuter=drawOuter, cap=cap, miterLimit=miterLimit, closeOpenPaths=closeOpenPaths))
+        
         op = OutlinePen(None, offset=offset, optimizeCurve=True, cap=cap, miterLimit=miterLimit, closeOpenPaths=closeOpenPaths)
         self.replay(op)
         op.drawSettings(drawInner=drawInner, drawOuter=drawOuter)

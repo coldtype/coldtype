@@ -428,10 +428,17 @@ class DATPen(DraftingPen):
             self.typographic = True
         return self
     
+    add_frame = addFrame
+    
     def frameSet(self, th=False, tv=False):
         """Return a new DATPen represent
         ation of the frame of this DATPen."""
         return self.single_pen_class(fill=("random", 0.25)).rect(self.getFrame(th=th, tv=tv))
+    
+    def _repr_html_(self):
+        from coldtype.notebook import show
+        self.ch(show())
+        return None
     
     def at_rotation(self, degrees, fn:Callable[["DATPen"], None], point=None):
         self.rotate(degrees)
@@ -656,6 +663,8 @@ class DATPens(DraftingPens, DATPen):
             self._frame = frame
             self.typographic = typographic
         return self
+    
+    add_frame = addFrame
     
     def getFrame(self, th=False, tv=False):
         """Get the frame of the DATPens;
