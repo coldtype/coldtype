@@ -118,8 +118,7 @@ class Renderer():
             self.dead = True
             return
         
-        if self.args.file:
-            self.args.file = str(self.prenormalize_filepath(self.args.file))
+        self.args.file = str(self.prenormalize_filepath(self.args.file))
 
         self.source_reader = SourceReader(
             renderer=self,
@@ -192,8 +191,9 @@ class Renderer():
 
         root = Path(__file__).parent.parent
         pj = False
-        if "picklejar.py" in filepath:
-            pj = True
+        if filepath:
+            if "picklejar.py" in filepath:
+                pj = True
         
         filepath = self.source_reader.normalize_filepath(filepath)
 
@@ -1236,7 +1236,8 @@ class Renderer():
     def restart(self):
         print("> RESTARTING...")
         args = sys.argv
-        args[1] = str(self.source_reader.filepath)
+        if len(args) > 1:
+            args[1] = str(self.source_reader.filepath)
         
         # attempt to preserve state across reload
         fo = str(self.state._frame_offsets)

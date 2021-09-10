@@ -10,7 +10,7 @@ More info available at: [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
 
 setuptools.setup(
     name="coldtype",
-    version="0.6.5",
+    version="0.6.6",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",
@@ -51,6 +51,7 @@ setuptools.setup(
             "demo/ColdtypeObviously-VF.ttf",
             "demo/MutatorSans.ttf",
             "demo/demo.py",
+            "demo/midi.py",
             "demo/blank.py",
             "demo/boiler.py",
             "renderer/picklejar.py",
