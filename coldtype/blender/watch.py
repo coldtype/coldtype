@@ -177,7 +177,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
     def execute(self, context):
         ccf = bpy.app.driver_namespace.get("_coldtype_command_file")
         self.file = Path(ccf)
-        print(">>>>>>>>>>>>", self.file)
+        #print(">>>>>>>>>>>>", self.file)
 
         wm = context.window_manager
         self._timer = wm.event_timer_add(0.25, window=context.window)
