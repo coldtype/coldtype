@@ -101,6 +101,8 @@ class Renderer():
             show_exit_code=parser.add_argument("-sec", "--show-exit-code", action="store_true", default=False, help=argparse.SUPPRESS),
 
             frame_offsets=parser.add_argument("-fo", "--frame-offsets", type=str, default=None, help=argparse.SUPPRESS),
+
+            viewer_solos=parser.add_argument("-vs", "--viewer-solos", type=str, default=None, help=argparse.SUPPRESS)
         )
 
         ConfigOption.AddCommandLineArgs(pargs, parser)
@@ -157,7 +159,10 @@ class Renderer():
         self.hotkeys = None
         self.hotkey_waiting = None
 
-        self.viewer_solos = []
+        if self.args.viewer_solos:
+            self.viewer_solos = [int(x.strip()) for x in self.args.viewer_solos.split(",")]
+        else:
+            self.viewer_solos = []
     
     def prenormalize_filepath(self, filepath):
         root = Path(__file__).parent.parent
@@ -553,7 +558,12 @@ class Renderer():
             
             if len(self.args.inputs) > 0:
                 sargs = [*sargs[:2], *self.args.inputs, *sargs[2:]]
-                print(sargs)
+            
+            if len(self.viewer_solos) > 0:
+                sargs.append("-vs")
+                sargs.append(",".join([str(x) for x in self.viewer_solos]))
+            
+            print(sargs)
 
             r = self.args.rasterizer
             if r:
