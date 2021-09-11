@@ -284,7 +284,7 @@ class SourceReader():
         return name
     
     @staticmethod
-    def DemoFrame(name, frame, inputs={}, idx=0):
+    def FrameResult(name, frame, inputs={}, idx=0):
         filepath = SourceReader.Demo(name)
         sr = SourceReader(filepath, inputs=inputs)
         sr.unlink()
