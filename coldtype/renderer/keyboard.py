@@ -78,6 +78,8 @@ class KeyboardShortcut(Enum):
     ViewerSolo8 = "viewer_solo_8"
     ViewerSolo9 = "viewer_solo_9"
 
+    PrintApproxFPS = "show_approx_fps"
+
     ViewerSampleFrames1 = "viewer_sample_frames_1"
     ViewerSampleFrames2 = "viewer_sample_frames_2"
     ViewerSampleFrames3 = "viewer_sample_frames_3"
@@ -360,7 +362,7 @@ SHORTCUTS = {
     ],
 
     KeyboardShortcut.JumpToFrameFunctionDef: [
-        [[], "f"],
+        [["cmd"], "f"],
     ],
     KeyboardShortcut.OpenInEditor: [
         [[], "o"]
@@ -416,6 +418,9 @@ SHORTCUTS = {
         [[], "9"]
     ],
 
+    KeyboardShortcut.PrintApproxFPS: [
+        [[], "f"],
+    ],
     KeyboardShortcut.ViewerSampleFrames1: [
         [["cmd"], "np1"],
         [["cmd"], "1"]

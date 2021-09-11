@@ -952,6 +952,8 @@ class Renderer():
             KeyboardShortcut.ViewerSolo9
             ]:
             self.viewer_solos = [int(str(shortcut)[-1])-1]
+        elif shortcut == KeyboardShortcut.PrintApproxFPS:
+            self.winmans.print_approx_fps = True
         elif shortcut.value.startswith("viewer_sample_frames"):
             self.viewer_sample_frames = int(shortcut.value.split("_")[-1])
         elif shortcut == KeyboardShortcut.CopySVGToClipboard:

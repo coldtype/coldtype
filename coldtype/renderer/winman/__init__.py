@@ -50,6 +50,8 @@ class Winmans():
         self.preloaded_frames = []
         self.playing_preloaded_frame = -1
 
+        self.print_approx_fps = False
+
         self.bg = False
         if (config.args.is_subprocess
             or config.args.all
@@ -206,6 +208,9 @@ class Winmans():
                 spf = 1 / float(self.renderer.last_animation.timeline.fps)
 
                 if td2 >= spf:
+                    if self.print_approx_fps:
+                        print("APPROX FPS == ", 1/td2 * self.renderer.viewer_sample_frames)
+                        self.print_approx_fps = False
                     self.last_time = t2
                 else:
                     self.poll()
