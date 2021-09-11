@@ -119,7 +119,7 @@ class Font():
         return FontCache[path]
 
     @lru_cache()
-    def List(regex, regex_dir=None):
+    def List(regex, regex_dir=None, log=False):
         results = []
         for dir in ALL_FONT_DIRS:
             dir = normalize_font_prefix(dir)
@@ -133,6 +133,8 @@ class Font():
                         if re.search(regex, dir):
                             results.append(path)
                 for file in files:
+                    if log:
+                        print(file, re.search(regex, file))
                     if re.search(regex, file):
                         path = Path(root + "/" + file)
                         if path.suffix in [".ttf", ".otf", ".ttc"]:
@@ -145,6 +147,11 @@ class Font():
             return Font.Cacheable(found[index])
         except:
             raise FontNotFoundException()
+    
+    def RegisterDir(dir):
+        global ALL_FONT_DIRS
+        if dir not in ALL_FONT_DIRS:
+            ALL_FONT_DIRS.insert(0, dir)
     
     @staticmethod
     def ColdtypeObviously():
