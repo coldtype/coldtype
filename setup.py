@@ -28,7 +28,6 @@ setuptools.setup(
         "coldtype.pens",
         "coldtype.text",
         "coldtype.grid",
-        "coldtype.demos",
         "coldtype.color",
         "coldtype.capture",
         "coldtype.blender",

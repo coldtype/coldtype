@@ -10,6 +10,7 @@ args = parse_inputs(__inputs__, dict(
     duration=[None, int],
     bpm=[None, float],
     fps=[None, float],
+    log=[False, bool],
     w=1080,
     h=1080))
 
@@ -22,13 +23,14 @@ mr = MidiReader(
 dst = Path(args["file"]).parent
 custom_folder = Path(args["file"]).name + ".midiview/renders"
 
-print("="*20)
-print("> Path:", mr.midi_path)
-print(f"> Note Range: {mr.min}-{mr.max}")
-print("> Duration:", mr.duration)
-print(f"> BPM/FPS: {mr.bpm}/{mr.fps}")
-print(f"> Track Count: {len(mr.tracks)}")
-print("="*20)
+if args["log"]:
+    print("="*20)
+    print("> Path:", mr.midi_path)
+    print(f"> Note Range: {mr.min}-{mr.max}")
+    print("> Duration:", mr.duration)
+    print(f"> BPM/FPS: {mr.bpm}/{mr.fps}")
+    print(f"> Track Count: {len(mr.tracks)}")
+    print("="*20)
 
 r = args["rect"]
 xo = 47

@@ -246,6 +246,7 @@ class SourceReader():
         code:str=None,
         renderer=None,
         runner:str="default",
+        inputs=None,
         cli_args=None,
         ):
         self.filepath = None
@@ -257,17 +258,30 @@ class SourceReader():
         self.candidates = None
         self.renderer = renderer
         self.runner = runner
-
-        if cli_args and "inputs" in cli_args:
-            self.inputs = cli_args.inputs
-        else:
-            self.inputs = []
+        self.inputs = inputs or []
 
         self.config = None
         self.read_configs(cli_args, filepath)
 
         if filepath or code:
             self.reset_filepath(filepath, code)
+    
+    @staticmethod
+    def Demo(name):
+        root = Path(__file__).parent.parent
+        if not name:
+            return root / "demo/demo.py"
+        elif name == "demo": # TODO more of these
+            return root / "demo/demo.py"
+        elif name == "blank":
+            return root / "demo/blank.py"
+        elif name == "boiler":
+            return root / "demo/boiler.py"
+        elif name == "midi":
+            return root / "demo/midi.py"
+        elif name == "pj":
+            return root / "renderer/picklejar.py"
+        return name
     
     def read_configs(self, args, filepath):
         embedded = Path(__file__).parent / ".coldtype.py"

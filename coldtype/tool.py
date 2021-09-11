@@ -3,9 +3,12 @@ from coldtype.geometry.rect import Rect
 
 def parse_inputs(inputs, defaults):
     parsed = {}
-    for input in inputs:
-        k, v = input.split("=")
-        parsed[k] = v
+    if isinstance(inputs, str):
+        for input in inputs:
+            k, v = input.split("=")
+            parsed[k] = v
+    else:
+        parsed = {**inputs}
 
     out = {}
     for k, v in defaults.items():

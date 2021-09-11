@@ -124,6 +124,7 @@ class Renderer():
 
         self.source_reader = SourceReader(
             renderer=self,
+            inputs=self.args.inputs,
             cli_args=self.args)
         
         self.winmans = None
@@ -167,20 +168,7 @@ class Renderer():
         self.viewer_sample_frames = 1
     
     def prenormalize_filepath(self, filepath):
-        root = Path(__file__).parent.parent
-        if not filepath:
-            return root / "demo/demo.py"
-        elif filepath == "demo": # TODO more of these
-            return root / "demo/demo.py"
-        elif filepath == "blank":
-            return root / "demo/blank.py"
-        elif filepath == "boiler":
-            return root / "demo/boiler.py"
-        elif filepath == "midi":
-            return root / "demo/midi.py"
-        elif filepath == "pj":
-            return root / "renderer/picklejar.py"
-        return filepath
+        return SourceReader.Demo(filepath)
     
     def reset_filepath(self, filepath, reload=False):
         dirdirection = 0
