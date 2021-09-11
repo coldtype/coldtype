@@ -67,6 +67,7 @@ _prefixes = [
 
 # TODO windows & linux?
 ALL_FONT_DIRS = [
+    ".",
     "/System/Library/Fonts",
     "/Library/Fonts",
     "~/Library/Fonts",
