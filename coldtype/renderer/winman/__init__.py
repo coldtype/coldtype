@@ -209,7 +209,7 @@ class Winmans():
 
                 if td2 >= spf:
                     if self.print_approx_fps:
-                        print("APPROX FPS == ", 1/td2 * self.renderer.viewer_sample_frames)
+                        print("APPROX FPS ==", 1/td2 * self.renderer.viewer_sample_frames)
                         self.print_approx_fps = False
                     self.last_time = t2
                 else:
