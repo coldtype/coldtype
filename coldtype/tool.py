@@ -3,7 +3,7 @@ from coldtype.geometry.rect import Rect
 
 def parse_inputs(inputs, defaults):
     parsed = {}
-    if isinstance(inputs, str):
+    if not isinstance(inputs, dict):
         for input in inputs:
             k, v = input.split("=")
             parsed[k] = v

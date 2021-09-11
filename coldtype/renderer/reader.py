@@ -283,6 +283,13 @@ class SourceReader():
             return root / "renderer/picklejar.py"
         return name
     
+    @staticmethod
+    def DemoFrame(name, frame, inputs={}, idx=0):
+        filepath = SourceReader.Demo(name)
+        sr = SourceReader(filepath, inputs=inputs)
+        sr.unlink()
+        return sr.frame_results(frame)[idx][1]
+    
     def read_configs(self, args, filepath):
         embedded = Path(__file__).parent / ".coldtype.py"
         proj = Path(".coldtype.py")

@@ -145,8 +145,11 @@ def render_animation(a, show=[], preview_scale=0.5, scale=1):
         elif a.fmt == "svg":
             SkiaPen.SVG(res, a.rect, str(rp.output_path), scale=scale)
 
-def show_video(a, loops=1, verbose=False, download=False, scale=0.5):
-    ffex = FFMPEGExport(a, loops=loops)
+def show_video(a, loops=1, verbose=False, download=False, scale=0.5, audio=None, audio_loops=None):
+    ffex = FFMPEGExport(a,
+        loops=loops,
+        audio=audio,
+        audio_loops=audio_loops)
     ffex.h264()
     ffex.write(verbose=verbose)
     compressed_path = str(ffex.output_path.absolute())
@@ -240,11 +243,11 @@ class notebook_animation(animation):
         render_animation(self, show=[], scale=scale)
         return self
     
-    def show(self, loops=1, verbose=False, download=False, scale=0.5):
+    def show(self, loops=1, verbose=False, download=False, scale=0.5, audio=None, audio_loops=None):
         if self.fmt == "svg":
             show_animation(self, start=False)
         else:
-            show_video(self, loops=loops, verbose=verbose, download=download, scale=scale)
+            show_video(self, loops=loops, verbose=verbose, download=download, scale=scale, audio=audio, audio_loops=audio_loops)
         return self
     
     def zip(self, download=False):
