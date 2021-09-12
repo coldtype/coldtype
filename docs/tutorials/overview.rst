@@ -24,7 +24,7 @@ For the second requirement – **defining a renderable function** — all you n
 .. code:: python
 
     def show_something(r:Rect):
-        return P.rect(r)
+        return P().rect(r)
 
 If you followed the install instructions and have activated your virtual environment, you can now run this file from the command-line, like so:
 
