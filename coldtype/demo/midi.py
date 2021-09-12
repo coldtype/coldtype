@@ -10,7 +10,7 @@ args = parse_inputs(__inputs__, dict(
     duration=[None, int],
     bpm=[None, float],
     fps=[None, float],
-    log=[False, bool],
+    log=[True, bool],
     w=1080,
     h=1080))
 
@@ -36,7 +36,8 @@ r = args["rect"]
 xo = 47
 
 def build_display():
-    wu = (r.w - xo) / int(mr.duration)
+    rt, rd = r.divide(30, "N")
+    wu = (rd.w - xo) / int(mr.duration)
 
     valid_notes = set()
     for t in mr.tracks:
@@ -44,10 +45,10 @@ def build_display():
             valid_notes.add(n.note)
 
     valid_notes = sorted(valid_notes)
-    rows = r.subdivide(len(valid_notes), "S")
+    rows = rd.subdivide(len(valid_notes), "S")
 
     out = PS([
-        (P().line(r.subtract(xo, "W").ew)
+        (P().line(rd.subtract(xo, "W").ew)
             .fssw(-1, hsl(0.65, 1, 0.8), 1))])
 
     for idx, vn in enumerate(valid_notes):
@@ -62,9 +63,9 @@ def build_display():
                 .translate(xo+n.on*wu, 0)
                 .f(hsl(0.5+tidx*0.1+n.idx*0.02)))
     
-    return out
+    return rt, rd, out
 
-static = build_display()
+rt, rd, static = build_display()
 
 @animation(r,
     timeline=mr,
@@ -75,6 +76,6 @@ static = build_display()
 def midi(f):
     return PS([
         static,
-        (P().line(f.a.r.ew)
-            .translate(f.e("l", rng=(xo, f.a.r.w)), 0)
+        (P().line(r.ew)
+            .translate(f.e("l", rng=(xo, rd.w)), 0)
             .fssw(-1, 0, 1))])
