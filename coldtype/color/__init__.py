@@ -222,7 +222,14 @@ def normalize_color(v):
         return Color.from_rgb(0,0,0,0)
     elif isinstance(v, Color):
         return v
-    elif isinstance(v, Gradient):
+    
+    try:
+        if isinstance(v[0], Color):
+            return v[0]
+    except:
+        pass
+    
+    if isinstance(v, Gradient):
         return v
     elif isinstance(v, float) or isinstance(v, int):
         return Color.from_rgb(v, v, v)

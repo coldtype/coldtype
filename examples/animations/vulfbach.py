@@ -22,7 +22,7 @@ def pos(x, y):
     return (x*note_width, (y-midi.min)*(r.h-200)/midi.spread+100)
 
 def build_line():
-    dp = DATPen().f(None).s(1, 0, 0.5).sw(3)
+    dp = DATPen().f(None).s(rgb(1, 0, 0.5)).sw(3)
     last_note = None
 
     for note in organ.notes:

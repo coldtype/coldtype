@@ -17,7 +17,7 @@ from fontPens.flattenPen import FlattenPen
 from fontPens.marginPen import MarginPen
 
 from coldtype.geometry import Atom, Point, Line, Edge, Rect, Curve, align
-from coldtype.color import normalize_color
+from coldtype.color import normalize_color, rgb
 from coldtype.sh import SH_UNARY_SUFFIX_PROPS, sh, SHContext
 
 from coldtype.pens.misc import BooleanOp, calculate_pathop, ExplodingPen, SmoothPointsPen
@@ -1296,7 +1296,7 @@ class DraftingPen(RecordingPen, SHContext):
     def clearAttrs(self):
         """Remove all styling."""
         self.attrs = OrderedDict()
-        self.attr("default", fill=(1, 0, 0.5))
+        self.attr("default", fill=rgb(1, 0, 0.5))
         return self
     
     def allStyledAttrs(self, style=None):
@@ -1348,7 +1348,7 @@ class DraftingPen(RecordingPen, SHContext):
                         #if attrs["stroke"]["color"].a == 0:
                         #    attrs["stroke"]["color"] = normalize_color((1, 0, 0.5))
                     else:
-                        attrs["stroke"] = dict(color=normalize_color((1, 0, 0.5)), weight=v)
+                        attrs["stroke"] = dict(color=rgb((1, 0, 0.5)), weight=v)
                 elif k == "shadow":
                     if "color" in v:
                         v["color"] = normalize_color(v["color"])
@@ -1482,7 +1482,7 @@ class DraftingPen(RecordingPen, SHContext):
         self.translate(offset[0], offset[1])
         return self
 
-    def castshadow(self, angle=-45, width=100, ro=1, fill=1):
+    def castshadow(self, angle=-45, width=100, ro=1, fill=True):
         out = self.single_pen_class()
         tp = TranslationPen(out, frontAngle=angle, frontWidth=width)
         self.replay(tp)

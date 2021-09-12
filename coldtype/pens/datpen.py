@@ -15,7 +15,7 @@ from coldtype.pens.draftingpens import DraftingPen, DraftingPens
 from coldtype.interpolation import norm
 
 from coldtype.geometry import Rect, Edge, Point, Line, Geometrical
-from coldtype.color import normalize_color, hsl
+from coldtype.color import normalize_color, hsl, rgb, bw
 
 
 def _random_series(start=0, end=1, seed=0, count=5000):
@@ -62,7 +62,7 @@ class DATPen(DraftingPen):
             elif isinstance(arg, Rect):
                 self.rect(arg)
             elif isinstance(arg, Line):
-                self.line(arg).s(0, 0.5, 1).sw(5)
+                self.line(arg).s(rgb(0, 0.5, 1)).sw(5)
             elif isinstance(arg, Point):
                 self.oval(Rect.FromCenter(arg, 50, 50))
     

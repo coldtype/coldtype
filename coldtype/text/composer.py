@@ -64,16 +64,13 @@ class Graf():
             l.fit(fw)
         return self
     
-    def pens(self, align=False):
+    def pens(self):
         rects = self.lineRects()
         pens = _PensClass()
         for idx, l in enumerate(self.lines):
             r = rects[idx]
             dps = l.pens().translate(r.x, r.y) # r.x
             dps.addFrame(Rect(r.x, r.y, r.w, r.h))
-            #if align:
-            #    dps.container = Rect(0, r.y, r.w, r.h)
-            #    dps.align(dps.container, x=self.style.x, y=None)
             pens.append(dps)
         return pens
     
@@ -306,11 +303,12 @@ def Glyphwise(st, styler, start=0, line=0):
         test_str = "".join([t if isinstance(t, str) else "".join(t) for t in test])
         #print(c, test_str, target, test, tcount)
 
-        tkon = StSt(test_str, skon)
-        tkoff = StSt(test_str, skoff)
+        tkon = StSt(test_str, skon.mod(no_shapes=True))
         if skon_tweak is None:
+            tkoff = StSt(test_str, skoff)
             tkoff_tweak = None
         else:
+            tkoff = StSt(test_str, skoff.mod(no_shapes=True))
             skoff_tweak = skon_tweak.mod(kern=0, kern_pairs={}, kp={}, tu=0)
             tkoff_tweak = StSt(test_str, skoff_tweak)
 

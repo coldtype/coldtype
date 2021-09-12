@@ -11,7 +11,7 @@ from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
 from fontTools.ttLib.ttFont import TTFont
 
-from coldtype.color import normalize_color
+from coldtype.color import normalize_color, rgb
 from coldtype.pens.draftingpen import DraftingPen
 from coldtype.pens.draftingpens import DraftingPens
 from coldtype.pens.datpen import DATPen, DATPens
@@ -217,7 +217,7 @@ class Style():
             layer=None,
             liga=True,
             kern=True,
-            fill=(0, 0.5, 1),
+            fill=rgb(0, 0.5, 1),
             stroke=None,
             strokeWidth=0,
             variations=dict(),
@@ -230,6 +230,8 @@ class Style():
             varyFontSize=False,
             preventHwid=False,
             fitHeight=None,
+            no_shapes=False,
+            show_frames=False,
             load_font=True, # should we attempt to load the font?
             tag=None, # way to differentiate in __eq__
             **kwargs):
@@ -259,7 +261,12 @@ class Style():
         self.tag = tag
         capHeight = kwargs.get("ch", capHeight)
 
-        try:        
+        self.no_shapes = no_shapes
+        self.show_frames = show_frames
+    
+        #print(hash(self.font.font.ttFont))
+
+        try:
             if "OS/2" in self.font.font.ttFont:
                 os2 = self.font.font.ttFont["OS/2"]
                 self.capHeight = os2.sCapHeight if hasattr(os2, "sCapHeight") else 0
@@ -315,6 +322,7 @@ class Style():
 
         self.fill = normalize_color(fill)
         self.stroke = normalize_color(stroke)
+        
         if stroke and strokeWidth == 0:
             self.strokeWidth = 1
         else:
@@ -325,8 +333,10 @@ class Style():
         self.variations = dict()
         self.variationLimits = dict()
         self.varyFontSize = varyFontSize
-        
-        if load_font and self.font.font.ttFont:
+
+        if not load_font:
+            return
+        else:
             try:
                 fvar = self.font.font.ttFont['fvar']
             except:
@@ -716,7 +726,7 @@ class StyledString(FittableMixin):
         self.resetGlyphRun()
         return adjusted
     
-    def scalePenToStyle(self, glyph, in_pen):
+    def scalePenToStyle(self, glyph, in_pen, idx):
         s = self.scale()
         t = Transform()
         try:
@@ -766,21 +776,35 @@ class StyledString(FittableMixin):
             dp.s(self.style.stroke).sw(self.style.strokeWidth)
         return dp
 
-    def pens(self, frame=True) -> DraftingPens:
+    def pens(self) -> DraftingPens:
         """
         Vectorize text into a ``DATPens``, such that each glyph (or ligature) is represented by a single `DATPen` (or a ``DATPens`` in the case of a color font, which will then nest a `DATPen` for each layer of that color glyph)
         """
         self.resetGlyphRun()
-        self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
+        if not self.style.no_shapes:
+            self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
         
         pens = _PensClass()
         for idx, g in enumerate(self.glyphs):
             dp_atom = self._emptyPenWithAttrs()
-            if len(g.glyphDrawing.layers) == 1:
-                dp_atom.value = self.scalePenToStyle(g, g.glyphDrawing.layers[0][0]).value
+            if self.style.no_shapes:
+                if callable(self.style.show_frames):
+                    dp_atom.rect(self.style.show_frames(g.frame))
+                else:
+                    dp_atom.rect(g.frame)
                 dp_atom.typographic = True
                 dp_atom.addFrame(g.frame)
                 dp_atom.glyphName = g.name
+            elif len(g.glyphDrawing.layers) == 1:
+                dp_atom.value = self.scalePenToStyle(g, g.glyphDrawing.layers[0][0], idx).value
+                dp_atom.typographic = True
+                dp_atom.addFrame(g.frame)
+                dp_atom.glyphName = g.name
+                if self.style.show_frames:
+                    if callable(self.style.show_frames):
+                        dp_atom.rect(self.style.show_frames(g.frame))
+                    else:
+                        dp_atom.rect(g.frame)
                 if self.style.q2c:
                     dp_atom.q2c()
                 if self.style.removeOverlap:
@@ -791,7 +815,7 @@ class StyledString(FittableMixin):
                 for lidx, layer in enumerate(g.glyphDrawing.layers):
                     dp_layer = self._emptyPenWithAttrs()
                     #dp_layer.value = layer[0].value
-                    dp_layer.value = self.scalePenToStyle(g, layer[0]).value
+                    dp_layer.value = self.scalePenToStyle(g, layer[0], idx).value
                     if isinstance(self.style.palette, int):
                         dp_layer.f(self.style.font.font.colorPalettes[self.style.palette][layer[1]])
                     else:
@@ -855,7 +879,7 @@ class SegmentedString(FittableMixin):
         pens = _PensClass()
         x_off = 0
         for s in self.strings:
-            dps = s.pens(frame=True)
+            dps = s.pens()
             if dps.layered:
                 pens.layered = True
             dps.translate(x_off, 0)
