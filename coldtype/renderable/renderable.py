@@ -272,6 +272,16 @@ class renderable():
     
     def rasterize(self, content, render_pass):
         return False
+    
+    def _profile_render_all(self):
+        ps = self.passes(Action.RenderAll, None)
+        for p in ps:
+            self.run_normal(p)
+        return self
+    
+    def profile(self, file="profile.profile"):
+        import cProfile
+        cProfile.runctx(f"self._profile_render_all()", {}, {"self": self}, filename=file)
 
 
 class skia_direct(renderable):
