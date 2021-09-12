@@ -315,10 +315,6 @@ class b3d_animation(animation):
             else:
                 bpy.data.scenes[0].render.fps = self.t.fps
                 bpy.data.scenes[0].render.fps_base = 1
-            
-    def frame_img(self, fi):
-        from coldtype.img.skiaimage import SkiaImage
-        return SkiaImage(self.pass_path(fi))
     
     def run(self, render_pass, renderer_state):
         fi = render_pass.args[0].i

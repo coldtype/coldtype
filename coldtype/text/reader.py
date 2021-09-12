@@ -842,7 +842,7 @@ class StyledString(FittableMixin):
         """
         Vectorize all text into single ``DATPen``
         """
-        return self.pens(frame=frame).pen()
+        return self.pens().pen()
 
 class SegmentedString(FittableMixin):
     def __init__(self, text, styles):

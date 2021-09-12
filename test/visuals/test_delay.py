@@ -8,13 +8,15 @@ co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 def var(f, depth=0):
     t = f.a.progress(f.i, loops=1, easefn="qeio") 
     cold = (StyledString("COLDTYPE",
-        Style(co, 800-t.e*700, wdth=t.e, ro=1, tu=-90+t.e*50, r=1))
+        Style(co, 800-t.e*700,
+            wdth=t.e, ro=1, tu=-90+t.e*50, r=1))
         .pens()
         .align(f.a.r)
         .f(1)
         .s(0)
         .sw(23-depth)
-        .pmap(lambda i, p: p.nlt(warp_fn(0, 0, mult=30))))
+        #.pmap(lambda i, p: p.nlt(warp_fn(0, 0, mult=30)))
+        )
     
     cold = (cold
         .ch(color_phototype(f.a.r, blur=2+depth*5, cut=120+depth*5, rgba=[1, 0, 1, 1]))
