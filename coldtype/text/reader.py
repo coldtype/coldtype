@@ -19,6 +19,13 @@ from coldtype.geometry import Rect, Point
 
 from typing import Optional, Callable, Union
 
+try:
+    from skia import Matrix
+    from coldtype.pens.skiapathpen import SkiaPathPen
+except ImportError:
+    Matrix = None
+    SkiaPathPen = None
+
 _PenClass = DATPen
 _PensClass = DATPens
 
@@ -232,6 +239,7 @@ class Style():
             fitHeight=None,
             no_shapes=False,
             show_frames=False,
+            _skiaback=False,
             load_font=True, # should we attempt to load the font?
             tag=None, # way to differentiate in __eq__
             **kwargs):
@@ -249,6 +257,8 @@ class Style():
                 self.font:Font = font
         else:
             self.font = font
+
+        self._skiaback = _skiaback
 
         self.narrower = narrower
         self.layer = layer
@@ -725,6 +735,50 @@ class StyledString(FittableMixin):
             adjusted = True
         self.resetGlyphRun()
         return adjusted
+
+    def _skia_scalePenToStyle(self, glyph, in_pen, idx):
+        s = self.scale()
+        tx, ty = 0, 0
+        try:
+            bs = self.style.baselineShift[idx]
+        except:
+            bs = self.style.baselineShift
+        
+        if callable(bs):
+            ty = bs(idx)
+        else:
+            try:
+                ty = bs[idx]
+            except:
+                try:
+                    ty = bs
+                except:
+                    pass
+        tx = glyph.frame.x#/self.scale()
+        ty = ty + glyph.frame.y#/self.scale()
+        out_pen = _PenClass()
+        skia_pen = SkiaPathPen(in_pen)
+        skia_pen.path.transform(Matrix.Scale(s, s))
+        skia_pen.path.transform(Matrix.Translate(tx, ty))
+        
+        # TODO how to parallel this?
+        #if self.style.mods and glyph.name in self.style.mods:
+        #    w, mod = self.style.mods[glyph.name]
+        #    mod(-1, ip)
+
+        out_pen = skia_pen.to_datpen()
+
+        if self.style.rotate:
+            out_pen.rotate(self.style.rotate)
+        
+        # # TODO this shouldn't be necessary
+        # if True:
+        #     valid_values = []
+        #     for (move, pts) in out_pen.value:
+        #         if move != "addComponent":
+        #             valid_values.append((move, pts))
+        #     out_pen.value = valid_values
+        return out_pen
     
     def scalePenToStyle(self, glyph, in_pen, idx):
         s = self.scale()
@@ -758,12 +812,12 @@ class StyledString(FittableMixin):
             out_pen.rotate(self.style.rotate)
         
         # TODO this shouldn't be necessary
-        if True:
-            valid_values = []
-            for (move, pts) in out_pen.value:
-                if move != "addComponent":
-                    valid_values.append((move, pts))
-            out_pen.value = valid_values
+        # if True:
+        #     valid_values = []
+        #     for (move, pts) in out_pen.value:
+        #         if move != "addComponent":
+        #             valid_values.append((move, pts))
+        #     out_pen.value = valid_values
 
         return out_pen
     
@@ -796,7 +850,10 @@ class StyledString(FittableMixin):
                 dp_atom.addFrame(g.frame)
                 dp_atom.glyphName = g.name
             elif len(g.glyphDrawing.layers) == 1:
-                dp_atom.value = self.scalePenToStyle(g, g.glyphDrawing.layers[0][0], idx).value
+                if self.style._skiaback:
+                    dp_atom.value = self._skia_scalePenToStyle(g, g.glyphDrawing.layers[0][0], idx).value
+                else:
+                    dp_atom.value = self.scalePenToStyle(g, g.glyphDrawing.layers[0][0], idx).value
                 dp_atom.typographic = True
                 dp_atom.addFrame(g.frame)
                 dp_atom.glyphName = g.name

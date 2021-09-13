@@ -223,6 +223,8 @@ def StSt(text,
         if fit:
             lockup.fit(fit)
         lockup = lockup.pens()
+        #if len(lockup) == 1:
+        #    return lockup[0]
     return lockup
 
 GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e", "l", "li"])
