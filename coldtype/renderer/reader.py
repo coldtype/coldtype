@@ -489,6 +489,7 @@ class Programs():
         r=(1080, 540),
         log=False,
         duration=None,
+        preview_only=True,
         bpm=None,
         fps=30
         ):
@@ -500,4 +501,5 @@ class Programs():
             duration=duration,
             bpm=bpm,
             fps=fps,
+            preview_only=preview_only,
             log=log)[0]

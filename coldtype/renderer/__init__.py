@@ -858,6 +858,10 @@ class Renderer():
             self.on_action(Action.RenderAll)
             self.action_waiting = Action.RenderedPlay
             return -1
+        elif shortcut == KeyboardShortcut.RenderAllAndRelease:
+            self.on_action(Action.RenderAll)
+            self.action_waiting = Action.Release
+            return -1
         elif shortcut == KeyboardShortcut.RenderOne:
             fo = [abs(o%self.last_animation.duration) for o in self.state.get_frame_offsets(self.last_animation.name)]
             # TODO should iterate over all animations, not just "last" (but infra isn't there for this yet)
