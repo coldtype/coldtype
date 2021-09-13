@@ -71,7 +71,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         if dash:
             self.paint.setPathEffect(skia.DashPathEffect.Make(*dash))
         if color and weight > 0:
-            self.paint.setStrokeWidth(weight)
+            self.paint.setStrokeWidth(weight*self.scale)
             if isinstance(color, Gradient):
                 self.gradient(color)
             else:

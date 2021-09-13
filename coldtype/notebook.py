@@ -19,13 +19,17 @@ except ImportError:
     precompose = None
 
 
-def update_ffpmeg():
+def update_ffmpeg():
+    print("fetching...")
     os.system("add-apt-repository -y ppa:jonathonf/ffmpeg-4")
+    print("updating...")
     os.system("apt-get update")
+    print("mediainfo...")
     os.system("apt install mediainfo")
+    print("ffmpeg...")
     os.system("apt-get install ffmpeg")
     clear_output()
-    print('Installation finished.')
+    print('ffmpeg update finished')
 
 
 def show(fmt=None, rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=0.5):
