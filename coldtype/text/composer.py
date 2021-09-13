@@ -251,7 +251,10 @@ def Glyphwise(st, styler, start=0, line=0):
         if isinstance(styles, Style):
             return styles, None
         else:
-            return styles
+            if isinstance(styles[1], dict):
+                return styles[0], styles[0].mod(**styles[1])
+            else:
+                return styles
 
     if len(st) == 1:
         return StSt(st, run_styler(GlyphwiseGlyph(0, st, 0, 0, line, 0))[0])

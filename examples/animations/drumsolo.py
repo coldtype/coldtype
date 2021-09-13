@@ -20,7 +20,7 @@ def drumsolo(f):
 
     return (Glyphwise("DRUM\nSHOP", lambda g:
             [Style(Font.MutatorSans(), 350),
-             Style(Font.MutatorSans(), 350,
+             dict(
                 wdth=lk1.get(g.c, 0),
                 wght=0.25*lk1.get(g.c, 0))])
         .track(40, v=1)
