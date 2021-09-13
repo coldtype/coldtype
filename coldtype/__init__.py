@@ -8,6 +8,7 @@ from coldtype.pens.dattext import DATText
 from coldtype.geometry import *
 from coldtype.color import *
 from coldtype.renderable import *
+from coldtype.renderer.reader import Programs
 from coldtype.helpers import loopidx, sibling, raw_ufo, ßhide, ßshow, cycle_idx, random_series, show_points, glyph_to_uni, uni_to_glyph, glyph_to_class, DefconFont
 from coldtype.time import *
 from coldtype.time.easing import ez

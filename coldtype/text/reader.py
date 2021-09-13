@@ -211,7 +211,7 @@ class Style():
 
     def __init__(self,
             font:Union[Font, str]=None,
-            fontSize:int=12,            
+            font_size:int=12,            
             tracking=0,
             trackingMode=1,
             kern_pairs=dict(),
@@ -303,7 +303,7 @@ class Style():
         if fitHeight:
             self.fontSize = (fitHeight/self.capHeight)*1000
         else:
-            self.fontSize = fontSize
+            self.fontSize = font_size
 
         self.tracking = kwargs.get("t", tracking)
         self.kern_pairs = kwargs.get("kp", kern_pairs)

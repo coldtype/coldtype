@@ -22,7 +22,10 @@ def parse_inputs(inputs, defaults):
     
     for k, v in parsed.items():
         if k in defaults:
-            out[k] = defaults[k][1](v)
+            if defaults[k][0] is None and v is None:
+                pass
+            else:
+                out[k] = defaults[k][1](v)
         else:
             print(f"> key {k} not recognized")
     

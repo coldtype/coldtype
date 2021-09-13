@@ -1,3 +1,4 @@
+import enum
 import math, tempfile, pickle, inspect
 from os import stat
 from pathlib import Path
@@ -6,8 +7,8 @@ from typing import Optional, Callable, Tuple
 from coldtype.geometry.primitives import add
 #from collections.abc import Callable
 
+from collections import namedtuple
 from fontTools.misc.transform import Transform
-
 from random import randint, Random
 
 from coldtype.sh import sh
@@ -486,6 +487,9 @@ class DATPen(DraftingPen):
     #         p.ease_curve(r.psw, r.pne, angle, fA, fB))
 
 
+DATPensEnumerable = namedtuple("DATPensEnumerable", ["i", "el", "e"])
+
+
 class DATPens(DraftingPens, DATPen):
     """
     A set/collection of DATPen’s
@@ -773,8 +777,11 @@ class DATPens(DraftingPens, DATPen):
     
     def Enumerate(enumerable, enumerator):
         out = DATPens()
-        for idx, item in enumerate(enumerable):
-            out.append(enumerator(idx, item))
+        es = list(enumerable)
+        length = len(es)
+        for idx, item in enumerate(es):
+            e = idx / (length-1)
+            out.append(enumerator(DATPensEnumerable(idx, item, e)))
         return out
 
 DATPenSet = DATPens

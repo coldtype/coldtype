@@ -12,6 +12,7 @@ from coldtype.renderer.utils import Watchable
 from coldtype.renderer.config import ColdtypeConfig
 from coldtype.helpers import sibling
 from coldtype.text.reader import ALL_FONT_DIRS
+from coldtype.geometry.rect import Rect
 
 try:
     from docutils.core import publish_doctree
@@ -284,6 +285,12 @@ class SourceReader():
         return name
     
     @staticmethod
+    def LoadDemo(demoname, **inputs):
+        return SourceReader(
+            SourceReader.Demo(demoname),
+            inputs=inputs).renderables()
+    
+    @staticmethod
     def FrameResult(name, frame, inputs={}, idx=0):
         filepath = SourceReader.Demo(name)
         sr = SourceReader(filepath, inputs=inputs)
@@ -474,3 +481,23 @@ class SourceReader():
             if self.codepath.exists():
                 self.codepath.unlink()
         return self
+
+
+class Programs():
+    @staticmethod
+    def Midi(file,
+        r=(1080, 540),
+        log=False,
+        duration=None,
+        bpm=None,
+        fps=30
+        ):
+        _r = Rect(r)
+        return SourceReader.LoadDemo("midi",
+            file=file,
+            w=_r.w,
+            h=_r.h,
+            duration=duration,
+            bpm=bpm,
+            fps=fps,
+            log=log)[0]

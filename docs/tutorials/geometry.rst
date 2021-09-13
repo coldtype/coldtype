@@ -85,8 +85,8 @@ Here’s an example using ``subdivide`` to subdivide a larger rectangle into sma
     @renderable((700, 300))
     def columns(r):
         cs = r.inset(10).subdivide(5, "W")
-        return PS.Enumerate(cs, lambda i, c:
-            P(c.inset(10)).f(hsl(random())))
+        return PS.Enumerate(cs, lambda x:
+            P(x.el.inset(10)).f(hsl(random())))
 
 .. image:: /_static/renders/geometry_columns.png
     :width: 350
@@ -99,8 +99,8 @@ Of course, columns like that aren’t very typographic. Here’s an example usin
     @renderable((700, 500))
     def columns_leading(r):
         cs = r.subdivide_with_leading(5, 20, "N")
-        return PS.Enumerate(cs, lambda i, c:
-            P(c).f(hsl(random())))
+        return PS.Enumerate(cs, lambda x:
+            P(x.el).f(hsl(random())))
 
 .. image:: /_static/renders/geometry_columns_leading.png
     :width: 350
