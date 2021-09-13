@@ -153,7 +153,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         return
     
     def Composite(pens, rect, save_to, scale=1, context=None, style=None):
-        rect = rect.scale(scale)
+        rect = rect.scale(scale).round()
 
         if context:
             info = skia.ImageInfo.MakeN32Premul(rect.w, rect.h)
