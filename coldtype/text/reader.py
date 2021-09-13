@@ -120,6 +120,13 @@ class Font():
             self._loaded = True
             return self
     
+    def variations(self):
+        axes = {}
+        fvar = self.font.ttFont['fvar']
+        for axis in fvar.axes:
+            axes[axis.axisTag] = (axis.__dict__)
+        return axes
+    
     @staticmethod
     def Cacheable(path):
         if path not in FontCache:
