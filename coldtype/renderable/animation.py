@@ -250,6 +250,7 @@ class FFMPEGExport():
         self.date = date
         self.loops = loops
         self.fmt = None
+        
         if audio:
             self.audio = Path(audio).expanduser()
             self.audio_loops = audio_loops if audio_loops is not None else loops
@@ -267,9 +268,7 @@ class FFMPEGExport():
             "ffmpeg",
             "-y", # overwrite existing files
             "-loglevel", "16", # 'error, 16' Show all errors
-            "-r", str(self.a.timeline.fps),
-            "-stream_loop", str(self.loops-1),
-            "-i", template, # input sequence
+            "-r", str(self.a.timeline.fps)
         ]
 
         if self.audio:
@@ -282,9 +281,9 @@ class FFMPEGExport():
             ])
         else:
             self.args.extend([
-                "-stream_loop", str(self.loops-1),
+                #"-stream_loop", str(self.loops-1),
                 "-i", template, # input sequence
-                #"-filter_complex", f"loop=loop={self.loops-1}:size={self.a.timeline.duration}:start=0"
+                "-filter_complex", f"loop=loop={self.loops-1}:size={self.a.timeline.duration}:start=0"
             ])
         
         if vf:

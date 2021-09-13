@@ -4,7 +4,7 @@ from coldtype.fx.skia import phototype
 
 midi = MidiReader(__sibling__("media/68.mid"), bpm=151)
 
-@animation(timeline=midi, bg=hsl(0.65, 0.8, l=0.2), render_bg=1)
+@animation(timeline=midi, bg=hsl(0.35, 0.8, l=0.2), render_bg=1)
 def drumsolo(f):
     d = midi[0].fifve(f.i)
     lk1 = {
@@ -30,7 +30,7 @@ def drumsolo(f):
         .pen()
         .ch(phototype(f.a.r,
             blur=2, cut=190, cutw=25,
-            fill=hsl(0.65, 0.8, l=0.75))))
+            fill=hsl(0.35, 0.8, l=0.75))))
 
 release = drumsolo.export("h264",
     audio=__sibling__("media/68.wav"),
