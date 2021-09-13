@@ -239,7 +239,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                         deg, pt = args
                         canvas.rotate(-deg, pt.x, pt.y)
                     #print(action, args)
-                paint.setAlphaf(paint.getAlphaf()*data["alpha"])
+                paint.setAlphaf(paint.getAlphaf()*data["alpha"]*pen.alpha)
                 bm = pen.blendmode()
                 if bm:
                     paint.setBlendMode(bm.to_skia())

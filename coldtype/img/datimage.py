@@ -17,8 +17,11 @@ class DATImage(DATPen):
         else:
             self.src = None
             self._img = src
+        
         self.transforms = []
         self.visible = True
+        self.alpha = 1
+
         super().__init__()
         self.addFrame(self.rect())
     
@@ -36,6 +39,13 @@ class DATImage(DATPen):
     
     def img(self):
         return None
+    
+    def a(self, alpha=None):
+        if alpha is None:
+            return self.alpha
+        else:
+            self.alpha = alpha
+        return self
     
     def width(self):
         raise NotImplementedError()
