@@ -3,6 +3,7 @@ from coldtype.time.midi import MidiReader
 from coldtype.fx.skia import phototype 
 
 midi = Programs.Midi(__sibling__("media/68.mid"), text=0)
+#midi.hide()
 
 @animation(timeline=midi.t, bg=hsl(0.35, 0.8, l=0.2), render_bg=1)
 def drumsolo(f):
