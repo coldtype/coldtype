@@ -405,6 +405,7 @@ class WinmanGLFWSkia():
             return
         
         render, result, rp = waiter
+
         error_color = rgb(1, 1, 1).skia()
         canvas.save()
         canvas.translate(0, self.window_scrolly)
@@ -427,7 +428,7 @@ class WinmanGLFWSkia():
                 render.show_error = short_error
                 error_color = rgb(0, 0, 0).skia()
         else:
-            if render.composites:
+            if render.single_frame or render.composites:
                 comp = result.ch(skfx.precompose(render.rect))
                 if not self.renderer.last_render_cleared:
                     render.last_result = comp

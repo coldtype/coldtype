@@ -2,6 +2,13 @@ from coldtype.geometry.rect import Rect
 
 
 def parse_inputs(inputs, defaults):
+    defaults["rect"] = [
+        Rect(1080, 1080),
+        lambda xs: Rect([int(x) for x in xs.split(",")])]
+
+    defaults["preview_only"] = [False, bool]
+    defaults["log"] = [False, bool]
+
     parsed = {}
     if not isinstance(inputs, dict):
         for input in inputs:
@@ -25,13 +32,17 @@ def parse_inputs(inputs, defaults):
             if defaults[k][0] is None and v is None:
                 pass
             else:
-                if defaults[k][1] == bool and isinstance(v, str):
-                    out[k] = bool(eval(v))
+                if isinstance(v, str):
+                    if defaults[k][1] == bool:
+                        out[k] = bool(eval(v))
+                    else:
+                        out[k] = defaults[k][1](v)
                 else:
-                    out[k] = defaults[k][1](v)
+                    if k == "rect":
+                        out[k] = Rect(v)
+                    else:
+                        out[k] = v
         else:
             print(f"> key {k} not recognized")
     
-    if "w" in defaults and "h" in defaults:
-        out["rect"] = Rect(out["w"], out["h"])
     return out

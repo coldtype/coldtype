@@ -13,13 +13,9 @@ args = parse_inputs(__inputs__, dict(
     positions=[(0, 1), lambda xs: [float(x) for x in xs.split(",")]],
     stroke=[False, bool],
     text=["A", str],
-    preview_only=[False, bool],
-    log=[False, bool],
     seed=[0, int],
     shuffle=[False, bool],
-    animate=[True, bool],
-    w=1080,
-    h=1080))
+    animate=[True, bool]))
 
 rnd = Random()
 rnd.seed(args["seed"])
@@ -57,6 +53,7 @@ for combo in valids:
     axes_combos.append(axs)
 
 sq = math.floor(math.sqrt(len(axes_combos)))
+
 r:Rect = args["rect"]
 rs = r.inset(20).grid(sq, math.ceil(len(axes_combos)/sq))
 
@@ -64,16 +61,13 @@ if args["shuffle"]:
     rnd.shuffle(axes_combos)
 
 @animation(r,
-    timeline=60,
+    timeline=60 if args["animate"] else 1,
     dst=dst,
     custom_folder=custom_folder,
     bg=0,
     render_bg=1,
     preview_only=args["preview_only"])
 def vf(f):
-    #ac = {}
-    #for k, v in axes_combos.items():
-    #    ac[k] = f.e("eeio", 1, rng=(v, v+1))
     if args["animate"]:
         anim_combos = []
         for ac in axes_combos:

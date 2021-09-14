@@ -508,3 +508,10 @@ class Programs():
             preview_only=preview_only,
             text=text,
             log=log)[0]
+    
+    @staticmethod
+    def VF(font=None, text="A", font_size=None, positions=(0, 1),
+        stroke=False, seed=0, shuffle=False, animate=False,
+        rect=(1080, 1080), log=False, preview_only=True,
+        ):
+        return SourceReader.LoadDemo("vf", **locals())[0]

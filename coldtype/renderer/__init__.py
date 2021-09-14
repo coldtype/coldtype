@@ -424,9 +424,12 @@ class Renderer():
                             if not render.last_result:
                                 if len(prev_renders) > 0:
                                     for pr in prev_renders:
-                                        if pr.name == render.name and pr.last_result:
+                                        if pr.name == render.name and pr.last_result and pr.composites:
                                             render.last_result = pr.last_result
-                            result = render.normalize_result(render.run(rp, self.state))
+                            if render.single_frame and render.last_result:
+                                result = render.last_result
+                            else:
+                                result = render.normalize_result(render.run(rp, self.state))
 
                         if not result and not render.direct_draw:
                             #print(">>> No result")
@@ -436,10 +439,14 @@ class Renderer():
                             if render.direct_draw:
                                 self.previews_waiting_to_paint.append([render, None, rp])
                             else:
-                                preview_result = render.normalize_result(render.runpost(result, rp, self.state))
-                                preview_count += 1
-                                if preview_result:
-                                    self.previews_waiting_to_paint.append([render, preview_result, rp])
+                                if render.single_frame and render.last_result:
+                                    preview_count += 1
+                                    self.previews_waiting_to_paint.append([render, result, rp])
+                                else:
+                                    preview_result = render.normalize_result(render.runpost(result, rp, self.state))
+                                    preview_count += 1
+                                    if preview_result:
+                                        self.previews_waiting_to_paint.append([render, preview_result, rp])
                         
                         if rendering:
                             if False:

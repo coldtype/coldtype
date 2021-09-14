@@ -95,6 +95,7 @@ class renderable():
         direct_draw=False,
         clip=False,
         composites=False,
+        single_frame=True,
         cv2caps=None,
         render_bg=False,
         style="default",
@@ -116,6 +117,7 @@ class renderable():
         self.last_result = None
         self.style = style
         self.composites = composites
+        self.single_frame = single_frame
         self.cv2caps = cv2caps
         self._hide = hide
 

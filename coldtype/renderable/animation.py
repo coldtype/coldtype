@@ -56,6 +56,7 @@ class animation(renderable, Timeable):
         self.write_start = write_start
         self.storyboard = storyboard
         self.reset_timeline(timeline)
+        self.single_frame = self.duration == 1
     
     def __call__(self, func):
         res = super().__call__(func)
