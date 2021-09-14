@@ -79,7 +79,7 @@ rt, rd, static = build_display()
 def midi(f):
     px = f.e("l", rng=(xo, rd.w))
     if args["text"]:
-        frame = (StSt("{:04d}".format(f.i),
+        frame = (StSt(str(f.i),
             Font.RecursiveMono(), 20)
             .align(rt.take(px-10, "W"), "E")
             .f(hsl(0.65)))
