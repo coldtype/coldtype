@@ -488,26 +488,11 @@ class SourceReader():
 
 class Programs():
     @staticmethod
-    def Midi(file,
-        r=(1080, 540),
-        log=False,
-        duration=None,
-        preview_only=True,
-        bpm=None,
-        text=True,
-        fps=30
+    def Midi(file=None,
+        duration=None, bpm=None, text=True, fps=30,
+        rect=(1080, 540), log=False, preview_only=True,
         ):
-        _r = Rect(r)
-        return SourceReader.LoadDemo("midi",
-            file=file,
-            w=_r.w,
-            h=_r.h,
-            duration=duration,
-            bpm=bpm,
-            fps=fps,
-            preview_only=preview_only,
-            text=text,
-            log=log)[0]
+        return SourceReader.LoadDemo("midi", **locals())[0]
     
     @staticmethod
     def VF(font=None, text="A", font_size=None, positions=(0, 1),

@@ -10,11 +10,7 @@ args = parse_inputs(__inputs__, dict(
     duration=[None, int],
     bpm=[None, float],
     fps=[None, float],
-    log=[True, bool],
-    preview_only=[False, bool],
-    text=[True, bool],
-    w=1080,
-    h=1080))
+    text=[True, bool]))
 
 mr = MidiReader(
     Path(args["file"]).expanduser(),
