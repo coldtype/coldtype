@@ -25,7 +25,10 @@ def parse_inputs(inputs, defaults):
             if defaults[k][0] is None and v is None:
                 pass
             else:
-                out[k] = defaults[k][1](v)
+                if defaults[k][1] == bool and isinstance(v, str):
+                    out[k] = bool(eval(v))
+                else:
+                    out[k] = defaults[k][1](v)
         else:
             print(f"> key {k} not recognized")
     

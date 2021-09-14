@@ -491,6 +491,7 @@ class Programs():
         duration=None,
         preview_only=True,
         bpm=None,
+        text=True,
         fps=30
         ):
         _r = Rect(r)
@@ -502,4 +503,5 @@ class Programs():
             bpm=bpm,
             fps=fps,
             preview_only=preview_only,
+            text=text,
             log=log)[0]

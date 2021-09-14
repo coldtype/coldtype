@@ -2,6 +2,7 @@ from coldtype import *
 from coldtype.time.midi import MidiReader
 from coldtype.tool import parse_inputs
 
+
 if __as_config__:
     raise ColdtypeCeaseConfigException()
 
@@ -12,6 +13,7 @@ args = parse_inputs(__inputs__, dict(
     fps=[None, float],
     log=[True, bool],
     preview_only=[False, bool],
+    text=[True, bool],
     w=1080,
     h=1080))
 
@@ -56,8 +58,10 @@ def build_display():
     for idx, vn in enumerate(valid_notes):
         out += P(rows[idx]).f(1 if idx%2==0 else hsl(0.6, 1, 0.975))
         out += P().line(rows[idx].es).fssw(-1, hsl(0.65, 1, 0.8), 1)
-        #out += StSt(f"{vn}", Font.RecursiveMono(), 20).align(rows[idx].take(xo, "W")).f(hsl(0.65))
-        out += DATText(f"{vn}", Style("Monaco", 24, load_font=0), rows[idx].take(xo, "W").offset(8, rows[idx].h/2-21/2))
+        if args["text"]:
+            out += StSt(f"{vn}", Font.RecursiveMono(), 20).align(rows[idx].take(xo, "W")).f(hsl(0.65))
+        else:
+            out += DATText(f"{vn}", Style("Monaco", 24, load_font=0), rows[idx].take(xo, "W").offset(8, rows[idx].h/2-21/2))
 
     for tidx, t in enumerate(mr.tracks):
         for n in t.notes:
@@ -79,10 +83,22 @@ rt, rd, static = build_display()
     preview_only=args["preview_only"])
 def midi(f):
     px = f.e("l", rng=(xo, rd.w))
+    if args["text"]:
+        frame = (StSt("{:04d}".format(f.i),
+            Font.RecursiveMono(), 20)
+            .align(rt.take(px-10, "W"), "E")
+            .f(hsl(0.65)))
+    else:
+        frame = DATText("{:04d}".format(f.i),
+            Style("Monaco", 18, load_font=0, fill=0),
+            rt.offset(px-50, 8))
+
     return PS([
         static,
-        DATText("{:04d}".format(f.i), Style("Monaco", 18, load_font=0, fill=0), rt.offset(px-50, 8)),
-        #StSt(f"{f.i}", Font.RecursiveMono(), 20).align(rt.take(xo, "W")).f(hsl(0.65)),
+        frame,
+        (P().line(r.ew)
+            .translate(xo, 0)
+            .fssw(-1, bw(0, 0.25), 1)),
         (P().line(r.ew)
             .translate(px, 0)
             .fssw(-1, 0, 1))])
