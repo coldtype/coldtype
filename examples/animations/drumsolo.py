@@ -1,5 +1,4 @@
 from coldtype import *
-from coldtype.time.midi import MidiReader
 from coldtype.fx.skia import phototype 
 
 midi = Programs.Midi(__sibling__("media/68.mid"), text=0)

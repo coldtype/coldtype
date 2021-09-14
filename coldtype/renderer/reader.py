@@ -272,7 +272,7 @@ class SourceReader():
         root = Path(__file__).parent.parent
         if not name:
             return root / "demo/demo.py"
-        elif name == "demo": # TODO more of these
+        elif name == "demo":
             return root / "demo/demo.py"
         elif name == "blank":
             return root / "demo/blank.py"
@@ -280,6 +280,8 @@ class SourceReader():
             return root / "demo/boiler.py"
         elif name == "midi":
             return root / "demo/midi.py"
+        elif name == "vf":
+            return root / "demo/vf.py"
         elif name == "pj":
             return root / "renderer/picklejar.py"
         return name

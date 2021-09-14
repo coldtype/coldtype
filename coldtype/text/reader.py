@@ -238,6 +238,7 @@ class Style():
             variationLimits=dict(),
             trackingLimit=0,
             scaleVariations=True,
+            rollVariations=False,
             mods=None,
             features=dict(),
             increments=dict(),
@@ -274,7 +275,8 @@ class Style():
         self.q2c = q2c
         self.rotate = rotate
         self.include_blanks = include_blanks
-        self.scaleVariations = scaleVariations
+        self.scaleVariations = kwargs.get("sv", scaleVariations)
+        self.rollVariations = kwargs.get("rv", rollVariations)
         self.tag = tag
         capHeight = kwargs.get("ch", capHeight)
 
@@ -412,6 +414,8 @@ class Style():
     
     def normalizeVariations(self, variations):
         scale = self.scaleVariations
+        roll = self.rollVariations
+
         for k, v in variations.items():
             try:
                 axis = self.axes[k]
@@ -426,7 +430,12 @@ class Style():
             elif v == "default":
                 variations[k] = axis.defaultValue
             elif scale:
-                _v = max(0, min(1, v))
+                vv = v
+                if roll:
+                    vv = v%2
+                    if 1 < vv < 2:
+                        vv = 2 - vv
+                _v = max(0, min(1, vv))
                 variations[k] = float(abs(axis.maxValue-axis.minValue)*_v + axis.minValue)
             else:
                 if v < axis.minValue or v > axis.maxValue:

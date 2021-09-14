@@ -2,7 +2,6 @@ from coldtype import *
 from coldtype.time.midi import MidiReader
 from coldtype.tool import parse_inputs
 
-
 if __as_config__:
     raise ColdtypeCeaseConfigException()
 

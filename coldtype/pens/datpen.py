@@ -5,6 +5,7 @@ from pathlib import Path
 
 from typing import Optional, Callable, Tuple
 from coldtype.geometry.primitives import add
+from coldtype.geometry.edge import txt_to_edge
 #from collections.abc import Callable
 
 from collections import namedtuple
@@ -792,10 +793,14 @@ PS = DATPens
 
 
 class DATText(DATPen):
-    def __init__(self, text, style, frame):
+    def __init__(self, text, style, frame,
+        x="mnx",
+        y="mny",
+        ):
         self.text = text
         self.style = style
         self.visible = True
+        self.align = (txt_to_edge(x), txt_to_edge(y))
         super().__init__()
         self.addFrame(frame)
     
