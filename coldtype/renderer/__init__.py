@@ -246,8 +246,14 @@ class Renderer():
     def show_error(self):
         if self.winmans.playing > 0:
             self.winmans.playing = -1
-        render, res = self.renderable_error()
-        self.previews_waiting_to_paint.append([render, res, None])
+        
+        if self.source_reader.config.no_viewer_errors: 
+            short_error = self.print_error()
+            bc_print(bcolors.FAIL, "SYNTAX ERROR")
+            bc_print(bcolors.WARNING, short_error)
+        else:
+            render, res = self.renderable_error()
+            self.previews_waiting_to_paint.append([render, res, None])
     
     def show_message(self, message, scale=1):
         print(message)

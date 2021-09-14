@@ -64,6 +64,8 @@ class ConfigOption(Enum):
         true_false_or_none)
     NoSound = ("no_sound", None, "ns",
         true_false_or_none)
+    NoViewerErrors = ("no_viewer_errors", None, "nve",
+        true_false_or_none)
 
     @staticmethod
     def Help(e):
@@ -119,6 +121,8 @@ class ConfigOption(Enum):
             return "Should information about the current MIDI setup and messages be printed while the program runs?"
         elif e == ConfigOption.NoSound:
             return "Turn off all sounds made by the renderer"
+        elif e == ConfigOption.NoViewerErrors:
+            return "Turn off displaying errors in the viewer"
         
 
     @staticmethod

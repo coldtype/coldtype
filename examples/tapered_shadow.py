@@ -31,5 +31,5 @@ def taper(f):
                 .ch(phototype(f.a.r,
                     blur=3, cutw=15,
                     cut=230+f.e(1, rng=(-30, 5)),
-                    fill=hsl(0.23, 0.86, 0.63)))
+                    fill=hsl(0.19, 0.86, 0.63)))
                 ._null()))

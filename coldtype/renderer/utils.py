@@ -36,6 +36,10 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
+def bc_print(which, *txt):
+    print(f"{which}{' '.join(txt)}{bcolors.ENDC}")
+
+
 class SimpleEcho(WebSocket):
     def handleMessage(self):
         if "webviewer" in self.data:
