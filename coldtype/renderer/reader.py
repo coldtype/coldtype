@@ -291,11 +291,12 @@ class SourceReader():
             inputs=inputs).renderables()
     
     @staticmethod
-    def FrameResult(name, frame, inputs={}, idx=0):
+    def FrameResult(name, frame, inputs={}, renderer_state=None):
         filepath = SourceReader.Demo(name)
         sr = SourceReader(filepath, inputs=inputs)
         sr.unlink()
-        return sr.frame_results(frame)[idx][1]
+        return sr.frame_results(frame,
+            renderer_state=renderer_state)
     
     def read_configs(self, args, filepath):
         embedded = Path(__file__).parent / ".coldtype.py"
@@ -459,7 +460,7 @@ class SourceReader():
             function_filters=function_filters,
             class_filters=class_filters)
     
-    def frame_results(self, frame, class_filters=[]):
+    def frame_results(self, frame, class_filters=[], renderer_state=None):
         rs = self.renderables(class_filters=class_filters)
         res = []
         for r in rs:
@@ -468,9 +469,9 @@ class SourceReader():
                 and r.no_render_if(r)
                 ):
                 continue
-            ps = r.passes(None, None, indices=[frame])
+            ps = r.passes(None, renderer_state, indices=[frame])
             for p in ps:
-                res.append([r, r.run_normal(p)])
+                res.append([r, r.run_normal(p, renderer_state=renderer_state)])
         return res
     
     def unlink(self):

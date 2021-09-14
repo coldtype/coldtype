@@ -2,11 +2,11 @@ from coldtype import *
 from coldtype.time.midi import MidiReader
 from coldtype.fx.skia import phototype 
 
-midi = MidiReader(__sibling__("media/68.mid"), bpm=151)
+midi = Programs.Midi(__sibling__("media/68.mid"), text=0)
 
-@animation(timeline=midi, bg=hsl(0.35, 0.8, l=0.2), render_bg=1)
+@animation(timeline=midi.t, bg=hsl(0.35, 0.8, l=0.2), render_bg=1)
 def drumsolo(f):
-    d = midi[0].fifve(f.i)
+    d = midi.t[0].fifve(f.i)
     lk1 = {
         "O": d([36, 38], 5, 50),
         "M": d([42, 62, 63], 3, 20),

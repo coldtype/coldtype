@@ -49,7 +49,7 @@ class RendererState():
     
     @property
     def filepath(self):
-        if self.renderer.source_reader.filepath:
+        if self.renderer and self.renderer.source_reader.filepath:
             return Path(str(self.renderer.source_reader.filepath).replace(".py", "") + "_state.json")
         else:
             return None
