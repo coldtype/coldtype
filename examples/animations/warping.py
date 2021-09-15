@@ -25,5 +25,5 @@ def warp(f):
         #.flatten(5) # slower but preserves curves across warp
         .nlt(warp_fn(f.i*30, f.i, mult=int(state["warp"])))
         .f(1)
-        -.ch(phototype(f.a.r,
-            state["blur"], cutw=50, fill=hsl(0.75))))
+        #.ch(phototype(f.a.r, state["blur"], cutw=50, fill=hsl(0.75)))
+        )

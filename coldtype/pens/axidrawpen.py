@@ -10,7 +10,7 @@ except:
     print("Couldn’t import pyaxidraw")
     pass
 
-MOVE_DELAY = 2
+MOVE_DELAY = 0
 
 class AxiDrawPen(BasePen):
     def __init__(self, dat, page):
@@ -57,9 +57,9 @@ class AxiDrawPen(BasePen):
         ad = axidraw.AxiDraw()
         ad.interactive()
         ad.options.units = 1 if cm else 0
-        ad.options.speed_pendown = 10
+        ad.options.speed_pendown = 50
         ad.options.speed_penup = 50
-        ad.options.pen_rate_raise = 10
+        ad.options.pen_rate_raise = 50
 
         ad.connect()
         ad.penup()
