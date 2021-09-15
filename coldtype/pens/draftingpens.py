@@ -523,6 +523,17 @@ class DraftingPens(DraftingPen):
         self._pens = new_pens
         return self
     
+    def zip(self, before, fn):
+        new_pens = []
+        for idx, el in enumerate(self._pens):
+            if before:
+                new_pens.append(fn(idx))
+            new_pens.append(el)
+            if not before:
+                new_pens.append(fn(idx))
+        self._pens = new_pens
+        return self
+    
     def return_replace(self):
         return self.add_data("replace", 1)
     

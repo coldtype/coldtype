@@ -91,6 +91,16 @@ class KeyboardShortcut(Enum):
     ViewerSampleFrames8 = "viewer_sample_frames_8"
     ViewerSampleFrames9 = "viewer_sample_frames_9"
 
+    ViewerNumberedAction1 = "viewer_numbered_action_1"
+    ViewerNumberedAction2 = "viewer_numbered_action_2"
+    ViewerNumberedAction3 = "viewer_numbered_action_3"
+    ViewerNumberedAction4 = "viewer_numbered_action_4"
+    ViewerNumberedAction5 = "viewer_numbered_action_5"
+    ViewerNumberedAction6 = "viewer_numbered_action_6"
+    ViewerNumberedAction7 = "viewer_numbered_action_7"
+    ViewerNumberedAction8 = "viewer_numbered_action_8"
+    ViewerNumberedAction9 = "viewer_numbered_action_9"
+
     ToggleCapturing = "toggle_capturing"
     CaptureOnce = "capture_once"
 
@@ -378,8 +388,8 @@ SHORTCUTS = {
     ],
 
     KeyboardShortcut.ViewerSoloNone: [
-        [[], "np0"],
-        [[], "0"]
+        [["shift"], "np0"],
+        [["shift"], "0"]
     ],
     KeyboardShortcut.ViewerSoloNext: [
         [["cmd"], "<right>"]
@@ -388,45 +398,42 @@ SHORTCUTS = {
         [["cmd"], "<left>"]
     ],
     KeyboardShortcut.ViewerSolo1: [
-        [[], "np1"],
-        [[], "1"]
+        [["shift"], "np1"],
+        [["shift"], "1"]
     ],
     KeyboardShortcut.ViewerSolo2: [
-        [[], "np2"],
-        [[], "2"]
+        [["shift"], "np2"],
+        [["shift"], "2"]
     ],
     KeyboardShortcut.ViewerSolo3: [
-        [[], "np3"],
-        [[], "3"]
+        [["shift"], "np3"],
+        [["shift"], "3"]
     ],
     KeyboardShortcut.ViewerSolo4: [
-        [[], "np4"],
-        [[], "4"]
+        [["shift"], "np4"],
+        [["shift"], "4"]
     ],
     KeyboardShortcut.ViewerSolo5: [
-        [[], "np5"],
-        [[], "5"]
+        [["shift"], "np5"],
+        [["shift"], "5"]
     ],
     KeyboardShortcut.ViewerSolo6: [
-        [[], "np6"],
-        [[], "6"]
+        [["shift"], "np6"],
+        [["shift"], "6"]
     ],
     KeyboardShortcut.ViewerSolo7: [
-        [[], "np7"],
-        [[], "7"]
+        [["shift"], "np7"],
+        [["shift"], "7"]
     ],
     KeyboardShortcut.ViewerSolo8: [
-        [[], "np8"],
-        [[], "8"]
+        [["shift"], "np8"],
+        [["shift"], "8"]
     ],
     KeyboardShortcut.ViewerSolo9: [
-        [[], "np9"],
-        [[], "9"]
+        [["shift"], "np9"],
+        [["shift"], "9"]
     ],
 
-    KeyboardShortcut.PrintApproxFPS: [
-        [[], "f"],
-    ],
     KeyboardShortcut.ViewerSampleFrames1: [
         [["cmd"], "np1"],
         [["cmd"], "1"]
@@ -462,6 +469,44 @@ SHORTCUTS = {
     KeyboardShortcut.ViewerSampleFrames9: [
         [["cmd"], "np9"],
         [["cmd"], "9"]
+    ],
+
+
+    KeyboardShortcut.ViewerNumberedAction1: [
+        [[], "np1"],
+        [[], "1"]
+    ],
+    KeyboardShortcut.ViewerNumberedAction2: [
+        [[], "np2"],
+        [[], "2"]
+    ],
+    KeyboardShortcut.ViewerNumberedAction3: [
+        [[], "np3"],
+        [[], "3"]
+    ],
+    KeyboardShortcut.ViewerNumberedAction4: [
+        [[], "np4"],
+        [[], "4"]
+    ],
+    KeyboardShortcut.ViewerNumberedAction5: [
+        [[], "np5"],
+        [[], "5"]
+    ],
+    KeyboardShortcut.ViewerNumberedAction6: [
+        [[], "np6"],
+        [[], "6"]
+    ],
+    KeyboardShortcut.ViewerNumberedAction7: [
+        [[], "np7"],
+        [[], "7"]
+    ],
+    KeyboardShortcut.ViewerNumberedAction8: [
+        [[], "np8"],
+        [[], "8"]
+    ],
+    KeyboardShortcut.ViewerNumberedAction9: [
+        [[], "np9"],
+        [[], "9"]
     ],
 
     KeyboardShortcut.ToggleCapturing: [

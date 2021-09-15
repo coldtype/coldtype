@@ -177,6 +177,20 @@ class DraftingPen(RecordingPen, SHContext):
         return self
     
     add_frame = addFrame
+
+    def open_paths(self):
+        if hasattr(self, "pmap"):
+            return self.pmap(lambda p: p.open_paths())
+
+        ex = self.explode()
+        if len(ex) == 1:
+            if self.value[-1][0] == "closePath":
+                self.value[-1] = ("endPath", ())
+        else:
+            return (self
+                .explode()
+                .pmap(lambda p: p.open_paths())
+                .implode())
     
     def unended(self):
         if len(self.value) == 0:

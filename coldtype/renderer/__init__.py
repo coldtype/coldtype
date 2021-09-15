@@ -786,8 +786,10 @@ class Renderer():
     def additional_actions(self):
         return []
     
-    def on_release(self, build=False):
+    def on_release(self, build=False, number=None):
         fnname = "build" if build else "release"
+        if number is not None:
+            fnname = "numpad"
         release_fn = self.buildrelease_fn(fnname)
         if not release_fn:
             print(f"No `{fnname}` fn defined in source")
@@ -799,8 +801,11 @@ class Renderer():
             for render in renders:
                 if not render.preview_only:
                     all_passes.extend(render.passes(trigger, self.state, [0]))
-
-            release_fn(all_passes)
+            
+            if number is not None:
+                release_fn[number](all_passes)
+            else:
+                release_fn(all_passes)
         except Exception as e:
             self.print_error()
             print("! Release failed !")
@@ -973,6 +978,9 @@ class Renderer():
             self.winmans.print_approx_fps = True
         elif shortcut.value.startswith("viewer_sample_frames"):
             self.viewer_sample_frames = int(shortcut.value.split("_")[-1])
+        elif shortcut.value.startswith("viewer_numbered_action_"):
+            action_number = int(shortcut.value.split("_")[-1])
+            self.on_release(number=action_number)
         elif shortcut == KeyboardShortcut.CopySVGToClipboard:
             self.winmans.glsk.copy_previews_to_clipboard = True
             return Action.PreviewStoryboard

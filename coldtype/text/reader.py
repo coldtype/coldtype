@@ -860,8 +860,8 @@ class StyledString(FittableMixin):
             if self.style.no_shapes:
                 if callable(self.style.show_frames):
                     dp_atom.rect(self.style.show_frames(g.frame))
-                else:
-                    dp_atom.rect(g.frame)
+                #else:
+                #    dp_atom.rect(g.frame)
                 dp_atom.typographic = True
                 dp_atom.addFrame(g.frame)
                 dp_atom.glyphName = g.name
