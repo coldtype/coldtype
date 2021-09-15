@@ -49,7 +49,7 @@ class AxiDrawPen(BasePen):
         ):
 
         self.dat.scale(scale, point=Point(0, 0))
-        self.page = self.page.scale(scale)
+        page = self.page.scale(scale)
         bounds = self.dat.bounds()
 
         limits = Rect(0, 0, 11, 8.5)
@@ -62,11 +62,10 @@ class AxiDrawPen(BasePen):
                 and r.mxx <= limits.w
                 and r.mxy <= limits.h)
 
-        if small_enough(self.page) and small_enough(bounds):
+        if small_enough(page) and small_enough(bounds):
             print("Drawing!")
-            #return False
         else:
-            print("Too big!", self.page)
+            print("Too big!", page, bounds)
             return False
         
         own_ad = False
@@ -86,11 +85,13 @@ class AxiDrawPen(BasePen):
         self.move_delay = move_delay
 
         tp = TransformPen(self,
-            (1, 0, 0, -1, 0, self.page.h))
+            (1, 0, 0, -1, 0, page.h))
+        
         self.dat.replay(tp)
-
+        ad.penup()
         time.sleep(move_delay)
         ad.penup()
+        
         if zero:
             ad.moveto(0,0)
         if own_ad:

@@ -1,6 +1,7 @@
 from coldtype.pens.axidrawpen import AxiDrawPen
 from coldtype.renderable import renderable
 from coldtype.pens.datpen import DATPen
+from coldtype.geometry import Rect, Point
 from time import sleep
 
 try:
@@ -51,15 +52,15 @@ class axidrawing(renderable):
     def __init__(self,
         vertical=False,
         flatten=10,
-        colors=None,
+        **kwargs
         ):
         self.flatten = flatten
         self.vertical = vertical
         
         if self.vertical:
-            super().__init__(rect=(850, 1100))
+            super().__init__(rect=(850, 1100), **kwargs)
         else:
-            super().__init__(rect=(1100, 850))
+            super().__init__(rect=(1100, 850), **kwargs)
     
     def runpost(self, result, render_pass, renderer_state):
         def color(p):
@@ -101,14 +102,14 @@ class axidrawing(renderable):
                     p = p.cond(flatten,
                         lambda p: p.flatten(
                             flatten, segmentLines=False))
-                    ap = AxiDrawPen(p, self.rect)
+                    ap = AxiDrawPen(p, Rect(0, 0, 1100, 850))
                     ap.draw(ad=ad,
                         move_delay=move_delay,
                         zero=False)
 
             res = self.frame_result(frame, post=True)
             if self.vertical:
-                res = res.copy().rotate(90)
+                res = res.copy().rotate(90, point=Point(0, 0)).translate(1100, 0)
             if tag is not None:
                 if isinstance(tag, int):
                     res = res[tag].copy(with_data=True)
