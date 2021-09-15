@@ -48,7 +48,7 @@ class AxiDrawPen(BasePen):
         limits = Rect(0, 0, 11, 8.5)
         if cm:
             limits = limits.scale(2.54)
-        if b.x >= 0 and b.y >= 0 and b.w <= limits.w and b.h <= limits.h:
+        if self.page.x >= 0 and self.page.y >= 0 and self.page.w <= limits.w and self.page.h <= limits.h:
             print("Drawing!")
         else:
             print("Too big!", b)

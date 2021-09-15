@@ -59,5 +59,6 @@ def test_draw(r, layer=None):
 
 def release(_):
     pen = test_draw.func(test_draw.rect, layer="tstroke") # TODO could encapsulate?
-    ap = AxiDrawPen(pen, test_draw.rect)
-    ap.draw()
+    print(pen)
+    #ap = AxiDrawPen(pen, test_draw.rect)
+    #ap.draw()

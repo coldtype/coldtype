@@ -808,14 +808,16 @@ class DraftingPen(RecordingPen, SHContext):
     
     # PEN-BASED MODIFICATIONS
     
-    def flatten(self, length=10):
+    def flatten(self, length=10, segmentLines=True):
         """
         Runs a fontTools `FlattenPen` on this pen
         """
+        if hasattr(self, "pmap"):
+            return self.pmap(lambda p: p.flatten(length, segmentLines))
         if length == 0:
             return self
         dp = type(self)()
-        fp = FlattenPen(dp, approximateSegmentLength=length, segmentLines=True)
+        fp = FlattenPen(dp, approximateSegmentLength=length, segmentLines=segmentLines)
         self.replay(fp)
         self.value = dp.value
         return self
