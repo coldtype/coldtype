@@ -71,7 +71,7 @@ class DATPen(DraftingPen):
     def __str__(self):
         v = "" if self._visible else "ø-"
         if self.glyphName:
-            return f"<{v}DP:'{self.glyphName}'/tag={self._tag}/data:{self.data}>"
+            return f"<{v}DP:'{self.glyphName}'/tag={self._tag}/data={self.data}>"
         else:
             return f"<{v}DP/tag={self._tag}/data:{self.data}>"
     
@@ -519,8 +519,8 @@ class DATPens(DraftingPens, DATPen):
     
     def __str__(self):
         v = "" if self.visible else "ø-"
-        out = f"<{v}DPS:{len(self._pens)}——tag:{self._tag}/data{self.data})>"
-        if hasattr(self, "glyphName"):
+        out = f"<{v}DPS/len={len(self._pens)}/tag={self._tag}/data={self.data})>"
+        if hasattr(self, "glyphName") and self.glyphName:
             return out[:-1] + f":::glyphName:{self.glyphName}>"
         return out
     
