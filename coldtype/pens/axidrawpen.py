@@ -27,6 +27,7 @@ class AxiDrawPen(BasePen):
         time.sleep(self.move_delay)
 
     def _lineTo(self, p):
+        time.sleep(self.move_delay)
         self.ad.lineto(*p)
 
     def _curveToOne(self, p1, p2, p3):

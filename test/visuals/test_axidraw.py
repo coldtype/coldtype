@@ -6,7 +6,7 @@ mis = Font.Find("Mistral")
 
 @axidrawing()
 def test_draw(r):
-    border = P(r.inset(50)).f(None).s(0).sw(2).tag("border")
+    border = P(r.inset(50)).tag("border")
     
     letters = (StSt("COLD", co, 900, wdth=0.15, ro=1)
         .pen()
@@ -19,8 +19,7 @@ def test_draw(r):
         .pen()
         .intersection(letters.copy())
         .explode()
-        .map(lambda _,p:
-            P().line(p.ambit().ecy))
+        .map(lambda _,p: P().line(p.ambit().ecy))
         .tag("hatches"))
 
     typ = (StSt("type", mis, 650)

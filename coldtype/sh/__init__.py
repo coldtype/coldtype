@@ -281,7 +281,7 @@ def sh(s, ctx:SHContext=None, dps=None, subs={}):
     splits = ["ƒ"]
     splits.extend(SH_EXPLODES.keys())
 
-    s = re.sub("ƒ\-[^ƒ]+", "", s)
+    s = re.sub(r"ƒ\-[^ƒ]+", "", s)
 
     for phrase in split_before(s, lambda x: x in splits):
         phrase = "".join(phrase).strip()

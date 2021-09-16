@@ -70,7 +70,7 @@ setuptools.setup(
         "viewer": [
             "glfw",
             "PyOpenGL",
-            "PyOpenGL-accelerate",
+            #"PyOpenGL-accelerate",
             "skia-python>=86.0",
             "skia-pathops", # can this be taken from skia-python?
             "SimpleWebSocketServer",

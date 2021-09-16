@@ -867,8 +867,13 @@ class DraftingPen(RecordingPen, SHContext):
     
     def layer(self, *layers):
         """
-        For every lambda function you pass in, a copy of the original pen is made and passed to your function, building up a multi-layered version and removing the original version
+        For every lambda function you pass in, a copy of the original pen is made and passed to your function, building up a multi-layered version and removing the original version; alternatively,
+        pass in an integer n to simply duplicate the
+        current value of the pen n-times
         """
+        if len(layers) == 1 and isinstance(layers[0], int):
+            layers = [1]*layers[0]
+
         dps = self.multi_pen_class()
         for layer in layers:
             if callable(layer):

@@ -17,10 +17,10 @@ def aximeta(fn):
         pen.add_data("aximeta", dict(fn=fn))
     return _aximeta
 
-def dip_pen(seconds=1):
+def dip_pen(seconds=1, location=(0, 0)):
     return (DATPen()
         .ch(aximeta(lambda ad: ad
-            .moveto(0, 0)
+            .moveto(*location)
             .pendown()
             .sleep(seconds)
             .penup()
