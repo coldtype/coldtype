@@ -10,6 +10,7 @@ from coldtype.renderable.animation import FFMPEGExport
 from subprocess import run
 from shutil import rmtree
 
+DEFAULT_DISPLAY = "png"
 
 try:
     from coldtype.fx.skia import precompose
