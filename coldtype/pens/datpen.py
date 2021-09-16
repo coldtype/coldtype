@@ -70,7 +70,10 @@ class DATPen(DraftingPen):
     
     def __str__(self):
         v = "" if self._visible else "ø-"
-        return f"<{v}DP(typo:int({self.typographic})({self.glyphName}))——tag:{self._tag}/data:{self.data}>"
+        if self.glyphName:
+            return f"<{v}DP:'{self.glyphName}'/tag={self._tag}/data:{self.data}>"
+        else:
+            return f"<{v}DP/tag={self._tag}/data:{self.data}>"
     
     def __len__(self):
         return len(self.value)
