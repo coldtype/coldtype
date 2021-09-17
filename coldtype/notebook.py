@@ -170,7 +170,7 @@ def render_animation(a, show=[], preview_scale=0.5, scale=1):
         elif a.fmt == "svg":
             SkiaPen.SVG(res, a.rect, str(rp.output_path), scale=scale)
 
-def show_video(a, loops=1, verbose=False, download=False, scale=0.5, audio=None, audio_loops=None):
+def show_video(a, loops=1, verbose=False, download=False, scale=0.5, audio=None, audio_loops=None,autoplay=False):
     ffex = FFMPEGExport(a,
         loops=loops,
         audio=audio,
@@ -181,7 +181,7 @@ def show_video(a, loops=1, verbose=False, download=False, scale=0.5, audio=None,
     mp4 = open(compressed_path, 'rb').read()
     data_url = "data:video/mp4;base64," + b64encode(mp4).decode()
     display(HTML(f"""
-    <video width={a.rect.w*scale} controls loop=true autoplay>
+    <video width={a.rect.w*scale} controls loop=true autoplay={str(autoplay).lower()}>
         <source src="%s" type="video/mp4">
     </video>
     """ % data_url))
@@ -300,11 +300,18 @@ class notebook_animation(_animation):
         render_animation(self, show=[], scale=scale)
         return self
     
-    def show(self, loops=1, verbose=False, download=False, scale=0.5, audio=None, audio_loops=None):
+    def show(self, loops=1, verbose=False, download=False, scale=0.5, audio=None, audio_loops=None, autoplay=False):
         if self.fmt == "svg":
             show_animation(self, start=False)
         else:
-            show_video(self, loops=loops, verbose=verbose, download=download, scale=scale, audio=audio, audio_loops=audio_loops)
+            show_video(self,
+            loops=loops,
+            verbose=verbose,
+            download=download,
+            scale=scale,
+            audio=audio,
+            audio_loops=audio_loops,
+            autoplay=autoplay)
         return self
     
     def zip(self, download=False):
