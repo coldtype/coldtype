@@ -1,7 +1,7 @@
 Text
 ====
 
-`Now available as an interactive Colab notebook here <https://colab.research.google.com/drive/1E-q_UdRFkxQRI7Lx6OxDfTw_WBD4cyuI?usp=sharing>`
+`Now available as an interactive Colab notebook here <https://colab.research.google.com/drive/1E-q_UdRFkxQRI7Lx6OxDfTw_WBD4cyuI?usp=sharing>`_
 
 To run any of these examples, you'll want to save a bit of code in a python file, with any name, e.g. ``text.py``, and then run that file by navigating to it on the command line and constructing a call like, ``coldtype text.py``
 
