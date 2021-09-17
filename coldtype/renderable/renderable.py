@@ -298,7 +298,13 @@ class skia_direct(renderable):
     def __init__(self, rect=(1080, 1080), **kwargs):
         super().__init__(rect=rect, direct_draw=True, **kwargs)
     
-    def run(self, render_pass, renderer_state, canvas):
+    def run(self, render_pass, renderer_state, canvas=None):
+        if canvas is None:
+            surface = skia.Surface(*self.rect.wh())
+            with surface as canvas:
+                render_pass.fn(*render_pass.args, canvas)
+            return
+
         if self.rstate:
             return render_pass.fn(*render_pass.args, renderer_state, canvas)
         else:

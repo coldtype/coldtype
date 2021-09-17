@@ -9,14 +9,14 @@ recmono = Font.Cacheable("assets/RecMono-CasualItalic.ttf")
 
 @animation(timeline=tl, bg=0, watch=[pp])
 def render(f):
-    def render_clip_fn(f, idx, clip, ftext):
-        if "coldtype" in clip.styles:
-            style = clip.style_matching("coldtype")
+    def render_clip_fn(tc):
+        if "coldtype" in tc.clip.styles:
+            style = tc.clip.style_matching("coldtype")
             e = style.progress(f.i, easefn="eei").e
-            return ftext.upper(), Style(co, 200, wdth=0.5, tu=-150+e*150, rotate=e*360)
-        if ftext == "!":
-            return ftext, Style(recmono, 200, xShift=-30, rotate=-5)
-        return ftext, Style(recmono, 72)
+            return tc.text.upper(), Style(co, 200, wdth=0.5, tu=-150+e*150, rotate=e*360)
+        if tc.text == "!":
+            return tc.text, Style(recmono, 200, xShift=-30, rotate=-5)
+        return tc.text, Style(recmono, 72)
 
     cg = tl.clip_group(0, f, styles=[1])
     pens = (cg

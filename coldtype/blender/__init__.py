@@ -30,7 +30,7 @@ class BlenderTimeline(Sequence):
         workarea_track=1,
         ):
         tracks = []
-        for t in data["tracks"]:
+        for t in data.get("tracks", []):
             clips = []
             for cidx, clip in enumerate(t["clips"]):
                 clips.append(Clip(
@@ -42,13 +42,14 @@ class BlenderTimeline(Sequence):
             
             tracks.append(ClipTrack(self, clips, []))
         
-        workarea = range(data["start"], data["end"]+1)
-        self.workarea = workarea
+        self.workarea = range(
+            data.get("start", 0),
+            data.get("end", duration-1)+1)
 
         super().__init__(
             duration,
             fps,
-            [data["current_frame"]],
+            [data.get("current_frame", 0)],
             tracks,
             workarea_track=workarea_track-1)
 
@@ -244,6 +245,7 @@ class b3d_animation(animation):
         center=(0, 0),
         upright=False,
         no_render_if=None,
+        create_timeline=False,
         renderer="b3d",
         **kwargs
         ):
@@ -261,6 +263,7 @@ class b3d_animation(animation):
         self.match_fps = match_fps
         self.no_render_if = no_render_if
         self.renderer = renderer
+        self.create_timeline = create_timeline
         self._bt = False
 
         if "timeline" not in kwargs:
@@ -287,7 +290,11 @@ class b3d_animation(animation):
         return out
     
     def reread_timeline(self, reset=False):
-        if self.blend.exists():
+        if self.create_timeline:
+            if not self.data_path().exists():
+                self.data_path().write_text("{}")
+
+        if True or self.blend.exists():
             if self.data_path().exists():
                 self._bt = True
                 bt = BlenderTimeline(
@@ -304,7 +311,11 @@ class b3d_animation(animation):
     def reset_timeline(self, timeline):
         super().reset_timeline(timeline)
 
-        if bpy and self.match_length:
+        do_match_length = self.match_length
+        if isinstance(self.timeline, BlenderTimeline) and len(self.timeline.tracks) == 0:
+            do_match_length = True
+
+        if bpy and do_match_length:
             bpy.data.scenes[0].frame_end = self.t.duration-1
         
         if bpy and self.match_fps:
@@ -367,6 +378,7 @@ class b3d_sequencer(b3d_animation):
             match_fps=True,
             match_length=False,
             match_output=False,
+            create_timeline=True,
             #no_render_if=lambda _: bool(bpy),
             renderer="skia",
             **kwargs)

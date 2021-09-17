@@ -12,8 +12,8 @@ print(pt1.duration, pt2.duration)
 def t1(f):
     cg:ClipGroup = pt1.clip_group(0, f, [2])
 
-    def render_clip(f, lidx, clip, t):
-        return t.upper(), Style(mutator, 200, wght=0, fill=hsl(0.9) if "b" in clip.styles else 1)
+    def render_clip(tc):
+        return tc.text.upper(), Style(mutator, 200, wght=0, fill=hsl(0.9) if "b" in tc.clip.styles else 1)
     
     return DATText(str(f.i), Style("Times", 100, load_font=0), f.a.r.inset(50).offset(0, 500)) + (cg
         .pens(f, render_clip, f.a.r)
@@ -26,8 +26,8 @@ def t1(f):
 def t2(f):
     cg:ClipGroup = pt2.clip_group(1, f, [2])
 
-    def render_clip(f, lidx, clip, t):
-        return t.upper(), Style(mutator, 200, wght=1, fill=hsl(0.9) if "b" in clip.styles else 1)
+    def render_clip(tc):
+        return tc.text.upper(), Style(mutator, 200, wght=1, fill=hsl(0.9) if "b" in tc.clip.styles else 1)
     
     return DATText(str(f.i), Style("Times", 100, load_font=0, fill=hsl(0.3)), f.a.r.inset(50, 50)) + (cg
         .pens(f, render_clip, f.a.r)

@@ -12,7 +12,7 @@ def test_image_gen(r):
 
 @renderable((1000, 500))
 def test_resize(r):
-    imgp = test_image_gen.last_passes[0].output_path
+    imgp = test_image_gen.pass_path(0)
     img = SkiaPen.ReadImage(imgp)
     return (DATPen()
         .rect(r)

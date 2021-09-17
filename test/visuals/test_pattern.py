@@ -11,7 +11,7 @@ def test_pattern_generate(r):
 
 @renderable((1000, 1000))
 def test_pattern_use(r):
-    imgp = test_pattern_generate.last_passes[0].output_path
+    imgp = test_pattern_generate.pass_path(0)
     return (DATPen()
         .rect(r)
         .f(1)

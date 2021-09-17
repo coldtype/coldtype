@@ -1,5 +1,6 @@
 import re, math, copy
 from enum import Enum
+from collections import namedtuple
 
 from coldtype.time import Timeable, Frame
 from coldtype.time.easing import ease
@@ -91,6 +92,11 @@ class ClipGroupPens(DATPens):
         for clip, pen in self.iterate_clips():
             pen.understroke(s=s, sw=sw)
         return self
+
+
+ClipGroupTextSetter = namedtuple(
+    "ClipGroupTextSetter",
+    ["frame", "i", "clip", "text"])
 
 
 class ClipGroup(Timeable):
@@ -276,7 +282,9 @@ class ClipGroup(Timeable):
     
     def pens(self,
         f,
-        render_clip_fn:Callable[[Frame, int, Clip, str], Tuple[str, Style]],
+        render_clip_fn:Callable[
+            [ClipGroupTextSetter],
+            Tuple[str, Style]],
         rect=None,
         graf_style=GrafStyle(leading=20),
         fit=None,
@@ -304,7 +312,7 @@ class ClipGroup(Timeable):
                     continue
                 try:
                     ftext = clip.ftext()
-                    text, style = render_clip_fn(f, idx, clip, ftext)
+                    text, style = render_clip_fn(ClipGroupTextSetter(f, idx, clip, ftext))
                     texts.append([text, clip.idx, style])
                 except Exception as e:
                     print(e)
@@ -578,6 +586,9 @@ class Sequence(Timeline):
                 return group.position(frame_idx, style_tracks)
     
     def clip_group(self, track_idx, f, styles=[]) -> ClipGroup:
+        if track_idx > len(self.tracks)-1:
+            return ClipGroup(None, -1, [])
+        
         cg = self.trackClipGroupForFrame(track_idx, f.i if hasattr(f, "i") else f, styles)
         if cg:
             return cg

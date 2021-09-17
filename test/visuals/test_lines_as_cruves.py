@@ -25,7 +25,7 @@ def lines_to_curves(pen):
                 pen.value[idx] = ("curveTo",
                     (line.t(0.25), line.t(0.75), line.end))
 
-@animation(timeline=60)
+#@animation(timeline=60)
 def test_lines_to_curves_simple(f):
     #rpo = DP
     r = f.a.r

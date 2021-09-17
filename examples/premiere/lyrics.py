@@ -1,13 +1,14 @@
 from coldtype import *
 from coldtype.time.nle.premiere import PremiereTimeline
 
-pt = PremiereTimeline(__sibling__("projs/lyrics_coldtype.json"))
+pt = PremiereTimeline(
+    __sibling__("projs/lyrics_coldtype.json"))
 
 @animation(timeline=pt, bg=0)
 def lyrics(f):
-    def render_clip_fn(f, idx, clip, ftext):
-        ct = "ct" in clip.styles
-        return ftext.upper(), Style(Font.MutatorSans(), 150,
+    def render_clip_fn(tc):
+        ct = "ct" in tc.clip.styles
+        return tc.text.upper(), Style(Font.MutatorSans(), 150,
             wght=1 if ct else 0,
             wdth=1,
             fill=hsl(0.65) if ct else 1)
