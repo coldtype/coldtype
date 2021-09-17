@@ -1,6 +1,8 @@
 Geometry
 ========
 
+`Available as an interactive Colab notebook here <https://colab.research.google.com/drive/1ldEBGu6z5kJBamnpCA1D71fecpZyFbPs?usp=sharing>`_
+
 To run any of these examples, you'll want to save a bit of code in a python file, with any name, e.g. ``geometry.py``, and then run that file by navigating to it on the command line and constructing a call like, ``coldtype geometry.py``
 
 Dividing Rect(angles)

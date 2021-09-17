@@ -312,7 +312,7 @@ class notebook_animation(_animation):
                 audio=audio,
                 audio_loops=audio_loops,
                 autoplay=autoplay)
-        return self
+        return None
     
     def zip(self, download=False):
         zipfile = f"{str(self.output_folder)}.zip"

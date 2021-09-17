@@ -1,6 +1,8 @@
 Animation
 =========
 
+`Available as an interactive Colab notebook here <https://colab.research.google.com/drive/1sxNSdggg7mZmkQgSXG2WB2LwwtHA1UiK?usp=sharing>`_
+
 There are lots of examples of somewhat complex animation in the `examples/animations <https://github.com/goodhertz/coldtype/tree/main/examples/animations>`_ directory, but here are some simpler (and shorter) ones, that demonstrate the fundamentals of how animations are built in coldtype.
 
 A circle moving
