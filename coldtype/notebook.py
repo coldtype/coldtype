@@ -228,7 +228,7 @@ class notebook_renderable(_renderable):
 
 class notebook_animation(_animation):
     def __init__(self,
-        rect=(540, 540),
+        rect=(1080, 1080),
         preview=[0],
         interactive=True,
         preview_scale=0.5,
@@ -323,7 +323,7 @@ class notebook_animation(_animation):
 
 class notebook_aframe(_aframe):
     def __init__(self,
-        rect=(540, 540),
+        rect=(1080, 1080),
         **kwargs
         ):
         self._preview = [0]
