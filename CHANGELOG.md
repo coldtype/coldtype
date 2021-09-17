@@ -47,7 +47,7 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 - Better MIDI primitives
 - `coldtype midi` midi viewer
 
-## [0.6.7] - 2021-09-16
+## [0.6.8] - 2021-09-16
 ### Added
 - Better axidraw primitives in new `coldtype.axidraw` namespace, demonstrated in `test/visuals/test_axidraw.png`
 - New `numpad` special variable that can handle up to 9 special actions, triggerable from the numpad with the viewer enabled

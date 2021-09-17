@@ -1,6 +1,8 @@
 Text
 ====
 
+`Now available as an interactive Colab notebook here <https://colab.research.google.com/drive/1E-q_UdRFkxQRI7Lx6OxDfTw_WBD4cyuI?usp=sharing>`
+
 To run any of these examples, you'll want to save a bit of code in a python file, with any name, e.g. ``text.py``, and then run that file by navigating to it on the command line and constructing a call like, ``coldtype text.py``
 
 Before we begin, let’s run some code needed to setup all the examples below. (If you’re copying just the code from one of the blocks below, you'll need to also copy this code and put it at the top of your source file.)
