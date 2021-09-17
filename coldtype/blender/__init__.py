@@ -246,6 +246,7 @@ class b3d_animation(animation):
         upright=False,
         no_render_if=None,
         create_timeline=False,
+        autosave=False,
         renderer="b3d",
         **kwargs
         ):
@@ -264,6 +265,7 @@ class b3d_animation(animation):
         self.no_render_if = no_render_if
         self.renderer = renderer
         self.create_timeline = create_timeline
+        self.autosave = autosave
         self._bt = False
 
         if "timeline" not in kwargs:
@@ -371,6 +373,7 @@ class b3d_animation(animation):
 class b3d_sequencer(b3d_animation):
     def __init__(self,
         rect=Rect(1080, 1080),
+        autosave=True,
         **kwargs
         ):
         super().__init__(
@@ -379,6 +382,7 @@ class b3d_sequencer(b3d_animation):
             match_length=False,
             match_output=False,
             create_timeline=True,
+            autosave=autosave,
             #no_render_if=lambda _: bool(bpy),
             renderer="skia",
             **kwargs)

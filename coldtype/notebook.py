@@ -1,15 +1,17 @@
-from coldtype.renderable.renderable import renderable
+from coldtype import renderable
+from coldtype.blender import render
 import json, os
 
 from pathlib import Path
 from base64 import b64encode
 from IPython.display import display, SVG, HTML, clear_output
-from coldtype.renderable.animation import aframe, animation, Action, Timeline
+from coldtype.renderable.renderable import renderable as _renderable
+from coldtype.renderable.animation import animation as _animation, aframe as _aframe
+from coldtype.renderable.animation import Action, Timeline, FFMPEGExport
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.svgpen import SVGPen
 from coldtype.color import rgb, hsl
 from coldtype.geometry import Rect
-from coldtype.renderable.animation import FFMPEGExport
 from subprocess import run
 from shutil import rmtree
 
@@ -140,7 +142,7 @@ function animate(name, start_playing) {
 }
 """
 
-def show_animation(a:animation, start=False):
+def show_animation(a:_animation, start=False):
     idxs = range(0, a.duration+1)
     passes = a.passes(Action.PreviewIndices, None, idxs)
     results = [a.run_normal(rp) for rp in passes]
@@ -192,7 +194,7 @@ def show_video(a, loops=1, verbose=False, download=False, scale=0.5, audio=None,
             pass
 
 
-class notebook_renderable(renderable):
+class notebook_renderable(_renderable):
     def __init__(self,
         rect=(540, 540),
         preview=True,
@@ -224,7 +226,7 @@ class notebook_renderable(renderable):
         return self
 
 
-class notebook_animation(animation):
+class notebook_animation(_animation):
     def __init__(self,
         rect=(540, 540),
         preview=[0],
@@ -319,7 +321,7 @@ class notebook_animation(animation):
         return self
 
 
-class notebook_aframe(aframe):
+class notebook_aframe(_aframe):
     def __init__(self,
         rect=(540, 540),
         **kwargs
@@ -330,3 +332,8 @@ class notebook_aframe(aframe):
             timeline=Timeline(1),
             interactive=False,
             **kwargs)
+
+
+renderable = notebook_renderable
+animation = notebook_animation
+aframe = notebook_aframe

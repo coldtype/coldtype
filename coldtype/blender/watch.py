@@ -44,9 +44,16 @@ def persist_sequence(last_persisted):
     else:
         #print("NEW CHANGES")
         Path(jpath).write_text(json.dumps(out, indent=4))
+        
+        autosave = False
         for r in bpy.app.driver_namespace.get("_coldtypes", []):
             if hasattr(r, "reread_timeline"):
                 r.reread_timeline()
+            if hasattr(r, "autosave") and r.autosave:
+                autosave = True
+        
+        if autosave:
+            bpy.ops.wm.save_mainfile()
         return out
     
 
