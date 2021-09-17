@@ -221,7 +221,6 @@ class notebook_renderable(renderable):
             res
         ])
         out.ch(show("png", self.rect, padding=[0, 0], scale=self.preview_scale))
-        print(">>>", out)
         return self
 
 
