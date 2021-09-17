@@ -441,8 +441,11 @@ class DATPen(DraftingPen):
         return self.single_pen_class(fill=("random", 0.25)).rect(self.getFrame(th=th, tv=tv))
     
     def _repr_html_(self):
+        if self.data.get("_notebook_shown"):
+            return None
+        
         from coldtype.notebook import show, DEFAULT_DISPLAY
-        self.ch(show(DEFAULT_DISPLAY))
+        self.ch(show(DEFAULT_DISPLAY, th=1, tv=1))
         return None
     
     def at_rotation(self, degrees, fn:Callable[["DATPen"], None], point=None):

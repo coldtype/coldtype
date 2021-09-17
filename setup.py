@@ -54,6 +54,7 @@ setuptools.setup(
             "demo/midi.py",
             "demo/blank.py",
             "demo/boiler.py",
+            "demo/vf.py",
             "renderer/picklejar.py",
             "renderer/.coldtype.py"
         ],

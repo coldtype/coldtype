@@ -4,6 +4,7 @@ from pathlib import Path
 from base64 import b64encode
 from IPython.display import display, SVG, HTML, clear_output
 from coldtype.renderable.animation import aframe, animation, Action, Timeline
+from coldtype.pens.datpen import DATPen
 from coldtype.pens.svgpen import SVGPen
 from coldtype.geometry import Rect
 from coldtype.renderable.animation import FFMPEGExport
@@ -37,7 +38,8 @@ def show(fmt=None, rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=0
     if not precompose and fmt == "png":
         raise Exception("pip install skia-python")
     
-    def _display(pen):
+    def _display(pen:DATPen):
+        pen.add_data("_notebook_shown", True)
         nonlocal rect, fmt
 
         if fmt is None:
