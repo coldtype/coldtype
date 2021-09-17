@@ -181,7 +181,7 @@ def show_video(a, loops=1, verbose=False, download=False, scale=0.5, audio=None,
     mp4 = open(compressed_path, 'rb').read()
     data_url = "data:video/mp4;base64," + b64encode(mp4).decode()
     display(HTML(f"""
-    <video width={a.rect.w*scale} controls loop=true autoplay={str(autoplay).lower()}>
+    <video width={a.rect.w*scale} controls loop=true autoplay={'autoplay' if autoplay else ''}>
         <source src="%s" type="video/mp4">
     </video>
     """ % data_url))
@@ -305,13 +305,13 @@ class notebook_animation(_animation):
             show_animation(self, start=False)
         else:
             show_video(self,
-            loops=loops,
-            verbose=verbose,
-            download=download,
-            scale=scale,
-            audio=audio,
-            audio_loops=audio_loops,
-            autoplay=autoplay)
+                loops=loops,
+                verbose=verbose,
+                download=download,
+                scale=scale,
+                audio=audio,
+                audio_loops=audio_loops,
+                autoplay=autoplay)
         return self
     
     def zip(self, download=False):
