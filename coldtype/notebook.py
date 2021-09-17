@@ -1,11 +1,13 @@
+from coldtype.renderable.renderable import renderable
 import json, os
 
 from pathlib import Path
 from base64 import b64encode
 from IPython.display import display, SVG, HTML, clear_output
 from coldtype.renderable.animation import aframe, animation, Action, Timeline
-from coldtype.pens.datpen import DATPen
+from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.svgpen import SVGPen
+from coldtype.color import rgb, hsl
 from coldtype.geometry import Rect
 from coldtype.renderable.animation import FFMPEGExport
 from subprocess import run
@@ -55,6 +57,7 @@ def show(fmt="png", rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=
             lar = pen.data.get("_last_align_rect")
             if lar:
                 rect = lar
+                pen = DATPens([DATPen(rect).fssw(-1, 0.75, 2), pen])
             else:
                 amb = pen.ambit(th=th, tv=tv)
                 rect = Rect(amb.w+padding[0], amb.h+padding[1])
@@ -187,6 +190,39 @@ def show_video(a, loops=1, verbose=False, download=False, scale=0.5, audio=None,
         except ImportError:
             print("download= arg is for colab")
             pass
+
+
+class notebook_renderable(renderable):
+    def __init__(self,
+        rect=(540, 540),
+        preview=True,
+        preview_scale=0.5,
+        render_bg=False,
+        border=(0.75, 2),
+        **kwargs
+        ):
+        self._preview = preview
+        self.preview_scale = preview_scale
+        self.border = border
+
+        super().__init__(rect, render_bg=render_bg, **kwargs)
+    
+    def __call__(self, func):
+        res = super().__call__(func)
+
+        if self._preview:
+            self.preview()
+        return res
+    
+    def preview(self):
+        res = self.frame_result(0, post=False)
+        out = DATPens([
+            DATPen(self.rect).fssw(-1, *self.border) if self.border else None,
+            res
+        ])
+        out.ch(show("png", self.rect, padding=[0, 0], scale=self.preview_scale))
+        print(">>>", out)
+        return self
 
 
 class notebook_animation(animation):
