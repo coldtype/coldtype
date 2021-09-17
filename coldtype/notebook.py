@@ -34,7 +34,7 @@ def update_ffmpeg():
     print('ffmpeg update finished')
 
 
-def show(fmt=None, rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=0.5):
+def show(fmt="png", rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=0.5):
     if not precompose and fmt == "png":
         raise Exception("pip install skia-python")
     
@@ -52,9 +52,13 @@ def show(fmt=None, rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=0
         if align and rect is not None:
             pen.align(rect)
         if rect is None:
-            amb = pen.ambit(th=th, tv=tv)
-            rect = Rect(amb.w+padding[0], amb.h+padding[1])
-            pen.align(rect)
+            lar = pen.data.get("_last_align_rect")
+            if lar:
+                rect = lar
+            else:
+                amb = pen.ambit(th=th, tv=tv)
+                rect = Rect(amb.w+padding[0], amb.h+padding[1])
+                pen.align(rect)
         
         if fmt == "png":
             src = pen.ch(precompose(rect)).img().get("src")

@@ -720,6 +720,7 @@ class DraftingPen(RecordingPen, SHContext):
         r = self.ambit(th, tv)
         if h is not None:
             r = r.seth(h)
+        self.add_data("_last_align_rect", rect)
         offset = align(r, rect, x, y)
         self.translate(*offset, transformFrame=transformFrame)
         if return_offset:
