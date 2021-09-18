@@ -295,6 +295,9 @@ class Renderer():
                                     self.state.add_frame_offset(r.name, s)
                         
                         self.last_animation = r
+                    
+                if self.last_animation:
+                    self.winmans.did_reload_animation(self.last_animation)
                 
                 if full_restart:
                     fos = {}
@@ -373,7 +376,23 @@ class Renderer():
         if len(self.previews_waiting_to_paint) > 0:
             return 0, 0, []
 
+        previewing = (trigger in [
+            Action.Initial,
+            Action.Resave,
+            Action.PreviewStoryboard,
+            Action.PreviewIndices,
+            Action.PreviewStoryboardReload,
+        ])
+        
+        rendering = (self.args.save_renders or trigger in [
+            Action.RenderAll,
+            Action.RenderWorkarea,
+            Action.RenderIndices,
+        ])
+
+        self.state.previewing = previewing
         prev_renders = self.last_renders
+        
         renders = self.renderables(trigger)
         self.last_renders = renders
         preview_count = 0
@@ -392,23 +411,6 @@ class Renderer():
                 
                 passes = render.passes(trigger, self.state, indices)
                 render.last_passes = passes
-
-                previewing = (trigger in [
-                    Action.Initial,
-                    Action.Resave,
-                    Action.PreviewStoryboard,
-                    Action.PreviewIndices,
-                    Action.PreviewStoryboardReload,
-                ])
-                
-                rendering = (self.args.save_renders or trigger in [
-                    Action.RenderAll,
-                    Action.RenderWorkarea,
-                    Action.RenderIndices,
-                ])
-
-                self.state.previewing = previewing # TODO too janky?
-                #self.state.preview_scale = self.preview_scale()
                 
                 for rp in passes:
                     output_path = rp.output_path

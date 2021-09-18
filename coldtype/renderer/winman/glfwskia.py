@@ -379,6 +379,7 @@ class WinmanGLFWSkia():
         
         self.surface.flushAndSubmit()
         glfw.swap_buffers(self.window)
+
         return did_preview
     
     def poll(self):

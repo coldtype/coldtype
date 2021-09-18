@@ -3,11 +3,12 @@ import time, threading, sys
 from coldtype.renderer.config import ColdtypeConfig
 from coldtype.renderer.winman.passthrough import WinmanPassthrough
 from coldtype.renderer.winman.glfwskia import glfw, skia, WinmanGLFWSkia, WinmanGLFWSkiaBackground
-from coldtype.renderer.winman.midi import MIDIWatcher, rtmidi
+from coldtype.renderer.winman.audio import WinmanAudio
 from coldtype.renderer.winman.webview import WinmanWebview
+from coldtype.renderer.winman.midi import MIDIWatcher, rtmidi
 from coldtype.renderer.winman.websocket import WinmanWebsocket
 from coldtype.renderer.winman.blender import WinmanBlender
-from coldtype.renderable import Action
+from coldtype.renderable import Action, Overlay
 
 
 last_line = ''
@@ -41,6 +42,7 @@ class Winmans():
         self.wv:WinmanWebview = None
         self.midi:MIDIWatcher = None
         self.b3d:WinmanBlender = None
+        self.audio:WinmanAudio = None
 
         self.last_time = -1
         self.refresh_delay = self.config.refresh_delay
@@ -69,6 +71,9 @@ class Winmans():
     def should_midi(self):
         return rtmidi and not self.config.no_midi
     
+    def should_audio(self):
+        return WinmanAudio.Possible()
+    
     def should_blender(self):
         return self.config.blender_watch
     
@@ -94,10 +99,17 @@ class Winmans():
                 self.renderer.execute_string_as_shortcut_or_action)
         elif self.config.args.midi_info:
             print(">>> pip install rtmidi")
+        
+        if self.should_audio():
+            self.audio = WinmanAudio()
 
     def did_reload(self, filepath):
         if self.b3d:
             self.b3d.reload(filepath)
+    
+    def did_reload_animation(self, rs):
+        if self.audio:
+            self.audio.reload_with_animation(rs)
     
     def did_render(self, count):
         if self.b3d:
@@ -219,6 +231,10 @@ class Winmans():
             if self.renderer.last_animation and self.playing_preloaded_frame >= 0 and len(self.preloaded_frames) > 0:
                 if self.glsk:
                     self.glsk.show_preloaded_frame(self.preloaded_frames[self.playing_preloaded_frame])
+
+                if self.audio:
+                    self.audio.play_frame(
+                        (self.playing_preloaded_frame+1) % len(self.preloaded_frames))
                 
                 self.playing_preloaded_frame += 1
                 if self.playing_preloaded_frame == len(self.preloaded_frames):
@@ -231,6 +247,7 @@ class Winmans():
                 self.last_time = t2
                 
                 # TODO the main turn_over, why is it like this?
+
                 self.last_previews = self.renderer.turn_over()
 
                 global last_line

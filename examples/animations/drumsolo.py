@@ -1,10 +1,11 @@
 from coldtype import *
 from coldtype.fx.skia import phototype 
 
-midi = Programs.Midi(__sibling__("media/68.mid"), text=0)
+audio = __sibling__("media/68.wav")
+midi = Programs.Midi(__sibling__("media/68.mid"), text=0, bpm=151)
 #midi.hide()
 
-@animation(timeline=midi.t, bg=hsl(0.35, 0.8, l=0.2), render_bg=1)
+@animation(timeline=midi.t, bg=hsl(0.45, 0.8, l=0.2), render_bg=1, audio=audio)
 def drumsolo(f):
     d = midi.t[0].fifve(f.i)
     lk1 = {

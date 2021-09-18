@@ -328,15 +328,9 @@ class b3d_animation(animation):
             else:
                 bpy.data.scenes[0].render.fps = self.t.fps
                 bpy.data.scenes[0].render.fps_base = 1
-    
-    def run(self, render_pass, renderer_state):
-        fi = render_pass.args[0].i
-        if renderer_state and not bpy:
-            if renderer_state.previewing:
-                if Overlay.Rendered in renderer_state.overlays:
-                    return self.frame_img(fi)
         
-        return super().run(render_pass, renderer_state)
+    def running_in_viewer(self):
+        return not bpy
     
     def rasterize(self, content, rp):
         if self.renderer == "skia":

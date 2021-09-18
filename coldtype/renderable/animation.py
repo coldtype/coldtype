@@ -44,6 +44,7 @@ class animation(renderable, Timeable):
         show_frame=True,
         overlay=True,
         write_start=0,
+        audio=None,
         **kwargs
         ):
         super().__init__(**kwargs)
@@ -57,6 +58,7 @@ class animation(renderable, Timeable):
         self.storyboard = storyboard
         self.reset_timeline(timeline)
         self.single_frame = self.duration == 1
+        self.audio = audio
     
     def __call__(self, func):
         res = super().__call__(func)
@@ -157,6 +159,18 @@ class animation(renderable, Timeable):
     def passes(self, action, renderer_state, indices=[]):
         frames = self.active_frames(action, renderer_state, indices)
         return [RenderPass(self, action, self.pass_suffix(i), [Frame(i, self)]) for i in frames]
+
+    def running_in_viewer(self):
+        return True
+    
+    def run(self, render_pass, renderer_state):
+        fi = render_pass.args[0].i
+        if renderer_state and self.running_in_viewer():
+            if renderer_state.previewing:
+                if Overlay.Rendered in renderer_state.overlays:
+                    return self.frame_img(fi)
+        
+        return super().run(render_pass, renderer_state)
     
     def runpost(self, result, render_pass, renderer_state):
         #if Overlay.Rendered in renderer_state.overlays:

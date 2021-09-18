@@ -275,7 +275,6 @@ SHORTCUTS = {
 
     KeyboardShortcut.ReloadSource: [
         [[], "<enter>"],
-        [[], "p"],
     ],
     KeyboardShortcut.RestartApp: [
         [["cmd"], "r"]
