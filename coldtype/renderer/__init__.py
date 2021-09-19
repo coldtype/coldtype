@@ -872,7 +872,6 @@ class Renderer():
             self.actions_queued = [Action.PreviewStoryboard]
             return Action.PreviewPlay
         elif shortcut == KeyboardShortcut.PlayPreview:
-            #self.winmans.stop_playing_preloaded()
             return Action.PreviewPlay
         elif shortcut == KeyboardShortcut.EnableAudio:
             self.source_reader.config.enable_audio = not self.source_reader.config.enable_audio
@@ -901,7 +900,7 @@ class Renderer():
             return -1
         elif shortcut == KeyboardShortcut.RenderAllAndPlay:
             self.on_action(Action.RenderAll)
-            self.action_waiting = Action.RenderedPlay
+            self.actions_queued.append(KeyboardShortcut.PlayRendered)
             return -1
         elif shortcut == KeyboardShortcut.RenderAllAndRelease:
             self.on_action(Action.RenderAll)
@@ -1049,6 +1048,10 @@ class Renderer():
         self.hotkey_waiting = (cmd, None, args)
 
     def on_action(self, action, message=None) -> bool:
+        if isinstance(action, KeyboardShortcut):
+            self.on_shortcut(self.action_waiting)
+            return True
+
         if action in [
             Action.RenderAll,
             Action.RenderWorkarea,
@@ -1067,7 +1070,6 @@ class Renderer():
             Action.PreviewStoryboardPrev,
             Action.PreviewPlay]:
             if action == Action.PreviewPlay:
-                #self.winmans.stop_playing_preloaded()
                 self.winmans.toggle_playback()
             if action == Action.PreviewStoryboardPrevMany:
                 self.winmans.frame_offset(-self.source_reader.config.many_increment)
@@ -1082,14 +1084,6 @@ class Renderer():
                 self.winmans.frame_offset(+self.viewer_sample_frames)
                 #self.state.adjust_all_frame_offsets(+1)
             self.render(Action.PreviewStoryboard)
-        elif action == Action.RenderedPlay:
-            #self.winmans.playing = 0
-            #self.winmans.toggle_play_preloaded()
-            print("-TOGGLE")
-            self.winmans.toggle_rendered()
-            self.winmans.playing = not self.winmans.playing
-            if not self.winmans.playing:
-                self.action_waiting = Action.PreviewStoryboard
         elif action == Action.Build:
             self.on_release(build=True)
         elif action == Action.Release:

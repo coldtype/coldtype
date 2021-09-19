@@ -50,9 +50,6 @@ class Winmans():
         self.backoff_refresh_delay = self.refresh_delay
 
         self.playing = 0
-        self.preloaded_frames = []
-        self.playing_preloaded_frame = -1
-
         self.print_approx_fps = False
 
         self.bg = False
@@ -169,23 +166,6 @@ class Winmans():
             if self.b3d:
                 self.b3d.frame_offset(offset)
     
-    def preload_frames(self, passes):
-        for rp in passes:
-            self.preloaded_frames.append(rp.output_path)
-        self.playing_preloaded_frame = 0
-    
-    def stop_playing_preloaded(self):
-        self.playing_preloaded_frame = -1
-    
-    def toggle_play_preloaded(self):
-        if self.playing_preloaded_frame >= 0:
-            self.playing_preloaded_frame = -1
-            self.preloaded_frames = []
-        else:
-            anm = self.renderer.animation()
-            passes = anm.passes(Action.RenderAll, self.renderer.state, anm.all_frames())
-            self.preload_frames(passes)
-    
     def should_close(self):
         return any([wm.should_close() for wm in self.map()])
     
@@ -250,37 +230,22 @@ class Winmans():
                     self.poll()
                     continue
             
-            if self.renderer.last_animation and self.playing_preloaded_frame >= 0 and len(self.preloaded_frames) > 0:
-                if self.glsk:
-                    self.glsk.show_preloaded_frame(self.preloaded_frames[self.playing_preloaded_frame])
-
-                if self.audio:
-                    self.audio.play_frame(
-                        (self.playing_preloaded_frame+1) % len(self.preloaded_frames))
-                
-                self.playing_preloaded_frame += 1
-                if self.playing_preloaded_frame == len(self.preloaded_frames):
-                    self.playing_preloaded_frame = 0
-                
+            if self.playing:
                 time.sleep(0.01)
-            
             else:
-                if self.playing:
-                    time.sleep(0.01)
-                else:
-                    time.sleep(self.backoff_refresh_delay)
-                self.last_time = t2
-                
-                # TODO the main turn_over, why is it like this?
+                time.sleep(self.backoff_refresh_delay)
+            self.last_time = t2
+            
+            # TODO the main turn_over, why is it like this?
 
-                self.last_previews = self.renderer.turn_over()
+            self.last_previews = self.renderer.turn_over()
 
-                global last_line
-                if last_line:
-                    lls = last_line.strip()
-                    if lls:
-                        self.renderer.on_stdin(lls)
-                    last_line = None
+            global last_line
+            if last_line:
+                lls = last_line.strip()
+                if lls:
+                    self.renderer.on_stdin(lls)
+                last_line = None
             
             self.poll()
     

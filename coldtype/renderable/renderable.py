@@ -46,7 +46,6 @@ class Action(Enum):
     PreviewStoryboardPrevMany = "preview_storyboard_prev_many"
     ClearLastRender = "clear_last_render"
     ClearRenderedFrames = "clear_rendered_frames"
-    RenderedPlay = "rendered_play"
     RestartRenderer = "restart_renderer"
     ToggleMultiplex = "toggle_multiplex"
     Kill = "kill"

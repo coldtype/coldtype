@@ -340,10 +340,6 @@ class WinmanGLFWSkia():
                         return self.renderer.on_shortcut(shortcut)
     
     def turn_over(self):
-        # if Overlay.Rendered in self.renderer.state.overlays:
-        #    self.show_preloaded_frame(self.renderer.previews_waiting[0][1])
-        #    return True
-
         frect, rects, dscale, needs_new_context = self.calculate_window_size(self.renderer.previews_waiting)
 
         if needs_new_context:
@@ -389,19 +385,6 @@ class WinmanGLFWSkia():
     
     def poll(self):
         glfw.poll_events()
-    
-    def show_preloaded_frame(self, path):
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-
-        with self.surface as canvas:
-            if not self.config.window_transparent:
-                c = self.renderer.last_animation.bg
-                canvas.clear(c.skia())
-            image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(path)))
-            canvas.drawImage(image, 0, 0)
-        
-        self.surface.flushAndSubmit()
-        glfw.swap_buffers(self.window)
 
     def draw_preview(self, idx, scale, canvas, rect, waiter):        
         render, result, rp = waiter
