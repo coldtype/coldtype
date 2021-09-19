@@ -8,7 +8,7 @@ midi = Path("examples/animations/media/house.mid").resolve()
 drums = MidiReader(midi, duration=60, bpm=120)[0]
 
 
-@animation(timeline=drums.duration, storyboard=[0], bg=0.1)
+@animation(timeline=drums.duration, storyboard=[0], bg=0.1, audio=wav)
 def render(f):
     kick = drums.fv(f.i, [36], [12, 10]).ease()
     snare = drums.fv(f.i, [38], [4, 35]).ease()

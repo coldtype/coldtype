@@ -16,7 +16,7 @@ loop = Loop(150, 15, [ # some keyframes
         font_size=330, warp=0, blur=1)
     ])
 
-@animation(timeline=loop)
+@animation(timeline=loop, bg=0)
 def warp(f):
     state = f.a.t.current_state(f.i, e="eeio")
     return ((ß:=StSt("WARP\nBLUR", peshka, ro=1, **state))
