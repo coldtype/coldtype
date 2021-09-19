@@ -814,10 +814,15 @@ class Renderer():
         fnname = "build" if build else "release"
         if number is not None:
             fnname = "numpad"
-        release_fn = self.buildrelease_fn(fnname)
-        if not release_fn:
-            print(f"No `{fnname}` fn defined in source")
-            return
+        
+        fn = self.buildrelease_fn(fnname)
+        if not fn:
+            if fnname == "release" and self.last_animation:
+                print("DEFAULT RENDER ACTION")
+                fn = self.last_animation.export("h264", audio=self.last_animation.audio)
+            else:
+                print(f"No `{fnname}` fn defined in source")
+                return
         trigger = Action.RenderAll
         renders = self.renderables(trigger)
         all_passes = []
@@ -827,9 +832,9 @@ class Renderer():
                     all_passes.extend(render.passes(trigger, self.state, [0]))
             
             if number is not None:
-                release_fn[number](all_passes)
+                fn[number](all_passes)
             else:
-                release_fn(all_passes)
+                fn(all_passes)
         except Exception as e:
             self.print_error()
             print("! Release failed !")

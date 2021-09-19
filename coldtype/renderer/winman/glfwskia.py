@@ -85,6 +85,7 @@ class WinmanGLFWSkia():
             raise RuntimeError('glfw.init() failed')
         
         glfw.window_hint(glfw.STENCIL_BITS, 8)
+        #glfw.window_hint(glfw.SRGB_CAPABLE, glfw.TRUE)
         
         if self.config.window_chromeless:
             glfw.window_hint(glfw.DECORATED, glfw.FALSE)

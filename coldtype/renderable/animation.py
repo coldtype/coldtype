@@ -331,6 +331,8 @@ class FFMPEGExport():
         return self
     
     def write(self, verbose=False):
+        print(f"writing {self.fmt}...")
+
         if not self.fmt:
             raise Exception("No fmt specified")
         
@@ -345,6 +347,8 @@ class FFMPEGExport():
 
         if verbose:
             print(">", self.output_path)
+
+        print("...done")
         return self
     
     def open(self):
