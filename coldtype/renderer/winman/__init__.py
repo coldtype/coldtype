@@ -44,6 +44,7 @@ class Winmans():
         self.b3d:WinmanBlender = None
         self.audio:WinmanAudio = None
 
+        self.last_title = "coldtype"
         self.last_time = -1
         self.refresh_delay = self.config.refresh_delay
         self.backoff_refresh_delay = self.refresh_delay
@@ -129,13 +130,27 @@ class Winmans():
                 yield wm
     
     def set_title(self, text):
+        self.last_title = text
         [wm.set_title(text) for wm in self.map()]
+    
+    def mod_title(self, mod=None):
+        if mod is not None:
+            [wm.set_title(self.last_title + " / " + mod) for wm in self.map()]
+        else:
+            [wm.set_title(self.last_title) for wm in self.map()]
     
     def reset(self):
         [wm.reset() for wm in self.map()]
     
     def terminate(self):
         [wm.terminate() for wm in self.map()]
+    
+    def toggle_rendered(self):
+        self.renderer.state.toggle_overlay(Overlay.Rendered)
+        if Overlay.Rendered in self.renderer.state.overlays:
+            self.mod_title("rendered")
+        else:
+            self.mod_title()
     
     def toggle_playback(self):
         if self.playing == 0:
@@ -207,7 +222,7 @@ class Winmans():
             did_preview.append(self.wv.turn_over())
 
         if len(did_preview) > 0:
-            if Overlay.Rendered in self.renderer.state.overlays:
+            if self.config.enable_audio:
                 la = self.renderer.last_animation
                 if self.audio and la:
                     fo = [abs(o%la.duration) for o in self.renderer.state.get_frame_offsets(la.name)]

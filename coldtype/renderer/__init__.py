@@ -154,6 +154,7 @@ class Renderer():
         self.completed_renderers = []
 
         self.action_waiting = None
+        self.actions_queued = []
         self.debounced_actions = {}
         self.previews_waiting = []
         self.last_animation = None
@@ -867,11 +868,14 @@ class Renderer():
             return Action.ClearRenderedFrames
         
         elif shortcut == KeyboardShortcut.PlayRendered:
-            self.on_action(Action.RenderedPlay)
-            return -1
-        elif shortcut == KeyboardShortcut.PlayPreview:
-            self.winmans.stop_playing_preloaded()
+            self.winmans.toggle_rendered()
+            self.actions_queued = [Action.PreviewStoryboard]
             return Action.PreviewPlay
+        elif shortcut == KeyboardShortcut.PlayPreview:
+            #self.winmans.stop_playing_preloaded()
+            return Action.PreviewPlay
+        elif shortcut == KeyboardShortcut.EnableAudio:
+            self.source_reader.config.enable_audio = not self.source_reader.config.enable_audio
         
         elif shortcut == KeyboardShortcut.ReloadSource:
             return Action.PreviewStoryboardReload
@@ -926,7 +930,7 @@ class Renderer():
         elif shortcut == KeyboardShortcut.OverlayTimeline:
             self.state.toggle_overlay(Overlay.Timeline)
         elif shortcut == KeyboardShortcut.OverlayRendered:
-            self.state.toggle_overlay(Overlay.Rendered)
+            self.winmans.toggle_rendered()
         elif shortcut == KeyboardShortcut.PreviewScaleUp:
             self.state.mod_preview_scale(+0.1)
         elif shortcut == KeyboardShortcut.PreviewScaleDown:
@@ -1063,7 +1067,7 @@ class Renderer():
             Action.PreviewStoryboardPrev,
             Action.PreviewPlay]:
             if action == Action.PreviewPlay:
-                self.winmans.stop_playing_preloaded()
+                #self.winmans.stop_playing_preloaded()
                 self.winmans.toggle_playback()
             if action == Action.PreviewStoryboardPrevMany:
                 self.winmans.frame_offset(-self.source_reader.config.many_increment)
@@ -1079,8 +1083,13 @@ class Renderer():
                 #self.state.adjust_all_frame_offsets(+1)
             self.render(Action.PreviewStoryboard)
         elif action == Action.RenderedPlay:
-            self.winmans.playing = 0
-            self.winmans.toggle_play_preloaded()
+            #self.winmans.playing = 0
+            #self.winmans.toggle_play_preloaded()
+            print("-TOGGLE")
+            self.winmans.toggle_rendered()
+            self.winmans.playing = not self.winmans.playing
+            if not self.winmans.playing:
+                self.action_waiting = Action.PreviewStoryboard
         elif action == Action.Build:
             self.on_release(build=True)
         elif action == Action.Release:
@@ -1156,6 +1165,9 @@ class Renderer():
                 # TODO should be recursive?
                 self.on_action(self.action_waiting)
             self.action_waiting = None
+        
+        if len(self.actions_queued) > 0:
+            self.action_waiting = self.actions_queued.pop(0)
         
         did_preview = self.winmans.turn_over()
         

@@ -102,6 +102,10 @@ setuptools.setup(
         "notebook": [
             "skia-pathops",
             "skia-python",
+        ],
+        "audio": [
+            "pyaudio",
+            "soundfile",
         ]
     },
     install_requires=[

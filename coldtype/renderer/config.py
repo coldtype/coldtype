@@ -66,6 +66,7 @@ class ConfigOption(Enum):
         true_false_or_none)
     NoViewerErrors = ("no_viewer_errors", None, "nve",
         true_false_or_none)
+    EnableAudio = ("enable_audio", None, "ea", true_false_or_none)
 
     @staticmethod
     def Help(e):
@@ -123,6 +124,8 @@ class ConfigOption(Enum):
             return "Turn off all sounds made by the renderer"
         elif e == ConfigOption.NoViewerErrors:
             return "Turn off displaying errors in the viewer"
+        elif e == ConfigOption.EnableAudio:
+            return "Enable audio playback if audio is defined on an @animation"
         
 
     @staticmethod

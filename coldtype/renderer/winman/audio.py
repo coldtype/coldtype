@@ -24,10 +24,21 @@ class WinmanAudio(WinmanPassthrough):
         self.pa_rate = 0
         self.a = None
     
+    def recycle(self):
+        if self.pa_stream:
+            self.pa_stream.stop_stream()
+            self.pa_stream.close()
+        if self.pa_src:
+            self.pa_src.close()
+        
+        self.pa_stream = None
+        self.pa_src = None
+    
     def reload_with_animation(self, a:animation):
+        self.recycle()
         self.a = a
-        self.pa_src = soundfile.SoundFile(a.audio, "r+")
-        self.pa_preview = 0
+        if a.audio:
+            self.pa_src = soundfile.SoundFile(a.audio, "r+")
     
     def play_frame(self, frame):
         #if not self.args.preview_audio:
@@ -80,7 +91,5 @@ class WinmanAudio(WinmanPassthrough):
         pass
 
     def terminate(self):
-        self.pa_stream.stop_stream()
-        self.pa_stream.close()
+        self.recycle()
         self.pa.terminate()
-        self.pa_src.close()

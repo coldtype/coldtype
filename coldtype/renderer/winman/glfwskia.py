@@ -340,7 +340,7 @@ class WinmanGLFWSkia():
                         return self.renderer.on_shortcut(shortcut)
     
     def turn_over(self):
-        #if Overlay.Rendered in self.renderer.state.overlays:
+        # if Overlay.Rendered in self.renderer.state.overlays:
         #    self.show_preloaded_frame(self.renderer.previews_waiting[0][1])
         #    return True
 
@@ -403,13 +403,7 @@ class WinmanGLFWSkia():
         self.surface.flushAndSubmit()
         glfw.swap_buffers(self.window)
 
-    def draw_preview(self, idx, scale, canvas, rect, waiter):
-        if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
-            image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(waiter[1])))
-            if image:
-                canvas.drawImage(image, rect.x, rect.y)
-            return
-        
+    def draw_preview(self, idx, scale, canvas, rect, waiter):        
         render, result, rp = waiter
 
         error_color = rgb(1, 1, 1).skia()
@@ -419,6 +413,12 @@ class WinmanGLFWSkia():
         
         if not self.config.window_transparent:
             canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
+        
+        if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
+            image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(waiter[1])))
+            if image:
+                canvas.drawImage(image, rect.x, rect.y)
+            return
         
         if not hasattr(render, "show_error"):
             canvas.scale(scale, scale)

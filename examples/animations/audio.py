@@ -9,7 +9,7 @@ You'll need to `pip install soundfile` in yourt virtualenv to get this to work
 audio = Wavfile("examples/animations/media/coldtype.wav")
 obvs = Font("assets/ColdtypeObviously.designspace")
 
-@animation(timeline=audio.framelength, bg=0)
+@animation(timeline=audio.framelength, bg=0, audio=audio.path)
 def render(f):
     amp = audio.amp(f.i)
     return (StSt("COLDTYPE", obvs, 700,

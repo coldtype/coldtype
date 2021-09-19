@@ -44,6 +44,7 @@ class KeyboardShortcut(Enum):
     OverlayInfo = "overlay_info"
     OverlayTimeline = "overlay_timeline"
     OverlayRendered = "overlay_rendered"
+    EnableAudio = "toggle_audio"
 
     PreviewScaleDown = "preview_scale_down"
     PreviewScaleUp = "preview_scale_up"
@@ -127,6 +128,8 @@ KeyboardShortcutExplainers = {
         "Play the rendered-to-disk version of this animation",
     KeyboardShortcut.PlayPreview:
         "Play the current animation as fast as possible, evaluating the code live",
+    KeyboardShortcut.EnableAudio:
+        "If audio is defined on a renderable, toggle whether or not to play it",
     KeyboardShortcut.RestartApp:
         "Restart the app (a shortcut for when you've modified code that isn't reloaded automatically on save)",
     KeyboardShortcut.Quit:
@@ -221,6 +224,8 @@ def symbol_to_glfw(s):
         "<home>": glfw.KEY_HOME,
         "<end>": glfw.KEY_END,
         "<enter>": glfw.KEY_ENTER,
+        ",": glfw.KEY_COMMA,
+        ".": glfw.KEY_PERIOD,
         "-": glfw.KEY_MINUS,
         "=": glfw.KEY_EQUAL,
         "/": glfw.KEY_SLASH,
@@ -271,6 +276,9 @@ SHORTCUTS = {
     KeyboardShortcut.PlayPreview: [
         [[], "<space>"],
         #[[], glfw.KEY_K]
+    ],
+    KeyboardShortcut.EnableAudio: [
+        [[], "."]
     ],
 
     KeyboardShortcut.ReloadSource: [
@@ -344,7 +352,8 @@ SHORTCUTS = {
         [["cmd"], "t"]
     ],
     KeyboardShortcut.OverlayRendered: [
-        [[], "'"]
+        [[], "'"],
+        [[], ","],
     ],
 
     KeyboardShortcut.PreviewScaleUp: [
@@ -431,6 +440,10 @@ SHORTCUTS = {
     KeyboardShortcut.ViewerSolo9: [
         [["shift"], "np9"],
         [["shift"], "9"]
+    ],
+
+    KeyboardShortcut.PrintApproxFPS: [
+        [[], "f"],
     ],
 
     KeyboardShortcut.ViewerSampleFrames1: [
