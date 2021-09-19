@@ -53,3 +53,7 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 - New `numpad` special variable that can handle up to 9 special actions, triggerable from the numpad with the viewer enabled
 ### Removed
 - Dependency on `PyOpenGL-accelerate` in the `[viewer]` extra — not really sure why that was there to begin with.
+
+## [0.6.9]
+### Added
+- Restored some audio capabilities, via `audio=` keywords and the new `ConfigOption.EnableAudio`/`KeyboardShortcut.EnableAudio`
