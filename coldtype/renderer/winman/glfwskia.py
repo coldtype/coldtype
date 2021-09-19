@@ -86,6 +86,7 @@ class WinmanGLFWSkia():
         
         glfw.window_hint(glfw.STENCIL_BITS, 8)
         #glfw.window_hint(glfw.SRGB_CAPABLE, glfw.TRUE)
+        #GL.glEnable(GL.GL_FRAMEBUFFER_SRGB)
         
         if self.config.window_chromeless:
             glfw.window_hint(glfw.DECORATED, glfw.FALSE)
@@ -154,9 +155,12 @@ class WinmanGLFWSkia():
                 self.primary_monitor = found_primary
     
     def create_surface(self, rect):
+        mode = GL.GL_RGBA8
+        #mode = GL.GL_COMPRESSED_RGB8_ETC2
+
         backend_render_target = skia.GrBackendRenderTarget(
             int(rect.w), int(rect.h), 0, 0,
-            skia.GrGLFramebufferInfo(0, GL.GL_RGBA8))
+            skia.GrGLFramebufferInfo(0, mode))
         
         self.surface = skia.Surface.MakeFromBackendRenderTarget(
             self.context,
