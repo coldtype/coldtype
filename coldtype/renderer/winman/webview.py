@@ -59,7 +59,7 @@ class WinmanWebview(WinmanPassthrough):
         except:
             title = "coldtype"
 
-        for idx, (render, result, rp) in enumerate(self.renderer.previews_waiting_to_paint):
+        for idx, (render, result, rp) in enumerate(self.renderer.previews_waiting):
             if self.renderer.args.format == "canvas": # TODO config?
                 renders.append(dict(
                     fmt="canvas",

@@ -1,3 +1,4 @@
+from coldtype.renderable.renderable import Overlay
 from coldtype.renderer.winman.passthrough import WinmanPassthrough
 
 import time as ptime
@@ -339,7 +340,11 @@ class WinmanGLFWSkia():
                         return self.renderer.on_shortcut(shortcut)
     
     def turn_over(self):
-        frect, rects, dscale, needs_new_context = self.calculate_window_size(self.renderer.previews_waiting_to_paint)
+        #if Overlay.Rendered in self.renderer.state.overlays:
+        #    self.show_preloaded_frame(self.renderer.previews_waiting[0][1])
+        #    return True
+
+        frect, rects, dscale, needs_new_context = self.calculate_window_size(self.renderer.previews_waiting)
 
         if needs_new_context:
             self.create_surface(frect)
@@ -354,7 +359,7 @@ class WinmanGLFWSkia():
             if self.config.window_transparent:
                 canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 0))
             
-            for idx, (render, result, rp) in enumerate(self.renderer.previews_waiting_to_paint):
+            for idx, (render, result, rp) in enumerate(self.renderer.previews_waiting):
                 rect = rects[idx].offset((frect.w-rects[idx].w)/2, 0).round()
 
                 if self.copy_previews_to_clipboard:

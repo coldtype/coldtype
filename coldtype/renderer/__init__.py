@@ -155,7 +155,7 @@ class Renderer():
 
         self.action_waiting = None
         self.debounced_actions = {}
-        self.previews_waiting_to_paint = []
+        self.previews_waiting = []
         self.last_animation = None
         self.hotkeys = None
         self.hotkey_waiting = None
@@ -253,7 +253,7 @@ class Renderer():
             bc_print(bcolors.WARNING, short_error)
         else:
             render, res = self.renderable_error()
-            self.previews_waiting_to_paint.append([render, res, None])
+            self.previews_waiting.append([render, res, None])
     
     def show_message(self, message, scale=1):
         print(message)
@@ -373,7 +373,7 @@ class Renderer():
         if not self.args.is_subprocess:
             start = ptime.time()
         
-        if len(self.previews_waiting_to_paint) > 0:
+        if len(self.previews_waiting) > 0:
             return 0, 0, []
 
         previewing = (trigger in [
@@ -389,6 +389,25 @@ class Renderer():
             Action.RenderWorkarea,
             Action.RenderIndices,
         ])
+
+        if previewing:
+            if Overlay.Rendered in self.state.overlays:
+                overlays = []
+                overlay_count = 0
+                for render in self.last_renders:
+                    if render.preview_only:
+                        continue
+                    overlays.append(render)
+                    passes = render.passes(trigger, self.state, indices)
+                    render.last_passes = passes
+                    result = render.pass_path(passes[0].i)
+                    self.previews_waiting.append([
+                        render,
+                        result,
+                        passes[0]
+                    ])
+                    overlay_count += 1
+                return overlay_count, 0, overlays
 
         self.state.previewing = previewing
         prev_renders = self.last_renders
@@ -439,16 +458,16 @@ class Renderer():
 
                         if previewing:
                             if render.direct_draw:
-                                self.previews_waiting_to_paint.append([render, None, rp])
+                                self.previews_waiting.append([render, None, rp])
                             else:
                                 if render.single_frame and render.last_result:
                                     preview_count += 1
-                                    self.previews_waiting_to_paint.append([render, result, rp])
+                                    self.previews_waiting.append([render, result, rp])
                                 else:
                                     preview_result = render.normalize_result(render.runpost(result, rp, self.state))
                                     preview_count += 1
                                     if preview_result:
-                                        self.previews_waiting_to_paint.append([render, preview_result, rp])
+                                        self.previews_waiting.append([render, preview_result, rp])
                         
                         if rendering:
                             if False:
@@ -524,7 +543,7 @@ class Renderer():
             for render in renders:
                 result = render.package()
                 if result:
-                    self.previews_waiting_to_paint.append([render, result, None])
+                    self.previews_waiting.append([render, result, None])
                 else:
                     self.action_waiting = Action.PreviewStoryboard
 
@@ -669,7 +688,9 @@ class Renderer():
             self.stop_watching_file_changes()
             self.watch_file_changes()
 
-    def main(self):
+    def main(self, profiler=None):
+        self.profiler = profiler
+
         if self.dead:
             return
 
@@ -906,7 +927,6 @@ class Renderer():
             self.state.toggle_overlay(Overlay.Timeline)
         elif shortcut == KeyboardShortcut.OverlayRendered:
             self.state.toggle_overlay(Overlay.Rendered)
-        
         elif shortcut == KeyboardShortcut.PreviewScaleUp:
             self.state.mod_preview_scale(+0.1)
         elif shortcut == KeyboardShortcut.PreviewScaleDown:
@@ -1139,7 +1159,7 @@ class Renderer():
         
         did_preview = self.winmans.turn_over()
         
-        self.previews_waiting_to_paint = []
+        self.previews_waiting = []
         self.last_render_cleared = False
 
         if self.winmans.playing > 0:
@@ -1313,11 +1333,24 @@ class Renderer():
         if restart:
             self.restart()
 
+        if self.profiler:
+            print(">>>PROFILED!")
+            print(self.profiler)
+            self.profiler.disable()
+            self.profiler.dump_stats("profile_result")
+
 
 def main():
     Path("~/.coldtype").expanduser().mkdir(exist_ok=True)
     pargs, parser = Renderer.Argparser()
-    Renderer(parser).main()
+
+    if False:
+        import cProfile
+        pr = cProfile.Profile()
+        pr.enable()
+    else:
+        pr = None
+    Renderer(parser).main(profiler=pr)
 
 if __name__ == "__main__":
     main()

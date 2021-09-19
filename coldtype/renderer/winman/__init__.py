@@ -190,7 +190,7 @@ class Winmans():
         if self.ws:
             self.ws.read_messages()
 
-        render_previews = len(self.renderer.previews_waiting_to_paint) > 0
+        render_previews = len(self.renderer.previews_waiting) > 0
         if not render_previews:
             self.backoff_refresh_delay += 0.01
             if self.backoff_refresh_delay >= 0.25:
@@ -205,6 +205,13 @@ class Winmans():
         
         if self.wv:
             did_preview.append(self.wv.turn_over())
+
+        if len(did_preview) > 0:
+            if Overlay.Rendered in self.renderer.state.overlays:
+                la = self.renderer.last_animation
+                if self.audio and la:
+                    fo = [abs(o%la.duration) for o in self.renderer.state.get_frame_offsets(la.name)]
+                    self.audio.play_frame(fo[0])
         
         return did_preview
     
@@ -243,7 +250,10 @@ class Winmans():
                 time.sleep(0.01)
             
             else:
-                time.sleep(self.backoff_refresh_delay)
+                if self.playing:
+                    time.sleep(0.01)
+                else:
+                    time.sleep(self.backoff_refresh_delay)
                 self.last_time = t2
                 
                 # TODO the main turn_over, why is it like this?

@@ -33,3 +33,4 @@ examples/*.pdf
 *.blend
 examples/blender/blends
 profile.profile
+profile_result
