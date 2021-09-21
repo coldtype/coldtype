@@ -11,7 +11,8 @@ The most common viewer shortcuts
 * ``shift+<right>`` go forward ten frames
 * ``a`` render all the frames of the animation to disk
 * ``cmd+a`` render just the current frame to disk
-* ``shift+spacebar`` play the disk-rendered version of an animation (useful for playing back at correct framerate/speed if animation generation is complex & consequently not realtime)
+* ``,`` display the rendered version of a frame (and hit ``,`` again to display the live version) — in general this is useful if you want to play the disk-rendered version of an animation (for playing back at correct framerate/speed if animation generation is complex & consequently not realtime)
+* ``.`` toggle audio support (if you have the ``[audio]`` extra successfully installed)
 * ``<home>`` go to frame 0
 * ``q`` quits viewer and kills running coldtype program (equivalent to ctrl-c in command-line or hitting the X in the viewer window)
 
