@@ -977,6 +977,7 @@ class Renderer():
         
         elif shortcut == KeyboardShortcut.ShowInFinder:
             folder = self.renderables(Action.PreviewStoryboard)[0].output_folder
+            folder.mkdir(parents=True, exist_ok=True)
             os.system(f"open {folder}")
         
         elif shortcut == KeyboardShortcut.ViewerTakeFocus:
