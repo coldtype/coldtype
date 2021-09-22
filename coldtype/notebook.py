@@ -232,34 +232,41 @@ class notebook_renderable(_renderable):
 class notebook_animation(_animation):
     def __init__(self,
         rect=(1080, 1080),
-        preview=[0],
-        interactive=True,
+        display=True,
         preview_scale=0.5,
         render_bg=True,
+        storyboard=None,
         vars={},
         **kwargs
         ):
-        self._preview = preview
-        self._interactive = interactive
+        self._display = display
         self.preview_scale = preview_scale
         self.vars = vars
 
-        super().__init__(rect, render_bg=render_bg, **kwargs)
+        if storyboard is None:
+            self._storyboarded = False
+            storyboard = [0]
+        else:
+            self._storyboarded = True
+
+        super().__init__(rect, render_bg=render_bg, storyboard=storyboard, **kwargs)
     
     def __call__(self, func):
         res = super().__call__(func)
-
+        if self._display:
+            self.display()
+        return res
+    
+    def display(self):
         self._interaction_file = Path(self.name + "_tmp_state.json")
         self._interaction_state = {}
 
-        if self._preview:
-            if self._interactive:
-                if not self._interaction_file.exists():
-                    self._interaction_file.write_text("{}")
-                self.interactive_preview(self._preview[0])
-            else:
-                self.preview(*self._preview)
-        return res
+        if not self._interaction_file.exists():
+            self._interaction_file.write_text("{}")
+        self.interactive_preview(self.storyboard[0])
+
+        if len(self.storyboard) > 1:
+            self.preview(*self.storyboard[1:])
     
     def interactive_preview(self, start):
         from ipywidgets import IntSlider, FloatSlider, interact
@@ -336,11 +343,11 @@ class notebook_aframe(_aframe):
         rect=(1080, 1080),
         **kwargs
         ):
-        self._preview = [0]
 
         super().__init__(rect,
             timeline=Timeline(1),
             interactive=False,
+            storyboard=[0],
             **kwargs)
 
 
