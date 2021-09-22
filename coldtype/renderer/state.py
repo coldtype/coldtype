@@ -110,8 +110,11 @@ class RendererState():
         for i, o in enumerate(offs):
             offs[i] = fn(i, o)
     
-    def toggle_overlay(self, overlay):
-        v = not self.overlays.get(overlay, False)
+    def toggle_overlay(self, overlay, force=None):
+        if force is not None:
+            v = force
+        else:
+            v = not self.overlays.get(overlay, False)
         if not v:
             if overlay in self.overlays:
                 del self.overlays[overlay]

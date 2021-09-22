@@ -169,6 +169,8 @@ def render_animation(a, show=[], preview_scale=0.5, scale=1):
                 showlocalpng(a.rect, rp.output_path, scale=preview_scale)
         elif a.fmt == "svg":
             SkiaPen.SVG(res, a.rect, str(rp.output_path), scale=scale)
+    
+    clear_output()
 
 def show_video(a, loops=1, verbose=False, download=False, scale=0.5, audio=None, audio_loops=None,autoplay=False):
     ffex = FFMPEGExport(a,

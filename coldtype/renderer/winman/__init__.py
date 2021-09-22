@@ -138,12 +138,13 @@ class Winmans():
     
     def reset(self):
         [wm.reset() for wm in self.map()]
+        self.toggle_rendered(force=False)
     
     def terminate(self):
         [wm.terminate() for wm in self.map()]
     
-    def toggle_rendered(self):
-        self.renderer.state.toggle_overlay(Overlay.Rendered)
+    def toggle_rendered(self, force=None):
+        self.renderer.state.toggle_overlay(Overlay.Rendered, force=force)
         if Overlay.Rendered in self.renderer.state.overlays:
             self.mod_title("rendered")
         else:
