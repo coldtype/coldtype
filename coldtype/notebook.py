@@ -303,7 +303,7 @@ class notebook_animation(_animation):
         render_animation(self, show=[], scale=scale)
         return self
     
-    def show(self, loops=1, verbose=False, download=False, scale=0.5, audio=None, audio_loops=None, autoplay=False):
+    def show(self, loops=1, verbose=False, download=False, scale=0.5, audio=None, audio_loops=None, autoplay=True):
         if self.fmt == "svg":
             show_animation(self, start=False)
         else:
