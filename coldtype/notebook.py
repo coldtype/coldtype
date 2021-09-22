@@ -172,7 +172,7 @@ def render_animation(a, show=[], preview_scale=0.5, scale=1):
     
     clear_output()
 
-def show_video(a, loops=1, verbose=False, download=False, scale=0.5, audio=None, audio_loops=None,autoplay=False):
+def show_video(a, loops=1, verbose=False, download=False, scale=0.5, audio=None, audio_loops=None,autoplay=True):
     ffex = FFMPEGExport(a,
         loops=loops,
         audio=audio,
@@ -182,6 +182,7 @@ def show_video(a, loops=1, verbose=False, download=False, scale=0.5, audio=None,
     compressed_path = str(ffex.output_path.absolute())
     mp4 = open(compressed_path, 'rb').read()
     data_url = "data:video/mp4;base64," + b64encode(mp4).decode()
+    clear_output()
     display(HTML(f"""
     <video width={a.rect.w*scale} controls loop=true {'autoplay' if autoplay else ''}>
         <source src="%s" type="video/mp4">
