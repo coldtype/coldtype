@@ -1621,6 +1621,9 @@ class DraftingPen(RecordingPen, SHContext):
         return tv
     
     def nonlinear_transform(self, fn):
+        if hasattr(self, "_pens"):
+            return self.pmap(lambda i, p: p.nlt(fn))
+
         for idx, (move, pts) in enumerate(self.value):
             if len(pts) > 0:
                 _pts = []
