@@ -9,7 +9,7 @@ states = [
 
 loop = Loop(70, 12, len(states))
 
-@animation((1080, 1080/2), timeline=loop, storyboard=[0], bg=1)
+@animation((1080, 1080/2), timeline=loop, storyboard=[0], bg=1, render_bg=1)
 def render(f):
     state = f.a.t.current_phase(f.i).calc_state(states)
     return (StSt("COLDTYPE", Font.ColdtypeObviously(),
