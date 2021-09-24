@@ -352,6 +352,22 @@ class DATPen(DraftingPen):
                 p0 = self.value[idx-1][-1][-1]
                 curveTo_bars.line((p0, pts[0]))
                 curveTo_bars.line((pts[1], pts[2]))
+            elif t == "qCurveTo":
+                r = 6*scale
+                # x, y = pts[-1]
+                # curveTo_on.oval(Rect((x-r/2, y-r/2, r, r)))
+                # r = 4*scale
+                # x, y = pts[1]
+                # curveTo_off.oval(Rect((x-r/2, y-r/2, r, r)))
+                # x, y = pts[0]
+                # curveTo_off.oval(Rect((x-r/2, y-r/2, r, r)))
+                p0 = self.value[idx-1][-1][-1]
+                #curveTo_bars.line((p0, pts[0]))
+                for i, pt in enumerate(pts[0:]):
+                    x, y = pt
+                    lineTo.rect(Rect((x-r/2, y-r/2, r, r)))
+                    #curveTo_bars.line((pt, pts[i+1]))
+                #curveTo_bars.line((pts[1], pts[2]))
             elif t == "lineTo":
                 r = 6*scale
                 x, y = pts[0]
