@@ -488,6 +488,10 @@ class SourceReader():
 
 class Programs():
     @staticmethod
+    def Demo():
+        return SourceReader.LoadDemo("demo")[0]
+
+    @staticmethod
     def Midi(file=None,
         duration=None, bpm=None, text=True, fps=30,
         rect=(1080, 540), log=False, preview_only=True,
