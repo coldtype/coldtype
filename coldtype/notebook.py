@@ -1,5 +1,4 @@
-from coldtype import renderable
-from coldtype.blender import render
+from coldtype import *
 import json, os
 
 from pathlib import Path
@@ -258,10 +257,11 @@ class notebook_animation(_animation):
         return res
     
     def display(self):
-        self._interaction_file = Path(self.name + "_tmp_state.json")
+        self._interaction_file = Path("_coldtype_notebook_tmp/" + self.name + "_tmp_state.json")
         self._interaction_state = {}
 
         if not self._interaction_file.exists():
+            self._interaction_file.parent.mkdir(parents=True, exist_ok=True)
             self._interaction_file.write_text("{}")
         self.interactive_preview(self.storyboard[0])
 
