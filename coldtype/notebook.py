@@ -354,3 +354,5 @@ class notebook_aframe(_aframe):
 renderable = notebook_renderable
 animation = notebook_animation
 aframe = notebook_aframe
+
+clear_output()
