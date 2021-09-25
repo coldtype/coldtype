@@ -459,7 +459,11 @@ class DraftingPens(DraftingPen):
         the pen it was given as an argument;
         fn lambda receives `idx, p` as arguments"""
         for idx, p in enumerate(self._pens):
-            result = fn(idx, p)
+            arg_count = len(inspect.signature(fn).parameters)
+            if arg_count == 1:
+                result = fn(p)
+            else:
+                result = fn(idx, p)
             if result:
                 self._pens[idx] = result
         return self
