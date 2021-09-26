@@ -10,7 +10,7 @@ More info available at: [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
 
 setuptools.setup(
     name="coldtype",
-    version="0.6.9",
+    version="0.7.0",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",
@@ -76,7 +76,7 @@ setuptools.setup(
             "skia-pathops", # can this be taken from skia-python?
             "SimpleWebSocketServer",
             "watchdog<2.0.0", # https://github.com/gorakhargosh/watchdog/issues/702
-            "noise",
+            #"noise",
             "ufo2ft",
             "numpy",
         ],

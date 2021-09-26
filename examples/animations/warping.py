@@ -3,7 +3,7 @@ from coldtype.warping import warp_fn
 from coldtype.fx.skia import phototype
 
 Style.RegisterShorthandPrefix("≈", "~/Type/fonts/fonts")
-peshka = Font.Cacheable("≈/CoFoPeshkaVariableV0.5.ttf")
+peshka = Font.Find("CoFoPeshkaV")
 
 loop = Loop(150, 15, [ # some keyframes
     dict(wdth=0, wght=0, rotate=-15, leading=200,

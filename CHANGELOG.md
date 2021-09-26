@@ -54,6 +54,12 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ### Removed
 - Dependency on `PyOpenGL-accelerate` in the `[viewer]` extra — not really sure why that was there to begin with.
 
-## [0.6.9]
+## [0.6.9] - 2021-09-20
 ### Added
 - Restored some audio capabilities, via `audio=` keywords and the new `ConfigOption.EnableAudio`/`KeyboardShortcut.EnableAudio`
+
+## [0.7.0] - 2021-09-26
+### Fixed
+- General tidying, particularly for use in `[notebook]`
+### Removed
+- Dependency on `noise` in `[viewer]`

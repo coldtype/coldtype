@@ -4,6 +4,7 @@ from coldtype.beziers import CurveCutter, splitCubicAtT
 try:
     import noise
 except ImportError:
+    print("`pip install noise`")
     pass
 
 def warp_fn(xa=0, ya=-1, xs=300, ys=300, speed=5, base=0, octaves=1, mult=50, rz=1024):
