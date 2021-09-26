@@ -4,7 +4,7 @@ states = [
     dict(wdth=0, rotate=0, tu=300),
     dict(wdth=1, rotate=15, tu=-80),
     dict(wdth=0.5, rotate=-270, tu=330),
-    dict(wdth=1, rotate=25, tu=50)
+    dict(wdth=1, rotate=-25, tu=50)
 ]
 
 loop = Loop(70, 12, len(states))
