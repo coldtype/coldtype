@@ -42,7 +42,7 @@ def show(fmt="png", rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=
         raise Exception("pip install skia-python")
     
     def _display(pen:DATPen):
-        pen = pen.copy()
+        pen = pen.copy(with_data=1)
         pen.add_data("_notebook_shown", True)
         nonlocal rect, fmt
 
