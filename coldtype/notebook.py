@@ -261,7 +261,7 @@ class notebook_animation(_animation):
     
     def display(self):
         if not self.interactive:
-            self.preview(self.storyboard)
+            self.preview(*self.storyboard)
             return
 
         self._interaction_file = Path("_coldtype_notebook_tmp/" + self.name + "_tmp_state.json")
