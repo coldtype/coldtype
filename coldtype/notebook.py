@@ -236,10 +236,12 @@ class notebook_animation(_animation):
         preview_scale=0.5,
         render_bg=True,
         storyboard=None,
+        interactive=False,
         vars={},
         **kwargs
         ):
         self._display = display
+        self.interactive = interactive
         self.preview_scale = preview_scale
         self.vars = vars
 
@@ -258,6 +260,10 @@ class notebook_animation(_animation):
         return res
     
     def display(self):
+        if not self.interactive:
+            self.preview(self.storyboard)
+            return
+
         self._interaction_file = Path("_coldtype_notebook_tmp/" + self.name + "_tmp_state.json")
         self._interaction_state = {}
 
