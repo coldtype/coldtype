@@ -386,7 +386,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
             cl.settings.collision_settings.use_self_collision = True
         return self
     
-    def rigidbody(self, mode="active", kinematic=False, mesh=False, bounce=0, mass=1, deactivated=False, friction=0.5, linear_damping=0.04, angular_damping=0.1):
+    def rigidbody(self, mode="active", animated=False, mesh=False, bounce=0, mass=1, deactivated=False, friction=0.5, linear_damping=0.04, angular_damping=0.1):
         bpy.context.view_layer.objects.active = None
         bpy.context.view_layer.objects.active = self.bez
         self.bez.select_set(True)
@@ -394,7 +394,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
         if mesh:
             self.bez.rigid_body.collision_shape = "MESH"
         self.bez.rigid_body.type = mode.upper()
-        self.bez.rigid_body.kinematic = kinematic
+        self.bez.rigid_body.kinematic = animated
         self.bez.rigid_body.restitution = bounce
         self.bez.rigid_body.mass = mass
         self.bez.rigid_body.friction = friction
