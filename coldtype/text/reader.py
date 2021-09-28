@@ -859,7 +859,7 @@ class StyledString(FittableMixin):
             dp_atom = self._emptyPenWithAttrs()
             if self.style.no_shapes:
                 if callable(self.style.show_frames):
-                    dp_atom.rect(self.style.show_frames(g.frame))
+                    dp_atom.record(DATPen().rect(self.style.show_frames(g.frame)).outline(4))
                 #else:
                 #    dp_atom.rect(g.frame)
                 dp_atom.typographic = True
@@ -875,9 +875,11 @@ class StyledString(FittableMixin):
                 dp_atom.glyphName = g.name
                 if self.style.show_frames:
                     if callable(self.style.show_frames):
+                        #dp_atom.record(DATPen().rect(self.style.show_frames(g.frame)).outline(4))
                         dp_atom.rect(self.style.show_frames(g.frame))
                     else:
-                        dp_atom.rect(g.frame)
+                        dp_atom.record(DATPen().rect(g.frame).outline(4))
+                        #dp_atom.rect(g.frame)
                 if self.style.q2c:
                     dp_atom.q2c()
                 if self.style.removeOverlap:

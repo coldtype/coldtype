@@ -40,7 +40,7 @@ class TestText(unittest.TestCase):
         self.assertEqual(space.ambit().w, 250)
         self.assertEqual(txt.ambit().w, 1093)
         self.assertEqual(space.ambit().x, 400)
-        txt.align(r)
+        txt.align(r, th=1)
         self.assertEqual(space.ambit().x, 863.5)
         #txt.picklejar(r)
 
@@ -50,7 +50,7 @@ class TestText(unittest.TestCase):
         self.assertEqual(space.ambit().w, 500)
         self.assertEqual(txt.ambit().w, 1093+250)
         self.assertEqual(space.ambit().x, 400)
-        txt.align(r)
+        txt.align(r, th=1)
         self.assertEqual(space.ambit().x, 863.5-(250/2))
         #txt.picklejar(r)
 
@@ -61,7 +61,7 @@ class TestText(unittest.TestCase):
             .align(r)
             .picklejar(r))
         
-        self.assertEqual(co.ambit(th=0).w, 998.8)
+        self.assertAlmostEqual(co.ambit(th=0).w, 998.8)
         self.assertAlmostEqual(co.ambit(th=1).w, 1018.8, 1)
         self.assertEqual(len(co), 8)
         self.assertEqual(f1.font.fontPath.stem, "ColdtypeObviously-VF")

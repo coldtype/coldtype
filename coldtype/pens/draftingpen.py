@@ -717,6 +717,10 @@ class DraftingPen(RecordingPen, SHContext):
         return self
     
     def align(self, rect, x="mdx", y="mdy", th=True, tv=False, transformFrame=True, h=None, return_offset=False):
+        """Align this pen to another rect, defaults to the center;
+        `th` means true-horizontal (i.e. will disregard any invisible 'frame'
+        set on the pen (as in the case of glyphs returned from StSt/Glyphwise));
+        `tv` means true-vertical, which is the same but for the vertical dimension"""
         r = self.ambit(th, tv)
         if h is not None:
             r = r.seth(h)

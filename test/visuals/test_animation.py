@@ -10,7 +10,7 @@ Timeline.find_workarea = find_workarea
 @animation(rect=(1920, 1080), timeline=tl, bg=0)
 def render(f):
     pe = f.e("qeio", 1)
-    return DPS([
+    return PS([
         (StSt(chr(65+f.i), mutator, 1000, wdth=1-pe, wght=pe)
             .f(hsl(pe, s=0.6, l=0.6))
             .align(f.a.r)),

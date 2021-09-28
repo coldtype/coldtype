@@ -11,7 +11,7 @@ def test_scaling(f):
         Style("assets/ColdtypeObviously-VF.ttf", 800, wdth=1))
         .pen()
         .scale(px/1000)
-        .align(pr)
+        .align(pr, th=1)
         .f(0)
         .ch(precompose(pr, f.a.r)))
 

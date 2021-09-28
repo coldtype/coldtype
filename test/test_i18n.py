@@ -30,7 +30,7 @@ class TestI18N(unittest.TestCase):
         dps = (Slug("CO同步", style, obv)
             .fit(r.w-100)
             .pens()
-            .align(r))
+            .align(r, th=1))
         
         self.assertEqual(
             dps[-1].ambit().round(),
@@ -53,6 +53,8 @@ class TestI18N(unittest.TestCase):
         graf = Graf(slugs, r, leading=30)
         dps = graf.pens().xa().align(r)
 
+        #dps.picklejar(r)
+
         lgn = dps[-1][-1].glyphName
         lc = gn_to_c(lgn)
         
@@ -69,7 +71,7 @@ class TestI18N(unittest.TestCase):
     def test_hebrew(self):
         hebrew = Style(hebrew_font, 130)
         slug = Slug('קומפרסיה ועוד', hebrew)
-        dps = slug.pens().align(r)
+        dps = slug.pens().align(r, th=1)
 
         self.assertEqual(gn_to_c(dps[-1].glyphName), "ק")
         self.assertEqual(dps[-1].ambit().round(),
@@ -83,8 +85,8 @@ class TestI18N(unittest.TestCase):
         seg = SegmentedString(txt, dict(Arab=arabic, Latn=latin)).pens()
         slug = Slug(txt, arabic, latin).pens()
         dps = DATPens([
-            seg.align(r).translate(0, 100),
-            slug.align(r).translate(0, -100)])
+            seg.align(r, th=1).translate(0, 100),
+            slug.align(r, th=1).translate(0, -100)])
         
         self.assertEqual(dps[0][-1].glyphName, "plus")
         self.assertEqual(
@@ -101,7 +103,7 @@ class TestI18N(unittest.TestCase):
         line = DATPen().rect(Rect(100, 20))
         s2 = Slug("OY", Style(co, 300, wdth=0)).pens()
         shape = DATPen().oval(Rect(100, 100))
-        dps = DATPens([s1, line, s2, shape]).distribute().align(r)
+        dps = DATPens([s1, line, s2, shape]).distribute().align(r, th=1)
         self.assertEqual(dps.ambit().round(),
             Rect([127,138,737,225]))
         self.assertEqual(dps[1].ambit().round(),
