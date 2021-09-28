@@ -32,7 +32,7 @@ def blend_source(blender_app_path, py_file, blend_file, frame, output_dir, sampl
     """
     A facility for telling Blender to render a single frame in a background process
     """
-    expr = f"from coldtype.blender.render import frame_render; frame_render('{py_file}', {frame}, {samples}, {denoise})"
+    expr = f"from coldtype.blender.render import frame_render; frame_render(r'{py_file}', {frame}, {samples}, {denoise})"
     #print(expr)
     blend_frame(blender_app_path, py_file, blend_file, expr, output_dir, frame)
 
