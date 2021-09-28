@@ -19,7 +19,8 @@ def default_blender_app_path():
     elif sys == "Windows":
         return Path("C:/Program Files/Blender Foundation/Blender/blender.exe").resolve()
     else:
-        raise Exception("No default blender app path for this platform, please configure via .coldtype.py file and `BLENDER_APP_PATH=`")
+        return None
+        #raise Exception("No default blender app path for this platform, please configure via .coldtype.py file and `BLENDER_APP_PATH=`")
 
 
 class ConfigOption(Enum):
