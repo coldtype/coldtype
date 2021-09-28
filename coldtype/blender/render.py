@@ -8,24 +8,34 @@ def blender_launch_livecode(blender_app_path, file, command_file):
 
 
 def blend_frame(blender_app_path, py_file, blend_file, expr, output_dir, fi):
-    call = f"{blender_app_path} -b \"{blend_file}\" --python-expr \"{expr}\" -o \"{output_dir}####.png\" -f {fi}"
+    call = [
+        str(blender_app_path),
+        "-b", blend_file,
+        "--python-expr", f"{expr}",
+        "-o", f"{output_dir}####.png",
+        "-f", str(fi),
+    ]
+    #call = f"{blender_app_path} -b \"{blend_file}\" --python-expr \"{expr}\" -o \"{output_dir}####.png\" -f {fi}"
     print(f"Blending frame {fi}...")
     print(call)
     #return
     #os.system(call)
-    process = subprocess.Popen(call, stdout=subprocess.PIPE, shell=True)
-    log = ""
-    while True:
-        out = process.stdout.read(1).decode("utf-8")
-        log += out
-        if out == "" and process.poll() != None:
-            break
-        if "Error: Python:" in log:
-            print(log)
-            process.kill()
-            process.terminate()
-            break
-    print(log)
+    if True:
+        process = subprocess.Popen(call, stdout=subprocess.PIPE, shell=False)
+        log = ""
+        while True:
+            out = process.stdout.read(1).decode("utf-8")
+            log += out
+            if out == "" and process.poll() != None:
+                break
+            if "Error: Python:" in log:
+                print(log)
+                process.kill()
+                process.terminate()
+                break
+        print(log)
+    else:
+        print(subprocess.run(call, stdout=subprocess.PIPE, shell=True))
     print(f"/Blended frame {fi}.")
 
 def blend_source(blender_app_path, py_file, blend_file, frame, output_dir, samples=2, denoise=True):

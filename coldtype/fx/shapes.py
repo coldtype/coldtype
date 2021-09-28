@@ -71,3 +71,23 @@ def polygon(sides, rect):
         dp.align(rect)
         pen.record(dp)
     return _record
+
+
+def _lissajous_points(a, b, phase, radius, num_steps=340):
+    """I believe originally by Just van Rossum, via Very Cool Studio"""
+    points = []
+    for i in range(num_steps):
+        angle = 2 * math.pi * i / num_steps
+        x = radius * math.sin(a * angle + phase)
+        y = -radius * math.sin(b * angle)
+        points.append((x, y))
+    return points
+
+
+def lissajous(a, b, phase, radius, num_steps=340):
+    """draw a lissajous curve on the pen, though you'll probably need to align it"""
+    def _lissajous(pen):
+        return (pen
+            .line(_lissajous_points(a, b, phase, radius, num_steps))
+            .closePath())
+    return _lissajous
