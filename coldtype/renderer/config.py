@@ -1,5 +1,6 @@
 from enum import Enum
-import argparse, re, json
+import argparse, re, platform
+from pathlib import Path
 
 
 def true_false_or_none(x):
@@ -9,6 +10,16 @@ def true_false_or_none(x):
         return True
     else:
         return None
+    
+
+def default_blender_app_path():
+    sys = platform.system()
+    if sys == "Darwin":
+        return Path("/Applications/Blender.app/Contents/MacOS/blender").resolve()
+    elif sys == "Windows":
+        return Path("C:/Program Files/Blender Foundation/Blender/blender.exe").resolve()
+    else:
+        raise Exception("No default blender app path for this platform, please configure via .coldtype.py file and `BLENDER_APP_PATH=`")
 
 
 class ConfigOption(Enum):
@@ -48,6 +59,8 @@ class ConfigOption(Enum):
         lambda x: x.split(","))
     BlenderWatch = ("blender_watch", None, "bw",
         true_false_or_none)
+    BlenderAppPath = ("blender_app_path", default_blender_app_path(), "bap",
+        lambda x: str(x))
     Webviewer = ("webviewer", None, "wv",
         true_false_or_none)
     Websocket = ("websocket", None, "ws",

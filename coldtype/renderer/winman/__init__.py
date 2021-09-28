@@ -89,7 +89,7 @@ class Winmans():
             self.wv = WinmanWebview(self.config, self.renderer)
         
         if self.should_blender():
-            self.b3d = WinmanBlender()
+            self.b3d = WinmanBlender(self.config)
         
         if self.should_midi():
             self.midi = MIDIWatcher(self.config,

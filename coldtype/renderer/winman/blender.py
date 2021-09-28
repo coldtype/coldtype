@@ -4,14 +4,16 @@ from coldtype.renderer.winman.passthrough import WinmanPassthrough
 from coldtype.blender.render import blender_launch_livecode
 
 class WinmanBlender(WinmanPassthrough):
-    def __init__(self):
+    def __init__(self, config):
         self.subp = None
         self.command_file = None
+        self.blender_app_path = config.blender_app_path
+        print("BLENDER APP PATH", self.blender_app_path)
     
     def launch(self, blend_file):
         if self.subp:
             self.subp.kill()
-        self.subp = blender_launch_livecode(blend_file, self.command_file)
+        self.subp = blender_launch_livecode(self.blender_app_path, blend_file, self.command_file)
     
     def write_command(self, cmd, arg):
         try:

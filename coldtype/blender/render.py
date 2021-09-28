@@ -1,17 +1,14 @@
 import subprocess
 
-# TODO configurable
-BLENDER = "/Applications/Blender.app/Contents/MacOS/blender"
 
-
-def blender_launch_livecode(file, command_file):
+def blender_launch_livecode(blender_app_path, file, command_file):
     #call = f"{BLENDER} {file}"
     print(f"Opening blend file: {file}...")
-    return subprocess.Popen([BLENDER, file, "--python-expr", f"from coldtype.blender.watch import watch; watch('{str(command_file)}')"])
+    return subprocess.Popen([blender_app_path, file, "--python-expr", f"from coldtype.blender.watch import watch; watch('{str(command_file)}')"])
 
 
-def blend_frame(py_file, blend_file, expr, output_dir, fi):
-    call = f"{BLENDER} -b \"{blend_file}\" --python-expr \"{expr}\" -o \"{output_dir}####.png\" -f {fi}"
+def blend_frame(blender_app_path, py_file, blend_file, expr, output_dir, fi):
+    call = f"{blender_app_path} -b \"{blend_file}\" --python-expr \"{expr}\" -o \"{output_dir}####.png\" -f {fi}"
     print(f"Blending frame {fi}...")
     print(call)
     #return
