@@ -1,9 +1,21 @@
+import platform
 from enum import Enum
 
 try:
     import glfw
 except ImportError:
     glfw = None
+
+
+# def super_key():
+#     sys = platform.system()
+#     if sys == "Darwin":
+#         return glfw.MOD_SUPER
+#     elif sys == "Windows":
+#         return glfw.MOD_CONTROL
+#     else:
+#         return glfw.MOD_SUPER
+
 
 class KeyboardShortcut(Enum):
     PreviewPrev = "prev_prev"
@@ -546,7 +558,7 @@ SHORTCUTS = {
         [["alt"], "m"],
     ],
     KeyboardShortcut.MIDIControllersReset: [
-        [["ctrl"], "m"],
+        [["shift"], "m"],
     ]
 }
 
@@ -556,6 +568,9 @@ def shortcuts_keyed():
         modded = []
         for mods, symbol in v:
             modded.append([[symbol_to_glfw(s) for s in mods], symbol_to_glfw(symbol)])
+            if "cmd" in mods:
+                mod_mods = ["ctrl" if mod == "cmd" else mod for mod in mods]
+                modded.append([[symbol_to_glfw(s) for s in mod_mods], symbol_to_glfw(symbol)])
         keyed[k] = modded
     return keyed
 
