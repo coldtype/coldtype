@@ -28,13 +28,13 @@ def blend_frame(blender_app_path, py_file, blend_file, expr, output_dir, fi):
     print(log)
     print(f"/Blended frame {fi}.")
 
-def blend_source(py_file, blend_file, frame, output_dir, samples=2, denoise=True):
+def blend_source(blender_app_path, py_file, blend_file, frame, output_dir, samples=2, denoise=True):
     """
     A facility for telling Blender to render a single frame in a background process
     """
     expr = f"from coldtype.blender.render import frame_render; frame_render('{py_file}', {frame}, {samples}, {denoise})"
     #print(expr)
-    blend_frame(py_file, blend_file, expr, output_dir, frame)
+    blend_frame(blender_app_path, py_file, blend_file, expr, output_dir, frame)
 
 def frame_render(file, frame, samples, denoise=True):
     """

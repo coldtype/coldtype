@@ -280,7 +280,7 @@ class renderable():
         else:
             return res
     
-    def rasterize(self, content, render_pass):
+    def rasterize(self, config, content, render_pass):
         return False
     
     def _profile_render_all(self):

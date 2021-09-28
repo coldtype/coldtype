@@ -619,7 +619,7 @@ class Renderer():
             print("Self rasterizing")
             return True
         
-        did_rasterize = render.rasterize(content, rp)
+        did_rasterize = render.rasterize(self.source_reader.config, content, rp)
         if did_rasterize:
             return False
         

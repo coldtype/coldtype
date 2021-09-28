@@ -332,12 +332,12 @@ class b3d_animation(animation):
     def running_in_viewer(self):
         return not bpy
     
-    def rasterize(self, content, rp):
+    def rasterize(self, config, content, rp):
         if self.renderer == "skia":
-            return super().rasterize(content, rp)
+            return super().rasterize(config, content, rp)
         
         fi = rp.args[0].i
-        blend_source(self.filepath, self.blend, fi, self.pass_path(""), self.samples, denoise=self.denoise)
+        blend_source(config.blender_app_path, self.filepath, self.blend, fi, self.pass_path(""), self.samples, denoise=self.denoise)
         return True
     
     def baked_frames(self):
