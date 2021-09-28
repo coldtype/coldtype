@@ -4,7 +4,7 @@ import subprocess
 def blender_launch_livecode(blender_app_path, file, command_file):
     #call = f"{BLENDER} {file}"
     print(f"Opening blend file: {file}...")
-    return subprocess.Popen([blender_app_path, file, "--python-expr", f"from coldtype.blender.watch import watch; watch('{str(command_file)}')"])
+    return subprocess.Popen([blender_app_path, file, "--python-expr", f"from coldtype.blender.watch import watch; watch(r'{str(command_file)}')"])
 
 
 def blend_frame(blender_app_path, py_file, blend_file, expr, output_dir, fi):
