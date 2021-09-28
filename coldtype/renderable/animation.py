@@ -158,7 +158,7 @@ class animation(renderable, Timeable):
     
     def passes(self, action, renderer_state, indices=[]):
         frames = self.active_frames(action, renderer_state, indices)
-        return [RenderPass(self, action, self.pass_suffix(i), [Frame(i, self)]) for i in frames]
+        return [RenderPass(self, action, i, [Frame(i, self)]) for i in frames]
 
     def running_in_viewer(self):
         return True

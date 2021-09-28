@@ -68,6 +68,7 @@ class drawbot_script(renderable):
 
 class drawbot_animation(drawbot_script, animation):
     def passes(self, action, renderer_state, indices=[]):
+        return animation.passes(self, action, renderer_state, indices)
         if action in [
             Action.RenderAll,
             Action.RenderIndices,
@@ -75,7 +76,7 @@ class drawbot_animation(drawbot_script, animation):
             frames = super().active_frames(action, renderer_state, indices)
             passes = []
             for i in frames:
-                p = RenderPass(self, action, "{:04d}".format(i), [Frame(i, self)])
+                p = RenderPass(self, action, i, [Frame(i, self)])
                 passes.append(p)
             return passes
         else:

@@ -52,16 +52,17 @@ class Action(Enum):
 
 
 class RenderPass():
-    def __init__(self, render:"renderable", action, suffix, args):
+    def __init__(self, render:"renderable", action, idx, args):
         self.render = render
         self.action = action
         self.fn = self.render.func
         self.args = args
         self.path = None
         
+        self.idx = idx
         self.prefix = render.pass_prefix()
-        self.suffix = suffix
-        self.output_path = render.output_folder / f"{self.prefix}{self.suffix}.{render.fmt}"
+        self.output_path = render.pass_path(index=idx)
+        #self.output_path = render.output_folder / f"{self.prefix}{self.suffix}.{render.fmt}"
 
         self.i = None
         if hasattr(args[0], "i"):
@@ -205,7 +206,7 @@ class renderable():
             return self.output_folder / f"{self.pass_prefix()}{self.pass_suffix(index)}"
     
     def passes(self, action, renderer_state, indices=[]):
-        return [RenderPass(self, action, self.pass_suffix(), [self.rect])]
+        return [RenderPass(self, action, 0, [self.rect])]
 
     def package(self):
         pass
@@ -310,25 +311,17 @@ class skia_direct(renderable):
             return render_pass.fn(*render_pass.args, canvas)
 
 
-class svgicon(renderable):
-    def __init__(self, **kwargs):
-        super().__init__(fmt="svg", **kwargs)
+# class glyph(renderable):
+#     def __init__(self, glyphName, width=500, **kwargs):
+#         r = Rect(kwargs.get("rect", Rect(1000, 1000)))
+#         kwargs.pop("rect", None)
+#         self.width = width
+#         self.body = r.take(750, "mdy").take(self.width, "mdx")
+#         self.glyphName = glyphName
+#         super().__init__(rect=r, **kwargs)
     
-    def folder(self, filepath):
-        return filepath.stem
-
-
-class glyph(renderable):
-    def __init__(self, glyphName, width=500, **kwargs):
-        r = Rect(kwargs.get("rect", Rect(1000, 1000)))
-        kwargs.pop("rect", None)
-        self.width = width
-        self.body = r.take(750, "mdy").take(self.width, "mdx")
-        self.glyphName = glyphName
-        super().__init__(rect=r, **kwargs)
-    
-    def passes(self, action, renderer_state, indices=[]):
-        return [RenderPass(self, action, self.glyphName, [])]
+#     def passes(self, action, renderer_state, indices=[]):
+#         return [RenderPass(self, action, self.glyphName, [])]
 
 
 class fontpreview(renderable):
