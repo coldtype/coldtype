@@ -84,10 +84,12 @@ def _lissajous_points(a, b, phase, radius, num_steps=340):
     return points
 
 
-def lissajous(a, b, phase, radius, num_steps=340):
+def lissajous(a, b, phase_t, radius, num_steps=340, autophase=True):
     """draw a lissajous curve on the pen, though you'll probably need to align it"""
     def _lissajous(pen):
         return (pen
-            .line(_lissajous_points(a, b, phase, radius, num_steps))
+            .line(_lissajous_points(a, b,
+                2 * math.pi * phase_t if autophase else phase_t,
+                radius, num_steps))
             .closePath())
     return _lissajous
