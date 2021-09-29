@@ -3,7 +3,7 @@ Blender
 
 Behind the scenes, Coldtype uses the Skia library to rasterize two-dimensional vectors. But what if we want to rasterize *three-dimensional* graphics? One very fun option is to use Blender.
 
-Because Blender has an incredible Python API, it's not too difficult to use it programmatically — i.e. to write a normal Coldtype script, mark a few things (specific to Blender), and then let Blender & Coldtype take care of the translation to three dimensions. Here's an example:
+Because Blender has an incredible Python API, it's not too difficult to use it programmatically — i.e. to write a normal Coldtype script, mark a few things (with metadata specific to Blender), and then let Blender & Coldtype take care of the translation to three dimensions. Here's an example:
 
 .. code:: python
 
@@ -30,11 +30,17 @@ But before you can begin, you'll need to install Coldtype using the python bundl
 Installing
 ----------
 
-Installing packages in Blender requires locating the bundled python binary included with Blender itself. The path to this binary varies based on the version of Blender you have installed, but should look something like this:
+Installing packages in Blender requires locating the bundled python binary included with Blender itself. The path to this binary varies based on the version of Blender you have installed, but should look something like this on Mac:
 
 .. code:: bash
 
     /Applications/Blender.app/Contents/Resources/2.93/python/bin/python3.9
+
+And this on Windows (if you're using a forward-slash prompt like ``git bash``, which I would recommend for futzing with Python command line stuff):
+
+.. code:: bash
+
+    /c/Program Files/Blender Foundation/Blender/2.93/python/bin/python.exe
 
 The ``2.93`` and the ``3.9`` might be different depending on your installation.
 
@@ -56,18 +62,24 @@ Once you have all that out of the way, you can `pip install` things using that e
 
 .. code:: bash
 
-    b3d_python -m pip install "coldtype"
+    b3d_python -m pip install "coldtype[viewer]"
+
+Or if you'd like to skip the ``b3d_python`` aliasing part on Windows:
+
+.. code:: bash
+
+    /c/Program Files/Blender Foundation/Blender/2.93/python/bin/python.exe -m pip install "coldtype[viewer]"
 
 Running Code in Blender
 -----------------------
 
-To get a Blender window to show up, all you need to do is use the ``@b3d_animation`` decorator in place of the standard @animation decorator, and add `-bw 1` to the command-line invocation.
+To get a Blender window to show up, all you need to do is use the ``@b3d_animation`` decorator in place of the standard @animation decorator, and add ``-bw 1`` to the command-line invocation. Or, if you want a set of sensible CLI defaults, try ``-p b3d`` instead, which stands for ``--profile=b3d`` and sets ``-bw 1`` as part of some other settings in the b3d profile.
 
 So, to use an example from the Coldtype repo, you could run:
 
 .. code:: bash
 
-    coldtype examples/blender/varfont.py -bw 1
+    coldtype examples/blender/varfont.py -p b3d
 
 This should launch both a standard Coldtype window (with a 2D Skia render) and a Blender GUI window, which should automatically render the same thing as the 2D window, except in 3D. Put another way: you do not need to open Blender yourself, since Coldtype launches it as a background process (necessary to connect the live-code-reloading part of Coldtype to Blender). To quit both Coldtype and Blender, just hit ctrl-c in the terminal.
 

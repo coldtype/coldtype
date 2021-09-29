@@ -318,6 +318,7 @@ class b3d_animation(animation):
             do_match_length = True
 
         if bpy and do_match_length:
+            bpy.data.scenes[0].frame_start = 0
             bpy.data.scenes[0].frame_end = self.t.duration-1
         
         if bpy and self.match_fps:

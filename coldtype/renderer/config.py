@@ -61,7 +61,7 @@ class ConfigOption(Enum):
     BlenderWatch = ("blender_watch", None, "bw",
         true_false_or_none)
     BlenderAppPath = ("blender_app_path", default_blender_app_path(), "bap",
-        lambda x: str(x))
+        lambda x: Path(x).resolve())
     Webviewer = ("webviewer", None, "wv",
         true_false_or_none)
     Websocket = ("websocket", None, "ws",

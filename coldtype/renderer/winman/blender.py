@@ -8,7 +8,7 @@ class WinmanBlender(WinmanPassthrough):
         self.subp = None
         self.command_file = None
         self.blender_app_path = config.blender_app_path
-        print("BLENDER APP PATH", self.blender_app_path)
+        print("BLENDER APP PATH>", self.blender_app_path)
     
     def launch(self, blend_file):
         if self.subp:
