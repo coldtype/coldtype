@@ -172,22 +172,39 @@ def render_animation(a, show=[], preview_scale=0.5, scale=1):
     
     clear_output()
 
-def show_video(a, loops=1, verbose=False, download=False, scale=0.5, audio=None, audio_loops=None,autoplay=True):
+def show_video(a, fmt="h264", loops=1, verbose=False, download=False, scale=0.5, audio=None, audio_loops=None,autoplay=True):
     ffex = FFMPEGExport(a,
         loops=loops,
         audio=audio,
         audio_loops=audio_loops)
-    ffex.h264()
+    
+    if fmt == "h264":
+        ffex.h264()
+    elif fmt == "gif":
+        ffex.gif()
+    else:
+        print("Unrecognized fmt:", fmt)
+        return
+    
     ffex.write(verbose=verbose)
     compressed_path = str(ffex.output_path.absolute())
-    mp4 = open(compressed_path, 'rb').read()
-    data_url = "data:video/mp4;base64," + b64encode(mp4).decode()
-    clear_output()
-    display(HTML(f"""
-    <video width={a.rect.w*scale} controls loop=true {'autoplay' if autoplay else ''}>
-        <source src="%s" type="video/mp4">
-    </video>
-    """ % data_url))
+
+    if fmt == "h264":
+        mp4 = open(compressed_path, 'rb').read()
+        data_url = "data:video/mp4;base64," + b64encode(mp4).decode()
+        clear_output()
+        display(HTML(f"""
+        <video width={a.rect.w*scale} controls loop=true {'autoplay' if autoplay else ''}>
+            <source src="%s" type="video/mp4">
+        </video>
+        """ % data_url))
+    elif fmt == "gif":
+        gif = open(compressed_path, 'rb').read()
+        data_url = "data:image/gif;base64," + b64encode(gif).decode()
+        clear_output()
+        #display(HTML(f"<img width={rect.w*scale} src='data:image/gif;base64,{data_url}'/>"))
+        display(HTML(f"""<img width={a.rect.w*scale} src="%s"></img>""" % data_url))
+    
     if download:
         try:
             from google.colab import files
@@ -317,11 +334,22 @@ class notebook_animation(_animation):
         render_animation(self, show=[], scale=scale)
         return self
     
-    def show(self, loops=1, verbose=False, download=False, scale=0.5, audio=None, audio_loops=None, autoplay=True):
+    def show(self,
+        fmt="h264",
+        loops=1,
+        verbose=False,
+        download=False,
+        scale=0.5,
+        audio=None,
+        audio_loops=None,
+        autoplay=True
+        ):
         if self.fmt == "svg":
             show_animation(self, start=False)
         else:
+
             show_video(self,
+                fmt=fmt,
                 loops=loops,
                 verbose=verbose,
                 download=download,
