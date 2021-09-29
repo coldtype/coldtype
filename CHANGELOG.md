@@ -63,3 +63,8 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 - General tidying, particularly for use in `[notebook]`
 ### Removed
 - Dependency on `noise` in `[viewer]`
+
+## [0.7.1] - 2021-09-28
+### Added
+- Support for configurable `BLENDER_APP_PATH`
+- Better support for Windows-Blender workflow
