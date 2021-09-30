@@ -92,8 +92,10 @@ class generativefont(animation):
     def ShowGrid(render, result):
         if False: # flip to true if you don't want to see the grid
             return result
-
+        
+        defs = result[0].defined_pens()
         gfn = result[0].data.get("gfn")
+
         if not gfn:
             print("! No glyph found")
         else:
@@ -106,6 +108,7 @@ class generativefont(animation):
                     .line(bbox.en.extr(-100))
                     .line(bbox.ee.extr(-100))
                     .f(None).s(hsl(0.9, 1, a=0.5)).sw(4)),
+                defs.translate(gfn.lsb, 250),
                 (DATText(gfn.glyph_name, Style("Times", 48, load_font=0),
                     render.rect.inset(50)))])
     
@@ -113,7 +116,7 @@ class generativefont(animation):
         glyph_fn = self.glyph_fns[f.i]
         glyph_fn.add_font(self)
 
-        print(f"> drawing :{glyph_fn.glyph_name}:")
+        print(f"> drawing /{glyph_fn.glyph_name}")
         glyph_pen = glyph_fn.func(glyph_fn.frame).f(0)
 
         # shift over by the left-side-bearing
@@ -132,7 +135,7 @@ class generativefont(animation):
         This function loads the ufo that’s been created by the code above and displays it "as a font" (i.e. it compiles the ufo to a font and then uses the actual font to do standard font-display logic)
         """
         ufo = Font(self.ufo.path)
-        return (StyledString("ABC CBA",
+        return (StyledString(text,
             Style(ufo, 150))
             .pens()
             .align(r)

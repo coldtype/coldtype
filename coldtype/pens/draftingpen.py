@@ -1200,6 +1200,14 @@ class DraftingPen(RecordingPen, SHContext):
     def define(self, *args, **kwargs):
         return self.context_record("$", "defs", None, *args, **kwargs)
     
+    def defined_pens(self):
+        out = self.multi_pen_class([])
+        if self.defs:
+            for k, v in self.defs.items():
+                if isinstance(v, DraftingPen):
+                    out.append(v.add_data("key", k))
+        return out
+    
     def declare(self, *whatever):
         # TODO do something with what's declared somehow?
         return self

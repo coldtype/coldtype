@@ -11,6 +11,9 @@ class SHLookup():
             return self.values[k]
         else:
             return default
+        
+    def items(self):
+        return self.values.items()
     
     def __getitem__(self, k):
         return self.values[k]
