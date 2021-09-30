@@ -68,3 +68,7 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ### Added
 - Support for configurable `BLENDER_APP_PATH`
 - Better support for Windows-Blender workflow
+
+## [0.7.2] - 2021-09-29
+### Added
+- Support for gif export in `@notebook_animation.show`
