@@ -73,9 +73,6 @@ class Graf():
             dps.addFrame(Rect(r.x, r.y, r.w, r.h))
             pens.append(dps)
         return pens
-    
-    def fpa(self, rect=None):
-        return self.fit().pens().align(rect or self.container.ambit())
 
 
 class Lockup(FittableMixin):

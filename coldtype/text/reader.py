@@ -227,6 +227,9 @@ class Style():
             include_blanks=False,
             palette=0,
             capHeight=None,
+            ascender=None,
+            descender=None,
+            metrics="c",
             data={},
             layer=None,
             liga=True,
@@ -278,32 +281,23 @@ class Style():
         self.scaleVariations = kwargs.get("sv", scaleVariations)
         self.rollVariations = kwargs.get("rv", rollVariations)
         self.tag = tag
-        capHeight = kwargs.get("ch", capHeight)
+        
+        self.metrics = metrics
+        self.capHeight = kwargs.get("ch", capHeight)
+        self.descender = kwargs.get("dsc", descender)
+        self.ascender = kwargs.get("asc", ascender)
 
         self.no_shapes = no_shapes
         self.show_frames = show_frames
-    
-        #print(hash(self.font.font.ttFont))
 
-        try:
-            if "OS/2" in self.font.font.ttFont:
-                os2 = self.font.font.ttFont["OS/2"]
-                self.capHeight = os2.sCapHeight if hasattr(os2, "sCapHeight") else 0
-                if self.capHeight == 0:
-                    self.capHeight = os2.sTypoAscender if hasattr(os2, "sTypoAscender") else 750
-            elif hasattr(self.font.font, "info"):
-                self.capHeight = self.font.font.info.capHeight
-            elif hasattr(self.font.font, "defaultInfo"):
-                self.capHeight = self.font.font.defaultInfo.capHeight
-
-            if capHeight: # override whatever the font says
-                if capHeight != "x":
-                    self.capHeight = capHeight
-        except AttributeError:
-            pass
+        self.complete_metrics()
+        if "c" in self.metrics:
+            self._asc = self.capHeight
+        else:
+            self._asc = self.ascender
 
         if fitHeight:
-            self.fontSize = (fitHeight/self.capHeight)*1000
+            self.fontSize = (fitHeight/self._asc)*1000
         else:
             self.fontSize = font_size
 
@@ -405,6 +399,53 @@ class Style():
         del keyed["self"]
         keyed.update(kwargs)
         return Style(**keyed)
+    
+    def complete_metrics(self):
+        c = False
+        a = False
+        d = False
+
+        if self.capHeight is None and "c" in self.metrics:
+            c = True
+        elif self.ascender is None and "a" in self.metrics:
+            a = True
+
+        if self.descender is None and "d" in self.metrics:
+            d = True    
+
+        try:
+            if "OS/2" in self.font.font.ttFont:
+                os2 = self.font.font.ttFont["OS/2"]
+                if c:
+                    self.capHeight = os2.sCapHeight if hasattr(os2, "sCapHeight") else 0
+                    if self.capHeight == 0:
+                        self.capHeight = os2.sTypoAscender if hasattr(os2, "sTypoAscender") else 750
+                if a:
+                    self.ascender = os2.sTypoAscender if hasattr(os2, "sTypoAscender") else 0
+                    if self.ascender == 0:
+                        self.ascender = os2.sCapHeight if hasattr(os2, "sCapHeight") else 750
+                if d:
+                    self.descender = -os2.sTypoDescender if hasattr(os2, "sTypoDescender") else 250
+            
+            # TODO does this every happen?
+            elif hasattr(self.font.font, "info"):
+                if c:
+                    self.capHeight = self.font.font.info.capHeight
+                if a:
+                    self.ascender = self.font.font.info.ascender
+                if d:
+                    self.descender = -self.font.font.info.descender
+            
+            # TODO also does this ever happen?
+            elif hasattr(self.font.font, "defaultInfo"):
+                if c:
+                    self.capHeight = self.font.font.defaultInfo.capHeight
+                if a:
+                    self.ascender = self.font.font.defaultInfo.ascender
+                if d:
+                    self.descender = -self.font.font.defaultInfo.descender
+        except AttributeError:
+            pass
     
     def addVariations(self, variations, limits=dict()):
         for k, v in self.normalizeVariations(variations).items():
@@ -569,7 +610,10 @@ class StyledString(FittableMixin):
         #self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations)
         x = 0
         for glyph in self.glyphs:
-            glyph.frame = Rect(x+glyph.dx, glyph.dy, glyph.ax, self.style.capHeight)
+            glyph.frame = Rect(x+glyph.dx, glyph.dy, glyph.ax, self.style._asc)
+            if "d" in self.style.metrics:
+                glyph.frame = glyph.frame.expand(self.style.descender, "N")
+            
             x += glyph.ax
         self.getGlyphFrames()
     
@@ -645,7 +689,10 @@ class StyledString(FittableMixin):
         return self.getGlyphFrames()[-1].frame.point("SE").x
     
     def height(self):
-        return self.style.capHeight*self.scale()
+        asc = self.style._asc * self.scale()
+        if "d" in self.style.metrics:
+            asc += self.style.descender * self.scale()
+        return asc
     
     def textContent(self):
         return self.text
@@ -870,6 +917,10 @@ class StyledString(FittableMixin):
                     dp_atom.value = self._skia_scalePenToStyle(g, g.glyphDrawing.layers[0][0], idx).value
                 else:
                     dp_atom.value = self.scalePenToStyle(g, g.glyphDrawing.layers[0][0], idx).value
+                
+                if "d" in self.style.metrics:
+                    dp_atom.translate(0, self.style.descender*self.scale())
+                
                 dp_atom.typographic = True
                 dp_atom.addFrame(g.frame)
                 dp_atom.glyphName = g.name

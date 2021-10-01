@@ -51,9 +51,9 @@ class TestI18N(unittest.TestCase):
             Slug(lines[1], arabic, latin)
         ]
         graf = Graf(slugs, r, leading=30)
-        dps = graf.pens().xa().align(r)
+        dps = graf.pens().xalign(r).align(r)
 
-        #dps.picklejar(r)
+        dps.picklejar(r)
 
         lgn = dps[-1][-1].glyphName
         lc = gn_to_c(lgn)

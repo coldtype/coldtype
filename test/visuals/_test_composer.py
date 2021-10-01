@@ -98,7 +98,7 @@ def test_ar_multiline(r):
         Slug(lines[1], arabic, latin)
     ]
     graf = Graf(slugs, r, leading=30)
-    dps = graf.pens().xa()
+    dps = graf.pens()#.xa()
     #xa(dps[0])
     #xa(dps[1])
     #dps[0].xAlignToFrame("mdx")
