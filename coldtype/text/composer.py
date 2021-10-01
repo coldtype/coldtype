@@ -198,7 +198,7 @@ def StSt(text,
     font,
     font_size=24,
     rect=Rect(1080, 1080),
-    xa="mdx",
+    #xa="mdx",
     **kwargs):
 
     if not isinstance(text, str):
@@ -214,8 +214,8 @@ def StSt(text,
 
     if "\n" in text:
         lockup = Composer(rect, text, style, fit=fit, leading=leading).pens()
-        if xa:
-            lockup = lockup.xa(xa)
+        #if xa:
+        #    lockup = lockup.xa(xa)
         for l in lockup:
             l._frame = None
     else:
