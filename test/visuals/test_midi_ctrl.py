@@ -5,8 +5,9 @@ obv = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
 
 from pprint import pprint
 
-@renderable((1080, 1080), bg=1, rstate=1)
-def render(r, rstate):
+@animation((1080, 1080), bg=1, rstate=1)
+def render(f, rstate):
+    r = f.a.r
     nxl = LaunchControlXL(rstate.midi)
     nmn = LaunchkeyMini(rstate.midi)
 
