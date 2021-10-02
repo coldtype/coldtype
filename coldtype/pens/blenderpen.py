@@ -310,6 +310,12 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.set_visibility_at_frame(frame+1, False)
         return self
     
+    def show_at_frame(self, frame):
+        self.set_visibility_at_frame(0, False)
+        self.set_visibility_at_frame(frame-1, False)
+        self.set_visibility_at_frame(frame, True)
+        return self
+    
     def make_invisible(self):
         self.bez.cycles_visibility.camera = False
         self.bez.cycles_visibility.diffuse = False
@@ -513,6 +519,21 @@ class BlenderPen(DrawablePenMixin, BasePen):
             self.bez.location[1] = self.bez.location[1] + y
         if z is not None:
             self.bez.location[2] = self.bez.location[2] + z
+        return self
+    
+    def parent(self, parent_tag):
+        parent = bpy.data.objects[parent_tag]
+
+        bpy.context.view_layer.objects.active = None
+        self.bez.select_set(True)
+        parent.select_set(True)
+        bpy.context.view_layer.objects.active = parent
+        #yield self.bez
+        bpy.ops.object.parent_set(type="OBJECT")
+        
+        self.bez.select_set(False)
+        bpy.data.objects[parent_tag].select_set(False)
+        bpy.context.view_layer.objects.active = None
         return self
     
     def draw(self, collection, style=None, scale=0.01, cyclic=True, dn=False, plane=False, material="auto"):

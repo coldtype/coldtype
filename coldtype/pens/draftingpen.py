@@ -882,21 +882,21 @@ class DraftingPen(RecordingPen, SHContext):
         dps = self.multi_pen_class()
         for layer in layers:
             if callable(layer):
-                dps.append(layer(self.copy()))
+                dps.append(layer(self.copy(with_data=1)))
             elif isinstance(layer, str):
-                dp = self.copy()
+                dp = self.copy(with_data=1)
                 dps.append(dp.sh("ctx" + layer)[0])
             else:
-                dps.append(self.copy())
+                dps.append(self.copy(with_data=1))
         return dps
     
     def layerfn(self, times, fn=None):
         dps = self.multi_pen_class()
         for x in range(0, times):
             if fn:
-                dps.append(fn(x, self.copy()))
+                dps.append(fn(x, self.copy(with_data=1)))
             else:
-                dps.append(self.copy())
+                dps.append(self.copy(with_data=1))
         return dps
     
     # Iteration-manipulation

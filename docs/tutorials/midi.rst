@@ -6,11 +6,11 @@ There are two primary uses for MIDI in Coldtype programs, and they're kind of co
 Using MIDI controllers
 ----------------------
 
-If you launch coldtype with the ``-mi`` or ``--midi-info`` flag, you should see a list of MIDI controllers/devices currently available on your system.
+If you launch coldtype with the ``-mi 1`` or ``--midi-info=1`` flag, you should see a list of MIDI controllers/devices currently available on your system.
 
 I always have a `Launch Control XL <https://novationmusic.com/en/launch/launch-control-xl>`_ plugged into my computer, and if you don't already have a MIDI Controller, I highly recommend that one, since it's got faders, which are a lot of fun in combination with real-time dynamic typography, and it's great for mixing in Ableton, which has nothing to do with this.
 
-With that in mind, I'll use the Launch Control as an example. So with that device plugged in, when I run ``coldtype -mi`` in my coldtype virtualenv, I see the following print out in my terminal window:
+With that in mind, I'll use the Launch Control as an example. So with that device plugged in, when I run ``coldtype -mi 1`` in my coldtype virtualenv, I see the following print out in my terminal window:
 
 .. code::txt
 
@@ -36,7 +36,7 @@ Once you’re there, you’ll want to add some Python code to configure the MIDI
         }
     }
 
-Now save that file and relaunch coldtype with the same invocation for midi-info, i.e. ``coldtype -mi``
+Now save that file and relaunch coldtype with the same invocation for midi-info, i.e. ``coldtype -mi 1``
 
 Now if you hit some buttons on your midi controller, you should see some identifying information about those buttons, like what number they correspond to.
 
@@ -62,7 +62,7 @@ N.B. The actions defined in the ``"note_on"`` dict are completely optional, but 
 
 **Faders**: Of course, triggering actions isn't the exciting use of a MIDI controller in Coldtype. The exciting thing is hooking up a knob or fader to a variable, meaning you can quickly and easily modify a design otherwise defined completely in code.
 
-If you run coldtype again with the ``-mi`` flag (``coldtype -mi``), and move around a fader or a knob on your controller, you should see print outs like this:
+If you run coldtype again with the ``-mi 1`` flag (``coldtype -mi 1``), and move around a fader or a knob on your controller, you should see print outs like this:
 
 ``Launch Control XL <CONTROLLER: 77 ("Sound Control 8"), value: 51, channel: 9>``
 

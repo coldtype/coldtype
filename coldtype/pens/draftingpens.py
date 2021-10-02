@@ -495,9 +495,9 @@ class DraftingPens(DraftingPen):
             else:
                 arg_count = len(inspect.signature(fn).parameters)
                 if arg_count == 1:
-                    fn(p)
+                    self[idx] = fn(p)
                 else:
-                    fn(idx, p)
+                    self[idx] = fn(idx, p)
         return self
     
     def pfilter(self, fn):
