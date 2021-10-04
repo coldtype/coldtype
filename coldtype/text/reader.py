@@ -144,10 +144,15 @@ class Font():
         return axes
     
     @staticmethod
-    def Cacheable(path):
+    def Cacheable(path, suffix=None):
         if path not in FontCache:
-            FontCache[path] = Font(path, cacheable=True).load()
+            FontCache[path] = Font(path, cacheable=True, suffix=suffix).load()
         return FontCache[path]
+    
+    @staticmethod
+    def GDrive(id, suffix):
+        dwnl = f"https://drive.google.com/uc?id={id}&export=download"
+        return Font.Cacheable(dwnl, suffix=suffix)
 
     @lru_cache()
     def List(regex, regex_dir=None, log=False):
