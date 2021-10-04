@@ -111,7 +111,6 @@ class Font():
             sfx = url.suffix
             if not sfx:
                 sfx = suffix
-            print(url, sfx)
             with tempfile.NamedTemporaryFile(prefix="coldtype_download_temp", suffix="."+sfx, delete=False) as tmp:
                 urlretrieve(path, tmp.name)
                 path = tmp.name
