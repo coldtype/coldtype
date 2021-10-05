@@ -104,7 +104,12 @@ FontCache = {}
 
 class Font():
     # TODO support glyphs?
-    def __init__(self, path, number=0, cacheable=False, suffix=None):
+    def __init__(self, path,
+        number=0,
+        cacheable=False,
+        suffix=None,
+        delete_tmp=False
+        ):
         tmp = None
         if isinstance(path, str) and path.startswith("http"):
             url = Path(path)
@@ -124,7 +129,7 @@ class Font():
         self._loaded = False
         self.load()
 
-        if tmp:
+        if tmp and delete_tmp:
             os.unlink(tmp.name)
     
     def load(self):
@@ -143,15 +148,18 @@ class Font():
         return axes
     
     @staticmethod
-    def Cacheable(path, suffix=None):
+    def Cacheable(path, suffix=None, delete_tmp=False):
         if path not in FontCache:
-            FontCache[path] = Font(path, cacheable=True, suffix=suffix).load()
+            FontCache[path] = Font(path,
+                cacheable=True,
+                suffix=suffix,
+                delete_tmp=delete_tmp).load()
         return FontCache[path]
     
     @staticmethod
-    def GDrive(id, suffix):
+    def GDrive(id, suffix, delete=True):
         dwnl = f"https://drive.google.com/uc?id={id}&export=download"
-        return Font.Cacheable(dwnl, suffix=suffix)
+        return Font.Cacheable(dwnl, suffix=suffix, delete_tmp=delete)
 
     @lru_cache()
     def List(regex, regex_dir=None, log=False):
