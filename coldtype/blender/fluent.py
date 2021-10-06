@@ -1,3 +1,4 @@
+from coldtype.time.timeline import Timeline
 import math
 from contextlib import contextmanager
 
@@ -18,6 +19,41 @@ class BpyWorld():
         except KeyError:
             self.scene = None
     
+    def deselect_all(self):
+        bpy.ops.object.select_all(action='DESELECT')
+        return self
+    
+    def delete_previous(self, collection="Coldtype"):
+        self.deselect_all()
+        BpyCollection.Find(collection).delete_hierarchy()
+        return self
+    
+    def timeline(self, t:Timeline):
+        self.scene.frame_start = 0
+        self.scene.frame_end = t.duration-1
+
+        if isinstance(t.fps, float):
+            self.scene.render.fps = round(t.fps)
+            self.scene.render.fps_base = 1.001
+        else:
+            self.scene.render.fps = t.fps
+            self.scene.render.fps_base = 1
+        
+        return self
+    
+    def render_settings(self, samples=16, denoiser=False):
+        if samples > 0:
+            self.scene.cycles.samples = samples
+        
+        if denoiser:
+            self.scene.cycles.denoiser = "OPENIMAGEDENOISE" if denoiser == True else denoiser
+            self.scene.cycles.use_denoising = True
+        else:
+            if denoiser is False:
+                self.scene.cycles.use_denoising = False
+        
+        return self
+    
     @contextmanager
     def rigidbody(self, speed=1, frame_end=250):
         try:
@@ -33,6 +69,27 @@ class BpyWorld():
                 rw.time_scale = speed
                 rw.point_cache.frame_end = frame_end
         return self
+
+
+class BpyCollection():
+    @staticmethod
+    def Find(tag):
+        bco = BpyCollection()
+        try:
+            bco.collection = bpy.data.collections[tag]
+        except KeyError:
+            bco.collection = None
+        return bco
+
+    def delete_hierarchy(self):
+        if not self.collection: return
+
+        bpy.context.view_layer.objects.active = None
+        for obj in self.collection.objects:
+            BpyObj.Find(obj.name).select()
+        bpy.ops.object.delete()
+        bpy.data.collections.remove(self.collection)
+        return None
 
 
 class BpyObj():
@@ -52,16 +109,26 @@ class BpyObj():
         else:
             return BpyObj.Find(obj_or_tag)
     
+    def select(self, selected=True):
+        self.obj.select_set(selected)
+        return self
+    
     @contextmanager
-    def obj_selected(self):
+    def obj_selected(self, yield_self=False):
         if not self.obj:
-            yield
+            if yield_self:
+                yield None
+            else:
+                yield
             return
         
         bpy.context.view_layer.objects.active = None
         bpy.context.view_layer.objects.active = self.obj
         self.obj.select_set(True)
-        yield
+        if yield_self:
+            yield self
+        else:
+            yield
         self.obj.select_set(False)
         bpy.context.view_layer.objects.active = None
     
@@ -85,9 +152,17 @@ class BpyObj():
         bpy.context.view_layer.objects.active = None
         return self
     
-    def parent(self, parent_tag):
-        with self.obj_selection_sequence(parent_tag) as _:
+    def parent(self, parent_tag, hide=False):
+        with self.obj_selection_sequence(parent_tag) as o:
             bpy.ops.object.parent_set(type="OBJECT")
+        if hide:
+            with o.obj_selected():
+                o.hide()
+        return self
+    
+    def hide(self, hide=True):
+        self.obj.hide_viewport = hide
+        self.obj.hide_render = hide
         return self
     
     # Geometry Methods
