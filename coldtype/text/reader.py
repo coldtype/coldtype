@@ -1,8 +1,9 @@
 from pathlib import Path
 from collections import OrderedDict
 from functools import partial, lru_cache
+from urllib.request import urlretrieve
 
-import unicodedata, math, os, re
+import unicodedata, math, os, re, tempfile
 
 from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
@@ -103,7 +104,23 @@ FontCache = {}
 
 class Font():
     # TODO support glyphs?
-    def __init__(self, path, number=0, cacheable=False):
+    def __init__(self, path,
+        number=0,
+        cacheable=False,
+        suffix=None,
+        delete_tmp=False
+        ):
+        tmp = None
+        if isinstance(path, str) and path.startswith("http"):
+            url = Path(path)
+            sfx = url.suffix
+            if not sfx:
+                sfx = suffix
+            with tempfile.NamedTemporaryFile(prefix="coldtype_download_temp", suffix="."+sfx, delete=False) as tmp:
+                urlretrieve(path, tmp.name)
+                path = tmp.name
+                tmp = tmp
+        
         self.path = Path(normalize_font_path(path))
         numFonts, opener, getSortInfo = getOpener(self.path)
         self.font:BaseFont = opener(self.path, number)
@@ -111,6 +128,9 @@ class Font():
         self.cacheable = cacheable
         self._loaded = False
         self.load()
+
+        if tmp and delete_tmp:
+            os.unlink(tmp.name)
     
     def load(self):
         if self._loaded:
@@ -128,10 +148,18 @@ class Font():
         return axes
     
     @staticmethod
-    def Cacheable(path):
+    def Cacheable(path, suffix=None, delete_tmp=False):
         if path not in FontCache:
-            FontCache[path] = Font(path, cacheable=True).load()
+            FontCache[path] = Font(path,
+                cacheable=True,
+                suffix=suffix,
+                delete_tmp=delete_tmp).load()
         return FontCache[path]
+    
+    @staticmethod
+    def GDrive(id, suffix, delete=True):
+        dwnl = f"https://drive.google.com/uc?id={id}&export=download"
+        return Font.Cacheable(dwnl, suffix=suffix, delete_tmp=delete)
 
     @lru_cache()
     def List(regex, regex_dir=None, log=False):

@@ -37,8 +37,18 @@ for key, (w, h) in list(COMMON_PAPER_SIZES.items()):
 
 
 def align(b, rect, x=Edge.CenterX, y=Edge.CenterY):
-    x = txt_to_edge(x)
-    y = txt_to_edge(y)
+    if x in ["NE", "SE", "SW", "NW"]:
+        if x == "NE":
+            x, y = Edge.MaxX, Edge.MaxY
+        elif x == "NW":
+            x, y = Edge.MinX, Edge.MaxY
+        elif x == "SW":
+            x, y = Edge.MinX, Edge.MinY
+        elif x == "SE":
+            x, y = Edge.MaxX, Edge.MinY
+    else:
+        x = txt_to_edge(x)
+        y = txt_to_edge(y)
     
     xoff = 0
     if x != None:
@@ -359,6 +369,8 @@ class Rect(Geometrical):
         """
         edge = txt_to_edge(edge)
         return Rect(subtract(self.rect(), amount, edge))
+    
+    drop = subtract
 
     def expand(self, amount, edge):
         edges = None
