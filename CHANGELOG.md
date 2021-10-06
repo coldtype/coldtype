@@ -72,3 +72,7 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ## [0.7.2] - 2021-09-29
 ### Added
 - Support for gif export in `@notebook_animation.show`
+
+## [0.7.3] - 2021-10-?
+### Added
+- `strip=` kwarg on StSt (defaulting to `True`) so incoming text is automatically stripped (but can be overriden as in the `Glyphwise` use of `StSt`)
