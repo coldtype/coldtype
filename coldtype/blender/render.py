@@ -1,4 +1,4 @@
-import subprocess
+import subprocess, time
 
 
 def blender_launch_livecode(blender_app_path, file, command_file):
@@ -38,7 +38,7 @@ def blend_frame(blender_app_path, py_file, blend_file, expr, output_dir, fi):
         print(subprocess.run(call, stdout=subprocess.PIPE, shell=True))
     print(f"/Blended frame {fi}.")
 
-def blend_source(blender_app_path, py_file, blend_file, frame, output_dir, samples=2, denoise=True):
+def blend_source(blender_app_path, py_file, blend_file, frame, output_dir, samples=-1, denoise=False):
     """
     A facility for telling Blender to render a single frame in a background process
     """
@@ -46,21 +46,28 @@ def blend_source(blender_app_path, py_file, blend_file, frame, output_dir, sampl
     #print(expr)
     blend_frame(blender_app_path, py_file, blend_file, expr, output_dir, frame)
 
-def frame_render(file, frame, samples, denoise=True):
+def frame_render(file, frame, samples=-1, denoise=False):
     """
     A facility for easy-rendering from within a backgrounded blender
     """
     import bpy
     from coldtype.renderer.reader import SourceReader
     from coldtype.blender import walk_to_b3d
-    bpy.data.scenes[0].cycles.samples = samples
+    
+    bpy.data.scenes[0].frame_set(frame)
+    
+    if samples > 0:
+        bpy.data.scenes[0].cycles.samples = samples
+    
     if denoise:
         bpy.data.scenes[0].cycles.denoiser = "OPENIMAGEDENOISE"
         bpy.data.scenes[0].cycles.use_denoising = True
-    else:
-        bpy.data.scenes[0].cycles.use_denoising = False
+
+    #time.sleep(1)
 
     sr = SourceReader(file)
     for r, res in sr.frame_results(frame, class_filters=[r"^b3d_.*$"]):
         walk_to_b3d(res, dn=True, renderable=r)
     sr.unlink()
+
+    #time.sleep(1)

@@ -3,10 +3,9 @@ from contextlib import contextmanager
 
 try:
     import bpy
-    from mathutils import Vector
+    from mathutils import Vector, Euler
 except ImportError:
     bpy = None
-    Vector = None
     pass
 
 # TODO easy, chainable interface for
@@ -20,7 +19,7 @@ class BpyWorld():
             self.scene = None
     
     @contextmanager
-    def rigidbody(self, speed=1):
+    def rigidbody(self, speed=1, frame_end=250):
         try:
             bpy.ops.rigidbody.world_remove()
             yield
@@ -32,6 +31,7 @@ class BpyWorld():
             rw = self.scene.rigidbody_world
             if rw:
                 rw.time_scale = speed
+                rw.point_cache.frame_end = frame_end
         return self
 
 
@@ -93,12 +93,30 @@ class BpyObj():
     # Geometry Methods
 
     def rotate(self, x=None, y=None, z=None):
+        if isinstance(x, Euler):
+            self.obj.rotation_euler = x
+            return self
+        
         if x is not None:
             self.obj.rotation_euler[0] = math.radians(x)
         if y is not None:
             self.obj.rotation_euler[1] = math.radians(y)
         if z is not None:
             self.obj.rotation_euler[2] = math.radians(z)
+        return self
+    
+    def apply_transform(self,
+        location=True,
+        rotation=True,
+        scale=True,
+        properties=True
+        ):
+        with self.obj_selected():
+            bpy.ops.object.transform_apply(
+                location=location,
+                rotation=rotation,
+                scale=scale,
+                properties=properties)
         return self
     
     def origin_to_geometry(self):
@@ -120,6 +138,10 @@ class BpyObj():
         return self
     
     def locate(self, x=None, y=None, z=None):
+        if isinstance(x, Vector):
+            self.obj.location = x
+            return self
+        
         if x is not None:
             self.obj.location[0] = x
         if y is not None:

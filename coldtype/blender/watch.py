@@ -120,6 +120,11 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
         if statics:
             bpy.app.driver_namespace["_coldtypes"] = out
+
+        for o in out:
+            if hasattr(o, "post_run") and o.post_run:
+                o.post_run()
+        
         return animation_found
 
     def reimport(self, arg):

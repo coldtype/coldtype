@@ -138,6 +138,8 @@ def walk_to_b3d(result:DATPens,
     center_rect = renderable.rect
 
     def walker(p:DATPen, pos, data):
+        bp = None
+
         if pos == 0:
             bdata = p.data.get("b3d")
             if not bdata:
@@ -203,10 +205,11 @@ def walk_to_b3d(result:DATPens,
                 
                 built[p.tag()] = (p, bp)
 
-                b3d_post = p.data.get("b3d_post")
-                if b3d_post:
-                    for post in b3d_post:
-                        post(bp)
+        if pos == 0 or pos == 1:
+            b3d_post = p.data.get("b3d_post")
+            if b3d_post:
+                for post in b3d_post:
+                    post(bp)
                 
     result.walk(walker)
 
@@ -215,10 +218,12 @@ class b3d_renderable(renderable):
         rect=(1080, 1080),
         center=(0, 0),
         upright=False,
+        post_run=None,
         **kwargs
         ):
         self.center = center
         self.upright = upright
+        self.post_run = post_run
         super().__init__(rect, **kwargs)
 
     def post_read(self):
@@ -235,8 +240,8 @@ class b3d_renderable(renderable):
 class b3d_animation(animation):
     def __init__(self,
         rect=(1080, 1080),
-        samples=16,
-        denoise=True,
+        samples=-1,
+        denoise=False,
         blend=None,
         match_length=True,
         match_output=True,
