@@ -195,11 +195,15 @@ def StSt(text,
     font,
     font_size=24,
     rect=Rect(1080, 1080),
+    strip=True,
     #xa="mdx",
     **kwargs):
 
     if not isinstance(text, str):
         text = "\n".join(text)
+    else:
+        if strip:
+            text = text.strip()
     
     if isinstance(font, Style):
         style = font
@@ -254,7 +258,7 @@ def Glyphwise(st, styler, start=0, line=0):
                 return styles
 
     if len(st) == 1:
-        return StSt(st, run_styler(GlyphwiseGlyph(0, st, 0, 0, line, 0))[0])
+        return StSt(st, run_styler(GlyphwiseGlyph(0, st, 0, 0, line, 0))[0], strip=False)
 
     try:
         lines = st.split("\n")
@@ -305,14 +309,14 @@ def Glyphwise(st, styler, start=0, line=0):
         test_str = "".join([t if isinstance(t, str) else "".join(t) for t in test])
         #print(c, test_str, target, test, tcount)
 
-        tkon = StSt(test_str, skon.mod(no_shapes=True))
+        tkon = StSt(test_str, skon.mod(no_shapes=True), strip=False)
         if skon_tweak is None:
-            tkoff = StSt(test_str, skoff)
+            tkoff = StSt(test_str, skoff, strip=False)
             tkoff_tweak = None
         else:
-            tkoff = StSt(test_str, skoff.mod(no_shapes=True))
+            tkoff = StSt(test_str, skoff.mod(no_shapes=True), strip=False)
             skoff_tweak = skon_tweak.mod(kern=0, kern_pairs={}, kp={}, tu=0)
-            tkoff_tweak = StSt(test_str, skoff_tweak)
+            tkoff_tweak = StSt(test_str, skoff_tweak, strip=False)
 
         if idx == 0:
             if tkoff_tweak:
