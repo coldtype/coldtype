@@ -1,9 +1,12 @@
-from coldtype.sh import context
+import math
 from contextlib import contextmanager
+
 try:
     import bpy
+    from mathutils import Vector
 except ImportError:
     bpy = None
+    Vector = None
     pass
 
 # TODO easy, chainable interface for
@@ -33,11 +36,21 @@ class BpyWorld():
 
 
 class BpyObj():
-    def __init__(self, tag):
+    @staticmethod
+    def Find(tag):
+        bobj = BpyObj()
         try:
-            self.obj = bpy.data.objects[tag]
+            bobj.obj = bpy.data.objects[tag]
         except KeyError:
-            self.obj = None
+            bobj.obj = None
+        return bobj
+    
+    @staticmethod
+    def Norm(obj_or_tag):
+        if isinstance(obj_or_tag, BpyObj):
+            return obj_or_tag
+        else:
+            return BpyObj.Find(obj_or_tag)
     
     @contextmanager
     def obj_selected(self):
@@ -54,22 +67,77 @@ class BpyObj():
     
     @contextmanager
     def obj_selection_sequence(self, other_tag):
-        other = BpyObj(other_tag)
+        other = BpyObj.Norm(other_tag)
+        
         if not self.obj or not other.obj:
-            yield None, None
+            yield None
             return
 
         bpy.context.view_layer.objects.active = None
         self.obj.select_set(True)
         other.obj.select_set(True)
         bpy.context.view_layer.objects.active = other.obj
-        yield self.obj, other.obj
+        yield other
         bpy.ops.object.parent_set(type="OBJECT")
         
-        self.bez.select_set(False)
+        self.obj.select_set(False)
         other.obj.select_set(False)
         bpy.context.view_layer.objects.active = None
         return self
+    
+    def parent(self, parent_tag):
+        with self.obj_selection_sequence(parent_tag) as _:
+            bpy.ops.object.parent_set(type="OBJECT")
+        return self
+    
+    # Geometry Methods
+
+    def rotate(self, x=None, y=None, z=None):
+        if x is not None:
+            self.obj.rotation_euler[0] = math.radians(x)
+        if y is not None:
+            self.obj.rotation_euler[1] = math.radians(y)
+        if z is not None:
+            self.obj.rotation_euler[2] = math.radians(z)
+        return self
+    
+    def origin_to_geometry(self):
+        with self.obj_selected():
+            bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
+        return self
+    
+    def origin_to_cursor(self):
+        with self.obj_selected():
+            bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+        return self
+    
+    def set_origin(self, x, y, z):
+        #saved_location = bpy.context.scene.cursor.location
+        bpy.context.scene.cursor.location = Vector((x, y, z))
+        with self.obj_selected():
+            bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+        bpy.context.scene.cursor.location = Vector((0, 0, 0))
+        return self
+    
+    def locate(self, x=None, y=None, z=None):
+        if x is not None:
+            self.obj.location[0] = x
+        if y is not None:
+            self.obj.location[1] = y
+        if z is not None:
+            self.obj.location[2] = z
+        return self
+    
+    def locate_relative(self, x=None, y=None, z=None):
+        if x is not None:
+            self.obj.location[0] = self.obj.location[0] + x
+        if y is not None:
+            self.obj.location[1] = self.obj.location[1] + y
+        if z is not None:
+            self.obj.location[2] = self.obj.location[2] + z
+        return self
+
+    # Convenience Methods
 
     def rigidbody(self,
         mode="active",

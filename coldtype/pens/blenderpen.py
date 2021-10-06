@@ -4,6 +4,7 @@ from coldtype.beziers import CurveCutter, raise_quadratic
 from coldtype.pens.drawablepen import DrawablePenMixin
 from fontTools.pens.basePen import BasePen
 from coldtype.color import Gradient, Color, normalize_color
+from coldtype.blender.fluent import BpyObj
 
 import math
 import random
@@ -134,7 +135,7 @@ class BPH():
         return Vector((x, y, z))
 
 
-class BlenderPen(DrawablePenMixin, BasePen):
+class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
     def __init__(self, dat):
         super().__init__(None)
         self.dat = dat
@@ -183,7 +184,7 @@ class BlenderPen(DrawablePenMixin, BasePen):
         self.spline = None
     
     def materials(self):
-        return self.bez.data.materials
+        return self.obj.data.materials
 
     def bsdf(self):
         if self.material:
@@ -224,18 +225,18 @@ class BlenderPen(DrawablePenMixin, BasePen):
             return
         if weight and color and color.a > 0:
             #print("STROKE>>>", self.tag, weight, color)
-            self.bez.data.fill_mode = "NONE"
+            self.obj.data.fill_mode = "NONE"
             if isinstance(color, Gradient):
                 pass
             else:
                 self.fill(color)
             
     def extrude(self, amount=0.1):
-        self.bez.data.extrude = amount
+        self.obj.data.extrude = amount
         return self
     
     def bevel(self, depth=0.02):
-        self.bez.data.bevel_depth = depth
+        self.obj.data.bevel_depth = depth
         return self
     
     def metallic(self, amount=1):
@@ -287,21 +288,21 @@ class BlenderPen(DrawablePenMixin, BasePen):
             if callable(value):
                 value(self)
             else:
-                exec(f"self.bez.{path} = {value}")
-        self.bez.keyframe_insert(data_path=path)
+                exec(f"self.obj.{path} = {value}")
+        self.obj.keyframe_insert(data_path=path)
         return self
-        #setattr(self.bez, path, value)
+        #setattr(self.obj, path, value)
 
     def hide(self, hide):
-        self.bez.hide_viewport = hide
-        self.bez.hide_render = hide
+        self.obj.hide_viewport = hide
+        self.obj.hide_render = hide
         return self
     
     def set_visibility_at_frame(self, frame, visibility):
         bpy.data.scenes[0].frame_set(frame)
         self.hide(not visibility)
-        self.bez.keyframe_insert(data_path="hide_render")
-        self.bez.keyframe_insert(data_path="hide_viewport")
+        self.obj.keyframe_insert(data_path="hide_render")
+        self.obj.keyframe_insert(data_path="hide_viewport")
         return self
     
     def show_on_frame(self, frame):
@@ -317,20 +318,20 @@ class BlenderPen(DrawablePenMixin, BasePen):
         return self
     
     def make_invisible(self):
-        self.bez.cycles_visibility.camera = False
-        self.bez.cycles_visibility.diffuse = False
-        self.bez.cycles_visibility.glossy = False
-        self.bez.cycles_visibility.transmission = False
-        self.bez.cycles_visibility.scatter = False
-        self.bez.cycles_visibility.shadow = False
+        self.obj.cycles_visibility.camera = False
+        self.obj.cycles_visibility.diffuse = False
+        self.obj.cycles_visibility.glossy = False
+        self.obj.cycles_visibility.transmission = False
+        self.obj.cycles_visibility.scatter = False
+        self.obj.cycles_visibility.shadow = False
         return self
     
     def convert_to_mesh(self):
         bpy.context.view_layer.objects.active = None
-        bpy.context.view_layer.objects.active = self.bez
-        self.bez.select_set(True)
+        bpy.context.view_layer.objects.active = self.obj
+        self.obj.select_set(True)
         bpy.ops.object.convert(target="MESH")
-        self.bez.select_set(False)
+        self.obj.select_set(False)
         bpy.context.view_layer.objects.active = None
         return self
 
@@ -338,36 +339,36 @@ class BlenderPen(DrawablePenMixin, BasePen):
     
     def solidify(self, thickness=1):
         bpy.context.view_layer.objects.active = None
-        bpy.context.view_layer.objects.active = self.bez
-        self.bez.select_set(True)
-        if "Solidify" not in self.bez.modifiers:
+        bpy.context.view_layer.objects.active = self.obj
+        self.obj.select_set(True)
+        if "Solidify" not in self.obj.modifiers:
             bpy.ops.object.modifier_add(type="SOLIDIFY")
-        self.bez.modifiers["Solidify"].thickness = thickness
-        self.bez.select_set(False)
+        self.obj.modifiers["Solidify"].thickness = thickness
+        self.obj.select_set(False)
         bpy.context.view_layer.objects.active = None
         return self
     
     def remesh(self, octree_depth=7, smooth=False):
         bpy.context.view_layer.objects.active = None
-        bpy.context.view_layer.objects.active = self.bez
-        self.bez.select_set(True)
-        if "Remesh" not in self.bez.modifiers:
+        bpy.context.view_layer.objects.active = self.obj
+        self.obj.select_set(True)
+        if "Remesh" not in self.obj.modifiers:
             bpy.ops.object.modifier_add(type="REMESH")
-        self.bez.modifiers["Remesh"].mode = "SHARP"
-        self.bez.modifiers["Remesh"].octree_depth = octree_depth
-        self.bez.modifiers["Remesh"].use_remove_disconnected = False
-        self.bez.modifiers["Remesh"].use_smooth_shade = smooth
-        self.bez.select_set(False)
+        self.obj.modifiers["Remesh"].mode = "SHARP"
+        self.obj.modifiers["Remesh"].octree_depth = octree_depth
+        self.obj.modifiers["Remesh"].use_remove_disconnected = False
+        self.obj.modifiers["Remesh"].use_smooth_shade = smooth
+        self.obj.select_set(False)
         bpy.context.view_layer.objects.active = None
         return self
     
     @contextmanager
     def obj_selected(self):
         bpy.context.view_layer.objects.active = None
-        bpy.context.view_layer.objects.active = self.bez
-        self.bez.select_set(True)
-        yield self.bez
-        self.bez.select_set(False)
+        bpy.context.view_layer.objects.active = self.obj
+        self.obj.select_set(True)
+        yield self.obj
+        self.obj.select_set(False)
         bpy.context.view_layer.objects.active = None
         return self
     
@@ -392,27 +393,6 @@ class BlenderPen(DrawablePenMixin, BasePen):
             cl.settings.collision_settings.use_self_collision = True
         return self
     
-    def rigidbody(self, mode="active", animated=False, mesh=False, bounce=0, mass=1, deactivated=False, friction=0.5, linear_damping=0.04, angular_damping=0.1):
-        bpy.context.view_layer.objects.active = None
-        bpy.context.view_layer.objects.active = self.bez
-        self.bez.select_set(True)
-        bpy.ops.rigidbody.object_add()
-        if mesh:
-            self.bez.rigid_body.collision_shape = "MESH"
-        self.bez.rigid_body.type = mode.upper()
-        self.bez.rigid_body.kinematic = animated
-        self.bez.rigid_body.restitution = bounce
-        self.bez.rigid_body.mass = mass
-        self.bez.rigid_body.friction = friction
-        self.bez.rigid_body.linear_damping = linear_damping
-        self.bez.rigid_body.angular_damping = angular_damping
-        if deactivated:
-            self.bez.rigid_body.use_deactivation = True
-            self.bez.rigid_body.use_start_deactivated = True
-        self.bez.select_set(False)
-        bpy.context.view_layer.objects.active = None
-        return self
-    
     def apply_transform(self,
         location=True,
         rotation=True,
@@ -420,64 +400,34 @@ class BlenderPen(DrawablePenMixin, BasePen):
         properties=True
         ):
         bpy.context.view_layer.objects.active = None
-        bpy.context.view_layer.objects.active = self.bez
+        bpy.context.view_layer.objects.active = self.obj
         
-        self.bez.select_set(True)
+        self.obj.select_set(True)
         bpy.ops.object.transform_apply(location=location,
             rotation=rotation,
             scale=scale,
             properties=properties)
-        self.bez.select_set(False)
+        self.obj.select_set(False)
 
         bpy.context.view_layer.objects.active = None
         return self
     
     def apply_modifier(self, name):
         bpy.context.view_layer.objects.active = None
-        bpy.context.view_layer.objects.active = self.bez
+        bpy.context.view_layer.objects.active = self.obj
         
-        self.bez.select_set(True)
+        self.obj.select_set(True)
         #bpy.ops.object.modifier_set_active(modifier=name)
         bpy.ops.object.modifier_apply(modifier="Remesh")
-        #print(self.bez)
-        self.bez.to_mesh(preserve_all_data_layers=True)
-        self.bez.select_set(False)
+        #print(self.obj)
+        self.obj.to_mesh(preserve_all_data_layers=True)
+        self.obj.select_set(False)
 
         bpy.context.view_layer.objects.active = None
         return self
     
     applyModifier = apply_modifier
-    
-    def rotate(self, x=None, y=None, z=None):
-        if x is not None:
-            self.bez.rotation_euler[0] = math.radians(x)
-        if y is not None:
-            self.bez.rotation_euler[1] = math.radians(y)
-        if z is not None:
-            self.bez.rotation_euler[2] = math.radians(z)
-        return self
-    
-    def origin_to_geometry(self):
-        self.bez.select_set(True)
-        bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
-        self.bez.select_set(False)
-        return self
-    
-    def origin_to_cursor(self):
-        self.bez.select_set(True)
-        bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        self.bez.select_set(False)
-        return self
-    
-    def set_origin(self, x, y, z):
-        #saved_location = bpy.context.scene.cursor.location
-        bpy.context.scene.cursor.location = Vector((x, y, z))
-        self.bez.select_set(True)
-        bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        self.bez.select_set(False)
-        bpy.context.scene.cursor.location = Vector((0, 0, 0))
-        return self
-    
+
     def with_origin(self, xyz, fn):
         if xyz == "C":
             pc = self.dat.ambit().pc
@@ -486,63 +436,30 @@ class BlenderPen(DrawablePenMixin, BasePen):
         fn(self)
         self.set_origin(0, 0, 0)
         return self
-    
+
     def center_origin(self):
         c = self.dat.ambit().pc
         self.locate_relative(x=-c.x/100, y=-c.y/100)
         
         bpy.context.view_layer.objects.active = None
-        bpy.context.view_layer.objects.active = self.bez
+        bpy.context.view_layer.objects.active = self.obj
         
-        self.bez.select_set(True)
+        self.obj.select_set(True)
         bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
-        self.bez.select_set(False)
+        self.obj.select_set(False)
 
         bpy.context.view_layer.objects.active = None
 
         self.locate_relative(x=+c.x/100, y=+c.y/100)
         return self
     
-    def locate(self, x=None, y=None, z=None):
-        if x is not None:
-            self.bez.location[0] = x
-        if y is not None:
-            self.bez.location[1] = y
-        if z is not None:
-            self.bez.location[2] = z
-        return self
-    
-    def locate_relative(self, x=None, y=None, z=None):
-        if x is not None:
-            self.bez.location[0] = self.bez.location[0] + x
-        if y is not None:
-            self.bez.location[1] = self.bez.location[1] + y
-        if z is not None:
-            self.bez.location[2] = self.bez.location[2] + z
-        return self
-    
-    def parent(self, parent_tag):
-        parent = bpy.data.objects[parent_tag]
-
-        bpy.context.view_layer.objects.active = None
-        self.bez.select_set(True)
-        parent.select_set(True)
-        bpy.context.view_layer.objects.active = parent
-        #yield self.bez
-        bpy.ops.object.parent_set(type="OBJECT")
-        
-        self.bez.select_set(False)
-        bpy.data.objects[parent_tag].select_set(False)
-        bpy.context.view_layer.objects.active = None
-        return self
-    
     def draw(self, collection, style=None, scale=0.01, cyclic=True, dn=False, plane=False, material="auto"):
         self.material = material
 
         if plane:
-            self.bez, self.created = BPH.Primitive("Plane", collection, self.tag, dn=dn, material=material, container=self.dat.ambit().scale(scale))
+            self.obj, self.created = BPH.Primitive("Plane", collection, self.tag, dn=dn, material=material, container=self.dat.ambit().scale(scale))
         else:
-            self.bez, self.created = BPH.Primitive("Bezier", collection, self.tag, dn=dn, material=material)
+            self.obj, self.created = BPH.Primitive("Bezier", collection, self.tag, dn=dn, material=material)
 
             if material and material != "auto":
                 try:
@@ -551,14 +468,14 @@ class BlenderPen(DrawablePenMixin, BasePen):
                     mat = bpy.data.materials.new(material)
                     mat.use_nodes = True
                     
-                self.bez.data.materials.clear()
-                self.bez.data.materials.append(mat)
+                self.obj.data.materials.clear()
+                self.obj.data.materials.append(mat)
 
-            self.bez.data.fill_mode = "BOTH"
+            self.obj.data.fill_mode = "BOTH"
             self.origin_to_cursor()
             self.record(self.dat.copy().removeOverlap().scale(scale, point=False))
             try:
-                self.draw_on_bezier_curve(self.bez.data, cyclic=cyclic)
+                self.draw_on_bezier_curve(self.obj.data, cyclic=cyclic)
             except:
                 pass
         for attrs, attr in self.findStyledAttrs(style):
