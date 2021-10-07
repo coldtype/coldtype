@@ -428,15 +428,23 @@ class WinmanGLFWSkia():
                 error_color = rgb(0, 0, 0).skia()
         else:
             if render.single_frame or render.composites:
-                comp = result.ch(skfx.precompose(render.rect))
+                comp = result.ch(skfx.precompose(render.rect, scale=scale))
+
                 if not self.renderer.last_render_cleared:
                     render.last_result = comp
                 else:
                     render.last_result = None
+
+                comp = comp.img().get("src")
+                
+                canvas.save()
+                canvas.scale(1/scale, 1/scale)
+                #render.draw_preview(1.0, canvas, render.rect, comp, rp)
+                canvas.drawImage(comp, rect.x, rect.y)
+                canvas.restore()
             else:
                 comp = result
-            
-            render.draw_preview(1.0, canvas, render.rect, comp, rp)
+                render.draw_preview(1.0, canvas, render.rect, comp, rp)
         
         if hasattr(render, "show_error"):
             paint = skia.Paint(AntiAlias=True, Color=error_color)

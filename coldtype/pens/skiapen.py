@@ -255,20 +255,31 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         pens.walk(draw, visible_only=True)
     
     def Precompose(pens, rect, fmt=None, context=None, scale=1, disk=False):
+        if scale < 0:
+            rescale = abs(scale)
+            scale = 1
+        else:
+            rescale = None
+
+        sr = rect
+        if scale != 1:
+            sr = rect.scale(scale).round()
         rect = rect.round()
         if context:
-            info = skia.ImageInfo.MakeN32Premul(rect.w, rect.h)
+            info = skia.ImageInfo.MakeN32Premul(sr.w, sr.h)
             surface = skia.Surface.MakeRenderTarget(context, skia.Budgeted.kNo, info)
             assert surface is not None
         else:
-            #print("CPU PRECOMPOSE")
-            surface = skia.Surface(rect.w, rect.h)
+            surface = skia.Surface(sr.w, sr.h)
         
         with surface as canvas:
+            canvas.save()
+            canvas.scale(scale, scale)
             SkiaPen.CompositeToCanvas(pens.translate(-rect.x, -rect.y), rect, canvas)
+            canvas.restore()
         img = surface.makeImageSnapshot()
-        if scale != 1:
-            x, y, w, h = rect.scale(scale)
+        if rescale is not None:
+            x, y, w, h = rect.scale(rescale)
             img = img.resize(int(w), int(h))
         
         if disk:
