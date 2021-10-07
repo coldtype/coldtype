@@ -1,4 +1,3 @@
-from coldtype.blender.fluent import BpyCollection
 from coldtype import *
 from coldtype.blender import *
 
@@ -7,9 +6,9 @@ txt = "FALL\nING\nTEXT"
 if True: # experimental
     if bpy:
         from coldtype.blender.fluent import BpyWorld, BpyObj
-        bpy.ops.object.select_all(action='DESELECT')
 
         with (BpyWorld()
+            .deselect_all()
             .delete_previous()
             .timeline(Timeline(250))
             .render_settings(128)
