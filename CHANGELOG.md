@@ -73,6 +73,7 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ### Added
 - Support for gif export in `@notebook_animation.show`
 
-## [0.7.3] - 2021-10-?
+## [0.7.3] - 2021-10-07
 ### Added
 - `strip=` kwarg on StSt (defaulting to `True`) so incoming text is automatically stripped (but can be overriden as in the `Glyphwise` use of `StSt`)
+- `coldtype.blender.fluent` experimental chainable interface for direct manipulation of blender objects
