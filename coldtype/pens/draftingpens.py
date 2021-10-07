@@ -495,9 +495,13 @@ class DraftingPens(DraftingPen):
             else:
                 arg_count = len(inspect.signature(fn).parameters)
                 if arg_count == 1:
-                    self[idx] = fn(p)
+                    res = fn(p)
+                    if res is not None:
+                        self[idx] = res
                 else:
-                    self[idx] = fn(idx, p)
+                    res = fn(idx, p)
+                    if res is not None:
+                        self[idx] = res
         return self
     
     def pfilter(self, fn):

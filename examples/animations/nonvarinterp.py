@@ -12,6 +12,7 @@ r = Rect(1080, 1080)
 def build(font, **kwargs):
     return (StSt("Inter-\npolation",
         font, 250, leading=50, **kwargs)
+        .xalign(r)
         .align(r.take(0.85, "mxy"))
         .pen())
 

@@ -20,6 +20,7 @@ def officehours(f):
     txt = (StSt("Coldtype\nOffice\nHours".upper(),
         nudge, 125, ss02=1, mods=stx, leading=20)
         .f(1)
+        .xalign(f.a.r)
         .align(f.a.r))
     
     bg = (DP(txt.copy().ambit().inset(-50))
