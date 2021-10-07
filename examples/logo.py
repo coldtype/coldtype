@@ -31,7 +31,7 @@ def logo(r, rs):
                 cut=50+200*nxl(20),
                 cutw=1+10*nxl(30),
                 fill=bw(1))))])
-        
+
 @renderable()
 def logo2(r):
     return DPS([
