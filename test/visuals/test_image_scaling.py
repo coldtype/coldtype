@@ -3,7 +3,7 @@ from coldtype.fx.skia import phototype, precompose
 
 tl = Timeline(30)
 
-#@animation((1000, 1000), timeline=tl)
+@animation((1000, 1000), timeline=tl)
 def test_scaling(f):
     px = (0.01+f.a.progress(f.i, loops=1, easefn="eei").e*0.99)*1000
     pr = Rect(math.floor(px), math.floor(px))
