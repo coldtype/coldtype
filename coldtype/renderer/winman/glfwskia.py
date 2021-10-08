@@ -437,13 +437,10 @@ class WinmanGLFWSkia():
 
                 comp = comp.img().get("src")
                 
-                sr = rect.scale(scale)
-                sr = rect
                 canvas.save()
                 canvas.scale(1/scale, 1/scale)
                 #render.draw_preview(1.0, canvas, render.rect, comp, rp)
-                print("DRAW", sr.x, sr.y)
-                canvas.drawImage(comp, sr.x, sr.y)
+                canvas.drawImage(comp, 0, 0)
                 canvas.restore()
             else:
                 comp = result
