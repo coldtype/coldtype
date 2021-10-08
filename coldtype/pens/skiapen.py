@@ -255,6 +255,8 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         pens.walk(draw, visible_only=True)
     
     def Precompose(pens, rect, fmt=None, context=None, scale=1, disk=False):
+        rect = rect.round()
+
         if scale < 0:
             rescale = abs(scale)
             scale = 1
