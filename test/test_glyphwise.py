@@ -172,6 +172,17 @@ class TestGlyphwise(unittest.TestCase):
         self.assertEqual(g2[-1]._frame.w, g1[-1]._frame.w)
         self.assertEqual(g1[-1].ambit(th=1).w, 28.0)
         self.assertEqual(g2[-1].ambit(th=1).w, 86.0)
+    
+    def test_multiline(self):
+        def styler(g):
+            return Style(Font.MutatorSans(), 120,
+                meta=dict(idx=g.i))
+        
+        gw = (Glyphwise("AB\nCD\nEF", styler)
+            .collapse())
+        
+        for idx, g in enumerate(gw):
+            self.assertEqual(g.data.get("idx"), idx)
 
 if __name__ == "__main__":
     unittest.main()

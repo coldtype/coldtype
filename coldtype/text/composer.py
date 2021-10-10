@@ -266,11 +266,10 @@ def Glyphwise(st, styler, start=0, line=0):
         lines = st.split("\n")
         if len(lines) > 1:
             gs = []
+            start = 0
             for lidx, l in enumerate(lines):
-                start = 0
-                if len(gs) > 0:
-                    start = len(gs[-1])
                 gs.append(Glyphwise(l, styler, start=start, line=lidx))
+                start += len(l)
             return _PensClass(gs).reversePens().distribute(v=True).reversePens()
     except AttributeError:
         pass
