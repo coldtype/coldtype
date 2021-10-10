@@ -276,6 +276,7 @@ class Style():
             varyFontSize=False,
             preventHwid=False,
             fitHeight=None,
+            meta=dict(),
             no_shapes=False,
             show_frames=False,
             _skiaback=False,
@@ -298,6 +299,7 @@ class Style():
             self.font = font
 
         self._skiaback = _skiaback
+        self.meta = meta
 
         self.narrower = narrower
         self.layer = layer
@@ -982,6 +984,10 @@ class StyledString(FittableMixin):
                 dp_atom.glyphName = g.name
             
             #dp_atom._parent = pens
+            if self.style.meta:
+                for k, v in self.style.meta.items():
+                    dp_atom.add_data(k, v)
+            
             pens.append(dp_atom, allow_blank=self.style.include_blanks)
 
         if self.style.reverse:
