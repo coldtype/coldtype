@@ -326,6 +326,11 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
         self.obj.cycles_visibility.shadow = False
         return self
     
+    def remove_doubles(self, threshold=0.01):
+        with self.all_vertices_selected():
+            bpy.ops.mesh.remove_doubles(threshold=threshold)
+        return self
+    
     def convert_to_mesh(self):
         bpy.context.view_layer.objects.active = None
         bpy.context.view_layer.objects.active = self.obj

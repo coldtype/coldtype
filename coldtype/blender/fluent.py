@@ -152,6 +152,17 @@ class BpyObj():
         bpy.context.view_layer.objects.active = None
         return self
     
+    @contextmanager
+    def all_vertices_selected(self):
+        with self.obj_selected():
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.mesh.select_mode(type='VERT')
+            bpy.ops.mesh.select_all(action='SELECT')
+            yield
+            bpy.ops.mesh.select_all(action='DESELECT')
+            bpy.ops.object.mode_set(mode='OBJECT')
+        return self
+    
     def parent(self, parent_tag, hide=False):
         with self.obj_selection_sequence(parent_tag) as o:
             bpy.ops.object.parent_set(type="OBJECT")
