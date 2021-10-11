@@ -104,6 +104,21 @@ class TestText(unittest.TestCase):
         self.assertEqual(len(st4), len("HELLO"))
         st5 = StSt("\n\nHEL\nL\nO\n", Font.MutatorSans(), 100)
         self.assertEqual(len(st5), 3)
+    
+    def test_zero_font_size(self):
+        s = Style(Font.ColdtypeObviously(), 0)
+        self.assertEqual(s.fontSize, 0)
+
+        s = Style(Font.ColdtypeObviously(), -1)
+        self.assertEqual(s.fontSize, 0)
+
+        s = Style(Font.ColdtypeObviously(), -1000)
+        self.assertEqual(s.fontSize, 0)
+
+        st = StSt("COLD", Font.ColdtypeObviously(), 0)
+        self.assertEqual(len(st), 4)
+        self.assertEqual(st[0].glyphName, "C")
+        self.assertEqual(st[-1].glyphName, "D")
 
 if __name__ == "__main__":
     unittest.main()

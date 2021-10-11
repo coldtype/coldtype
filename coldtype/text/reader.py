@@ -330,6 +330,8 @@ class Style():
             self.fontSize = (fitHeight/self._asc)*1000
         else:
             self.fontSize = font_size
+        
+        self.fontSize = max(self.fontSize, 0)
 
         self.tracking = kwargs.get("t", tracking)
         self.kern_pairs = kwargs.get("kp", kern_pairs)
@@ -891,9 +893,12 @@ class StyledString(FittableMixin):
                     t = t.translate(0, bs)
                 except:
                     pass
+        
         t = t.scale(s)
-        t = t.translate(glyph.frame.x/self.scale(), glyph.frame.y/self.scale())
-        #t = t.translate(0, bs)
+        s = self.scale()
+        if s > 0:
+            t = t.translate(glyph.frame.x/s, glyph.frame.y/s)
+
         out_pen = _PenClass()
         tp = TransformPen(out_pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
         ip = _PenClass().record(in_pen)
