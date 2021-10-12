@@ -22,7 +22,7 @@ from coldtype.renderer.winman import Winmans, WinmanGLFWSkiaBackground
 from coldtype.renderer.config import ConfigOption
 from coldtype.renderer.reader import SourceReader
 from coldtype.renderer.state import RendererState
-from coldtype.renderable import renderable, animation, Action, Overlay
+from coldtype.renderable import renderable, animation, Action, Overlay, runnable
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.svgpen import SVGPen
 
@@ -330,6 +330,9 @@ class Renderer():
         return candidate
     
     def normalize_fmt(self, render):
+        if isinstance(render, runnable):
+            return
+
         if self.args.format:
             render.fmt = self.args.format
         if self.args.rasterizer:
@@ -419,6 +422,10 @@ class Renderer():
         render_count = 0
         try:
             for render in renders:
+                if isinstance(render, runnable):
+                    render.run()
+                    continue
+
                 for watch, flag in render.watch:
                     if isinstance(watch, Font) and not watch.cacheable:
                         if watch.path not in self.watchee_paths():

@@ -72,6 +72,37 @@ class RenderPass():
         return f"<RenderPass:f{self.output_path}/>"
 
 
+class runnable():
+    """Minimal interface for runnable code in an abstract context (like a renderable but with nothing to render)"""
+    def __init__(self, solo=False):
+        self.filepath = None
+        self.codepath = None
+        self.hidden = solo == -1
+        self.solo = solo
+        self.preview_only = True
+        self.dst = None
+        self.custom_folder = None
+        self.name = None
+        self.sort = 0
+        self.cv2caps = None
+        self.watch = []
+    
+    def __call__(self, func):
+        self.func = func
+        if not self.name:
+            self.name = self.func.__name__
+        return self
+    
+    def post_read(self):
+        pass
+    
+    def run(self):
+        return self.func()
+    
+    def folder(self, filepath):
+        return ""
+
+
 class renderable():
     """
     Base class for any content renderable by Coldtype

@@ -3,7 +3,7 @@ from pathlib import Path
 from collections import defaultdict
 
 from coldtype.renderer.reader import SourceReader
-from coldtype.blender import b3d_animation, walk_to_b3d
+from coldtype.blender import b3d_animation, b3d_runnable, walk_to_b3d
 from coldtype.blender.timedtext import add_shortcuts
 
 
@@ -112,8 +112,11 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                         raise Exception("r.renderer not supported", r.renderer)
 
             elif statics:
-                walk_to_b3d(res, renderable=r)
-                bpy.data.scenes[0].frame_set(0)
+                if isinstance(r, b3d_runnable):
+                    r.run()
+                else:
+                    walk_to_b3d(res, renderable=r)
+                    bpy.data.scenes[0].frame_set(0)
         
         #if not animation_found:
         #    bpy.data.scenes[0].frame_set(0)

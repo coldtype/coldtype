@@ -5,7 +5,7 @@ from runpy import run_path
 from functools import partial
 from tempfile import NamedTemporaryFile
 
-from coldtype.renderable import renderable, ColdtypeCeaseConfigException
+from coldtype.renderable import renderable, ColdtypeCeaseConfigException, runnable
 from coldtype.renderable.animation import animation
 
 from coldtype.renderer.utils import Watchable
@@ -180,6 +180,9 @@ def find_renderables(
         elif k == "RENDERABLES":
             for r in v:
                 all_rs.append(r)
+            
+        if isinstance(v, runnable):
+            all_rs.append(v)
     
     #all_rs = sorted(all_rs, key=lambda r: r.layer)
     all_rs = sorted(all_rs, key=lambda r: r.sort)
@@ -471,6 +474,10 @@ class SourceReader():
                 and r.no_render_if(r)
                 ):
                 continue
+            elif isinstance(r, runnable):
+                res.append([r, None])
+                continue
+            
             ps = r.passes(None, renderer_state, indices=[frame])
             for p in ps:
                 res.append([r, r.run_normal(p, renderer_state=renderer_state)])

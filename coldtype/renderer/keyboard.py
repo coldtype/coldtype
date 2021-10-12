@@ -7,16 +7,6 @@ except ImportError:
     glfw = None
 
 
-# def super_key():
-#     sys = platform.system()
-#     if sys == "Darwin":
-#         return glfw.MOD_SUPER
-#     elif sys == "Windows":
-#         return glfw.MOD_CONTROL
-#     else:
-#         return glfw.MOD_SUPER
-
-
 class KeyboardShortcut(Enum):
     PreviewPrev = "prev_prev"
     PreviewPrevMany = "prev_prev_many"
@@ -236,6 +226,8 @@ def symbol_to_glfw(s):
         "<home>": glfw.KEY_HOME,
         "<end>": glfw.KEY_END,
         "<enter>": glfw.KEY_ENTER,
+        "<page-up>": glfw.KEY_PAGE_UP,
+        "<page-down>": glfw.KEY_PAGE_DOWN,
         ",": glfw.KEY_COMMA,
         ".": glfw.KEY_PERIOD,
         "-": glfw.KEY_MINUS,
@@ -545,10 +537,12 @@ SHORTCUTS = {
     ],
 
     KeyboardShortcut.LoadNextInDirectory: [
-        [["cmd", "alt"], "<right>"]
+        [["cmd", "alt"], "<right>"],
+        [[], "<page-down>"],
     ],
     KeyboardShortcut.LoadPrevInDirectory: [
-        [["cmd", "alt"], "<left>"]
+        [["cmd", "alt"], "<left>"],
+        [[], "<page-up>"]
     ],
 
     KeyboardShortcut.MIDIControllersPersist: [

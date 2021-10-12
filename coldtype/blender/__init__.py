@@ -9,11 +9,13 @@ from coldtype.pens.blenderpen import BlenderPen, BPH
 from coldtype.color import hsl
 
 from coldtype.time import Frame, Timeline
-from coldtype.renderable import renderable, Overlay, Action
+from coldtype.renderable import renderable, Overlay, Action, runnable
 from coldtype.renderable.animation import animation
 
 from coldtype.blender.render import blend_source
 from coldtype.time.sequence import ClipTrack, Clip, Sequence
+
+from coldtype.blender.fluent import BpyWorld, BpyObj, BpyCollection
 
 
 try:
@@ -212,6 +214,15 @@ def walk_to_b3d(result:DATPens,
                     post(bp)
                 
     result.walk(walker)
+
+
+class b3d_runnable(runnable):
+    def run(self):
+        if not bpy:
+            return None
+        else:
+            return self.func(BpyWorld()) # TODO some kind of args, maybe a curried BpyWorld?
+
 
 class b3d_renderable(renderable):
     def __init__(self,
