@@ -367,6 +367,27 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
         bpy.context.view_layer.objects.active = None
         return self
     
+    def displace(self, texture=None, coords_object=None):
+        with self.obj_selected():
+            bpy.ops.object.modifier_add(type="DISPLACE")
+            m = self.obj.modifiers["Displace"]
+            if texture and isinstance(texture, str):
+                t = bpy.data.textures[texture]
+                m.texture = t
+            if coords_object:
+                m.texture_coords = "OBJECT"
+                m.texture_coords_object = bpy.data.objects[coords_object]
+        return self
+    
+    def shade_smooth(self):
+        with self.obj_selected():
+            bpy.ops.object.shade_smooth()
+    
+    def subsurface(self):
+        with self.obj_selected():
+            bpy.ops.object.modifier_add(type="SUBSURF")
+        return self
+    
     @contextmanager
     def obj_selected(self):
         bpy.context.view_layer.objects.active = None
