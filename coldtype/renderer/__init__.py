@@ -220,6 +220,7 @@ class Renderer():
         if reload:
             self.reload_and_render(Action.PreviewStoryboard)
             self.winmans.set_title(filepath.name)
+            # TODO close an open blend file?
 
         return True
 
@@ -276,12 +277,8 @@ class Renderer():
             
             try:
                 full_restart = False
-                blend_files = []
 
                 for r in self.renderables(Action.PreviewStoryboardReload):
-                    if hasattr(r, "blend"):
-                        blend_files.append(r.blend)
-
                     if isinstance(r, animation):
                         if r.name not in self.state._frame_offsets:
                             full_restart = True
@@ -306,10 +303,11 @@ class Renderer():
                         fos = eval(self.args.frame_offsets)
                         for k, v in fos.items():
                             self.state.adjust_keyed_frame_offsets(k, lambda i, o: v[i])
-                
+            
                 if trigger == Action.Initial:
-                    self.winmans.found_blend_files(blend_files)
-                
+                    if self.winmans.b3d:
+                        self.winmans.b3d.launch(self.source_reader.blender_file())
+
             except SystemExit:
                 self.on_exit(restart=False)
                 return True

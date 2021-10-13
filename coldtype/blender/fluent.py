@@ -12,7 +12,11 @@ except ImportError:
 # TODO easy, chainable interface for
 # blender objects (could be a separate library)
 
-class BpyWorld():
+class _Chainable():
+    def noop(self):
+        return self
+
+class BpyWorld(_Chainable):
     def __init__(self, scene="Scene"):
         try:
             self.scene = bpy.data.scenes[scene]
@@ -71,7 +75,7 @@ class BpyWorld():
         return self
 
 
-class BpyCollection():
+class BpyCollection(_Chainable):
     @staticmethod
     def Find(tag):
         bco = BpyCollection()
@@ -92,7 +96,7 @@ class BpyCollection():
         return None
 
 
-class BpyObj():
+class BpyObj(_Chainable):
     @staticmethod
     def Find(tag):
         bobj = BpyObj()
@@ -253,6 +257,7 @@ class BpyObj():
         mesh=False,
         bounce=0,
         mass=1,
+        bake=0,
         deactivated=False,
         friction=0.5,
         linear_damping=0.04,
@@ -275,5 +280,7 @@ class BpyObj():
             if deactivated:
                 o.rigid_body.use_deactivation = True
                 o.rigid_body.use_start_deactivated = True
+            if bake:
+                bpy.ops.rigidbody.bake_to_keyframes()
         
         return self

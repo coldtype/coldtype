@@ -169,20 +169,25 @@ def find_renderables(
     codepath:Path,
     program:dict,
     output_folder_override=None,
+    blender_file=None,
     ):
     all_rs = []
     filtered_rs = []
     
     for k, v in program.items():
-        if isinstance(v, renderable) and not v.hidden:
+        if (isinstance(v, renderable) or isinstance(v, runnable)) and not v.hidden:
+            if v.cond is not None:
+                if callable(v.cond) and not v.cond():
+                    continue
+                elif not v.cond:
+                    continue
+            
             if v not in all_rs:
                 all_rs.append(v)
+        
         elif k == "RENDERABLES":
             for r in v:
                 all_rs.append(r)
-            
-        if isinstance(v, runnable):
-            all_rs.append(v)
     
     #all_rs = sorted(all_rs, key=lambda r: r.layer)
     all_rs = sorted(all_rs, key=lambda r: r.sort)
@@ -192,6 +197,10 @@ def find_renderables(
         r.codepath = codepath
         r.output_folder = renderable_to_output_folder(
             filepath, r, override=output_folder_override)
+
+        if hasattr(r, "blender_file"):
+            r.blender_file = blender_file
+
         r.post_read()
 
     if any([r.solo for r in all_rs]):
@@ -312,9 +321,10 @@ class SourceReader():
             if args.config == "0":
                 files = []
             else:
-                if args.config == ".":
-                    args.config = args.file
-                files.append(Path(args.config).expanduser())
+                pass
+                #if args.config == ".":
+                #    args.config = args.file
+                #files.append(Path(args.config).expanduser())
 
         if filepath:
             files.append(Path(filepath).expanduser())
@@ -364,6 +374,14 @@ class SourceReader():
             valid_sources = sorted(valid_sources, key=lambda p: p.stem)
         
         return valid_sources
+    
+    def blender_file(self):
+        bf = self.config.blender_file
+        if not bf:
+            bf = self.filepath.parent / "blends" / (self.filepath.stem + ".blend")
+        bf = Path(bf).expanduser()
+        bf.parent.mkdir(exist_ok=True, parents=True)
+        return bf
     
     def normalize_filepath(self, filepath:Path, dirindex=0):
         if isinstance(filepath, str):
@@ -450,7 +468,8 @@ class SourceReader():
             self.filepath,
             self.codepath,
             self.program,
-            output_folder_override)
+            output_folder_override,
+            blender_file=self.blender_file())
     
     def renderables(self,
         viewer_solos=[],
@@ -469,12 +488,7 @@ class SourceReader():
         rs = self.renderables(class_filters=class_filters)
         res = []
         for r in rs:
-            if (hasattr(r, "no_render_if")
-                and r.no_render_if
-                and r.no_render_if(r)
-                ):
-                continue
-            elif isinstance(r, runnable):
+            if isinstance(r, runnable):
                 res.append([r, None])
                 continue
             

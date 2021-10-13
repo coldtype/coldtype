@@ -217,11 +217,18 @@ def walk_to_b3d(result:DATPens,
 
 
 class b3d_runnable(runnable):
+    def __init__(self, solo=False, cond=None):
+        if cond is not None:
+            cond = lambda: cond and bool(bpy)
+        else:
+            cond = bool(bpy)
+        
+        super().__init__(solo=solo, cond=cond)
     def run(self):
         if not bpy:
             return None
         else:
-            return self.func(BpyWorld()) # TODO some kind of args, maybe a curried BpyWorld?
+            return self.func(BpyWorld().deselect_all())
 
 
 class b3d_renderable(renderable):
@@ -235,17 +242,8 @@ class b3d_renderable(renderable):
         self.center = center
         self.upright = upright
         self.post_run = post_run
+        self.blender_file = None
         super().__init__(rect, **kwargs)
-
-    def post_read(self):
-        if not hasattr(self, "blend"):
-            self.blend = self.filepath.parent / "blends" / (self.filepath.stem + ".blend")
-
-        if self.blend:
-            self.blend = Path(self.blend).expanduser()
-            self.blend.parent.mkdir(exist_ok=True, parents=True)
-
-        super().post_read()
 
 
 class b3d_animation(animation):
@@ -253,14 +251,12 @@ class b3d_animation(animation):
         rect=(1080, 1080),
         samples=-1,
         denoise=False,
-        blend=None,
         match_length=True,
         match_output=True,
         match_fps=True,
         bake=False,
         center=(0, 0),
         upright=False,
-        no_render_if=None,
         create_timeline=False,
         autosave=False,
         renderer="b3d",
@@ -271,18 +267,17 @@ class b3d_animation(animation):
         self.current_frame = -1
         self.samples = samples
         self.denoise = denoise
-        self.blend = blend
         self.bake = bake
         self.center = center
         self.upright = upright
         self.match_length = match_length
         self.match_output = match_output
         self.match_fps = match_fps
-        self.no_render_if = no_render_if
         self.renderer = renderer
         self.create_timeline = create_timeline
         self.autosave = autosave
         self._bt = False
+        self.blender_file = None
 
         if "timeline" not in kwargs:
             kwargs["timeline"] = Timeline(30)
@@ -290,16 +285,7 @@ class b3d_animation(animation):
         super().__init__(rect=rect, **kwargs)
     
     def post_read(self):
-        out = None
-
-        if not self.blend:
-            self.blend = self.filepath.parent / "blends" / (self.filepath.stem + ".blend")
-
-        if self.blend:
-            self.blend = Path(self.blend).expanduser()
-            self.blend.parent.mkdir(exist_ok=True, parents=True)
-            out = self.reread_timeline(reset=True)
-
+        out = self.reread_timeline(reset=True)
         super().post_read()
 
         if bpy and self.match_output:
@@ -312,19 +298,18 @@ class b3d_animation(animation):
             if not self.data_path().exists():
                 self.data_path().write_text("{}")
 
-        if True or self.blend.exists():
-            if self.data_path().exists():
-                self._bt = True
-                bt = BlenderTimeline(
-                    self.timeline.duration,
-                    self.timeline.fps,
-                    self.data())
-                if reset:
-                    self.reset_timeline(bt)
-                else:
-                    self.timeline = bt
-                    self.t = self.timeline
-                return bt.storyboard
+        if self.data_path().exists():
+            self._bt = True
+            bt = BlenderTimeline(
+                self.timeline.duration,
+                self.timeline.fps,
+                self.data())
+            if reset:
+                self.reset_timeline(bt)
+            else:
+                self.timeline = bt
+                self.t = self.timeline
+            return bt.storyboard
     
     def reset_timeline(self, timeline):
         super().reset_timeline(timeline)
@@ -354,7 +339,7 @@ class b3d_animation(animation):
             return super().rasterize(config, content, rp)
         
         fi = rp.args[0].i
-        blend_source(config.blender_app_path, self.filepath, self.blend, fi, self.pass_path(""), self.samples, denoise=self.denoise)
+        blend_source(config.blender_app_path, self.filepath, self.blender_file, fi, self.pass_path(""), self.samples, denoise=self.denoise)
         return True
     
     def baked_frames(self):
@@ -394,7 +379,6 @@ class b3d_sequencer(b3d_animation):
             match_output=False,
             create_timeline=True,
             autosave=autosave,
-            #no_render_if=lambda _: bool(bpy),
             renderer="skia",
             **kwargs)
     

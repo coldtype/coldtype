@@ -74,7 +74,7 @@ class RenderPass():
 
 class runnable():
     """Minimal interface for runnable code in an abstract context (like a renderable but with nothing to render)"""
-    def __init__(self, solo=False):
+    def __init__(self, solo=False, cond=None):
         self.filepath = None
         self.codepath = None
         self.hidden = solo == -1
@@ -86,6 +86,7 @@ class runnable():
         self.sort = 0
         self.cv2caps = None
         self.watch = []
+        self.cond = cond
     
     def __call__(self, func):
         self.func = func
@@ -132,6 +133,7 @@ class renderable():
         style="default",
         viewBox=True,
         layer=False,
+        cond=None,
         sort=0,
         hide=[]):
         """Base configuration for a renderable function"""
@@ -160,6 +162,7 @@ class renderable():
         for w in watch_soft:
             self.watch_soft.append(self.add_watchee(w, "soft"))
 
+        self.cond = cond
         self.name = name
         self.codepath = None
         self.rasterizer = rasterizer

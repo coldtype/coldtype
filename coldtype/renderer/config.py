@@ -61,7 +61,9 @@ class ConfigOption(Enum):
     BlenderWatch = ("blender_watch", None, "bw",
         true_false_or_none)
     BlenderAppPath = ("blender_app_path", default_blender_app_path(), "bap",
-        lambda x: Path(x).resolve())
+        lambda x: Path(x).expanduser().resolve())
+    BlenderFile = ("blender_file", None, "bf",
+        lambda x: Path(x).expanduser().resolve())
     Webviewer = ("webviewer", None, "wv",
         true_false_or_none)
     Websocket = ("websocket", None, "ws",
@@ -184,7 +186,7 @@ class ColdtypeConfig():
                 prop, default_value, _ = co.value
                 cli_mod = lambda x: x
             
-            if prop in _set_paths:
+            if prop in _set_paths and prev_config:
                 setattr(self, prop, getattr(prev_config, prop))
             else:
                 setattr(self,
