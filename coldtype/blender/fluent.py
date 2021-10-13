@@ -167,6 +167,29 @@ class BpyObj(_Chainable):
             bpy.ops.object.mode_set(mode='OBJECT')
         return self
     
+    #@contextmanager
+    def select_vertices(self, selector):
+        with self.obj_selected():
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.mesh.select_mode(type='VERT')
+            bpy.ops.mesh.select_all(action='DESELECT')
+            bpy.ops.object.mode_set(mode='OBJECT')
+            for v in self.obj.data.vertices:
+                #print(v.co[2])
+                if selector(v):
+                    #print("yes")
+                    v.select = True
+                else:
+                    #print("no")
+                    pass
+            #yield
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.object.vertex_group_add()
+            bpy.ops.object.vertex_group_assign()
+            bpy.ops.mesh.select_all(action='DESELECT')
+            bpy.ops.object.mode_set(mode='OBJECT')
+        return self
+    
     def parent(self, parent_tag, hide=False):
         with self.obj_selection_sequence(parent_tag) as o:
             bpy.ops.object.parent_set(type="OBJECT")
@@ -178,6 +201,14 @@ class BpyObj(_Chainable):
     def hide(self, hide=True):
         self.obj.hide_viewport = hide
         self.obj.hide_render = hide
+        return self
+    
+    # Manipulation Methods
+
+    def vertex_group_all(self):
+        with self.all_vertices_selected():
+            bpy.ops.object.vertex_group_add()
+            bpy.ops.object.vertex_group_assign()
         return self
     
     # Geometry Methods

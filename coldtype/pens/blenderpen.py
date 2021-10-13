@@ -293,7 +293,7 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
         return self
         #setattr(self.obj, path, value)
 
-    def hide(self, hide):
+    def hide(self, hide=True):
         self.obj.hide_viewport = hide
         self.obj.hide_render = hide
         return self
@@ -367,13 +367,14 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
         bpy.context.view_layer.objects.active = None
         return self
     
-    def displace(self, strength=1, midlevel=0.5, texture=None, coords_object=None):
+    def displace(self, strength=1, midlevel=0.5, texture=None, coords_object=None, direction="NORMAL"):
         with self.obj_selected():
             bpy.ops.object.modifier_add(type="DISPLACE")
             
             m = self.obj.modifiers["Displace"]
             m.strength = strength
             m.mid_level = midlevel
+            m.direction = direction
 
             if texture and isinstance(texture, str):
                 try:
@@ -391,6 +392,17 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
                     m.texture_coords_object = bpy.data.objects[coords_object]
                 except KeyError:
                     print("coords_object not found", coords_object)
+        return self
+    
+    def boolean(self, object):
+        with self.obj_selected():
+            bpy.ops.object.modifier_add(type="BOOLEAN")
+            m = self.obj.modifiers["Boolean"]
+            m.operation = "INTERSECT"
+            try:
+                m.object = bpy.data.objects[object]
+            except KeyError:
+                print("object for boolean not found", object)
         return self
     
     def shade_smooth(self):
@@ -459,7 +471,7 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
         
         self.obj.select_set(True)
         #bpy.ops.object.modifier_set_active(modifier=name)
-        bpy.ops.object.modifier_apply(modifier="Remesh")
+        bpy.ops.object.modifier_apply(modifier=name)
         #print(self.obj)
         self.obj.to_mesh(preserve_all_data_layers=True)
         self.obj.select_set(False)

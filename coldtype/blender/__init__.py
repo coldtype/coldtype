@@ -360,7 +360,7 @@ class b3d_animation(animation):
         return to_bake.walk(bakewalk)
     
     def data_path(self):
-        return Path(str(self.blend) + ".json")
+        return Path(str(self.blender_file) + ".json")
     
     def data(self):
         return json.loads(self.data_path().read_text())
