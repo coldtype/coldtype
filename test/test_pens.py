@@ -7,6 +7,7 @@ from coldtype.color import hsl, rgb
 from coldtype.pens.drawablepen import DrawablePenMixin
 from coldtype.renderer.reader import SourceReader
 from coldtype.text.composer import StSt, Font
+from coldtype.pens.datpen import DATPen, DATPens
 
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 mutator = Font.Cacheable("assets/MutatorSans.ttf")
@@ -360,7 +361,83 @@ def lattr_style_set(r):
         #     .gs("$r↙ $r↗ ɜ")
         #     .fssw(None, 0, 5))
         dp.picklejar(r)
+    
+    def test_distribute_oval(self):
+        r = Rect(1000, 500)
+        txt = (StSt("COLDTYPE "*7, co, 64,
+            tu=-50, r=1, ro=1)
+            .distribute_on_path(DraftingPen()
+                .oval(r.inset(50))
+                .reverse()
+                .repeat())
+            .understroke(s=0, sw=5))
+        
+        txt.picklejar(r)
 
+        self.assertEqual(len(txt), 124)
+        
+        x, y = txt[-1].ambit().xy()
+        self.assertAlmostEqual(x, 500, 0)
+        self.assertAlmostEqual(y, 50, 0)
+
+        x, y = txt[50].ambit().xy()
+        self.assertAlmostEqual(x, 657, 0)
+        self.assertAlmostEqual(y, 433, 0)
+    
+    def test_distribute_path_center(self):
+        r = Rect(1000, 500)
+        lockup = (DATPens()
+            .define(
+                r=r,
+                nx=100,
+                a="$rIX100SY+200")
+            .gs("$a↙ $a↑|$a↖OX+$nx|65 $a↘|$a↗OX-$nx|65 ɜ")
+            .f(None).s(0).sw(4)
+            .append(lambda ps: StSt(
+                "Coldtype Cdelopty".upper(),
+                co, 100, wdth=0.5)
+                .pens()
+                .distribute_on_path(ps[0], center=-5)
+                .f(hsl(0.9)))
+            .align(r))
+        
+        lockup.picklejar(r)
+        
+        x, y = lockup[1][10].ambit().xy()
+        self.assertAlmostEqual(x, 534, 0)
+        self.assertAlmostEqual(y, 362, 0)
+
+        x, y, w, h = lockup[1].ambit()
+        self.assertAlmostEqual(x, 196, 0)
+        self.assertAlmostEqual(y, 236, 0)
+        self.assertAlmostEqual(w, 643, 0)
+        self.assertAlmostEqual(h, 202, 0)
+    
+    def test_distribute_path_lines(self):
+        r = Rect(1080, 1080).inset(200)
+        p = (DATPen()
+            .moveTo(r.psw)
+            .lineTo(r.pn)
+            .lineTo(r.pse)
+            .endPath())
+
+        lockup = (StSt("COLDTYPE",
+            Font.MutatorSans(), 220, wght=.4, wdth=0.5)
+            .distribute_on_path(p)
+            .align(r, tv=1, th=1)
+            .f(0))
+        
+        lockup.picklejar(Rect(1080, 1080))
+
+        x, y = lockup[3].ambit().xy()
+        self.assertEqual(lockup[3].glyphName, "D")
+        self.assertAlmostEqual(x, 454, 0)
+        self.assertAlmostEqual(y, 690, 0)
+
+        x, y = lockup[-1].ambit().xy()
+        self.assertEqual(lockup[-1].glyphName, "E")
+        self.assertAlmostEqual(x, 792, 0)
+        self.assertAlmostEqual(y, 312, 0)
 
 if __name__ == "__main__":
     unittest.main()

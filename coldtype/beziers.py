@@ -1,4 +1,5 @@
 import math
+from re import sub
 from fontTools.pens.recordingPen import RecordingPen, replayRecording
 from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT, calcQuadraticArcLength
 from coldtype.geometry import Rect, Point, Line
@@ -112,11 +113,18 @@ class CurveCutter():
         return out
 
     def subsegmentPoint(self, start=0, end=1):
-        inc = self.inc
         subsegment = self.subsegment(start=start, end=end)
         try:
-            t, (a, b, c) = subsegment[-2]
-            tangent = math.degrees(math.atan2(c[1] - b[1], c[0] - b[0]) + math.pi*.5)
-            return Point(c), tangent
-        except ValueError:
+            t, ps = subsegment[-2]
+            if t == "lineTo":
+                a = subsegment[-3][1][0]
+                b, = ps
+                tangent = math.degrees(math.atan2(b[1] - a[1], b[0] - a[0]) + math.pi*.5)
+                return Point(b), tangent
+            elif t == "curveTo":
+                t, (a, b, c) = subsegment[-2]
+                tangent = math.degrees(math.atan2(c[1] - b[1], c[0] - b[0]) + math.pi*.5)
+                return Point(c), tangent
+        except ValueError as e:
+            print(e)
             return None, None
