@@ -1542,6 +1542,21 @@ class DraftingPen(RecordingPen, SHContext):
                 self.line([_y.point("SW"), _y.point("SE")])
         return self.f(None).s(0, 0.1).sw(3)
     
+    # Splitting
+
+    def split_moves(self):
+        pens = self.multi_pen_class()
+        pen = self.single_pen_class()
+        pens.append(pen)
+        for mv, pts in self.value:
+            if mv == "endPath":
+                pen.endPath()
+                pen = self.single_pen_class()
+                pens.append(pen)
+            else:
+                getattr(pen, mv)(*pts)
+        return pens
+    
     # Some curvy/bendy things
 
     def subsegment(self, start=0, end=1):
