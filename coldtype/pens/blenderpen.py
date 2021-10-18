@@ -71,7 +71,7 @@ class BPH():
         else:
             return bpy.context.scene.objects[name]
 
-    def Primitive(_type, coll, name, dn=False, container=None, material="ColdtypeDefault"):
+    def Primitive(_type, coll, name, dn=False, container=None, material="ColdtypeDefault", cyclic=True):
         created = False
         
         if dn: #and name in bpy.context.scene.objects:
@@ -101,9 +101,12 @@ class BPH():
             bc.data.name = name
             #name = bc.name
             if _type == "Bezier":
-                bc.data.dimensions = "2D"
-                bc.data.fill_mode = "BOTH"
-                bc.data.extrude = 0.1
+                if cyclic:
+                    bc.data.dimensions = "2D"
+                    bc.data.fill_mode = "BOTH"
+                    bc.data.extrude = 0.1
+                else:
+                    bc.data.dimensions = "3D"
             elif _type == "Plane":
                 if container:
                     bc.scale[0] = container.w/2
@@ -512,7 +515,7 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
         if plane:
             self.obj, self.created = BPH.Primitive("Plane", collection, self.tag, dn=dn, material=material, container=self.dat.ambit().scale(scale))
         else:
-            self.obj, self.created = BPH.Primitive("Bezier", collection, self.tag, dn=dn, material=material)
+            self.obj, self.created = BPH.Primitive("Bezier", collection, self.tag, dn=dn, material=material, cyclic=cyclic)
 
             if material and material != "auto":
                 try:
@@ -524,9 +527,15 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
                 self.obj.data.materials.clear()
                 self.obj.data.materials.append(mat)
 
-            self.obj.data.fill_mode = "BOTH"
+            if cyclic:
+                self.obj.data.fill_mode = "BOTH"
             self.origin_to_cursor()
-            self.record(self.dat.copy().removeOverlap().scale(scale, point=False))
+            
+            if cyclic:
+                self.record(self.dat.copy().removeOverlap().scale(scale, point=False))
+            else:
+                self.record(self.dat.copy().scale(scale, point=False))
+            
             try:
                 self.draw_on_bezier_curve(self.obj.data, cyclic=cyclic)
             except:

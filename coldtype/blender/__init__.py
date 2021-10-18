@@ -2,6 +2,7 @@
 
 import os, math, json
 from pathlib import Path
+from coldtype.geometry import curve
 
 from coldtype.geometry.rect import Rect
 from coldtype.pens.datpen import DATPen, DATPens
@@ -60,6 +61,7 @@ def b3d(collection,
     callback=None,
     plane=False,
     dn=False,
+    cyclic=True,
     material=None,
     zero=False,
     upright=False,
@@ -100,6 +102,7 @@ def b3d(collection,
                 or prev.get("material", "ColdtypeDefault")),
             tag_prefix=(tag_prefix or prev.get("tag_prefix")),
             dn=dn,
+            cyclic=cyclic,
             plane=plane,
             zero=zero,
             #reposition=c,
@@ -175,11 +178,12 @@ def walk_to_b3d(result:DATPens,
                     p.v(0)
                 
                 denovo = bdata.get("dn", dn)
+                cyclic = bdata.get("cyclic", True)
 
                 if bdata.get("plane"):
                     bp = p.cast(BlenderPen).draw(coll, plane=True, material=material, dn=True)
                 else:
-                    bp = p.cast(BlenderPen).draw(coll, dn=denovo, material=material)
+                    bp = p.cast(BlenderPen).draw(coll, dn=denovo, material=material, cyclic=cyclic)
                 
                 bp.rotate(0)
                 
