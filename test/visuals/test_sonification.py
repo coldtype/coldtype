@@ -3,7 +3,7 @@ import wave, struct, math, random, pickle
 
 
 """
-Run in terminal: `coldtype test/test_sonification.py`
+Run in terminal: `coldtype test/visuals/test_sonification.py`
 
 After a render_all (aka hitting the `a` key in the viewer app),
 this code will render individual wave files for each letter,
@@ -28,7 +28,7 @@ class sonification(animation):
 
         for pp in sorted(self.output_folder.glob("*.pickle")):
             pen:DATPen = (pickle
-                .load(open(pp, "rb"))
+                .load(open(pp, "rb"))[0]
                 .scale(-1, 1)
                 .rotate(-45)
                 .translate(-500, -500)
@@ -36,7 +36,7 @@ class sonification(animation):
                 .flatten(1))
     
             left, right = [], []
-            for (mv, pts) in pen.value:
+            for (_, pts) in pen.value:
                 if len(pts) > 0:
                     left.append(pts[0][0])
                     right.append(pts[0][1])
@@ -49,18 +49,16 @@ class sonification(animation):
                     obj.writeframesraw(data)
             
         obj.close()
+        print("/wrote-wav:", self.name)
 
 def animate_letter(f, l):
     e = f.a.progress(f.i, loops=2, easefn="qeio").e
-    c = (StyledString(l,
-        Style(co, 1000-(1-e)*250, wdth=1-e, wght=e))
-        .pens()
+    c = (StSt(l, Font.ColdtypeObviously(),
+        font_size=1000-(1-e)*250, wdth=1-e, wght=e)
         .align(f.a.r)
-        .f(None)
-        .s(0)
-        .sw(2)
+        .fssw(-1, 0, 2)
         .pen()
-        .removeOverlap()
+        .remove_overlap()
         #.explode()[0] # do this to knock out counters
         )
     return c
