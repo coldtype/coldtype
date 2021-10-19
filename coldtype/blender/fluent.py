@@ -151,8 +151,14 @@ class BpyObj(_Chainable):
         yield other
         bpy.ops.object.parent_set(type="OBJECT")
         
-        self.obj.select_set(False)
-        other.obj.select_set(False)
+        try:
+            self.obj.select_set(False)
+        except ReferenceError:
+            pass
+        try:
+            other.obj.select_set(False)
+        except ReferenceError:
+            pass
         bpy.context.view_layer.objects.active = None
         return self
     
@@ -167,27 +173,37 @@ class BpyObj(_Chainable):
             bpy.ops.object.mode_set(mode='OBJECT')
         return self
     
-    #@contextmanager
-    def select_vertices(self, selector):
+    @contextmanager
+    def select_vertices(self, selector, keep_selected=False):
         with self.obj_selected():
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_mode(type='VERT')
             bpy.ops.mesh.select_all(action='DESELECT')
             bpy.ops.object.mode_set(mode='OBJECT')
-            for v in self.obj.data.vertices:
-                #print(v.co[2])
+            for idx, v in enumerate(self.obj.data.vertices):
                 if selector(v):
-                    #print("yes")
                     v.select = True
                 else:
-                    #print("no")
                     pass
-            #yield
             bpy.ops.object.mode_set(mode='EDIT')
+            yield
+            if not keep_selected:
+                bpy.ops.mesh.select_all(action='DESELECT')
+                bpy.ops.object.mode_set(mode='OBJECT')
+        return self
+    
+    def make_vertex_group(self, selector, name=None):
+        with self.select_vertices(selector):
             bpy.ops.object.vertex_group_add()
             bpy.ops.object.vertex_group_assign()
-            bpy.ops.mesh.select_all(action='DESELECT')
-            bpy.ops.object.mode_set(mode='OBJECT')
+            if name:
+                self.obj.vertex_groups[-1].name = name
+        return self
+    
+    def select_and_delete(self, select_mode, selector):
+        with self.select_vertices(selector):
+            bpy.ops.mesh.select_mode(type=select_mode)
+            bpy.ops.mesh.delete(type=select_mode)
         return self
     
     def parent(self, parent_tag, hide=False):
