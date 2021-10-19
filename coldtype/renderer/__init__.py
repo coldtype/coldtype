@@ -120,6 +120,7 @@ class Renderer():
             self.dead = True
             return
         
+        self._unnormalized_file = self.args.file
         self.args.file = str(self.prenormalize_filepath(self.args.file))
 
         self.source_reader = SourceReader(
@@ -1309,7 +1310,8 @@ class Renderer():
         print("> RESTARTING...")
         args = sys.argv
         if len(args) > 1:
-            args[1] = str(self.source_reader.filepath)
+            #args[1] = str(self.source_reader.filepath)
+            args[1] = str(self._unnormalized_file)
         
         # attempt to preserve state across reload
         fo = str(self.state._frame_offsets)

@@ -354,8 +354,9 @@ class SourceReader():
                     if isinstance(e, ColdtypeCeaseConfigException):
                         pass
                     else:
-                        print("Failed to load config", p)
-                        print("Exception:", e)
+                        #print("Failed to load config", p)
+                        #print("Exception:", e)
+                        pass
         
         if len(files) == 0 or not self.config:
             self.config = ColdtypeConfig({}, None, args)
@@ -469,7 +470,7 @@ class SourceReader():
             self.codepath,
             self.program,
             output_folder_override,
-            blender_file=self.blender_file())
+            blender_file=self.blender_file() if self.config.blender_watch else None)
     
     def renderables(self,
         viewer_solos=[],
