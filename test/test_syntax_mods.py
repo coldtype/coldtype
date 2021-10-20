@@ -42,6 +42,13 @@ class TestSyntaxMods(unittest.TestCase):
         self.assertEqual(len(self.sr2.renderables()), 1)
         self.assertEqual(self.sr2.program["__RUNNER__"], "special")
     
+    def test_source_with_config(self):
+        sr = SourceReader("test/source_file_with_config.py")
+        sr.unlink()
+        self.assertEqual(sr.filepath.stem, "source_file_with_config")
+        self.assertEqual(len(sr.renderables()), 2)
+        self.assertEqual(sr.config.window_pin, "SW")
+    
     def test_frame_read(self):
         result = self.sr.frame_results(1)
         self.assertEqual(len(result), 2)

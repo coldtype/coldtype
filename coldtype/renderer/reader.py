@@ -327,7 +327,10 @@ class SourceReader():
                 #files.append(Path(args.config).expanduser())
 
         if filepath:
-            files.append(Path(filepath).expanduser())
+            fp = Path(filepath).expanduser()
+            if fp.exists() and not fp.is_dir():
+                if "# .coldtype" in fp.read_text():
+                    files.append(fp)
         
         if args and args.file and args.config != "0":
             fp = Path(args.file).expanduser()
