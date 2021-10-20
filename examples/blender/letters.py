@@ -6,7 +6,8 @@ from coldtype.fx.skia import potrace, phototype
 def letters(f):
     return (StSt(chr(f.i+65),
         Font.Find("CompadreV"), 1000, wdth=0)
-        .align(f.a.r)
+        #.align(f.a.r)
+        .translate(0, 200)
         .f(1)
         .pen()
         .ch(b3d(lambda bp: bp

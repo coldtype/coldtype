@@ -1,4 +1,5 @@
 from coldtype.time.timeline import Timeline
+from coldtype.geometry import Rect
 import math
 from contextlib import contextmanager
 
@@ -42,10 +43,9 @@ class BpyWorld(_Chainable):
         else:
             self.scene.render.fps = t.fps
             self.scene.render.fps_base = 1
-        
         return self
     
-    def render_settings(self, samples=16, denoiser=False):
+    def render_settings(self, samples=16, denoiser=False, canvas:Rect=None):
         if samples > 0:
             self.scene.cycles.samples = samples
         
@@ -56,6 +56,10 @@ class BpyWorld(_Chainable):
             if denoiser is False:
                 self.scene.cycles.use_denoising = False
         
+        if canvas is not None:
+            self.scene.render.resolution_x = canvas.w
+            self.scene.render.resolution_y = canvas.h
+
         return self
     
     @contextmanager
@@ -354,7 +358,31 @@ class BpyObj(_Chainable):
             m.use_smooth_shade = smooth
         return self
     
-    def displace(self, strength=1, midlevel=0.5, texture=None, coords_object=None, direction="NORMAL"):
+    def smooth(self,
+        factor=0.5,
+        repeat=1,
+        x=True,
+        y=True,
+        z=True
+        ):
+        with self.obj_selected():
+            bpy.ops.object.modifier_add(type="SMOOTH")
+            m = self.obj.modifiers["Smooth"]
+            m.factor = factor
+            m.iterations = repeat
+            m.use_x = bool(x)
+            m.use_y = bool(y)
+            m.use_z = bool(z)
+        return self
+    
+    def displace(self,
+        strength=1,
+        midlevel=0.5,
+        texture=None,
+        coords_object=None,
+        direction="NORMAL",
+        vertex_group=None
+        ):
         with self.obj_selected():
             bpy.ops.object.modifier_add(type="DISPLACE")
             
@@ -379,6 +407,9 @@ class BpyObj(_Chainable):
                     m.texture_coords_object = bpy.data.objects[coords_object]
                 except KeyError:
                     print("coords_object not found", coords_object)
+            
+            if vertex_group and isinstance(vertex_group, str):
+                m.vertex_group = vertex_group
         return self
     
     def boolean(self, object):
