@@ -128,7 +128,7 @@ class BpyObj(_Chainable):
                 yield None
             else:
                 yield
-            return
+            return self
         
         bpy.context.view_layer.objects.active = None
         bpy.context.view_layer.objects.active = self.obj
@@ -139,6 +139,7 @@ class BpyObj(_Chainable):
             yield
         self.obj.select_set(False)
         bpy.context.view_layer.objects.active = None
+        return self
     
     @contextmanager
     def obj_selection_sequence(self, other_tag):
@@ -337,20 +338,15 @@ class BpyObj(_Chainable):
         return self
     
     def solidify(self, thickness=1):
-        bpy.context.view_layer.objects.active = None
-        bpy.context.view_layer.objects.active = self.obj
-        self.obj.select_set(True)
-        if "Solidify" not in self.obj.modifiers:
+        with self.obj_selected():
             bpy.ops.object.modifier_add(type="SOLIDIFY")
-        self.obj.modifiers["Solidify"].thickness = thickness
-        self.obj.select_set(False)
-        bpy.context.view_layer.objects.active = None
+            m = self.obj.modifiers["Solidify"]
+            m.thickness = thickness
         return self
     
     def remesh(self, octree_depth=7, smooth=False):
         with self.obj_selected():
             bpy.ops.object.modifier_add(type="REMESH")
-            
             m = self.obj.modifiers["Remesh"]
             m.mode = "SHARP"
             m.octree_depth = octree_depth

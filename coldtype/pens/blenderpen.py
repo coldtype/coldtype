@@ -259,12 +259,6 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
             return
         self.bsdf().inputs[15].default_value = amount
         return self
-    
-    def subsurface(self, amount=0.01):
-        if not self.material == "auto" or not self.bsdf():
-            return
-        self.bsdf().inputs[1].default_value = amount
-        return self
 
     def emission(self, color=None, strength=1):
         if not self.material == "auto" or not self.bsdf():
@@ -344,62 +338,6 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
         return self
 
     convertToMesh = convert_to_mesh
-    
-    def solidify(self, thickness=1):
-        bpy.context.view_layer.objects.active = None
-        bpy.context.view_layer.objects.active = self.obj
-        self.obj.select_set(True)
-        if "Solidify" not in self.obj.modifiers:
-            bpy.ops.object.modifier_add(type="SOLIDIFY")
-        self.obj.modifiers["Solidify"].thickness = thickness
-        self.obj.select_set(False)
-        bpy.context.view_layer.objects.active = None
-        return self
-    
-    def remesh(self, octree_depth=7, smooth=False):
-        bpy.context.view_layer.objects.active = None
-        bpy.context.view_layer.objects.active = self.obj
-        self.obj.select_set(True)
-        if "Remesh" not in self.obj.modifiers:
-            bpy.ops.object.modifier_add(type="REMESH")
-        self.obj.modifiers["Remesh"].mode = "SHARP"
-        self.obj.modifiers["Remesh"].octree_depth = octree_depth
-        self.obj.modifiers["Remesh"].use_remove_disconnected = False
-        self.obj.modifiers["Remesh"].use_smooth_shade = smooth
-        self.obj.select_set(False)
-        bpy.context.view_layer.objects.active = None
-        return self
-    
-    def boolean(self, object):
-        with self.obj_selected():
-            bpy.ops.object.modifier_add(type="BOOLEAN")
-            m = self.obj.modifiers["Boolean"]
-            m.operation = "INTERSECT"
-            try:
-                m.object = bpy.data.objects[object]
-            except KeyError:
-                print("object for boolean not found", object)
-        return self
-    
-    def shade_smooth(self):
-        with self.obj_selected():
-            bpy.ops.object.shade_smooth()
-        return self
-    
-    def subsurface(self):
-        with self.obj_selected():
-            bpy.ops.object.modifier_add(type="SUBSURF")
-        return self
-    
-    @contextmanager
-    def obj_selected(self):
-        bpy.context.view_layer.objects.active = None
-        bpy.context.view_layer.objects.active = self.obj
-        self.obj.select_set(True)
-        yield self.obj
-        self.obj.select_set(False)
-        bpy.context.view_layer.objects.active = None
-        return self
     
     def remesh_smooth(self, octree_depth=7, smooth=False):
         with self.obj_selected() as o:
