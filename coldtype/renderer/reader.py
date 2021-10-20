@@ -332,7 +332,8 @@ class SourceReader():
         if args and args.file and args.config != "0":
             fp = Path(args.file).expanduser()
             if fp.exists() and not fp.is_dir():
-                files.append(fp)
+                if "# .coldtype" in fp.read_text():
+                    files.append(fp)
 
         py_config = {}
         for p in files:

@@ -5,9 +5,11 @@ but you cannot click on it
 (when run with `-c .`)
 """
 
+# .coldtype
 WINDOW_PIN = "SE"
 WINDOW_PASSTHROUGH = True
 WINDOW_TRANSPARENT = True
+WINDOW_CHROMELESS = True
 
 from coldtype import *
 

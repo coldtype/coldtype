@@ -123,6 +123,10 @@ class Renderer():
         self._unnormalized_file = self.args.file
         self.args.file = str(self.prenormalize_filepath(self.args.file))
 
+        if self.on_args_parsed():
+            self.dead = True
+            return
+
         self.source_reader = SourceReader(
             renderer=self,
             inputs=self.args.inputs,
@@ -168,6 +172,9 @@ class Renderer():
             self.viewer_solos = []
         
         self.viewer_sample_frames = 1
+
+    def on_args_parsed(self):
+        pass
     
     def prenormalize_filepath(self, filepath):
         return SourceReader.Demo(filepath)
