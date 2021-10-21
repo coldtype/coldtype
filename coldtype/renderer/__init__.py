@@ -121,7 +121,13 @@ class Renderer():
             return
         
         self._unnormalized_file = self.args.file
-        self.args.file = str(self.prenormalize_filepath(self.args.file))
+        
+        normalized = self.prenormalize_filepath(self.args.file)
+        if normalized == -1:
+            self.dead = True
+            return
+
+        self.args.file = str(normalized)
 
         if self.on_args_parsed():
             self.dead = True
