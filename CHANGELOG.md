@@ -77,3 +77,9 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ### Added
 - `strip=` kwarg on StSt (defaulting to `True`) so incoming text is automatically stripped (but can be overriden as in the `Glyphwise` use of `StSt`)
 - `coldtype.blender.fluent` experimental chainable interface for direct manipulation of blender objects
+
+## [0.7.4] - 2021-10-21
+### Added
+- Support for lineTo's in `distribute_on_path`
+- More `coldtype.blender.fluent` interface
+- Ability to exit from renderer with -1 in `prenormalize_filepath`

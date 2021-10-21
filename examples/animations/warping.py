@@ -20,7 +20,9 @@ loop = Loop(150, 15, [ # some keyframes
 def warp(f):
     state = f.a.t.current_state(f.i, e="eeio")
     return ((ß:=StSt("WARP\nBLUR", peshka, ro=1, **state))
-        .align(f.a.r).pen() # a single, centered vector
+        .xalign(f.a.r)
+        .align(f.a.r)
+        .pen() # a single, centered vector
         .f(Gradient.V(ß.ambit(), hsl(0.7), hsl(0.9)))
         #.flatten(5) # slower but preserves curves across warp
         .nlt(warp_fn(f.i*30, f.i, mult=int(state["warp"])))
