@@ -424,6 +424,14 @@ class BpyObj(_Chainable):
             bpy.ops.object.shade_smooth()
         return self
     
+    def auto_smooth(self, angle=30):
+        if angle is None:
+            self.obj.data.use_auto_smooth = False
+        else:
+            self.obj.data.use_auto_smooth = True
+            self.obj.data.auto_smooth_angle = math.radians(angle)
+        return self
+    
     def subsurface(self):
         with self.obj_selected():
             bpy.ops.object.modifier_add(type="SUBSURF")
