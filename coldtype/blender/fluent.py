@@ -436,3 +436,10 @@ class BpyObj(_Chainable):
         with self.obj_selected():
             bpy.ops.object.modifier_add(type="SUBSURF")
         return self
+    
+    def decimate_planar(self):
+        with self.obj_selected():
+            bpy.ops.object.modifier_add(type="DECIMATE")
+            m = self.obj.modifiers["Decimate"]
+            m.decimate_type = "DISSOLVE"
+        return self
