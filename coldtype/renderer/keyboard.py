@@ -539,10 +539,12 @@ SHORTCUTS = {
     KeyboardShortcut.LoadNextInDirectory: [
         [["cmd", "alt"], "<right>"],
         [[], "<page-down>"],
+        [[], "u"],
     ],
     KeyboardShortcut.LoadPrevInDirectory: [
         [["cmd", "alt"], "<left>"],
-        [[], "<page-up>"]
+        [[], "<page-up>"],
+        [[], "y"],
     ],
 
     KeyboardShortcut.MIDIControllersPersist: [

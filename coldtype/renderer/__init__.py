@@ -314,9 +314,15 @@ class Renderer():
                 if full_restart:
                     fos = {}
                     if self.args.frame_offsets:
+                        def adjuster(i, o):
+                            if i <= len(v)-1:
+                                return v[i]
+                            else:
+                                return 0
+                            
                         fos = eval(self.args.frame_offsets)
                         for k, v in fos.items():
-                            self.state.adjust_keyed_frame_offsets(k, lambda i, o: v[i])
+                            self.state.adjust_keyed_frame_offsets(k, adjuster)
             
                 if trigger == Action.Initial:
                     if self.winmans.b3d:
