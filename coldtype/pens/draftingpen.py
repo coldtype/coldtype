@@ -1686,6 +1686,13 @@ class DraftingPen(RecordingPen, SHContext):
     def pickle(self, dst):
         dst.parent.mkdir(parents=True, exist_ok=True)
         fh = open(str(dst), "wb")
+        
+        def prune(pen, state, data):
+            if state >= 0:
+                if hasattr(pen, "_stst"):
+                    pen._stst = None
+        
+        self.walk(prune)
         pickle.dump(self, fh)
         fh.close()
         return self

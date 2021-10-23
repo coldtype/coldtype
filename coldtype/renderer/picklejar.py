@@ -1,4 +1,5 @@
 import os
+from shutil import rmtree
 from coldtype import *
 
 if False:
@@ -18,9 +19,12 @@ else:
 
 results = []
 for pickle in pickles:
-    results.append([
-        pickle,
-        DP().Unpickle(pickle)])
+    try:
+        results.append([
+            pickle,
+            DP().Unpickle(pickle)])
+    except EOFError:
+        print("invalid pickle")
 
 def make_renderable(name, result):
     r = result.data.get("rect", Rect(1000, 1000))
@@ -40,3 +44,6 @@ for result in results:
 
 for pickle, _ in results:
     pickle.unlink()
+
+if picklejar and picklejar.exists():
+    rmtree(picklejar)

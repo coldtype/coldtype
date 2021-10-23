@@ -228,7 +228,9 @@ def StSt(text,
         lockup = lockup.pens()
         #if len(lockup) == 1:
         #    return lockup[0]
+    #lockup._stst_style = style
     return lockup
+
 
 GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e", "l", "li"])
 

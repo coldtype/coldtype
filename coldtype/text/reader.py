@@ -932,6 +932,7 @@ class StyledString(FittableMixin):
         """
         Vectorize text into a ``DATPens``, such that each glyph (or ligature) is represented by a single `DATPen` (or a ``DATPens`` in the case of a color font, which will then nest a `DATPen` for each layer of that color glyph)
         """
+
         self.resetGlyphRun()
         if not self.style.no_shapes:
             self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
@@ -1001,6 +1002,7 @@ class StyledString(FittableMixin):
         for k, v in self.style.data.items():
             pens.data[k] = v
 
+        pens._stst = self
         return pens
 
     def pen(self, frame=True) -> DraftingPen:
