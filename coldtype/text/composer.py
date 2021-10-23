@@ -270,7 +270,7 @@ def Glyphwise(st, styler, start=0, line=0):
             for lidx, l in enumerate(lines):
                 gs.append(Glyphwise(l, styler, start=start, line=lidx))
                 start += len(l)
-            return _PensClass(gs).reversePens().distribute(v=True).reversePens()
+            return _PensClass(gs).stack()
     except AttributeError:
         pass
 

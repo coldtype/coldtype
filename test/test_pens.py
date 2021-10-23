@@ -438,6 +438,58 @@ def lattr_style_set(r):
         self.assertEqual(lockup[-1].glyphName, "E")
         self.assertAlmostEqual(x, 792, 0)
         self.assertAlmostEqual(y, 312, 0)
+    
+    def test_stack(self):
+        r = Rect(540, 540)
+        sr = Rect(100, 100)
+
+        res = (DraftingPens([
+            (DraftingPen()
+                .oval(sr)
+                .f(hsl(0.5))
+                .tag("A")),
+            (DraftingPen()
+                .oval(sr)
+                .f(hsl(0.7))
+                .tag("B")),
+            (DraftingPen()
+                .oval(sr)
+                .f(hsl(0.9))
+                .tag("C"))])
+            .stack(10))
+        
+        res.picklejar(r)
+
+        self.assertEqual(res.fft("C").ambit().y, 0)
+        self.assertEqual(res.fft("B").ambit().y, 110)
+        self.assertEqual(res.fft("A").ambit().y, 220)
+    
+    def test_stack_and_lead(self):
+        r = Rect(540, 540)
+        sr = Rect(100, 100)
+
+        res = (DraftingPens([
+            (DraftingPen()
+                .oval(sr)
+                .f(hsl(0.5))
+                .tag("A")),
+            (DraftingPen()
+                .oval(sr)
+                .f(hsl(0.7))
+                .tag("B")),
+            (DraftingPen()
+                .oval(sr)
+                .f(hsl(0.9))
+                .tag("C"))])
+            .stack(10)
+            .lead(10))
+        
+        res.picklejar(r)
+
+        self.assertEqual(res.fft("C").ambit().y, 0)
+        self.assertEqual(res.fft("B").ambit().y, 120)
+        self.assertEqual(res.fft("A").ambit().y, 240)
+
 
 if __name__ == "__main__":
     unittest.main()

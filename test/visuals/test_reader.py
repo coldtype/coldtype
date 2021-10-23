@@ -16,7 +16,7 @@ def test_style_mod(r):
     out = DATPens()
     out += StyledString("CLDTP", style).pen()
     out += StyledString("CLDTP", style.mod(wdth=0)).pen()
-    return out.rp().distribute(v=1).track(10, v=1).align(r).f("hr", 0.5, 0.5)
+    return out.stack(10).align(r).f("hr", 0.5, 0.5)
 
 
 @test()
@@ -25,7 +25,7 @@ def test_fit_height(r):
     out = DATPens()
     out += StyledString("CLDTP", style).pen()
     out += StyledString("CLDTP", style.mod(fitHeight=300)).pen()
-    return out.rp().distribute(v=1).track(10, v=1).align(r).f("hr", 0.5, 0.5)
+    return out.stack(10).align(r).f("hr", 0.5, 0.5)
 
 
 @test()
