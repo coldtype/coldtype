@@ -549,7 +549,11 @@ class DraftingPens(DraftingPen):
         try:
             p = self
             for x in idx:
-                p = p[x]
+                if hasattr(p, "_pens"):
+                    p = p[x]
+                else:
+                    p.mod_contour(x, fn)
+                    return self
         except:
             p = self[idx]
         if enum_idx is None:
