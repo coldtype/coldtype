@@ -1,7 +1,7 @@
 import math, inspect
 from random import Random
 from re import L
-from typing import Callable, Optional
+from typing import Callable, Optional, Type
 
 from fontTools.misc.transform import Transform
 
@@ -345,6 +345,21 @@ class DraftingPens(DraftingPen):
                 p.translate(t*idx, 0)
         return self
     
+    def stack(self, leading=0, tv=0):
+        "Vertical distribution of elements"
+        ambits = [p.ambit(th=0, tv=tv).expand(leading, "N") for p in self._pens]
+        for idx, p in enumerate(self._pens):
+            for a in ambits[idx+1:]:
+                p.translate(0, a.h)
+        return self
+    
+    def lead(self, leading):
+        "Vertical spacing"
+        ln = len(self._pens)
+        for idx, p in enumerate(self._pens):
+            p.translate(0, leading*(ln-1-idx))
+        return self
+    
     def track_with_width(self, t):
         """Track-out/distribute elements"""
         x = 0
@@ -554,7 +569,7 @@ class DraftingPens(DraftingPen):
                 else:
                     p.mod_contour(x, fn)
                     return self
-        except:
+        except TypeError:
             p = self[idx]
         if enum_idx is None:
             res = fn(p)
