@@ -16,7 +16,7 @@ def glyphwise(f):
 
     return (Glyphwise("COLD\nTYPE", styler)
         .xalign(f.a.r, th=0)
-        .track(30, v=1)
+        .lead(30)
         .align(f.a.r, th=0)
         .collapse()
         .reverse_pens()

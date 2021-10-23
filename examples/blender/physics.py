@@ -15,7 +15,7 @@ if False: # experimental
 def justi(r):
     return (StSt(txt,
         Font.MutatorSans(), 300, wght=0.25)
-        .track(100, v=1)
+        .track(110, v=1)
         .map(λ.track_to_rect(r.inset(70)))
         .align(r.inset(50))
         .remove_blanks()
