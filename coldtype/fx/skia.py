@@ -1,4 +1,4 @@
-import skia, tempfile
+import skia, tempfile, math
 from subprocess import run
 from functools import reduce
 from random import Random, randint
@@ -68,7 +68,51 @@ class Skfi():
         matrix.setScaleX(xs)
         matrix.setScaleY(ys)
         return noise.makeWithLocalMatrix(matrix)
+    
+    
+    # straight from the chromium source https://chromium.googlesource.com/chromium/blink/+/refs/heads/main/Source/platform/graphics/filters/FEColorMatrix.cpp
 
+    @staticmethod
+    def huerotate(hue):
+        cosHue = math.cos(hue * math.pi / 180);
+        sinHue = math.sin(hue * math.pi / 180);
+        matrix = [0 for _ in range(0, 20)]
+        matrix[0] = 0.213 + cosHue * 0.787 - sinHue * 0.213;
+        matrix[1] = 0.715 - cosHue * 0.715 - sinHue * 0.715;
+        matrix[2] = 0.072 - cosHue * 0.072 + sinHue * 0.928;
+        matrix[3] = matrix[4] = 0;
+        matrix[5] = 0.213 - cosHue * 0.213 + sinHue * 0.143;
+        matrix[6] = 0.715 + cosHue * 0.285 + sinHue * 0.140;
+        matrix[7] = 0.072 - cosHue * 0.072 - sinHue * 0.283;
+        matrix[8] = matrix[9] = 0;
+        matrix[10] = 0.213 - cosHue * 0.213 - sinHue * 0.787;
+        matrix[11] = 0.715 - cosHue * 0.715 + sinHue * 0.715;
+        matrix[12] = 0.072 + cosHue * 0.928 + sinHue * 0.072;
+        matrix[13] = matrix[14] = 0;
+        matrix[15] = matrix[16] = matrix[17] = 0;
+        matrix[18] = 1;
+        matrix[19] = 0;
+        return skia.ColorFilters.Matrix(matrix)
+    
+    @staticmethod
+    def saturate(s):
+        matrix = [0 for _ in range(0, 20)]
+        matrix[0] = 0.213 + 0.787 * s;
+        matrix[1] = 0.715 - 0.715 * s;
+        matrix[2] = 0.072 - 0.072 * s;
+        matrix[3] = matrix[4] = 0;
+        matrix[5] = 0.213 - 0.213 * s;
+        matrix[6] = 0.715 + 0.285 * s;
+        matrix[7] = 0.072 - 0.072 * s;
+        matrix[8] = matrix[9] = 0;
+        matrix[10] = 0.213 - 0.213 * s;
+        matrix[11] = 0.715 - 0.715 * s;
+        matrix[12] = 0.072 + 0.928 * s;
+        matrix[13] = matrix[14] = 0;
+        matrix[15] = matrix[16] = matrix[17] = 0;
+        matrix[18] = 1;
+        matrix[19] = 0;
+        return skia.ColorFilters.Matrix(matrix)
 
 # CHAINABLES
 
@@ -246,3 +290,15 @@ def color_phototype(rect,
     rgba=[1, 1, 1, 1]
     ):
     return phototype(rect, blur, 255-cut, cutw, fill=None, rgba=rgba, luma=False)
+
+def huerotate(c):
+    c = c*360%360
+    def _fill(pen):
+        return pen.attr(skp=dict(ColorFilter=Skfi.huerotate(c)))
+    return _fill
+
+def saturate(c):
+    #c = c*360%360
+    def _fill(pen):
+        return pen.attr(skp=dict(ColorFilter=Skfi.saturate(c)))
+    return _fill
