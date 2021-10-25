@@ -17,7 +17,6 @@ class RendererState():
         self.previewing = False
         self.preview_scale = 1
         self.controller_values = {}
-        self.mouse = Point(0, 0)
         self.overlays = {}
         self._frame_offsets = {}
         self._initial_frame_offsets = {}
@@ -25,6 +24,18 @@ class RendererState():
         self._last_filepath = None
         self.cv2caps = {}
         self.inputs = []
+        self.playing = False
+
+        self.cursor = Point(0, 0)
+        self.cursor_history = []
+
+        for c in renderer.args.last_cursor.split(";"):
+            cp = Point([float(p) for p in c.split(",")])
+            self.cursor_history.append(cp)
+        
+        if len(self.cursor_history) > 0:
+            self.cursor = self.cursor_history[-1]
+
         self.reset()
     
     def reset(self, ignore_current_state=False):
@@ -66,16 +77,21 @@ class RendererState():
         else:
             print("No source; cannot persist state")
     
-    def record_mouse(self, pos):
-        self.mouse = pos.scale(1/self.preview_scale)
+    def record_cursor(self, pos):
+        self.cursor = pos.scale(1/self.preview_scale).round_to(1)
+        return self.cursor
         #return Action.PreviewStoryboard
     
     def on_mouse_button(self, pos, btn, action, mods):
-        self.record_mouse(pos)
-        return Action.PreviewStoryboard
+        if not self.playing and action == 0:
+            p = self.record_cursor(pos)
+            if self.cursor_history[-1] != p:
+                self.cursor_history.append(p)
+                return Action.PreviewStoryboard
     
     def on_mouse_move(self, pos):
-        return self.record_mouse(pos)
+        if self.playing:
+            self.record_cursor(pos)
     
     def mod_preview_scale(self, inc, absolute=0):
         if absolute > 0:

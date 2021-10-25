@@ -48,8 +48,7 @@ class Winmans():
         self.last_time = -1
         self.refresh_delay = self.config.refresh_delay
         self.backoff_refresh_delay = self.refresh_delay
-
-        self.playing = 0
+        
         self.print_approx_fps = False
 
         self.bg = False
@@ -151,14 +150,14 @@ class Winmans():
             self.mod_title()
     
     def toggle_playback(self):
-        if self.playing == 0:
-            self.playing = 1
+        if self.renderer.state.playing == 0:
+            self.renderer.state.playing = 1
         else:
-            self.playing = 0
+            self.renderer.state.playing = 0
         
         if not self.glsk:
             if self.b3d:
-                self.b3d.toggle_playback(self.playing)
+                self.b3d.toggle_playback(self.renderer.state.playing)
     
     def frame_offset(self, offset):
         self.renderer.state.adjust_all_frame_offsets(offset)
@@ -180,7 +179,7 @@ class Winmans():
     
     def turn_over(self):
         if self.midi:
-            if self.midi.monitor(self.playing):
+            if self.midi.monitor(self.renderer.state.playing):
                 self.renderer.action_waiting = Action.PreviewStoryboard
 
         if self.ws:
@@ -231,7 +230,7 @@ class Winmans():
                     self.poll()
                     continue
             
-            if self.playing:
+            if self.renderer.state.playing:
                 time.sleep(0.01)
             else:
                 time.sleep(self.backoff_refresh_delay)

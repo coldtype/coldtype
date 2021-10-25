@@ -83,3 +83,7 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 - Support for lineTo's in `distribute_on_path`
 - More `coldtype.blender.fluent` interface
 - Ability to exit from renderer with -1 in `prenormalize_filepath`
+
+## [0.7.5] - 2021-10-25
+### Added
+- `@ui` decorator idea, to be used/tested in Goodhertz plugin-builder

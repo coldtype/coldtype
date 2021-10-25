@@ -800,10 +800,15 @@ class DATPens(DraftingPens, DATPen):
     
     def Enumerate(enumerable, enumerator):
         out = DATPens()
+        if len(enumerable) == 0:
+            return out
         es = list(enumerable)
         length = len(es)
         for idx, item in enumerate(es):
-            e = idx / (length-1)
+            if idx == 0 and len(enumerable) == 1:
+                e = 0.5
+            else:
+                e = idx / (length-1)
             out.append(enumerator(DATPensEnumerable(idx, item, e)))
         return out
 

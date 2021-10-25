@@ -102,7 +102,9 @@ class Renderer():
 
             frame_offsets=parser.add_argument("-fo", "--frame-offsets", type=str, default=None, help=argparse.SUPPRESS),
 
-            viewer_solos=parser.add_argument("-vs", "--viewer-solos", type=str, default=None, help=argparse.SUPPRESS)
+            viewer_solos=parser.add_argument("-vs", "--viewer-solos", type=str, default=None, help=argparse.SUPPRESS),
+
+            last_cursor=parser.add_argument("-lc", "--last-cursor", type=str, default="0,0", help=argparse.SUPPRESS)
         )
 
         ConfigOption.AddCommandLineArgs(pargs, parser)
@@ -260,8 +262,8 @@ class Renderer():
         return render, res
 
     def show_error(self):
-        if self.winmans.playing > 0:
-            self.winmans.playing = -1
+        if self.state.playing > 0:
+            self.state.playing = -1
         
         if self.source_reader.config.no_viewer_errors: 
             short_error = self.print_error()
@@ -702,8 +704,8 @@ class Renderer():
                 return True
             if self.source_reader.program:
                 preview_count, render_count = self.render(trigger, indices=indices)
-                if self.winmans.playing < 0:
-                    self.winmans.playing = 1
+                if self.state.playing < 0:
+                    self.state.playing = 1
             else:
                 print(">>>>>>>>>>>> No program loaded! <<<<<<<<<<<<<<")
         except:
@@ -1199,7 +1201,7 @@ class Renderer():
         self.previews_waiting = []
         self.last_render_cleared = False
 
-        if self.winmans.playing > 0:
+        if self.state.playing > 0:
             self.on_action(Action.PreviewStoryboardNext)
         
         return did_preview
@@ -1333,6 +1335,7 @@ class Renderer():
             args[1] = str(self._unnormalized_file)
         
         # attempt to preserve state across reload
+
         fo = str(self.state._frame_offsets)
         try:
             foi = args.index("-fo")
@@ -1340,6 +1343,17 @@ class Renderer():
         except ValueError:
             args.append("-fo")
             args.append(fo)
+        
+        lc = []
+        for c in self.state.cursor_history:
+            lc.append(",".join([str(p) for p in c]))
+        lc = ";".join(lc)
+        try:
+            lci = args.index("-lc")
+            args[lci+1] = lc
+        except ValueError:
+            args.append("-lc")
+            args.append(lc)
         
         print("> RESTART:", args)
         os.execl(sys.executable, *(["-m"]+args))

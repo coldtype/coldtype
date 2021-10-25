@@ -4,6 +4,14 @@ from coldtype.interpolation import norm
 from coldtype.geometry.primitives import polar_coord, line_intersection, calc_angle, calc_vector
 
 
+def rt(v, mult):
+    rndd = float(round(v / mult) * mult)
+    if rndd.is_integer():
+        return int(rndd)
+    else:
+        return rndd
+
+
 class Point(Geometrical):
     """Representation of a point (x,y), indexable"""
     def __init__(self, *points):
@@ -64,8 +72,8 @@ class Point(Geometrical):
         return Point([int(round(n)) for n in self])
     
     def round_to(self, to=10):
-        """round the values in the point to the nearest integer multiple"""
-        return Point([int(round(n/to)*to) for n in self.xy()])
+        """round the values in the point to the nearest integer multiple"""        
+        return Point([rt(n, to) for n in self.xy()])
     
     def inside(self, rect):
         mnx, mny, mxx, mxy = rect.mnmnmxmx()

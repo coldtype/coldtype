@@ -6,17 +6,21 @@ Proof-of-concept for @ui interface
 
 @ui(timeline=Timeline(60, 60), bg=0)
 def ui1(u):
-    mouse = (P()
-        .oval(u.m.rect(50, 50))
-        .f(1))
+    c = (P()
+        .oval(u.c.rect(30, 30))
+        .fssw(-1, 1, 4))
+    
+    ch = PS.Enumerate(u.ch, lambda x:
+        (P().oval(x.el.rect(20, 20))
+            .fssw(-1, hsl(0.6, 1), 2)))
     
     box = ((ß:=StSt("{:02d}".format(u.i),
             Font.RecursiveMono(),
             font_size=300))
         .align(u.r, th=0)
-        .cond(u.m.inside(ß.ambit()),
+        .cond(u.c.inside(ß.ambit()),
             λ.f(hsl(0.9)),
             λ.f(1)))
     
-    return PS([mouse, box])
+    return PS([ch, c, box])
 
