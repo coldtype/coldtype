@@ -473,7 +473,7 @@ class Renderer():
                                     for pr in prev_renders:
                                         if pr.name == render.name and pr.last_result and pr.composites:
                                             render.last_result = pr.last_result
-                            if render.single_frame and render.last_result:
+                            if render.single_frame and not render.interactive and render.last_result:
                                 result = render.last_result
                             else:
                                 result = render.normalize_result(render.run(rp, self.state))
@@ -486,7 +486,7 @@ class Renderer():
                             if render.direct_draw:
                                 self.previews_waiting.append([render, None, rp])
                             else:
-                                if render.single_frame and render.last_result:
+                                if render.single_frame and not render.interactive and render.last_result:
                                     preview_count += 1
                                     self.previews_waiting.append([render, result, rp])
                                 else:

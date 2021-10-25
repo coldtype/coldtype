@@ -1,36 +1,21 @@
-import math, os, re
+import math, os
 from typing import Tuple
 
-from enum import Enum
 from subprocess import run
 from pathlib import Path
 from datetime import datetime
 
-from coldtype.helpers import loopidx, interp_dict
-from coldtype.time.timeable import Timing, Timeable, TimeableSet
+from coldtype.time.timeable import Timeable
 from coldtype.time import Frame
 from coldtype.time.timeline import Timeline
-from coldtype.time.loop import Loop, LoopPhase
 
-from coldtype.text.reader import normalize_font_prefix, Font, Style
+from coldtype.text.reader import Style
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
-from coldtype.geometry import Rect, Point
-from coldtype.color import normalize_color, hsl, bw
+from coldtype.geometry import Rect
+from coldtype.color import bw
 
 from coldtype.renderable.renderable import renderable, Action, RenderPass, Overlay
-
-
-try:
-    import skia
-except ImportError:
-    skia = None
-
-try:
-    import drawBot as db
-    import AppKit
-except ImportError:
-    db = None
 
 
 class animation(renderable, Timeable):

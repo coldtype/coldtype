@@ -128,6 +128,7 @@ class renderable():
         clip=False,
         composites=False,
         single_frame=True,
+        interactive=False,
         cv2caps=None,
         render_bg=False,
         style="default",
@@ -151,6 +152,7 @@ class renderable():
         self.style = style
         self.composites = composites
         self.single_frame = single_frame
+        self.interactive = interactive
         self.cv2caps = cv2caps
         self._hide = hide
 

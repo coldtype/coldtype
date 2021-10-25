@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from coldtype.geometry import Point
+from coldtype.renderable import Action
 
 
 class RendererStateEncoder(json.JSONEncoder):
@@ -70,7 +71,8 @@ class RendererState():
         #return Action.PreviewStoryboard
     
     def on_mouse_button(self, pos, btn, action, mods):
-        return self.record_mouse(pos)
+        self.record_mouse(pos)
+        return Action.PreviewStoryboard
     
     def on_mouse_move(self, pos):
         return self.record_mouse(pos)

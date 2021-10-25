@@ -73,6 +73,21 @@ class Point(Geometrical):
             return True
         else:
             return False
+    
+    def clip(self, rect):
+        x, y = self
+        mnx, mny, mxx, mxy = rect.mnmnmxmx()
+        if x < mnx:
+            x = mnx
+        elif x > mxx:
+            x = mxx
+        
+        if y < mny:
+            y = mny
+        elif y > mxy:
+            y = mxy
+        
+        return Point(x, y)
 
     def flip(self, frame):
         return Point((self.x, frame.h - self.y))
