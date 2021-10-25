@@ -27,6 +27,7 @@ class Overlay(Enum):
     Info = "info"
     Timeline = "timeline"
     Rendered = "rendered"
+    Recording = "recording"
 
 class Action(Enum):
     Initial = "initial"

@@ -12,8 +12,8 @@ from coldtype.time.timeline import Timeline
 from coldtype.text.reader import Style
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
-from coldtype.geometry import Rect
-from coldtype.color import bw
+from coldtype.geometry import Rect, Point
+from coldtype.color import bw, hsl
 
 from coldtype.renderable.renderable import renderable, Action, RenderPass, Overlay
 
@@ -163,6 +163,10 @@ class animation(renderable, Timeable):
         #    return SkiaImage(render_pass.output_path)
 
         res = super().runpost(result, render_pass, renderer_state)
+
+        if Overlay.Recording in renderer_state.overlays and self.overlay:
+            res.append(DATPen().oval(Point(0, 0).rect(30, 30)).f(hsl(0, 1, 0.7)))
+
         if Overlay.Info in renderer_state.overlays and self.overlay:
             t = self.rect.take(50, "mny")
             frame:Frame = render_pass.args[0]

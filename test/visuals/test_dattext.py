@@ -8,7 +8,7 @@ def test_system_font(r):
 @test((1000, 300), rstate=1)
 def test_return_string(r, rs):
     ri = r.inset(30)
-    sx, sy = ri.ipos(rs.mouse, (0, 0))
+    sx, sy = ri.ipos(rs.cursor, (0, 0))
 
     rt = r.take(80, "mdy").take(0.8, "mdx")
     style = Style(co, 150, wdth=sx, fill=(0, 0.5))

@@ -510,7 +510,7 @@ class DATPen(DraftingPen):
     #         p.ease_curve(r.psw, r.pne, angle, fA, fB))
 
 
-DATPensEnumerable = namedtuple("DATPensEnumerable", ["i", "el", "e"])
+DATPensEnumerable = namedtuple("DATPensEnumerable", ["i", "el", "e", "len"])
 
 
 class DATPens(DraftingPens, DATPen):
@@ -809,7 +809,7 @@ class DATPens(DraftingPens, DATPen):
                 e = 0.5
             else:
                 e = idx / (length-1)
-            out.append(enumerator(DATPensEnumerable(idx, item, e)))
+            out.append(enumerator(DATPensEnumerable(idx, item, e, length)))
         return out
 
 DATPenSet = DATPens

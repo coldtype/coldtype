@@ -13,6 +13,10 @@ def ui1(u):
     ch = PS.Enumerate(u.ch, lambda x:
         (P().oval(x.el.rect(20, 20))
             .fssw(-1, hsl(0.6, 1), 2)))
+        
+    # cr = PS.Enumerate(u.cr.items(), lambda x:
+    #     (P().oval(x.el[1].rect(50, 50))
+    #         .fssw(-1, hsl(0.3, 1), 2)))
     
     box = ((ß:=StSt("{:02d}".format(u.i),
             Font.RecursiveMono(),

@@ -314,6 +314,10 @@ class Rect(Geometrical):
         unit = (full - sum(leadings)) / count
         amounts = [val for pair in zip([unit] * count, leadings) for val in pair][:-1]
         return [Rect(x) for x in subdivide(self.rect(), amounts, edge, forcePixel=forcePixel)][::2]
+    
+    sub = subdivide
+    subl = subdivide_with_leading
+    subls = subdivide_with_leadings
 
     def transform(self, t):
         pts = ["NW", "NE", "SE", "SW"]

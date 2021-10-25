@@ -48,7 +48,12 @@ class Winmans():
         self.last_time = -1
         self.refresh_delay = self.config.refresh_delay
         self.backoff_refresh_delay = self.refresh_delay
-        
+
+        self.title_states = {
+            "rendered": False,
+            "playing": False,
+        }
+
         self.print_approx_fps = False
 
         self.bg = False
@@ -129,11 +134,15 @@ class Winmans():
         self.last_title = text
         [wm.set_title(text) for wm in self.map()]
     
-    def mod_title(self, mod=None):
-        if mod is not None:
-            [wm.set_title(self.last_title + " / " + mod) for wm in self.map()]
-        else:
-            [wm.set_title(self.last_title) for wm in self.map()]
+    def mod_title(self, state, value):
+        self.title_states[state] = value
+        
+        ts = self.last_title
+        for k, v in self.title_states.items():
+            if v:
+                ts = ts + " / " + k
+        
+        [wm.set_title(ts) for wm in self.map()]
     
     def reset(self):
         [wm.reset() for wm in self.map()]
@@ -145,15 +154,17 @@ class Winmans():
     def toggle_rendered(self, force=None):
         self.renderer.state.toggle_overlay(Overlay.Rendered, force=force)
         if Overlay.Rendered in self.renderer.state.overlays:
-            self.mod_title("rendered")
+            self.mod_title("rendered", True)
         else:
-            self.mod_title()
+            self.mod_title("rendered", False)
     
     def toggle_playback(self):
         if self.renderer.state.playing == 0:
             self.renderer.state.playing = 1
+            self.mod_title("playing", True)
         else:
             self.renderer.state.playing = 0
+            self.mod_title("playing", False)
         
         if not self.glsk:
             if self.b3d:

@@ -46,6 +46,7 @@ class KeyboardShortcut(Enum):
     OverlayInfo = "overlay_info"
     OverlayTimeline = "overlay_timeline"
     OverlayRendered = "overlay_rendered"
+    OverlayRecording = "overlay_recording"
     EnableAudio = "toggle_audio"
 
     PreviewScaleDown = "preview_scale_down"
@@ -158,6 +159,8 @@ KeyboardShortcutExplainers = {
         "Turn on the “info” overlay",
     KeyboardShortcut.OverlayRendered:
         "Turn on the “rendered” overlay (only used in the blender workflow for previewing a blender-rendered frame)",
+    KeyboardShortcut.OverlayRecording:
+        "Turn on the “recording” overlay",
     KeyboardShortcut.PreviewScaleDown:
         "Shrink the viewer",
     KeyboardShortcut.PreviewScaleUp:
@@ -228,6 +231,7 @@ def symbol_to_glfw(s):
         "<enter>": glfw.KEY_ENTER,
         "<page-up>": glfw.KEY_PAGE_UP,
         "<page-down>": glfw.KEY_PAGE_DOWN,
+        "<tab>": glfw.KEY_TAB,
         ",": glfw.KEY_COMMA,
         ".": glfw.KEY_PERIOD,
         "-": glfw.KEY_MINUS,
@@ -358,6 +362,9 @@ SHORTCUTS = {
     KeyboardShortcut.OverlayRendered: [
         [[], "'"],
         [[], ","],
+    ],
+    KeyboardShortcut.OverlayRecording: [
+        [[], "<tab>"],
     ],
 
     KeyboardShortcut.PreviewScaleUp: [

@@ -960,8 +960,11 @@ class Renderer():
             self.state.toggle_overlay(Overlay.Info)
         elif shortcut == KeyboardShortcut.OverlayTimeline:
             self.state.toggle_overlay(Overlay.Timeline)
+        elif shortcut == KeyboardShortcut.OverlayRecording:
+            self.state.toggle_overlay(Overlay.Recording)
         elif shortcut == KeyboardShortcut.OverlayRendered:
             self.winmans.toggle_rendered()
+        
         elif shortcut == KeyboardShortcut.PreviewScaleUp:
             self.state.mod_preview_scale(+0.1)
         elif shortcut == KeyboardShortcut.PreviewScaleDown:

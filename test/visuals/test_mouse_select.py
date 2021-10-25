@@ -1,28 +1,13 @@
 from coldtype.test import *
-from time import sleep
 
-tmp_angle = 0 # "tmp" b/c it will be set back to 0 when the program restarts
-
-@test((1000, 1000), rstate=1)
-def test_select(r, rs):
-    dps = DATPens()
+@ui((1000, 1000))
+def test_select(u):
     txts = "COLDTYPE"
-    selection = None
+    rows = u.r.inset(10).subl(len(txts), 10, "N")
 
-    for idx, c in enumerate(r.inset(10).subdivide_with_leading(len(txts), 10, "mxy")):
-        rf = hsl(idx/len(txts)*0.3+0.5)
-        if rs.mouse and rs.mouse.inside(c):
-            dps += DATPen().rect(c).f(0)
-            selection = txts[idx]
-        else:
-            dps += DATPen().rect(c).f(rf)
-        dps += (StyledString(txts[idx],
-            Style(co, 100))
-            .pen()
-            .align(c.subdivide(len(txts), "mnx")[idx])
-            .f(rf.lighter(0.1)))
-
-    if selection:
-        rs.request = selection
-    
-    return dps
+    return PS.Enumerate(rows, lambda x: PS([
+        (P(x.el).f(rf:=hsl(x.e*0.3+0.5))
+            .cond(u.c.inside(x.el), lambda p: p.f(0))),
+        (StSt(txts[x.i], Font.ColdtypeObviously(), 100)
+            .align(x.el.subdivide(len(txts), "W")[x.i])
+            .f(rf.lighter(0.2)))]))
