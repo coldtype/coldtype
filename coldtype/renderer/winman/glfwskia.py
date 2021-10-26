@@ -10,6 +10,7 @@ from coldtype.color import rgb
 try:
     import glfw
 except ImportError:
+    print("Big problem: GLFW could not be loaded")
     glfw = None
 
 try:
@@ -233,7 +234,7 @@ class WinmanGLFWSkia():
 
         pin = self.config.window_pin
 
-        if pin:
+        if pin and pin != "0":
             work_rect = Rect(glfw.get_monitor_workarea(self.primary_monitor))
             wrz = work_rect.zero()
             edges = Edge.PairFromCompass(pin)
