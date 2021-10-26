@@ -8,20 +8,29 @@ except ImportError:
     skia = None
 
 
+FLIP_MATRIX = skia.Matrix()
+FLIP_MATRIX.setAffine((1, 0, 0, -1, 0, 0))
+
+
 class SkiaPathPen(BasePen):
     def __init__(self, dat, h=None):
         super().__init__()
-        self.dat = dat
-        self.path = skia.Path()
-        
-        if h is not None:
-            tp = TransformPen(self, (1, 0, 0, -1, 0, h))
-            dat.replay(tp)
+        if isinstance(dat, skia.Path):
+            self.path = skia.Path(dat)
+            self.path.transform(FLIP_MATRIX)
+            self.dat = None
         else:
-            for mv, pts in self.dat.value:
-                #if mv == "qCurveTo":
-                #    self._qCurveToOne()
-                getattr(self, mv)(*pts)
+            self.dat = dat
+            self.path = skia.Path()
+            
+            if h is not None:
+                tp = TransformPen(self, (1, 0, 0, -1, 0, h))
+                dat.replay(tp)
+            else:
+                for mv, pts in self.dat.value:
+                    #if mv == "qCurveTo":
+                    #    self._qCurveToOne()
+                    getattr(self, mv)(*pts)
     
     def _moveTo(self, p):
         self.path.moveTo(p[0], p[1])

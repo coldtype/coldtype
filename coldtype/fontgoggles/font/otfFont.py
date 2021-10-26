@@ -11,7 +11,7 @@ from ..misc.properties import cachedProperty
 
 class _OTFBaseFont(BaseFont):
 
-    def _getGlyphDrawing(self, glyphName, colorLayers):
+    def _getGlyphDrawing(self, glyphName, gid, fontSize, colorLayers):
         if colorLayers and "COLR" in self.ttFont:
             colorLayers = self.ttFont["COLR"].ColorLayers
             layers = colorLayers.get(glyphName)

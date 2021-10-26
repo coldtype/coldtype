@@ -79,7 +79,12 @@ class HBShape:
                  ttFont=None):
         self._fontData = fontData
         self._fontNumber = fontNumber
-        self.face = hb.Face(fontData, fontNumber)
+
+        if isinstance(fontData, hb.Face):
+            self.face = fontData
+        else:
+            self.face = hb.Face(fontData, fontNumber)
+        
         self.font = hb.Font(self.face)
 
         if ttFont is None:

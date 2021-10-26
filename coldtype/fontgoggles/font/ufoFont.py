@@ -203,7 +203,7 @@ class UFOFont(BaseFont):
             vOrgY = self.defaultVerticalOriginY
         return True, vOrgX, vOrgY
 
-    def _getGlyphDrawing(self, glyphName, colorLayers):
+    def _getGlyphDrawing(self, glyphName, gid, colorLayers):
         glyph = self._getGlyph(glyphName)
         if colorLayers:
             colorLayerMapping = glyph.lib.get(COLOR_LAYER_MAPPING_KEY)

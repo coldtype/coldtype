@@ -40,6 +40,7 @@ _PensClass = DATPens
 from coldtype.fontgoggles.font import getOpener
 from coldtype.fontgoggles.font.baseFont import BaseFont
 from coldtype.fontgoggles.font.otfFont import OTFFont
+from coldtype.fontgoggles.font.skiaFont import SkiaFont
 from coldtype.fontgoggles.misc.textInfo import TextInfo
 
 
@@ -108,7 +109,8 @@ class Font():
         number=0,
         cacheable=False,
         suffix=None,
-        delete_tmp=False
+        delete_tmp=False,
+        use_skia=False,
         ):
         tmp = None
         if isinstance(path, str) and path.startswith("http"):
@@ -121,9 +123,15 @@ class Font():
                 path = tmp.name
                 tmp = tmp
         
+        self.use_skia = use_skia
         self.path = Path(normalize_font_path(path))
-        numFonts, opener, getSortInfo = getOpener(self.path)
-        self.font:BaseFont = opener(self.path, number)
+        
+        if self.use_skia:
+            self.font:BaseFont = SkiaFont(self.path, 0)
+        else:
+            numFonts, opener, getSortInfo = getOpener(self.path)
+            self.font:BaseFont = opener(self.path, number)
+        
         self.font.cocoa = False
         self.cacheable = cacheable
         self._loaded = False
@@ -148,13 +156,16 @@ class Font():
         return axes
     
     @staticmethod
-    def Cacheable(path, suffix=None, delete_tmp=False):
-        if path not in FontCache:
-            FontCache[path] = Font(path,
+    def Cacheable(path, suffix=None, delete_tmp=False, use_skia=False):
+        key = str(path) + "/" + str(use_skia)
+        
+        if key not in FontCache:
+            FontCache[key] = Font(path,
                 cacheable=True,
                 suffix=suffix,
+                use_skia=use_skia,
                 delete_tmp=delete_tmp).load()
-        return FontCache[path]
+        return FontCache[key]
     
     @staticmethod
     def GDrive(id, suffix, delete=True):
@@ -184,10 +195,10 @@ class Font():
                             results.append(path)
         return results
 
-    def Find(regex, regex_dir=None, index=0):
+    def Find(regex, regex_dir=None, index=0, use_skia=0):
         found = Font.List(regex, regex_dir)
         try:
-            return Font.Cacheable(found[index])
+            return Font.Cacheable(found[index], use_skia=use_skia)
         except:
             raise FontNotFoundException()
     
@@ -197,12 +208,12 @@ class Font():
             ALL_FONT_DIRS.insert(0, dir)
     
     @staticmethod
-    def ColdtypeObviously():
-        return Font.Cacheable(Path(__file__).parent.parent / "demo/ColdtypeObviously-VF.ttf")
+    def ColdtypeObviously(skia=False):
+        return Font.Cacheable(Path(__file__).parent.parent / "demo/ColdtypeObviously-VF.ttf", use_skia=skia)
 
     @staticmethod
-    def MutatorSans():
-        return Font.Cacheable(Path(__file__).parent.parent / "demo/MutatorSans.ttf")
+    def MutatorSans(skia=False):
+        return Font.Cacheable(Path(__file__).parent.parent / "demo/MutatorSans.ttf", use_skia=skia)
     
     @staticmethod
     def RecursiveMono():
@@ -279,7 +290,6 @@ class Style():
             meta=dict(),
             no_shapes=False,
             show_frames=False,
-            _skiaback=False,
             load_font=True, # should we attempt to load the font?
             tag=None, # way to differentiate in __eq__
             **kwargs):
@@ -298,7 +308,7 @@ class Style():
         else:
             self.font = font
 
-        self._skiaback = _skiaback
+        self._skiaback = self.font.use_skia
         self.meta = meta
 
         self.narrower = narrower
@@ -638,7 +648,7 @@ class StyledString(FittableMixin):
         self.variations = self.style.variations.copy()
     
     def resetGlyphRun(self):
-        self.glyphs = self.style.font.font.getGlyphRunFromTextInfo(self.text_info, addDrawings=False, features=self.features, varLocation=self.variations)
+        self.glyphs = self.style.font.font.getGlyphRunFromTextInfo(self.text_info, addDrawings=False, features=self.features, varLocation=self.variations, fontSize=self.fontSize)
         #self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations)
         x = 0
         for glyph in self.glyphs:
@@ -849,12 +859,15 @@ class StyledString(FittableMixin):
                     ty = bs
                 except:
                     pass
+        
         tx = glyph.frame.x#/self.scale()
         ty = ty + glyph.frame.y#/self.scale()
         out_pen = _PenClass()
+        
         skia_pen = SkiaPathPen(in_pen)
-        skia_pen.path.transform(Matrix.Scale(s, s))
-        skia_pen.path.transform(Matrix.Translate(tx, ty))
+        #skia_pen = in_pen
+        #skia_pen.path.transform(Matrix.Scale(s, s))
+        #skia_pen.path.transform(Matrix.Translate(tx, ty))
         
         # TODO how to parallel this?
         #if self.style.mods and glyph.name in self.style.mods:
@@ -865,14 +878,6 @@ class StyledString(FittableMixin):
 
         if self.style.rotate:
             out_pen.rotate(self.style.rotate)
-        
-        # # TODO this shouldn't be necessary
-        # if True:
-        #     valid_values = []
-        #     for (move, pts) in out_pen.value:
-        #         if move != "addComponent":
-        #             valid_values.append((move, pts))
-        #     out_pen.value = valid_values
         return out_pen
     
     def scalePenToStyle(self, glyph, in_pen, idx):
@@ -935,7 +940,7 @@ class StyledString(FittableMixin):
 
         self.resetGlyphRun()
         if not self.style.no_shapes:
-            self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
+            self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True, fontSize=self.fontSize)
         
         pens = _PensClass()
         for idx, g in enumerate(self.glyphs):

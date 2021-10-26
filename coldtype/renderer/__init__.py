@@ -1362,6 +1362,12 @@ class Renderer():
         os.execl(sys.executable, *(["-m"]+args))
 
     def on_exit(self, restart=False):
+        if self.profiler:
+            print(">>>PROFILED!")
+            print(self.profiler)
+            self.profiler.disable()
+            self.profiler.dump_stats("profile_result")
+
         self.source_reader.unlink()
 
         for _, p in self.subprocesses.items():
@@ -1387,12 +1393,6 @@ class Renderer():
         
         if restart:
             self.restart()
-
-        if self.profiler:
-            print(">>>PROFILED!")
-            print(self.profiler)
-            self.profiler.disable()
-            self.profiler.dump_stats("profile_result")
 
 
 def main():

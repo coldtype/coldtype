@@ -300,7 +300,7 @@ class DSFont(BaseFont):
         vOrgX, vOrgY = varGlyph.verticalOrigin
         return True, vOrgX, vOrgY
 
-    def _getGlyphDrawing(self, glyphName, colorLayers):
+    def _getGlyphDrawing(self, glyphName, gid, colorLayers):
         try:
             varGlyph = self._getVarGlyph(glyphName)
             return GlyphDrawing([(varGlyph.getOutline(cocoa=self.cocoa), None)])
