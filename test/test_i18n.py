@@ -25,7 +25,7 @@ def gn_to_uniname(gn):
 
 class TestI18N(unittest.TestCase):
     def test_mixed_lang_slug(self):
-        obv = Style(co, 300, wdth=1, wght=0)
+        obv = Style(co, 300, wdth=1, wght=0, lang="en")
         style = Style(zh, 300, lang="zh")
         dps = (Slug("CO同步", style, obv)
             .fit(r.w-100)
@@ -40,7 +40,46 @@ class TestI18N(unittest.TestCase):
         self.assertEqual(dps[1].glyphName, "O")
         self.assertEqual(dps[2].glyphName, "cid12378")
         self.assertEqual(dps[3].glyphName, "cid23039")
-    
+
+        dps.picklejar(r)
+
+        dps = (Slug("CO同步", style, obv)
+            .fit(r.w-100)
+            .pens(flat=False)
+            .align(r, th=1))
+        
+        self.assertEqual(dps[0].data["lang"], "en")
+        self.assertEqual(dps[0][0].glyphName, "C")
+        self.assertEqual(dps[0][1].glyphName, "O")
+
+        self.assertEqual(dps[1].data["lang"], "zh")
+        self.assertEqual(dps[1][0].glyphName, "cid12378")
+        self.assertEqual(dps[1][1].glyphName, "cid23039")
+
+    def test_mixed_lang_stst(self):
+        dps = (StSt("CO同步TY", zh, 300,
+            lang="zh",
+            fallback=Style(co, 300, wdth=1, wght=0, lang="en"),
+            fit=r.w-100)
+            .align(r, th=1))
+        
+        dps[1].translate(10, 0)
+        dps.picklejar(r)
+        
+        self.assertEqual(dps[1][-1].ambit().w, 300)
+        
+        self.assertEqual(dps[0].data["lang"], "en")
+        self.assertEqual(dps[0][0].glyphName, "C")
+        self.assertEqual(dps[0][1].glyphName, "O")
+        
+        self.assertEqual(dps[1].data["lang"], "zh")
+        self.assertEqual(dps[1][0].glyphName, "cid12378")
+        self.assertEqual(dps[1][1].glyphName, "cid23039")
+
+        self.assertEqual(dps[2].data["lang"], "en")
+        self.assertEqual(dps[2][0].glyphName, "T")
+        self.assertEqual(dps[2][1].glyphName, "Y")
+
     def test_rtl_multiline(self):
         ar = 'Limmmm/Satلل\nوصل الإستيرِو'
         lines = ar.split("\n")
@@ -67,6 +106,28 @@ class TestI18N(unittest.TestCase):
         
         self.assertEqual(dps[0][0].glyphName, "L")
         self.assertEqual(dps[0][-1].glyphName, "uniFEDF")
+
+    def test_rtl_multiline_stst(self):
+        txt = 'Limmmm/Satلل\nوصل الإستيرِو'
+        arabic = Style(ar_light, 150, lang="ar", bs=-1,
+            fallback=Style(latin_font, 100, fill=("hr", 0.5, 0.5)))
+        
+        dps = StSt(txt, arabic, leading=30).xalign(r).align(r)
+
+        dps.picklejar(r)
+
+        lgn = dps[-1][-1][-1].glyphName
+        lc = gn_to_c(lgn)
+        
+        self.assertEqual(
+            unicodedata.name(lc),
+            "ARABIC LETTER WAW")
+        self.assertEqual(
+            dps[-1][-1][-1].ambit().round(),
+            Rect([707,148,42,87]))
+        
+        self.assertEqual(dps[0][0][0].glyphName, "L")
+        self.assertEqual(dps[0][1][-1].glyphName, "uniFEDF")
     
     def test_hebrew(self):
         hebrew = Style(hebrew_font, 130)

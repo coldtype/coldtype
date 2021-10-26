@@ -7,18 +7,14 @@ import unicodedata, math, os, re, tempfile
 
 from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
-from fontTools.pens.svgPathPen import SVGPathPen
-from fontTools.pens.recordingPen import RecordingPen, replayRecording
-from fontTools.pens.boundsPen import ControlBoundsPen, BoundsPen
-from fontTools.ttLib.ttFont import TTFont
 
 from coldtype.color import normalize_color, rgb
 from coldtype.pens.draftingpen import DraftingPen
 from coldtype.pens.draftingpens import DraftingPens
 from coldtype.pens.datpen import DATPen, DATPens
-from coldtype.geometry import Rect, Point
+from coldtype.geometry import Rect
 
-from typing import Optional, Callable, Union
+from typing import Union
 
 try:
     from skia import Matrix
@@ -252,6 +248,7 @@ class Style():
             q2c=False,
             lang=None,
             narrower=None,
+            fallback=None,
             include_blanks=False,
             palette=0,
             capHeight=None,
@@ -301,6 +298,7 @@ class Style():
         self._skiaback = _skiaback
         self.meta = meta
 
+        self.fallback = fallback
         self.narrower = narrower
         self.layer = layer
         self.reverse = kwargs.get("r", reverse)
@@ -939,6 +937,13 @@ class StyledString(FittableMixin):
         
         pens = _PensClass()
         for idx, g in enumerate(self.glyphs):
+
+            # TODO this is sketchy but seems to correct
+            # some line-spacing issues with arabic?
+            norm_frame = g.frame
+            if g.frame.y < 0:
+                norm_frame = norm_frame.setmny(0)
+
             dp_atom = self._emptyPenWithAttrs()
             if self.style.no_shapes:
                 if callable(self.style.show_frames):
@@ -946,7 +951,7 @@ class StyledString(FittableMixin):
                 else:
                     dp_atom.record(DATPen().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
                 dp_atom.typographic = True
-                dp_atom.addFrame(g.frame)
+                dp_atom.addFrame(norm_frame)
                 dp_atom.glyphName = g.name
             elif len(g.glyphDrawing.layers) == 1:
                 if self.style._skiaback:
@@ -958,7 +963,7 @@ class StyledString(FittableMixin):
                     dp_atom.translate(0, self.style.descender*self.scale())
                 
                 dp_atom.typographic = True
-                dp_atom.addFrame(g.frame)
+                dp_atom.addFrame(norm_frame)
                 dp_atom.glyphName = g.name
                 if self.style.show_frames:
                     if callable(self.style.show_frames):
@@ -986,7 +991,7 @@ class StyledString(FittableMixin):
                         #dp_layer.addFrame(g.frame, typographic=True)
                         dp_layer.glyphName = f"{g.name}_layer_{lidx}"
                         dp_atom += dp_layer
-                dp_atom.addFrame(g.frame, typographic=True)
+                dp_atom.addFrame(norm_frame, typographic=True)
                 dp_atom.glyphName = g.name
             
             #dp_atom._parent = pens
@@ -1042,7 +1047,7 @@ class SegmentedString(FittableMixin):
             adjusted = s.shrink() or adjusted
         return adjusted
 
-    def pens(self):
+    def pens(self, flat=True):
         pens = _PensClass()
         x_off = 0
         for s in self.strings:
@@ -1050,7 +1055,11 @@ class SegmentedString(FittableMixin):
             if dps.layered:
                 pens.layered = True
             dps.translate(x_off, 0)
-            pens.extend(dps._pens)
+            if flat:
+                pens.extend(dps._pens)
+            else:
+                if s.style.lang:
+                    dps.add_data("lang", s.style.lang)
+                pens.append(dps)
             x_off += dps.ambit().w
         return pens
-        #return DATPens([s.pens(frame=True) for s in self.strings])

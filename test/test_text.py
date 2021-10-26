@@ -120,5 +120,6 @@ class TestText(unittest.TestCase):
         self.assertEqual(st[0].glyphName, "C")
         self.assertEqual(st[-1].glyphName, "D")
 
+
 if __name__ == "__main__":
     unittest.main()

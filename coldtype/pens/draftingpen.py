@@ -453,6 +453,8 @@ class DraftingPen(RecordingPen, SHContext):
         self.closePath()
         return self
     
+    rr = roundedRect
+    
     def oval(self, rect):
         """Oval primitive"""
         self.roundedRect(rect, 0.5, 0.5)

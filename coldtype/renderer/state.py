@@ -85,9 +85,9 @@ class RendererState():
     def on_mouse_button(self, pos, btn, action, mods):
         if not self.playing and action == 0:
             p = self.record_cursor(pos)
-            if self.cursor_history[-1] != p:
-                self.cursor_history.append(p)
-                return Action.PreviewStoryboard
+            #if self.cursor_history[-1] != p:
+            self.cursor_history.append(p)
+            return Action.PreviewStoryboard
     
     def on_mouse_move(self, pos):
         if self.playing:

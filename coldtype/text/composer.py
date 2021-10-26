@@ -214,20 +214,29 @@ def StSt(text,
     leading = kwargs.get("leading", 10)
 
     if "\n" in text:
-        lockup = Composer(rect, text, style, fit=fit, leading=leading).pens()
+        lines = DATPens()
+        for l in text.split("\n"):
+            lines.append(StSt(l, font, font_size, rect=rect, strip=strip, **kwargs))
+            #lockup = Composer(rect, text, style, fit=fit, leading=leading).pens()
         #if xa:
         #    lockup = lockup.xa(xa)
-        ambit = lockup.ambit()
-        lockup.translate(-ambit.x, -ambit.y)
-        for l in lockup:
-            l._frame = None
+        #ambit = lockup.ambit()
+        #lockup.translate(-ambit.x, -ambit.y)
+        #for l in lockup:
+        #    l._frame = None
+        return lines.stack(leading)
     else:
-        lockup = StyledString(text, style)
-        if fit:
-            lockup.fit(fit)
-        lockup = lockup.pens()
-        #if len(lockup) == 1:
-        #    return lockup[0]
+        if style.fallback:
+            lockup = Slug(text, style, style.fallback)
+            if fit:
+                lockup.fit(fit)
+            lockup = lockup.pens(flat=False)
+        else:
+            lockup = StyledString(text, style)
+            if fit:
+                lockup.fit(fit)
+            lockup = lockup.pens()
+
     #lockup._stst_style = style
     return lockup
 

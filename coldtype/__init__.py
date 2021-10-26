@@ -18,10 +18,12 @@ from coldtype.grid import Grid
 name = "coldtype"
 __version__ = "0.7.5"
 
+__FILE__ = None # will be redefined contextually
 __sibling__ = lambda x: x # will be redefined contextually
 __inputs__ = [] # will be redefined contextually
 __as_config__ = False # will be redefined contextually
 λ = None
+
 
 def debug_txt(r, txt, font_size=42, **kwargs):
     return DATText(txt, Style("Times", font_size, load_font=0, **kwargs), r.inset(20))
