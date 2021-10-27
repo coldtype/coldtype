@@ -1,7 +1,7 @@
 from coldtype import *
 from coldtype.time.nle.ascii import AsciiTimeline
 
-fnt = Font.Find("ObviouslyV")
+fnt = Font.MutatorSans()
 
 at = AsciiTimeline(3, 30, """
                                                 <
@@ -16,17 +16,15 @@ def choreography(f):
     return (Glyphwise("TYPE", lambda g:
         Style(fnt, 200,
             wght=at[g.i].e(f.i),
-            wdth=at[g.i+4].e(f.i, "qeio"),
-            slnt=at["slnt"].e(f.i, "seio")))
+            wdth=at[g.i+4].e(f.i, "qeio")))
         .track(150*at["tu"].e(f.i, "eeio", 1))
         .align(f.a.r)
+        .skew(at["slnt"].e(f.i, "seio")*0.2, 0)
         .f(hsl(0.7, 1))
         .pmap(lambda i, p: p.rotate(-360*at["ro"].e(f.i-i, 0)))
-        .cond(now:=at.now(f.i, 1, True, lambda m: m.index < 4), 
-            lambda pens:
-            (pens
-                .center_on_point(f.a.r,
-                    pens[now.index].bounds().point("C"),
-                    interp=now.e(f.i))
-                .scale(1+now.e(f.i)*2,
-                    point=pens[now.index].bounds().point("C")))))
+        .cond(now:=at.now(f.i, 1, True, lambda m: m.index < 4), lambda ps: ps
+            .center_on_point(f.a.r,
+                ps[now.index].bounds().point("C"),
+                interp=now.e(f.i))
+            .scale(1+now.e(f.i)*2,
+                point=ps[now.index].bounds().point("C"))))
