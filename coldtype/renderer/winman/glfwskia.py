@@ -429,7 +429,10 @@ class WinmanGLFWSkia():
                 error_color = rgb(0, 0, 0).skia()
         else:
             if render.single_frame or render.composites and not render.interactive:
-                comp = result.ch(skfx.precompose(render.rect, scale=scale))
+                comp = result.ch(skfx.precompose(
+                    render.rect,
+                    scale=scale,
+                    style=render.style))
 
                 if not self.renderer.last_render_cleared:
                     render.last_result = comp

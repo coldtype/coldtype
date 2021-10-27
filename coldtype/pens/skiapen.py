@@ -254,7 +254,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         
         pens.walk(draw, visible_only=True)
     
-    def Precompose(pens, rect, fmt=None, context=None, scale=1, disk=False):
+    def Precompose(pens, rect, fmt=None, context=None, scale=1, disk=False, style=None):
         rect = rect.round()
 
         if scale < 0:
@@ -277,7 +277,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         with surface as canvas:
             canvas.save()
             canvas.scale(scale, scale)
-            SkiaPen.CompositeToCanvas(pens.translate(-rect.x, -rect.y), rect, canvas)
+            SkiaPen.CompositeToCanvas(pens.translate(-rect.x, -rect.y), rect, canvas, style=style)
             canvas.restore()
         img = surface.makeImageSnapshot()
         if rescale is not None:

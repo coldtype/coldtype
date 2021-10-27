@@ -193,12 +193,14 @@ def precompose(rect,
     opacity=1,
     scale=1,
     disk=False,
+    style=None,
     ):
     def _precompose(pen):
         img = SkiaPen.Precompose(pen, rect,             
             context=SKIA_CONTEXT,
             scale=scale,
-            disk=disk)
+            disk=disk,
+            style=style)
         return (DATPen()
             .rect(placement or rect)
             .img(img, (placement or rect), False, opacity)

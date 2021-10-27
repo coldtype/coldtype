@@ -1,7 +1,7 @@
 from coldtype import *
 from coldtype.time.nle.ascii import AsciiTimeline
 
-nudge = Font.Cacheable("~/Type/fonts/fonts/VCNudge2-Bold.otf")
+nudge = Font.Find(r"VCNudge.*-Bold")
 
 at = AsciiTimeline(1, """
                                                         <
@@ -23,14 +23,14 @@ def officehours(f):
         .xalign(f.a.r)
         .align(f.a.r))
     
-    bg = (DP(txt.copy().ambit().inset(-50))
+    bg = (P(txt.copy().ambit().inset(-50))
             .f(hsl(0.35, 0.8, 0.3)))
 
     # after bg, so it doesn't effect bounds 
     txt.index([0, 2], lambda p: p
         .rotate(f.e(0, cyclic=0, rng=(0, 360))))
 
-    return DPS([
+    return PS([
         bg.copy().translate(5, -5).f(0),
         bg,
         txt])
