@@ -67,6 +67,7 @@ Table of Contents
    youtube <https://www.youtube.com/channel/UCIRaiGAVFaM-pSErJG1UZFA>
    github <https://github.com/goodhertz/coldtype>
    goodhertz.com <https://goodhertz.com>
+   questions & answers <https://github.com/goodhertz/coldtype/discussions>
 
 .. toctree::
    :maxdepth: 2
