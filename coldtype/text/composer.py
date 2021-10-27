@@ -196,6 +196,7 @@ def StSt(text,
     font_size=24,
     rect=Rect(1080, 1080),
     strip=True,
+    multiline=False,
     #xa="mdx",
     **kwargs):
 
@@ -216,14 +217,7 @@ def StSt(text,
     if "\n" in text:
         lines = DATPens()
         for l in text.split("\n"):
-            lines.append(StSt(l, font, font_size, rect=rect, strip=strip, **kwargs))
-            #lockup = Composer(rect, text, style, fit=fit, leading=leading).pens()
-        #if xa:
-        #    lockup = lockup.xa(xa)
-        #ambit = lockup.ambit()
-        #lockup.translate(-ambit.x, -ambit.y)
-        #for l in lockup:
-        #    l._frame = None
+            lines.append(StSt(l, font, font_size, rect=rect, strip=strip, **{**kwargs, **dict(multline=False)}))
         return lines.stack(leading)
     else:
         if style.fallback:
@@ -236,9 +230,12 @@ def StSt(text,
             if fit:
                 lockup.fit(fit)
             lockup = lockup.pens()
+        
+        if multiline:
+            return DATPens([lockup])
 
-    #lockup._stst_style = style
-    return lockup
+        #lockup._stst_style = style
+        return lockup
 
 
 GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e", "l", "li"])
