@@ -1,11 +1,10 @@
 from coldtype import *
 from coldtype.blender import *
 
-Style.RegisterShorthandPrefix("≈", "~/Type/fonts/fonts")
-mdpb = Font.Cacheable("≈/MDNichrome0.7-Black.otf")
-mdpl = Font.Cacheable("≈/MDNichrome0.7-Light.otf")
-mdiob = Font.Cacheable("≈/MDIO0.2-Bold.otf")
-mdior = Font.Cacheable("≈/MDIO0.2-Regular.otf")
+mdpb = Font.Find("MDNichrome0.7-Black")
+mdpl = Font.Find("MDNichrome0.7-Light")
+mdiob = Font.Find("MDIO0.2-Bold")
+mdior = Font.Find("MDIO0.2-Regular")
 
 r = Rect(1080, 1080)
 

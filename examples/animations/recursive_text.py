@@ -1,10 +1,10 @@
 from coldtype import *
 from coldtype.fx.skia import phototype, fill
 
-fnt = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
-dfnt = Font.Cacheable("~/Type/fonts/fonts/CleftTwinline-MMv0.1.otf")
+fnt = Font.ColdtypeObviously()
+dfnt = Font.RecursiveMono()
 
-@animation(timeline=80, bg=1, composites=1)
+@animation(timeline=80, bg=hsl(0.3, 1, 0.9), composites=1)
 def discord(f):
     return (DPS([
             (StSt("COLDTYPE", fnt,
@@ -13,12 +13,14 @@ def discord(f):
                 tu=f.e(1, rng=(-150, 0)), r=1)
                 .align(f.a.r)
                 .f(1).understroke(sw=15)),
-            (StSt("Discord", dfnt, 10)
+            (StSt("Recursive", dfnt,
+                font_size=f.e("ceio", 1, rng=(1, 200)),
+                tu=f.e("ceio", 1, rng=(0, -100)))
+                .rp()
                 .align(f.a.r)
-                .scale(f.e("ceio", 1, rng=(-15, 30)))
-                .pen().removeOverlap()
-                .f(1).s(0).sw(5)
-                .v(lambda _: f.e(1) > 0.5))])
+                .f(1)
+                .understroke(sw=15)
+                .v(f.e(1) > 0.5))])
         .translate(0, f.e("eeio", 1, rng=(y:=300, -y+10)))
         .insert(0, f.last_render(lambda p: p
             .scale(0.995)

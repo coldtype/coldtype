@@ -1,12 +1,12 @@
 from coldtype import *
 from coldtype.time.nle.ascii import AsciiTimeline
 
-nudge = Font.Find(r"VCNudge.*-Bold")
+nudge = Font.MutatorSans()
 
 at = AsciiTimeline(1, """
-                                                        <
+                                                                <
         [L                                   ]
-                     [F                              ]
+                     [F                                     ]
                [H                 ]             
 """)
 
