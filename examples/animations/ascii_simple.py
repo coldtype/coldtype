@@ -1,9 +1,7 @@
-from coldtype.time import loop
-from coldtype.test import *
+from coldtype import *
 from coldtype.time.nle.ascii import AsciiTimeline
-from coldtype.text.composer import Glyphwise
 
-fnt = Font.Cacheable("~/Type/fonts/fonts/CheeeVariable.ttf")
+fnt = Font.Find("CheeeV")
 
 at = AsciiTimeline(1, """
                                                               <
@@ -12,7 +10,7 @@ at = AsciiTimeline(1, """
                                 [c                   ]
 """)
 
-@animation((1080, 540), timeline=at)
+@animation((1080, 540), timeline=at, bg=1)
 def test_ascii(f):
     io = at.io2(f.i, 20, "eeio")
     word = (Glyphwise("ASCII", lambda g:
@@ -22,6 +20,6 @@ def test_ascii(f):
         .align(f.a.r)
         .scale(io*2))
     
-    return DPS([
-        DP(word.ambit(tv=1).inset(-50)).f(hsl(0.07, 1, 0.8, a=0.5)),
-        word])
+    return PS([
+        P(word.ambit(tv=1).inset(-50)).fssw(-1, 0, 2),
+        word.f(0)])
