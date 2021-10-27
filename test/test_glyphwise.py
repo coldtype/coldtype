@@ -183,6 +183,15 @@ class TestGlyphwise(unittest.TestCase):
         
         for idx, g in enumerate(gw):
             self.assertEqual(g.data.get("idx"), idx)
+    
+    def test_no_reverse(self):
+        def styler(g):
+            return Style(Font.MutatorSans(), 120, r=1)
+        
+        with self.assertRaises(Exception) as context:
+            (Glyphwise("AB\nCD\nEF", styler))
+        
+        self.assertIn("r=1 not possible", str(context.exception))
 
 if __name__ == "__main__":
     unittest.main()

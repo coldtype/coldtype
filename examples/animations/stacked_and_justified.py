@@ -8,10 +8,8 @@ def render(f):
     c1, c2 = (f.a.r
         .inset(0, 50)
         .divide(f.e(1, rng=(0.15, 0.85)), "N")
-        .map(λ.inset(20, 5))
-        )
+        .map(λ.inset(20, 5)))
 
-    #c1, c2 = [r.inset(20, 5) for r in cs]
     s = Style(fatface, t=-25, wdth=1, wght=1, ro=1, r=1)
 
     return (PS([

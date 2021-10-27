@@ -257,14 +257,23 @@ def Glyphwise(st, styler, start=0, line=0):
     #print(glyphs)
     #print([g.name for g in glyphs])
 
+    def except_reverse():
+        raise Exception("r=1 not possible in a Glyphwise; please use a .reversePens() after the Glyphwise constructor")
+
     def run_styler(g):
         styles = styler(g)
         if isinstance(styles, Style):
+            if styles.reverse:
+                except_reverse()
             return styles, None
         else:
             if isinstance(styles[1], dict):
+                if styles[0].reverse:
+                    except_reverse()
                 return styles[0], styles[0].mod(**styles[1])
             else:
+                if styles[0].reverse:
+                    except_reverse()
                 return styles
 
     if len(st) == 1:
