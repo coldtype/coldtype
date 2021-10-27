@@ -1,3 +1,4 @@
+import enum
 import traceback
 import argparse, json, math
 import sys, os, signal, tracemalloc, shutil
@@ -1346,6 +1347,12 @@ class Renderer():
         if len(args) > 1:
             #args[1] = str(self.source_reader.filepath)
             args[1] = str(self._unnormalized_file)
+        
+        inputs = self.source_reader.program["__inputs__"]
+
+        if len(inputs) > 0:
+            for idx, input in enumerate(inputs):
+                args[idx+2] = input
         
         # attempt to preserve state across reload
 
