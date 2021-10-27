@@ -119,6 +119,25 @@ class TestText(unittest.TestCase):
         self.assertEqual(len(st), 4)
         self.assertEqual(st[0].glyphName, "C")
         self.assertEqual(st[-1].glyphName, "D")
+    
+    def test_strict_multiline_stst(self):
+        st = (StSt("COLD", Font.ColdtypeObviously(), 100,
+            multiline=1))
+        
+        self.assertEqual(len(st), 1)
+        self.assertEqual(len(st[0]), 4)
+
+        st = (StSt("COLD\nTYPE", Font.ColdtypeObviously(), 100,
+            multiline=1))
+        
+        self.assertEqual(len(st), 2)
+        self.assertEqual(len(st[1]), 4)
+
+        st = (StSt("COLD\nTYPE", Font.ColdtypeObviously(), 100,
+            multiline=0))
+        
+        self.assertEqual(len(st), 2)
+        self.assertEqual(len(st[1]), 4)
 
 
 if __name__ == "__main__":
