@@ -1,11 +1,10 @@
 from coldtype import *
-from coldtype.warping import warp_fn
+from coldtype.fx.warping import warp
 from coldtype.fx.skia import phototype
 
-Style.RegisterShorthandPrefix("≈", "~/Type/fonts/fonts")
 peshka = Font.Find("CoFoPeshkaV")
 
-loop = Loop(150, 15, [ # some keyframes
+loop = Loop(150, 15, [
     dict(wdth=0, wght=0, rotate=-15, leading=200,
         font_size=700, warp=0, blur=15),
     dict(wdth=1, wght=1, rotate=0, leading=10,
@@ -17,15 +16,13 @@ loop = Loop(150, 15, [ # some keyframes
     ])
 
 @animation(timeline=loop, bg=0)
-def warp(f):
+def warp_blur(f):
     state = f.a.t.current_state(f.i, e="eeio")
-    return ((ß:=StSt("WARP\nBLUR", peshka, ro=1, **state))
+    return (StSt("WARP\nBLUR", peshka, ro=1, **state)
         .xalign(f.a.r)
         .align(f.a.r)
-        .pen() # a single, centered vector
-        .f(Gradient.V(ß.ambit(), hsl(0.7), hsl(0.9)))
-        #.flatten(5) # slower but preserves curves across warp
-        .nlt(warp_fn(f.i*30, f.i, mult=int(state["warp"])))
+        .pen()
         .f(1)
-        #.ch(phototype(f.a.r, state["blur"], cutw=50, fill=hsl(0.75)))
-        )
+        .ch(warp(None, # can be a number like 5 to preserve curves
+            f.i*30, f.i, mult=int(state["warp"])))
+        .ch(phototype(f.a.r, state["blur"], cutw=50)))
