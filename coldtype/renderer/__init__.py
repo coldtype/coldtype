@@ -1045,10 +1045,20 @@ class Renderer():
         elif shortcut == KeyboardShortcut.CopySVGToClipboard:
             self.winmans.glsk.copy_previews_to_clipboard = True
             return Action.PreviewStoryboard
-        elif shortcut == KeyboardShortcut.LoadNextInDirectory:
-            self.reset_filepath(+1, reload=True)
-        elif shortcut == KeyboardShortcut.LoadPrevInDirectory:
-            self.reset_filepath(-1, reload=True)
+        elif shortcut in [
+            KeyboardShortcut.LoadNextInDirectory,
+            KeyboardShortcut.LoadPrevInDirectory,
+            ]:
+            d = -1 if shortcut == KeyboardShortcut.LoadPrevInDirectory else +1
+            f = self.buildrelease_fn("adjacent")
+            if f:
+                res = f(d)
+                if isinstance(res, Action):
+                    return res
+                elif isinstance(res, Path) or isinstance(res, str):
+                    self.reset_filepath(res, reload=True)
+            else:
+                self.reset_filepath(d, reload=True)
         else:
             print(shortcut, "not recognized")
     
