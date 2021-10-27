@@ -1,4 +1,4 @@
-import math, re
+import math, re, inspect
 
 from coldtype.geometry.geometrical import Geometrical
 from coldtype.geometry.point import Point
@@ -70,6 +70,25 @@ def align(b, rect, x=Edge.CenterX, y=Edge.CenterY):
     
     #diff = rect.w - b.w
     return (xoff, yoff)
+
+
+class Chainable():
+    def __init__(self, *items):
+        self.items = items
+
+    def __getitem__(self, key):
+        return self.items[key]
+    
+    def map(self, fn):
+        out = []
+        for idx, item in enumerate(self.items):
+            arg_count = len(inspect.signature(fn).parameters)
+            if arg_count == 1:
+                result = fn(item)
+            else:
+                result = fn(idx, item)
+            out.append(result)
+        return Chainable(*out)
 
 
 class Rect(Geometrical):
@@ -276,10 +295,10 @@ class Rect(Geometrical):
         edge = txt_to_edge(edge)
         if edge == Edge.CenterX or edge == Edge.CenterY:
             a, b, c = divide(self.rect(), amount, edge, forcePixel=forcePixel)
-            return Rect(a), Rect(b), Rect(c)
+            return Chainable(Rect(a), Rect(b), Rect(c))
         else:
             a, b = divide(self.rect(), amount, edge, forcePixel=forcePixel)
-            return Rect(a), Rect(b)
+            return Chainable(Rect(a), Rect(b))
 
     def subdivide(self, amount, edge):
         """
