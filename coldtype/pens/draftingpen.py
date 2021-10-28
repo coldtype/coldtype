@@ -915,7 +915,7 @@ class DraftingPen(RecordingPen, SHContext):
     def ups(self):
         "Convert this single pen into a collection of pens, with one-pen in the collection (this pen)"
         dps = self.multi_pen_class()
-        dps.append(self.copy())
+        dps.append(self.copy(with_data=1))
         return dps
     
     def pens(self):

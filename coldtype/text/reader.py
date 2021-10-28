@@ -941,8 +941,7 @@ class StyledString(FittableMixin):
             # TODO this is sketchy but seems to correct
             # some line-spacing issues with arabic?
             norm_frame = g.frame
-            if g.frame.y < 0:
-                norm_frame = norm_frame.setmny(0)
+            norm_frame = Rect(g.frame.x, 0, g.frame.w, self.style._asc*self.scale())
 
             dp_atom = self._emptyPenWithAttrs()
             if self.style.no_shapes:
