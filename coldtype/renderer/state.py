@@ -24,6 +24,7 @@ class RendererState():
         self._last_filepath = None
         self.cv2caps = {}
         self.inputs = []
+        self.memory = {}
         self.playing = False
 
         self.cursor = Point(0, 0)

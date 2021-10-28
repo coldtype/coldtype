@@ -1,20 +1,20 @@
 from coldtype import *
 from coldtype.fx.skia import phototype
 
-r = Rect(1080, 1080)
-a = DP().oval(r.inset(150, 300)).flatten(10).roughen(200, seed=3)
-b = DP().oval(r.inset(150, 300)).flatten(10).roughen(200, seed=1)
-
 tl = Timeline(90)
+r = Rect(1080, 1080)
+
+a = P().oval(r.inset(150, 300)).flatten(10).roughen(200, seed=3)
+b = P().oval(r.inset(150, 300)).flatten(10).roughen(200, seed=1)
 
 @animation(r, timeline=tl)
 def cloud(f):
-    return DPS([
-        DP(f.a.r).f(hsl(0.6, 0.6, 0.6)),
-        (DP.Interpolate([a, b], f.a.progress(f.i, loops=1, easefn="ceio").e)
+    print(__memory__)
+    return PS([
+        P(f.a.r).f(hsl(0.6, 0.6, 0.6)),
+        (P.Interpolate([a, b], f.e("eeio", 1))
             .f(1)
             .smooth()
-            .ch(phototype(f.a.r, blur=20, cut=100, cutw=20)))])
+            .ch(phototype(f.a.r, blur=10, cut=100, cutw=50)))])
 
-def release(passes):
-    FFMPEGExport(cloud, passes).gif().write()
+release = cloud.export("gif")

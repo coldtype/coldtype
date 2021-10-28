@@ -145,11 +145,12 @@ def read_source_to_tempfile(filepath:Path,
     return codepath, data_out
 
 
-def run_source(filepath, codepath, inputs, **kwargs):
+def run_source(filepath, codepath, inputs, memory, **kwargs):
     return run_path(str(codepath), init_globals={
         "__COLDTYPE__": True,
         "__FILE__": filepath,
         "__inputs__": inputs,
+        "__memory__": memory,
         "__as_config__": False,
         "__sibling__": partial(sibling, filepath),
         **kwargs})
@@ -345,6 +346,7 @@ class SourceReader():
                     py_config = run_path(str(p), init_globals={
                         "__FILE__": p,
                         "__inputs__": self.inputs,
+                        "__memory__": {},
                         "__as_config__": True,
                         "__sibling__": partial(sibling, p),
                     })
@@ -451,6 +453,7 @@ class SourceReader():
             self.filepath,
             self.codepath,
             self.inputs,
+            self.renderer.state.memory,
             __RUNNER__=self.runner)
         
         self.candidates = self.renderable_candidates(

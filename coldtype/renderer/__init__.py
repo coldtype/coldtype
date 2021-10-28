@@ -1,6 +1,6 @@
 import enum
 import traceback
-import argparse, json, math
+import argparse, json, math, inspect
 import sys, os, signal, tracemalloc, shutil
 import pickle
 
@@ -135,6 +135,8 @@ class Renderer():
         if self.on_args_parsed():
             self.dead = True
             return
+
+        self._original_inputs = [*self.args.inputs]
 
         self.source_reader = SourceReader(
             renderer=self,
@@ -860,9 +862,16 @@ class Renderer():
                     all_passes.extend(render.passes(trigger, self.state, [0]))
             
             if number is not None:
-                fn[number](all_passes)
+                fn = fn[number]
+
+            arg_count = len(inspect.signature(fn).parameters)
+            if arg_count == 0:
+                res = fn()
             else:
-                fn(all_passes)
+                res = fn(all_passes)
+            if isinstance(res, Action):
+                return res
+            
         except Exception as e:
             self.print_error()
             print("! Release failed !")
@@ -1042,7 +1051,7 @@ class Renderer():
             self.viewer_sample_frames = int(shortcut.value.split("_")[-1])
         elif shortcut.value.startswith("viewer_numbered_action_"):
             action_number = int(shortcut.value.split("_")[-1])
-            self.on_release(number=action_number)
+            return self.on_release(number=action_number)
         elif shortcut == KeyboardShortcut.CopySVGToClipboard:
             self.winmans.glsk.copy_previews_to_clipboard = True
             return Action.PreviewStoryboard
@@ -1132,9 +1141,9 @@ class Renderer():
                 #self.state.adjust_all_frame_offsets(+1)
             self.render(Action.PreviewStoryboard)
         elif action == Action.Build:
-            self.on_release(build=True)
+            self.action_waiting = self.on_release(build=True)
         elif action == Action.Release:
-            self.on_release()
+            self.action_waiting = self.on_release()
         elif action == Action.RestartRenderer:
             self.on_exit(restart=True)
         elif action == Action.Kill:
@@ -1351,8 +1360,14 @@ class Renderer():
         inputs = self.source_reader.program["__inputs__"]
 
         if len(inputs) > 0:
-            for idx, input in enumerate(inputs):
-                args[idx+2] = input
+            if len(self._original_inputs) == len(inputs):
+                for idx, input in enumerate(inputs):
+                    args[idx+2] = input
+            else:
+                a_args = args[:2]
+                b_args = args[len(self._original_inputs)+2:]
+                args = a_args + inputs + b_args
+                #print(">>>", a_args, "|||", b_args)
         
         # attempt to preserve state across reload
 

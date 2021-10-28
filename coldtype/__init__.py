@@ -21,6 +21,7 @@ __version__ = "0.7.5"
 __FILE__ = None # will be redefined contextually
 __sibling__ = lambda x: x # will be redefined contextually
 __inputs__ = [] # will be redefined contextually
+__memory__ = [] # will be redefined contextually
 __as_config__ = False # will be redefined contextually
 λ = None
 
