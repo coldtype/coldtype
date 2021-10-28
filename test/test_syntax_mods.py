@@ -41,6 +41,7 @@ class TestSyntaxMods(unittest.TestCase):
         self.assertEqual(self.sr2.filepath.stem, "source_file")
         self.assertEqual(len(self.sr2.renderables()), 1)
         self.assertEqual(self.sr2.program["__RUNNER__"], "special")
+        self.assertEqual(self.sr2.program["hello"], "world")
     
     def test_source_with_config(self):
         sr = SourceReader("test/source_file_with_config.py")

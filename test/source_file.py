@@ -1,4 +1,5 @@
 from coldtype import *
+from .source_file_adjacent import * #INLINE
 
 @animation()
 def test_src_animation(f):

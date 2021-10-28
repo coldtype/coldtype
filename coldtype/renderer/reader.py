@@ -453,11 +453,16 @@ class SourceReader():
             self.write_code_to_tmpfile(code)
         
         self.codepath, self.data_out = read_source_to_tempfile(self.filepath, self.codepath, renderer=self.renderer)
+        
+        memory = {}
+        if self.renderer:
+            memory = self.renderer.state.memory
+
         self.program = run_source(
             self.filepath,
             self.codepath,
             self.inputs,
-            self.renderer.state.memory,
+            memory,
             __RUNNER__=self.runner)
         
         self.candidates = self.renderable_candidates(
