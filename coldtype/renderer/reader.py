@@ -20,7 +20,7 @@ except ImportError:
     publish_doctree = None
 
 
-def apply_syntax_mods(source_code, renderer=None):
+def apply_syntax_mods(filepath, source_code, renderer=None):
     codepath_offset = 0
 
     def inline_arg(p):
@@ -34,7 +34,11 @@ def apply_syntax_mods(source_code, renderer=None):
     
     def inline_other(x):
         cwd = Path.cwd()
-        path = Path(cwd / (x.group(1).replace(".", "/")+".py"))
+        m = x.group(1)
+        if m.startswith("."):
+            path = filepath.parent / (m[1:] + ".py")
+        else:
+            path = Path(cwd / (m.replace(".", "/")+".py"))
         if renderer:
             if path not in renderer.watchee_paths():
                 renderer.watchees.append([Watchable.Source, path, None])
@@ -128,12 +132,12 @@ def read_source_to_tempfile(filepath:Path,
         if codepath and codepath.exists():
             codepath.unlink()
         with NamedTemporaryFile("w", prefix="coldtype_md_src", suffix=".py", delete=False) as tf:
-            mod_src, _ = apply_syntax_mods(source_code, renderer)
+            mod_src, _ = apply_syntax_mods(filepath, source_code, renderer)
             tf.write(mod_src)
             codepath = Path(tf.name)
     
     elif filepath.suffix == ".py":
-        source_code, _ = apply_syntax_mods(filepath.read_text(), renderer)
+        source_code, _ = apply_syntax_mods(filepath, filepath.read_text(), renderer)
         if codepath and codepath.exists():
             codepath.unlink()
         with NamedTemporaryFile("w", prefix=f"coldtype__{filepath.stem}_", suffix=".py", delete=False) as tf:
