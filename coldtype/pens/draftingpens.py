@@ -568,7 +568,7 @@ class DraftingPens(DraftingPen):
                 if hasattr(p, "_pens"):
                     p = p[x]
                 else:
-                    p.mod_contour(x, fn)
+                    p.index(x, fn)
                     return self
         except TypeError:
             p = self[idx]
@@ -591,6 +591,9 @@ class DraftingPens(DraftingPen):
         for eidx, idx in enumerate(idxs):
             self.index(idx, fn, enum_idx=eidx)
         return self
+    
+    î = index
+    ï = indices
     
     def hide(self, *indices):
         for idx in indices:

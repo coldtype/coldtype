@@ -69,3 +69,5 @@ class Frame():
             return modfn(self.a.last_result.copy())
         else:
             return None
+    
+    lastRender = last_render

@@ -65,6 +65,8 @@ class ClipGroupPens(DATPens):
             self.clean_empties()
         return self
     
+    removeFutures = remove_futures
+    
     def remove_future_lines(self, clean=True):
         for _, line in self.iterate_lines():
             any_now = False
@@ -436,6 +438,8 @@ class ClipGroup(Timeable):
         for clip, pen in self.iterate_clip_pens(pens):
             if clip.position > 0:
                 pen._pens = []
+    
+    removeFutures = remove_futures
     
     def iterate_pens(self, pens, copy=True):
         for idx, line in enumerate(self.lines()):

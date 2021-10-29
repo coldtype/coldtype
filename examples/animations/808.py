@@ -18,7 +18,8 @@ obvs = Font.ColdtypeObviously()
 # This is also useful to load before the render function, because this MIDI data doesn’t change once our program is loaded.
 
 wav = __sibling__("media/808.wav")
-midi = MidiReader(__sibling__("media/808.mid"), duration=120, bpm=120, fps=30)
+midi = MidiReader(__sibling__("media/808.mid"),
+    duration=120, bpm=120, fps=30)
 drums = midi[0]
 
 # I like to keep things like logos in UFO source files, since they aren’t really typographic, so you don’t need to load them as fonts. Here we load a ufo of logos via `DefconFont`, which makes keyed lookups of vectors very easy.
@@ -52,7 +53,6 @@ def drummachine(f):
 
     pens = (StSt("COLD\nTYPE", style,
         leading=math.floor(10+kick.ease()*50))
-        .pens()
         .align(f.a.r))
 
     # So now we’ve got the lockup, and we move from _building_ the text to _messing_ with it, since we converted from the "text" realm to the "vector" realm with that `.pens()` call above. This is analogous to hitting "Convert to Outlines" in Illustrator (except in this case, if we want to change the text later, it’s easy).
@@ -65,7 +65,7 @@ def drummachine(f):
 
     # - `ffg` stands for `find-first-glyph`, which finds the first glyph with the given name. So we want to find the L in the first line of text, that’s `pens[0].ffg("L")`; we want to find the P on the second line, that’s `pens[1].ffg("P")`, etc.
 
-    # - `mod_contour` allows you to modify a nested pen value in-place as a set of contours with a callback function (aka a `lambda`). Basically, the `mod_contour` function first "explodes" the glyph into all its component contours (in the P’s case, that’s the outer shape & the counter shape), and then gives you an opportunity to modify just the specified contour before reassembling the contours into the letter (so the counter is still a counter and not just another filled-in shape). That’s how we’re able to keep the counter of the P frozen in place. If we got rid of the `mod_contour` call and instead rotated the P glyph itself (ala `pens[1].ffg("P").rotate(rim.ease()*-270)`), then the counter shape would also rotate.
+    # - `î` (aka index) allows you to modify a nested pen value in-place as a set of contours with a callback function (aka a `lambda`). Basically, the `î` function first "explodes" the glyph into all its component contours (in the P’s case, that’s the outer shape & the counter shape), and then gives you an opportunity to modify just the specified contour (at the "index") before reassembling the contours into the letter (so the counter is still a counter and not just another filled-in shape). That’s how we’re able to keep the counter of the P frozen in place. If we got rid of the `î` call and instead rotated the P glyph itself (ala `pens[1].ffg("P").rotate(rim.ease()*-270)`), then the counter shape would also rotate.
 
     snare = drums.fv(f.i, [40], [10, 40])
     se = snare.ease()
@@ -77,19 +77,14 @@ def drummachine(f):
     else: # the second snare hit
         pens[0].translate(150*se, 0)
         pens[1].translate(-150*se, 0)
-        (pens[1]
-            .ffg("P")
-            .mod_contour(0, lambda c:
-                c.rotate(snare.ease()*270)))
+        pens[1].ffg("P").î(0, λ.rotate(se*270))
 
-    # Whew, ok that was a little complicated. Now let’s do something similar with `mod_contour` on the P, but this time rotate just the counter shape when the second rimshot hits (we can ignore the first rimshot b/c it hits at the same time as a hi-hat, which we'll visualize in a second).
+    # Whew, ok that was a little complicated. Now let’s do something similar with `î` on the P, but this time rotate just the counter shape when the second rimshot hits (we can ignore the first rimshot b/c it hits at the same time as a hi-hat, which we'll visualize in a second).
 
     rim = drums.fv(f.i, [39], [5, 5])
     if rim.count == 2:
-        (pens[1]
-            .ffg("P")
-            .mod_contour(1, lambda c:
-                c.rotate(rim.ease()*-270)))
+        (pens[1].ffg("P")
+            .î(1, λ.rotate(rim.ease()*-270)))
 
     # Wouldn’t it be cool if the letters corresponding to the kicks scaled up whenever the kick hit? That’s what’s happening here, along with a more programmer-y idiom, i.e. unpacking a tuple to the `line, glyph`. This is just a way of abbreviating a longer `if-else` statement that would contain redundant code.
 
@@ -104,76 +99,55 @@ def drummachine(f):
 
     # When the first hat hits, let’s move the counter in the O to the right.
 
+    he = hat.ease()
+
     if hat.count == 1:
-        (pens[0]
-            .ffg("O")
-            .mod_contour(1, lambda c:
-                c.translate(80*hat.ease(), 0)))
+        (pens[0].ffg("O")
+            .î(1, λ.translate(80*he, 0)))
 
     # And when the second hat hits, let’s move the counter of the D in the first line, this time translating it down & then rotating it, to make it seem like it’s falling and then bouncing back up from the bottom of the outer shape.
 
     elif hat.count == 2:
-        (pens[0]
-            .ffg("D")
-            .mod_contour(1,
-                lambda c: (c
-                    .translate(-30*hat.ease(), -100*hat.ease())
-                    .rotate(hat.ease()*110))))
+        (pens[0].ffg("D")
+            .î(1, λ.translate(-30*he, -100*he).rotate(he*110)))
 
-    # And when the third and fourth hats hit, let’s move the left and right sides of the T crossbar, via the `map_points` function, which lets you adjust the x and y values of a shape directly via a callback.
+    # And when the third and fourth hats hit, let’s move the left and right sides of the T crossbar, via the `ï` (indices) function, which lets you adjust the x and y values of a certain set of points (at the given indices) directly via a callback.
 
-    elif hat.count in [3, 4]:
-        def move_t_top(idx, x, y):
-            if hat.count == 3 and 0 <= idx <= 6:
-                return x-150*hat.ease(), y
-            elif hat.count == 4 and 26 <= idx <= 34:
-                return x+150*hat.ease(), y
+    elif hat.count == 3:
+        pens[1].ffg("T").ï(range(0, 7), λ.o(-150*he, 0))
+    elif hat.count == 4:
+        pens[1].ffg("T").ï(range(26, 35), λ.o(150*he, 0))
 
-        pens[1].ffg("T").map_points(move_t_top)
-
-    # Ok last hat! Here we exaggerate the horizontality of the E counters with the same `map_points` function.
+    # Ok last hat! Here we exaggerate the horizontality of the E counters with the same `ï` function.
 
     elif hat.count == 5:
-        
-        def move_e_contour(idx, x, y):
-            if 10 <= idx <= 14:
-                x -= 35*hat.ease()
-            elif 23 <= idx <= 29:
-                x -= 75*hat.ease()
-            return x, y
-        
-        pens[1].ffg("E").map_points(move_e_contour)
+        (pens[1].ffg("E")
+            .ï(range(10, 15), λ.o(-35*he, 0))
+            .ï(range(23, 30), λ.o(-75*he, 0)))
 
     # The last visualization is the tom-tom hit. Here we can just nudge up the outer contour of the O in the first line.
 
     tom = drums.fv(f.i, [50], [5, 10])
-    (pens[0]
-        .ffg("O")
-        .mod_contour(0, lambda c:
-            c.translate(0, -80*tom.ease())))
+    (pens[0].ffg("O")
+        .î(0, λ.translate(0, -80*tom.ease())))
 
     # And a little branding: load the Goodhertz logo from the ufo via `glyph` and apply a `warp` to it, using the `warp` chainable. This lets you quickly & easily apply a "wavey" Perlin noise transform. To be honest I barely understand how it works, but it looks cool.
 
-    fp = f.a.progress(f.i, easefn="linear").e
-    ghz_logo = (DATPen()
+    ghz_logo = (P()
         .glyph(logos["goodhertz_logo_2019"])
         .scale(0.2)
         .align(f.a.r, y="mny")
         .translate(0, 100)
-        #.ch(warp(None, speed=fp*3, rz=3, mult=10))
-        .skew(cowbell.ease()*1))
+        .ch(warp(None, speed=f.e("l", rng=(0, 3)), rz=3, mult=50))
+        .skew(cowbell.ease()*0.5))
 
     # Now we return the data we’ve manipulated to the renderer. This is also where we apply the finishing touches to the `COLD\nTYPE` lockup, by reversing the lines so that the the first line is last (meaning it shows up on top, which is nice for when the C gets really big), and then by applying an `understroke`, which interleaves stroked copies of each letter in the composition, giving us a classic look that we can hit with a high-contrast `phototype` simulation. And then we’re done!
 
-    return DATPens([
-        (DATPen()
-            .rect(f.a.r)
-            .f(0)),
+    return PS([
+        P(f.a.r).f(0),
         ghz_logo.f(hsl(0.9, 0.55, 0.5)),
         (pens.f(1)
             .reversePens()
             .translate(0, 100)
-            # un-comment next to enable slow warping
-            #.pmap(warp(3, f.i*10, f.i*10, mult=30))
             .understroke(s=0, sw=15)
             .ch(phototype(f.a.r, cut=190, cutw=8)))])

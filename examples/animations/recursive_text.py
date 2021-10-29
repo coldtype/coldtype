@@ -21,8 +21,8 @@ def discord(f):
                 .f(1)
                 .understroke(sw=15)
                 .v(f.e(1) > 0.5))])
-        .translate(0, f.e("eeio", 1, rng=(y:=300, -y+10)))
-        .insert(0, f.last_render(lambda p: p
+        .translate(0, f.e("eeio", 1, rng=(y:=390, -y)))
+        .insert(0, f.lastRender(lambda p: p
             .scale(0.995)
             .ch(fill(1))))
         .ch(phototype(f.a.r, blur=1.5, cut=137, cutw=35,

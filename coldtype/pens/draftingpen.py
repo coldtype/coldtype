@@ -953,6 +953,19 @@ class DraftingPen(RecordingPen, SHContext):
         self.value = exploded.implode().value
         return self
     
+    def index(self, idx, fn):
+        return self.mod_contour(idx, fn)
+    
+    def indices(self, idxs, fn):
+        def apply(idx, x, y):
+            if idx in idxs:
+                return fn(Point(x, y))
+        
+        return self.map_points(apply)
+
+    î = index
+    ï = indices
+    
     def filter_contours(self, filter_fn):
         exploded = self.explode()
         keep = []

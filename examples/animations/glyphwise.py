@@ -19,9 +19,7 @@ def glyphwise(f):
         .lead(30)
         .align(f.a.r, th=0)
         .collapse()
-        .reverse_pens()
+        .rp()
         .f(1)
         .understroke(sw=5)
         .ch(phototype(f.a.r, 3, 190, cutw=15)))
-
-release = glyphwise.export("h264", loops=4)
