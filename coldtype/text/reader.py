@@ -211,9 +211,9 @@ class Style():
     **Keyword arguments**
 
     * ``font``: can either be a ``coldtype.text.Font`` object, a ``pathlib.Path``, or a plain string path
-    * ``fontSize``: standard point-based font-size, expressed as integer
-    * ``tracking`` (aka ``tu``): set the tracking, by default **in font-source-point-size** aka as if the font-size was always 1000; this means tracking is by default done relatively rather than absolutely (aka the relative tracking will not change when you change the fontSize)
-    * ``trackingMode``: set to 0 to set tracking in a classic fontSize-based (defaults to 1, as described just above)
+    * ``font_size``: standard point-based font-size, expressed as integer
+    * ``tracking`` (aka ``tu``): set the tracking, by default **in font-source-point-size** aka as if the font-size was always 1000; this means tracking is by default done relatively rather than absolutely (aka the relative tracking will not change when you change the font_size)
+    * ``trackingMode``: set to 0 to set tracking in a classic font_size-based (defaults to 1, as described just above)
     * ``space``: set this to override the width of the standard space character (useful when setting text on a curve and the space is getting collapsed)
     * ``baselineShift`` (aka ``bs``): if an integer, shifts glyphs by that amount in y axis; if a list, shifts glyphs at corresponding index in list by that amount in y axis
     * ``xShift`` (aka ``xs``): if an integer, shifts glyphs by that amount in x axis; if a list, shifts glyphs at corresponding index in list by that amount in x axis
@@ -323,6 +323,10 @@ class Style():
             self._asc = self.capHeight
         else:
             self._asc = self.ascender
+        
+        # legacy for older code
+        if kwargs.get("fontSize"):
+            font_size = kwargs.get("fontSize")
 
         if fitHeight:
             self.fontSize = (fitHeight/self._asc)*1000
