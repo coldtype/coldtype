@@ -19,9 +19,9 @@ if PREBAKE:
     @b3d_runnable()
     def before_bake(bw):
         with (bw
-            .delete_previous()
+            .deletePrevious()
             .timeline(t)
-            .render_settings(128)
+            .renderSettings(128)
             .rigidbody(speed=3, frame_end=1000)):
                 (BpyObj.Find("Plane")
                     .rigidbody("passive"))
@@ -33,7 +33,7 @@ if PREBAKE:
                 .tag(f"glyph_{i}")
                 .ch(b3d(lambda bp: bp
                     .extrude(0.5)
-                    .convert_to_mesh()
+                    .convertToMesh()
                     .rigidbody(friction=1, bounce=0.95),
                     dn=True,
                     upright=True,

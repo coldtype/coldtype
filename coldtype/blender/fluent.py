@@ -28,10 +28,14 @@ class BpyWorld(_Chainable):
         bpy.ops.object.select_all(action='DESELECT')
         return self
     
+    deselectAll = deselect_all
+    
     def delete_previous(self, collection="Coldtype"):
         self.deselect_all()
         BpyCollection.Find(collection).delete_hierarchy()
         return self
+    
+    deletePrevious = delete_previous
     
     def timeline(self, t:Timeline):
         self.scene.frame_start = 0
@@ -61,6 +65,8 @@ class BpyWorld(_Chainable):
             self.scene.render.resolution_y = canvas.h
 
         return self
+    
+    renderSettings = render_settings
     
     @contextmanager
     def rigidbody(self, speed=1, frame_end=250):
@@ -98,6 +104,8 @@ class BpyCollection(_Chainable):
         bpy.ops.object.delete()
         bpy.data.collections.remove(self.collection)
         return None
+    
+    deleteHierarchy = delete_hierarchy
 
 
 class BpyObj(_Chainable):
@@ -141,6 +149,8 @@ class BpyObj(_Chainable):
         bpy.context.view_layer.objects.active = None
         return self
     
+    objSelected = obj_selected
+    
     @contextmanager
     def obj_selection_sequence(self, other_tag):
         other = BpyObj.Norm(other_tag)
@@ -167,6 +177,8 @@ class BpyObj(_Chainable):
         bpy.context.view_layer.objects.active = None
         return self
     
+    objSelectionSequence = obj_selection_sequence
+    
     @contextmanager
     def all_vertices_selected(self):
         with self.obj_selected():
@@ -177,6 +189,8 @@ class BpyObj(_Chainable):
             bpy.ops.mesh.select_all(action='DESELECT')
             bpy.ops.object.mode_set(mode='OBJECT')
         return self
+    
+    allVerticesSelected = all_vertices_selected
     
     @contextmanager
     def select_vertices(self, selector, keep_selected=False):
@@ -197,6 +211,8 @@ class BpyObj(_Chainable):
                 bpy.ops.object.mode_set(mode='OBJECT')
         return self
     
+    selectVertices = select_vertices
+    
     def make_vertex_group(self, selector, name=None):
         with self.select_vertices(selector):
             bpy.ops.object.vertex_group_add()
@@ -205,11 +221,15 @@ class BpyObj(_Chainable):
                 self.obj.vertex_groups[-1].name = name
         return self
     
+    makeVertexGroup = make_vertex_group
+    
     def select_and_delete(self, select_mode, selector):
         with self.select_vertices(selector):
             bpy.ops.mesh.select_mode(type=select_mode)
             bpy.ops.mesh.delete(type=select_mode)
         return self
+    
+    selectAndDelete = select_and_delete
     
     def parent(self, parent_tag, hide=False):
         with self.obj_selection_sequence(parent_tag) as o:
@@ -231,6 +251,8 @@ class BpyObj(_Chainable):
             bpy.ops.object.vertex_group_add()
             bpy.ops.object.vertex_group_assign()
         return self
+    
+    vertexGroupAll = vertex_group_all
     
     # Geometry Methods
 
@@ -261,15 +283,21 @@ class BpyObj(_Chainable):
                 properties=properties)
         return self
     
+    applyTransform = apply_transform
+    
     def origin_to_geometry(self):
         with self.obj_selected():
             bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
         return self
     
+    originToGeometry = origin_to_geometry
+    
     def origin_to_cursor(self):
         with self.obj_selected():
             bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
         return self
+    
+    originToCursor = origin_to_cursor
     
     def set_origin(self, x, y, z):
         #saved_location = bpy.context.scene.cursor.location
@@ -278,6 +306,8 @@ class BpyObj(_Chainable):
             bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
         bpy.context.scene.cursor.location = Vector((0, 0, 0))
         return self
+    
+    setOrigin = set_origin
     
     def locate(self, x=None, y=None, z=None):
         if isinstance(x, Vector):
@@ -300,6 +330,8 @@ class BpyObj(_Chainable):
         if z is not None:
             self.obj.location[2] = self.obj.location[2] + z
         return self
+    
+    locateRelative = locate_relative
 
     # Convenience Methods
 
@@ -424,6 +456,8 @@ class BpyObj(_Chainable):
             bpy.ops.object.shade_smooth()
         return self
     
+    shadeSmooth = shade_smooth
+    
     def auto_smooth(self, angle=30):
         if angle is None:
             self.obj.data.use_auto_smooth = False
@@ -431,6 +465,8 @@ class BpyObj(_Chainable):
             self.obj.data.use_auto_smooth = True
             self.obj.data.auto_smooth_angle = math.radians(angle)
         return self
+    
+    autoSmooth = auto_smooth
     
     def subsurface(self):
         with self.obj_selected():
@@ -443,3 +479,5 @@ class BpyObj(_Chainable):
             m = self.obj.modifiers["Decimate"]
             m.decimate_type = "DISSOLVE"
         return self
+    
+    decimatePlanar = decimate_planar

@@ -9,8 +9,6 @@ at = AsciiTimeline(4, """
                     [wght     ]
 """)
 
-print(at.clips)
-
 @animation((1080, 540), timeline=at, bg=0.97, render_bg=1)
 def ascii(f):
     def wdth(g):

@@ -169,6 +169,8 @@ class DraftingPen(RecordingPen, SHContext):
         else:
             return self.bounds()
     
+    amb = ambit
+    
     def addFrame(self, frame, typographic=False, passthru=False):
         """Add a new frame to the DATPen, replacing any old frame. Passthru ignored, there for compatibility"""
         self._frame = frame

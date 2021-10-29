@@ -181,7 +181,7 @@ class Font():
                         path = Path(root + "/" + file)
                         if path.suffix in [".ttf", ".otf", ".ttc"]:
                             results.append(path)
-        return sorted(results)
+        return sorted(results, key=lambda p: p.stem)
 
     def Find(regex, regex_dir=None, index=0):
         found = Font.List(regex, regex_dir)

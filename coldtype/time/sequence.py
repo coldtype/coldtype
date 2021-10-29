@@ -249,6 +249,8 @@ class ClipGroup(Timeable):
                     pass
                 return clips
     
+    currentWord = current_word
+    
     def currentLine(self):
         for line in self.lines():
             for clip in line:

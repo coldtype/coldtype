@@ -218,6 +218,8 @@ class animation(renderable, Timeable):
         from coldtype.img.skiaimage import SkiaImage
         return SkiaImage(self.pass_path(fi))
     
+    frameImg = frame_img
+    
     def export(self, fmt, date=False, loops=1, open=1, audio=None, audio_loops=None, vf=None):
         def _export(passes):
             fe = FFMPEGExport(self, date=date, loops=loops, audio=audio, audio_loops=audio_loops, vf=vf)

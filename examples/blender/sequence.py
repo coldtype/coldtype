@@ -11,12 +11,12 @@ def lyrics(f):
             slnt=1,
             fill=hsl(0.65))
 
-    cg = f.a.t.clip_group(0, f)
+    cg = f.a.t.clipGroup(0, f)
     return PS([
         (P().oval(f.a.r.inset(50)).f(1)),
         (cg.pens(f, render_clip,
                 graf_style=GrafStyle(leading=30),
-                use_lines=[cg.current_word()])
+                use_lines=[cg.currentWord()])
             .xalign(f.a.r)
             .align(f.a.r)
-            .remove_futures())])
+            .removeFutures())])
