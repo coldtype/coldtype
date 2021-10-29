@@ -203,6 +203,8 @@ class RichText(DraftingPens):
                 line._pens = [DraftingPen()]
         
         return self
+    
+    unblank = remove_blanklines
 
 
 if highlight:

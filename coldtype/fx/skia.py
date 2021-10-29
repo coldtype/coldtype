@@ -304,3 +304,11 @@ def saturate(c):
     def _fill(pen):
         return pen.attr(skp=dict(ColorFilter=Skfi.saturate(c)))
     return _fill
+
+def shake(seg_length=2, deviation=2, seed=0):
+    """shake up the path"""
+    def _shake(p):
+        effect = skia.DiscretePathEffect.Make(
+            seg_length, deviation, seed)
+        return p.attr(skp=dict(PathEffect=effect))
+    return _shake

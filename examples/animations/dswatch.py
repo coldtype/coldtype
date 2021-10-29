@@ -1,27 +1,26 @@
+from random import seed
 from coldtype import *
-from coldtype.warping import warp_fn
-from functools import partial
-from coldtype.fx.skia import phototype
+from coldtype.fx.warping import warp
+from coldtype.fx.skia import phototype, shake
+
+"""
+Saving a change to UFOs included in the designspace
+file should automatically update the coldtype window
+"""
 
 ds = Font("assets/ColdtypeObviously.designspace")
 
-def shake(idx, p):
-    """shake up the vector w/ a skia effect"""
-    return p.attr(skp=dict(
-        PathEffect=skia.DiscretePathEffect.Make(2, 2, idx)))
-
-@animation(timeline=(120, 23.976), watch=[ds])
+@animation(timeline=(120, 23.976), watch=[ds], bg=0)
 def dswatch(f):
-    return (DPS([
-        (StSt("COLD", ds, 510, ro=1, r=1,
-            wdth=f.e(1),
-            tu=250+-450*(f.e(1)))
-            .align(f.a.r)
-            .f(0).s(1).sw(4)
-            .pmap(lambda i,p: p
-                .flatten(15)
-                .nlt(warp_fn(f.i*20, mult=10)))
-            .chain(partial(shake, f.i)))])
-        .ch(phototype(f.a.r, blur=2,
-            cut=125, cutw=20,
-            fill=hsl(0.65))))
+    return (PS([
+        (StSt("COLD", ds, 510,
+            wdth=f.e(1), tu=250+-450*(f.e(1)))
+            .ro().rp().align(f.a.r)
+            .fssw(0, 1, 5)
+            .pmap(warp(5, f.i*20, mult=10))
+            .ch(shake(5, 2, seed=f.i)))])
+        .ch(phototype(f.a.r,
+            blur=2,
+            cut=125,
+            cutw=20,
+            fill=1)))

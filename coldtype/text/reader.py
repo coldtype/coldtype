@@ -162,9 +162,9 @@ class Font():
         results = []
         for dir in ALL_FONT_DIRS:
             dir = normalize_font_prefix(dir)
-            if regex_dir:
-                if not re.search(regex_dir, str(dir)):
-                    continue
+            #if regex_dir:
+            #    if not re.search(regex_dir, str(dir)):
+            #        continue
             for root, dirs, files in os.walk(dir):
                 for dir in dirs:
                     path = Path(root + "/" + dir)
@@ -172,13 +172,16 @@ class Font():
                         if re.search(regex, dir):
                             results.append(path)
                 for file in files:
+                    if regex_dir:
+                        if not re.search(regex_dir, str(root)):
+                            continue
                     if log:
                         print(file, re.search(regex, file))
                     if re.search(regex, file):
                         path = Path(root + "/" + file)
                         if path.suffix in [".ttf", ".otf", ".ttc"]:
                             results.append(path)
-        return results
+        return sorted(results)
 
     def Find(regex, regex_dir=None, index=0):
         found = Font.List(regex, regex_dir)
