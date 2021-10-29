@@ -36,7 +36,7 @@ loop = Loop(120, 8, [
 def cheee_wild(f):
     return (Glyphwise("CHEEE", lambda g:
         (Style(cheee, 270,
-            **f.a.t.current_state((f.i-g.i*30), "eeio"))))
+            **f.a.t.currentState((f.i-g.i*30), "eeio"))))
         .f(1)
         .align(f.a.r)
         .translate(0, 10))

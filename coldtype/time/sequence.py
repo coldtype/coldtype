@@ -599,6 +599,8 @@ class Sequence(Timeline):
         else:
             return ClipGroup(self[track_idx], -1, [])
     
+    clipGroup = clip_group
+    
     def find_workarea(self, frame=None):
         if frame is None:
             frame = self.cti

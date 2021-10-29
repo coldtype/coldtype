@@ -50,8 +50,9 @@ class Winmans():
         self.backoff_refresh_delay = self.refresh_delay
 
         self.title_states = {
-            "rendered": False,
             "playing": False,
+            "rendered": False,
+            "audio": False,
         }
 
         self.print_approx_fps = False

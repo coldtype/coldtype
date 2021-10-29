@@ -17,7 +17,7 @@ loop = Loop(150, 15, [
 
 @animation(timeline=loop, bg=0)
 def warp_blur(f):
-    state = f.a.t.current_state(f.i, e="eeio")
+    state = f.a.t.currentState(f.i, e="eeio")
     return (StSt("WARP\nBLUR", peshka, ro=1, **state)
         .xalign(f.a.r)
         .align(f.a.r)

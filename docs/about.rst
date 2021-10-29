@@ -59,8 +59,8 @@ Here’s the code for a somewhat complex animation:
 
     @animation(timeline=loop, storyboard=[130], bg=1, rect=(700, 300))
     def banner(f):
-        phase = f.a.t.current_phase(f.i)
-        state = phase.calc_state(states)
+        phase = f.a.t.currentPhase(f.i)
+        state = phase.calcState(states)
         return (StSt("COLDTYPE", obvs, 150, fill=0, **state, r=1, ro=1)
             .align(f.a.r)
             .f(0)

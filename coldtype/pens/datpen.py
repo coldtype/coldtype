@@ -412,13 +412,6 @@ class DATPen(DraftingPen):
         self.data["_preserve"] = dict(calls=calls, pickle=str(tmp.absolute()))
         pickle.dump(self, open(str(tmp), "wb"))
         return self
-
-    def add_data(self, key, value=None):
-        if value is None:
-            self.data = key
-        else:
-            self.data[key] = value
-        return self
     
     def editable(self, tag):
         self.tag(tag)

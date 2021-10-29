@@ -109,7 +109,7 @@ class generativefont(animation):
                 (DATText(gfn.glyph_name, Style("Times", 48, load_font=0),
                     render.rect.inset(50)))])
     
-    def glyph_viewer(self, f):
+    def glyphViewer(self, f):
         glyph_fn = self.glyph_fns[f.i]
         glyph_fn.add_font(self)
 
@@ -118,7 +118,7 @@ class generativefont(animation):
 
         # shift over by the left-side-bearing
         glyph_pen.translate(glyph_fn.lsb, 0)
-        glyph = glyph_pen.to_glyph(
+        glyph = glyph_pen.toGlyph(
             name=glyph_fn.glyph_name,
             width=glyph_fn.frame.w + glyph_fn.lsb + glyph_fn.rsb,
             allow_blank = True)

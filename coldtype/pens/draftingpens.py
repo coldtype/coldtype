@@ -395,6 +395,8 @@ class DraftingPens(DraftingPen):
                 p.translate(xoffset+tracking_value*idx, 0)
         return self
     
+    trackToRect = track_to_rect
+    
     def interleave(self, style_fn, direction=-1, recursive=True):
         """Provide a callback-lambda to interleave new DATPens between the existing ones; useful for stroke-ing glyphs, since the stroked glyphs can be placed behind the primary filled glyphs."""
         pens = []

@@ -17,12 +17,12 @@ def render(f):
                 s.mod(fitHeight=c1.h, opsz=f.e(1))
                 , fit=c1)
                 .align(c1)
-                .track_to_rect(c1, pullToEdges=1, r=1)),
+                .trackToRect(c1.inset(f.e(1, rng=(30, 0)), 0), pullToEdges=1, r=1)),
             (StSt("JUSTIFIED",
                 s.mod(fitHeight=c2.h, opsz=f.e(1, rng=(1, 0)))
                 , fit=c1)
                 .align(c2)
-                .track_to_rect(c2, pullToEdges=1, r=1))])
+                .trackToRect(c2, pullToEdges=1, r=1))])
         .f(1)
         .understroke(sw=10)
-        .ch(phototype(f.a.r, blur=3, cut=150, cutw=25)))
+        .ch(phototype(f.a.r, blur=2, cut=150, cutw=25)))

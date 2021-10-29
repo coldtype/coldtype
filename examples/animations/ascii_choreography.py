@@ -23,7 +23,7 @@ def choreography(f):
         .f(hsl(0.7, 1))
         .pmap(lambda i, p: p.rotate(-360*at["ro"].e(f.i-i, 0)))
         .cond(now:=at.now(f.i, 1, True, lambda m: m.index < 4), lambda ps: ps
-            .center_on_point(f.a.r,
+            .centerOnPoint(f.a.r,
                 ps[now.index].bounds().point("C"),
                 interp=now.e(f.i))
             .scale(1+now.e(f.i)*2,

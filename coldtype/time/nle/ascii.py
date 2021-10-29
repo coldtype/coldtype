@@ -81,7 +81,7 @@ class AsciiTimeline(Timeline):
         else:
             return self.clips[item]
     
-    def get_at(self, key, fi):
+    def geti(self, key, fi):
         for c in self.clips:
             if c.name == key and (c.start <= fi < c.end):
                 return c

@@ -50,7 +50,7 @@ def C(r):
     "Generative",
     "Regular")
 def gufo(f):
-    return gufo.glyph_viewer(f)
+    return gufo.glyphViewer(f)
 
 @renderable((1080, 300))
 def spacecenter(r):

@@ -917,6 +917,8 @@ class Renderer():
             return Action.PreviewPlay
         elif shortcut == KeyboardShortcut.EnableAudio:
             self.source_reader.config.enable_audio = not self.source_reader.config.enable_audio
+            self.winmans.mod_title("audio",
+                self.source_reader.config.enable_audio)
         
         elif shortcut == KeyboardShortcut.ReloadSource:
             return Action.PreviewStoryboardReload

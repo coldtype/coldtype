@@ -129,14 +129,14 @@ def glyph_viewer(f):
 
     # shift over by the left-side-bearing
     glyph_pen.translate(glyph_fn.lsb, 0)
-    glyph = glyph_pen.to_glyph(
+    glyph = glyph_pen.toGlyph(
         name=glyph_fn.glyph_name,
         width=glyph_fn.frame.w + glyph_fn.lsb + glyph_fn.rsb,
         allow_blank = True)
     glyph.unicode = glyph_to_uni(glyph_fn.glyph_name)
     ufo.insertGlyph(glyph)
     ufo.save()
-    return glyph_pen.add_data("gfn", glyph_fn)
+    return glyph_pen.addData("gfn", glyph_fn)
 
 
 @renderable((1080, 300))

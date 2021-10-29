@@ -13,7 +13,7 @@ def lyrics(f):
             wdth=1,
             fill=hsl(0.65) if ct else 1)
 
-    return (pt.clip_group(0, f, styles=[1])
+    return (pt.clipGroup(0, f, styles=[1])
         .pens(f, render_clip_fn,
             graf_style=GrafStyle(leading=30),
             fit=f.a.r.w-200
@@ -21,4 +21,4 @@ def lyrics(f):
         .xalign(f.a.r)
         .index(0, lambda p: p.translate(0, -10))
         .align(f.a.r)
-        .remove_futures())
+        .removeFutures())

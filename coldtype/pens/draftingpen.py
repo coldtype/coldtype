@@ -395,7 +395,7 @@ class DraftingPen(RecordingPen, SHContext):
         glyph.draw(self)
         return self
     
-    def to_glyph(self, name=None, width=None, allow_blank=False):
+    def toGlyph(self, name=None, width=None, allow_blank=False):
         """
         Create a glyph (like from `defcon`) using this pen’s value.
         *Warning*: if path is unended, closedPath will be called
@@ -644,6 +644,8 @@ class DraftingPen(RecordingPen, SHContext):
             self.data[key] = value
         return self
     
+    addData = add_data
+    
     def copy(self, with_data=False):
         dp = self.single_pen_class()
         self.replay(dp)
@@ -764,6 +766,8 @@ class DraftingPen(RecordingPen, SHContext):
     
     def center_on_point(self, rect, pt, interp=1):
         return self.translate(norm(interp, 0, rect.w/2-pt[0]), norm(interp, 0, rect.h/2-pt[1]))
+    
+    centerOnPoint = center_on_point
     
     def skew(self, x=0, y=0, point=None):
         t = Transform()

@@ -13,8 +13,8 @@ loop = Loop(200, 10, len(states))
 
 @animation(timeline=loop, storyboard=[0], bg=1, rect=(1500, 300))
 def render(f):
-    phase = f.a.t.current_phase(f.i)
-    state = phase.calc_state(states)
+    phase = f.a.t.currentPhase(f.i)
+    state = phase.calcState(states)
     return (StyledString("COLDTYPE",
         Style(obvs, 250, fill=0, **state, r=1, ro=1))
         .pens()

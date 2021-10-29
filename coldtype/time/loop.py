@@ -28,6 +28,8 @@ class LoopPhase():
             e = self.t.progress(self.i, easefn=e, to1=1).e
             state = interp_dict(e, state.copy(), next_state)
         return state
+    
+    calcState = calc_state
 
 
 class Loop(Timeline):
@@ -115,8 +117,12 @@ class Loop(Timeline):
         """
         return LoopPhase(*self.current_on_loop(i))
     
+    currentPhase = current_phase
+    
     def current_state(self, i, e="eeio") -> LoopPhase:
         """
         Get current state of the Loop as a dict (provided states were passed to init)
         """
         return LoopPhase(*self.current_on_loop(i)).calc_state(self.states, e)
+
+    currentState = current_state
