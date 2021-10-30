@@ -7,6 +7,9 @@ from coldtype.text.composer import StSt, Glyphwise, Style, Font
 from coldtype.pens.draftingpens import DraftingPens
 from coldtype.pens.svgpen import SVGPen
 
+from coldtype.text.reader import ALL_FONT_DIRS
+ALL_FONT_DIRS.insert(0, "~/Type/fonts/fonts")
+
 tf = Path(__file__).parent
 
 class TestGlyphwise(unittest.TestCase):

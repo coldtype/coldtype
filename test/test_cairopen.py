@@ -38,7 +38,7 @@ def test_image(test:unittest.TestCase, path, rect=Rect(300, 300)):
     test.assertEqual(hash_after, hash_before)
     test.assertEqual(img.exists(), True)
 
-class TestCairoPen(unittest.TestCase):
+class TestCairoPen():#unittest.TestCase):
     def test_cairo_pdf(self):
         r = Rect(300, 300)
         pdf = renders / "test_cairo.pdf"

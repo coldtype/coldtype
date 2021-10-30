@@ -5,7 +5,8 @@ from pathlib import Path
 try:
     import cairo
 except:
-    print(">>> No cairo installation found!")
+    #print(">>> No cairo installation found!")
+    pass
 
 
 from coldtype.pens.drawablepen import DrawablePenMixin
