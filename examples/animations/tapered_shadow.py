@@ -17,7 +17,7 @@ def taper(f):
         .pen()
         .cond(SHAKE, warp(-1, rs[f.i//4+10], mult=5))
         .layer(
-            lambda p: (p.layer(
+            lambda p: p.layer(
                 lambda p: p.f(1)
                     .t(o:=15+f.e(1, rng=(0, 10)), -o)
                     .cond(SHAKE, warp(-1, rs[f.i//4], mult=5)),
@@ -26,10 +26,10 @@ def taper(f):
                 .ch(phototype(f.a.r,
                     blur=5, cut=183, cutw=8,
                     fill=hsl(0.75, 0.94, 0.68)))
-                ._null()),
+                ._null(),
             lambda p: p.f(1)
                 .ch(phototype(f.a.r,
-                    blur=3, cutw=10,
+                    blur=3, cutw=15,
                     cut=230+f.e(1, rng=(-30, 5)),
                     fill=hsl(0.11, 0.86, 0.63)))
                 ._null()))
