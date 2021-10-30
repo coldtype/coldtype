@@ -29,7 +29,7 @@ def taper(f):
                 ._null()),
             lambda p: p.f(1)
                 .ch(phototype(f.a.r,
-                    blur=3, cutw=15,
+                    blur=3, cutw=10,
                     cut=230+f.e(1, rng=(-30, 5)),
                     fill=hsl(0.11, 0.86, 0.63)))
                 ._null()))

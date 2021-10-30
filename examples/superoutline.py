@@ -26,6 +26,6 @@ def outline(f):
                     fill=hsl(0.75, 1, 0.605))),
             lambda p: p.f(1)
                 .ch(phototype(f.a.r,
-                    blur=3, cutw=15,
+                    blur=3, cutw=10,
                     cut=230+f.e(1, rng=(-30, 5)),
                     fill=hsl(0.65, 0.7, 0.55)))))
