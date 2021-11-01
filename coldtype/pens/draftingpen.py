@@ -1043,9 +1043,17 @@ class DraftingPen(RecordingPen, SHContext):
                 pen.walk(callback, depth=depth+1, visible_only=visible_only, parent=self, alpha=alpha, idx=idxs)
             callback(self, 1, dict(depth=depth, alpha=alpha, idx=idx))
         else:
-            callback(self, 0, dict(depth=depth, alpha=alpha, idx=idx))
+            utag = "_".join([str(i) for i in idx])
+            callback(self, 0, dict(
+                depth=depth, alpha=alpha, idx=idx, utag=utag))
         
         return self
+    
+    def pwalk(self, fn):
+        def walker(p, pos, data):
+            if pos == 0:
+                fn(p, data)
+        return self.walk(walker)
     
     def remove_blanks(self):
         print("REMOVE BLANKS PEN", self)
