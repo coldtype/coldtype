@@ -24,16 +24,15 @@ def render(f):
         (StSt("COLD",
             style.mod(wdth=1-snare*0.5))
             .f(hsl(hues[0], 0.75, 0.5))
-            .index(1, lambda c: c.rotate(hat_count*-45))),
+            .î(1, λ.r(hat_count*-45))),
         (StSt("TYPE",
             style.mod(
                 tu=-150-100*kick,
                 rotate=-8*kick))
             .f(hsl(hues[1], 0.75, 0.5))
-            .index([2, 1], lambda c: c
-                .translate(70*cowbell, 0)))])
+            .î([2, 1], λ.t(70*cowbell, 0)))])
         .xalign(f.a.r)
         .stack(30)
         .align(f.a.r.inset(0, 150))
-        .map(lambda p: p.rp().understroke(sw=10))
+        .map(λ.rp().understroke(sw=10))
         .rotate(5))

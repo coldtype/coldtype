@@ -792,6 +792,8 @@ class DraftingPen(RecordingPen, SHContext):
         t = t.translate(-point.x, -point.y)
         return self.transform(t, transformFrame=False)
     
+    r = rotate
+    
     def scale(self, scaleX, scaleY=None, point=None):
         """Scale this shape by a percentage amount (1-scale)."""
         t = Transform()
