@@ -305,6 +305,8 @@ class DraftingPens(DraftingPen):
         return self
     
     def xalign(self, rect=None, x="centerx", th=1, tv=0):
+        if callable(rect):
+            rect = rect(self)
         for pen in self:
             pen.align(rect, x=x, y=None, th=th, tv=tv)
         return self
@@ -468,7 +470,6 @@ class DraftingPens(DraftingPen):
             self._pens = self._pens[0:limit]
         return self
     
-    # deprecated
     distributeOnPath = distribute_on_path
 
     def map(self, fn: Callable[[int, DraftingPen], Optional[DraftingPen]]):
@@ -547,6 +548,9 @@ class DraftingPens(DraftingPen):
                     new_pens.append(el_or_fn.copy())
             new_pens.append(el)
         self._pens = new_pens
+        return self
+    
+    def split(self, fn):
         return self
     
     def zip(self, before, fn):
