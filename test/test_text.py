@@ -153,6 +153,18 @@ class TestText(unittest.TestCase):
         self.assertEqual(st.depth(), 3)
     
     def test_word_splitting(self):
+        st = (StSt("These are some words", Font.RecursiveMono()))
+
+        self.assertEqual(st.depth(), 2)
+        self.assertEqual(st[0].glyphName, 'T')
+        self.assertEqual(len(st), 20)
+
+        st = st.wordPens()
+        self.assertEqual(st.depth(), 2)
+        self.assertEqual(st[0].data["word"],
+            'T/h.italic/e.italic/s.italic/e.italic')
+        self.assertEqual(len(st), 4)
+        
         st = (StSt("These are some words", Font.RecursiveMono(), multiline=1))
 
         self.assertEqual(st.depth(), 3)
@@ -164,6 +176,18 @@ class TestText(unittest.TestCase):
         self.assertEqual(st[0][0].data["word"],
             'T/h.italic/e.italic/s.italic/e.italic')
         self.assertEqual(len(st[0]), 4)
+
+        st = (StSt("These are\nsome words", Font.RecursiveMono()))
+
+        self.assertEqual(st.depth(), 3)
+        self.assertEqual(st[0][0].glyphName, 'T')
+        self.assertEqual(len(st[0]), 9)
+
+        st = st.wordPens()
+        self.assertEqual(st.depth(), 3)
+        self.assertEqual(st[-1][-1].data["word"],
+            'w.italic/o/r.italic/d.italic/s.italic')
+        self.assertEqual(len(st[0]), 2)
 
 
 if __name__ == "__main__":

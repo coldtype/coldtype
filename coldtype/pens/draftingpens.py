@@ -563,13 +563,20 @@ class DraftingPens(DraftingPen):
         return out
 
     def wordPens(self, pred=lambda x: x.glyphName == "space"):
-        out = self.multi_pen_class()
-        for pen in self:
-            out.append(pen
+        def _wp(p):
+            return (p
                 .split(pred)
                 .map(lambda x: x.pen()
                     .addData("word",
                         "/".join([p.glyphName for p in x]))))
+        
+        d = self.depth()
+        if d == 2:
+            return _wp(self)
+        
+        out = self.multi_pen_class()
+        for pen in self:
+            out.append(_wp(pen))
         return out
     
     def zip(self, before, fn):
