@@ -1,4 +1,3 @@
-from random import seed
 from coldtype import *
 from coldtype.fx.warping import warp
 from coldtype.fx.skia import phototype, shake
