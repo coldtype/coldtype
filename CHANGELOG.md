@@ -87,3 +87,13 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ## [0.7.5] - 2021-10-25
 ### Added
 - `@ui` decorator idea, to be used/tested in Goodhertz plugin-builder
+
+## [0.7.6] - 2021-11-02
+### Added
+- `.depth`, `.split`, `.wordPens`, `.walkp`
+- `î` and `ï` for `index` and `indices`, also both of those on `DraftingPen` now, since they shadow functionality of `mod_contour` and `map_points`
+- `utag` in walk.data
+- camelCase throughout examples, headed towards standardizing on that
+- `.geti` for time-based fetch in `AsciiTimeline`
+### Fixed
+- `style=` on precomposed/@renderable-cached
