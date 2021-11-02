@@ -551,7 +551,26 @@ class DraftingPens(DraftingPen):
         return self
     
     def split(self, fn):
-        return self
+        out = self.multi_pen_class()
+        curr = self.multi_pen_class()
+        for pen in self:
+            if fn(pen):
+                out.append(curr)
+                curr = self.multi_pen_class()
+            else:
+                curr.append(pen)
+        out.append(curr)
+        return out
+
+    def wordPens(self, pred=lambda x: x.glyphName == "space"):
+        out = self.multi_pen_class()
+        for pen in self:
+            out.append(pen
+                .split(pred)
+                .map(lambda x: x.pen()
+                    .addData("word",
+                        "/".join([p.glyphName for p in x]))))
+        return out
     
     def zip(self, before, fn):
         new_pens = []

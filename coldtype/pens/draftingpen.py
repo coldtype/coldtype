@@ -1049,7 +1049,14 @@ class DraftingPen(RecordingPen, SHContext):
         
         return self
     
-    def pwalk(self, fn):
+    def depth(self):
+        if hasattr(self, "_pens"):
+            return 1 + max(p.depth() for p in self)
+        else:
+            return 1
+    
+    def walkPens(self, fn):
+        "A recursive walk, but only calls-back with actual pen objects (not pen-sets)"
         def walker(p, pos, data):
             if pos == 0:
                 fn(p, data)
