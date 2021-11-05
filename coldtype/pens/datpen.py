@@ -310,6 +310,7 @@ class DATPen(DraftingPen):
         """WIP"""
         all_points = []
         points = []
+        self.pvl()
         for idx, (t, pts) in enumerate(self.value):
             if t == "moveTo":
                 points.append(("moveTo", pts))
