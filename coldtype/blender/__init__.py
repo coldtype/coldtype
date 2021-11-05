@@ -241,12 +241,15 @@ class b3d_renderable(renderable):
         center=(0, 0),
         upright=False,
         post_run=None,
+        reset_to_zero=False,
         **kwargs
         ):
         self.center = center
         self.upright = upright
         self.post_run = post_run
         self.blender_file = None
+        self.reset_to_zero = reset_to_zero
+        
         super().__init__(rect, **kwargs)
 
 
