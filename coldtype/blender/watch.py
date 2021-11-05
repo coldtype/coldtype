@@ -116,7 +116,8 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     r.run()
                 else:
                     walk_to_b3d(res, renderable=r)
-                    bpy.data.scenes[0].frame_set(0)
+                    if r.reset_to_zero:
+                        bpy.data.scenes[0].frame_set(0)
         
         #if not animation_found:
         #    bpy.data.scenes[0].frame_set(0)

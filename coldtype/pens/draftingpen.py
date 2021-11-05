@@ -212,6 +212,8 @@ class DraftingPen(RecordingPen, SHContext):
                 self.closePath()
         return self
     
+    fullyClosePath = fully_close_path
+    
     def reverse(self):
         """Reverse the winding direction of the pen."""
         if self.unended():
@@ -1055,7 +1057,7 @@ class DraftingPen(RecordingPen, SHContext):
         else:
             return 1
     
-    def walkPens(self, fn):
+    def walkp(self, fn):
         "A recursive walk, but only calls-back with actual pen objects (not pen-sets)"
         def walker(p, pos, data):
             if pos == 0:
@@ -1751,3 +1753,11 @@ class DraftingPen(RecordingPen, SHContext):
         if isinstance(src, str):
             src = Path(src)
         return pickle.load(open(str(src.expanduser()), "rb"))
+    
+    @staticmethod
+    def FromSVG(svg_file):
+        from fontTools.svgLib import SVGPath
+        svg = SVGPath.fromstring(svg_file.read_bytes())
+        dp = DraftingPen()
+        svg.draw(dp)
+        return dp
