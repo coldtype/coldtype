@@ -184,6 +184,9 @@ class Font():
         return sorted(results, key=lambda p: p.stem)
 
     def Find(regex, regex_dir=None, index=0):
+        if Path(regex).expanduser().exists():
+            return Font.Cacheable(regex)
+        
         found = Font.List(regex, regex_dir)
         try:
             return Font.Cacheable(found[index])
