@@ -1234,7 +1234,7 @@ class Renderer():
     def on_modified(self, event):
         path = Path(event.src_path)
 
-        if path.parent.stem == "picklejar":
+        if path.parent.stem == "picklejar" and "picklejar" in str(self.source_reader.filepath):
             if path.exists():
                 self.debounced_actions["picklejar"] = ptime.time()
             return

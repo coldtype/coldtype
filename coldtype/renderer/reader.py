@@ -1,12 +1,12 @@
-from coldtype import ColdtypeCeaseConfigException
-import re, os
+import re, os, sys
 from pathlib import Path
 from runpy import run_path
 from functools import partial
+from unittest import TestCase
 from tempfile import NamedTemporaryFile
+from subprocess import run
 
 from coldtype.renderable import renderable, ColdtypeCeaseConfigException, runnable
-from coldtype.renderable.animation import animation
 
 from coldtype.renderer.utils import Watchable
 from coldtype.renderer.config import ColdtypeConfig
@@ -180,6 +180,12 @@ def find_renderables(
     filtered_rs = []
     
     for k, v in program.items():
+        if "Test" in k:
+            iv = v()
+            if isinstance(iv, TestCase):
+                test_file = filepath.relative_to(Path.cwd())
+                run(["python", test_file])
+
         if (isinstance(v, renderable) or isinstance(v, runnable)) and not v.hidden:
             if v.cond is not None:
                 if callable(v.cond) and not v.cond():
