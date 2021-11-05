@@ -58,10 +58,14 @@ class Point(Geometrical):
     
     o = offset
 
-    def rect(self, w, h):
+    def rect(self, w, h=None):
         "Create a rect from this point as center, with w and h dimensions provided"
         from coldtype.geometry.rect import Rect
+        if h is None:
+            h = w
         return Rect((self.x-w/2, self.y-h/2, w, h))
+    
+    r = rect
 
     def xy(self):
         "As a tuple"

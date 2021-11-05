@@ -305,7 +305,7 @@ class DATPen(DraftingPen):
         if len(ls) > 1:
             ls.append([pts[-1], pts[0]])
         return ls
-
+    
     def skeletonPoints(self):
         """WIP"""
         all_points = []
@@ -313,7 +313,7 @@ class DATPen(DraftingPen):
         for idx, (t, pts) in enumerate(self.value):
             if t == "moveTo":
                 points.append(("moveTo", pts))
-            elif t == "curveTo":
+            elif t in ["curveTo", "qCurveTo"]:
                 p0 = self.value[idx-1][-1][-1]
                 points.append(("curveTo", [p0, *pts]))
             elif t == "lineTo":
@@ -326,67 +326,6 @@ class DATPen(DraftingPen):
         if len(points) > 0:
             all_points.append(points)
         return all_points
-    
-    def skeleton(self, scale=1, returnSet=False):
-        """Vector-editing visualization"""
-        dp = DATPen()
-        moveTo = DATPen(fill=("random", 0.5))
-        lineTo = DATPen(fill=("random", 0.5))
-        curveTo_on = DATPen(fill=("random", 0.5))
-        curveTo_off = DATPen(fill=("random", 0.25))
-        curveTo_bars = DATPen(fill=None, stroke=dict(color=("random", 0.5), weight=1*scale))
-        for idx, (t, pts) in enumerate(self.value):
-            if t == "moveTo":
-                r = 12*scale
-                x, y = pts[0]
-                moveTo.rect(Rect((x-r/2, y-r/2, r, r)))
-            elif t == "curveTo":
-                r = 6*scale
-                x, y = pts[-1]
-                curveTo_on.oval(Rect((x-r/2, y-r/2, r, r)))
-                r = 4*scale
-                x, y = pts[1]
-                curveTo_off.oval(Rect((x-r/2, y-r/2, r, r)))
-                x, y = pts[0]
-                curveTo_off.oval(Rect((x-r/2, y-r/2, r, r)))
-                p0 = self.value[idx-1][-1][-1]
-                curveTo_bars.line((p0, pts[0]))
-                curveTo_bars.line((pts[1], pts[2]))
-            elif t == "qCurveTo":
-                r = 6*scale
-                # x, y = pts[-1]
-                # curveTo_on.oval(Rect((x-r/2, y-r/2, r, r)))
-                # r = 4*scale
-                # x, y = pts[1]
-                # curveTo_off.oval(Rect((x-r/2, y-r/2, r, r)))
-                # x, y = pts[0]
-                # curveTo_off.oval(Rect((x-r/2, y-r/2, r, r)))
-                p0 = self.value[idx-1][-1][-1]
-                #curveTo_bars.line((p0, pts[0]))
-                for i, pt in enumerate(pts[0:]):
-                    x, y = pt
-                    lineTo.rect(Rect((x-r/2, y-r/2, r, r)))
-                    #curveTo_bars.line((pt, pts[i+1]))
-                #curveTo_bars.line((pts[1], pts[2]))
-            elif t == "lineTo":
-                r = 6*scale
-                x, y = pts[0]
-                lineTo.rect(Rect((x-r/2, y-r/2, r, r)))
-        
-        all_pens = [moveTo, lineTo, curveTo_on, curveTo_off, curveTo_bars]
-        if returnSet:
-            return all_pens
-        else:
-            for _dp in all_pens:
-                dp.record(_dp)
-            self.value = dp.value
-            return self
-    
-    def skel(self):
-        return DPS([
-            self,
-            self.skeleton().f(None).s(hsl(0.9)).sw(4)
-        ])
     
     def all_guides(self, field="defs", sw=1, l=0, a=0.15):
         dps = DATPens()
@@ -738,19 +677,6 @@ class DATPens(DraftingPens, DATPen):
             dp.record(p)
         return dp
     
-    def skel(self, pts=None, start=0):
-        _pts = pts or DPS()
-        for idx, pen in enumerate(self):
-            if hasattr(pen, "_pens"):
-                pen.skel(pts=_pts)
-            else:
-                c = (start + idx)*0.37
-                pen.f(hsl(c, s=1, a=0.05)).s(hsl(c, s=0.65, a=0.5)).sw(8)
-                _pts.append(pen.copy().skeleton().f(None).s(hsl(c+0.05, s=1, a=0.35)).sw(4))
-        if not pts:
-            self.append(_pts)
-        return self
-    
     def addOverlaps(self, idx1, idx2, which, outline=3, scale=1, xray=0):
         c1 = self[idx1]
         c2 = self[idx2]
@@ -804,6 +730,8 @@ class DATPens(DraftingPens, DATPen):
                 e = idx / (length-1)
             out.append(enumerator(DATPensEnumerable(idx, item, e, length)))
         return out
+    
+    E = Enumerate
 
 DATPenSet = DATPens
 DPS = DATPens

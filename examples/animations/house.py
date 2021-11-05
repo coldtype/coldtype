@@ -24,7 +24,7 @@ def render(f):
         (StSt("COLD",
             style.mod(wdth=1-snare*0.5))
             .f(hsl(hues[0], 0.75, 0.5))
-            .î(1, λ.r(hat_count*-45))),
+            .î(1, λ.rt(hat_count*-45))),
         (StSt("TYPE",
             style.mod(
                 tu=-150-100*kick,

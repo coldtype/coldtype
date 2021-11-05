@@ -209,6 +209,8 @@ def StSt(text,
     if isinstance(font, Style):
         style = font
     else:
+        if isinstance(font, str):
+            font = Font.Find(font)
         style = Style(font, font_size, **kwargs)
     
     fit = kwargs.get("fit", None)

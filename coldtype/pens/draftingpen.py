@@ -427,6 +427,8 @@ class DraftingPen(RecordingPen, SHContext):
         self.closePath()
         return self
     
+    r = rect
+    
     def roundedRect(self, rect, hr, vr=None):
         """Rounded rectangle primitive"""
         if vr is None:
@@ -461,6 +463,8 @@ class DraftingPen(RecordingPen, SHContext):
         """Oval primitive"""
         self.roundedRect(rect, 0.5, 0.5)
         return self
+    
+    o = oval
 
     def line(self, points, moveTo=True, endPath=True):
         """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""
@@ -477,6 +481,8 @@ class DraftingPen(RecordingPen, SHContext):
         if endPath:
             self.endPath()
         return self
+    
+    l = line
     
     def hull(self, points):
         """Same as `DraftingPen.line` but calls closePath instead of endPath`"""
@@ -792,7 +798,7 @@ class DraftingPen(RecordingPen, SHContext):
         t = t.translate(-point.x, -point.y)
         return self.transform(t, transformFrame=False)
     
-    r = rotate
+    rt = rotate
     
     def scale(self, scaleX, scaleY=None, point=None):
         """Scale this shape by a percentage amount (1-scale)."""
@@ -1294,6 +1300,8 @@ class DraftingPen(RecordingPen, SHContext):
             if "returns" in metadata:
                 return res
             elif isinstance(res, DraftingPen):
+                return res
+            elif res:
                 return res
         return self
     
