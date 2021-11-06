@@ -171,8 +171,9 @@ class Font():
             _depth = str(dir).count(os.sep)
             for root, dirs, files in os.walk(dir):
                 depth = root.count(os.sep) - _depth
-                if depth > FONT_FIND_DEPTH:
+                if depth >= FONT_FIND_DEPTH:
                     continue
+                #print(depth)
                 for dir in dirs:
                     path = Path(root + "/" + dir)
                     if path.suffix == ".ufo":
