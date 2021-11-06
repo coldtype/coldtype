@@ -70,12 +70,15 @@ _prefixes = [
 ]
 
 # TODO windows & linux?
+
 ALL_FONT_DIRS = [
     ".",
     "/System/Library/Fonts",
     "/Library/Fonts",
     "~/Library/Fonts",
 ]
+
+FONT_FIND_DEPTH = 3
 
 class FontNotFoundException(Exception):
     pass
@@ -165,12 +168,17 @@ class Font():
             #if regex_dir:
             #    if not re.search(regex_dir, str(dir)):
             #        continue
+            _depth = str(dir).count(os.sep)
             for root, dirs, files in os.walk(dir):
+                depth = root.count(os.sep) - _depth
+                if depth > FONT_FIND_DEPTH:
+                    continue
                 for dir in dirs:
                     path = Path(root + "/" + dir)
                     if path.suffix == ".ufo":
                         if re.search(regex, dir):
                             results.append(path)
+                #print(dir)
                 for file in files:
                     if regex_dir:
                         if not re.search(regex_dir, str(root)):
