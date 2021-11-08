@@ -35,3 +35,4 @@ examples/*.pdf
 examples/blender/blends
 profile.profile
 profile_result
+deps.txt
