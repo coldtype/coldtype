@@ -34,7 +34,6 @@ setuptools.setup(
         "coldtype.geometry",
         "coldtype.time.nle",
         "coldtype.renderer",
-        "coldtype.webserver",
         "coldtype.renderable",
         "coldtype.fontgoggles",
         "coldtype.interpolation",
@@ -46,7 +45,6 @@ setuptools.setup(
     include_package_data=True,
     package_data={
         "": [
-            "webserver/webviewer.html",
             "demo/RecMono-CasualItalic.ttf",
             "demo/ColdtypeObviously-VF.ttf",
             "demo/MutatorSans.ttf",

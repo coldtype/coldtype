@@ -111,7 +111,7 @@ class Renderer():
         ConfigOption.AddCommandLineArgs(pargs, parser)
         return pargs, parser
 
-    def __init__(self, parser, no_socket_ok=False):
+    def __init__(self, parser, winmans_class=Winmans):
         sys.path.insert(0, os.getcwd())
 
         self.subprocesses = {}
@@ -144,7 +144,7 @@ class Renderer():
             cli_args=self.args)
         
         self.winmans = None
-        self.winmans = Winmans(self, self.source_reader.config)
+        self.winmans = winmans_class(self, self.source_reader.config)
         
         self.state = RendererState(self)
 
@@ -578,7 +578,6 @@ class Renderer():
                 else:
                     self.action_waiting = Action.PreviewStoryboard
 
-            self.winmans.send_to_external(None, rendered=True)
             self.winmans.did_render(render_count)
 
         return preview_count, render_count
@@ -829,13 +828,7 @@ class Renderer():
             return True
 
     def lookup_action(self, action):
-        try:
-            return Action(action)
-        except ValueError:
-            try:
-                return EditAction(action)
-            except ValueError:
-                return None
+        return Action(action)
     
     def additional_actions(self):
         return []
@@ -1163,26 +1156,8 @@ class Renderer():
             for r in self.renderables(Action.PreviewStoryboard):
                 shutil.rmtree(r.output_folder, ignore_errors=True)
             print("Deleted rendered version")
-        elif message.get("serialization"):
-            ptime.sleep(0.5)
-            self.reload(Action.Resave)
-            print(">>>>>>>>>>>", self.animation().timeline.cti)
-            cw = self.animation().timeline.find_workarea()
-            print("WORKAREA", cw)
-            if cw:
-                start, end = cw
-                self.winmans.send_to_external(None, workarea_update=True, start=start, end=end)
-            else:
-                print("No CTI/trackGroups found")
-        elif action in EditAction:
-            if action in [EditAction.SelectWorkarea]:
-                self.winmans.send_to_external(action, serialization_request=True)
-            else:
-                self.winmans.send_to_external(action, edit_action=True)
         else:
             return False
-    
-    
     
     def turn_over(self):
         if self.dead:
@@ -1328,19 +1303,12 @@ class Renderer():
 
         try:
             ksc = KeyboardShortcut(shortcut)
-            ea = None
         except ValueError:
-            try:
-                ksc = None
-                ea = EditAction(shortcut)
-            except ValueError:
-                ea = None
+            ksc = None
         
         if ksc:
             self.on_shortcut(KeyboardShortcut(shortcut))
-        elif ea:
-            self.on_action(EditAction(shortcut), {})
-        elif not ea:
+        else:
             print("No shortcut/action", key, shortcut)
     
     def stop_watching_file_changes(self):
@@ -1429,7 +1397,7 @@ class Renderer():
             self.profiler.dump_stats("profile_result")
 
 
-def main():
+def main(winmans=Winmans):
     Path("~/.coldtype").expanduser().mkdir(exist_ok=True)
     pargs, parser = Renderer.Argparser()
 
@@ -1439,7 +1407,7 @@ def main():
         pr.enable()
     else:
         pr = None
-    Renderer(parser).main(profiler=pr)
+    Renderer(parser, winmans_class=winmans).main(profiler=pr)
 
 if __name__ == "__main__":
     main()

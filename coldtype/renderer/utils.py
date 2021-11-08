@@ -1,12 +1,5 @@
-import ast, json, threading, platform, os
-from http.server import SimpleHTTPRequestHandler
+import ast, platform, os
 from enum import Enum
-
-try:
-    from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
-except ImportError:
-    SimpleWebSocketServer = object
-    WebSocket = object
 
 
 class Watchable(Enum):
@@ -14,15 +7,6 @@ class Watchable(Enum):
     Font = "Font"
     Library = "Library"
     Generic = "Generic"
-    
-
-class EditAction(Enum):
-    Newline = "newline"
-    Tokenize = "tokenize"
-    TokenizeLine = "tokenize_line"
-    NewSection = "newsection"
-    Capitalize = "capitalize"
-    SelectWorkarea = "select_workarea"
 
 
 class bcolors:
@@ -39,41 +23,6 @@ class bcolors:
 def bc_print(which, *txt):
     print(f"{which}{' '.join(txt)}{bcolors.ENDC}")
 
-
-class SimpleEcho(WebSocket):
-    def handleMessage(self):
-        if "webviewer" in self.data:
-            data = json.loads(self.data)
-            if data.get("webviewer") == True:
-                self.webviewer = True
-        #print("INCOMING!", self, self.address, self.data)
-        self.messages.append(self.data)
-
-    def handleConnected(self):
-        #if not str(self.address).startswith("('::ffff"):
-        #    print(self.address, "connected")
-        self.messages = []
-        self.webviewer = False
-
-    def handleClose(self):
-        #print(self.address, "closed")
-        pass
-
-
-def echo_server(port):
-    return SimpleWebSocketServer('', port, SimpleEcho)
-
-def run_echo_server(port, name):
-    try:
-        server = echo_server(port)
-        daemon = threading.Thread(name=name,
-            target=server.serveforever)
-        daemon.setDaemon(True)
-        daemon.start()
-        print(f"<coldtype: websocket-opened@localhost:{port}>")
-        return server
-    except OSError:
-        return None
 
 def bytesto(bytes):
     r = float(bytes)

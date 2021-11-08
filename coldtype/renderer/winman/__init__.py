@@ -4,9 +4,7 @@ from coldtype.renderer.config import ColdtypeConfig
 from coldtype.renderer.winman.passthrough import WinmanPassthrough
 from coldtype.renderer.winman.glfwskia import glfw, skia, WinmanGLFWSkia, WinmanGLFWSkiaBackground
 from coldtype.renderer.winman.audio import WinmanAudio
-from coldtype.renderer.winman.webview import WinmanWebview
 from coldtype.renderer.winman.midi import MIDIWatcher, rtmidi
-from coldtype.renderer.winman.websocket import WinmanWebsocket
 from coldtype.renderer.winman.blender import WinmanBlender
 from coldtype.renderable import Action, Overlay
 
@@ -38,8 +36,6 @@ class Winmans():
         self.pt = WinmanPassthrough()
 
         self.glsk:WinmanGLFWSkia = None
-        self.ws:WinmanWebsocket = None
-        self.wv:WinmanWebview = None
         self.midi:MIDIWatcher = None
         self.b3d:WinmanBlender = None
         self.audio:WinmanAudio = None
@@ -68,9 +64,6 @@ class Winmans():
     def should_glfwskia(self):
         return glfw is not None and skia is not None and not self.config.no_viewer
     
-    def should_webviewer(self):
-        return self.config.webviewer
-    
     def should_midi(self):
         return rtmidi and not self.config.no_midi
     
@@ -84,14 +77,8 @@ class Winmans():
         if not self.bg:
             monitor_stdin()
 
-        if self.config.websocket or self.should_webviewer():
-            self.ws = WinmanWebsocket(self.config, self.renderer)
-
         if self.should_glfwskia():
             self.glsk = WinmanGLFWSkia(self.config, self.renderer)
-        
-        if self.should_webviewer():
-            self.wv = WinmanWebview(self.config, self.renderer)
         
         if self.should_blender():
             self.b3d = WinmanBlender(self.config)
@@ -124,7 +111,7 @@ class Winmans():
                 self.b3d.launch(blend_files[0])
     
     def all(self):
-        return [self.pt, self.glsk, self.wv, self.b3d]
+        return [self.pt, self.glsk, self.b3d]
     
     def map(self):
         for wm in self.all():
@@ -182,8 +169,7 @@ class Winmans():
         return any([wm.should_close() for wm in self.map()])
     
     def send_to_external(self, action, **kwargs):
-        if self.ws:
-            self.ws.send_to_external(action, **kwargs)
+        pass
     
     def poll(self):
         if self.glsk:
@@ -193,9 +179,6 @@ class Winmans():
         if self.midi:
             if self.midi.monitor(self.renderer.state.playing):
                 self.renderer.action_waiting = Action.PreviewStoryboard
-
-        if self.ws:
-            self.ws.read_messages()
 
         render_previews = len(self.renderer.previews_waiting) > 0
         if not render_previews:
@@ -209,9 +192,6 @@ class Winmans():
         did_preview = []
         if self.glsk:
             did_preview.append(self.glsk.turn_over())
-        
-        if self.wv:
-            did_preview.append(self.wv.turn_over())
 
         if len(did_preview) > 0:
             if self.config.enable_audio:
