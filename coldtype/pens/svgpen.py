@@ -4,8 +4,8 @@ from fontTools.pens.basePen import BasePen
 from coldtype.color import Gradient, Color
 from coldtype.pens.drawablepen import DrawablePenMixin
 
-from coldtype.color import Color
-from lxml import etree
+#from lxml import etree
+import xml.etree.ElementTree as etree
 import base64
 
 from random import randint
@@ -339,7 +339,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
             docroot.append(sp.asSVG(style=style))
         
         if to_string:
-            return etree.tostring(docroot, pretty_print=True).decode("utf-8").replace("image-href", "xlink:href")
+            return etree.tostring(docroot).decode("utf-8").replace("image-href", "xlink:href")
         else:
             return docroot
     
@@ -357,7 +357,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
             g.set("class", "frame")
             docroot.append(g)
 
-        return etree.tostring(docroot, pretty_print=True).decode("utf-8").replace("image-href", "xlink:href")
+        return etree.tostring(docroot).decode("utf-8").replace("image-href", "xlink:href")
     
 if __name__ == "__main__":
     from pathlib import Path

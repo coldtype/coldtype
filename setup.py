@@ -10,7 +10,7 @@ More info available at: [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
 
 setuptools.setup(
     name="coldtype",
-    version="0.7.6",
+    version="0.7.7",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",
@@ -71,18 +71,11 @@ setuptools.setup(
         "viewer": [
             "glfw",
             "PyOpenGL",
-            #"PyOpenGL-accelerate",
             "skia-python>=86.0",
             "skia-pathops", # can this be taken from skia-python?
-            "SimpleWebSocketServer",
             "watchdog<2.0.0", # https://github.com/gorakhargosh/watchdog/issues/702
-            #"noise",
             "ufo2ft",
             "numpy",
-        ],
-        "webviewer": [
-            "SimpleWebSocketServer",
-            "watchdog<2.0.0", # https://github.com/gorakhargosh/watchdog/issues/702
         ],
         "experimental": [
             "pynput",
@@ -109,13 +102,10 @@ setuptools.setup(
         ]
     },
     install_requires=[
-        "lxml",
         "fonttools[ufo]",
         "fontPens",
-        "fontParts",
         "more-itertools",
         "easing-functions",
-        "timecode",
         "mido",
         "defcon",
         "freetype-py",

@@ -361,7 +361,8 @@ class WinmanGLFWSkia():
                         process = Popen(
                             'pbcopy', env={'LANG': 'en_US.UTF-8'}, stdin=PIPE)
                         process.communicate(svg.encode('utf-8'))
-                    except:
+                    except Exception as e:
+                        print(">>>>>>>>>>>", e)
                         print("failed to copy to clipboard")
 
                 try:
