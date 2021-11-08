@@ -23,7 +23,7 @@ def test2(r):
             $d1⊣∮〱OX-30""")
         .f(None).s(0).sw(4))
 
-@renderable((500, 500))
+#@renderable((500, 500))
 def test3(r):
     def sqc(c, cc):
         return f"""{c}↑
@@ -43,4 +43,5 @@ def test3(r):
             c4=Geo(63, 67))
         .gs(sqc("$c", "$c3"))
         .gs(sqc("$ic", "$c4")+" Я")
-        .skel())
+        .skel()
+        )

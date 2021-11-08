@@ -96,25 +96,34 @@ class generativefont(animation):
         gfn = result[0].data.get("gfn")
         if not gfn:
             print("! No glyph found")
-        else:
-            bbox = gfn.bbox.offset(0, 250)
-            return DATPens([
-                DATPens(result).translate(0, 250),
-                DATPen().gridlines(render.rect).s(hsl(0.6, a=0.3)).sw(1).f(None),
-                (DATPen()
-                    .line(bbox.es.extr(-100))
-                    .line(bbox.en.extr(-100))
-                    .line(bbox.ee.extr(-100))
-                    .f(None).s(hsl(0.9, 1, a=0.5)).sw(4)),
-                (DATText(gfn.glyph_name, Style("Times", 48, load_font=0),
-                    render.rect.inset(50)))])
+            return result
+        
+        try:
+            guides = result[0].all_guides()
+        except:
+            guides = DATPens()
+        
+        bbox = gfn.bbox.offset(0, 250)
+        return DATPens([
+            DATPens(result).translate(0, 250),
+            #DATPen().gridlines(render.rect).s(hsl(0.6, a=0.3)).sw(1).f(None),
+            (DATPen()
+                .line(bbox.es.extr(-100))
+                .line(bbox.en.extr(-100))
+                .line(bbox.ee.extr(-100))
+                .f(None).s(hsl(0.9, 1, a=0.5)).sw(4)),
+            guides.translate(gfn.lsb, 250),
+            (DATText(gfn.glyph_name, Style("Times", 48, load_font=0),
+                render.rect.inset(50)))])
     
     def glyphViewer(self, f):
         glyph_fn = self.glyph_fns[f.i]
         glyph_fn.add_font(self)
 
         print(f"> drawing :{glyph_fn.glyph_name}:")
-        glyph_pen = glyph_fn.func(glyph_fn.frame).f(0)
+        glyph_pen = (glyph_fn
+            .func(glyph_fn.frame)
+            .fssw(-1, 0, 2))
 
         # shift over by the left-side-bearing
         glyph_pen.translate(glyph_fn.lsb, 0)
@@ -125,7 +134,9 @@ class generativefont(animation):
         glyph.unicode = glyph_to_uni(glyph_fn.glyph_name)
         self.ufo.insertGlyph(glyph)
         self.ufo.save()
-        return glyph_pen.add_data("gfn", glyph_fn)
+        return DATPens([
+            glyph_pen.add_data("gfn", glyph_fn)
+        ])
     
     def spacecenter(self, r, text):
         """

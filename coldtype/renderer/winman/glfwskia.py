@@ -50,7 +50,10 @@ from coldtype.renderable import Action
 from coldtype.renderer.config import ConfigOption, ColdtypeConfig
 from coldtype.renderer.keyboard import KeyboardShortcut, REPEATABLE_SHORTCUTS, shortcuts_keyed
 
-from coldtype.pens.svgpen import SVGPen
+try:
+    from coldtype.pens.svgpen import SVGPen
+except ModuleNotFoundError:
+    SVGPen = None
 
 
 class WinmanGLFWSkiaBackground(WinmanPassthrough):
