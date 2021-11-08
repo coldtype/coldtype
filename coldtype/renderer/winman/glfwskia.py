@@ -20,25 +20,10 @@ except ImportError:
     skia = None
     skfx = None
 
-# source: https://github.com/PixarAnimationStudios/USD/issues/1372
-
-def monkeypatch_ctypes():
-    import os
-    import ctypes.util
-    uname = os.uname()
-    if uname.sysname == "Darwin" and uname.release >= "20.":
-        real_find_library = ctypes.util.find_library
-        def find_library(name):
-            if name in {"OpenGL", "GLUT"}:  # add more names here if necessary
-                return f"/System/Library/Frameworks/{name}.framework/{name}"
-            return real_find_library(name)
-        ctypes.util.find_library = find_library
-    return
 
 try:
     from OpenGL import GL
 except ImportError:
-    monkeypatch_ctypes()
     try:
         from OpenGL import GL
     except:
@@ -238,7 +223,9 @@ class WinmanGLFWSkia():
         pin = self.config.window_pin
 
         if pin and pin != "0":
-            work_rect = Rect(glfw.get_monitor_workarea(self.primary_monitor))
+            vm = glfw.get_video_mode(self.primary_monitor)
+            work_rect = Rect(vm.size.width, vm.size.height)
+            #work_rect = Rect(glfw.get_monitor_workarea(self.primary_monitor))
             wrz = work_rect.zero()
             edges = Edge.PairFromCompass(pin)
             pinned = wrz.take(ww, edges[0]).take(wh, edges[1]).round()

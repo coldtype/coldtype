@@ -1,6 +1,26 @@
 import math, sys, os, re
 from pathlib import Path
 
+# source: https://github.com/PixarAnimationStudios/USD/issues/1372
+
+def monkeypatch_ctypes():
+    import ctypes.util, platform
+    uname = os.uname()
+    if uname.sysname == "Darwin" and uname.release >= "20.":
+        real_find_library = ctypes.util.find_library
+        def find_library(name):
+            if name in {"OpenGL", "GLUT"}:  # add more names here if necessary
+                return f"/System/Library/Frameworks/{name}.framework/{name}"
+            elif name in {"freetype"}:
+                res = real_find_library(name)
+                if res.startswith("/usr/local") and platform.processor() == "arm":
+                    return "/opt/homebrew/lib/libfreetype.dylib"
+            return real_find_library(name)
+        ctypes.util.find_library = find_library
+    return
+
+monkeypatch_ctypes()
+
 from coldtype.text import *
 from coldtype.text.reader import Font
 from coldtype.pens.datpen import DATPen, DATPens, DATPenSet, DP, DPS, P, PS
