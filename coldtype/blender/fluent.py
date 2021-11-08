@@ -109,6 +109,9 @@ class BpyCollection(_Chainable):
 
 
 class BpyObj(_Chainable):
+    def __init__(self, dat=None) -> None:
+        self.eo = None
+
     @staticmethod
     def Find(tag):
         bobj = BpyObj()
@@ -253,6 +256,13 @@ class BpyObj(_Chainable):
         return self
     
     vertexGroupAll = vertex_group_all
+
+    def addEmptyOrigin(self):
+        bpy.ops.object.empty_add(type="PLAIN_AXES")
+        bc = bpy.context.object
+        bc.name = self.obj.name + "_EmptyOrigin"
+        self.eo = bc
+        return self
     
     # Geometry Methods
 
@@ -329,6 +339,10 @@ class BpyObj(_Chainable):
             self.obj.location[1] = self.obj.location[1] + y
         if z is not None:
             self.obj.location[2] = self.obj.location[2] + z
+        
+        if self.eo:
+            (BpyObj.Find(self.eo.name)
+                .locate_relative(x=x, y=y, z=z))
         return self
     
     locateRelative = locate_relative
@@ -471,6 +485,17 @@ class BpyObj(_Chainable):
     def subsurface(self):
         with self.obj_selected():
             bpy.ops.object.modifier_add(type="SUBSURF")
+        return self
+    
+    def simpleDeform(self, method="BEND", angle=180, axis="Z", origin=None):
+        with self.obj_selected():
+            bpy.ops.object.modifier_add(type="SIMPLE_DEFORM")
+            m = self.obj.modifiers["SimpleDeform"]
+            m.deform_method = "BEND"
+            m.deform_axis = axis
+            m.angle = math.radians(angle)
+            if origin:
+                m.origin = bpy.data.objects[origin]
         return self
     
     def decimate_planar(self):
