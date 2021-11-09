@@ -223,11 +223,9 @@ def walk_to_b3d(result:DATPens,
 class b3d_runnable(runnable):
     def __init__(self, solo=False, cond=None):
         if cond is not None:
-            cond = lambda: cond and bool(bpy)
+            super().__init__(solo=solo, cond=lambda: cond and bool(bpy))
         else:
-            cond = bool(bpy)
-        
-        super().__init__(solo=solo, cond=cond)
+            super().__init__(solo=solo, cond=None)
     def run(self):
         if not bpy:
             return None
