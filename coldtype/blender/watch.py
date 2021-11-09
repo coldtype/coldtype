@@ -1,6 +1,7 @@
 import bpy, traceback, json
 from pathlib import Path
 from collections import defaultdict
+from coldtype.renderable.animation import animation
 
 from coldtype.renderer.reader import SourceReader
 from coldtype.blender import b3d_animation, b3d_runnable, walk_to_b3d
@@ -86,7 +87,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
         cfs = [r"^b3d_.*$"]
         if not statics:
-            cfs = [r"^b3d_animation$"]
+            cfs = [r"^b3d_animation$", r"^b3d_sequencer$"]
         
         out = []
         
@@ -133,7 +134,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
     def reimport(self, arg):
         try:
-            self.sr = SourceReader(arg)
+            self.sr = SourceReader(arg, use_blender=True)
             self.sr.unlink()
             #bpy.data.scenes[0].frame_start = 0
 

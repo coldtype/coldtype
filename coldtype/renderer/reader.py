@@ -272,6 +272,7 @@ class SourceReader():
         runner:str="default",
         inputs=None,
         cli_args=None,
+        use_blender=False,
         ):
         self.filepath = None
         self.codepath = None
@@ -283,6 +284,7 @@ class SourceReader():
         self.renderer = renderer
         self.runner = runner
         self.inputs = inputs or []
+        self.use_blender = use_blender
 
         self.config = None
         self.read_configs(cli_args, filepath)
@@ -393,6 +395,9 @@ class SourceReader():
         return valid_sources
     
     def blender_file(self):
+        if not self.use_blender and not self.config.blender_watch:
+            return None
+
         bf = self.config.blender_file
         if not bf:
             bf = self.filepath.parent / "blends" / (self.filepath.stem + ".blend")
@@ -492,7 +497,7 @@ class SourceReader():
             self.codepath,
             self.program,
             output_folder_override,
-            blender_file=self.blender_file() if self.config.blender_watch else None)
+            blender_file=self.blender_file())
     
     def renderables(self,
         viewer_solos=[],

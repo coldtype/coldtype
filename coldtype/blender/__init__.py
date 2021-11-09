@@ -249,7 +249,7 @@ class b3d_renderable(renderable):
         self.post_run = post_run
         self.blender_file = None
         self.reset_to_zero = reset_to_zero
-        
+
         super().__init__(rect, **kwargs)
 
 
@@ -377,16 +377,18 @@ class b3d_sequencer(b3d_animation):
     def __init__(self,
         rect=Rect(1080, 1080),
         autosave=True,
+        in_blender=False,
+        match_output=False,
         **kwargs
         ):
         super().__init__(
             rect=rect,
             match_fps=True,
             match_length=False,
-            match_output=False,
+            match_output=match_output,
             create_timeline=True,
             autosave=autosave,
-            renderer="skia",
+            renderer="b3d" if in_blender else "skia",
             **kwargs)
     
     def post_read(self):
