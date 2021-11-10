@@ -87,22 +87,25 @@ class BpyWorld(_Chainable):
 
 class BpyCollection(_Chainable):
     @staticmethod
-    def Find(tag):
-        bco = BpyCollection()
+    def Find(tag, create=True):
+        bc = BpyCollection()
         try:
-            bco.collection = bpy.data.collections[tag]
+            bc.c = bpy.data.collections[tag]
         except KeyError:
-            bco.collection = None
-        return bco
+            if create:
+                bc.c = bpy.data.collections.new(tag)
+            else:
+                bc.c = None
+        return bc
 
     def delete_hierarchy(self):
-        if not self.collection: return
+        if not self.c: return
 
         bpy.context.view_layer.objects.active = None
-        for obj in self.collection.objects:
+        for obj in self.c.objects:
             BpyObj.Find(obj.name).select()
         bpy.ops.object.delete()
-        bpy.data.collections.remove(self.collection)
+        bpy.data.collections.remove(self.c)
         return None
     
     deleteHierarchy = delete_hierarchy
@@ -130,6 +133,13 @@ class BpyObj(_Chainable):
     
     def select(self, selected=True):
         self.obj.select_set(selected)
+        return self
+    
+    def collect(self, collectionTag, create=True):
+        for c in self.obj.users_collection:
+            c.objects.unlink(self.obj)
+        bc = BpyCollection.Find(collectionTag, create=create)
+        bc.c.objects.link(self.obj)
         return self
     
     @contextmanager
@@ -257,11 +267,13 @@ class BpyObj(_Chainable):
     
     vertexGroupAll = vertex_group_all
 
-    def addEmptyOrigin(self):
+    def addEmptyOrigin(self, collection="Coldtype"):
         bpy.ops.object.empty_add(type="PLAIN_AXES")
         bc = bpy.context.object
         bc.name = self.obj.name + "_EmptyOrigin"
+        print("EMPTY ORIGIN", bc.name)
         self.eo = bc
+        BpyObj.Find(bc.name).collect(collection)
         return self
     
     # Geometry Methods
@@ -399,6 +411,13 @@ class BpyObj(_Chainable):
             m.use_remove_disconnected = False
             m.use_smooth_shade = smooth
         return self
+    
+    def remove_doubles(self, threshold=0.01):
+        with self.all_vertices_selected():
+            bpy.ops.mesh.remove_doubles(threshold=threshold)
+        return self
+    
+    removeDoubles = remove_doubles
     
     def smooth(self,
         factor=0.5,
