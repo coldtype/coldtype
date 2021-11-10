@@ -1308,6 +1308,12 @@ class DraftingPen(RecordingPen, SHContext):
         return self
     
     ch = chain
+
+    def __or__(self, other):
+        return self.chain(other)
+
+    def __ror__(self, other):
+        return self.chian(other)
     
     def cond(self, condition, if_true:Callable[["DraftingPen"], None], if_false:Callable[["DraftingPen"], None]=None):
         if callable(condition):
