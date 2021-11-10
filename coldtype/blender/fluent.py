@@ -37,7 +37,7 @@ class BpyWorld(_Chainable):
     
     deletePrevious = delete_previous
     
-    def timeline(self, t:Timeline):
+    def timeline(self, t:Timeline, resetFrame=None):
         self.scene.frame_start = 0
         self.scene.frame_end = t.duration-1
 
@@ -47,6 +47,10 @@ class BpyWorld(_Chainable):
         else:
             self.scene.render.fps = t.fps
             self.scene.render.fps_base = 1
+        
+        if resetFrame is not None:
+            self.scene.frame_set(resetFrame)
+
         return self
     
     def render_settings(self, samples=16, denoiser=False, canvas:Rect=None):
@@ -83,6 +87,17 @@ class BpyWorld(_Chainable):
                 rw.time_scale = speed
                 rw.point_cache.frame_end = frame_end
         return self
+    
+    def insertKeyframe(self, frame, path, value=None):
+        bpy.data.scenes[0].frame_set(frame)
+        if value is not None:
+            if callable(value):
+                value(self)
+            else:
+                exec(f"self.obj.{path} = {value}")
+        self.scene.keyframe_insert(data_path=path)
+        return self
+        #setattr(self.obj, path, value)
 
 
 class BpyCollection(_Chainable):

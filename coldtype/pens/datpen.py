@@ -443,7 +443,7 @@ class DATPen(DraftingPen):
     #         p.ease_curve(r.psw, r.pne, angle, fA, fB))
 
 
-DATPensEnumerable = namedtuple("DATPensEnumerable", ["i", "el", "e", "len"])
+DATPensEnumerable = namedtuple("DATPensEnumerable", ["i", "el", "e", "len", "k"])
 
 
 class DATPens(DraftingPens, DATPen):
@@ -722,14 +722,25 @@ class DATPens(DraftingPens, DATPen):
         out = DATPens()
         if len(enumerable) == 0:
             return out
+        
         es = list(enumerable)
         length = len(es)
-        for idx, item in enumerate(es):
-            if idx == 0 and len(enumerable) == 1:
-                e = 0.5
-            else:
-                e = idx / (length-1)
-            out.append(enumerator(DATPensEnumerable(idx, item, e, length)))
+
+        if isinstance(enumerable, dict):
+            for idx, k in enumerate(enumerable.keys()):
+                item = enumerable[k]
+                if idx == 0 and len(enumerable) == 1:
+                    e = 0.5
+                else:
+                    e = idx / (length-1)
+                out.append(enumerator(DATPensEnumerable(idx, item, e, length, k)))
+        else:
+            for idx, item in enumerate(es):
+                if idx == 0 and len(enumerable) == 1:
+                    e = 0.5
+                else:
+                    e = idx / (length-1)
+                out.append(enumerator(DATPensEnumerable(idx, item, e, length, idx)))
         return out
     
     E = Enumerate

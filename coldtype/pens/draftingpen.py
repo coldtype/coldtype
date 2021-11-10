@@ -1,4 +1,4 @@
-import math, re, pickle
+import math, re, pickle, json
 
 from time import sleep
 from pathlib import Path
@@ -389,7 +389,10 @@ class DraftingPen(RecordingPen, SHContext):
             for p in pen:
                 self.record(p)
         elif pen:
-            pen.replay(self)
+            if isinstance(pen, Path):
+                self.withJSONValue(pen)
+            else:
+                pen.replay(self)
         return self
     
     def glyph(self, glyph, glyphSet=None):
@@ -1769,6 +1772,10 @@ class DraftingPen(RecordingPen, SHContext):
         if isinstance(src, str):
             src = Path(src)
         return pickle.load(open(str(src.expanduser()), "rb"))
+    
+    def withJSONValue(self, path):
+        self.value = json.loads(Path(path).expanduser().read_text())
+        return self
     
     @staticmethod
     def FromSVG(svg_file):

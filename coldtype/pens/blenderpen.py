@@ -73,8 +73,6 @@ class BPH():
 
     def Primitive(_type, coll, name, dn=False, container=None, material="ColdtypeDefault", cyclic=True):
         created = False
-
-        print("PRIMITIVE", name)
         
         if dn: #and name in bpy.context.scene.objects:
             # obj = bpy.context.scene.objects[name]
@@ -82,17 +80,14 @@ class BPH():
 
             for m in bpy.data.objects:
                 if name in m.name:
-                    print("OBJ R", name)
                     bpy.data.objects.remove(m)
 
             for m in bpy.data.meshes:
                 if name in m.name:
-                    print("MESH R", name)
                     bpy.data.meshes.remove(m)
             
             for m in bpy.data.materials:
                 if name in m.name:
-                    print("MAT R", name)
                     bpy.data.materials.remove(m)
 
         if name not in bpy.context.scene.objects:
@@ -245,6 +240,12 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
     
     def bevel(self, depth=0.02):
         self.obj.data.bevel_depth = depth
+        return self
+    
+    def specular(self, amount=0.5):
+        if not self.material == "auto" or not self.bsdf():
+            return
+        self.bsdf().inputs[5].default_value = amount
         return self
     
     def metallic(self, amount=1):
