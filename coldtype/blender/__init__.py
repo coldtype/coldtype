@@ -1,6 +1,6 @@
 # to be loaded from within Blender
 
-import os, math, json
+import os, math, json, time
 from pathlib import Path
 from coldtype.geometry import curve
 

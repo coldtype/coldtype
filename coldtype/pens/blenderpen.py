@@ -73,6 +73,8 @@ class BPH():
 
     def Primitive(_type, coll, name, dn=False, container=None, material="ColdtypeDefault", cyclic=True):
         created = False
+
+        print("PRIMITIVE", name)
         
         if dn: #and name in bpy.context.scene.objects:
             # obj = bpy.context.scene.objects[name]
@@ -80,14 +82,17 @@ class BPH():
 
             for m in bpy.data.objects:
                 if name in m.name:
+                    print("OBJ R", name)
                     bpy.data.objects.remove(m)
 
             for m in bpy.data.meshes:
                 if name in m.name:
+                    print("MESH R", name)
                     bpy.data.meshes.remove(m)
             
             for m in bpy.data.materials:
                 if name in m.name:
+                    print("MAT R", name)
                     bpy.data.materials.remove(m)
 
         if name not in bpy.context.scene.objects:
@@ -321,11 +326,6 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
         self.obj.cycles_visibility.transmission = False
         self.obj.cycles_visibility.scatter = False
         self.obj.cycles_visibility.shadow = False
-        return self
-    
-    def remove_doubles(self, threshold=0.01):
-        with self.all_vertices_selected():
-            bpy.ops.mesh.remove_doubles(threshold=threshold)
         return self
     
     def convert_to_mesh(self):
