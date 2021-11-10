@@ -745,6 +745,8 @@ class DraftingPen(RecordingPen, SHContext):
             return offset
         return self
     
+    å = align
+    
     def x_align_to_frame(self, x=Edge.CenterX, th=0):
         if self._frame:
             return self.align(self.ambit(th=th, tv=0), x=x, transformFrame=1, th=1)

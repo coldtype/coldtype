@@ -311,6 +311,8 @@ class DraftingPens(DraftingPen):
             pen.align(rect, x=x, y=None, th=th, tv=tv)
         return self
     
+    xå = xalign
+    
     def xa(self, x="centerx"):
         for pen in self:
             pen.x_align_to_frame(x)

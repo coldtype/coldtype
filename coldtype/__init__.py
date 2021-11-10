@@ -44,6 +44,7 @@ __inputs__ = [] # will be redefined contextually
 __memory__ = [] # will be redefined contextually
 __as_config__ = False # will be redefined contextually
 λ = None
+ℛ = lambda x: x
 
 
 def debug_txt(r, txt, font_size=42, **kwargs):

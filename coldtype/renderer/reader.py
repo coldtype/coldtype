@@ -51,6 +51,7 @@ def apply_syntax_mods(filepath, source_code, renderer=None):
             source_code = inline_arg(inline) + "\n" + source_code
 
     source_code = re.sub(r"from ([^\s]+) import \* \#INLINE", inline_other, source_code)
+    source_code = re.sub(r"ℛ", "return ", source_code)
     source_code = re.sub(r"\-\.[A-Za-z_ƒ]+([A-Za-z_0-9]+)?\(", ".nerp(", source_code)
     source_code = re.sub(r"([\s]+)Ƨ\(", r"\1nerp(", source_code)
     #source_code = re.sub(r"λ[\s]{0,3}\.", "lambda p: p.", source_code)
