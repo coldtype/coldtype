@@ -94,7 +94,7 @@ class BpyWorld(_Chainable):
             if callable(value):
                 value(self)
             else:
-                exec(f"self.obj.{path} = {value}")
+                exec(f"self.scene.{path} = {value}")
         self.scene.keyframe_insert(data_path=path)
         return self
         #setattr(self.obj, path, value)
