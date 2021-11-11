@@ -1218,7 +1218,18 @@ class Renderer():
         if path.parent in self.watchee_paths():
             actual_path = path
             path = path.parent
+        
         if path in self.watchee_paths():
+            last = self.watchee_mods.get(path)
+            now = ptime.time()
+            self.watchee_mods[path] = now
+            if last is not None:
+                diff = now - last
+                if diff < 0.05:
+                    return
+                else:
+                    pass
+
             if path.suffix == ".json":
                 if path.stem == "command":
                     data = json.loads(path.read_text())
@@ -1232,15 +1243,6 @@ class Renderer():
                         self.hotkey_waiting = (action, None, None)
                     return
 
-                last = self.watchee_mods.get(path)
-                now = ptime.time()
-                self.watchee_mods[path] = now
-                if last is not None:
-                    diff = now - last
-                    if diff < 0.25:
-                        return
-                    else:
-                        pass
                 try:
                     json.loads(path.read_text())
                 except json.JSONDecodeError:
