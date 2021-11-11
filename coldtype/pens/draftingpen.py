@@ -29,6 +29,8 @@ from coldtype.beziers import CurveCutter, splitCubicAtT
 from coldtype.interpolation import norm
 from coldtype.grid import Grid
 
+from coldtype.fx.chainable import Chainable
+
 
 class CurveSample():
     def __init__(self, idx, pt, e, tan):
@@ -1298,6 +1300,21 @@ class DraftingPen(RecordingPen, SHContext):
         For simple take-one callback functions in a chain
         """
         if fn:
+            if isinstance(fn, Chainable):
+                res = fn.func(self, *args)
+                if res:
+                    return res
+                return self
+            
+            try:
+                if isinstance(fn[0], Chainable):
+                    r = self
+                    for f in fn:
+                        r = r.chain(f, *args)
+                    return r
+            except TypeError:
+                pass
+
             try:
                 fn, metadata = fn
             except TypeError:
@@ -1318,7 +1335,7 @@ class DraftingPen(RecordingPen, SHContext):
         return self.chain(other)
 
     def __ror__(self, other):
-        return self.chian(other)
+        return self.chain(other)
     
     def cond(self, condition, if_true:Callable[["DraftingPen"], None], if_false:Callable[["DraftingPen"], None]=None):
         if callable(condition):

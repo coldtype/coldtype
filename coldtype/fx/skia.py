@@ -7,6 +7,7 @@ from pathlib import Path
 from fontTools.svgLib import SVGPath
 from fontTools.misc.transform import Transform
 
+from coldtype.fx.chainable import Chainable
 from coldtype.color import normalize_color, bw
 from coldtype.pens.skiapen import SkiaPen
 from coldtype.pens.datpen import DATPen
@@ -282,7 +283,8 @@ def phototype(rect=None,
             .ch(precompose(rect))
             .attr(skp=dict(
                 ColorFilter=Skfi.compose(*cut_filters))))
-    return _phototype
+    
+    return Chainable(_phototype)
 
 
 def color_phototype(rect,

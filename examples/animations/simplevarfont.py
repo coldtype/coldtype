@@ -1,8 +1,8 @@
 from coldtype import *
 
-@animation((1920, 540), timeline=Timeline(60))
+@animation((1920, 540), timeline=Timeline(60, 30))
 def irregardless(f):
-    return (StSt("COLDTYPE",
+    return (StSt("Coldtype".upper(),
         Font.ColdtypeObviously(),
         font_size=300,
         wdth=f.e("eeio", 1),
