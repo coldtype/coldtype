@@ -8,6 +8,7 @@ from coldtype.pens.drawablepen import DrawablePenMixin
 from coldtype.renderer.reader import SourceReader
 from coldtype.text.composer import StSt, Font
 from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.fx.chainable import Chainable
 
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 mutator = Font.Cacheable("assets/MutatorSans.ttf")
@@ -489,6 +490,25 @@ def lattr_style_set(r):
         self.assertEqual(res.fft("C").ambit().y, 0)
         self.assertEqual(res.fft("B").ambit().y, 120)
         self.assertEqual(res.fft("A").ambit().y, 240)
+    
+    def test_chain(self):
+        def c1(a):
+            def _c1(p:DraftingPen):
+                return [a]
+            return Chainable(_c1)
+        
+        def c2(a):
+            def _c2(p:DraftingPen):
+                p.add_data("hello", a)
+                return None
+            return Chainable(_c2)
+        
+        p1 = DraftingPen() | c1(1)
+        self.assertEqual(p1, [1])
+
+        p2 = DraftingPen() | c2("chain")
+        self.assertTrue(isinstance(p2, DraftingPen))
+        self.assertEqual(p2.data["hello"], "chain")
 
 
 if __name__ == "__main__":
