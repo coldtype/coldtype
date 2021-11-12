@@ -1,4 +1,4 @@
-import ast, platform, os
+import ast, platform, os, hashlib
 from enum import Enum
 
 
@@ -53,6 +53,11 @@ def file_and_line_to_def(filepath, lineno):
     if candidate:
         return candidate.name
     
+
 def play_sound(name="Pop"):
     if platform.system() == "Darwin":
         os.system(f"afplay /System/Library/Sounds/{name}.aiff")
+
+
+def path_hash(path):
+    return hashlib.sha1(str(path.resolve()).encode("UTF-8")).hexdigest()[:10]

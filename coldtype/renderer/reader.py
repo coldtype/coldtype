@@ -397,8 +397,8 @@ class SourceReader():
         return valid_sources
     
     def blender_file(self):
-        if not self.use_blender and not self.config.blender_watch:
-            return None
+        #if not self.use_blender and not self.config.blender_watch:
+        #    return None
 
         bf = self.config.blender_file
         if not bf:

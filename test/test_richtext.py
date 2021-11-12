@@ -1,7 +1,6 @@
 import unittest
 from coldtype import Rect, Font, Style, DP, Path, hsl
 from coldtype.text.richtext import RichText
-from coldtype.remote import show_picklejar
 
 f1 = Font("assets/ColdtypeObviously-VF.ttf")
 f2 = Font("assets/MutatorSans.ttf")

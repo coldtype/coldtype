@@ -1,8 +1,9 @@
 from coldtype import *
 from coldtype.blender import *
 
-@b3d_sequencer(timeline=Timeline(1440, 24), bg=0, render_bg=1)
+@b3d_sequencer(timeline=Timeline(1440, 24), bg=0.5, render_bg=1)
 def lyrics(f):
+
     def render_clip(tc):
         if "title" in tc.clip.styles:
             return tc.text.upper(), Style(
@@ -20,9 +21,8 @@ def lyrics(f):
                 fill=1)
 
     cg = f.a.t.clip_group(0, f, styles=[1])
-    print("title" in cg.styles())
+
     return PS([
-        #(P().oval(f.a.r.inset(50)).f(1)),
         (cg.pens(f, render_clip,
                 graf_style=GrafStyle(leading=30),
                 use_lines=[cg.current_word() if "title" not in cg.styles() else None])

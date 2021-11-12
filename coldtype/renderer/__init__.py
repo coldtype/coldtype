@@ -228,7 +228,8 @@ class Renderer():
         # TODO check exists here on filepath
         self.watchees = [[Watchable.Source, self.source_reader.filepath, None]]
 
-        self.watchees.append([Watchable.Generic, Path("~/.coldtype/command.json").expanduser(), None])
+        ph = path_hash(self.source_reader.filepath)
+        self.watchees.append([Watchable.Generic, Path(f"~/.coldtype/{ph}_input.json").expanduser(), None])
 
         if pj:
             self.watchees.append([Watchable.Generic, Path("~/.coldtype/picklejar"), None])

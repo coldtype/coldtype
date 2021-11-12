@@ -168,8 +168,10 @@ class ColdtypeImporter(bpy.types.Operator):
 
 
 def remote(command):
+    from coldtype.renderer.utils import path_hash
     sq = find_sequence()
-    (Path("~/.coldtype/command.json")
+    ph = path_hash(sq.filepath)
+    (Path(f"~/.coldtype/{ph}_input.json")
         .expanduser()
         .write_text(json.dumps(dict(
             action=command if isinstance(command, str) else command.value,
@@ -274,7 +276,7 @@ class COLDTYPE_PT_Panel(bpy.types.Panel):
     bl_space_type = 'SEQUENCE_EDITOR'
     bl_region_type = 'UI'
     bl_category = 'Tool'
- 
+
     def draw(self, context):
         layout = self.layout
         layout.operator(ColdtypeSequenceDefaults.bl_idname, text="Set Defaults", icon="SETTINGS",)
