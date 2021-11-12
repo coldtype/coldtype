@@ -368,7 +368,8 @@ class SourceReader():
                     self.config = ColdtypeConfig(py_config, self.config if self.config else None, args)
 
                     for f in self.config.font_dirs:
-                        ALL_FONT_DIRS.insert(0, f)
+                        if f not in ALL_FONT_DIRS:
+                            ALL_FONT_DIRS.insert(0, f)
                 except Exception as e:
                     if isinstance(e, ColdtypeCeaseConfigException):
                         pass
