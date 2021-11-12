@@ -168,10 +168,9 @@ class ColdtypeImporter(bpy.types.Operator):
 
 
 def remote(command):
-    from coldtype.renderer.utils import path_hash
     sq = find_sequence()
-    ph = path_hash(sq.filepath)
-    (Path(f"~/.coldtype/{ph}_input.json")
+    input_command_file = bpy.app.driver_namespace["_coldtype_command_input_file"]
+    (Path(input_command_file)
         .expanduser()
         .write_text(json.dumps(dict(
             action=command if isinstance(command, str) else command.value,
