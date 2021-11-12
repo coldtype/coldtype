@@ -6,7 +6,7 @@ SHAKE = 1
 fnt = Font.ColdtypeObviously()
 rs = random_series(0, 1000)
 
-@animation(bg=0, timeline=Timeline(92, 23.976))
+@animation(bg=0, timeline=Timeline(92, 24))
 def taper(f):
     return (StSt("COLD\nTYPE", fnt, 330,
         rotate=f.e(1, rng=(5, 10)),

@@ -72,7 +72,7 @@ def align(b, rect, x=Edge.CenterX, y=Edge.CenterY):
     return (xoff, yoff)
 
 
-class Chainable():
+class GeoIterable():
     def __init__(self, *items):
         self.items = items
 
@@ -88,7 +88,7 @@ class Chainable():
             else:
                 result = fn(idx, item)
             out.append(result)
-        return Chainable(*out)
+        return GeoIterable(*out)
 
 
 class Rect(Geometrical):
@@ -295,10 +295,10 @@ class Rect(Geometrical):
         edge = txt_to_edge(edge)
         if edge == Edge.CenterX or edge == Edge.CenterY:
             a, b, c = divide(self.rect(), amount, edge, forcePixel=forcePixel)
-            return Chainable(Rect(a), Rect(b), Rect(c))
+            return GeoIterable(Rect(a), Rect(b), Rect(c))
         else:
             a, b = divide(self.rect(), amount, edge, forcePixel=forcePixel)
-            return Chainable(Rect(a), Rect(b))
+            return GeoIterable(Rect(a), Rect(b))
 
     def subdivide(self, amount, edge):
         """
