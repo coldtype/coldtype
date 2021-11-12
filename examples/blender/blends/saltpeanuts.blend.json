@@ -1,0 +1,305 @@
+{
+    "start": 349,
+    "end": 366,
+    "current_frame": 364,
+    "tracks": [
+        {
+            "index": 2,
+            "clips": [
+                {
+                    "name": "*At",
+                    "text": "*At",
+                    "start": 99,
+                    "end": 104
+                },
+                {
+                    "name": "this",
+                    "text": "this",
+                    "start": 104,
+                    "end": 110
+                },
+                {
+                    "name": "time",
+                    "text": "time",
+                    "start": 110,
+                    "end": 117
+                },
+                {
+                    "name": "we",
+                    "text": "we",
+                    "start": 117,
+                    "end": 120
+                },
+                {
+                    "name": "would",
+                    "text": "would",
+                    "start": 120,
+                    "end": 123
+                },
+                {
+                    "name": "like",
+                    "text": "like",
+                    "start": 123,
+                    "end": 129
+                },
+                {
+                    "name": "to",
+                    "text": "to",
+                    "start": 129,
+                    "end": 132
+                },
+                {
+                    "name": "play",
+                    "text": "play",
+                    "start": 132,
+                    "end": 137
+                },
+                {
+                    "name": "a",
+                    "text": "a",
+                    "start": 137,
+                    "end": 141
+                },
+                {
+                    "name": "tune",
+                    "text": "tune",
+                    "start": 141,
+                    "end": 160
+                },
+                {
+                    "name": "that",
+                    "text": "that",
+                    "start": 160,
+                    "end": 162
+                },
+                {
+                    "name": "was",
+                    "text": "was",
+                    "start": 162,
+                    "end": 166
+                },
+                {
+                    "name": "com",
+                    "text": "com",
+                    "start": 166,
+                    "end": 170
+                },
+                {
+                    "name": "+posed",
+                    "text": "+posed",
+                    "start": 170,
+                    "end": 182
+                },
+                {
+                    "name": "by",
+                    "text": "by",
+                    "start": 182,
+                    "end": 188
+                },
+                {
+                    "name": "my",
+                    "text": "my",
+                    "start": 188,
+                    "end": 195
+                },
+                {
+                    "name": "wor",
+                    "text": "wor",
+                    "start": 195,
+                    "end": 199
+                },
+                {
+                    "name": "+thy",
+                    "text": "+thy",
+                    "start": 199,
+                    "end": 202
+                },
+                {
+                    "name": "con",
+                    "text": "con",
+                    "start": 202,
+                    "end": 207
+                },
+                {
+                    "name": "+sti",
+                    "text": "+sti",
+                    "start": 207,
+                    "end": 210
+                },
+                {
+                    "name": "+tu",
+                    "text": "+tu",
+                    "start": 210,
+                    "end": 213
+                },
+                {
+                    "name": "+ent",
+                    "text": "+ent",
+                    "start": 213,
+                    "end": 217
+                },
+                {
+                    "name": "Mr.",
+                    "text": "Mr.",
+                    "start": 217,
+                    "end": 223
+                },
+                {
+                    "name": "Diz",
+                    "text": "Diz",
+                    "start": 223,
+                    "end": 227
+                },
+                {
+                    "name": "+zy",
+                    "text": "+zy",
+                    "start": 227,
+                    "end": 230
+                },
+                {
+                    "name": "Gil",
+                    "text": "Gil",
+                    "start": 230,
+                    "end": 233
+                },
+                {
+                    "name": "+les",
+                    "text": "+les",
+                    "start": 233,
+                    "end": 239
+                },
+                {
+                    "name": "+spie",
+                    "text": "+spie",
+                    "start": 239,
+                    "end": 242
+                },
+                {
+                    "name": "in",
+                    "text": "in",
+                    "start": 242,
+                    "end": 248
+                },
+                {
+                    "name": "the",
+                    "text": "the",
+                    "start": 248,
+                    "end": 252
+                },
+                {
+                    "name": "year",
+                    "text": "year",
+                    "start": 252,
+                    "end": 256
+                },
+                {
+                    "name": "of",
+                    "text": "of",
+                    "start": 256,
+                    "end": 262
+                },
+                {
+                    "name": "19",
+                    "text": "19",
+                    "start": 262,
+                    "end": 272
+                },
+                {
+                    "name": "+4",
+                    "text": "+4",
+                    "start": 272,
+                    "end": 282
+                },
+                {
+                    "name": "+2",
+                    "text": "+2",
+                    "start": 282,
+                    "end": 292
+                },
+                {
+                    "name": "*We",
+                    "text": "*We",
+                    "start": 298,
+                    "end": 300
+                },
+                {
+                    "name": "sin",
+                    "text": "sin",
+                    "start": 300,
+                    "end": 304
+                },
+                {
+                    "name": "+cere",
+                    "text": "+cere",
+                    "start": 304,
+                    "end": 307
+                },
+                {
+                    "name": "+ly",
+                    "text": "+ly",
+                    "start": 307,
+                    "end": 310
+                },
+                {
+                    "name": "hope",
+                    "text": "hope",
+                    "start": 310,
+                    "end": 315
+                },
+                {
+                    "name": "you",
+                    "text": "you",
+                    "start": 315,
+                    "end": 319
+                },
+                {
+                    "name": "do",
+                    "text": "do",
+                    "start": 319,
+                    "end": 322
+                },
+                {
+                    "name": "en",
+                    "text": "en",
+                    "start": 322,
+                    "end": 327
+                },
+                {
+                    "name": "+joy",
+                    "text": "+joy",
+                    "start": 327,
+                    "end": 349
+                },
+                {
+                    "name": "*Salt",
+                    "text": "*Salt",
+                    "start": 349,
+                    "end": 357
+                },
+                {
+                    "name": "Pea",
+                    "text": "Pea",
+                    "start": 357,
+                    "end": 361
+                },
+                {
+                    "name": "+nuts",
+                    "text": "+nuts",
+                    "start": 361,
+                    "end": 367
+                }
+            ]
+        },
+        {
+            "index": 3,
+            "clips": [
+                {
+                    "name": "title",
+                    "text": "title",
+                    "start": 349,
+                    "end": 367
+                }
+            ]
+        }
+    ]
+}
