@@ -304,6 +304,8 @@ class SourceReader():
             return root / "demo/blank.py"
         elif name == "boiler":
             return root / "demo/boiler.py"
+        elif name == "glyphs":
+            return root / "demo/glyphs.py"
         elif name == "midi":
             return root / "demo/midi.py"
         elif name == "vf":
@@ -541,6 +543,10 @@ class Programs():
     @staticmethod
     def Demo():
         return SourceReader.LoadDemo("demo")[0]
+    
+    @staticmethod
+    def Glyphs(font=None, fontSize=72, showChars=False):
+        return SourceReader.LoadDemo("glyphs", **locals())[0]
 
     @staticmethod
     def Midi(file=None,
