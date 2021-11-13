@@ -56,7 +56,9 @@ def apply_syntax_mods(filepath, source_code, renderer=None):
     source_code = re.sub(r"([\s]+)Ƨ\(", r"\1nerp(", source_code)
     #source_code = re.sub(r"λ[\s]{0,3}\.", "lambda p: p.", source_code)
     #source_code = re.sub(r"λ\s?([/\.\@]{1,2})", r"lambda xxx: xxx\1", source_code)
-    source_code = re.sub(r"λ(\s+)?\.", "lambda x: x.", source_code)
+    source_code = re.sub(r"ι,λ\.", "lambda ι, λ__: λ__.", source_code)
+    source_code = re.sub(r"λ(\s+)?\.", "lambda λ__: λ__.", source_code)
+    source_code = re.sub(r"λ__", "λ", source_code)
     #source_code = re.sub(r"λ", "lambda ", source_code)
     #source_code = re.sub(r"ßDPS\(([^\)]+)\)", r"(ß:=DPS(\1))", source_code)
 
