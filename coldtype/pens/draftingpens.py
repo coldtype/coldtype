@@ -136,6 +136,8 @@ class DraftingPens(DraftingPen):
             except Exception as e:
                 return Rect(0,0,0,0)
     
+    amb = ambit
+    
     def bounds(self):
         """Calculated bounds of a DraftingPens"""
         return self.ambit(th=1, tv=1)

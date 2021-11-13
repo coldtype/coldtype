@@ -4,7 +4,7 @@ from coldtype.geometry.rect import Rect
 def parse_inputs(inputs, defaults):
     defaults["rect"] = [
         Rect(1080, 1080),
-        lambda xs: Rect([int(x) for x in xs.split(",")])]
+        lambda xs: Rect([int(x) for x in str(xs).split(",")])]
 
     defaults["preview_only"] = [False, bool]
     defaults["log"] = [False, bool]

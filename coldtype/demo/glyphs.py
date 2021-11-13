@@ -1,9 +1,10 @@
 from coldtype import *
 from coldtype.tool import parse_inputs
 
+# TODO single-frame animated version?
+
 args = parse_inputs(__inputs__, dict(
-    font=[None, str,
-        "Must provide font regex or path"],
+    font=[None, str, "Must provide font regex or path"],
     fontSize=[72, int],
     showChars=[False, bool]))
 
@@ -16,7 +17,7 @@ for ch, name in cmap.getBestCmap().items():
 
 sq = math.ceil(math.sqrt(len(all_chars)))
 
-@renderable((1000, 1000))
+@renderable(args["rect"])
 def wt1(r:Rect):
     rs = r.grid(sq, sq)
     return PS([

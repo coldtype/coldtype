@@ -545,7 +545,7 @@ class Programs():
         return SourceReader.LoadDemo("demo")[0]
     
     @staticmethod
-    def Glyphs(font=None, fontSize=72, showChars=False):
+    def Glyphs(font=None, fontSize=72, showChars=False, rect=(1080, 1080)):
         return SourceReader.LoadDemo("glyphs", **locals())[0]
 
     @staticmethod
