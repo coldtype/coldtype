@@ -16,7 +16,7 @@ def test_ascii(f):
     word = (Glyphwise("TYPE", lambda g:
         Style(fnt, 100,
             wdth=(at[g.i > 1].io2(f.i, 10, "eeio")),
-            tu=at["c"].io2(f.i, 8, "eeio")*500))
+            tu=at.ki("c", f.i).io(8, rng=(100, 500))))
         .align(f.a.r)
         .scale(io*2))
     

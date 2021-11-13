@@ -1,4 +1,5 @@
-from coldtype.time.easing import ease
+from coldtype.pens.draftingpen import DraftingPen
+from coldtype.time.easing import ease, ez
 from copy import copy
 import math
 
@@ -356,3 +357,82 @@ class TimeableSet():
 
     def __repr__(self):
         return "<TimeableSet ({:s}){:04d}>".format(self.name if self.name else "?", len(self.timeables))
+
+
+class Easeable():
+    def __init__(self,
+        t:Timeable,
+        i:int
+        ):
+        self.timeable = t
+        self.i = i
+
+    def e(self,
+        easefn="eeio",
+        loops=0,
+        rng=(0, 1),
+        on=None,
+        cyclic=True,
+        to1=False
+        ):
+        if not isinstance(easefn, str) and not isinstance(easefn, DraftingPen) and not type(easefn).__name__ == "Glyph":
+            loops = easefn
+            easefn = "eeio"
+        t = self.timeable.progress(self.i%self.timeable.duration, loops=loops, easefn=easefn, cyclic=cyclic, to1=to1)
+        tl = t.loop // (2 if cyclic else 1)
+        e = t.e
+        if on:
+            if tl not in on:
+                e = 0
+        ra, rb = rng
+        if ra > rb:
+            e = 1 - e
+            rb, ra = ra, rb
+        return ra + e*(rb - ra)
+    
+    def io(self, length, easefn="eeio", negative=False, rng=(0, 1)):
+        t = self.timeable
+        try:
+            length_i, length_o = length
+        except:
+            length_i = length
+            length_o = length
+        
+        if isinstance(length_i, float):
+            length_i = int(t.duration*(length_i/2))
+        if isinstance(length_o, float):
+            length_o = int(t.duration*(length_o/2))
+        
+        if self.i < t.start or self.i > t.end:
+            return rng[0]
+        
+        try:
+            ei, eo = easefn
+        except ValueError:
+            ei, eo = easefn, easefn
+
+        to_end = t.end - self.i
+        to_start = self.i - t.start
+        easefn = None
+        in_end = False
+
+        if to_end < length_o and eo:
+            in_end = True
+            v = to_end/length_o
+            easefn = eo
+        elif to_start <= length_i and ei:
+            v = to_start/length_i
+            easefn = ei
+        else:
+            v = 1
+
+        if v == 1 or not easefn:
+            return rng[0] + rng[1]
+        else:
+            return ez(v, easefn, 0, False, rng)
+            #a, _ = ease(easefn, v)
+            #return a
+            if negative and in_end:
+                return -a
+            else:
+                return a

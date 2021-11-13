@@ -1,5 +1,6 @@
 import enum
-from coldtype.time.timeline import Timeline, Timeable
+from coldtype.time.timeable import Timeable, Easeable
+from coldtype.time.timeline import Timeline
 from coldtype.geometry.rect import Rect
 
 
@@ -84,8 +85,10 @@ class AsciiTimeline(Timeline):
     def geti(self, key, fi):
         for c in self.clips:
             if c.name == key and (c.start <= fi < c.end):
-                return c
-        return self[key]
+                return Easeable(c, fi)
+        return Easeable(self[key], fi)
+    
+    ki = geti
     
     def now(self, fi, line=None, first=False, filter_fn=None):
         matches = []
