@@ -2,6 +2,7 @@ from coldtype import *
 from coldtype.blender import *
 
 fnt = Font.Find("Hobeaux-Roc.*Bor")
+
 styles = [
     "Aa ", "B  ", "Cc3", "Dd4", "Ee5",
     "Ff6", "Gg ", "Hh8", "Ii9", "Jj0",
@@ -13,11 +14,11 @@ styles = [
 def hobeauxBorder(r, style=0, fs=200):
     s = styles[style]
     b, c, m = [StSt(x, fnt, fs).pen() for x in s]
-    ba, ca, _ = [e.ambit() for e in (b, c, m)]
+    bw, cw, _ = [e.ambit().w for e in (b, c, m)]
     
-    nh = int((r.w)/ba.w/2)
-    nv = int(r.h/ba.w/2)
-    bx = Rect(ba.w*nh*2+ca.w*2, ba.w*nv*2).align(r)
+    nh = int((r.w)/bw/2)
+    nv = int(r.h/bw/2)
+    bx = Rect(bw*nh*2+cw*2, bw*nv*2).align(r)
 
     return PS([
         (b.layer(nh)
@@ -31,7 +32,7 @@ def hobeauxBorder(r, style=0, fs=200):
             .distribute()
             .append(m)
             .rotate(90, (0, 0))
-            .translate(ca.w, 0)
+            .translate(cw, 0)
             .layer(1, λ.scale(1, -1, (0, 0)))
             .layer(λ.t(*bx.pw),
                 λ.scale(-1, 1, (0, 0)).t(*bx.pe)))])
@@ -40,8 +41,7 @@ def hobeauxBorder(r, style=0, fs=200):
 @b3d_animation(timeline=len(styles))
 def b1(f):
     r = f.a.r.inset(150)
-    return (hobeauxBorder(r, f.i, 300)
-        .pen()
+    return (hobeauxBorder(r, f.i, 500).pen()
         .f(hsl(0.7))
         .tag("border")
         | b3d(lambda bp: bp
