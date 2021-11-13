@@ -28,7 +28,7 @@ def officehours(f):
 
     # after bg, so it doesn't effect bounds 
     txt.index([0, 2], lambda p: p
-        .rotate(at["L"].e(f.i-10, "eeio", 0, cyclic=0, rng=(0, 360))))
+        .rotate(at["L"].e(f.i-10, "eeio", 0, cyclic=0, rng=(0, 360)), th=1))
 
     return PS([
         bg.copy().translate(5, -5).f(0),
