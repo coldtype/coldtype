@@ -782,8 +782,8 @@ class DraftingPen(RecordingPen, SHContext):
         return self
     
     def _normPoint(self, point=None, th=0, tv=0, **kwargs):
-        if "ṗ" in kwargs:
-            point = kwargs["ṗ"]
+        if "pt" in kwargs:
+            point = kwargs["pt"]
         a = self.ambit(th=th, tv=tv)
         if point is None:
             return a.pc
@@ -807,7 +807,10 @@ class DraftingPen(RecordingPen, SHContext):
         else:
             return Point(point)
     
-    def centerOnPoint(self, rect, pt, interp=1, th=0, tv=0, **kwargs):
+    def centerPoint(self, rect, pt, interp=1, th=0, tv=0, **kwargs):
+        if "i" in kwargs:
+            interp = kwargs["i"]
+        
         x, y = self._normPoint(pt, th=th, tv=tv, **kwargs)
         return self.translate(norm(interp, 0, rect.w/2-x), norm(interp, 0, rect.h/2-y))
     

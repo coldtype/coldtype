@@ -393,7 +393,7 @@ class Easeable():
         find=False,
         **kwargs
         ):
-        if "ŋ" in kwargs: rng = kwargs["ŋ"]
+        if "r" in kwargs: rng = kwargs["r"]
         if isinstance(rng, (int, float)):
             rng = (0, rng)
 
