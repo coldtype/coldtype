@@ -82,13 +82,19 @@ class AsciiTimeline(Timeline):
         else:
             return self.clips[item]
     
-    def geti(self, key, fi):
+    def ki(self, key, fi):
+        """(k)eyed-at-(i)ndex"""
         for c in self.clips:
-            if c.name == key and (c.start <= fi < c.end):
-                return Easeable(c, fi)
+            if isinstance(key, str):
+                if c.name == str(key) and (c.start <= fi < c.end):
+                    return Easeable(c, fi)
+            elif not isinstance(key, int):
+                try:
+                    if c.name in key and (c.start <= fi < c.end):
+                        return Easeable(c, fi)
+                except TypeError:
+                    pass
         return Easeable(self[key], fi)
-    
-    ki = geti
     
     def now(self, fi, line=None, first=False, filter_fn=None):
         matches = []
@@ -101,8 +107,8 @@ class AsciiTimeline(Timeline):
         if filter_fn:
             matches = list(filter(filter_fn, matches))
         if first:
-            return matches[0] if matches else None
-        return matches
+            return Easeable(matches[0], fi) if matches else Easeable(Timeable(-2, -1, -1), fi)
+        return [Easeable(m, fi) for m in matches]
     
     def rmap(self, r=Rect(1000, 1000)):
         """

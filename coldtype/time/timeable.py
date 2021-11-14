@@ -364,8 +364,13 @@ class Easeable():
         t:Timeable,
         i:int
         ):
-        self.timeable = t
+        if not t:
+            raise Exception("T MUST EXIST")
+        self.t = t
         self.i = i
+    
+    def __str__(self) -> str:
+        return f"<Easeable@{self.i}:{self.t}/>"
 
     def e(self,
         easefn="eeio",
@@ -373,12 +378,28 @@ class Easeable():
         rng=(0, 1),
         on=None,
         cyclic=True,
-        to1=False
+        to1=False,
+        wrap=False
         ):
+        
         if not isinstance(easefn, str) and not isinstance(easefn, DraftingPen) and not type(easefn).__name__ == "Glyph":
             loops = easefn
             easefn = "eeio"
-        t = self.timeable.progress(self.i%self.timeable.duration, loops=loops, easefn=easefn, cyclic=cyclic, to1=to1)
+        
+        if wrap:
+            i = self.i%self.t.duration
+        else:
+            i = self.i
+        
+        if i < self.t.start:
+            return rng[0]
+        elif i >= self.t.end:
+            if loops%2 == 0:
+                return rng[1]
+            else:
+                return rng[0]
+        
+        t = self.t.progress(i, loops=loops, easefn=easefn, cyclic=cyclic, to1=to1)
         tl = t.loop // (2 if cyclic else 1)
         e = t.e
         if on:
@@ -391,7 +412,7 @@ class Easeable():
         return ra + e*(rb - ra)
     
     def io(self, length, easefn="eeio", negative=False, rng=(0, 1)):
-        t = self.timeable
+        t = self.t
         try:
             length_i, length_o = length
         except:
@@ -427,7 +448,7 @@ class Easeable():
             v = 1
 
         if v == 1 or not easefn:
-            return rng[0] + rng[1]
+            return rng[1]
         else:
             return ez(v, easefn, 0, False, rng)
             #a, _ = ease(easefn, v)

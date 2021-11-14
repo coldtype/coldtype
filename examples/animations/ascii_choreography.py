@@ -15,18 +15,25 @@ at = AsciiTimeline(3, 30, """
 def choreography(f):
     now = at.now(f.i, 1, True, lambda m: m.index < 4)
 
-    return (Glyphwise("TYPE", lambda g:
-        Style(fnt, 200,
-            wght=at[g.i].e(f.i),
-            wdth=at[g.i+4].e(f.i, "qeio")))
-        .track(at["tu"].e(f.i, "eeio", 1, rng=(0, 150)))
+    def styler(g):
+        return Style(fnt,
+            fontSize=200,
+            wght=at.ki(g.i, f.i)
+                .e(1),
+            wdth=at.ki(g.i+4, f.i)
+                .e("qeio", 1))
+
+    return (Glyphwise("TYPE", styler)
+        .track(at.ki("tu", f.i).e(1, rng=(0, 150)))
         .align(f.a.r)
-        .skew(at["slnt"].e(f.i, "seio", rng=(0, 0.2)), 0)
         .f(hsl(0.7, 1))
-        .pmap(lambda i, p: p.rotate(at["ro"].e(f.i-i, 0, rng=(0, -360))))
+        .pmap(lambda i, p: p
+            .rotate(at.ki("ro", f.i-i)
+                .e(rng=(0, -360))))
         .cond(now, lambda ps: ps
             .centerOnPoint(f.a.r,
-                ps[now.index].ambit().pc,
-                interp=now.e(f.i))
-            .scale(1+now.e(f.i)*2,
-                point=ps[now.index].ambit().pc)))
+                ps[now.t.index].ambit(th=1).pc,
+                interp=now.e(1))
+            .scale(1+now.e(1)*2,
+                point=ps[now.t.index].ambit().pc)
+                ))

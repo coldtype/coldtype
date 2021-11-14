@@ -25,7 +25,7 @@ class Frame(Easeable):
         return Frame(self.i+off, self.a)
 
     @property
-    def timeable(self):
+    def t(self):
         return self.a
     
     # def e(self, easefn="eeio", loops=0, rng=(0, 1), on=None, cyclic=True, to1=False):
