@@ -1,4 +1,5 @@
-import enum
+from typing import List
+
 from coldtype.time.timeable import Timeable, Easeable
 from coldtype.time.timeline import Timeline
 from coldtype.geometry.rect import Rect
@@ -66,6 +67,8 @@ class AsciiTimeline(Timeline):
             if clip_start is not None and clip_name is not None:
                 unclosed_clip = (clip_start, clip_name)
         
+        self.clips:List[Timeable] = []
+
         if sort:
             self.clips = sorted(clips, key=lambda c: c.name)
         else:
@@ -73,28 +76,40 @@ class AsciiTimeline(Timeline):
         
         for cidx, clip in enumerate(self.clips):
             clip.index = cidx
-
-    def __getitem__(self, item):
-        if isinstance(item, str):
+    
+    def _keyed(self, k):
+        if isinstance(k, str):
             for c in self.clips:
-                if c.name == item:
+                if c.name == k:
                     return c
         else:
-            return self.clips[item]
+            return self.clips[k]
     
     def ki(self, key, fi):
         """(k)eyed-at-(i)ndex"""
-        for c in self.clips:
-            if isinstance(key, str):
-                if c.name == str(key) and (c.start <= fi < c.end):
-                    return Easeable(c, fi)
-            elif not isinstance(key, int):
-                try:
-                    if c.name in key and (c.start <= fi < c.end):
-                        return Easeable(c, fi)
-                except TypeError:
-                    pass
-        return Easeable(self[key], fi)
+
+        if not isinstance(key, str):
+            try:
+                es = [self.ki(k, fi) for k in key]
+                return Easeable(es, fi)
+            except TypeError as e:
+                pass
+
+        for c in reversed(self.clips):
+            ck = c.name if isinstance(key, str) else c.index
+            if ck == key and (c.start <= fi < c.end):
+                return Easeable(c, fi)
+        
+        return Easeable(self._keyed(key), fi)
+
+    def __getitem__(self, item) -> Easeable:
+        try:
+            if isinstance(item[1], int):
+                item, fi = item
+                return self.ki(item, fi)
+
+        except TypeError:
+            return self._keyed(item)
     
     def now(self, fi, line=None, first=False, filter_fn=None):
         matches = []

@@ -13,22 +13,28 @@ at = AsciiTimeline(1, """
 @animation(timeline=at)
 def officehours(f):
     stx = Style.StretchX(0,
-        L=(730*at["L"].io2(f.i, 10, e:="ceio"), 310),
-        F=(1220*at["F"].io2(f.i, 10, e), 260),
-        H=(1900*at["H"].io2(f.i, 10, e), 250))
+        L=(730*at["L", f.i].io(10, e:="ceio"), 310),
+        F=(1220*at["F", f.i].io(10, e), 260),
+        H=(1900*at["H", f.i].io(10, e), 250))
     
-    txt = (StSt("Coldtype\nOffice\nHours".upper(),
-        nudge, 125, ss02=1, mods=stx, leading=20)
+    txt = (StSt("Coldtype\nOffice\nHours".upper()
+        , Font.MutatorSans()
+        , fontSize=125
+        , ss02=1
+        , mods=stx
+        , leading=20)
         .f(1)
         .xalign(f.a.r)
         .align(f.a.r))
-    
+
     bg = (P(txt.copy().ambit().inset(-50))
             .f(hsl(0.35, 0.8, 0.3)))
 
     # after bg, so it doesn't effect bounds 
     txt.index([0, 2], lambda p: p
-        .rotate(at["L"].e(f.i-10, "eeio", 0, cyclic=0, rng=(0, 360)), th=1))
+        .rotate(at.ki("L", f.i-10)
+            .e("eeio", 0, rng=(0, 360))
+            , th=1))
 
     return PS([
         bg.copy().translate(5, -5).f(0),

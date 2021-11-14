@@ -19,6 +19,14 @@ class TestTime(unittest.TestCase):
         self.assertEqual(at[2].start, 16)
         self.assertEqual(at[-1].end, 41)
         self.assertEqual(len(at.clips), 4)
+
+        self.assertEqual(at[0, 0].e(), 0)
+        self.assertAlmostEqual(at[0, 4].e(), 0.0347, 3)
+
+        self.assertNotEqual(at[1, 20].e(to1=0), 1)
+        self.assertEqual(at[1, 20].e(to1=1), 1)
+
+        self.assertEqual(at[1, 30].e(), 1)
     
     def test_animation(self):
         src = "test/visuals/test_animation.py"

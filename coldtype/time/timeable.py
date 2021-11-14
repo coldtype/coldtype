@@ -80,7 +80,9 @@ class Timeable():
                 return fi + self.timeline.duration
         return fi
     
-    def e(self, fi, easefn="eeio", loops=1, rng=(0, 1), cyclic=True, to1=False, out1=False):
+    def e(self, fi, easefn="eeio", loops=1, rng=(0, 1), cyclic=True, to1=False, out1=False, **kwargs):
+        if "ŋ" in kwargs: rng = kwargs["ŋ"]
+
         if not isinstance(easefn, str):
             loops = easefn
             easefn = "eeio"
@@ -226,6 +228,9 @@ class Timeable():
     
     #prg = progress
 
+    def at(self, i) -> "Easeable":
+        return Easeable(self, i)
+
 
 class TimeableView(Timeable):
     def __init__(self, timeable, value, svalue, count, index, position, start, end):
@@ -368,8 +373,12 @@ class Easeable():
             raise Exception("T MUST EXIST")
         self.t = t
         self.i = i
+
+        self._ts = False
+        if not isinstance(t, Timeable):
+            self._ts = True
     
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"<Easeable@{self.i}:{self.t}/>"
 
     def e(self,
@@ -379,8 +388,22 @@ class Easeable():
         on=None,
         cyclic=True,
         to1=False,
-        wrap=False
+        wrap=False,
+        choose=max,
+        find=False,
+        **kwargs
         ):
+        if "ŋ" in kwargs: rng = kwargs["ŋ"]
+        if isinstance(rng, (int, float)):
+            rng = (0, rng)
+
+        if self._ts:
+            es = [t.e(easefn, loops, rng, on, cyclic, to1, wrap) for t in self.t]
+            e = choose(es)
+            if find is False:
+                return e
+            else:
+                return e, es.index(e)
         
         if not isinstance(easefn, str) and not isinstance(easefn, DraftingPen) and not type(easefn).__name__ == "Glyph":
             loops = easefn

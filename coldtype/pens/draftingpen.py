@@ -781,13 +781,9 @@ class DraftingPen(RecordingPen, SHContext):
         self.translate(-x, -y)
         return self
     
-    def center_on_point(self, rect, pt, interp=1, th=0, tv=0):
-        x, y = self._normPoint(pt, th=th, tv=tv)
-        return self.translate(norm(interp, 0, rect.w/2-x), norm(interp, 0, rect.h/2-y))
-    
-    centerOnPoint = center_on_point
-
-    def _normPoint(self, point=None, th=0, tv=0):
+    def _normPoint(self, point=None, th=0, tv=0, **kwargs):
+        if "ṗ" in kwargs:
+            point = kwargs["ṗ"]
         a = self.ambit(th=th, tv=tv)
         if point is None:
             return a.pc
@@ -796,22 +792,37 @@ class DraftingPen(RecordingPen, SHContext):
         elif point is False:
             return Point(0, 0)
         elif isinstance(point, str):
+            if point.startswith("th"):
+                a = self.ambit(th=1, tv=0)
+                point = point[2:]
+            elif point.startswith("tv"):
+                a = self.ambit(th=0, tv=1)
+                point = point[2:]
+            elif point.startswith("t"):
+                a = self.ambit(th=1, tv=1)
+                point = point[1:]
             return a.point(point)
+        elif not (isinstance(point[1], int) or isinstance(point[1], float)) and hasattr(self, "_pens"):
+            return self[point[0]]._normPoint(point[1])
         else:
             return Point(point)
     
-    def skew(self, x=0, y=0, point=None, th=0, tv=0):
+    def centerOnPoint(self, rect, pt, interp=1, th=0, tv=0, **kwargs):
+        x, y = self._normPoint(pt, th=th, tv=tv, **kwargs)
+        return self.translate(norm(interp, 0, rect.w/2-x), norm(interp, 0, rect.h/2-y))
+    
+    def skew(self, x=0, y=0, point=None, th=0, tv=0, **kwargs):
         t = Transform()
-        px, py = self._normPoint(point, th, tv)
+        px, py = self._normPoint(point, th, tv, **kwargs)
         t = t.translate(px, py)
         t = t.skew(x, y)
         t = t.translate(-px, -py)
         return self.transform(t)
     
-    def rotate(self, degrees, point=None, th=0, tv=0):
+    def rotate(self, degrees, point=None, th=0, tv=0, **kwargs):
         """Rotate this shape by a degree (in 360-scale, counterclockwise)."""
         t = Transform()
-        x, y = self._normPoint(point, th, tv)
+        x, y = self._normPoint(point, th, tv, **kwargs)
         t = t.translate(x, y)
         t = t.rotate(math.radians(degrees))
         t = t.translate(-x, -y)
@@ -819,10 +830,10 @@ class DraftingPen(RecordingPen, SHContext):
     
     rt = rotate
     
-    def scale(self, scaleX, scaleY=None, point=None, th=0, tv=0):
+    def scale(self, scaleX, scaleY=None, point=None, th=0, tv=0, **kwargs):
         """Scale this shape by a percentage amount (1-scale)."""
         t = Transform()
-        x, y = self._normPoint(point, th, tv)
+        x, y = self._normPoint(point, th, tv, **kwargs)
         t = t.translate(x, y)
         t = t.scale(scaleX, scaleY or scaleX)
         t = t.translate(-x, -y)
