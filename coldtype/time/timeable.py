@@ -480,3 +480,18 @@ class Easeable():
                 return -a
             else:
                 return a
+    
+    def adsr(self,
+        adsr=[5, 0, 0, 10],
+        es=["eei", "eeio", "eeio", "eeo"],
+        rng=(0, 1)
+        ):
+        a, d, s, r = adsr
+        ae, de, se, re = es
+        i, t = self.i, self.t
+
+        if i < t.start:
+            return Easeable(Timeable(t.start-a, t.start), i).e(ae, 0, rng=rng)
+        elif i >= t.start:
+            if not d and not s:
+                return Easeable(Timeable(t.start, t.start+r), i).e(re, rng=list(reversed(rng)))
