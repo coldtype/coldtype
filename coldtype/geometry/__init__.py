@@ -7,6 +7,9 @@ from coldtype.geometry.curve import Curve
 from coldtype.geometry.edge import Edge, txt_to_edge
 from coldtype.geometry.rect import Rect, align
 
+Pt = Point
+Rt = Rect
+
 
 def Geo(*args):
     if len(args) == 1:

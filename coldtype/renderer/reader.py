@@ -304,6 +304,8 @@ class SourceReader():
             return root / "demo/blank.py"
         elif name == "boiler":
             return root / "demo/boiler.py"
+        elif name == "glyphs":
+            return root / "demo/glyphs.py"
         elif name == "midi":
             return root / "demo/midi.py"
         elif name == "vf":
@@ -397,8 +399,8 @@ class SourceReader():
         return valid_sources
     
     def blender_file(self):
-        if not self.use_blender and not self.config.blender_watch:
-            return None
+        #if not self.use_blender and not self.config.blender_watch:
+        #    return None
 
         bf = self.config.blender_file
         if not bf:
@@ -541,6 +543,10 @@ class Programs():
     @staticmethod
     def Demo():
         return SourceReader.LoadDemo("demo")[0]
+    
+    @staticmethod
+    def Glyphs(font=None, fontSize=72, showChars=False, rect=(1080, 1080)):
+        return SourceReader.LoadDemo("glyphs", **locals())[0]
 
     @staticmethod
     def Midi(file=None,

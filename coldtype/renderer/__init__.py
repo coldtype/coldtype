@@ -228,7 +228,8 @@ class Renderer():
         # TODO check exists here on filepath
         self.watchees = [[Watchable.Source, self.source_reader.filepath, None]]
 
-        self.watchees.append([Watchable.Generic, Path("~/.coldtype/command.json").expanduser(), None])
+        ph = path_hash(self.source_reader.filepath)
+        self.watchees.append([Watchable.Generic, Path(f"~/.coldtype/{ph}_input.json").expanduser(), None])
 
         if pj:
             self.watchees.append([Watchable.Generic, Path("~/.coldtype/picklejar"), None])
@@ -1220,17 +1221,17 @@ class Renderer():
             path = path.parent
         
         if path in self.watchee_paths():
-            last = self.watchee_mods.get(path)
-            now = ptime.time()
-            self.watchee_mods[path] = now
-            if last is not None:
-                diff = now - last
-                if diff < 0.05:
-                    return
-                else:
-                    pass
-
             if path.suffix == ".json":
+                last = self.watchee_mods.get(path)
+                now = ptime.time()
+                self.watchee_mods[path] = now
+                if last is not None:
+                    diff = now - last
+                    if diff < 0.05:
+                        return
+                    else:
+                        pass
+
                 if path.stem == "command":
                     data = json.loads(path.read_text())
                     if "action" in data:

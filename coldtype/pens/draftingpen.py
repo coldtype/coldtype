@@ -795,29 +795,32 @@ class DraftingPen(RecordingPen, SHContext):
         t = t.translate(-point.x, -point.y)
         return self.transform(t)
     
-    def rotate(self, degrees, point=None):
+    def rotate(self, degrees, point=None, th=0, tv=0):
         """Rotate this shape by a degree (in 360-scale, counterclockwise)."""
         t = Transform()
         if not point:
-            point = self.bounds().point("C") # maybe should be getFrame()?
+            point = self.ambit(th=th, tv=tv).point("C") # maybe should be getFrame()?
         elif isinstance(point, str):
-            point = self.bounds().point(point)
-        t = t.translate(point.x, point.y)
+            point = self.ambit(th=th, tv=tv).point(point)
+        t = t.translate(point[0], point[1])
         t = t.rotate(math.radians(degrees))
-        t = t.translate(-point.x, -point.y)
+        t = t.translate(-point[0], -point[1])
         return self.transform(t, transformFrame=False)
     
     rt = rotate
     
-    def scale(self, scaleX, scaleY=None, point=None):
+    def scale(self, scaleX, scaleY=None, point=None, th=0, tv=0):
         """Scale this shape by a percentage amount (1-scale)."""
         t = Transform()
         if point != False:
-            point = self.bounds().point("C") if point == None else point # maybe should be getFrame()?
-            t = t.translate(point.x, point.y)
+            if isinstance(point, str):
+                point = self.ambit(th=th, tv=tv).point(point)
+            else:
+                point = self.ambit(th=th, tv=tv).point("C") if point == None else point
+            t = t.translate(point[0], point[1])
         t = t.scale(scaleX, scaleY or scaleX)
         if point != False:
-            t = t.translate(-point.x, -point.y)
+            t = t.translate(-point[0], -point[1])
         return self.transform(t)
     
     def scaleToRect(self, rect, preserveAspect=True, shrink_only=False):

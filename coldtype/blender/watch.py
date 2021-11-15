@@ -192,7 +192,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def execute(self, context):
-        ccf = bpy.app.driver_namespace.get("_coldtype_command_file")
+        ccf = bpy.app.driver_namespace.get("_coldtype_command_output_file")
         self.file = Path(ccf)
         #print(">>>>>>>>>>>>", self.file)
 
@@ -214,7 +214,9 @@ def unregister_watcher():
     bpy.utils.unregister_class(ColdtypeWatchingOperator)
 
 def watch(command_file):
-    bpy.app.driver_namespace["_coldtype_command_file"] = command_file
+    input_file = command_file.replace(".txt", "_input.txt")
+    bpy.app.driver_namespace["_coldtype_command_output_file"] = command_file
+    bpy.app.driver_namespace["_coldtype_command_input_file"] = input_file
     
     register_watcher()
     bpy.ops.wm.coldtype_watching_operator()

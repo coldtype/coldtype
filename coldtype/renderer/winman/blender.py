@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from coldtype.renderer.utils import path_hash
 from coldtype.renderer.winman.passthrough import WinmanPassthrough
 from coldtype.blender.render import blender_launch_livecode
 
@@ -28,7 +29,8 @@ class WinmanBlender(WinmanPassthrough):
         self.write_command("refresh_sequencer", count)
     
     def reload(self, filepath):
-        self.command_file = Path(f"~/.coldtype/{filepath.stem}.txt").expanduser()
+        ph = path_hash(filepath)
+        self.command_file = Path(f"~/.coldtype/{ph}.txt").expanduser()
         self.write_command("import", filepath)
     
     def toggle_playback(self, toggle):
