@@ -95,10 +95,14 @@ class AsciiTimeline(Timeline):
             except TypeError as e:
                 pass
 
-        for c in reversed(self.clips):
+        all = []
+        for c in self.clips:
             ck = c.name if isinstance(key, str) else c.index
             if ck == key and (c.start <= fi < c.end):
-                return Easeable(c, fi)
+                all.append(c)
+        
+        if len(all) > 0:
+            return Easeable(all, fi)
         
         return Easeable(self._keyed(key), fi)
 

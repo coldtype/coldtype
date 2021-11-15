@@ -496,6 +496,11 @@ class Easeable():
         rs=False, # read-sustain
         **kwargs
         ):
+        if self._ts:
+            es = [Easeable(t, self.i).adsr(adsr, es, rng, dv, rs, **kwargs) for t in self.t]
+            e = max(es)
+            return e
+
         rng = self._normRange(rng, **kwargs)
 
         if len(adsr) == 2:
