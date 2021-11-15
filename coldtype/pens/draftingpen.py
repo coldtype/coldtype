@@ -837,9 +837,11 @@ class DraftingPen(RecordingPen, SHContext):
         """Scale this shape by a percentage amount (1-scale)."""
         t = Transform()
         x, y = self._normPoint(point, th, tv, **kwargs)
-        t = t.translate(x, y)
+        if point is not False:
+            t = t.translate(x, y)
         t = t.scale(scaleX, scaleY or scaleX)
-        t = t.translate(-x, -y)
+        if point is not False:
+            t = t.translate(-x, -y)
         return self.transform(t)
     
     def scaleToRect(self, rect, preserveAspect=True, shrink_only=False):
@@ -1369,6 +1371,9 @@ class DraftingPen(RecordingPen, SHContext):
 
     def __ror__(self, other):
         return self.chain(other)
+    
+    def __truediv__(self, other):
+        return self.pmap(other)
     
     def cond(self, condition, if_true:Callable[["DraftingPen"], None], if_false:Callable[["DraftingPen"], None]=None):
         if callable(condition):
