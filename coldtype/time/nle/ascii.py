@@ -63,7 +63,7 @@ class AsciiTimeline(Timeline):
                 if instant_clip and c == " ":
                     clips.append(Timeable(
                         clip_start,
-                        clip_start+1,
+                        clip_start,
                         name=instant_clip,
                         data=dict(line=lidx),
                         timeline=self))
@@ -73,7 +73,7 @@ class AsciiTimeline(Timeline):
             if instant_clip:
                 clips.append(Timeable(
                     clip_start,
-                    clip_start+1,
+                    clip_start,
                     name=instant_clip,
                     data=dict(line=lidx),
                     timeline=self))
@@ -135,7 +135,7 @@ class AsciiTimeline(Timeline):
                 item, fi = item
                 return self.ki(item, fi)
 
-        except TypeError:
+        except (IndexError, TypeError):
             return self._keyed(item)
     
     def now(self, fi, line=None, first=False, filter_fn=None):

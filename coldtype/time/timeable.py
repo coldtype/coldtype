@@ -380,8 +380,6 @@ class Easeable():
         t:Timeable,
         i:int
         ):
-        if not t:
-            raise Exception("T MUST EXIST")
         self.t = t
         self.i = i
 
@@ -436,6 +434,9 @@ class Easeable():
                 return EaseableTiming(0)
         else:
             d = t.duration
+            if to1:
+                d = d - 1
+            
             v = (i - t.start) / d
             if loops == 0:
                 return EaseableTiming(v)
