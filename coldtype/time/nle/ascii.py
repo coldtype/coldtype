@@ -90,7 +90,7 @@ class AsciiTimeline(Timeline):
 
         if not isinstance(key, str):
             try:
-                es = [self.ki(k, fi) for k in key]
+                es = [self.ki(k, fi).t for k in key]
                 return Easeable(es, fi)
             except TypeError as e:
                 pass
@@ -98,7 +98,7 @@ class AsciiTimeline(Timeline):
         all = []
         for c in self.clips:
             ck = c.name if isinstance(key, str) else c.index
-            if ck == key and (c.start <= fi < c.end):
+            if ck == key:# and (c.start <= fi < c.end):
                 all.append(c)
         
         if len(all) > 0:

@@ -23,10 +23,14 @@ class Frame(Easeable):
     
     def adj(self, off):
         return Frame(self.i+off, self.a)
+    
+    # Easeable interface
 
     @property
-    def t(self):
-        return self.a
+    def t(self): return self.a
+    
+    @property
+    def _ts(self): return None
     
     # def e(self, easefn="eeio", loops=0, rng=(0, 1), on=None, cyclic=True, to1=False):
     #     return _e(self.a, self.i)

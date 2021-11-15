@@ -34,5 +34,5 @@ def choreography(f):
                     rs=1))])
             .align(f.a.r.take(0.5, "S"), th=0)
             ._null())])
-        .f(1)
-        .append(P().line(f.a.r.ecy).fssw(-1, 1, 5)))
+        .append(P().line(f.a.r.ecy))
+        .fssw(-1, 1, 5))

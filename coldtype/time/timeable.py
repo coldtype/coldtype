@@ -1,6 +1,7 @@
+from dataclasses import dataclass
 from coldtype.interpolation import lerp
 from coldtype.pens.draftingpen import DraftingPen
-from coldtype.time.easing import ease, ez
+from coldtype.time.easing import ease, ez, applyRange
 from copy import copy
 import math
 
@@ -363,6 +364,12 @@ class TimeableSet():
 
     def __repr__(self):
         return "<TimeableSet ({:s}){:04d}>".format(self.name if self.name else "?", len(self.timeables))
+    
+
+@dataclass
+class EaseableTiming():
+    t: float = 0
+    i: int = -1
 
 
 class Easeable():
@@ -388,13 +395,56 @@ class Easeable():
         if isinstance(rng, (int, float)):
             rng = (0, rng)
         return rng
-        
+    
+    def _maxRange(self, rng, vs):
+        if rng[1] > rng[0]:
+            return max(vs)
+        else:
+            return min(vs)
+    
+    def tv(self,
+        loops=0,
+        cyclic=True,
+        to1=True,
+        choose=max,
+        wrap=False,
+        find=False
+        ):
+        if self._ts:
+            es = [Easeable(t, self.i).tv(loops, cyclic, to1).t for t in self.t]
+            e = choose(es)
+            if find is False:
+                return EaseableTiming(e)
+            else:
+                return EaseableTiming(e, es.index(e))
+
+        t, i = self.t, self.i
+        if wrap:
+            i = i % self.t.duration
+        else:
+            i = self.i
+
+        if i < t.start:
+            return EaseableTiming(0)
+        elif i > t.end:
+            if loops % 2 == 0:
+                return EaseableTiming(1)
+            else:
+                return EaseableTiming(0)
+        else:
+            d = t.duration
+            v = (i - t.start) / d
+            if loops == 0:
+                return EaseableTiming(v)
+            else:
+                loop_t, loop_index = self.t._loop(v, times=loops, cyclic=cyclic, negative=False)
+                return EaseableTiming(loop_t)
 
     def e(self,
         easefn="eeio",
         loops=0,
         rng=(0, 1),
-        on=None,
+        on=None, # TODO?
         cyclic=True,
         to1=False,
         wrap=False,
@@ -403,45 +453,32 @@ class Easeable():
         **kwargs
         ):
         rng = self._normRange(rng, **kwargs)
-
-        if self._ts:
-            es = [t.e(easefn, loops, rng, on, cyclic, to1, wrap) for t in self.t]
-            e = choose(es)
-            if find is False:
-                return e
-            else:
-                return e, es.index(e)
         
         if not isinstance(easefn, str) and not isinstance(easefn, DraftingPen) and not type(easefn).__name__ == "Glyph":
             loops = easefn
             easefn = "eeio"
         
-        if wrap:
-            i = self.i%self.t.duration
+        tv = self.tv(loops, cyclic, to1, choose, wrap, find=True)
+        
+        ev = ez(tv.t, easefn, cyclic=cyclic, rng=rng)
+        if find:
+            return ev, tv.i
         else:
-            i = self.i
-        
-        if i < self.t.start:
-            return rng[0]
-        elif i >= self.t.end:
-            if loops%2 == 0:
-                return rng[1]
-            else:
-                return rng[0]
-        
-        t = self.t.progress(i, loops=loops, easefn=easefn, cyclic=cyclic, to1=to1)
-        tl = t.loop // (2 if cyclic else 1)
-        e = t.e
-        if on:
-            if tl not in on:
-                e = 0
-        ra, rb = rng
-        if ra > rb:
-            e = 1 - e
-            rb, ra = ra, rb
-        return ra + e*(rb - ra)
+            return ev
     
-    def io(self, length, easefn="eeio", negative=False, rng=(0, 1)):
+    def io(self,
+        length,
+        easefn="eeio",
+        negative=False,
+        rng=(0, 1),
+        **kwargs
+        ):
+        rng = self._normRange(rng, **kwargs)
+
+        if self._ts:
+            es = [Easeable(t, self.i).io(length, easefn, negative, rng) for t in self.t]
+            return self._maxRange(rng, es)
+
         t = self.t
         try:
             length_i, length_o = length
@@ -496,12 +533,11 @@ class Easeable():
         rs=False, # read-sustain
         **kwargs
         ):
-        if self._ts:
-            es = [Easeable(t, self.i).adsr(adsr, es, rng, dv, rs, **kwargs) for t in self.t]
-            e = max(es)
-            return e
-
         rng = self._normRange(rng, **kwargs)
+
+        if self._ts:
+            es = [Easeable(t, self.i).adsr(adsr, es, rng, dv, rs) for t in self.t]
+            return self._maxRange(rng, es)
 
         if len(adsr) == 2:
             d, s = 0, 0
@@ -537,13 +573,15 @@ class Easeable():
         if i > end and td > -1:
             i = i - td
         
+        rv = rng[0]
         if td > -1 and end > td:
             if i < t.start-a:
                 i = i + td
+            rv = Easeable(Timeable(ds, end), i+td).e(re, rng=(dv, rng[0]), to1=1)
 
         if i < t.start: # ATTACK
             s = t.start - a
-            return Easeable(Timeable(t.start-a, t.start), i).e(ae, rng=rng, to1=1)
+            return self._maxRange(rng, [rv, Easeable(Timeable(t.start-a, t.start), i).e(ae, rng=rng, to1=1)])
         elif i >= t.start:
             if i >= ds: # RELEASE
                 return Easeable(Timeable(ds, end), i).e(re, rng=(dv, rng[0]), to1=1)
