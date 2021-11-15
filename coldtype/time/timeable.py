@@ -1,3 +1,4 @@
+from coldtype.interpolation import lerp
 from coldtype.pens.draftingpen import DraftingPen
 from coldtype.time.easing import ease, ez
 from copy import copy
@@ -380,6 +381,14 @@ class Easeable():
     
     def __repr__(self) -> str:
         return f"<Easeable@{self.i}:{self.t}/>"
+    
+    def _normRange(self, rng, **kwargs):
+        if "r" in kwargs:
+            rng = kwargs["r"]
+        if isinstance(rng, (int, float)):
+            rng = (0, rng)
+        return rng
+        
 
     def e(self,
         easefn="eeio",
@@ -393,9 +402,7 @@ class Easeable():
         find=False,
         **kwargs
         ):
-        if "r" in kwargs: rng = kwargs["r"]
-        if isinstance(rng, (int, float)):
-            rng = (0, rng)
+        rng = self._normRange(rng, **kwargs)
 
         if self._ts:
             es = [t.e(easefn, loops, rng, on, cyclic, to1, wrap) for t in self.t]
@@ -483,15 +490,60 @@ class Easeable():
     
     def adsr(self,
         adsr=[5, 0, 0, 10],
-        es=["eei", "eeio", "eeio", "eeo"],
-        rng=(0, 1)
+        es=["eei", "qeio", "eeo"],
+        rng=(0, 1),
+        dv=None, # decay-value
+        rs=False, # read-sustain
+        **kwargs
         ):
-        a, d, s, r = adsr
-        ae, de, se, re = es
-        i, t = self.i, self.t
+        rng = self._normRange(rng, **kwargs)
 
-        if i < t.start:
-            return Easeable(Timeable(t.start-a, t.start), i).e(ae, 0, rng=rng)
+        if len(adsr) == 2:
+            d, s = 0, 0
+            a, r = adsr
+        elif len(adsr) == 3:
+            d = 0
+            a, s, r = adsr
+        elif len(adsr) == 4:        
+            a, d, s, r = adsr
+        
+        if rs:
+            s = self.t.duration
+        
+        if len(es) == 2:
+            de = "qeio"
+            ae, re = es
+        elif len(es) == 3:
+            ae, de, re = es
+        
+        if dv is None:
+            dv = rng[1]
+            if d > 0:
+                dv = lerp(rng[0], rng[1], 0.5)
+        
+        i, t = self.i, self.t
+        end = t.start + d + s + r
+        ds = t.start + d + s
+
+        td = -1
+        if t.timeline:
+            td = t.timeline.duration
+
+        if i > end and td > -1:
+            i = i - td
+        
+        if td > -1 and end > td:
+            if i < t.start-a:
+                i = i + td
+
+        if i < t.start: # ATTACK
+            s = t.start - a
+            return Easeable(Timeable(t.start-a, t.start), i).e(ae, rng=rng, to1=1)
         elif i >= t.start:
-            if not d and not s:
-                return Easeable(Timeable(t.start, t.start+r), i).e(re, rng=list(reversed(rng)))
+            if i >= ds: # RELEASE
+                return Easeable(Timeable(ds, end), i).e(re, rng=(dv, rng[0]), to1=1)
+            else:
+                if i >= t.start + d: # SUSTAIN
+                    return dv
+                else: # DECAY
+                    return Easeable(Timeable(t.start, ds), i).e(de, rng=(rng[1], dv), to1=1)
