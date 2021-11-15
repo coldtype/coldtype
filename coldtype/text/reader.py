@@ -161,9 +161,14 @@ class Font():
         return Font.Cacheable(dwnl, suffix=suffix, delete_tmp=delete)
 
     @lru_cache()
-    def List(regex, regex_dir=None, log=False):
+    def List(regex, regex_dir=None, log=False, font_dir=None, max_depth=FONT_FIND_DEPTH):
         results = []
-        for dir in ALL_FONT_DIRS:
+        
+        font_dirs = ALL_FONT_DIRS
+        if font_dir is not None:
+            font_dirs = [font_dir]
+        
+        for dir in font_dirs:
             dir = normalize_font_prefix(dir)
             #if regex_dir:
             #    if not re.search(regex_dir, str(dir)):
@@ -171,8 +176,9 @@ class Font():
             _depth = str(dir).count(os.sep)
             for root, dirs, files in os.walk(dir):
                 depth = root.count(os.sep) - _depth
-                if depth >= FONT_FIND_DEPTH:
-                    continue
+                if max_depth is not None:
+                    if depth >= max_depth:
+                        continue
                 #print(depth)
                 for dir in dirs:
                     path = Path(root + "/" + dir)
