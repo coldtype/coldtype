@@ -56,7 +56,10 @@ class Timeable():
         return self.end - self.start
     
     def __repr__(self):
-        return f"Timeable({self.start}, {self.end} ({self.duration}))"
+        if self.name:
+            return f"Timeable('{self.name}', {self.start}, {self.end} ({self.duration}))"
+        else:
+            return f"Timeable({self.start}, {self.end} ({self.duration}))"
     
     def delay(self, frames_delayed, feedback) -> 'Timeable':
         t = copy(self)
@@ -583,6 +586,8 @@ class Easeable():
             s = t.start - a
             return self._maxRange(rng, [rv, Easeable(Timeable(t.start-a, t.start), i).e(ae, rng=rng, to1=1)])
         elif i >= t.start:
+            if i == t.start:
+                return rng[1]
             if i >= ds: # RELEASE
                 return Easeable(Timeable(ds, end), i).e(re, rng=(dv, rng[0]), to1=1)
             else:

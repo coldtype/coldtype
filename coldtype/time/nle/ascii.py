@@ -24,11 +24,13 @@ class AsciiTimeline(Timeline):
         self.multiplier = multiplier
         
         clips = []
-
         unclosed_clip = None
+
         for lidx, l in enumerate(lines):
             clip_start = None
             clip_name = None
+            instant_clip = None
+
             if unclosed_clip:
                 clip_start, clip_name = unclosed_clip
                 unclosed_clip = None
@@ -50,7 +52,31 @@ class AsciiTimeline(Timeline):
                     clip_start = idx*multiplier
                     clip_name = ""
                 elif c not in [" ", "-", "|", "<", ">"]:
-                    clip_name += c
+                    if clip_name is None:
+                        if instant_clip is not None:
+                            instant_clip += c
+                        else:
+                            instant_clip = c
+                            clip_start = idx*multiplier
+                    else:
+                        clip_name += c
+                if instant_clip and c == " ":
+                    clips.append(Timeable(
+                        clip_start,
+                        clip_start+1,
+                        name=instant_clip,
+                        data=dict(line=lidx),
+                        timeline=self))
+                    clip_start = None
+                    instant_clip = None
+            
+            if instant_clip:
+                clips.append(Timeable(
+                    clip_start,
+                    clip_start+1,
+                    name=instant_clip,
+                    data=dict(line=lidx),
+                    timeline=self))
             
             if looped_clip_end:
                 if clip_start is not None and clip_name is not None:
@@ -73,12 +99,13 @@ class AsciiTimeline(Timeline):
             clip.index = cidx
     
     def _keyed(self, k):
+        k = str(k)
+        all = []
         if isinstance(k, str):
             for c in self.clips:
                 if c.name == k:
-                    return c
-        else:
-            return self.clips[k]
+                    all.append(c)
+        return all
     
     def ki(self, key, fi):
         """(k)eyed-at-(i)ndex"""
@@ -90,15 +117,15 @@ class AsciiTimeline(Timeline):
             except TypeError:
                 pass
 
-        all = []
-        key = str(key)
+        # all = []
+        # key = str(key)
 
-        for c in self.clips:
-            if c.name == key:
-                all.append(c)
+        # for c in self.clips:
+        #     if c.name == key:
+        #         all.append(c)
         
-        if len(all) > 0:
-            return Easeable(all, fi)
+        # if len(all) > 0:
+        #     return Easeable(all, fi)
         
         return Easeable(self._keyed(key), fi)
 

@@ -7,6 +7,7 @@ at = AsciiTimeline(2, 30, """
     [1   ]
                 [2 ]
                         [3 ]
+            4
 """)
 
 @animation((1080, 1080), timeline=at, bg=0)
@@ -34,5 +35,5 @@ def choreography(f):
                     rs=1))])
             .align(f.a.r.take(0.5, "S"), th=0)
             ._null())])
-        .append(P().line(f.a.r.ecy))
+        .append(P(f.a.r.take(at[4,f.i].adsr(rng=(4, 100)), "CY").inset(-20, 0)))
         .fssw(-1, 1, 5))
