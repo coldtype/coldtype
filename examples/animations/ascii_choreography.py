@@ -21,7 +21,7 @@ def choreography(f):
 
     return (Glyphwise("TYPE", lambda g:
         Style(fnt, 200,
-            wght=at.ki(f"{g.i}", f.i).e(1),
+            wght=at.ki(g.i, f.i).e(1),
             wdth=at.ki(f"{g.i}w", f.i).e("qeio", 1)))
         .track(at.ki("tu", f.i).e(1, r=150))
         .align(f.a.r)

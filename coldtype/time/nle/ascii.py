@@ -12,7 +12,6 @@ class AsciiTimeline(Timeline):
         multiplier:int,
         fps:float,
         ascii:str=None,
-        sort=False,
         **kwargs
         ):
         if isinstance(fps, str):
@@ -68,11 +67,7 @@ class AsciiTimeline(Timeline):
                 unclosed_clip = (clip_start, clip_name)
         
         self.clips:List[Timeable] = []
-
-        if sort:
-            self.clips = sorted(clips, key=lambda c: c.name)
-        else:
-            self.clips = clips
+        self.clips = clips
         
         for cidx, clip in enumerate(self.clips):
             clip.index = cidx
@@ -92,13 +87,14 @@ class AsciiTimeline(Timeline):
             try:
                 es = [self.ki(k, fi).t for k in key]
                 return Easeable(es, fi)
-            except TypeError as e:
+            except TypeError:
                 pass
 
         all = []
+        key = str(key)
+
         for c in self.clips:
-            ck = c.name if isinstance(key, str) else c.index
-            if ck == key:# and (c.start <= fi < c.end):
+            if c.name == key:
                 all.append(c)
         
         if len(all) > 0:
