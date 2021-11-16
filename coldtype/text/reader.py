@@ -159,9 +159,38 @@ class Font():
     def GDrive(id, suffix, delete=True):
         dwnl = f"https://drive.google.com/uc?id={id}&export=download"
         return Font.Cacheable(dwnl, suffix=suffix, delete_tmp=delete)
+    
+    def _ListDir(dir, regex, regex_dir, log=False, depth=0):
+        if dir.name in [".git", "venv"]:
+            return
+        
+        #print(dir.stem, depth, len(os.listdir(dir)))
+        results = []
+
+        for p in dir.iterdir():
+            if p.is_dir() and depth < FONT_FIND_DEPTH and p.suffix != ".ufo":
+                res = Font._ListDir(p, regex, regex_dir, log, depth=depth+1)
+                if res:
+                    results.extend(res)
+            else:
+                if regex_dir and not re.search(regex_dir, str(p.parent)):
+                    continue
+                if re.search(regex, p.name):
+                    if p.suffix in [".otf", ".ttf", ".ttc", ".ufo"]:
+                        results.append(p)
+        
+        return results
 
     @lru_cache()
     def List(regex, regex_dir=None, log=False):
+        results = []
+        for dir in ALL_FONT_DIRS:
+            dir = normalize_font_prefix(dir)
+            results.extend(Font._ListDir(Path(dir), regex, regex_dir, log, depth=0))
+        return sorted(results, key=lambda p: p.stem)
+
+    @lru_cache()
+    def List1(regex, regex_dir=None, log=False):
         results = []
         for dir in ALL_FONT_DIRS:
             dir = normalize_font_prefix(dir)
