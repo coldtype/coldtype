@@ -932,6 +932,8 @@ class DraftingPen(RecordingPen, SHContext):
         for layer in layers:
             if callable(layer):
                 dps.append(layer(self.copy(with_data=1)))
+            elif isinstance(layer, Chainable):
+                dps.append(layer.func(self.copy(with_data=1)))
             elif isinstance(layer, str):
                 dp = self.copy(with_data=1)
                 dps.append(dp.sh("ctx" + layer)[0])
