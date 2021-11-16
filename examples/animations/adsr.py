@@ -36,4 +36,4 @@ def choreography(f):
             .align(f.a.r.take(0.5, "S"), th=0)
             ._null())])
         .append(P(f.a.r.take(at[4,f.i].adsr(rng=(4, 100)), "CY").inset(-20, 0)))
-        .fssw(-1, 1, 5))
+        .fssw(-1, 1, 2))

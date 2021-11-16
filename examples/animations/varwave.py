@@ -18,11 +18,10 @@ def cilati_wave(f:Frame):
 def fatface_wave(f):
     return (Glyphwise("WAVEFORM", lambda g:
         (Style(fatface,
-            150+(fa:=f.adj(g.i*4)).ie(ease:="seio", 1)*150,
+            100+(fa:=f.adj(g.i*4)).e(ease:="seio", 1)*150,
             wdth=fa.e(ease, 1),
-            opsz=fa.ie(ease, 1),
-            rotate=-15+30*fa.e(ease, 1),
-            )))
+            opsz=fa.e(ease, 1),
+            rotate=-15+30*fa.e(ease, 1))))
         .align(f.a.r, h=200)
         .f(0))
 

@@ -5,7 +5,7 @@ co = Font("assets/ColdtypeObviously-VF.ttf")
 c1 = hsl(0.65, 0.7)
 c2 = hsl(0.53, 0.6)
 
-@iconset(rect=(1024, 1024), sizes=(128, 1024))
+@iconset(rect=(1024, 1024), sizes=(1024,))
 def appicon(r, size):
     grade = Gradient.Horizontal(r, c1, c2)
     outline = 15

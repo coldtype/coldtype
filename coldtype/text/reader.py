@@ -232,7 +232,7 @@ class Font():
         try:
             return Font.Cacheable(found[index])
         except:
-            raise FontNotFoundException()
+            raise FontNotFoundException(regex)
     
     def RegisterDir(dir):
         global ALL_FONT_DIRS

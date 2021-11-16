@@ -387,6 +387,10 @@ class Easeable():
         if not isinstance(t, Timeable):
             self._ts = True
     
+    @property
+    def autowrap(self):
+        return False
+    
     def __repr__(self) -> str:
         return f"<Easeable@{self.i}:{self.t}/>"
     
@@ -408,9 +412,12 @@ class Easeable():
         cyclic=True,
         to1=True,
         choose=max,
-        wrap=False,
+        wrap=None,
         find=False
         ):
+        if wrap is None and self.autowrap:
+            wrap = True
+
         if self._ts:
             es = [Easeable(t, self.i).tv(loops, cyclic, to1).t for t in self.t]
             e = choose(es)
@@ -451,7 +458,7 @@ class Easeable():
         on=None, # TODO?
         cyclic=True,
         to1=False,
-        wrap=False,
+        wrap=None,
         choose=max,
         find=False,
         **kwargs

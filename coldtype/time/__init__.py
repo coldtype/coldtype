@@ -31,6 +31,9 @@ class Frame(Easeable):
     
     @property
     def _ts(self): return None
+
+    @property
+    def autowrap(self): return True
     
     # def e(self, easefn="eeio", loops=0, rng=(0, 1), on=None, cyclic=True, to1=False):
     #     return _e(self.a, self.i)
