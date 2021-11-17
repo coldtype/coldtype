@@ -19,6 +19,18 @@ class AsciiTimeline(Timeline):
             fps = 30
         lines = [l.rstrip() for l in ascii.splitlines() if l.strip()]
         ml = max([len(l) for l in lines]) - 1
+
+        self.states = {}
+        if "states" in kwargs:
+            self.states = kwargs["states"]
+            del kwargs["states"]
+        
+        if not isinstance(self.states, dict):
+            states = {}
+            for idx, v in enumerate(self.states):
+                states[str(idx)] = v
+            self.states = states
+
         super().__init__(multiplier*ml, fps=fps, **kwargs)
 
         self.multiplier = multiplier
@@ -27,6 +39,9 @@ class AsciiTimeline(Timeline):
         unclosed_clip = None
 
         for lidx, l in enumerate(lines):
+            if l.startswith("#"):
+                continue
+            
             clip_start = None
             clip_name = None
             instant_clip = None
@@ -93,7 +108,7 @@ class AsciiTimeline(Timeline):
                 unclosed_clip = (clip_start, clip_name)
         
         self.clips:List[Timeable] = []
-        self.clips = clips
+        self.clips = sorted(clips, key=lambda c: c.start)
         
         for cidx, clip in enumerate(self.clips):
             clip.index = cidx
@@ -137,6 +152,24 @@ class AsciiTimeline(Timeline):
 
         except (IndexError, TypeError):
             return self._keyed(item)
+    
+    def enumerate(self, lines=None, pairs=False):
+        matches = []
+        for c in self.clips:
+            if lines is not None:
+                if c.data["line"] in lines:
+                    matches.append(c)
+            else:
+                matches.append(c)
+        
+        for i, c in enumerate(matches):
+            if pairs:
+                if i < len(matches)-1:
+                    yield c, matches[i+1]
+                else:
+                    yield c, matches[0]
+            else:
+                yield c
     
     def now(self, fi, line=None, first=False, filter_fn=None):
         matches = []

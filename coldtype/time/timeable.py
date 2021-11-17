@@ -86,11 +86,12 @@ class Timeable():
         return fi
     
     def e(self, fi, easefn="eeio", loops=1, rng=(0, 1), cyclic=True, to1=False, out1=False, **kwargs):
-        if "ŋ" in kwargs: rng = kwargs["ŋ"]
+        if "r" in kwargs: rng = kwargs["r"]
 
         if not isinstance(easefn, str):
             loops = easefn
             easefn = "eeio"
+        
         fi = self._normalize_fi(fi)
         t = self.progress(fi, loops=loops, easefn=easefn, cyclic=cyclic, to1=to1, out1=out1)
         e = t.e
@@ -413,7 +414,8 @@ class Easeable():
         to1=True,
         choose=max,
         wrap=None,
-        find=False
+        find=False,
+        clip=True
         ):
         if wrap is None and self.autowrap:
             wrap = True
@@ -432,9 +434,9 @@ class Easeable():
         else:
             i = self.i
 
-        if i < t.start:
+        if clip and i < t.start:
             return EaseableTiming(0)
-        elif i > t.end:
+        elif clip and i > t.end:
             if loops % 2 == 0:
                 return EaseableTiming(1)
             else:
@@ -446,14 +448,14 @@ class Easeable():
             
             v = (i - t.start) / d
             if loops == 0:
-                return EaseableTiming(v)
+                return EaseableTiming(max(0, min(1, v)) if clip else v)
             else:
                 loop_t, loop_index = self.t._loop(v, times=loops, cyclic=cyclic, negative=False)
-                return EaseableTiming(loop_t)
+                return EaseableTiming(max(0, min(1, loop_t)) if clip else v)
 
     def e(self,
         easefn="eeio",
-        loops=0,
+        loops=1,
         rng=(0, 1),
         on=None, # TODO?
         cyclic=True,
@@ -465,7 +467,9 @@ class Easeable():
         ):
         rng = self._normRange(rng, **kwargs)
         
-        if not isinstance(easefn, str) and not isinstance(easefn, DraftingPen) and not type(easefn).__name__ == "Glyph":
+        if (not isinstance(easefn, str)
+            and not isinstance(easefn, DraftingPen)
+            and not type(easefn).__name__ == "Glyph"):
             loops = easefn
             easefn = "eeio"
         
@@ -588,18 +592,18 @@ class Easeable():
         if td > -1 and end > td:
             if i < t.start-a:
                 i = i + td
-            rv = Easeable(Timeable(ds, end), i+td).e(re, rng=(dv, rng[0]), to1=1)
+            rv = Easeable(Timeable(ds, end), i+td).e(re, 0, rng=(dv, rng[0]), to1=1)
 
         if i < t.start: # ATTACK
             s = t.start - a
-            return self._maxRange(rng, [rv, Easeable(Timeable(t.start-a, t.start), i).e(ae, rng=rng, to1=1)])
+            return self._maxRange(rng, [rv, Easeable(Timeable(t.start-a, t.start), i).e(ae, 0, rng=rng, to1=1)])
         elif i >= t.start:
             if i == t.start:
                 return rng[1]
             if i >= ds: # RELEASE
-                return Easeable(Timeable(ds, end), i).e(re, rng=(dv, rng[0]), to1=1)
+                return Easeable(Timeable(ds, end), i).e(re, 0, rng=(dv, rng[0]), to1=1)
             else:
                 if i >= t.start + d: # SUSTAIN
                     return dv
                 else: # DECAY
-                    return Easeable(Timeable(t.start, ds), i).e(de, rng=(rng[1], dv), to1=1)
+                    return Easeable(Timeable(t.start, ds), i).e(de, 0, rng=(rng[1], dv), to1=1)
