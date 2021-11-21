@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from coldtype.interpolation import lerp
+from coldtype.interpolation import lerp, interp_dict
 from coldtype.pens.draftingpen import DraftingPen
 from coldtype.time.easing import ease, ez, applyRange
 from copy import copy
@@ -480,6 +480,17 @@ class Easeable():
             return ev, tv.i
         else:
             return ev
+    
+    def interpDict(self, dicts, easefn, loops=0):
+        v = self.tv(loops=loops).t
+        vr = v*(len(dicts)-1)
+        vf = math.floor(vr)
+        v = vr-vf
+        try:
+            a, b = dicts[vf], dicts[vf+1]
+            return interp_dict(ez(v, easefn), a, b)
+        except IndexError:
+            return dicts[vf]
     
     def io(self,
         length,
