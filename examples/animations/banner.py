@@ -1,9 +1,10 @@
 from coldtype import *
 from coldtype.time.nle.ascii import AsciiTimeline
+from coldtype.fx.skia import phototype
 
 at = AsciiTimeline(3, 30, """
                                        <
-0     0 1       2    3    3 4
+0     0  1       2    3    3   4
 """, {
     "0": dict(wdth=0, rotate=0, tu=300),
     "1": dict(wdth=1, rotate=15, tu=-150),
@@ -15,10 +16,10 @@ at = AsciiTimeline(3, 30, """
 @animation(timeline=at, bg=1, rect=(1500, 300))
 def render(f):
     return (StSt("COLDTYPE",
-        Font.ColdtypeObviously(),
-        250, fill=0,
-        **at.kf(f.i, easefn="ceio"),
-        r=1, ro=1)
-        .align(f.a.r)
-        .f(0)
-        .understroke(s=1, sw=15))
+        Font.ColdtypeObviously(), 250
+        , **at.kf(f.i, easefn="eeio")
+        , r=1, ro=1)
+        .align(f.a.r, th=0)
+        .f(1)
+        .understroke(0, 20)
+        .ch(phototype(f.a.r, 2, 200, 30, 0)))
