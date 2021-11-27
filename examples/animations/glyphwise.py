@@ -23,3 +23,5 @@ def glyphwise(f):
         .f(1)
         .understroke(sw=5)
         .ch(phototype(f.a.r, 3, 190, cutw=15)))
+
+release = glyphwise.export("h264", loops=4)

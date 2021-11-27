@@ -3,7 +3,7 @@ from functools import partial
 
 def pair(tx, f, x):
     fa = f.adj(-x.i*3)
-    ro = fa.e("eeio", rng=(0, -360))
+    ro = fa.e("eeio", 0, rng=(0, -360))
     p = (P((f.a.r
             .take(350, "mdx")
             .take(30, "mny")))

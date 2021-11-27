@@ -1,9 +1,9 @@
 from coldtype import *
+from coldtype.time.nle.ascii import AsciiTimeline
 
-Style.RegisterShorthandPrefix("≈", "~/Type/fonts/fonts")
-swear = Font.Cacheable("≈/SwearCilatiVariable.ttf")
-fatface = Font.Cacheable("≈/OhnoFatfaceVariable.ttf")
-cheee = Font.Cacheable("≈/CheeeVariable.ttf")
+swear = Font.Find("SwearCilatiVariable")
+fatface = Font.Find("OhnoFatfaceVariable")
+cheee = Font.Find("CheeeVariable")
 
 @animation((1080, 1080/2), timeline=60, solo=0)
 def cilati_wave(f:Frame):
@@ -25,17 +25,20 @@ def fatface_wave(f):
         .align(f.a.r, h=200)
         .f(0))
 
-loop = Loop(120, 8, [
-    dict(grvt=0, yest=1, rotate=0),
-    dict(grvt=1, yest=0, rotate=0),
-    dict(grvt=1, yest=1, rotate=0),
-    dict(grvt=0, yest=0, rotate=180)])
+at = AsciiTimeline(2, 30, """
+A   A   B   B   C   C   D    D  <
+""", {
+    "A": dict(grvt=0, yest=1, rotate=0),
+    "B": dict(grvt=1, yest=0, rotate=0),
+    "C": dict(grvt=1, yest=1, rotate=0),
+    "D": dict(grvt=0, yest=0, rotate=180),
+})
 
-@animation((1080, 520), timeline=loop, solo=0, bg=0)
+@animation((1080, 520), timeline=at, solo=1, bg=0)
 def cheee_wild(f):
-    return (Glyphwise("CHEEE", lambda g:
-        (Style(cheee, 270,
-            **f.a.t.currentState((f.i-g.i*30), "eeio"))))
+    return (Glyphwise("CHEEE", lambda g: [
+        Style(cheee, 270, tu=50),
+        at.kf(f.i+g.i*30, easefn="eeio")])
         .f(1)
-        .align(f.a.r)
-        .translate(0, 10))
+        .align(f.a.r, th=0)
+        .rp().understroke(0, 8))

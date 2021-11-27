@@ -6,7 +6,7 @@ from coldtype.geometry.rect import Rect
 from coldtype.helpers import glyph_to_uni
 from coldtype.time.timeline import Timeline
 from coldtype.renderable import renderable, animation
-from coldtype.text.reader import Style, StyledString, Font
+from coldtype.text.composer import Style, Font, StSt
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.color import hsl
@@ -46,7 +46,8 @@ class generativefont(animation):
         ascender=750,
         descender=-250,
         units_per_em=1000,
-        preview_size=(1000, None)):
+        preview_size=(1000, None),
+        filter=None):
 
         pw, ph = preview_size
         self.preview_frame = Rect(pw, ph if ph else (-descender*2) + cap_height)
@@ -65,6 +66,7 @@ class generativefont(animation):
         ufo.info.unitsPerEm = units_per_em
         
         self.ufo = ufo
+        self.filter = filter
 
         super().__init__(
             self.preview_frame, timeline=self.timeline(lookup),
@@ -124,6 +126,9 @@ class generativefont(animation):
         glyph_pen = (glyph_fn
             .func(glyph_fn.frame)
             .fssw(-1, 0, 2))
+        
+        if self.filter:
+            glyph_pen = self.filter(glyph_pen)
 
         # shift over by the left-side-bearing
         glyph_pen.translate(glyph_fn.lsb, 0)
@@ -138,14 +143,12 @@ class generativefont(animation):
             glyph_pen.add_data("gfn", glyph_fn)
         ])
     
-    def spacecenter(self, r, text):
+    def spacecenter(self, r, text, fontSize=150):
         """
         This function loads the ufo that’s been created by the code above and displays it "as a font" (i.e. it compiles the ufo to a font and then uses the actual font to do standard font-display logic)
         """
         ufo = Font(self.ufo.path)
-        return (StyledString("ABC CBA",
-            Style(ufo, 150))
-            .pens()
+        return (StSt(text, ufo, fontSize)
             .align(r)
             .f(0))
 

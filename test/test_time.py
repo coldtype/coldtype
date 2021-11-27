@@ -14,8 +14,8 @@ at = AsciiTimeline(1, """
 
 at2 = AsciiTimeline(1, """
 1
-        two
-                threeee
+        2
+                3
                         [four  ]
 """)
 
@@ -29,10 +29,11 @@ class TestTime(unittest.TestCase):
         self.assertEqual(len(at.clips), 4)
 
         self.assertEqual(at["a", 0].e(), 0)
-        self.assertAlmostEqual(at["a", 4].e(), 0.0347, 3)
+        self.assertAlmostEqual(at["a", 4].e(loops=0), 0.0347, 3)
+        self.assertAlmostEqual(at["a", 4].e(loops=1), 0.8990, 3)
 
-        self.assertNotEqual(at["b", 20].e(to1=0), 1)
-        self.assertEqual(at["b", 20].e(to1=1), 1)
+        self.assertNotEqual(at["b", 20].e(loops=0, to1=0), 1)
+        self.assertEqual(at["b", 20].e(loops=0, to1=1), 1)
 
         self.assertEqual(at[1], [])
         self.assertEqual(at[1, 30].t, [])
@@ -44,11 +45,11 @@ class TestTime(unittest.TestCase):
         self.assertEqual(at2.duration, 31)
         self.assertIsInstance(at2["1"][0], Timeable)
         self.assertEqual(at2[1][0].duration, 0)
-        self.assertEqual(at2["two", 8].adsr(), 1)
-        self.assertEqual(at2["two", 0].adsr(), 0)
-        self.assertAlmostEqual(at2["two", 8+18].adsr([5, 20]), 0.001, 3)
-        self.assertAlmostEqual(at2["two", 8+18].adsr([5, 20], ["eei", "qeio"]), 0.0055, 3)
-        self.assertEqual(at2["two", 8+3].adsr([5, 5, 20], ["eei", "qeio"], rng=(10, -10)), -10)
+        self.assertEqual(at2["2", 8].adsr(), 1)
+        self.assertEqual(at2["2", 0].adsr(), 0)
+        self.assertAlmostEqual(at2["2", 8+18].adsr([5, 20]), 0.001, 3)
+        self.assertAlmostEqual(at2["2", 8+18].adsr([5, 20], ["eei", "qeio"]), 0.0055, 3)
+        self.assertEqual(at2["2", 8+3].adsr([5, 5, 20], ["eei", "qeio"], rng=(10, -10)), -10)
     
     def test_animation(self):
         src = "test/visuals/test_animation.py"

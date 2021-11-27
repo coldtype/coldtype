@@ -335,8 +335,9 @@ class Style():
             if isinstance(font, Path):
                 font = str(font)
             if isinstance(font, str):
-                self.font:Font = Font(font)
-                self.font.load() #font._syncLoad(None)
+                _font = Font.Find(font)
+                self.font:Font = _font
+                self.font.load()
             else:
                 self.font:Font = font
         else:

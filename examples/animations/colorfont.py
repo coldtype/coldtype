@@ -14,13 +14,13 @@ def spin(fa, g):
     # address color font layers individually
     g[2].translate(0, fa.e(1, rng=(0, y)))
     g[0].translate(0, fa.e(1, rng=(0, -y)))
-    g[1].rotate(fa.e(rng=(0, -360*2)))
+    g[1].rotate(fa.e(0, rng=(0, -360*2)))
 
 @animation((1080, 1080), timeline=120)
 def pappardelle(f):
     wave = (StSt("SPIN", ppvf, 500,
         palette=custom_palette,
-        SPIN=f.e("l"))
+        SPIN=f.e("l", 0))
         .align(f.a.r))
 
     r_wave = wave.ambit(th=1, tv=1)
@@ -30,5 +30,5 @@ def pappardelle(f):
     
     return [
         DP(r_wave.inset(-20)).f(None).s(custom_palette[2]).sw(3),
-        wave.rotate(f.e(to1=1)*360, point=r_wave.pc)
+        wave.rotate(f.e(0, to1=1)*360, point=r_wave.pc)
     ]

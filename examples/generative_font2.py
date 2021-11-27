@@ -1,7 +1,4 @@
-from subprocess import run
-
 from coldtype import *
-from coldtype.pens.dattext import DATText
 from coldtype.renderable.font import generativefont, glyphfn
 
 # individual functions to draw glyphs

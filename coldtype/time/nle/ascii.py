@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from coldtype.interpolation import interp_dict
 from coldtype.time.timeable import Timeable, Easeable
@@ -10,7 +10,7 @@ class AsciiTimeline(Timeline):
     __name__ = "AsciiTimeline"
 
     def __init__(self,
-        multiplier:int,
+        multiplier:Union[int,float],
         fps:float,
         ascii:str=None,
         keyframes:dict=None,
@@ -30,7 +30,7 @@ class AsciiTimeline(Timeline):
                 kfs[str(idx)] = v
             self.keyframes = kfs
 
-        super().__init__(multiplier*ml, fps=fps, **kwargs)
+        super().__init__(round(multiplier*ml), fps=fps, **kwargs)
 
         self.multiplier = multiplier
         
@@ -54,22 +54,22 @@ class AsciiTimeline(Timeline):
                     if clip_start is not None and clip_name is not None:
                         clips.append(Timeable(
                             clip_start,
-                            (idx+1)*multiplier,
+                            round((idx+1)*multiplier),
                             name=clip_name,
                             data=dict(line=lidx),
                             timeline=self))
                     else:
-                        looped_clip_end = idx*multiplier
+                        looped_clip_end = round(idx*multiplier)
                     clip_start = None
                     clip_name = None
                 elif c == "[":
-                    clip_start = idx*multiplier
+                    clip_start = round(idx*multiplier)
                     clip_name = ""
                 elif c not in [" ", "-", "|", "<", ">"]:
                     if clip_name is None:
                         clips.append(Timeable(
-                            idx*multiplier,
-                            idx*multiplier,
+                            round(idx*multiplier),
+                            round(idx*multiplier),
                             name=c,
                             data=dict(line=lidx),
                             timeline=self))
@@ -114,6 +114,8 @@ class AsciiTimeline(Timeline):
         return all
     
     def kf(self, fi, easefn="eeio", lines=None):
+        fi = fi % self.duration
+
         for c1, c2 in self.enumerate(lines=lines, pairs=True):
             start, end = c1.start, c2.start
             if c2.start < c1.end:
