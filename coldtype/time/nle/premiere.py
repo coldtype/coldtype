@@ -44,7 +44,7 @@ class PremiereTimeline(Sequence):
 
         tof = lambda s: int(round(float(s)*fps))
         
-        cti = tof(meta.get("cti"))
+        cti = tof(meta.get("cti", 0))
         self.cti = cti
 
         _storyboard = []

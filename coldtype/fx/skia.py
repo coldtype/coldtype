@@ -206,7 +206,7 @@ def precompose(rect,
             .rect(placement or rect)
             .img(img, (placement or rect), False, opacity)
             .f(None))
-    return _precompose
+    return Chainable(_precompose)
 
 
 def rasterized(rect, scale=1):

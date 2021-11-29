@@ -379,22 +379,6 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
 
         bpy.context.view_layer.objects.active = None
         return self
-    
-    def apply_modifier(self, name):
-        bpy.context.view_layer.objects.active = None
-        bpy.context.view_layer.objects.active = self.obj
-        
-        self.obj.select_set(True)
-        #bpy.ops.object.modifier_set_active(modifier=name)
-        bpy.ops.object.modifier_apply(modifier=name)
-        #print(self.obj)
-        self.obj.to_mesh(preserve_all_data_layers=True)
-        self.obj.select_set(False)
-
-        bpy.context.view_layer.objects.active = None
-        return self
-    
-    applyModifier = apply_modifier
 
     def with_origin(self, xyz, fn):
         if xyz == "C":

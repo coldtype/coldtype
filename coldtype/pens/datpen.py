@@ -11,6 +11,7 @@ from coldtype.geometry.edge import txt_to_edge
 from collections import namedtuple
 from fontTools.misc.transform import Transform
 from random import randint, Random
+from coldtype.img.blendmode import BlendMode
 
 from coldtype.sh import sh
 from coldtype.pens.draftingpens import DraftingPen, DraftingPens
@@ -363,7 +364,12 @@ class DATPen(DraftingPen):
         self.container = rect
         return self
     
-    def blendmode(self, blendmode=None):
+    def blendmode(self, blendmode=None, show=False):
+        if isinstance(blendmode, int):
+            blendmode = BlendMode.Cycle(blendmode, show=show)
+        elif isinstance(blendmode, str):
+            blendmode = BlendMode[blendmode]
+        
         if blendmode:
             return self.attr(blendmode=blendmode)
         else:

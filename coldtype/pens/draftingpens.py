@@ -608,6 +608,7 @@ class DraftingPens(DraftingPen):
                     return self
         except TypeError:
             p = self[idx]
+        
         if enum_idx is None:
             res = fn(p)
         else:

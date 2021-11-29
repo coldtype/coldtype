@@ -321,6 +321,15 @@ class BpyObj(_Chainable):
         return self
     
     applyTransform = apply_transform
+
+    def apply_modifier(self, name):
+        with self.obj_selected():        
+            #bpy.ops.object.modifier_set_active(modifier=name)
+            bpy.ops.object.modifier_apply(modifier=name)
+            self.obj.to_mesh(preserve_all_data_layers=True)
+        return self
+    
+    applyModifier = apply_modifier
     
     def origin_to_geometry(self):
         with self.obj_selected():

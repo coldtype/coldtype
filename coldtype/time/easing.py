@@ -23,7 +23,26 @@ eases = dict(
     eleo=ef.ElasticEaseOut,
     elei=ef.ElasticEaseIn,
     elieo=ef.ElasticEaseInOut,
-    eleio=ef.ElasticEaseInOut)
+    eleio=ef.ElasticEaseInOut,
+
+    ci=ef.CubicEaseIn,
+    co=ef.CubicEaseOut,
+    cio=ef.CubicEaseInOut,
+    qi=ef.QuadEaseIn,
+    qo=ef.QuadEaseOut,
+    qio=ef.QuadEaseInOut,
+    ei=ef.ExponentialEaseIn,
+    eo=ef.ExponentialEaseOut,
+    eio=ef.ExponentialEaseInOut,
+    si=ef.SineEaseIn,
+    so=ef.SineEaseOut,
+    sio=ef.SineEaseInOut,
+    bi=ef.BounceEaseIn,
+    bo=ef.BounceEaseOut,
+    bio=ef.BounceEaseInOut,
+    elo=ef.ElasticEaseOut,
+    eli=ef.ElasticEaseIn,
+    elio=ef.ElasticEaseInOut)
 
 
 def curve_pos_and_speed(curve, x):
@@ -120,15 +139,17 @@ def _loop(t, times=1, cyclic=True, negative=False):
             lt = 1 - lt
     return lt, ltf
 
+def applyRange(e, rng):
+    ra, rb = rng
+    if ra > rb:
+        e = 1 - e
+        rb, ra = ra, rb
+    return ra + e*(rb - ra)
+
 def ez(t, easefn="eeio", loops=0, cyclic=True, rng=(0, 1)):
     t = max(0, min(1, t))
     if loops > 0:
         t, _ = _loop(t, times=loops, cyclic=cyclic)
 
     e, _ = ease(easefn, t)
-    
-    ra, rb = rng
-    if ra > rb:
-        e = 1 - e
-        rb, ra = ra, rb
-    return ra + e*(rb - ra)
+    return applyRange(e, rng)
