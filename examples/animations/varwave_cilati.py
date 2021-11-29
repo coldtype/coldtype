@@ -1,6 +1,6 @@
 from coldtype import *
 
-@animation((1080, 1080/2), timeline=60)
+@animation((1080, 1080/2), timeline=50)
 def cilati_wave(f:Frame):
     return (Glyphwise("Cilati", lambda g:
         Style("SwearCilatiVariable", 340,
