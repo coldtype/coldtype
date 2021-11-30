@@ -547,11 +547,17 @@ class Programs():
         return SourceReader.LoadDemo("demo")[0]
     
     @staticmethod
-    def Glyphs(font=None, fontSize=72, showChars=False, rect=(1080, 1080)):
+    def Glyphs(
+        font=None,
+        fontSize=72,
+        showChars=False,
+        rect=(1080, 1080)
+        ):
         return SourceReader.LoadDemo("glyphs", **locals())[0]
 
     @staticmethod
-    def Midi(file=None,
+    def Midi(
+        file=None,
         duration=None,
         bpm=None,
         lookup=None,
@@ -564,8 +570,17 @@ class Programs():
         return SourceReader.LoadDemo("midi", **locals())[0]
     
     @staticmethod
-    def VF(font=None, text="A", font_size=None, positions=(0, 1),
-        stroke=False, seed=0, shuffle=False, animate=False,
-        rect=(1080, 1080), log=False, preview_only=True,
+    def VF(
+        font=None,
+        text="A",
+        font_size=None,
+        positions=(0, 1),
+        stroke=False,
+        seed=0,
+        shuffle=False,
+        animate=False,
+        rect=(1080, 1080),
+        log=False,
+        preview_only=True,
         ):
         return SourceReader.LoadDemo("vf", **locals())[0]
