@@ -370,8 +370,8 @@ class Easeable():
         t:Timeable,
         i:int
         ):
-        self.t = t
-        self.i = i
+        self.t:Timeable = t
+        self.i:int = i
 
         self._ts = False
         if not isinstance(t, Timeable):
@@ -397,6 +397,12 @@ class Easeable():
         else:
             return min(vs)
     
+    def count(self):
+        if self._ts:
+            return sum([self.i >= t.start for t in self.t])
+        else:
+            return int(self.i >= self.t.start)
+    
     def tv(self,
         loops=0,
         cyclic=True,
@@ -416,6 +422,11 @@ class Easeable():
                 return EaseableTiming(e)
             else:
                 return EaseableTiming(e, es.index(e))
+                # chosen = [(i, 1 if x == e else 0) for i, x in enumerate(es)]
+                # if e > 0:
+                #     return EaseableTiming(e, chosen[-1][0])
+                # else:
+                #     return EaseableTiming(e, chosen[0][0])
 
         t, i = self.t, self.i
         if wrap:
@@ -546,13 +557,18 @@ class Easeable():
         rng=(0, 1),
         dv=None, # decay-value
         rs=False, # read-sustain
+        find=False,
         **kwargs
         ):
         rng = self._normRange(rng, **kwargs)
 
         if self._ts:
             es = [Easeable(t, self.i).adsr(adsr, es, rng, dv, rs) for t in self.t]
-            return self._maxRange(rng, es)
+            mx = self._maxRange(rng, es)
+            if find:
+                return mx, es.index(mx)
+            else:
+                return mx
 
         if len(adsr) == 2:
             d, s = 0, 0
@@ -596,14 +612,19 @@ class Easeable():
 
         if i < t.start: # ATTACK
             s = t.start - a
-            return self._maxRange(rng, [rv, Easeable(Timeable(t.start-a, t.start), i).e(ae, 0, rng=rng, to1=1)])
+            out = self._maxRange(rng, [rv, Easeable(Timeable(t.start-a, t.start), i).e(ae, 0, rng=rng, to1=1)])
         elif i >= t.start:
             if i == t.start:
-                return rng[1]
+                out = rng[1]
             if i >= ds: # RELEASE
-                return Easeable(Timeable(ds, end), i).e(re, 0, rng=(dv, rng[0]), to1=1)
+                out = Easeable(Timeable(ds, end), i).e(re, 0, rng=(dv, rng[0]), to1=1)
             else:
                 if i >= t.start + d: # SUSTAIN
-                    return dv
+                    out = dv
                 else: # DECAY
-                    return Easeable(Timeable(t.start, ds), i).e(de, 0, rng=(rng[1], dv), to1=1)
+                    out = Easeable(Timeable(t.start, ds), i).e(de, 0, rng=(rng[1], dv), to1=1)
+        
+        if find:
+            return out, 0
+        else:
+            return out

@@ -248,7 +248,15 @@ class MidiReader(Timeline):
 
 
 class MidiReader2(Timeline):
-    def __init__(self, path, duration=None, fps=30, bpm=None, track=0, rounded=True, lookup={}):
+    def __init__(self,
+        path,
+        duration=None,
+        fps=30,
+        bpm=None,
+        track=0,
+        rounded=True,
+        lookup={}
+        ):
         def s2f(value):
             if rounded:
                 return math.floor(value * fps)
@@ -329,10 +337,14 @@ class MidiReader2(Timeline):
         for k, v in lookup.items():
             self.lookup[k] = v
     
-    def lki(self, k, i):
-        if k in self.lookup:
-            notes = self.lookup[k]
-            e = self.ki(notes, i)
+    # def _keyed(self, k):
+    #     if k in self.lookup:
+    #         return super()._keyed(self.lookup[k])
+    #     else:
+    #         return super()._keyed(k)
+    
+    def ki(self, key, fi):
+        if key in self.lookup:
+            return super().ki(self.lookup[key], fi)
         else:
-            e = Timeable(-1, -1).at(i)
-        return e
+            return super().ki(key, fi)

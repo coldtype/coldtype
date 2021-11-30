@@ -67,6 +67,9 @@ class Timeline(Timeable):
             for c in self.timeables:
                 if c.name == k:
                     all.append(c)
+        
+        if len(all) == 0:
+            return Timeable(-1, -1)
         return all
 
     def k(self, *keys):
@@ -82,7 +85,7 @@ class Timeline(Timeable):
         if not isinstance(key, str):
             try:
                 es = [self.ki(k, fi).t for k in key]
-                return Easeable(es, fi)
+                return Easeable(self._flatten(es), fi)
             except TypeError:
                 pass
         
