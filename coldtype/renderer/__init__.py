@@ -174,6 +174,7 @@ class Renderer():
         self.debounced_actions = {}
         self.previews_waiting = []
         self.last_animation = None
+        self.last_animations = []
         self.hotkeys = None
         self.hotkey_waiting = None
 
@@ -287,6 +288,8 @@ class Renderer():
     def reload(self, trigger):
         if self.winmans.glsk:
             skfx.SKIA_CONTEXT = self.winmans.glsk.context
+        
+        self.last_animations = []
 
         if True:
             self.state.reset()
@@ -313,6 +316,7 @@ class Renderer():
                                     self.state.add_frame_offset(r.name, s)
                         
                         self.last_animation = r
+                        self.last_animations.append(r)
                     
                 if self.last_animation:
                     self.winmans.did_reload_animation(self.last_animation)
@@ -886,9 +890,8 @@ class Renderer():
             self.state.adjust_all_frame_offsets(-1, absolute=True)
         
         elif shortcut == KeyboardShortcut.JumpPrev:
-            self.state.adjust_keyed_frame_offsets(
-                self.last_animation.name,
-                lambda i, o: self.last_animation.jump(o, -1))
+            for a in self.last_animations:
+                self.state.adjust_keyed_frame_offsets(a.name, lambda i, o: a.jump(o, -1))
         elif shortcut == KeyboardShortcut.JumpNext:
             self.state.adjust_keyed_frame_offsets(
                 self.last_animation.name,

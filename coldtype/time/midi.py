@@ -337,13 +337,7 @@ class MidiReader2(Timeline):
         for k, v in lookup.items():
             self.lookup[k] = v
     
-    # def _keyed(self, k):
-    #     if k in self.lookup:
-    #         return super()._keyed(self.lookup[k])
-    #     else:
-    #         return super()._keyed(k)
-    
-    def ki(self, key, fi):
+    def ki(self, key, fi=None):
         if key in self.lookup:
             return super().ki(self.lookup[key], fi)
         else:

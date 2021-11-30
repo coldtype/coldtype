@@ -248,6 +248,8 @@ class Font():
     @staticmethod
     def ColdtypeObviously():
         return Font.Cacheable(Path(__file__).parent.parent / "demo/ColdtypeObviously-VF.ttf")
+    
+    ColdObvi = ColdtypeObviously
 
     @staticmethod
     def MutatorSans():

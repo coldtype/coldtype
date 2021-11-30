@@ -552,8 +552,14 @@ class Programs():
 
     @staticmethod
     def Midi(file=None,
-        duration=None, bpm=None, text=True, fps=30,
-        rect=(1080, 540), log=False, preview_only=True,
+        duration=None,
+        bpm=None,
+        lookup=None,
+        text=True,
+        fps=30,
+        rect=(1080, 540),
+        log=False,
+        preview_only=True,
         ):
         return SourceReader.LoadDemo("midi", **locals())[0]
     

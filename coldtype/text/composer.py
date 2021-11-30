@@ -208,6 +208,8 @@ def StSt(text,
     
     if isinstance(font, Style):
         style = font
+    elif isinstance(font, dict):
+        style = Style(**{**font, **kwargs})
     else:
         if isinstance(font, str):
             font = Font.Find(font)

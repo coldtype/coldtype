@@ -25,6 +25,7 @@ class Timeline(Timeable):
         self.end = duration
 
         self.timeables = self._flatten(timeables)
+        self._holding = -1
 
         self._jumps = [self.start, *(jumps or []), self.end-1]
         
@@ -56,6 +57,10 @@ class Timeline(Timeable):
     
     def __getitem__(self, index):
         return self.timeables[index]
+    
+    def hold(self, i):
+        self._holding = i
+        return self
 
     def at(self, i) -> Easeable:
         return Easeable(self.timeables, i)
@@ -79,8 +84,14 @@ class Timeline(Timeable):
         else:
             return self._flatten(self._keyed(keys[0]))
     
-    def ki(self, key, fi):
+    def ki(self, key, fi=None):
         """(k)eyed-at-(i)ndex"""
+
+        if fi is None:
+            if self._holding >= 0:
+                fi = self._holding
+            else:
+                raise Exception("Must .hold or provide fi=")
 
         if not isinstance(key, str):
             try:
