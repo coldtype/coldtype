@@ -1,7 +1,7 @@
 import mido, math
 from pathlib import Path
 
-from coldtype.time.timeline import Timeline
+from coldtype.time.timeline import Timeline, Timeable
 from coldtype.time.easing import ease, ez
 
 
@@ -245,3 +245,94 @@ class MidiReader(Timeline):
                     return t
         else:
             return self.tracks[item]
+
+
+class MidiReader2(Timeline):
+    def __init__(self, path, duration=None, fps=30, bpm=None, track=0, rounded=True, lookup={}):
+        def s2f(value):
+            if rounded:
+                return math.floor(value * fps)
+            else:
+                return value * fps
+
+        midi_path = path if isinstance(path, Path) else Path(path).expanduser()
+        self.midi_path = midi_path
+        mid = mido.MidiFile(str(midi_path))
+        
+        events = []
+        open_notes = []
+
+        self.mid = mid
+        self.time_signature = (4, 4)
+
+        if fps is None:
+            fps = 30
+
+        if bpm is None:
+            bpm = float(mido.tempo2bpm(self.find_tempo()))
+
+        for tidx, track in enumerate(mid.tracks):
+            cumulative_time = 0
+            events = []
+            open_notes = {}
+            for idx, msg in enumerate(track):
+                if hasattr(msg, "note"):
+                    delta_s = mido.tick2second(msg.time, mid.ticks_per_beat, mido.bpm2tempo(bpm))
+                    cumulative_time += delta_s
+                    o = open_notes.get(msg.note)
+                    if o != None:
+                        open_notes[msg.note] = None
+                        timeable = Timeable(
+                            s2f(o),
+                            s2f(cumulative_time),
+                            idx,
+                            name=str(msg.note),
+                            data=msg,
+                            timeline=self,
+                            track=tidx)
+                        events.append(timeable)
+                    
+                    if msg.type == "note_on" and msg.velocity > 0:
+                        open_notes[msg.note] = cumulative_time
+
+        self.midi_file = mid
+        self.bpm = bpm
+        self.fps = fps
+        
+        end = sorted(events, key=lambda e: e.end)[-1].end
+        self._duration = int(duration or end)
+            
+        self.min = min([int(n.name) for n in events])
+        self.max = max([int(n.name) for n in events])
+        self.notes = set(int(n.name) for n in events)
+        self.spread = self.max - self.min
+
+        self.lookup = {}
+        self.register(lookup)
+
+        super().__init__(self._duration, self.fps, timeables=events)
+
+    @property
+    def duration(self):
+        return self._duration
+    
+    def find_tempo(self):
+        for track in self.mid.tracks:
+            for msg in track:
+                if msg.type == "set_tempo":
+                    return msg.tempo
+                elif msg.type == "time_signature":
+                    self.time_signature = (msg.numerator, msg.denominator)
+        return 500000 # 120 equivalent
+    
+    def register(self, lookup):
+        for k, v in lookup.items():
+            self.lookup[k] = v
+    
+    def lki(self, k, i):
+        if k in self.lookup:
+            notes = self.lookup[k]
+            e = self.ki(notes, i)
+        else:
+            e = Timeable(-1, -1).at(i)
+        return e

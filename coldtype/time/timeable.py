@@ -40,7 +40,15 @@ class Timeable():
 
     Implements additional methods to make it easier to work with time-based concepts
     """
-    def __init__(self, start, end, index=0, name=None, data={}, timeline=None):
+    def __init__(self,
+        start,
+        end,
+        index=0,
+        name=None,
+        data={},
+        timeline=None,
+        track=None,
+        ):
         self.start = start
         self.end = end
         self.index = index
@@ -50,6 +58,7 @@ class Timeable():
         self.feedback = 0
         self.data = data
         self.timeline = timeline
+        self.track = track
     
     @property
     def duration(self):
@@ -258,12 +267,14 @@ class TimeableView(Timeable):
 
 
 class TimeableSet():
-    def __init__(self, timeables, name=None, start=-1, end=-1, data={}):
-        self.timeables = timeables
+    def __init__(self, timeables, name=None, start=-1, end=-1, data={}, flatten=False):
+        self.timeables = sorted(timeables, key=lambda t: t.start)
         self.name = name
         self._start = start
         self._end = end
         self.data = data
+        if flatten:
+            self.timeables = self.flat_timeables()
     
     def flat_timeables(self):
         ts = []
@@ -313,58 +324,36 @@ class TimeableSet():
             if t.start <= frame and frame < t.end:
                 return t
     
-    def fv(self, frame, filter_fn=None, reverb=[0,5], duration=-1, accumulate=0):
-        pre, post = reverb
-        count = 0
-        timeables_on = []
+    def at(self, i) -> "Easeable":
+        return Easeable(self.timeables, i)
+    
+    def _keyed(self, k):
+        k = str(k)
+        all = []
+        if isinstance(k, str):
+            for c in self.timeables:
+                if c.name == k:
+                    all.append(c)
+        return all
+    
+    def k(self, *keys):
+        if len(keys) > 1:
+            es = [self.k(k) for k in keys]
+            return TimeableSet(es, flatten=1)
+        else:
+            return TimeableSet(self._keyed(keys[0]), flatten=1)
+    
+    def ki(self, key, fi):
+        """(k)eyed-at-(i)ndex"""
 
-        ts_duration = self.end - self.start
-
-        for idx, t in enumerate(self.flat_timeables()):
-            if filter_fn and not filter_fn(t):
-                continue
-            t_start = t.start
-            t_end = t.end
-            if duration > -1:
-                t_end = t_start + duration
-            pre_start = t_start - pre
-            post_end = t_end + post
-
-            t_index = count
-            if frame >= pre_start: # correct?
-                count += 1
-            
-            value = 0
-            pos = 0
-            fi = frame
-
-            if frame >= t_start and frame <= t_end: # truly on
-                pos = 0
-                value = 1
-            else:
-                if post_end > ts_duration and frame < pre_start:
-                    fi = frame + ts_duration
-                elif pre_start < 0 and frame > post_end:
-                    fi = frame - ts_duration
-                if fi < t_start and fi >= pre_start:
-                    pos = 1
-                    value = (fi - pre_start) / pre
-                elif fi > t_end and fi < post_end:
-                    pos = -1
-                    value = (post_end - fi) / post
-            
-            if value > 0:
-                timeables_on.append(TimeableView(t, value, -1, count, idx, pos, pre_start, post_end))
-            else:
+        if not isinstance(key, str):
+            try:
+                es = [self.ki(k, fi).t for k in key]
+                return Easeable(es, fi)
+            except TypeError:
                 pass
         
-        if accumulate:
-            return timeables_on
-        else:
-            if len(timeables_on) == 0:
-                return TimeableView(None, 0, 0, count, -1, 0, 0, 0)
-            else:
-                return max(timeables_on, key=lambda tv: tv.value)
+        return Easeable(self._keyed(key), fi)
 
     def __repr__(self):
         return "<TimeableSet ({:s}){:04d}>".format(self.name if self.name else "?", len(self.timeables))
