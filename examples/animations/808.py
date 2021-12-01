@@ -21,14 +21,7 @@ midi = Programs.Midi(
     __sibling__("media/808.mid")
     , duration=120
     , bpm=120
-    , fps=30
-    , lookup={
-        "KD": 36,
-        "RS": 39,
-        "SD": 40,
-        "HT": 43,
-        "CW": 47,
-        "TM": 50}).hide()
+    , fps=30).hide()
 
 ar = {
     "KD": [5, 50],
@@ -49,9 +42,9 @@ logos = DefconFont("assets/logos.ufo")
 
 @animation(timeline=midi.t, audio=wav)
 def drummachine(f):
-    drums = f.a.t.hold(f.i)
-    kick = drums.ki("KD")
-    cowbell = drums.ki("CW")
+    drums = f.t
+    kick = drums.ki(36)
+    cowbell = drums.ki(47)
 
     # Now we can build the initial `Style` specification, using the MIDI values for kick and cowbell to control the tracking (`tu`), and the `wdth` of the variable font, via the `.ease()` function available on the object returned from an `.fv` call.
 
@@ -59,10 +52,8 @@ def drummachine(f):
 
     style = Style(obvs,
         390,
-        #tu=-150+550*cowbell.adsr(ar["CW"]),
-        tu=cowbell.adsr(ar["CW"], rng=(-150, 400)),
-        #wdth=1-cowbell.ease()*0.75,
-        wdth=cowbell.adsr(ar["CW"], rng=(1, 0.75)),
+        tu=cowbell.adsr(ar["CW"], r=(-150, 400)),
+        wdth=cowbell.adsr(ar["CW"], r=(1, 0.75)),
         ro=1,
         r=1,
         kp={"T/Y":-25})
@@ -76,7 +67,7 @@ def drummachine(f):
     #     .align(f.a.r))
     
     pens = (StSt("COLD\nTYPE", style,
-        leading=kick.adsr(ar["KD"], rng=(10, 50)))
+        leading=kick.adsr(ar["KD"], r=(10, 50)))
         .align(f.a.r))
 
     # So now we’ve got the lockup, and we move from _building_ the text to _messing_ with it, since we converted from the "text" realm to the "vector" realm with that `.pens()` call above. This is analogous to hitting "Convert to Outlines" in Illustrator (except in this case, if we want to change the text later, it’s easy).
@@ -91,7 +82,7 @@ def drummachine(f):
 
     # - `î` (aka index) allows you to modify a nested pen value in-place as a set of contours with a callback function (aka a `lambda`). Basically, the `î` function first "explodes" the glyph into all its component contours (in the P’s case, that’s the outer shape & the counter shape), and then gives you an opportunity to modify just the specified contour (at the "index") before reassembling the contours into the letter (so the counter is still a counter and not just another filled-in shape). That’s how we’re able to keep the counter of the P frozen in place. If we got rid of the `î` call and instead rotated the P glyph itself (ala `pens[1].ffg("P").rotate(rim.ease()*-270)`), then the counter shape would also rotate.
 
-    snare = drums.ki("SD")
+    snare = drums.ki(40)
     se, si = snare.adsr(ar["SD"], find=1)
 
     if si == 0: # the first snare hit
@@ -105,7 +96,7 @@ def drummachine(f):
 
     # Whew, ok that was a little complicated. Now let’s do something similar with `î` on the P, but this time rotate just the counter shape when the second rimshot hits (we can ignore the first rimshot b/c it hits at the same time as a hi-hat, which we'll visualize in a second).
 
-    rim = drums.ki("RS")
+    rim = drums.ki(39)
     re, ri = rim.adsr(ar["RS"], rng=(0, -270), find=1)
 
     if ri == 1:
@@ -121,7 +112,7 @@ def drummachine(f):
 
     # OK, on to the hi-hats. Here we get the hat signal from the midi, with an even preverb-reverb (that’s the `[10, 10]` bit), because we want to mimic the regular action of a drummer hitting a hi-hat.
 
-    hat = drums.ki("HT")
+    hat = drums.ki(43)
     he, hi = hat.adsr(ar["HT"], find=1)
 
     # When the first hat hits, let’s move the counter in the O to the right.
@@ -152,7 +143,7 @@ def drummachine(f):
 
     # The last visualization is the tom-tom hit. Here we can just nudge up the outer contour of the O in the first line.
 
-    tom = (drums.ki("TM")
+    tom = (drums.ki(50)
         .adsr(ar["TM"], rng=(0, -80)))
 
     (pens[0].ffg("O").î(0, λ.translate(0, tom)))

@@ -13,7 +13,7 @@ def render(f):
     s = f.t.ki(38).adsr([4, 35])
     c = f.t.ki(48).adsr([0, 50])
 
-    hat = f.a.t.ki(42).index()
+    hat = f.t.ki(42).index()
     hues = (0.6, 0.05) if hat < 2 else (0.75, 0.9)
 
     style = dict(
