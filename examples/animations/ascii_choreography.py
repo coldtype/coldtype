@@ -16,13 +16,13 @@ at = AsciiTimeline(3, 30, """
     , timeline=at
     , bg=hsl(0.9, 1, 0.9))
 def choreography(f):
-    letter = at[list("0123"), f.i]
+    letter = at.ki(list("0123"))
     li, lidx = letter.e(find=1)
 
     return (Glyphwise("TYPE", lambda g:
         Style(fnt, 200,
-            wght=at.ki(g.i, f.i).e(),
-            wdth=at.ki(f"{g.i}w", f.i).e("qeio", 1)))
+            wght=at.ki(g.i).e(),
+            wdth=at.ki(f"{g.i}w").e("qeio", 1)))
         .track(at.ki("tu", f.i).e(r=150))
         .align(f.a.r)
         .f(hsl(0.7, 1))

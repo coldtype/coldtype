@@ -6,6 +6,7 @@ nudge = Font.MutatorSans()
 at = AsciiTimeline(1, """
                                                                 <
         [L                                   ]
+                        [Lr             ]
                      [F                                     ]
                [H                 ]             
 """)
@@ -13,9 +14,9 @@ at = AsciiTimeline(1, """
 @animation(timeline=at)
 def officehours(f):
     stx = Style.StretchX(0,
-        L=(730*at["L", f.i].io(10, e:="ceio"), 310),
-        F=(1220*at["F", f.i].io(10, e), 260),
-        H=(1900*at["H", f.i].io(10, e), 250))
+        L=(730*at.ki("L").io(10, "eeio"), 310),
+        F=(1220*at.ki("F").io(10, "eleio"), 260),
+        H=(1900*at.ki("H").io(10, "ceio"), 250))
     
     txt = (StSt("Coldtype\nOffice\nHours".upper()
         , Font.MutatorSans()
@@ -32,8 +33,7 @@ def officehours(f):
 
     # after bg, so it doesn't effect bounds 
     txt.index([0, 2], lambda p: p
-        .rotate(at.ki("L", f.i-10)
-            .e("eeio", 0, rng=(0, -360))
+        .rotate(at.ki("Lr").e("eeio", 0, r=(0, 360))
             , th=1))
 
     return PS([

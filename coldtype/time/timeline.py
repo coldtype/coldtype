@@ -38,6 +38,9 @@ class Timeline(Timeable):
         self.storyboard.sort()
     
     def _flatten(self, timeables):
+        if not timeables:
+            return []
+        
         ts = []
         for t in timeables:
             if isinstance(t, Timeable):

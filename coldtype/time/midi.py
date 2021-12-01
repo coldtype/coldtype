@@ -316,7 +316,8 @@ class MidiReader2(Timeline):
         self.spread = self.max - self.min
 
         self.lookup = {}
-        self.register(lookup)
+        if lookup:
+            self.register(lookup)
 
         super().__init__(self._duration, self.fps, timeables=events)
 

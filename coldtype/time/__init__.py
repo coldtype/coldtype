@@ -27,7 +27,7 @@ class Frame(Easeable):
     # Easeable interface
 
     @property
-    def t(self): return self.a
+    def t(self): return self.a.t
     
     @property
     def _ts(self): return None

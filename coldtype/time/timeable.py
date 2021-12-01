@@ -397,11 +397,11 @@ class Easeable():
         else:
             return min(vs)
     
-    def count(self):
+    def index(self):
         if self._ts:
-            return sum([self.i >= t.start for t in self.t])
+            return sum([self.i >= t.start for t in self.t]) - 1
         else:
-            return int(self.i >= self.t.start)
+            return int(self.i >= self.t.start) - 1
     
     def tv(self,
         loops=0,
@@ -612,7 +612,7 @@ class Easeable():
 
         if i < t.start: # ATTACK
             s = t.start - a
-            out = self._maxRange(rng, [rv, Easeable(Timeable(t.start-a, t.start), i).e(ae, 0, rng=rng, to1=1)])
+            out = self._maxRange(rng, [rv, Easeable(Timeable(t.start-a, t.start), i).e(ae, 0, rng=rng, to1=0)])
         elif i >= t.start:
             if i == t.start:
                 out = rng[1]

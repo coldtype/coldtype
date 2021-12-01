@@ -255,6 +255,8 @@ class Font():
     def MutatorSans():
         return Font.Cacheable(Path(__file__).parent.parent / "demo/MutatorSans.ttf")
     
+    MuSan = MutatorSans
+    
     @staticmethod
     def RecursiveMono():
         return Font.Cacheable(Path(__file__).parent.parent / "demo/RecMono-CasualItalic.ttf")

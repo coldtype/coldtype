@@ -13,6 +13,6 @@ at = AsciiTimeline(4, """
 def ascii(f):
     return (Glyphwise("ABC", lambda g:
         Style(Font.MutatorSans(), 250,
-            wdth=at.ki(g.c, f.i).io(8),
-            wght=at.ki("wght", f.i).io(10)))
+            wdth=at.ki(g.c).io(8),
+            wght=at.ki("wght").io(10)))
         .align(f.a.r, tv=1))

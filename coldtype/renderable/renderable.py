@@ -272,8 +272,15 @@ class renderable():
         sr = self.rect.scale(scale, "mnx", "mxx")
         SkiaPen.CompositeToCanvas(result, sr, canvas, scale, style=self.style)
     
+    def noop(self, *args, **kwargs):
+        return self
+    
     def hide(self):
         self.hidden = True
+        return self
+    
+    def _hide(self):
+        self.hidden = False
         return self
     
     def show(self):
