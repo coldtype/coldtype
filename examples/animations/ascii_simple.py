@@ -9,6 +9,8 @@ at = AsciiTimeline(4, """
                     [wght     ]
 """)
 
+av = Programs.Asciiview(at)
+
 @animation((1080, 540), timeline=at)
 def ascii(f):
     return (Glyphwise("ABC", lambda g:

@@ -13,6 +13,7 @@ from coldtype.renderer.config import ColdtypeConfig
 from coldtype.helpers import sibling
 from coldtype.text.reader import ALL_FONT_DIRS
 from coldtype.geometry.rect import Rect
+from coldtype.time.nle.ascii import AsciiTimeline
 
 try:
     from docutils.core import publish_doctree
@@ -312,6 +313,8 @@ class SourceReader():
             return root / "demo/midi.py"
         elif name == "vf":
             return root / "demo/vf.py"
+        elif name == "asciiview":
+            return root / "demo/asciiview.py"
         elif name == "pj":
             return root / "renderer/picklejar.py"
         return name
@@ -584,3 +587,9 @@ class Programs():
         preview_only=True,
         ):
         return SourceReader.LoadDemo("vf", **locals())[0]
+    
+    @staticmethod
+    def Asciiview(
+        ascii:AsciiTimeline
+        ):
+        return SourceReader.LoadDemo("asciiview", **locals())[0]

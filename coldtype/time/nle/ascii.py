@@ -1,7 +1,7 @@
 from typing import Union
 
 from coldtype.interpolation import interp_dict
-from coldtype.time.timeline import Timeline, Timeable, Easeable
+from coldtype.time.timeline import Timeline, Timeable
 from coldtype.geometry.rect import Rect
 
 
