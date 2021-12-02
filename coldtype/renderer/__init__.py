@@ -102,7 +102,7 @@ class Renderer():
 
             show_exit_code=parser.add_argument("-sec", "--show-exit-code", action="store_true", default=False, help=argparse.SUPPRESS),
 
-            frame_offsets=parser.add_argument("-fo", "--frame-offsets", type=str, default=None, help=argparse.SUPPRESS),
+            frame_offset=parser.add_argument("-fo", "--frame-offset", type=int, default=0, help=argparse.SUPPRESS),
 
             viewer_solos=parser.add_argument("-vs", "--viewer-solos", type=str, default=None, help=argparse.SUPPRESS),
 
@@ -202,8 +202,7 @@ class Renderer():
             cv2cap.release()
 
         self.stop_watching_file_changes()
-        self.state._frame_offsets = {}
-        self.state._initial_frame_offsets = {}
+        self.state.frame_offset = 0
         self.state.cv2caps = {}
 
         root = Path(__file__).parent.parent
@@ -292,6 +291,9 @@ class Renderer():
         
         self.last_animations = []
 
+        if trigger == Action.Initial:
+            self.state.frame_offset = self.args.frame_offset
+
         if True:
             self.state.reset()
             self.source_reader.reload(
@@ -300,40 +302,13 @@ class Renderer():
             self.winmans.did_reload(self.source_reader.filepath)
             
             try:
-                full_restart = False
-
                 for r in self.renderables(Action.PreviewStoryboardReload):
                     if isinstance(r, animation):
-                        if r.offset_key not in self.state._frame_offsets:
-                            full_restart = True
-                            for i, s in enumerate(r.storyboard):
-                                self.state.add_frame_offset(r.offset_key, s)
-                        else:
-                            lasts = self.state._initial_frame_offsets[r.offset_key]
-                            if str(lasts) != str(r.storyboard):
-                                del self.state._frame_offsets[r.offset_key]
-                                del self.state._initial_frame_offsets[r.offset_key]
-                                for s in r.storyboard:
-                                    self.state.add_frame_offset(r.offset_key, s)
-                        
                         self.last_animation = r
                         self.last_animations.append(r)
                     
                 if self.last_animation:
                     self.winmans.did_reload_animation(self.last_animation)
-                
-                if full_restart:
-                    fos = {}
-                    if self.args.frame_offsets:
-                        def adjuster(i, o):
-                            if i <= len(v)-1:
-                                return v[i]
-                            else:
-                                return 0
-                            
-                        fos = eval(self.args.frame_offsets)
-                        for k, v in fos.items():
-                            self.state.adjust_keyed_frame_offsets(k, adjuster)
             
                 if trigger == Action.Initial:
                     if self.winmans.b3d:
@@ -826,10 +801,7 @@ class Renderer():
             if fi is None:
                 print("fn_to_frame: no match")
                 return False
-            #self.last_animation.storyboard = [fi]
-            self.state.adjust_all_frame_offsets(0, absolute=True)
-            self.state.adjust_keyed_frame_offsets(
-                self.last_animation.offset_key, lambda i, o: fi)
+            self.state.frame_offset = fi
             self.action_waiting = Action.PreviewStoryboard
             return True
 
@@ -886,21 +858,14 @@ class Renderer():
             return Action.PreviewStoryboardNext
         
         elif shortcut == KeyboardShortcut.JumpHome:
-            self.state.adjust_all_frame_offsets(0, absolute=True)
+            self.state.frame_offset = 0
         elif shortcut == KeyboardShortcut.JumpEnd:
-            self.state.adjust_all_frame_offsets(-1, absolute=True)
+            self.state.frame_offset = -1
         
         elif shortcut == KeyboardShortcut.JumpPrev:
-            for a in self.last_animations:
-                self.state.adjust_keyed_frame_offsets(a.offset_key, lambda i, o: a.jump(o, -1))
+            self.state.frame_offset = self.last_animation.jump(self.state.frame_offset, -1)
         elif shortcut == KeyboardShortcut.JumpNext:
-            self.state.adjust_keyed_frame_offsets(
-                self.last_animation.offset_key,
-                lambda i, o: self.last_animation.jump(o, +1))
-        elif shortcut == KeyboardShortcut.JumpStoryboard:
-            self.state.adjust_keyed_frame_offsets(
-                self.last_animation.offset_key,
-                lambda i, o: self.last_animation.storyboard[i])
+            self.state.frame_offset = self.last_animation.jump(self.state.frame_offset, +1)
 
         elif shortcut == KeyboardShortcut.ClearLastRender:
             return Action.ClearLastRender
@@ -949,14 +914,13 @@ class Renderer():
             self.action_waiting = Action.Release
             return -1
         elif shortcut == KeyboardShortcut.RenderOne:
-            fo = [abs(o%self.last_animation.duration) for o in self.state.get_frame_offsets(self.last_animation.offset_key)]
-            # TODO should iterate over all animations, not just "last" (but infra isn't there for this yet)
-            self.on_action(Action.RenderIndices, fo)
+            self.on_action(Action.RenderIndices,
+                abs(self.state.frame_offset%self.last_animation.duration))
             return -1
         elif shortcut == KeyboardShortcut.RenderFrom:
             la = self.last_animation
-            fo = [abs(o%la.duration) for o in self.state.get_frame_offsets(la.offset_key)]
-            idxs = list(range(fo[0], la.duration))
+            fo = abs(self.state.frame_offset%la.duration)
+            idxs = list(range(fo, la.duration))
             self.on_action(Action.RenderIndices, idxs)
             return -1
         elif shortcut == KeyboardShortcut.RenderWorkarea:
@@ -1133,16 +1097,12 @@ class Renderer():
                 self.winmans.toggle_playback()
             if action == Action.PreviewStoryboardPrevMany:
                 self.winmans.frame_offset(-self.source_reader.config.many_increment)
-                #self.state.adjust_all_frame_offsets(-self.source_reader.config.many_increment)
             elif action == Action.PreviewStoryboardPrev:
                 self.winmans.frame_offset(-self.viewer_sample_frames)
-                #self.state.adjust_all_frame_offsets(-1)
             elif action == Action.PreviewStoryboardNextMany:
                 self.winmans.frame_offset(+self.source_reader.config.many_increment)
-                #self.state.adjust_all_frame_offsets(+self.source_reader.config.many_increment)
             elif action == Action.PreviewStoryboardNext:
                 self.winmans.frame_offset(+self.viewer_sample_frames)
-                #self.state.adjust_all_frame_offsets(+1)
             self.render(Action.PreviewStoryboard)
         elif action == Action.Build:
             self.action_waiting = self.on_release(build=True)
@@ -1261,11 +1221,6 @@ class Renderer():
             idx = self.watchee_paths().index(path)
             wpath, wtype, wflag = self.watchees[idx]
             if wflag == "soft":
-                if self.last_animation:
-                    storyboard = self.last_animation.post_read()
-                    if storyboard:
-                        self.state.adjust_keyed_frame_offsets(
-                            self.last_animation.offset_key, lambda i, o: storyboard[0])
                 self.action_waiting = Action.PreviewStoryboard
                 return
 
@@ -1352,7 +1307,7 @@ class Renderer():
         
         # attempt to preserve state across reload
 
-        fo = str(self.state._frame_offsets)
+        fo = str(self.state.frame_offset)
         try:
             foi = args.index("-fo")
             args[foi+1] = fo

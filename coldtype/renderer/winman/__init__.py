@@ -159,7 +159,7 @@ class Winmans():
                 self.b3d.toggle_playback(self.renderer.state.playing)
     
     def frame_offset(self, offset):
-        self.renderer.state.adjust_all_frame_offsets(offset)
+        self.renderer.state.frame_offset += offset
 
         if not self.glsk:
             if self.b3d:
@@ -197,8 +197,8 @@ class Winmans():
             if self.config.enable_audio:
                 la = self.renderer.last_animation
                 if self.audio and la:
-                    fo = [abs(o%la.duration) for o in self.renderer.state.get_frame_offsets(la.name)]
-                    self.audio.play_frame(fo[0])
+                    fo = abs(self.state.frame_offset%la.duration)
+                    self.audio.play_frame(fo)
         
         return did_preview
     
