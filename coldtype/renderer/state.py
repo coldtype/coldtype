@@ -88,7 +88,8 @@ class RendererState():
 
         if not self.playing and action == 0:
             for r in self.renderer.renderables(None):
-                if Point(*pos).inside(r._stacked_rect):
+                sr = r._stacked_rect.flip(self.renderer.extent.h)
+                if Point(*pos).inside(sr):
                     if hasattr(r, "pointToFrame"):
                         fo = r.pointToFrame(Point(*pos))
                         self.frame_offset = fo
@@ -102,7 +103,8 @@ class RendererState():
     def on_mouse_move(self, pos):
         if self.mouse_down:
             for r in self.renderer.renderables(None):
-                if Point(*pos).inside(r._stacked_rect):
+                sr = r._stacked_rect.flip(self.renderer.extent.h)
+                if Point(*pos).inside(sr):
                     if hasattr(r, "pointToFrame"):
                         fo = r.pointToFrame(Point(*pos))
                         self.frame_offset = fo

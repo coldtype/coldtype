@@ -1,4 +1,3 @@
-import math
 from collections import defaultdict
 from coldtype.renderable.animation import animation, renderable
 from coldtype.text.composer import StSt, Font, Rect, Point, Style
@@ -143,7 +142,7 @@ def timeViewer(tl):
                 ])
     
     def pointToFrame(pt:Point):
-        return math.floor(min(1, max(0, (pt.x-re.x)/re.w))*tl.duration)
+        return round(min(1, max(0, (pt.x-re.x)/re.w))*tl.duration)
     
     timeView.pointToFrame = pointToFrame
     return timeViewBackground, timeView

@@ -92,6 +92,10 @@ class Winmans():
         
         if self.should_audio():
             self.audio = WinmanAudio()
+    
+    def did_reset_extent(self, extent):
+        if self.glsk:
+            self.glsk.reset_extent(extent)
 
     def did_reload(self, filepath):
         if self.b3d:
@@ -179,6 +183,7 @@ class Winmans():
         if self.midi:
             if self.midi.monitor(self.renderer.state.playing):
                 self.renderer.action_waiting = Action.PreviewStoryboard
+                self.renderer.action_waiting_reason = "midi_trigger"
 
         render_previews = len(self.renderer.previews_waiting) > 0
         if not render_previews:

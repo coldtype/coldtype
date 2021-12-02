@@ -6,9 +6,9 @@ import pickle
 
 import time as ptime
 from pathlib import Path
-from typing import Tuple
 from pprint import pprint
 from subprocess import Popen
+from typing import Tuple, List
 from random import shuffle, Random
 from more_itertools import distribute
 from functools import partial
@@ -153,6 +153,9 @@ class Renderer():
         self.watchees = []
         self.watchee_mods = {}
         self.rasterizer_warning = None
+        self.needs_new_context = False
+
+        self.extent = None
         
         if not self.reset_filepath(self.args.file if hasattr(self.args, "file") else None):
             self.dead = True
@@ -171,6 +174,8 @@ class Renderer():
         self.completed_renderers = []
 
         self.action_waiting = None
+        self.action_waiting_reason = None
+
         self.actions_queued = []
         self.debounced_actions = {}
         self.previews_waiting = []
@@ -253,10 +258,10 @@ class Renderer():
         print(stack)
         return stack.split("\n")[-2]
     
-    def renderable_error(self):
+    def renderable_error(self, rect):
         short_error = self.print_error()
         
-        r = Rect(1200, 300)
+        r = rect
         render = renderable(r)
         res = DATPens([
             DATPen().rect(r).f(coldtype.Gradient.V(r,
@@ -275,7 +280,8 @@ class Renderer():
             bc_print(bcolors.FAIL, "SYNTAX ERROR")
             bc_print(bcolors.WARNING, short_error)
         else:
-            render, res = self.renderable_error()
+            render, res = self.renderable_error(self.extent)
+            render._stacked_rect = self.extent
             self.previews_waiting.append([render, res, None])
     
     def show_message(self, message, scale=1):
@@ -369,11 +375,6 @@ class Renderer():
                 for cap in caps:
                     if cap not in self.state.cv2caps:
                         self.state.cv2caps[cap] = cv2.VideoCapture(cap)
-        
-        h = 0
-        for r in reversed(_rs):
-            r._stacked_rect = r.rect.offset(0, h)
-            h = r._stacked_rect.pn[1]
 
         if len(_rs) == 0:
             root = Path(__file__).parent.parent
@@ -381,6 +382,40 @@ class Renderer():
             _rs = sr.renderables()
             sr.unlink()
         return _rs
+    
+    def calculate_window_size(self, rs:List[renderable]):
+        dscale = self.state.preview_scale
+        w = 0
+        llh = -1
+        lh = -1
+        h = 0
+        for r in rs:
+            sr = r.rect.scale(dscale, "mnx", "mny").round()
+            w = max(sr.w, w)
+            adjr = None
+            if r.layer:
+                adjr = Rect(0, llh, sr.w, sr.h)
+            else:
+                adjr = Rect(0, lh+1, sr.w, sr.h)
+                llh = lh+1
+                lh += sr.h + 1
+                h += sr.h + 1
+            r._stacked_rect = adjr.round()
+        h -= 1
+
+        extent = Rect(0, 0, w, h)
+
+        if not self.extent:
+            needs_new_context = True
+        else:
+            needs_new_context = self.extent != extent
+        
+        self.extent = extent
+        
+        if needs_new_context:
+            self.winmans.did_reset_extent(self.extent)
+
+        return needs_new_context
     
     def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
         if not self.args.is_subprocess:
@@ -426,6 +461,7 @@ class Renderer():
         prev_renders = self.last_renders
         
         renders = self.renderables(trigger)
+
         self.last_renders = renders
         preview_count = 0
         render_count = 0
@@ -528,6 +564,8 @@ class Renderer():
         return preview_count, render_count, renders
 
     def render(self, trigger, indices=[]) -> Tuple[int, int]:
+        #print(">RENDER!", trigger, self.action_waiting_reason)#, traceback.print_stack())
+
         if self.args.is_subprocess:
             if trigger != Action.RenderIndices:
                 raise Exception("Invalid child process render action", trigger)
@@ -563,6 +601,7 @@ class Renderer():
                     self.previews_waiting.append([render, result, None])
                 else:
                     self.action_waiting = Action.PreviewStoryboard
+                    self.action_waiting_reason = "unclear"
 
             self.winmans.did_render(render_count)
 
@@ -680,6 +719,7 @@ class Renderer():
     def reload_and_render(self, trigger, watchable=None, indices=None):
         if (self.winmans.bg
             and not self.args.cpu_render
+            and not self.winmans.glsk
             ):
             self.winmans.glsk = WinmanGLFWSkiaBackground(self.source_reader.config, self)
 
@@ -691,7 +731,14 @@ class Renderer():
             if should_halt:
                 return True
             if self.source_reader.program:
-                preview_count, render_count = self.render(trigger, indices=indices)
+                renders = self.renderables(Action.Resave)
+                self.needs_new_context = self.calculate_window_size(renders)
+                if self.needs_new_context and trigger != Action.Initial:
+                    self.debounced_actions["reset_extent"] = ptime.time()
+                #if self.needs_new_context: #and trigger != Action.Initial:
+                #    return True
+
+                self.render(trigger, indices=indices)
                 if self.state.playing < 0:
                     self.state.playing = 1
             else:
@@ -796,6 +843,7 @@ class Renderer():
             if enum_action:
                 print(">", enum_action)
                 self.action_waiting = enum_action
+                self.action_waiting_reason = "on_message"
                 #self.on_action(enum_action, message)
             else:
                 print(">>> (", action, ") is not a recognized action")
@@ -808,6 +856,7 @@ class Renderer():
                 return False
             self.state.frame_offset = fi
             self.action_waiting = Action.PreviewStoryboard
+            self.action_waiting_reason = "jump_to_fn"
             return True
 
     def lookup_action(self, action):
@@ -917,6 +966,7 @@ class Renderer():
         elif shortcut == KeyboardShortcut.RenderAllAndRelease:
             self.on_action(Action.RenderAll)
             self.action_waiting = Action.Release
+            self.action_waiting_reason = shortcut
             return -1
         elif shortcut == KeyboardShortcut.RenderOne:
             self.on_action(Action.RenderIndices,
@@ -946,7 +996,7 @@ class Renderer():
         
         elif shortcut == KeyboardShortcut.ToggleTimeViewer:
             self.source_reader.addTimeViewers = not self.source_reader.addTimeViewers
-            self.on_action(Action.PreviewStoryboardReload)
+            return Action.PreviewStoryboardReload
         
         elif shortcut == KeyboardShortcut.PreviewScaleUp:
             self.state.mod_preview_scale(+0.1)
@@ -1069,8 +1119,10 @@ class Renderer():
         if waiting:
             if waiting != -1:
                 self.action_waiting = waiting
+                self.action_waiting_reason = shortcut
         else:
             self.action_waiting = Action.PreviewStoryboard
+            self.action_waiting_reason = "shortcut_default"
 
     def on_stdin(self, stdin):
         cmd, *args = stdin.split(" ")
@@ -1111,8 +1163,10 @@ class Renderer():
             self.render(Action.PreviewStoryboard)
         elif action == Action.Build:
             self.action_waiting = self.on_release(build=True)
+            self.action_waiting_reason = "build"
         elif action == Action.Release:
             self.action_waiting = self.on_release()
+            self.action_waiting_reason = "release"
         elif action == Action.RestartRenderer:
             self.on_exit(restart=True)
         elif action == Action.Kill:
@@ -1126,6 +1180,7 @@ class Renderer():
             for r in self.renderables(Action.PreviewStoryboard):
                 r.last_result = None
             self.action_waiting = Action.PreviewStoryboard
+            self.action_waiting_reason = "clear_last_render"
         elif action == Action.ClearRenderedFrames:
             for r in self.renderables(Action.PreviewStoryboard):
                 shutil.rmtree(r.output_folder, ignore_errors=True)
@@ -1157,6 +1212,7 @@ class Renderer():
                 if v:
                     if (now - v) > self.source_reader.config.debounce_time:
                         self.action_waiting = Action.PreviewStoryboardReload
+                        self.action_waiting_reason = "debouncing"
                         self.debounced_actions[k] = None
 
         if self.action_waiting:
@@ -1166,9 +1222,11 @@ class Renderer():
                 # TODO should be recursive?
                 self.on_action(self.action_waiting)
             self.action_waiting = None
+            self.action_waiting_reason = None
         
         if len(self.actions_queued) > 0:
             self.action_waiting = self.actions_queued.pop(0)
+            self.action_waiting_reason = "pop_from_queue"
         
         did_preview = self.winmans.turn_over()
         
@@ -1227,6 +1285,7 @@ class Renderer():
             wpath, wtype, wflag = self.watchees[idx]
             if wflag == "soft":
                 self.action_waiting = Action.PreviewStoryboard
+                self.action_waiting_reason = "soft_watch"
                 return
 
             try:
@@ -1241,6 +1300,7 @@ class Renderer():
                 print(">>> pid:{:d}/new:{:04.2f}MB/total:{:4.2f}".format(os.getpid(), diff, memory))
             
             self.action_waiting = Action.PreviewStoryboardReload
+            self.action_waiting_reason = "on_modified"
 
     def watch_file_changes(self):
         if self.winmans.bg:

@@ -63,7 +63,6 @@ class WinmanGLFWSkia():
         self.background = background
         self.renderer = renderer
         self.primary_monitor = None
-        self.last_rect = None
         self.all_shortcuts = shortcuts_keyed()
         self.prev_scale = 0
         self.surface = None
@@ -115,6 +114,7 @@ class WinmanGLFWSkia():
         glfw.set_cursor_pos_callback(self.window, self.on_mouse_move)
         glfw.set_scroll_callback(self.window, self.on_scroll)
         glfw.set_window_focus_callback(self.window, self.on_focus)
+        glfw.set_framebuffer_size_callback(self.window, self.on_resize)
 
         self.set_window_opacity()
 
@@ -179,38 +179,6 @@ class WinmanGLFWSkia():
             self.prev_scale = scale_x
             return True
         return False
-    
-    def calculate_window_size(self, previews):
-        rects = []
-        dscale = self.renderer.state.preview_scale
-        w = 0
-        llh = -1
-        lh = -1
-        h = 0
-        for render, result, rp in previews:
-            if hasattr(render, "show_error"):
-                sr = render.rect
-            else:
-                sr = render.rect.scale(dscale, "mnx", "mny").round()
-            w = max(sr.w, w)
-            if render.layer:
-                rects.append(Rect(0, llh, sr.w, sr.h))
-            else:
-                rects.append(Rect(0, lh+1, sr.w, sr.h))
-                llh = lh+1
-                lh += sr.h + 1
-                h += sr.h + 1
-        h -= 1
-
-        frect = Rect(0, 0, w, h)
-
-        if not self.last_rect:
-            needs_new_context = True
-        else:
-            needs_new_context = self.last_rect != frect
-        
-        self.last_rect = frect
-        return frect, rects, dscale, needs_new_context
     
     def update_window(self, frect):
         m_scale = self.get_content_scale()
@@ -278,25 +246,32 @@ class WinmanGLFWSkia():
     def on_focus(self, win, focus):
         self.window_focus = focus
     
+    def on_resize(self, win, w, h):
+        #self.renderer.action_waiting = Action.PreviewStoryboard
+        #self.renderer.action_waiting_reason = "on_resize"
+        pass
+    
     def on_mouse_button(self, _, btn, action, mods):
         if not self.allow_mouse():
             return
         
         pos = Point(glfw.get_cursor_pos(self.window)).scale(2) # TODO should this be preview-scale?
-        pos[1] = self.last_rect.h - pos[1]
+        pos[1] = self.renderer.extent.h - pos[1]
         requested_action = self.renderer.state.on_mouse_button(pos, btn, action, mods)
         if requested_action:
             self.renderer.action_waiting = requested_action
+            self.renderer.action_waiting_reason = "mouse_trigger"
     
     def on_mouse_move(self, _, xpos, ypos):
         if not self.allow_mouse():
             return
         
         pos = Point((xpos, ypos)).scale(2)
-        pos[1] = self.last_rect.h - pos[1]
+        pos[1] = self.renderer.extent.h - pos[1]
         requested_action = self.renderer.state.on_mouse_move(pos)
         if requested_action:
             self.renderer.action_waiting = requested_action
+            self.renderer.action_waiting_reason = "mouse_move"
     
     def on_key(self, win, key, scan, action, mods):
         self.on_potential_shortcut(key, action, mods)
@@ -335,12 +310,18 @@ class WinmanGLFWSkia():
                         #print(shortcut, modifiers, skey, mod_match)
                         return self.renderer.on_shortcut(shortcut)
     
+    def reset_extent(self, extent):
+        #GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+        self.create_surface(extent)
+        self.update_window(extent)
+        #self.surface.flushAndSubmit()
+        #glfw.swap_buffers(self.window)
+    
     def turn_over(self):
-        frect, rects, dscale, needs_new_context = self.calculate_window_size(self.renderer.previews_waiting)
+        extent = self.renderer.extent
 
-        if needs_new_context:
-            self.create_surface(frect)
-            self.update_window(frect)
+        #if self.renderer.needs_new_context:
+        #    self.update_window(extent)
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
@@ -352,7 +333,8 @@ class WinmanGLFWSkia():
                 canvas.clear(skia.Color4f(0.3, 0.3, 0.3, 0))
             
             for idx, (render, result, rp) in enumerate(self.renderer.previews_waiting):
-                rect = rects[idx].offset((frect.w-rects[idx].w)/2, 0).round()
+                sr = render._stacked_rect
+                rect = sr.offset((extent.w-sr.w)/2, 0).round()
 
                 if self.copy_previews_to_clipboard:
                     try:
@@ -366,7 +348,7 @@ class WinmanGLFWSkia():
                         print("failed to copy to clipboard")
 
                 try:
-                    self.draw_preview(idx, dscale, canvas, rect, (render, result, rp))
+                    self.draw_preview(idx, self.renderer.state.preview_scale, canvas, rect, (render, result, rp))
                     did_preview.append(rp)
                 except Exception as e:
                     short_error = self.renderer.print_error()
@@ -383,12 +365,12 @@ class WinmanGLFWSkia():
     def poll(self):
         glfw.poll_events()
 
-    def draw_preview(self, idx, scale, canvas, rect, waiter):        
+    def draw_preview(self, idx, scale, canvas, rect, waiter):
         render, result, rp = waiter
 
         error_color = rgb(1, 1, 1).skia()
         canvas.save()
-        canvas.translate(0, self.window_scrolly)
+        #canvas.translate(0, self.window_scrolly)
         canvas.translate(rect.x, rect.y)
         
         if not self.config.window_transparent:

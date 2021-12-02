@@ -1377,6 +1377,10 @@ class DraftingPen(RecordingPen, SHContext):
     def __truediv__(self, other):
         return self.pmap(other)
     
+    def __sub__(self, other):
+        """noop"""
+        return self
+    
     def cond(self, condition, if_true:Callable[["DraftingPen"], None], if_false:Callable[["DraftingPen"], None]=None):
         if callable(condition):
             condition = condition(self)

@@ -30,6 +30,7 @@ class animation(renderable, Timeable):
         overlay=True,
         write_start=0,
         audio=None,
+        suffixer=None,
         **kwargs
         ):
         super().__init__(**kwargs)
@@ -44,6 +45,7 @@ class animation(renderable, Timeable):
         self.reset_timeline(timeline)
         self.single_frame = self.duration == 1
         self.audio = audio
+        self.suffixer = suffixer
     
     def __call__(self, func):
         res = super().__call__(func)
@@ -129,13 +131,19 @@ class animation(renderable, Timeable):
         return current
     
     def pass_suffix(self, index=0):
-        if self.suffix:
+        if isinstance(index, int):
+            idx = (index - self.write_start) % self.duration
+        else:
+            idx = index
+
+        if self.suffixer:
+            return self.suffixer(idx)
+        elif self.suffix:
             pf = self.suffix + "_"
         else:
             pf = ""
         
-        if isinstance(index, int):
-            idx = (index - self.write_start) % self.duration
+        if isinstance(idx, int):
             return pf + "{:04d}".format(idx)
         else:
             return pf + index

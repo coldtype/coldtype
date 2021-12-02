@@ -231,7 +231,7 @@ class Font():
         if isinstance(regex, Font):
             return regex
 
-        if Path(regex).expanduser().exists():
+        if Path(normalize_font_prefix(regex)).expanduser().exists():
             return Font.Cacheable(regex)
         
         found = Font.List(regex, regex_dir)
