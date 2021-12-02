@@ -54,7 +54,6 @@ setuptools.setup(
             "demo/blank.py",
             "demo/boiler.py",
             "demo/vf.py",
-            "demo/asciiview.py",
             "renderer/picklejar.py",
             "renderer/.coldtype.py"
         ],

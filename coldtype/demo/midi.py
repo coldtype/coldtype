@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.time.midi import MidiReader2
+from coldtype.time.midi import MidiTimeline
 from coldtype.tool import parse_inputs
 
 if __as_config__:
@@ -13,7 +13,7 @@ args = parse_inputs(__inputs__, dict(
     text=[True, bool],
     lookup=[None, {}]))
 
-mr = MidiReader2(
+mr = MidiTimeline(
     Path(args["file"]).expanduser(),
     duration=args["duration"],
     fps=args["fps"],

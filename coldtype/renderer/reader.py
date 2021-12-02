@@ -5,15 +5,17 @@ from functools import partial
 from unittest import TestCase
 from tempfile import NamedTemporaryFile
 from subprocess import run
+from typing import Union
 
-from coldtype.renderable import renderable, ColdtypeCeaseConfigException, runnable
+from coldtype.renderable import renderable, ColdtypeCeaseConfigException, runnable, animation
 
 from coldtype.renderer.utils import Watchable
 from coldtype.renderer.config import ColdtypeConfig
 from coldtype.helpers import sibling
 from coldtype.text.reader import ALL_FONT_DIRS
 from coldtype.geometry.rect import Rect
-from coldtype.time.nle.ascii import AsciiTimeline
+from coldtype.time import Timeline
+from coldtype.time.viewer import timeViewer
 
 try:
     from docutils.core import publish_doctree
@@ -289,6 +291,7 @@ class SourceReader():
         self.runner = runner
         self.inputs = inputs or []
         self.use_blender = use_blender
+        self.addTimeViewers = False
 
         self.config = None
         self.read_configs(cli_args, filepath)
@@ -313,8 +316,6 @@ class SourceReader():
             return root / "demo/midi.py"
         elif name == "vf":
             return root / "demo/vf.py"
-        elif name == "asciiview":
-            return root / "demo/asciiview.py"
         elif name == "pj":
             return root / "renderer/picklejar.py"
         return name
@@ -486,7 +487,7 @@ class SourceReader():
             __RUNNER__=self.runner)
         
         self.candidates = self.renderable_candidates(
-            output_folder_override)
+            output_folder_override, self.addTimeViewers)
     
     def write_code_to_tmpfile(self, code):
         if self.filepath:
@@ -500,13 +501,24 @@ class SourceReader():
     
     def renderable_candidates(self,
         output_folder_override=None,
+        addTimeViewers=False,
         ):
-        return find_renderables(
+        candidates = find_renderables(
             self.filepath,
             self.codepath,
             self.program,
             output_folder_override,
             blender_file=self.blender_file())
+        
+        if addTimeViewers:        
+            out = []
+            for c in candidates:
+                if isinstance(c, animation):
+                    out.append(timeViewer(c))
+                out.append(c)
+            return out
+        else:
+            return candidates
     
     def renderables(self,
         viewer_solos=[],
@@ -587,9 +599,3 @@ class Programs():
         preview_only=True,
         ):
         return SourceReader.LoadDemo("vf", **locals())[0]
-    
-    @staticmethod
-    def Asciiview(
-        ascii:AsciiTimeline
-        ):
-        return SourceReader.LoadDemo("asciiview", **locals())[0]

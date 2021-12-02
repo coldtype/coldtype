@@ -30,6 +30,7 @@ class animation(renderable, Timeable):
         overlay=True,
         write_start=0,
         audio=None,
+        offset_key=None,
         **kwargs
         ):
         super().__init__(**kwargs)
@@ -44,10 +45,13 @@ class animation(renderable, Timeable):
         self.reset_timeline(timeline)
         self.single_frame = self.duration == 1
         self.audio = audio
+        self.offset_key = offset_key
     
     def __call__(self, func):
         res = super().__call__(func)
         self.prefix = self.name + "_"
+        if self.offset_key is None:
+            self.offset_key = self.name
         return res
 
     def reset_timeline(self, timeline):

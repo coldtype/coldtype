@@ -12,8 +12,6 @@ at = AsciiTimeline(3, 30, """
                                    [tu     ]
 """)
 
-av = Programs.Asciiview(at)
-
 @animation((1080, 1080)
     , timeline=at
     , bg=hsl(0.9, 1, 0.9))

@@ -26,6 +26,7 @@ from coldtype.renderer.state import RendererState
 from coldtype.renderable import renderable, animation, Action, Overlay, runnable
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.svgpen import SVGPen
+from coldtype.time.viewer import timeViewer
 
 from coldtype.renderer.keyboard import KeyboardShortcut
 
@@ -303,17 +304,17 @@ class Renderer():
 
                 for r in self.renderables(Action.PreviewStoryboardReload):
                     if isinstance(r, animation):
-                        if r.name not in self.state._frame_offsets:
+                        if r.offset_key not in self.state._frame_offsets:
                             full_restart = True
                             for i, s in enumerate(r.storyboard):
-                                self.state.add_frame_offset(r.name, s)
+                                self.state.add_frame_offset(r.offset_key, s)
                         else:
-                            lasts = self.state._initial_frame_offsets[r.name]
+                            lasts = self.state._initial_frame_offsets[r.offset_key]
                             if str(lasts) != str(r.storyboard):
-                                del self.state._frame_offsets[r.name]
-                                del self.state._initial_frame_offsets[r.name]
+                                del self.state._frame_offsets[r.offset_key]
+                                del self.state._initial_frame_offsets[r.offset_key]
                                 for s in r.storyboard:
-                                    self.state.add_frame_offset(r.name, s)
+                                    self.state.add_frame_offset(r.offset_key, s)
                         
                         self.last_animation = r
                         self.last_animations.append(r)
@@ -828,7 +829,7 @@ class Renderer():
             #self.last_animation.storyboard = [fi]
             self.state.adjust_all_frame_offsets(0, absolute=True)
             self.state.adjust_keyed_frame_offsets(
-                self.last_animation.name, lambda i, o: fi)
+                self.last_animation.offset_key, lambda i, o: fi)
             self.action_waiting = Action.PreviewStoryboard
             return True
 
@@ -891,14 +892,14 @@ class Renderer():
         
         elif shortcut == KeyboardShortcut.JumpPrev:
             for a in self.last_animations:
-                self.state.adjust_keyed_frame_offsets(a.name, lambda i, o: a.jump(o, -1))
+                self.state.adjust_keyed_frame_offsets(a.offset_key, lambda i, o: a.jump(o, -1))
         elif shortcut == KeyboardShortcut.JumpNext:
             self.state.adjust_keyed_frame_offsets(
-                self.last_animation.name,
+                self.last_animation.offset_key,
                 lambda i, o: self.last_animation.jump(o, +1))
         elif shortcut == KeyboardShortcut.JumpStoryboard:
             self.state.adjust_keyed_frame_offsets(
-                self.last_animation.name,
+                self.last_animation.offset_key,
                 lambda i, o: self.last_animation.storyboard[i])
 
         elif shortcut == KeyboardShortcut.ClearLastRender:
@@ -948,13 +949,13 @@ class Renderer():
             self.action_waiting = Action.Release
             return -1
         elif shortcut == KeyboardShortcut.RenderOne:
-            fo = [abs(o%self.last_animation.duration) for o in self.state.get_frame_offsets(self.last_animation.name)]
+            fo = [abs(o%self.last_animation.duration) for o in self.state.get_frame_offsets(self.last_animation.offset_key)]
             # TODO should iterate over all animations, not just "last" (but infra isn't there for this yet)
             self.on_action(Action.RenderIndices, fo)
             return -1
         elif shortcut == KeyboardShortcut.RenderFrom:
             la = self.last_animation
-            fo = [abs(o%la.duration) for o in self.state.get_frame_offsets(la.name)]
+            fo = [abs(o%la.duration) for o in self.state.get_frame_offsets(la.offset_key)]
             idxs = list(range(fo[0], la.duration))
             self.on_action(Action.RenderIndices, idxs)
             return -1
@@ -973,6 +974,10 @@ class Renderer():
             self.state.toggle_overlay(Overlay.Recording)
         elif shortcut == KeyboardShortcut.OverlayRendered:
             self.winmans.toggle_rendered()
+        
+        elif shortcut == KeyboardShortcut.ToggleTimeViewer:
+            self.source_reader.addTimeViewers = not self.source_reader.addTimeViewers
+            self.on_action(Action.PreviewStoryboardReload)
         
         elif shortcut == KeyboardShortcut.PreviewScaleUp:
             self.state.mod_preview_scale(+0.1)
@@ -1260,7 +1265,7 @@ class Renderer():
                     storyboard = self.last_animation.post_read()
                     if storyboard:
                         self.state.adjust_keyed_frame_offsets(
-                            self.last_animation.name, lambda i, o: storyboard[0])
+                            self.last_animation.offset_key, lambda i, o: storyboard[0])
                 self.action_waiting = Action.PreviewStoryboard
                 return
 

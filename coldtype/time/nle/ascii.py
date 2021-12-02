@@ -21,14 +21,7 @@ class AsciiTimeline(Timeline):
         lines = [l.rstrip() for l in ascii.splitlines() if l.strip()]
         ml = max([len(l) for l in lines]) - 1
 
-
-        self.keyframes = keyframes or {}
-        
-        if not isinstance(self.keyframes, dict):
-            kfs = {}
-            for idx, v in enumerate(self.keyframes):
-                kfs[str(idx)] = v
-            self.keyframes = kfs
+        self.keyframes = self._norm_keyframes(keyframes)
 
         duration = round(multiplier*ml)
 
@@ -106,10 +99,31 @@ class AsciiTimeline(Timeline):
         
         super().__init__(duration, fps, clips, **kwargs)
     
-    def kf(self, fi, easefn="eeio", lines=None):
+    def _norm_keyframes(self, keyframes):
+        if not keyframes:
+            return {}
+
+        if not isinstance(keyframes, dict):
+            kfs = {}
+            for idx, v in enumerate(keyframes):
+                kfs[str(idx)] = v
+            return kfs
+        else:
+            kfs = {}
+            for k, v in keyframes.items():
+                kfs[str(k)] = v
+            return kfs
+    
+    def kf(self, easefn="eeio", fi=None, lines=None, keyframes=None):
+        fi = self._norm_held_fi(fi)
         fi = fi % self.duration
 
-        for c1, c2 in self.enumerate(lines=lines, pairs=True):
+        if keyframes is None:
+            keyframes = self.keyframes
+        else:
+            keyframes = self._norm_keyframes(keyframes)
+
+        for c1, c2 in self.enumerate(lines=lines, pairs=True, edges=True):
             start, end = c1.start, c2.start
             if c2.start < c1.end:
                 end += self.duration
@@ -119,19 +133,28 @@ class AsciiTimeline(Timeline):
             t = Timeable(start, end,
                 name=f"_kf_{c1.name}/{c2.name}",
                 timeline=self)
+            
             if t.now(fi):
-                return interp_dict(t.at(fi).e(easefn, 0), self.keyframes[c1.name], self.keyframes[c2.name])
+                return interp_dict(t.at(fi).e(easefn, 0), keyframes[c1.name], keyframes[c2.name])
     
-        return list(self.keyframes.values())[0]
+        return list(keyframes.values())[0]
     
-    def enumerate(self, lines=None, pairs=False):
+    def enumerate(self, lines=None, pairs=False, edges=False):
         matches = []
         for c in self.timeables:
+            match = False
             if lines is not None:
                 if c.data["line"] in lines:
-                    matches.append(c)
+                    match = True
             else:
-                matches.append(c)
+                match = True
+            
+            if match:
+                if edges and c.duration > 0:
+                    matches.append(Timeable(c.start, c.start, -1, name=c.name, timeline=self))
+                    matches.append(Timeable(c.end-1, c.end-1, -1, name=c.name, timeline=self))
+                else:
+                    matches.append(c)
         
         for i, c in enumerate(matches):
             if pairs:

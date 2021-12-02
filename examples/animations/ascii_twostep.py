@@ -3,6 +3,7 @@ from coldtype.time.nle.ascii import AsciiTimeline
 
 at = AsciiTimeline(1, """
                                                               <
+[s                                                        ]
             [a                               ]
                       [b                     ]
                                 [c                        ]
@@ -15,7 +16,7 @@ def test_ascii(f):
             wdth=(at.ki("a" if g.i <= 1 else "b").io(10)),
             tu=at.ki("c").io(8, r=(0, 500))))
         .align(f.a.r)
-        .scale(f.io(20)*2)
+        .scale(at.ki("s").io(20)*2)
         .f(0)
         .layer(1, lambda p: P()
             .rect(p.ambit(tv=1).inset(-50))

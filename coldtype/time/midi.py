@@ -247,7 +247,7 @@ class MidiReader(Timeline):
             return self.tracks[item]
 
 
-class MidiReader2(Timeline):
+class MidiTimeline(Timeline):
     def __init__(self,
         path,
         duration=None,

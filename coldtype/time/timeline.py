@@ -87,14 +87,18 @@ class Timeline(Timeable):
         else:
             return self._flatten(self._keyed(keys[0]))
     
+    def _norm_held_fi(self, fi=None):
+        if fi is None:
+            if self._holding >= 0:
+                return self._holding
+            else:
+                raise Exception("Must .hold or provide fi=")
+        return fi
+    
     def ki(self, key, fi=None):
         """(k)eyed-at-(i)ndex"""
 
-        if fi is None:
-            if self._holding >= 0:
-                fi = self._holding
-            else:
-                raise Exception("Must .hold or provide fi=")
+        fi = self._norm_held_fi(fi)
 
         if not isinstance(key, str):
             try:
@@ -130,3 +134,12 @@ class Timeline(Timeable):
             elif te > _end:
                 _end = te
         return _end
+    
+    def shift(self, prop, fn):
+        for t in self.timeables:
+            attr = getattr(t, prop)
+            if callable(fn):
+                setattr(t, prop, fn(t))
+            else:
+                setattr(t, prop, attr + fn)
+        return self
