@@ -1,4 +1,5 @@
 from coldtype.time.timeable import Timeable, Easeable
+from typing import List
 
 
 class Timeline(Timeable):
@@ -24,7 +25,7 @@ class Timeline(Timeable):
         self.start = 0
         self.end = duration
 
-        self.timeables = self._flatten(timeables)
+        self.timeables:List[Timeable] = self._flatten(timeables)
         self._holding = -1
 
         self._jumps = [self.start, *(jumps or []), self.end-1]

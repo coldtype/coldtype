@@ -1,5 +1,4 @@
 from coldtype import *
-from coldtype.time.midi import MidiReader
 from coldtype.fx.skia import color_phototype
 
 """
@@ -12,56 +11,59 @@ Rendered with organ.wav as the backing track:
     https://vimeo.com/489013931/cd77ab7e4d
 """
 
-midi = MidiReader("examples/animations/media/organ.mid", bpm=183, fps=30)
-organ = midi[0]
+midi = MidiTimeline(
+    "examples/animations/media/organ.mid"
+    , bpm=183, fps=30)
 
 note_width = 3
 r = Rect(1440, 1080)
 
 def pos(x, y):
+    y = int(y)
     return (x*note_width, (y-midi.min)*(r.h-200)/midi.spread+100)
 
 def build_line():
-    dp = DATPen().f(None).s(rgb(1, 0, 0.5)).sw(3)
-    last_note = None
+    dp = P().f(None).s(rgb(1, 0, 0.5)).sw(3)
+    last:Timeable = None
 
-    for note in organ.notes:
-        if last_note and (note.on - last_note.off > 3 or last_note.note == note.note):
-            dp.lineTo((pos(last_note.off, last_note.note)))
+    for t in midi.timeables:
+        if last and (t.start - last.end > 3 or last.name == t.name):
+            dp.lineTo((pos(last.end, last.name)))
             dp.endPath()
-            last_note = None
-        if last_note:
-            if last_note.off < note.on:
-                dp.lineTo((pos(last_note.off, last_note.note)))
+            last = None
+        
+        if last:
+            if last.end < t.start:
+                dp.lineTo((pos(last.end, last.name)))
             else:
-                dp.lineTo((pos(note.on, last_note.note)))
-            dp.lineTo((pos(note.on, note.note)))
+                dp.lineTo((pos(t.start, last.name)))
+            dp.lineTo((pos(t.start, t.name)))
         else:
-            dp.moveTo((pos(note.on, note.note)))
-        last_note = note
-    if last_note:
-        dp.lineTo((pos(last_note.off, last_note.note)))
+            dp.moveTo((pos(t.start, t.name)))
+        
+        last = t
+    
+    if last:
+        dp.lineTo((pos(last.end, int(last.name))))
     dp.endPath()
     return dp
 
 line = build_line()
 
-@animation(timeline=organ.duration, rect=r, storyboard=[0])
+@animation(timeline=midi, rect=r, storyboard=[0])
 def render(f):
     time_offset = -f.i * note_width + r.w - note_width * 3
     time_offset += 10 # fudge
-    looped_line = DATPens([
-        (line
-            .copy()
+    looped_line = PS([
+        (line.copy()
             .translate(
-                time_offset - organ.duration *note_width,
+                time_offset - f.t.duration * note_width,
                 0)),
-        (line
-            .copy()
+        (line.copy()
             .translate(time_offset, 0))
     ])
-    return DATPens([
-        DATPen().rect(f.a.r).f(0),
+    return PS([
+        P().rect(f.a.r).f(0),
         (looped_line.pen()
             .ch(color_phototype(f.a.r, blur=20, cut=215, cutw=40))),
         (looped_line.pen()
