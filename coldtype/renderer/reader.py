@@ -291,7 +291,7 @@ class SourceReader():
         self.runner = runner
         self.inputs = inputs or []
         self.use_blender = use_blender
-        self.addTimeViewers = False
+        self.addTimeViewers = True
 
         self.config = None
         self.read_configs(cli_args, filepath)

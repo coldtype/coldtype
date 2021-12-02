@@ -2,17 +2,16 @@ from coldtype import *
 
 audio = __sibling__("media/c78.wav")
 
-midi = Programs.Midi(
-    __sibling__("media/c78.mid")
-    , text=0, bpm=120
+midi = MidiTimeline(__sibling__("media/c78.mid")
+    , bpm=120
     , lookup={
         0: (36, 41), # kicks
         1: 37, # snare
         2: 45, # tom-lo
         3: 47, # tom-hi
-    }).show()
+    })
 
-@animation(timeline=midi.t, bg=0, render_bg=1, audio=audio)
+@animation(timeline=midi, bg=0, render_bg=1, audio=audio)
 def drumloop(f):
     kicks = f.a.t.ki(0, f.i).index()
 

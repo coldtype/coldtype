@@ -33,6 +33,7 @@ from coldtype.helpers import loopidx, sibling, raw_ufo, ßhide, ßshow, cycle_id
 from coldtype.time import *
 from coldtype.time.easing import ez
 from coldtype.time.nle.ascii import AsciiTimeline
+from coldtype.time.midi import MidiTimeline
 from coldtype.img.blendmode import BlendMode
 from coldtype.grid import Grid
 
