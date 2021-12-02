@@ -514,7 +514,7 @@ class SourceReader():
             out = []
             for c in candidates:
                 if isinstance(c, animation):
-                    out.append(timeViewer(c))
+                    out.extend(timeViewer(c))
                 out.append(c)
             return out
         else:

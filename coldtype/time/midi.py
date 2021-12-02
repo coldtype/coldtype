@@ -312,7 +312,7 @@ class MidiTimeline(Timeline):
             
         self.min = min([int(n.name) for n in events])
         self.max = max([int(n.name) for n in events])
-        self.notes = sorted(set(int(n.name) for n in events))
+        self.notes = list(reversed(sorted(set(int(n.name) for n in events))))
         self.spread = self.max - self.min
 
         self.lookup = {}

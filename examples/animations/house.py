@@ -2,12 +2,12 @@ from coldtype import *
 
 audio = __sibling__("media/house.wav")
 
-midi = (Programs.Midi(
-    __sibling__("media/house.mid"),
-    text=0, bpm=120, duration=60)
-    .show())
+midi = MidiTimeline(
+    __sibling__("media/house.mid")
+    , bpm=120
+    , duration=60)
 
-@animation(timeline=midi.t, bg=0.1, audio=audio)
+@animation(timeline=midi, bg=0.1, audio=audio)
 def render(f):
     k = f.t.ki(36).adsr([12, 10])
     s = f.t.ki(38).adsr([4, 35])

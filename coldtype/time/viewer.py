@@ -1,6 +1,6 @@
 import math
 from collections import defaultdict
-from coldtype.renderable.animation import animation
+from coldtype.renderable.animation import animation, renderable
 from coldtype.text.composer import StSt, Font, Rect, Point
 from coldtype.time.midi import MidiTimeline
 from coldtype.time.nle.ascii import AsciiTimeline
@@ -34,13 +34,30 @@ def timeViewer(tl):
     def build_midi_display(r):
         wu = r.w / int(tl.duration)
         rows = r.subdivide(len(lines), "N")
-            
+        
         out = PS()
         
         for idx, line in enumerate(lines.keys()):
             out += (P(rows[idx].take(2, "N"))
                 .f(bw(0.8))
                 .t(0, 1))
+        
+        for t in tl.timeables:
+            l = tl.notes.index(int(t.name))
+            f = hsl(0.5+l*0.3)
+            row = rows[l]
+            tr = (row.take(t.duration*wu, "W")
+                .offset(t.start*wu, 0))
+            
+            out += (P(tr).f(f.lighter(0.2).with_alpha(0.8)))
+
+            out += (P(row.take(2, "W"))
+               .translate(t.start*wu, 0)
+               .f(f))
+            out += (StSt(t.name, Font.RecursiveMono(), 32)
+               .align(row.take(20, "W"), "W")
+               .translate(t.start*wu+6, 0)
+               .f(f.darker(0.15)))
         
         return out
 
@@ -100,24 +117,29 @@ def timeViewer(tl):
 
     outer += display
 
+    @renderable(r)
+    def timeViewBackground(r):
+        return outer
+
     @animation(r
     , timeline=tl
     , bg=1
     , preview_only=1
     , sort=-1
+    , layer=1
     )
     def timeView(f):
         return PS([
-            outer,
             (P(Rect(2, r.h))
                 .t(f.e("l", 0, rng=(rd.psw[0], rd.pse[0])), 0)),
-            (StSt("{:04d}\n{:04d}"
-                .format(f.i, f.t.duration),
-                Font.RecursiveMono(), 22)
-                .align(rw.inset(10), th=0))])
+            # (StSt("{:04d}\n{:04d}"
+            #     .format(f.i, f.t.duration),
+            #     Font.RecursiveMono(), 22)
+            #     .align(rw.inset(10), th=0))
+                ])
     
     def pointToFrame(pt:Point):
         return math.floor(min(1, max(0, (pt.x-re.x)/re.w))*tl.duration)
     
     timeView.pointToFrame = pointToFrame
-    return timeView
+    return timeViewBackground, timeView
