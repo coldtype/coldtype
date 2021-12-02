@@ -369,6 +369,11 @@ class Renderer():
                 for cap in caps:
                     if cap not in self.state.cv2caps:
                         self.state.cv2caps[cap] = cv2.VideoCapture(cap)
+        
+        h = 0
+        for r in reversed(_rs):
+            r._stacked_rect = r.rect.offset(0, h)
+            h = r._stacked_rect.pn[1]
 
         if len(_rs) == 0:
             root = Path(__file__).parent.parent

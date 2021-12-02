@@ -1,6 +1,7 @@
+import math
 from collections import defaultdict
 from coldtype.renderable.animation import animation
-from coldtype.text.composer import StSt, Font, Rect
+from coldtype.text.composer import StSt, Font, Rect, Point
 from coldtype.time.nle.ascii import AsciiTimeline
 from coldtype.pens.datpen import P, PS
 from coldtype.color import bw, hsl
@@ -96,4 +97,8 @@ def timeViewer(tl):
                 Font.RecursiveMono(), 22)
                 .align(rw.inset(10), th=0))])
     
+    def pointToFrame(pt:Point):
+        return math.floor(min(1, max(0, (pt.x-re.x)/re.w))*tl.duration)
+    
+    timeView.pointToFrame = pointToFrame
     return timeView

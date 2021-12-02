@@ -26,6 +26,7 @@ class RendererState():
         self.memory = {}
         self.playing = False
 
+        self.mouse_down = False
         self.cursor = Point(0, 0)
         self.cursor_history = []
 
@@ -83,13 +84,30 @@ class RendererState():
         #return Action.PreviewStoryboard
     
     def on_mouse_button(self, pos, btn, action, mods):
+        self.mouse_down = action
+
         if not self.playing and action == 0:
+            for r in self.renderer.renderables(None):
+                if Point(*pos).inside(r._stacked_rect):
+                    if hasattr(r, "pointToFrame"):
+                        fo = r.pointToFrame(Point(*pos))
+                        self.frame_offset = fo
+                        return Action.PreviewStoryboard
+            
             p = self.record_cursor(pos)
             #if self.cursor_history[-1] != p:
             self.cursor_history.append(p)
             return Action.PreviewStoryboard
     
     def on_mouse_move(self, pos):
+        if self.mouse_down:
+            for r in self.renderer.renderables(None):
+                if Point(*pos).inside(r._stacked_rect):
+                    if hasattr(r, "pointToFrame"):
+                        fo = r.pointToFrame(Point(*pos))
+                        self.frame_offset = fo
+                        return Action.PreviewStoryboard
+
         if self.playing:
             self.record_cursor(pos)
     

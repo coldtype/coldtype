@@ -141,6 +141,8 @@ class renderable():
         """Base configuration for a renderable function"""
 
         self.rect = Rect(rect).round()
+        self._stacked_rect = None
+
         self.bg = normalize_color(bg)
         self.fmt = fmt
         self.prefix = prefix
