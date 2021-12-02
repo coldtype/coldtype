@@ -155,7 +155,7 @@ def drummachine(f):
         .scale(0.2)
         .align(f.a.r, y="mny")
         .translate(0, 100)
-        #.ch(warp(None, speed=f.e("l", 1, rng=(0, 3)), rz=3, mult=50))
+        .ch(warp(None, speed=f.e("l", 1, rng=(0, 3)), rz=3, mult=50))
         .skew(cowbell.adsr(ar["CW"], rng=(0, 0.5))))
 
     # Now we return the data we’ve manipulated to the renderer. This is also where we apply the finishing touches to the `COLD\nTYPE` lockup, by reversing the lines so that the the first line is last (meaning it shows up on top, which is nice for when the C gets really big), and then by applying an `understroke`, which interleaves stroked copies of each letter in the composition, giving us a classic look that we can hit with a high-contrast `phototype` simulation. And then we’re done!

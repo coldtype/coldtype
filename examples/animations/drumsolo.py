@@ -1,14 +1,15 @@
 from coldtype import *
 from coldtype.fx.skia import phototype 
+from coldtype.time.midi import MidiReader
 
 audio = __sibling__("media/68.wav")
-midi = Programs.Midi(__sibling__("media/68.mid"), text=0, bpm=151)
+midi = MidiTimeline(
+    __sibling__("media/68.mid")
+    , bpm=151)
 
-midi.hide()
-
-@animation(timeline=midi.t, bg=hsl(0.4, 0.8, l=0.2), render_bg=1, audio=audio)
+@animation(timeline=midi, bg=hsl(0.4, 0.8, l=0.2), render_bg=1, audio=audio)
 def drumsolo(f):
-    d = midi.t[0].fifve(f.i)
+    d = lambda notes, a, r: f.t.ki(notes).adsr([a, r])
     lk1 = {
         "O": d([36, 38], 5, 50),
         "M": d([42, 62, 63], 3, 20),
@@ -20,11 +21,12 @@ def drumsolo(f):
         "P": d([51], 3, 350)
     }
 
-    return (Glyphwise("DRUM\nSHOP", lambda g:
-            [Style(Font.MutatorSans(), 350),
-             dict(
-                wdth=lk1.get(g.c, 0),
-                wght=0.25*lk1.get(g.c, 0))])
+    return (Glyphwise("DRUM\nSHOP", lambda g: [
+        Style(Font.MutatorSans(), 350),
+        dict(
+            wdth=lk1.get(g.c, 0),
+            wght=0.25*lk1.get(g.c, 0)
+        )])
         .lead(20)
         .xalign(f.a.r, th=0)
         .align(f.a.r, th=0)

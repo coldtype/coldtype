@@ -17,7 +17,7 @@ def timeViewer(tl):
         tl = a.t
         ow = a.rect.w
 
-    lh = 60
+    lh = 40
     lt = 40
 
     lines = defaultdict(lambda: [])
@@ -55,7 +55,7 @@ def timeViewer(tl):
                .translate(t.start*wu, 0)
                .f(f))
             out += (StSt(t.name, Font.RecursiveMono(), 32)
-               .align(row.take(20, "W"), "W")
+               .align(row.take(20, "W"), "W", tv=1)
                .translate(t.start*wu+6, 0)
                .f(f.darker(0.15)))
         
@@ -86,7 +86,7 @@ def timeViewer(tl):
             out += (P(row.take(2, "W"))
                 .translate(t.start*wu, 0)
                 .f(f))
-            out += (StSt(t.name, Font.RecursiveMono(), 38)
+            out += (StSt(t.name, Font.RecursiveMono(), 34)
                 .align(row.take(20, "W"), "W")
                 .translate(t.start*wu+6, 0)
                 .f(f.darker(0.15)))

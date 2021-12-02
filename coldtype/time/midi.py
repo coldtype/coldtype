@@ -339,7 +339,10 @@ class MidiTimeline(Timeline):
             self.lookup[k] = v
     
     def ki(self, key, fi=None):
-        if key in self.lookup:
-            return super().ki(self.lookup[key], fi)
-        else:
-            return super().ki(key, fi)
+        try:
+            if key in self.lookup:
+                return super().ki(self.lookup[key], fi)
+        except TypeError:
+            pass
+        
+        return super().ki(key, fi)
