@@ -15,7 +15,7 @@ at = AsciiTimeline(1, """
 def officehours(f):
     stx = Style.StretchX(0,
         L=(730*at.ki("L").io(10, "eeio"), 310),
-        F=(1220*at.ki("F").io(10, "eleio"), 260),
+        F=(1220*at.ki("F").io(10, ["qeio", "eleio"]), 260),
         H=(1900*at.ki("H").io(10, "ceio"), 250))
     
     txt = (StSt("Coldtype\nOffice\nHours".upper()

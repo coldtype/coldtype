@@ -1,10 +1,10 @@
 import math
 from collections import defaultdict
 from coldtype.renderable.animation import animation, renderable
-from coldtype.text.composer import StSt, Font, Rect, Point
+from coldtype.text.composer import StSt, Font, Rect, Point, Style
 from coldtype.time.midi import MidiTimeline
 from coldtype.time.nle.ascii import AsciiTimeline
-from coldtype.pens.datpen import P, PS
+from coldtype.pens.datpen import P, PS, DATText
 from coldtype.color import bw, hsl
 
 
@@ -94,7 +94,8 @@ def timeViewer(tl):
         return out
 
     r = Rect(ow, len(lines)*lh+lt)
-    rw, re = r.divide(100, "W")
+    #rw, re = r.divide(100, "W")
+    re = r.inset(20, 0)
     rt, rd = re.divide(lt, "N")
 
     if isinstance(tl, AsciiTimeline):
@@ -105,7 +106,7 @@ def timeViewer(tl):
         display = PS()
 
     outer = PS([
-        P(rw).f(bw(0.95)),
+        #P(rw).f(bw(0.95)),
         P(rt).f(bw(0.95))])
 
     frames = re.subdivide(tl.duration, "W")
@@ -129,13 +130,16 @@ def timeViewer(tl):
     , layer=1
     )
     def timeView(f):
+        x = f.e("l", 0, rng=(rd.psw[0], rd.pse[0]))
         return PS([
-            (P(Rect(2, r.h))
-                .t(f.e("l", 0, rng=(rd.psw[0], rd.pse[0])), 0)),
+            P(Rect(2, r.h)).t(x, 0),
             # (StSt("{:04d}\n{:04d}"
             #     .format(f.i, f.t.duration),
             #     Font.RecursiveMono(), 22)
             #     .align(rw.inset(10), th=0))
+            (DATText(str(f.i), Style("Times", 20, load_font=0), Rect(x+6, r.h-20, 100, 40))
+                #.align(rw.inset(10), th=0)
+                )
                 ])
     
     def pointToFrame(pt:Point):
