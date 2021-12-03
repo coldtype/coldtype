@@ -323,8 +323,12 @@ class WinmanGLFWSkia():
     def turn_over(self):
         extent = self.renderer.extent
 
-        #if self.renderer.needs_new_context:
-        #    self.update_window(extent)
+        if self.renderer.needs_new_context:
+            self.renderer.needs_new_context = False
+            self.reset_extent(extent)
+            #self.update_window(extent)
+            #if not self.surface:
+            #self.create_surface(extent)
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 

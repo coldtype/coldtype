@@ -75,6 +75,7 @@ class ConfigOption(Enum):
     NoViewerErrors = ("no_viewer_errors", None, "nve",
         true_false_or_none)
     EnableAudio = ("enable_audio", None, "ea", true_false_or_none)
+    AddTimeViewers = ("add_time_viewers", None, "tv", true_false_or_none)
 
     @staticmethod
     def Help(e):
@@ -130,6 +131,8 @@ class ConfigOption(Enum):
             return "Turn off displaying errors in the viewer"
         elif e == ConfigOption.EnableAudio:
             return "Enable audio playback if audio is defined on an @animation"
+        elif e == ConfigOption.AddTimeViewers:
+            return "Begin with time-viewers visible?"
         
 
     @staticmethod

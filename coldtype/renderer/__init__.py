@@ -407,8 +407,8 @@ class Renderer():
         
         self.extent = extent
         
-        if needs_new_context:
-            self.winmans.did_reset_extent(self.extent)
+        #if needs_new_context:
+        #    self.winmans.did_reset_extent(self.extent)
 
         return needs_new_context
     
@@ -990,7 +990,7 @@ class Renderer():
             self.winmans.toggle_rendered()
         
         elif shortcut == KeyboardShortcut.ToggleTimeViewer:
-            self.source_reader.addTimeViewers = not self.source_reader.addTimeViewers
+            self.source_reader.config.add_time_viewers = not self.source_reader.config.add_time_viewers
             return Action.PreviewStoryboardReload
         
         elif shortcut == KeyboardShortcut.PreviewScaleUp:

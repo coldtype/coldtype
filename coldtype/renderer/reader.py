@@ -291,7 +291,6 @@ class SourceReader():
         self.runner = runner
         self.inputs = inputs or []
         self.use_blender = use_blender
-        self.addTimeViewers = True
 
         self.config = None
         self.read_configs(cli_args, filepath)
@@ -487,7 +486,7 @@ class SourceReader():
             __RUNNER__=self.runner)
         
         self.candidates = self.renderable_candidates(
-            output_folder_override, self.addTimeViewers)
+            output_folder_override, self.config.add_time_viewers)
     
     def write_code_to_tmpfile(self, code):
         if self.filepath:
@@ -501,7 +500,7 @@ class SourceReader():
     
     def renderable_candidates(self,
         output_folder_override=None,
-        addTimeViewers=False,
+        add_time_viewers=False,
         ):
         candidates = find_renderables(
             self.filepath,
@@ -513,7 +512,7 @@ class SourceReader():
         if len(candidates) == 0:
             candidates.append(Programs.Blank())
         
-        if addTimeViewers:
+        if add_time_viewers:
             out = []
             for c in candidates:
                 if (isinstance(c, animation) and
