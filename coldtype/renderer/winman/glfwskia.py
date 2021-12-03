@@ -54,6 +54,9 @@ class WinmanGLFWSkiaBackground(WinmanPassthrough):
         glfw.make_context_current(window)
 
         self.context = skia.GrDirectContext.MakeGL()
+    
+    def reset_extent(self, extent):
+        pass
 
 
 class WinmanGLFWSkia():
