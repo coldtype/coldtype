@@ -1,5 +1,6 @@
 import enum
 import math, tempfile, pickle, inspect
+from subprocess import call
 from os import stat
 from pathlib import Path
 
@@ -576,11 +577,17 @@ class DATPens(DraftingPens, DATPen):
         return []
     
     def insert(self, index, pen):
+        if callable(pen):
+            pen = pen(self)
+        
         for app in self._appendable(pen):
             self._pens.insert(index, app)
         return self
     
     def append(self, pen, allow_blank=False):
+        if callable(pen):
+            pen = pen(self)
+
         for app in self._appendable(pen, allow_blank):
             self._pens.append(app)
         return self

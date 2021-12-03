@@ -2,10 +2,7 @@ from coldtype.test import *
 
 @test()
 def stub(r):
-    dps = (StyledString("Yy",
-        Style("~/Type/fonts/fonts/_script/MistralD.otf", 500))
-        .pens()
+    return (StSt("Yy", "Mistral", 500)
         .align(r)
-        .f(hsl(0.7)))
-    print(dps[0].a(0.1))
-    return dps
+        .f(hsl(0.7))
+        .î(0, lambda p: p.a(0.1)))

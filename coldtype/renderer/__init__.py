@@ -244,7 +244,8 @@ class Renderer():
             self.watch_file_changes()
         
         if reload:
-            self.reload_and_render(Action.PreviewStoryboard)
+            self.reload_and_render(Action.Initial)
+            self.actions_queued.append(Action.PreviewStoryboardReload)
             self.winmans.set_title(filepath.name)
             # TODO close an open blend file?
 
@@ -1043,14 +1044,17 @@ class Renderer():
         
         elif shortcut == KeyboardShortcut.ViewerSoloNone:
             self.viewer_solos = []
+            return Action.PreviewStoryboardReload
         elif shortcut == KeyboardShortcut.ViewerSoloNext:
             if len(self.viewer_solos):
                 for i, solo in enumerate(self.viewer_solos):
                     self.viewer_solos[i] = solo + 1
+            return Action.PreviewStoryboardReload
         elif shortcut == KeyboardShortcut.ViewerSoloPrev:
             if len(self.viewer_solos):
                 for i, solo in enumerate(self.viewer_solos):
                     self.viewer_solos[i] = solo - 1
+            return Action.PreviewStoryboardReload
         elif shortcut in [
             KeyboardShortcut.ViewerSolo1,
             KeyboardShortcut.ViewerSolo2,
@@ -1063,6 +1067,7 @@ class Renderer():
             KeyboardShortcut.ViewerSolo9
             ]:
             self.viewer_solos = [int(str(shortcut)[-1])-1]
+            return Action.PreviewStoryboardReload
         elif shortcut == KeyboardShortcut.PrintApproxFPS:
             self.winmans.print_approx_fps = True
         elif shortcut.value.startswith("viewer_sample_frames"):
@@ -1350,8 +1355,8 @@ class Renderer():
         print("> RESTARTING...")
         args = sys.argv
         if len(args) > 1:
-            #args[1] = str(self.source_reader.filepath)
-            args[1] = str(self._unnormalized_file)
+            args[1] = str(self.source_reader.filepath)
+            #args[1] = str(self._unnormalized_file)
         
         inputs = self.source_reader.program["__inputs__"]
 
@@ -1375,8 +1380,16 @@ class Renderer():
             args.append("-fo")
             args.append(fo)
         
+        tv = str(int(self.source_reader.config.add_time_viewers))
+        try:
+            tvi = args.index("-tv")
+            args[tvi+1] = tv
+        except ValueError:
+            args.append("-tv")
+            args.append(tv)
+        
         lc = []
-        for c in self.state.cursor_history:
+        for c in self.state.cursor_history[-3:]:
             lc.append(",".join([str(p) for p in c]))
         lc = ";".join(lc)
         try:

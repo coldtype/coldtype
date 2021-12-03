@@ -660,6 +660,9 @@ class DraftingPen(RecordingPen, SHContext):
         return self
     
     addData = add_data
+
+    def return_replace(self):
+        return self.add_data("replace", 1)
     
     def copy(self, with_data=False):
         dp = self.single_pen_class()
@@ -833,7 +836,7 @@ class DraftingPen(RecordingPen, SHContext):
     
     rt = rotate
     
-    def scale(self, scaleX, scaleY=None, point=None, th=0, tv=0, **kwargs):
+    def scale(self, scaleX, scaleY=None, point=None, th=1, tv=0, **kwargs):
         """Scale this shape by a percentage amount (1-scale)."""
         t = Transform()
         x, y = self._normPoint(point, th, tv, **kwargs)

@@ -6,7 +6,7 @@ nudge = Font.MutatorSans()
 at = AsciiTimeline(1, """
                                                                 <
         [L                                   ]
-                        [Lr             ]
+                        [Er             ]
                      [F                                     ]
                [H                 ]             
 """)
@@ -32,9 +32,9 @@ def officehours(f):
             .f(hsl(0.35, 0.8, 0.3)))
 
     # after bg, so it doesn't effect bounds 
-    txt.index([0, 2], lambda p: p
-        .rotate(at.ki("Lr").e("eeio", 0, r=(0, 360))
-            , th=1))
+    txt.index([0, -1], lambda p: p
+        .translate(at.ki("Er").e("eeio", 1, r=(0, 24)), 0)
+        .rotate(at.ki("Er").e("ceio", 0, r=(0, -360))))
 
     return PS([
         bg.copy().translate(5, -5).f(0),

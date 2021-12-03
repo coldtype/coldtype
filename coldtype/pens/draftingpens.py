@@ -68,6 +68,9 @@ class DraftingPens(DraftingPen):
         return self.append(item)
     
     def append(self, pen, allow_blank=False):
+        if callable(pen):
+            pen = pen(self)
+
         if isinstance(pen, Geometrical):
             return self._pens.append(self.single_pen_class(pen))
         elif isinstance(pen, DraftingPen):
@@ -82,6 +85,9 @@ class DraftingPens(DraftingPen):
         return self
     
     def insert(self, index, pen):
+        if callable(pen):
+            pen = pen(self)
+
         if pen:
             self._pens.insert(index, pen)
         return self
@@ -594,20 +600,24 @@ class DraftingPens(DraftingPen):
         self._pens = new_pens
         return self
     
-    def return_replace(self):
-        return self.add_data("replace", 1)
-    
     def index(self, idx, fn, enum_idx=None):
+        parent = self
+        lidx = idx
         try:
             p = self
             for x in idx:
                 if hasattr(p, "_pens"):
+                    parent = p
+                    lidx = x
                     p = p[x]
                 else:
                     p.index(x, fn)
                     return self
         except TypeError:
             p = self[idx]
+
+        parent[lidx] = p.ch(fn)
+        return self
         
         if enum_idx is None:
             res = fn(p)
