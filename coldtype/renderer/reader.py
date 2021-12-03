@@ -510,6 +510,9 @@ class SourceReader():
             output_folder_override,
             blender_file=self.blender_file())
         
+        if len(candidates) == 0:
+            candidates.append(Programs.Blank())
+        
         if addTimeViewers:
             out = []
             for c in candidates:
@@ -563,6 +566,10 @@ class Programs():
     @staticmethod
     def Demo():
         return SourceReader.LoadDemo("demo")[0]
+    
+    @staticmethod
+    def Blank():
+        return SourceReader.LoadDemo("blank")[0]
     
     @staticmethod
     def Glyphs(

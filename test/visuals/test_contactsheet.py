@@ -22,7 +22,7 @@ def flyinga(f):
             .rotate(360*qeio)
             .f(1))]
 
-flyinga_contact = flyinga.contactsheet(4, slice(0, None, 1))
+flyinga_contact = flyinga.contactsheet(4, slice(0, None, 2))
 
 @animation((250, 250), storyboard=[0], bg=0, timeline=tl)
 def storyboard(f):

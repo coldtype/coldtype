@@ -376,11 +376,6 @@ class Renderer():
                     if cap not in self.state.cv2caps:
                         self.state.cv2caps[cap] = cv2.VideoCapture(cap)
 
-        if len(_rs) == 0:
-            root = Path(__file__).parent.parent
-            sr = SourceReader(root / "demo/blank.py")
-            _rs = sr.renderables()
-            sr.unlink()
         return _rs
     
     def calculate_window_size(self, rs:List[renderable]):
