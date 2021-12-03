@@ -7,7 +7,7 @@ from tempfile import NamedTemporaryFile
 from subprocess import run
 from typing import Union
 
-from coldtype.renderable import renderable, ColdtypeCeaseConfigException, runnable, animation
+from coldtype.renderable import renderable, ColdtypeCeaseConfigException, runnable, animation, aframe, ui
 
 from coldtype.renderer.utils import Watchable
 from coldtype.renderer.config import ColdtypeConfig
@@ -513,7 +513,10 @@ class SourceReader():
         if addTimeViewers:
             out = []
             for c in candidates:
-                if isinstance(c, animation):
+                if (isinstance(c, animation) and
+                    not isinstance(c, aframe) and
+                    not isinstance(c, ui)
+                    ):
                     out.extend(timeViewer(c))
                 out.append(c)
             return out

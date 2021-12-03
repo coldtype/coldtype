@@ -119,6 +119,7 @@ class RendererState():
         else:
             ps = self.preview_scale + inc
         self.preview_scale = max(0.1, min(5, ps))
+        return Action.PreviewStoryboardReload
     
     def toggle_overlay(self, overlay, force=None):
         if force is not None:

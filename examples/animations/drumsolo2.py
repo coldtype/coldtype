@@ -19,9 +19,9 @@ def drumloop(f):
         return [Style(Font.MuSan(), 350, tu=100),
             dict(
                 wdth=f.a.t.ki(g.i)
-                    .adsr((10, 100)),
+                    .adsr((10, 130)),
                 wght=f.a.t.ki(g.i)
-                    .adsr((5, 50), r=(0, 1)))]
+                    .adsr((5, 20), r=(0, 1)))]
 
     return (Glyphwise("DRUM", styler)
         .align(f.a.r, th=0)

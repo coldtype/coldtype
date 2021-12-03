@@ -999,15 +999,15 @@ class Renderer():
             return Action.PreviewStoryboardReload
         
         elif shortcut == KeyboardShortcut.PreviewScaleUp:
-            self.state.mod_preview_scale(+0.1)
+            return self.state.mod_preview_scale(+0.1)
         elif shortcut == KeyboardShortcut.PreviewScaleDown:
-            self.state.mod_preview_scale(-0.1)
+            return self.state.mod_preview_scale(-0.1)
         elif shortcut == KeyboardShortcut.PreviewScaleMin:
-            self.state.mod_preview_scale(0, 0.1)
+            return self.state.mod_preview_scale(0, 0.1)
         elif shortcut == KeyboardShortcut.PreviewScaleMax:
-            self.state.mod_preview_scale(0, 5)
+            return self.state.mod_preview_scale(0, 5)
         elif shortcut == KeyboardShortcut.PreviewScaleDefault:
-            self.state.mod_preview_scale(0, 1)
+            return self.state.mod_preview_scale(0, 1)
 
         elif shortcut == KeyboardShortcut.WindowOpacityDown:
             self.winmans.glsk.set_window_opacity(relative=-0.1)

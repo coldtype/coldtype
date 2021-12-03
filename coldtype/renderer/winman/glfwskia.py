@@ -311,11 +311,11 @@ class WinmanGLFWSkia():
                         return self.renderer.on_shortcut(shortcut)
     
     def reset_extent(self, extent):
-        #GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.create_surface(extent)
         self.update_window(extent)
-        #self.surface.flushAndSubmit()
-        #glfw.swap_buffers(self.window)
+        self.surface.flushAndSubmit()
+        glfw.swap_buffers(self.window)
     
     def turn_over(self):
         extent = self.renderer.extent
