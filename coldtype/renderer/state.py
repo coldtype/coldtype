@@ -88,6 +88,8 @@ class RendererState():
 
         if not self.playing and action == 0:
             for r in self.renderer.renderables(None):
+                if not hasattr(r, "_stacked_rect"):
+                    continue
                 sr = r._stacked_rect.flip(self.renderer.extent.h)
                 if Point(*pos).inside(sr):
                     if hasattr(r, "pointToFrame"):

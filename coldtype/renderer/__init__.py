@@ -386,6 +386,9 @@ class Renderer():
         lh = -1
         h = 0
         for r in rs:
+            if not hasattr(r, "rect"):
+                continue
+            
             sr = r.rect.scale(dscale, "mnx", "mny").round()
             w = max(sr.w, w)
             adjr = None
