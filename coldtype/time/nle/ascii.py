@@ -62,22 +62,36 @@ class AsciiTimeline(Timeline):
                     clip_name = ""
                 elif c not in [" ", "-", "|", "<", ">"]:
                     if clip_name is None:
-                        clips.append(Timeable(
-                            round(idx*multiplier),
-                            round(idx*multiplier),
-                            name=c,
-                            data=dict(line=lidx),
-                            timeline=self))
+                        if instant_clip:
+                            instant_clip += c
+                        else:
+                            clip_start = round(idx*multiplier)
+                            instant_clip = c
+                    # if clip_name is None:
+                    #     clips.append(Timeable(
+                    #         round(idx*multiplier),
+                    #         round(idx*multiplier),
+                    #         name=c,
+                    #         data=dict(line=lidx),
+                    #         timeline=self))
                     else:
                         clip_name += c
+                elif c in [" "] and instant_clip:
+                    clips.append(Timeable(
+                        clip_start,
+                        clip_start,
+                        name=instant_clip,
+                        data=dict(line=lidx),
+                        timeline=self))
+                    instant_clip = None
             
-            # if instant_clip:
-            #     clips.append(Timeable(
-            #         clip_start,
-            #         clip_start,
-            #         name=instant_clip,
-            #         data=dict(line=lidx),
-            #         timeline=self))
+            if instant_clip:
+                clips.append(Timeable(
+                    clip_start,
+                    clip_start,
+                    name=instant_clip,
+                    data=dict(line=lidx),
+                    timeline=self))
             
             if looped_clip_end:
                 if clip_start is not None and clip_name is not None:

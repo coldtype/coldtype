@@ -33,6 +33,10 @@ class animation(renderable, Timeable):
         suffixer=None,
         **kwargs
         ):
+        if "tl" in kwargs:
+            timeline = kwargs["tl"]
+            del kwargs["tl"]
+
         super().__init__(**kwargs)
         
         self.rect = Rect(rect).round()
