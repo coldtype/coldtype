@@ -1,4 +1,4 @@
-import math, os
+import math, os, re
 from typing import Tuple
 
 from subprocess import run
@@ -9,7 +9,7 @@ from coldtype.time.timeable import Timeable
 from coldtype.time import Frame
 from coldtype.time.timeline import Timeline
 
-from coldtype.text.reader import Style
+from coldtype.text.reader import Style, Font
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.geometry import Rect, Point
@@ -354,3 +354,23 @@ class FFMPEGExport():
         """i.e. Reveal-in-Finder"""
         os.system(f"open {self.output_path.parent}")
         return self
+
+
+class fontpreview(animation):
+    def __init__(self, font_re, font_dir=None, rect=(1200, 150), limit=25, **kwargs):
+        self.dir = font_dir
+        self.re = font_re
+        self.matches = []
+
+        for font in Font.List(self.re, self.dir):
+            if re.search(self.re, str(font)):
+                if len(self.matches) < limit:
+                    self.matches.append(font)
+        
+        self.matches.sort()
+
+        super().__init__(rect=rect, timeline=Timeline(len(self.matches)), **kwargs)
+    
+    def passes(self, action, renderer_state, indices=[]):
+        frames = self.active_frames(action, renderer_state, indices)
+        return [RenderPass(self, action, i, [Frame(i, self), self.matches[i]]) for i in frames]

@@ -370,24 +370,6 @@ class skia_direct(renderable):
 #         return [RenderPass(self, action, self.glyphName, [])]
 
 
-class fontpreview(renderable):
-    def __init__(self, font_dir, font_re, rect=(1200, 150), limit=25, **kwargs):
-        super().__init__(rect=rect, **kwargs)
-        self.dir = normalize_font_prefix(font_dir)
-        self.re = font_re
-        self.matches = []
-        
-        for font in self.dir.iterdir():
-            if re.search(self.re, str(font)):
-                if len(self.matches) < limit:
-                    self.matches.append(font)
-        
-        self.matches.sort()
-    
-    def passes(self, action, renderer_state, indices=[]):
-        return [RenderPass(self, action, "{:s}".format(m.name), [self.rect, m]) for m in self.matches]
-
-
 class iconset(renderable):
     valid_sizes = [16, 32, 64, 128, 256, 512, 1024]
 
