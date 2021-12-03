@@ -1,11 +1,10 @@
 from coldtype import *
 from coldtype.drawbot import *
 
-co = Font("assets/ColdtypeObviously-VF.ttf")
+co = Font.ColdObvi()
 
-@drawbot_animation((1080, 300), timeline=Timeline(30), bg=1)
+@drawbot_animation((1080, 300), timeline=Timeline(30), bg=hsl(0.8, 0.6, 0.85))
 def bounce(f):
-
     # Using mostly DrawBot API
 
     fs = db.FormattedString("COLDTYPE",

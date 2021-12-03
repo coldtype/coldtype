@@ -106,7 +106,8 @@ def timeViewer(tl):
 
     outer = PS([
         #P(rw).f(bw(0.95)),
-        P(rt).f(bw(0.95))])
+        P(rt).f(bw(0.95))
+        ])
 
     frames = re.subdivide(tl.duration, "W")
         

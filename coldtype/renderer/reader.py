@@ -510,7 +510,7 @@ class SourceReader():
             output_folder_override,
             blender_file=self.blender_file())
         
-        if addTimeViewers:        
+        if addTimeViewers:
             out = []
             for c in candidates:
                 if isinstance(c, animation):

@@ -368,24 +368,22 @@ class WinmanGLFWSkia():
     def draw_preview(self, idx, scale, canvas, rect, waiter):
         render, result, rp = waiter
 
+        if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
+            image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(waiter[1])))
+            if image:
+                canvas.save()
+                canvas.scale(scale, scale)
+                canvas.drawImage(image, rect.x, rect.y)
+                canvas.restore()
+            return
+
         error_color = rgb(1, 1, 1).skia()
         canvas.save()
-        #canvas.translate(0, self.window_scrolly)
+        canvas.translate(0, self.window_scrolly)
         canvas.translate(rect.x, rect.y)
         
         if not self.config.window_transparent:
             canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
-        
-        if isinstance(waiter[1], Path) or isinstance(waiter[1], str):
-            image = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(waiter[1])))
-            if image:
-                if scale != 1:
-                    canvas.save()
-                    canvas.scale(scale, scale)
-                canvas.drawImage(image, rect.x, rect.y)
-                if scale != 1:
-                    canvas.restore()
-            return
         
         if not hasattr(render, "show_error"):
             canvas.scale(scale, scale)
