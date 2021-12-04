@@ -15,7 +15,7 @@ def styler(c):
     else:
         return c.text, Style(Font.RecursiveMono(), 100)
 
-ct, styles = at.interpretClips(exclude=[1])
+ct, styles = at.interpretClips(exclude=[0])
 
 @animation((1080, 540), tl=at)
 def timedWords(f):

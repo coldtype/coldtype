@@ -9,7 +9,7 @@ from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.blenderpen import BlenderPen, BPH
 from coldtype.color import hsl
 
-from coldtype.time import Frame, Timeline
+from coldtype.time import Frame, Timeline, Timeable
 from coldtype.renderable import renderable, Overlay, Action, runnable
 from coldtype.renderable.animation import animation
 
@@ -26,35 +26,52 @@ except ImportError:
     pass
 
 
-class BlenderTimeline(Sequence):
-    __name__ = "Blender"
+class BlenderIO():
+    def __init__(self, file):
+        file = Path(str(file)).expanduser()
+        file.parent.mkdir(exist_ok=True, parents=True)
+
+        self.blend_file = file
+        self.data_file = Path(str(file) + ".json")
     
-    def __init__(self, duration, fps, data,
-        workarea_track=1,
-        ):
-        tracks = []
-        for t in data.get("tracks", []):
-            clips = []
-            for cidx, clip in enumerate(t["clips"]):
-                clips.append(Clip(
-                    clip["text"],
-                    clip["start"],
-                    clip["end"],
-                    idx=cidx,
-                    track=t["index"]))
-            
-            tracks.append(ClipTrack(self, clips, []))
+    def data(self):
+        if self.data_file.exists():
+            return json.loads(self.data_file.read_text())
+
+
+class BlenderTimeline(Timeline):
+    def __init__(self, file):
+        if isinstance(file, BlenderIO):
+            file = file.data_file
+
+        self.file = file
+        if not self.file.exists():
+            self.file.write_text("{}")
+        
+        data = json.loads(file.read_text())
+
+        timeables = []
+        for track in data.get("tracks", []):
+            for tidx, t in enumerate(track["clips"]):
+                timeables.append(Timeable(
+                    t["start"],
+                    t["end"],
+                    name=t["text"],
+                    index=tidx,
+                    track=track["index"]))
         
         self.workarea = range(
             data.get("start", 0),
-            data.get("end", duration-1)+1)
+            data.get("end", 30)+1)
+    
+        super().__init__(fps=data.get("fps", 30), timeables=timeables)
 
-        super().__init__(
-            duration,
-            fps,
-            [data.get("current_frame", 0)],
-            tracks,
-            workarea_track=workarea_track-1)
+        # super().__init__(
+        #     duration,
+        #     fps,
+        #     [data.get("current_frame", 0)],
+        #     tracks,
+        #     workarea_track=workarea_track-1)
 
 
 def b3d(collection,
@@ -220,6 +237,7 @@ def walk_to_b3d(result:DATPens,
     result.walk(walker)
 
 
+
 class b3d_runnable(runnable):
     def __init__(self, solo=False, cond=None):
         if cond is not None:
@@ -245,7 +263,7 @@ class b3d_renderable(renderable):
         self.center = center
         self.upright = upright
         self.post_run = post_run
-        self.blender_file = None
+        self.blender_io = None
         self.reset_to_zero = reset_to_zero
 
         super().__init__(rect, **kwargs)
@@ -282,46 +300,12 @@ class b3d_animation(animation):
         self.create_timeline = create_timeline
         self.autosave = autosave
         self._bt = False
-        self.blender_file = None
+        self.blender_io = None
 
         if "timeline" not in kwargs:
             kwargs["timeline"] = Timeline(30)
         
-        super().__init__(rect=rect, **kwargs)
-    
-    def post_read(self):
-        out = self.reread_timeline(reset=True)
-        super().post_read()
-
-        if bpy and self.match_output:
-            bpy.data.scenes[0].render.filepath = str(self.pass_path(""))
-        
-        return out
-    
-    def reread_timeline(self, reset=False):
-        if self.create_timeline:
-            if not self.data_path().exists():
-                self.data_path().write_text("{}")
-
-        if self.data_path().exists():
-            self._bt = True
-            bt = BlenderTimeline(
-                self.timeline.duration,
-                self.timeline.fps,
-                self.data())
-            if reset:
-                self.reset_timeline(bt)
-            else:
-                self.timeline = bt
-                self.t = self.timeline
-            return bt.storyboard
-    
-    def reset_timeline(self, timeline):
-        super().reset_timeline(timeline)
-
         do_match_length = self.match_length
-        if isinstance(self.timeline, BlenderTimeline) and len(self.timeline.tracks) == 0:
-            do_match_length = True
 
         if bpy and do_match_length:
             bpy.data.scenes[0].frame_start = 0
@@ -336,6 +320,55 @@ class b3d_animation(animation):
                 bpy.data.scenes[0].render.fps = self.t.fps
                 bpy.data.scenes[0].render.fps_base = 1
         
+        super().__init__(rect=rect, **kwargs)
+    
+    # def post_read(self):
+    #     out = self.reread_timeline(reset=True)
+    #     super().post_read()
+
+    #     if bpy and self.match_output:
+    #         bpy.data.scenes[0].render.filepath = str(self.pass_path(""))
+        
+    #     return out
+    
+    # def reread_timeline(self, reset=False):
+    #     if self.create_timeline:
+    #         if not self.data_path().exists():
+    #             self.data_path().write_text("{}")
+
+    #     if self.data_path().exists():
+    #         self._bt = True
+    #         bt = BlenderTimeline(
+    #             self.timeline.duration,
+    #             self.timeline.fps,
+    #             self.data())
+    #         if reset:
+    #             self.reset_timeline(bt)
+    #         else:
+    #             self.timeline = bt
+    #             self.t = self.timeline
+    #         return bt.storyboard
+    
+    # def reset_timeline(self, timeline):
+    #     super().reset_timeline(timeline)
+
+    #     do_match_length = self.match_length
+    #     if isinstance(self.timeline, BlenderTimeline) and len(self.timeline.timeables) == 0:
+    #         do_match_length = True
+
+    #     if bpy and do_match_length:
+    #         bpy.data.scenes[0].frame_start = 0
+    #         bpy.data.scenes[0].frame_end = self.t.duration-1
+        
+    #     if bpy and self.match_fps:
+    #         # don't think this is totally accurate but good enough for now
+    #         if isinstance(self.t.fps, float):
+    #             bpy.data.scenes[0].render.fps = round(self.t.fps)
+    #             bpy.data.scenes[0].render.fps_base = 1.001
+    #         else:
+    #             bpy.data.scenes[0].render.fps = self.t.fps
+    #             bpy.data.scenes[0].render.fps_base = 1
+        
     def running_in_viewer(self):
         return not bpy
     
@@ -344,7 +377,7 @@ class b3d_animation(animation):
             return super().rasterize(config, content, rp)
         
         fi = rp.args[0].i
-        blend_source(config.blender_app_path, self.filepath, self.blender_file, fi, self.pass_path(""), self.samples, denoise=self.denoise)
+        blend_source(config.blender_app_path, self.filepath, self.blender_io.blend_file, fi, self.pass_path(""), self.samples, denoise=self.denoise)
         return True
     
     def baked_frames(self):
@@ -364,11 +397,12 @@ class b3d_animation(animation):
         
         return to_bake.walk(bakewalk)
     
-    def data_path(self):
-        return Path(str(self.blender_file) + ".json")
+    # def data_path(self):
+    #     return self.blender_io.data_file
     
-    def data(self):
-        return json.loads(self.data_path().read_text())
+    # def data(self):
+    #     if self.blender_io.data_file.exists():
+    #         return json.loads(self.data_path().read_text())
 
 
 class b3d_sequencer(b3d_animation):

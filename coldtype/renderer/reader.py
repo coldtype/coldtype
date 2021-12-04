@@ -6,6 +6,7 @@ from unittest import TestCase
 from tempfile import NamedTemporaryFile
 from subprocess import run
 from typing import Union
+from coldtype.blender import BlenderIO
 
 from coldtype.renderable import renderable, ColdtypeCeaseConfigException, runnable, animation, aframe, ui
 
@@ -180,7 +181,7 @@ def find_renderables(
     codepath:Path,
     program:dict,
     output_folder_override=None,
-    blender_file=None,
+    blender_io=None,
     ):
     all_rs = []
     filtered_rs = []
@@ -215,8 +216,8 @@ def find_renderables(
         r.output_folder = renderable_to_output_folder(
             filepath, r, override=output_folder_override)
 
-        if hasattr(r, "blender_file"):
-            r.blender_file = blender_file
+        if hasattr(r, "blender_io"):
+            r.blender_io = blender_io
 
         r.post_read()
 
@@ -403,16 +404,14 @@ class SourceReader():
         
         return valid_sources
     
-    def blender_file(self):
+    def blender_io(self):
         #if not self.use_blender and not self.config.blender_watch:
         #    return None
 
         bf = self.config.blender_file
         if not bf:
             bf = self.filepath.parent / "blends" / (self.filepath.stem + ".blend")
-        bf = Path(bf).expanduser()
-        bf.parent.mkdir(exist_ok=True, parents=True)
-        return bf
+        return BlenderIO(bf)
     
     def normalize_filepath(self, filepath:Path, dirindex=0):
         if isinstance(filepath, str):
@@ -483,7 +482,8 @@ class SourceReader():
             self.codepath,
             self.inputs,
             memory,
-            __RUNNER__=self.runner)
+            __RUNNER__=self.runner,
+            __BLENDER__=self.blender_io())
         
         self.candidates = self.renderable_candidates(
             output_folder_override, self.config.add_time_viewers)
@@ -507,7 +507,7 @@ class SourceReader():
             self.codepath,
             self.program,
             output_folder_override,
-            blender_file=self.blender_file())
+            blender_io=self.blender_io())
         
         if len(candidates) == 0:
             candidates.append(Programs.Blank())

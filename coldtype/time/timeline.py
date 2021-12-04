@@ -1,3 +1,4 @@
+from collections import defaultdict
 from coldtype.time.timeable import Timeable, Easeable
 from typing import List
 
@@ -62,6 +63,12 @@ class Timeline(Timeable):
     
     def jumps(self):
         return self._jumps
+    
+    def tracks(self):
+        ts = defaultdict(lambda: [])
+        for t in self.timeables:
+            ts[t.track].append(t)
+        return ts
     
     def text_for_frame(self, fi):
         return ""
@@ -170,7 +177,7 @@ class Timeline(Timeable):
         clips = []
         styles = []
         for t in self.timeables:
-            if int(t.data["line"]) not in exclude:
+            if t.track not in exclude:
                 start = t.start
                 end = t.end
                 if t.start == t.end:

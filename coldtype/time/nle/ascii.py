@@ -52,6 +52,7 @@ class AsciiTimeline(Timeline):
                             round((idx+1)*multiplier),
                             name=clip_name,
                             data=dict(line=lidx),
+                            track=lidx-1,
                             timeline=self))
                     else:
                         looped_clip_end = round(idx*multiplier)
@@ -82,6 +83,7 @@ class AsciiTimeline(Timeline):
                         clip_start,
                         name=instant_clip,
                         data=dict(line=lidx),
+                        track=lidx-1,
                         timeline=self))
                     instant_clip = None
             
@@ -91,6 +93,7 @@ class AsciiTimeline(Timeline):
                     clip_start,
                     name=instant_clip,
                     data=dict(line=lidx),
+                    track=lidx-1,
                     timeline=self))
             
             if looped_clip_end:
@@ -100,6 +103,7 @@ class AsciiTimeline(Timeline):
                         duration+looped_clip_end,
                         name=clip_name,
                         data=dict(line=idx),
+                        track=lidx-1,
                         timeline=self))
                     clip_start = None
                     clip_name = None

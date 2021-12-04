@@ -58,14 +58,14 @@ class Timeable():
         self.feedback = 0
         self.data = data
         self.timeline = timeline
-        self.track = track
+        self.track = int(track) if track else 0
     
     @property
     def duration(self):
         return self.end - self.start
     
     def __repr__(self):
-        if self.name:
+        if hasattr(self, "name") and self.name:
             return f"Timeable('{self.name}', {self.start}, {self.end} ({self.duration}))"
         else:
             return f"Timeable({self.start}, {self.end} ({self.duration}))"

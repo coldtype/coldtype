@@ -1,8 +1,8 @@
 from collections import defaultdict
 from coldtype.renderable.animation import animation, renderable
 from coldtype.text.composer import StSt, Font, Rect, Point, Style
+from coldtype.time.timeline import Timeline
 from coldtype.time.midi import MidiTimeline
-from coldtype.time.nle.ascii import AsciiTimeline
 from coldtype.pens.datpen import P, PS, DATText
 from coldtype.color import bw, hsl
 
@@ -21,18 +21,19 @@ def timeViewer(tl):
 
     lines = defaultdict(lambda: [])
 
-    if isinstance(tl, AsciiTimeline):
-        for t in tl.enumerate():
-            lines[t.data["line"]].append(t)
-    elif isinstance(tl, MidiTimeline):
+    if isinstance(tl, MidiTimeline):
         for n in tl.notes:
             lines[n].append(n)
+    elif isinstance(tl, Timeline):
+        lines = tl.tracks()
     else:
         lines[0] = 1
+    
+    line_count = max(lines.keys())+1
 
     def build_midi_display(r):
         wu = r.w / int(tl.duration)
-        rows = r.subdivide(len(lines), "N")
+        rows = r.subdivide(line_count, "N")
         
         out = PS()
         
@@ -60,22 +61,23 @@ def timeViewer(tl):
         
         return out
 
-    def build_ascii_display(r):
+    def build_timeable_display(r):
         wu = r.w / int(tl.duration)
-        rows = r.subdivide(len(lines), "N")
+        rows = r.subdivide(line_count, "N")
             
         out = PS()
+        #return out
         
         for line in lines.keys():
-            out += (P(rows[line - 1].take(2, "N"))
+            out += (P(rows[line].take(2, "N"))
                 .f(bw(0.8))
                 .t(0, 1))
             # out += (StSt(str(line),
             #     Font.RecursiveMono(), 22)
             #     .align(rows[line - 1].inset(-80, 0), "W"))
 
-        for t in tl.enumerate():
-            l = int(t.data["line"])-1
+        for t in tl.timeables:
+            l = int(t.track)
             f = hsl(0.5+l*0.3)
             row = rows[l]
             tr = (row.take(t.duration*wu, "W")
@@ -92,15 +94,15 @@ def timeViewer(tl):
 
         return out
 
-    r = Rect(ow, len(lines)*lh+lt)
+    r = Rect(ow, line_count*lh+lt)
     #rw, re = r.divide(100, "W")
     re = r.inset(20, 0)
     rt, rd = re.divide(lt, "N")
 
-    if isinstance(tl, AsciiTimeline):
-        display = build_ascii_display(rd)
-    elif isinstance(tl, MidiTimeline):
+    if isinstance(tl, MidiTimeline):
         display = build_midi_display(rd)
+    elif isinstance(tl, Timeline):
+        display = build_timeable_display(rd)
     else:
         display = PS()
 

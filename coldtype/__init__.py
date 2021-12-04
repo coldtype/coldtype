@@ -41,6 +41,8 @@ name = "coldtype"
 __version__ = "0.7.7"
 
 __FILE__ = None # will be redefined contextually
+__BLENDER__ = None # will be redefined contextually
+
 __sibling__ = lambda x: x # will be redefined contextually
 __inputs__ = [] # will be redefined contextually
 __memory__ = [] # will be redefined contextually
