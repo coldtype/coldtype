@@ -12,7 +12,7 @@ from coldtype.color import *
 
 from coldtype.time.clip import Clip, ClipFlags, ClipType
 
-from typing import Optional, Union, Callable, Tuple
+from typing import Optional, Union, Callable, Tuple, List
 
 
 class Marker(Timeable):
@@ -98,7 +98,7 @@ class ClipGroupPens(DATPens):
 
 ClipGroupTextSetter = namedtuple(
     "ClipGroupTextSetter",
-    ["frame", "i", "clip", "text"])
+    ["frame", "i", "clip", "text", "styles"])
 
 
 class ClipGroup(Timeable):
@@ -294,6 +294,7 @@ class ClipGroup(Timeable):
         fit=None,
         ignore_newlines=False,
         use_lines=None,
+        styles:List[Timeable]=[],
         removeOverlap=False) -> ClipGroupPens:
         """
         render_clip_fn: frame, line index, clip, clip text — you must return a tuple of text to render and the Style to render it with
@@ -315,8 +316,13 @@ class ClipGroup(Timeable):
                 if clip.type == ClipType.Meta or clip.blank:
                     continue
                 try:
+                    match_styles = []
+                    for s in styles:
+                        if s.now(clip.start):
+                            match_styles.append(s)
+                    
                     ftext = clip.ftext()
-                    text, style = render_clip_fn(ClipGroupTextSetter(f, idx, clip, ftext))
+                    text, style = render_clip_fn(ClipGroupTextSetter(f, idx, clip, ftext, match_styles))
                     texts.append([text, clip.idx, style])
                 except Exception as e:
                     print(e)
