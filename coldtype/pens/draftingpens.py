@@ -369,6 +369,13 @@ class DraftingPens(DraftingPen):
     def lead(self, leading):
         "Vertical spacing"
         ln = len(self._pens)
+
+        try:
+            if self._pens[-1].ambit().y > self._pens[0].ambit().y:
+                leading = -leading
+        except IndexError:
+            pass
+        
         for idx, p in enumerate(self._pens):
             p.translate(0, leading*(ln-1-idx))
         return self

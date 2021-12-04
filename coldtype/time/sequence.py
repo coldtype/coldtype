@@ -57,6 +57,13 @@ class ClipGroupPens(DATPens):
         return self
 
     def remove_futures(self, clean=True):
+        def futureRemover(p, pos, _):
+            if pos == 1 and "position" in p.data and "clip" in p.data:
+                if p.data["position"] > 0:
+                    p._pens = []
+        
+        return self.walk(futureRemover)
+
         for clip, pen in self.iterate_clips():
             if clip.position > 0:
                 pen._pens = []
@@ -511,6 +518,7 @@ class ClipTrack():
             cg:ClipGroup
             if cg.start <= fi and fi < cg.end:
                 return cg
+        return ClipGroup(self.sequence, -1, [])
     
     def now(self, fi, text):
         for idx, clip in enumerate(self.clips):

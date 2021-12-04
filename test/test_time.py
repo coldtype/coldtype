@@ -86,17 +86,15 @@ class TestTime(unittest.TestCase):
         self.assertEqual(cg.clips[-1].text, "")
 
         cg:ClipGroup = ct.currentGroup(16)
-        self.assertEqual(cg, None)
+        self.assertEqual(cg.duration, 0)
 
         cg:ClipGroup = ct.currentGroup(19)
-        self.assertEqual(cg, None)
+        self.assertEqual(cg.duration, 0)
 
         cg:ClipGroup = ct.currentGroup(20)
-        self.assertNotEqual(cg, None)
+        self.assertNotEqual(cg.duration, 0)
 
         cg:ClipGroup = ct.currentGroup(28)
-        self.assertNotEqual(cg, None)
-
         self.assertEqual(len(cg.clips), 7)
         self.assertEqual(cg.clips[0].type, ClipType.ClearScreen)
         self.assertEqual(cg.clips[-1].type, ClipType.EndCap)

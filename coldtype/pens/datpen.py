@@ -614,14 +614,14 @@ class DATPens(DraftingPens, DATPen):
     #     self._pens = list(reversed(self._pens))
     #     return self
     
-    def removeBlanks(self):
-        """Remove blank pens from the set"""
-        nonblank_pens = []
-        for pen in self._pens:
-            if not pen.removeBlanks():
-                nonblank_pens.append(pen)
-        self._pens = nonblank_pens
-        return self
+    # def removeBlanks(self):
+    #     """Remove blank pens from the set"""
+    #     nonblank_pens = []
+    #     for pen in self._pens:
+    #         if not pen.removeBlanks():
+    #             nonblank_pens.append(pen)
+    #     self._pens = nonblank_pens
+    #     return self
     
     def clearFrames(self):
         """Get rid of any non-bounds-derived pen frames;
