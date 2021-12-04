@@ -86,7 +86,10 @@ class Timeable():
         return self
     
     def now(self, i):
-        return self.start <= i < self.end
+        if self.start == self.end:
+            return i == self.start
+        else:
+            return self.start <= i < self.end
 
     def _normalize_fi(self, fi):
         if hasattr(self, "timeline") and self.timeline:

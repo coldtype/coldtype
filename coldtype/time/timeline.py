@@ -15,17 +15,27 @@ class Timeline(Timeable):
     __name__ = "Generic"
 
     def __init__(self,
-        duration,
+        duration=None,
         fps=30,
         timeables=None,
         storyboard=None,
         jumps=None,
         ):
-        self.fps = fps
-        self.start = 0
-        self.end = duration
-
         self.timeables:List[Timeable] = self._flatten(timeables)
+
+        self.fps = fps
+
+        if duration == None:
+            if len(self.timeables) > 0:
+                self.start = min([t.start for t in self.timeables])
+                self.end = max([t.end for t in self.timeables])
+            else:
+                self.start = 0
+                self.end = 0
+        else:
+            self.start = 0
+            self.end = duration
+
         self._holding = -1
 
         self._jumps = [self.start, *(jumps or []), self.end-1]
@@ -61,6 +71,12 @@ class Timeline(Timeable):
     
     def __getitem__(self, index):
         return self.timeables[index]
+    
+    def __contains__(self, key):
+        for t in self.timeables:
+            if t.name == key:
+                return True
+        return False
     
     def hold(self, i):
         self._holding = i
@@ -144,3 +160,23 @@ class Timeline(Timeable):
             else:
                 setattr(t, prop, attr + fn)
         return self
+    
+    def interpretClips(self, exclude=[]):
+        from coldtype.time.sequence import ClipTrack, Clip
+
+        clips = []
+        styles = []
+        for t in self.timeables:
+            if int(t.data["line"]) not in exclude:
+                start = t.start
+                end = t.end
+                if t.start == t.end:
+                    end = start + 1
+                if t.name == "•":
+                    start -= 1
+                    end -= 1
+                clips.append(Clip(t.name, start, end, t.index, track=t.track))
+            else:
+                styles.append(t)
+        ct = ClipTrack(self, clips, None)
+        return ct, Timeline(timeables=styles)

@@ -72,6 +72,9 @@ class DATPen(DraftingPen):
     
     def __str__(self):
         v = "" if self._visible else "ø-"
+        d = {**self.data}
+        if "_last_align_rect" in d:
+            del d["_last_align_rect"]
         if self.glyphName:
             return f"<{v}DP:'{self.glyphName}'/tag={self._tag}/data={self.data}>"
         else:

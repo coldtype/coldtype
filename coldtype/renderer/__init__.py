@@ -116,8 +116,11 @@ class Renderer():
         sys.path.insert(0, os.getcwd())
 
         self.subprocesses = {}
-        self.parser = parser
-        self.args = parser.parse_args()
+
+        if isinstance(parser, argparse.Namespace):
+            self.args = parser
+        else:
+            self.args = parser.parse_args()
 
         if self.args.version:
             print(coldtype.__version__)
@@ -743,6 +746,9 @@ class Renderer():
             else:
                 print(">>>>>>>>>>>> No program loaded! <<<<<<<<<<<<<<")
         except:
+            if not self.extent:
+                self.extent = Rect(1200, 200)
+                self.needs_new_context = True
             self.show_error()
 
         if wl < len(self.watchees) and len(self.observers) > 0:

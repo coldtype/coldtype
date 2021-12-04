@@ -320,6 +320,7 @@ class ClipGroup(Timeable):
                     for s in styles:
                         if s.now(clip.start):
                             match_styles.append(s)
+                    match_styles = Timeline(timeables=match_styles)
                     
                     ftext = clip.ftext()
                     text, style = render_clip_fn(ClipGroupTextSetter(f, idx, clip, ftext, match_styles))
@@ -379,10 +380,16 @@ class ClipGroup(Timeable):
                 last_clip_dps = None
                 for (text, cidx, style) in gt:
                     clip:Clip = self.clips[cidx]
-                    if clip.position == 0:
+                    if f.i < clip.start:
+                        position = 1
+                    elif f.i == clip.start or f.i < clip.end:
                         position = 0
-                    elif clip.position == -1:
+                    else:
                         position = -1
+                    # if clip.position == 0:
+                    #     position = 0
+                    # elif clip.position == -1:
+                    #     position = -1
                     line_text += clip.ftext()
                     clip_dps = DATPens(group_dps[tidx:tidx+len(text)])
                     clip_dps.tag("clip")
@@ -390,6 +397,7 @@ class ClipGroup(Timeable):
                     clip_dps.data["line_index"] = idx
                     clip_dps.data["line"] = re_grouped_line
                     clip_dps.data["group"] = re_grouped
+                    clip_dps.data["position"] = position
                     if clip.type == ClipType.JoinPrev and last_clip_dps:
                         grouped_clip_dps = last_clip_dps #DATPens()
                         #grouped_clip_dps.append(last_clip_dps)
@@ -497,6 +505,12 @@ class ClipTrack():
             clip:Clip
             if clip.start <= fi and fi < clip.end:
                 return clip
+    
+    def currentGroup(self, fi):
+        for idx, cg in enumerate(self.clip_groups):
+            cg:ClipGroup
+            if cg.start <= fi and fi < cg.end:
+                return cg
     
     def now(self, fi, text):
         for idx, clip in enumerate(self.clips):
