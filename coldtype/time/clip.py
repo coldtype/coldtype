@@ -77,7 +77,7 @@ class Clip(Timeable):
             self.type = ClipType.Meta
             self.text = self.text[2:]
         elif self.text == "•":
-            self.type == ClipType.EndCap
+            self.type = ClipType.EndCap
             self.text = ""
         
         parts = self.text.split(":")

@@ -1,8 +1,10 @@
 import unittest
 from coldtype.time.nle.ascii import AsciiTimeline
-from coldtype.renderable.animation import animation
+from coldtype.renderable.animation import animation, Frame
 from coldtype.renderer.reader import SourceReader
 from coldtype.time.timeable import Timeable
+from coldtype.time.timeline import Timeline
+from coldtype.text import Font, Style, Rect
 
 at = AsciiTimeline(1, """
                                     |
@@ -17,6 +19,13 @@ at2 = AsciiTimeline(1, """
         2
                 3
                         [four  ]
+""")
+
+at3 = AsciiTimeline(1, 24, """
+                                                    <
+        style1
+*Oh,    hello.  •   *This   some
+                        is      t  +x  +t       •
 """)
 
 class TestTime(unittest.TestCase):
@@ -54,6 +63,59 @@ class TestTime(unittest.TestCase):
 
         at2.hold(8+18)
         self.assertAlmostEqual(at2.ki("2").adsr([5, 20], ["eei", "qeio"]), 0.0055, 3)
+    
+    def test_ascii_timeline_3(self):
+        from coldtype.time.sequence import ClipTrack, ClipGroup, Clip, ClipType
+
+        self.assertEqual(at3.duration, 52)
+        self.assertEqual(at3.fps, 24)
+
+        ct, styles = at3.interpretClips(exclude=[1])
+        self.assertIsInstance(ct, ClipTrack)
+        self.assertIsInstance(styles, Timeline)
+        self.assertEqual(len(styles), 1)
+        self.assertEqual(styles[0].name, "style1")
+
+        cg:ClipGroup = ct.currentGroup(0)
+        self.assertEqual(len(cg.clips), 3)
+        self.assertEqual(cg.clips[0].type, ClipType.ClearScreen)
+        self.assertEqual(cg.clips[0].text, "Oh,")
+        self.assertEqual(cg.clips[1].type, ClipType.Isolated)
+        self.assertEqual(cg.clips[1].text, "hello.")
+        self.assertEqual(cg.clips[-1].type, ClipType.EndCap)
+        self.assertEqual(cg.clips[-1].text, "")
+
+        cg:ClipGroup = ct.currentGroup(16)
+        self.assertEqual(cg, None)
+
+        cg:ClipGroup = ct.currentGroup(19)
+        self.assertEqual(cg, None)
+
+        cg:ClipGroup = ct.currentGroup(20)
+        self.assertNotEqual(cg, None)
+
+        cg:ClipGroup = ct.currentGroup(28)
+        self.assertNotEqual(cg, None)
+
+        self.assertEqual(len(cg.clips), 7)
+        self.assertEqual(cg.clips[0].type, ClipType.ClearScreen)
+        self.assertEqual(cg.clips[-1].type, ClipType.EndCap)
+        self.assertEqual(cg.clips[-1].text, "")
+
+        def styler(c):
+            if "style1" in c.styles:
+                return c.text, Style(Font.RecursiveMono(), 150)
+            else:
+                return c.text.upper(), Style(Font.MutatorSans(), 150)
+
+        cgp = cg.pens(Frame(28, at3), styler, Rect(1080, 1080))
+        self.assertEqual(len(cgp), 1)
+        self.assertEqual(len(cgp[0]), 4)
+        self.assertEqual(cgp[0].data["line_text"], "This is some txt")
+        self.assertEqual(cgp[0][0][0].data["position"], 1)
+        self.assertEqual(cgp[0][1][0].data["position"], 0)
+        self.assertEqual(cgp[0][2][0].data["position"], -1)
+        self.assertEqual(cgp[0][1][0][-2].glyphName, "S.closed")
     
     def test_animation(self):
         src = "test/visuals/test_animation.py"

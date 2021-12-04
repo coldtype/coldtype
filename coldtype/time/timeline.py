@@ -72,6 +72,9 @@ class Timeline(Timeable):
     def __getitem__(self, index):
         return self.timeables[index]
     
+    def __len__(self):
+        return len(self.timeables)
+    
     def __contains__(self, key):
         for t in self.timeables:
             if t.name == key:
