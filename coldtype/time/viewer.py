@@ -21,7 +21,7 @@ def timeViewer(tl):
 
     lines = defaultdict(lambda: [])
 
-    if isinstance(tl, MidiTimeline):
+    if False and isinstance(tl, MidiTimeline):
         for n in tl.notes:
             lines[n].append(n)
     elif isinstance(tl, Timeline):
@@ -29,52 +29,29 @@ def timeViewer(tl):
     else:
         lines[0] = 1
     
-    line_count = max(lines.keys())+1
-
-    def build_midi_display(r):
-        wu = r.w / int(tl.duration)
-        rows = r.subdivide(line_count, "N")
-        
-        out = PS()
-        
-        for idx, line in enumerate(lines.keys()):
-            out += (P(rows[idx].take(2, "N"))
-                .f(bw(0.8))
-                .t(0, 1))
-        
-        for t in tl.timeables:
-            l = tl.notes.index(int(t.name))
-            f = hsl(0.5+l*0.3)
-            row = rows[l]
-            tr = (row.take(t.duration*wu, "W")
-                .offset(t.start*wu, 0))
-            
-            out += (P(tr).f(f.lighter(0.2).with_alpha(0.8)))
-
-            out += (P(row.take(2, "W"))
-               .translate(t.start*wu, 0)
-               .f(f))
-            out += (StSt(t.name, Font.RecursiveMono(), 32)
-               .align(row.take(20, "W"), "W", tv=1)
-               .translate(t.start*wu+6, 0)
-               .f(f.darker(0.15)))
-        
-        return out
+    try:
+        line_count = max(lines.keys())+1
+    except ValueError:
+        line_count = 0
 
     def build_timeable_display(r):
         wu = r.w / int(tl.duration)
         rows = r.subdivide(line_count, "N")
             
         out = PS()
-        #return out
         
         for line in lines.keys():
             out += (P(rows[line].take(2, "N"))
                 .f(bw(0.8))
                 .t(0, 1))
-            # out += (StSt(str(line),
-            #     Font.RecursiveMono(), 22)
-            #     .align(rows[line - 1].inset(-80, 0), "W"))
+            out += (StSt(str(line),
+                Font.RecursiveMono(), fs:=14)
+                .align(rows[line].inset(-12, 0), "W")
+                .f(hsl(0.65, 1, 0.7)))
+            out += (StSt(str(line),
+                Font.RecursiveMono(), fs)
+                .align(rows[line].inset(-12, 0), "E")
+                .f(hsl(0.65, 1, 0.7)))
 
         for t in tl.timeables:
             l = int(t.track)
@@ -99,7 +76,7 @@ def timeViewer(tl):
     re = r.inset(20, 0)
     rt, rd = re.divide(lt, "N")
 
-    if isinstance(tl, MidiTimeline):
+    if False and isinstance(tl, MidiTimeline):
         display = build_midi_display(rd)
     elif isinstance(tl, Timeline):
         display = build_timeable_display(rd)

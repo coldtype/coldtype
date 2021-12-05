@@ -50,7 +50,7 @@ def build_line():
 
 line = build_line()
 
-@animation(timeline=midi, rect=r, storyboard=[0])
+@animation(timeline=midi, rect=r)
 def render(f):
     time_offset = -f.i * note_width + r.w - note_width * 3
     time_offset += 10 # fudge

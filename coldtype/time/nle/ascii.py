@@ -49,7 +49,7 @@ class AsciiTimeline(Timeline):
                     if clip_start is not None and clip_name is not None:
                         clips.append(Timeable(
                             clip_start,
-                            round((idx+1)*multiplier),
+                            round((idx)*multiplier)+1,
                             name=clip_name,
                             data=dict(line=lidx),
                             track=lidx-1,

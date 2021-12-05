@@ -14,7 +14,7 @@ kfs = [
 # i.e. equivalent when multiplier=1
 # but different at multiplier>1
 
-at = AsciiTimeline(2, 30, """
+at = AsciiTimeline(3, 30, """
                                         <
 [0   ]  [1   ]  [2   ]  [3   ]  [4   ]   
 A    A  B    B  C    C  D    D  E    E

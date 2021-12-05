@@ -24,7 +24,6 @@ class animation(renderable, Timeable):
     """
     def __init__(self,
         rect=(1080, 1080),
-        storyboard=[0],
         timeline:Timeline=10,
         show_frame=True,
         offset=0,
@@ -45,7 +44,6 @@ class animation(renderable, Timeable):
         self.start = 0
         self.offset = offset
         self.show_frame = show_frame
-        self.storyboard = storyboard
         self.reset_timeline(timeline)
         self.single_frame = self.duration == 1
         self.audio = audio
@@ -70,11 +68,6 @@ class animation(renderable, Timeable):
         self.t = timeline
         self.start = timeline.start
         self.end = timeline.end
-        
-        if self.storyboard != [0] and timeline.storyboard == [0]:
-            pass
-        else:
-            self.storyboard = timeline.storyboard.copy()
     
     def folder(self, filepath):
         return filepath.stem + "/" + self.name # TODO necessary?

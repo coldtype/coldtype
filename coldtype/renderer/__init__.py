@@ -1093,6 +1093,7 @@ class Renderer():
             KeyboardShortcut.LoadNextInDirectory,
             KeyboardShortcut.LoadPrevInDirectory,
             ]:
+            self.args.frame_offset = 0
             d = -1 if shortcut == KeyboardShortcut.LoadPrevInDirectory else +1
             f = self.buildrelease_fn("adjacent")
             if f:

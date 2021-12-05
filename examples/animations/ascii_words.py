@@ -2,10 +2,9 @@ from coldtype import *
 
 at = AsciiTimeline(1, 30, """
                                                                                         <
-            [.big         ]
-*Oh,        hello.      
-                          •                                                         •
-                            *This       ≈some           ≈t  +e +x  +t                 
+            [.big        ]
+*Oh,        hello.        • 
+                            *This       ≈some           ≈t  +e +x  +t               •  
                                   is            timed
 """)
 

@@ -16,7 +16,7 @@ def pair(tx, f, x):
             .rotate(-ro+270)
             .translate(tx, 0))])
 
-@animation((1080, 1080), timeline=240)
+@animation((1080, 1080), timeline=120)
 def twister(f:Frame):
     tx = 250
     return (PS.Enumerate(range(0, 30),

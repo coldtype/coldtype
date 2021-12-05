@@ -1,3 +1,4 @@
+from collections import defaultdict
 import mido, math
 from pathlib import Path
 
@@ -320,6 +321,9 @@ class MidiTimeline(Timeline):
             self.register(lookup)
 
         super().__init__(self._duration, self.fps, timeables=events)
+
+        for t in self.timeables:
+            t.track = self.notes.index(int(t.name))
 
     @property
     def duration(self):
