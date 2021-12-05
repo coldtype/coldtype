@@ -18,7 +18,7 @@ class Frame(Easeable):
     (where `Frame` is an optional type-hint if you're looking to leverage autocomplete in your editor)
     """
     def __init__(self, i, animation):
-        self.i = i #: index of the frame
+        self.i = i % animation.t.duration #: index of the frame
         self.a = animation #: the animation (or subclass of animation) associated with the frame
     
     def adj(self, off):

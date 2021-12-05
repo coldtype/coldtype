@@ -309,6 +309,8 @@ class b3d_animation(animation):
         if "timeline" not in kwargs:
             kwargs["timeline"] = Timeline(30)
         
+        super().__init__(rect=rect, **kwargs)
+        
         do_match_length = self.match_length
 
         if bpy and do_match_length:
@@ -323,8 +325,6 @@ class b3d_animation(animation):
             else:
                 bpy.data.scenes[0].render.fps = self.t.fps
                 bpy.data.scenes[0].render.fps_base = 1
-        
-        super().__init__(rect=rect, **kwargs)
     
     # def post_read(self):
     #     out = self.reread_timeline(reset=True)

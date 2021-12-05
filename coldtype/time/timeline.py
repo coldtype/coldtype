@@ -23,6 +23,7 @@ class Timeline(Timeable):
         jumps=None,
         start=None,
         end=None,
+        findClips=True,
         ):
         self.timeables:List[Timeable] = self._flatten(timeables)
 
@@ -56,6 +57,11 @@ class Timeline(Timeable):
         if len(self.storyboard) == 0:
             self.storyboard.append(0)
         self.storyboard.sort()
+
+        if findClips:
+            self.clips = self.interpretClips()
+        else:
+            self.clips = None
     
     def _flatten(self, timeables):
         if not timeables:
@@ -179,22 +185,23 @@ class Timeline(Timeable):
                 setattr(t, prop, attr + fn)
         return self
     
-    def interpretClips(self, exclude=[]):
+    def interpretClips(self, include="*"):
         from coldtype.time.sequence import ClipTrack, Clip
 
         clips = []
         styles = []
         for t in self.timeables:
-            if t.track not in exclude:
-                start = t.start
-                end = t.end
-                if t.start == t.end:
-                    end = start + 1
-                if t.name == "•":
-                    start -= 1
-                    end -= 1
-                clips.append(Clip(t.name, start, end, t.index, track=t.track))
-            else:
-                styles.append(t)
-        ct = ClipTrack(self, clips, None)
-        return ct, Timeline(timeables=styles)
+            if include == "*" or t.track in include:
+                if t.name.startswith("."):
+                    styles.append(Timeable(t.start, t.end, index=t.index, name=t.name[1:], data=t.data, timeline=self, track=t.track))
+                else:
+                    start = t.start
+                    end = t.end
+                    if t.start == t.end:
+                        end = start + 1
+                    if t.name == "•":
+                        start -= 1
+                        end -= 1
+                    clips.append(Clip(t.name, start, end, t.index, track=t.track))
+        
+        return ClipTrack(self, clips, None, Timeline(timeables=styles, findClips=False))

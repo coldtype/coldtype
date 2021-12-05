@@ -114,6 +114,7 @@ class ClipGroup(Timeable):
         self.clips = clips
         self.timeline = timeline
         self.style_indices = []
+        self.styles = []
 
         self.retime()
 
@@ -308,6 +309,9 @@ class ClipGroup(Timeable):
         """
         if not rect:
             rect = f.a.r
+        if not styles or len(styles) == 0:
+            styles = self.styles
+
         group_pens = ClipGroupPens(self)
         lines = []
         groupings = []
@@ -327,7 +331,7 @@ class ClipGroup(Timeable):
                     for s in styles:
                         if s.now(clip.start):
                             match_styles.append(s)
-                    match_styles = Timeline(timeables=match_styles)
+                    match_styles = Timeline(timeables=match_styles, findClips=False)
                     
                     ftext = clip.ftext()
                     if clip.type == ClipType.Isolated and idx == 0:
@@ -485,11 +489,12 @@ class ClipGroup(Timeable):
 
 
 class ClipTrack():
-    def __init__(self, sequence, clips, markers):
+    def __init__(self, sequence, clips, markers, styles=None):
         self.sequence = sequence
         self.clips = clips
         self.markers = markers
         self.clip_groups = self.groupedClips(clips)
+        self.styles = styles
     
     def groupedClips(self, clips):
         groups = []
@@ -520,6 +525,7 @@ class ClipTrack():
         for idx, cg in enumerate(self.clip_groups):
             cg:ClipGroup
             if cg.start <= fi and fi < cg.end:
+                cg.styles = self.styles
                 return cg
         return ClipGroup(self.sequence, -1, [])
     
