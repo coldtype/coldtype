@@ -1389,7 +1389,7 @@ class Renderer():
             args.append("-fo")
             args.append(fo)
         
-        tv = str(int(self.source_reader.config.add_time_viewers))
+        tv = str(int(self.source_reader.config.add_time_viewers or 0))
         try:
             tvi = args.index("-tv")
             args[tvi+1] = tv

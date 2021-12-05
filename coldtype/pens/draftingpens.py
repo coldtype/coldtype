@@ -266,8 +266,13 @@ class DraftingPens(DraftingPen):
         nonblank_pens = []
         for pen in self._pens:
             if hasattr(pen, "_pens"):
-                pen.remove_blanks()
-                nonblank_pens.append(pen)
+                if len(pen._pens) == 0:
+                    continue
+                else:
+                    pen.remove_blanks()
+                    #print(">", pen, len(pen))
+                    if len(pen._pens) > 0:
+                        nonblank_pens.append(pen)
             elif len(pen.value) > 0:
                 nonblank_pens.append(pen)
             #rb = pen.remove_blanks()
@@ -276,6 +281,8 @@ class DraftingPens(DraftingPen):
             #    nonblank_pens.append(pen)
         self._pens = nonblank_pens
         return self
+    
+    removeBlanks = remove_blanks
     
     def remove_overlap(self):
         for p in self._pens:

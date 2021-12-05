@@ -1122,6 +1122,8 @@ class DraftingPen(RecordingPen, SHContext):
         """If this is blank, `return True` (for recursive calls from DATPens)."""
         return len(self.value) == 0
     
+    removeBlanks = remove_blanks
+    
     def interpolate(self, value, other):
         if len(self.value) != len(other.value):
             raise Exception("Cannot interpolate / diff lens")

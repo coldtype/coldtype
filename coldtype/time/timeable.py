@@ -407,6 +407,15 @@ class Easeable():
             return sum([self.i >= t.start for t in self.t]) - 1
         else:
             return int(self.i >= self.t.start) - 1
+        
+    def on(self):
+        if self._ts:
+            return bool(max([Easeable(t, self.i).on() for t in self.t]))
+        
+        if self.t.start == self.t.end:
+            return self.i == self.t.start
+        else:
+            return self.t.start <= self.i < self.t.end
     
     def tv(self,
         loops=0,

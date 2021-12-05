@@ -237,9 +237,9 @@ class ClipGroup(Timeable):
             if clip.position == 0:
                 return clip
     
-    def current_word(self):
+    def current_word(self, fi):
         for clip in self.clips:
-            if clip.position == 0:
+            if clip.start <= fi < clip.end:
                 clips = [clip]
                 before_clip = clip
                 # walk back
@@ -311,7 +311,7 @@ class ClipGroup(Timeable):
         group_pens = ClipGroupPens(self)
         lines = []
         groupings = []
-        if not use_lines:
+        if not use_lines or (use_lines and use_lines[0] is None):
             use_lines = self.lines(ignore_newlines=ignore_newlines)
         
         for idx, _line in enumerate(use_lines):
@@ -319,7 +319,7 @@ class ClipGroup(Timeable):
                 continue
             slugs = []
             texts = []
-            for clip in _line:
+            for idx, clip in enumerate(_line):
                 if clip.type == ClipType.Meta or clip.blank:
                     continue
                 try:
@@ -330,6 +330,9 @@ class ClipGroup(Timeable):
                     match_styles = Timeline(timeables=match_styles)
                     
                     ftext = clip.ftext()
+                    if clip.type == ClipType.Isolated and idx == 0:
+                        ftext = ftext[1:]
+
                     text, style = render_clip_fn(ClipGroupTextSetter(f, idx, clip, ftext, match_styles))
                     texts.append([text, clip.idx, style])
                 except Exception as e:

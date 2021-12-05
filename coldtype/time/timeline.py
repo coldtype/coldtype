@@ -21,21 +21,29 @@ class Timeline(Timeable):
         timeables=None,
         storyboard=None,
         jumps=None,
+        start=None,
+        end=None,
         ):
         self.timeables:List[Timeable] = self._flatten(timeables)
 
         self.fps = fps
-
-        if duration == None:
-            if len(self.timeables) > 0:
-                self.start = min([t.start for t in self.timeables])
-                self.end = max([t.end for t in self.timeables])
-            else:
-                self.start = 0
-                self.end = 0
+        
+        if start is not None:
+            self.start = start
         else:
             self.start = 0
-            self.end = duration
+        
+        if end is not None:
+            self.end = end
+        else:
+            if duration is None:
+                if len(self.timeables) > 0:
+                    #self.start = min([t.start for t in self.timeables])
+                    self.end = max([t.end for t in self.timeables])
+                else:
+                    self.end = 0
+            else:
+                self.end = duration
 
         self._holding = -1
 

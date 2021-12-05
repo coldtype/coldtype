@@ -40,7 +40,7 @@ class BlenderIO():
 
 
 class BlenderTimeline(Timeline):
-    def __init__(self, file):
+    def __init__(self, file, duration=None):
         if isinstance(file, BlenderIO):
             file = file.data_file
 
@@ -60,11 +60,15 @@ class BlenderTimeline(Timeline):
                     index=tidx,
                     track=track["index"]))
         
-        self.workarea = range(
-            data.get("start", 0),
-            data.get("end", 30)+1)
+        # self.workarea = range(
+        #     data.get("start", 0),
+        #     data.get("end", 30)+1)
     
-        super().__init__(fps=data.get("fps", 30), timeables=timeables)
+        super().__init__(
+            fps=data.get("fps", 30)
+            , timeables=timeables
+            , start=0
+            , end=duration or data.get("end")+1)
 
         # super().__init__(
         #     duration,
