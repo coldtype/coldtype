@@ -3,23 +3,13 @@ from coldtype.blender import *
 
 bt = BlenderTimeline(__BLENDER__, 400)
 
-@b3d_sequencer((1080, 540), timeline=bt, bg=0, render_bg=1)
+@b3d_sequencer((1080, 540), timeline=bt, bg=0, render_bg=1, storyboard=[180])
 def lyrics(f):
     def render_clip(tc):
         if "title" in tc.styles:
-            return tc.text.upper(), Style(
-                Font.Find("smoosh4"), 600,
-                wght=1,
-                wdth=0,
-                slnt=1,
-                fill=1)
+            return tc.text.upper(), Style("smoosh4", 600)
         else:
-            return tc.text.upper(), Style(
-                Font.Find("Rainer"), 350,
-                wght=1,
-                wdth=0.5,
-                slnt=1,
-                fill=1)
+            return tc.text.upper(), Style("Rainer", 350)
 
     cg = f.t.clips.currentGroup()
 

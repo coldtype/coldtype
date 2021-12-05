@@ -130,6 +130,7 @@ def timeViewer(tl):
     , preview_only=1
     , sort=-1
     , layer=1
+    , offset=a.offset
     )
     def timeView(f):
         x = f.e("l", 0, rng=(rd.psw[0], rd.pse[0]))

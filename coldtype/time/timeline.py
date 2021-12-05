@@ -59,9 +59,9 @@ class Timeline(Timeable):
         self.storyboard.sort()
 
         if findClips:
-            self.clips = self.interpretClips(findClips)
+            self.words = self.interpretClips(findClips)
         else:
-            self.clips = None
+            self.words = None
     
     def _flatten(self, timeables):
         if not timeables:
@@ -104,8 +104,8 @@ class Timeline(Timeable):
     
     def hold(self, i):
         self._holding = i
-        if self.clips:
-            self.clips.hold(i)
+        if self.words:
+            self.words.hold(i)
         return self
 
     def at(self, i) -> Easeable:

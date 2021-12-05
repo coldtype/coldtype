@@ -1,7 +1,7 @@
 from coldtype import *
 from coldtype.fx.xray import skeleton
 
-@animation(timeline=60, write_start=30, bg=1)
+@animation(timeline=60, bg=1)
 def easer(f):
     p = P().With1000(lambda r, p: p
         .moveTo(r.psw)

@@ -314,7 +314,8 @@ class Renderer():
             try:
                 for r in self.renderables(Action.PreviewStoryboardReload):
                     if isinstance(r, animation):
-                        self.last_animation = r
+                        if not r.preview_only:
+                            self.last_animation = r
                         self.last_animations.append(r)
                     
                 if self.last_animation:
@@ -974,12 +975,13 @@ class Renderer():
             self.action_waiting_reason = shortcut
             return -1
         elif shortcut == KeyboardShortcut.RenderOne:
+            la = self.last_animation
             self.on_action(Action.RenderIndices,
-                abs(self.state.frame_offset%self.last_animation.duration))
+                [abs((self.state.frame_offset+la.offset) % la.duration)])
             return -1
         elif shortcut == KeyboardShortcut.RenderFrom:
             la = self.last_animation
-            fo = abs(self.state.frame_offset%la.duration)
+            fo = abs((self.state.frame_offset+la.offset) % la.duration)
             idxs = list(range(fo, la.duration))
             self.on_action(Action.RenderIndices, idxs)
             return -1

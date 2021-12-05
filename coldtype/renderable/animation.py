@@ -27,8 +27,8 @@ class animation(renderable, Timeable):
         storyboard=[0],
         timeline:Timeline=10,
         show_frame=True,
+        offset=0,
         overlay=True,
-        write_start=0,
         audio=None,
         suffixer=None,
         **kwargs
@@ -43,8 +43,8 @@ class animation(renderable, Timeable):
         self.r = self.rect
         self.overlay = overlay
         self.start = 0
+        self.offset = offset
         self.show_frame = show_frame
-        self.write_start = write_start
         self.storyboard = storyboard
         self.reset_timeline(timeline)
         self.single_frame = self.duration == 1
@@ -75,9 +75,6 @@ class animation(renderable, Timeable):
             pass
         else:
             self.storyboard = timeline.storyboard.copy()
-        
-        if self.write_start and self.storyboard == [0]:
-            self.storyboard = [self.write_start]
     
     def folder(self, filepath):
         return filepath.stem + "/" + self.name # TODO necessary?
@@ -88,7 +85,7 @@ class animation(renderable, Timeable):
     def _active_frames(self, renderer_state):
         frames = []
         if renderer_state:
-            frames.append(renderer_state.frame_offset % self.duration)
+            frames.append((renderer_state.frame_offset + self.offset) % self.duration)
         return frames
     
     def active_frames(self, action, renderer_state, indices):
@@ -135,10 +132,7 @@ class animation(renderable, Timeable):
         return current
     
     def pass_suffix(self, index=0):
-        if isinstance(index, int):
-            idx = (index - self.write_start) % self.duration
-        else:
-            idx = index
+        idx = index % self.duration
 
         if self.suffixer:
             return self.suffixer(idx)
@@ -196,6 +190,12 @@ class animation(renderable, Timeable):
     
     def frame_to_fn(self, fi) -> Tuple[str, dict]:
         return None, {}
+    
+    def viewOffset(self, offset):
+        @animation(self.rect, timeline=self.timeline, offset=offset, preview_only=1)
+        def offset_view(f):
+            return self.func(Frame(f.i, self))
+        return offset_view
 
     def contactsheet(self, gx, sl=slice(0, None, None)):
         try:
