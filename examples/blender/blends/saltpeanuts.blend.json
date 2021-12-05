@@ -294,8 +294,8 @@
             "index": 3,
             "clips": [
                 {
-                    "name": "title",
-                    "text": "title",
+                    "name": ".title",
+                    "text": ".title",
                     "start": 349,
                     "end": 367
                 }

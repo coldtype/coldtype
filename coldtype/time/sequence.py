@@ -495,6 +495,12 @@ class ClipTrack():
         self.markers = markers
         self.clip_groups = self.groupedClips(clips)
         self.styles = styles
+        self._holding = -1
+    
+    def hold(self, i):
+        self._holding = i
+        if self.styles is not None:
+            self.styles.hold(i)
     
     def groupedClips(self, clips):
         groups = []
@@ -521,7 +527,13 @@ class ClipTrack():
             if clip.start <= fi and fi < clip.end:
                 return clip
     
-    def currentGroup(self, fi):
+    def currentGroup(self, fi=None):
+        if fi is None:
+            if self._holding >= 0:
+                fi = self._holding
+            else:
+                raise Exception("Must provide fi if ClipTrack is not held")
+
         for idx, cg in enumerate(self.clip_groups):
             cg:ClipGroup
             if cg.start <= fi and fi < cg.end:

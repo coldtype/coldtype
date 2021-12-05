@@ -59,7 +59,7 @@ class Timeline(Timeable):
         self.storyboard.sort()
 
         if findClips:
-            self.clips = self.interpretClips()
+            self.clips = self.interpretClips(findClips)
         else:
             self.clips = None
     
@@ -104,6 +104,8 @@ class Timeline(Timeable):
     
     def hold(self, i):
         self._holding = i
+        if self.clips:
+            self.clips.hold(i)
         return self
 
     def at(self, i) -> Easeable:
@@ -188,20 +190,38 @@ class Timeline(Timeable):
     def interpretClips(self, include="*"):
         from coldtype.time.sequence import ClipTrack, Clip
 
+        includes = []
+        excludes = []
+
+        if isinstance(include, str):
+            for x in include.split(" "):
+                if x == "*":
+                    continue
+                elif x.startswith("-"):
+                    excludes.append(int(x[1:]))
+                elif x.startswith("+"):
+                    includes.append(int(x[1:]))
+
         clips = []
         styles = []
         for t in self.timeables:
-            if include == "*" or t.track in include:
-                if t.name.startswith("."):
-                    styles.append(Timeable(t.start, t.end, index=t.index, name=t.name[1:], data=t.data, timeline=self, track=t.track))
-                else:
-                    start = t.start
-                    end = t.end
-                    if t.start == t.end:
-                        end = start + 1
-                    if t.name == "•":
-                        start -= 1
-                        end -= 1
-                    clips.append(Clip(t.name, start, end, t.index, track=t.track))
+            if len(includes) > 0:
+                if t.track not in includes:
+                    continue
+            if len(excludes) > 0:
+                if t.track in excludes:
+                    continue
+
+            if t.name.startswith("."):
+                styles.append(Timeable(t.start, t.end, index=t.index, name=t.name[1:], data=t.data, timeline=self, track=t.track))
+            else:
+                start = t.start
+                end = t.end
+                if t.start == t.end:
+                    end = start + 1
+                if t.name == "•":
+                    start -= 1
+                    end -= 1
+                clips.append(Clip(t.name, start, end, t.index, track=t.track))
         
         return ClipTrack(self, clips, None, Timeline(timeables=styles, findClips=False))

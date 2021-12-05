@@ -2,7 +2,7 @@ from coldtype import *
 
 at = AsciiTimeline(1, 30, """
                                                                         <
-            .big
+            [.big   ]
 *Oh,        hello.      
                     •                                               •
                         *This       ≈some           ≈t  +e +x  +t                 
@@ -17,8 +17,10 @@ def styler(c):
 
 @animation((1080, 540), tl=at)
 def timedWords(f):
-    return (f.t.clips.currentGroup(f.i)
+    return (f.t.clips.currentGroup()
         .pens(f, styler)
+        .cond(f.t.clips.styles.ki("big").on(),
+            λ.f(hsl(0.9)))
         .lead(30)
         .xalign(f.a.r)
         .align(f.a.r)

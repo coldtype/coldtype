@@ -40,7 +40,7 @@ class BlenderIO():
 
 
 class BlenderTimeline(Timeline):
-    def __init__(self, file, duration=None):
+    def __init__(self, file, duration=None, **kwargs):
         if isinstance(file, BlenderIO):
             file = file.data_file
 
@@ -68,7 +68,8 @@ class BlenderTimeline(Timeline):
             fps=data.get("fps", 30)
             , timeables=timeables
             , start=0
-            , end=duration or data.get("end")+1)
+            , end=duration or data.get("end")+1
+            , **kwargs)
 
         # super().__init__(
         #     duration,
@@ -267,7 +268,7 @@ class b3d_renderable(renderable):
         self.center = center
         self.upright = upright
         self.post_run = post_run
-        self.blender_io = None
+        self.blender_io:BlenderIO = None
         self.reset_to_zero = reset_to_zero
 
         super().__init__(rect, **kwargs)
@@ -304,7 +305,7 @@ class b3d_animation(animation):
         self.create_timeline = create_timeline
         self.autosave = autosave
         self._bt = False
-        self.blender_io = None
+        self.blender_io:BlenderIO = None
 
         if "timeline" not in kwargs:
             kwargs["timeline"] = Timeline(30)
@@ -430,5 +431,5 @@ class b3d_sequencer(b3d_animation):
     def post_read(self):
         out = super().post_read()
         if self._bt:
-            self.add_watchee(self.data_path(), "soft")
+            self.add_watchee(self.blender_io.data_file, "soft")
         return out
