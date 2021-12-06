@@ -3,7 +3,11 @@ from coldtype.drawbot import *
 
 co = Font.ColdObvi()
 
-@drawbot_animation((1080, 540), timeline=Timeline(30), bg=hsl(0.8, 0.6, 0.85))
+@drawbot_animation((1080, 540)
+, timeline=Timeline(30)
+, bg=hsl(0.8, 0.6, 0.85)
+, render_bg=1
+)
 def bounce(f):
     # Using mostly DrawBot API
 
