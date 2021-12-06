@@ -3,7 +3,7 @@ from coldtype.time.nle.ascii import AsciiTimeline
 
 at = AsciiTimeline(1, """
                                                               <
-[s                                                        ]
+    [s                                                    ]
             [a                               ]
                       [b                     ]
                                 [c                        ]
