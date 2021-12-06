@@ -279,7 +279,9 @@ class Renderer():
         if self.state.playing > 0:
             self.state.playing = -1
         
-        if self.source_reader.config.no_viewer_errors: 
+        if (self.source_reader.config.no_viewer_errors
+            or self.source_reader.config.no_viewer
+            ): 
             short_error = self.print_error()
             bc_print(bcolors.FAIL, "SYNTAX ERROR")
             bc_print(bcolors.WARNING, short_error)
@@ -440,6 +442,9 @@ class Renderer():
             Action.RenderWorkarea,
             Action.RenderIndices,
         ])
+
+        if previewing and self.source_reader.config.load_only:
+            return 0, 0, 0
 
         if previewing:
             if Overlay.Rendered in self.state.overlays:
@@ -753,7 +758,7 @@ class Renderer():
             self.show_error()
 
         if wl < len(self.watchees) and len(self.observers) > 0:
-            pprint(self.watchees)
+            #pprint(self.watchees)
             self.stop_watching_file_changes()
             self.watch_file_changes()
 
@@ -1252,6 +1257,7 @@ class Renderer():
     
     def on_modified(self, event):
         path = Path(event.src_path)
+        #print("\n\n\n---\nMOD", path, ptime.time())
 
         if path.parent.stem == "picklejar" and "picklejar" in str(self.source_reader.filepath):
             if path.exists():
@@ -1323,11 +1329,36 @@ class Renderer():
             return None
 
         self.observers = []
-        dirs = set([w[1] if w[1].is_dir() else w[1].parent for w in self.watchees])
-        for d in dirs:
-            o = AsyncWatchdog(str(d), on_modified=self.on_modified, recursive=True)
+
+        watcheable = set()
+        for w in self.watchees:
+            if w[1].is_dir():
+                watcheable.add(w[1])
+            else:
+                watcheable.add(w[1])
+        
+        #dirs = set([w[1] if w[1].is_dir() else w[1].parent for w in self.watchees])
+        
+        #for d in dirs:
+        print("\n>>> watching...")
+        for w in sorted(watcheable):
+            if w.is_dir():
+                try:
+                    print("  [d]", w.relative_to(Path.cwd()))
+                except:
+                    print("  [d]", w)
+                o = AsyncWatchdog(str(w), on_modified=self.on_modified, recursive=True)
+            else:
+                try:
+                    print("  [f]", w.relative_to(Path.cwd()))
+                except:
+                    print("  [f]", w)
+                o = AsyncWatchdog(str(w), on_modified=self.on_modified, recursive=False)
             o.start()
             self.observers.append(o)
+        
+        print("")
+        return
         if self.source_reader.filepath:
             try:
                 print(f"... watching {self.source_reader.filepath.relative_to(Path.cwd())} for changes ...")
@@ -1335,7 +1366,8 @@ class Renderer():
                 print(f"... watching {self.source_reader.filepath} for changes ...")
     
     def execute_string_as_shortcut_or_action(self, shortcut, key, args=[]):
-        print("SHORTCUT", shortcut, key, args)
+        print("\n>>> shortcut:")
+        print(f"  \"{shortcut}\"({key if key else 'ø'}[{args}])\n")
         co = ConfigOption.ShortToConfigOption(shortcut)
         if co:
             if co == ConfigOption.WindowOpacity:
@@ -1345,7 +1377,7 @@ class Renderer():
             return
         
         if shortcut == "render_index":
-            self.render(Action.RenderIndices, indices=[args])
+            self.render(Action.RenderIndices, indices=[int(args[0])])
             return
 
         try:

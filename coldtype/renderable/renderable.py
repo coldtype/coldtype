@@ -239,7 +239,9 @@ class renderable():
         return prefix
     
     def pass_path(self, index=0):
-        if isinstance(index, int):
+        if index is None:
+            return self.output_folder / f"{self.pass_prefix()}"
+        elif isinstance(index, int):
             return self.output_folder / f"{self.pass_prefix()}{self.pass_suffix(index)}.{self.fmt}"
         else:
             return self.output_folder / f"{self.pass_prefix()}{self.pass_suffix(index)}"

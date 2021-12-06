@@ -325,52 +325,11 @@ class b3d_animation(animation):
                 bpy.data.scenes[0].render.fps = self.t.fps
                 bpy.data.scenes[0].render.fps_base = 1
     
-    # def post_read(self):
-    #     out = self.reread_timeline(reset=True)
-    #     super().post_read()
-
-    #     if bpy and self.match_output:
-    #         bpy.data.scenes[0].render.filepath = str(self.pass_path(""))
-        
-    #     return out
-    
-    # def reread_timeline(self, reset=False):
-    #     if self.create_timeline:
-    #         if not self.data_path().exists():
-    #             self.data_path().write_text("{}")
-
-    #     if self.data_path().exists():
-    #         self._bt = True
-    #         bt = BlenderTimeline(
-    #             self.timeline.duration,
-    #             self.timeline.fps,
-    #             self.data())
-    #         if reset:
-    #             self.reset_timeline(bt)
-    #         else:
-    #             self.timeline = bt
-    #             self.t = self.timeline
-    #         return bt.storyboard
-    
-    # def reset_timeline(self, timeline):
-    #     super().reset_timeline(timeline)
-
-    #     do_match_length = self.match_length
-    #     if isinstance(self.timeline, BlenderTimeline) and len(self.timeline.timeables) == 0:
-    #         do_match_length = True
-
-    #     if bpy and do_match_length:
-    #         bpy.data.scenes[0].frame_start = 0
-    #         bpy.data.scenes[0].frame_end = self.t.duration-1
-        
-    #     if bpy and self.match_fps:
-    #         # don't think this is totally accurate but good enough for now
-    #         if isinstance(self.t.fps, float):
-    #             bpy.data.scenes[0].render.fps = round(self.t.fps)
-    #             bpy.data.scenes[0].render.fps_base = 1.001
-    #         else:
-    #             bpy.data.scenes[0].render.fps = self.t.fps
-    #             bpy.data.scenes[0].render.fps_base = 1
+    def post_read(self):
+        out = super().post_read()
+        if bpy and self.match_output:
+            bpy.data.scenes[0].render.filepath = str(self.pass_path(index=None))
+        return out
         
     def running_in_viewer(self):
         return not bpy
@@ -380,7 +339,7 @@ class b3d_animation(animation):
             return super().rasterize(config, content, rp)
         
         fi = rp.args[0].i
-        blend_source(config.blender_app_path, self.filepath, self.blender_io.blend_file, fi, self.pass_path(""), self.samples, denoise=self.denoise)
+        blend_source(config.blender_app_path, self.filepath, self.blender_io.blend_file, fi, self.pass_path(index=None), self.samples, denoise=self.denoise)
         return True
     
     def baked_frames(self):

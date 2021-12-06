@@ -24,58 +24,43 @@ def default_blender_app_path():
 
 
 class ConfigOption(Enum):
-    WindowPassthrough = ("window_passthrough", None, "wpass",
-        true_false_or_none)
-    WindowTransparent = ("window_transparent", None, "wt",
-        true_false_or_none)
-    WindowChromeless = ("window_chromeless", None, "wc", 
-        true_false_or_none)
-    WindowBackground = ("window_background", None, "wb",
-        true_false_or_none)
-    WindowFloat = ("window_float", None, "wf",
-        true_false_or_none)
-    WindowOpacity = ("window_opacity", 1, "wo",
-        lambda x: float(x))
+    WindowPassthrough = ("window_passthrough", None, "wpass", true_false_or_none)
+    WindowTransparent = ("window_transparent", None, "wt", true_false_or_none)
+    WindowChromeless = ("window_chromeless", None, "wc",  true_false_or_none)
+    WindowBackground = ("window_background", None, "wb", true_false_or_none)
+    WindowFloat = ("window_float", None, "wf", true_false_or_none)
+    WindowOpacity = ("window_opacity", 1, "wo", lambda x: float(x))
     WindowPin = ("window_pin", "NE", "wp")
     WindowPinInset = ("window_pin_inset", (0, 0), "wpi",
         lambda x: [int(n) for n in x.split(",")])
-    WindowContentScale = ("window_content_scale", None, "wcs",
-        lambda x: float(x))
+    WindowContentScale = ("window_content_scale", None, "wcs", lambda x: float(x))
     MonitorName = ("monitor_name", None, "mn")
     EditorCommand = ("editor_command", "code", "ec")
     ManyIncrement = ("many_increment", None, "minc")
-    PreviewScale = ("preview_scale", 1, "ps",
-        lambda x: float(x))
+    PreviewScale = ("preview_scale", 1, "ps", lambda x: float(x))
     FontDirs = ("font_dirs", [], "fd")
     FunctionFilters = ("function_filters", "", "ff",
         lambda x: [re.compile(f.strip()) for f in x.split(",")])
     Midi = ("midi", {}, None)
     Hotkeys = ("hotkeys", {}, None)
     ThreadCount = ("thread_count", 8, "tc")
-    Multiplex = ("multiplex", None, "mp",
-        true_false_or_none)
+    Multiplex = ("multiplex", None, "mp", true_false_or_none)
     DebounceTime = ("debounce_time", 0.25, "dt")
     RefreshDelay = ("refresh_delay", 0.025, "rd")
-    InlineFiles = ("inline_files", [], "in",
-        lambda x: x.split(","))
-    BlenderWatch = ("blender_watch", None, "bw",
-        true_false_or_none)
+    InlineFiles = ("inline_files", [], "in", lambda x: x.split(","))
+    BlenderWatch = ("blender_watch", None, "bw", true_false_or_none)
     BlenderAppPath = ("blender_app_path", default_blender_app_path(), "bap",
         lambda x: Path(x).expanduser().resolve())
     BlenderFile = ("blender_file", None, "bf",
         lambda x: Path(x).expanduser().resolve())
-    NoViewer = ("no_viewer", None, "nv",
-        true_false_or_none)
-    NoMIDI = ("no_midi", None, "nm",
-        true_false_or_none)
-    MIDIInfo = ("midi_info", None, "mi",
-        true_false_or_none)
-    NoSound = ("no_sound", None, "ns",
-        true_false_or_none)
-    NoViewerErrors = ("no_viewer_errors", None, "nve",
-        true_false_or_none)
+    NoViewer = ("no_viewer", None, "nv", true_false_or_none)
+    NoMIDI = ("no_midi", None, "nm", true_false_or_none)
+    MIDIInfo = ("midi_info", None, "mi", true_false_or_none)
+    NoSound = ("no_sound", None, "ns", true_false_or_none)
+    NoViewerErrors = ("no_viewer_errors", None, "nve", true_false_or_none)
     EnableAudio = ("enable_audio", None, "ea", true_false_or_none)
     AddTimeViewers = ("add_time_viewers", None, "tv", true_false_or_none)
+    LoadOnly = ("load_only", None, "lo", true_false_or_none)
 
     @staticmethod
     def Help(e):

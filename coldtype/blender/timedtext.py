@@ -201,7 +201,7 @@ class ColdtypeRenderOne(bpy.types.Operator):
 
     def execute(self, _):
         print("RENDER ONE")
-        remote("render_index", bpy.data.scenes[0].frame_current)
+        remote("render_index", [bpy.data.scenes[0].frame_current])
         return {'FINISHED'}
 
 class ColdtypeRenderWorkarea(bpy.types.Operator):

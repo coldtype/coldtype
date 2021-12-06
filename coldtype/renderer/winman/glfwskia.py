@@ -10,7 +10,7 @@ from coldtype.color import rgb
 try:
     import glfw
 except ImportError:
-    print("Big problem: GLFW could not be loaded")
+    #print("Big problem: GLFW could not be loaded")
     glfw = None
 
 try:
