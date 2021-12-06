@@ -271,9 +271,9 @@ class ColdtypeOpenInEditor(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class COLDTYPE_PT_Panel(bpy.types.Panel):
-    bl_idname = 'COLDTYPE_PT_panel'
-    bl_label = 'Coldtype'
+class COLDTYPE_WORDS_PT_Panel(bpy.types.Panel):
+    bl_idname = 'COLDTYPE_WORDS_PT_panel'
+    bl_label = 'Coldtype Words'
     bl_space_type = 'SEQUENCE_EDITOR'
     bl_region_type = 'UI'
     bl_category = 'Tool'
@@ -310,7 +310,7 @@ def register():
     bpy.utils.register_class(ColdtypeUnsetWorkarea)
     bpy.utils.register_class(ColdtypeOpenInEditor)
     
-    bpy.utils.register_class(COLDTYPE_PT_Panel)
+    bpy.utils.register_class(COLDTYPE_WORDS_PT_Panel)
     
     wm = bpy.context.window_manager
     kc = wm.keyconfigs.addon

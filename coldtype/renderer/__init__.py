@@ -443,10 +443,24 @@ class Renderer():
             Action.RenderIndices,
         ])
 
+        def check_watches(render):
+            for watch, flag in render.watch:
+                if isinstance(watch, Font) and not watch.cacheable:
+                    if watch.path not in self.watchee_paths():
+                        self.watchees.append([Watchable.Font, watch.path, flag])
+                    for ext in watch.font.getExternalFiles():
+                        if ext not in self.watchee_paths():
+                            self.watchees.append([Watchable.Font, ext, flag])
+                elif watch not in self.watchee_paths():
+                    self.watchees.append([Watchable.Generic, watch, flag])
+
         if previewing and self.source_reader.config.load_only:
+            renders = self.renderables(trigger)
+            for r in renders:
+                check_watches(r)
             return 0, 0, 0
 
-        if previewing:
+        if previewing and not self.source_reader.config.load_only:
             if Overlay.Rendered in self.state.overlays:
                 overlays = []
                 overlay_count = 0
@@ -479,15 +493,7 @@ class Renderer():
                     render.run()
                     continue
 
-                for watch, flag in render.watch:
-                    if isinstance(watch, Font) and not watch.cacheable:
-                        if watch.path not in self.watchee_paths():
-                            self.watchees.append([Watchable.Font, watch.path, flag])
-                        for ext in watch.font.getExternalFiles():
-                            if ext not in self.watchee_paths():
-                                self.watchees.append([Watchable.Font, ext, flag])
-                    elif watch not in self.watchee_paths():
-                        self.watchees.append([Watchable.Generic, watch, flag])
+                check_watches(render)
                 
                 passes = render.passes(trigger, self.state, indices)
                 render.last_passes = passes

@@ -3,6 +3,9 @@ from coldtype.blender import *
 
 bt = BlenderTimeline(__BLENDER__, 400)
 
+if not bpy:
+    print("RELOAD")
+
 @b3d_sequencer((1080, 540), timeline=bt, bg=0, render_bg=1, offset=180, watch=[bt.file])
 def lyrics(f):
     def render_clip(tc):
