@@ -3,15 +3,17 @@ from coldtype.drawbot import *
 
 co = Font.ColdObvi()
 
-@drawbot_animation((1080, 300), timeline=Timeline(30), bg=hsl(0.8, 0.6, 0.85))
+@drawbot_animation((1080, 540), timeline=Timeline(30), bg=hsl(0.8, 0.6, 0.85))
 def bounce(f):
     # Using mostly DrawBot API
 
+    fontSize = 190
+
     fs = db.FormattedString("COLDTYPE",
         font=co.path,
-        fontSize=120,
+        fontSize=fontSize,
         fontVariations=dict(
-            wdth=f.e("eeio", 1, rng=(0, 1000))))
+            wdth=f.e("eeio", rng=(0, 1000))))
     
     bp = db.BezierPath()
     bp.text(fs, (50, 50))
@@ -20,7 +22,8 @@ def bounce(f):
 
     # Using mostly Coldtype API
 
-    (StSt("COLDTYPE", co, 120, wdth=f.e("eeio", 1))
-        .t(50, 150)
+    (StSt("COLDTYPE", co, fontSize
+        , wdth=f.e("eeio"))
+        .t(50, 210)
         .f(hsl(0.4))
         | dbdraw)
