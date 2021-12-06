@@ -93,6 +93,8 @@ class Renderer():
             config=parser.add_argument("-c", "--config", type=str, default=None, help="By default, Coldtype looks for a .coldtype.py file in ~ and the cwd; use this to override that and look at a specific file instead"),
 
             profile=parser.add_argument("-p", "--profile", type=str, default=None, help="What config profile do you want to use? Default is no profile"),
+
+            cprofile=parser.add_argument("-cp", "--c-profile", action="store_true", default=False),
             
             format=parser.add_argument("-fmt", "--format", type=str, default=None, help="What image format should be saved to disk?"),
 
@@ -768,8 +770,14 @@ class Renderer():
             self.stop_watching_file_changes()
             self.watch_file_changes()
 
-    def main(self, profiler=None):
-        self.profiler = profiler
+    def main(self):
+        self.profiler = None
+        if self.args.c_profile:
+            print(">>> profiling with cProfile...")
+            import cProfile
+            pr = cProfile.Profile()
+            pr.enable()
+            self.profiler = pr
 
         if self.dead:
             return
@@ -1492,15 +1500,8 @@ class Renderer():
 
 def main(winmans=Winmans):
     Path("~/.coldtype").expanduser().mkdir(exist_ok=True)
-    pargs, parser = Renderer.Argparser()
-
-    if False:
-        import cProfile
-        pr = cProfile.Profile()
-        pr.enable()
-    else:
-        pr = None
-    Renderer(parser, winmans_class=winmans).main(profiler=pr)
+    _, parser = Renderer.Argparser()
+    Renderer(parser, winmans_class=winmans).main()
 
 if __name__ == "__main__":
     main()
