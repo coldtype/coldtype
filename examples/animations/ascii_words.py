@@ -14,7 +14,7 @@ def styler(c):
     else:
         return c.text, Style(Font.RecursiveMono(), 100)
 
-@animation((1080, 540), tl=at, offset=15)
+@animation((1080, 540), tl=at, offset=0)
 def timedWords(f):
     return (f.t.words.currentGroup()
         .pens(f, styler)
