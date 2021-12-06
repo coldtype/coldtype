@@ -1,21 +1,36 @@
 from coldtype import *
 from coldtype.drawbot import *
 
+font = Font.RecursiveMono()
 
 @drawbot_animation("letter")
 def multipage_doc(f):
-    c = hsl(f.a.progress(f.i).e, s=0.5, l=0.5)
-    (DATPen(f.a.r)
-        .f(c)
-        .ch(dbdraw))
+    c = hsl(f.e("l", 0))
     
-    db.fontSize(50)
-    db.fill(1)
-    db.font("Times")
-    db.textBox("This is page " + str(f.i), f.a.r.inset(50))
+    P(f.a.r.inset(10)).f(c).outline(10) | dbdraw
+    
+    fontName = db.installFont(str(font.path))
+    fs = db.FormattedString(
+        f"This is page {f.i}"
+        , font=fontName
+        , fontSize=50
+        , fill=c.rgba())
+    
+    db.textBox(fs, f.a.r.inset(50))
+    
+    bp = db.BezierPath()
+    bp.textBox(fs, f.a.r.inset(50, 100))
+    db.fill(*c)
+    db.drawPath(bp)
+
+    (StSt(f"This is page {f.i}", font, 50)
+        .f(c)
+        .align(f.a.r.inset(50, 160), "NW", th=0)
+        | dbdraw)
 
 
 # hit the 'R' key in the viewer to trigger this
+
 def release(_):
     pdfdoc(multipage_doc,
-        "examples/drawbot/drawbot_multipage.pdf")
+        __sibling__("multipage.pdf"))
