@@ -60,9 +60,9 @@ class BlenderTimeline(Timeline):
                     index=tidx,
                     track=track["index"]))
         
-        # self.workarea = range(
-        #     data.get("start", 0),
-        #     data.get("end", 30)+1)
+        self.workarea = range(
+            data.get("start", 0),
+            data.get("end", 30)+1)
     
         super().__init__(
             fps=data.get("fps", 30)
@@ -285,7 +285,6 @@ class b3d_animation(animation):
         bake=False,
         center=(0, 0),
         upright=False,
-        create_timeline=False,
         autosave=False,
         renderer="b3d",
         **kwargs
@@ -302,7 +301,6 @@ class b3d_animation(animation):
         self.match_output = match_output
         self.match_fps = match_fps
         self.renderer = renderer
-        self.create_timeline = create_timeline
         self.autosave = autosave
         self._bt = False
         self.blender_io:BlenderIO = None
@@ -423,13 +421,12 @@ class b3d_sequencer(b3d_animation):
             match_fps=True,
             match_length=False,
             match_output=match_output,
-            create_timeline=True,
             autosave=autosave,
             renderer="b3d" if in_blender else "skia",
             **kwargs)
     
-    def post_read(self):
-        out = super().post_read()
-        if self._bt:
-            self.add_watchee(self.blender_io.data_file, "soft")
-        return out
+    # def post_read(self):
+    #     out = super().post_read()
+    #     if self._bt:
+    #         self.add_watchee(self.blender_io.data_file, "soft")
+    #     return out

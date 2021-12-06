@@ -331,7 +331,7 @@ class ClipGroup(Timeable):
                     for s in styles:
                         if s.now(clip.start):
                             match_styles.append(s)
-                    match_styles = Timeline(timeables=match_styles, findClips=False)
+                    match_styles = Timeline(timeables=match_styles, findWords=False)
                     
                     ftext = clip.ftext()
                     if clip.type == ClipType.Isolated and idx == 0:

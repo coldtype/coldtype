@@ -167,13 +167,15 @@ class ColdtypeImporter(bpy.types.Operator):
         return {'FINISHED'}
 
 
-def remote(command):
+def remote(command, args=None):
     sq = find_sequence()
     input_command_file = bpy.app.driver_namespace["_coldtype_command_input_file"]
+    print("INPUT_COMMAND_FILE", input_command_file)
     (Path(input_command_file)
         .expanduser()
         .write_text(json.dumps(dict(
             action=command if isinstance(command, str) else command.value,
+            args=args,
             filepath=str(sq.filepath)))))
 
 
@@ -199,7 +201,7 @@ class ColdtypeRenderOne(bpy.types.Operator):
 
     def execute(self, _):
         print("RENDER ONE")
-        remote("render_one")
+        remote("render_index", bpy.data.scenes[0].frame_current)
         return {'FINISHED'}
 
 class ColdtypeRenderWorkarea(bpy.types.Operator):
@@ -234,7 +236,7 @@ class ColdtypeSetWorkarea(bpy.types.Operator):
         sq = find_sequence()
         if sq:
             fc = context.scene.frame_current
-            work = sq.t.find_workarea(fc)
+            work = sq.t.findWordsWorkarea(fc)
             if work:
                 start, end = work
                 context.scene.frame_start = start

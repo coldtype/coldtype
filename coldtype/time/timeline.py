@@ -23,7 +23,7 @@ class Timeline(Timeable):
         jumps=None,
         start=None,
         end=None,
-        findClips=True,
+        findWords=True,
         ):
         self.timeables:List[Timeable] = self._flatten(timeables)
 
@@ -58,8 +58,8 @@ class Timeline(Timeable):
             self.storyboard.append(0)
         self.storyboard.sort()
 
-        if findClips:
-            self.words = self.interpretClips(findClips)
+        if findWords:
+            self.words = self.interpretWords(findWords)
         else:
             self.words = None
     
@@ -187,7 +187,13 @@ class Timeline(Timeable):
                 setattr(t, prop, attr + fn)
         return self
     
-    def interpretClips(self, include="*"):
+    def findWordsWorkarea(self, fi):
+        if self.words:
+            cg = self.words.currentGroup(fi)
+            if cg:
+                return [cg.start, cg.end]
+    
+    def interpretWords(self, include="*"):
         from coldtype.time.sequence import ClipTrack, Clip
 
         includes = []
@@ -224,4 +230,4 @@ class Timeline(Timeable):
                     end -= 1
                 clips.append(Clip(t.name, start, end, t.index, track=t.track))
         
-        return ClipTrack(self, clips, None, Timeline(timeables=styles, findClips=False))
+        return ClipTrack(self, clips, None, Timeline(timeables=styles, findWords=False))

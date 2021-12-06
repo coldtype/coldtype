@@ -37,7 +37,7 @@ def persist_sequence(last_persisted):
     out = dict(
         start=scene.frame_start,
         end=scene.frame_end,
-        current_frame=scene.frame_current,
+        #current_frame=scene.frame_current,
         tracks=tracks)
     
     if out == last_persisted:
@@ -214,7 +214,7 @@ def unregister_watcher():
     bpy.utils.unregister_class(ColdtypeWatchingOperator)
 
 def watch(command_file):
-    input_file = command_file.replace(".txt", "_input.txt")
+    input_file = command_file.replace(".txt", "_input.json")
     bpy.app.driver_namespace["_coldtype_command_output_file"] = command_file
     bpy.app.driver_namespace["_coldtype_command_input_file"] = input_file
     

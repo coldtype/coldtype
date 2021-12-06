@@ -1275,7 +1275,7 @@ class Renderer():
                     else:
                         pass
 
-                if path.stem == "command":
+                if path.stem == "command" or "_input" in path.stem:
                     data = json.loads(path.read_text())
                     if "action" in data:
                         action = data.get("action")
@@ -1284,7 +1284,7 @@ class Renderer():
                             if path != str(self.last_animation.filepath):
                                 print("IGNORING COMMAND")
                                 return
-                        self.hotkey_waiting = (action, None, None)
+                        self.hotkey_waiting = (action, None, data.get("args"))
                     return
 
                 try:
@@ -1335,13 +1335,17 @@ class Renderer():
                 print(f"... watching {self.source_reader.filepath} for changes ...")
     
     def execute_string_as_shortcut_or_action(self, shortcut, key, args=[]):
-        #print("SHORTCUT", shortcut, key, args)
+        print("SHORTCUT", shortcut, key, args)
         co = ConfigOption.ShortToConfigOption(shortcut)
         if co:
             if co == ConfigOption.WindowOpacity:
                 self.winmans.glsk.set_window_opacity(absolute=args[0])
             else:
                 print("> Unhandled ConfigOption", co, key)
+            return
+        
+        if shortcut == "render_index":
+            self.render(Action.RenderIndices, indices=[args])
             return
 
         try:
