@@ -37,8 +37,8 @@ def render_snake(f, fi):
 def render(f):
     now = render_snake(f, f.i)
     return DPS([
-        DP(f.a.r).scale(0.3).fssw(None, 0, 2),
-        DP(f.a.r).scale(0.25).fssw(None, 0, 2),
+        DP(f.a.r).scale(0.3).fssw(-1, -1, 2),
+        DP(f.a.r).scale(0.25).fssw(-1, -1, 2),
         (track.copy()
             .fssw(None, hsl(0.65, l=0.9), 15)
             .translate(0, -8)),

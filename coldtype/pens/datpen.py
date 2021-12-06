@@ -1,5 +1,6 @@
 import enum
 import math, tempfile, pickle, inspect
+from subprocess import call
 from os import stat
 from pathlib import Path
 
@@ -71,6 +72,9 @@ class DATPen(DraftingPen):
     
     def __str__(self):
         v = "" if self._visible else "ø-"
+        d = {**self.data}
+        if "_last_align_rect" in d:
+            del d["_last_align_rect"]
         if self.glyphName:
             return f"<{v}DP:'{self.glyphName}'/tag={self._tag}/data={self.data}>"
         else:
@@ -576,11 +580,17 @@ class DATPens(DraftingPens, DATPen):
         return []
     
     def insert(self, index, pen):
+        if callable(pen):
+            pen = pen(self)
+        
         for app in self._appendable(pen):
             self._pens.insert(index, app)
         return self
     
     def append(self, pen, allow_blank=False):
+        if callable(pen):
+            pen = pen(self)
+
         for app in self._appendable(pen, allow_blank):
             self._pens.append(app)
         return self
@@ -604,14 +614,14 @@ class DATPens(DraftingPens, DATPen):
     #     self._pens = list(reversed(self._pens))
     #     return self
     
-    def removeBlanks(self):
-        """Remove blank pens from the set"""
-        nonblank_pens = []
-        for pen in self._pens:
-            if not pen.removeBlanks():
-                nonblank_pens.append(pen)
-        self._pens = nonblank_pens
-        return self
+    # def removeBlanks(self):
+    #     """Remove blank pens from the set"""
+    #     nonblank_pens = []
+    #     for pen in self._pens:
+    #         if not pen.removeBlanks():
+    #             nonblank_pens.append(pen)
+    #     self._pens = nonblank_pens
+    #     return self
     
     def clearFrames(self):
         """Get rid of any non-bounds-derived pen frames;

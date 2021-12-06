@@ -12,6 +12,7 @@ class ClipType(Enum):
     Isolated = "Isolated"
     JoinPrev = "JoinPrev"
     Meta = "Meta"
+    EndCap = "EndCap"
 
 
 class ClipFlags(Enum):
@@ -75,6 +76,9 @@ class Clip(Timeable):
         elif self.text.startswith("µ:"):
             self.type = ClipType.Meta
             self.text = self.text[2:]
+        elif self.text == "•":
+            self.type = ClipType.EndCap
+            self.text = ""
         
         parts = self.text.split(":")
         inline_style_marker = parts.index("ß") if "ß" in parts else -1

@@ -5,7 +5,8 @@ from coldtype.renderable.animation import animation
 
 from coldtype.renderer.reader import SourceReader
 from coldtype.blender import b3d_animation, b3d_runnable, walk_to_b3d
-from coldtype.blender.timedtext import add_shortcuts
+from coldtype.blender.timedtext import add_external_panel
+from coldtype.blender.internal_panel import add_internal_panel
 
 
 def persist_sequence(last_persisted):
@@ -37,7 +38,7 @@ def persist_sequence(last_persisted):
     out = dict(
         start=scene.frame_start,
         end=scene.frame_end,
-        current_frame=scene.frame_current,
+        #current_frame=scene.frame_current,
         tracks=tracks)
     
     if out == last_persisted:
@@ -214,11 +215,12 @@ def unregister_watcher():
     bpy.utils.unregister_class(ColdtypeWatchingOperator)
 
 def watch(command_file):
-    input_file = command_file.replace(".txt", "_input.txt")
+    input_file = command_file.replace(".txt", "_input.json")
     bpy.app.driver_namespace["_coldtype_command_output_file"] = command_file
     bpy.app.driver_namespace["_coldtype_command_input_file"] = input_file
     
     register_watcher()
     bpy.ops.wm.coldtype_watching_operator()
-    add_shortcuts()
+    add_internal_panel()
+    add_external_panel()
     print("...waiting for coldtype...")

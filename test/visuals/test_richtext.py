@@ -17,17 +17,6 @@ def render_txt(txt, styles):
     elif "b" in styles:
         return txt.upper(), Style(reiner, 90, bs=0, fill=hsl(0.1, s=0.8))
     return txt, Style(blanco, 64, fill=0)
-
-@test((1000, 200), solo=0)
-def test_rich_space(r):
-    rt = (RichText(r, "Hello[i] World", render_txt)
-        .xa()
-        .align(r, tv=1))
-    
-    return DPS([
-        DP(rt[0][-1].ambit(th=1)).f(hsl(0.3, 1, 0.8)),
-        rt
-    ])
     
 txt1 = """
 Behold! [h]
@@ -135,7 +124,7 @@ def render_txt2(txt, styles):
         return txt, Style(blanc + "Bold.otf", 72)
     return txt, Style(blanc + "Regular.otf", 42)
 
-@test(solo=0)
+#@test(solo=0)
 def test_plainish(r):
     rt = (RichText(r, txt3, render_txt2, blankfill="¶")
         #.remove_blanks()
@@ -152,7 +141,7 @@ Hello, [a]
 World!
 """
 
-@test(solo=0)
+#@test(solo=0)
 def test_style_key_lookup(r):
     rt = (RichText(
         r, txt4, {

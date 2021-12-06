@@ -1,31 +1,31 @@
 from coldtype import *
 from coldtype.blender import *
 
-@b3d_sequencer(timeline=Timeline(1440, 24), bg=0.5, render_bg=1)
+bt = BlenderTimeline(__BLENDER__, 400)
+
+if not bpy:
+    print("RELOAD")
+
+@b3d_sequencer((1080, 540), timeline=bt, bg=0, render_bg=1, offset=180, watch=[bt.file])
 def lyrics(f):
-
     def render_clip(tc):
-        if "title" in tc.clip.styles:
-            return tc.text.upper(), Style(
-                Font.Find("smoosh4-u"), 850,
-                wght=1,
-                wdth=0,
-                slnt=1,
-                fill=1)
+        if "title" in tc.styles:
+            return tc.text.upper(), Style("smoosh4", 600)
         else:
-            return tc.text.upper(), Style(
-                Font.Find("ObviouslyV"), 350,
-                wght=1,
-                wdth=0,
-                slnt=1,
-                fill=1)
+            return tc.text.upper(), Style("Rainer", 350)
 
-    cg = f.a.t.clip_group(0, f, styles=[1])
+    cg = f.t.words.currentGroup()
+
+    txt = (cg.pens(f, render_clip
+        , graf_style=GrafStyle(leading=30)
+        , use_lines=[cg.currentWord(f.i) if not f.t.words.styles.ki("title").on() else None]
+        )
+        .removeFutures()
+        .removeBlanks()
+        .align(f.a.r)
+        .f(1))
 
     return PS([
-        (cg.pens(f, render_clip,
-                graf_style=GrafStyle(leading=30),
-                use_lines=[cg.current_word() if "title" not in cg.styles() else None])
-            .xalign(f.a.r)
-            .align(f.a.r)
-            .remove_futures())])
+        P(txt.ambit(th=1)),
+        P().gridlines(f.a.r, 5).s(hsl(0.9)),
+        txt])

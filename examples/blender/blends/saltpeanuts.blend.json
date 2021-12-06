@@ -1,7 +1,6 @@
 {
-    "start": 349,
-    "end": 366,
-    "current_frame": 364,
+    "start": 0,
+    "end": 399,
     "tracks": [
         {
             "index": 2,
@@ -294,8 +293,8 @@
             "index": 3,
             "clips": [
                 {
-                    "name": "title",
-                    "text": "title",
+                    "name": ".title",
+                    "text": ".title",
                     "start": 349,
                     "end": 367
                 }

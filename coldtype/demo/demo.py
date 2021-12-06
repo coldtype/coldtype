@@ -1,18 +1,30 @@
 from coldtype import *
 
 states = [
-    dict(wdth=0, rotate=0, tu=300),
-    dict(wdth=1, rotate=15, tu=-80),
-    dict(wdth=0.5, rotate=-270, tu=330),
-    dict(wdth=1, rotate=-25, tu=50)
+    dict(wdth=0, rotate=0),
+    dict(wdth=1, rotate=15),
+    dict(wdth=0.5, rotate=-210),
+    dict(wdth=1, rotate=-25)
 ]
 
-loop = Loop(70, 12, len(states))
+spacings = [
+    dict(tu=300),
+    dict(tu=80),
+    dict(tu=330),
+    dict(tu=150)
+]
 
-@animation((1080, 1080/2), timeline=loop, storyboard=[0], bg=1, render_bg=1)
+at = AsciiTimeline(2, 30, """
+                                <
+[0     ][1     ][2     ][3     ]
+""").shift("end", -10)
+
+@animation((1080, 1080/4), timeline=at, bg=1)
 def render(f):
-    state = f.a.t.currentPhase(f.i).calcState(states)
+    state = at.kf("eeio", keyframes=states)
+    spacing = at.kf("seio", keyframes=spacings)
+
     return (StSt("COLDTYPE", Font.ColdtypeObviously(),
-        150, fill=0, **state, r=1, leading=80)
+        150, fill=0, **{**state, **spacing}, r=1, leading=80)
         .align(f.a.r)
         .f(0))

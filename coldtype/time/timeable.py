@@ -40,7 +40,15 @@ class Timeable():
 
     Implements additional methods to make it easier to work with time-based concepts
     """
-    def __init__(self, start, end, index=0, name=None, data={}, timeline=None):
+    def __init__(self,
+        start,
+        end,
+        index=0,
+        name=None,
+        data={},
+        timeline=None,
+        track=None,
+        ):
         self.start = start
         self.end = end
         self.index = index
@@ -50,13 +58,14 @@ class Timeable():
         self.feedback = 0
         self.data = data
         self.timeline = timeline
+        self.track = int(track) if track else 0
     
     @property
     def duration(self):
         return self.end - self.start
     
     def __repr__(self):
-        if self.name:
+        if hasattr(self, "name") and self.name:
             return f"Timeable('{self.name}', {self.start}, {self.end} ({self.duration}))"
         else:
             return f"Timeable({self.start}, {self.end} ({self.duration}))"
@@ -77,7 +86,10 @@ class Timeable():
         return self
     
     def now(self, i):
-        return self.start <= i < self.end
+        if self.start == self.end:
+            return i == self.start
+        else:
+            return self.start <= i < self.end
 
     def _normalize_fi(self, fi):
         if hasattr(self, "timeline") and self.timeline:
@@ -101,92 +113,92 @@ class Timeable():
             rb, ra = ra, rb
         return ra + e*(rb - ra)
 
-    def io(self, fi, length, ei="eei", eo="eei", negative=False):
-        """
-        Somewhat like ``progress()``, but can be used to fade in/out (hence the name (i)n/(o)ut)
+    # def io(self, fi, length, ei="eei", eo="eei", negative=False):
+    #     """
+    #     Somewhat like ``progress()``, but can be used to fade in/out (hence the name (i)n/(o)ut)
 
-        * ``length`` refers to the lenght of the ease, in frames
-        * ``ei=`` takes the ease-in mnemonic
-        * ``eo=`` takes the ease-out mnemonic
-        """
-        try:
-            length_i, length_o = length
-        except:
-            length_i = length
-            length_o = length
+    #     * ``length`` refers to the lenght of the ease, in frames
+    #     * ``ei=`` takes the ease-in mnemonic
+    #     * ``eo=`` takes the ease-out mnemonic
+    #     """
+    #     try:
+    #         length_i, length_o = length
+    #     except:
+    #         length_i = length
+    #         length_o = length
         
-        fi = self._normalize_fi(fi)
+    #     fi = self._normalize_fi(fi)
 
-        if fi < self.start:
-            return 1
-        if fi > self.end:
-            return 0
-        to_end = self.end - fi
-        to_start = fi - self.start
-        easefn = None
-        in_end = False
-        if to_end < length_o and eo:
-            in_end = True
-            v = 1-to_end/length_o
-            easefn = eo
-        elif to_start <= length_i and ei:
-            v = 1-to_start/length_i
-            easefn = ei
-        else:
-            v = 0
-        if v == 0 or not easefn:
-            return 0
-        else:
-            a, _ = ease(easefn, v)
-            if negative and in_end:
-                return -a
-            else:
-                return a
+    #     if fi < self.start:
+    #         return 1
+    #     if fi > self.end:
+    #         return 0
+    #     to_end = self.end - fi
+    #     to_start = fi - self.start
+    #     easefn = None
+    #     in_end = False
+    #     if to_end < length_o and eo:
+    #         in_end = True
+    #         v = 1-to_end/length_o
+    #         easefn = eo
+    #     elif to_start <= length_i and ei:
+    #         v = 1-to_start/length_i
+    #         easefn = ei
+    #     else:
+    #         v = 0
+    #     if v == 0 or not easefn:
+    #         return 0
+    #     else:
+    #         a, _ = ease(easefn, v)
+    #         if negative and in_end:
+    #             return -a
+    #         else:
+    #             return a
     
-    def io2(self, fi, length, easefn="eeio", negative=False):
-        try:
-            length_i, length_o = length
-        except:
-            length_i = length
-            length_o = length
+    # def io2(self, fi, length, easefn="eeio", negative=False):
+    #     try:
+    #         length_i, length_o = length
+    #     except:
+    #         length_i = length
+    #         length_o = length
         
-        if isinstance(length_i, float):
-            length_i = int(self.duration*(length_i/2))
-        if isinstance(length_o, float):
-            length_o = int(self.duration*(length_o/2))
+    #     if isinstance(length_i, float):
+    #         length_i = int(self.duration*(length_i/2))
+    #     if isinstance(length_o, float):
+    #         length_o = int(self.duration*(length_o/2))
         
-        if fi < self.start or fi > self.end:
-            return 0
+    #     if fi < self.start or fi > self.end:
+    #         return 0
         
-        try:
-            ei, eo = easefn
-        except ValueError:
-            ei, eo = easefn, easefn
+    #     try:
+    #         ei, eo = easefn
+    #     except ValueError:
+    #         ei, eo = easefn, easefn
 
-        to_end = self.end - fi
-        to_start = fi - self.start
-        easefn = None
-        in_end = False
+    #     to_end = self.end - fi
+    #     to_start = fi - self.start
+    #     easefn = None
+    #     in_end = False
 
-        if to_end < length_o and eo:
-            in_end = True
-            v = to_end/length_o
-            easefn = eo
-        elif to_start <= length_i and ei:
-            v = to_start/length_i
-            easefn = ei
-        else:
-            v = 1
+    #     if to_end < length_o and eo:
+    #         in_end = True
+    #         v = to_end/length_o
+    #         easefn = eo
+    #     elif to_start <= length_i and ei:
+    #         v = to_start/length_i
+    #         easefn = ei
+    #     else:
+    #         v = 1
 
-        if v == 1 or not easefn:
-            return 1
-        else:
-            a, _ = ease(easefn, v)
-            return a
-            if negative and in_end:
-                return -a
-            else:
-                return a
+    #     if v == 1 or not easefn:
+    #         return 1
+    #     else:
+    #         a, _ = ease(easefn, v)
+    #         return a
+    #         if negative and in_end:
+    #             return -a
+    #         else:
+    #             return a
 
     def _loop(self, t, times=1, cyclic=True, negative=False):
         lt = t*times*2
@@ -238,6 +250,8 @@ class Timeable():
         return Easeable(self, i)
 
 
+
+
 class TimeableView(Timeable):
     def __init__(self, timeable, value, svalue, count, index, position, start, end):
         self.timeable = timeable
@@ -258,12 +272,14 @@ class TimeableView(Timeable):
 
 
 class TimeableSet():
-    def __init__(self, timeables, name=None, start=-1, end=-1, data={}):
-        self.timeables = timeables
+    def __init__(self, timeables, name=None, start=-1, end=-1, data={}, flatten=False):
+        self.timeables = sorted(timeables, key=lambda t: t.start)
         self.name = name
         self._start = start
         self._end = end
         self.data = data
+        if flatten:
+            self.timeables = self.flat_timeables()
     
     def flat_timeables(self):
         ts = []
@@ -313,58 +329,36 @@ class TimeableSet():
             if t.start <= frame and frame < t.end:
                 return t
     
-    def fv(self, frame, filter_fn=None, reverb=[0,5], duration=-1, accumulate=0):
-        pre, post = reverb
-        count = 0
-        timeables_on = []
+    def at(self, i) -> "Easeable":
+        return Easeable(self.timeables, i)
+    
+    def _keyed(self, k):
+        k = str(k)
+        all = []
+        if isinstance(k, str):
+            for c in self.timeables:
+                if c.name == k:
+                    all.append(c)
+        return all
+    
+    def k(self, *keys):
+        if len(keys) > 1:
+            es = [self.k(k) for k in keys]
+            return TimeableSet(es, flatten=1)
+        else:
+            return TimeableSet(self._keyed(keys[0]), flatten=1)
+    
+    def ki(self, key, fi):
+        """(k)eyed-at-(i)ndex"""
 
-        ts_duration = self.end - self.start
-
-        for idx, t in enumerate(self.flat_timeables()):
-            if filter_fn and not filter_fn(t):
-                continue
-            t_start = t.start
-            t_end = t.end
-            if duration > -1:
-                t_end = t_start + duration
-            pre_start = t_start - pre
-            post_end = t_end + post
-
-            t_index = count
-            if frame >= pre_start: # correct?
-                count += 1
-            
-            value = 0
-            pos = 0
-            fi = frame
-
-            if frame >= t_start and frame <= t_end: # truly on
-                pos = 0
-                value = 1
-            else:
-                if post_end > ts_duration and frame < pre_start:
-                    fi = frame + ts_duration
-                elif pre_start < 0 and frame > post_end:
-                    fi = frame - ts_duration
-                if fi < t_start and fi >= pre_start:
-                    pos = 1
-                    value = (fi - pre_start) / pre
-                elif fi > t_end and fi < post_end:
-                    pos = -1
-                    value = (post_end - fi) / post
-            
-            if value > 0:
-                timeables_on.append(TimeableView(t, value, -1, count, idx, pos, pre_start, post_end))
-            else:
+        if not isinstance(key, str):
+            try:
+                es = [self.ki(k, fi).t for k in key]
+                return Easeable(es, fi)
+            except TypeError:
                 pass
         
-        if accumulate:
-            return timeables_on
-        else:
-            if len(timeables_on) == 0:
-                return TimeableView(None, 0, 0, count, -1, 0, 0, 0)
-            else:
-                return max(timeables_on, key=lambda tv: tv.value)
+        return Easeable(self._keyed(key), fi)
 
     def __repr__(self):
         return "<TimeableSet ({:s}){:04d}>".format(self.name if self.name else "?", len(self.timeables))
@@ -381,8 +375,8 @@ class Easeable():
         t:Timeable,
         i:int
         ):
-        self.t = t
-        self.i = i
+        self.t:Timeable = t
+        self.i:int = i
 
         self._ts = False
         if not isinstance(t, Timeable):
@@ -408,6 +402,21 @@ class Easeable():
         else:
             return min(vs)
     
+    def index(self):
+        if self._ts:
+            return sum([self.i >= t.start for t in self.t]) - 1
+        else:
+            return int(self.i >= self.t.start) - 1
+        
+    def on(self):
+        if self._ts:
+            return bool(max([Easeable(t, self.i).on() for t in self.t]))
+        
+        if self.t.start == self.t.end:
+            return self.i == self.t.start
+        else:
+            return self.t.start <= self.i < self.t.end
+    
     def tv(self,
         loops=0,
         cyclic=True,
@@ -427,6 +436,11 @@ class Easeable():
                 return EaseableTiming(e)
             else:
                 return EaseableTiming(e, es.index(e))
+                # chosen = [(i, 1 if x == e else 0) for i, x in enumerate(es)]
+                # if e > 0:
+                #     return EaseableTiming(e, chosen[-1][0])
+                # else:
+                #     return EaseableTiming(e, chosen[0][0])
 
         t, i = self.t, self.i
         if wrap:
@@ -557,13 +571,18 @@ class Easeable():
         rng=(0, 1),
         dv=None, # decay-value
         rs=False, # read-sustain
+        find=False,
         **kwargs
         ):
         rng = self._normRange(rng, **kwargs)
 
         if self._ts:
             es = [Easeable(t, self.i).adsr(adsr, es, rng, dv, rs) for t in self.t]
-            return self._maxRange(rng, es)
+            mx = self._maxRange(rng, es)
+            if find:
+                return mx, es.index(mx)
+            else:
+                return mx
 
         if len(adsr) == 2:
             d, s = 0, 0
@@ -607,14 +626,19 @@ class Easeable():
 
         if i < t.start: # ATTACK
             s = t.start - a
-            return self._maxRange(rng, [rv, Easeable(Timeable(t.start-a, t.start), i).e(ae, 0, rng=rng, to1=1)])
+            out = self._maxRange(rng, [rv, Easeable(Timeable(t.start-a, t.start), i).e(ae, 0, rng=rng, to1=0)])
         elif i >= t.start:
             if i == t.start:
-                return rng[1]
+                out = rng[1]
             if i >= ds: # RELEASE
-                return Easeable(Timeable(ds, end), i).e(re, 0, rng=(dv, rng[0]), to1=1)
+                out = Easeable(Timeable(ds, end), i).e(re, 0, rng=(dv, rng[0]), to1=1)
             else:
                 if i >= t.start + d: # SUSTAIN
-                    return dv
+                    out = dv
                 else: # DECAY
-                    return Easeable(Timeable(t.start, ds), i).e(de, 0, rng=(rng[1], dv), to1=1)
+                    out = Easeable(Timeable(t.start, ds), i).e(de, 0, rng=(rng[1], dv), to1=1)
+        
+        if find:
+            return out, 0
+        else:
+            return out

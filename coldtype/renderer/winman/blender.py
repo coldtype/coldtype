@@ -3,6 +3,7 @@ from pathlib import Path
 from coldtype.renderer.utils import path_hash
 from coldtype.renderer.winman.passthrough import WinmanPassthrough
 from coldtype.blender.render import blender_launch_livecode
+from coldtype.blender import BlenderIO
 
 class WinmanBlender(WinmanPassthrough):
     def __init__(self, config):
@@ -11,10 +12,13 @@ class WinmanBlender(WinmanPassthrough):
         self.blender_app_path = config.blender_app_path
         print("BLENDER APP PATH>", self.blender_app_path)
     
-    def launch(self, blend_file):
+    def launch(self, blender_io:BlenderIO):
         if self.subp:
             self.subp.kill()
-        self.subp = blender_launch_livecode(self.blender_app_path, blend_file, self.command_file)
+        self.subp = blender_launch_livecode(
+            self.blender_app_path,
+            blender_io.blend_file,
+            self.command_file)
     
     def write_command(self, cmd, arg):
         try:

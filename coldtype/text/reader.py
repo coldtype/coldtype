@@ -231,7 +231,7 @@ class Font():
         if isinstance(regex, Font):
             return regex
 
-        if Path(regex).expanduser().exists():
+        if Path(normalize_font_prefix(regex)).expanduser().exists():
             return Font.Cacheable(regex)
         
         found = Font.List(regex, regex_dir)
@@ -248,10 +248,14 @@ class Font():
     @staticmethod
     def ColdtypeObviously():
         return Font.Cacheable(Path(__file__).parent.parent / "demo/ColdtypeObviously-VF.ttf")
+    
+    ColdObvi = ColdtypeObviously
 
     @staticmethod
     def MutatorSans():
         return Font.Cacheable(Path(__file__).parent.parent / "demo/MutatorSans.ttf")
+    
+    MuSan = MutatorSans
     
     @staticmethod
     def RecursiveMono():

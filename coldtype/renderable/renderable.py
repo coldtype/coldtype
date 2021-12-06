@@ -141,6 +141,8 @@ class renderable():
         """Base configuration for a renderable function"""
 
         self.rect = Rect(rect).round()
+        self._stacked_rect = None
+
         self.bg = normalize_color(bg)
         self.fmt = fmt
         self.prefix = prefix
@@ -237,7 +239,9 @@ class renderable():
         return prefix
     
     def pass_path(self, index=0):
-        if isinstance(index, int):
+        if index is None:
+            return self.output_folder / f"{self.pass_prefix()}"
+        elif isinstance(index, int):
             return self.output_folder / f"{self.pass_prefix()}{self.pass_suffix(index)}.{self.fmt}"
         else:
             return self.output_folder / f"{self.pass_prefix()}{self.pass_suffix(index)}"
@@ -272,8 +276,15 @@ class renderable():
         sr = self.rect.scale(scale, "mnx", "mxx")
         SkiaPen.CompositeToCanvas(result, sr, canvas, scale, style=self.style)
     
+    def noop(self, *args, **kwargs):
+        return self
+    
     def hide(self):
         self.hidden = True
+        return self
+    
+    def _hide(self):
+        self.hidden = False
         return self
     
     def show(self):
@@ -359,24 +370,6 @@ class skia_direct(renderable):
     
 #     def passes(self, action, renderer_state, indices=[]):
 #         return [RenderPass(self, action, self.glyphName, [])]
-
-
-class fontpreview(renderable):
-    def __init__(self, font_dir, font_re, rect=(1200, 150), limit=25, **kwargs):
-        super().__init__(rect=rect, **kwargs)
-        self.dir = normalize_font_prefix(font_dir)
-        self.re = font_re
-        self.matches = []
-        
-        for font in self.dir.iterdir():
-            if re.search(self.re, str(font)):
-                if len(self.matches) < limit:
-                    self.matches.append(font)
-        
-        self.matches.sort()
-    
-    def passes(self, action, renderer_state, indices=[]):
-        return [RenderPass(self, action, "{:s}".format(m.name), [self.rect, m]) for m in self.matches]
 
 
 class iconset(renderable):

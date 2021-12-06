@@ -1,8 +1,7 @@
-from typing import List, Union
+from typing import Union
 
 from coldtype.interpolation import interp_dict
-from coldtype.time.timeable import Timeable, Easeable
-from coldtype.time.timeline import Timeline
+from coldtype.time.timeline import Timeline, Timeable
 from coldtype.geometry.rect import Rect
 
 
@@ -22,15 +21,11 @@ class AsciiTimeline(Timeline):
         lines = [l.rstrip() for l in ascii.splitlines() if l.strip()]
         ml = max([len(l) for l in lines]) - 1
 
-        self.keyframes = keyframes or {}
-        
-        if not isinstance(self.keyframes, dict):
-            kfs = {}
-            for idx, v in enumerate(self.keyframes):
-                kfs[str(idx)] = v
-            self.keyframes = kfs
+        self.keyframes = self._norm_keyframes(keyframes)
 
-        super().__init__(round(multiplier*ml), fps=fps, **kwargs)
+        duration = round(multiplier*ml)
+
+        #super().__init__(round(multiplier*ml), fps=fps, **kwargs)
 
         self.multiplier = multiplier
         
@@ -54,9 +49,10 @@ class AsciiTimeline(Timeline):
                     if clip_start is not None and clip_name is not None:
                         clips.append(Timeable(
                             clip_start,
-                            round((idx+1)*multiplier),
+                            round((idx)*multiplier)+1,
                             name=clip_name,
                             data=dict(line=lidx),
+                            track=lidx-1,
                             timeline=self))
                     else:
                         looped_clip_end = round(idx*multiplier)
@@ -67,30 +63,47 @@ class AsciiTimeline(Timeline):
                     clip_name = ""
                 elif c not in [" ", "-", "|", "<", ">"]:
                     if clip_name is None:
-                        clips.append(Timeable(
-                            round(idx*multiplier),
-                            round(idx*multiplier),
-                            name=c,
-                            data=dict(line=lidx),
-                            timeline=self))
+                        if instant_clip:
+                            instant_clip += c
+                        else:
+                            clip_start = round(idx*multiplier)
+                            instant_clip = c
+                    # if clip_name is None:
+                    #     clips.append(Timeable(
+                    #         round(idx*multiplier),
+                    #         round(idx*multiplier),
+                    #         name=c,
+                    #         data=dict(line=lidx),
+                    #         timeline=self))
                     else:
                         clip_name += c
+                elif c in [" "] and instant_clip:
+                    clips.append(Timeable(
+                        clip_start,
+                        clip_start,
+                        name=instant_clip,
+                        data=dict(line=lidx),
+                        track=lidx-1,
+                        timeline=self))
+                    instant_clip = None
             
-            # if instant_clip:
-            #     clips.append(Timeable(
-            #         clip_start,
-            #         clip_start,
-            #         name=instant_clip,
-            #         data=dict(line=lidx),
-            #         timeline=self))
+            if instant_clip:
+                clips.append(Timeable(
+                    clip_start,
+                    clip_start,
+                    name=instant_clip,
+                    data=dict(line=lidx),
+                    track=lidx-1,
+                    timeline=self))
             
             if looped_clip_end:
                 if clip_start is not None and clip_name is not None:
                     clips.append(Timeable(
                         clip_start,
-                        self.duration+looped_clip_end,
+                        duration+looped_clip_end,
                         name=clip_name,
                         data=dict(line=idx),
+                        track=lidx-1,
                         timeline=self))
                     clip_start = None
                     clip_name = None
@@ -98,25 +111,37 @@ class AsciiTimeline(Timeline):
             if clip_start is not None and clip_name is not None:
                 unclosed_clip = (clip_start, clip_name)
         
-        self.clips:List[Timeable] = []
-        self.clips = sorted(clips, key=lambda c: c.start)
-        
-        for cidx, clip in enumerate(self.clips):
+        clips = sorted(clips, key=lambda c: c.start)
+        for cidx, clip in enumerate(clips):
             clip.index = cidx
+        
+        super().__init__(duration, fps, clips, **kwargs)
     
-    def _keyed(self, k):
-        k = str(k)
-        all = []
-        if isinstance(k, str):
-            for c in self.clips:
-                if c.name == k:
-                    all.append(c)
-        return all
+    def _norm_keyframes(self, keyframes):
+        if not keyframes:
+            return {}
+
+        if not isinstance(keyframes, dict):
+            kfs = {}
+            for idx, v in enumerate(keyframes):
+                kfs[str(idx)] = v
+            return kfs
+        else:
+            kfs = {}
+            for k, v in keyframes.items():
+                kfs[str(k)] = v
+            return kfs
     
-    def kf(self, fi, easefn="eeio", lines=None):
+    def kf(self, easefn="eeio", fi=None, lines=None, keyframes=None):
+        fi = self._norm_held_fi(fi)
         fi = fi % self.duration
 
-        for c1, c2 in self.enumerate(lines=lines, pairs=True):
+        if keyframes is None:
+            keyframes = self.keyframes
+        else:
+            keyframes = self._norm_keyframes(keyframes)
+
+        for c1, c2 in self.enumerate(lines=lines, pairs=True, edges=True):
             start, end = c1.start, c2.start
             if c2.start < c1.end:
                 end += self.duration
@@ -126,50 +151,28 @@ class AsciiTimeline(Timeline):
             t = Timeable(start, end,
                 name=f"_kf_{c1.name}/{c2.name}",
                 timeline=self)
+            
             if t.now(fi):
-                return interp_dict(t.at(fi).e(easefn, 0), self.keyframes[c1.name], self.keyframes[c2.name])
+                return interp_dict(t.at(fi).e(easefn, 0), keyframes[c1.name], keyframes[c2.name])
     
-        return list(self.keyframes.values())[0]
+        return list(keyframes.values())[0]
     
-    def ki(self, key, fi):
-        """(k)eyed-at-(i)ndex"""
-
-        if not isinstance(key, str):
-            try:
-                es = [self.ki(k, fi).t for k in key]
-                return Easeable(es, fi)
-            except TypeError:
-                pass
-
-        # all = []
-        # key = str(key)
-
-        # for c in self.clips:
-        #     if c.name == key:
-        #         all.append(c)
-        
-        # if len(all) > 0:
-        #     return Easeable(all, fi)
-        
-        return Easeable(self._keyed(key), fi)
-
-    def __getitem__(self, item) -> Easeable:
-        try:
-            if isinstance(item[1], int):
-                item, fi = item
-                return self.ki(item, fi)
-
-        except (IndexError, TypeError):
-            return self._keyed(item)
-    
-    def enumerate(self, lines=None, pairs=False):
+    def enumerate(self, lines=None, pairs=False, edges=False):
         matches = []
-        for c in self.clips:
+        for c in self.timeables:
+            match = False
             if lines is not None:
                 if c.data["line"] in lines:
-                    matches.append(c)
+                    match = True
             else:
-                matches.append(c)
+                match = True
+            
+            if match:
+                if edges and c.duration > 0:
+                    matches.append(Timeable(c.start, c.start, -1, name=c.name, timeline=self))
+                    matches.append(Timeable(c.end-1, c.end-1, -1, name=c.name, timeline=self))
+                else:
+                    matches.append(c)
         
         for i, c in enumerate(matches):
             if pairs:
@@ -180,27 +183,16 @@ class AsciiTimeline(Timeline):
             else:
                 yield c
     
-    def now(self, fi, line=None, first=False, filter_fn=None):
-        matches = []
-        for clip in self.clips:
-            if clip.start <= fi < clip.end:
-                if line is not None:
-                    if clip.data["line"] != line:
-                        continue
-                matches.append(clip)
-        if filter_fn:
-            matches = list(filter(filter_fn, matches))
-        if first:
-            return Easeable(matches[0], fi) if matches else Easeable(Timeable(-2, -1, -1), fi)
-        return [Easeable(m, fi) for m in matches]
-    
     def rmap(self, r=Rect(1000, 1000)):
         """
         Rect-map, i.e. a representation of this ascii timeline as a 2D map of rectangles
         """
         from coldtype.geometry.rect import Rect
         out = {}
-        for clip in self.clips:
+        for clip in self.timeables:
             sc = r.w / self.duration
             out[clip.name] = Rect(clip.start * sc, 0, clip.duration * sc, r.h)
         return out
+    
+    def __getitem__(self, item):
+        return self._keyed(item)

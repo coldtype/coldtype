@@ -1,6 +1,5 @@
 from coldtype.test import *
 from coldtype.fx.skia import Skfi, color_phototype, precompose
-from coldtype.warping import warp_fn
 from coldtype.fx.motion import filmjitter
 
 fonts = [Font.Cacheable(f"~/Type/fonts/fonts/{f}") for f in [

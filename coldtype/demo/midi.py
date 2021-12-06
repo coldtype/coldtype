@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.time.midi import MidiReader
+from coldtype.time.midi import MidiTimeline
 from coldtype.tool import parse_inputs
 
 if __as_config__:
@@ -10,13 +10,15 @@ args = parse_inputs(__inputs__, dict(
     duration=[None, int],
     bpm=[None, float],
     fps=[None, float],
-    text=[True, bool]))
+    text=[True, bool],
+    lookup=[None, {}]))
 
-mr = MidiReader(
+mr = MidiTimeline(
     Path(args["file"]).expanduser(),
     duration=args["duration"],
     fps=args["fps"],
-    bpm=args["bpm"])
+    bpm=args["bpm"],
+    lookup=args["lookup"])
 
 dst = Path(args["file"]).parent
 custom_folder = Path(args["file"]).name + ".midiview/renders"
@@ -27,7 +29,6 @@ if args["log"]:
     print(f"> Note Range: {mr.min}-{mr.max}")
     print("> Duration:", mr.duration)
     print(f"> BPM/FPS: {mr.bpm}/{mr.fps}")
-    print(f"> Track Count: {len(mr.tracks)}")
     print("="*20)
 
 r = args["rect"]
@@ -38,9 +39,8 @@ def build_display():
     wu = (rd.w - xo) / int(mr.duration)
 
     valid_notes = set()
-    for t in mr.tracks:
-        for n in t.notes:
-            valid_notes.add(n.note)
+    for t in mr.timeables:
+        valid_notes.add(int(t.name))
 
     valid_notes = sorted(valid_notes)
     rows = rd.subdivide(len(valid_notes), "S")
@@ -58,12 +58,13 @@ def build_display():
         else:
             out += DATText(f"{vn}", Style("Monaco", 24, load_font=0), rows[idx].take(xo, "W").offset(8, rows[idx].h/2-21/2))
 
-    for tidx, t in enumerate(mr.tracks):
-        for n in t.notes:
-            out += (P(rows[valid_notes.index(n.note)]
-                    .take(n.duration*wu, "W"))
-                .translate(xo+n.on*wu, 0)
-                .f(hsl(0.5+tidx*0.1+n.idx*0.02)))
+    for t in mr.timeables:
+        t:Timeable
+        i = valid_notes.index(int(t.name))
+        tr = (rows[i].take(t.duration*wu, "W"))
+        out += (P(tr)
+            .translate(xo+t.start*wu, 0)
+            .f(hsl(0.5+t.idx*0.02)))
     
     return rt, rd, out
 
@@ -77,7 +78,7 @@ rt, rd, static = build_display()
     render_bg=1,
     preview_only=args["preview_only"])
 def midi(f):
-    px = f.e("l", rng=(xo, rd.w))
+    px = f.e("l", 0, rng=(xo, rd.w))
     if args["text"]:
         frame = (StSt(str(f.i),
             Font.RecursiveMono(), 20)

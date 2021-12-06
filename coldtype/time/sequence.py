@@ -12,7 +12,7 @@ from coldtype.color import *
 
 from coldtype.time.clip import Clip, ClipFlags, ClipType
 
-from typing import Optional, Union, Callable, Tuple
+from typing import Optional, Union, Callable, Tuple, List
 
 
 class Marker(Timeable):
@@ -57,6 +57,13 @@ class ClipGroupPens(DATPens):
         return self
 
     def remove_futures(self, clean=True):
+        def futureRemover(p, pos, _):
+            if pos == 1 and "position" in p.data and "clip" in p.data:
+                if p.data["position"] > 0:
+                    p._pens = []
+        
+        return self.walk(futureRemover)
+
         for clip, pen in self.iterate_clips():
             if clip.position > 0:
                 pen._pens = []
@@ -98,7 +105,7 @@ class ClipGroupPens(DATPens):
 
 ClipGroupTextSetter = namedtuple(
     "ClipGroupTextSetter",
-    ["frame", "i", "clip", "text"])
+    ["frame", "i", "clip", "text", "styles"])
 
 
 class ClipGroup(Timeable):
@@ -107,6 +114,7 @@ class ClipGroup(Timeable):
         self.clips = clips
         self.timeline = timeline
         self.style_indices = []
+        self.styles = []
 
         self.retime()
 
@@ -230,9 +238,9 @@ class ClipGroup(Timeable):
             if clip.position == 0:
                 return clip
     
-    def current_word(self):
+    def current_word(self, fi):
         for clip in self.clips:
-            if clip.position == 0:
+            if clip.start <= fi < clip.end:
                 clips = [clip]
                 before_clip = clip
                 # walk back
@@ -294,16 +302,20 @@ class ClipGroup(Timeable):
         fit=None,
         ignore_newlines=False,
         use_lines=None,
+        styles:List[Timeable]=[],
         removeOverlap=False) -> ClipGroupPens:
         """
         render_clip_fn: frame, line index, clip, clip text — you must return a tuple of text to render and the Style to render it with
         """
         if not rect:
             rect = f.a.r
+        if not styles or len(styles) == 0:
+            styles = self.styles
+
         group_pens = ClipGroupPens(self)
         lines = []
         groupings = []
-        if not use_lines:
+        if not use_lines or (use_lines and use_lines[0] is None):
             use_lines = self.lines(ignore_newlines=ignore_newlines)
         
         for idx, _line in enumerate(use_lines):
@@ -311,12 +323,21 @@ class ClipGroup(Timeable):
                 continue
             slugs = []
             texts = []
-            for clip in _line:
+            for idx, clip in enumerate(_line):
                 if clip.type == ClipType.Meta or clip.blank:
                     continue
                 try:
+                    match_styles = []
+                    for s in styles:
+                        if s.now(clip.start):
+                            match_styles.append(s)
+                    match_styles = Timeline(timeables=match_styles, findWords=False)
+                    
                     ftext = clip.ftext()
-                    text, style = render_clip_fn(ClipGroupTextSetter(f, idx, clip, ftext))
+                    if clip.type == ClipType.Isolated and idx == 0:
+                        ftext = ftext[1:]
+
+                    text, style = render_clip_fn(ClipGroupTextSetter(f, idx, clip, ftext, match_styles))
                     texts.append([text, clip.idx, style])
                 except Exception as e:
                     print(e)
@@ -373,10 +394,16 @@ class ClipGroup(Timeable):
                 last_clip_dps = None
                 for (text, cidx, style) in gt:
                     clip:Clip = self.clips[cidx]
-                    if clip.position == 0:
+                    if f.i < clip.start:
+                        position = 1
+                    elif f.i == clip.start or f.i < clip.end:
                         position = 0
-                    elif clip.position == -1:
+                    else:
                         position = -1
+                    # if clip.position == 0:
+                    #     position = 0
+                    # elif clip.position == -1:
+                    #     position = -1
                     line_text += clip.ftext()
                     clip_dps = DATPens(group_dps[tidx:tidx+len(text)])
                     clip_dps.tag("clip")
@@ -384,6 +411,7 @@ class ClipGroup(Timeable):
                     clip_dps.data["line_index"] = idx
                     clip_dps.data["line"] = re_grouped_line
                     clip_dps.data["group"] = re_grouped
+                    clip_dps.data["position"] = position
                     if clip.type == ClipType.JoinPrev and last_clip_dps:
                         grouped_clip_dps = last_clip_dps #DATPens()
                         #grouped_clip_dps.append(last_clip_dps)
@@ -461,11 +489,18 @@ class ClipGroup(Timeable):
 
 
 class ClipTrack():
-    def __init__(self, sequence, clips, markers):
+    def __init__(self, sequence, clips, markers, styles=None):
         self.sequence = sequence
         self.clips = clips
         self.markers = markers
         self.clip_groups = self.groupedClips(clips)
+        self.styles = styles
+        self._holding = -1
+    
+    def hold(self, i):
+        self._holding = i
+        if self.styles is not None:
+            self.styles.hold(i)
     
     def groupedClips(self, clips):
         groups = []
@@ -491,6 +526,20 @@ class ClipTrack():
             clip:Clip
             if clip.start <= fi and fi < clip.end:
                 return clip
+    
+    def currentGroup(self, fi=None):
+        if fi is None:
+            if self._holding >= 0:
+                fi = self._holding
+            else:
+                raise Exception("Must provide fi if ClipTrack is not held")
+
+        for idx, cg in enumerate(self.clip_groups):
+            cg:ClipGroup
+            if cg.start <= fi and fi < cg.end:
+                cg.styles = self.styles
+                return cg
+        return ClipGroup(self.sequence, -1, [])
     
     def now(self, fi, text):
         for idx, clip in enumerate(self.clips):

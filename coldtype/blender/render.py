@@ -39,7 +39,14 @@ def blend_frame(blender_app_path, py_file, blend_file, expr, output_dir, fi):
         print(subprocess.run(call, stdout=subprocess.PIPE, shell=True))
     print(f"/Blended frame {fi}.")
 
-def blend_source(blender_app_path, py_file, blend_file, frame, output_dir, samples=-1, denoise=False):
+def blend_source(blender_app_path
+    , py_file
+    , blend_file
+    , frame
+    , output_dir
+    , samples=-1
+    , denoise=False
+    ):
     """
     A facility for telling Blender to render a single frame in a background process
     """

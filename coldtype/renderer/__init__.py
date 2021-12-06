@@ -6,9 +6,9 @@ import pickle
 
 import time as ptime
 from pathlib import Path
-from typing import Tuple
 from pprint import pprint
 from subprocess import Popen
+from typing import Tuple, List
 from random import shuffle, Random
 from more_itertools import distribute
 from functools import partial
@@ -26,6 +26,7 @@ from coldtype.renderer.state import RendererState
 from coldtype.renderable import renderable, animation, Action, Overlay, runnable
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.svgpen import SVGPen
+from coldtype.time.viewer import timeViewer
 
 from coldtype.renderer.keyboard import KeyboardShortcut
 
@@ -101,7 +102,7 @@ class Renderer():
 
             show_exit_code=parser.add_argument("-sec", "--show-exit-code", action="store_true", default=False, help=argparse.SUPPRESS),
 
-            frame_offsets=parser.add_argument("-fo", "--frame-offsets", type=str, default=None, help=argparse.SUPPRESS),
+            frame_offset=parser.add_argument("-fo", "--frame-offset", type=int, default=0, help=argparse.SUPPRESS),
 
             viewer_solos=parser.add_argument("-vs", "--viewer-solos", type=str, default=None, help=argparse.SUPPRESS),
 
@@ -115,8 +116,11 @@ class Renderer():
         sys.path.insert(0, os.getcwd())
 
         self.subprocesses = {}
-        self.parser = parser
-        self.args = parser.parse_args()
+
+        if isinstance(parser, argparse.Namespace):
+            self.args = parser
+        else:
+            self.args = parser.parse_args()
 
         if self.args.version:
             print(coldtype.__version__)
@@ -152,6 +156,9 @@ class Renderer():
         self.watchees = []
         self.watchee_mods = {}
         self.rasterizer_warning = None
+        self.needs_new_context = False
+
+        self.extent = None
         
         if not self.reset_filepath(self.args.file if hasattr(self.args, "file") else None):
             self.dead = True
@@ -170,10 +177,13 @@ class Renderer():
         self.completed_renderers = []
 
         self.action_waiting = None
+        self.action_waiting_reason = None
+
         self.actions_queued = []
         self.debounced_actions = {}
         self.previews_waiting = []
         self.last_animation = None
+        self.last_animations = []
         self.hotkeys = None
         self.hotkey_waiting = None
 
@@ -200,8 +210,7 @@ class Renderer():
             cv2cap.release()
 
         self.stop_watching_file_changes()
-        self.state._frame_offsets = {}
-        self.state._initial_frame_offsets = {}
+        self.state.frame_offset = 0
         self.state.cv2caps = {}
 
         root = Path(__file__).parent.parent
@@ -238,7 +247,8 @@ class Renderer():
             self.watch_file_changes()
         
         if reload:
-            self.reload_and_render(Action.PreviewStoryboard)
+            self.reload_and_render(Action.Initial)
+            self.actions_queued.append(Action.PreviewStoryboardReload)
             self.winmans.set_title(filepath.name)
             # TODO close an open blend file?
 
@@ -252,10 +262,10 @@ class Renderer():
         print(stack)
         return stack.split("\n")[-2]
     
-    def renderable_error(self):
+    def renderable_error(self, rect):
         short_error = self.print_error()
         
-        r = Rect(1200, 300)
+        r = rect
         render = renderable(r)
         res = DATPens([
             DATPen().rect(r).f(coldtype.Gradient.V(r,
@@ -269,12 +279,15 @@ class Renderer():
         if self.state.playing > 0:
             self.state.playing = -1
         
-        if self.source_reader.config.no_viewer_errors: 
+        if (self.source_reader.config.no_viewer_errors
+            or self.source_reader.config.no_viewer
+            ): 
             short_error = self.print_error()
             bc_print(bcolors.FAIL, "SYNTAX ERROR")
             bc_print(bcolors.WARNING, short_error)
         else:
-            render, res = self.renderable_error()
+            render, res = self.renderable_error(self.extent)
+            render._stacked_rect = self.extent
             self.previews_waiting.append([render, res, None])
     
     def show_message(self, message, scale=1):
@@ -287,6 +300,11 @@ class Renderer():
     def reload(self, trigger):
         if self.winmans.glsk:
             skfx.SKIA_CONTEXT = self.winmans.glsk.context
+        
+        self.last_animations = []
+
+        if trigger == Action.Initial:
+            self.state.frame_offset = self.args.frame_offset
 
         if True:
             self.state.reset()
@@ -296,43 +314,18 @@ class Renderer():
             self.winmans.did_reload(self.source_reader.filepath)
             
             try:
-                full_restart = False
-
                 for r in self.renderables(Action.PreviewStoryboardReload):
                     if isinstance(r, animation):
-                        if r.name not in self.state._frame_offsets:
-                            full_restart = True
-                            for i, s in enumerate(r.storyboard):
-                                self.state.add_frame_offset(r.name, s)
-                        else:
-                            lasts = self.state._initial_frame_offsets[r.name]
-                            if str(lasts) != str(r.storyboard):
-                                del self.state._frame_offsets[r.name]
-                                del self.state._initial_frame_offsets[r.name]
-                                for s in r.storyboard:
-                                    self.state.add_frame_offset(r.name, s)
-                        
-                        self.last_animation = r
+                        if not r.preview_only:
+                            self.last_animation = r
+                        self.last_animations.append(r)
                     
                 if self.last_animation:
                     self.winmans.did_reload_animation(self.last_animation)
-                
-                if full_restart:
-                    fos = {}
-                    if self.args.frame_offsets:
-                        def adjuster(i, o):
-                            if i <= len(v)-1:
-                                return v[i]
-                            else:
-                                return 0
-                            
-                        fos = eval(self.args.frame_offsets)
-                        for k, v in fos.items():
-                            self.state.adjust_keyed_frame_offsets(k, adjuster)
             
                 if trigger == Action.Initial:
                     if self.winmans.b3d:
-                        self.winmans.b3d.launch(self.source_reader.blender_file())
+                        self.winmans.b3d.launch(self.source_reader.blender_io())
 
             except SystemExit:
                 self.on_exit(restart=False)
@@ -390,12 +383,44 @@ class Renderer():
                     if cap not in self.state.cv2caps:
                         self.state.cv2caps[cap] = cv2.VideoCapture(cap)
 
-        if len(_rs) == 0:
-            root = Path(__file__).parent.parent
-            sr = SourceReader(root / "demo/blank.py")
-            _rs = sr.renderables()
-            sr.unlink()
         return _rs
+    
+    def calculate_window_size(self, rs:List[renderable]):
+        dscale = self.state.preview_scale
+        w = 0
+        llh = -1
+        lh = -1
+        h = 0
+        for r in rs:
+            if not hasattr(r, "rect"):
+                continue
+            
+            sr = r.rect.scale(dscale, "mnx", "mny").round()
+            w = max(sr.w, w)
+            adjr = None
+            if r.layer:
+                adjr = Rect(0, llh, sr.w, sr.h)
+            else:
+                adjr = Rect(0, lh+1, sr.w, sr.h)
+                llh = lh+1
+                lh += sr.h + 1
+                h += sr.h + 1
+            r._stacked_rect = adjr.round()
+        h -= 1
+
+        extent = Rect(0, 0, w, h)
+
+        if not self.extent:
+            needs_new_context = True
+        else:
+            needs_new_context = self.extent != extent
+        
+        self.extent = extent
+        
+        #if needs_new_context:
+        #    self.winmans.did_reset_extent(self.extent)
+
+        return needs_new_context
     
     def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
         if not self.args.is_subprocess:
@@ -418,7 +443,24 @@ class Renderer():
             Action.RenderIndices,
         ])
 
-        if previewing:
+        def check_watches(render):
+            for watch, flag in render.watch:
+                if isinstance(watch, Font) and not watch.cacheable:
+                    if watch.path not in self.watchee_paths():
+                        self.watchees.append([Watchable.Font, watch.path, flag])
+                    for ext in watch.font.getExternalFiles():
+                        if ext not in self.watchee_paths():
+                            self.watchees.append([Watchable.Font, ext, flag])
+                elif watch not in self.watchee_paths():
+                    self.watchees.append([Watchable.Generic, watch, flag])
+
+        if previewing and self.source_reader.config.load_only:
+            renders = self.renderables(trigger)
+            for r in renders:
+                check_watches(r)
+            return 0, 0, 0
+
+        if previewing and not self.source_reader.config.load_only:
             if Overlay.Rendered in self.state.overlays:
                 overlays = []
                 overlay_count = 0
@@ -441,6 +483,7 @@ class Renderer():
         prev_renders = self.last_renders
         
         renders = self.renderables(trigger)
+
         self.last_renders = renders
         preview_count = 0
         render_count = 0
@@ -450,15 +493,7 @@ class Renderer():
                     render.run()
                     continue
 
-                for watch, flag in render.watch:
-                    if isinstance(watch, Font) and not watch.cacheable:
-                        if watch.path not in self.watchee_paths():
-                            self.watchees.append([Watchable.Font, watch.path, flag])
-                        for ext in watch.font.getExternalFiles():
-                            if ext not in self.watchee_paths():
-                                self.watchees.append([Watchable.Font, ext, flag])
-                    elif watch not in self.watchee_paths():
-                        self.watchees.append([Watchable.Generic, watch, flag])
+                check_watches(render)
                 
                 passes = render.passes(trigger, self.state, indices)
                 render.last_passes = passes
@@ -543,6 +578,8 @@ class Renderer():
         return preview_count, render_count, renders
 
     def render(self, trigger, indices=[]) -> Tuple[int, int]:
+        #print(">RENDER!", trigger, self.action_waiting_reason)#, traceback.print_stack())
+
         if self.args.is_subprocess:
             if trigger != Action.RenderIndices:
                 raise Exception("Invalid child process render action", trigger)
@@ -578,6 +615,7 @@ class Renderer():
                     self.previews_waiting.append([render, result, None])
                 else:
                     self.action_waiting = Action.PreviewStoryboard
+                    self.action_waiting_reason = "unclear"
 
             self.winmans.did_render(render_count)
 
@@ -695,6 +733,7 @@ class Renderer():
     def reload_and_render(self, trigger, watchable=None, indices=None):
         if (self.winmans.bg
             and not self.args.cpu_render
+            and not self.winmans.glsk
             ):
             self.winmans.glsk = WinmanGLFWSkiaBackground(self.source_reader.config, self)
 
@@ -706,16 +745,26 @@ class Renderer():
             if should_halt:
                 return True
             if self.source_reader.program:
-                preview_count, render_count = self.render(trigger, indices=indices)
+                renders = self.renderables(Action.Resave)
+                self.needs_new_context = self.calculate_window_size(renders)
+                if self.needs_new_context and trigger != Action.Initial:
+                    self.debounced_actions["reset_extent"] = ptime.time()
+                #if self.needs_new_context: #and trigger != Action.Initial:
+                #    return True
+
+                self.render(trigger, indices=indices)
                 if self.state.playing < 0:
                     self.state.playing = 1
             else:
                 print(">>>>>>>>>>>> No program loaded! <<<<<<<<<<<<<<")
         except:
+            if not self.extent:
+                self.extent = Rect(1200, 200)
+                self.needs_new_context = True
             self.show_error()
 
         if wl < len(self.watchees) and len(self.observers) > 0:
-            pprint(self.watchees)
+            #pprint(self.watchees)
             self.stop_watching_file_changes()
             self.watch_file_changes()
 
@@ -811,6 +860,7 @@ class Renderer():
             if enum_action:
                 print(">", enum_action)
                 self.action_waiting = enum_action
+                self.action_waiting_reason = "on_message"
                 #self.on_action(enum_action, message)
             else:
                 print(">>> (", action, ") is not a recognized action")
@@ -821,11 +871,9 @@ class Renderer():
             if fi is None:
                 print("fn_to_frame: no match")
                 return False
-            #self.last_animation.storyboard = [fi]
-            self.state.adjust_all_frame_offsets(0, absolute=True)
-            self.state.adjust_keyed_frame_offsets(
-                self.last_animation.name, lambda i, o: fi)
+            self.state.frame_offset = fi
             self.action_waiting = Action.PreviewStoryboard
+            self.action_waiting_reason = "jump_to_fn"
             return True
 
     def lookup_action(self, action):
@@ -881,22 +929,14 @@ class Renderer():
             return Action.PreviewStoryboardNext
         
         elif shortcut == KeyboardShortcut.JumpHome:
-            self.state.adjust_all_frame_offsets(0, absolute=True)
+            self.state.frame_offset = 0
         elif shortcut == KeyboardShortcut.JumpEnd:
-            self.state.adjust_all_frame_offsets(-1, absolute=True)
+            self.state.frame_offset = -1
         
         elif shortcut == KeyboardShortcut.JumpPrev:
-            self.state.adjust_keyed_frame_offsets(
-                self.last_animation.name,
-                lambda i, o: self.last_animation.jump(o, -1))
+            self.state.frame_offset = self.last_animation.jump(self.state.frame_offset, -1)
         elif shortcut == KeyboardShortcut.JumpNext:
-            self.state.adjust_keyed_frame_offsets(
-                self.last_animation.name,
-                lambda i, o: self.last_animation.jump(o, +1))
-        elif shortcut == KeyboardShortcut.JumpStoryboard:
-            self.state.adjust_keyed_frame_offsets(
-                self.last_animation.name,
-                lambda i, o: self.last_animation.storyboard[i])
+            self.state.frame_offset = self.last_animation.jump(self.state.frame_offset, +1)
 
         elif shortcut == KeyboardShortcut.ClearLastRender:
             return Action.ClearLastRender
@@ -943,16 +983,17 @@ class Renderer():
         elif shortcut == KeyboardShortcut.RenderAllAndRelease:
             self.on_action(Action.RenderAll)
             self.action_waiting = Action.Release
+            self.action_waiting_reason = shortcut
             return -1
         elif shortcut == KeyboardShortcut.RenderOne:
-            fo = [abs(o%self.last_animation.duration) for o in self.state.get_frame_offsets(self.last_animation.name)]
-            # TODO should iterate over all animations, not just "last" (but infra isn't there for this yet)
-            self.on_action(Action.RenderIndices, fo)
+            la = self.last_animation
+            self.on_action(Action.RenderIndices,
+                [abs((self.state.frame_offset+la.offset) % la.duration)])
             return -1
         elif shortcut == KeyboardShortcut.RenderFrom:
             la = self.last_animation
-            fo = [abs(o%la.duration) for o in self.state.get_frame_offsets(la.name)]
-            idxs = list(range(fo[0], la.duration))
+            fo = abs((self.state.frame_offset+la.offset) % la.duration)
+            idxs = list(range(fo, la.duration))
             self.on_action(Action.RenderIndices, idxs)
             return -1
         elif shortcut == KeyboardShortcut.RenderWorkarea:
@@ -971,16 +1012,20 @@ class Renderer():
         elif shortcut == KeyboardShortcut.OverlayRendered:
             self.winmans.toggle_rendered()
         
+        elif shortcut == KeyboardShortcut.ToggleTimeViewer:
+            self.source_reader.config.add_time_viewers = not self.source_reader.config.add_time_viewers
+            return Action.PreviewStoryboardReload
+        
         elif shortcut == KeyboardShortcut.PreviewScaleUp:
-            self.state.mod_preview_scale(+0.1)
+            return self.state.mod_preview_scale(+0.1)
         elif shortcut == KeyboardShortcut.PreviewScaleDown:
-            self.state.mod_preview_scale(-0.1)
+            return self.state.mod_preview_scale(-0.1)
         elif shortcut == KeyboardShortcut.PreviewScaleMin:
-            self.state.mod_preview_scale(0, 0.1)
+            return self.state.mod_preview_scale(0, 0.1)
         elif shortcut == KeyboardShortcut.PreviewScaleMax:
-            self.state.mod_preview_scale(0, 5)
+            return self.state.mod_preview_scale(0, 5)
         elif shortcut == KeyboardShortcut.PreviewScaleDefault:
-            self.state.mod_preview_scale(0, 1)
+            return self.state.mod_preview_scale(0, 1)
 
         elif shortcut == KeyboardShortcut.WindowOpacityDown:
             self.winmans.glsk.set_window_opacity(relative=-0.1)
@@ -1012,7 +1057,7 @@ class Renderer():
             self.open_in_editor()
         
         elif shortcut == KeyboardShortcut.ShowInFinder:
-            folder = self.renderables(Action.PreviewStoryboard)[0].output_folder
+            folder = self.renderables(Action.PreviewStoryboard)[-1].output_folder
             folder.mkdir(parents=True, exist_ok=True)
             os.system(f"open {folder}")
         
@@ -1021,14 +1066,17 @@ class Renderer():
         
         elif shortcut == KeyboardShortcut.ViewerSoloNone:
             self.viewer_solos = []
+            return Action.PreviewStoryboardReload
         elif shortcut == KeyboardShortcut.ViewerSoloNext:
             if len(self.viewer_solos):
                 for i, solo in enumerate(self.viewer_solos):
                     self.viewer_solos[i] = solo + 1
+            return Action.PreviewStoryboardReload
         elif shortcut == KeyboardShortcut.ViewerSoloPrev:
             if len(self.viewer_solos):
                 for i, solo in enumerate(self.viewer_solos):
                     self.viewer_solos[i] = solo - 1
+            return Action.PreviewStoryboardReload
         elif shortcut in [
             KeyboardShortcut.ViewerSolo1,
             KeyboardShortcut.ViewerSolo2,
@@ -1041,6 +1089,7 @@ class Renderer():
             KeyboardShortcut.ViewerSolo9
             ]:
             self.viewer_solos = [int(str(shortcut)[-1])-1]
+            return Action.PreviewStoryboardReload
         elif shortcut == KeyboardShortcut.PrintApproxFPS:
             self.winmans.print_approx_fps = True
         elif shortcut.value.startswith("viewer_sample_frames"):
@@ -1055,6 +1104,7 @@ class Renderer():
             KeyboardShortcut.LoadNextInDirectory,
             KeyboardShortcut.LoadPrevInDirectory,
             ]:
+            self.args.frame_offset = 0
             d = -1 if shortcut == KeyboardShortcut.LoadPrevInDirectory else +1
             f = self.buildrelease_fn("adjacent")
             if f:
@@ -1092,8 +1142,10 @@ class Renderer():
         if waiting:
             if waiting != -1:
                 self.action_waiting = waiting
+                self.action_waiting_reason = shortcut
         else:
             self.action_waiting = Action.PreviewStoryboard
+            self.action_waiting_reason = "shortcut_default"
 
     def on_stdin(self, stdin):
         cmd, *args = stdin.split(" ")
@@ -1125,21 +1177,19 @@ class Renderer():
                 self.winmans.toggle_playback()
             if action == Action.PreviewStoryboardPrevMany:
                 self.winmans.frame_offset(-self.source_reader.config.many_increment)
-                #self.state.adjust_all_frame_offsets(-self.source_reader.config.many_increment)
             elif action == Action.PreviewStoryboardPrev:
                 self.winmans.frame_offset(-self.viewer_sample_frames)
-                #self.state.adjust_all_frame_offsets(-1)
             elif action == Action.PreviewStoryboardNextMany:
                 self.winmans.frame_offset(+self.source_reader.config.many_increment)
-                #self.state.adjust_all_frame_offsets(+self.source_reader.config.many_increment)
             elif action == Action.PreviewStoryboardNext:
                 self.winmans.frame_offset(+self.viewer_sample_frames)
-                #self.state.adjust_all_frame_offsets(+1)
             self.render(Action.PreviewStoryboard)
         elif action == Action.Build:
             self.action_waiting = self.on_release(build=True)
+            self.action_waiting_reason = "build"
         elif action == Action.Release:
             self.action_waiting = self.on_release()
+            self.action_waiting_reason = "release"
         elif action == Action.RestartRenderer:
             self.on_exit(restart=True)
         elif action == Action.Kill:
@@ -1153,6 +1203,7 @@ class Renderer():
             for r in self.renderables(Action.PreviewStoryboard):
                 r.last_result = None
             self.action_waiting = Action.PreviewStoryboard
+            self.action_waiting_reason = "clear_last_render"
         elif action == Action.ClearRenderedFrames:
             for r in self.renderables(Action.PreviewStoryboard):
                 shutil.rmtree(r.output_folder, ignore_errors=True)
@@ -1184,6 +1235,7 @@ class Renderer():
                 if v:
                     if (now - v) > self.source_reader.config.debounce_time:
                         self.action_waiting = Action.PreviewStoryboardReload
+                        self.action_waiting_reason = "debouncing"
                         self.debounced_actions[k] = None
 
         if self.action_waiting:
@@ -1193,9 +1245,11 @@ class Renderer():
                 # TODO should be recursive?
                 self.on_action(self.action_waiting)
             self.action_waiting = None
+            self.action_waiting_reason = None
         
         if len(self.actions_queued) > 0:
             self.action_waiting = self.actions_queued.pop(0)
+            self.action_waiting_reason = "pop_from_queue"
         
         did_preview = self.winmans.turn_over()
         
@@ -1209,6 +1263,7 @@ class Renderer():
     
     def on_modified(self, event):
         path = Path(event.src_path)
+        #print("\n\n\n---\nMOD", path, ptime.time())
 
         if path.parent.stem == "picklejar" and "picklejar" in str(self.source_reader.filepath):
             if path.exists():
@@ -1232,7 +1287,7 @@ class Renderer():
                     else:
                         pass
 
-                if path.stem == "command":
+                if path.stem == "command" or "_input" in path.stem:
                     data = json.loads(path.read_text())
                     if "action" in data:
                         action = data.get("action")
@@ -1241,7 +1296,7 @@ class Renderer():
                             if path != str(self.last_animation.filepath):
                                 print("IGNORING COMMAND")
                                 return
-                        self.hotkey_waiting = (action, None, None)
+                        self.hotkey_waiting = (action, None, data.get("args"))
                     return
 
                 try:
@@ -1253,12 +1308,8 @@ class Renderer():
             idx = self.watchee_paths().index(path)
             wpath, wtype, wflag = self.watchees[idx]
             if wflag == "soft":
-                if self.last_animation:
-                    storyboard = self.last_animation.post_read()
-                    if storyboard:
-                        self.state.adjust_keyed_frame_offsets(
-                            self.last_animation.name, lambda i, o: storyboard[0])
                 self.action_waiting = Action.PreviewStoryboard
+                self.action_waiting_reason = "soft_watch"
                 return
 
             try:
@@ -1273,6 +1324,7 @@ class Renderer():
                 print(">>> pid:{:d}/new:{:04.2f}MB/total:{:4.2f}".format(os.getpid(), diff, memory))
             
             self.action_waiting = Action.PreviewStoryboardReload
+            self.action_waiting_reason = "on_modified"
 
     def watch_file_changes(self):
         if self.winmans.bg:
@@ -1283,11 +1335,36 @@ class Renderer():
             return None
 
         self.observers = []
-        dirs = set([w[1] if w[1].is_dir() else w[1].parent for w in self.watchees])
-        for d in dirs:
-            o = AsyncWatchdog(str(d), on_modified=self.on_modified, recursive=True)
+
+        watcheable = set()
+        for w in self.watchees:
+            if w[1].is_dir():
+                watcheable.add(w[1])
+            else:
+                watcheable.add(w[1])
+        
+        #dirs = set([w[1] if w[1].is_dir() else w[1].parent for w in self.watchees])
+        
+        #for d in dirs:
+        print("\n>>> watching...")
+        for w in sorted(watcheable):
+            if w.is_dir():
+                try:
+                    print("  [d]", w.relative_to(Path.cwd()))
+                except:
+                    print("  [d]", w)
+                o = AsyncWatchdog(str(w), on_modified=self.on_modified, recursive=True)
+            else:
+                try:
+                    print("  [f]", w.relative_to(Path.cwd()))
+                except:
+                    print("  [f]", w)
+                o = AsyncWatchdog(str(w), on_modified=self.on_modified, recursive=False)
             o.start()
             self.observers.append(o)
+        
+        print("")
+        return
         if self.source_reader.filepath:
             try:
                 print(f"... watching {self.source_reader.filepath.relative_to(Path.cwd())} for changes ...")
@@ -1295,13 +1372,18 @@ class Renderer():
                 print(f"... watching {self.source_reader.filepath} for changes ...")
     
     def execute_string_as_shortcut_or_action(self, shortcut, key, args=[]):
-        #print("SHORTCUT", shortcut, key, args)
+        print("\n>>> shortcut:")
+        print(f"  \"{shortcut}\"({key if key else 'ø'}[{args}])\n")
         co = ConfigOption.ShortToConfigOption(shortcut)
         if co:
             if co == ConfigOption.WindowOpacity:
                 self.winmans.glsk.set_window_opacity(absolute=args[0])
             else:
                 print("> Unhandled ConfigOption", co, key)
+            return
+        
+        if shortcut == "render_index":
+            self.render(Action.RenderIndices, indices=[int(args[0])])
             return
 
         try:
@@ -1327,8 +1409,8 @@ class Renderer():
         print("> RESTARTING...")
         args = sys.argv
         if len(args) > 1:
-            #args[1] = str(self.source_reader.filepath)
-            args[1] = str(self._unnormalized_file)
+            args[1] = str(self.source_reader.filepath)
+            #args[1] = str(self._unnormalized_file)
         
         inputs = self.source_reader.program["__inputs__"]
 
@@ -1344,7 +1426,7 @@ class Renderer():
         
         # attempt to preserve state across reload
 
-        fo = str(self.state._frame_offsets)
+        fo = str(self.state.frame_offset)
         try:
             foi = args.index("-fo")
             args[foi+1] = fo
@@ -1352,8 +1434,16 @@ class Renderer():
             args.append("-fo")
             args.append(fo)
         
+        tv = str(int(self.source_reader.config.add_time_viewers or 0))
+        try:
+            tvi = args.index("-tv")
+            args[tvi+1] = tv
+        except ValueError:
+            args.append("-tv")
+            args.append(tv)
+        
         lc = []
-        for c in self.state.cursor_history:
+        for c in self.state.cursor_history[-3:]:
             lc.append(",".join([str(p) for p in c]))
         lc = ";".join(lc)
         try:

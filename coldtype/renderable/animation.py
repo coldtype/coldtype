@@ -1,4 +1,4 @@
-import math, os
+import math, os, re
 from typing import Tuple
 
 from subprocess import run
@@ -9,7 +9,7 @@ from coldtype.time.timeable import Timeable
 from coldtype.time import Frame
 from coldtype.time.timeline import Timeline
 
-from coldtype.text.reader import Style
+from coldtype.text.reader import Style, Font
 from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.dattext import DATText
 from coldtype.geometry import Rect, Point
@@ -24,26 +24,30 @@ class animation(renderable, Timeable):
     """
     def __init__(self,
         rect=(1080, 1080),
-        storyboard=[0],
         timeline:Timeline=10,
         show_frame=True,
+        offset=0,
         overlay=True,
-        write_start=0,
         audio=None,
+        suffixer=None,
         **kwargs
         ):
+        if "tl" in kwargs:
+            timeline = kwargs["tl"]
+            del kwargs["tl"]
+
         super().__init__(**kwargs)
         
         self.rect = Rect(rect).round()
         self.r = self.rect
         self.overlay = overlay
         self.start = 0
+        self.offset = offset
         self.show_frame = show_frame
-        self.write_start = write_start
-        self.storyboard = storyboard
         self.reset_timeline(timeline)
         self.single_frame = self.duration == 1
         self.audio = audio
+        self.suffixer = suffixer
     
     def __call__(self, func):
         res = super().__call__(func)
@@ -64,14 +68,6 @@ class animation(renderable, Timeable):
         self.t = timeline
         self.start = timeline.start
         self.end = timeline.end
-        
-        if self.storyboard != [0] and timeline.storyboard == [0]:
-            pass
-        else:
-            self.storyboard = timeline.storyboard.copy()
-        
-        if self.write_start and self.storyboard == [0]:
-            self.storyboard = [self.write_start]
     
     def folder(self, filepath):
         return filepath.stem + "/" + self.name # TODO necessary?
@@ -82,8 +78,7 @@ class animation(renderable, Timeable):
     def _active_frames(self, renderer_state):
         frames = []
         if renderer_state:
-            for f in renderer_state.get_frame_offsets(self.name):
-                frames.append(f % self.duration)
+            frames.append((renderer_state.frame_offset + self.offset) % self.duration)
         return frames
     
     def active_frames(self, action, renderer_state, indices):
@@ -130,13 +125,16 @@ class animation(renderable, Timeable):
         return current
     
     def pass_suffix(self, index=0):
-        if self.suffix:
+        idx = index % self.duration
+
+        if self.suffixer:
+            return self.suffixer(idx)
+        elif self.suffix:
             pf = self.suffix + "_"
         else:
             pf = ""
         
-        if isinstance(index, int):
-            idx = (index - self.write_start) % self.duration
+        if isinstance(idx, int):
             return pf + "{:04d}".format(idx)
         else:
             return pf + index
@@ -155,6 +153,7 @@ class animation(renderable, Timeable):
                 if Overlay.Rendered in renderer_state.overlays:
                     return self.frame_img(fi)
         
+        self.t.hold(fi)
         return super().run(render_pass, renderer_state)
     
     def runpost(self, result, render_pass, renderer_state):
@@ -184,6 +183,12 @@ class animation(renderable, Timeable):
     
     def frame_to_fn(self, fi) -> Tuple[str, dict]:
         return None, {}
+    
+    def viewOffset(self, offset):
+        @animation(self.rect, timeline=self.timeline, offset=offset, preview_only=1)
+        def offset_view(f):
+            return self.func(Frame(f.i, self))
+        return offset_view
 
     def contactsheet(self, gx, sl=slice(0, None, None)):
         try:
@@ -346,3 +351,23 @@ class FFMPEGExport():
         """i.e. Reveal-in-Finder"""
         os.system(f"open {self.output_path.parent}")
         return self
+
+
+class fontpreview(animation):
+    def __init__(self, font_re, font_dir=None, rect=(1200, 150), limit=25, **kwargs):
+        self.dir = font_dir
+        self.re = font_re
+        self.matches = []
+
+        for font in Font.List(self.re, self.dir):
+            if re.search(self.re, str(font)):
+                if len(self.matches) < limit:
+                    self.matches.append(font)
+        
+        self.matches.sort()
+
+        super().__init__(rect=rect, timeline=Timeline(len(self.matches)), **kwargs)
+    
+    def passes(self, action, renderer_state, indices=[]):
+        frames = self.active_frames(action, renderer_state, indices)
+        return [RenderPass(self, action, i, [Frame(i, self), self.matches[i]]) for i in frames]

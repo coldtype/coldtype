@@ -18,8 +18,7 @@ class RendererState():
         self.preview_scale = 1
         self.controller_values = {}
         self.overlays = {}
-        self._frame_offsets = {}
-        self._initial_frame_offsets = {}
+        self.frame_offset = 0
         self.canvas = None
         self._last_filepath = None
         self.cv2caps = {}
@@ -27,6 +26,7 @@ class RendererState():
         self.memory = {}
         self.playing = False
 
+        self.mouse_down = False
         self.cursor = Point(0, 0)
         self.cursor_history = []
 
@@ -84,13 +84,34 @@ class RendererState():
         #return Action.PreviewStoryboard
     
     def on_mouse_button(self, pos, btn, action, mods):
+        self.mouse_down = action
+
         if not self.playing and action == 0:
+            for r in self.renderer.renderables(None):
+                if not hasattr(r, "_stacked_rect"):
+                    continue
+                sr = r._stacked_rect.flip(self.renderer.extent.h)
+                if Point(*pos).inside(sr):
+                    if hasattr(r, "pointToFrame"):
+                        fo = r.pointToFrame(Point(*pos))
+                        self.frame_offset = fo
+                        return Action.PreviewStoryboard
+            
             p = self.record_cursor(pos)
             #if self.cursor_history[-1] != p:
             self.cursor_history.append(p)
             return Action.PreviewStoryboard
     
     def on_mouse_move(self, pos):
+        if self.mouse_down:
+            for r in self.renderer.renderables(None):
+                sr = r._stacked_rect.flip(self.renderer.extent.h)
+                if Point(*pos).inside(sr):
+                    if hasattr(r, "pointToFrame"):
+                        fo = r.pointToFrame(Point(*pos))
+                        self.frame_offset = fo
+                        return Action.PreviewStoryboard
+
         if self.playing:
             self.record_cursor(pos)
     
@@ -100,34 +121,7 @@ class RendererState():
         else:
             ps = self.preview_scale + inc
         self.preview_scale = max(0.1, min(5, ps))
-    
-    def add_frame_offset(self, key, offset):
-        if key in self._frame_offsets:
-            offsets = self._frame_offsets[key]
-            initials = self._initial_frame_offsets[key]
-            offsets.append(offset)
-            initials.append(offset)
-        else:
-            self._frame_offsets[key] = [offset]
-            self._initial_frame_offsets[key] = [offset]
-    
-    def get_frame_offsets(self, key):
-        return self._frame_offsets.get(key, [0])
-    
-    def adjust_all_frame_offsets(self, adj, absolute=False):
-        if absolute:
-            for k, v in self._frame_offsets.items():
-                for i, o in enumerate(v):
-                    v[i] = adj
-        else:
-            for k, v in self._frame_offsets.items():
-                for i, o in enumerate(v):
-                    v[i] = o + adj
-    
-    def adjust_keyed_frame_offsets(self, key, fn):
-        offs = self.get_frame_offsets(key)
-        for i, o in enumerate(offs):
-            offs[i] = fn(i, o)
+        return Action.PreviewStoryboardReload
     
     def toggle_overlay(self, overlay, force=None):
         if force is not None:

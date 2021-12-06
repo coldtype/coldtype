@@ -4,7 +4,7 @@ from coldtype.fx.skia import phototype
 
 peshka = Font.Find("CoFoPeshkaV")
 
-loop = Loop(150, 15, [
+keyframes = [
     dict(wdth=0, wght=0, rotate=-15, leading=200,
         font_size=700, warp=0, blur=15),
     dict(wdth=1, wght=1, rotate=0, leading=10,
@@ -12,12 +12,16 @@ loop = Loop(150, 15, [
     dict(wdth=0, wght=1, rotate=15, leading=100,
         font_size=500, warp=50, blur=3),
     dict(wdth=0.5, wght=0.5, rotate=0, leading=-470,
-        font_size=330, warp=0, blur=1)
-    ])
+        font_size=330, warp=0, blur=1)]
 
-@animation(timeline=loop, bg=0)
+at = AsciiTimeline(8, 30, """
+                <
+0   1   2   3   
+""", keyframes).shift("end", +10)
+
+@animation(timeline=at, bg=0)
 def warp_blur(f):
-    state = f.a.t.currentState(f.i, e="eeio")
+    state = f.t.kf("eeio")
     return (StSt("WARP\nBLUR", peshka, ro=1, **state)
         .xalign(f.a.r)
         .align(f.a.r)

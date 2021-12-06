@@ -68,6 +68,9 @@ class DraftingPens(DraftingPen):
         return self.append(item)
     
     def append(self, pen, allow_blank=False):
+        if callable(pen):
+            pen = pen(self)
+
         if isinstance(pen, Geometrical):
             return self._pens.append(self.single_pen_class(pen))
         elif isinstance(pen, DraftingPen):
@@ -82,6 +85,9 @@ class DraftingPens(DraftingPen):
         return self
     
     def insert(self, index, pen):
+        if callable(pen):
+            pen = pen(self)
+
         if pen:
             self._pens.insert(index, pen)
         return self
@@ -260,8 +266,13 @@ class DraftingPens(DraftingPen):
         nonblank_pens = []
         for pen in self._pens:
             if hasattr(pen, "_pens"):
-                pen.remove_blanks()
-                nonblank_pens.append(pen)
+                if len(pen._pens) == 0:
+                    continue
+                else:
+                    pen.remove_blanks()
+                    #print(">", pen, len(pen))
+                    if len(pen._pens) > 0:
+                        nonblank_pens.append(pen)
             elif len(pen.value) > 0:
                 nonblank_pens.append(pen)
             #rb = pen.remove_blanks()
@@ -270,6 +281,8 @@ class DraftingPens(DraftingPen):
             #    nonblank_pens.append(pen)
         self._pens = nonblank_pens
         return self
+    
+    removeBlanks = remove_blanks
     
     def remove_overlap(self):
         for p in self._pens:
@@ -363,6 +376,13 @@ class DraftingPens(DraftingPen):
     def lead(self, leading):
         "Vertical spacing"
         ln = len(self._pens)
+
+        try:
+            if self._pens[-1].ambit().y > self._pens[0].ambit().y:
+                leading = -leading
+        except IndexError:
+            pass
+        
         for idx, p in enumerate(self._pens):
             p.translate(0, leading*(ln-1-idx))
         return self
@@ -594,20 +614,24 @@ class DraftingPens(DraftingPen):
         self._pens = new_pens
         return self
     
-    def return_replace(self):
-        return self.add_data("replace", 1)
-    
     def index(self, idx, fn, enum_idx=None):
+        parent = self
+        lidx = idx
         try:
             p = self
             for x in idx:
                 if hasattr(p, "_pens"):
+                    parent = p
+                    lidx = x
                     p = p[x]
                 else:
                     p.index(x, fn)
                     return self
         except TypeError:
             p = self[idx]
+
+        parent[lidx] = p.ch(fn)
+        return self
         
         if enum_idx is None:
             res = fn(p)

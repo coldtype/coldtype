@@ -5,14 +5,18 @@ from functools import partial
 from unittest import TestCase
 from tempfile import NamedTemporaryFile
 from subprocess import run
+from typing import Union
+from coldtype.blender import BlenderIO
 
-from coldtype.renderable import renderable, ColdtypeCeaseConfigException, runnable
+from coldtype.renderable import renderable, ColdtypeCeaseConfigException, runnable, animation, aframe, ui
 
 from coldtype.renderer.utils import Watchable
 from coldtype.renderer.config import ColdtypeConfig
 from coldtype.helpers import sibling
 from coldtype.text.reader import ALL_FONT_DIRS
 from coldtype.geometry.rect import Rect
+from coldtype.time import Timeline
+from coldtype.time.viewer import timeViewer
 
 try:
     from docutils.core import publish_doctree
@@ -177,7 +181,7 @@ def find_renderables(
     codepath:Path,
     program:dict,
     output_folder_override=None,
-    blender_file=None,
+    blender_io=None,
     ):
     all_rs = []
     filtered_rs = []
@@ -212,8 +216,8 @@ def find_renderables(
         r.output_folder = renderable_to_output_folder(
             filepath, r, override=output_folder_override)
 
-        if hasattr(r, "blender_file"):
-            r.blender_file = blender_file
+        if hasattr(r, "blender_io"):
+            r.blender_io = blender_io
 
         r.post_read()
 
@@ -400,16 +404,14 @@ class SourceReader():
         
         return valid_sources
     
-    def blender_file(self):
+    def blender_io(self):
         #if not self.use_blender and not self.config.blender_watch:
         #    return None
 
         bf = self.config.blender_file
         if not bf:
             bf = self.filepath.parent / "blends" / (self.filepath.stem + ".blend")
-        bf = Path(bf).expanduser()
-        bf.parent.mkdir(exist_ok=True, parents=True)
-        return bf
+        return BlenderIO(bf)
     
     def normalize_filepath(self, filepath:Path, dirindex=0):
         if isinstance(filepath, str):
@@ -480,10 +482,11 @@ class SourceReader():
             self.codepath,
             self.inputs,
             memory,
-            __RUNNER__=self.runner)
+            __RUNNER__=self.runner,
+            __BLENDER__=self.blender_io())
         
         self.candidates = self.renderable_candidates(
-            output_folder_override)
+            output_folder_override, self.config.add_time_viewers)
     
     def write_code_to_tmpfile(self, code):
         if self.filepath:
@@ -497,13 +500,30 @@ class SourceReader():
     
     def renderable_candidates(self,
         output_folder_override=None,
+        add_time_viewers=False,
         ):
-        return find_renderables(
+        candidates = find_renderables(
             self.filepath,
             self.codepath,
             self.program,
             output_folder_override,
-            blender_file=self.blender_file())
+            blender_io=self.blender_io())
+        
+        if len(candidates) == 0:
+            candidates.append(Programs.Blank())
+        
+        if add_time_viewers:
+            out = []
+            for c in candidates:
+                if (isinstance(c, animation) and
+                    not isinstance(c, aframe) and
+                    not isinstance(c, ui)
+                    ):
+                    out.extend(timeViewer(c))
+                out.append(c)
+            return out
+        else:
+            return candidates
     
     def renderables(self,
         viewer_solos=[],
@@ -547,19 +567,44 @@ class Programs():
         return SourceReader.LoadDemo("demo")[0]
     
     @staticmethod
-    def Glyphs(font=None, fontSize=72, showChars=False, rect=(1080, 1080)):
+    def Blank():
+        return SourceReader.LoadDemo("blank")[0]
+    
+    @staticmethod
+    def Glyphs(
+        font=None,
+        fontSize=72,
+        showChars=False,
+        rect=(1080, 1080)
+        ):
         return SourceReader.LoadDemo("glyphs", **locals())[0]
 
     @staticmethod
-    def Midi(file=None,
-        duration=None, bpm=None, text=True, fps=30,
-        rect=(1080, 540), log=False, preview_only=True,
+    def Midi(
+        file=None,
+        duration=None,
+        bpm=None,
+        lookup=None,
+        text=True,
+        fps=30,
+        rect=(1080, 540),
+        log=False,
+        preview_only=True,
         ):
         return SourceReader.LoadDemo("midi", **locals())[0]
     
     @staticmethod
-    def VF(font=None, text="A", font_size=None, positions=(0, 1),
-        stroke=False, seed=0, shuffle=False, animate=False,
-        rect=(1080, 1080), log=False, preview_only=True,
+    def VF(
+        font=None,
+        text="A",
+        font_size=None,
+        positions=(0, 1),
+        stroke=False,
+        seed=0,
+        shuffle=False,
+        animate=False,
+        rect=(1080, 1080),
+        log=False,
+        preview_only=True,
         ):
         return SourceReader.LoadDemo("vf", **locals())[0]

@@ -4,9 +4,10 @@ from coldtype.blender import *
 txt = "FALL\nING\nTEXT"
 
 @b3d_runnable()
-def setup(bw):
+def setup(bw:BpyWorld):
     with (bw
         .deletePrevious()
+        .timeline(Timeline(120))
         .rigidbody(speed=3.5, frame_end=1000)):
         (BpyObj.Find("Plane")
             .rigidbody("passive", friction=1, bounce=0))

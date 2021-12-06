@@ -1,6 +1,5 @@
 from coldtype.time.timeable import Timing, Timeable, TimeableSet, Easeable
 from coldtype.time.timeline import Timeline
-from coldtype.time.loop import Loop, LoopPhase
 
 
 class Frame(Easeable):
@@ -17,9 +16,12 @@ class Frame(Easeable):
     
     (where `Frame` is an optional type-hint if you're looking to leverage autocomplete in your editor)
     """
-    def __init__(self, i, animation):
-        self.i = i #: index of the frame
-        self.a = animation #: the animation (or subclass of animation) associated with the frame
+    def __init__(self, i, anim):
+        if isinstance(anim, Timeline):
+            self.i = i % anim.duration
+        else:
+            self.i = i % anim.t.duration
+        self.a = anim
     
     def adj(self, off):
         return Frame(self.i+off, self.a)
@@ -27,7 +29,7 @@ class Frame(Easeable):
     # Easeable interface
 
     @property
-    def t(self): return self.a
+    def t(self): return self.a.t if hasattr(self.a, "t") else self.a
     
     @property
     def _ts(self): return None

@@ -260,6 +260,7 @@ class notebook_animation(_animation):
         self._display = display
         self.interactive = interactive
         self.preview_scale = preview_scale
+        self.storyboard = storyboard
         self.vars = vars
 
         if storyboard is None:

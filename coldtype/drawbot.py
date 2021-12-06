@@ -45,6 +45,8 @@ class drawbot_script(renderable):
                     DATPen().rect(self.rect).f(self.bg).cast(DrawBotPen).draw()
             else:
                 db.size(self.rect.w, self.rect.h)
+                if self.render_bg:
+                    DATPen().rect(self.rect).f(self.bg).cast(DrawBotPen).draw()
             if self.rstate:
                 render_pass.fn(*render_pass.args, renderer_state)
             else:

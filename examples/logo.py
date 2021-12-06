@@ -8,7 +8,7 @@ For instagram
 
 obv = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 
-#@renderable(rstate=1)
+@renderable(rstate=1)
 def logo(r, rs):
     nxl = LaunchControlXL(rs.midi)
     return PS([
