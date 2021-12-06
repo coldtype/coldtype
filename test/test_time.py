@@ -23,7 +23,7 @@ at2 = AsciiTimeline(1, """
 
 at3 = AsciiTimeline(1, 24, """
                                                     <
-        style1
+        .style1
 *Oh,    hello.  •   *This   some
                         is      t  +x  +t       •
 """)
@@ -70,11 +70,11 @@ class TestTime(unittest.TestCase):
         self.assertEqual(at3.duration, 52)
         self.assertEqual(at3.fps, 24)
 
-        ct, styles = at3.interpretClips(exclude=[1])
+        ct = at3.words
         self.assertIsInstance(ct, ClipTrack)
-        self.assertIsInstance(styles, Timeline)
-        self.assertEqual(len(styles), 1)
-        self.assertEqual(styles[0].name, "style1")
+        self.assertIsInstance(ct.styles, Timeline)
+        self.assertEqual(len(ct.styles), 1)
+        self.assertEqual(ct.styles[0].name, "style1")
 
         cg:ClipGroup = ct.currentGroup(0)
         self.assertEqual(len(cg.clips), 3)
