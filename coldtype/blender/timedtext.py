@@ -1,5 +1,5 @@
-import bpy, json
-from pathlib import Path
+from coldtype.blender.util import *
+
 
 def text_in_channel(se, c, sort=True):
     matches = []
@@ -15,16 +15,6 @@ def next_neighbor(se, curr):
     for c in candidates:
         if curr.frame_final_end == c.frame_start:
             return c
-
-def find_sequence():
-    from coldtype.blender import b3d_sequencer
-
-    rs = bpy.app.driver_namespace.get("_coldtypes", [])
-    sq = None
-    for r in rs:
-        if isinstance(r, b3d_sequencer):
-            sq = r
-    return sq
 
 
 class TimedTextEditorOperator(bpy.types.Operator):
@@ -147,7 +137,7 @@ class TimedTextRoller(bpy.types.Operator):
 class ColdtypeExternalImporter(bpy.types.Operator):
     """Import the current Coldtype animation as a PNG frame sequence in the Blender sequence editor"""
 
-    bl_idname = "wm.coldtype_words_importer"
+    bl_idname = "wm.coldtype_external_importer"
     bl_label = "Coldtype External Importer"
 
     def invoke(self, context, event):
@@ -167,22 +157,10 @@ class ColdtypeExternalImporter(bpy.types.Operator):
         return {'FINISHED'}
 
 
-def remote(command, args=None):
-    sq = find_sequence()
-    input_command_file = bpy.app.driver_namespace["_coldtype_command_input_file"]
-    print("INPUT_COMMAND_FILE", input_command_file)
-    (Path(input_command_file)
-        .expanduser()
-        .write_text(json.dumps(dict(
-            action=command if isinstance(command, str) else command.value,
-            args=args,
-            filepath=str(sq.filepath)))))
-
-
 class ColdtypeExternalSequenceDefaults(bpy.types.Operator):
     """Some good defaults for editing and rendering a 2D sequence based on PNG images"""
 
-    bl_idname = "wm.coldtype_words_sequence_defaults"
+    bl_idname = "wm.coldtype_external_sequence_defaults"
     bl_label = "Coldtype External Sequence Defaults"
 
     def execute(self, context):
@@ -196,7 +174,7 @@ class ColdtypeExternalSequenceDefaults(bpy.types.Operator):
 class ColdtypeExternalRenderOne(bpy.types.Operator):
     """Render the current frame with the Coldtype renderer"""
 
-    bl_idname = "wm.coldtype_words_render_one"
+    bl_idname = "wm.coldtype_external_render_one"
     bl_label = "Coldtype External Render One"
 
     def execute(self, _):
@@ -207,7 +185,7 @@ class ColdtypeExternalRenderOne(bpy.types.Operator):
 class ColdtypeExternalRenderWorkarea(bpy.types.Operator):
     """Render the current workarea with the Coldtype renderer; if not workarea is set, this will render the entire animation"""
 
-    bl_idname = "wm.coldtype_words_render_workarea"
+    bl_idname = "wm.coldtype_external_render_workarea"
     bl_label = "Coldtype External Render Workarea"
 
     def execute(self, _):
@@ -218,7 +196,7 @@ class ColdtypeExternalRenderWorkarea(bpy.types.Operator):
 class ColdtypeExternalRenderAll(bpy.types.Operator):
     """Render the entire animation with the Coldtype renderer"""
 
-    bl_idname = "wm.coldtype_words_render_all"
+    bl_idname = "wm.coldtype_external_render_all"
     bl_label = "Coldtype External Render All"
 
     def execute(self, _):
@@ -229,7 +207,7 @@ class ColdtypeExternalRenderAll(bpy.types.Operator):
 class ColdtypeExternalSetWorkarea(bpy.types.Operator):
     """Set a workarea based on the current frame and the text data in the sequence"""
 
-    bl_idname = "wm.coldtype_words_set_workarea"
+    bl_idname = "wm.coldtype_external_set_workarea"
     bl_label = "Coldtype External Set Workarea"
 
     def execute(self, context):
@@ -250,7 +228,7 @@ class ColdtypeExternalSetWorkarea(bpy.types.Operator):
 class ColdtypeExternalUnsetWorkarea(bpy.types.Operator):
     """Set the workarea to the entire length of the animation"""
 
-    bl_idname = "wm.coldtype_words_unset_workarea"
+    bl_idname = "wm.coldtype_external_unset_workarea"
     bl_label = "Coldtype External Unset Workarea"
 
     def execute(self, context):
@@ -263,7 +241,7 @@ class ColdtypeExternalUnsetWorkarea(bpy.types.Operator):
 class ColdtypeExternalOpenInEditor(bpy.types.Operator):
     """Open the current Coldtype source file in your configured text editor"""
 
-    bl_idname = "wm.coldtype_words_open_in_editor"
+    bl_idname = "wm.coldtype_external_open_in_editor"
     bl_label = "Coldtype External Open-in-editor"
 
     def execute(self, _):
@@ -370,5 +348,5 @@ def unregister():
     bpy.utils.unregister_class(TimedTextEditorOperator)
 
 
-def add_shortcuts():
+def add_external_panel():
     register()
