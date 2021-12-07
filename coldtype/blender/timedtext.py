@@ -134,11 +134,11 @@ class TimedTextRoller(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class ColdtypeExternalImporter(bpy.types.Operator):
+class Coldtype2DImporter(bpy.types.Operator):
     """Import the current Coldtype animation as a PNG frame sequence in the Blender sequence editor"""
 
-    bl_idname = "wm.coldtype_external_importer"
-    bl_label = "Coldtype External Importer"
+    bl_idname = "wm.coldtype_2d_importer"
+    bl_label = "Coldtype 2D Importer"
 
     def invoke(self, context, event):
         from coldtype.blender import Action
@@ -157,11 +157,11 @@ class ColdtypeExternalImporter(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class ColdtypeExternalPrerender(bpy.types.Operator):
+class Coldtype2DPrerender(bpy.types.Operator):
     """Enable to draw prerendered frames to live preview Image Editor image"""
 
-    bl_idname = "wm.coldtype_external_prerendered"
-    bl_label = "Coldtype External Prerender"
+    bl_idname = "wm.coldtype_2d_prerendered"
+    bl_label = "Coldtype 2D Prerender"
 
     def execute(self, context):
         current = bpy.app.driver_namespace.get("_coldtype_prerendered", False)
@@ -170,11 +170,11 @@ class ColdtypeExternalPrerender(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class ColdtypeExternalSequenceDefaults(bpy.types.Operator):
+class Coldtype2DSequenceDefaults(bpy.types.Operator):
     """Some good defaults for editing and rendering a 2D sequence based on PNG images"""
 
-    bl_idname = "wm.coldtype_external_sequence_defaults"
-    bl_label = "Coldtype External Sequence Defaults"
+    bl_idname = "wm.coldtype_2d_sequence_defaults"
+    bl_label = "Coldtype 2D Sequence Defaults"
 
     def execute(self, context):
         context.scene.render.use_compositing = False
@@ -184,44 +184,44 @@ class ColdtypeExternalSequenceDefaults(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class ColdtypeExternalRenderOne(bpy.types.Operator):
+class Coldtype2DRenderOne(bpy.types.Operator):
     """Render the current frame with the Coldtype renderer"""
 
-    bl_idname = "wm.coldtype_external_render_one"
-    bl_label = "Coldtype External Render One"
+    bl_idname = "wm.coldtype_2d_render_one"
+    bl_label = "Coldtype 2D Render One"
 
     def execute(self, _):
         print("EXTERNAL RENDER ONE")
         remote("render_index", [bpy.data.scenes[0].frame_current])
         return {'FINISHED'}
 
-class ColdtypeExternalRenderWorkarea(bpy.types.Operator):
+class Coldtype2DRenderWorkarea(bpy.types.Operator):
     """Render the current workarea with the Coldtype renderer; if not workarea is set, this will render the entire animation"""
 
-    bl_idname = "wm.coldtype_external_render_workarea"
-    bl_label = "Coldtype External Render Workarea"
+    bl_idname = "wm.coldtype_2d_render_workarea"
+    bl_label = "Coldtype 2D Render Workarea"
 
     def execute(self, _):
         print("RENDER WORKAREA")
         remote("render_workarea")
         return {'FINISHED'}
 
-class ColdtypeExternalRenderAll(bpy.types.Operator):
+class Coldtype2DRenderAll(bpy.types.Operator):
     """Render the entire animation with the Coldtype renderer"""
 
-    bl_idname = "wm.coldtype_external_render_all"
-    bl_label = "Coldtype External Render All"
+    bl_idname = "wm.coldtype_2d_render_all"
+    bl_label = "Coldtype 2D Render All"
 
     def execute(self, _):
         print("RENDER ALL")
         remote("render_all")
         return {'FINISHED'}
 
-class ColdtypeExternalSetWorkarea(bpy.types.Operator):
+class Coldtype2DSetWorkarea(bpy.types.Operator):
     """Set a workarea based on the current frame and the text data in the sequence"""
 
-    bl_idname = "wm.coldtype_external_set_workarea"
-    bl_label = "Coldtype External Set Workarea"
+    bl_idname = "wm.coldtype_2d_set_workarea"
+    bl_label = "Coldtype 2D Set Workarea"
 
     def execute(self, context):
         sq = find_sequence()
@@ -238,11 +238,11 @@ class ColdtypeExternalSetWorkarea(bpy.types.Operator):
         
         return {'FINISHED'}
 
-class ColdtypeExternalUnsetWorkarea(bpy.types.Operator):
+class Coldtype2DUnsetWorkarea(bpy.types.Operator):
     """Set the workarea to the entire length of the animation"""
 
-    bl_idname = "wm.coldtype_external_unset_workarea"
-    bl_label = "Coldtype External Unset Workarea"
+    bl_idname = "wm.coldtype_2d_unset_workarea"
+    bl_label = "Coldtype 2D Unset Workarea"
 
     def execute(self, context):
         sq = find_sequence()
@@ -251,20 +251,20 @@ class ColdtypeExternalUnsetWorkarea(bpy.types.Operator):
             context.scene.frame_end = sq.t.duration-1
         return {'FINISHED'}
 
-class ColdtypeExternalOpenInEditor(bpy.types.Operator):
+class Coldtype2DOpenInEditor(bpy.types.Operator):
     """Open the current Coldtype source file in your configured text editor"""
 
-    bl_idname = "wm.coldtype_external_open_in_editor"
-    bl_label = "Coldtype External Open-in-editor"
+    bl_idname = "wm.coldtype_2d_open_in_editor"
+    bl_label = "Coldtype 2D Open-in-editor"
 
     def execute(self, _):
         remote("open_in_editor")
         return {'FINISHED'}
 
 
-class COLDTYPE_EXTERNAL_PT_Panel(bpy.types.Panel):
-    bl_idname = 'COLDTYPE_EXTERNAL_PT_panel'
-    bl_label = 'Coldtype External'
+class COLDTYPE_2D_PT_Panel(bpy.types.Panel):
+    bl_idname = 'COLDTYPE_2D_PT_panel'
+    bl_label = 'Coldtype 2D'
     bl_space_type = 'SEQUENCE_EDITOR'
     bl_region_type = 'UI'
     bl_category = 'Tool'
@@ -273,18 +273,18 @@ class COLDTYPE_EXTERNAL_PT_Panel(bpy.types.Panel):
         prerendered = bpy.app.driver_namespace.get("_coldtype_prerendered", False)
 
         layout = self.layout
-        layout.operator(ColdtypeExternalSequenceDefaults.bl_idname, text="Set Defaults", icon="SETTINGS",)
-        layout.operator(ColdtypeExternalImporter.bl_idname, text="Import Frames", icon="DOCUMENTS",)
+        layout.operator(Coldtype2DSequenceDefaults.bl_idname, text="Set Defaults", icon="SETTINGS",)
+        layout.operator(Coldtype2DImporter.bl_idname, text="Import Frames", icon="DOCUMENTS",)
         layout.separator()
-        layout.operator(ColdtypeExternalPrerender.bl_idname, text="Prerender Enabled" if prerendered else "Prerender Disabled", icon="TEXTURE_DATA",)
-        layout.operator(ColdtypeExternalRenderOne.bl_idname, text="Render One", icon="IMAGE_DATA",)
-        layout.operator(ColdtypeExternalRenderWorkarea.bl_idname, text="Render Workarea", icon="RENDERLAYERS",)
-        layout.operator(ColdtypeExternalRenderAll.bl_idname, text="Render All", icon="RENDER_ANIMATION",)
+        layout.operator(Coldtype2DPrerender.bl_idname, text="Prerender Enabled" if prerendered else "Prerender Disabled", icon="TEXTURE_DATA",)
+        layout.operator(Coldtype2DRenderOne.bl_idname, text="Render One", icon="IMAGE_DATA",)
+        layout.operator(Coldtype2DRenderWorkarea.bl_idname, text="Render Workarea", icon="RENDERLAYERS",)
+        layout.operator(Coldtype2DRenderAll.bl_idname, text="Render All", icon="RENDER_ANIMATION",)
         layout.separator()
-        layout.operator(ColdtypeExternalSetWorkarea.bl_idname, text="Set Workarea", icon="STICKY_UVS_VERT",)
-        layout.operator(ColdtypeExternalUnsetWorkarea.bl_idname, text="Unset Workarea", icon="STICKY_UVS_LOC",)
+        layout.operator(Coldtype2DSetWorkarea.bl_idname, text="Set Workarea", icon="STICKY_UVS_VERT",)
+        layout.operator(Coldtype2DUnsetWorkarea.bl_idname, text="Unset Workarea", icon="STICKY_UVS_LOC",)
         layout.separator()
-        layout.operator(ColdtypeExternalOpenInEditor.bl_idname, text="Open in Editor", icon="SCRIPT",)
+        layout.operator(Coldtype2DOpenInEditor.bl_idname, text="Open in Editor", icon="SCRIPT",)
 
 
 addon_keymaps = []
@@ -295,17 +295,17 @@ def register():
     bpy.utils.register_class(TimedTextSelector)
     bpy.utils.register_class(TimedTextRoller)
     
-    bpy.utils.register_class(ColdtypeExternalPrerender)
-    bpy.utils.register_class(ColdtypeExternalSequenceDefaults)
-    bpy.utils.register_class(ColdtypeExternalImporter)
-    bpy.utils.register_class(ColdtypeExternalRenderOne)
-    bpy.utils.register_class(ColdtypeExternalRenderWorkarea)
-    bpy.utils.register_class(ColdtypeExternalRenderAll)
-    bpy.utils.register_class(ColdtypeExternalSetWorkarea)
-    bpy.utils.register_class(ColdtypeExternalUnsetWorkarea)
-    bpy.utils.register_class(ColdtypeExternalOpenInEditor)
+    bpy.utils.register_class(Coldtype2DPrerender)
+    bpy.utils.register_class(Coldtype2DSequenceDefaults)
+    bpy.utils.register_class(Coldtype2DImporter)
+    bpy.utils.register_class(Coldtype2DRenderOne)
+    bpy.utils.register_class(Coldtype2DRenderWorkarea)
+    bpy.utils.register_class(Coldtype2DRenderAll)
+    bpy.utils.register_class(Coldtype2DSetWorkarea)
+    bpy.utils.register_class(Coldtype2DUnsetWorkarea)
+    bpy.utils.register_class(Coldtype2DOpenInEditor)
     
-    bpy.utils.register_class(COLDTYPE_EXTERNAL_PT_Panel)
+    bpy.utils.register_class(COLDTYPE_2D_PT_Panel)
     
     wm = bpy.context.window_manager
     kc = wm.keyconfigs.addon
@@ -329,31 +329,31 @@ def register():
         ])
         addon_keymaps.append([
             km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
-            km.keymap_items.new(ColdtypeExternalImporter.bl_idname, type='I', value='PRESS', shift=True)
+            km.keymap_items.new(Coldtype2DImporter.bl_idname, type='I', value='PRESS', shift=True)
         ])
         addon_keymaps.append([
             km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
-            km.keymap_items.new(ColdtypeExternalRenderOne.bl_idname, type='R', value='PRESS')
+            km.keymap_items.new(Coldtype2DRenderOne.bl_idname, type='R', value='PRESS')
         ])
         addon_keymaps.append([
             km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
-            km.keymap_items.new(ColdtypeExternalRenderWorkarea.bl_idname, type='R', value='PRESS', shift=True)
+            km.keymap_items.new(Coldtype2DRenderWorkarea.bl_idname, type='R', value='PRESS', shift=True)
         ])
         addon_keymaps.append([
             km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
-            km.keymap_items.new(ColdtypeExternalRenderAll.bl_idname, type='R', value='PRESS', shift=True, oskey=True)
+            km.keymap_items.new(Coldtype2DRenderAll.bl_idname, type='R', value='PRESS', shift=True, oskey=True)
         ])
         addon_keymaps.append([
             km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
-            km.keymap_items.new(ColdtypeExternalOpenInEditor.bl_idname, type='O', value='PRESS')
+            km.keymap_items.new(Coldtype2DOpenInEditor.bl_idname, type='O', value='PRESS')
         ])
         addon_keymaps.append([
             km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
-            km.keymap_items.new(ColdtypeExternalSetWorkarea.bl_idname, type='W', value='PRESS', shift=True)
+            km.keymap_items.new(Coldtype2DSetWorkarea.bl_idname, type='W', value='PRESS', shift=True)
         ])
         addon_keymaps.append([
             km:=kc.keymaps.new(name='Sequencer', space_type='SEQUENCE_EDITOR'),
-            km.keymap_items.new(ColdtypeExternalUnsetWorkarea.bl_idname, type='W', value='PRESS', shift=True, oskey=True)
+            km.keymap_items.new(Coldtype2DUnsetWorkarea.bl_idname, type='W', value='PRESS', shift=True, oskey=True)
         ])
  
  
@@ -365,5 +365,5 @@ def unregister():
     bpy.utils.unregister_class(TimedTextEditorOperator)
 
 
-def add_external_panel():
+def add_2d_panel():
     register()

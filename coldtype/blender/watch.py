@@ -5,8 +5,8 @@ from coldtype.renderable.animation import animation
 
 from coldtype.renderer.reader import SourceReader
 from coldtype.blender import b3d_animation, b3d_renderable, b3d_runnable, b3d_sequencer, walk_to_b3d
-from coldtype.blender.timedtext import add_external_panel
-from coldtype.blender.internal_panel import add_internal_panel
+from coldtype.blender.timedtext import add_2d_panel
+from coldtype.blender.panel3d import add_3d_panel
 from coldtype.blender.util import remote
 
 # def draw_png():
@@ -299,6 +299,8 @@ def watch(command_file):
     
     register_watcher()
     bpy.ops.wm.coldtype_watching_operator()
-    add_internal_panel()
-    add_external_panel()
+    
+    add_3d_panel()
+    add_2d_panel()
+
     print("...waiting for coldtype...")
