@@ -146,10 +146,16 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         out = []
         animation_found = False
         frame = self.current_frame
-        
-        #rs = self.sr.renderables(class_filters=cfs)
-        rs = self.candidates
-        for r in rs:
+        prerendered = bpy.app.driver_namespace.get("_coldtype_prerendered", False)
+
+        def display_image(r, result):
+            lp_path = render_as_image(r, result)
+            if lp_path.name in bpy.data.images:
+                bpy.data.images[lp_path.name].reload()
+            else:
+                bpy.data.images.load(str(lp_path))
+
+        for r in self.candidates:
             if isinstance(r, b3d_runnable):
                 r.run()
             else:
@@ -161,19 +167,13 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             
                 if isinstance(r, b3d_sequencer) and r.renderer == "skia":
                     animation_found = True
-                    prerendered = bpy.app.driver_namespace.get("_coldtype_prerendered", False)
 
                     if r.live_preview:
                         if prerendered:
                             result = ps[0].output_path
                         else:
                             result = run_passes()
-                        
-                        lp_path = render_as_image(r, result)
-                        if lp_path.name in bpy.data.images:
-                            bpy.data.images[lp_path.name].reload()
-                        else:
-                            bpy.data.images.load(str(lp_path))
+                        display_image(r, result)
                 
                 elif isinstance(r, b3d_animation):
                     if r.bake:
@@ -186,6 +186,9 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                             walk_to_b3d(result, renderable=r)
                         else:
                             raise Exception("r.renderer not supported", r.renderer)
+                        
+                        if prerendered:
+                            display_image(r, ps[0].output_path)
             
                 elif isinstance(r, b3d_renderable):
                     # coolio
