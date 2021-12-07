@@ -1,10 +1,10 @@
-import bpy, traceback, json
+import bpy, traceback, json, shutil
 from pathlib import Path
 from collections import defaultdict
 from coldtype.renderable.animation import animation
 
 from coldtype.renderer.reader import SourceReader
-from coldtype.blender import b3d_animation, b3d_runnable, walk_to_b3d
+from coldtype.blender import b3d_animation, b3d_renderable, b3d_runnable, b3d_sequencer, walk_to_b3d
 from coldtype.blender.timedtext import add_external_panel
 from coldtype.blender.internal_panel import add_internal_panel
 from coldtype.blender.util import remote
@@ -114,7 +114,14 @@ def render_as_image(r, res):
     from coldtype.pens.skiapen import SkiaPen
 
     path = r.filepath.parent / "renders" / (r.filepath.stem + "_livepreview.png")
-    _ = SkiaPen.Precompose(res, r.rect, disk=str(path), scale=r.live_preview_scale)
+
+    if isinstance(res, Path) or isinstance(res, str):
+        prp = Path(str(res))
+        if prp.exists():
+            shutil.copy(str(prp), str(path))
+    else:
+        _ = SkiaPen.Precompose(res, r.rect, disk=str(path), scale=r.live_preview_scale)
+    
     return path
 
     # if r.name not in bpy.data.images.keys():
@@ -136,48 +143,57 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
     persisted = None
 
     def render_current_frame(self, statics=False):
-        animation_found = False
-
-        cfs = [r"^b3d_.*$"]
-        if not statics:
-            cfs = [r"^b3d_animation$", r"^b3d_sequencer$"]
-        
         out = []
-
-        # TODO unnecessary to do work of rendering b3d_sequencer results
+        animation_found = False
+        frame = self.current_frame
         
-        for r, res in self.sr.frame_results(
-            self.current_frame,
-            class_filters=cfs
-            ):
+        #rs = self.sr.renderables(class_filters=cfs)
+        rs = self.candidates
+        for r in rs:
+            if isinstance(r, b3d_runnable):
+                r.run()
+            else:
+                out.append(r)
 
-            out.append(r)
-
-            if isinstance(r, b3d_animation):
-                if r.bake:
-                    if statics:
-                        walk_to_b3d(r.baked_frames(), renderable=r)
-                else:
+                ps = r.passes(None, None, indices=[frame])
+                def run_passes():
+                    return r.run_normal(ps[0], renderer_state=None)
+            
+                if isinstance(r, b3d_sequencer) and r.renderer == "skia":
                     animation_found = True
-                    if r.renderer == "b3d":
-                        walk_to_b3d(res, renderable=r)
-                    elif r.renderer == "skia":
-                        if bpy.app.driver_namespace.get("_coldtype_live_preview", False):
-                            lp_path = render_as_image(r, res)
-                            if lp_path.name in bpy.data.images:
-                                bpy.data.images[lp_path.name].reload()
-                            else:
-                                bpy.data.images.load(str(lp_path))
-                    else:
-                        raise Exception("r.renderer not supported", r.renderer)
+                    prerendered = bpy.app.driver_namespace.get("_coldtype_prerendered", False)
 
-            elif statics:
-                if isinstance(r, b3d_runnable):
-                    r.run()
-                else:
-                    walk_to_b3d(res, renderable=r)
-                    if r.reset_to_zero:
-                        bpy.data.scenes[0].frame_set(0)
+                    if r.live_preview:
+                        if prerendered:
+                            result = ps[0].output_path
+                        else:
+                            result = run_passes()
+                        
+                        lp_path = render_as_image(r, result)
+                        if lp_path.name in bpy.data.images:
+                            bpy.data.images[lp_path.name].reload()
+                        else:
+                            bpy.data.images.load(str(lp_path))
+                
+                elif isinstance(r, b3d_animation):
+                    if r.bake:
+                        if statics:
+                            walk_to_b3d(r.baked_frames(), renderable=r)
+                    else:
+                        animation_found = True
+                        result = run_passes()
+                        if r.renderer == "b3d":
+                            walk_to_b3d(result, renderable=r)
+                        else:
+                            raise Exception("r.renderer not supported", r.renderer)
+            
+                elif isinstance(r, b3d_renderable):
+                    # coolio
+                    if statics:
+                        result = run_passes()
+                        walk_to_b3d(result, renderable=r)
+                        if r.reset_to_zero:
+                            bpy.data.scenes[0].frame_set(0)
         
         #if not animation_found:
         #    bpy.data.scenes[0].frame_set(0)
@@ -195,6 +211,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         try:
             self.sr = SourceReader(arg, use_blender=True)
             self.sr.unlink()
+            self.candidates = self.sr.renderables()
             #bpy.data.scenes[0].frame_start = 0
 
             bpy.app.handlers.frame_change_pre.clear()
@@ -223,6 +240,10 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
     def modal(self, context, event):
         if event.type == 'TIMER':
+            if bpy.app.driver_namespace.get("_coldtype_needs_rerender", False):
+                bpy.app.driver_namespace["_coldtype_needs_rerender"] = False
+                self.render_current_frame(statics=False)
+
             if not bpy.context.screen.is_animation_playing:
                 self.persisted = persist_sequence(self.persisted)
 

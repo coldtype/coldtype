@@ -12,7 +12,7 @@ def setup(bw:BpyWorld):
         (BpyObj.Find("Plane")
             .rigidbody("passive", friction=1, bounce=0))
 
-@b3d_renderable()
+@b3d_renderable(reset_to_zero=1)
 def justi(r):
     return (StSt(txt,
         Font.MutatorSans(), 300, wght=0.25)

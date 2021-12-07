@@ -373,9 +373,11 @@ class b3d_sequencer(b3d_animation):
         autosave=True,
         in_blender=False,
         match_output=False,
+        live_preview=True,
         live_preview_scale=0.25,
         **kwargs
         ):
+        self.live_preview = live_preview
         self.live_preview_scale = live_preview_scale
 
         super().__init__(

@@ -157,15 +157,16 @@ class ColdtypeExternalImporter(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class ColdtypeExternalLivePreview(bpy.types.Operator):
-    """Enable to draw a live 2D version to the ImageEditor"""
+class ColdtypeExternalPrerender(bpy.types.Operator):
+    """Enable to draw prerendered frames to live preview Image Editor image"""
 
-    bl_idname = "wm.coldtype_external_live_preview"
-    bl_label = "Coldtype External Live Preview"
+    bl_idname = "wm.coldtype_external_prerendered"
+    bl_label = "Coldtype External Prerender"
 
     def execute(self, context):
-        current = bpy.app.driver_namespace.get("_coldtype_live_preview", False)
-        bpy.app.driver_namespace["_coldtype_live_preview"] = not current
+        current = bpy.app.driver_namespace.get("_coldtype_prerendered", False)
+        bpy.app.driver_namespace["_coldtype_prerendered"] = not current
+        bpy.app.driver_namespace["_coldtype_needs_rerender"] = True
         return {'FINISHED'}
 
 
@@ -226,7 +227,7 @@ class ColdtypeExternalSetWorkarea(bpy.types.Operator):
         sq = find_sequence()
         if sq:
             fc = context.scene.frame_current
-            work = sq.t.findExternalWorkarea(fc)
+            work = sq.t.findWordsWorkarea(fc)
             if work:
                 start, end = work
                 context.scene.frame_start = start
@@ -269,13 +270,13 @@ class COLDTYPE_EXTERNAL_PT_Panel(bpy.types.Panel):
     bl_category = 'Tool'
 
     def draw(self, context):
-        live_preview = bpy.app.driver_namespace.get("_coldtype_live_preview", False)
+        prerendered = bpy.app.driver_namespace.get("_coldtype_prerendered", False)
 
         layout = self.layout
-        layout.operator(ColdtypeExternalLivePreview.bl_idname, text="Live Preview Enabled" if live_preview else "Live Preview Disabled", icon="TEXTURE_DATA",)
         layout.operator(ColdtypeExternalSequenceDefaults.bl_idname, text="Set Defaults", icon="SETTINGS",)
         layout.operator(ColdtypeExternalImporter.bl_idname, text="Import Frames", icon="DOCUMENTS",)
         layout.separator()
+        layout.operator(ColdtypeExternalPrerender.bl_idname, text="Prerender Enabled" if prerendered else "Prerender Disabled", icon="TEXTURE_DATA",)
         layout.operator(ColdtypeExternalRenderOne.bl_idname, text="Render One", icon="IMAGE_DATA",)
         layout.operator(ColdtypeExternalRenderWorkarea.bl_idname, text="Render Workarea", icon="RENDERLAYERS",)
         layout.operator(ColdtypeExternalRenderAll.bl_idname, text="Render All", icon="RENDER_ANIMATION",)
@@ -294,7 +295,7 @@ def register():
     bpy.utils.register_class(TimedTextSelector)
     bpy.utils.register_class(TimedTextRoller)
     
-    bpy.utils.register_class(ColdtypeExternalLivePreview)
+    bpy.utils.register_class(ColdtypeExternalPrerender)
     bpy.utils.register_class(ColdtypeExternalSequenceDefaults)
     bpy.utils.register_class(ColdtypeExternalImporter)
     bpy.utils.register_class(ColdtypeExternalRenderOne)
