@@ -13,11 +13,11 @@ def find_sequence():
     return sq
 
 
-def remote(command, args=None):
-    print("REMOTE", command, args)
-    sq = find_sequence()
+def remote(command, args=None, sq=None):
+    #print("REMOTE", command, args, sq)
+    if sq is None:
+        sq = find_sequence()
     input_command_file = bpy.app.driver_namespace["_coldtype_command_input_file"]
-    print("INPUT_COMMAND_FILE", input_command_file)
     (Path(input_command_file)
         .expanduser()
         .write_text(json.dumps(dict(

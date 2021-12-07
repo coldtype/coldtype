@@ -180,6 +180,12 @@ class Winmans():
             self.glsk.poll()
     
     def turn_over(self):
+        if self.b3d and self.b3d.subp:
+            if self.b3d.subp.poll() == 0:
+                self.renderer.dead = True
+                self.renderer.on_exit()
+                return
+
         if self.midi:
             if self.midi.monitor(self.renderer.state.playing):
                 self.renderer.action_waiting = Action.PreviewStoryboard

@@ -3,10 +3,14 @@ from coldtype.blender import *
 
 bt = BlenderTimeline(__BLENDER__, 400)
 
-if not bpy:
-    print("RELOAD")
-
-@b3d_sequencer((1080, 540), timeline=bt, bg=0, render_bg=1, offset=180, watch=[bt.file])
+@b3d_sequencer((1080, 1080)
+, timeline=bt
+, bg=hsl(0.7)
+, render_bg=1
+, offset=180
+, watch=[bt.file]
+, live_preview_scale=0.25
+)
 def lyrics(f):
     def render_clip(tc):
         if "title" in tc.styles:
@@ -24,8 +28,10 @@ def lyrics(f):
         .removeBlanks()
         .align(f.a.r)
         .f(1))
+    
 
-    return PS([
-        P(txt.ambit(th=1)),
-        P().gridlines(f.a.r, 5).s(hsl(0.9)),
-        txt])
+    if len(txt) > 0:
+        return PS([
+            #P(txt.ambit(th=1).inset(-20)),
+            #P().gridlines(f.a.r, 5).s(hsl(0.9)),
+            txt])

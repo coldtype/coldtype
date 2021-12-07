@@ -1,7 +1,5 @@
-import enum
-import traceback
-import argparse, json, math, inspect
-import sys, os, signal, tracemalloc, shutil
+import traceback, argparse, json, math, inspect
+import sys, os, signal, tracemalloc, shutil, re
 import pickle
 
 import time as ptime
@@ -424,7 +422,7 @@ class Renderer():
 
         return needs_new_context
     
-    def _single_thread_render(self, trigger, indices=[]) -> Tuple[int, int]:
+    def _single_thread_render(self, trigger, indices=[], output_transform=None, no_sound=False) -> Tuple[int, int]:
         if not self.args.is_subprocess:
             start = ptime.time()
         
@@ -502,6 +500,8 @@ class Renderer():
                 
                 for rp in passes:
                     output_path = rp.output_path
+                    if output_transform:
+                        output_path = output_transform(output_path)
 
                     if rendering and render.preview_only:
                         continue
@@ -571,7 +571,7 @@ class Renderer():
         if not self.args.is_subprocess and not previewing:
             print(f"<coldtype: render: {render_count}(" + str(round(ptime.time() - start, 3)) + "s)>")
         
-        if not previewing:
+        if not previewing and not no_sound:
             if self.args.is_subprocess:
                 self.play_sound("Morse")
             else:
@@ -1380,8 +1380,9 @@ class Renderer():
                 print(f"... watching {self.source_reader.filepath} for changes ...")
     
     def execute_string_as_shortcut_or_action(self, shortcut, key, args=[]):
-        print("\n>>> shortcut:")
-        print(f"  \"{shortcut}\"({key if key else 'ø'}[{args}])\n")
+        #print("\n>>> shortcut:")
+        #print(f"  \"{shortcut}\"({key if key else 'ø'}[{args}])\n")
+        
         co = ConfigOption.ShortToConfigOption(shortcut)
         if co:
             if co == ConfigOption.WindowOpacity:
@@ -1392,6 +1393,13 @@ class Renderer():
         
         if shortcut == "render_index":
             self.render(Action.RenderIndices, indices=[int(args[0])])
+            return
+        elif shortcut == "render_scratch":
+            fi = int(args[0])
+            print(f">/scratch:{fi}")
+            def to_scratch(p):
+                return Path(re.sub(r"[0-9]{4}", "XXXX", str(p)))
+            self._single_thread_render(Action.RenderIndices, [fi], output_transform=to_scratch, no_sound=True)
             return
 
         try:

@@ -7,6 +7,57 @@ from coldtype.renderer.reader import SourceReader
 from coldtype.blender import b3d_animation, b3d_runnable, walk_to_b3d
 from coldtype.blender.timedtext import add_external_panel
 from coldtype.blender.internal_panel import add_internal_panel
+from coldtype.blender.util import remote
+
+# def draw_png():
+#     import gpu, os
+#     from gpu_extras.batch import batch_for_shader
+
+#     imageName = "ldts.png"
+#     pathTexture = str(Path("~/Desktop/ldts.png").expanduser())
+#     foundSceneImage = 0
+#     loadedImage = None
+
+#     for image in bpy.data.images:
+#         if (image.name.find(imageName) != -1):
+#             foundSceneImage += 1
+#             loadedImage = image
+
+#     if (foundSceneImage == 0):
+#         loadedImage = bpy.data.images.load(pathTexture)
+
+#     width = 1080
+#     height = 1080
+#     scale = 0.25
+
+#     width = width*scale
+#     height = height*scale
+
+#     # For 2.93 specifically
+#     tex = gpu.texture.from_image(loadedImage)
+
+#     content = {
+#         "pos": ((0, 0), (width, 0), (width, height), (0, height)),
+#         "texCoord": ((0, 0), (1, 0), (1, 1), (0, 1)),
+#     }
+
+#     shader = gpu.shader.from_builtin("2D_IMAGE")
+#     batch = batch_for_shader(shader, 'TRI_FAN', content)
+
+#     def draw():
+#         gpu.state.blend_set("ALPHA")
+#         shader.bind()
+
+#         shader.uniform_sampler("image", tex)
+#         batch.draw(shader)
+
+#     # For toggling on/off run script again
+#     try:
+#         bpy.context.space_data.draw_handler_remove(bpy.h, "WINDOW")
+#         del bpy.h
+#     except AttributeError:
+#         bpy.h = bpy.context.space_data.draw_handler_add(draw, (), 'WINDOW', 'POST_PIXEL')
+#     bpy.context.region.tag_redraw()
 
 
 def persist_sequence(last_persisted):
@@ -61,15 +112,16 @@ def persist_sequence(last_persisted):
 
 def render_as_image(r, res):
     from coldtype.pens.skiapen import SkiaPen
-    import skia
 
-    pimg = SkiaPen.Precompose(res, r.rect, disk=False)
+    path = r.filepath.parent / "renders" / (r.filepath.stem + "_livepreview.png")
+    _ = SkiaPen.Precompose(res, r.rect, disk=str(path), scale=r.live_preview_scale)
+    return path
 
-    if r.name not in bpy.data.images.keys():
-        bpy.data.images.new(r.name, width=r.rect.w, height=r.rect.h, alpha=True, float_buffer=True)
+    # if r.name not in bpy.data.images.keys():
+    #     bpy.data.images.new(r.name, width=r.rect.w, height=r.rect.h, alpha=True, float_buffer=True)
 
-    img = bpy.data.images[r.name]
-    img.pixels = pimg.toarray(colorType=skia.ColorType.kRGBA_F32_ColorType).ravel()
+    # img = bpy.data.images[r.name]
+    # img.pixels = pimg.toarray(colorType=skia.ColorType.kRGBA_F32_ColorType).ravel()
 
 # original idea: https://blender.stackexchange.com/questions/15670/send-instructions-to-blender-from-external-application
 
@@ -91,6 +143,8 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             cfs = [r"^b3d_animation$", r"^b3d_sequencer$"]
         
         out = []
+
+        # TODO unnecessary to do work of rendering b3d_sequencer results
         
         for r, res in self.sr.frame_results(
             self.current_frame,
@@ -108,8 +162,12 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     if r.renderer == "b3d":
                         walk_to_b3d(res, renderable=r)
                     elif r.renderer == "skia":
-                        #render_as_image(r, res)
-                        pass
+                        if bpy.app.driver_namespace.get("_coldtype_live_preview", False):
+                            lp_path = render_as_image(r, res)
+                            if lp_path.name in bpy.data.images:
+                                bpy.data.images[lp_path.name].reload()
+                            else:
+                                bpy.data.images.load(str(lp_path))
                     else:
                         raise Exception("r.renderer not supported", r.renderer)
 
@@ -195,7 +253,6 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
     def execute(self, context):
         ccf = bpy.app.driver_namespace.get("_coldtype_command_output_file")
         self.file = Path(ccf)
-        #print(">>>>>>>>>>>>", self.file)
 
         wm = context.window_manager
         self._timer = wm.event_timer_add(0.25, window=context.window)

@@ -157,6 +157,18 @@ class ColdtypeExternalImporter(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class ColdtypeExternalLivePreview(bpy.types.Operator):
+    """Enable to draw a live 2D version to the ImageEditor"""
+
+    bl_idname = "wm.coldtype_external_live_preview"
+    bl_label = "Coldtype External Live Preview"
+
+    def execute(self, context):
+        current = bpy.app.driver_namespace.get("_coldtype_live_preview", False)
+        bpy.app.driver_namespace["_coldtype_live_preview"] = not current
+        return {'FINISHED'}
+
+
 class ColdtypeExternalSequenceDefaults(bpy.types.Operator):
     """Some good defaults for editing and rendering a 2D sequence based on PNG images"""
 
@@ -257,7 +269,10 @@ class COLDTYPE_EXTERNAL_PT_Panel(bpy.types.Panel):
     bl_category = 'Tool'
 
     def draw(self, context):
+        live_preview = bpy.app.driver_namespace.get("_coldtype_live_preview", False)
+
         layout = self.layout
+        layout.operator(ColdtypeExternalLivePreview.bl_idname, text="Live Preview Enabled" if live_preview else "Live Preview Disabled", icon="TEXTURE_DATA",)
         layout.operator(ColdtypeExternalSequenceDefaults.bl_idname, text="Set Defaults", icon="SETTINGS",)
         layout.operator(ColdtypeExternalImporter.bl_idname, text="Import Frames", icon="DOCUMENTS",)
         layout.separator()
@@ -279,6 +294,7 @@ def register():
     bpy.utils.register_class(TimedTextSelector)
     bpy.utils.register_class(TimedTextRoller)
     
+    bpy.utils.register_class(ColdtypeExternalLivePreview)
     bpy.utils.register_class(ColdtypeExternalSequenceDefaults)
     bpy.utils.register_class(ColdtypeExternalImporter)
     bpy.utils.register_class(ColdtypeExternalRenderOne)
