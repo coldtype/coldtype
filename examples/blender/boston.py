@@ -1,5 +1,9 @@
 from coldtype import *
-from coldtype.blender import *
+from coldtype.blender import BlenderTimeline, b3d_sequencer
+from coldtype.fx.skia import phototype
+from coldtype.pens.datpen import DATPensEnumerable
+
+# https://accent.gmu.edu/browse_language.php?function=detail&speakerid=79
 
 """
 pʰliz kalˠ stɛlɘ
@@ -9,36 +13,21 @@ faɪv tɪk slæbz ʌv blu tʃiːz
 n meɪbi ɘ snæk fɔɹ hɚ bɹʌðɘ bɔɘb
 """
 
-bt = BlenderTimeline(__BLENDER__, 400)
+bt = BlenderTimeline(__BLENDER__, 250)
 
 @b3d_sequencer((1080, 1080)
 , timeline=bt
 , bg=hsl(0.7)
 , render_bg=1
-, watch=[bt.file]
 , live_preview_scale=0.25
+, audio=__sibling__("media/pleasecallstella.wav")
 )
-def lyrics(f):
-    def render_clip(tc):
-        if "title" in tc.styles:
-            return tc.text.upper(), Style("smoosh4", 500)
-        else:
-            return tc.text, Style("Brill Roman", 250)
-
-    cg = f.t.words.currentGroup()
-
-    txt = (cg.pens(f, render_clip
-        , graf_style=GrafStyle(leading=30)
-        , use_lines=[cg.currentWord(f.i) if not f.t.words.styles.ki("title").on() else None]
-        )
+def lyrics(f:Frame):
+    return (f.t.words.currentWord()
+        .pens(f.i, lambda c:
+            (c.text, Style("Brill Italic", 350, tu=30)))
         .removeFutures()
-        .removeBlanks()
-        .align(f.a.r)
-        .f(1))
-    
-
-    if len(txt) > 0:
-        return PS([
-            #P(txt.ambit(th=1).inset(-20)),
-            #P().gridlines(f.a.r, 5).s(hsl(0.9)),
-            txt])
+        #.align(f.a.r)
+        .f(1)
+        .insert(0, lambda p:
+            P(p.ambit()).fssw(-1, 0, 10)))

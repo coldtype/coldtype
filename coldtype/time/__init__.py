@@ -29,7 +29,7 @@ class Frame(Easeable):
     # Easeable interface
 
     @property
-    def t(self): return self.a.t if hasattr(self.a, "t") else self.a
+    def t(self) -> Timeline: return self.a.t if hasattr(self.a, "t") else self.a
     
     @property
     def _ts(self): return None

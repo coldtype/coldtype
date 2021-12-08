@@ -388,6 +388,9 @@ class b3d_sequencer(b3d_animation):
             autosave=autosave,
             renderer="b3d" if in_blender else "skia",
             **kwargs)
+        
+        if isinstance(self.timeline, BlenderTimeline):
+            self.add_watchee(self.timeline.file)
     
     # def post_read(self):
     #     out = super().post_read()
