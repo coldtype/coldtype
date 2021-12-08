@@ -14,7 +14,7 @@ bt = BlenderTimeline(__BLENDER__, 400)
 def lyrics(f):
     def render_clip(tc):
         if "title" in tc.styles:
-            return tc.text.upper(), Style("smoosh4", 600)
+            return tc.text.upper(), Style("smoosh4", 500)
         else:
             return tc.text.upper(), Style("Rainer", 350)
 
