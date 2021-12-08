@@ -137,6 +137,8 @@ class DraftingPens(DraftingPen):
                 union = self._pens[0].ambit(th=th, tv=tv)
                 for p in self._pens[1:]:
                     a = p.ambit(th=th, tv=tv)
+                    if a.x == 0 and a.y == 0 and a.w == 0 and a.h == 0:
+                        continue
                     union = union.union(a)
                 return union
             except Exception as e:

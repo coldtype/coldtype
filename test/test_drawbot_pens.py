@@ -68,7 +68,7 @@ class TestDrawbotPens(unittest.TestCase):
         
             circle = DraftingPen().oval(r.inset(200)).reverse().rotate(0)
             s2 = (s.copy()
-                .zero_translate()
+                .zero()
                 .distribute_on_path(circle)
                 .chain(dbdraw))
             

@@ -18,7 +18,7 @@ class GrafStyle():
 
 
 class Graf():
-    def __init__(self, lines, container, style=None, **kwargs):
+    def __init__(self, lines, container, style=None, no_frames=False, **kwargs):
         if isinstance(container, Rect):
             self.container = _PenClass().rect(container)
         else:
@@ -29,6 +29,8 @@ class Graf():
             self.style = GrafStyle(leading=style)
         else:
             self.style = GrafStyle(**kwargs)
+        
+        self.no_frames = no_frames
         self.lines = lines
     
     def lineRects(self):
@@ -70,7 +72,8 @@ class Graf():
         for idx, l in enumerate(self.lines):
             r = rects[idx]
             dps = l.pens().translate(r.x, r.y) # r.x
-            dps.addFrame(Rect(r.x, r.y, r.w, r.h))
+            if not self.no_frames:
+                dps.addFrame(Rect(r.x, r.y, r.w, r.h))
             pens.append(dps)
         return pens
 

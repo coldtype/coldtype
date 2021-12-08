@@ -32,7 +32,7 @@ class RichText(DraftingPens):
         visible_boundaries=[" "],
         invisible_boundaries=[],
         union_styles=True,
-        blankfill="¶",
+        spacer="¶",
         strip=True,
         strip_lines=False):
 
@@ -41,7 +41,7 @@ class RichText(DraftingPens):
         self.visible_boundary_chars = visible_boundaries
         self.invisible_boundary_chars = invisible_boundaries
         self.union_styles = union_styles
-        self.blankfill = blankfill
+        self.spacer = spacer
         
         if isinstance(text, PurePath):
             text = text.read_text()
@@ -115,8 +115,8 @@ class RichText(DraftingPens):
             #print(">", pl)
             if pl:
                 parsed_lines.append(pl)
-            elif self.blankfill:
-                parsed_lines.append([[self.blankfill, ["blank"]]])
+            elif self.spacer:
+                parsed_lines.append([[self.spacer, ["blank"]]])
 
         lines = []
         groupings = []
@@ -176,8 +176,10 @@ class RichText(DraftingPens):
             if fit:
                 lockup.fit(fit)
             lockups.append(lockup)
-        graf = Graf(lockups, rect, graf_style)
+        
+        graf = Graf(lockups, rect, graf_style, no_frames=True)
         pens = graf.pens()#.align(rect, x="minx")
+        pens._frame = None
         group_pens = DraftingPens() # TODO configurable?
 
         pens.reversePens()
@@ -185,7 +187,7 @@ class RichText(DraftingPens):
             line.reversePens()
             for slug in line:
                 slug.reversePens()
-        return pens
+        return pens.zero()
     
     def filter_style(self, style):
         return self.pfilter(lambda i, p: style in p.data.get("style_names", []))
@@ -193,18 +195,19 @@ class RichText(DraftingPens):
     def filter_text(self, text, flags=re.I):
         return self.pfilter(lambda i, p: re.match(text, p.data.get("txt", ""), flags=flags))
     
-    def remove_blanklines(self, blank=None):
-        if not blank and self.blankfill:
-            blank = self.blankfill
+    def removeSpacers(self, spacer=None, clean=True):
+        if not spacer and self.spacer:
+            spacer = self.spacer
         
         for line in self._pens:
             txt = reduce(lambda acc, p: p.data.get("txt", "") + acc, line, "")
-            if txt == blank:
-                line._pens = [DraftingPen()]
+            if txt == spacer:
+                line._pens = []
+        
+        if clean:
+            return self.removeBlanks()
         
         return self
-    
-    unblank = remove_blanklines
 
 
 if highlight:

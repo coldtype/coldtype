@@ -15,7 +15,9 @@ def highlight(r):
         .align(r, tv=1)
         .scale(1.5)
         .insert(0, lambda ps: P()
-            .rect(ps[0][-1].ambit(th=1, tv=1).inset(-10))
+            .rect(ps[0][-1]
+                .ambit(th=1, tv=1)
+                .inset(-10))
             .fssw(-1, hsl(0.7, a=0.3), 10)))
 
 txt = """H [h]
@@ -25,13 +27,12 @@ a smaller line [i]"""
 
 @renderable((1080, 540))
 def plainish(r):
-    return (RichText(r, txt, styler, blankfill="¶")
+    return (RichText(r, txt, styler, spacer="¶")
         .xalign(r)
         .align(r)
         .scale(2, th=1)
         .f(0)
-        #.remove_blanklines()
-        )
+        .removeSpacers())
 
 txt2 = """
 Hello, [a]
