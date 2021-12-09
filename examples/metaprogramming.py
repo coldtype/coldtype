@@ -24,7 +24,7 @@ def code1(f):
         , render_code
         , leading=8)
         .align(ri, "W")
-        .unblank()
+        .removeSpacers()
         .collapse()
         .pmap(lambda i, p: p.rotate(-30+rnds1[i]*30))
         .pmap(warp(2, 0, 0, mult=30)))

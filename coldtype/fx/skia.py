@@ -119,7 +119,7 @@ class Skfi():
 
 def spackle(xo=None, yo=None,
     xs=0.85, ys=0.85, base=None,
-    cut=240, cutw=5
+    cut=240, cutw=5, fill=bw(1)
     ):
     r1 = Random()
     r1.seed(0)
@@ -137,7 +137,7 @@ def spackle(xo=None, yo=None,
                 Shader=(Skfi.improved_noise(1,
                     xo=xo, yo=yo, xs=xs, ys=ys, base=base)
                     .makeWithColorFilter(Skfi.compose(
-                        Skfi.fill(bw(1)),
+                        Skfi.fill(fill),
                         Skfi.as_filter(Skfi.contrast_cut(cut, cutw)),
                         skia.LumaColorFilter.Make()))))))
     return _spackle

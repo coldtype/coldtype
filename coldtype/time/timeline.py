@@ -1,4 +1,5 @@
 from collections import defaultdict
+from re import match
 from coldtype.time.timeable import Timeable, Easeable
 from typing import List
 
@@ -116,7 +117,7 @@ class Timeline(Timeable):
         all = []
         if isinstance(k, str):
             for c in self.timeables:
-                if c.name == k:
+                if k == "*" or c.name == k:
                     all.append(c)
         
         if len(all) == 0:
@@ -151,6 +152,18 @@ class Timeline(Timeable):
                 pass
         
         return Easeable(self._keyed(key), fi)
+    
+    def current(self, track=None, fi=None) -> Easeable:
+        fi = self._norm_held_fi(fi)
+
+        matches = []
+        for t in self.timeables:
+            if t.now(fi):
+                if track is not None and t.track != track:
+                    continue
+                matches.append(t)
+        
+        return Easeable(matches, fi)
     
     @property
     def tstart(self):
@@ -219,7 +232,7 @@ class Timeline(Timeable):
                     continue
 
             if t.name.startswith("."):
-                styles.append(Timeable(t.start, t.end, index=t.index, name=t.name[1:], data=t.data, timeline=self, track=t.track))
+                styles.append(Timeable(t.start, t.end, index=t.idx, name=t.name[1:], data=t.data, timeline=self, track=t.track))
             else:
                 start = t.start
                 end = t.end
@@ -228,6 +241,6 @@ class Timeline(Timeable):
                 if t.name == "•":
                     start -= 1
                     end -= 1
-                clips.append(Clip(t.name, start, end, t.index, track=t.track))
+                clips.append(Clip(t.name, start, end, t.idx, track=t.track))
         
         return ClipTrack(self, clips, None, Timeline(timeables=styles, findWords=False))

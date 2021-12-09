@@ -51,9 +51,7 @@ class Timeable():
         ):
         self.start = start
         self.end = end
-        self.index = index
         self.idx = index
-        self.i = index
         self.name = name
         self.feedback = 0
         self.data = data
@@ -250,120 +248,6 @@ class Timeable():
         return Easeable(self, i)
 
 
-
-
-class TimeableView(Timeable):
-    def __init__(self, timeable, value, svalue, count, index, position, start, end):
-        self.timeable = timeable
-        self.value = value
-        self.svalue = svalue
-        self.count = count
-        self.index = index
-        self.position = position
-        self.start = start
-        self.end = end
-        super().__init__(start, end)
-    
-    def ease(self, eo="eei", ei="eei"):
-        return ease(eo, self.value)[0]
-    
-    def __repr__(self):
-        return f"<TimeableView:{self.timeable}/>"
-
-
-class TimeableSet():
-    def __init__(self, timeables, name=None, start=-1, end=-1, data={}, flatten=False):
-        self.timeables = sorted(timeables, key=lambda t: t.start)
-        self.name = name
-        self._start = start
-        self._end = end
-        self.data = data
-        if flatten:
-            self.timeables = self.flat_timeables()
-    
-    def flat_timeables(self):
-        ts = []
-        for t in self.timeables:
-            if isinstance(t, TimeableSet):
-                ts.extend(t.flat_timeables())
-            else:
-                ts.append(t)
-        return ts
-
-    def constrain(self, start, end):
-        self._start = start
-        self._end = end
-    
-    @property
-    def start(self):
-        if self._start > -1:
-            return self._start
-        _start = -1
-        for t in self.timeables:
-            ts = t.start
-            if _start == -1:
-                _start = ts
-            elif ts < _start:
-                _start = ts
-        return _start
-
-    @property
-    def end(self):
-        if self._end > -1:
-            return self._end
-        _end = -1
-        for t in self.timeables:
-            te = t.end
-            if _end == -1:
-                _end = te
-            elif te > _end:
-                _end = te
-        return _end
-    
-    def __getitem__(self, index):
-        return self.timeables[index]
-    
-    def current(self, frame):
-        for idx, t in enumerate(self.flat_timeables()):
-            t:Timeable
-            if t.start <= frame and frame < t.end:
-                return t
-    
-    def at(self, i) -> "Easeable":
-        return Easeable(self.timeables, i)
-    
-    def _keyed(self, k):
-        k = str(k)
-        all = []
-        if isinstance(k, str):
-            for c in self.timeables:
-                if c.name == k:
-                    all.append(c)
-        return all
-    
-    def k(self, *keys):
-        if len(keys) > 1:
-            es = [self.k(k) for k in keys]
-            return TimeableSet(es, flatten=1)
-        else:
-            return TimeableSet(self._keyed(keys[0]), flatten=1)
-    
-    def ki(self, key, fi):
-        """(k)eyed-at-(i)ndex"""
-
-        if not isinstance(key, str):
-            try:
-                es = [self.ki(k, fi).t for k in key]
-                return Easeable(es, fi)
-            except TypeError:
-                pass
-        
-        return Easeable(self._keyed(key), fi)
-
-    def __repr__(self):
-        return "<TimeableSet ({:s}){:04d}>".format(self.name if self.name else "?", len(self.timeables))
-    
-
 @dataclass
 class EaseableTiming():
     t: float = 0
@@ -402,6 +286,23 @@ class Easeable():
         else:
             return min(vs)
     
+    @property
+    def name(self):
+        if self._ts:
+            return "/".join([t.name for t in self.t])
+        else:
+            return self.t.name
+    
+    @property
+    def idx(self):
+        if self._ts:
+            if len(self.t) > 0:
+                return self.t[0].idx
+            else:
+                return -1
+        else:
+            return self.t.idx
+    
     def index(self):
         if self._ts:
             return sum([self.i >= t.start for t in self.t]) - 1
@@ -431,11 +332,17 @@ class Easeable():
 
         if self._ts:
             es = [Easeable(t, self.i).tv(loops, cyclic, to1).t for t in self.t]
-            e = choose(es)
+            if len(es) == 0:
+                e = 0
+            else:
+                e = choose(es)
             if find is False:
                 return EaseableTiming(e)
             else:
-                return EaseableTiming(e, es.index(e))
+                try:
+                    return EaseableTiming(e, es.index(e))
+                except:
+                    return EaseableTiming(e, -1)
                 # chosen = [(i, 1 if x == e else 0) for i, x in enumerate(es)]
                 # if e > 0:
                 #     return EaseableTiming(e, chosen[-1][0])

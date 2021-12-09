@@ -331,6 +331,7 @@ class DraftingPens(DraftingPen):
     xå = xalign
     
     def xa(self, x="centerx"):
+        """deprecated"""
         for pen in self:
             pen.x_align_to_frame(x)
         return self
@@ -367,8 +368,11 @@ class DraftingPens(DraftingPen):
                 p.translate(t*idx, 0)
         return self
     
-    def stack(self, leading=0, tv=0):
+    def stack(self, leading=0, tv=0, zero=False):
         "Vertical distribution of elements"
+        if zero:
+            for p in self:
+                p.zero()
         ambits = [p.ambit(th=0, tv=tv).expand(leading, "N") for p in self._pens]
         for idx, p in enumerate(self._pens):
             for a in ambits[idx+1:]:
@@ -519,7 +523,11 @@ class DraftingPens(DraftingPen):
         stands for `mutate`;
         fn lambda receives `idx, p` as arguments"""
         for idx, p in enumerate(self._pens):
-            fn(idx, p)
+            arg_count = len(inspect.signature(fn).parameters)
+            if arg_count == 1:
+                fn(p)
+            else:
+                fn(idx, p)
         return self
     
     def filter(self, fn: Callable[[int, DraftingPen], bool]):

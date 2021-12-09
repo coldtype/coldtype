@@ -756,10 +756,19 @@ class DraftingPen(RecordingPen, SHContext):
     å = align
     
     def x_align_to_frame(self, x=Edge.CenterX, th=0):
+        """deprecated"""
         if self._frame:
             return self.align(self.ambit(th=th, tv=0), x=x, transformFrame=1, th=1)
         else:
             raise Exception("No Frame")
+    
+    def xalign(self, rect=None, x="centerx", th=1, tv=0):
+        if callable(rect):
+            rect = rect(self)
+        self.align(rect, x=x, y=None, th=th, tv=tv)
+        return self
+    
+    xå = xalign
 
     # deprecated camelcase
     xAlignToFrame = x_align_to_frame

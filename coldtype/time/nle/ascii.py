@@ -49,7 +49,7 @@ class AsciiTimeline(Timeline):
                     if clip_start is not None and clip_name is not None:
                         clips.append(Timeable(
                             clip_start,
-                            round((idx)*multiplier)+1,
+                            round((idx)*multiplier)+multiplier,
                             name=clip_name,
                             data=dict(line=lidx),
                             track=lidx-1,
@@ -113,7 +113,7 @@ class AsciiTimeline(Timeline):
         
         clips = sorted(clips, key=lambda c: c.start)
         for cidx, clip in enumerate(clips):
-            clip.index = cidx
+            clip.idx = cidx
         
         super().__init__(duration, fps, clips, **kwargs)
     

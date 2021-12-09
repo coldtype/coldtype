@@ -4,8 +4,8 @@ from coldtype.fx.skia import phototype, fill
 fnt = Font.ColdtypeObviously()
 dfnt = Font.RecursiveMono()
 
-@animation(timeline=80, bg=hsl(0.3, 1, 0.9), composites=1)
-def discord(f):
+@animation(timeline=80, bg=0, composites=1)
+def recursive(f):
     return (DPS([
             (StSt("COLDTYPE", fnt,
                 font_size=f.e(1, rng=(250, 20)),
@@ -26,4 +26,6 @@ def discord(f):
             .scale(0.995)
             .ch(fill(1))))
         .ch(phototype(f.a.r, blur=1.5, cut=137, cutw=35,
-            fill=hsl(f.e(1, rng=(0.65, 0.85))))))
+            fill=hsl(f.e(1, rng=(0.65, 0.85)), 0.6, 0.6))))
+
+release = recursive.export("h264", loops=4)
