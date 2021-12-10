@@ -3,7 +3,8 @@ from coldtype.blender import BlenderTimeline, b3d_sequencer
 from coldtype.fx.skia import phototype
 from coldtype.pens.datpen import DATPensEnumerable
 
-# https://accent.gmu.edu/browse_language.php?function=detail&speakerid=79
+# sound: https://accent.gmu.edu/browse_language.php?function=detail&speakerid=79
+# typed with: https://westonruter.github.io/ipa-chart/keyboard/
 
 """
 pʰliz kalˠ stɛlɘ

@@ -1,4 +1,4 @@
-from coldtype.time.timeable import Timing, Timeable, Easeable
+from coldtype.time.timeable import Timeable, Easeable
 from coldtype.time.timeline import Timeline
 
 

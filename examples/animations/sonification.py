@@ -1,6 +1,5 @@
-from coldtype.test import *
-import wave, struct, math, random, pickle
-
+from coldtype import *
+import wave, struct, pickle
 
 """
 Run in terminal: `coldtype examples/animations/sonification.py`

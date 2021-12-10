@@ -12,7 +12,7 @@ def render(f):
     def render_clip_fn(tc):
         if "coldtype" in tc.clip.styles:
             style = tc.clip.style_matching("coldtype")
-            e = style.progress(f.i, easefn="eei").e
+            e = style._progress(f.i, easefn="eei").e
             return tc.text.upper(), Style(co, 200, wdth=0.5, tu=-150+e*150, rotate=e*360)
         if tc.text == "!":
             return tc.text, Style(recmono, 200, xShift=-30, rotate=-5)
@@ -31,7 +31,7 @@ def render(f):
             pen.f(hsl(0.57, s=0.6, l=0.6)).understroke(sw=10)
     
     if zoom := cg.style_matching("zoom"):
-        e = zoom.progress(f.i, easefn="eei").e
+        e = zoom._progress(f.i, easefn="eei").e
         pens.scale(1+pow(e, 2)*150, point=f.a.r.point("C").offset(0, 51))
     
     return pens

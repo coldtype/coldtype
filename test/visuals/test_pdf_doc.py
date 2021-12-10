@@ -22,4 +22,4 @@ class pdfdoc(animation):
 def test_multipage(f):
     return (DATPen()
         .rect(f.a.r.inset(50))
-        .f(hsl(f.a.progress(f.i).e)))
+        .f(hsl(f.e("l", 0))))

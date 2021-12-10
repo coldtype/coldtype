@@ -1,18 +1,11 @@
 from coldtype import *
 
-tl = Timeline(30)
-
-@animation(timeline=tl)
+@animation((540, 540), timeline=30)
 def hsl_interp(f):
-    p = f.a.progress(f.i, loops=1, easefn="qeio").e
-    return (DATPen()
-        .oval(f.a.r.inset(100))
-        .f(hsl(0.5).hsl_interp(p, hsl(0.1))))
+    return (P().oval(f.a.r.inset(100))
+        .f(hsl(0.5).hsl_interp(f.e("qeio"), hsl(0.1))))
 
-
-@animation(timeline=120)
+@animation((540, 540), timeline=120)
 def rgb_interp(f):
-    p = f.a.progress(f.i, loops=1, easefn="eeio").e
-    return (DATPen()
-        .rect(f.a.r.inset(100))
-        .f(hsl(0.5).rgb_interp(p, hsl(0.8))))
+    return (P(f.a.r.inset(100))
+        .f(hsl(0.5).rgb_interp(f.e("eeio"), hsl(0.8))))

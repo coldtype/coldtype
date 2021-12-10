@@ -6,34 +6,6 @@ from copy import copy
 import math
 
 
-class Timing():
-    def __init__(self, t, loop_t, loop, easefn):
-        self.t = t
-        self.loop_t = loop_t
-        self.loop = loop
-        self.loop_phase = int(loop%2 != 0)
-        self.e, self.s = self.ease(easefn)
-    
-    def ease(self, easefn):
-        easer = easefn
-        if not isinstance(easer, str) and not hasattr(easer, "value") and not type(easefn).__name__ == "Glyph":
-            try:
-                iter(easefn) # is-iterable
-                if len(easefn) > self.loop:
-                    easer = easefn[self.loop]
-                elif len(easefn) == 2:
-                    easer = easefn[self.loop % 2]
-                elif len(easefn) == 1:
-                    easer = easefn[0]
-                else:
-                    easer = easefn[0]
-            except TypeError:
-                print("failed")
-                pass
-        v, tangent = ease(easer, self.loop_t)
-        return min(1, max(0, v)), tangent
-
-
 class Timeable():
     """
     Abstract base class for anything with a concept of `start` and `end`/`duration`
@@ -94,109 +66,6 @@ class Timeable():
             if self.end > self.timeline.duration and fi < self.start:
                 return fi + self.timeline.duration
         return fi
-    
-    def e(self, fi, easefn="eeio", loops=1, rng=(0, 1), cyclic=True, to1=False, out1=False, **kwargs):
-        if "r" in kwargs: rng = kwargs["r"]
-
-        if not isinstance(easefn, str):
-            loops = easefn
-            easefn = "eeio"
-        
-        fi = self._normalize_fi(fi)
-        t = self.progress(fi, loops=loops, easefn=easefn, cyclic=cyclic, to1=to1, out1=out1)
-        e = t.e
-        ra, rb = rng
-        if ra > rb:
-            e = 1 - e
-            rb, ra = ra, rb
-        return ra + e*(rb - ra)
-
-    # def io(self, fi, length, ei="eei", eo="eei", negative=False):
-    #     """
-    #     Somewhat like ``progress()``, but can be used to fade in/out (hence the name (i)n/(o)ut)
-
-    #     * ``length`` refers to the lenght of the ease, in frames
-    #     * ``ei=`` takes the ease-in mnemonic
-    #     * ``eo=`` takes the ease-out mnemonic
-    #     """
-    #     try:
-    #         length_i, length_o = length
-    #     except:
-    #         length_i = length
-    #         length_o = length
-        
-    #     fi = self._normalize_fi(fi)
-
-    #     if fi < self.start:
-    #         return 1
-    #     if fi > self.end:
-    #         return 0
-    #     to_end = self.end - fi
-    #     to_start = fi - self.start
-    #     easefn = None
-    #     in_end = False
-    #     if to_end < length_o and eo:
-    #         in_end = True
-    #         v = 1-to_end/length_o
-    #         easefn = eo
-    #     elif to_start <= length_i and ei:
-    #         v = 1-to_start/length_i
-    #         easefn = ei
-    #     else:
-    #         v = 0
-    #     if v == 0 or not easefn:
-    #         return 0
-    #     else:
-    #         a, _ = ease(easefn, v)
-    #         if negative and in_end:
-    #             return -a
-    #         else:
-    #             return a
-    
-    # def io2(self, fi, length, easefn="eeio", negative=False):
-    #     try:
-    #         length_i, length_o = length
-    #     except:
-    #         length_i = length
-    #         length_o = length
-        
-    #     if isinstance(length_i, float):
-    #         length_i = int(self.duration*(length_i/2))
-    #     if isinstance(length_o, float):
-    #         length_o = int(self.duration*(length_o/2))
-        
-    #     if fi < self.start or fi > self.end:
-    #         return 0
-        
-    #     try:
-    #         ei, eo = easefn
-    #     except ValueError:
-    #         ei, eo = easefn, easefn
-
-    #     to_end = self.end - fi
-    #     to_start = fi - self.start
-    #     easefn = None
-    #     in_end = False
-
-    #     if to_end < length_o and eo:
-    #         in_end = True
-    #         v = to_end/length_o
-    #         easefn = eo
-    #     elif to_start <= length_i and ei:
-    #         v = to_start/length_i
-    #         easefn = ei
-    #     else:
-    #         v = 1
-
-    #     if v == 1 or not easefn:
-    #         return 1
-    #     else:
-    #         a, _ = ease(easefn, v)
-    #         return a
-    #         if negative and in_end:
-    #             return -a
-    #         else:
-    #             return a
 
     def _loop(self, t, times=1, cyclic=True, negative=False):
         lt = t*times*2
@@ -214,35 +83,6 @@ class Timeable():
             else:
                 lt = 1 - lt
         return lt, ltf
-    
-    def progress(self, i, loops=0, cyclic=True, negative=False, easefn="linear", to1=False, out1=True) -> Timing:
-        """
-        Given an easing function (``easefn=``), calculate the amount of progress as a Timing object
-
-        ``easefn=`` takes a mnemonic as enumerated in :func:`coldtype.time.easing.ease`
-        """
-        if i < self.start:
-            return Timing(0, 0, 0, easefn)
-        if i > self.end:
-            if out1:
-                return Timing(1, 1, 0, easefn)
-            else:
-                return Timing(0, 0, 0, easefn)
-        d = self.duration
-        if to1:
-            d = d - 1
-        t = (i-self.start) / d
-        if loops == 0:
-            return Timing(t, t, 0, easefn)
-        else:
-            loop_t, loop_index = self._loop(t, times=loops, cyclic=cyclic, negative=negative)
-            return Timing(t, loop_t, loop_index, easefn)
-    
-    def halfover(self, i):
-        e = self.progress(i, to1=1).e
-        return e >= 0.5
-    
-    #prg = progress
 
     def at(self, i) -> "Easeable":
         return Easeable(self, i)

@@ -3,16 +3,19 @@ from coldtype.fx.skia import phototype, potrace
 
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 
-@animation(bg=bw(0), storyboard=[0], timeline=Timeline(30))
+@animation(bg=bw(0), timeline=Timeline(30))
 def render(f):
-    raw = (StyledString("COLD",
-        Style(co, 700, wdth=0.5, tu=-155*f.a.progress(f.i).e, r=1, ro=1, rotate=10))
-        .pens()
+    raw = (StSt("COLD", co, 700
+        , wdth=0.5
+        , tu=-155*f.e()
+        , r=1
+        , ro=1
+        , rotate=10)
         .align(f.a.r)
         .f(1))
     
     letter = (raw.copy()
-        .ch(phototype(f.a.r, 10, 250)))
+        .ch(phototype(f.a.r, 15, 200)))
     
     return [
         (letter.copy()

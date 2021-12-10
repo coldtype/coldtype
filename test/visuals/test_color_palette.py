@@ -1,7 +1,4 @@
 from coldtype.test import *
-from random import randint
-from noise import pnoise1
-import PIL.Image
 from coldtype.fx.skia import Skfi, mod_pixels, precompose
 
 def r10(x):
@@ -42,43 +39,21 @@ for i in range(256):
     x = (i - 96) * 255 // 1
     ct[i] = min(255, max(0, x))
 
-def improved(e, xo=0, yo=0, xs=1, ys=1, base=1):
-    noise = skia.PerlinNoiseShader.MakeImprovedNoise(0.01, 0.01, 3, e)
-    matrix = skia.Matrix()
-    matrix.setTranslate(e*xo, e*yo)
-    matrix.setScaleX(xs)
-    matrix.setScaleY(ys)
-    return noise.makeWithLocalMatrix(matrix)
-
 @animation(timeline=Timeline(120))
 def restricted_colors(f):
-    t = f.a.progress(f.i, loops=0, easefn="linear")
-    cp = f.a.r.point("C")
-    
-    c:DATPen = (StyledString("COLD", Style(co, 500, wdth=0.5, ro=1))
-        #.oval(f.a.r.take(100, "mdy").square())
-        #.scale(1+t.e*8)
-        .pen()
+    c = (StSt("COLD", co, 500, wdth=0.5, ro=1)
         .align(f.a.r))
     
-    cap_c = (c.copy()
-        #.f(Gradient.Horizontal(f.a.r, hsl(0.2, s=1), hsl(0.5, s=1)))
-        .f(0)
+    cap_c = (c.copy().f(0)
         .attr(skp=dict(
-            #Shader=skia.GradientShader.MakeSweep(cx=cp.x, cy=cp.y, colors=[hsl(0.9).skia(), hsl(0.7).skia(), hsl(0.3).skia(), hsl(0.9).skia()]),
-            Shader=skia.PerlinNoiseShader.MakeFractalNoise(0.01, 0.01, 2, 5),
-            #Shader=skia.PerlinNoiseShader.MakeImprovedNoise(0.01, 0.01, 1, t.e*2),
-            #Shader=improved(t.e, 500, 100)
-        ))
+            Shader=skia.PerlinNoiseShader.MakeFractalNoise(0.01, 0.01, 2, 5)))
         .ch(precompose(f.a.r))
         .attr(skp=dict(
             ImageFilter=skia.BlurImageFilter.Make(5, 5),
-            ColorFilter=Skfi.as_filter(contrast_cut(100+pnoise1(t.e)*30, 10), a=0, r=1, g=1, b=1),
-            #ColorFilter=skia.TableColorFilter.MakeARGB(ct, ct, ct, ct)
+            ColorFilter=Skfi.as_filter(
+                contrast_cut(f.e("l", 0, r=(50, 190)), 10)
+                , a=0, r=1, g=1, b=1),
         ))
-        #.mod_pixels(f.a.r, 0.1, lambda rgba: lut(rgba))
         .ch(mod_pixels(f.a.r, 0.1, lambda c: [r10(x) for x in c])))
 
-    return cap_c + DATPen().rect(f.a.r).difference(c.f(None)).f(0)
-    
-    return cap_c
+    return cap_c + P(f.a.r).difference(c.f(None)).f(0)
