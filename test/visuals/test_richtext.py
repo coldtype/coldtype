@@ -26,7 +26,7 @@ And one[b] more[b] line
 
 @test()
 def test_rich(r):
-    pens = (RichText(r, txt1, render_txt).xa().align(r, tv=1))
+    pens = (RichText(r, txt1, render_txt).xalign(r).align(r, tv=1))
     
     pens[1][0].rotate(180).translate(0, -5)
     pens[1][1].f(Gradient.H(
@@ -47,7 +47,8 @@ def test_rich_custom(r):
         tag_delimiters=["≤", "≥"],
         visible_boundaries=["¶"],
         invisible_boundaries=["¬"])
-        .xa()
+        #.xa()
+        .xalign(r)
         .align(r, tv=1))
     
     for p in pens.filter_style("h"):
@@ -100,9 +101,9 @@ def render_code(txt, styles):
 def test_rich_code(r):
     rt = (PythonCode(r.inset(100), code, render_code,
         graf_style=GrafStyle(leading=12))
-        #.align(r, tv=1)
+        .align(r, tv=1)
         .scale(1)
-        .remove_blanklines())
+        .removeSpacers())
     
     out = DATPens()
     for line in rt:
@@ -110,45 +111,3 @@ def test_rich_code(r):
 
     out += rt
     return out
-
-txt3 = """H [h]
-
-Text
-footnote, innit? [i]"""
-
-def render_txt2(txt, styles):
-    blanc = "~/Type/fonts/fonts/_text/Blanco-"
-    if "i" in styles:
-        return txt, Style(blanc + "Italic.otf", 32)
-    elif "h" in styles:
-        return txt, Style(blanc + "Bold.otf", 72)
-    return txt, Style(blanc + "Regular.otf", 42)
-
-#@test(solo=0)
-def test_plainish(r):
-    rt = (RichText(r, txt3, render_txt2, blankfill="¶")
-        #.remove_blanks()
-        .xa()
-        .align(r)
-        .scale(2)
-        .f(0)
-        -.remove_blanklines())
-    #return DP(rt.ambit(th=1))
-    return rt
-
-txt4 = """
-Hello, [a]
-World!
-"""
-
-#@test(solo=0)
-def test_style_key_lookup(r):
-    rt = (RichText(
-        r, txt4, {
-            "a": Style(mistral, 200, fill=hsl(0.3)),
-            "default": Style(blanco, 100, fill=bw(0))})
-        .xa()
-        .align(r))
-    #print(rt.tree())
-    return rt
-    return DPS([rt])

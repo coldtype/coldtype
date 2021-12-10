@@ -2,7 +2,7 @@ from coldtype.grid import Grid
 from coldtype.time.nle.ascii import AsciiTimeline
 from coldtype import *
 
-blc_font = Font.Cacheable("~/Downloads/BLC_Animated_Wordmarks.ttf")
+#blc_font = Font.Cacheable("~/Downloads/BLC_Animated_Wordmarks.ttf")
 
 at = AsciiTimeline(2, 30, """
 [a  ][b ][c  ][d       ][e  ][f  ][g  ][h   ]

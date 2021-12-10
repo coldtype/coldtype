@@ -3,14 +3,14 @@ import wave, struct, math, random, pickle
 
 
 """
-Run in terminal: `coldtype test/visuals/test_sonification.py`
+Run in terminal: `coldtype examples/animations/sonification.py`
 
 After a render_all (aka hitting the `a` key in the viewer app),
 this code will render individual wave files for each letter,
-to the test/visual/renders/test_sonification folder
+to the examples/animations/renders/sonification folder
 
 Those waves can then be played back in any DAW and should
-be visible on an x/y scope (like this one http://goodhertz.co/midside-matrix)
+be visible on an x/y scope (like this one http://goodhertz.com/midside-matrix)
 """
 
 class sonification(animation):
@@ -49,30 +49,22 @@ class sonification(animation):
                     obj.writeframesraw(data)
             
         obj.close()
-        print("/wrote-wav:", self.name)
+        print("/wrote-wav:", self.name, self.filename)
 
 def animate_letter(f, l):
     e = f.a.progress(f.i, loops=2, easefn="qeio").e
     c = (StSt(l, Font.ColdtypeObviously(),
-        font_size=1000-(1-e)*250, wdth=1-e, wght=e)
+        fontSize=1000-(1-e)*250, wdth=1-e, wght=e)
         .align(f.a.r)
         .fssw(-1, 0, 2)
         .pen()
-        .remove_overlap()
+        .removeOverlap()
         #.explode()[0] # do this to knock out counters
         )
     return c
 
 tl = Timeline(60)
+l = "E"
 
-@sonification(tl, "_T.wav")
-def t(f): return animate_letter(f, "T")
-
-@sonification(tl, "_Y.wav")
-def y(f): return animate_letter(f, "Y")
-
-@sonification(tl, "_P.wav")
-def p(f): return animate_letter(f, "P")
-
-@sonification(tl, "_E.wav")
-def e(f): return animate_letter(f, "E")
+@sonification(tl, f"_{l}.wav")
+def letter(f): return animate_letter(f, l)

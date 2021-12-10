@@ -6,7 +6,7 @@ rnd.seed(0)
 
 tl = Timeline(24)
 
-@animation((250, 250), storyboard=[0], bg=0, timeline=tl)
+@animation((250, 250), bg=0, timeline=tl)
 def flyinga(f):
     qeio = f.a.progress(f.i, easefn="qeio").e
     eei = f.a.progress(f.i, easefn="eei").e
@@ -24,7 +24,7 @@ def flyinga(f):
 
 flyinga_contact = flyinga.contactsheet(4, slice(0, None, 2))
 
-@animation((250, 250), storyboard=[0], bg=0, timeline=tl)
+@animation((250, 250), bg=0, timeline=tl)
 def storyboard(f):
     qeio = f.a.progress(f.i, easefn="qeio").e
     eei = f.a.progress(f.i, easefn="eei").e

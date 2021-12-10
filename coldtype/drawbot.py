@@ -20,7 +20,7 @@ try:
 except ImportError:
     db = None
 
-class drawbot_script(renderable):
+class drawbot_renderable(renderable):
     def __init__(self, rect=(1080, 1080), scale=1, **kwargs):
         if not db:
             raise Exception("DrawBot not installed!")
@@ -68,7 +68,7 @@ class drawbot_script(renderable):
                 del pool
         return result
 
-class drawbot_animation(drawbot_script, animation):
+class drawbot_animation(drawbot_renderable, animation):
     def passes(self, action, renderer_state, indices=[]):
         return animation.passes(self, action, renderer_state, indices)
         if action in [
@@ -83,6 +83,9 @@ class drawbot_animation(drawbot_script, animation):
             return passes
         else:
             return super().passes(action, renderer_state, indices)
+
+# deprecated alias
+drawbot_script = drawbot_renderable
 
 def dbdraw(p:DraftingPen):
     p.cast(DrawBotPen).draw()
