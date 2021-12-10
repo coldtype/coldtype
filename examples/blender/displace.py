@@ -2,7 +2,7 @@ from coldtype import *
 from coldtype.blender import *
 
 @b3d_renderable(center=(0, 1), upright=1)
-def scratch(r):
+def displace(r):
     return (StSt("ABC", Font.MutatorSans(), 350
         , wdth=0, wght=1)
         .align(r)

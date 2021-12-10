@@ -252,6 +252,7 @@ class Timeable():
 class EaseableTiming():
     t: float = 0
     i: int = -1
+    loopidx: int = 0
 
 
 class Easeable():
@@ -372,7 +373,7 @@ class Easeable():
                 return EaseableTiming(max(0, min(1, v)) if clip else v)
             else:
                 loop_t, loop_index = self.t._loop(v, times=loops, cyclic=cyclic, negative=False)
-                return EaseableTiming(max(0, min(1, loop_t)) if clip else v)
+                return EaseableTiming(max(0, min(1, loop_t)) if clip else v, -1, loop_index)
 
     def e(self,
         easefn="eeio",
@@ -384,6 +385,7 @@ class Easeable():
         wrap=None,
         choose=max,
         find=False,
+        loop_info=False,
         **kwargs
         ):
         rng = self._normRange(rng, **kwargs)
@@ -399,6 +401,8 @@ class Easeable():
         ev = ez(tv.t, easefn, cyclic=cyclic, rng=rng)
         if find:
             return ev, tv.i
+        elif loop_info:
+            return ev, tv.loopidx
         else:
             return ev
     

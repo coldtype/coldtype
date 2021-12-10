@@ -393,6 +393,7 @@ class ClipGroup(Timeable):
             if fit:
                 lockup.fit(fit)
             lockups.append(lockup)
+        
         graf = Graf(lockups, rect, graf_style)
         pens = graf.pens()#.align(rect, x="minx")
         
@@ -445,7 +446,7 @@ class ClipGroup(Timeable):
             re_grouped_line.data["line_index"] = idx
             re_grouped_line.data["position"] = position
             re_grouped_line.data["line_text"] = line_text
-            re_grouped_line.addFrame(line_dps.getFrame())
+            #re_grouped_line.addFrame(line_dps.getFrame())
             re_grouped.append(re_grouped_line)
         
         pens = re_grouped

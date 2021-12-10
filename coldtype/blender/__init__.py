@@ -29,7 +29,7 @@ except ImportError:
 class BlenderIO():
     def __init__(self, file):
         file = Path(str(file)).expanduser()
-        file.parent.mkdir(exist_ok=True, parents=True)
+        #file.parent.mkdir(exist_ok=True, parents=True)
 
         self.blend_file = file
         self.data_file = Path(str(file) + ".json")

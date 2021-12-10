@@ -1,7 +1,11 @@
 import subprocess, time
+from pathlib import Path
 
 
-def blender_launch_livecode(blender_app_path, file, command_file):
+def blender_launch_livecode(blender_app_path, file:Path, command_file):
+    if not file.exists():
+        file.parent.mkdir(exist_ok=True, parents=True)
+    
     #call = f"{BLENDER} {file}"
     print(f"Opening blend file: {file}...")
     args = [blender_app_path, file, "--python-expr", f"from coldtype.blender.watch import watch; watch(r'{str(command_file)}')"]

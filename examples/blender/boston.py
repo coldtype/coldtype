@@ -27,7 +27,8 @@ def lyrics(f:Frame):
         .pens(f.i, lambda c:
             (c.text, Style("Brill Italic", 350, tu=30)))
         .removeFutures()
-        #.align(f.a.r)
+        .align(f.a.r)
         .f(1)
+        #.print(lambda p: p[0]._frame)
         .insert(0, lambda p:
             P(p.ambit()).fssw(-1, 0, 10)))
