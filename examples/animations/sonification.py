@@ -52,9 +52,10 @@ class sonification(animation):
         print("/wrote-wav:", self.name, self.filename)
 
 def animate_letter(f, l):
-    e = f.a.progress(f.i, loops=2, easefn="qeio").e
-    c = (StSt(l, Font.ColdtypeObviously(),
-        fontSize=1000-(1-e)*250, wdth=1-e, wght=e)
+    c = (StSt(l, Font.ColdtypeObviously()
+        , fontSize=f.e("seio", 2, r=(750, 1000))
+        , wdth=f.e("eeio", 2, r=(1, 0))
+        , wght=f.e("ceio", 2))
         .align(f.a.r)
         .fssw(-1, 0, 2)
         .pen()
