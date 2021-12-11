@@ -1,7 +1,5 @@
 from coldtype import *
 from coldtype.blender import BlenderTimeline, b3d_sequencer
-from coldtype.fx.skia import phototype
-from coldtype.pens.datpen import DATPensEnumerable
 
 # sound: https://accent.gmu.edu/browse_language.php?function=detail&speakerid=79
 # typed with: https://westonruter.github.io/ipa-chart/keyboard/
@@ -30,6 +28,5 @@ def lyrics(f:Frame):
         .removeFutures()
         .align(f.a.r)
         .f(1)
-        #.print(lambda p: p[0]._frame)
         .insert(0, lambda p:
-            P(p.ambit()).fssw(-1, 0, 10)))
+            P(p.ambit().inset(-20).drop(40, "N")).f(0)))
