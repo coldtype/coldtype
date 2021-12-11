@@ -14,7 +14,7 @@ faɪv tɪk slæbz ʌv blu tʃiːz
 n meɪbi ɘ snæk fɔɹ hɚ bɹʌðɘ bɔɘb
 """
 
-bt = BlenderTimeline(__BLENDER__, 250)
+bt = BlenderTimeline(__BLENDER__, 275)
 
 @b3d_sequencer((1080, 1080)
 , timeline=bt
