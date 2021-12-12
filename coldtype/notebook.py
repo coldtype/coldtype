@@ -253,7 +253,7 @@ class notebook_animation(_animation):
         preview_scale=0.5,
         render_bg=True,
         storyboard=None,
-        interactive=False,
+        interactive=True,
         vars={},
         **kwargs
         ):
