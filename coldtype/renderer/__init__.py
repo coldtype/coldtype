@@ -5,6 +5,7 @@ import pickle
 import time as ptime
 from pathlib import Path
 from pprint import pprint
+from shutil import rmtree
 from subprocess import Popen
 from typing import Tuple, List
 from random import shuffle, Random
@@ -106,7 +107,9 @@ class Renderer():
 
             viewer_solos=parser.add_argument("-vs", "--viewer-solos", type=str, default=None, help=argparse.SUPPRESS),
 
-            last_cursor=parser.add_argument("-lc", "--last-cursor", type=str, default="0,0", help=argparse.SUPPRESS)
+            last_cursor=parser.add_argument("-lc", "--last-cursor", type=str, default="0,0", help=argparse.SUPPRESS),
+
+            k=parser.add_argument("-k", "--k", type=str, default=None, help=argparse.SUPPRESS)
         )
 
         ConfigOption.AddCommandLineArgs(pargs, parser)
@@ -241,7 +244,11 @@ class Renderer():
         self.watchees.append([Watchable.Generic, Path(f"~/.coldtype/{ph}_input.json").expanduser(), None])
 
         if pj:
-            self.watchees.append([Watchable.Generic, Path("~/.coldtype/picklejar"), None])
+            pjp = Path("~/.coldtype/picklejar").expanduser()
+            if pjp.exists():
+                rmtree(pjp)
+            pjp.mkdir()
+            self.watchees.append([Watchable.Generic, pjp, None])
 
         if not self.args.is_subprocess:
             self.watch_file_changes()
@@ -1346,6 +1353,7 @@ class Renderer():
 
         watcheable = set()
         for w in self.watchees:
+            print("...", w[1], w[1].is_dir(), w[1].is_file())
             if w[1].is_dir():
                 watcheable.add(w[1])
             else:

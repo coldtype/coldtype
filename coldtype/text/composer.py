@@ -284,7 +284,9 @@ def Glyphwise(st, styler, start=0, line=0):
                 return styles
 
     if len(st) == 1:
-        return StSt(st, run_styler(GlyphwiseGlyph(0, st, 0, 0, line, 0))[0], strip=False)
+        return StSt(st,
+            run_styler(
+                GlyphwiseGlyph(0, st, 0, line, 0))[0], strip=False)
 
     try:
         lines = st.split("\n")

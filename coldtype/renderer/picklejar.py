@@ -9,11 +9,12 @@ if False:
     r = Rect(500, 300)
     DP().oval(Rect(200, 200)).align(r).f(hsl(0.3)).picklejar(r)
 
-picklejar = Path("~/.coldtype/picklejar").expanduser()
+picklejar = Path("~/.coldtype/picklejar/").expanduser()
 if picklejar.exists():
     pickles = list(picklejar.glob("*.pickle"))
     pickles.sort(key=os.path.getmtime)
 else:
+    picklejar.mkdir(parents=True)
     picklejar = None
     pickles = []
 
@@ -42,8 +43,12 @@ for result in results:
     except:
         print("failed to load", pickle.stem)
 
-for pickle, _ in results:
-    pickle.unlink()
+#if picklejar and picklejar.exists():
+#    rmtree(picklejar)
 
-if picklejar and picklejar.exists():
-    rmtree(picklejar)
+def release(_):
+    for pickle, _ in results:
+        try:
+            pickle.unlink()
+        except FileNotFoundError:
+            print("> skip", pickle)

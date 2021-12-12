@@ -1,8 +1,7 @@
-import re, os, sys
+import re, os, unittest
 from pathlib import Path
 from runpy import run_path
 from functools import partial
-from unittest import TestCase
 from tempfile import NamedTemporaryFile
 from subprocess import run
 from typing import Union
@@ -182,6 +181,7 @@ def find_renderables(
     program:dict,
     output_folder_override=None,
     blender_io=None,
+    args=None,
     ):
     all_rs = []
     filtered_rs = []
@@ -189,9 +189,17 @@ def find_renderables(
     for k, v in program.items():
         if "Test" in k:
             iv = v()
-            if isinstance(iv, TestCase):
+            if isinstance(iv, unittest.TestCase):
                 test_file = filepath.relative_to(Path.cwd())
-                run(["python", test_file])
+                # tests = unittest.defaultTestLoader.discover(
+                #     str(test_file.parent),
+                #     pattern=test_file.stem)
+                # print(">", tests)
+                if args and args.k:
+                    run(["python", test_file, "-k", args.k])
+                else:
+                    run(["python", test_file])
+                #print("TEST FILE", test_file, args.k if args else None)
 
         if (isinstance(v, renderable) or isinstance(v, runnable)) and not v.hidden:
             if v.cond is not None:
@@ -507,7 +515,8 @@ class SourceReader():
             self.codepath,
             self.program,
             output_folder_override,
-            blender_io=self.blender_io())
+            blender_io=self.blender_io(),
+            args=self.renderer.args if self.renderer else None)
         
         if len(candidates) == 0:
             candidates.append(Programs.Blank())

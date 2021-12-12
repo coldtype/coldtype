@@ -108,6 +108,26 @@ class TestGlyphwise(unittest.TestCase):
         self.assertEqual(gs[0][-1].glyphName, "E")
         self.assertEqual(gs[1][-1].glyphName, "T")
     
+    def test_newline_onechar(self):
+        fnt = Font.MutatorSans()
+        r = Rect(1080, 300)
+        
+        gs = (Glyphwise("T\nYPE", lambda g:
+            Style(fnt, 150-g.i*20, wdth=1-g.e))
+            .xalign(r)
+            .lead(20)
+            .align(r)
+            #.picklejar(r)
+            )
+        
+        self.assertEqual(gs[0][0].ambit().xy(),
+            [454.49999999999994, 153.0])
+        self.assertEqual(gs[1][-1].ambit().xy(),
+            [629.56, 42.0])
+        self.assertEqual(gs[0][0].glyphName, gs[0][-1].glyphName)
+        self.assertEqual(gs[0][0].glyphName, "T")
+        self.assertEqual(gs[1][-2].glyphName, "P")
+    
     def test_kp(self):
         fnt = Font.Find("OhnoFatfaceV")
         r = Rect(1080, 300)
