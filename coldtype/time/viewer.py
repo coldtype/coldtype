@@ -39,13 +39,14 @@ def timeViewer(tl):
         rows = r.subdivide(line_count, "N")
             
         out = PS()
+        fs = 14
         
         for line in lines.keys():
             out += (P(rows[line].take(2, "N"))
                 .f(bw(0.8))
                 .t(0, 1))
             out += (StSt(str(line),
-                Font.RecursiveMono(), fs:=14)
+                Font.RecursiveMono(), fs)
                 .align(rows[line].inset(-12, 0), "W")
                 .f(hsl(0.65, 1, 0.7)))
             out += (StSt(str(line),
