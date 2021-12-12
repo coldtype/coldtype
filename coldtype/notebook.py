@@ -269,7 +269,7 @@ class notebook_animation(_animation):
         else:
             self._storyboarded = True
 
-        super().__init__(rect, render_bg=render_bg, storyboard=storyboard, **kwargs)
+        super().__init__(rect, render_bg=render_bg, **kwargs)
     
     def __call__(self, func):
         res = super().__call__(func)
@@ -383,7 +383,7 @@ class notebook_aframe(_aframe):
         super().__init__(rect,
             timeline=Timeline(1),
             interactive=False,
-            storyboard=[0],
+            #storyboard=[0],
             **kwargs)
 
 
