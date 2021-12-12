@@ -481,7 +481,10 @@ class DATPens(DraftingPens, DATPen):
     
     def __str__(self):
         v = "" if self.visible else "ø-"
-        out = f"<{v}DPS/len={len(self._pens)}/tag={self._tag}/data={self.data})>"
+        d = {**self.data}
+        if "_last_align_rect" in d:
+            del d["_last_align_rect"]
+        out = f"<{v}DPS/len={len(self._pens)}/tag={self._tag}/data={d})>"
         if hasattr(self, "glyphName") and self.glyphName:
             return out[:-1] + f":::glyphName:{self.glyphName}>"
         return out
