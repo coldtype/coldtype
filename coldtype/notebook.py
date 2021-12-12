@@ -260,7 +260,6 @@ class notebook_animation(_animation):
         self._display = display
         self.interactive = interactive
         self.preview_scale = preview_scale
-        self.storyboard = storyboard
         self.vars = vars
 
         if storyboard is None:
@@ -268,7 +267,8 @@ class notebook_animation(_animation):
             storyboard = [0]
         else:
             self._storyboarded = True
-
+        
+        self.storyboard = storyboard
         super().__init__(rect, render_bg=render_bg, **kwargs)
     
     def __call__(self, func):
