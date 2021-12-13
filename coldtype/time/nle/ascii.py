@@ -19,6 +19,7 @@ class AsciiTimeline(Timeline):
         if isinstance(fps, str):
             ascii = fps
             fps = 30
+        
         lines = [l.rstrip() for l in ascii.splitlines() if l.strip()]
         ml = max([len(l) for l in lines]) - 1
 
