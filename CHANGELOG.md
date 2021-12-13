@@ -110,5 +110,6 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 - Manual-drive `BlenderTimeline`
 ### Removed
 - Implicit `BlenderTimeline` on `@b3d_animation` and `@b3d_sequencer`
+- `.progress` method (in favor of new `Easeable` apis)
 ### Changed
 - `.e` now defaults to `loops=1`, rather than `loops=0`

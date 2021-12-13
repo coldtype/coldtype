@@ -75,17 +75,20 @@ class DocsWriter(Renderer):
                 try:
                     dst = Path("docs/_static/renders")
                     dst.mkdir(parents=True, exist_ok=True)
+                    print(img)
                     copy2(img, dst / img.name)
                     print("COPYING", img.name)
                 except FileNotFoundError:
                     print("FileNotFound", img)
-            owd = os.getcwd()
-            try:
-                os.chdir("docs")
-                os.system("make clean")
-                os.system("make html")
-            finally:
-                os.chdir(owd)
+
+            if True:
+                owd = os.getcwd()
+                try:
+                    os.chdir("docs")
+                    os.system("make clean")
+                    os.system("make html")
+                finally:
+                    os.chdir(owd)
         
         if candidate:
             def wrapped(passes):

@@ -20,7 +20,7 @@ Here’s an example:
 
    from coldtype import *
 
-   fnt = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
+   fnt = Font.ColdtypeObviously()
 
    @renderable((700, 350))
    def coldtype_simple(r):

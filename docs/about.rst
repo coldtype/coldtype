@@ -42,45 +42,6 @@ Some oddities to note if you’re familiar with other graphics programming envir
 
 * As might already be clear from the first two points, coldtype is not meant to be a good introduction to programming. The point here is to be a toolkit that can help you create professional graphics, particularly **complex animations** that blend multiple data sources, like text defined in Premiere, MIDI files, or even Ableton Live project files. (TODO: add links to tutorials on each of those)
 
-Here’s the code for a somewhat complex animation:
-
-.. code:: python
-
-    states = [
-        dict(wdth=0, rotate=0, tu=300),
-        dict(wdth=1, rotate=15, tu=-150),
-        dict(wdth=0.25, rotate=-15, tu=250),
-        dict(wdth=0.75, rotate=0, tu=-175),
-        dict(wdth=0.5, rotate=25, tu=100)
-    ]
-
-    obvs = Font("assets/ColdtypeObviously.designspace")
-    loop = Loop(200, 10, len(states))
-
-    @animation(timeline=loop, storyboard=[130], bg=1, rect=(700, 300))
-    def banner(f):
-        phase = f.a.t.currentPhase(f.i)
-        state = phase.calcState(states)
-        return (StSt("COLDTYPE", obvs, 150, fill=0, **state, r=1, ro=1)
-            .align(f.a.r)
-            .f(0)
-            .understroke(s=1, sw=10))
-
-.. code:: ruby
-    
-    banner_contact = banner.contactsheet(2, [0, 33, 66, 99, 133, 166])
-
-And here’re a few frames from what that code creates:
-
-.. image:: /_static/renders/about_banner_contactsheet.png
-    :width: 700
-    :class: add-border
-
-And here it is as a gif:
-
-.. image:: https://raw.githubusercontent.com/goodhertz/coldtype/main/assets/banner_3.gif
-    :width: 700
-
 
 Why is Coldtype?
 ----------------

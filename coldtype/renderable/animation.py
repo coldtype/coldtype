@@ -331,6 +331,8 @@ class FFMPEGExport():
 
         if not self.fmt:
             raise Exception("No fmt specified")
+
+        print("DATE", self.date)
         
         now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         d = ("_" + now) if self.date else ""

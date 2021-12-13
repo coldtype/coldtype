@@ -80,10 +80,6 @@ Again, the only thing we’re interested in is the 77 displayed there, which is 
         return (DATPen()
             .oval(f.a.r.take(fader, "mdx").square())
             .f(hsl(0.65)))
-
-.. image:: /_static/renders/midi_use_midi.png
-    :width: 500
-    :class: add-border
     
 Now if you run that code, you should see a blue circle on your screen — and if you move the first fader on a Launch Control XL, you should see the circle change size.
 

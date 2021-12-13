@@ -82,7 +82,7 @@ All that said, it is still quite possible to do normal DrawBot things in a Coldt
 
     @drawbot_animation((500, 200))
     def multipage_doc(f):
-        c = hsl(f.a.progress(f.i).e, s=0.5, l=0.5)
+        c = hsl(f.e("l", 0), s=0.5, l=0.5)
         (P(f.a.r)
             .f(c)
             .chain(ctdb.dbdraw))
