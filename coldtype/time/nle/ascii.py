@@ -13,6 +13,7 @@ class AsciiTimeline(Timeline):
         fps:float,
         ascii:str=None,
         keyframes:dict=None,
+        eases:dict=None,
         **kwargs
         ):
         if isinstance(fps, str):
@@ -21,16 +22,13 @@ class AsciiTimeline(Timeline):
         lines = [l.rstrip() for l in ascii.splitlines() if l.strip()]
         ml = max([len(l) for l in lines]) - 1
 
-        self.keyframes = self._norm_keyframes(keyframes)
-
-        duration = round(multiplier*ml)
-
-        #super().__init__(round(multiplier*ml), fps=fps, **kwargs)
-
         self.multiplier = multiplier
-        
+        self.keyframes = self._norm_keyframes(keyframes)
+        self.eases = eases
+
         clips = []
         unclosed_clip = None
+        duration = round(multiplier*ml)
 
         for lidx, l in enumerate(lines):
             if l.startswith("#"):
@@ -132,7 +130,14 @@ class AsciiTimeline(Timeline):
                 kfs[str(k)] = v
             return kfs
     
-    def kf(self, easefn="eeio", fi=None, lines=None, keyframes=None):
+    def _find_kf_easer(self, ease, eases):
+        for t in self.timeables:
+            if t.name.startswith("~"):
+                if ease.start <= t.start < ease.end:
+                    return eases[t.name[1:]]
+        return "eeio"
+    
+    def kf(self, easefn=None, fi=None, lines=None, keyframes=None, eases=None):
         fi = self._norm_held_fi(fi)
         fi = fi % self.duration
 
@@ -153,7 +158,20 @@ class AsciiTimeline(Timeline):
                 timeline=self)
             
             if t.now(fi):
-                return interp_dict(t.at(fi).e(easefn, 0), keyframes[c1.name], keyframes[c2.name])
+                if c1.name == c2.name:
+                    return keyframes[c1.name]
+                else:
+                    easer = easefn
+                    if easer is None:
+                        if eases or self.eases:
+                            easer = self._find_kf_easer(t, eases or self.eases)
+                        else:
+                            easer = "eeio"
+                    
+                    return interp_dict(
+                        t.at(fi).e(easer, 0),
+                        keyframes[c1.name],
+                        keyframes[c2.name])
     
         return list(keyframes.values())[0]
     
@@ -161,7 +179,9 @@ class AsciiTimeline(Timeline):
         matches = []
         for c in self.timeables:
             match = False
-            if lines is not None:
+            if c.name.startswith("~"):
+                match = False
+            elif lines is not None:
                 if c.data["line"] in lines:
                     match = True
             else:
