@@ -24,8 +24,7 @@ def countdown(f:Frame):
         .insert(0, f.last_render(
             filmjitter(f.e("l"), speed=(50, 50), scale=(3, 5))))
         .append(StSt(c.name, Font.MutatorSans()
-            , c.e("sei", 0, rng=(100, 1200))
-            , 500
+            , fontSize=c.e("sei", 0, rng=(100, 1200))
             , wdth=c.e("sei", 0)
             , wght=rs[c.idx+1]*0.25
             , ro=1)
