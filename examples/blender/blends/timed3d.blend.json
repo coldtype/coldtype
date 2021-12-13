@@ -1,0 +1,29 @@
+{
+    "start": 0,
+    "end": 79,
+    "tracks": [
+        {
+            "index": 1,
+            "clips": [
+                {
+                    "name": "*A",
+                    "text": "*A",
+                    "start": 0,
+                    "end": 20
+                },
+                {
+                    "name": "+B",
+                    "text": "+B",
+                    "start": 20,
+                    "end": 40
+                },
+                {
+                    "name": "+C",
+                    "text": "+C",
+                    "start": 40,
+                    "end": 70
+                }
+            ]
+        }
+    ]
+}
