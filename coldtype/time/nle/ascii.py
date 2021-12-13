@@ -206,6 +206,15 @@ class AsciiTimeline(Timeline):
             else:
                 yield c
     
+    def inflate(self, lines=None):
+        for a, b in self.enumerate(pairs=True, lines=lines):
+            if a.start == a.end:
+                if a.start < b.start:
+                    a.end = b.start
+                else:
+                    a.end = self.duration
+        return self
+    
     def rmap(self, r=Rect(1000, 1000)):
         """
         Rect-map, i.e. a representation of this ascii timeline as a 2D map of rectangles

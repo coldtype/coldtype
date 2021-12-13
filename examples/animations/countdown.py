@@ -5,14 +5,7 @@ from coldtype.fx.motion import filmjitter
 at = AsciiTimeline(3, 18, """
                                 <
 C   O   L   D   T   Y   P   E
-""")
-
-for a, b in at.enumerate(pairs=True):
-    if a.start == a.end:
-        if a.start < b.start:
-            a.end = b.start
-        else:
-            a.end = at.duration
+""").inflate()
 
 rs = random_series(seed=8)
 
