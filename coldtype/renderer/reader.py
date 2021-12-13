@@ -582,7 +582,7 @@ class Programs():
     @staticmethod
     def Glyphs(
         font=None,
-        fontSize=72,
+        fontSize=54,
         showChars=False,
         rect=(1080, 1080)
         ):

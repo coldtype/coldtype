@@ -5,7 +5,7 @@ from coldtype.tool import parse_inputs
 
 args = parse_inputs(__inputs__, dict(
     font=[None, str, "Must provide font regex or path"],
-    fontSize=[72, int],
+    fontSize=[54, int],
     showChars=[False, bool]))
 
 fnt = Font.Find(args["font"])
@@ -17,14 +17,23 @@ for ch, name in cmap.getBestCmap().items():
 
 sq = math.ceil(math.sqrt(len(all_chars)))
 
-@renderable(args["rect"])
-def wt1(r:Rect):
-    rs = r.grid(sq, sq)
+@ui(args["rect"])
+def wt1(u):
+    rs = u.r.inset(10).grid(sq, sq)
+    
+    def showChar(x):
+        if u.c.inside(rs[x.i]):
+            print(">", x.el)
+
+        return PS([StSt(x.el, fnt, args["fontSize"])
+                .align(rs[x.i])
+                .f(0),
+            DATText(x.el,
+                Style("Times", 24
+                    , load_font=0
+                    , fill=hsl(0.8))
+                , rs[x.i].inset(5)) if args["showChars"] else None])
+
     return PS([
-        P().gridlines(r, sq, sq),
-        (PS.Enumerate(all_chars, lambda x:
-            PS([
-                StSt(x.el, fnt, args["fontSize"])
-                    .align(rs[x.i])
-                    .f(0),
-                DATText(x.el, Style("Times", 24, load_font=0, fill=hsl(0.8)), rs[x.i].inset(5)) if args["showChars"] else None])))])
+        P().gridlines(u.r.inset(10), sq, sq),
+        (PS.Enumerate(all_chars, showChar))])

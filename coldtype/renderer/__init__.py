@@ -1353,7 +1353,7 @@ class Renderer():
 
         watcheable = set()
         for w in self.watchees:
-            print("...", w[1], w[1].is_dir(), w[1].is_file())
+            #print("...", w[1], w[1].is_dir(), w[1].is_file())
             if w[1].is_dir():
                 watcheable.add(w[1])
             else:

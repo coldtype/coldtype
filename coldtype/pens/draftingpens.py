@@ -1,4 +1,5 @@
 import math, inspect
+from os import replace
 from random import Random
 from re import L
 from typing import Callable, Optional, Type
@@ -66,6 +67,27 @@ class DraftingPens(DraftingPen):
     
     def __add__(self, item):
         return self.append(item)
+    
+    def replace(self, tag, replacement, limit=None):
+        if isinstance(tag, str):
+            def walker(p, pos, data):
+                if pos in [0, 1]:
+                    if p.tag() == tag or p.glyphName == tag:
+                        self.index(data["idx"], replacement)
+            return self.walk(walker)
+        elif callable(tag):
+            def walker(p, pos, data):
+                if pos in [0, 1]:
+                    if tag(p):
+                        self.index(data["idx"], replacement)
+            return self.walk(walker)
+        else:
+            raise Exception("not yet supported")
+    
+    def replaceGlyph(self, glyphName, replacement, limit=None):
+        return self.replace(lambda p: p.glyphName == glyphName,
+            lambda p: (replacement(p) if callable(replacement) else replacement)
+                .translate(*p.ambit().xy()))
     
     def append(self, pen, allow_blank=False):
         if callable(pen):
@@ -693,6 +715,8 @@ class DraftingPens(DraftingPen):
             if pos >= 0:
                 if isinstance(tag, str):
                     found = p.tag() == tag
+                elif callable(tag):
+                    found = tag(p)
                 else:
                     found = all(p.data.get(k) == v for k, v in tag.items())
             if found:
@@ -706,6 +730,9 @@ class DraftingPens(DraftingPen):
             return self
         else:
             return matches
+    
+    def findGlyph(self, glyphName, fn=None):
+        return self.find(lambda p: p.glyphName == glyphName, fn)
     
     def get(self, k):
         tagged = self.fft(k)
