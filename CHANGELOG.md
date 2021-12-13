@@ -97,3 +97,18 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 - `.geti` for time-based fetch in `AsciiTimeline`
 ### Fixed
 - `style=` on precomposed/@renderable-cached
+
+## [0.8.0] - 2021-12-13
+### Added
+- `MidiTimeline` to replace `MidiReader` (`MidiTimeline` uses standard `Timeline` capabilities rather than Midi-specifi classes)
+- `AsciiTimeline` improvements and changed api, old `[]`-style access replaced by `.ki`; keyframe support also added, via `.kf`; many new examples in `examples/animations/ascii_*`
+- `Easeable` class to encapsulate all easing functionality, i.e. a `Timeable` bound to a frame value, meaning frame values can now be implied on all `@animation`-bound timelines (via `Timeline.hold`)
+- Generic lyric-video sentence building on timelines, available contextually as `.words` on a timeline (example in `examples/animations/ascii_words.py`) (adapted from older `Sequence` class (not recommended for use), originally developed for lyric video animation in Premiere, though works better now with Blender)
+- Automatic timeline viewer, available with `-tv 1` command-line arg or toggleable with `V` key in viewer app
+- A lot more examples
+- Normalized behavior of `point=` handling in `.scale`/`.rotate`/`.skew`
+- Manual-drive `BlenderTimeline`
+### Removed
+- Implicit `BlenderTimeline` on `@b3d_animation` and `@b3d_sequencer`
+### Changed
+- `.e` now defaults to `loops=1`, rather than `loops=0`
