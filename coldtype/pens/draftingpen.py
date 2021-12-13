@@ -143,12 +143,14 @@ class DraftingPen(RecordingPen, SHContext):
         except:
             return Rect(0, 0, 0, 0)
     
-    def ambit(self, th=False, tv=False):
+    def ambit(self, th=False, tv=False, t=None):
         """Get the calculated rect boundary of the DraftingPen;
         `th` means `(t)rue (h)orizontal`;
         `ty` means `(t)rue (v)ertical`;
         passing either ignores a non-bounds-derived frame
         in either dimension"""
+        th, tv = self._normT(th, tv, t)
+
         if self._frame:
             if (th or tv) and len(self.value) > 0:
                 f = self._frame
@@ -792,10 +794,25 @@ class DraftingPen(RecordingPen, SHContext):
         x, y, _, _ = self.ambit(th=th, tv=tv)
         self.translate(-x, -y)
         return self
+
+    def _normT(self, th, tv, t):
+        if t is not None:
+            print("HERE", t)
+            th = bool(int(t))
+            if th:
+                tv = int((t-1)*10) == 1
+            else:
+                tv = int(t)*10 == 1
+        else:
+            th, tv = th, tv
+        return th, tv
     
     def _normPoint(self, point=None, th=0, tv=0, **kwargs):
+        th, tv = self._normT(th, tv, kwargs.get("t"))
+
         if "pt" in kwargs:
             point = kwargs["pt"]
+        
         a = self.ambit(th=th, tv=tv)
         if point is None:
             return a.pc
@@ -819,14 +836,14 @@ class DraftingPen(RecordingPen, SHContext):
         else:
             return Point(point)
     
-    def centerPoint(self, rect, pt, interp=1, th=0, tv=0, **kwargs):
+    def centerPoint(self, rect, pt, interp=1, th=1, tv=0, **kwargs):
         if "i" in kwargs:
             interp = kwargs["i"]
         
         x, y = self._normPoint(pt, th=th, tv=tv, **kwargs)
         return self.translate(norm(interp, 0, rect.w/2-x), norm(interp, 0, rect.h/2-y))
     
-    def skew(self, x=0, y=0, point=None, th=0, tv=0, **kwargs):
+    def skew(self, x=0, y=0, point=None, th=1, tv=0, **kwargs):
         t = Transform()
         px, py = self._normPoint(point, th, tv, **kwargs)
         t = t.translate(px, py)
@@ -834,7 +851,7 @@ class DraftingPen(RecordingPen, SHContext):
         t = t.translate(-px, -py)
         return self.transform(t)
     
-    def rotate(self, degrees, point=None, th=0, tv=0, **kwargs):
+    def rotate(self, degrees, point=None, th=1, tv=0, **kwargs):
         """Rotate this shape by a degree (in 360-scale, counterclockwise)."""
         t = Transform()
         x, y = self._normPoint(point, th, tv, **kwargs)

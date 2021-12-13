@@ -33,7 +33,7 @@ class ui(animation):
         super().__init__(
             rect=rect,
             preview_only=True,
-            interactive=True,
+            interactable=True,
             **kwargs)
     
     def passes(self, action, renderer_state, indices=[]):
