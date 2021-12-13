@@ -42,11 +42,11 @@ def countdown(f:Frame):
         .ch(phototype(f.a.r
             , cut=139, blur=2.5, cutw=20)))
 
-@animation((1080, 800), tl=at, bg=hsl(0.7, 0.7, 0.8), render_bg=1, solo=1)
+#@animation((1080, 800), tl=at, bg=hsl(0.7, 0.7, 0.8), render_bg=1, solo=1)
 def recolor(f):
     return (countdown.frame_img(f.i)
         .ch(luma(f.a.r))
         .ch(precompose(f.a.r))
         .ch(fill(hsl(0.7, 0.7, 0.4))))
 
-release = recolor.export("h264", loops=4)
+#release = recolor.export("h264", loops=4)
