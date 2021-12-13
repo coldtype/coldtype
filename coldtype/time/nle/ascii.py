@@ -132,7 +132,7 @@ class AsciiTimeline(Timeline):
     
     def _find_kf_easer(self, ease, eases):
         for t in self.timeables:
-            if t.name.startswith("~"):
+            if t.name.startswith("~") and t.name[1:] in eases.keys():
                 if ease.start <= t.start < ease.end:
                     return eases[t.name[1:]]
         return "eeio"
@@ -146,7 +146,7 @@ class AsciiTimeline(Timeline):
         else:
             keyframes = self._norm_keyframes(keyframes)
 
-        for c1, c2 in self.enumerate(lines=lines, pairs=True, edges=True):
+        for c1, c2 in self.enumerate(lines=lines, pairs=True, edges=True, filter=keyframes.keys()):
             start, end = c1.start, c2.start
             if c2.start < c1.end:
                 end += self.duration
@@ -175,11 +175,13 @@ class AsciiTimeline(Timeline):
     
         return list(keyframes.values())[0]
     
-    def enumerate(self, lines=None, pairs=False, edges=False):
+    def enumerate(self, lines=None, pairs=False, edges=False, filter=None):
         matches = []
         for c in self.timeables:
             match = False
             if c.name.startswith("~"):
+                match = False
+            elif filter and c.name not in filter:
                 match = False
             elif lines is not None:
                 if c.data["line"] in lines:
