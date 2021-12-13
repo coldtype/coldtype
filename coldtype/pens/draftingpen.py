@@ -851,7 +851,7 @@ class DraftingPen(RecordingPen, SHContext):
         t = t.translate(-px, -py)
         return self.transform(t)
     
-    def rotate(self, degrees, point=None, th=1, tv=0, **kwargs):
+    def rotate(self, degrees, point=None, th=1, tv=1, **kwargs):
         """Rotate this shape by a degree (in 360-scale, counterclockwise)."""
         t = Transform()
         x, y = self._normPoint(point, th, tv, **kwargs)
