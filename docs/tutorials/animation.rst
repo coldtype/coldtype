@@ -19,8 +19,8 @@ A circle moving
         return PS([
             P(f.a.r).f(1),
             (P().oval(f.a.r
-                    .offset(f.e("qeio", rng=(-f.a.r.w, f.a.r.w)), 0))
-                .f(hsl(f.e("qeio"), s=0.75)))])
+                    .offset(f.e("qeio", 0, rng=(-f.a.r.w, f.a.r.w)), 0))
+                .f(hsl(f.e("qeio", 0), s=0.75)))])
     
 .. code:: ruby
 
@@ -53,12 +53,12 @@ A letter flying
     def flyinga(f):
         return PS([
             (P().rect(f.a.r)
-                .f(hsl(f.e("qeio")))),
+                .f(hsl(f.e("qeio", 0)))),
             (StSt("A", Font.MutatorSans(),
                 50, wght=0.2)
                 .align(f.a.r)
-                .scale(f.e("eei", rng=(1, 51)))
-                .rotate(f.e("qeio", rng=(0, 360)))
+                .scale(f.e("eei", 0, rng=(1, 51)))
+                .rotate(f.e("qeio", 0, rng=(0, 360)))
                 .f(1))])
 
 .. code:: ruby
