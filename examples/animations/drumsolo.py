@@ -1,6 +1,5 @@
 from coldtype import *
-from coldtype.fx.skia import phototype 
-from coldtype.time.midi import MidiReader
+from coldtype.fx.skia import phototype
 
 audio = __sibling__("media/68.wav")
 midi = MidiTimeline(

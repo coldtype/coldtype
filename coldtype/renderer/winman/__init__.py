@@ -208,7 +208,7 @@ class Winmans():
             if self.config.enable_audio:
                 la = self.renderer.last_animation
                 if self.audio and la:
-                    fo = abs(self.state.frame_offset%la.duration)
+                    fo = abs(self.renderer.state.frame_offset%la.duration)
                     self.audio.play_frame(fo)
         
         return did_preview

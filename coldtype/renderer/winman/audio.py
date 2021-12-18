@@ -38,7 +38,11 @@ class WinmanAudio(WinmanPassthrough):
         self.recycle()
         self.a = a
         if a.audio:
-            self.pa_src = soundfile.SoundFile(a.audio, "r+")
+            try:
+                self.pa_src = soundfile.SoundFile(a.audio, "r+")
+            except:
+                print(">>> Could not load audio file (corrupted?)")
+                self.pa_src = None
     
     def play_frame(self, frame):
         #if not self.args.preview_audio:
