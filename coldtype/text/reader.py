@@ -539,6 +539,15 @@ class Style():
         except AttributeError:
             pass
     
+    def scale(self):
+        return self.fontSize / self.font.font.shaper.face.upem
+    
+    def height(self):
+        asc = self._asc * self.scale()
+        if "d" in self.metrics:
+            asc += self.descender * self.scale()
+        return asc
+    
     def addVariations(self, variations, limits=dict()):
         for k, v in self.normalizeVariations(variations).items():
             self.variations[k] = v

@@ -32,7 +32,7 @@ class SkiaDraftingPen(DraftingPen):
 
 
 from coldtype.pens.draftingpens import DraftingPens
-from coldtype.text import Style
+from coldtype.text import Style, Rect
 import drawbot_skia.drawbot as db
 
 # temp
@@ -50,12 +50,15 @@ def StyledString_db(text:str, style:Style):
     info = db.glyphs(text)
     
     out = DraftingPens([])
+    
     for gi in info:
         if gi.path:
             p = skia.Path(gi.path)
-            p.offset(gi.pos[0], gi.pos[1])
+            p.offset(gi.pos[0], -gi.pos[1])
             sdp = SkiaDraftingPen(p)
             sdp.glyphName = gi.name
+            sdp.addFrame(Rect(gi.pos[0], 0, gi.adv[0], style.height()), typographic=True)
             out.append(sdp)
+            #out.append(DraftingPen().outline(2))
     
     return out
