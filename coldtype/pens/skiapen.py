@@ -13,6 +13,7 @@ from coldtype.text.reader import Style
 class SkiaPen(DrawablePenMixin, SkiaPathPen):
     def __init__(self, dat, rect, canvas, scale, style=None, alpha=1):
         super().__init__(dat, rect.h)
+
         self.scale = scale
         self.canvas = canvas
         self.rect = rect

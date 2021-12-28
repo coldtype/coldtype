@@ -8,20 +8,45 @@ except ImportError:
     skia = None
 
 
+def SkiaPathToDATPen(path):
+    def unwrap(p):
+        return [p.x(), p.y()]
+
+    dp = DATPen()
+    for mv, pts in path:
+        if mv == skia.Path.Verb.kMove_Verb:
+            dp.moveTo(unwrap(pts[0]))
+        elif mv == skia.Path.Verb.kLine_Verb:
+            dp.lineTo(*[unwrap(p) for p in pts[1:]])
+        elif mv == skia.Path.Verb.kQuad_Verb:
+            dp.qCurveTo(*[unwrap(p) for p in pts[1:]])
+        elif mv == skia.Path.Verb.kCubic_Verb:
+            dp.curveTo(*[unwrap(p) for p in pts[1:]])
+        elif mv == skia.Path.Verb.kClose_Verb:
+            dp.closePath()
+        else:
+            print(mv)
+    return dp
+
 class SkiaPathPen(BasePen):
     def __init__(self, dat, h=None):
         super().__init__()
         self.dat = dat
-        self.path = skia.Path()
-        
-        if h is not None:
-            tp = TransformPen(self, (1, 0, 0, -1, 0, h))
-            dat.replay(tp)
+
+        if hasattr(dat, "path"):
+            matrix = skia.Matrix()
+            matrix.setAffine((1, 0, 0, -1, 0, h))
+            self.path = skia.Path(dat.path)
+            self.path.transform(matrix)
         else:
-            for mv, pts in self.dat.value:
-                #if mv == "qCurveTo":
-                #    self._qCurveToOne()
-                getattr(self, mv)(*pts)
+            self.path = skia.Path()
+        
+            if h is not None:
+                tp = TransformPen(self, (1, 0, 0, -1, 0, h))
+                dat.replay(tp)
+            else:
+                for mv, pts in self.dat.value:
+                    getattr(self, mv)(*pts)
     
     def _moveTo(self, p):
         self.path.moveTo(p[0], p[1])
