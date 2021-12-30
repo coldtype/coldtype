@@ -20,6 +20,10 @@ class RunonException(Exception):
     pass
 
 
+class RunonNoData:
+    pass
+
+
 class Runon:
     def __init__(self,
         value=None,
@@ -42,6 +46,19 @@ class Runon:
         if value is not None:
             self._val = value
 
+    # Value operations
+
+    def update(self, val):
+        if callable(val):
+            val = val(self)
+        
+        self._val = val
+        return self
+    
+    @property
+    def v(self):
+        return self._val
+
     # Array Operations
 
     def append(self, el):
@@ -52,14 +69,6 @@ class Runon:
             self._els.append(el)
         else:
             self._els.append(Runon(el))
-        return self
-    
-    def insert(self, index, el):
-        if callable(el):
-            el = el(self)
-        
-        if el:
-            self._els.insert(index, el)
         return self
     
     def extend(self, els):
@@ -118,71 +127,88 @@ class Runon:
     
     # Iteration operations
 
-    def map(self, fn: Callable[[int, "Runon"], Optional[DraftingPen]]):
-        """Apply `fn` to all top-level pen(s) in this set;
-        if `fn` returns a value, it will overwrite
-        the pen it was given as an argument;
-        fn lambda receives `idx, p` as arguments"""
-        for idx, p in enumerate(self._pens):
-            res = _call_idx_fn(idx, p)
-            if result:
-                self._pens[idx] = result
+    def walk(self,
+        callback:Callable[["Runon", int, dict], None],
+        depth=0,
+        visible_only=False,
+        parent=None,
+        alpha=1,
+        idx=None
+        ):
+        if visible_only and not self._visible:
+            return
+        
+        if parent:
+            self._parent = parent
+        
+        alpha = self._alpha * alpha
+        
+        if len(self) > 0:
+            callback(self, -1, dict(depth=depth, alpha=alpha, idx=idx))
+            for pidx, el in enumerate(self._els):
+                idxs = [*idx] if idx else []
+                idxs.append(pidx)
+                el.walk(callback, depth=depth+1, visible_only=visible_only, parent=self, alpha=alpha, idx=idxs)
+            callback(self, 1, dict(depth=depth, alpha=alpha, idx=idx))
+        else:
+            #print("PARENT", idx)
+            utag = "_".join([str(i) for i in idx]) if idx else None
+            res = callback(self, 0, dict(
+                depth=depth, alpha=alpha, idx=idx, utag=utag))
+            
+            if res is not None:
+                parent[idx[-1]] = res
+        
+        return self
+
+    def map(self, fn):
+        for idx, p in enumerate(self._els):
+            res = _call_idx_fn(fn, idx, p)
+            if res:
+                self._els[idx] = res
         return self
     
-    def mmap(self, fn: Callable[[int, DraftingPen], None]):
-        """Apply `fn` to all top-level pen(s) in this set but
-        do not look at return value; first m in mmap
-        stands for `mutate`;
-        fn lambda receives `idx, p` as arguments"""
-        for idx, p in enumerate(self._pens):
-            arg_count = len(inspect.signature(fn).parameters)
-            if arg_count == 1:
-                fn(p)
-            else:
-                fn(idx, p)
+    def filter(self, fn):
+        to_delete = []
+        for idx, p in enumerate(self._els):
+            res = _call_idx_fn(fn, idx, p)
+            if res == False:
+                to_delete.append(idx)
+        to_delete = sorted(to_delete, reverse=True)
+        for idx in to_delete:
+            del self._els[idx]
         return self
     
-    def filter(self, fn: Callable[[int, DraftingPen], bool]):
-        """Filter top-level pen(s)"""
-        dps = self.multi_pen_class()
-        for idx, p in enumerate(self._pens):
-            if fn(idx, p):
-                dps.append(p)
-        #self._pens = dps._pens
-        #return self
-        return dps
+    def mapv(self, fn):
+        idx = 0
+        def walker(el, pos, _):
+            nonlocal idx
+            if pos != 0: return
+            
+            res = _call_idx_fn(fn, idx, el)
+            idx += 1
+            return res
+        
+        return self.walk(walker)
     
-    def pmap(self, fn):
-        """Apply `fn` to all individal pens, recursively"""
-        for idx, p in enumerate(self._pens):
-            if hasattr(p, "_pens"):
-                p.pmap(fn)
-            else:
-                arg_count = len(inspect.signature(fn).parameters)
-                if arg_count == 1:
-                    res = fn(p)
-                    if res is not None:
-                        self[idx] = res
-                else:
-                    res = fn(idx, p)
-                    if res is not None:
-                        self[idx] = res
-        return self
+    def filterv(self, fn):
+        idx = 0
+        def walker(el, pos, data):
+            nonlocal idx
+            
+            if pos == 0:
+                res = _call_idx_fn(fn, idx, el)
+                if not res:
+                    el.data("_walk_delete", True)
+                idx += 1
+                return None
+            elif pos == 1:
+                el.filter(lambda p: not p.data("_walk_delete"))
+        
+        return self.walk(walker)
     
-    def pfilter(self, fn):
-        """Filter all pens, recursively"""
-        to_keep = []
-        for idx, p in enumerate(self._pens):
-            if hasattr(p, "_pens"):
-                matches = p.pfilter(fn)
-                if len(matches) > 0:
-                    to_keep.extend(matches)
-            if fn(idx, p):
-                to_keep.append(p)
-        try:
-            return type(self)(to_keep)
-        except TypeError:
-            return self.multi_pen_class(to_keep)
+    def unblank(self):
+        return self.filterv(lambda p: p.v is not None)
     
     def interpose(self, el_or_fn):
         new_pens = []
@@ -210,45 +236,16 @@ class Runon:
     
     # Hierarchical Operations
 
-    def walk(self,
-        callback:Callable[["Runon", int, dict], None],
-        depth=0,
-        visible_only=False,
-        parent=None,
-        alpha=1,
-        idx=None
-        ):
-        if visible_only and not self._visible:
-            return
-        
-        if parent:
-            self._parent = parent
-        
-        alpha = self._alpha * alpha
-        
-        if len(self) > 0:
-            callback(self, -1, dict(depth=depth, alpha=alpha, idx=idx))
-            for pidx, el in enumerate(self._els):
-                idxs = [*idx] if idx else []
-                idxs.append(pidx)
-                el.walk(callback, depth=depth+1, visible_only=visible_only, parent=self, alpha=alpha, idx=idxs)
-            callback(self, 1, dict(depth=depth, alpha=alpha, idx=idx))
-        else:
-            utag = "_".join([str(i) for i in idx]) if idx else None
-            callback(self, 0, dict(
-                depth=depth, alpha=alpha, idx=idx, utag=utag))
-        
-        return self
-
     def collapse(self, levels=100, onself=False):
         """AKA `flatten` in some programming contexts, though
         `flatten` is a totally different function here that flattens outlines; this function flattens nested collections into one-dimensional collections"""
         els = []
         for el in self._els:
+            if el._val is not None:
+                els.append(el)
+            
             if len(el) > 0 and levels > 0:
                 els.extend(el.collapse(levels=levels-1)._els)
-            else:
-                els.append(el)
         
         out = type(self)(els=els)
 
@@ -299,7 +296,61 @@ class Runon:
         
         return _copy
     
+    def insert(self, idx, el):
+        if callable(el):
+            el = el(self)
+        
+        parent = self
+        try:
+            p = self
+            for x in idx[:-1]:
+                if len(self) > 0:
+                    parent = p
+                    p = p[x]
+            
+            p._els.insert(idx[-1], el)
+            return self
+        except TypeError:
+            pass
+
+        parent._els.insert(idx, el)
+        return self
+    
+    def index(self, idx, fn):
+        parent = self
+        lidx = idx
+        try:
+            p = self
+            for x in idx:
+                if len(self) > 0:
+                    parent = p
+                    lidx = x
+                    p = p[x]
+                else:
+                    p.index(x, fn)
+                    return self
+        except TypeError:
+            p = self[idx]
+
+        parent[lidx] = _call_idx_fn(fn, lidx, p)
+        return self
+    
+    def indices(self, idxs, fn):
+        for idx in idxs:
+            self.index(idx, fn)
+        return self
+    
+    î = index
+    ï = indices
+    
     # Data-access methods
+
+    def data(self, key, value=RunonNoData(), default=None):
+        if isinstance(value, RunonNoData):
+            return self._data.get(key, default)
+        else:
+            self._data[key] = value
+            return self
 
     def attr(self,
         tag=None,
@@ -324,7 +375,6 @@ class Runon:
 
         if recursive:
             for el in self._els:
-                print("helo")
                 el.attr(tag=tag, field=None, recursive=True, **kwargs)
         
         return self
@@ -336,13 +386,22 @@ class Runon:
         self._tmp_attr_tag = None
         return self
     
-    def v(self, v):
+    def _get_set_prop(self, prop, v, castfn=None):
+        if v is None:
+            return getattr(self, prop)
+
+        _v = v
         if callable(v):
-            self.visible(bool(v(self)))
-        else:
-            self.visible(bool(v))
+            _v = v(self)
+        
+        if castfn is not None:
+            _v = castfn(_v)
+
+        setattr(self, prop, _v)
         return self
     
-    def a(self, v):
-        self._alpha = v
-        return self
+    def visible(self, v=None):
+        return self._get_set_prop("_visible", v, bool)
+    
+    def alpha(self, v=None):
+        return self._get_set_prop("_alpha", v, float)

@@ -30,7 +30,7 @@ def stacking(r):
             graf(grafs[3])
         ])
         .stack(20, zero=1)
-        .mmap(lambda p: p
+        .map(lambda p: p
             .xalign(r)
             .insert(0, P(p.ambit(th=1))
                 .fssw(-1, hsl(0.3, a=0.6), 2)))
