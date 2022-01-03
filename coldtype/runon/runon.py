@@ -40,6 +40,7 @@ class Runon:
         self._attrs = attrs if attrs else {}
         self._data = data if data else {}
         self._parent = None
+        self._tag = None
 
         self._tmp_attr_tag = None
 
@@ -90,13 +91,45 @@ class Runon:
         return self.__repr__(data)
     
     def __repr__(self, data=False):
-        return f"<{type(self).__name__}({self._val}/els={len(self)})/>"
+        v = self._val
+        t = self._tag
+        d = self._data
+        l = len(self)
+
+        if v is None:
+            v = ""
+        else:
+            v = f"\"{v}\""
+        
+        if l == 0:
+            l = ""
+        else:
+            l = "/" + str(l) + "..."
+        
+        if t is None:
+            t = ""
+        else:
+            t = f" {{#{t}}}"
+        
+        if len(d) == 0:
+            d = ""
+        else:
+            d = " {" + ",".join([f"{k}={v}" for k,v in d.items()]) + "}"
+        
+        ty = type(self).__name__
+        if ty == "Runon":
+            ty = ""
+        out = f"<®:{ty}{v}{l}{t}{d}>"
+        return out
     
     def __len__(self):
         return len(self._els)
 
     def __getitem__(self, index):
+        #try:
         return self._els[index]
+        #except IndexError:
+        #    return None
         
     def __setitem__(self, index, pen):
         self._els[index] = pen
@@ -149,7 +182,8 @@ class Runon:
                 idxs = [*idx] if idx else []
                 idxs.append(pidx)
                 el.walk(callback, depth=depth+1, visible_only=visible_only, parent=self, alpha=alpha, idx=idxs)
-            callback(self, 1, dict(depth=depth, alpha=alpha, idx=idx))
+            utag = "_".join([str(i) for i in idx]) if idx else None
+            callback(self, 1, dict(depth=depth, alpha=alpha, idx=idx, utag=utag))
         else:
             #print("PARENT", idx)
             utag = "_".join([str(i) for i in idx]) if idx else None
@@ -237,8 +271,7 @@ class Runon:
     # Hierarchical Operations
 
     def collapse(self, levels=100, onself=False):
-        """AKA `flatten` in some programming contexts, though
-        `flatten` is a totally different function here that flattens outlines; this function flattens nested collections into one-dimensional collections"""
+        """AKA `flatten` in some programming contexts"""
         els = []
         for el in self._els:
             if el._val is not None:
@@ -278,9 +311,6 @@ class Runon:
         return self
     
     def copy(self):
-        # needs to copy the _val somehow...
-        # simple hasattr?
-
         if hasattr(self._val, "copy"):
             v = self._val.copy()
         else:
@@ -316,7 +346,7 @@ class Runon:
         parent._els.insert(idx, el)
         return self
     
-    def index(self, idx, fn):
+    def index(self, idx, fn=None):
         parent = self
         lidx = idx
         try:
@@ -327,21 +357,52 @@ class Runon:
                     lidx = x
                     p = p[x]
                 else:
-                    p.index(x, fn)
-                    return self
+                    return p.index(x, fn)
         except TypeError:
             p = self[idx]
 
-        parent[lidx] = _call_idx_fn(fn, lidx, p)
+        if fn:
+            parent[lidx] = _call_idx_fn(fn, lidx, p)
+        else:
+            return parent[lidx]
         return self
     
-    def indices(self, idxs, fn):
+    def indices(self, idxs, fn=None):
+        out = []
         for idx in idxs:
-            self.index(idx, fn)
+            out.append(self.index(idx, fn))
+        if fn is None:
+            return out
         return self
     
     î = index
     ï = indices
+
+    def find(self, finder_fn, fn=None):
+        matches = []
+        def finder(p, pos, _):
+            found = False
+            if pos >= 0:
+                if isinstance(finder_fn, str):
+                    found = p.tag() == finder_fn
+                elif callable(finder_fn):
+                    found = finder_fn(p)
+                else:
+                    found = all(p.data.get(k) == v for k, v in finder_fn.items())
+            if found:
+                if fn:
+                    fn(p)
+                else:
+                    matches.append(p)
+        
+        self.walk(finder)
+        if fn:
+            return self
+        else:
+            return matches
+    
+    def find_(self, finder_fn):
+        return self.find(finder_fn)[0]
     
     # Data-access methods
 
@@ -350,6 +411,13 @@ class Runon:
             return self._data.get(key, default)
         else:
             self._data[key] = value
+            return self
+    
+    def tag(self, value=RunonNoData()):
+        if isinstance(value, RunonNoData):
+            return self._tag
+        else:
+            self._tag = value
             return self
 
     def attr(self,
