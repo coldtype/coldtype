@@ -1,4 +1,5 @@
 from coldtype.color import Color, normalize_color, rgb
+from coldtype.geometry import Rect
 
 """
 Requires Runon.attr contract
@@ -58,3 +59,18 @@ class StylingMixin():
         self.s(s)
         self.sw(sw)
         return self
+    
+    def img(self, src=None, rect=Rect(0, 0, 500, 500), pattern=False, opacity=1.0):
+        """Get/set an image fill"""
+        if src:
+            from coldtype.img.datimage import DATImage
+            if isinstance(src, DATImage):
+                return self.attr(image=dict(src=src.src, rect=rect, pattern=pattern, opacity=opacity))
+            return self.attr(image=dict(src=src, rect=rect, pattern=pattern, opacity=opacity))
+        else:
+            return self.attr(field="image")
+    
+    image = img
+
+    def shadow(self, radius=10, color=(0, 0.3), clip=None):
+        return self.attr(shadow=dict(color=normalize_color(color), radius=radius, clip=clip))

@@ -524,3 +524,13 @@ class Runon:
                     #self.gs(if_false)
                     pass # TODO?
         return self
+    
+    # Utils
+
+    def print(self, *args):
+        for a in args:
+            if callable(a):
+                print(a(self))
+            else:
+                print(a)
+        return self

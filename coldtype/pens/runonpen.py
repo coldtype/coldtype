@@ -7,6 +7,7 @@ from coldtype.runon.runon import Runon
 from coldtype.pens.mixins.StylingMixin import StylingMixin
 from coldtype.pens.mixins.LayoutMixin import LayoutMixin
 
+
 class RunonPen(Runon,
     StylingMixin,
     LayoutMixin
@@ -17,14 +18,16 @@ class RunonPen(Runon,
             for p in pens:
                 rp = RecordingPen()
                 p.replay(rp)
-                rrp = RunonPen(rp)
+                rrp = RunonPen(rp).f(p.f())
                 if p._frame:
-                    rrp.data(frame=p._frame)
+                    rrp.data(frame=p._frame,
+                        glyphName=p.glyphName)
                 out.append(rrp)
         else:
             out = RunonPen(pens)
             if hasattr(pens, "_frame"):
-                out.data(frame=pens._frame)
+                out.data(
+                    frame=pens._frame)
         return out
     
     def __init__(self,
@@ -48,5 +51,12 @@ class RunonPen(Runon,
             return f"RecordingPen({len(self._val.value)})"
 
     def style(self, style="_default"):
+        """for compatibility with defaults and grouped-stroke-properties from DATPen"""
         st = {**super().style(style)}
         return self.groupedStyle(st)
+
+
+def runonCast():
+    def _runonCast(p):
+        return RunonPen.FromPens(p)
+    return _runonCast

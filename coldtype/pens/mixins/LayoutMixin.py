@@ -22,8 +22,10 @@ class LayoutMixin():
             except:
                 pass
         
-        for el in self._els:
-            b = b.union(el.bounds())
+        if len(self._els) > 0:
+            b = self._els[0].bounds()
+            for el in self._els[1:]:
+                b = b.union(el.bounds())
         
         return b
     
@@ -54,9 +56,11 @@ class LayoutMixin():
         # true bounds
         if th and tv:
             return self.bounds()
+        
         # true no-bounds
         elif not th and not tv and f:
             return f
+        
         # partial bounds
         elif f and self._val:
             if self.empty():
@@ -71,6 +75,7 @@ class LayoutMixin():
                     return Rect(b.x, f.y, b.w, f.h)
                 else:
                     return Rect(f.x, b.y, f.w, b.h)
+        
         # pass-to-els
         elif len(self._els) > 0:
             try:
@@ -193,9 +198,9 @@ class LayoutMixin():
         for p in self._els:
             p.transform(transform, transformFrame=transformFrame)
         
-        # img = self.img()
-        # if img:
-        #     img["rect"] = img["rect"].transform(transform)
+        img = self.img()
+        if img:
+            img["rect"] = img["rect"].transform(transform)
         
         return self
     
