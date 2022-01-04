@@ -1,6 +1,7 @@
 from typing import Callable, Optional
 from inspect import signature
 from random import Random
+from time import sleep
 
 from coldtype.fx.chainable import Chainable
 
@@ -611,6 +612,23 @@ class Runon:
                 print(a(self))
             else:
                 print(a)
+        return self
+    
+    def noop(self, *args, **kwargs):
+        """Does nothing"""
+        return self
+    
+    def null(self):
+        """For chaining; return an empty instead of this pen"""
+        return self.single_pen_class()
+    
+    def _null(self):
+        """For chaining; quickly disable a .null() call without a line-comment"""
+        return self
+    
+    def sleep(self, time):
+        """Sleep call within the chain (if you want to measure something)"""
+        sleep(time)
         return self
     
     # Aliases
