@@ -1,6 +1,6 @@
 import re
 import unittest
-from coldtype.runon.runon import Runon
+from coldtype.runon.runon import * #INLINE
 
 class TestRunon(unittest.TestCase):
     def test_init(self):
@@ -90,6 +90,50 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(els[0].v, 3)
         self.assertEqual(els[0].tag(), "oy")
         self.assertEqual(els[1].v, 200)
+    
+    def test_attr(self):
+        r = Runon(els=[Runon(1).attr(q=2)])
+        
+        self.assertEqual(r.attr("q"), None)
+        self.assertEqual(r[0].attr("q"), 2)
+
+        r.index(0, lambda p: p.attr(q=3))
+
+        self.assertEqual(r[0].attr("q"), 3)
+
+        r[0].lattr("alt", lambda p2: p2.attr(q=4))
+        
+        self.assertEqual(r[0].attr("q"), 3)
+        self.assertEqual(r[0].attr("alt", "q"), 4)
+    
+    def test_alpha(self):
+        r = Runon(els=[Runon(1).alpha(0.5).tag("leaf")])
+        r.alpha(0.5).tag("root")
+
+        alphas = {}
+        def walker(el, pos, data):
+            if pos >= 0:
+                alphas[el.tag()] = data.get("alpha")
+        
+        r.walk(walker)
+
+        self.assertEqual(alphas["root"], 0.5)
+        self.assertEqual(alphas["leaf"], 0.25)
+        self.assertEqual(r[0].alpha(), 0.5)
+    
+    def test_logic(self):
+        r = Runon(els=[Runon(1), Runon(2)])
+
+        r.cond(True,
+            lambda p: p.data(a="b", c="d"))
+        
+        r.cond(False,
+            lambda p: p,
+            lambda p: p.data(x="z"))
+
+        self.assertEqual(r.data("a"), "b")
+        self.assertEqual(r.data("c"), "d")
+        self.assertEqual(r.data("x"), "z")
 
 if __name__ == "__main__":
     unittest.main()

@@ -93,6 +93,12 @@ class DATPen(DraftingPen):
     def __sub__(self, item):
         return DATPens([self])
     
+    def style(self, style):
+        if style and style in self.attrs:
+            return self.attrs[style]
+        else:
+            return self.attrs["default"]
+    
     def to_code(self, classname="DATPen", additional_lines=[]):
         t = None
         if self._tag and self._tag != "?":

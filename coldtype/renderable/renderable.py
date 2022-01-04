@@ -305,6 +305,8 @@ class renderable():
             return DATPens([pens])
         elif isinstance(pens, DATImage):
             return DATPens([pens])
+        elif hasattr(pens, "walk"):
+            return pens
         elif not isinstance(pens, DATPens):
             return DATPens(pens)
         else:
@@ -312,6 +314,7 @@ class renderable():
     
     def normalize_result(self, pens):
         normalized = self._normalize_result(pens)
+        #print(">norm", pens, normalized)
         if self._hide:
             normalized.hide(*self._hide)
         return normalized

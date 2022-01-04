@@ -16,7 +16,10 @@ class SkiaPathPen(BasePen):
         
         if h is not None:
             tp = TransformPen(self, (1, 0, 0, -1, 0, h))
-            dat.replay(tp)
+            if hasattr(dat, "_val"):
+                dat._val.replay(tp)
+            else:
+                dat.replay(tp)
         else:
             for mv, pts in self.dat.value:
                 #if mv == "qCurveTo":

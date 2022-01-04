@@ -21,6 +21,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         self.alpha = alpha
 
         all_attrs = list(self.findStyledAttrs(style))
+
         skia_paint_kwargs = dict(AntiAlias=True)
         for attrs, attr in all_attrs:
             method, *args = attr

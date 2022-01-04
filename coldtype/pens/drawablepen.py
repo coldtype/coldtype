@@ -37,10 +37,8 @@ class DrawablePenMixin(object):
                 return self.image(**v)
     
     def findStyledAttrs(self, style):
-        if style and style in self.dat.attrs:
-            attrs = self.dat.attrs[style]
-        else:
-            attrs = self.dat.attrs["default"]
+        attrs = self.dat.style(style)
+
         for attr in attrs.items():
             if attr and attr[-1]:
                 yield attrs, attr

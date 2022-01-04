@@ -46,6 +46,10 @@ class Runon:
 
         if value is not None:
             self._val = value
+    
+    def post_init(self):
+        """subclass hook"""
+        pass
 
     # Value operations
 
@@ -121,6 +125,9 @@ class Runon:
             ty = ""
         out = f"<®:{ty}{v}{l}{t}{d}>"
         return out
+    
+    def __bool__(self):
+        return len(self._els) > 0 or self._val is not None
     
     def __len__(self):
         return len(self._els)
@@ -406,8 +413,13 @@ class Runon:
     
     # Data-access methods
 
-    def data(self, key, value=RunonNoData(), default=None):
-        if isinstance(value, RunonNoData):
+    def data(self, key=None, value=RunonNoData(), default=None, **kwargs):
+        if key is None and len(kwargs) > 0:
+            for k, v in kwargs.items():
+                if callable(v):
+                    v = _call_idx_fn(v, k, self)
+                self._data[k] = v
+        elif isinstance(value, RunonNoData):
             return self._data.get(key, default)
         else:
             self._data[key] = value
@@ -420,12 +432,23 @@ class Runon:
             self._tag = value
             return self
 
+    def style(self, style="_default"):
+        if style and style in self._attrs:
+            return self._attrs[style]
+        else:
+            return self._attrs.get("_default", {})
+
     def attr(self,
         tag=None,
         field=None,
         recursive=True,
         **kwargs
         ):
+
+        if field is None and len(kwargs) == 0:
+            field = tag
+            tag = None
+
         if tag is None:
             if self._tmp_attr_tag is not None:
                 tag = self._tmp_attr_tag
@@ -433,7 +456,7 @@ class Runon:
                 tag = "_default"
         
         if field: # getting, not setting
-            return self._attrs.get(tag).get(field)
+            return self._attrs.get(tag, {}).get(field)
 
         attrs = self._attrs.get(tag, {})
         for k, v in kwargs.items():
@@ -473,3 +496,27 @@ class Runon:
     
     def alpha(self, v=None):
         return self._get_set_prop("_alpha", v, float)
+    
+    # Logic Operations
+
+    def cond(self, condition,
+        if_true:Callable[["Runon"], None], 
+        if_false:Callable[["Runon"], None]=None
+        ):
+        if callable(condition):
+            condition = condition(self)
+
+        if condition:
+            if callable(if_true):
+                if_true(self)
+            else:
+                #self.gs(if_true)
+                pass # TODO?
+        else:
+            if if_false is not None:
+                if callable(if_false):
+                    if_false(self)
+                else:
+                    #self.gs(if_false)
+                    pass # TODO?
+        return self
