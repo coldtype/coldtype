@@ -198,6 +198,16 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(r[0].v, 10)
         self.assertEqual(r[-1].v, 20)
 
+        def c2():
+            def _c(ru):
+                return ru.update(10)
+            return _c
+
+        r = Runon(1)
+        self.assertEqual(r.v, 1)
+        r.chain(c2)
+        self.assertEqual(r.v, 10)
+
         #print("\n")
         #print(r.tree())
 

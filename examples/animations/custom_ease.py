@@ -1,3 +1,4 @@
+from subprocess import run
 from coldtype import *
 from coldtype.fx.xray import skeleton
 
@@ -19,5 +20,8 @@ def easer(f):
                 λ.fssw(-1, hsl(0.9), 2),
                 λ.ch(skeleton()).s(hsl(0.65))
             )),
-        StSt("COLD", Font.ColdtypeObviously(), 300,
-            wdth=f.e(p, 0)).align(f.a.r).f(0, 0.5)])
+        (StSt("COLD", Font.ColdtypeObviously()
+            , 300
+            , wdth=f.e(p, 0))
+            .align(f.a.r)
+            .f(0, 0.5))])

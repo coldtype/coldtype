@@ -555,6 +555,13 @@ class Runon:
             except TypeError:
                 metadata = {}
             
+            # So you can pass in a function
+            # without calling it (if it has no args)
+            # TODO what happens w/ no args but kwargs?
+            ac = _arg_count(fn)
+            if ac == 0:
+                fn = fn()
+
             res = fn(self, *args)
             if "returns" in metadata:
                 return res
