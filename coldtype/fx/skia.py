@@ -202,7 +202,6 @@ def precompose(rect,
         if t == DATPens:
             nt = DATPen
         
-        print(">>>", pen)
         img = SkiaPen.Precompose(pen, rect,             
             context=SKIA_CONTEXT,
             scale=scale,

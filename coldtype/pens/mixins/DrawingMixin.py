@@ -7,15 +7,24 @@ from coldtype.geometry import Rect, Line, Point
 
 
 class DrawingMixin():
-    def moveTo(self, p0):
-        self._val.moveTo(p0)
+    def _normPointSplat(self, p):
+        if isinstance(p[0], Point):
+            return p[0].xy()
+        elif len(p) == 1:
+            return p[0]
+        else:
+            return p
+
+    def moveTo(self, *p):
+        self._val.moveTo(self._normPointSplat(p))
         return self
 
-    def lineTo(self, p1):
+    def lineTo(self, *p):
+        p = self._normPointSplat(p)
         if len(self._val.value) == 0:
-            self._val.moveTo(p1)
+            self._val.moveTo(p)
         else:
-            self._val.lineTo(p1)
+            self._val.lineTo(p)
         return self
 
     def qCurveTo(self, *points):
@@ -128,4 +137,31 @@ class DrawingMixin():
         for pt in points[1:]:
             self.lineTo(pt)
         self.closePath()
+        return self
+    
+    def round(self):
+        """Round the values of this pen to integer values."""
+        return self.round_to(1)
+
+    def round_to(self, rounding):
+        """Round the values of this pen to nearest multiple of rounding."""
+        def rt(v, mult):
+            rndd = float(round(v / mult) * mult)
+            if rndd.is_integer():
+                return int(rndd)
+            else:
+                return rndd
+        
+        rounded = []
+        for t, pts in self._val.value:
+            _rounded = []
+            for p in pts:
+                if p:
+                    x, y = p
+                    _rounded.append((rt(x, rounding), rt(y, rounding)))
+                else:
+                    _rounded.append(p)
+            rounded.append((t, _rounded))
+        
+        self._val.value = rounded
         return self
