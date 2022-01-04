@@ -1476,12 +1476,11 @@ class DraftingPen(RecordingPen, SHContext):
         self.attr("default", fill=rgb(1, 0, 0.5))
         return self
     
-    def allStyledAttrs(self, style=None):
+    def style(self, style):
         if style and style in self.attrs:
-            attrs = self.attrs[style]
+            return self.attrs[style]
         else:
-            attrs = self.attrs["default"]
-        return attrs
+            return self.attrs["default"]
 
     def attr(self, tag=None, field=None, **kwargs):
         """Set a style attribute on the pen."""

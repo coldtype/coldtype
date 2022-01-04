@@ -94,8 +94,11 @@ class Runon:
     def __str__(self, data=False):
         return self.__repr__(data)
     
+    def printable_val(self):
+        return self._val
+    
     def __repr__(self, data=False):
-        v = self._val
+        v = self.printable_val()
         t = self._tag
         d = self._data
         l = len(self)
@@ -123,6 +126,7 @@ class Runon:
         ty = type(self).__name__
         if ty == "Runon":
             ty = ""
+        
         out = f"<®:{ty}{v}{l}{t}{d}>"
         return out
     
