@@ -134,6 +134,72 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(r.data("a"), "b")
         self.assertEqual(r.data("c"), "d")
         self.assertEqual(r.data("x"), "z")
+    
+    def test_layers(self):
+        r = Runon(5)
+
+        self.assertEqual(r.v, 5)
+        self.assertEqual(len(r), 0)
+        self.assertEqual(bool(r), True)
+        
+        r.layer(2)
+        self.assertEqual(r.v, None)
+        self.assertEqual(len(r), 2)
+        self.assertEqual(len(r[0]), 0)
+        self.assertEqual(bool(r), True)
+
+        r.layer(3)
+        self.assertEqual(r.v, None)
+        self.assertEqual(len(r), 2)
+        self.assertEqual(len(r[0]), 3)
+
+        r = Runon(1)
+        self.assertEqual(r.v, 1)
+        self.assertEqual(r.depth(), 1)
+        
+        r.layer(lambda p: p.v + 2)
+        self.assertEqual(r.v, None)
+        self.assertEqual(r[0].v, 3)
+        self.assertEqual(r.depth(), 2)
+        
+        r.layer(lambda p: p.v + 2)
+        self.assertEqual(r[0].v, None)
+        self.assertEqual(r[0][0].v, 5)
+        self.assertEqual(r.depth(), 3)
+
+        r.layer(lambda p: p.v + 2, lambda p: p.v + 3)
+        self.assertEqual(r[0][0].v, None)
+        self.assertEqual(r[0][0][0].v, 7)
+        self.assertEqual(r[0][0][-1].v, 8)
+        self.assertEqual(r.depth(), 4)
+
+        r.collapse()
+        self.assertEqual(len(r), 2)
+        self.assertEqual(r[0].v, 7)
+        self.assertEqual(r[-1].v, 8)
+    
+    def test_chain(self):
+        def c(a):
+            def _c(ru):
+                return ru.update(a)
+            return _c
+
+        r = Runon(1)
+        self.assertEqual(r.v, 1)
+        r.chain(c(5))
+        self.assertEqual(r.v, 5)
+
+        r.layer(2)
+        r.index(1, lambda e: e.update(e.v*2))
+        self.assertEqual(r[0].v, 5)
+        self.assertEqual(r[-1].v, 10)
+
+        r.mapv(lambda e: e.update(e.v*2))
+        self.assertEqual(r[0].v, 10)
+        self.assertEqual(r[-1].v, 20)
+
+        #print("\n")
+        #print(r.tree())
 
 if __name__ == "__main__":
     unittest.main()

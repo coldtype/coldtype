@@ -970,14 +970,14 @@ class DraftingPen(RecordingPen, SHContext):
                 dps.append(self.copy(with_data=1))
         return dps
     
-    def layerfn(self, times, fn=None):
-        dps = self.multi_pen_class()
-        for x in range(0, times):
-            if fn:
-                dps.append(fn(x, self.copy(with_data=1)))
-            else:
-                dps.append(self.copy(with_data=1))
-        return dps
+    # def layerfn(self, times, fn=None):
+    #     dps = self.multi_pen_class()
+    #     for x in range(0, times):
+    #         if fn:
+    #             dps.append(fn(x, self.copy(with_data=1)))
+    #         else:
+    #             dps.append(self.copy(with_data=1))
+    #     return dps
     
     def mirror(self, y=0, point=None):
         s = (1, -1) if y else (-1, 1)

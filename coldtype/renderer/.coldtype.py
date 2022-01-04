@@ -22,7 +22,7 @@ PROFILES = dict(
         NO_VIEWER = 1,
     ),
     tut = dict(
-        WINDOW_PIN = "NW",
+        WINDOW_PIN = "SE",
         WINDOW_OPACITY = 0.85,
         WINDOW_CHROMELESS = True,
         WINDOW_TRANSPARENT = True,

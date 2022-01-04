@@ -177,7 +177,9 @@ class LayoutMixin():
                 a = self.ambit(th=1, tv=1)
                 point = point[1:]
             return a.point(point)
-        elif not (isinstance(point[1], int) or isinstance(point[1], float)) and hasattr(self, "_pens"):
+        elif (not (isinstance(point[1], int)
+                or isinstance(point[1], float))
+            and hasattr(self, "_normPoint")):
             return self[point[0]]._normPoint(point[1])
         else:
             return Point(point)
@@ -223,6 +225,7 @@ class LayoutMixin():
             interp = kwargs["i"]
         
         x, y = self._normPoint(pt, th=th, tv=tv, **kwargs)
+
         return self.translate(norm(interp, 0, rect.w/2-x), norm(interp, 0, rect.h/2-y))
     
     def skew(self, x=0, y=0, point=None, th=1, tv=0, **kwargs):
@@ -284,3 +287,97 @@ class LayoutMixin():
         if shrink_only and b.h < h:
             return self
         return self.scale(1, h / self.bounds().h)
+    
+    # multi-elements
+
+    def distribute(self, v=False, tracks=None, th=0, tv=0):
+        off = 0
+        for idx, p in enumerate(self):
+            if tracks is not None and idx > 0:
+                t = tracks[idx-1]
+                #print(t)
+                off += t
+            frame = p.ambit(th=th, tv=tv)
+            if v:
+                if frame.y < 0:
+                    p.translate(0, -frame.y)
+                p.translate(0, off)
+                off += frame.h
+            else:
+                if frame.x < 0:
+                    p.translate(-frame.x, 0)
+                if frame.x > 0 and th:
+                    p.translate(-frame.x, 0)
+                p.translate(off, 0)
+                off += frame.w
+        return self
+    
+    def track(self, t, v=False):
+        """Track-out/distribute elements"""
+        for idx, p in enumerate(self._els):
+            if v:
+                p.translate(0, -t*idx)
+            else:
+                p.translate(t*idx, 0)
+        return self
+    
+    def stack(self, leading=0, tv=0, zero=False):
+        "Vertical distribution of elements"
+        if zero:
+            for p in self:
+                p.zero()
+        ambits = [p.ambit(th=0, tv=tv).expand(leading, "N") for p in self._els]
+        for idx, p in enumerate(self._els):
+            for a in ambits[idx+1:]:
+                p.translate(0, a.h)
+        return self
+    
+    def lead(self, leading):
+        "Vertical spacing"
+        ln = len(self._els)
+
+        try:
+            if self._els[-1].ambit().y > self._els[0].ambit().y:
+                leading = -leading
+        except IndexError:
+            pass
+        
+        for idx, p in enumerate(self._els):
+            p.translate(0, leading*(ln-1-idx))
+        return self
+    
+    def track_with_width(self, t):
+        """Track-out/distribute elements"""
+        x = 0
+        for idx, p in enumerate(self._els):
+            frame = p.ambit()
+            p.translate(x + t, 0)
+            x += frame.w
+        return self
+    
+    def track_to_rect(self, rect, pullToEdges=False, r=0):
+        """Distribute pens evenly within a frame"""
+        if len(self) == 1:
+            return self.align(rect)
+        total_width = 0
+        pens = self._els
+        if r:
+            pens = list(reversed(pens))
+        start_x = pens[0].ambit(th=pullToEdges).x
+        end_x = pens[-1].ambit(th=pullToEdges).point("SE").x
+        # TODO easy to knock out apostrophes here based on a callback, last "actual" frame
+        total_width = end_x - start_x
+        leftover_w = rect.w - total_width
+        tracking_value = leftover_w / (len(self)-1)
+        if pullToEdges:
+            xoffset = rect.x - pens[0].bounds().x
+        else:
+            xoffset = rect.x - pens[0].ambit().x
+        for idx, p in enumerate(pens):
+            if idx == 0:
+                p.translate(xoffset, 0)
+            else:
+                p.translate(xoffset+tracking_value*idx, 0)
+        return self
+    
+    trackToRect = track_to_rect

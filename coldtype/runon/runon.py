@@ -1,8 +1,8 @@
-from coldtype import *
-
 from typing import Callable, Optional
 from inspect import signature
 from random import Random
+
+from coldtype.fx.chainable import Chainable
 
 
 def _arg_count(fn):
@@ -281,7 +281,7 @@ class Runon:
     
     # Hierarchical Operations
 
-    def collapse(self, levels=100, onself=False):
+    def collapse(self, levels=100, onself=True):
         """AKA `flatten` in some programming contexts"""
         els = []
         for el in self._els:
@@ -525,6 +525,77 @@ class Runon:
                     pass # TODO?
         return self
     
+    # Chaining
+
+    def chain(self,
+        fn:Callable[["Runon"], None],
+        *args
+        ):
+        """
+        For simple take-one callback functions in a chain
+        """
+        if fn:
+            if isinstance(fn, Chainable):
+                res = fn.func(self, *args)
+                if res:
+                    return res
+                return self
+            
+            try:
+                if isinstance(fn[0], Chainable):
+                    r = self
+                    for f in fn:
+                        r = r.chain(f, *args)
+                    return r
+            except TypeError:
+                pass
+
+            try:
+                fn, metadata = fn
+            except TypeError:
+                metadata = {}
+            
+            res = fn(self, *args)
+            if "returns" in metadata:
+                return res
+            elif isinstance(res, Runon):
+                return res
+            elif res:
+                return res
+        return self
+    
+    ch = chain
+
+    def layer(self, *layers):
+        """
+        For every lambda function you pass in, a copy of the original is made and passed to your function, building up a multi-layered version and removing the original version; alternatively,
+        pass in an integer n to simply duplicate the
+        current value of the pen n-times
+        """
+        if self._val:
+            if len(layers) == 1 and isinstance(layers[0], int):
+                layers = [1]*layers[0]
+            
+            els = []
+            for layer in layers:
+                if callable(layer):
+                    els.append(layer(self.copy()))
+                elif isinstance(layer, Chainable):
+                    els.append(layer.func(self.copy()))
+                #elif isinstance(layer, str):
+                #    dp = self.copy()
+                #    els.append(dp.sh("ctx" + layer)[0])
+                else:
+                    els.append(self.copy())
+            
+            self._val = None
+            self.extend(els)
+        else:
+            for el in self._els:
+                el.layer(*layers)
+        
+        return self
+    
     # Utils
 
     def print(self, *args):
@@ -534,3 +605,7 @@ class Runon:
             else:
                 print(a)
         return self
+    
+    # Aliases
+
+    pmap = mapv
