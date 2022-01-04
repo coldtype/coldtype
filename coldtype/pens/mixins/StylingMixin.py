@@ -1,15 +1,20 @@
-from coldtype.runon.runon import Runon
-from coldtype.color import Color, normalize_color
+from coldtype.color import Color, normalize_color, rgb
 
+"""
+Requires Runon.attr contract
+"""
 
 class StylingMixin():
-    def groupStrokeStyle(self, st):
+    def groupedStyle(self, st):
         if "stroke" in st:
             c = st["stroke"]
             sw = st.get("strokeWidth", 1)
             st["stroke"] = dict(color=c, weight=sw)
         if "strokeWidth" in st:
             del st["strokeWidth"]
+
+        if "fill" not in st:
+            st["fill"] = rgb(1, 0, 0.5)
         return st
 
     def f(self, *value):
