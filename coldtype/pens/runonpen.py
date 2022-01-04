@@ -6,11 +6,12 @@ from coldtype.runon.runon import Runon
 
 from coldtype.pens.mixins.StylingMixin import StylingMixin
 from coldtype.pens.mixins.LayoutMixin import LayoutMixin
-
+from coldtype.pens.mixins.DrawingMixin import DrawingMixin
 
 class RunonPen(Runon,
     StylingMixin,
-    LayoutMixin
+    LayoutMixin,
+    DrawingMixin
     ):
     def FromPens(pens):
         if hasattr(pens, "_pens"):
@@ -40,6 +41,8 @@ class RunonPen(Runon,
         if isinstance(value, Rect):
             r = value
             value = None
+        elif value is None:
+            value = RecordingPen()
         
         super().__init__(value=value, els=els, data=data, attrs=attrs)
 

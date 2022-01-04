@@ -10,7 +10,7 @@ from fontTools.misc.transform import Transform
 from coldtype.fx.chainable import Chainable
 from coldtype.color import normalize_color, bw
 from coldtype.pens.skiapen import SkiaPen
-from coldtype.pens.datpen import DATPen
+from coldtype.pens.datpen import DATPen, DATPens
 
 SKIA_CONTEXT = None
 
@@ -197,12 +197,18 @@ def precompose(rect,
     style=None,
     ):
     def _precompose(pen):
+        t = type(pen)
+        nt = t
+        if t == DATPens:
+            nt = DATPen
+        
+        print(">>>", pen)
         img = SkiaPen.Precompose(pen, rect,             
             context=SKIA_CONTEXT,
             scale=scale,
             disk=disk,
             style=style)
-        return (DATPen()
+        return (nt()
             .rect(placement or rect)
             .img(img, (placement or rect), False, opacity)
             .f(None))
