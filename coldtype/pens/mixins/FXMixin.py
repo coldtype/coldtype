@@ -55,6 +55,20 @@ class FXMixin():
         
         return self
     
+    def implode(self):
+        # TODO preserve frame from some of this?
+        self.reset_val()
+        
+        for el in self._els:
+            self.record(el._val)
+        
+        # dp = self[0]
+        # for p in self[1:]:
+        #     dp.record(p)
+
+        self._els = []
+        return self
+    
     def repeat(self, times=1):
         for el in self._els:
             el.repeat(times)
@@ -130,3 +144,26 @@ class FXMixin():
                 self.removeOverlap()
         
         return self
+    
+    def understroke(self,
+        s=0,
+        sw=5,
+        outline=False,
+        dofill=0,
+        miterLimit=None
+        ):
+        if sw == 0:
+            return self
+        
+        def mod_fn(p):
+            if not outline:
+                return p.fssw(s, s, sw)
+            else:
+                if dofill:
+                    pf = p.copy()
+                p.f(s).outline(sw*2, miterLimit=miterLimit)
+                if dofill:
+                    p.reverse().record(pf)
+                return p
+
+        return self.layer(mod_fn, 1)

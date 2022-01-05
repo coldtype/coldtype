@@ -18,17 +18,20 @@ else:
     picklejar = None
     pickles = []
 
+print("HERE")
+
 results = []
 for pickle in pickles:
     try:
         results.append([
             pickle,
-            DP().Unpickle(pickle)])
+            RunonPen().Unpickle(pickle)])
     except EOFError:
         print("invalid pickle")
 
 def make_renderable(name, result):
-    r = result.data.get("rect", Rect(1000, 1000))
+    print(name, result)
+    r = result.data("rect", Rect(1000, 1000))
     @renderable(r)
     def pj(r): # TODO naming needs to be different?
         return result
@@ -40,7 +43,8 @@ for result in results:
     pickle, res = result
     try:
         RENDERABLES.append(make_renderable(pickle.stem, res))
-    except:
+    except Exception as e:
+        print(e)
         print("failed to load", pickle.stem)
 
 #if picklejar and picklejar.exists():

@@ -40,8 +40,11 @@ def calcCubicArcLength_cached(a, b, c, d):
 
 class CurveCutter():
     def __init__(self, g, inc=0.0015):
-        #self.pen = g#RecordingPen()
-        self.pen = g.copy()
+        self.pen = RecordingPen()
+        if hasattr(g, "value"):
+            self.pen = g.copy()
+        else:
+            g.replay(self.pen)
         #g.draw(self.pen)
         #self.pen.ensure_fully_closed_path()
         self.inc = inc

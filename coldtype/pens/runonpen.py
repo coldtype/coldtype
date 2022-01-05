@@ -1,21 +1,26 @@
 from collections.abc import Iterable
 
 from fontTools.pens.recordingPen import RecordingPen
+from fontTools.pens.reverseContourPen import ReverseContourPen
 
 from coldtype.geometry import Rect
-from coldtype.pens.mixins.PathopsMixin import PathopsMixin
 from coldtype.runon.runon import Runon
 
-from coldtype.pens.mixins.StylingMixin import StylingMixin
-from coldtype.pens.mixins.LayoutMixin import LayoutMixin
-from coldtype.pens.mixins.DrawingMixin import DrawingMixin
 from coldtype.pens.mixins.FXMixin import FXMixin
+from coldtype.pens.mixins.LayoutMixin import LayoutMixin
+from coldtype.pens.mixins.StylingMixin import StylingMixin
+from coldtype.pens.mixins.DrawingMixin import DrawingMixin
+from coldtype.pens.mixins.PathopsMixin import PathopsMixin
+from coldtype.pens.mixins.SegmentingMixin import SegmentingMixin
+from coldtype.pens.mixins.SerializationMixin import SerializationMixin
 
 class RunonPen(Runon,
     StylingMixin,
     LayoutMixin,
     DrawingMixin,
     PathopsMixin,
+    SegmentingMixin,
+    SerializationMixin,
     FXMixin
     ):
     def FromPens(pens):
@@ -97,6 +102,48 @@ class RunonPen(Runon,
         self.data(frame=frame)
         self._els = []
         return self
+    
+    def unended(self):
+        if not self.val_present():
+            return None
+
+        if len(self._val.value) == 0:
+            return True
+        elif self._val.value[-1][0] not in ["endPath", "closePath"]:
+            return True
+        return False
+    
+    def fully_close_path(self):
+        if not self.val_present():
+            # TODO log noop?
+            return self
+
+        if self._val.value[-1][0] == "closePath":        
+            start = self._val.value[0][-1][-1]
+            end = self._val.value[-2][-1][-1]
+
+            if start != end:
+                self._val.value = self._val.value[:-1]
+                self.lineTo(start)
+                self.closePath()
+        return self
+    
+    fullyClosePath = fully_close_path
+
+    # multi-use overrides
+    
+    def reverse(self, recursive=False):
+        """Reverse elements; if pen value present, reverse the winding direction of the pen."""
+        if self.val_present():
+            if self.unended():
+                self.closePath()
+            dp = RecordingPen()
+            rp = ReverseContourPen(dp)
+            self.replay(rp)
+            self._val.value = dp.value
+            return self
+
+        return super().reverse(recursive=recursive)
     
     # backwards compatibility
 

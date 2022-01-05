@@ -39,7 +39,12 @@ class Runon:
                 value = val[0]
         else:
             value = None
-            els = list(val)
+            els = []
+            for v in val:
+                if isinstance(v, Runon):
+                    els.append(v)
+                else:
+                    els.append(Runon(v))
 
         self._val = None
         self.reset_val()
@@ -289,28 +294,65 @@ class Runon:
         return self.filterv(lambda p: p.v is not None)
     
     def interpose(self, el_or_fn):
-        new_pens = []
-        for idx, el in enumerate(self._pens):
+        new_els = []
+        for idx, el in enumerate(self._els):
             if idx > 0:
                 if callable(el_or_fn):
-                    new_pens.append(el_or_fn(idx-1))
+                    new_els.append(el_or_fn(idx-1))
                 else:
-                    new_pens.append(el_or_fn.copy())
-            new_pens.append(el)
-        self._pens = new_pens
+                    new_els.append(el_or_fn.copy())
+            new_els.append(el)
+        self._els = new_els
         return self
     
-    def split(self, fn):
-        out = self.multi_pen_class()
-        curr = self.multi_pen_class()
-        for pen in self:
-            if fn(pen):
-                out.append(curr)
-                curr = self.multi_pen_class()
+    # def interleave(self, style_fn, direction=-1, recursive=True):
+    #     """Provide a callback-lambda to interleave new DATPens between the existing ones; useful for stroke-ing glyphs, since the stroked glyphs can be placed behind the primary filled glyphs."""
+    #     els = []
+    #     for idx, el in enumerate(self._els):
+    #         if recursive:
+    #             _p = p.interleave(style_fn, direction=direction, recursive=True)
+    #             pens.append(_p)
+    #         else:
+    #             try:
+    #                 np = style_fn(idx, p.copy())
+    #             except TypeError:
+    #                 np = style_fn(p.copy())
+    #             if isinstance(np, self.single_pen_class):
+    #                 np = [np]
+    #             if direction < 0:
+    #                 pens.extend(np)
+    #             pens.append(p)
+    #             if direction > 0:
+    #                 pens.extend(np)
+
+    #     self._pens = pens
+    #     return self
+    
+    def split(self, fn, split=0):
+        out = type(self)()
+        curr = type(self)()
+
+        for el in self._els:
+            do_split = False
+            if callable(fn):
+                do_split = fn(el)
             else:
-                curr.append(pen)
+                if el._val == fn:
+                    do_split = True
+            
+            if do_split:
+                if split == -1:
+                    curr.append(el)
+                out.append(curr)
+                curr = type(self)()
+                if split == 1:
+                    curr.append(el)
+            else:
+                curr.append(el)
+        
         out.append(curr)
-        return out
+        self._els = out._els
+        return self
     
     # Hierarchical Operations
 
@@ -328,7 +370,7 @@ class Runon:
         return self
     
     def sum(self):
-        r = self.collapse()
+        r = self.copy().collapse()
         out = []
         for el in r:
             out.append(el._val)

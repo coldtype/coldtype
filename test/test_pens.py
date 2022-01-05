@@ -3,6 +3,8 @@ from random import Random
 from coldtype.geometry import Rect, Point
 from coldtype.pens.draftingpen import DraftingPen
 from coldtype.pens.draftingpens import DraftingPens
+from coldtype.pens.runonpen import RunonPen
+
 from coldtype.color import hsl, rgb
 from coldtype.pens.drawablepen import DrawablePenMixin
 from coldtype.renderer.reader import SourceReader
@@ -296,7 +298,7 @@ def lattr_style_set(r):
     
     def test_scaleToRect(self):
         r = Rect(1000, 500)
-        dps = DraftingPens([
+        dps = RunonPen([
             (StSt("SPACEFILLING", mutator, 50)
                 .align(r)
                 .f(hsl(0.8))

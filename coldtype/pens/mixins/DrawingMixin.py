@@ -49,6 +49,10 @@ class DrawingMixin():
     
     def record(self, pen):
         """Play a pen into this pen, meaning that pen will be added to this one’s value."""
+        if hasattr(pen, "value"):
+            pen.replay(self._val)
+            return self
+
         if len(pen) > 0:
             for el in pen._els:
                 self.record(el._val)
@@ -57,12 +61,6 @@ class DrawingMixin():
                 self.withJSONValue(pen)
             else:
                 pen.replay(self._val)
-        return self
-    
-    def withJSONValue(self, path):
-        self._val.value = loads(Path(path)
-            .expanduser()
-            .read_text())
         return self
 
     def rect(self, rect):

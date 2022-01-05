@@ -2,7 +2,10 @@ import unittest
 from coldtype.pens.runonpen import * #INLINE
 
 from fontTools.pens.recordingPen import RecordingPen
+
 from coldtype.geometry import Point, Rect
+from coldtype.text import StSt, Font
+
 
 class TestRunon(unittest.TestCase):
     def test_init(self):
@@ -80,6 +83,11 @@ class TestRunon(unittest.TestCase):
             ('curveTo', [(10, 12), (12, 10), (15, 10)]), 
             ('closePath', [])
         ])
+    
+    def test_fx(self):
+        r = StSt("ABC", Font.MutatorSans(), 100)
+
+        self.assertEqual(r[0].data("glyphName"), "A")
 
 if __name__ == "__main__":
     unittest.main()

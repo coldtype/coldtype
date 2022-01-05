@@ -221,7 +221,7 @@ def StSt(text,
     leading = kwargs.get("leading", 10)
 
     if "\n" in text:
-        lines = DATPens()
+        lines = RunonPen()
         for l in text.split("\n"):
             lines.append(StSt(l, font, font_size, rect=rect, strip=strip, **{**kwargs, **dict(multline=False)}))
         return lines.stack(leading)
@@ -238,7 +238,7 @@ def StSt(text,
             lockup = lockup.pens()
         
         if multiline:
-            return DATPens([lockup])
+            return RunonPen([lockup])
 
         #lockup._stst_style = style
         return lockup

@@ -27,6 +27,17 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(r[0].v, 1)
         self.assertEqual(r[1].v, 2)
 
+        r = Runon(3, 2, 1)
+        
+        self.assertEqual(len(r), 3)
+        self.assertEqual(r[0].v, 3)
+        self.assertEqual(r[-1].v, 1)
+
+        r.reverse()
+
+        self.assertEqual(r[0].v, 1)
+        self.assertEqual(r[-1].v, 3)
+
         r = Runon(
             Runon(1).data("hi", "word"),
             Runon(2).tag("oy"))
@@ -230,9 +241,49 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(r.v, 1)
         r.chain(c2)
         self.assertEqual(r.v, 10)
+    
+    def test_inter(self):
+        r = Runon(1, 2, 3)
+        self.assertEqual(len(r), 3)
+        
+        r.interpose(Runon(10))
+        self.assertEqual(len(r), 5)
 
-        #print("\n")
-        #print(r.tree())
+        r = Runon(1, 2, 3)
+        self.assertEqual(len(r), 3)
+        self.assertEqual(len(r[0]), 0)
+
+        r.layer(1, lambda e: e.update(e.v+1))
+        self.assertEqual(len(r), 3)
+        self.assertEqual(len(r[0]), 2)
+        self.assertEqual(r[0][0].v, 1)
+        self.assertEqual(r[0][1].v, 2)
+
+        r = Runon(3, 2, 1)
+        r.split(2)
+        self.assertEqual(len(r), 2)
+        self.assertEqual(r.sum(), [3, 1])
+        
+        r = Runon(1, 2, 3)
+        r.split(lambda e: e.v == 2)
+        self.assertEqual(len(r), 2)
+        self.assertEqual(len(r[0]), 1)
+        self.assertEqual(len(r[1]), 1)
+        self.assertEqual(r.sum(), [1, 3])
+
+        r = Runon(1, 2, 3)
+        r.split(lambda e: e.v == 2, -1)
+        self.assertEqual(len(r), 2)
+        self.assertEqual(len(r[0]), 2)
+        self.assertEqual(len(r[1]), 1)
+        self.assertEqual(r.sum(), [1, 2, 3])
+
+        r = Runon(1, 2, 3)
+        r.split(lambda e: e.v == 2, 1)
+        self.assertEqual(len(r), 2)
+        self.assertEqual(len(r[0]), 1)
+        self.assertEqual(len(r[1]), 2)
+        self.assertEqual(r.sum(), [1, 2, 3])
 
 if __name__ == "__main__":
     unittest.main()
