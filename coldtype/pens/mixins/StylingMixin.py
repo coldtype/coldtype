@@ -1,5 +1,6 @@
 from coldtype.color import Color, normalize_color, rgb
 from coldtype.geometry import Rect
+from coldtype.img.blendmode import BlendMode
 
 """
 Requires Runon.attr contract
@@ -7,15 +8,23 @@ Requires Runon.attr contract
 
 class StylingMixin():
     def groupedStyle(self, st):
+        sf = False
         if "stroke" in st:
             c = st["stroke"]
             sw = st.get("strokeWidth", 1)
             st["stroke"] = dict(color=c, weight=sw)
+        
         if "strokeWidth" in st:
             del st["strokeWidth"]
+        if "strokeFirst" in st:
+            sf = True
+            del st["strokeFirst"]
 
         if "fill" not in st:
             st["fill"] = rgb(1, 0, 0.5)
+        
+        if sf:
+            return {k:v for k,v in sorted(st.items(), reverse=True)}
         return st
 
     def f(self, *value):
@@ -60,6 +69,12 @@ class StylingMixin():
         self.sw(sw)
         return self
     
+    def strokeFirst(self, value=None):
+        if value:
+            return self.attr(strokeFirst=value)
+        else:
+            return self.attr(field="strokeFirst")
+    
     def img(self, src=None, rect=Rect(0, 0, 500, 500), pattern=False, opacity=1.0):
         """Get/set an image fill"""
         if src:
@@ -74,3 +89,16 @@ class StylingMixin():
 
     def shadow(self, radius=10, color=(0, 0.3), clip=None):
         return self.attr(shadow=dict(color=normalize_color(color), radius=radius, clip=clip))
+    
+    # other
+
+    def blendmode(self, blendmode=None, show=False):
+        if isinstance(blendmode, int):
+            blendmode = BlendMode.Cycle(blendmode, show=show)
+        elif isinstance(blendmode, str):
+            blendmode = BlendMode[blendmode]
+        
+        if blendmode:
+            return self.attr(blendmode=blendmode)
+        else:
+            return self.attr(field="blendmode")

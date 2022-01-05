@@ -17,18 +17,26 @@ class RunonPen(Runon,
         if hasattr(pens, "_pens"):
             out = RunonPen()
             for p in pens:
-                rp = RecordingPen()
-                p.replay(rp)
-                rrp = RunonPen(rp).f(p.f())
-                if p._frame:
-                    rrp.data(frame=p._frame,
-                        glyphName=p.glyphName)
-                out.append(rrp)
+                out.append(RunonPen.FromPens(p))
         else:
-            out = RunonPen(pens)
+            p = pens
+            rp = RecordingPen()
+            p.replay(rp)
+            out = RunonPen(rp)
+            
+            attrs = p.attrs.get("default", {})
+            if "fill" in attrs:
+                out.f(attrs["fill"])
+            if "stroke" in attrs:
+                out.s(attrs["stroke"]["color"])
+                out.sw(attrs["stroke"]["weight"])
+
+            # TODO also the rest of the styles
+
             if hasattr(pens, "_frame"):
-                out.data(
-                    frame=pens._frame)
+                out.data(frame=pens._frame)
+            if hasattr(pens, "glyphName"):
+                out.data(glyphName=pens.glyphName)
         return out
     
     def __init__(self,

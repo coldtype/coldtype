@@ -12,7 +12,7 @@ at = AsciiTimeline(2, 30, """
 
 @animation((1080, 1080), timeline=at, bg=1)
 def choreography(f):
-    return (PS([
+    res = (PS([
         (Glyphwise("COLD", lambda g:
             Style(Font.MutatorSans(), 350,
                 wght=at.ki(f"{g.i}").adsr(
@@ -40,4 +40,9 @@ def choreography(f):
                 .ki("snare")
                 .adsr(rng=(4, 100)), "CY")
             .inset(-20, 0)))
-        .fssw(-1, 0, 2))
+        .fssw(hsl(0.3), 0, 2))
+    
+    #print(res[0][0].attrs.get("default", {}))
+    #print(res.ch(runonCast()).tree())
+    return res.ch(runonCast())
+    return res
