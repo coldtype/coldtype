@@ -13,7 +13,7 @@ class LayoutMixin():
     def bounds(self):
         """Calculate the exact bounds of this shape, using a BoundPen"""
         b = Rect(0, 0, 0, 0)
-        if self._val:
+        if self.val_present():
             try:
                 cbp = BoundsPen(None)
                 self._val.replay(cbp)
@@ -187,7 +187,7 @@ class LayoutMixin():
     def transform(self, transform, transformFrame=True):
         """Perform an arbitrary transformation on the pen, using the fontTools `Transform` class."""
 
-        if self._val:
+        if self.val_present():
             op = RecordingPen()
             tp = TransformPen(op, transform)
             self._val.replay(tp)
@@ -205,6 +205,23 @@ class LayoutMixin():
             img["rect"] = img["rect"].transform(transform)
         
         return self
+    
+    def nonlinear_transform(self, fn):
+        for el in self._els:
+            return self.pmap(lambda i, p: p.nlt(fn))
+        
+        if self.val_present():
+            for idx, (move, pts) in enumerate(self._val.value):
+                if len(pts) > 0:
+                    _pts = []
+                    for _pt in pts:
+                        x, y = _pt
+                        _pts.append(fn(x, y))
+                    self._val.value[idx] = (move, _pts)
+        
+        return self
+    
+    nlt = nonlinear_transform
     
     def translate(self, x, y=None, transformFrame=True):
         """Translate this shape by `x` and `y` (pixel values)."""

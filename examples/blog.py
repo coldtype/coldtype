@@ -2,17 +2,18 @@ from coldtype import *
 from coldtype.fx.warping import warp
 from coldtype.fx.skia import phototype
 
-"""If you add this code to a file in the coldtype repo, you can run it as `coldtype name-of-file.py`"""
-
-obv = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 logos = raw_ufo("assets/logos.ufo")
 
 @renderable((1200, 600))
 def nameplate(r, fontSize=500, wdth=0.25, rotate=0):
     return (PS([
         P(r).f(0),
-        (StSt("COLDTYPE", obv, fontSize,
-            wdth=wdth, tu=-50, r=1, rotate=rotate)
+        (StSt("COLDTYPE"
+            , Font.ColdObvi()
+            , fontSize
+            , wdth=wdth
+            , rotate=rotate
+            , tu=-50, r=1)
             .f(1)
             .understroke(sw=35)
             .align(r)

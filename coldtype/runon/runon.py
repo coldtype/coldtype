@@ -32,7 +32,7 @@ class Runon:
         data=None,
         attrs=None,
         ):
-        self._val = None
+        self._val = self.reset_val()
         self._els = els if els is not None else []
         
         self._visible = True
@@ -96,12 +96,17 @@ class Runon:
         return self.__repr__(data)
     
     def printable_val(self):
+        """subclass hook for __repr__"""
         return self._val
+    
+    def printable_data(self):
+        """subclass hook for __repr__"""
+        return self._data
     
     def __repr__(self, data=False):
         v = self.printable_val()
         t = self._tag
-        d = self._data
+        d = self.printable_data()
         l = len(self)
 
         if v is None:
@@ -133,6 +138,14 @@ class Runon:
     
     def __bool__(self):
         return len(self._els) > 0 or self._val is not None
+    
+    def val_present(self):
+        """subclass hook"""
+        return bool(self._val)
+    
+    def reset_val(self):
+        self._val = None
+        return self
     
     def __len__(self):
         return len(self._els)
@@ -580,7 +593,7 @@ class Runon:
         pass in an integer n to simply duplicate the
         current value of the pen n-times
         """
-        if self._val:
+        if self.val_present():
             if len(layers) == 1 and isinstance(layers[0], int):
                 layers = [1]*layers[0]
             
@@ -596,7 +609,7 @@ class Runon:
                 else:
                     els.append(self.copy())
             
-            self._val = None
+            self.reset_val()
             self.extend(els)
         else:
             for el in self._els:

@@ -192,7 +192,7 @@ class Rect(Geometrical):
         return self.rect()[key]
 
     def __repr__(self):
-        return "Rect(" + str(self.rect()).replace(" ", "") + ")"
+        return "Rect({:.2f},{:.2f},{:.2f},{:.2f})".format(*self.rect())
     
     def __eq__(self, r):
         try:

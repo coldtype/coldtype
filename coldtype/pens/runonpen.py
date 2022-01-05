@@ -2,6 +2,7 @@
 from fontTools.pens.recordingPen import RecordingPen
 
 from coldtype.geometry import Rect
+from coldtype.pens.mixins.PathopsMixin import PathopsMixin
 from coldtype.runon.runon import Runon
 
 from coldtype.pens.mixins.StylingMixin import StylingMixin
@@ -11,7 +12,8 @@ from coldtype.pens.mixins.DrawingMixin import DrawingMixin
 class RunonPen(Runon,
     StylingMixin,
     LayoutMixin,
-    DrawingMixin
+    DrawingMixin,
+    PathopsMixin,
     ):
     def FromPens(pens):
         if hasattr(pens, "_pens"):
@@ -56,16 +58,48 @@ class RunonPen(Runon,
 
         if r:
             self.rect(r)
+
+    def reset_val(self):
+        self._val = RecordingPen()
+        return self
+    
+    def val_present(self):
+        return self._val and len(self._val.value) > 0
     
     def printable_val(self):
-        if self._val:
+        if self.val_present():
             return f"RecordingPen({len(self._val.value)})"
+    
+    def printable_data(self):
+        out = {}
+        exclude = ["_last_align_rect"]
+        for k, v in self._data.items():
+            if k not in exclude:
+                out[k] = v
+        return out
 
     def style(self, style="_default"):
         """for compatibility with defaults and grouped-stroke-properties from DATPen"""
         st = {**super().style(style)}
         return self.groupedStyle(st)
+    
+    def pen(self):
+        """collapse and combine into a single vector"""
+        if len(self) == 0:
+            return self
+        
+        frame = self.ambit()
+        self.collapse()
 
+        for el in self._els:
+            el._val.replay(self._val)
+            #self._val.record(el._val)
+
+        self._attrs = {**self._els[0]._attrs, **self._attrs}
+            
+        self.data(frame=frame)
+        self._els = []
+        return self
 
 def runonCast():
     def _runonCast(p):
