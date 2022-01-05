@@ -767,8 +767,8 @@ class DATPens(DraftingPens, DATPen):
 DATPenSet = DATPens
 DPS = DATPens
 DP = DATPen
-P = DATPen
-PS = DATPens
+#P = DATPen
+#PS = DATPens
 
 
 class DATText(DATPen):

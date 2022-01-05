@@ -3,9 +3,12 @@ from coldtype.renderable.animation import animation, renderable
 from coldtype.text.composer import StSt, Font, Rect, Point, Style
 from coldtype.time.timeline import Timeline
 from coldtype.time.midi import MidiTimeline
-from coldtype.pens.datpen import P, PS, DATText
+from coldtype.pens.datpen import DATText
 from coldtype.color import bw, hsl
 
+from coldtype.pens.runonpen import RunonPen as P
+
+PS = P
 
 def timeViewer(tl):
     a = None
@@ -65,7 +68,8 @@ def timeViewer(tl):
             out += (P(row.take(2, "W"))
                 .translate(t.start*wu, 0)
                 .f(f))
-            out += (StSt(t.name, Font.RecursiveMono(), 34)
+            out += (StSt(t.name,
+                Font.RecursiveMono(), 34)
                 .align(row.take(20, "W"), "W")
                 .translate(t.start*wu+6, 0)
                 .f(f.darker(0.15)))
@@ -73,13 +77,10 @@ def timeViewer(tl):
         return out
 
     r = Rect(ow, line_count*lh+lt)
-    #rw, re = r.divide(100, "W")
     re = r.inset(20, 0)
     rt, rd = re.divide(lt, "N")
 
-    if False and isinstance(tl, MidiTimeline):
-        display = build_midi_display(rd)
-    elif isinstance(tl, Timeline):
+    if isinstance(tl, Timeline):
         display = build_timeable_display(rd)
     else:
         display = PS()
@@ -114,14 +115,9 @@ def timeViewer(tl):
         x = f.e("l", 0, rng=(rd.psw[0], rd.pse[0]))
         return PS([
             P(Rect(2, r.h)).t(x, 0),
-            # (StSt("{:04d}\n{:04d}"
-            #     .format(f.i, f.t.duration),
-            #     Font.RecursiveMono(), 22)
-            #     .align(rw.inset(10), th=0))
-            (DATText(str(f.i), Style("Times", 20, load_font=0), Rect(x+6, r.h-20, 100, 40))
-                #.align(rw.inset(10), th=0)
-                )
-                ])
+            (DATText(str(f.i),
+                Style("Times", 20, load_font=0),
+                Rect(x+6, r.h-20, 100, 40)))])
     
     def pointToFrame(pt:Point):
         return round(min(1, max(0, (pt.x-re.x)/re.w))*tl.duration)

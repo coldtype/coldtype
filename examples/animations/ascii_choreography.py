@@ -23,6 +23,7 @@ def choreography(f):
         Style(fnt, 200,
             wght=at.ki(g.i).e(),
             wdth=at.ki(f"{g.i}w").e("qeio", 1)))
+        #.ch(runonCast())
         .track(at.ki("tu", f.i).e(r=150))
         .align(f.a.r)
         .f(hsl(0.7, 1))

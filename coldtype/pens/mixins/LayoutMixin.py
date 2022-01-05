@@ -153,6 +153,14 @@ class LayoutMixin():
     
     xå = xalign
 
+    def yalign(self, rect=None, y="centery", th=0, tv=1):
+        if callable(rect):
+            rect = rect(self)
+        self.align(rect, x=None, y=y, th=th, tv=tv)
+        return self
+    
+    xå = xalign
+
     def _normPoint(self, point=None, th=0, tv=0, **kwargs):
         th, tv = self._normT(th, tv, kwargs.get("t"))
 
@@ -208,7 +216,7 @@ class LayoutMixin():
     
     def nonlinear_transform(self, fn):
         for el in self._els:
-            return self.pmap(lambda i, p: p.nlt(fn))
+            el.nonlinear_transform(fn)
         
         if self.val_present():
             for idx, (move, pts) in enumerate(self._val.value):

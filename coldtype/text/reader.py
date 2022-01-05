@@ -9,9 +9,11 @@ from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
 
 from coldtype.color import normalize_color, rgb
-from coldtype.pens.draftingpen import DraftingPen
-from coldtype.pens.draftingpens import DraftingPens
+
 from coldtype.pens.datpen import DATPen, DATPens
+
+from coldtype.pens.runonpen import RunonPen
+
 from coldtype.geometry import Rect
 
 from typing import Union
@@ -25,13 +27,6 @@ except ImportError:
 
 _PenClass = DATPen
 _PensClass = DATPens
-
-# try:
-#     from fontgoggles.font import getOpener
-#     from fontgoggles.font.baseFont import BaseFont
-#     from fontgoggles.font.otfFont import OTFFont
-#     from fontgoggles.misc.textInfo import TextInfo
-# except ModuleNotFoundError:
 
 from coldtype.fontgoggles.font import getOpener
 from coldtype.fontgoggles.font.baseFont import BaseFont
@@ -988,7 +983,7 @@ class StyledString(FittableMixin):
             dp.s(self.style.stroke).sw(self.style.strokeWidth)
         return dp
 
-    def pens(self) -> DraftingPens:
+    def pens(self) -> _PensClass:
         """
         Vectorize text into a ``DATPens``, such that each glyph (or ligature) is represented by a single `DATPen` (or a ``DATPens`` in the case of a color font, which will then nest a `DATPen` for each layer of that color glyph)
         """
@@ -1008,9 +1003,9 @@ class StyledString(FittableMixin):
             dp_atom = self._emptyPenWithAttrs()
             if self.style.no_shapes:
                 if callable(self.style.show_frames):
-                    dp_atom.record(DATPen().rect(self.style.show_frames(g.frame)).outline(4))
+                    dp_atom.record(_PenClass().rect(self.style.show_frames(g.frame)).outline(4))
                 else:
-                    dp_atom.record(DATPen().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
+                    dp_atom.record(_PenClass().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
                 dp_atom.typographic = True
                 dp_atom.addFrame(norm_frame)
                 dp_atom.glyphName = g.name
@@ -1031,7 +1026,7 @@ class StyledString(FittableMixin):
                         #dp_atom.record(DATPen().rect(self.style.show_frames(g.frame)).outline(4))
                         dp_atom.rect(self.style.show_frames(g.frame))
                     else:
-                        dp_atom.record(DATPen().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
+                        dp_atom.record(_PenClass().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
                         #dp_atom.rect(g.frame)
                 if self.style.q2c:
                     dp_atom.q2c()
@@ -1069,9 +1064,10 @@ class StyledString(FittableMixin):
             pens.data[k] = v
 
         pens._stst = self
+        return RunonPen.FromPens(pens)
         return pens
 
-    def pen(self, frame=True) -> DraftingPen:
+    def pen(self, frame=True) -> _PenClass:
         """
         Vectorize all text into single ``DATPen``
         """

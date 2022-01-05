@@ -1,6 +1,5 @@
-#from coldtype.pens.draftingpens import DraftingPen, DraftingPens
 from coldtype.pens.datpen import DATPen, DATPens
-from coldtype.pens.draftingpens import DraftingPens
+from coldtype.pens.runonpen import RunonPen
 from coldtype.geometry import Rect, Point
 
 from coldtype.text.shaper import segment
@@ -306,7 +305,7 @@ def Glyphwise(st, styler, start=0, line=0):
     def krn(off, on, idx):
         return kx(off, idx) - kx(on, idx)
 
-    dps = DATPens()
+    dps = RunonPen()
     prev = 0
     tracks = []
 
@@ -347,11 +346,11 @@ def Glyphwise(st, styler, start=0, line=0):
 
         if idx == 0:
             if tkoff_tweak:
-                tkoff_frame = tkoff[0]._frame
+                tkoff_frame = tkoff[0].data("frame")
                 th = skon_tweak.input["kwargs"].get("th", 0)
                 tv = skon_tweak.input["kwargs"].get("tv", 0)
                 tkoff_glyph = tkoff_tweak[0].align(tkoff_frame, th=th, tv=tv)
-                tkoff_glyph._frame = tkoff_frame
+                tkoff_glyph.data(frame=tkoff_frame)
             else:
                 tkoff_glyph = tkoff[0]#.copy(with_data=True)
             
@@ -362,11 +361,11 @@ def Glyphwise(st, styler, start=0, line=0):
             prev_av = (prev+_prev)/2
 
             if tkoff_tweak:
-                tkoff_frame = tkoff[1]._frame
+                tkoff_frame = tkoff[1].data("frame")
                 th = skon_tweak.input["kwargs"].get("th", 0)
                 tv = skon_tweak.input["kwargs"].get("tv", 0)
                 tkoff_glyph = tkoff_tweak[1].align(tkoff_frame, th=th, tv=tv)
-                tkoff_glyph._frame = tkoff_frame
+                tkoff_glyph.data(frame=tkoff_frame)
             else:
                 tkoff_glyph = tkoff[1].copy(with_data=True)
             

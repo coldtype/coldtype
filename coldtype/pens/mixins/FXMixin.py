@@ -1,12 +1,74 @@
 import math
+from copy import deepcopy
 
 from fontTools.pens.recordingPen import RecordingPen
+from fontPens.flattenPen import FlattenPen
 
 from coldtype.pens.outlinepen import OutlinePen
 from coldtype.pens.translationpen import TranslationPen, polarCoord
+from coldtype.pens.misc import ExplodingPen, SmoothPointsPen
 
 
 class FXMixin():
+    def flatten(self, length=10, segmentLines=True):
+        """
+        Runs a fontTools `FlattenPen` on this pen
+        """
+        for el in self._els:
+            el.flatten(length, segmentLines)
+
+        if self.val_present():
+            rp = RecordingPen()
+            fp = FlattenPen(rp, approximateSegmentLength=length, segmentLines=segmentLines)
+            self.replay(fp)
+            self._val.value = rp.value
+
+        return self
+    
+    def smooth(self):
+        for el in self._els:
+            el.smooth()
+        
+        if self.val_present():
+            rp = RecordingPen()
+            fp = SmoothPointsPen(rp)
+            self.replay(fp)
+            self._val.value = rp.value
+        
+        return self
+    
+    def explode(self):
+        """Convert all contours to individual paths"""
+        for el in self._els:
+            el.explode()
+
+        if self.val_present():
+            rp = RecordingPen()
+            ep = ExplodingPen(rp)
+            self.replay(ep)
+
+            for p in ep._pens:
+                el = type(self)()
+                el._val.value = p
+                el._attrs = deepcopy(self._attrs)
+                self.append(el)
+        
+        return self
+    
+    def repeat(self, times=1):
+        for el in self._els:
+            el.repeat(times)
+
+        if self.val_present():
+            copy = self.copy()._val.value
+            _, copy_0_data = copy[0]
+            copy[0] = ("moveTo", copy_0_data)
+            self._val.value = self._val.value[:-1] + copy
+            if times > 1:
+                self.repeat(times-1)
+        
+        return self
+
     def outline(self,
         offset=1,
         drawInner=True,

@@ -148,7 +148,7 @@ class Runon:
         if ty == "Runon":
             ty = ""
         
-        out = f"<®:{ty}{tv}{v}{l}{t}{d}>"
+        out = f"<®:{ty}:{tv}{v}{l}{t}{d}>"
         return out
     
     def __bool__(self):
@@ -349,7 +349,8 @@ class Runon:
         r.shuffle(self._els)
         return self
     
-    def copy(self, deep=True):
+    def copy(self, deep=True, with_data=True):
+        """with_data is deprecated"""
         if hasattr(self._val, "copy"):
             v = self._val.copy()
         else:
@@ -641,6 +642,10 @@ class Runon:
     # Utils
 
     def print(self, *args):
+        if len(args) == 0:
+            print(self.tree())
+            return self
+
         for a in args:
             if callable(a):
                 print(a(self))

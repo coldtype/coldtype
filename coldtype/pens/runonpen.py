@@ -65,7 +65,7 @@ class RunonPen(Runon,
     
     def printable_val(self):
         if self.val_present():
-            return f"RecordingPen({len(self._val.value)})"
+            return f"{len(self._val.value)}mvs"
     
     def printable_data(self):
         out = {}
@@ -97,6 +97,12 @@ class RunonPen(Runon,
         self.data(frame=frame)
         self._els = []
         return self
+    
+    # backwards compatibility
+
+    # @property
+    # def _frame(self):
+    #     return self.data("frame")
 
 def runonCast():
     def _runonCast(p):
