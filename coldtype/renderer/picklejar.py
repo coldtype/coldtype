@@ -18,8 +18,6 @@ else:
     picklejar = None
     pickles = []
 
-print("HERE")
-
 results = []
 for pickle in pickles:
     try:
@@ -30,7 +28,6 @@ for pickle in pickles:
         print("invalid pickle")
 
 def make_renderable(name, result):
-    print(name, result)
     r = result.data("rect", Rect(1000, 1000))
     @renderable(r)
     def pj(r): # TODO naming needs to be different?
@@ -44,8 +41,10 @@ for result in results:
     try:
         RENDERABLES.append(make_renderable(pickle.stem, res))
     except Exception as e:
-        print(e)
-        print("failed to load", pickle.stem)
+        import traceback
+        stack = traceback.format_exc()
+        print(stack)
+        print("> failed to load", pickle.stem)
 
 #if picklejar and picklejar.exists():
 #    rmtree(picklejar)

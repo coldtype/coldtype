@@ -120,7 +120,7 @@ class LayoutMixin():
         tv=False,
         transformFrame=True,
         h=None,
-        return_offset=False
+        returnOffset=False
         ):
         """Align this pen to another rect, defaults to the center;
         `th` means true-horizontal (i.e. will disregard any invisible 'frame'
@@ -138,7 +138,7 @@ class LayoutMixin():
         self.translate(*offset,
             transformFrame=transformFrame)
         
-        if return_offset:
+        if returnOffset:
             return offset
         else:
             return self

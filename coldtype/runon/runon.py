@@ -282,7 +282,7 @@ class Runon:
             if pos == 0:
                 res = _call_idx_fn(fn, idx, el)
                 if not res:
-                    el.data("_walk_delete", True)
+                    el.data(_walk_delete=True)
                 idx += 1
                 return None
             elif pos == 1:
@@ -391,14 +391,17 @@ class Runon:
         r.shuffle(self._els)
         return self
     
+    def copy_val(self, val):
+        if hasattr(val, "copy"):
+            return val.copy()
+        else:
+            return val
+    
     def copy(self, deep=True, with_data=True):
         """with_data is deprecated"""
-        if hasattr(self._val, "copy"):
-            v = self._val.copy()
-        else:
-            v = self._val
+        val_copy = self.copy_val(self._val)
 
-        _copy = type(self)(v)
+        _copy = type(self)(val_copy)
         if deep:
             _copy._data = deepcopy(self._data)
             _copy._attrs = deepcopy(self._attrs)
@@ -492,18 +495,15 @@ class Runon:
     
     # Data-access methods
 
-    def data(self, key=None, value=RunonNoData(), default=None, **kwargs):
+    def data(self, key=None, default=None, **kwargs):
         if key is None and len(kwargs) > 0:
             for k, v in kwargs.items():
                 if callable(v):
                     v = _call_idx_fn(v, k, self)
                 self._data[k] = v
             return self
-        elif key is not None and isinstance(value, RunonNoData):
-            return self._data.get(key, default)
         elif key is not None:
-            self._data[key] = value
-            return self
+            return self._data.get(key, default)
         else:
             return self
     

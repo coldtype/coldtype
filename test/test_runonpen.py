@@ -88,6 +88,17 @@ class TestRunon(unittest.TestCase):
         r = StSt("ABC", Font.MutatorSans(), 100)
 
         self.assertEqual(r[0].data("glyphName"), "A")
+    
+        r = RunonPen(RunonPen(Rect(0, 0, 100, 100)))
+        self.assertEqual(r.ambit().y, 0)
+        r.translate(0, 100)
+        self.assertEqual(r.ambit().y, 100)
+        r.layer(1, 1)
+        r.print()
+        r.translate(0, 100)
+        self.assertEqual(r.ambit().y, 200)
+        print(r.ambit(th=1))
+        
 
 if __name__ == "__main__":
     unittest.main()

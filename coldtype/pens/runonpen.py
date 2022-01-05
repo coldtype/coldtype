@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from copy import deepcopy
 
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.reverseContourPen import ReverseContourPen
@@ -11,6 +11,7 @@ from coldtype.pens.mixins.LayoutMixin import LayoutMixin
 from coldtype.pens.mixins.StylingMixin import StylingMixin
 from coldtype.pens.mixins.DrawingMixin import DrawingMixin
 from coldtype.pens.mixins.PathopsMixin import PathopsMixin
+from coldtype.pens.mixins.ShorthandMixin import ShorthandMixin
 from coldtype.pens.mixins.SegmentingMixin import SegmentingMixin
 from coldtype.pens.mixins.SerializationMixin import SerializationMixin
 
@@ -21,6 +22,7 @@ class RunonPen(Runon,
     PathopsMixin,
     SegmentingMixin,
     SerializationMixin,
+    ShorthandMixin,
     FXMixin
     ):
     def FromPens(pens):
@@ -60,6 +62,9 @@ class RunonPen(Runon,
             self.rect(r)
         else:
             raise Exception("Can’t understand _val", self._val)
+        
+        self._last = None
+        ShorthandMixin.__init__(self)
 
     def reset_val(self):
         self._val = RecordingPen()
@@ -67,6 +72,11 @@ class RunonPen(Runon,
     
     def val_present(self):
         return self._val and len(self._val.value) > 0
+    
+    def copy_val(self, val):
+        copy = RecordingPen()
+        copy.value = deepcopy(self._val.value)
+        return copy
     
     def printable_val(self):
         if self.val_present():
@@ -102,33 +112,6 @@ class RunonPen(Runon,
         self.data(frame=frame)
         self._els = []
         return self
-    
-    def unended(self):
-        if not self.val_present():
-            return None
-
-        if len(self._val.value) == 0:
-            return True
-        elif self._val.value[-1][0] not in ["endPath", "closePath"]:
-            return True
-        return False
-    
-    def fully_close_path(self):
-        if not self.val_present():
-            # TODO log noop?
-            return self
-
-        if self._val.value[-1][0] == "closePath":        
-            start = self._val.value[0][-1][-1]
-            end = self._val.value[-2][-1][-1]
-
-            if start != end:
-                self._val.value = self._val.value[:-1]
-                self.lineTo(start)
-                self.closePath()
-        return self
-    
-    fullyClosePath = fully_close_path
 
     # multi-use overrides
     
@@ -145,7 +128,15 @@ class RunonPen(Runon,
 
         return super().reverse(recursive=recursive)
     
+    def reversePens(self):
+        """for backwards compatibility"""
+        return self.reverse(recursive=False)
+    
     # backwards compatibility
+
+    @property
+    def glyphName(self):
+        return self.data("glyphName")
 
     # @property
     # def _frame(self):

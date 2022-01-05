@@ -1,9 +1,7 @@
 import math
 
 from pathlib import Path
-from json import loads, dumps
-
-from coldtype.geometry import Rect, Line, Point
+from coldtype.geometry import Rect, Line, Point, Atom
 
 
 class DrawingMixin():
@@ -16,7 +14,9 @@ class DrawingMixin():
             return p
 
     def moveTo(self, *p):
-        self._val.moveTo(self._normPointSplat(p))
+        p = self._normPointSplat(p)
+        self._val.moveTo(p)
+        self._last = p
         return self
 
     def lineTo(self, *p):
@@ -25,14 +25,17 @@ class DrawingMixin():
             self._val.moveTo(p)
         else:
             self._val.lineTo(p)
+        self._last = p
         return self
 
     def qCurveTo(self, *points):
         self._val.qCurveTo(*points)
+        self._last = points[-1]
         return self
 
     def curveTo(self, *points):
         self._val.curveTo(*points)
+        self._last = points[-1]
         return self
 
     def closePath(self):
@@ -62,6 +65,33 @@ class DrawingMixin():
             else:
                 pen.replay(self._val)
         return self
+    
+    def unended(self):
+        if not self.val_present():
+            return None
+
+        if len(self._val.value) == 0:
+            return True
+        elif self._val.value[-1][0] not in ["endPath", "closePath"]:
+            return True
+        return False
+    
+    def fully_close_path(self):
+        if not self.val_present():
+            # TODO log noop?
+            return self
+
+        if self._val.value[-1][0] == "closePath":        
+            start = self._val.value[0][-1][-1]
+            end = self._val.value[-2][-1][-1]
+
+            if start != end:
+                self._val.value = self._val.value[:-1]
+                self.lineTo(start)
+                self.closePath()
+        return self
+    
+    fullyClosePath = fully_close_path
 
     def rect(self, rect):
         """Rectangle primitive — `moveTo/lineTo/lineTo/lineTo/closePath`"""

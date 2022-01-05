@@ -324,22 +324,24 @@ def lattr_style_set(r):
         dps.picklejar(r)
     
     def test_distribute_and_track(self):
-        dps = DraftingPens()
+        dps = RunonPen()
         rnd = Random(0)
         r = Rect(1000, 500)
 
         for _ in range(0, 11):
-            dps += (DraftingPen()
+            dps += (RunonPen()
                 .rect(Rect(100, 100))
                 .f(hsl(rnd.random(), s=0.6))
                 .rotate(rnd.randint(-45, 45)))
         dps = (dps
             .distribute()
             .track(-50)
-            .reversePens()
-            .understroke(s=0.2).align(r))
+            .reverse()
+            .understroke(s=0.2)
+            .align(r)
+            )
         
-        self.assertEqual(len(dps), 22)
+        self.assertEqual(len(dps), 11)
         self.assertEqual(dps.ambit(th=1).round().w, 830)
     
         dps.picklejar(r)
@@ -369,7 +371,7 @@ def lattr_style_set(r):
         r = Rect(1000, 500)
         txt = (StSt("COLDTYPE "*7, co, 64,
             tu=-50, r=1, ro=1)
-            .distribute_on_path(DraftingPen()
+            .distribute_on_path(RunonPen()
                 .oval(r.inset(50))
                 .reverse()
                 .repeat())
@@ -377,13 +379,13 @@ def lattr_style_set(r):
         
         txt.picklejar(r)
 
-        self.assertEqual(len(txt), 124)
+        self.assertEqual(len(txt), 62)
         
         x, y = txt[-1].ambit().xy()
         self.assertAlmostEqual(x, 500, 0)
         self.assertAlmostEqual(y, 50, 0)
 
-        x, y = txt[50].ambit().xy()
+        x, y = txt[100].ambit().xy()
         self.assertAlmostEqual(x, 657, 0)
         self.assertAlmostEqual(y, 433, 0)
     

@@ -39,7 +39,7 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(r[-1].v, 3)
 
         r = Runon(
-            Runon(1).data("hi", "word"),
+            Runon(1).data(hi="word"),
             Runon(2).tag("oy"))
         
         self.assertEqual(len(r), 2)
