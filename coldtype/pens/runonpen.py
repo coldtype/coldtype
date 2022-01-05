@@ -9,12 +9,14 @@ from coldtype.runon.runon import Runon
 from coldtype.pens.mixins.StylingMixin import StylingMixin
 from coldtype.pens.mixins.LayoutMixin import LayoutMixin
 from coldtype.pens.mixins.DrawingMixin import DrawingMixin
+from coldtype.pens.mixins.FXMixin import FXMixin
 
 class RunonPen(Runon,
     StylingMixin,
     LayoutMixin,
     DrawingMixin,
     PathopsMixin,
+    FXMixin
     ):
     def FromPens(pens):
         if hasattr(pens, "_pens"):
@@ -42,32 +44,21 @@ class RunonPen(Runon,
                 out.data(glyphName=pens.glyphName)
         return out
     
-    def __init__(self, *vals):
-        # r = None
-
-        # if isinstance(value, RunonPen):
-        #     els = [value]
-        #     value = RecordingPen()
-        # elif isinstance(value, Iterable):
-        #     els = value
-        #     value = RecordingPen()
-        # elif isinstance(value, Rect):
-        #     r = value
-        #     value = None
-        # elif value is None:
-        #     value = RecordingPen()
-        
+    def __init__(self, *vals):        
         super().__init__(*vals)
 
-        # if r:
-        #     self.rect(r)
+        if isinstance(self._val, RecordingPen):
+            pass
+        elif isinstance(self._val, Rect):
+            r = self._val
+            self._val = RecordingPen()
+            self.rect(r)
+        else:
+            raise Exception("Can’t understand _val", self._val)
 
     def reset_val(self):
         self._val = RecordingPen()
         return self
-    
-    def normalize_val(self, val):
-        return val
     
     def val_present(self):
         return self._val and len(self._val.value) > 0

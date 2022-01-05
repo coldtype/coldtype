@@ -6,10 +6,28 @@ from coldtype.geometry import Point, Rect
 
 class TestRunon(unittest.TestCase):
     def test_init(self):
-        from collections.abc import Iterable
-        print(isinstance(Rect(50, 50), Iterable))
-        #r = RunonPen(Rect(50, 50))
-        #print(r)
+        r = RunonPen()
+        self.assertIsInstance(r.v, RecordingPen)
+        self.assertEqual(r.val_present(), False)
+
+        r = RunonPen(RunonPen())
+        self.assertIsInstance(r.v, RecordingPen)
+        self.assertIsInstance(r[0].v, RecordingPen)
+
+        r.index(0, lambda e: e.moveTo(0, 0))
+        self.assertEqual(r.val_present(), False)
+        self.assertEqual(r[0].val_present(), True)
+        
+        r = RunonPen(Rect(50, 50))
+        self.assertEqual(r.v.value[0][-1][0], (0, 0))
+        self.assertEqual(r.v.value[-2][-1][0], (0, 50))
+        self.assertEqual(r.v.value[-1][0], "closePath")
+
+        r = RunonPen(RunonPen(), RunonPen())
+        self.assertEqual(len(r), 2)
+
+        r = RunonPen([RunonPen()]*3)
+        self.assertEqual(len(r), 3)
 
     def test_drawing_mixin(self):
         r = RunonPen()

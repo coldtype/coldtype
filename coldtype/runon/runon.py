@@ -159,6 +159,7 @@ class Runon:
         return bool(self._val)
     
     def normalize_val(self, val):
+        """subclass hook"""
         return val
     
     def reset_val(self):
