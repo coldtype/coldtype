@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 
 from fontTools.pens.recordingPen import RecordingPen
 
@@ -41,27 +42,32 @@ class RunonPen(Runon,
                 out.data(glyphName=pens.glyphName)
         return out
     
-    def __init__(self,
-        value=None,
-        els=None,
-        data=None,
-        attrs=None
-        ):
-        r = None
-        if isinstance(value, Rect):
-            r = value
-            value = None
-        elif value is None:
-            value = RecordingPen()
-        
-        super().__init__(value=value, els=els, data=data, attrs=attrs)
+    def __init__(self, *vals):
+        # r = None
 
-        if r:
-            self.rect(r)
+        # if isinstance(value, RunonPen):
+        #     els = [value]
+        #     value = RecordingPen()
+        # elif isinstance(value, Iterable):
+        #     els = value
+        #     value = RecordingPen()
+        # elif isinstance(value, Rect):
+        #     r = value
+        #     value = None
+        # elif value is None:
+        #     value = RecordingPen()
+        
+        super().__init__(*vals)
+
+        # if r:
+        #     self.rect(r)
 
     def reset_val(self):
         self._val = RecordingPen()
         return self
+    
+    def normalize_val(self, val):
+        return val
     
     def val_present(self):
         return self._val and len(self._val.value) > 0

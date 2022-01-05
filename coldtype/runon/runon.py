@@ -2,6 +2,8 @@ from typing import Callable, Optional
 from inspect import signature
 from random import Random
 from time import sleep
+from copy import deepcopy
+from collections.abc import Iterable
 
 from coldtype.fx.chainable import Chainable
 
@@ -26,27 +28,36 @@ class RunonNoData:
 
 
 class Runon:
-    def __init__(self,
-        value=None,
-        els=None,
-        data=None,
-        attrs=None,
-        ):
-        self._val = self.reset_val()
-        self._els = els if els is not None else []
+    def __init__(self, *val):
+        els = []
+
+        if len(val) == 1 and not isinstance(val[0], Runon):
+            if isinstance(val[0], Iterable):
+                els = val[0]
+                value = None
+            else:
+                value = val[0]
+        else:
+            value = None
+            els = list(val)
+
+        self._val = None
+        self.reset_val()
+        
+        if value is not None:
+            self._val = self.normalize_val(value)
+
+        self._els = els
         
         self._visible = True
         self._alpha = 1
 
-        self._attrs = attrs if attrs else {}
-        self._data = data if data else {}
+        self._attrs = {}
+        self._data = {}
         self._parent = None
         self._tag = None
 
         self._tmp_attr_tag = None
-
-        if value is not None:
-            self._val = value
     
     def post_init(self):
         """subclass hook"""
@@ -92,8 +103,8 @@ class Runon:
     
     # Generic Interface
 
-    def __str__(self, data=False):
-        return self.__repr__(data)
+    def __str__(self):
+        return self.__repr__()
     
     def printable_val(self):
         """subclass hook for __repr__"""
@@ -103,7 +114,7 @@ class Runon:
         """subclass hook for __repr__"""
         return self._data
     
-    def __repr__(self, data=False):
+    def __repr__(self):
         v = self.printable_val()
         t = self._tag
         d = self.printable_data()
@@ -112,7 +123,7 @@ class Runon:
         if v is None:
             v = ""
         else:
-            v = f"\"{v}\""
+            v = f"({v})"
         
         if l == 0:
             l = ""
@@ -129,11 +140,15 @@ class Runon:
         else:
             d = " {" + ",".join([f"{k}={v}" for k,v in d.items()]) + "}"
         
+        if self.val_present():
+            tv = type(self._val).__name__
+        else:
+            tv = ""
         ty = type(self).__name__
         if ty == "Runon":
             ty = ""
         
-        out = f"<®:{ty}{v}{l}{t}{d}>"
+        out = f"<®:{ty}{tv}{v}{l}{t}{d}>"
         return out
     
     def __bool__(self):
@@ -142,6 +157,9 @@ class Runon:
     def val_present(self):
         """subclass hook"""
         return bool(self._val)
+    
+    def normalize_val(self, val):
+        return val
     
     def reset_val(self):
         self._val = None
@@ -295,7 +313,7 @@ class Runon:
     
     # Hierarchical Operations
 
-    def collapse(self, levels=100, onself=True):
+    def collapse(self, levels=100):
         """AKA `flatten` in some programming contexts"""
         els = []
         for el in self._els:
@@ -304,14 +322,9 @@ class Runon:
             
             if len(el) > 0 and levels > 0:
                 els.extend(el.collapse(levels=levels-1)._els)
-        
-        out = type(self)(els=els)
 
-        if onself:
-            self._els = out._els
-            return self
-        else:
-            return out
+        self._els = els
+        return self
     
     def sum(self):
         r = self.collapse()
@@ -335,16 +348,20 @@ class Runon:
         r.shuffle(self._els)
         return self
     
-    def copy(self):
+    def copy(self, deep=True):
         if hasattr(self._val, "copy"):
             v = self._val.copy()
         else:
             v = self._val
 
-        _copy = type(self)(
-            value=v,
-            data=self._data.copy(),
-            attrs=self._attrs.copy())
+        _copy = type(self)(v)
+        if deep:
+            _copy._data = deepcopy(self._data)
+            _copy._attrs = deepcopy(self._attrs)
+        else:
+            _copy._data = self._data.copy()
+            _copy._attrs = self._attrs.copy()
+        _copy._tag = self._tag
         
         for el in self._els:
             _copy.append(el.copy())
@@ -437,10 +454,13 @@ class Runon:
                 if callable(v):
                     v = _call_idx_fn(v, k, self)
                 self._data[k] = v
-        elif isinstance(value, RunonNoData):
+            return self
+        elif key is not None and isinstance(value, RunonNoData):
             return self._data.get(key, default)
-        else:
+        elif key is not None:
             self._data[key] = value
+            return self
+        else:
             return self
     
     def tag(self, value=RunonNoData()):

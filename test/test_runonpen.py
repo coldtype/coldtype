@@ -5,6 +5,12 @@ from fontTools.pens.recordingPen import RecordingPen
 from coldtype.geometry import Point, Rect
 
 class TestRunon(unittest.TestCase):
+    def test_init(self):
+        from collections.abc import Iterable
+        print(isinstance(Rect(50, 50), Iterable))
+        #r = RunonPen(Rect(50, 50))
+        #print(r)
+
     def test_drawing_mixin(self):
         r = RunonPen()
         self.assertIsInstance(r._val, RecordingPen)

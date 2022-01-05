@@ -8,22 +8,28 @@ class TestRunon(unittest.TestCase):
         
         self.assertEqual(r.v, 1)
 
-        r = Runon(els=[1])
+        r = Runon(Runon(1))
         
         self.assertEqual(r.v, None)
         self.assertEqual(len(r), 1)
 
-        r = Runon(els=[
-            Runon(1), Runon(2)])
+        r = Runon(Runon(1), Runon(2))
         
         self.assertEqual(r.v, None)
         self.assertEqual(len(r), 2)
         self.assertEqual(r[0].v, 1)
         self.assertEqual(r[1].v, 2)
 
-        r = Runon(els=[
+        r = Runon([Runon(1), Runon(2)])
+        
+        self.assertEqual(r.v, None)
+        self.assertEqual(len(r), 2)
+        self.assertEqual(r[0].v, 1)
+        self.assertEqual(r[1].v, 2)
+
+        r = Runon(
             Runon(1).data("hi", "word"),
-            Runon(2).tag("oy")])
+            Runon(2).tag("oy"))
         
         self.assertEqual(len(r), 2)
         self.assertEqual(r[0].data("hi"), "word")
@@ -48,6 +54,7 @@ class TestRunon(unittest.TestCase):
         r.insert(0, Runon(4))
 
         self.assertEqual(r[0].v, 4)
+
         self.assertEqual(r.sum(), [4, 3])
 
         self.assertEqual(len(r.find(lambda p: p.v == 3)), 1)
@@ -57,6 +64,22 @@ class TestRunon(unittest.TestCase):
         r.insert([0, 0], Runon(6))
         r.insert([0, 0], Runon(5))
         self.assertEqual(r[0].sum(), [5, 6])
+
+        r.data(hello="world")
+        r.index([0, 0], lambda e: e.attr(fill=1))
+
+        r_copy = r.copy()
+
+        self.assertEqual(r_copy[0][0].attr("fill"), 1)
+
+        r.index([0, 0], lambda e: e.attr(fill=2))
+        r_copy.index([0, 0], lambda e: e.attr(fill=3))
+
+        self.assertEqual(r[0][0].attr("fill"), 2)
+        self.assertEqual(r_copy[0][0].attr("fill"), 3)
+
+        self.assertEqual(r_copy.data("hello"), "world")
+        self.assertEqual(r_copy[-1].tag(), "oy")
 
         r_rev1 = r.copy().reverse(recursive=0)
         r_rev2 = r.copy().reverse(recursive=1)
@@ -92,7 +115,7 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(els[1].v, 200)
     
     def test_attr(self):
-        r = Runon(els=[Runon(1).attr(q=2)])
+        r = Runon(Runon(1).attr(q=2))
         
         self.assertEqual(r.attr("q"), None)
         self.assertEqual(r[0].attr("q"), 2)
@@ -107,7 +130,7 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(r[0].attr("alt", "q"), 4)
     
     def test_alpha(self):
-        r = Runon(els=[Runon(1).alpha(0.5).tag("leaf")])
+        r = Runon(Runon(1).alpha(0.5).tag("leaf"))
         r.alpha(0.5).tag("root")
 
         alphas = {}
@@ -122,7 +145,7 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(r[0].alpha(), 0.5)
     
     def test_logic(self):
-        r = Runon(els=[Runon(1), Runon(2)])
+        r = Runon(Runon(1), Runon(2))
 
         r.cond(True,
             lambda p: p.data(a="b", c="d"))
