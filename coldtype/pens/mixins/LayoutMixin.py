@@ -24,14 +24,15 @@ class LayoutMixin():
                 pass
         
         if len(self._els) > 0:
-            b = self._els[0].bounds()
-            for el in self._els[1:]:
-                b = b.union(el.bounds())
+            bs = []
+            for el in self._els:
+                eb = el.bounds()
+                if eb and eb.nonzero():
+                    bs.append(eb)
             
-        if len(self._els) == 0 and not self.val_present():
-            f = self.data("frame")
-            if f:
-                return f
+            b = bs[0]
+            for eb in bs[1:]:
+                b = b.union(eb)
         
         return b
     

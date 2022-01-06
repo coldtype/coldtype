@@ -11,6 +11,7 @@ from coldtype.fx.chainable import Chainable
 from coldtype.color import normalize_color, bw
 from coldtype.pens.runonpen import RunonPen
 from coldtype.pens.skiapen import SkiaPen
+from coldtype.runon.runon import Runon
 
 #from coldtype.pens.datpen import DATPen, DATPens
 
@@ -205,8 +206,7 @@ def precompose(rect,
             disk=disk,
             style=style)
         
-        return (pen
-            .reset_val()
+        return (RunonPen()
             .rect(placement or rect)
             .img(img, (placement or rect), False, opacity)
             .f(None))

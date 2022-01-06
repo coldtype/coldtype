@@ -88,8 +88,6 @@ class RichText(RunonPen):
                 else:
                     slugs[si] += line[i]
                 i += 1
-            
-            print(slugs)
 
             if not list(slugs.values())[-1]:
                 line_meta = list(metas.values())[-1]

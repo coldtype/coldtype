@@ -442,6 +442,9 @@ class Rect(Geometrical):
 
     def zero(self):
         return Rect((0, 0, self.w, self.h))
+    
+    def nonzero(self):
+        return not (self.x == 0 and self.y == 0 and self.w == 0 and self.h == 0)
 
     def __add__(self, another_rect):
         return Rect(add(self, another_rect))

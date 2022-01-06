@@ -48,7 +48,7 @@ class Runon:
                 if isinstance(v, Runon):
                     els.append(v)
                 else:
-                    els.append(Runon(v))
+                    els.append(type(self)(v))
 
         self._val = None
         self.reset_val()
@@ -119,7 +119,7 @@ class Runon:
     
     def __add__(self, item):
         """yields new Runon with current nested, item after"""
-        return Runon(self, item)
+        return type(self)(self, item)
     
     # Generic Interface
 
