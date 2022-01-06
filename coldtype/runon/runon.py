@@ -309,8 +309,13 @@ class Runon:
         
         return self.walk(walker)
     
+    def delete(self):
+        self._els = []
+        self.reset_val()
+        return self
+    
     def unblank(self):
-        return self.filterv(lambda p: p.v is not None)
+        return self.filterv(lambda p: p.val_present())
     
     removeBlanks = unblank
     
@@ -484,12 +489,22 @@ class Runon:
             return out
         return self
     
-    î = index
-    ï = indices
+    def î(self, idx, fn=None):
+        return self.index(idx, fn)
 
-    def find(self, finder_fn, fn=None):
+    def ï(self, idxs, fn=None):
+        return self.indices(idxs, fn)
+
+    def find(self,
+        finder_fn,
+        fn=None,
+        index=None
+        ):
         matches = []
         def finder(p, pos, _):
+            #if limit and len(matches) > limit:
+            #    return
+
             found = False
             if pos >= 0:
                 if isinstance(finder_fn, str):
@@ -499,19 +514,38 @@ class Runon:
                 else:
                     found = all(p.data(k) == v for k, v in finder_fn.items())
             if found:
-                if fn:
-                    fn(p)
-                else:
-                    matches.append(p)
-        
+                matches.append(p)
+
         self.walk(finder)
+
+        narrowed = []
+        if index is not None:
+            for idx, match in enumerate(matches):
+                if isinstance(index, int):
+                    if idx == index:
+                        narrowed.append([idx, match])
+                else:
+                    if idx in index:
+                        narrowed.append([idx, match])
+        else:
+            for idx, match in enumerate(matches):
+                narrowed.append([idx, match])
+        
+        if fn:
+            for idx, match in narrowed:
+                _call_idx_fn(fn, idx, match)
+
         if fn:
             return self
         else:
-            return matches
+            return [m for (_, m) in narrowed]
     
-    def find_(self, finder_fn):
-        return self.find(finder_fn)[0]
+    def find_(self, finder_fn, fn=None, index=0):
+        res = self.find(finder_fn, fn, index=index)
+        if not fn:
+            return res[0]
+        else:
+            return self
     
     # Data-access methods
 

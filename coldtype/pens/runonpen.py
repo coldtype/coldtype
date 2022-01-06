@@ -3,7 +3,7 @@ from copy import deepcopy
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.reverseContourPen import ReverseContourPen
 
-from coldtype.geometry import Rect
+from coldtype.geometry import Rect, Point
 from coldtype.runon.runon import Runon
 
 from coldtype.pens.mixins.FXMixin import FXMixin
@@ -137,15 +137,34 @@ class RunonPen(Runon,
 
         return super().reverse(recursive=recursive)
     
+    def index(self, idx, fn):
+        if not self.val_present():
+            return super().index(idx, fn)
+        
+        return self.mod_contour(idx, fn)
+    
+    def indices(self, idxs, fn):
+        if not self.val_present():
+            return super().indices(idxs, fn)
+
+        def apply(idx, x, y):
+            if idx in idxs:
+                return fn(Point(x, y))
+        
+        return self.map_points(apply)
+    
+    # backwards compatibility
+
     def reversePens(self):
         """for backwards compatibility"""
         return self.reverse(recursive=False)
-    
-    # backwards compatibility
 
     @property
     def glyphName(self):
         return self.data("glyphName")
+    
+    def ffg(self, glyphName, fn=None, index=0):
+        return self.find_({"glyphName":glyphName}, fn, index)
 
     # @property
     # def _frame(self):

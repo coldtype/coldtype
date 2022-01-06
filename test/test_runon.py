@@ -1,5 +1,6 @@
 import re
 import unittest
+from coldtype.pens.runonpen import RunonPen
 from coldtype.runon.runon import * #INLINE
 
 class TestRunon(unittest.TestCase):
@@ -339,6 +340,24 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(r2.sum(), [1, 2, 3, 4])
         self.assertEqual(r2[0].sum(), [1, 2, 3])
         self.assertEqual(r2[1].sum(), [4])
+    
+    def test_index(self):
+        r = Runon(1, 2, 3)
+        r.index(0, lambda e: e.tag("one"))
+        self.assertEqual(r[0].tag(), "one")
+    
+    def test_find(self):
+        r = Runon(Runon(1, 2), Runon(1, 2, 3))
+        r.index([0, 1], lambda e: e.tag("alpha"))
+        r.index([1, 1], lambda e: e.tag("beta"))
+
+        self.assertEqual(
+            r.find_(lambda e: e.v == 2).tag(),
+            "alpha")
+        
+        self.assertEqual(
+            r.find_(lambda e: e.v == 2, index=1).tag(),
+            "beta")
 
 if __name__ == "__main__":
     unittest.main()

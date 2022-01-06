@@ -4,6 +4,7 @@ from copy import deepcopy
 from fontTools.pens.recordingPen import RecordingPen
 from fontPens.flattenPen import FlattenPen
 
+from coldtype.geometry import Point
 from coldtype.pens.outlinepen import OutlinePen
 from coldtype.pens.translationpen import TranslationPen, polarCoord
 from coldtype.pens.misc import ExplodingPen, SmoothPointsPen
@@ -57,16 +58,35 @@ class FXMixin():
     
     def implode(self):
         # TODO preserve frame from some of this?
-        self.reset_val()
+        #self.reset_val()
+        self._val = RecordingPen()
         
         for el in self._els:
             self.record(el._val)
-        
-        # dp = self[0]
-        # for p in self[1:]:
-        #     dp.record(p)
 
         self._els = []
+        return self
+    
+    def map_points(self, fn, filter_fn=None):
+        idx = 0
+        for cidx, c in enumerate(self._val.value):
+            move, pts = c
+            pts = list(pts)
+            for pidx, p in enumerate(pts):
+                x, y = p
+                if filter_fn and not filter_fn(Point(p)):
+                    continue
+                result = fn(idx, x, y)
+                if result:
+                    pts[pidx] = result
+                idx += 1
+            self._val.value[cidx] = (move, pts)
+        return self
+    
+    def mod_contour(self, contour_index, mod_fn):
+        exploded = self.explode()
+        mod_fn(exploded[contour_index])
+        self._val.value = exploded.implode()._val.value
         return self
     
     def repeat(self, times=1):
