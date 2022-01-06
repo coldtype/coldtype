@@ -31,6 +31,18 @@ class TestRunon(unittest.TestCase):
 
         r = RunonPen([RunonPen()]*3)
         self.assertEqual(len(r), 3)
+    
+    def test_collapse(self):
+        r = RunonPen(
+            StSt("ABC", Font.MutatorSans(), 100),
+            StSt("DEF", Font.MutatorSans(), 100))
+        
+        self.assertEqual(len(r), 2)
+        self.assertEqual(len(r[0]), 3)
+        
+        r.collapse()
+        self.assertEqual(len(r), 6)
+        self.assertEqual(len(r[0]), 0)
 
     def test_drawing_mixin(self):
         r = RunonPen()
@@ -94,10 +106,9 @@ class TestRunon(unittest.TestCase):
         r.translate(0, 100)
         self.assertEqual(r.ambit().y, 100)
         r.layer(1, 1)
-        r.print()
+
         r.translate(0, 100)
         self.assertEqual(r.ambit().y, 200)
-        print(r.ambit(th=1))
         
 
 if __name__ == "__main__":

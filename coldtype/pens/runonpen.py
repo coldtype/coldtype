@@ -7,6 +7,7 @@ from coldtype.geometry import Rect
 from coldtype.runon.runon import Runon
 
 from coldtype.pens.mixins.FXMixin import FXMixin
+from coldtype.pens.mixins.GlyphMixin import GlyphMixin
 from coldtype.pens.mixins.LayoutMixin import LayoutMixin
 from coldtype.pens.mixins.StylingMixin import StylingMixin
 from coldtype.pens.mixins.DrawingMixin import DrawingMixin
@@ -23,6 +24,7 @@ class RunonPen(Runon,
     SegmentingMixin,
     SerializationMixin,
     ShorthandMixin,
+    GlyphMixin,
     FXMixin
     ):
     def FromPens(pens):
@@ -30,6 +32,10 @@ class RunonPen(Runon,
             out = RunonPen()
             for p in pens:
                 out.append(RunonPen.FromPens(p))
+        elif hasattr(pens, "_els") and len(pens._els) > 0:
+            out = pens
+        elif hasattr(pens, "_val") and pens.val_present():
+            out = pens
         else:
             p = pens
             rp = RecordingPen()

@@ -22,6 +22,9 @@ from coldtype.geometry import Rect, Edge, Point, Line, Geometrical
 from coldtype.color import normalize_color, hsl, rgb, bw
 
 
+from coldtype.pens.runonpen import RunonPen
+
+
 def _random_series(start=0, end=1, seed=0, count=5000):
     rnd = Random()
     rnd.seed(seed)
@@ -738,29 +741,7 @@ class DATPens(DraftingPens, DATPen):
         return self
     
     def Enumerate(enumerable, enumerator):
-        out = DATPens()
-        if len(enumerable) == 0:
-            return out
-        
-        es = list(enumerable)
-        length = len(es)
-
-        if isinstance(enumerable, dict):
-            for idx, k in enumerate(enumerable.keys()):
-                item = enumerable[k]
-                if idx == 0 and len(enumerable) == 1:
-                    e = 0.5
-                else:
-                    e = idx / (length-1)
-                out.append(enumerator(DATPensEnumerable(idx, item, e, length, k)))
-        else:
-            for idx, item in enumerate(es):
-                if idx == 0 and len(enumerable) == 1:
-                    e = 0.5
-                else:
-                    e = idx / (length-1)
-                out.append(enumerator(DATPensEnumerable(idx, item, e, length, idx)))
-        return out
+        return RunonPen().enumerate(enumerable, enumerator)
     
     E = Enumerate
 

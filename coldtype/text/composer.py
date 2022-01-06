@@ -67,12 +67,12 @@ class Graf():
     
     def pens(self):
         rects = self.lineRects()
-        pens = _PensClass()
+        pens = RunonPen()
         for idx, l in enumerate(self.lines):
             r = rects[idx]
             dps = l.pens().translate(r.x, r.y) # r.x
             if not self.no_frames:
-                dps.addFrame(Rect(r.x, r.y, r.w, r.h))
+                dps.data(frame=Rect(r.x, r.y, r.w, r.h))
             pens.append(dps)
         return pens
 
@@ -112,7 +112,7 @@ class Lockup(FittableMixin):
                 if self.nestSlugs:
                     pens.append(dps)
                 else:
-                    pens.extend(dps._pens)
+                    pens.extend(dps._els)
             else:
                 dps = s.pen()
                 dps.translate(x_off, 0)
@@ -123,7 +123,7 @@ class Lockup(FittableMixin):
                 x_off += s.strings[-1].tracking
             except:
                 pass
-        return _PensClass(pens)
+        return RunonPen(pens)
     
     def pen(self):
         return self.pens().pen()

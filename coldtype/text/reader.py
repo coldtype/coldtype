@@ -1119,4 +1119,4 @@ class SegmentedString(FittableMixin):
                     dps.add_data("lang", s.style.lang)
                 pens.append(dps)
             x_off += dps.ambit().w
-        return pens
+        return RunonPen(pens)

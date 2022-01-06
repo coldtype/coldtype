@@ -211,6 +211,42 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(len(r), 2)
         self.assertEqual(r[0].v, 7)
         self.assertEqual(r[-1].v, 8)
+
+        r = Runon(1, 2, 3)
+        r[0].data(hello="world")
+        r.layer(1, lambda e: e.update(e.v+1))
+        self.assertEqual(r[0].data("hello"), None)
+
+        r = Runon(1)
+        
+        r.ups()
+        self.assertEqual(r[0].v, 1)
+        
+        r.ups()
+        self.assertEqual(r[0].v, None)
+        self.assertEqual(r[0][0].v, 1)
+        
+        r.ups()
+        r.insert(0, Runon(2))
+        self.assertEqual(r[0].v, 2)
+        self.assertEqual(r[1][0].v, None)
+        self.assertEqual(r[1][0][0].v, 1)
+        
+        r.ups()
+        self.assertEqual(len(r), 1)
+        self.assertEqual(len(r[0]), 2)
+    
+    def test_collapse(self):
+        r = Runon(Runon(Runon(1, 2), 3), Runon(4, 5))
+        r.collapse()
+        self.assertEqual(r.sum(), [1, 2, 3, 4, 5])
+        
+        r.reverse()
+        self.assertEqual(r.sum(), [5, 4, 3, 2, 1])
+        
+        r = Runon(Runon(1, 2, 3), Runon(4, 5, 6))
+        r.collapse()
+        self.assertEqual(r.sum(), [1, 2, 3, 4, 5, 6])
     
     def test_chain(self):
         def c(a):
@@ -284,6 +320,13 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(len(r[0]), 1)
         self.assertEqual(len(r[1]), 2)
         self.assertEqual(r.sum(), [1, 2, 3])
+    
+    def test_enumerate(self):
+        r = Runon().enumerate(range(0, 5), lambda en: Runon((en.el+1)*10))
+        self.assertEqual(r.sum(), [10, 20, 30, 40, 50])
+
+        r = Runon().enumerate(range(0, 5), lambda en: Runon(en.e))
+        self.assertEqual(r.sum(), [0, 0.25, 0.5, 0.75, 1])
 
 if __name__ == "__main__":
     unittest.main()

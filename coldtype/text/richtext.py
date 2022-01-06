@@ -1,7 +1,6 @@
 import re
 
-from coldtype.pens.draftingpen import DraftingPen
-from coldtype.pens.draftingpens import DraftingPens
+from coldtype.pens.runonpen import RunonPen
 from coldtype.text.composer import Graf, GrafStyle, Lockup
 from coldtype.text.reader import StyledString, Style
 from coldtype.color import hsl
@@ -19,7 +18,7 @@ except ImportError:
     highlight = None
     pass
 
-class RichText(DraftingPens):
+class RichText(RunonPen):
     """Very experimental module to support rich-text from annotated strings, like a super-minimal-but-open-ended subset of markdown, inspired by the way rich text is built up in the time.nle.premiere DPS subclass in coldtype"""
     def __init__(self,
         rect,
@@ -37,6 +36,7 @@ class RichText(DraftingPens):
         strip_lines=False):
 
         super().__init__()
+        
         self.tag_delimiters = tag_delimiters
         self.visible_boundary_chars = visible_boundaries
         self.invisible_boundary_chars = invisible_boundaries
@@ -51,7 +51,7 @@ class RichText(DraftingPens):
         if strip_lines:
             text = "\n".join([l.strip() for l in text.split("\n")])
         
-        self._pens = self.parse_block(text, render_text_fn, rect, fit, graf_style or leading)._pens
+        self._els = self.parse_block(text, render_text_fn, rect, fit, graf_style or leading)._els
 
     def parse_block(self, txt, render_text_fn, rect, fit, graf_style):
         parsed_lines = []
@@ -180,7 +180,6 @@ class RichText(DraftingPens):
         graf = Graf(lockups, rect, graf_style, no_frames=True)
         pens = graf.pens()#.align(rect, x="minx")
         pens._frame = None
-        group_pens = DraftingPens() # TODO configurable?
 
         pens.reversePens()
         for line in pens:
@@ -199,10 +198,10 @@ class RichText(DraftingPens):
         if not spacer and self.spacer:
             spacer = self.spacer
         
-        for line in self._pens:
+        for line in self._els:
             txt = reduce(lambda acc, p: p.data.get("txt", "") + acc, line, "")
             if txt == spacer:
-                line._pens = []
+                line._els = []
         
         if clean:
             return self.removeBlanks()

@@ -4,6 +4,7 @@ from random import Random
 from time import sleep
 from copy import deepcopy
 from collections.abc import Iterable
+from collections import namedtuple
 
 from coldtype.fx.chainable import Chainable
 
@@ -17,6 +18,9 @@ def _call_idx_fn(fn, idx, arg):
         return fn(arg)
     else:
         return fn(idx, arg)
+
+
+RunonEnumerable = namedtuple("RunonEnumerable", ["i", "el", "e", "len", "k"])
 
 
 class RunonException(Exception):
@@ -243,6 +247,13 @@ class Runon:
                 parent[idx[-1]] = res
         
         return self
+    
+    def parent(self):
+        if self._parent:
+            return self._parent
+        else:
+            print("no parent set")
+            return None
 
     def map(self, fn):
         for idx, p in enumerate(self._els):
@@ -305,29 +316,6 @@ class Runon:
         self._els = new_els
         return self
     
-    # def interleave(self, style_fn, direction=-1, recursive=True):
-    #     """Provide a callback-lambda to interleave new DATPens between the existing ones; useful for stroke-ing glyphs, since the stroked glyphs can be placed behind the primary filled glyphs."""
-    #     els = []
-    #     for idx, el in enumerate(self._els):
-    #         if recursive:
-    #             _p = p.interleave(style_fn, direction=direction, recursive=True)
-    #             pens.append(_p)
-    #         else:
-    #             try:
-    #                 np = style_fn(idx, p.copy())
-    #             except TypeError:
-    #                 np = style_fn(p.copy())
-    #             if isinstance(np, self.single_pen_class):
-    #                 np = [np]
-    #             if direction < 0:
-    #                 pens.extend(np)
-    #             pens.append(p)
-    #             if direction > 0:
-    #                 pens.extend(np)
-
-    #     self._pens = pens
-    #     return self
-    
     def split(self, fn, split=0):
         out = type(self)()
         curr = type(self)()
@@ -354,18 +342,40 @@ class Runon:
         self._els = out._els
         return self
     
+    def enumerate(self, enumerable, enumerator):
+        if len(enumerable) == 0:
+            return self
+        
+        es = list(enumerable)
+        length = len(es)
+
+        if isinstance(enumerable, dict):
+            for idx, k in enumerate(enumerable.keys()):
+                item = enumerable[k]
+                if idx == 0 and len(enumerable) == 1:
+                    e = 0.5
+                else:
+                    e = idx / (length-1)
+                self.append(enumerator(RunonEnumerable(idx, item, e, length, k)))
+        else:
+            for idx, item in enumerate(es):
+                if idx == 0 and len(enumerable) == 1:
+                    e = 0.5
+                else:
+                    e = idx / (length-1)
+                self.append(enumerator(RunonEnumerable(idx, item, e, length, idx)))
+        return self
+    
     # Hierarchical Operations
 
-    def collapse(self, levels=100):
+    def collapse(self):
         """AKA `flatten` in some programming contexts"""
         els = []
-        for el in self._els:
-            if el._val is not None:
+        def walk(el, pos, data):
+            if pos == 0:
                 els.append(el)
-            
-            if len(el) > 0 and levels > 0:
-                els.extend(el.collapse(levels=levels-1)._els)
-
+        
+        self.walk(walk)
         self._els = els
         return self
     
@@ -651,6 +661,17 @@ class Runon:
     
     ch = chain
 
+    def ups(self):
+        copy = self.copy()
+
+        self.reset_val()
+        self._data = {}
+        self._attrs = {}
+        self._tag = None
+
+        self._els = [copy]
+        return self
+
     def layer(self, *layers):
         """
         For every lambda function you pass in, a copy of the original is made and passed to your function, building up a multi-layered version and removing the original version; alternatively,
@@ -674,6 +695,10 @@ class Runon:
                     els.append(self.copy())
             
             self.reset_val()
+            self._data = {}
+            self._attrs = {}
+            self._tag = None
+
             self.extend(els)
         else:
             for el in self._els:

@@ -32,6 +32,7 @@ def stacking(r):
         .stack(20, zero=1)
         .map(lambda p: p
             .xalign(r)
+            #.map(lambda s: s.xalign(r))
             .insert(0, P(p.ambit(th=1))
                 .fssw(-1, hsl(0.3, a=0.6), 2)))
         .align(r))
