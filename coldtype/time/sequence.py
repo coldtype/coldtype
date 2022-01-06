@@ -82,7 +82,7 @@ class ClipGroupPens(DATPens):
             any_now = False
             for pen in line:
                 for p in pen:
-                    clip = p.data.get("clip")
+                    clip = p.data("clip")
                     if clip:
                         if clip.position <= 0:
                             any_now = True

@@ -96,7 +96,18 @@ class TestRunon(unittest.TestCase):
             ('closePath', [])
         ])
     
-    def test_fx(self):
+    def test_layout_mixin(self):
+        r = StSt("AB C", Font.MutatorSans(), 100)
+        self.assertEqual(r[2].data("glyphName"), "space")
+        self.assertAlmostEqual(r[2].bounds().x, 84.3, 2)
+        self.assertEqual(r[2].bounds().w, 25)
+        self.assertEqual(r[2].ambit().w, 25)
+        r.translate(100, 0)
+        self.assertAlmostEqual(r[2].bounds().x, 184.3, 2)
+        self.assertEqual(r[2].bounds().w, 25)
+        self.assertEqual(r[2].ambit().w, 25)
+    
+    def test_fx_mixin(self):
         r = StSt("ABC", Font.MutatorSans(), 100)
 
         self.assertEqual(r[0].data("glyphName"), "A")

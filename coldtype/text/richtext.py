@@ -89,6 +89,8 @@ class RichText(RunonPen):
                     slugs[si] += line[i]
                 i += 1
             
+            print(slugs)
+
             if not list(slugs.values())[-1]:
                 line_meta = list(metas.values())[-1]
                 last_key = list(slugs.keys())[-1]
@@ -189,17 +191,17 @@ class RichText(RunonPen):
         return pens.zero()
     
     def filter_style(self, style):
-        return self.pfilter(lambda i, p: style in p.data.get("style_names", []))
+        return self.pfilter(lambda i, p: style in p.data("style_names", []))
     
     def filter_text(self, text, flags=re.I):
-        return self.pfilter(lambda i, p: re.match(text, p.data.get("txt", ""), flags=flags))
+        return self.pfilter(lambda i, p: re.match(text, p.data("txt", ""), flags=flags))
     
     def removeSpacers(self, spacer=None, clean=True):
         if not spacer and self.spacer:
             spacer = self.spacer
         
         for line in self._els:
-            txt = reduce(lambda acc, p: p.data.get("txt", "") + acc, line, "")
+            txt = reduce(lambda acc, p: p.data("txt", "") + acc, line, "")
             if txt == spacer:
                 line._els = []
         

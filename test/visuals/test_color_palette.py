@@ -41,12 +41,13 @@ for i in range(256):
 
 @animation(timeline=Timeline(120))
 def restricted_colors(f):
-    c = (StSt("COLD", co, 500, wdth=0.5, ro=1)
-        .align(f.a.r))
+    c = (StSt("COLD", co, 500, wdth=0.5, ro=1).align(f.a.r))
     
-    cap_c = (c.copy().f(0)
+    cap_c = (c
+        .copy()
+        .f(0)
         .attr(skp=dict(
-            Shader=skia.PerlinNoiseShader.MakeFractalNoise(0.01, 0.01, 2, 5)))
+           Shader=skia.PerlinNoiseShader.MakeFractalNoise(0.01, 0.01, 2, 5)))
         .ch(precompose(f.a.r))
         .attr(skp=dict(
             ImageFilter=skia.BlurImageFilter.Make(5, 5),
@@ -54,6 +55,9 @@ def restricted_colors(f):
                 contrast_cut(f.e("l", 0, r=(50, 190)), 10)
                 , a=0, r=1, g=1, b=1),
         ))
-        .ch(mod_pixels(f.a.r, 0.1, lambda c: [r10(x) for x in c])))
+        .ch(mod_pixels(f.a.r, 0.1, lambda c: [r10(x) for x in c]))
+        )
 
-    return cap_c + P(f.a.r).difference(c.f(None)).f(0)
+    #print(cap_c + P(f.a.r))
+    #return None
+    return cap_c + P(f.a.r).difference(c).f(0)

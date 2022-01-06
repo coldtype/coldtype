@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.text.richtext import RichText
+from coldtype.text.richtext import * #INLINE
 
 def styler(txt, styles):
     if "i" in styles:
@@ -8,9 +8,9 @@ def styler(txt, styles):
         return txt, Style(Font.MutatorSans(), 72, wght=1)
     return txt, Style(Font.RecursiveMono(), 42)
 
-@renderable((1080, 200))
+@renderable((1080, 200), solo=1)
 def highlight(r):
-    return (RichText(r, "HELLO[h] World", styler)
+    out = (RichText(r, "HELLO[h] World", styler)
         .xalign(r)
         .align(r, tv=1)
         .scale(1.5)
@@ -19,6 +19,8 @@ def highlight(r):
                 .ambit(th=1, tv=1)
                 .inset(-10))
             .fssw(-1, hsl(0.7, a=0.3), 10)))
+    
+    return out
 
 txt = """H [h]
 
@@ -28,6 +30,7 @@ a smaller line [i]"""
 @renderable((1080, 540))
 def plainish(r):
     return (RichText(r, txt, styler, spacer="¶")
+        .print()
         .xalign(r)
         .align(r)
         .scale(2, th=1)

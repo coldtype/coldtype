@@ -13,6 +13,7 @@ class LayoutMixin():
     def bounds(self):
         """Calculate the exact bounds of this shape, using a BoundPen"""
         b = Rect(0, 0, 0, 0)
+        
         if self.val_present():
             try:
                 cbp = BoundsPen(None)
@@ -26,6 +27,11 @@ class LayoutMixin():
             b = self._els[0].bounds()
             for el in self._els[1:]:
                 b = b.union(el.bounds())
+            
+        if len(self._els) == 0 and not self.val_present():
+            f = self.data("frame")
+            if f:
+                return f
         
         return b
     
@@ -149,6 +155,8 @@ class LayoutMixin():
         if callable(rect):
             rect = rect(self)
         self.align(rect, x=x, y=None, th=th, tv=tv)
+        for el in self._els:
+            el.align(rect, x=x, y=None, th=th, tv=tv)
         return self
     
     xå = xalign

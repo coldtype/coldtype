@@ -327,6 +327,18 @@ class TestRunon(unittest.TestCase):
 
         r = Runon().enumerate(range(0, 5), lambda en: Runon(en.e))
         self.assertEqual(r.sum(), [0, 0.25, 0.5, 0.75, 1])
+    
+    def test_add(self):
+        r = Runon(1, 2, 3)
+        r += Runon(4)
+        self.assertEqual(r.sum(), [1, 2, 3, 4])
+
+        r = Runon(1, 2, 3)
+        r2 = r + 4
+        self.assertEqual(r.sum(), [1, 2, 3])
+        self.assertEqual(r2.sum(), [1, 2, 3, 4])
+        self.assertEqual(r2[0].sum(), [1, 2, 3])
+        self.assertEqual(r2[1].sum(), [4])
 
 if __name__ == "__main__":
     unittest.main()

@@ -92,7 +92,7 @@ class axidrawing(renderable):
 
             def walker(p:DATPen, pos, _):
                 if pos == 0:
-                    ameta = p.data.get("aximeta")
+                    ameta = p.data("aximeta")
                     if ameta:
                         fn = ameta.get("fn")
                         if fn:

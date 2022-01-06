@@ -9,8 +9,10 @@ from fontTools.misc.transform import Transform
 
 from coldtype.fx.chainable import Chainable
 from coldtype.color import normalize_color, bw
+from coldtype.pens.runonpen import RunonPen
 from coldtype.pens.skiapen import SkiaPen
-from coldtype.pens.datpen import DATPen, DATPens
+
+#from coldtype.pens.datpen import DATPen, DATPens
 
 SKIA_CONTEXT = None
 
@@ -197,20 +199,18 @@ def precompose(rect,
     style=None,
     ):
     def _precompose(pen):
-        t = type(pen)
-        nt = t
-        if t == DATPens:
-            nt = DATPen
-        
         img = SkiaPen.Precompose(pen, rect,             
             context=SKIA_CONTEXT,
             scale=scale,
             disk=disk,
             style=style)
-        return (nt()
+        
+        return (pen
+            .reset_val()
             .rect(placement or rect)
             .img(img, (placement or rect), False, opacity)
             .f(None))
+    
     return Chainable(_precompose)
 
 
@@ -237,7 +237,7 @@ def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
                 if res:
                     pi.putpixel((x, y), tuple(res))
         out = skia.Image.frombytes(pi.convert('RGBA').tobytes(), pi.size, skia.kRGBA_8888_ColorType)
-        return (DATPen()
+        return (RunonPen()
             .rect(rect)
             .img(out, rect, False)
             .f(None))

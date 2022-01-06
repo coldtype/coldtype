@@ -29,7 +29,7 @@ class RunonPen(Runon,
     ):
     def FromPens(pens):
         if hasattr(pens, "_pens"):
-            out = RunonPen()
+            out = RunonPen().data(**pens.data)
             for p in pens:
                 out.append(RunonPen.FromPens(p))
         elif hasattr(pens, "_els") and len(pens._els) > 0:
@@ -50,6 +50,8 @@ class RunonPen(Runon,
                 out.sw(attrs["stroke"]["weight"])
 
             # TODO also the rest of the styles
+
+            out.data(**pens.data)
 
             if hasattr(pens, "_frame"):
                 out.data(frame=pens._frame)
@@ -73,6 +75,7 @@ class RunonPen(Runon,
         ShorthandMixin.__init__(self)
 
     def reset_val(self):
+        super().reset_val()
         self._val = RecordingPen()
         return self
     

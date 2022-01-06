@@ -88,6 +88,9 @@ class Runon:
     # Array Operations
 
     def append(self, el):
+        # if len(self) == 0 and self.val_present():
+        #     self.ups()
+
         if callable(el):
             el = el(self)
 
@@ -109,6 +112,14 @@ class Runon:
         else:
             [self.append(el) for el in els]
         return self
+    
+    def __iadd__(self, item):
+        """alias to append"""
+        return self.append(item)
+    
+    def __add__(self, item):
+        """yields new Runon with current nested, item after"""
+        return Runon(self, item)
     
     # Generic Interface
 
@@ -173,6 +184,9 @@ class Runon:
     
     def reset_val(self):
         self._val = None
+        self._data = {}
+        self._attrs = {}
+        self._tag = None
         return self
     
     def __len__(self):
@@ -186,12 +200,6 @@ class Runon:
         
     def __setitem__(self, index, pen):
         self._els[index] = pen
-    
-    def __iadd__(self, el):
-        return self.append(el)
-    
-    def __add__(self, el):
-        return self.append(el)
     
     def tree(self, out=None, depth=0) -> str:
         """Hierarchical string representation"""
@@ -303,6 +311,8 @@ class Runon:
     
     def unblank(self):
         return self.filterv(lambda p: p.v is not None)
+    
+    removeBlanks = unblank
     
     def interpose(self, el_or_fn):
         new_els = []
@@ -487,7 +497,7 @@ class Runon:
                 elif callable(finder_fn):
                     found = finder_fn(p)
                 else:
-                    found = all(p.data.get(k) == v for k, v in finder_fn.items())
+                    found = all(p.data(k) == v for k, v in finder_fn.items())
             if found:
                 if fn:
                     fn(p)
@@ -665,9 +675,6 @@ class Runon:
         copy = self.copy()
 
         self.reset_val()
-        self._data = {}
-        self._attrs = {}
-        self._tag = None
 
         self._els = [copy]
         return self
@@ -695,10 +702,6 @@ class Runon:
                     els.append(self.copy())
             
             self.reset_val()
-            self._data = {}
-            self._attrs = {}
-            self._tag = None
-
             self.extend(els)
         else:
             for el in self._els:

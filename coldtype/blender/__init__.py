@@ -168,10 +168,10 @@ def walk_to_b3d(result:DATPens,
         bp = None
 
         if pos == 0:
-            bdata = p.data.get("b3d")
+            bdata = p.data("b3d")
             if not bdata:
                 p.ch(b3d(lambda bp: bp.extrude(0.01)))
-                bdata = p.data.get("b3d")
+                bdata = p.data("b3d")
             
             zero = bdata.get("zero", False)
 
@@ -234,7 +234,7 @@ def walk_to_b3d(result:DATPens,
                 built[p.tag()] = (p, bp)
 
         if pos == 0 or pos == 1:
-            b3d_post = p.data.get("b3d_post")
+            b3d_post = p.data("b3d_post")
             if b3d_post:
                 for post in b3d_post:
                     post(bp)

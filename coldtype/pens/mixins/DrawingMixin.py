@@ -48,6 +48,9 @@ class DrawingMixin():
     
     def replay(self, pen):
         self._val.replay(pen)
+
+        for el in self._els:
+            el.replay(pen)
         return self
     
     def record(self, pen):
