@@ -278,6 +278,25 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(r.v, 1)
         r.chain(c2)
         self.assertEqual(r.v, 10)
+
+        # variant syntax
+
+        r = Runon(1, 2, 3)
+        r / (lambda p: p.update(p.v+1))
+        self.assertEqual(r.sum(), [2, 3, 4])
+
+        def ch(a):
+            def _ch(ro):
+                ro / (lambda p: p.update(p.v + a))
+            return _ch
+
+        r = Runon(1, 2, 3)
+        r | ch(2)
+        self.assertEqual(r.sum(), [3, 4, 5])
+
+        r = Runon(1, 2, 3)
+        r - ch(2)
+        self.assertEqual(r.sum(), [1, 2, 3])
     
     def test_inter(self):
         r = Runon(1, 2, 3)

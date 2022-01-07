@@ -11,7 +11,7 @@ at = AsciiTimeline(1, """
     "A": dict(fontSize=100),
     "B": dict(fontSize=250),
 }, eases={
-    "i": cubicBezier(0.25,0.1,0.25,1.5),
+    "i": cubicBezier(0.25,0.1,0.25,3.5),
     "o": "qeio"
 })
 

@@ -705,6 +705,19 @@ class Runon:
     
     ch = chain
 
+    def __or__(self, other):
+        return self.chain(other)
+
+    def __ror__(self, other):
+        return self.chain(other)
+    
+    def __truediv__(self, other):
+        return self.mapv(other)
+    
+    def __sub__(self, other):
+        """noop"""
+        return self
+
     def ups(self):
         copy = self.copy()
 
