@@ -386,6 +386,23 @@ class TestRunon(unittest.TestCase):
             r.find_(lambda e: e.v == 2, index=1).tag(),
             "beta")
     
+    def test_append_insert(self):
+        # should normalize and ignore None
+
+        r = Runon(1, 2, 3)
+        r.insert(0, 10)
+        self.assertEqual(r[0].v, 10)
+
+        r.insert(0, None)
+        self.assertEqual(r[0].v, 10)
+
+        self.assertEqual(r[-1].v, 3)
+        r.append(None)
+        self.assertEqual(r[-1].v, 3)
+
+        r += None
+        self.assertEqual(r[-1].v, 3)
+    
     def test_tree(self):
         r = Runon(1, 2, Runon(11, Runon(21, 22), 13), 3)
         
@@ -399,7 +416,19 @@ class TestRunon(unittest.TestCase):
 
         r.î([2], lambda e: e.data(
            a="b"*20, c="d"*20, e="f"*20, g="h"*20, i="j"*20, k="l"*20))
-        r.print()
+        
+        self.assertEqual(r.tree(), """
+ <®::/4...>
+ - <®::int(1)>
+ - <®::int(2)>
+ | <®::/3... {a=bbbbbbbbbbbbbbbbbbbb,c=dddddddddddddddddddd,e=ffffffffffffffffffff,g=hhhhhhhhhhhhhhhhhh
+       hh,i=jjjjjjjjjjjjjjjjjjjj,k=llllllllllllllllllll}>
+ | - <®::int(11)>
+ | | <®::/2...>
+ | | - <®::int(21)>
+ | | - <®::int(22)>
+ | - <®::int(13)>
+ - <®::int(3)>""")
 
 if __name__ == "__main__":
     unittest.main()

@@ -89,17 +89,21 @@ class Runon:
 
     # Array Operations
 
-    def append(self, el):
-        # if len(self) == 0 and self.val_present():
-        #     self.ups()
-
+    def _norm_element(self, el):
+        if el is None:
+            return None
+        
         if callable(el):
             el = el(self)
+        if not isinstance(el, Runon):
+            el = type(self)(el)
+        return el
 
-        if isinstance(el, Runon):
-            self._els.append(el)
-        else:
-            self._els.append(Runon(el))
+    def append(self, el):
+        el = self._norm_element(el)
+        if el is None:
+            return self
+        self._els.append(el)
         return self
     
     def extend(self, els):
@@ -113,6 +117,28 @@ class Runon:
                 self.append(els)
         else:
             [self.append(el) for el in els]
+        return self
+    
+    def insert(self, idx, el):
+        el = self._norm_element(el)
+        
+        if el is None:
+            return self
+        
+        parent = self
+        try:
+            p = self
+            for x in idx[:-1]:
+                if len(self) > 0:
+                    parent = p
+                    p = p[x]
+            
+            p._els.insert(idx[-1], el)
+            return self
+        except TypeError:
+            pass
+
+        parent._els.insert(idx, el)
         return self
     
     def __iadd__(self, item):
@@ -206,7 +232,7 @@ class Runon:
     def __setitem__(self, index, pen):
         self._els[index] = pen
     
-    def tree(self, v=True):
+    def tree(self, v=True, limit=100):
         out = []
         def walker(el, pos, data):
             if pos <= 0:
@@ -219,7 +245,7 @@ class Runon:
                     tab = tab[:-1] + "-"
                 
                 sel = str(el)
-                sel = wrap(sel, 120, initial_indent="", subsequent_indent="  "*(dep+2) + " ")
+                sel = wrap(sel, limit, initial_indent="", subsequent_indent="  "*(dep+2) + " ")
                 out.append(tab + " " + "\n".join(sel))
         
         self.walk(walker)
@@ -439,38 +465,26 @@ class Runon:
         val_copy = self.copy_val(self._val)
 
         _copy = type(self)(val_copy)
+        copied = False
+        
         if deep:
-            _copy._data = deepcopy(self._data)
-            _copy._attrs = deepcopy(self._attrs)
-        else:
+            try:
+                _copy._data = deepcopy(self._data)
+                _copy._attrs = deepcopy(self._attrs)
+                copied = True
+            except TypeError:
+                pass
+        
+        if not copied:
             _copy._data = self._data.copy()
             _copy._attrs = self._attrs.copy()
+        
         _copy._tag = self._tag
         
         for el in self._els:
             _copy.append(el.copy())
         
         return _copy
-    
-    def insert(self, idx, el):
-        if callable(el):
-            el = el(self)
-        
-        parent = self
-        try:
-            p = self
-            for x in idx[:-1]:
-                if len(self) > 0:
-                    parent = p
-                    p = p[x]
-            
-            p._els.insert(idx[-1], el)
-            return self
-        except TypeError:
-            pass
-
-        parent._els.insert(idx, el)
-        return self
     
     def index(self, idx, fn=None):
         parent = self
@@ -802,7 +816,9 @@ class Runon:
     
     def null(self):
         """For chaining; return an empty instead of this pen"""
-        return self.single_pen_class()
+        self.reset_val()
+        self._els = []
+        return self
     
     def _null(self):
         """For chaining; quickly disable a .null() call without a line-comment"""

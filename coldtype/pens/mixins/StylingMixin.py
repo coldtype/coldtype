@@ -70,10 +70,17 @@ class StylingMixin():
         return self
     
     def strokeFirst(self, value=None):
+        """
+        For a rendering engine that has to stroke and fill in two separate passes, perform the stroke _before_ the fill (akin to an `.understroke` but without the duplication overhead)
+        """
         if value:
             return self.attr(strokeFirst=value)
         else:
             return self.attr(field="strokeFirst")
+    
+    def sf(self, value=None):
+        "strokeFirst"
+        return self.strokeFirst(value)
     
     def img(self, src=None, rect=Rect(0, 0, 500, 500), pattern=False, opacity=1.0):
         """Get/set an image fill"""
