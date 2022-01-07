@@ -132,7 +132,7 @@ class renderable():
         interactable=False,
         cv2caps=None,
         render_bg=False,
-        style="default",
+        style="_default",
         viewBox=True,
         layer=False,
         cond=None,

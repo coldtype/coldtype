@@ -190,8 +190,8 @@ class Runon:
         
         if self.val_present():
             tv = type(self._val).__name__
-            if len(tv) > 5:
-                tv = tv[:5] + "..."
+            #if len(tv) > 5:
+            #    tv = tv[:5] + "..."
         else:
             tv = ""
         

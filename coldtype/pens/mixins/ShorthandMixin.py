@@ -41,7 +41,7 @@ class ShorthandMixin(SHContext):
     def gss(self, s):
         dps = type(self)()
         sh(s, ctx=self, dps=dps)
-        for p in dps._pens:
+        for p in dps._els:
             self.record(p)
         return self
     
