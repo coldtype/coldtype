@@ -385,6 +385,21 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(
             r.find_(lambda e: e.v == 2, index=1).tag(),
             "beta")
+    
+    def test_tree(self):
+        r = Runon(1, 2, Runon(11, Runon(21, 22), 13), 3)
+        
+        rt1 = r.tree().split("\n")
+        self.assertTrue(" | | - <®::int(22)>" in rt1)
+        self.assertEqual(len(rt1), 11)
+
+        rt2 = r.tree(v=False).split("\n")
+        self.assertFalse(" | | - <®::int(22)>" in rt2)
+        self.assertEqual(len(rt2), 4)
+
+        r.î([2], lambda e: e.data(
+           a="b"*20, c="d"*20, e="f"*20, g="h"*20, i="j"*20, k="l"*20))
+        r.print()
 
 if __name__ == "__main__":
     unittest.main()

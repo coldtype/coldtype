@@ -146,7 +146,7 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(r.ambit().y, 200)
     
         r = StSt("B", Font.MutatorSans(), 100)
-        print(r)
+        print(r.tree())
         
 
 if __name__ == "__main__":

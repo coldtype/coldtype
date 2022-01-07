@@ -1,3 +1,5 @@
+from textwrap import wrap
+
 from typing import Callable, Optional
 from inspect import signature
 from random import Random
@@ -162,8 +164,11 @@ class Runon:
         
         if self.val_present():
             tv = type(self._val).__name__
+            if len(tv) > 5:
+                tv = tv[:5] + "..."
         else:
             tv = ""
+        
         ty = type(self).__name__
         if ty == "Runon":
             ty = ""
@@ -201,17 +206,24 @@ class Runon:
     def __setitem__(self, index, pen):
         self._els[index] = pen
     
-    def tree(self, out=None, depth=0) -> str:
-        """Hierarchical string representation"""
-        if out is None:
-            out = []
-        out.append(" |"*depth + " " + str(self))
-        for el in self._els:
-            if len(el._els) > 0:
-                el.tree(out=out, depth=depth+1)
-            else:
-                out.append(" |"*(depth+1) + " " + str(el))
-        return "\n".join(out)
+    def tree(self, v=True):
+        out = []
+        def walker(el, pos, data):
+            if pos <= 0:
+                if pos == 0 and not v:
+                    return
+                
+                dep = data.get("depth", 0)
+                tab = " |"*dep
+                if pos == 0:
+                    tab = tab[:-1] + "-"
+                
+                sel = str(el)
+                sel = wrap(sel, 120, initial_indent="", subsequent_indent="  "*(dep+2) + " ")
+                out.append(tab + " " + "\n".join(sel))
+        
+        self.walk(walker)
+        return "\n" + "\n".join(out)
     
     def depth(self):
         if len(self) > 0:
@@ -777,6 +789,11 @@ class Runon:
                 print(a(self))
             else:
                 print(a)
+        return self
+    
+    def printh(self):
+        """print hierarchy, no values"""
+        print(self.tree(v=False))
         return self
     
     def noop(self, *args, **kwargs):
