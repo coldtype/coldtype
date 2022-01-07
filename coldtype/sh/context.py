@@ -39,7 +39,7 @@ class SHLookup():
         if len(keys) > 1 and len(values) == 1:
             values = values[0]
         
-        for idx, k in enumerate(key.split("ƒ")):
+        for idx, k in enumerate(keys):
             value = values[idx]
             hide = False
             if k == "_":

@@ -276,7 +276,8 @@ class Runon:
         alpha = self._alpha * alpha
         
         if len(self) > 0:
-            callback(self, -1, dict(depth=depth, alpha=alpha, idx=idx))
+            utag = "_".join([str(i) for i in idx]) if idx else None
+            callback(self, -1, dict(depth=depth, alpha=alpha, idx=idx, utag=utag))
             for pidx, el in enumerate(self._els):
                 idxs = [*idx] if idx else []
                 idxs.append(pidx)
@@ -492,6 +493,7 @@ class Runon:
     def index(self, idx, fn=None):
         parent = self
         lidx = idx
+
         try:
             p = self
             for x in idx:
@@ -500,14 +502,19 @@ class Runon:
                     lidx = x
                     p = p[x]
                 else:
+                    print("HERE", p, x)
                     res = p.index(x, fn)
                     if not fn:
                         return res
-        except TypeError:
+                    else:
+                        return self
+        except TypeError as e:
             p = self[idx]
 
         if fn:
-            parent[lidx] = _call_idx_fn(fn, lidx, p)
+            res = _call_idx_fn(fn, lidx, p)
+            if res is not None:
+                parent[lidx] = res
         else:
             return parent[lidx]
         return self

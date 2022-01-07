@@ -53,6 +53,8 @@ class FXMixin():
                 el._val.value = p
                 el._attrs = deepcopy(self._attrs)
                 self.append(el)
+            
+            self._val = RecordingPen()
         
         return self
     

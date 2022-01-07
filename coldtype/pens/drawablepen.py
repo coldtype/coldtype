@@ -44,6 +44,8 @@ class DrawablePenMixin(object):
                 yield attrs, attr
 
     def FindPens(pens):
+        raise Exception("Should be rewritten")
+        
         if isinstance(pens, DraftingPen):
             pens = pens.collapse()._pens
         
