@@ -644,6 +644,12 @@ class Runon:
         
         return self
     
+    def cast(self, _class, *args):
+        """Quickly cast to a (different) subclass."""
+        res = _class(self, *args)
+        res._attrs = deepcopy(self._attrs)
+        return res
+    
     def lattr(self, tag, fn):
         """temporarily change default tag to something other than 'default'"""
         self._tmp_attr_tag = tag

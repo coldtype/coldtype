@@ -6,6 +6,8 @@ import drawBot as db
 import imagehash
 import contextlib
 
+from coldtype.runon.runon import Runon
+
 renders = Path("test/renders/drawbot")
 renders.mkdir(parents=True, exist_ok=True)
 
@@ -38,7 +40,7 @@ class TestDrawbotPens(unittest.TestCase):
     def test_gs_pen(self):
         with test_image(self, "test_gs_pen.png") as (i, r):
             rr = Rect(0, 0, 100, 100)
-            dp = (DraftingPen()
+            dp = (RunonPen()
                 .define(r=rr, c=75)
                 .gs("$r↗ $r↓|↘|$c $r↖|↙|$c")
                 .align(r)
@@ -47,8 +49,8 @@ class TestDrawbotPens(unittest.TestCase):
                 .s(hsl(0.9))
                 .sw(5)
                 .chain(dbdraw))
-            self.assertEqual(len(dp.value), 4)
-            self.assertEqual(type(dp), DraftingPen)
+            self.assertEqual(len(dp.v.value), 4)
+            self.assertEqual(type(dp), RunonPen)
 
     def test_distribute_on_path(self):
         mistral = Font.Cacheable("~/Type/fonts/fonts/_script/MistralD.otf")
@@ -66,7 +68,7 @@ class TestDrawbotPens(unittest.TestCase):
                 db.strokeWidth(1)
                 db.rect(*s.ambit())
         
-            circle = DraftingPen().oval(r.inset(200)).reverse().rotate(0)
+            circle = RunonPen().oval(r.inset(200)).reverse().rotate(0)
             s2 = (s.copy()
                 .zero()
                 .distribute_on_path(circle)

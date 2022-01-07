@@ -1,10 +1,8 @@
 import contextlib
 import drawBot as db
-from coldtype.geometry import Point, Line, Rect
+from coldtype.pens.runonpen import RunonPen
 from coldtype.pens.drawbotpen import DrawBotPen
-from coldtype.pens.draftingpen import DraftingPen
-from coldtype.pens.draftingpens import DraftingPens
-from coldtype.pens.datpen import DATPen
+from coldtype.geometry import Point, Line, Rect
 from coldtype.text.reader import StyledString, Style, Font
 from coldtype.text.composer import StSt
 from coldtype.color import hsl, bw
@@ -42,11 +40,11 @@ class drawbot_renderable(renderable):
                 db.size(self.rect.w*ps, self.rect.h*ps)
                 db.scale(ps, ps)
                 if not renderer_state.renderer.source_reader.config.window_transparent:
-                    DATPen().rect(self.rect).f(self.bg).cast(DrawBotPen).draw()
+                    RunonPen().rect(self.rect).f(self.bg).cast(DrawBotPen).draw()
             else:
                 db.size(self.rect.w, self.rect.h)
                 if self.render_bg:
-                    DATPen().rect(self.rect).f(self.bg).cast(DrawBotPen).draw()
+                    RunonPen().rect(self.rect).f(self.bg).cast(DrawBotPen).draw()
             if self.rstate:
                 render_pass.fn(*render_pass.args, renderer_state)
             else:
@@ -87,17 +85,17 @@ class drawbot_animation(drawbot_renderable, animation):
 # deprecated alias
 drawbot_script = drawbot_renderable
 
-def dbdraw(p:DraftingPen):
+def dbdraw(p:RunonPen):
     p.cast(DrawBotPen).draw()
     return p
 
-def tobp(p:DraftingPen):
+def tobp(p:RunonPen):
     bp = db.BezierPath()
     p.replay(bp)
     return bp
 
 def dbdraw_with_filters(rect:Rect, filters):
-    def _draw_call(p:DraftingPen):
+    def _draw_call(p:RunonPen):
         p.cast(DrawBotPen).draw_with_filters(rect, filters)
         return p
     return _draw_call
