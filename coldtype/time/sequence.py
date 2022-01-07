@@ -7,7 +7,7 @@ from coldtype.time.easing import ease
 from coldtype.time.timeline import Timeline
 
 from coldtype.text import StyledString, Lockup, Graf, GrafStyle, Style, Rect
-from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.pens.runonpen import RunonPen
 from coldtype.color import *
 
 from coldtype.time.clip import Clip, ClipFlags, ClipType
@@ -21,16 +21,16 @@ class Marker(Timeable):
         super().__init__(start, end, data=marker)
 
 
-class ClipGroupPens(DATPens):
+class ClipGroupPens(RunonPen):
     def __init__(self, clip_group):
         super().__init__()
         self.cg = clip_group
     
     def _iterate_tags(self, tag, pens):
-        if hasattr(pens, "_pens"):
+        if len(pens) > 0:
             for pen in pens:
                 if pen._tag == tag:
-                    yield pen.data.get(tag), pen
+                    yield pen.data(tag), pen
                 else:
                     yield from self._iterate_tags(tag, pen)
     
@@ -50,17 +50,17 @@ class ClipGroupPens(DATPens):
     
     def clean_empties(self):
         for _, pen in self.iterate_slugs():
-            pen._pens = [p for p in pen._pens if len(p._pens) > 0]
+            pen._els = [p for p in pen._els if len(p._els) > 0]
         for line in self:
-            line._pens = [p for p in line._pens if len(p._pens) > 0]
-        self._pens = [p for p in self._pens if len(p._pens) > 0]
+            line._els = [p for p in line._els if len(p._els) > 0]
+        self._els = [p for p in self._els if len(p._els) > 0]
         return self
 
     def remove_futures(self, clean=True):
         def futureRemover(p, pos, _):
-            if pos == 1 and "position" in p.data and "clip" in p.data:
-                if p.data["position"] > 0:
-                    p._pens = []
+            if pos == 1 and "position" in p._data and "clip" in p._data:
+                if p.data("position") > 0:
+                    p._els = []
         
         self.walk(futureRemover)
         if clean:
@@ -69,7 +69,7 @@ class ClipGroupPens(DATPens):
 
         for clip, pen in self.iterate_clips():
             if clip.position > 0:
-                pen._pens = []
+                pen._els = []
         
         if clean:
             self.clean_empties()
@@ -88,13 +88,13 @@ class ClipGroupPens(DATPens):
                             any_now = True
             
             if not any_now:
-                line._pens = []
+                line._els = []
             #for x in line.iterate_clips():
             #    print(">>>", x)
 
         #for clip, pen in self.iterate_clips():
         #    if clip.position > 0:
-        #        pen._pens = []
+        #        pen._els = []
         
         if clean:
             self.clean_empties()
@@ -397,11 +397,11 @@ class ClipGroup(Timeable):
         graf = Graf(lockups, rect, graf_style)
         pens = graf.pens()#.align(rect, x="minx")
         
-        re_grouped = DATPens()
+        re_grouped = RunonPen()
         for idx, line in enumerate(lines):
             #print(pens, idx, line[0].text)
             line_dps = pens[idx]
-            re_grouped_line = DATPens()
+            re_grouped_line = RunonPen()
             re_grouped_line.tag("line")
             position = 1
             line_text = ""
@@ -422,37 +422,37 @@ class ClipGroup(Timeable):
                     # elif clip.position == -1:
                     #     position = -1
                     line_text += clip.ftext()
-                    clip_dps = DATPens(group_dps[tidx:tidx+len(text)])
+                    clip_dps = RunonPen(group_dps[tidx:tidx+len(text)])
                     clip_dps.tag("clip")
-                    #clip_dps.data["clip"] = self.clips[cidx]
-                    clip_dps.data["clip"] = clip
-                    clip_dps.data["line_index"] = idx
-                    clip_dps.data["line"] = re_grouped_line
-                    clip_dps.data["group"] = re_grouped
-                    clip_dps.data["position"] = position
+                    clip_dps.data(
+                        clip=clip,
+                        line_index=idx,
+                        line=re_grouped_line,
+                        group=re_grouped,
+                        positions=position)
                     if clip.type == ClipType.JoinPrev and last_clip_dps:
                         grouped_clip_dps = last_clip_dps #DATPens()
                         #grouped_clip_dps.append(last_clip_dps)
-                        #grouped_clip_dps._pens = last_clip_dps._pens
+                        #grouped_clip_dps._els = last_clip_dps._els
                         grouped_clip_dps.append(clip_dps)
                         #re_grouped_line[-1] = grouped_clip_dps
                         #last_clip_dps = grouped_clip_dps
                     else:
-                        last_clip_dps = DATPens()
+                        last_clip_dps = RunonPen()
                         last_clip_dps.tag("slug")
                         last_clip_dps.append(clip_dps)
                         re_grouped_line.append(last_clip_dps)
                     tidx += len(text)
-            re_grouped_line.data["line_index"] = idx
-            re_grouped_line.data["position"] = position
-            re_grouped_line.data["line_text"] = line_text
-            #re_grouped_line.addFrame(line_dps.getFrame())
+            re_grouped_line.data(
+                line_index=idx,
+                position=position,
+                line_text=line_text)
             re_grouped.append(re_grouped_line)
         
         pens = re_grouped
-        for pens in pens._pens:
+        for pens in pens._els:
             if removeOverlap:
-                for pen in pens._pens:
+                for pen in pens._els:
                     pen.removeOverlap()
             group_pens.append(pens)
         
@@ -461,7 +461,7 @@ class ClipGroup(Timeable):
                 #pen.f(0)
                 pass
             if clip.blank:
-                pen._pens = []
+                pen._els = []
         
         for line in group_pens:
             line.reversePens() # line top-to-bottom
@@ -474,18 +474,18 @@ class ClipGroup(Timeable):
         return group_pens
     
     def iterate_clip_pens(self, pens):
-        if hasattr(pens, "_pens"):
+        if len(pens) > 0:
             for pen in pens:
                 if hasattr(pen, "data"):
-                    if pen.data.get("clip"):
-                        yield pen.data.get("clip"), pen
+                    if pen.data("clip"):
+                        yield pen.data("clip"), pen
                     else:
                         yield from self.iterate_clip_pens(pen)
 
     def remove_futures(self, pens):
         for clip, pen in self.iterate_clip_pens(pens):
             if clip.position > 0:
-                pen._pens = []
+                pen._els = []
     
     removeFutures = remove_futures
     
@@ -494,9 +494,9 @@ class ClipGroup(Timeable):
             _pens = pens[idx]
             for cidx, clip in enumerate(line):
                 if copy:
-                    p = _pens._pens[cidx].copy()
+                    p = _pens._els[cidx].copy()
                 else:
-                    p = _pens._pens[cidx]
+                    p = _pens._els[cidx]
                 yield idx, clip, p
     
     def __repr__(self):

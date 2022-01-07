@@ -172,18 +172,26 @@ class TestRunon(unittest.TestCase):
     
     def test_layers(self):
         r = Runon(5)
+        r.layer(3)
+        self.assertEqual(len(r), 3)
+        
+        r.layer(2)
+        self.assertEqual(len(r), 2)
+        self.assertEqual(len(r[0]), 3)
+
+        r = Runon(5)
 
         self.assertEqual(r.v, 5)
         self.assertEqual(len(r), 0)
         self.assertEqual(bool(r), True)
         
-        r.layer(2)
+        r.layerv(2)
         self.assertEqual(r.v, None)
         self.assertEqual(len(r), 2)
         self.assertEqual(len(r[0]), 0)
         self.assertEqual(bool(r), True)
 
-        r.layer(3)
+        r.layerv(3)
         self.assertEqual(r.v, None)
         self.assertEqual(len(r), 2)
         self.assertEqual(len(r[0]), 3)
@@ -192,17 +200,17 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(r.v, 1)
         self.assertEqual(r.depth(), 1)
         
-        r.layer(lambda p: p.v + 2)
+        r.layerv(lambda p: p.v + 2)
         self.assertEqual(r.v, None)
         self.assertEqual(r[0].v, 3)
         self.assertEqual(r.depth(), 2)
         
-        r.layer(lambda p: p.v + 2)
+        r.layerv(lambda p: p.v + 2)
         self.assertEqual(r[0].v, None)
         self.assertEqual(r[0][0].v, 5)
         self.assertEqual(r.depth(), 3)
 
-        r.layer(lambda p: p.v + 2, lambda p: p.v + 3)
+        r.layerv(lambda p: p.v + 2, lambda p: p.v + 3)
         self.assertEqual(r[0][0].v, None)
         self.assertEqual(r[0][0][0].v, 7)
         self.assertEqual(r[0][0][-1].v, 8)
@@ -215,7 +223,7 @@ class TestRunon(unittest.TestCase):
 
         r = Runon(1, 2, 3)
         r[0].data(hello="world")
-        r.layer(1, lambda e: e.update(e.v+1))
+        r.layerv(1, lambda e: e.update(e.v+1))
         self.assertEqual(r[0].data("hello"), None)
 
         r = Runon(1)
@@ -260,7 +268,7 @@ class TestRunon(unittest.TestCase):
         r.chain(c(5))
         self.assertEqual(r.v, 5)
 
-        r.layer(2)
+        r.layerv(2)
         r.index(1, lambda e: e.update(e.v*2))
         self.assertEqual(r[0].v, 5)
         self.assertEqual(r[-1].v, 10)
@@ -309,7 +317,7 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(len(r), 3)
         self.assertEqual(len(r[0]), 0)
 
-        r.layer(1, lambda e: e.update(e.v+1))
+        r.layerv(1, lambda e: e.update(e.v+1))
         self.assertEqual(len(r), 3)
         self.assertEqual(len(r[0]), 2)
         self.assertEqual(r[0][0].v, 1)

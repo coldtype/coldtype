@@ -186,4 +186,4 @@ class FXMixin():
                     p.reverse().record(pf)
                 return p
 
-        return self.layer(mod_fn, 1)
+        return self.layerv(mod_fn, 1)

@@ -727,11 +727,23 @@ class Runon:
         return self
 
     def layer(self, *layers):
-        """
-        For every lambda function you pass in, a copy of the original is made and passed to your function, building up a multi-layered version and removing the original version; alternatively,
-        pass in an integer n to simply duplicate the
-        current value of the pen n-times
-        """
+        if len(layers) == 1 and isinstance(layers[0], int):
+            layers = [1]*layers[0]
+        
+        els = []
+        for layer in layers:
+            if callable(layer):
+                els.append(layer(self.copy()))
+            elif isinstance(layer, Chainable):
+                els.append(layer.func(self.copy()))
+            else:
+                els.append(self.copy())
+        
+        self.reset_val()
+        self._els = els
+        return self
+
+    def layerv(self, *layers):
         if self.val_present():
             if len(layers) == 1 and isinstance(layers[0], int):
                 layers = [1]*layers[0]
@@ -742,9 +754,6 @@ class Runon:
                     els.append(layer(self.copy()))
                 elif isinstance(layer, Chainable):
                     els.append(layer.func(self.copy()))
-                #elif isinstance(layer, str):
-                #    dp = self.copy()
-                #    els.append(dp.sh("ctx" + layer)[0])
                 else:
                     els.append(self.copy())
             
@@ -752,7 +761,7 @@ class Runon:
             self.extend(els)
         else:
             for el in self._els:
-                el.layer(*layers)
+                el.layerv(*layers)
         
         return self
     
