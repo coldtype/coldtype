@@ -331,3 +331,10 @@ class DrawingMixin():
         
         self.curveTo(b, c, d)
         return self
+    
+    def withRect(self, rect, fn):
+        return fn(Rect(rect), self)
+    
+    # def with1000(fn):
+    #     return withRect(Rect(1000, 1000), )
+    #     return DATPen.WithRect(Rect(1000, 1000), fn)

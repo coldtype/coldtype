@@ -119,11 +119,15 @@ class Rect(Geometrical):
             x, y = 0, 0
             w, h = COMMON_PAPER_SIZES[rect[0].lower()]
         elif isinstance(rect[0], int) or isinstance(rect[0], float):
-            try:
-                x, y, w, h = rect
-            except:
-                w, h = rect
+            if len(rect) == 1:
                 x, y = 0, 0
+                w, h = rect[0], rect[0]
+            else:
+                try:
+                    x, y, w, h = rect
+                except:
+                    w, h = rect
+                    x, y = 0, 0
         else:
             try:
                 x, y, w, h = rect[0]
@@ -205,6 +209,8 @@ class Rect(Geometrical):
     def rect(self):
         """x,y,w,h in list"""
         return [self.x, self.y, self.w, self.h]
+    
+    xywh = rect
     
     def round(self):
         """round the values in the rectangle to the nearest integer"""

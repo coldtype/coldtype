@@ -4,7 +4,7 @@ from coldtype.pens.runonpen import * #INLINE
 from fontTools.pens.recordingPen import RecordingPen
 
 from coldtype.geometry import Point, Rect
-from coldtype.text import StSt, Font
+from coldtype.text import StSt, Font, Glyphwise, Style
 
 
 class TestRunon(unittest.TestCase):
@@ -146,8 +146,30 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(r.ambit().y, 200)
     
         r = StSt("B", Font.MutatorSans(), 100)
-        print(r.tree())
         
+    def test_glyphwise(self):
+        r = Glyphwise("ABC", lambda _: Style(Font.MuSan(), 100))
+        self.assertIsInstance(r, RunonPen)
+
+        r = Glyphwise("ABC\nDEF", lambda _: Style(Font.MuSan(), 100))
+        self.assertIsInstance(r, RunonPen)
+
+        r = Glyphwise("ABC\nDEF", lambda g: [Style(Font.MuSan(), 100), dict(wdth=g.e)])
+        self.assertIsInstance(r, RunonPen)
+    
+    def test_mods(self):
+        r = StSt("ABC", Font.MuSan(), 500, ro=1)
+        self.assertEqual(
+            r.index([1, 2]).v.value,
+            r.index(1).index(2).v.value)
+        
+        before_rotate = r.index([1, 2]).bounds()
+        before_frame = r.index([1]).ambit(th=0, tv=0)
+
+        r.ffg("B", lambda p: p.î(2, lambda c: c.rotate(-5)))
+
+        self.assertNotEqual(before_rotate, r.î([1, 2]).bounds())
+        self.assertEqual(before_frame, r.î(1).ambit())
 
 if __name__ == "__main__":
     unittest.main()

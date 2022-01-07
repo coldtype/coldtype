@@ -1,4 +1,3 @@
-from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.pens.runonpen import RunonPen
 from coldtype.geometry import Rect, Point
 
@@ -295,7 +294,7 @@ def Glyphwise(st, styler, start=0, line=0):
             for lidx, l in enumerate(lines):
                 gs.append(Glyphwise(l, styler, start=start, line=lidx))
                 start += len(l)
-            return _PensClass(gs).stack()
+            return RunonPen(gs).stack()
     except AttributeError:
         pass
 

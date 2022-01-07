@@ -83,11 +83,14 @@ class FXMixin():
             self._val.value[cidx] = (move, pts)
         return self
     
-    def mod_contour(self, contour_index, mod_fn):
-        exploded = self.explode()
-        mod_fn(exploded[contour_index])
-        self._val.value = exploded.implode()._val.value
-        return self
+    def mod_contour(self, contour_index, mod_fn=None):
+        exploded = self.copy().explode()
+        if mod_fn:
+            mod_fn(exploded[contour_index])
+            self._val.value = exploded.implode()._val.value
+            return self
+        else:
+            return exploded[contour_index]
     
     def repeat(self, times=1):
         for el in self._els:

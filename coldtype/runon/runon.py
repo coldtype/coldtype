@@ -36,21 +36,18 @@ class RunonNoData:
 class Runon:
     def __init__(self, *val):
         els = []
+        to_append = []
 
         if len(val) == 1 and not isinstance(val[0], Runon):
             if isinstance(val[0], Iterable):
-                els = val[0]
+                to_append = val[0]
                 value = None
             else:
                 value = val[0]
         else:
             value = None
             els = []
-            for v in val:
-                if isinstance(v, Runon):
-                    els.append(v)
-                else:
-                    els.append(type(self)(v))
+            to_append = val
 
         self._val = None
         self.reset_val()
@@ -69,6 +66,9 @@ class Runon:
         self._tag = None
 
         self._tmp_attr_tag = None
+
+        for el in to_append:
+            self.append(el)
     
     def post_init(self):
         """subclass hook"""
@@ -320,6 +320,9 @@ class Runon:
         return self
     
     def mapv(self, fn):
+        if len(self) == 0:
+            return self
+
         idx = 0
         def walker(el, pos, _):
             nonlocal idx
@@ -492,12 +495,14 @@ class Runon:
         try:
             p = self
             for x in idx:
-                if len(self) > 0:
+                if len(p) > 0:
                     parent = p
                     lidx = x
                     p = p[x]
                 else:
-                    return p.index(x, fn)
+                    res = p.index(x, fn)
+                    if not fn:
+                        return res
         except TypeError:
             p = self[idx]
 

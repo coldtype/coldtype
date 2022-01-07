@@ -1,4 +1,4 @@
-from coldtype.pens.datpen import P, PS
+from coldtype.pens.runonpen import RunonPen as P
 from coldtype.geometry import Point
 from coldtype.color import hsl
 
@@ -6,14 +6,14 @@ from coldtype.color import hsl
 def skeletonLookup(self) -> dict:
     m, l, c, cf, q, qf, cbs, qbs = [[] for x in range(8)]
         
-    for idx, (mv, pts) in enumerate(self.value):
+    for idx, (mv, pts) in enumerate(self._val.value):
         pts = [Point(x) for x in pts]
         if mv == "moveTo":
             m.append(pts[0])
         elif mv == "lineTo":
             l.append(pts[0])
         elif mv in ["curveTo", "qCurveTo"]:
-            lp = Point(self.value[idx-1][-1][-1])
+            lp = Point(self._val.value[idx-1][-1][-1])
             pts.insert(0, lp)
             onc = pts[-1]
             if mv == "curveTo":
@@ -40,37 +40,46 @@ def skeletonLookup(self) -> dict:
         "qCurveBars": qbs
     }
 
+scaleables = [
+    "moveTo",
+    "lineTo",
+    "curveOn",
+    "curveOff",
+    "qCurveOn",
+    "qCurveOff",
+]
 
 def skeleton(scale=1):
     def _skeleton(p:P):
         pts = list(skeletonLookup(p).values())
-        return (PS([
-            (PS.E(pts[0],
+        return (P(
+            (P().enumerate(pts[0],
                 lambda x: P().r(x.el.r(30)))
                 .tag("moveTo")),
-            (PS.E(pts[1],
+            (P().enumerate(pts[1],
                 lambda x: P().r(x.el.r(20)))
                 .tag("lineTo")),
-            (PS.E(pts[2],
+            (P().enumerate(pts[2],
                 lambda x: P().o(x.el.r(20)))
                 .tag("curveOn")),
-            (PS.E(pts[3],
+            (P().enumerate(pts[3],
                 lambda x: P().o(x.el.r(10)))
                 .tag("curveOff")),
-            (PS.E(pts[4],
+            (P().enumerate(pts[4],
                 lambda x: P().o(x.el.r(20)))
                 .tag("qCurveOn")),
-            (PS.E(pts[5],
+            (P().enumerate(pts[5],
                 lambda x: P().o(x.el.r(10)))
                 .tag("qCurveOff")),
-            (PS.E(pts[6],
+            (P().enumerate(pts[6],
                 lambda x: P().l(x.el))
                 .tag("curveBars")),
-            (PS.E(pts[7],
+            (P().enumerate(pts[7],
                 lambda x: P().l(x.el))
-                .tag("qCurveBars")),
-            ])
-            .ï([0, 1, 2, 3, 4, 5], lambda p:
-                p.pmap(lambda x: x.scale(scale)))
+                .tag("qCurveBars")))
+            .find(
+                lambda e: e.tag() in scaleables,
+                lambda e: e.mapv(
+                    lambda x: x.scale(scale)))
             .fssw(-1, 0, 2))
     return _skeleton

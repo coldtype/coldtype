@@ -415,3 +415,8 @@ class LayoutMixin():
         return self
     
     trackToRect = track_to_rect
+
+    def connect(self, *others):
+        return (type(self)([self, *others])
+            .distribute()
+            .pen())

@@ -402,6 +402,14 @@ class TestRunon(unittest.TestCase):
 
         r += None
         self.assertEqual(r[-1].v, 3)
+
+        r = Runon(1, 2, 3, None)
+        self.assertEqual(len(r), 3)
+        self.assertEqual(r[-1].v, 3)
+
+        r = Runon(1, 2, 3, Runon(None))
+        self.assertEqual(len(r), 4)
+        self.assertEqual(r[-1].v, None)
     
     def test_tree(self):
         r = Runon(1, 2, Runon(11, Runon(21, 22), 13), 3)

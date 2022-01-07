@@ -32,5 +32,5 @@ def render(f):
         .xalign(f.a.r)
         .stack(30)
         .align(f.a.r.inset(0, 150))
-        .map(λ.rp().understroke(sw=10))
+        .map(λ.rp().ssw(0, 10).sf(1))
         .rotate(5))

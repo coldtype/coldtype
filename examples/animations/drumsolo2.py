@@ -11,7 +11,7 @@ midi = MidiTimeline(__sibling__("media/c78.mid")
         3: 47, # tom-hi
     })
 
-@animation(timeline=midi, bg=0, render_bg=1, audio=audio)
+@animation((1080, 540), timeline=midi, bg=0, render_bg=1, audio=audio)
 def drumloop(f):
     kicks = f.a.t.ki(0, f.i).index()
 

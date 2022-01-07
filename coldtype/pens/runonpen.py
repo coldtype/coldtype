@@ -137,13 +137,13 @@ class RunonPen(Runon,
 
         return super().reverse(recursive=recursive)
     
-    def index(self, idx, fn):
+    def index(self, idx, fn=None):
         if not self.val_present():
             return super().index(idx, fn)
         
         return self.mod_contour(idx, fn)
     
-    def indices(self, idxs, fn):
+    def indices(self, idxs, fn=None):
         if not self.val_present():
             return super().indices(idxs, fn)
 
@@ -158,6 +158,8 @@ class RunonPen(Runon,
     def reversePens(self):
         """for backwards compatibility"""
         return self.reverse(recursive=False)
+    
+    rp = reversePens
 
     @property
     def glyphName(self):

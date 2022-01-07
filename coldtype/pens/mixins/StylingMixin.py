@@ -63,10 +63,11 @@ class StylingMixin():
         self.sw(sw)
         return self
     
-    def fssw(self, f, s, sw):
+    def fssw(self, f, s, sw, sf=0):
         self.f(f)
         self.s(s)
         self.sw(sw)
+        self.sf(sf)
         return self
     
     def strokeFirst(self, value=None):

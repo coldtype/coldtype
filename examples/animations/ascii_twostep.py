@@ -18,6 +18,13 @@ def test_ascii(f):
         .align(f.a.r)
         .scale(at.ki("s").io(20)*2)
         .f(0)
-        .layer(1, lambda p: P()
-            .rect(p.ambit(tv=1).inset(-50))
-            .fssw(-1, 0, 2)))
+        .layer(
+            lambda p: p.layerv(1,
+                lambda g: P()
+                    .rect(g.ambit(th=1).inset(-20))
+                    .fssw(-1, 0, 2)
+                    .null()),
+            lambda p: P()
+                .rect(p.ambit(th=1, tv=1).inset(-50))
+                .fssw(-1, 0, 2)
+                ._null()))

@@ -26,8 +26,8 @@ class sonification(animation):
         obj.setframerate(sampleRate)
 
         for pp in sorted(self.output_folder.glob("*.pickle")):
-            pen:DATPen = (pickle
-                .load(open(pp, "rb"))[0]
+            pen:RunonPen = (pickle
+                .load(open(pp, "rb"))
                 .scale(-1, 1)
                 .rotate(-45)
                 .translate(-500, -500)
@@ -35,7 +35,7 @@ class sonification(animation):
                 .flatten(1))
     
             left, right = [], []
-            for (_, pts) in pen.value:
+            for (_, pts) in pen._val.value:
                 if len(pts) > 0:
                     left.append(pts[0][0])
                     right.append(pts[0][1])
@@ -64,7 +64,7 @@ def animate_letter(f, l):
     return c
 
 tl = Timeline(60)
-l = "E"
+l = "Y"
 
 @sonification(tl, f"_{l}.wav")
 def letter(f): return animate_letter(f, l)
