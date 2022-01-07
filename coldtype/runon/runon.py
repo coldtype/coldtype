@@ -664,6 +664,14 @@ class Runon:
     def alpha(self, v=None):
         return self._get_set_prop("_alpha", v, float)
     
+    def hide(self, *indices):
+        for idx in indices:
+            self.index(idx, lambda p: p.visible(False))
+        
+        if self.val_present():
+            self.visible(False)
+        return self
+    
     # Logic Operations
 
     def cond(self, condition,
