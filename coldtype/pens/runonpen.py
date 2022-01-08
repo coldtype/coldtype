@@ -176,6 +176,27 @@ class RunonPen(Runon,
             out.append(_wp(pen))
         return out
     
+    def interpolate(self, value, other):
+        if len(self.v.value) != len(other.v.value):
+            raise Exception("Cannot interpolate / diff lens")
+        vl = []
+        for idx, (mv, pts) in enumerate(self.v.value):
+            ipts = []
+            for jdx, p in enumerate(pts):
+                pta = Point(p)
+                try:
+                    ptb = Point(other.v.value[idx][-1][jdx])
+                except IndexError:
+                    print(">>>>>>>>>>>>> Can’t interpolate", idx, mv, "///", other.v.value[idx])
+                    raise IndexError
+                ipt = pta.interp(value, ptb)
+                ipts.append(ipt)
+            vl.append((mv, ipts))
+        
+        np = type(self)()
+        np.v.value = vl
+        return np
+    
     # backwards compatibility
 
     def reversePens(self):
@@ -183,6 +204,18 @@ class RunonPen(Runon,
         return self.reverse(recursive=False)
     
     rp = reversePens
+
+    def vl(self, value):
+        self.v.value = value
+        return self
+
+    def replaceGlyph(self, glyphName, replacement, limit=None):
+        return self.replace(lambda p: p.glyphName == glyphName,
+            lambda p: (replacement(p) if callable(replacement) else replacement)
+                .translate(*p.ambit().xy()))
+    
+    def findGlyph(self, glyphName, fn=None):
+        return self.find(lambda p: p.glyphName == glyphName, fn)
 
     @property
     def glyphName(self):

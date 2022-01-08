@@ -583,6 +583,22 @@ class Runon:
             return res[0]
         else:
             return self
+        
+    def replace(self, tag, replacement, limit=None):
+        if isinstance(tag, str):
+            def walker(p, pos, data):
+                if pos in [0, 1]:
+                    if p.tag() == tag:
+                        self.index(data["idx"], replacement)
+            return self.walk(walker)
+        elif callable(tag):
+            def walker(p, pos, data):
+                if pos in [0, 1]:
+                    if tag(p):
+                        self.index(data["idx"], replacement)
+            return self.walk(walker)
+        else:
+            raise Exception("not yet supported")
     
     # Data-access methods
 

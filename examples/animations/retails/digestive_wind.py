@@ -14,7 +14,7 @@ def style_a(f, hit):
         .align(f.a.r))
     
     def alter(idx, p):
-        fr = p.getFrame()
+        fr = p.ambit()
         rng = 10+45*hit
         factor = 0.05
         x_seed = (f.i+idx)*factor

@@ -25,7 +25,7 @@ def cube(f):
                 .locate(0, 10.8*(z/d), 0)))))
 
     gs = f.a.r.grid(d, d)
-    out = DPS()
+    out = PS()
     gi = 0
     gs = gs * d
     for z in range(0, d):

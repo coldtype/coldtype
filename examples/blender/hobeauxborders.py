@@ -26,18 +26,16 @@ def hobeauxBorder(r, style=0, fs=200):
             .append(m.copy())
             .mirrorx()
             .translate(*bx.pn)
-            .mirrory(bx.pc)
-            ),
+            .mirrory(bx.pc)),
         (b.copy()
             .layer(nv)
             .distribute()
             .append(m.copy())
-            .rotate(90, "SW")
+            .rotate(90, point=(0, 0))
             .translate(cw, 0)
             .mirrory()
             .translate(*bx.pw)
-            #.mirrorx(bx.pc)
-            ))
+            .mirrorx(bx.pc)))
 
 
 @b3d_animation(timeline=len(styles))
@@ -45,6 +43,7 @@ def b1(f):
     return (hobeauxBorder(f.a.r.inset(150), f.i, 500)
         .pen()
         .f(hsl(0.7))
+        .scale(0.8)
         .tag("border")
         | b3d(lambda bp: bp
             .extrude(0.25)
