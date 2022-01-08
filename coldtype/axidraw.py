@@ -14,7 +14,7 @@ except:
 
 def aximeta(fn):
     def _aximeta(pen:DATPen):
-        pen.add_data("aximeta", dict(fn=fn))
+        pen.data(aximeta=dict(fn=fn))
     return _aximeta
 
 def dip_pen(seconds=1, location=(0, 0)):

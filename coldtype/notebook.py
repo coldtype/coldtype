@@ -43,7 +43,7 @@ def show(fmt="png", rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=
     
     def _display(pen:DATPen):
         #pen = pen.copy(with_data=1)
-        pen.add_data("_notebook_shown", True)
+        pen.data(_notebook_shown=True)
         nonlocal rect, fmt
 
         if fmt is None:
@@ -56,7 +56,7 @@ def show(fmt="png", rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=
         if align and rect is not None:
             pen.align(rect)
         if rect is None:
-            lar = pen.data.get("_last_align_rect")
+            lar = pen.data("_last_align_rect")
             if lar:
                 rect = lar
                 pen = DATPens([DATPen(rect).fssw(-1, 0.75, 2), pen])

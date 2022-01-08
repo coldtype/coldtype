@@ -31,7 +31,7 @@ class RendererDrawBotPen(DrawBotPen):
             if state == 0:
                 RendererDrawBotPen(pen, rect).draw(scale=scale)
             elif state == -1:
-                imgf = pen.data.get("imgf")
+                imgf = pen.data("imgf")
                 if imgf:
                     im = db.ImageObject()
                     im.lockFocus()
@@ -40,8 +40,8 @@ class RendererDrawBotPen(DrawBotPen):
                     db.scale(scale)
                     pen.data["im"] = im
             elif state == 1:
-                imgf = pen.data.get("imgf")
-                im = pen.data.get("im")
+                imgf = pen.data("imgf")
+                im = pen.data("im")
                 if imgf and im:
                     im.unlockFocus()
                     imgf(im)

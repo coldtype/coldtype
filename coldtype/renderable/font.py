@@ -4,6 +4,7 @@ from subprocess import run
 from defcon import Font as DFont
 from coldtype.geometry.rect import Rect
 from coldtype.helpers import glyph_to_uni
+from coldtype.pens.runonpen import RunonPen
 from coldtype.time.timeline import Timeline
 from coldtype.renderable import renderable, animation
 from coldtype.text.composer import Style, Font, StSt
@@ -139,8 +140,8 @@ class generativefont(animation):
         glyph.unicode = glyph_to_uni(glyph_fn.glyph_name)
         self.ufo.insertGlyph(glyph)
         self.ufo.save()
-        return DATPens([
-            glyph_pen.add_data("gfn", glyph_fn)
+        return RunonPen([
+            glyph_pen.data(gfn=glyph_fn)
         ])
     
     def spacecenter(self, r, text, fontSize=150):

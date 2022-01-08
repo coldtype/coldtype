@@ -5,7 +5,7 @@ from pathlib import Path
 from coldtype.geometry import curve
 
 from coldtype.geometry.rect import Rect
-from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.pens.runonpen import RunonPen
 from coldtype.pens.blenderpen import BlenderPen, BPH
 from coldtype.color import hsl
 
@@ -101,11 +101,11 @@ def b3d(collection,
         pen_mod = callback[0]
         callback = callback[1]
 
-    def annotate(pen:DATPen):
+    def annotate(pen:RunonPen):
         if bpy and pen_mod:
             pen_mod(pen)
         
-        prev = pen.data.get("b3d", {})
+        prev = pen.data("b3d", {})
         if prev:
             callbacks = [*prev.get("callbacks"), callback]
         else:
@@ -116,7 +116,7 @@ def b3d(collection,
         #    c = pen.ambit().pc
         #    pen.translate(-c.x, -c.y)
 
-        pen.add_data("b3d", dict(
+        pen.data(b3d=dict(
             collection=(collection
                 or prev.get("collection", "Coldtype")),
             callbacks=callbacks,
@@ -137,8 +137,8 @@ def b3d_post(callback):
     if not bpy: # short-circuit for non-bpy
         return lambda x: x
 
-    def _b3d_post(pen:DATPen):
-        prev = pen.data.get("b3d_post")
+    def _b3d_post(pen:RunonPen):
+        prev = pen.data("b3d_post")
         if prev:
             callbacks = [*prev, callback]
         else:
@@ -149,13 +149,13 @@ def b3d_post(callback):
 
 
 def b3d_pre(callback):
-    def _cast(pen:DATPen):
+    def _cast(pen:RunonPen):
         if bpy:
             callback(pen)
     return _cast
 
 
-def walk_to_b3d(result:DATPens,
+def walk_to_b3d(result:RunonPen,
     dn=False,
     renderable=None,
     ):
@@ -164,7 +164,7 @@ def walk_to_b3d(result:DATPens,
     center = renderable.center
     center_rect = renderable.rect
 
-    def walker(p:DATPen, pos, data):
+    def walker(p:RunonPen, pos, data):
         bp = None
 
         if pos == 0:
@@ -196,8 +196,8 @@ def walk_to_b3d(result:DATPens,
                 coll = BPH.Collection(bdata["collection"])
                 material = bdata.get("material", "ColdtypeDefault")
 
-                if len(p.value) == 0:
-                    p.v(0)
+                if len(p.v.value) == 0:
+                    p.hide()
                 
                 denovo = bdata.get("dn", dn)
                 cyclic = bdata.get("cyclic", True)
@@ -353,7 +353,7 @@ class b3d_animation(animation):
                     dn=True,
                     tag_prefix=f"ct_baked_frame_{fi}_{self.name}")))
         
-        to_bake = DATPens([])
+        to_bake = RunonPen()
         for ps in self.passes(Action.RenderAll, None)[:]:
             to_bake += self.run_normal(ps, None)
         
