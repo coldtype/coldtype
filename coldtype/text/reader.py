@@ -1105,7 +1105,7 @@ class SegmentedString(FittableMixin):
         return adjusted
 
     def pens(self, flat=True):
-        pens = _PensClass()
+        pens = RunonPen()
         x_off = 0
         for s in self.strings:
             dps = s.pens()
@@ -1113,10 +1113,10 @@ class SegmentedString(FittableMixin):
             #    pens.layered = True
             dps.translate(x_off, 0)
             if flat:
-                pens.extend(dps._pens)
+                pens.extend(dps._els)
             else:
                 if s.style.lang:
                     dps.data(lang=s.style.lang)
                 pens.append(dps)
             x_off += dps.ambit().w
-        return RunonPen(pens)
+        return pens
