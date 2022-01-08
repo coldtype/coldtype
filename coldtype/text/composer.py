@@ -2,7 +2,7 @@ from coldtype.pens.runonpen import RunonPen
 from coldtype.geometry import Rect, Point
 
 from coldtype.text.shaper import segment
-from coldtype.text.reader import Style, StyledString, FittableMixin, Font, normalize_font_path, SegmentedString,  _PenClass, _PensClass
+from coldtype.text.reader import Style, StyledString, FittableMixin, Font, SegmentedString
 
 import inspect
 from collections import namedtuple
@@ -18,7 +18,7 @@ class GrafStyle():
 class Graf():
     def __init__(self, lines, container, style=None, no_frames=False, **kwargs):
         if isinstance(container, Rect):
-            self.container = _PenClass().rect(container)
+            self.container = RunonPen().rect(container)
         else:
             self.container = container
         if style and isinstance(style, GrafStyle):
