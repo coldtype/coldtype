@@ -9,7 +9,7 @@ def var3d2(f):
         bpy.data.cameras["Camera"].dof.aperture_fstop = f.e("eeio", 2, rng=(7, 2.5))
         bpy.data.objects["Empty"].location[2] = f.e("seio", 1, rng=(7, 5))
     
-    return (PS.Enumerate(range(0, 3 if bpy else 2), lambda x:
+    return (ß().enumerate(range(0, 3 if bpy else 3), lambda x:
         (StSt("DEPTH\nOF\nFIELD", peshka,
             f.adj(-x.i).e("eeio", 1, rng=(350, 150)),
             wdth=f.adj(-x.i).e("eeio", 2),

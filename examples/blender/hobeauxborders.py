@@ -18,22 +18,26 @@ def hobeauxBorder(r, style=0, fs=200):
     nh, nv = int(r.w/bw/2), int(r.h/bw/2)
     bx = Rect(bw*nh*2+cw*2, bw*nv*2).align(r)
 
-    return PS([
-        (b.layer(nh)
-            .append(c)
+    return ß(
+        (b.copy()
+            .layer(nh)
+            .append(c.copy())
             .distribute()
-            .append(m)
+            .append(m.copy())
             .mirrorx()
             .translate(*bx.pn)
-            .mirrory(bx.pc)),
-        (b.layer(nv)
+            .mirrory(bx.pc)
+            ),
+        (b.copy()
+            .layer(nv)
             .distribute()
-            .append(m)
+            .append(m.copy())
             .rotate(90, "SW")
             .translate(cw, 0)
             .mirrory()
             .translate(*bx.pw)
-            .mirrorx(bx.pc))])
+            #.mirrorx(bx.pc)
+            ))
 
 
 @b3d_animation(timeline=len(styles))
