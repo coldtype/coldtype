@@ -431,7 +431,7 @@ class ClipGroup(Timeable):
                         group=re_grouped,
                         position=position)
                     if clip.type == ClipType.JoinPrev and last_clip_dps:
-                        grouped_clip_dps = last_clip_dps #DATPens()
+                        grouped_clip_dps = last_clip_dps
                         #grouped_clip_dps.append(last_clip_dps)
                         #grouped_clip_dps._els = last_clip_dps._els
                         grouped_clip_dps.append(clip_dps)

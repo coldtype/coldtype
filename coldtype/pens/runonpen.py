@@ -100,7 +100,7 @@ class RunonPen(Runon,
         return out
 
     def style(self, style="_default"):
-        """for compatibility with defaults and grouped-stroke-properties from DATPen"""
+        """for backwards compatibility with defaults and grouped-stroke-properties"""
         st = {**super().style(style)}
         return self.groupedStyle(st)
     
@@ -223,10 +223,6 @@ class RunonPen(Runon,
     
     def ffg(self, glyphName, fn=None, index=0):
         return self.find_({"glyphName":glyphName}, fn, index)
-
-    # @property
-    # def _frame(self):
-    #     return self.data("frame")
 
 def runonCast():
     def _runonCast(p):

@@ -4,11 +4,10 @@ from subprocess import run
 from defcon import Font as DFont
 from coldtype.geometry.rect import Rect
 from coldtype.helpers import glyph_to_uni
-from coldtype.pens.runonpen import RunonPen
 from coldtype.time.timeline import Timeline
 from coldtype.renderable import renderable, animation
 from coldtype.text.composer import Style, Font, StSt
-from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.pens.runonpen import RunonPen
 from coldtype.pens.dattext import DATText
 from coldtype.color import hsl
 from pathlib import Path
@@ -104,13 +103,13 @@ class generativefont(animation):
         try:
             guides = result[0].all_guides()
         except:
-            guides = DATPens()
+            guides = RunonPen()
         
         bbox = gfn.bbox.offset(0, 250)
-        return DATPens([
-            DATPens(result).translate(0, 250),
-            #DATPen().gridlines(render.rect).s(hsl(0.6, a=0.3)).sw(1).f(None),
-            (DATPen()
+        return RunonPen([
+            RunonPen(result).translate(0, 250),
+            #RunonPen().gridlines(render.rect).s(hsl(0.6, a=0.3)).sw(1).f(None),
+            (RunonPen()
                 .line(bbox.es.extr(-100))
                 .line(bbox.en.extr(-100))
                 .line(bbox.ee.extr(-100))

@@ -12,9 +12,9 @@ Style.RegisterShorthandPrefix("≈", "~/Type/fonts/fonts")
 
 
 def add_grid(render, result):
-    return DATPens([
-        DATPens(result),
-        DATPen().gridlines(render.rect).s(0, 0.1).sw(1).f(None)
+    return RunonPen([
+        RunonPen(result),
+        RunonPen().gridlines(render.rect).s(0, 0.1).sw(1).f(None)
     ])
 
 

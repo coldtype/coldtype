@@ -346,6 +346,21 @@ class DrawingMixin():
     def withRect(self, rect, fn):
         return fn(Rect(rect), self)
     
-    # def with1000(fn):
-    #     return withRect(Rect(1000, 1000), )
-    #     return DATPen.WithRect(Rect(1000, 1000), fn)
+    def gridlines(self, rect, x=20, y=None, absolute=False):
+        """Construct a grid in the pen using `x` and (optionally) `y` subdivisions"""
+        xarg = x
+        yarg = y or x
+        if absolute:
+            x = int(rect.w / xarg)
+            y = int(rect.h / yarg)
+        else:
+            x = xarg
+            y = yarg
+        
+        for _x in rect.subdivide(x, "minx"):
+            if _x.x > 0 and _x.x > rect.x:
+                self.line([_x.point("NW"), _x.point("SW")])
+        for _y in rect.subdivide(y, "miny"):
+            if _y.y > 0 and _y.y > rect.y:
+                self.line([_y.point("SW"), _y.point("SE")])
+        return self.f(None).s(0, 0.1).sw(3)

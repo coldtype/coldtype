@@ -1,6 +1,6 @@
 from coldtype.pens.axidrawpen import AxiDrawPen
+from coldtype.pens.runonpen import RunonPen
 from coldtype.renderable import renderable
-from coldtype.pens.datpen import DATPen
 from coldtype.geometry import Rect, Point
 from time import sleep
 
@@ -13,12 +13,12 @@ except:
 
 
 def aximeta(fn):
-    def _aximeta(pen:DATPen):
+    def _aximeta(pen:RunonPen):
         pen.data(aximeta=dict(fn=fn))
     return _aximeta
 
 def dip_pen(seconds=1, location=(0, 0)):
-    return (DATPen()
+    return (RunonPen()
         .ch(aximeta(lambda ad: ad
             .moveto(*location)
             .pendown()
@@ -90,7 +90,7 @@ class axidrawing(renderable):
         def _draw(_):
             ad = None
 
-            def walker(p:DATPen, pos, _):
+            def walker(p:RunonPen, pos, _):
                 if pos == 0:
                     ameta = p.data("aximeta")
                     if ameta:

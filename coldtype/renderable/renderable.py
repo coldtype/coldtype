@@ -16,7 +16,7 @@ from pathlib import Path
 from coldtype.geometry import Rect, Point
 from coldtype.color import normalize_color
 from coldtype.text.reader import normalize_font_prefix, Font
-from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.pens.runonpen import RunonPen
 from coldtype.pens.dattext import DATText
 from coldtype.img.datimage import DATImage
 
@@ -259,8 +259,8 @@ class renderable():
             res = render_pass.fn(*render_pass.args)
         
         if self.render_bg:
-            return DATPens([
-                DATPen(self.rect).f(self.bg),
+            return RunonPen([
+                RunonPen(self.rect).f(self.bg),
                 res
             ])
         else:
@@ -293,22 +293,9 @@ class renderable():
     
     def _normalize_result(self, pens):
         if not pens:
-            return DATPens()
-        elif hasattr(pens, "_pens"):
-            if (isinstance(pens, DraftingPens)
-                and not isinstance(pens, DATPens)):
-                return DATPens(pens._pens)
-            return pens
-        elif isinstance(pens, DATPen):
-            return DATPens([pens])
-        elif isinstance(pens, DATText):
-            return DATPens([pens])
-        elif isinstance(pens, DATImage):
-            return DATPens([pens])
-        elif hasattr(pens, "walk"):
-            return pens
-        elif not isinstance(pens, DATPens):
-            return DATPens(pens)
+            return RunonPen()
+        elif not isinstance(pens, RunonPen):
+            return RunonPen(pens)
         else:
             return pens
     

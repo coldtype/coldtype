@@ -1,6 +1,5 @@
 import math, sys, os, re
 from pathlib import Path
-from coldtype.runon.runon import Runon
 
 # source: https://github.com/PixarAnimationStudios/USD/issues/1372
 
@@ -24,14 +23,13 @@ monkeypatch_ctypes()
 
 from coldtype.text import *
 from coldtype.text.reader import Font
-from coldtype.pens.datpen import DATPen, DATPens, DATPenSet, DP, DPS
-from coldtype.pens.runonpen import RunonPen, runonCast
+from coldtype.pens.runonpen import RunonPen
 from coldtype.pens.dattext import DATText
 from coldtype.geometry import *
 from coldtype.color import *
 from coldtype.renderable import *
 from coldtype.renderer.reader import Programs
-from coldtype.helpers import loopidx, sibling, raw_ufo, ßhide, ßshow, cycle_idx, random_series, show_points, glyph_to_uni, uni_to_glyph, glyph_to_class, DefconFont
+from coldtype.helpers import loopidx, sibling, raw_ufo, ßhide, ßshow, cycle_idx, random_series, glyph_to_uni, uni_to_glyph, glyph_to_class, DefconFont
 from coldtype.time import *
 from coldtype.time.easing import ez
 from coldtype.time.nle.ascii import AsciiTimeline
@@ -56,6 +54,12 @@ __as_config__ = False # will be redefined contextually
 ß = RunonPen
 P = RunonPen
 PS = RunonPen
+
+# temporary aliases for backwards compat
+DATPens = RunonPen
+DATPen = RunonPen
+DPS = RunonPen
+DP = RunonPen
 
 def debug_txt(r, txt, font_size=42, **kwargs):
     return DATText(txt, Style("Times", font_size, load_font=0, **kwargs), r.inset(20))

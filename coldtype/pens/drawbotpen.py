@@ -91,7 +91,7 @@ class DrawBotPen(DrawablePenMixin, RunonPen):
             cp.replay(bp)
             db.clipPath(bp)
         #elif self.rect:
-        #    cp = DATPen(fill=None).rect(self.rect).xor(self.dat)
+        #    cp = RunonPen(fill=None).rect(self.rect).xor(self.dat)
         #    bp = db.BezierPath()
         #    cp.replay(bp)
         #    db.clipPath(bp)

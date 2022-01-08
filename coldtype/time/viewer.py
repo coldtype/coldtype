@@ -3,7 +3,7 @@ from coldtype.renderable.animation import animation, renderable
 from coldtype.text.composer import StSt, Font, Rect, Point, Style
 from coldtype.time.timeline import Timeline
 from coldtype.time.midi import MidiTimeline
-from coldtype.pens.datpen import DATText
+from coldtype.pens.dattext import DATText
 from coldtype.color import bw, hsl
 
 from coldtype.pens.runonpen import RunonPen as P

@@ -181,7 +181,7 @@ class Composer():
         """
         Structured representation of the multi-line text
         
-        In the return ``DATPens``, each line will be a ``DATPens``, then within those lines, each glyph/ligature for that line will be an individual ``DATPen``
+        In the result, each line will be a ``RunonPen``, then within those lines, each glyph/ligature for that line will be an individual ``RunonPen``
         """
         return self.graf.pens()
     

@@ -9,11 +9,7 @@ from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
 
 from coldtype.color import normalize_color, rgb
-
-#from coldtype.pens.datpen import DATPen, DATPens
-
 from coldtype.pens.runonpen import RunonPen
-
 from coldtype.geometry import Rect
 
 from typing import Union
@@ -189,38 +185,38 @@ class Font():
             results.extend(Font._ListDir(Path(dir), regex, regex_dir, log, depth=0))
         return sorted(results, key=lambda p: p.stem)
 
-    @lru_cache()
-    def List1(regex, regex_dir=None, log=False):
-        results = []
-        for dir in ALL_FONT_DIRS:
-            dir = normalize_font_prefix(dir)
-            #if regex_dir:
-            #    if not re.search(regex_dir, str(dir)):
-            #        continue
-            _depth = str(dir).count(os.sep)
-            for root, dirs, files in os.walk(dir):
-                depth = root.count(os.sep) - _depth
-                if max_depth is not None:
-                    if depth >= max_depth:
-                        continue
-                #print(depth)
-                for dir in dirs:
-                    path = Path(root + "/" + dir)
-                    if path.suffix == ".ufo":
-                        if re.search(regex, dir):
-                            results.append(path)
-                #print(dir)
-                for file in files:
-                    if regex_dir:
-                        if not re.search(regex_dir, str(root)):
-                            continue
-                    if log:
-                        print(file, re.search(regex, file))
-                    if re.search(regex, file):
-                        path = Path(root + "/" + file)
-                        if path.suffix in [".ttf", ".otf", ".ttc"]:
-                            results.append(path)
-        return sorted(results, key=lambda p: p.stem)
+    # @lru_cache()
+    # def List1(regex, regex_dir=None, log=False):
+    #     results = []
+    #     for dir in ALL_FONT_DIRS:
+    #         dir = normalize_font_prefix(dir)
+    #         #if regex_dir:
+    #         #    if not re.search(regex_dir, str(dir)):
+    #         #        continue
+    #         _depth = str(dir).count(os.sep)
+    #         for root, dirs, files in os.walk(dir):
+    #             depth = root.count(os.sep) - _depth
+    #             if max_depth is not None:
+    #                 if depth >= max_depth:
+    #                     continue
+    #             #print(depth)
+    #             for dir in dirs:
+    #                 path = Path(root + "/" + dir)
+    #                 if path.suffix == ".ufo":
+    #                     if re.search(regex, dir):
+    #                         results.append(path)
+    #             #print(dir)
+    #             for file in files:
+    #                 if regex_dir:
+    #                     if not re.search(regex_dir, str(root)):
+    #                         continue
+    #                 if log:
+    #                     print(file, re.search(regex, file))
+    #                 if re.search(regex, file):
+    #                     path = Path(root + "/" + file)
+    #                     if path.suffix in [".ttf", ".otf", ".ttc"]:
+    #                         results.append(path)
+    #     return sorted(results, key=lambda p: p.stem)
 
     def Find(regex, regex_dir=None, index=0):
         if isinstance(regex, Font):
@@ -916,7 +912,7 @@ class StyledString(FittableMixin):
         #    w, mod = self.style.mods[glyph.name]
         #    mod(-1, ip)
 
-        out_pen = skia_pen.to_datpen()
+        out_pen = skia_pen.to_runonpen()
 
         if self.style.rotate:
             out_pen.rotate(self.style.rotate)
@@ -985,7 +981,7 @@ class StyledString(FittableMixin):
 
     def pens(self) -> RunonPen:
         """
-        Vectorize text into a ``DATPens``, such that each glyph (or ligature) is represented by a single `DATPen` (or a ``DATPens`` in the case of a color font, which will then nest a `DATPen` for each layer of that color glyph)
+        Vectorize text into a ``RunonPen``, such that each glyph (or ligature) is represented by a single `RunonPen` (or a ``RunonPen`` in the case of a color font, which will then nest a `RunonPen` for each layer of that color glyph)
         """
 
         self.resetGlyphRun()
@@ -1007,7 +1003,6 @@ class StyledString(FittableMixin):
                 else:
                     dp_atom.record(RunonPen().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
                 dp_atom.data(
-                    typographic=True,
                     frame=norm_frame,
                     glyphName=g.name
                 )
@@ -1024,14 +1019,13 @@ class StyledString(FittableMixin):
                     dp_atom.translate(0, self.style.descender*self.scale())
                 
                 dp_atom.data(
-                    typographic=True,
                     frame=norm_frame,
                     glyphName=g.name
                 )
 
                 if self.style.show_frames:
                     if callable(self.style.show_frames):
-                        #dp_atom.record(DATPen().rect(self.style.show_frames(g.frame)).outline(4))
+                        #dp_atom.record(RunonPen().rect(self.style.show_frames(g.frame)).outline(4))
                         dp_atom.rect(self.style.show_frames(g.frame))
                     else:
                         dp_atom.record(RunonPen().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
@@ -1058,7 +1052,6 @@ class StyledString(FittableMixin):
                         dp_atom += dp_layer
                 
                 dp_atom.data(
-                    typographic=True,
                     frame=norm_frame,
                     glyphName=g.name
                 )
@@ -1087,7 +1080,7 @@ class StyledString(FittableMixin):
 
     def pen(self, frame=True) -> RunonPen:
         """
-        Vectorize all text into single ``DATPen``
+        Vectorize all text into single ``RunonPen``
         """
         return self.pens().pen()
 

@@ -1,13 +1,13 @@
 import skia, struct
 
-from coldtype.pens.skiapathpen import SkiaPathPen
-from coldtype.pens.datpen import DATPen, DATPens
-from coldtype.pens.dattext import DATText
-from coldtype.img.datimage import DATImage
-from coldtype.geometry import Rect, Point
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
-from coldtype.color import Color
+from coldtype.pens.skiapathpen import SkiaPathPen
+from coldtype.pens.runonpen import RunonPen
+from coldtype.img.datimage import DATImage
+from coldtype.pens.dattext import DATText
+from coldtype.geometry import Rect, Point
 from coldtype.text.reader import Style
+from coldtype.color import Color
 
 
 class SkiaPen(DrawablePenMixin, SkiaPathPen):
@@ -146,7 +146,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 skia.Rect()
                 sr = skia.Rect(*clip.scale(self.scale, "mnx", "mny").flip(self.rect.h).mnmnmxmx())
                 self.canvas.clipRect(sr)
-            elif isinstance(clip, DATPen):
+            elif isinstance(clip, RunonPen):
                 sp = SkiaPathPen(clip, self.rect.h)
                 self.canvas.clipPath(sp.path, doAntiAlias=True)
         self.paint.setColor(skia.ColorBLACK)
@@ -247,7 +247,6 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 
                 canvas.drawImage(pen._img, f.x, f.y, paint)
                 canvas.restore()
-                #pen = DATPen().rect(pen.bounds()).img(pen._img, rect=pen.bounds(), pattern=False)
                 return
             
             if state == 0:

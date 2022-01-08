@@ -10,7 +10,7 @@ from coldtype.time import Frame
 from coldtype.time.timeline import Timeline
 
 from coldtype.text.reader import Style, Font
-from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.pens.runonpen import RunonPen
 from coldtype.pens.dattext import DATText
 from coldtype.geometry import Rect, Point
 from coldtype.color import bw, hsl
@@ -164,14 +164,14 @@ class animation(renderable, Timeable):
         res = super().runpost(result, render_pass, renderer_state)
 
         if Overlay.Recording in renderer_state.overlays and self.overlay:
-            res.append(DATPen().oval(Point(0, 0).rect(30, 30)).f(hsl(0, 1, 0.7)))
+            res.append(RunonPen().oval(Point(0, 0).rect(30, 30)).f(hsl(0, 1, 0.7)))
 
         if Overlay.Info in renderer_state.overlays and self.overlay:
             t = self.rect.take(50, "mny")
             frame:Frame = render_pass.args[0]
-            return DATPens([
+            return RunonPen([
                 res,
-                DATPen().rect(t).f(bw(0, 0.75)) if self.show_frame else None,
+                RunonPen().rect(t).f(bw(0, 0.75)) if self.show_frame else None,
                 DATText(f"{frame.i} / {self.duration}", Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10)) if self.show_frame else None])
         return res
     
@@ -210,11 +210,11 @@ class animation(renderable, Timeable):
             else:
                 pngs = [p for i, p in enumerate(_pngs) if i in sl]
             
-            dps = DATPens()
-            dps += DATPen().rect(r).f(self.bg)
+            dps = RunonPen()
+            dps += RunonPen().rect(r).f(self.bg)
             for idx, g in enumerate(r.grid(gx, gy)):
                 if idx < len(pngs):
-                    dps += DATPen().rect(g).f(None).img(pngs[idx], g, pattern=False)
+                    dps += RunonPen().rect(g).f(None).img(pngs[idx], g, pattern=False)
             return dps
         
         return contactsheet

@@ -1,7 +1,6 @@
 from pathlib import Path
 from defcon import Font as DefconFont
-from coldtype.text.reader import normalize_font_path, StyledString
-from coldtype.pens.datpen import DATPens
+from coldtype.text.reader import normalize_font_path
 from coldtype.interpolation import norm, interp_dict, lerp, loopidx
 from random import Random
 
@@ -33,19 +32,6 @@ def random_series(start=0, end=1, seed=0, count=5000):
     for x in range(count):
         rnds.append(start+rnd.random()*(end-start))
     return rnds
-
-def show_points(pen, style, offcurves=True, filter=lambda i: True):
-    pt_labels = DATPens()
-    if offcurves:
-        def labeller(idx, x, y):
-            if filter(idx):
-                pt_labels.append(StyledString(str(idx), style).pen().translate(x, y))
-        pen.map_points(labeller)
-    else:
-        for idx, (m, pts) in enumerate(pen.value):
-            if len(pts) > 0 and filter(idx):
-                pt_labels += StyledString(str(idx), style).pen().translate(*pts[-1])
-    return pt_labels
 
 _by_uni = None
 _by_glyph = None

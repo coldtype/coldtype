@@ -1,6 +1,7 @@
-from coldtype.pens.datpen import DATPen
 from fontTools.pens.basePen import BasePen
 from fontTools.pens.transformPen import TransformPen
+
+from coldtype.pens.runonpen import RunonPen
 
 try:
     import skia
@@ -41,11 +42,11 @@ class SkiaPathPen(BasePen):
     def _closePath(self):
         self.path.close()
 
-    def to_datpen(self):
+    def to_runonpen(self):
         def unwrap(p):
             return [p.x(), p.y()]
         
-        dp = DATPen()
+        dp = RunonPen()
         for mv, pts in self.path:
             if mv == skia.Path.Verb.kMove_Verb:
                 dp.moveTo(unwrap(pts[0]))

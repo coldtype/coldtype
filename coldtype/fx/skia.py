@@ -1,3 +1,4 @@
+from fontTools.pens.recordingPen import RecordingPen
 import skia, tempfile, math
 from subprocess import run
 from functools import reduce
@@ -11,9 +12,6 @@ from coldtype.fx.chainable import Chainable
 from coldtype.color import normalize_color, bw
 from coldtype.pens.runonpen import RunonPen
 from coldtype.pens.skiapen import SkiaPen
-from coldtype.runon.runon import Runon
-
-#from coldtype.pens.datpen import DATPen, DATPens
 
 SKIA_CONTEXT = None
 
@@ -186,8 +184,10 @@ def potrace(rect, poargs=[], invert=True):
             svgp = SVGPath.fromstring(result.stdout, transform=t)
             if False:
                 print(svgp)
-            dp = DATPen()
-            svgp.draw(dp)
+            rp = RecordingPen()
+            svgp.draw(rp)
+            dp = RunonPen()
+            dp.v.value = rp.value
             return dp.f(0)
     return _potrace
 

@@ -36,7 +36,7 @@ def space(r):
 
 @glyphfn(500, 10, 10)
 def A(r):
-    return (DATPen()
+    return (P()
         .rect(r)
         .difference(DP(r.take(100, "mdy")
             .take(20, "mdx")
@@ -47,7 +47,7 @@ def A(r):
 @glyphfn(500, 10, 10)
 def B(r):
     t, b = r.inset(0, 100).subdivide(2, "mxy")
-    return (DATPen()
+    return (P()
         .rect(r)
         .difference(DP(t.take(100, "mdy")
             .take(20, "mdx")))
@@ -60,7 +60,7 @@ def B(r):
 
 @glyphfn(500, 10, 10)
 def C(r):
-    return (DATPen()
+    return (P()
         .rect(r)
         .difference(DP(r.take(20, "mdx")
             .inset(0, 250)))
@@ -95,10 +95,10 @@ def show_grid(render, result):
         print("! No glyph found")
     else:
         bbox = gfn.bbox.offset(0, 250)
-        return DATPens([
-            DATPens(result).translate(0, 250),
-            DATPen().gridlines(render.rect).s(hsl(0.6, a=0.3)).sw(1).f(None),
-            (DATPen()
+        return P([
+            P(result).translate(0, 250),
+            P().gridlines(render.rect).s(hsl(0.6, a=0.3)).sw(1).f(None),
+            (P()
                 .line(bbox.es.extr(-100))
                 .line(bbox.en.extr(-100))
                 .line(bbox.ee.extr(-100))
