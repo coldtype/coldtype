@@ -153,6 +153,23 @@ class RunonPen(Runon,
         
         return self.map_points(apply)
     
+    def wordPens(self, pred=lambda x: x.glyphName == "space"):
+        def _wp(p):
+            return (p
+                .split(pred)
+                .map(lambda x: x
+                    .data(word="/".join([p.glyphName for p in x]))
+                    .pen()))
+        
+        d = self.depth()
+        if d == 2:
+            return _wp(self)
+        
+        out = type(self)()
+        for pen in self:
+            out.append(_wp(pen))
+        return out
+    
     # backwards compatibility
 
     def reversePens(self):
