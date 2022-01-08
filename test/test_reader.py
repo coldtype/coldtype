@@ -1,13 +1,8 @@
 import unittest
-from random import Random
-from coldtype.geometry import Rect, Point
-from coldtype.pens.draftingpen import DraftingPen
-from coldtype.pens.draftingpens import DraftingPens
-from coldtype.color import hsl, rgb
-from coldtype.pens.drawablepen import DrawablePenMixin
-from coldtype.renderer.reader import SourceReader
-from coldtype.text.composer import StSt, Font, Slug, Style
-from coldtype.pens.datpen import DATPen, DATPens, P, PS
+from coldtype.geometry import Rect
+from coldtype.color import hsl
+from coldtype.text.composer import StSt, Font, Style
+from coldtype.pens.runonpen import RunonPen
 
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 mutator = Font.Cacheable("assets/MutatorSans.ttf")
@@ -17,10 +12,10 @@ class TestReader(unittest.TestCase):
     def test_fit(self):
         inset = 150
         ri = r.inset(inset, 0)
-        out = DATPens([
-            P(ri).f(hsl(0.7, a=0.1)),
+        out = RunonPen([
+            RunonPen(ri).f(hsl(0.7, a=0.1)),
             (StSt("COLD", co, 500,
-                wdth=1, fit=ri.w)
+                wdth=1, fit=ri.w, _stst=True)
                 .fssw(-1, hsl(0.7), 2)
                 .align(r))])
         
@@ -29,7 +24,7 @@ class TestReader(unittest.TestCase):
         #out.picklejar(r)
     
     def test_style_mod(self):
-        style = Style(co, 250, wdth=1)
+        style = Style(co, 250, wdth=1, _stst=True)
         a = StSt("CLDTP", style)
         b = StSt("CLDTP", style.mod(wdth=0))
         
@@ -37,7 +32,7 @@ class TestReader(unittest.TestCase):
         self.assertEqual(b._stst.variations["wdth"], 0)
     
     def test_fit_height(self):
-        style = Style(co, 250, wdth=1)
+        style = Style(co, 250, wdth=1, _stst=True)
         a = StSt("CLDTP", style)
         b = StSt("CLDTP", style.mod(fitHeight=300))
         
@@ -45,11 +40,11 @@ class TestReader(unittest.TestCase):
         self.assertEqual(b._stst.fontSize, 400)
     
     def test_kern_pairs(self):
-        style = Style(co, 250, wdth=1)
+        style = Style(co, 250, wdth=1, _stst=True)
         a = StSt("CLD", style)
         b = StSt("CLD", style.mod(kp={"C/L":20, "L/D":100}))
         
-        PS([a, b]).fssw(-1, 0, 1).picklejar(r)
+        RunonPen([a, b]).fssw(-1, 0, 1).picklejar(r)
         
         self.assertEqual(a[1].ambit().x, 155.75)
         self.assertEqual(b[1].ambit().x, 155.75 + 20*(250/1000))

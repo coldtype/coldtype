@@ -331,6 +331,7 @@ class Style():
             _skiaback=False,
             load_font=True, # should we attempt to load the font?
             tag=None, # way to differentiate in __eq__
+            _stst=False,
             **kwargs):
 
         self.input = locals()
@@ -362,6 +363,7 @@ class Style():
         self.scaleVariations = kwargs.get("sv", scaleVariations)
         self.rollVariations = kwargs.get("rv", rollVariations)
         self.tag = tag
+        self._stst = _stst
         
         self.metrics = metrics
         self.capHeight = kwargs.get("ch", capHeight)
@@ -1063,9 +1065,10 @@ class StyledString(FittableMixin):
         for k, v in self.style.data.items():
             pens.data[k] = v
 
-        pens._stst = self
-        return RunonPen.FromPens(pens)
-        return pens
+        ro = RunonPen.FromPens(pens)
+        if self.style._stst:
+            ro._stst = self
+        return ro
 
     def pen(self, frame=True) -> _PenClass:
         """
