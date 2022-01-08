@@ -109,10 +109,10 @@ class TestTime(unittest.TestCase):
         cgp = cg.pens(Frame(28, at3), styler, Rect(1080, 1080))
         self.assertEqual(len(cgp), 1)
         self.assertEqual(len(cgp[0]), 4)
-        self.assertEqual(cgp[0].data["line_text"], "This is some txt")
-        self.assertEqual(cgp[0][0][0].data["position"], 1)
-        self.assertEqual(cgp[0][1][0].data["position"], 0)
-        self.assertEqual(cgp[0][2][0].data["position"], -1)
+        self.assertEqual(cgp[0].data("line_text"), "This is some txt")
+        self.assertEqual(cgp[0][0][0].data("position"), 1)
+        self.assertEqual(cgp[0][1][0].data("position"), 0)
+        self.assertEqual(cgp[0][2][0].data("position"), -1)
         self.assertEqual(cgp[0][1][0][-2].glyphName, "S.closed")
     
     def test_animation(self):
