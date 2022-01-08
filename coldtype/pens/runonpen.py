@@ -121,6 +121,12 @@ class RunonPen(Runon,
         self.data(frame=frame)
         self._els = []
         return self
+    
+    def pens(self):
+        if self.val_present():
+            return self.ups()
+        else:
+            return self
 
     # multi-use overrides
     

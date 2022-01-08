@@ -1,6 +1,7 @@
 import math
 from copy import deepcopy
 
+from fontTools.pens.basePen import decomposeQuadraticSegment
 from fontTools.pens.recordingPen import RecordingPen
 from fontPens.flattenPen import FlattenPen
 
@@ -11,6 +12,22 @@ from coldtype.pens.misc import ExplodingPen, SmoothPointsPen
 
 
 class FXMixin():
+    def q2c(self):
+        new_vl = []
+        for mv, pts in self.v.value:
+            if mv == "qCurveTo":
+                decomposed = decomposeQuadraticSegment(pts)
+                for dpts in decomposed:
+                    qp1, qp2 = [Point(pt) for pt in dpts]
+                    qp0 = Point(new_vl[-1][-1][-1])
+                    cp1 = qp0 + (qp1 - qp0)*(2.0/3.0)
+                    cp2 = qp2 + (qp1 - qp2)*(2.0/3.0)
+                    new_vl.append(["curveTo", (cp1, cp2, qp2)])
+            else:
+                new_vl.append([mv, pts])
+        self.v.value = new_vl
+        return self
+
     def flatten(self, length=10, segmentLines=True):
         """
         Runs a fontTools `FlattenPen` on this pen

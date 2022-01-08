@@ -25,9 +25,6 @@ class ShorthandMixin(SHContext):
         return self
     
     def sh(self, s, subs={}):
-        if not self.val_present():
-            return self
-
         try:
             start = self._val.value[0][1][-1]
         except:

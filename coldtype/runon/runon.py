@@ -502,7 +502,6 @@ class Runon:
                     lidx = x
                     p = p[x]
                 else:
-                    print("HERE", p, x)
                     res = p.index(x, fn)
                     if not fn:
                         return res

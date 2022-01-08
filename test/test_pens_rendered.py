@@ -5,7 +5,7 @@ from pathlib import Path
 from coldtype.color import hsl
 from coldtype.geometry import Rect
 from coldtype.text.composer import StSt, Font
-from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.pens.runonpen import RunonPen
 
 from PIL import Image
 import imagehash
@@ -37,16 +37,17 @@ def test_image(test:unittest.TestCase, path, rect=Rect(1000, 500)):
     test.assertEqual(hash_after, hash_before)
     test.assertEqual(img.exists(), True)
 
-class TestCairoPen(unittest.TestCase):
+class TestPensRendered(unittest.TestCase):
     def test_skia_png(self):
         with test_image(self, "test_skia.png") as (i, r):
-            dp = ((ß:=DATPens())
+            dp = ((ß:=RunonPen())
                 .define(
                     r=r,
                     nx=100,
                     a="$rIX100SY+200")
                 .gs("$a↙ $a↑|$a↖OX+$nx|65 $a↘|$a↗OX-$nx|65 ɜ")
-                .f(None).s(0).sw(4)
+                .fssw(-1, 0, 4)
+                .ups()
                 .append(StSt("Coldtype Cdelopty".upper(),
                     co, 100, wdth=0.5)
                     .pens()
@@ -56,7 +57,7 @@ class TestCairoPen(unittest.TestCase):
             
             SkiaPen.Precompose(dp, r, disk=str(i))
             self.assertEqual(len(dp), 2)
-            self.assertEqual(type(dp), DATPens)
+            self.assertEqual(type(dp), RunonPen)
     
 if __name__ == "__main__":
     unittest.main()
