@@ -144,7 +144,9 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
         self.dat = dat
         tag = self.dat.tag()
         self.material = None
-        self.tag = tag if tag and tag != "Unknown" else f"Curve_{random.randint(0, 1000000)}"
+        if tag is None:
+            raise Exception("BlenderPen pens must be tagged")
+        self.tag = tag
     
     def record(self, dat):
         self.set_origin(0, 0, 0)

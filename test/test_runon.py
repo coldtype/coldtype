@@ -1,6 +1,4 @@
-import re
 import unittest
-from coldtype.pens.runonpen import RunonPen
 from coldtype.runon.runon import * #INLINE
 
 class TestRunon(unittest.TestCase):
@@ -125,6 +123,11 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(els[0].v, 3)
         self.assertEqual(els[0].tag(), "oy")
         self.assertEqual(els[1].v, 200)
+
+        r = Runon(1)
+        utags = []
+        r.walk(walker)
+        self.assertEqual(utags, ["ROOT"])
     
     def test_attr(self):
         r = Runon(Runon(1).attr(q=2))

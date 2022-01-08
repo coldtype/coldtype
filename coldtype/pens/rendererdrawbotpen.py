@@ -38,7 +38,7 @@ class RendererDrawBotPen(DrawBotPen):
                     db.size(rect.w+300, rect.h+300)
                     db.translate(150, 150)
                     db.scale(scale)
-                    pen.data["im"] = im
+                    pen.data(im=im)
             elif state == 1:
                 imgf = pen.data("imgf")
                 im = pen.data("im")

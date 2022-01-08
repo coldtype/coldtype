@@ -143,7 +143,7 @@ def b3d_post(callback):
             callbacks = [*prev, callback]
         else:
             callbacks = [callback]
-        pen.data["b3d_post"] = callbacks
+        pen.data(b3d_post=callbacks)
     
     return _b3d_post
 
@@ -184,8 +184,8 @@ def walk_to_b3d(result:RunonPen,
             if zero:
                 p.translate(-pc.x, -pc.y)
             
-            if p.tag() == "?" and data.get("idx"):
-                tag = "_".join([str(i) for i in data["idx"]])
+            if p.tag() is None:
+                tag = data["utag"]
                 if bdata.get("tag_prefix"):
                     tag = bdata.get("tag_prefix") + tag
                 else:

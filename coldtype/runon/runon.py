@@ -287,6 +287,8 @@ class Runon:
         else:
             #print("PARENT", idx)
             utag = "_".join([str(i) for i in idx]) if idx else None
+            if utag is None and parent is None:
+                utag = "ROOT"
             res = callback(self, 0, dict(
                 depth=depth, alpha=alpha, idx=idx, utag=utag))
             
