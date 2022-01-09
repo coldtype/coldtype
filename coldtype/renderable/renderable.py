@@ -1,7 +1,5 @@
 import inspect, platform, re, tempfile, math, datetime
 
-from coldtype.pens.draftingpens import DraftingPens
-
 try:
     import skia
     from coldtype.pens.skiapen import SkiaPen

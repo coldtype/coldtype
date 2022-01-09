@@ -1,15 +1,13 @@
-import sys, os
+import sys
 from pathlib import Path
-sys.path.insert(0, str(Path("~/Goodhertz/drafting").expanduser()))
+sys.path.insert(0, str(Path("~/Goodhertz/coldtype").expanduser()))
 
 from coldtype.drawbot import *
 
 with new_page() as r:
     mistral = Font.Cacheable("~/Type/fonts/fonts/_script/MistralD.otf")
 
-    s = (StyledString("Hello",
-        Style(mistral, 300))
-        .pens()
+    s = (StSt("Hello", mistral, 300)
         .f(hsl(0.3, s=1))
         .align(r))
 
@@ -21,7 +19,7 @@ with new_page() as r:
 
     s.chain(dbdraw)
 
-    circle = (DraftingPen()
+    circle = (RunonPen()
         .oval(r.inset(200))
         .reverse()
         .rotate(0))

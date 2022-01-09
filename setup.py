@@ -82,7 +82,7 @@ setuptools.setup(
             "noise",
         ],
         "c": [
-            "srt",
+            #"srt",
             "noise",
         ],
         "unicode": [

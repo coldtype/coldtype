@@ -1,6 +1,5 @@
 # Mixin for attribute-application
 
-from coldtype.pens.draftingpen import DraftingPen
 from coldtype.color import Gradient, Color
 
 class DrawablePenMixin(object):

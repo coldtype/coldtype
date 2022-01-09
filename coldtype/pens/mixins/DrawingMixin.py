@@ -163,7 +163,7 @@ class DrawingMixin():
     l = line
     
     def hull(self, points):
-        """Same as `DraftingPen.line` but calls closePath instead of endPath`"""
+        """Same as `.line` but calls closePath instead of endPath`"""
         self.moveTo(points[0])
         for pt in points[1:]:
             self.lineTo(pt)

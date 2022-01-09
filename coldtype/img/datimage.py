@@ -1,10 +1,10 @@
 from pathlib import Path
-from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.geometry import Rect
+from coldtype.pens.runonpen import RunonPen
 from coldtype.img.blendmode import BlendMode
 
 
-class DATImage(DATPen):
+class DATImage(RunonPen):
     def __init__(self, src, img=None):
         if isinstance(src, Path) or isinstance(src, str):
             self.src = Path(str(src)).expanduser().absolute()
@@ -114,13 +114,13 @@ class DATImage(DATPen):
         #return self
     
     def in_pen(self):
-        return (DATPen(self.bounds())
+        return (RunonPen(self.bounds())
             .img(self._img, self.bounds(), pattern=False))
         
     def to_pen(self, rect=None):
         return self.precompose(rect or self._frame, as_image=False)
     
-    def FromPen(pen:DATPen, original_src=None):
+    def FromPen(pen:RunonPen, original_src=None):
         return DATImage(original_src, img=pen.img().get("src"))
     
     def __str__(self):

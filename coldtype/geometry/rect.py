@@ -762,7 +762,3 @@ class Rect(Geometrical):
             _r, r = r.divide(w, "mxy")
             rs.append(_r)
         return rs
-    
-    def to_pen(self):
-        from coldtype.pens.draftingpen import DraftingPen
-        return DraftingPen(self)
