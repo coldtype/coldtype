@@ -197,6 +197,22 @@ class RunonPen(Runon,
         np.v.value = vl
         return np
     
+    def replaceGlyph(self, glyphName, replacement, limit=None):
+        return self.replace(lambda p: p.glyphName == glyphName,
+            lambda p: (replacement(p) if callable(replacement) else replacement)
+                .translate(*p.ambit().xy()))
+    
+    def findGlyph(self, glyphName, fn=None):
+        return self.find(lambda p: p.glyphName == glyphName, fn)
+    
+    def _repr_html_(self):
+        if self.data("_notebook_shown"):
+            return None
+        
+        from coldtype.notebook import show, DEFAULT_DISPLAY
+        self.ch(show(DEFAULT_DISPLAY, th=1, tv=1))
+        return None
+    
     # backwards compatibility
 
     def reversePens(self):
@@ -208,14 +224,6 @@ class RunonPen(Runon,
     def vl(self, value):
         self.v.value = value
         return self
-
-    def replaceGlyph(self, glyphName, replacement, limit=None):
-        return self.replace(lambda p: p.glyphName == glyphName,
-            lambda p: (replacement(p) if callable(replacement) else replacement)
-                .translate(*p.ambit().xy()))
-    
-    def findGlyph(self, glyphName, fn=None):
-        return self.find(lambda p: p.glyphName == glyphName, fn)
 
     @property
     def glyphName(self):
