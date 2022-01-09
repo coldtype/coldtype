@@ -3,10 +3,10 @@ from coldtype.renderable.animation import animation, renderable
 from coldtype.text.composer import StSt, Font, Rect, Point, Style
 from coldtype.time.timeline import Timeline
 from coldtype.time.midi import MidiTimeline
-from coldtype.pens.dattext import DATText
+from coldtype.vector import RunonPen
 from coldtype.color import bw, hsl
 
-from coldtype.pens.runonpen import RunonPen as P
+from coldtype.vector import RunonPen as P
 
 PS = P
 
@@ -115,7 +115,7 @@ def timeViewer(tl):
         x = f.e("l", 0, rng=(rd.psw[0], rd.pse[0]))
         return PS([
             P(Rect(2, r.h)).t(x, 0),
-            (DATText(str(f.i),
+            (RunonPen().text(str(f.i),
                 Style("Times", 20, load_font=0),
                 Rect(x+6, r.h-20, 100, 40)))])
     

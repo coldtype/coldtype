@@ -1,4 +1,4 @@
-from coldtype.pens.runonpen import RunonPen as P
+from coldtype.vector import RunonPen as P
 from coldtype.geometry import Point
 from coldtype.color import hsl
 

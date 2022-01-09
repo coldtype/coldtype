@@ -23,8 +23,7 @@ monkeypatch_ctypes()
 
 from coldtype.text import *
 from coldtype.text.reader import Font
-from coldtype.pens.runonpen import RunonPen
-from coldtype.pens.dattext import DATText
+from coldtype.vector import RunonPen
 from coldtype.geometry import *
 from coldtype.color import *
 from coldtype.renderable import *
@@ -62,7 +61,9 @@ DPS = RunonPen
 DP = RunonPen
 
 def debug_txt(r, txt, font_size=42, **kwargs):
-    return DATText(txt, Style("Times", font_size, load_font=0, **kwargs), r.inset(20))
+    return RunonPen().text(txt,
+        Style("Times", font_size, load_font=0, **kwargs),
+        r.inset(20))
 
 def noop():
     return None

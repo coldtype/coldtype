@@ -1,5 +1,5 @@
 import unittest
-from coldtype.pens.runonpen import * #INLINE
+from coldtype.vector import * #INLINE
 
 from fontTools.pens.recordingPen import RecordingPen
 

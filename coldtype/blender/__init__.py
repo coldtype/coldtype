@@ -5,7 +5,7 @@ from pathlib import Path
 from coldtype.geometry import curve
 
 from coldtype.geometry.rect import Rect
-from coldtype.pens.runonpen import RunonPen
+from coldtype.vector import RunonPen
 from coldtype.pens.blenderpen import BlenderPen, BPH
 from coldtype.color import hsl
 

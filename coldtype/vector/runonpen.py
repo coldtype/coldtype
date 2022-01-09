@@ -3,18 +3,18 @@ from copy import deepcopy
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.reverseContourPen import ReverseContourPen
 
-from coldtype.geometry import Rect, Point
+from coldtype.geometry import Rect, Point, txt_to_edge
 from coldtype.runon.runon import Runon
 
-from coldtype.pens.mixins.FXMixin import FXMixin
-from coldtype.pens.mixins.GlyphMixin import GlyphMixin
-from coldtype.pens.mixins.LayoutMixin import LayoutMixin
-from coldtype.pens.mixins.StylingMixin import StylingMixin
-from coldtype.pens.mixins.DrawingMixin import DrawingMixin
-from coldtype.pens.mixins.PathopsMixin import PathopsMixin
-from coldtype.pens.mixins.ShorthandMixin import ShorthandMixin
-from coldtype.pens.mixins.SegmentingMixin import SegmentingMixin
-from coldtype.pens.mixins.SerializationMixin import SerializationMixin
+from coldtype.vector.mixins.FXMixin import FXMixin
+from coldtype.vector.mixins.GlyphMixin import GlyphMixin
+from coldtype.vector.mixins.LayoutMixin import LayoutMixin
+from coldtype.vector.mixins.StylingMixin import StylingMixin
+from coldtype.vector.mixins.DrawingMixin import DrawingMixin
+from coldtype.vector.mixins.PathopsMixin import PathopsMixin
+from coldtype.vector.mixins.ShorthandMixin import ShorthandMixin
+from coldtype.vector.mixins.SegmentingMixin import SegmentingMixin
+from coldtype.vector.mixins.SerializationMixin import SerializationMixin
 
 class RunonPen(Runon,
     StylingMixin,
@@ -212,6 +212,19 @@ class RunonPen(Runon,
         from coldtype.notebook import show, DEFAULT_DISPLAY
         self.ch(show(DEFAULT_DISPLAY, th=1, tv=1))
         return None
+    
+    def text(self,
+        text:str,
+        style,
+        frame:Rect,
+        x="mnx",
+        y="mny",
+        ):
+        self.rect(frame)
+        self.data(
+            text=text,
+            style=style,
+            align=(txt_to_edge(x), txt_to_edge(y)))
     
     # backwards compatibility
 

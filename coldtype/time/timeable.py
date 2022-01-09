@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from coldtype.interpolation import lerp, interp_dict
-from coldtype.pens.runonpen import RunonPen
+from coldtype.vector import RunonPen
 from coldtype.time.easing import ease, ez, applyRange
 from copy import copy
 import math

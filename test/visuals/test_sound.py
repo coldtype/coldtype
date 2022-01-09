@@ -13,6 +13,6 @@ def playback(f):
 
     return [
         wave.s(0),
-        (DATText(str(f.i),
+        (RunonPen().text(str(f.i),
             Style("Helvetica", 100, load_font=0),
             f.a.r.inset(10)))]

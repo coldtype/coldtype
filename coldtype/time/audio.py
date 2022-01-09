@@ -1,6 +1,6 @@
 import math
 from pathlib import Path
-from coldtype.pens.runonpen import RunonPen
+from coldtype.vector import RunonPen
 
 try:
     import numpy as np

@@ -1,7 +1,7 @@
 import unittest
 from random import Random
 from coldtype.geometry import Rect, Point
-from coldtype.pens.runonpen import RunonPen
+from coldtype.vector import RunonPen
 
 from coldtype.color import hsl, rgb
 from coldtype.pens.drawablepen import DrawablePenMixin

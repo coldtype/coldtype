@@ -10,8 +10,7 @@ from coldtype.time import Frame
 from coldtype.time.timeline import Timeline
 
 from coldtype.text.reader import Style, Font
-from coldtype.pens.runonpen import RunonPen
-from coldtype.pens.dattext import DATText
+from coldtype.vector import RunonPen
 from coldtype.geometry import Rect, Point
 from coldtype.color import bw, hsl
 
@@ -172,7 +171,7 @@ class animation(renderable, Timeable):
             return RunonPen([
                 res,
                 RunonPen().rect(t).f(bw(0, 0.75)) if self.show_frame else None,
-                DATText(f"{frame.i} / {self.duration}", Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10)) if self.show_frame else None])
+                RunonPen().text(f"{frame.i} / {self.duration}", Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10)) if self.show_frame else None])
         return res
     
     def package(self):

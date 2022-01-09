@@ -2,7 +2,7 @@ import unittest
 from coldtype.geometry import Rect
 from coldtype.color import hsl
 from coldtype.text.composer import StSt, Font, Style
-from coldtype.pens.runonpen import RunonPen
+from coldtype.vector import RunonPen
 
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 mutator = Font.Cacheable("assets/MutatorSans.ttf")

@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 from coldtype.geometry import *
 from coldtype.color import hsl
-from coldtype.pens.runonpen import RunonPen
+from coldtype.vector import RunonPen
 from coldtype.text.composer import StSt, Font, Style
 
 tf = Path(__file__).parent

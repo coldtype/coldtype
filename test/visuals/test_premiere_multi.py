@@ -15,7 +15,7 @@ def t1(f):
     def render_clip(tc):
         return tc.text.upper(), Style(mutator, 200, wght=0, fill=hsl(0.9) if "b" in tc.clip.styles else 1)
     
-    return DATText(str(f.i), Style("Times", 100, load_font=0), f.a.r.inset(50).offset(0, 500)) + (cg
+    return RunonPen().text(str(f.i), Style("Times", 100, load_font=0), f.a.r.inset(50).offset(0, 500)) + (cg
         .pens(f, render_clip, f.a.r)
         .xa()
         .align(f.a.r)
@@ -29,7 +29,7 @@ def t2(f):
     def render_clip(tc):
         return tc.text.upper(), Style(mutator, 200, wght=1, fill=hsl(0.9) if "b" in tc.clip.styles else 1)
     
-    return DATText(str(f.i), Style("Times", 100, load_font=0, fill=hsl(0.3)), f.a.r.inset(50, 50)) + (cg
+    return RunonPen().text(str(f.i), Style("Times", 100, load_font=0, fill=hsl(0.3)), f.a.r.inset(50, 50)) + (cg
         .pens(f, render_clip, f.a.r)
         .xa()
         .align(f.a.r)

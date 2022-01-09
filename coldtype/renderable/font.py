@@ -7,8 +7,7 @@ from coldtype.helpers import glyph_to_uni
 from coldtype.time.timeline import Timeline
 from coldtype.renderable import renderable, animation
 from coldtype.text.composer import Style, Font, StSt
-from coldtype.pens.runonpen import RunonPen
-from coldtype.pens.dattext import DATText
+from coldtype.vector import RunonPen
 from coldtype.color import hsl
 from pathlib import Path
 
@@ -115,7 +114,7 @@ class generativefont(animation):
                 .line(bbox.ee.extr(-100))
                 .f(None).s(hsl(0.9, 1, a=0.5)).sw(4)),
             guides.translate(gfn.lsb, 250),
-            (DATText(gfn.glyph_name, Style("Times", 48, load_font=0),
+            (RunonPen().text(gfn.glyph_name, Style("Times", 48, load_font=0),
                 render.rect.inset(50)))])
     
     def glyphViewer(self, f):

@@ -14,8 +14,7 @@ from pathlib import Path
 from coldtype.geometry import Rect, Point
 from coldtype.color import normalize_color
 from coldtype.text.reader import normalize_font_prefix, Font
-from coldtype.pens.runonpen import RunonPen
-from coldtype.pens.dattext import DATText
+from coldtype.vector import RunonPen
 from coldtype.img.datimage import DATImage
 
 class ColdtypeCeaseConfigException(Exception):

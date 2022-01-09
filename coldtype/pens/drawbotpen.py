@@ -3,7 +3,7 @@ try:
 except:
     pass
 
-from coldtype.pens.runonpen import RunonPen
+from coldtype.vector import RunonPen
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin
 from coldtype.color import Color, Gradient

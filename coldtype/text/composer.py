@@ -1,4 +1,4 @@
-from coldtype.pens.runonpen import RunonPen
+from coldtype.vector import RunonPen
 from coldtype.geometry import Rect, Point
 
 from coldtype.text.shaper import segment

@@ -4,7 +4,6 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.colors import transparent
 
-from coldtype.pens.dattext import DATText
 from coldtype.geometry import Point
 from coldtype.pens.drawablepen import DrawablePenMixin
 
@@ -92,7 +91,7 @@ class ReportLabPen(DrawablePenMixin):
             if state != 0 or not pen.visible:
                 return
             
-            if isinstance(pen, DATText):
+            if "text" in pen._data:
                 # TODO, look at SkiaPen for reference implementation
                 return
             

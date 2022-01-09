@@ -116,7 +116,7 @@ def ease(style, x):
         return style.ease_t(x), 0.5
         return curve_pos_and_speed(style, x)
     elif type(style).__name__ == "Glyph":
-        from coldtype.pens.runonpen import RunonPen
+        from coldtype.vector import RunonPen
         p = RunonPen().glyph(style)
         return p.ease_t(x), 0.5
     elif False:

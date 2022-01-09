@@ -2,7 +2,6 @@ import datetime
 from subprocess import run
 
 from coldtype import *
-from coldtype.pens.dattext import DATText
 
 cap_height = 750
 descender = -250
@@ -105,7 +104,7 @@ def show_grid(render, result):
                 .f(None)
                 .s(hsl(0.9, 1, a=0.5))
                 .sw(4)),
-            (DATText(gfn.glyph_name,
+            (RunonPen().text(gfn.glyph_name,
                 Style("Times", 48, load_font=0),
                 render.rect.inset(50)))
         ])

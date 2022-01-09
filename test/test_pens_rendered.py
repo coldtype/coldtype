@@ -5,7 +5,7 @@ from pathlib import Path
 from coldtype.color import hsl
 from coldtype.geometry import Rect
 from coldtype.text.composer import StSt, Font
-from coldtype.pens.runonpen import RunonPen
+from coldtype.vector import RunonPen
 
 from PIL import Image
 import imagehash
