@@ -244,6 +244,10 @@ class RunonPen(Runon,
     
     def ffg(self, glyphName, fn=None, index=0):
         return self.find_({"glyphName":glyphName}, fn, index)
+    
+    @staticmethod
+    def Enumerate(enumerable, enumerator):
+        return RunonPen().enumerate(enumerable, enumerator)
 
 def runonCast():
     def _runonCast(p):

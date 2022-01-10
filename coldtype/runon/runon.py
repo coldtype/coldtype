@@ -289,6 +289,7 @@ class Runon:
             utag = "_".join([str(i) for i in idx]) if idx else None
             if utag is None and parent is None:
                 utag = "ROOT"
+            
             res = callback(self, 0, dict(
                 depth=depth, alpha=alpha, idx=idx, utag=utag))
             
@@ -324,6 +325,7 @@ class Runon:
     
     def mapv(self, fn):
         if len(self) == 0:
+            print("! no els to mapv")
             return self
 
         idx = 0

@@ -34,6 +34,6 @@ def wt1(u):
                     , fill=hsl(0.8))
                 , rs[x.i].inset(5)) if args["showChars"] else None])
 
-    return PS([
-        P().gridlines(u.r.inset(10), sq, sq),
-        (PS.Enumerate(all_chars, showChar))])
+    return ß(
+        ß().gridlines(u.r.inset(10), sq, sq),
+        ß().enumerate(all_chars, showChar))
