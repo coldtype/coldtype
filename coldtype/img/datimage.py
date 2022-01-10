@@ -1,6 +1,6 @@
 from pathlib import Path
 from coldtype.geometry import Rect
-from coldtype.vector import Drawing
+from coldtype.drawing import Drawing
 from coldtype.img.blendmode import BlendMode
 
 

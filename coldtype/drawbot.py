@@ -1,6 +1,6 @@
 import contextlib
 import drawBot as db
-from coldtype.vector import Drawing
+from coldtype.drawing import Drawing
 from coldtype.pens.drawbotpen import DrawBotPen
 from coldtype.geometry import Point, Line, Rect
 from coldtype.text.reader import StyledString, Style, Font

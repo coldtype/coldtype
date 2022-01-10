@@ -1,7 +1,7 @@
 from fontTools.pens.basePen import BasePen
 from fontTools.pens.transformPen import TransformPen
 
-from coldtype.vector import Drawing
+from coldtype.drawing import Drawing
 
 try:
     import skia

@@ -7,7 +7,7 @@ from coldtype.time.easing import ease
 from coldtype.time.timeline import Timeline
 
 from coldtype.text import StyledString, Lockup, Graf, GrafStyle, Style, Rect
-from coldtype.vector import Drawing
+from coldtype.drawing import Drawing
 from coldtype.color import *
 
 from coldtype.time.clip import Clip, ClipFlags, ClipType

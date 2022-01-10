@@ -1,4 +1,4 @@
-from coldtype.vector import Drawing as P
+from coldtype.drawing import Drawing as P
 from coldtype.geometry import Point
 from coldtype.color import hsl
 

@@ -23,7 +23,7 @@ monkeypatch_ctypes()
 
 from coldtype.text import *
 from coldtype.text.reader import Font
-from coldtype.vector import Drawing
+from coldtype.drawing import Drawing
 from coldtype.geometry import *
 from coldtype.color import *
 from coldtype.renderable import *

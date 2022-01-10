@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from coldtype.interpolation import lerp, interp_dict
-from coldtype.vector import Drawing
+from coldtype.drawing import Drawing
 from coldtype.time.easing import ease, ez, applyRange
 from copy import copy
 import math

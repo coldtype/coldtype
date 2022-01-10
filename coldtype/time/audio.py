@@ -1,6 +1,6 @@
 import math
 from pathlib import Path
-from coldtype.vector import Drawing
+from coldtype.drawing import Drawing
 
 try:
     import numpy as np

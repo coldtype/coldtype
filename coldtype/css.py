@@ -1,6 +1,6 @@
 from coldtype.geometry.rect import Rect
 from coldtype.color import hsl
-from coldtype.vector import Drawing
+from coldtype.drawing import Drawing
 
 
 def cubicBezier(x1, y1, x2, y2):

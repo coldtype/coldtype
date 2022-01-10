@@ -1,1 +1,0 @@
-from coldtype.vector.drawing import Drawing

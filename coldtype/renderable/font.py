@@ -7,7 +7,7 @@ from coldtype.helpers import glyph_to_uni
 from coldtype.time.timeline import Timeline
 from coldtype.renderable import renderable, animation
 from coldtype.text.composer import Style, Font, StSt
-from coldtype.vector import Drawing
+from coldtype.drawing import Drawing
 from coldtype.color import hsl
 from pathlib import Path
 

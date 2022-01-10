@@ -1,4 +1,4 @@
-from coldtype.vector import Drawing
+from coldtype.drawing import Drawing
 from coldtype.geometry import Rect, Point
 
 from coldtype.text.shaper import segment

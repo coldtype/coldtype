@@ -3,10 +3,10 @@ from coldtype.renderable.animation import animation, renderable
 from coldtype.text.composer import StSt, Font, Rect, Point, Style
 from coldtype.time.timeline import Timeline
 from coldtype.time.midi import MidiTimeline
-from coldtype.vector import Drawing
+from coldtype.drawing import Drawing
 from coldtype.color import bw, hsl
 
-from coldtype.vector import Drawing as P
+from coldtype.drawing import Drawing as P
 
 PS = P
 

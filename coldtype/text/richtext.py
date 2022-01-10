@@ -1,6 +1,6 @@
 import re
 
-from coldtype.vector import Drawing
+from coldtype.drawing import Drawing
 from coldtype.text.composer import Graf, GrafStyle, Lockup
 from coldtype.text.reader import StyledString, Style
 from coldtype.color import hsl

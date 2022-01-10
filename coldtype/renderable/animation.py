@@ -10,7 +10,7 @@ from coldtype.time import Frame
 from coldtype.time.timeline import Timeline
 
 from coldtype.text.reader import Style, Font
-from coldtype.vector import Drawing
+from coldtype.drawing import Drawing
 from coldtype.geometry import Rect, Point
 from coldtype.color import bw, hsl
 
