@@ -238,7 +238,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 return
             elif isinstance(pen, DATImage):
                 paint = skia.Paint(AntiAlias=True)
-                f = pen._frame
+                f = pen.data("frame")
                 canvas.save()
                 for action, *args in pen.transforms:
                     if action == "rotate":

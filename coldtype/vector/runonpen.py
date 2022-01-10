@@ -231,7 +231,7 @@ class RunonPen(Runon,
             align=(txt_to_edge(x), txt_to_edge(y)))
         return self
     
-    # backwards compatibility
+    # backwards compatibility (questionable if should exist)
 
     def reversePens(self):
         """for backwards compatibility"""
@@ -253,6 +253,37 @@ class RunonPen(Runon,
     @staticmethod
     def Enumerate(enumerable, enumerator):
         return RunonPen().enumerate(enumerable, enumerator)
+    
+    def frameSet(self, th=False, tv=False):
+        from coldtype.color import hsl
+        from random import random
+        frames = []
+
+        def walker(el, pos, data):
+            if pos <= 0:
+                f = el.data("frame")
+                if f:
+                    frames.append(type(self)(f).fssw(-1, hsl(random(), a=0.5), 1))
+
+        self.walk(walker)
+        return type(self)(frames)
+    
+    def pvl(self):
+        for idx, (_, pts) in enumerate(self.v.value):
+            if len(pts) > 0:
+                self.v.value[idx] = list(self.v.value[idx])
+                self.v.value[idx][-1] = [Point(p) for p in self.v.value[idx][-1]]
+        return self
+    
+    def dots(self, radius=4):
+        """(Necessary?) Create circles at moveTo commands"""
+        dp = type(self)()
+        for t, pts in self.v.value:
+            if t == "moveTo":
+                x, y = pts[0]
+                dp.oval(Rect((x-radius, y-radius, radius, radius)))
+        self.v.value = dp.v.value
+        return self
 
 def runonCast():
     def _runonCast(p):

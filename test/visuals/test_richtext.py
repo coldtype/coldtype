@@ -47,24 +47,18 @@ def test_rich_custom(r):
         tag_delimiters=["≤", "≥"],
         visible_boundaries=["¶"],
         invisible_boundaries=["¬"])
-        #.xa()
         .xalign(r)
         .align(r, tv=1))
     
-    for p in pens.filter_style("h"):
-        (p.f(Gradient.V(p.bounds(), hsl(0.9, s=1), hsl(0.5, s=1)))
-            .s(0).sw(2))
+    pens.findStyle("h", lambda p: p
+        .fssw(Gradient.H(p.bounds(), hsl(0.9, s=1), hsl(0.5, s=1)), 0, 2))
     
-    for p in pens.filter_style("i"):
-        p.f(hsl(0.8, l=0.8))
-        for c in p.copy(with_data=True):
-            if c.glyphName == "space":
-                continue
-            p.insert(0, DATPen().rect(c.bounds()).f(hsl(0.7, a=0.75)))
-            p.insert(0, DATPen().rect(c.getFrame()).f(hsl(0.05, s=0.7, a=0.7)))
+    pens.findStyle("i", lambda p: p
+        .f(hsl(0.8, l=0.8))
+        .insert(0, ß(p.bounds()).f(hsl(0.7, a=0.75)))
+        .insert(0, ß(p.ambit()).fssw(-1, 0, 2)))
     
-    for p in pens.filter_style("b"):
-        p.rotate(180).translate(-15, 0)
+    pens.findStyle("b", lambda p: p.rotate(180))
     
     return pens
 
@@ -99,15 +93,14 @@ def render_code(txt, styles):
 
 @test(solo=0)
 def test_rich_code(r):
-    rt = (PythonCode(r.inset(100), code, render_code,
-        graf_style=GrafStyle(leading=12))
+    return (PythonCode(r.inset(100)
+        , code
+        , render_code
+        , leading=12)
         .align(r, tv=1)
-        .scale(1)
-        .removeSpacers())
-    
-    out = DATPens()
-    for line in rt:
-        out += DATPen().rect(line.getFrame()).f(hsl(0.3, a=0.1))
-
-    out += rt
-    return out
+        .scale(1.5)
+        .removeSpacers()
+        .map(lambda p:
+            p.insert(0, ß()
+                .rect(p.ambit())
+                .fssw(-1, hsl(0.3, a=0.25), 10))))

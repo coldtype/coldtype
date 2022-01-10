@@ -188,11 +188,11 @@ class RichText(RunonPen):
                 slug.reversePens()
         return pens.zero()
     
-    def filter_style(self, style):
-        return self.pfilter(lambda i, p: style in p.data("style_names", []))
+    def findStyle(self, style, modfn):
+        return self.find(lambda p: style in p.data("style_names", []), modfn)
     
-    def filter_text(self, text, flags=re.I):
-        return self.pfilter(lambda i, p: re.match(text, p.data("txt", ""), flags=flags))
+    def findText(self, text, modfn, flags=re.I):
+        return self.find(lambda p: re.match(text, p.data("txt", ""), flags=flags), modfn)
     
     def removeSpacers(self, spacer=None, clean=True):
         if not spacer and self.spacer:

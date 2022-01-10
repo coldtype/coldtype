@@ -30,9 +30,10 @@ class LayoutMixin():
                 if eb and eb.nonzero():
                     bs.append(eb)
             
-            b = bs[0]
-            for eb in bs[1:]:
-                b = b.union(eb)
+            if len(bs) > 0:
+                b = bs[0]
+                for eb in bs[1:]:
+                    b = b.union(eb)
         
         return b
     

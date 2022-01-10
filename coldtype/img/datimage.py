@@ -23,7 +23,7 @@ class DATImage(RunonPen):
         self.alpha = 1
 
         super().__init__()
-        self.addFrame(self.rect())
+        self.data(frame=self.rect())
     
     def load_image(self, src):
         raise NotImplementedError()
@@ -54,7 +54,7 @@ class DATImage(RunonPen):
         raise NotImplementedError()
     
     def align(self, rect, x="mdx", y="mdy"):
-        self.addFrame(self.rect().align(rect, x, y))
+        self.data(frame=self.rect().align(rect, x, y))
         return self
     
     def _resize(self, fx, fy):
@@ -69,7 +69,7 @@ class DATImage(RunonPen):
             return self
 
         self._resize(fx, fy)
-        self.addFrame(
+        self.data(frame=
             self.rect().align(self._frame, "mnx", "mny"))
         return self
     
@@ -81,7 +81,7 @@ class DATImage(RunonPen):
         raise NotImplementedError()
     
     def precompose(self, rect, as_image=True):
-        res = DATPens([self]).ch(self._precompose_fn()(rect))
+        res = RunonPen([self]).ch(self._precompose_fn()(rect))
         if as_image:
             return type(self).FromPen(res, original_src=self.src)
         else:
@@ -93,9 +93,9 @@ class DATImage(RunonPen):
         
         xo, yo = -crop.bounds().x, -crop.bounds().y
 
-        cropped = DATPens([
+        cropped = RunonPen([
             (self.in_pen().translate(xo, yo)),
-            (DATPen()
+            (RunonPen()
                 .rect(self.bounds())
                 .difference(crop)
                 .f(0, 1)
@@ -106,7 +106,7 @@ class DATImage(RunonPen):
         
         if mutate:
             self._img = cropped.img().get("src")
-            self.addFrame(self.rect())
+            self.data(frame=self.rect())
             return self
         else:
             return DATImage(self.src, img=cropped.img().get("src"))
