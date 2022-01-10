@@ -325,7 +325,8 @@ class Runon:
     
     def mapv(self, fn):
         if len(self) == 0:
-            print("! no els to mapv")
+            if self.val_present():
+                print("! no els to mapv")
             return self
 
         idx = 0
@@ -848,6 +849,19 @@ class Runon:
                 print(a(self))
             else:
                 print(a)
+        return self
+    
+    def pprint(self, *args):
+        if len(args) == 0:
+            print(self.tree())
+            return self
+        
+        from pprint import pprint
+        for a in args:
+            if callable(a):
+                pprint(a(self))
+            else:
+                pprint(a)
         return self
     
     def printh(self):

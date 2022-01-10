@@ -2,7 +2,7 @@ from pathlib import Path
 from defcon import Font as DefconFont
 from coldtype.text.reader import normalize_font_path
 from coldtype.interpolation import norm, interp_dict, lerp, loopidx
-from random import Random
+from coldtype.random import random_series
 
 
 def sibling(root, file):
@@ -24,14 +24,6 @@ def cycle_idx(arr, idx):
         return 0
     else:
         return idx
-
-def random_series(start=0, end=1, seed=0, count=5000):
-    rnd = Random()
-    rnd.seed(seed)
-    rnds = []
-    for x in range(count):
-        rnds.append(start+rnd.random()*(end-start))
-    return rnds
 
 _by_uni = None
 _by_glyph = None

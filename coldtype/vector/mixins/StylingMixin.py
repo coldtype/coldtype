@@ -23,9 +23,14 @@ class StylingMixin():
         if "fill" not in st:
             st["fill"] = rgb(1, 0, 0.5)
         
+        rest = ["blendmode", "image", "skp"]
         if sf:
-            return {k:v for k,v in sorted(st.items(), reverse=True)}
-        return st
+            order = ["stroke", "fill", *rest]
+        else:
+            order = ["fill", "stroke", *rest]
+        
+        sort = {k:v for k,v in sorted(st.items(), key=lambda kv: order.index(kv[0]))}
+        return sort
 
     def f(self, *value):
         """Get/set a (f)ill"""

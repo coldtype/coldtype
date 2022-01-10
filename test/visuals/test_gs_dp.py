@@ -1,27 +1,27 @@
 from coldtype import *
 
-@renderable((500, 500))
-def test1(r):
-    return (DPS()
-        .define(
-            ri=r.inset(50),
-            aƒbƒc="$riC50—a—50",
-            an="$a⊤",
-            cs="$c⊥",
-            acp="($an⍺)⫎($cs⍵)")
-        .gss("$acp¶π0,50⊢ $acp⊣ $acp⊣µ")
-        .f(None).s(0).sw(4))
+# @renderable((500, 500))
+# def test1(r):
+#     return (DPS()
+#         .define(
+#             ri=r.inset(50),
+#             aƒbƒc="$riC50—a—50",
+#             an="$a⊤",
+#             cs="$c⊥",
+#             acp="($an⍺)⫎($cs⍵)")
+#         .gss("$acp¶π0,50⊢ $acp⊣ $acp⊣µ")
+#         .f(None).s(0).sw(4))
 
-@renderable((500, 500))
-def test2(r):
-    return (DPS()
-        .define(
-            ri=r.inset(50),
-            _ƒxƒyƒzƒ_="$riIY50C100—50—a—50—100",
-            d1="$x⊥∮$z⊤")
-        .gss("""$ri⊢∮~($ri↗⨝$ri↘OX-100)
-            $d1⊣∮〱OX-30""")
-        .f(None).s(0).sw(4))
+# @renderable((500, 500))
+# def test2(r):
+#     return (DPS()
+#         .define(
+#             ri=r.inset(50),
+#             _ƒxƒyƒzƒ_="$riIY50C100—50—a—50—100",
+#             d1="$x⊥∮$z⊤")
+#         .gss("""$ri⊢∮~($ri↗⨝$ri↘OX-100)
+#             $d1⊣∮〱OX-30""")
+#         .f(None).s(0).sw(4))
 
 #@renderable((500, 500))
 def test3(r):

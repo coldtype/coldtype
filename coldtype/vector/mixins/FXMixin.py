@@ -1,5 +1,6 @@
 import math
 from copy import deepcopy
+from random import randint
 
 from fontTools.pens.basePen import decomposeQuadraticSegment
 from fontTools.pens.recordingPen import RecordingPen
@@ -9,7 +10,7 @@ from coldtype.geometry import Point
 from coldtype.pens.outlinepen import OutlinePen
 from coldtype.pens.translationpen import TranslationPen, polarCoord
 from coldtype.pens.misc import ExplodingPen, SmoothPointsPen
-
+from coldtype.random import random_series
 
 class FXMixin():
     def q2c(self):
@@ -53,6 +54,65 @@ class FXMixin():
             self.replay(fp)
             self._val.value = rp.value
         
+        return self
+    
+    def catmull(self, points, close=False):
+        """Run a catmull spline through a series of points"""
+        p0 = points[0]
+        p1, p2, p3 = points[:3]
+        pts = [p0]
+        i = 1
+        while i < len(points):
+            pts.append([
+                ((-p0[0] + 6 * p1[0] + p2[0]) / 6),
+                ((-p0[1] + 6 * p1[1] + p2[1]) / 6),
+                ((p1[0] + 6 * p2[0] - p3[0]) / 6),
+                ((p1[1] + 6 * p2[1] - p3[1]) / 6),
+                p2[0],
+                p2[1]
+            ])
+            p0 = p1
+            p1 = p2
+            p2 = p3
+            try:
+                p3 = points[i + 2]
+            except:
+                p3 = p3
+            i += 1
+        self.moveTo(pts[0])
+        for p in pts[1:]:
+            self.curveTo((p[0], p[1]), (p[2], p[3]), (p[4], p[5]))
+        if close:
+            self.closePath()
+        return self
+    
+    def roughen(self, amplitude=10, threshold=10, ignore_ends=False, seed=None):
+        """Randomizes points in skeleton"""
+        if seed is not None:
+            rs = random_series(0, amplitude, seed=seed)
+        else:
+            rs = random_series(0, amplitude, seed=randint(0, 5000))
+        randomized = []
+        _x = 0
+        _y = 0
+        for idx, (t, pts) in enumerate(self.v.value):
+            if idx == 0 and ignore_ends:
+                randomized.append([t, pts])
+                continue
+            if idx == len(self.v.value) - 1 and ignore_ends:
+                randomized.append([t, pts])
+                continue
+            if t == "lineTo" or t == "curveTo":
+                #jx = pnoise1(_x) * amplitude # should actually be 1-d on the tangent (maybe? TODO)
+                #jy = pnoise1(_y) * amplitude
+                jx = rs[idx*2] - amplitude/2
+                jy = rs[idx*2+1] - amplitude/2
+                randomized.append([t, [(x+jx, y+jy) for x, y in pts]])
+                _x += 0.2
+                _y += 0.3
+            else:
+                randomized.append([t, pts])
+        self.v.value = randomized
         return self
     
     def explode(self):

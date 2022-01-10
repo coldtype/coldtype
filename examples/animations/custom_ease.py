@@ -16,10 +16,9 @@ def easer(f):
         (p.copy()
             .scaleToWidth(f.a.r.w-100)
             .align(f.a.r)
-            .layer(
+            .layerv(
                 λ.fssw(-1, hsl(0.9), 2),
-                λ.ch(skeleton(scale=0.5)).s(hsl(0.65))
-            )),
+                λ.ch(skeleton(scale=0.5)).s(hsl(0.65)))),
         (StSt("COLD", Font.ColdtypeObviously()
             , 300
             , wdth=f.e(p, 0))

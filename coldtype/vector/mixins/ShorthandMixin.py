@@ -36,10 +36,10 @@ class ShorthandMixin(SHContext):
         return res
     
     def gss(self, s):
-        dps = type(self)()
-        sh(s, ctx=self, dps=dps)
-        for p in dps._els:
-            self.record(p)
+        for gs in re.split(r"\s", s):
+            if gs:
+                print(">>>>>>>>", gs)
+                self.gs(gs)
         return self
     
     def ez(self, r, start_y, end_y, s):
@@ -139,3 +139,28 @@ class ShorthandMixin(SHContext):
         if s in SH_UNARY_SUFFIX_PROPS:
             return SH_UNARY_SUFFIX_PROPS[s]
         return s
+    
+    def all_guides(self, field="defs", sw=1, l=0, a=0.15):
+        from coldtype.geometry import Geometrical
+        from coldtype.text import Style
+        from coldtype.color import hsl
+
+        dps = type(self)()
+        for idx, (k, x) in enumerate(getattr(self, field).values.items()):
+            c = hsl(idx/2.3, 1, l=0.35, a=a)
+            if isinstance(x, Geometrical) or isinstance(x, type(self)):
+                g = (type(self)(x)
+                    .translate(l, 0)
+                    .f(None)
+                    .s(c).sw(sw))
+                if k in ["gb", "gc", "gs", "gxb"]:
+                    c = hsl(0.6, 1, 0.5, 0.25)
+                    g.s(c).sw(2)
+                dps += g
+                dps.append(type(self)()
+                    .text(k, Style("Helvetica", 24
+                        , load_font=0
+                        , fill=c.with_alpha(a).darker(0.2)),
+                        Rect.FromCenter(g.bounds().pc, 24)))
+                #dps += DATText(k, ["Helvetica", 24, dict(fill=)], Rect.FromCenter(g.bounds().pc, 24))
+        return dps

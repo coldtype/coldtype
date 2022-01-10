@@ -68,6 +68,10 @@ class RunonPen(Runon,
             r = self._val
             self._val = RecordingPen()
             self.rect(r)
+        elif isinstance(self._val, Point):
+            p = self._val
+            self._val = RecordingPen()
+            self.rect(Rect.FromCenter(p, 20))
         else:
             raise Exception("Can’t understand _val", self._val)
         
@@ -225,6 +229,7 @@ class RunonPen(Runon,
             text=text,
             style=style,
             align=(txt_to_edge(x), txt_to_edge(y)))
+        return self
     
     # backwards compatibility
 
