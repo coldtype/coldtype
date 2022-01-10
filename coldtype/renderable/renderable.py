@@ -14,7 +14,7 @@ from pathlib import Path
 from coldtype.geometry import Rect, Point
 from coldtype.color import normalize_color
 from coldtype.text.reader import normalize_font_prefix, Font
-from coldtype.vector import RunonPen
+from coldtype.vector import Drawing
 from coldtype.img.datimage import DATImage
 
 class ColdtypeCeaseConfigException(Exception):
@@ -256,8 +256,8 @@ class renderable():
             res = render_pass.fn(*render_pass.args)
         
         if self.render_bg:
-            return RunonPen([
-                RunonPen(self.rect).f(self.bg),
+            return Drawing([
+                Drawing(self.rect).f(self.bg),
                 res
             ])
         else:
@@ -290,9 +290,9 @@ class renderable():
     
     def _normalize_result(self, pens):
         if not pens:
-            return RunonPen()
-        elif not isinstance(pens, RunonPen):
-            return RunonPen(pens)
+            return Drawing()
+        elif not isinstance(pens, Drawing):
+            return Drawing(pens)
         else:
             return pens
     

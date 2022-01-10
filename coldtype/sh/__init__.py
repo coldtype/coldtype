@@ -77,7 +77,7 @@ SH_BINARY_OPS_EDGEAWARE = {
 SH_JOINS = {
     "⨝": ["join"],
     "∩": ["intersection"],
-    "∮": lambda a, b: f"RunonPen().moveTo({a}.start).lineTo({a}.end).lineTo({b}.end).lineTo({b}.start).closePath()",
+    "∮": lambda a, b: f"Drawing().moveTo({a}.start).lineTo({a}.end).lineTo({b}.end).lineTo({b}.start).closePath()",
     "⫎": lambda a, b: f"Rect.FromPoints({a}, {b})"
 }
 
@@ -215,7 +215,7 @@ def shgroup(s):
     return shphrase(s)
 
 def sh(s, ctx:SHContext=None, dps=None, subs={}):
-    from coldtype.vector import RunonPen
+    from coldtype.vector import Drawing
     from coldtype.color import hsl, rgb
 
     #print("SH>", s, subs)
@@ -264,7 +264,7 @@ def sh(s, ctx:SHContext=None, dps=None, subs={}):
                 Point=Point,
                 Line=Line,
                 Rect=Rect,
-                RunonPen=RunonPen)
+                Drawing=Drawing)
                 , last_locals)
             #print("LOCALS", last_locals)
             return res

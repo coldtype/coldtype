@@ -10,7 +10,7 @@ from coldtype.time import Frame
 from coldtype.time.timeline import Timeline
 
 from coldtype.text.reader import Style, Font
-from coldtype.vector import RunonPen
+from coldtype.vector import Drawing
 from coldtype.geometry import Rect, Point
 from coldtype.color import bw, hsl
 
@@ -163,15 +163,15 @@ class animation(renderable, Timeable):
         res = super().runpost(result, render_pass, renderer_state)
 
         if Overlay.Recording in renderer_state.overlays and self.overlay:
-            res.append(RunonPen().oval(Point(0, 0).rect(30, 30)).f(hsl(0, 1, 0.7)))
+            res.append(Drawing().oval(Point(0, 0).rect(30, 30)).f(hsl(0, 1, 0.7)))
 
         if Overlay.Info in renderer_state.overlays and self.overlay:
             t = self.rect.take(50, "mny")
             frame:Frame = render_pass.args[0]
-            return RunonPen([
+            return Drawing([
                 res,
-                RunonPen().rect(t).f(bw(0, 0.75)) if self.show_frame else None,
-                RunonPen().text(f"{frame.i} / {self.duration}", Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10)) if self.show_frame else None])
+                Drawing().rect(t).f(bw(0, 0.75)) if self.show_frame else None,
+                Drawing().text(f"{frame.i} / {self.duration}", Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10)) if self.show_frame else None])
         return res
     
     def package(self):
@@ -209,11 +209,11 @@ class animation(renderable, Timeable):
             else:
                 pngs = [p for i, p in enumerate(_pngs) if i in sl]
             
-            dps = RunonPen()
-            dps += RunonPen().rect(r).f(self.bg)
+            dps = Drawing()
+            dps += Drawing().rect(r).f(self.bg)
             for idx, g in enumerate(r.grid(gx, gy)):
                 if idx < len(pngs):
-                    dps += RunonPen().rect(g).f(None).img(pngs[idx], g, pattern=False)
+                    dps += Drawing().rect(g).f(None).img(pngs[idx], g, pattern=False)
             return dps
         
         return contactsheet

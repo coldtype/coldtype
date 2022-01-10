@@ -116,12 +116,12 @@ def ease(style, x):
         return style.ease_t(x), 0.5
         return curve_pos_and_speed(style, x)
     elif type(style).__name__ == "Glyph":
-        from coldtype.vector import RunonPen
-        p = RunonPen().glyph(style)
+        from coldtype.vector import Drawing
+        p = Drawing().glyph(style)
         return p.ease_t(x), 0.5
     elif False:
         if style in easer_ufo:
-            return curve_pos_and_speed(RunonPen().glyph(easer_ufo[style]), x)
+            return curve_pos_and_speed(Drawing().glyph(easer_ufo[style]), x)
         else:
             raise Exception("No easing function with that mnemonic")
     else:

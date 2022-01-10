@@ -2,7 +2,7 @@ import unittest
 from coldtype.geometry import Rect
 from coldtype.color import hsl
 from coldtype.text.composer import StSt, Font, Style
-from coldtype.vector import RunonPen
+from coldtype.vector import Drawing
 
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 mutator = Font.Cacheable("assets/MutatorSans.ttf")
@@ -12,8 +12,8 @@ class TestReader(unittest.TestCase):
     def test_fit(self):
         inset = 150
         ri = r.inset(inset, 0)
-        out = RunonPen([
-            RunonPen(ri).f(hsl(0.7, a=0.1)),
+        out = Drawing([
+            Drawing(ri).f(hsl(0.7, a=0.1)),
             (StSt("COLD", co, 500,
                 wdth=1, fit=ri.w, _stst=True)
                 .fssw(-1, hsl(0.7), 2)
@@ -44,7 +44,7 @@ class TestReader(unittest.TestCase):
         a = StSt("CLD", style)
         b = StSt("CLD", style.mod(kp={"C/L":20, "L/D":100}))
         
-        RunonPen([a, b]).fssw(-1, 0, 1).picklejar(r)
+        Drawing([a, b]).fssw(-1, 0, 1).picklejar(r)
         
         self.assertEqual(a[1].ambit().x, 155.75)
         self.assertEqual(b[1].ambit().x, 155.75 + 20*(250/1000))

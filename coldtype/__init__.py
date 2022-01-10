@@ -23,7 +23,7 @@ monkeypatch_ctypes()
 
 from coldtype.text import *
 from coldtype.text.reader import Font
-from coldtype.vector import RunonPen
+from coldtype.vector import Drawing
 from coldtype.geometry import *
 from coldtype.color import *
 from coldtype.renderable import *
@@ -50,18 +50,18 @@ __as_config__ = False # will be redefined contextually
 ι = None
 ℛ = lambda x: x
 
-ß = RunonPen
-P = RunonPen
-PS = RunonPen
+ß = Drawing
+P = Drawing
+PS = Drawing
 
 # temporary aliases for backwards compat
-DATPens = RunonPen
-DATPen = RunonPen
-DPS = RunonPen
-DP = RunonPen
+DATPens = Drawing
+DATPen = Drawing
+DPS = Drawing
+DP = Drawing
 
 def debug_txt(r, txt, font_size=42, **kwargs):
-    return RunonPen().text(txt,
+    return Drawing().text(txt,
         Style("Times", font_size, load_font=0, **kwargs),
         r.inset(20))
 

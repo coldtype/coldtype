@@ -1,4 +1,4 @@
-from coldtype.vector import RunonPen
+from coldtype.vector import Drawing
 from coldtype.geometry import Rect, Point
 
 from coldtype.text.shaper import segment
@@ -18,7 +18,7 @@ class GrafStyle():
 class Graf():
     def __init__(self, lines, container, style=None, no_frames=False, **kwargs):
         if isinstance(container, Rect):
-            self.container = RunonPen().rect(container)
+            self.container = Drawing().rect(container)
         else:
             self.container = container
         if style and isinstance(style, GrafStyle):
@@ -66,7 +66,7 @@ class Graf():
     
     def pens(self):
         rects = self.lineRects()
-        pens = RunonPen()
+        pens = Drawing()
         for idx, l in enumerate(self.lines):
             r = rects[idx]
             dps = l.pens().translate(r.x, r.y) # r.x
@@ -122,7 +122,7 @@ class Lockup(FittableMixin):
                 x_off += s.strings[-1].tracking
             except:
                 pass
-        return RunonPen(pens)
+        return Drawing(pens)
     
     def pen(self):
         return self.pens().pen()
@@ -181,7 +181,7 @@ class Composer():
         """
         Structured representation of the multi-line text
         
-        In the result, each line will be a ``RunonPen``, then within those lines, each glyph/ligature for that line will be an individual ``RunonPen``
+        In the result, each line will be a ``Drawing``, then within those lines, each glyph/ligature for that line will be an individual ``Drawing``
         """
         return self.graf.pens()
     
@@ -220,7 +220,7 @@ def StSt(text,
     leading = kwargs.get("leading", 10)
 
     if "\n" in text:
-        lines = RunonPen()
+        lines = Drawing()
         for l in text.split("\n"):
             lines.append(StSt(l, font, font_size, rect=rect, strip=strip, **{**kwargs, **dict(multline=False)}))
         return lines.stack(leading)
@@ -237,7 +237,7 @@ def StSt(text,
             lockup = lockup.pens()
         
         if multiline:
-            return RunonPen([lockup])
+            return Drawing([lockup])
 
         #lockup._stst_style = style
         return lockup
@@ -294,7 +294,7 @@ def Glyphwise(st, styler, start=0, line=0):
             for lidx, l in enumerate(lines):
                 gs.append(Glyphwise(l, styler, start=start, line=lidx))
                 start += len(l)
-            return RunonPen(gs).stack()
+            return Drawing(gs).stack()
     except AttributeError:
         pass
 
@@ -304,7 +304,7 @@ def Glyphwise(st, styler, start=0, line=0):
     def krn(off, on, idx):
         return kx(off, idx) - kx(on, idx)
 
-    dps = RunonPen()
+    dps = Drawing()
     prev = 0
     tracks = []
 

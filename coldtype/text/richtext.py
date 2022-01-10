@@ -1,6 +1,6 @@
 import re
 
-from coldtype.vector import RunonPen
+from coldtype.vector import Drawing
 from coldtype.text.composer import Graf, GrafStyle, Lockup
 from coldtype.text.reader import StyledString, Style
 from coldtype.color import hsl
@@ -18,7 +18,7 @@ except ImportError:
     highlight = None
     pass
 
-class RichText(RunonPen):
+class RichText(Drawing):
     """Very experimental module to support rich-text from annotated strings, like a super-minimal-but-open-ended subset of markdown, inspired by the way rich text is built up in the time.nle.premiere DPS subclass in coldtype"""
     def __init__(self,
         rect,

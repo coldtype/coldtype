@@ -104,7 +104,7 @@ def show_grid(render, result):
                 .f(None)
                 .s(hsl(0.9, 1, a=0.5))
                 .sw(4)),
-            (RunonPen().text(gfn.glyph_name,
+            (Drawing().text(gfn.glyph_name,
                 Style("Times", 48, load_font=0),
                 render.rect.inset(50)))
         ])

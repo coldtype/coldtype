@@ -3,7 +3,7 @@ try:
 except:
     pass
 
-from coldtype.vector import RunonPen
+from coldtype.vector import Drawing
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin
 from coldtype.color import Color, Gradient
@@ -14,7 +14,7 @@ def get_image_rect(src):
     return Rect(0, 0, w, h)
 
 
-class DrawBotPen(DrawablePenMixin, RunonPen):
+class DrawBotPen(DrawablePenMixin, Drawing):
     def __init__(self, dat, rect=None):
         super().__init__()
         self.rect = rect
@@ -86,12 +86,12 @@ class DrawBotPen(DrawablePenMixin, RunonPen):
     
     def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
         if clip:
-            cp = RunonPen(clip).f(None)
+            cp = Drawing(clip).f(None)
             bp = db.BezierPath()
             cp.replay(bp)
             db.clipPath(bp)
         #elif self.rect:
-        #    cp = RunonPen(fill=None).rect(self.rect).xor(self.dat)
+        #    cp = Drawing(fill=None).rect(self.rect).xor(self.dat)
         #    bp = db.BezierPath()
         #    cp.replay(bp)
         #    db.clipPath(bp)

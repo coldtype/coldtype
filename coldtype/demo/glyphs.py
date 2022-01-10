@@ -28,7 +28,7 @@ def wt1(u):
         return PS([StSt(x.el, fnt, args["fontSize"])
                 .align(rs[x.i])
                 .f(0),
-            RunonPen().text(x.el,
+            Drawing().text(x.el,
                 Style("Times", 24
                     , load_font=0
                     , fill=hsl(0.8))

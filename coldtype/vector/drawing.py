@@ -16,7 +16,7 @@ from coldtype.vector.mixins.ShorthandMixin import ShorthandMixin
 from coldtype.vector.mixins.SegmentingMixin import SegmentingMixin
 from coldtype.vector.mixins.SerializationMixin import SerializationMixin
 
-class RunonPen(Runon,
+class Drawing(Runon,
     StylingMixin,
     LayoutMixin,
     DrawingMixin,
@@ -29,9 +29,9 @@ class RunonPen(Runon,
     ):
     def FromPens(pens):
         if hasattr(pens, "_pens"):
-            out = RunonPen().data(**pens.data)
+            out = Drawing().data(**pens.data)
             for p in pens:
-                out.append(RunonPen.FromPens(p))
+                out.append(Drawing.FromPens(p))
         elif hasattr(pens, "_els") and len(pens._els) > 0:
             out = pens
         elif hasattr(pens, "_val") and pens.val_present():
@@ -40,7 +40,7 @@ class RunonPen(Runon,
             p = pens
             rp = RecordingPen()
             p.replay(rp)
-            out = RunonPen(rp)
+            out = Drawing(rp)
             
             attrs = p.attrs.get("default", {})
             if "fill" in attrs:
@@ -252,7 +252,7 @@ class RunonPen(Runon,
     
     @staticmethod
     def Enumerate(enumerable, enumerator):
-        return RunonPen().enumerate(enumerable, enumerator)
+        return Drawing().enumerate(enumerable, enumerator)
     
     def frameSet(self, th=False, tv=False):
         from coldtype.color import hsl
@@ -287,5 +287,5 @@ class RunonPen(Runon,
 
 def runonCast():
     def _runonCast(p):
-        return RunonPen.FromPens(p)
+        return Drawing.FromPens(p)
     return _runonCast

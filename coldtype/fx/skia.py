@@ -10,7 +10,7 @@ from fontTools.misc.transform import Transform
 
 from coldtype.fx.chainable import Chainable
 from coldtype.color import normalize_color, bw
-from coldtype.vector import RunonPen
+from coldtype.vector import Drawing
 from coldtype.pens.skiapen import SkiaPen
 
 SKIA_CONTEXT = None
@@ -186,7 +186,7 @@ def potrace(rect, poargs=[], invert=True):
                 print(svgp)
             rp = RecordingPen()
             svgp.draw(rp)
-            dp = RunonPen()
+            dp = Drawing()
             dp.v.value = rp.value
             return dp.f(0)
     return _potrace
@@ -206,7 +206,7 @@ def precompose(rect,
             disk=disk,
             style=style)
         
-        return (RunonPen()
+        return (Drawing()
             .rect(placement or rect)
             .img(img, (placement or rect), False, opacity)
             .f(None))
@@ -237,7 +237,7 @@ def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
                 if res:
                     pi.putpixel((x, y), tuple(res))
         out = skia.Image.frombytes(pi.convert('RGBA').tobytes(), pi.size, skia.kRGBA_8888_ColorType)
-        return (RunonPen()
+        return (Drawing()
             .rect(rect)
             .img(out, rect, False)
             .f(None))

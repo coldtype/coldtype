@@ -116,12 +116,11 @@ class TestTime(unittest.TestCase):
         self.assertEqual(cgp[0][1][0][-2].glyphName, "S.closed")
     
     def test_animation(self):
-        src = "test/visuals/test_animation.py"
+        src = "examples/animations/alphabet.py"
         sr = SourceReader(src).unlink()
         anim:animation = sr.renderables()[0]
         
         self.assertEqual(anim.duration, 26)
-        self.assertEqual(anim.t.find_workarea(), [0, 1, 2])
         
         for i in range(0, anim.duration):
             p = anim.passes(None, None, indices=[i])[0]

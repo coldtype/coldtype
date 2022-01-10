@@ -7,7 +7,7 @@ from coldtype.helpers import glyph_to_uni
 from coldtype.time.timeline import Timeline
 from coldtype.renderable import renderable, animation
 from coldtype.text.composer import Style, Font, StSt
-from coldtype.vector import RunonPen
+from coldtype.vector import Drawing
 from coldtype.color import hsl
 from pathlib import Path
 
@@ -102,19 +102,19 @@ class generativefont(animation):
         try:
             guides = result[0].all_guides()
         except:
-            guides = RunonPen()
+            guides = Drawing()
         
         bbox = gfn.bbox.offset(0, 250)
-        return RunonPen([
-            RunonPen(result).translate(0, 250),
-            #RunonPen().gridlines(render.rect).s(hsl(0.6, a=0.3)).sw(1).f(None),
-            (RunonPen()
+        return Drawing([
+            Drawing(result).translate(0, 250),
+            #Drawing().gridlines(render.rect).s(hsl(0.6, a=0.3)).sw(1).f(None),
+            (Drawing()
                 .line(bbox.es.extr(-100))
                 .line(bbox.en.extr(-100))
                 .line(bbox.ee.extr(-100))
                 .f(None).s(hsl(0.9, 1, a=0.5)).sw(4)),
             guides.translate(gfn.lsb, 250),
-            (RunonPen().text(gfn.glyph_name, Style("Times", 48, load_font=0),
+            (Drawing().text(gfn.glyph_name, Style("Times", 48, load_font=0),
                 render.rect.inset(50)))])
     
     def glyphViewer(self, f):
@@ -138,7 +138,7 @@ class generativefont(animation):
         glyph.unicode = glyph_to_uni(glyph_fn.glyph_name)
         self.ufo.insertGlyph(glyph)
         self.ufo.save()
-        return RunonPen([
+        return Drawing([
             glyph_pen.data(gfn=glyph_fn)
         ])
     

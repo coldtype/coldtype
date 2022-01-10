@@ -38,7 +38,7 @@ class ShorthandMixin(SHContext):
     def gss(self, s):
         for gs in re.split(r"\s", s):
             if gs:
-                print(">>>>>>>>", gs)
+                #print(">>>>>>>>", gs)
                 self.gs(gs)
         return self
     

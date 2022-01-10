@@ -9,7 +9,7 @@ from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
 
 from coldtype.color import normalize_color, rgb
-from coldtype.vector import RunonPen
+from coldtype.vector import Drawing
 from coldtype.geometry import Rect
 
 from typing import Union
@@ -21,8 +21,8 @@ except ImportError:
     Matrix = None
     SkiaPathPen = None
 
-#_PenClass = RunonPen
-#_PensClass = RunonPen
+#_PenClass = Drawing
+#_PensClass = Drawing
 
 from coldtype.fontgoggles.font import getOpener
 from coldtype.fontgoggles.font.baseFont import BaseFont
@@ -579,7 +579,7 @@ class Style():
         def stretcher(w, xp, i, p):
             np = (p.flatten(flatten) if flatten else p).nonlinear_transform(lambda x,y: (x if x < xp else x + w, y))
             if debug:
-                (np.record(RunonPen()
+                (np.record(Drawing()
                     .line([(xp, -250), (xp, 1000)])
                     .outline()))
             return np
@@ -598,10 +598,10 @@ class Style():
             np = (p.flatten(flatten) if flatten else p).nonlinear_transform(lambda x,y: (x if is_left((xdsc, -250), (xasc, 1000), (x, y)) else x + w, y))
             if debug:
                 (np
-                    .record(RunonPen()
+                    .record(Drawing()
                         .line([(xdsc, -250), (xasc, 1000)])
                         .outline())
-                    .record(RunonPen()
+                    .record(Drawing()
                         .moveTo((x0+50/2, y0+50/2))
                         .dots(radius=50)))
             return np
@@ -625,7 +625,7 @@ class Style():
             elif align == "mxy":
                 np.translate(0, -h)
             if debug:
-                (np.record(RunonPen()
+                (np.record(Drawing()
                     .line([(0, yp), (p.ambit().point("E").x, yp)])
                     .outline()))
             return np
@@ -646,10 +646,10 @@ class Style():
             np = (p.flatten(flatten) if flatten else p).nonlinear_transform(lambda x,y: (x, y if not is_left(p0, p1, (x, y)) else y + h))
             if debug:
                 (np
-                    .record(RunonPen()
+                    .record(Drawing()
                         .line([p0, p1])
                         .outline())
-                    .record(RunonPen()
+                    .record(Drawing()
                         .moveTo((x0+50/2, y0+50/2))
                         .dots(radius=50)))
             return np
@@ -902,7 +902,7 @@ class StyledString(FittableMixin):
                     pass
         tx = glyph.frame.x#/self.scale()
         ty = ty + glyph.frame.y#/self.scale()
-        out_pen = RunonPen()
+        out_pen = Drawing()
         skia_pen = SkiaPathPen(in_pen)
         skia_pen.path.transform(Matrix.Scale(s, s))
         skia_pen.path.transform(Matrix.Translate(tx, ty))
@@ -912,7 +912,7 @@ class StyledString(FittableMixin):
         #    w, mod = self.style.mods[glyph.name]
         #    mod(-1, ip)
 
-        out_pen = skia_pen.to_runonpen()
+        out_pen = skia_pen.to_drawing()
 
         if self.style.rotate:
             out_pen.rotate(self.style.rotate)
@@ -950,9 +950,9 @@ class StyledString(FittableMixin):
         if s > 0:
             t = t.translate(glyph.frame.x/s, glyph.frame.y/s)
 
-        out_pen = RunonPen()
+        out_pen = Drawing()
         tp = TransformPen(out_pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
-        ip = RunonPen().record(in_pen)
+        ip = Drawing().record(in_pen)
         if self.style.mods and glyph.name in self.style.mods:
             w, mod = self.style.mods[glyph.name]
             mod(-1, ip)
@@ -974,21 +974,21 @@ class StyledString(FittableMixin):
         #attrs = dict(fill=self.style.fill)
         #if self.style.stroke:
         #    attrs["stroke"] = dict(color=self.style.stroke, weight=self.style.strokeWidth)
-        dp = RunonPen().f(self.style.fill)
+        dp = Drawing().f(self.style.fill)
         if self.style.stroke:
             dp.s(self.style.stroke).sw(self.style.strokeWidth)
         return dp
 
-    def pens(self) -> RunonPen:
+    def pens(self) -> Drawing:
         """
-        Vectorize text into a ``RunonPen``, such that each glyph (or ligature) is represented by a single `RunonPen` (or a ``RunonPen`` in the case of a color font, which will then nest a `RunonPen` for each layer of that color glyph)
+        Vectorize text into a ``Drawing``, such that each glyph (or ligature) is represented by a single `Drawing` (or a ``Drawing`` in the case of a color font, which will then nest a `Drawing` for each layer of that color glyph)
         """
 
         self.resetGlyphRun()
         if not self.style.no_shapes:
             self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
         
-        pens = RunonPen()
+        pens = Drawing()
         for idx, g in enumerate(self.glyphs):
 
             # TODO this is sketchy but seems to correct
@@ -999,9 +999,9 @@ class StyledString(FittableMixin):
             dp_atom = self._emptyPenWithAttrs()
             if self.style.no_shapes:
                 if callable(self.style.show_frames):
-                    dp_atom.record(RunonPen().rect(self.style.show_frames(g.frame)).outline(4))
+                    dp_atom.record(Drawing().rect(self.style.show_frames(g.frame)).outline(4))
                 else:
-                    dp_atom.record(RunonPen().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
+                    dp_atom.record(Drawing().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
                 dp_atom.data(
                     frame=norm_frame,
                     glyphName=g.name
@@ -1025,17 +1025,17 @@ class StyledString(FittableMixin):
 
                 if self.style.show_frames:
                     if callable(self.style.show_frames):
-                        #dp_atom.record(RunonPen().rect(self.style.show_frames(g.frame)).outline(4))
+                        #dp_atom.record(Drawing().rect(self.style.show_frames(g.frame)).outline(4))
                         dp_atom.rect(self.style.show_frames(g.frame))
                     else:
-                        dp_atom.record(RunonPen().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
+                        dp_atom.record(Drawing().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
                         #dp_atom.rect(g.frame)
                 if self.style.q2c:
                     dp_atom.q2c()
                 if self.style.removeOverlap:
                     dp_atom.removeOverlap()
             else:
-                dp_atom = RunonPen()
+                dp_atom = Drawing()
                 dp_atom.layered = True
                 for lidx, layer in enumerate(g.glyphDrawing.layers):
                     dp_layer = self._emptyPenWithAttrs()
@@ -1073,14 +1073,14 @@ class StyledString(FittableMixin):
         #for k, v in self.style.data.items():
         #    pens.data[k] = v
 
-        ro = pens#RunonPen.FromPens(pens)
+        ro = pens#Drawing.FromPens(pens)
         if self.style._stst:
             ro._stst = self
         return ro
 
-    def pen(self, frame=True) -> RunonPen:
+    def pen(self, frame=True) -> Drawing:
         """
-        Vectorize all text into single ``RunonPen``
+        Vectorize all text into single ``Drawing``
         """
         return self.pens().pen()
 
@@ -1116,7 +1116,7 @@ class SegmentedString(FittableMixin):
         return adjusted
 
     def pens(self, flat=True):
-        pens = RunonPen()
+        pens = Drawing()
         x_off = 0
         for s in self.strings:
             dps = s.pens()

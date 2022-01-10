@@ -1,7 +1,7 @@
 import unittest
 from random import Random
 from coldtype.geometry import Rect, Point
-from coldtype.vector import RunonPen
+from coldtype.vector import Drawing
 
 from coldtype.color import hsl, rgb
 from coldtype.pens.drawablepen import DrawablePenMixin
@@ -12,25 +12,25 @@ from coldtype.fx.chainable import Chainable
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 mutator = Font.Cacheable("assets/MutatorSans.ttf")
 
-class TestRunonPen(unittest.TestCase):
+class TestDrawing(unittest.TestCase):
     def test_gs(self):
         r = Rect(0, 0, 100, 100)
-        dps = RunonPen()
-        dp = (RunonPen()
+        dps = Drawing()
+        dp = (Drawing()
             .define(r=r)
             .gs("$r↖ $r↗ $r↙|↘|65 ɜ"))
         self.assertEqual(len(dp.v.value), 4)
         self.assertEqual(dp.v.value[-2][-1][0], Point(100, 35))
         self.assertEqual(dp.v.value[-1][0], "endPath")
         self.assertEqual(dp.unended(), False)
-        dps.append(RunonPen([dp]))
+        dps.append(Drawing([dp]))
         self.assertEqual(len(dps.tree().splitlines()), 4)
         self.assertEqual(dps.tree().splitlines()[-1],
-            " | - <®:RunonPen:RecordingPen(4mvs)>")
+            " | - <®:Drawing:RecordingPen(4mvs)>")
         
     def test_gs_arrowcluster(self):
         r = Rect(100, 100)
-        dp = (RunonPen()
+        dp = (Drawing()
             .define(r=r)
             .gs("$r↖↗↘"))
         
@@ -41,7 +41,7 @@ class TestRunonPen(unittest.TestCase):
     
     def _test_gs_relative_moves(self):
         r = Rect(100, 100)
-        dp = (RunonPen()
+        dp = (Drawing()
             .define(r=r)
             .gs("$r↖ ¬OX50OY-50 §OY-50"))
         
@@ -54,18 +54,18 @@ class TestRunonPen(unittest.TestCase):
         """
         A rect passed to gs and gss should create the same value on the pen
         """
-        dp1 = (RunonPen()
+        dp1 = (Drawing()
             .define(r=Rect(100, 100))
             .gss("$r"))
         
-        dp2 = (RunonPen()
+        dp2 = (Drawing()
             .define(r=Rect(100, 100))
             .gs("$r"))
         
         self.assertEqual(dp1.v.value, dp2.v.value)
         
     def test_reverse(self):
-        dp = (RunonPen()
+        dp = (Drawing()
             .define(r=Rect(100, 100))
             .gs("$r↖ $r↗ $r↘ ɜ"))
         p1 = dp.v.value[0][-1]
@@ -73,7 +73,7 @@ class TestRunonPen(unittest.TestCase):
         self.assertEqual(p1, p2)
     
     def test_transforms(self):
-        dp = (RunonPen(Rect(100, 100))
+        dp = (Drawing(Rect(100, 100))
             .data(frame=Rect(100, 100))
             .align(Rect(200, 200)))
         
@@ -87,9 +87,9 @@ class TestRunonPen(unittest.TestCase):
         self.assertEqual(dp.copy().scale(2).ambit().w, 200)
 
     def test_pens_ambit(self):
-        dps = (RunonPen([
-                RunonPen(Rect(50, 50)),
-                RunonPen(Rect(100, 100, 100, 100))])
+        dps = (Drawing([
+                Drawing(Rect(50, 50)),
+                Drawing(Rect(100, 100, 100, 100))])
                 #.print(lambda x: x.tree())
                 )
         ram = dps.ambit()
@@ -102,60 +102,60 @@ class TestRunonPen(unittest.TestCase):
         self.assertEqual(moves[1][1], 0)
     
     def test_remove_blanks(self):
-        dps = (RunonPen([
-            RunonPen(Rect(50, 50)),
-            RunonPen()
+        dps = (Drawing([
+            Drawing(Rect(50, 50)),
+            Drawing()
         ]))
         self.assertEqual(len(dps), 2)
         dps.unblank()
         self.assertEqual(len(dps), 1)
     
     def test_collapse(self):
-        r = RunonPen([
-            RunonPen([RunonPen([RunonPen()])]),
-            RunonPen([RunonPen()]),
+        r = Drawing([
+            Drawing([Drawing([Drawing()])]),
+            Drawing([Drawing()]),
         ])
 
-        self.assertIsInstance(r[0], RunonPen)
-        self.assertIsInstance(r[0][0], RunonPen)
+        self.assertIsInstance(r[0], Drawing)
+        self.assertIsInstance(r[0][0], Drawing)
 
         r.collapse()
-        self.assertIsInstance(r[0], RunonPen)
-        self.assertIsInstance(r[1], RunonPen)
+        self.assertIsInstance(r[0], Drawing)
+        self.assertIsInstance(r[1], Drawing)
 
-        r = RunonPen([
-            RunonPen([RunonPen([RunonPen()])]),
-            RunonPen([RunonPen()]),
+        r = Drawing([
+            Drawing([Drawing([Drawing()])]),
+            Drawing([Drawing()]),
         ])
 
         r2 = r.copy().collapse()
         self.assertEqual(len(r), 2)
 
-        self.assertIsInstance(r[0], RunonPen)
-        self.assertIsInstance(r[0][0], RunonPen)
+        self.assertIsInstance(r[0], Drawing)
+        self.assertIsInstance(r[0][0], Drawing)
 
-        self.assertIsInstance(r2[0], RunonPen)
-        self.assertIsInstance(r2[1], RunonPen)
+        self.assertIsInstance(r2[0], Drawing)
+        self.assertIsInstance(r2[1], Drawing)
     
     def test_find(self):
-        dps = RunonPen([
-            RunonPen([RunonPen([RunonPen().tag("find-me").f(hsl(0.9))])]),
-            RunonPen().tag("not-me"),
-            RunonPen([RunonPen().tag("find-me").f(hsl(0.3))])])
+        dps = Drawing([
+            Drawing([Drawing([Drawing().tag("find-me").f(hsl(0.9))])]),
+            Drawing().tag("not-me"),
+            Drawing([Drawing().tag("find-me").f(hsl(0.3))])])
 
         self.assertEqual(dps.find("find-me")[0].f().h/360, 0.9)
         self.assertAlmostEqual(dps.find("find-me")[1].f().h/360, 0.3)
 
     def test_cond(self):
-        dps = (RunonPen([
-            (RunonPen().cond(True,
+        dps = (Drawing([
+            (Drawing().cond(True,
                 lambda p: p.f(rgb(1, 0, 0))))]))
         
         self.assertEqual(dps[0].f().r, 1)
 
         def _build(condition):
-            return (RunonPen([
-                (RunonPen().cond(condition,
+            return (Drawing([
+                (Drawing().cond(condition,
                     lambda p: p.f(rgb(0, 0, 1)),
                     lambda p: p.f(rgb(1, 0, 0))))]))
         
@@ -163,9 +163,9 @@ class TestRunonPen(unittest.TestCase):
         self.assertEqual(_build(False)[0].f().r, 1)
     
     def test_alpha(self):
-        dps = (RunonPen([
-            (RunonPen([
-                (RunonPen().alpha(0.5))
+        dps = (Drawing([
+            (Drawing([
+                (Drawing().alpha(0.5))
             ]).alpha(0.5))
         ]).alpha(0.25))
 
@@ -180,10 +180,10 @@ class TestRunonPen(unittest.TestCase):
         dps.walk(walker)
     
     def test_visibility(self):
-        dps = (RunonPen([
-            (RunonPen([
-                (RunonPen().visible(1).tag("visible")),
-                (RunonPen().visible(0).tag("invisible"))
+        dps = (Drawing([
+            (Drawing([
+                (Drawing().visible(1).tag("visible")),
+                (Drawing().visible(0).tag("invisible"))
             ]))
         ]))
 
@@ -210,7 +210,7 @@ class TestRunonPen(unittest.TestCase):
 from coldtype import *
 
 def two_styles(r):
-    return (RunonPen()
+    return (Drawing()
         .oval(r.inset(50).square())
         .f(hsl(0.8))
         .attr("alt", fill=hsl(0.3)))
@@ -224,7 +224,7 @@ def style_set(r):
     return two_styles(r)
 
 def lattr_styles(r):
-    return (RunonPen()
+    return (Drawing()
         .oval(r.inset(50).square())
         .f(hsl(0.5)).s(hsl(0.7)).sw(5)
         .lattr("alt", lambda p: p.f(hsl(0.7)).s(hsl(0.5)).sw(15)))
@@ -307,7 +307,7 @@ def lattr_style_set(r):
     
     def test_scaleToRect(self):
         r = Rect(1000, 500)
-        dps = RunonPen([
+        dps = Drawing([
             (StSt("SPACEFILLING", mutator, 50)
                 .align(r)
                 .f(hsl(0.8))
@@ -333,12 +333,12 @@ def lattr_style_set(r):
         dps.picklejar(r)
     
     def test_distribute_and_track(self):
-        dps = RunonPen()
+        dps = Drawing()
         rnd = Random(0)
         r = Rect(1000, 500)
 
         for _ in range(0, 11):
-            dps += (RunonPen()
+            dps += (Drawing()
                 .rect(Rect(100, 100))
                 .f(hsl(rnd.random(), s=0.6))
                 .rotate(rnd.randint(-45, 45)))
@@ -367,10 +367,10 @@ def lattr_style_set(r):
     
     def test_sample(self):
         r = Rect(1000, 500)
-        dp = (RunonPen()
+        dp = (Drawing()
             .define(r=r)
             .gs("$r↖ $r↗ $r↙|↘|65 ɜ"))
-        # dp = (RunonPen()
+        # dp = (Drawing()
         #     .define(r=r)
         #     .gs("$r↙ $r↗ ɜ")
         #     .fssw(None, 0, 5))
@@ -380,7 +380,7 @@ def lattr_style_set(r):
         r = Rect(1000, 500)
         txt = (StSt("COLDTYPE "*7, co, 64,
             tu=-50, r=1, ro=1)
-            .distribute_on_path(RunonPen()
+            .distribute_on_path(Drawing()
                 .oval(r.inset(50))
                 .reverse()
                 .repeat())
@@ -396,7 +396,7 @@ def lattr_style_set(r):
     
     def _test_distribute_path_center(self):
         r = Rect(1000, 500)
-        lockup = (RunonPen()
+        lockup = (Drawing()
             .define(
                 r=r,
                 nx=100,
@@ -426,7 +426,7 @@ def lattr_style_set(r):
     
     def test_distribute_path_lines(self):
         r = Rect(1080, 1080).inset(200)
-        p = (RunonPen()
+        p = (Drawing()
             .moveTo(r.psw)
             .lineTo(r.pn)
             .lineTo(r.pse)
@@ -454,16 +454,16 @@ def lattr_style_set(r):
         r = Rect(540, 540)
         sr = Rect(100, 100)
 
-        res = (RunonPen([
-            (RunonPen()
+        res = (Drawing([
+            (Drawing()
                 .oval(sr)
                 .f(hsl(0.5))
                 .tag("A")),
-            (RunonPen()
+            (Drawing()
                 .oval(sr)
                 .f(hsl(0.7))
                 .tag("B")),
-            (RunonPen()
+            (Drawing()
                 .oval(sr)
                 .f(hsl(0.9))
                 .tag("C"))])
@@ -479,16 +479,16 @@ def lattr_style_set(r):
         r = Rect(540, 540)
         sr = Rect(100, 100)
 
-        res = (RunonPen([
-            (RunonPen()
+        res = (Drawing([
+            (Drawing()
                 .oval(sr)
                 .f(hsl(0.5))
                 .tag("A")),
-            (RunonPen()
+            (Drawing()
                 .oval(sr)
                 .f(hsl(0.7))
                 .tag("B")),
-            (RunonPen()
+            (Drawing()
                 .oval(sr)
                 .f(hsl(0.9))
                 .tag("C"))])
@@ -503,21 +503,21 @@ def lattr_style_set(r):
     
     def test_chain(self):
         def c1(a):
-            def _c1(p:RunonPen):
+            def _c1(p:Drawing):
                 return [a]
             return Chainable(_c1)
         
         def c2(a):
-            def _c2(p:RunonPen):
+            def _c2(p:Drawing):
                 p.data(hello=a)
                 return None
             return Chainable(_c2)
         
-        p1 = RunonPen() | c1(1)
+        p1 = Drawing() | c1(1)
         self.assertEqual(p1, [1])
 
-        p2 = RunonPen() | c2("chain")
-        self.assertTrue(isinstance(p2, RunonPen))
+        p2 = Drawing() | c2("chain")
+        self.assertTrue(isinstance(p2, Drawing))
         self.assertEqual(p2.data("hello"), "chain")
 
 

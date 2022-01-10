@@ -4,7 +4,7 @@ from coldtype.grid import Grid
 from coldtype.geometry import *
 from coldtype.color import hsl
 from coldtype.text.composer import StSt, Glyphwise, Style, Font
-from coldtype.vector import RunonPen
+from coldtype.vector import Drawing
 from coldtype.pens.svgpen import SVGPen
 
 from coldtype.text.reader import ALL_FONT_DIRS
@@ -29,7 +29,7 @@ class TestGlyphwise(unittest.TestCase):
 
         if pj:
             r = Rect(1500, 500)
-            RunonPen([
+            Drawing([
                 ss,
                 gw.f(None).s(0).sw(5),
                 gwo.copy().f(None).s(hsl(0.9)).sw(5),
