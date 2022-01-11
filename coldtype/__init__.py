@@ -19,7 +19,10 @@ def monkeypatch_ctypes():
         ctypes.util.find_library = find_library
     return
 
-monkeypatch_ctypes()
+try:
+    monkeypatch_ctypes()
+except AttributeError:
+    pass
 
 from coldtype.path import P, PS, DP, DPS, ß, DATPen, DATPens
 from coldtype.text import *
@@ -37,7 +40,7 @@ from coldtype.img.blendmode import BlendMode
 from coldtype.grid import Grid
 
 name = "coldtype"
-__version__ = "0.8.1"
+__version__ = "0.8.2"
 
 __FILE__ = None # will be redefined contextually
 __BLENDER__ = None # will be redefined contextually

@@ -117,3 +117,8 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ## [0.8.1] - 2021-12-28
 ### Fixed
 - Audio support via `pyaudio`
+
+## [0.8.2] - 2022-01-10
+### Fixed
+- Error where windows can't watch non-existent file
+- Error where windows barfs on os.uname
