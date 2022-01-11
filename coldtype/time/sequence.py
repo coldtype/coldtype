@@ -99,11 +99,6 @@ class ClipGroupPens(P):
         if clean:
             self.clean_empties()
         return self
-    
-    def understroke(self, s=0, sw=5):
-        for clip, pen in self.iterate_clips():
-            pen.understroke(s=s, sw=sw)
-        return self
 
 
 ClipGroupTextSetter = namedtuple(
