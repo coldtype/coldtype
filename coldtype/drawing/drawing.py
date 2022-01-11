@@ -12,6 +12,7 @@ from coldtype.drawing.mixins.LayoutMixin import LayoutMixin
 from coldtype.drawing.mixins.StylingMixin import StylingMixin
 from coldtype.drawing.mixins.DrawingMixin import DrawingMixin
 from coldtype.drawing.mixins.PathopsMixin import PathopsMixin
+from coldtype.drawing.mixins.GeometryMixin import GeometryMixin
 from coldtype.drawing.mixins.ShorthandMixin import ShorthandMixin
 from coldtype.drawing.mixins.SegmentingMixin import SegmentingMixin
 from coldtype.drawing.mixins.SerializationMixin import SerializationMixin
@@ -21,6 +22,7 @@ class Drawing(Runon,
     LayoutMixin,
     DrawingMixin,
     PathopsMixin,
+    GeometryMixin,
     SegmentingMixin,
     SerializationMixin,
     ShorthandMixin,
