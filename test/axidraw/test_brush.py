@@ -8,7 +8,7 @@ https://axidraw.com/doc/py_api/#installation
 
 @renderable((1100, 850))
 def brush1(r):
-    return (Drawing()
+    return (P()
         .define(
             r=r.inset(100),
             ri="$rTX=460",

@@ -6,18 +6,18 @@ from fontTools.pens.reverseContourPen import ReverseContourPen
 from coldtype.geometry import Rect, Point, txt_to_edge
 from coldtype.runon.runon import Runon
 
-from coldtype.drawing.mixins.FXMixin import FXMixin
-from coldtype.drawing.mixins.GlyphMixin import GlyphMixin
-from coldtype.drawing.mixins.LayoutMixin import LayoutMixin
-from coldtype.drawing.mixins.StylingMixin import StylingMixin
-from coldtype.drawing.mixins.DrawingMixin import DrawingMixin
-from coldtype.drawing.mixins.PathopsMixin import PathopsMixin
-from coldtype.drawing.mixins.GeometryMixin import GeometryMixin
-from coldtype.drawing.mixins.ShorthandMixin import ShorthandMixin
-from coldtype.drawing.mixins.SegmentingMixin import SegmentingMixin
-from coldtype.drawing.mixins.SerializationMixin import SerializationMixin
+from coldtype.path.mixins.FXMixin import FXMixin
+from coldtype.path.mixins.GlyphMixin import GlyphMixin
+from coldtype.path.mixins.LayoutMixin import LayoutMixin
+from coldtype.path.mixins.StylingMixin import StylingMixin
+from coldtype.path.mixins.DrawingMixin import DrawingMixin
+from coldtype.path.mixins.PathopsMixin import PathopsMixin
+from coldtype.path.mixins.GeometryMixin import GeometryMixin
+from coldtype.path.mixins.ShorthandMixin import ShorthandMixin
+from coldtype.path.mixins.SegmentingMixin import SegmentingMixin
+from coldtype.path.mixins.SerializationMixin import SerializationMixin
 
-class Drawing(Runon,
+class P(Runon,
     StylingMixin,
     LayoutMixin,
     DrawingMixin,
@@ -31,9 +31,9 @@ class Drawing(Runon,
     ):
     def FromPens(pens):
         if hasattr(pens, "_pens"):
-            out = Drawing().data(**pens.data)
+            out = P().data(**pens.data)
             for p in pens:
-                out.append(Drawing.FromPens(p))
+                out.append(P.FromPens(p))
         elif hasattr(pens, "_els") and len(pens._els) > 0:
             out = pens
         elif hasattr(pens, "_val") and pens.val_present():
@@ -42,7 +42,7 @@ class Drawing(Runon,
             p = pens
             rp = RecordingPen()
             p.replay(rp)
-            out = Drawing(rp)
+            out = P(rp)
             
             attrs = p.attrs.get("default", {})
             if "fill" in attrs:
@@ -264,7 +264,7 @@ class Drawing(Runon,
     
     @staticmethod
     def Enumerate(enumerable, enumerator):
-        return Drawing().enumerate(enumerable, enumerator)
+        return P().enumerate(enumerable, enumerator)
     
     def frameSet(self, th=False, tv=False):
         from coldtype.color import hsl
@@ -299,5 +299,5 @@ class Drawing(Runon,
 
 def runonCast():
     def _runonCast(p):
-        return Drawing.FromPens(p)
+        return P.FromPens(p)
     return _runonCast

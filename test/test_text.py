@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 from coldtype.geometry import *
 from coldtype.color import hsl
-from coldtype.drawing import Drawing
+from coldtype.path import P
 from coldtype.text.composer import StSt, Font, Style
 
 tf = Path(__file__).parent
@@ -27,7 +27,7 @@ class TestText(unittest.TestCase):
         self.assertEqual(ufo[0].v.value, ds[0].v.value)
         self.assertEqual(ufo[-1].v.value, ds[-1].v.value)
 
-        Drawing([
+        P([
             ttf, otf, ufo, ds
         ]).f(None).s(hsl(0.5, a=0.3)).sw(1).picklejar(r)
     
@@ -146,7 +146,7 @@ class TestText(unittest.TestCase):
         st = (StSt("These are some words", Font.RecursiveMono(), multiline=1))
         self.assertEqual(st.depth(), 3)
 
-        st = Drawing([(StSt("These are some words", Font.RecursiveMono(), multiline=1))])
+        st = P([(StSt("These are some words", Font.RecursiveMono(), multiline=1))])
         self.assertEqual(st.depth(), 4)
 
         st = (StSt("These are some words\nbut now on multiple lines\nisn't that interesting", Font.RecursiveMono()))

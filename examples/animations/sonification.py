@@ -26,7 +26,7 @@ class sonification(animation):
         obj.setframerate(sampleRate)
 
         for pp in sorted(self.output_folder.glob("*.pickle")):
-            pen:Drawing = (pickle
+            pen:P = (pickle
                 .load(open(pp, "rb"))
                 .scale(-1, 1)
                 .rotate(-45)

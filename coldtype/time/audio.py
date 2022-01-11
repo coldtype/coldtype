@@ -1,6 +1,6 @@
 import math
 from pathlib import Path
-from coldtype.drawing import Drawing
+from coldtype.path import P
 
 try:
     import numpy as np
@@ -44,7 +44,7 @@ class Wavfile():
         return np.average(np.fabs(self.samples_for_frame(i)))
     
     def frame_waveform(self, fi, r, inc=1, pen=None):
-        wave = pen or Drawing()
+        wave = pen or P()
         samples = self.samples_for_frame(fi)[::inc]
         ww = r.w/len(samples)
         wh = r.h

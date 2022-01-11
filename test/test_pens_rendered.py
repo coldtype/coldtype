@@ -5,7 +5,7 @@ from pathlib import Path
 from coldtype.color import hsl
 from coldtype.geometry import Rect
 from coldtype.text.composer import StSt, Font
-from coldtype.drawing import Drawing
+from coldtype.path import P
 
 from PIL import Image
 import imagehash
@@ -40,7 +40,7 @@ def test_image(test:unittest.TestCase, path, rect=Rect(1000, 500)):
 class TestPensRendered(unittest.TestCase):
     def test_skia_png(self):
         with test_image(self, "test_skia.png") as (i, r):
-            dp = ((ß:=Drawing())
+            dp = ((ß:=P())
                 .define(
                     r=r,
                     nx=100,
@@ -57,7 +57,7 @@ class TestPensRendered(unittest.TestCase):
             
             SkiaPen.Precompose(dp, r, disk=str(i))
             self.assertEqual(len(dp), 2)
-            self.assertEqual(type(dp), Drawing)
+            self.assertEqual(type(dp), P)
     
 if __name__ == "__main__":
     unittest.main()

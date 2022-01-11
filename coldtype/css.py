@@ -1,10 +1,10 @@
 from coldtype.geometry.rect import Rect
 from coldtype.color import hsl
-from coldtype.drawing import Drawing
+from coldtype.path import P
 
 
 def cubicBezier(x1, y1, x2, y2):
-    p = Drawing()
+    p = P()
     p.moveTo((0, 0))
     p.curveTo(
         (x1*1000, y1*1000),

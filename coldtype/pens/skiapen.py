@@ -2,7 +2,7 @@ import skia, struct
 
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 from coldtype.pens.skiapathpen import SkiaPathPen
-from coldtype.drawing import Drawing
+from coldtype.path import P
 from coldtype.img.datimage import DATImage
 from coldtype.geometry import Rect, Point
 from coldtype.text.reader import Style
@@ -145,7 +145,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 skia.Rect()
                 sr = skia.Rect(*clip.scale(self.scale, "mnx", "mny").flip(self.rect.h).mnmnmxmx())
                 self.canvas.clipRect(sr)
-            elif isinstance(clip, Drawing):
+            elif isinstance(clip, P):
                 sp = SkiaPathPen(clip, self.rect.h)
                 self.canvas.clipPath(sp.path, doAntiAlias=True)
         self.paint.setColor(skia.ColorBLACK)

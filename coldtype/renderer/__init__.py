@@ -24,7 +24,7 @@ from coldtype.renderer.config import ConfigOption
 from coldtype.renderer.reader import SourceReader
 from coldtype.renderer.state import RendererState
 from coldtype.renderable import renderable, animation, Action, Overlay, runnable
-from coldtype.drawing import Drawing
+from coldtype.path import P
 from coldtype.pens.svgpen import SVGPen
 from coldtype.time.viewer import timeViewer
 
@@ -275,8 +275,8 @@ class Renderer():
         
         r = rect
         render = renderable(r)
-        res = Drawing([
-            Drawing().rect(r).f(coldtype.Gradient.V(r,
+        res = P([
+            P().rect(r).f(coldtype.Gradient.V(r,
                 coldtype.hsl(_random.random(), l=0.3),
                 coldtype.hsl(_random.random(), l=0.3)))])
         render.show_error = short_error
@@ -530,7 +530,7 @@ class Renderer():
 
                         if not result and not render.direct_draw:
                             #print(">>> No result")
-                            result = Drawing().rect(render.rect).f(None)
+                            result = P().rect(render.rect).f(None)
 
                         if previewing:
                             if render.direct_draw:
@@ -562,7 +562,7 @@ class Renderer():
                                     if render.direct_draw:
                                         show_render = self.rasterize(partial(render.run, rp, self.state), render, output_path, rp)
                                     else:
-                                        show_render = self.rasterize(result or Drawing(), render, output_path, rp)
+                                        show_render = self.rasterize(result or P(), render, output_path, rp)
                                     # TODO a progress bar?
                                     if show_render:
                                         try:

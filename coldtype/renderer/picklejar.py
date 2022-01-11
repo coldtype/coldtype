@@ -23,7 +23,7 @@ for pickle in pickles:
     try:
         results.append([
             pickle,
-            Drawing().Unpickle(pickle)])
+            P().Unpickle(pickle)])
     except EOFError:
         print("invalid pickle")
 

@@ -21,9 +21,9 @@ def monkeypatch_ctypes():
 
 monkeypatch_ctypes()
 
+from coldtype.path import P, PS, DP, DPS, ß, DATPen, DATPens
 from coldtype.text import *
 from coldtype.text.reader import Font
-from coldtype.drawing import Drawing
 from coldtype.geometry import *
 from coldtype.color import *
 from coldtype.renderable import *
@@ -50,18 +50,8 @@ __as_config__ = False # will be redefined contextually
 ι = None
 ℛ = lambda x: x
 
-ß = Drawing
-P = Drawing
-PS = Drawing
-
-# temporary aliases for backwards compat
-DATPens = Drawing
-DATPen = Drawing
-DPS = Drawing
-DP = Drawing
-
 def debug_txt(r, txt, font_size=42, **kwargs):
-    return Drawing().text(txt,
+    return P().text(txt,
         Style("Times", font_size, load_font=0, **kwargs),
         r.inset(20))
 

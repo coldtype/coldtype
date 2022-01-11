@@ -7,7 +7,7 @@ from IPython.display import display, SVG, HTML, clear_output
 from coldtype.renderable.renderable import renderable as _renderable
 from coldtype.renderable.animation import animation as _animation, aframe as _aframe
 from coldtype.renderable.animation import Action, Timeline, FFMPEGExport
-from coldtype.drawing import Drawing
+from coldtype.path import P
 from coldtype.pens.svgpen import SVGPen
 from coldtype.color import rgb, hsl
 from coldtype.geometry import Rect
@@ -41,7 +41,7 @@ def show(fmt="png", rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=
     if not precompose and fmt == "png":
         raise Exception("pip install skia-python")
     
-    def _display(pen:Drawing):
+    def _display(pen:P):
         #pen = pen.copy(with_data=1)
         pen.data(_notebook_shown=True)
         nonlocal rect, fmt
@@ -59,7 +59,7 @@ def show(fmt="png", rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=
             lar = pen.data("_last_align_rect")
             if lar:
                 rect = lar
-                pen = Drawing([Drawing(rect).fssw(-1, 0.75, 2), pen])
+                pen = P([P(rect).fssw(-1, 0.75, 2), pen])
             else:
                 amb = pen.ambit(th=th, tv=tv)
                 rect = Rect(amb.w+padding[0], amb.h+padding[1])
@@ -238,8 +238,8 @@ class notebook_renderable(_renderable):
     
     def preview(self):
         res = self.frame_result(0, post=False)
-        out = Drawing([
-            Drawing(self.rect).fssw(-1, *self.border) if self.border else None,
+        out = P([
+            P(self.rect).fssw(-1, *self.border) if self.border else None,
             res
         ])
         out.ch(show("png", self.rect, padding=[0, 0], scale=self.preview_scale))

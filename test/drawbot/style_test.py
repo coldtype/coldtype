@@ -19,7 +19,7 @@ with new_page() as r:
 
     s.chain(dbdraw)
 
-    circle = (Drawing()
+    circle = (P()
         .oval(r.inset(200))
         .reverse()
         .rotate(0))

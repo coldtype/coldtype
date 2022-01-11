@@ -1,6 +1,6 @@
 import re
 
-from coldtype.drawing import Drawing
+from coldtype.path import P
 from coldtype.text.composer import Graf, GrafStyle, Lockup
 from coldtype.text.reader import StyledString, Style
 from coldtype.color import hsl
@@ -18,7 +18,7 @@ except ImportError:
     highlight = None
     pass
 
-class RichText(Drawing):
+class RichText(P):
     """Very experimental module to support rich-text from annotated strings, like a super-minimal-but-open-ended subset of markdown, inspired by the way rich text is built up in the time.nle.premiere DPS subclass in coldtype"""
     def __init__(self,
         rect,

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from coldtype.interpolation import lerp, interp_dict
-from coldtype.drawing import Drawing
+from coldtype.path import P
 from coldtype.time.easing import ease, ez, applyRange
 from copy import copy
 import math
@@ -231,7 +231,7 @@ class Easeable():
         rng = self._normRange(rng, **kwargs)
         
         if (not isinstance(easefn, str)
-            and not isinstance(easefn, Drawing)
+            and not isinstance(easefn, P)
             and not type(easefn).__name__ == "Glyph"):
             loops = easefn
             easefn = "eeio"

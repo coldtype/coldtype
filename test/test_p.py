@@ -1,5 +1,5 @@
 import unittest
-from coldtype.drawing import * #INLINE
+from coldtype.path import P
 
 from fontTools.pens.recordingPen import RecordingPen
 
@@ -9,11 +9,11 @@ from coldtype.text import StSt, Font, Glyphwise, Style
 
 class TestRunon(unittest.TestCase):
     def test_init(self):
-        r = Drawing()
+        r = P()
         self.assertIsInstance(r.v, RecordingPen)
         self.assertEqual(r.val_present(), False)
 
-        r = Drawing(Drawing())
+        r = P(P())
         self.assertIsInstance(r.v, RecordingPen)
         self.assertIsInstance(r[0].v, RecordingPen)
 
@@ -21,19 +21,19 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(r.val_present(), False)
         self.assertEqual(r[0].val_present(), True)
         
-        r = Drawing(Rect(50, 50))
+        r = P(Rect(50, 50))
         self.assertEqual(r.v.value[0][-1][0], (0, 0))
         self.assertEqual(r.v.value[-2][-1][0], (0, 50))
         self.assertEqual(r.v.value[-1][0], "closePath")
 
-        r = Drawing(Drawing(), Drawing())
+        r = P(P(), P())
         self.assertEqual(len(r), 2)
 
-        r = Drawing([Drawing()]*3)
+        r = P([P()]*3)
         self.assertEqual(len(r), 3)
     
     def test_find(self):
-        r = Drawing(
+        r = P(
             StSt("ABC", Font.MutatorSans(), 100),
             StSt("ABC", Font.MutatorSans(), 100))
         
@@ -60,7 +60,7 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(len(r[-1]), 2)
     
     def test_collapse(self):
-        r = Drawing(
+        r = P(
             StSt("ABC", Font.MutatorSans(), 100),
             StSt("DEF", Font.MutatorSans(), 100))
         
@@ -72,7 +72,7 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(len(r[0]), 0)
 
     def test_drawing_mixin(self):
-        r = Drawing()
+        r = P()
         self.assertIsInstance(r._val, RecordingPen)
         self.assertEqual(len(r._val.value), 0)
 
@@ -84,7 +84,7 @@ class TestRunon(unittest.TestCase):
             [v[1][0] for v in r.v.value],
             [(0, 0), (1, 1), (2, 2)])
         
-        r = (Drawing()
+        r = (P()
             .moveTo(0, 0)
             .lineTo(10, 10)
             .lineTo(Point(0, 10))
@@ -99,7 +99,7 @@ class TestRunon(unittest.TestCase):
             ('closePath', ())
         ])
 
-        r = (Drawing()
+        r = (P()
             .rect(Rect(10, 10, 10, 10)))
         
         self.assertEqual(r.v.value, [
@@ -110,7 +110,7 @@ class TestRunon(unittest.TestCase):
             ('closePath', ())
         ])
 
-        r = (Drawing()
+        r = (P()
             .oval(Rect(10, 10, 10, 10))
             .round())
         
@@ -136,7 +136,7 @@ class TestRunon(unittest.TestCase):
 
         self.assertEqual(r[0].data("glyphName"), "A")
     
-        r = Drawing(Drawing(Rect(0, 0, 100, 100)))
+        r = P(P(Rect(0, 0, 100, 100)))
         self.assertEqual(r.ambit().y, 0)
         r.translate(0, 100)
         self.assertEqual(r.ambit().y, 100)
@@ -149,13 +149,13 @@ class TestRunon(unittest.TestCase):
         
     def test_glyphwise(self):
         r = Glyphwise("ABC", lambda _: Style(Font.MuSan(), 100))
-        self.assertIsInstance(r, Drawing)
+        self.assertIsInstance(r, P)
 
         r = Glyphwise("ABC\nDEF", lambda _: Style(Font.MuSan(), 100))
-        self.assertIsInstance(r, Drawing)
+        self.assertIsInstance(r, P)
 
         r = Glyphwise("ABC\nDEF", lambda g: [Style(Font.MuSan(), 100), dict(wdth=g.e)])
-        self.assertIsInstance(r, Drawing)
+        self.assertIsInstance(r, P)
     
     def test_mods(self):
         r = StSt("ABC", Font.MuSan(), 500, ro=1)

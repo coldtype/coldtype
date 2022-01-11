@@ -2,7 +2,7 @@ import unicodedata, unittest
 from pathlib import Path
 from coldtype.geometry import Rect
 from coldtype.helpers import glyph_to_uni
-from coldtype.drawing import Drawing
+from coldtype.path import P
 from coldtype.text.composer import StSt, Font, Style, Slug, SegmentedString
 
 tf = Path(__file__).parent
@@ -119,7 +119,7 @@ class TestI18N(unittest.TestCase):
         seg = SegmentedString(txt, dict(Arab=arabic, Latn=latin)).pens()
         slug = Slug(txt, arabic, latin).pens()
 
-        dps = Drawing([
+        dps = P([
             seg.align(r, th=1).translate(0, 100),
             slug.align(r, th=1).translate(0, -100)])
         
@@ -136,10 +136,10 @@ class TestI18N(unittest.TestCase):
         
     def test_combine_slugs(self):
         s1 = Slug("YO", Style(co, 300, wdth=1)).pens()
-        line = Drawing().rect(Rect(100, 20))
+        line = P().rect(Rect(100, 20))
         s2 = Slug("OY", Style(co, 300, wdth=0)).pens()
-        shape = Drawing().oval(Rect(100, 100))
-        dps = Drawing([s1, line, s2, shape]).distribute().align(r, th=1)
+        shape = P().oval(Rect(100, 100))
+        dps = P([s1, line, s2, shape]).distribute().align(r, th=1)
         self.assertEqual(dps.ambit().round(),
             Rect([127,138,737,225]))
         self.assertEqual(dps[1].ambit().round(),

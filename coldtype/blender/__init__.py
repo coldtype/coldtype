@@ -5,7 +5,7 @@ from pathlib import Path
 from coldtype.geometry import curve
 
 from coldtype.geometry.rect import Rect
-from coldtype.drawing import Drawing
+from coldtype.path import P
 from coldtype.pens.blenderpen import BlenderPen, BPH
 from coldtype.color import hsl
 
@@ -101,7 +101,7 @@ def b3d(collection,
         pen_mod = callback[0]
         callback = callback[1]
 
-    def annotate(pen:Drawing):
+    def annotate(pen:P):
         if bpy and pen_mod:
             pen_mod(pen)
         
@@ -137,7 +137,7 @@ def b3d_post(callback):
     if not bpy: # short-circuit for non-bpy
         return lambda x: x
 
-    def _b3d_post(pen:Drawing):
+    def _b3d_post(pen:P):
         prev = pen.data("b3d_post")
         if prev:
             callbacks = [*prev, callback]
@@ -149,13 +149,13 @@ def b3d_post(callback):
 
 
 def b3d_pre(callback):
-    def _cast(pen:Drawing):
+    def _cast(pen:P):
         if bpy:
             callback(pen)
     return _cast
 
 
-def walk_to_b3d(result:Drawing,
+def walk_to_b3d(result:P,
     dn=False,
     renderable=None,
     ):
@@ -164,7 +164,7 @@ def walk_to_b3d(result:Drawing,
     center = renderable.center
     center_rect = renderable.rect
 
-    def walker(p:Drawing, pos, data):
+    def walker(p:P, pos, data):
         bp = None
 
         if pos == 0:
@@ -353,7 +353,7 @@ class b3d_animation(animation):
                     dn=True,
                     tag_prefix=f"ct_baked_frame_{fi}_{self.name}")))
         
-        to_bake = Drawing()
+        to_bake = P()
         for ps in self.passes(Action.RenderAll, None)[:]:
             to_bake += self.run_normal(ps, None)
         

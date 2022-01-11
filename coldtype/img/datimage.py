@@ -1,10 +1,10 @@
 from pathlib import Path
+from coldtype.path import P
 from coldtype.geometry import Rect
-from coldtype.drawing import Drawing
 from coldtype.img.blendmode import BlendMode
 
 
-class DATImage(Drawing):
+class DATImage(P):
     def __init__(self, src, img=None):
         if isinstance(src, Path) or isinstance(src, str):
             self.src = Path(str(src)).expanduser().absolute()
@@ -81,7 +81,7 @@ class DATImage(Drawing):
         raise NotImplementedError()
     
     def precompose(self, rect, as_image=True):
-        res = Drawing([self]).ch(self._precompose_fn()(rect))
+        res = P([self]).ch(self._precompose_fn()(rect))
         if as_image:
             return type(self).FromPen(res, original_src=self.src)
         else:
@@ -93,9 +93,9 @@ class DATImage(Drawing):
         
         xo, yo = -crop.bounds().x, -crop.bounds().y
 
-        cropped = Drawing([
+        cropped = P([
             (self.in_pen().translate(xo, yo)),
-            (Drawing()
+            (P()
                 .rect(self.bounds())
                 .difference(crop)
                 .f(0, 1)
@@ -114,13 +114,13 @@ class DATImage(Drawing):
         #return self
     
     def in_pen(self):
-        return (Drawing(self.bounds())
+        return (P(self.bounds())
             .img(self._img, self.bounds(), pattern=False))
         
     def to_pen(self, rect=None):
         return self.precompose(rect or self._frame, as_image=False)
     
-    def FromPen(pen:Drawing, original_src=None):
+    def FromPen(pen:P, original_src=None):
         return DATImage(original_src, img=pen.img().get("src"))
     
     def __str__(self):

@@ -1,7 +1,7 @@
 from fontTools.pens.basePen import BasePen
 from fontTools.pens.transformPen import TransformPen
 
-from coldtype.drawing import Drawing
+from coldtype.path import P
 
 try:
     import skia
@@ -46,7 +46,7 @@ class SkiaPathPen(BasePen):
         def unwrap(p):
             return [p.x(), p.y()]
         
-        dp = Drawing()
+        dp = P()
         for mv, pts in self.path:
             if mv == skia.Path.Verb.kMove_Verb:
                 dp.moveTo(unwrap(pts[0]))

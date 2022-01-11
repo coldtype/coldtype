@@ -7,7 +7,7 @@ from coldtype.time.easing import ease
 from coldtype.time.timeline import Timeline
 
 from coldtype.text import StyledString, Lockup, Graf, GrafStyle, Style, Rect
-from coldtype.drawing import Drawing
+from coldtype.path import P
 from coldtype.color import *
 
 from coldtype.time.clip import Clip, ClipFlags, ClipType
@@ -21,7 +21,7 @@ class Marker(Timeable):
         super().__init__(start, end, data=marker)
 
 
-class ClipGroupPens(Drawing):
+class ClipGroupPens(P):
     def __init__(self, clip_group):
         super().__init__()
         self.cg = clip_group
@@ -397,11 +397,11 @@ class ClipGroup(Timeable):
         graf = Graf(lockups, rect, graf_style)
         pens = graf.pens()#.align(rect, x="minx")
         
-        re_grouped = Drawing()
+        re_grouped = P()
         for idx, line in enumerate(lines):
             #print(pens, idx, line[0].text)
             line_dps = pens[idx]
-            re_grouped_line = Drawing()
+            re_grouped_line = P()
             re_grouped_line.tag("line")
             position = 1
             line_text = ""
@@ -422,7 +422,7 @@ class ClipGroup(Timeable):
                     # elif clip.position == -1:
                     #     position = -1
                     line_text += clip.ftext()
-                    clip_dps = Drawing(group_dps[tidx:tidx+len(text)])
+                    clip_dps = P(group_dps[tidx:tidx+len(text)])
                     clip_dps.tag("clip")
                     clip_dps.data(
                         clip=clip,
@@ -438,7 +438,7 @@ class ClipGroup(Timeable):
                         #re_grouped_line[-1] = grouped_clip_dps
                         #last_clip_dps = grouped_clip_dps
                     else:
-                        last_clip_dps = Drawing()
+                        last_clip_dps = P()
                         last_clip_dps.tag("slug")
                         last_clip_dps.append(clip_dps)
                         re_grouped_line.append(last_clip_dps)

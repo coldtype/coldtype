@@ -2,7 +2,7 @@ import unittest
 
 import coldtype.pens.misc
 from coldtype.pens.reportlabpen import ReportLabPen
-from coldtype.test import StSt, co, Rect, Drawing, hsl
+from coldtype.test import StSt, co, Rect, P, hsl
 
 
 class TestReportLabPen(unittest.TestCase):
@@ -11,11 +11,11 @@ class TestReportLabPen(unittest.TestCase):
 
         r = Rect("letter")
         
-        pens = Drawing([
-            (Drawing(r.inset(20))
+        pens = P([
+            (P(r.inset(20))
                 .align(r)
                 .f(0.9)),
-            (Drawing(r.inset(40))
+            (P(r.inset(40))
                 .align(r)
                 .fssw(-1, 0, 5)),
             (StSt("COLD", co, 150, wdth=1)

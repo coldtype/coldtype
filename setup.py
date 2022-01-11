@@ -38,7 +38,7 @@ setuptools.setup(
         "coldtype.renderable",
         "coldtype.fontgoggles",
         "coldtype.interpolation",
-        "coldtype.drawing.mixins",
+        "coldtype.path.mixins",
         "coldtype.renderer.winman",
         "coldtype.fontgoggles.font",
         "coldtype.fontgoggles.misc",
