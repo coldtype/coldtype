@@ -59,7 +59,7 @@ class Drawing(Runon,
                 out.data(glyphName=pens.glyphName)
         return out
     
-    def __init__(self, *vals):        
+    def __init__(self, *vals, **kwargs):        
         super().__init__(*vals)
 
         if isinstance(self._val, RecordingPen):
@@ -77,6 +77,16 @@ class Drawing(Runon,
         
         self._last = None
         ShorthandMixin.__init__(self)
+
+        # more backwards compat
+        for k, v in kwargs.items():
+            if k == "fill":
+                self.f(v)
+            elif k == "stroke":
+                s, sw = v
+                self.s(s).sw(sw)
+            else:
+                raise Exception("Invalid __init__ kwargs", k)
 
     def reset_val(self):
         super().reset_val()
