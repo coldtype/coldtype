@@ -19,7 +19,10 @@ def monkeypatch_ctypes():
         ctypes.util.find_library = find_library
     return
 
-monkeypatch_ctypes()
+try:
+    monkeypatch_ctypes()
+except AttributeError:
+    pass
 
 from coldtype.text import *
 from coldtype.text.reader import Font
