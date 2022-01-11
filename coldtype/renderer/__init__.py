@@ -1342,6 +1342,7 @@ class Renderer():
             self.action_waiting_reason = "on_modified"
 
     def watch_file_changes(self):
+
         if self.winmans.bg:
             return None
         
@@ -1376,8 +1377,12 @@ class Renderer():
                 except:
                     print("  [f]", w)
                 o = AsyncWatchdog(str(w), on_modified=self.on_modified, recursive=False)
-            o.start()
-            self.observers.append(o)
+            try:
+                o.start()
+                self.observers.append(o)
+            except Exception as e:
+                print("File watch error:", e)
+                pass
         
         print("")
         return
