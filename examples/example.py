@@ -16,7 +16,7 @@ def coldtype(r):
         .align(r)
         .pmap(lambda idx, p: (p
             .f(hsl(0.5+idx/len(text)*0.15, s=0.6, l=0.55))
+            .s(0).sw(30).sf(1)
             .ch(warp(5, mult=25))))
-        .understroke(sw=30)
         .rotate(5)
         .scale(0.75))

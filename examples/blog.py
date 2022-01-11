@@ -14,8 +14,7 @@ def nameplate(r, fontSize=500, wdth=0.25, rotate=0):
             , wdth=wdth
             , rotate=rotate
             , tu=-50, r=1)
-            .f(1)
-            .understroke(sw=35)
+            .fssw(1, 0, 20, 1)
             .align(r)
             .ch(phototype(r, cutw=10))),
         (P().glyph(logos["goodhertz_logo_2019"])

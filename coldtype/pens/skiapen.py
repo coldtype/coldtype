@@ -66,12 +66,15 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             elif isinstance(color, Color):
                 self.paint.setColor(color.skia())
     
-    def stroke(self, weight=1, color=None, dash=None):
+    def stroke(self, weight=1, color=None, dash=None, miter=None):
         self.paint.setStyle(skia.Paint.kStroke_Style)
         if dash:
             self.paint.setPathEffect(skia.DashPathEffect.Make(*dash))
         if color and weight > 0:
             self.paint.setStrokeWidth(weight*self.scale)
+            if miter:
+                self.paint.setStrokeMiter(miter)
+            
             if isinstance(color, Gradient):
                 self.gradient(color)
             else:

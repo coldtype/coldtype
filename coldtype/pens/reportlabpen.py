@@ -63,7 +63,7 @@ class ReportLabPen(DrawablePenMixin):
     def fill(self, color):
         self.canvas.setFillColorRGB(color.r, color.g, color.b)
     
-    def stroke(self, weight=1, color=None, dash=None):
+    def stroke(self, weight=1, color=None, dash=None, miter=None):
         #return
         if weight == 0:
             self.canvas.setStrokeColor(transparent)

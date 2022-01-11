@@ -12,13 +12,16 @@ class StylingMixin():
         if "stroke" in st:
             c = st["stroke"]
             sw = st.get("strokeWidth", 1)
-            st["stroke"] = dict(color=c, weight=sw)
+            st["stroke"] = dict(color=c, weight=sw, miter=st.get("strokeMiter", None))
         
         if "strokeWidth" in st:
             del st["strokeWidth"]
+        if "strokeMiter" in st:
+            del st["strokeMiter"]
         if "strokeFirst" in st:
             sf = True
             del st["strokeFirst"]
+        
 
         if "fill" not in st:
             st["fill"] = rgb(1, 0, 0.5)
@@ -87,6 +90,19 @@ class StylingMixin():
     def sf(self, value=None):
         "strokeFirst"
         return self.strokeFirst(value)
+    
+    def strokeMiter(self, value=None):
+        """
+        For a rendering engine that can specify stroke-miter
+        """
+        if value:
+            return self.attr(strokeMiter=value)
+        else:
+            return self.attr(field="strokeMiter")
+
+    def sm(self, value=None):
+        "strokeMiter"
+        return self.strokeMiter(value)
     
     def img(self, src=None, rect=Rect(0, 0, 500, 500), pattern=False, opacity=1.0):
         """Get/set an image fill"""

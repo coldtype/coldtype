@@ -31,7 +31,7 @@ class DrawBotPen(DrawablePenMixin, P):
         else:
             db.fill(None)
     
-    def stroke(self, weight=1, color=None, dash=None):
+    def stroke(self, weight=1, color=None, dash=None, miter=None):
         db.strokeWidth(weight)
         if dash:
             db.lineDash(dash)

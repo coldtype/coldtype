@@ -225,7 +225,7 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
                 dv = bsdf.inputs[0].default_value
                 self.setColorValue(dv, color)
     
-    def stroke(self, weight=1, color=None, dash=None):
+    def stroke(self, weight=1, color=None, dash=None, miter=None):
         if not self.material == "auto" or not self.bsdf():
             return
         if weight and color and color.a > 0:

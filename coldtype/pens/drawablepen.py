@@ -14,7 +14,7 @@ class DrawablePenMixin(object):
     def fill(self, el, color):
         raise Exception("Pen does not implement fill function")
     
-    def stroke(self, el, weight=1, color=None, dash=None):
+    def stroke(self, el, weight=1, color=None, dash=None, miter=None):
         raise Exception("Pen does not implement stroke function")
 
     def shadow(self, el, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):

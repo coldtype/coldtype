@@ -53,7 +53,7 @@ class JSONPen(DrawablePenMixin, BasePen):
         elif isinstance(color, Color):
             self.serialAttrs["fill"] = ["f", self.color(color)]
     
-    def stroke(self, weight=1, color=None, dash=None):
+    def stroke(self, weight=1, color=None, dash=None, miter=None):
         if color and weight > 0:
             if color == "transparent":
                 self.serialAttrs["stroke"] = None
