@@ -35,7 +35,7 @@ class DATImage(P):
         return Rect(self.width(), self.height())
     
     def bounds(self):
-        return self._frame
+        return self.data("frame")
     
     def img(self):
         return None
@@ -70,11 +70,11 @@ class DATImage(P):
 
         self._resize(fx, fy)
         self.data(frame=
-            self.rect().align(self._frame, "mnx", "mny"))
+            self.rect().align(self.data("frame"), "mnx", "mny"))
         return self
     
     def rotate(self, degrees, point=None):
-        self.transforms.append(["rotate", degrees, point or self._frame.pc])
+        self.transforms.append(["rotate", degrees, point or self.data("frame").pc])
         return self
     
     def _precompose_fn(self):
@@ -118,7 +118,7 @@ class DATImage(P):
             .img(self._img, self.bounds(), pattern=False))
         
     def to_pen(self, rect=None):
-        return self.precompose(rect or self._frame, as_image=False)
+        return self.precompose(rect or self.data("frame"), as_image=False)
     
     def FromPen(pen:P, original_src=None):
         return DATImage(original_src, img=pen.img().get("src"))

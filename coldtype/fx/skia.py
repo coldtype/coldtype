@@ -191,7 +191,6 @@ def potrace(rect, poargs=[], invert=True):
             return dp.f(0)
     return _potrace
 
-
 def precompose(rect,
     placement=None,
     opacity=1,
@@ -222,6 +221,13 @@ def rasterized(rect, scale=1):
     def _rasterized(pen):
         return SkiaPen.Precompose(pen, rect, scale=scale, context=SKIA_CONTEXT, disk=False)
     return _rasterized, dict(returns=skia.Image)
+
+
+def rasterize(rect, path):
+    def _rasterize(pen):
+        pen.ch(precompose(rect)).img().get("src").save(str(Path(path).expanduser()), skia.kPNG)
+        return None
+    return _rasterize
 
 
 def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
