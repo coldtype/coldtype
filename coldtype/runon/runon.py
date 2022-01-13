@@ -434,7 +434,7 @@ class Runon:
         """AKA `flatten` in some programming contexts"""
         els = []
         def walk(el, pos, data):
-            if pos == 0:
+            if pos == 0 and el.val_present():
                 els.append(el)
         
         self.walk(walk)
@@ -648,6 +648,9 @@ class Runon:
                 tag = self._tmp_attr_tag
             else:
                 tag = "_default"
+        
+        if tag == "default":
+            tag = "_default"
         
         if field: # getting, not setting
             return self._attrs.get(tag, {}).get(field)

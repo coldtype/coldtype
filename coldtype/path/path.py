@@ -85,8 +85,13 @@ class P(Runon,
             if k == "fill":
                 self.f(v)
             elif k == "stroke":
-                s, sw = v
-                self.s(s).sw(sw)
+                self.s(v)
+            elif k == "strokeWidth":
+                self.sw(v)
+            elif k == "image":
+                self.img(**v)
+            elif k == "shadow":
+                self.shadow(**v)
             else:
                 raise Exception("Invalid __init__ kwargs", k)
 
@@ -265,6 +270,12 @@ class P(Runon,
     @staticmethod
     def Enumerate(enumerable, enumerator):
         return P().enumerate(enumerable, enumerator)
+    
+    def addFrame(self, frame):
+        return self.data(frame=frame)
+    
+    def xAlignToFrame(self):
+        return self.align(self.data("frame"), y=None)
     
     def frameSet(self, th=False, tv=False):
         from coldtype.color import hsl

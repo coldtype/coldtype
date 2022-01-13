@@ -170,6 +170,13 @@ class TestRunon(unittest.TestCase):
 
         self.assertNotEqual(before_rotate, r.î([1, 2]).bounds())
         self.assertEqual(before_frame, r.î(1).ambit())
+    
+    def test_empty(self):
+        r = P()
+        r.data(frame=Rect(0, 0, 100, 100))
+        r.collapse()
+        r.translate(10, 10)
+        print(r)
 
 if __name__ == "__main__":
     unittest.main()

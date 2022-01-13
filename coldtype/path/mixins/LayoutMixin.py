@@ -1,3 +1,4 @@
+from inspect import getframeinfo
 import math
 
 from fontTools.pens.boundsPen import BoundsPen
@@ -119,6 +120,8 @@ class LayoutMixin():
         #         return f
         # elif :
         #     return self.bounds()
+    
+    getFrame = ambit
     
     def align(self,
         rect,

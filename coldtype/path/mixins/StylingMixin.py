@@ -28,9 +28,9 @@ class StylingMixin():
         
         rest = ["blendmode", "image", "skp"]
         if sf:
-            order = ["stroke", "fill", *rest]
+            order = ["shadow", "stroke", "fill", *rest]
         else:
-            order = ["fill", "stroke", *rest]
+            order = ["shadow", "fill", "stroke", *rest]
         
         sort = {k:v for k,v in sorted(st.items(), key=lambda kv: order.index(kv[0]))}
         return sort
