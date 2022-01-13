@@ -56,7 +56,7 @@ class TestRunon(unittest.TestCase):
 
         self.assertEqual(len(r[-1]), 3)
         r.ffg("C", lambda e: e.delete(), index=1)
-        r.unblank()
+        r.deblank()
         self.assertEqual(len(r[-1]), 2)
     
     def test_collapse(self):
@@ -176,7 +176,7 @@ class TestRunon(unittest.TestCase):
         r.data(frame=Rect(0, 0, 100, 100))
         r.collapse()
         r.translate(10, 10)
-        print(r)
+        #print(r)
 
 if __name__ == "__main__":
     unittest.main()

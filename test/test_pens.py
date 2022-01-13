@@ -107,13 +107,14 @@ class TestP(unittest.TestCase):
             P()
         ]))
         self.assertEqual(len(dps), 2)
-        dps.unblank()
+        dps.deblank()
         self.assertEqual(len(dps), 1)
     
     def test_collapse(self):
+        rr = Rect(100, 100)
         r = P([
-            P([P([P()])]),
-            P([P()]),
+            P([P([P().rect(rr)])]),
+            P([P().rect(rr)]),
         ])
 
         self.assertIsInstance(r[0], P)
@@ -124,8 +125,8 @@ class TestP(unittest.TestCase):
         self.assertIsInstance(r[1], P)
 
         r = P([
-            P([P([P()])]),
-            P([P()]),
+            P([P([P().rect(rr)])]),
+            P([P().rect(rr)]),
         ])
 
         r2 = r.copy().collapse()
@@ -136,6 +137,24 @@ class TestP(unittest.TestCase):
 
         self.assertIsInstance(r2[0], P)
         self.assertIsInstance(r2[1], P)
+
+        r = P([
+            P([P([P()])]),
+            P([P()]),
+        ])
+
+        r2 = r.copy().collapse()
+        self.assertEqual(len(r), 2)
+        self.assertEqual(len(r2), 0)
+
+        r = P([
+            P([P([P()])]),
+            P([P()]),
+        ])
+
+        r2 = r.copy().collapse(deblank=False)
+        self.assertEqual(len(r), 2)
+        self.assertEqual(len(r2), 2)
     
     def test_find(self):
         dps = P([

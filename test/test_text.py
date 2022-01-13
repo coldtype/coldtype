@@ -98,7 +98,7 @@ class TestText(unittest.TestCase):
         self.assertEqual(len(st1), len("HELLO"))
         st2 = StSt("HELLO\n", Font.MutatorSans(), 100, strip=False)
         self.assertEqual(len(st2), 2)
-        st3 = st2.collapse().unblank()
+        st3 = st2.collapse().deblank()
         self.assertEqual(len(st3), len(st1))
         st4 = StSt("\n\nHELLO\n", Font.MutatorSans(), 100)
         self.assertEqual(len(st4), len("HELLO"))

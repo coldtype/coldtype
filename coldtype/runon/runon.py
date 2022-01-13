@@ -207,7 +207,7 @@ class Runon:
     
     def val_present(self):
         """subclass hook"""
-        return bool(self._val)
+        return self._val is not None
     
     def normalize_val(self, val):
         """subclass hook"""
@@ -361,10 +361,10 @@ class Runon:
         self.reset_val()
         return self
     
-    def unblank(self):
+    def deblank(self):
         return self.filterv(lambda p: p.val_present())
     
-    removeBlanks = unblank
+    removeBlanks = deblank
     
     def interpose(self, el_or_fn):
         new_els = []
@@ -430,11 +430,11 @@ class Runon:
     
     # Hierarchical Operations
 
-    def collapse(self):
+    def collapse(self, deblank=True):
         """AKA `flatten` in some programming contexts"""
         els = []
         def walk(el, pos, data):
-            if pos == 0 and el.val_present():
+            if pos == 0 and (el.val_present() or not deblank):
                 els.append(el)
         
         self.walk(walk)

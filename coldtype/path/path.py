@@ -101,7 +101,7 @@ class P(Runon,
         return self
     
     def val_present(self):
-        return self._val and len(self._val.value) > 0
+        return self._val is not None and len(self._val.value) > 0
     
     def copy_val(self, val):
         copy = RecordingPen()
