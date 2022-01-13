@@ -5,7 +5,7 @@ tl = Timeline(26, fps=14)
 @animation(rect=(1080, 1080), timeline=tl, bg=0)
 def render(f):
     pe = f.e(e:="qeio", 1)
-    return (ß(
+    return (P(
         (StSt(chr(65+f.i), mutator
             , f.e(e, r=(500, 750))
             , wdth=1-pe

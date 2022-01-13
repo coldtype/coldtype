@@ -3,7 +3,7 @@ from coldtype.fx.skia import fill, phototype
 
 @animation((1080, 1080), timeline=90, composites=1)
 def recursive_composite(f):
-    return (ß(
+    return (P(
         f.lastRender(lambda p: p
             .translate(1, -2)
             .scale(0.997)

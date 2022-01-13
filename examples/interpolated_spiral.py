@@ -4,7 +4,7 @@ rs = random_series()
 
 @aframe()
 def spiral(f):
-    return (ß()
+    return (P()
         .enumerate(range(0, 30), lambda x:
             StSt("COLDTYPE", Font.ColdtypeObviously(), 220,
                 wdth=x.e)

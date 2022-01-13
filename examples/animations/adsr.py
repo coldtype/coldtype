@@ -12,7 +12,7 @@ at = AsciiTimeline(2, 30, """
 
 @animation((1080, 1080), timeline=at, bg=1)
 def adsr(f):
-    return (ß(
+    return (P(
         (Glyphwise("COLD", lambda g:
             Style(Font.MutatorSans(), 350,
                 wght=at.ki(f"{g.i}").adsr(
@@ -35,7 +35,7 @@ def adsr(f):
                     rs=1))])
             .align(f.a.r.take(0.5, "S"), th=0)
             ._null()))
-        .append(ß(f.a.r
+        .append(P(f.a.r
             .take(at
                 .ki("snare")
                 .adsr(rng=(4, 100)), "CY")

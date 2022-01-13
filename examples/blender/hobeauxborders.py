@@ -18,7 +18,7 @@ def hobeauxBorder(r, style=0, fs=200):
     nh, nv = int(r.w/bw/2), int(r.h/bw/2)
     bx = Rect(bw*nh*2+cw*2, bw*nv*2).align(r)
 
-    return ß(
+    return P(
         (b.copy()
             .layer(nh)
             .append(c.copy())

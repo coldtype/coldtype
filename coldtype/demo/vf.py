@@ -93,4 +93,4 @@ def vf(f):
                 Style(Font.RecursiveMono(), 24, fill=bw(1, 0.5), load_font=0),
                 rs[x.i].inset(50, 0)))])
 
-    return (ß().enumerate(anim_combos, txt))
+    return (P().enumerate(anim_combos, txt))

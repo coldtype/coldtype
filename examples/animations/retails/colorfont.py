@@ -29,6 +29,6 @@ def pappardelle(f):
         spin(f.adj(-idx*4), g)
     
     return [
-        ß(r_wave.inset(-20)).f(None).s(custom_palette[2]).sw(3),
+        P(r_wave.inset(-20)).f(None).s(custom_palette[2]).sw(3),
         wave.rotate(f.e(0, to1=1)*360, point=r_wave.pc)
     ]

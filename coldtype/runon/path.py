@@ -313,7 +313,6 @@ def runonCast():
         return P.FromPens(p)
     return _runonCast
 
-ß = P
 PS = P
 DATPens = P
 DATPen = P

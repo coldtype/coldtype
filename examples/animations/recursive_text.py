@@ -3,7 +3,7 @@ from coldtype.fx.skia import phototype, fill
 
 @animation(timeline=80, bg=0, composites=1)
 def recursive(f):
-    return (ß(
+    return (P(
         (StSt("COLDTYPE", Font.ColdtypeObviously()
             , font_size=f.e(1, rng=(250, 20))
             , wdth=f.e("ceio", 1, rng=(1, 0))

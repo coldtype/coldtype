@@ -55,8 +55,8 @@ def test_rich_custom(r):
     
     pens.findStyle("i", lambda p: p
         .f(hsl(0.8, l=0.8))
-        .insert(0, ß(p.bounds()).f(hsl(0.7, a=0.75)))
-        .insert(0, ß(p.ambit()).fssw(-1, 0, 2)))
+        .insert(0, P(p.bounds()).f(hsl(0.7, a=0.75)))
+        .insert(0, P(p.ambit()).fssw(-1, 0, 2)))
     
     pens.findStyle("b", lambda p: p.rotate(180))
     
@@ -101,6 +101,6 @@ def test_rich_code(r):
         .scale(1.5)
         .removeSpacers()
         .map(lambda p:
-            p.insert(0, ß()
+            p.insert(0, P()
                 .rect(p.ambit())
                 .fssw(-1, hsl(0.3, a=0.25), 10))))

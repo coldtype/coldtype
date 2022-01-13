@@ -14,7 +14,7 @@ def test_draw(r):
         .tag("letters"))
 
     hatch_rs = r.inset(20).subdivide(250, "N")
-    hatches = (ß().enumerate(hatch_rs, lambda x:
+    hatches = (P().enumerate(hatch_rs, lambda x:
             P(x.el) if x.i%2==0 else None)
         .pen()
         .intersection(letters.copy())
@@ -30,7 +30,7 @@ def test_draw(r):
         .pmap(lambda p: p.removeOverlap())
         .tag("type"))
     
-    return ß(border, hatches, typ)
+    return P(border, hatches, typ)
 
 numpad = {
     1: test_draw.draw("border"),
