@@ -8,6 +8,7 @@ from fontTools.pens.recordingPen import RecordingPen
 
 from coldtype.geometry import Point, Rect, align
 from coldtype.interpolation import norm
+from coldtype.runon.layout import Layout
 
 
 class LayoutMixin():
@@ -137,6 +138,9 @@ class LayoutMixin():
         `th` means true-horizontal (i.e. will disregard any invisible 'frame'
         set on the pen (as in the case of glyphs returned from StSt/Glyphwise));
         `tv` means true-vertical, which is the same but for the vertical dimension"""
+
+        if isinstance(rect, Layout):
+            rect = rect.rect
         
         r = self.ambit(th, tv)
 

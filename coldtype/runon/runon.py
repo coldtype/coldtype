@@ -224,10 +224,11 @@ class Runon:
         return len(self._els)
 
     def __getitem__(self, index):
-        #try:
-        return self._els[index]
-        #except IndexError:
-        #    return None
+        if isinstance(index, int) or isinstance(index, slice):
+            return self._els[index]
+        else:
+            tag = index
+            return self.find_(tag)
         
     def __setitem__(self, index, pen):
         self._els[index] = pen
@@ -460,6 +461,9 @@ class Runon:
         return self
     
     def sum(self):
+        if self.val_present():
+            return self._val
+        
         r = self.copy().collapse()
         out = []
         for el in r:
@@ -603,12 +607,12 @@ class Runon:
     def find_(self, finder_fn, fn=None, index=0):
         res = self.find(finder_fn, fn, index=index)
         if not fn:
-            return res[0]
+            try:
+                return res[0]
+            except IndexError:
+                raise Exception(f"Could not find `{finder_fn}`")
         else:
             return self
-        
-    def kv(self, key, mod_fn=None, index=0):
-        return self.find_(key, mod_fn, index).v
         
     def replace(self, tag, replacement, limit=None):
         if isinstance(tag, str):
