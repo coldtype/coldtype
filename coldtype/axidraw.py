@@ -1,5 +1,5 @@
 from coldtype.pens.axidrawpen import AxiDrawPen
-from coldtype.path import P
+from coldtype.runon.path import P
 from coldtype.renderable import renderable
 from coldtype.geometry import Rect, Point
 from time import sleep

@@ -24,7 +24,7 @@ from coldtype.renderer.config import ConfigOption
 from coldtype.renderer.reader import SourceReader
 from coldtype.renderer.state import RendererState
 from coldtype.renderable import renderable, animation, Action, Overlay, runnable
-from coldtype.path import P
+from coldtype.runon.path import P
 from coldtype.pens.svgpen import SVGPen
 from coldtype.time.viewer import timeViewer
 

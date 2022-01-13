@@ -215,7 +215,7 @@ def shgroup(s):
     return shphrase(s)
 
 def sh(s, ctx:SHContext=None, dps=None, subs={}):
-    from coldtype.path import P
+    from coldtype.runon.path import P
     from coldtype.color import hsl, rgb
 
     #print("SH>", s, subs)

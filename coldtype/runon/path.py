@@ -6,16 +6,16 @@ from fontTools.pens.reverseContourPen import ReverseContourPen
 from coldtype.geometry import Rect, Point, txt_to_edge
 from coldtype.runon.runon import Runon
 
-from coldtype.path.mixins.FXMixin import FXMixin
-from coldtype.path.mixins.GlyphMixin import GlyphMixin
-from coldtype.path.mixins.LayoutMixin import LayoutMixin
-from coldtype.path.mixins.StylingMixin import StylingMixin
-from coldtype.path.mixins.DrawingMixin import DrawingMixin
-from coldtype.path.mixins.PathopsMixin import PathopsMixin
-from coldtype.path.mixins.GeometryMixin import GeometryMixin
-from coldtype.path.mixins.ShorthandMixin import ShorthandMixin
-from coldtype.path.mixins.SegmentingMixin import SegmentingMixin
-from coldtype.path.mixins.SerializationMixin import SerializationMixin
+from coldtype.runon.mixins.FXMixin import FXMixin
+from coldtype.runon.mixins.GlyphMixin import GlyphMixin
+from coldtype.runon.mixins.LayoutMixin import LayoutMixin
+from coldtype.runon.mixins.StylingMixin import StylingMixin
+from coldtype.runon.mixins.DrawingMixin import DrawingMixin
+from coldtype.runon.mixins.PathopsMixin import PathopsMixin
+from coldtype.runon.mixins.GeometryMixin import GeometryMixin
+from coldtype.runon.mixins.ShorthandMixin import ShorthandMixin
+from coldtype.runon.mixins.SegmentingMixin import SegmentingMixin
+from coldtype.runon.mixins.SerializationMixin import SerializationMixin
 
 class P(Runon,
     StylingMixin,
@@ -312,3 +312,10 @@ def runonCast():
     def _runonCast(p):
         return P.FromPens(p)
     return _runonCast
+
+ß = P
+PS = P
+DATPens = P
+DATPen = P
+DPS = P
+DP = P

@@ -1,5 +1,5 @@
 import unittest
-from coldtype.path import P
+from coldtype.runon.path import P
 
 from fontTools.pens.recordingPen import RecordingPen
 

@@ -27,4 +27,5 @@ def drumloop(f):
         .align(f.a.r, th=0)
         .f(-1)
         .s(hsl(0.3) if kicks == 0 else hsl(0.8))
-        .sw(4))
+        .sw(4)
+        .sm(0.5))

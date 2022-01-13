@@ -10,7 +10,7 @@ from fontTools.misc.transform import Transform
 
 from coldtype.fx.chainable import Chainable
 from coldtype.color import normalize_color, bw
-from coldtype.path import P
+from coldtype.runon.path import P
 from coldtype.pens.skiapen import SkiaPen
 
 SKIA_CONTEXT = None

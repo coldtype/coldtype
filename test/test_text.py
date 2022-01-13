@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 from coldtype.geometry import *
 from coldtype.color import hsl
-from coldtype.path import P
+from coldtype.runon.path import P
 from coldtype.text.composer import StSt, Font, Style
 
 tf = Path(__file__).parent

@@ -3,7 +3,7 @@ try:
 except:
     pass
 
-from coldtype.path import P
+from coldtype.runon.path import P
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin
 from coldtype.color import Color, Gradient

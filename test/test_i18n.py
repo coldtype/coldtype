@@ -2,7 +2,7 @@ import unicodedata, unittest
 from pathlib import Path
 from coldtype.geometry import Rect
 from coldtype.helpers import glyph_to_uni
-from coldtype.path import P
+from coldtype.runon.path import P
 from coldtype.text.composer import StSt, Font, Style, Slug, SegmentedString
 
 tf = Path(__file__).parent

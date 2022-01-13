@@ -4,7 +4,7 @@ from coldtype.grid import Grid
 from coldtype.geometry import *
 from coldtype.color import hsl
 from coldtype.text.composer import StSt, Glyphwise, Style, Font
-from coldtype.path import P
+from coldtype.runon.path import P
 from coldtype.pens.svgpen import SVGPen
 
 from coldtype.text.reader import ALL_FONT_DIRS

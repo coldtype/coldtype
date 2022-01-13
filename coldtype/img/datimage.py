@@ -1,5 +1,5 @@
 from pathlib import Path
-from coldtype.path import P
+from coldtype.runon.path import P
 from coldtype.geometry import Rect
 from coldtype.img.blendmode import BlendMode
 

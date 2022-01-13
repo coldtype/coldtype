@@ -1,4 +1,4 @@
-from coldtype.path import P
+from coldtype.runon.path import P
 from coldtype.geometry import Rect, Point
 
 from coldtype.text.shaper import segment

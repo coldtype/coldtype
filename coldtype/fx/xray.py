@@ -1,4 +1,4 @@
-from coldtype.path import P as P
+from coldtype.runon.path import P as P
 from coldtype.geometry import Point
 from coldtype.color import hsl
 

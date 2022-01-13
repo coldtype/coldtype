@@ -1,6 +1,6 @@
 import re
 
-from coldtype.path import P
+from coldtype.runon.path import P
 from coldtype.text.composer import Graf, GrafStyle, Lockup
 from coldtype.text.reader import StyledString, Style
 from coldtype.color import hsl

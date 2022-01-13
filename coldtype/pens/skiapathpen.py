@@ -1,7 +1,7 @@
 from fontTools.pens.basePen import BasePen
 from fontTools.pens.transformPen import TransformPen
 
-from coldtype.path import P
+from coldtype.runon.path import P
 
 try:
     import skia

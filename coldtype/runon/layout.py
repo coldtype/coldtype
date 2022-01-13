@@ -27,7 +27,7 @@ class Layout(Runon):
         return self
     
     def view(self, fontSize=32):
-        from coldtype.path import P
+        from coldtype.runon.path import P
         from coldtype.text import Style
 
         out = P()

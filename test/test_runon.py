@@ -107,7 +107,7 @@ class TestRunon(unittest.TestCase):
         r.walk(walker)
         
         self.assertEqual(utags,
-            ['0_0_0', '0_0', '0_1', '0', '1', None])
+            ['0_0_0', '0_0', '0_1', '0', '1', 'ROOT'])
 
         self.assertEqual(r.index(0).v, 4)
         r.index(0, lambda p: p.update(40))

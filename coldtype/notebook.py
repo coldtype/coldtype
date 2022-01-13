@@ -7,7 +7,7 @@ from IPython.display import display, SVG, HTML, clear_output
 from coldtype.renderable.renderable import renderable as _renderable
 from coldtype.renderable.animation import animation as _animation, aframe as _aframe
 from coldtype.renderable.animation import Action, Timeline, FFMPEGExport
-from coldtype.path import P
+from coldtype.runon.path import P
 from coldtype.pens.svgpen import SVGPen
 from coldtype.color import rgb, hsl
 from coldtype.geometry import Rect

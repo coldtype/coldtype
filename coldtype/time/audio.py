@@ -1,6 +1,6 @@
 import math
 from pathlib import Path
-from coldtype.path import P
+from coldtype.runon.path import P
 
 try:
     import numpy as np

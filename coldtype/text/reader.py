@@ -9,7 +9,7 @@ from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
 
 from coldtype.color import normalize_color, rgb
-from coldtype.path import P
+from coldtype.runon.path import P
 from coldtype.geometry import Rect
 
 from typing import Union

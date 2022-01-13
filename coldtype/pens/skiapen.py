@@ -2,7 +2,7 @@ import skia, struct
 
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 from coldtype.pens.skiapathpen import SkiaPathPen
-from coldtype.path import P
+from coldtype.runon.path import P
 from coldtype.img.datimage import DATImage
 from coldtype.geometry import Rect, Point
 from coldtype.text.reader import Style

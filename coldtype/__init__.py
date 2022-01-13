@@ -24,7 +24,7 @@ try:
 except AttributeError:
     pass
 
-from coldtype.path import P, PS, DP, DPS, ß, DATPen, DATPens
+from coldtype.runon.path import P, PS, DP, DPS, ß, DATPen, DATPens
 from coldtype.text import *
 from coldtype.text.reader import Font
 from coldtype.geometry import *
