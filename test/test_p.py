@@ -7,7 +7,7 @@ from coldtype.geometry import Point, Rect
 from coldtype.text import StSt, Font, Glyphwise, Style
 
 
-class TestRunon(unittest.TestCase):
+class TestRunonPath(unittest.TestCase):
     def test_init(self):
         r = P()
         self.assertIsInstance(r.v, RecordingPen)

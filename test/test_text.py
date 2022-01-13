@@ -141,27 +141,27 @@ class TestText(unittest.TestCase):
     
     def test_depth(self):
         st = (StSt("These are some words", Font.RecursiveMono()))
-        self.assertEqual(st.depth(), 2)
+        self.assertEqual(st.depth(), 1)
 
         st = (StSt("These are some words", Font.RecursiveMono(), multiline=1))
-        self.assertEqual(st.depth(), 3)
+        self.assertEqual(st.depth(), 2)
 
         st = P([(StSt("These are some words", Font.RecursiveMono(), multiline=1))])
-        self.assertEqual(st.depth(), 4)
+        self.assertEqual(st.depth(), 3)
 
         st = (StSt("These are some words\nbut now on multiple lines\nisn't that interesting", Font.RecursiveMono()))
-        self.assertEqual(st.depth(), 3)
+        self.assertEqual(st.depth(), 2)
     
     def test_word_splitting(self):
         st = (StSt("These are some words", Font.RecursiveMono()))
 
-        self.assertEqual(st.depth(), 2)
+        self.assertEqual(st.depth(), 1)
         self.assertEqual(st[0].glyphName, 'T')
         self.assertEqual(len(st), 20)
 
         st = st.wordPens()
 
-        self.assertEqual(st.depth(), 2)
+        self.assertEqual(st.depth(), 1)
         self.assertEqual(
             st[0].data("word"),
             'T/h.italic/e.italic/s.italic/e.italic')
@@ -170,24 +170,24 @@ class TestText(unittest.TestCase):
         
         st = (StSt("These are some words", Font.RecursiveMono(), multiline=1))
 
-        self.assertEqual(st.depth(), 3)
+        self.assertEqual(st.depth(), 2)
         self.assertEqual(st[0][0].glyphName, 'T')
         self.assertEqual(len(st[0]), 20)
 
         st = st.wordPens()
-        self.assertEqual(st.depth(), 3)
+        self.assertEqual(st.depth(), 2)
         self.assertEqual(st[0][0].data("word"),
             'T/h.italic/e.italic/s.italic/e.italic')
         self.assertEqual(len(st[0]), 4)
 
         st = (StSt("These are\nsome words", Font.RecursiveMono()))
 
-        self.assertEqual(st.depth(), 3)
+        self.assertEqual(st.depth(), 2)
         self.assertEqual(st[0][0].glyphName, 'T')
         self.assertEqual(len(st[0]), 9)
 
         st = st.wordPens()
-        self.assertEqual(st.depth(), 3)
+        self.assertEqual(st.depth(), 2)
         self.assertEqual(st[-1][-1].data("word"),
             'w.italic/o/r.italic/d.italic/s.italic')
         self.assertEqual(len(st[0]), 2)

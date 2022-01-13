@@ -1,9 +1,11 @@
-from random import random
-
 from coldtype.runon import Runon
 from coldtype.geometry import Rect
 from coldtype.grid import Grid
 from coldtype.color import hsl, bw
+from coldtype.random import random_series
+
+
+_view_rs1 = random_series()
 
 
 class Layout(Runon):
@@ -58,6 +60,7 @@ class Layout(Runon):
         if self.val_present():
             self._extend_with_tags(
                 self.r.grid(columns, rows), tags)
+            self._val = None
         else:
             for el in self._els:
                 el.grid(columns, rows, tags)
@@ -72,7 +75,7 @@ class Layout(Runon):
         return self
     
     def sort(self, attr="x", reverse=False):
-        if self.depth() == 2:
+        if self.depth() == 1:
             self._els = sorted(self._els, key=lambda el: getattr(el.r, attr), reverse=reverse)
         return self
     
@@ -81,17 +84,65 @@ class Layout(Runon):
         from coldtype.text import Style
 
         out = P()
+        ridx = 0
 
         def walker(el, pos, data):
+            nonlocal ridx
             if pos == 0:
                 out.append(P(
-                    P(el.r).f(hsl(random(), 1)).alpha(0.1),
+                    P(el.r).f(hsl(_view_rs1[ridx], 1)).alpha(0.1),
                     P(el.r.inset(2)).fssw(-1, bw(0, 0.2), 4),
                     P().text(el.tag() or ("u:" + data["utag"])
                         , Style("Times", fontSize, load_font=0, fill=bw(0, 0.5))
                         , el.r.inset(7, 10))))
+                ridx += 1
         
         self.postwalk(walker)
         return out
+    
+    # @property
+    # def ne(self): return self.r.pne
+    # @property
+    # def nw(self): return self.r.pnw
+    # @property
+    # def sw(self): return self.r.psw
+    # @property
+    # def se(self): return self.r.pse
+    # @property
+    # def n(self): return self.r.pn
+    # @property
+    # def s(self): return self.r.ps
+    # @property
+    # def e(self): return self.r.pe
+    # @property
+    # def w(self): return self.r.pw
+
+    @property
+    def pne(self): return self.r.pne
+    @property
+    def pnw(self): return self.r.pnw
+    @property
+    def psw(self): return self.r.psw
+    @property
+    def pse(self): return self.r.pse
+    @property
+    def pn(self): return self.r.pn
+    @property
+    def ps(self): return self.r.ps
+    @property
+    def pe(self): return self.r.pe
+    @property
+    def pw(self): return self.r.pw
+    @property
+    def pc(self): return self.r.pc
+    
+    @property
+    def en(self): return self.r.en
+    @property
+    def es(self): return self.r.es
+    @property
+    def ee(self): return self.r.ee
+    @property
+    def ew(self): return self.r.ew
 
 L = Layout

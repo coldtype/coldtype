@@ -18,6 +18,9 @@ class DrawingMixin():
         self._val.moveTo(p)
         self._last = p
         return self
+    
+    def m(self, *p):
+        return self.moveTo(*p)
 
     def lineTo(self, *p):
         p = self._normPointSplat(p)
@@ -27,24 +30,39 @@ class DrawingMixin():
             self._val.lineTo(p)
         self._last = p
         return self
+    
+    def l(self, *p):
+        return self.lineTo(*p)
 
     def qCurveTo(self, *points):
         self._val.qCurveTo(*points)
         self._last = points[-1]
         return self
+    
+    def q(self, *p):
+        return self.qCurveTo(*p)
 
     def curveTo(self, *points):
         self._val.curveTo(*points)
         self._last = points[-1]
         return self
+    
+    def c(self, *p):
+        return self.curveTo(*p)
 
     def closePath(self):
         self._val.closePath()
         return self
+    
+    def cp(self):
+        return self.closePath()
 
     def endPath(self):
         self._val.endPath()
         return self
+    
+    def ep(self):
+        return self.endPath()
     
     def replay(self, pen):
         self._val.replay(pen)
@@ -160,8 +178,6 @@ class DrawingMixin():
             self.endPath()
         return self
     
-    l = line
-    
     def hull(self, points):
         """Same as `.line` but calls closePath instead of endPath`"""
         self.moveTo(points[0])
@@ -207,6 +223,9 @@ class DrawingMixin():
         c = Line(d, pl.end).t(f2/100)
         return self.curveTo(b, c, d)
     
+    def ioc(self, pt, slope=0, fA=0, fB=85):
+        return self.ioEaseCurveTo(pt, slope, fA, fB)
+
     def ioEaseCurveTo(self, pt, slope=0, fA=0, fB=85):
         a = Point(self._val.value[-1][-1][-1])
         d = Point(pt)
@@ -256,6 +275,9 @@ class DrawingMixin():
             c2)
         self.lineTo(d)
         return self
+    
+    def bxc(self, pt, point, factor=65, po=(0, 0), mods={}, flatten=False):
+        return self.boxCurveTo(pt, point, factor, po, mods, flatten)
     
     def boxCurveTo(self, pt, point, factor=65, po=(0, 0), mods={}, flatten=False):
         #print("BOX", point, factor, pt, po, mods)
@@ -344,7 +366,8 @@ class DrawingMixin():
         return self.mirror(y=1, point=point)
     
     def withRect(self, rect, fn):
-        return fn(Rect(rect), self)
+        r = Rect(rect)
+        return fn(r, self).data(frame=r)
     
     def gridlines(self, rect, x=20, y=None, absolute=False):
         """Construct a grid in the pen using `x` and (optionally) `y` subdivisions"""

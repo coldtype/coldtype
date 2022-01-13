@@ -73,7 +73,7 @@ class TestRunon(unittest.TestCase):
 
         r.insert([0, 0], Runon(6))
         r.insert([0, 0], Runon(5))
-        self.assertEqual(r[0].sum(), [5, 6])
+        self.assertEqual(r[0].sum(), [4, 5, 6])
 
         r.data(hello="world")
         r.index([0, 0], lambda e: e.attr(fill=1))
@@ -94,8 +94,8 @@ class TestRunon(unittest.TestCase):
         r_rev1 = r.copy().reverse(recursive=0)
         r_rev2 = r.copy().reverse(recursive=1)
 
-        self.assertEqual(r_rev1[-1].sum(), [5, 6])
-        self.assertEqual(r_rev2[-1].sum(), [6, 5])
+        self.assertEqual(r_rev1[-1].sum(), [4, 5, 6])
+        self.assertEqual(r_rev2[-1].sum(), [4, 6, 5])
 
         r.insert([0, 0, 0], Runon(10))
 
@@ -201,23 +201,23 @@ class TestRunon(unittest.TestCase):
 
         r = Runon(1)
         self.assertEqual(r.v, 1)
-        self.assertEqual(r.depth(), 1)
+        self.assertEqual(r.depth(), 0)
         
         r.layerv(lambda p: p.v + 2)
         self.assertEqual(r.v, None)
         self.assertEqual(r[0].v, 3)
-        self.assertEqual(r.depth(), 2)
+        self.assertEqual(r.depth(), 1)
         
         r.layerv(lambda p: p.v + 2)
         self.assertEqual(r[0].v, None)
         self.assertEqual(r[0][0].v, 5)
-        self.assertEqual(r.depth(), 3)
+        self.assertEqual(r.depth(), 2)
 
         r.layerv(lambda p: p.v + 2, lambda p: p.v + 3)
         self.assertEqual(r[0][0].v, None)
         self.assertEqual(r[0][0][0].v, 7)
         self.assertEqual(r[0][0][-1].v, 8)
-        self.assertEqual(r.depth(), 4)
+        self.assertEqual(r.depth(), 3)
 
         r.collapse()
         self.assertEqual(len(r), 2)
@@ -369,7 +369,7 @@ class TestRunon(unittest.TestCase):
         self.assertEqual(r.sum(), [1, 2, 3])
         self.assertEqual(r2.sum(), [1, 2, 3, 4])
         self.assertEqual(r2[0].sum(), [1, 2, 3])
-        self.assertEqual(r2[1].sum(), [4])
+        self.assertEqual(r2[1].sum(), [4, 4])
     
     def test_index(self):
         r = Runon(1, 2, 3)

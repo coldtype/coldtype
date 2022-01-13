@@ -189,7 +189,7 @@ class P(Runon,
                     .pen()))
         
         d = self.depth()
-        if d == 2:
+        if d == 1:
             return _wp(self)
         
         out = type(self)()

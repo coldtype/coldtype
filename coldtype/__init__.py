@@ -25,6 +25,7 @@ except AttributeError:
     pass
 
 from coldtype.runon.path import P, PS, DP, DPS, DATPen, DATPens
+from coldtype.runon.layout import Layout, L
 from coldtype.text import *
 from coldtype.text.reader import Font
 from coldtype.geometry import *

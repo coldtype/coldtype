@@ -57,29 +57,28 @@ def skeleton(scale=1):
                 lambda x: P().r(x.el.r(30)))
                 .tag("moveTo")),
             (P().enumerate(pts[1],
-                lambda x: P().r(x.el.r(20)))
+                lambda x: P().rect(x.el.r(20)))
                 .tag("lineTo")),
             (P().enumerate(pts[2],
-                lambda x: P().o(x.el.r(20)))
+                lambda x: P().oval(x.el.r(20)))
                 .tag("curveOn")),
             (P().enumerate(pts[3],
-                lambda x: P().o(x.el.r(10)))
+                lambda x: P().oval(x.el.r(10)))
                 .tag("curveOff")),
             (P().enumerate(pts[4],
-                lambda x: P().o(x.el.r(20)))
+                lambda x: P().oval(x.el.r(20)))
                 .tag("qCurveOn")),
             (P().enumerate(pts[5],
-                lambda x: P().o(x.el.r(10)))
+                lambda x: P().oval(x.el.r(10)))
                 .tag("qCurveOff")),
             (P().enumerate(pts[6],
-                lambda x: P().l(x.el))
+                lambda x: P().line(x.el))
                 .tag("curveBars")),
             (P().enumerate(pts[7],
-                lambda x: P().l(x.el))
+                lambda x: P().line(x.el))
                 .tag("qCurveBars")))
             .find(
                 lambda e: e.tag() in scaleables,
-                lambda e: e.mapv(
-                    lambda x: x.scale(scale)))
+                lambda e: e.mapv(lambda x: x.scale(scale)))
             .fssw(-1, 0, 2))
     return _skeleton

@@ -256,7 +256,7 @@ class Runon:
         if len(self) > 0:
             return 1 + max(p.depth() for p in self)
         else:
-            return 1
+            return 0
     
     # Iteration operations
 
@@ -461,12 +461,12 @@ class Runon:
         return self
     
     def sum(self):
+        out = []
         if self.val_present():
-            return self._val
+            out.append(self._val)
         
         r = self.copy().collapse()
-        out = []
-        for el in r:
+        for el in r._els:
             out.append(el._val)
         return out
     
