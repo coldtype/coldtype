@@ -265,7 +265,8 @@ class Runon:
         visible_only=False,
         parent=None,
         alpha=1,
-        idx=None
+        idx=None,
+        _selector=None,
         ):
         if visible_only and not self._visible:
             return
@@ -277,15 +278,23 @@ class Runon:
         
         if len(self) > 0:
             utag = "_".join([str(i) for i in idx]) if idx else None
-            callback(self, -1, dict(depth=depth, alpha=alpha, idx=idx, utag=utag))
+            if utag is None and parent is None:
+                utag = "ROOT"
+            if _selector is None or _selector == -1:
+                callback(self, -1, dict(depth=depth, alpha=alpha, idx=idx, utag=utag))
+            
             for pidx, el in enumerate(self._els):
                 idxs = [*idx] if idx else []
                 idxs.append(pidx)
-                el.walk(callback, depth=depth+1, visible_only=visible_only, parent=self, alpha=alpha, idx=idxs)
+                el.walk(callback, depth=depth+1, visible_only=visible_only,
+                    parent=self, alpha=alpha, idx=idxs, _selector=_selector)
+            
             utag = "_".join([str(i) for i in idx]) if idx else None
-            callback(self, 1, dict(depth=depth, alpha=alpha, idx=idx, utag=utag))
+            if utag is None and parent is None:
+                utag = "ROOT"
+            if _selector is None or _selector == +1:
+                callback(self, 1, dict(depth=depth, alpha=alpha, idx=idx, utag=utag))
         else:
-            #print("PARENT", idx)
             utag = "_".join([str(i) for i in idx]) if idx else None
             if utag is None and parent is None:
                 utag = "ROOT"
@@ -294,9 +303,18 @@ class Runon:
                 depth=depth, alpha=alpha, idx=idx, utag=utag))
             
             if res is not None:
-                parent[idx[-1]] = res
+                if parent is None:
+                    return res
+                else:
+                    parent[idx[-1]] = res
         
         return self
+    
+    def prewalk(self, callback):
+        return self.walk(callback, _selector=-1)
+    
+    def postwalk(self, callback):
+        return self.walk(callback, _selector=+1)
     
     def parent(self):
         if self._parent:
@@ -588,6 +606,9 @@ class Runon:
             return res[0]
         else:
             return self
+        
+    def kv(self, key, mod_fn=None, index=0):
+        return self.find_(key, mod_fn, index).v
         
     def replace(self, tag, replacement, limit=None):
         if isinstance(tag, str):
