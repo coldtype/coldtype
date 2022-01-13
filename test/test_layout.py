@@ -5,7 +5,7 @@ from coldtype.text import StSt, Font
 
 class TestLayout(unittest.TestCase):
     def test_auto_recursion(self):
-        l = L(Rect(500, 500))
+        l = Layout(Rect(500, 500))
         self.assertEqual(l.depth(), 0)
         self.assertEqual(l.v, l.r)
         self.assertEqual(l.v, l.rect)
@@ -32,7 +32,7 @@ class TestLayout(unittest.TestCase):
         self.assertEqual(l[1][1][1].rect.w, 100)
     
     def test_duck(self):
-        l = L(Rect(500, 500))
+        l = Layout(Rect(500, 500))
         l.grid(2, 2, "abcd")
 
         self.assertEqual(l.val_present(), False)

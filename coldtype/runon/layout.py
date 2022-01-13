@@ -144,5 +144,3 @@ class Layout(Runon):
     def ee(self): return self.r.ee
     @property
     def ew(self): return self.r.ew
-
-L = Layout

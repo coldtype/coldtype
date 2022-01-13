@@ -157,7 +157,10 @@ class DrawingMixin():
     
     def oval(self, rect):
         """Oval primitive"""
-        self.roundedRect(rect, 0.5, 0.5)
+        if isinstance(rect, Point):
+            self.roundedRect(Rect.FromCenter(rect, 20, 20), 0.5, 0.5)
+        else:
+            self.roundedRect(rect, 0.5, 0.5)
         return self
     
     o = oval
@@ -329,8 +332,13 @@ class DrawingMixin():
                 else:
                     p1 = p2 = a.interp(0.5, d)
             else:
-                p = box.point(point)
-                p1, p2 = (p, p)
+                if "," in point:
+                    pt1, pt2 = [x.strip() for x in point.split(",")]
+                    p1 = box.point(pt1)
+                    p2 = box.point(pt2)
+                else:
+                    p = box.point(point)
+                    p1, p2 = (p, p)
         elif isinstance(point, Point):
             p1, p2 = point, point
         else:

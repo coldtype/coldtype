@@ -14,7 +14,7 @@ def easer(f):
             .align(f.a.r)
             .layerv(
                 lambda p: p.fssw(-1, hsl(0.9), 2),
-                lambda p: p.ch(skeleton(scale=0.5)).s(hsl(0.65)))),
+                lambda p: p.ch(skeleton(scale=1.5)).s(hsl(0.65)))),
         (StSt("COLD", Font.ColdtypeObviously()
             , 300
             , wdth=f.e(p, 0))
