@@ -223,6 +223,7 @@ class Renderer():
             if "picklejar.py" in str(filepath):
                 pj = True
         
+        unnormalized = filepath
         filepath = self.source_reader.normalize_filepath(filepath)
 
         if not filepath.exists():
@@ -239,17 +240,17 @@ class Renderer():
         self._codepath_offset = 0
         filepath = self.source_reader.reset_filepath(filepath, reload=False, dirdirection=dirdirection)
         # TODO check exists here on filepath
-        self.watchees = [[Watchable.Source, self.source_reader.filepath, None]]
+        self.watchees = [[Watchable.Source, Path(unnormalized), None]]
 
         ph = path_hash(self.source_reader.filepath)
-        self.watchees.append([Watchable.Generic, Path(f"~/.coldtype/{ph}_input.json").expanduser(), None])
+        self.add_watchee([Watchable.Generic, Path(f"~/.coldtype/{ph}_input.json").expanduser(), None])
 
         if pj:
             pjp = Path("~/.coldtype/picklejar").expanduser()
             if pjp.exists():
                 rmtree(pjp)
             pjp.mkdir()
-            self.watchees.append([Watchable.Generic, pjp, None])
+            self.add_watchee([Watchable.Generic, pjp, None])
 
         if not self.args.is_subprocess:
             self.watch_file_changes()
@@ -454,12 +455,12 @@ class Renderer():
             for watch, flag in render.watch:
                 if isinstance(watch, Font) and not watch.cacheable:
                     if watch.path not in self.watchee_paths():
-                        self.watchees.append([Watchable.Font, watch.path, flag])
+                        self.add_watchee([Watchable.Font, watch.path, flag])
                     for ext in watch.font.getExternalFiles():
                         if ext not in self.watchee_paths():
-                            self.watchees.append([Watchable.Font, ext, flag])
+                            self.add_watchee([Watchable.Font, ext, flag])
                 elif watch not in self.watchee_paths():
-                    self.watchees.append([Watchable.Generic, watch, flag])
+                    self.add_watchee([Watchable.Generic, watch, flag])
 
         if previewing and self.source_reader.config.load_only:
             renders = self.renderables(trigger)
@@ -1343,6 +1344,10 @@ class Renderer():
             
             self.action_waiting = Action.PreviewStoryboardReload
             self.action_waiting_reason = "on_modified"
+    
+    def add_watchee(self, w):
+        #print(">>>", w)
+        self.watchees.append(w)
 
     def watch_file_changes(self):
 
@@ -1354,6 +1359,8 @@ class Renderer():
             return None
 
         self.observers = []
+
+        print("WATCH", self.watchees)
 
         watcheable = set()
         for w in self.watchees:
