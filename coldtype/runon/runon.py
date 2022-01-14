@@ -867,6 +867,10 @@ class Runon:
     
     # Utils
 
+    def declare(self, *whatever):
+        # TODO do something with what's declared somehow?
+        return self
+
     def print(self, *args):
         if len(args) == 0:
             print(self.tree())

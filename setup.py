@@ -20,7 +20,6 @@ setuptools.setup(
     #package_dir={"": "coldtype"},
     packages=[
         "coldtype",
-        "coldtype.sh",
         "coldtype.fx",
         "coldtype.img",
         "coldtype.time",

@@ -13,7 +13,6 @@ from coldtype.runon.mixins.StylingMixin import StylingMixin
 from coldtype.runon.mixins.DrawingMixin import DrawingMixin
 from coldtype.runon.mixins.PathopsMixin import PathopsMixin
 from coldtype.runon.mixins.GeometryMixin import GeometryMixin
-from coldtype.runon.mixins.ShorthandMixin import ShorthandMixin
 from coldtype.runon.mixins.SegmentingMixin import SegmentingMixin
 from coldtype.runon.mixins.SerializationMixin import SerializationMixin
 
@@ -25,7 +24,6 @@ class P(Runon,
     GeometryMixin,
     SegmentingMixin,
     SerializationMixin,
-    ShorthandMixin,
     GlyphMixin,
     FXMixin
     ):
@@ -76,9 +74,6 @@ class P(Runon,
             self.rect(Rect.FromCenter(p, 20))
         else:
             raise Exception("Can’t understand _val", self._val)
-        
-        self._last = None
-        ShorthandMixin.__init__(self)
 
         # more backwards compat
         for k, v in kwargs.items():

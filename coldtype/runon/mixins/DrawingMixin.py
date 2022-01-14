@@ -16,7 +16,6 @@ class DrawingMixin():
     def moveTo(self, *p):
         p = self._normPointSplat(p)
         self._val.moveTo(p)
-        self._last = p
         return self
     
     def m(self, *p):
@@ -28,7 +27,6 @@ class DrawingMixin():
             self._val.moveTo(p)
         else:
             self._val.lineTo(p)
-        self._last = p
         return self
     
     def l(self, *p):
@@ -36,7 +34,6 @@ class DrawingMixin():
 
     def qCurveTo(self, *points):
         self._val.qCurveTo(*points)
-        self._last = points[-1]
         return self
     
     def q(self, *p):
@@ -44,7 +41,6 @@ class DrawingMixin():
 
     def curveTo(self, *points):
         self._val.curveTo(*points)
-        self._last = points[-1]
         return self
     
     def c(self, *p):
@@ -395,3 +391,10 @@ class DrawingMixin():
             if _y.y > 0 and _y.y > rect.y:
                 self.line([_y.point("SW"), _y.point("SE")])
         return self.f(None).s(0, 0.1).sw(3)
+    
+    def ez(self, r, start_y, end_y, s):
+        self.moveTo(r.edge("W").t(start_y))
+        self.gs(s, do_close=False, first_move="lineTo")
+        self.lineTo(r.edge("E").t(end_y))
+        self.endPath()
+        return self

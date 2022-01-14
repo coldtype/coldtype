@@ -41,12 +41,7 @@ class TestPensRendered(unittest.TestCase):
     def test_skia_png(self):
         with test_image(self, "test_skia.png") as (i, r):
             dp = ((ß:=P())
-                .define(
-                    r=r,
-                    nx=100,
-                    a="$rIX100SY+200")
-                .declare(nx:=100
-                    , a:=r.inset(100, 0).subtract(200, "N"))
+                .declare(nx:=100, a:=r.inset(100, 0).subtract(200, "N"))
                 .m(a.psw)
                 .bxc(a.pn, a.pnw.o(nx, 0), 65)
                 .bxc(a.pse, a.pne.o(-nx, 0), 65)
