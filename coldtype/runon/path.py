@@ -2,6 +2,7 @@ from copy import deepcopy
 
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.reverseContourPen import ReverseContourPen
+from coldtype.color import Color, normalize_color
 
 from coldtype.geometry import Rect, Point, txt_to_edge
 from coldtype.runon.runon import Runon
@@ -114,6 +115,12 @@ class P(Runon,
             if k not in exclude:
                 out[k] = v
         return out
+    
+    def normalize_attr_value(self, k, v):
+        if k == "fill" and not isinstance(v, Color):
+            return normalize_color(v)
+        else:
+            return super().normalize_attr_value(k, v)
 
     def style(self, style="_default"):
         """for backwards compatibility with defaults and grouped-stroke-properties"""
@@ -254,6 +261,14 @@ class P(Runon,
     def vl(self, value):
         self.v.value = value
         return self
+    
+    @property
+    def _pens(self):
+        return self._els
+    
+    @property
+    def value(self):
+        return self.v.value
 
     @property
     def glyphName(self):

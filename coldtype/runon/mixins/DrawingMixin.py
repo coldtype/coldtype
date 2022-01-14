@@ -369,6 +369,23 @@ class DrawingMixin():
     def mirrory(self, point=None):
         return self.mirror(y=1, point=point)
     
+    def pattern(self, rect, clip=False):
+        dp_copy = self.copy()
+        #dp_copy.value = self.value
+
+        for y in range(-1, 1):
+            for x in range(-1, 1):
+                dpp = type(self)()
+                dp_copy.replay(dpp)
+                dpp.translate(rect.w*x, rect.h*y)
+                dpp.replay(self)
+        
+        self.translate(rect.w/2, rect.h/2)
+        if clip:
+            clip_box = type(self)().rect(rect)
+            return self.intersection(clip_box)
+        return self
+    
     def withRect(self, rect, fn):
         r = Rect(rect)
         return fn(r, self).data(frame=r)

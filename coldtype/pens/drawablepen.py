@@ -1,5 +1,6 @@
 # Mixin for attribute-application
 
+from coldtype.runon import Runon
 from coldtype.color import Gradient, Color
 
 class DrawablePenMixin(object):
@@ -43,6 +44,9 @@ class DrawablePenMixin(object):
                 yield attrs, attr
 
     def FindPens(pens):
+        if not isinstance(pens, Runon):
+            pens = pens[0]
+
         found = []
         def walker(pen, pos, data):
             if pos == 0:

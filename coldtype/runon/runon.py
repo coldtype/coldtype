@@ -656,6 +656,24 @@ class Runon:
             return self._attrs[style]
         else:
             return self._attrs.get("_default", {})
+    
+    def styles(self):
+        all = {}
+        for k, _ in self._attrs.items():
+            style = self.style(k)
+            if k == "_default":
+                all["default"] = style
+            else:
+                all[k] = style
+        return all
+    
+    @property # deprecated / backwards-compatibility
+    def attrs(self):
+        return self.styles()
+    
+    def normalize_attr_value(self, k, v):
+        """subclass hook"""
+        return v
 
     def attr(self,
         tag=None,
@@ -682,7 +700,7 @@ class Runon:
 
         attrs = self._attrs.get(tag, {})
         for k, v in kwargs.items():
-            attrs[k] = v
+            attrs[k] = self.normalize_attr_value(k, v)
         
         self._attrs[tag] = attrs
 
