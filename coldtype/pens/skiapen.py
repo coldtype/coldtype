@@ -1,13 +1,12 @@
 import skia, struct
 
+from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 from coldtype.pens.skiapathpen import SkiaPathPen
-from coldtype.pens.datpen import DATPen, DATPens
-from coldtype.pens.dattext import DATText
+from coldtype.runon.path import P
 from coldtype.img.datimage import DATImage
 from coldtype.geometry import Rect, Point
-from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
-from coldtype.color import Color
 from coldtype.text.reader import Style
+from coldtype.color import Color
 
 
 class SkiaPen(DrawablePenMixin, SkiaPathPen):
@@ -21,6 +20,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         self.alpha = alpha
 
         all_attrs = list(self.findStyledAttrs(style))
+
         skia_paint_kwargs = dict(AntiAlias=True)
         for attrs, attr in all_attrs:
             method, *args = attr
@@ -66,12 +66,15 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             elif isinstance(color, Color):
                 self.paint.setColor(color.skia())
     
-    def stroke(self, weight=1, color=None, dash=None):
+    def stroke(self, weight=1, color=None, dash=None, miter=None):
         self.paint.setStyle(skia.Paint.kStroke_Style)
         if dash:
             self.paint.setPathEffect(skia.DashPathEffect.Make(*dash))
         if color and weight > 0:
             self.paint.setStrokeWidth(weight*self.scale)
+            if miter:
+                self.paint.setStrokeMiter(miter)
+            
             if isinstance(color, Gradient):
                 self.gradient(color)
             else:
@@ -145,7 +148,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 skia.Rect()
                 sr = skia.Rect(*clip.scale(self.scale, "mnx", "mny").flip(self.rect.h).mnmnmxmx())
                 self.canvas.clipRect(sr)
-            elif isinstance(clip, DATPen):
+            elif isinstance(clip, P):
                 sp = SkiaPathPen(clip, self.rect.h)
                 self.canvas.clipPath(sp.path, doAntiAlias=True)
         self.paint.setColor(skia.ColorBLACK)
@@ -192,6 +195,8 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         stream.flush()
     
     def CompositeToCanvas(pens, rect, canvas, scale=1, style=None):
+        style_ = style
+
         if scale != 1:
             pens.scale(scale, scale, Point((0, 0)))
         
@@ -205,34 +210,38 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             if not pen.visible:
                 return
             
-            if isinstance(pen, DATText):
-                if not isinstance(pen.style, Style):
-                    pen.style = Style(*pen.style[:-1], **pen.style[-1], load_font=0)
+            if "text" in pen._data:
+                text = pen.data("text")
+                style = pen.data("style")
+                frame = pen.ambit()
+
+                if not isinstance(style, Style):
+                    style = Style(*style[:-1], **style[-1], load_font=0)
                 
-                if isinstance(pen.style.font, str):
-                    font = skia.Typeface(pen.style.font)
+                if isinstance(style.font, str):
+                    font = skia.Typeface(style.font)
                 else:
-                    font = skia.Typeface.MakeFromFile(str(pen.style.font.path))
-                    if len(pen.style.variations) > 0:
+                    font = skia.Typeface.MakeFromFile(str(style.font.path))
+                    if len(style.variations) > 0:
                         fa = skia.FontArguments()
                         # h/t https://github.com/justvanrossum/drawbot-skia/blob/master/src/drawbot_skia/gstate.py
                         to_int = lambda s: struct.unpack(">i", bytes(s, "ascii"))[0]
                         makeCoord = skia.FontArguments.VariationPosition.Coordinate
-                        rawCoords = [makeCoord(to_int(tag), value) for tag, value in pen.style.variations.items()]
+                        rawCoords = [makeCoord(to_int(tag), value) for tag, value in style.variations.items()]
                         coords = skia.FontArguments.VariationPosition.Coordinates(rawCoords)
                         fa.setVariationDesignPosition(skia.FontArguments.VariationPosition(coords))
                         font = font.makeClone(fa)
-                pt = pen._frame.point("SW")
+                pt = frame.point("SW")
                 canvas.drawString(
-                    pen.text,
+                    text,
                     pt.x,
                     rect.h - pt.y,
-                    skia.Font(font, pen.style.fontSize),
-                    skia.Paint(AntiAlias=True, Color=pen.style.fill.skia()))
+                    skia.Font(font, style.fontSize),
+                    skia.Paint(AntiAlias=True, Color=style.fill.skia()))
                 return
             elif isinstance(pen, DATImage):
                 paint = skia.Paint(AntiAlias=True)
-                f = pen._frame
+                f = pen.data("frame")
                 canvas.save()
                 for action, *args in pen.transforms:
                     if action == "rotate":
@@ -246,11 +255,10 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 
                 canvas.drawImage(pen._img, f.x, f.y, paint)
                 canvas.restore()
-                #pen = DATPen().rect(pen.bounds()).img(pen._img, rect=pen.bounds(), pattern=False)
                 return
             
             if state == 0:
-                SkiaPen(pen, rect, canvas, scale, style=style, alpha=data["alpha"])
+                SkiaPen(pen, rect, canvas, scale, style=style_, alpha=data["alpha"])
         
         pens.walk(draw, visible_only=True)
     

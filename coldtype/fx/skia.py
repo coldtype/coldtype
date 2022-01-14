@@ -1,3 +1,4 @@
+from fontTools.pens.recordingPen import RecordingPen
 import skia, tempfile, math
 from subprocess import run
 from functools import reduce
@@ -9,8 +10,8 @@ from fontTools.misc.transform import Transform
 
 from coldtype.fx.chainable import Chainable
 from coldtype.color import normalize_color, bw
+from coldtype.runon.path import P
 from coldtype.pens.skiapen import SkiaPen
-from coldtype.pens.datpen import DATPen
 
 SKIA_CONTEXT = None
 
@@ -183,11 +184,12 @@ def potrace(rect, poargs=[], invert=True):
             svgp = SVGPath.fromstring(result.stdout, transform=t)
             if False:
                 print(svgp)
-            dp = DATPen()
-            svgp.draw(dp)
+            rp = RecordingPen()
+            svgp.draw(rp)
+            dp = P()
+            dp.v.value = rp.value
             return dp.f(0)
     return _potrace
-
 
 def precompose(rect,
     placement=None,
@@ -202,10 +204,12 @@ def precompose(rect,
             scale=scale,
             disk=disk,
             style=style)
-        return (DATPen()
+        
+        return (P()
             .rect(placement or rect)
             .img(img, (placement or rect), False, opacity)
             .f(None))
+    
     return Chainable(_precompose)
 
 
@@ -217,6 +221,13 @@ def rasterized(rect, scale=1):
     def _rasterized(pen):
         return SkiaPen.Precompose(pen, rect, scale=scale, context=SKIA_CONTEXT, disk=False)
     return _rasterized, dict(returns=skia.Image)
+
+
+def rasterize(rect, path):
+    def _rasterize(pen):
+        pen.ch(precompose(rect)).img().get("src").save(str(Path(path).expanduser()), skia.kPNG)
+        return None
+    return _rasterize
 
 
 def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
@@ -232,7 +243,7 @@ def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
                 if res:
                     pi.putpixel((x, y), tuple(res))
         out = skia.Image.frombytes(pi.convert('RGBA').tobytes(), pi.size, skia.kRGBA_8888_ColorType)
-        return (DATPen()
+        return (P()
             .rect(rect)
             .img(out, rect, False)
             .f(None))

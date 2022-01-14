@@ -20,6 +20,5 @@ def glyphwise(f):
         .align(f.a.r, th=0)
         .collapse()
         .rp()
-        .f(1)
-        .understroke(sw=5)
+        .fssw(1, 0, 7, 1)
         .ch(phototype(f.a.r, 3, 190, cutw=15)))

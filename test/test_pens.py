@@ -1,96 +1,77 @@
 import unittest
 from random import Random
 from coldtype.geometry import Rect, Point
-from coldtype.pens.draftingpen import DraftingPen
-from coldtype.pens.draftingpens import DraftingPens
+from coldtype.runon.path import P
+
 from coldtype.color import hsl, rgb
 from coldtype.pens.drawablepen import DrawablePenMixin
 from coldtype.renderer.reader import SourceReader
 from coldtype.text.composer import StSt, Font
-from coldtype.pens.datpen import DATPen, DATPens
 from coldtype.fx.chainable import Chainable
 
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 mutator = Font.Cacheable("assets/MutatorSans.ttf")
 
-class TestDraftingPens(unittest.TestCase):
+class TestPens(unittest.TestCase):
     def test_gs(self):
         r = Rect(0, 0, 100, 100)
-        dps = DraftingPens()
-        dp = (DraftingPen()
-            .define(r=r)
-            .gs("$r↖ $r↗ $r↙|↘|65 ɜ"))
-        self.assertEqual(len(dp.value), 4)
-        self.assertEqual(dp.value[-2][-1][0], Point(100, 35))
-        self.assertEqual(dp.value[-1][0], "endPath")
+        dps = P()
+        dp = (P()
+            .declare(r:=r)
+            .m(r.pnw).l(r.pne).bxc(r.psw, "se")
+            .ep())
+        self.assertEqual(len(dp.v.value), 4)
+        self.assertEqual(dp.v.value[-2][-1][0], Point(100, 35))
+        self.assertEqual(dp.v.value[-1][0], "endPath")
         self.assertEqual(dp.unended(), False)
-        dps.append(DraftingPens([dp]))
-        self.assertEqual(len(dps.tree().splitlines()), 3)
+        dps.append(P([dp]))
+        self.assertEqual(len(dps.tree().splitlines()), 4)
         self.assertEqual(dps.tree().splitlines()[-1],
-            " | | DraftingPen<4mvs:end/>")
+            " | - <®:P:RecordingPen(4mvs)>")
         
     def test_gs_arrowcluster(self):
         r = Rect(100, 100)
-        dp = (DraftingPen()
-            .define(r=r)
-            .gs("$r↖↗↘"))
+        dp = (P().m(r.pnw).l(r.pne).l(r.pse).ep())
         
-        self.assertEqual(len(dp.value), 4)
-        self.assertEqual(dp.value[0][-1][0], Point(0, 100))
-        self.assertEqual(dp.value[1][-1][0], Point(100, 100))
-        self.assertEqual(dp.value[2][-1][0], Point(100, 0))
+        self.assertEqual(len(dp.v.value), 4)
+        self.assertEqual(dp.v.value[0][-1][0], Point(0, 100).xy())
+        self.assertEqual(dp.v.value[1][-1][0], Point(100, 100).xy())
+        self.assertEqual(dp.v.value[2][-1][0], Point(100, 0).xy())
     
     def test_gs_relative_moves(self):
         r = Rect(100, 100)
-        dp = (DraftingPen()
-            .define(r=r)
-            .gs("$r↖ ¬OX50OY-50 §OY-50"))
+        dp = (P().m(r.pnw).l(r.pnw.o(50,-50)).l(r.pnw.o(0,-50)).ep())
         
-        self.assertEqual(len(dp.value), 4)
-        self.assertEqual(dp.value[0][-1][0], Point(0, 100))
-        self.assertEqual(dp.value[1][-1][0], Point(50, 50))
-        self.assertEqual(dp.value[2][-1][0], Point(0, 50))
-    
-    def test_gss(self):
-        """
-        A rect passed to gs and gss should create the same value on the pen
-        """
-        dp1 = (DraftingPen()
-            .define(r=Rect(100, 100))
-            .gss("$r"))
-        
-        dp2 = (DraftingPen()
-            .define(r=Rect(100, 100))
-            .gs("$r"))
-        
-        self.assertEqual(dp1.value, dp2.value)
+        self.assertEqual(len(dp.v.value), 4)
+        self.assertEqual(dp.v.value[0][-1][0], Point(0, 100).xy())
+        self.assertEqual(dp.v.value[1][-1][0], Point(50, 50).xy())
+        self.assertEqual(dp.v.value[2][-1][0], Point(0, 50).xy())
         
     def test_reverse(self):
-        dp = (DraftingPen()
-            .define(r=Rect(100, 100))
-            .gs("$r↖ $r↗ $r↘ ɜ"))
-        p1 = dp.value[0][-1]
-        p2 = dp.reverse().value[-2][-1]
+        r = Rect(100, 100)
+        dp = (P().m(r.pnw).l(r.pne).l(r.pse).ep())
+        p1 = dp.v.value[0][-1]
+        p2 = dp.reverse().v.value[-2][-1]
         self.assertEqual(p1, p2)
     
     def test_transforms(self):
-        dp = (DraftingPen(Rect(100, 100))
-            .frame(Rect(100, 100))
+        dp = (P(Rect(100, 100))
+            .data(frame=Rect(100, 100))
             .align(Rect(200, 200)))
         
-        self.assertEqual(dp.frame().mxx, 150)
-        self.assertEqual(dp.value[-2][-1][-1][0], 50)
+        self.assertEqual(dp.data("frame").mxx, 150)
+        self.assertEqual(dp.v.value[-2][-1][-1][0], 50)
 
         self.assertEqual(
-            dp.copy().rotate(45).round().value,
-            dp.copy().rotate(360+45).round().value)
+            dp.copy().rotate(45).round().v.value,
+            dp.copy().rotate(360+45).round().v.value)
         
         self.assertEqual(dp.copy().scale(2).ambit().w, 200)
 
     def test_pens_ambit(self):
-        dps = (DraftingPens([
-                DraftingPen(Rect(50, 50)),
-                DraftingPen(Rect(100, 100, 100, 100))])
+        dps = (P([
+                P(Rect(50, 50)),
+                P(Rect(100, 100, 100, 100))])
                 #.print(lambda x: x.tree())
                 )
         ram = dps.ambit()
@@ -103,48 +84,79 @@ class TestDraftingPens(unittest.TestCase):
         self.assertEqual(moves[1][1], 0)
     
     def test_remove_blanks(self):
-        dps = (DraftingPens([
-            DraftingPen(Rect(50, 50)),
-            DraftingPen()
+        dps = (P([
+            P(Rect(50, 50)),
+            P()
         ]))
         self.assertEqual(len(dps), 2)
-        dps.remove_blanks()
+        dps.deblank()
         self.assertEqual(len(dps), 1)
     
     def test_collapse(self):
-        dps = DraftingPens([
-            DraftingPens([DraftingPens([DraftingPen()])]),
-            DraftingPens([DraftingPen()]),
+        rr = Rect(100, 100)
+        r = P([
+            P([P([P().rect(rr)])]),
+            P([P().rect(rr)]),
         ])
 
-        dps.collapse() # should not mutate by default
-        self.assertIsInstance(dps[0], DraftingPens)
-        self.assertIsInstance(dps[0][0], DraftingPens)
+        self.assertIsInstance(r[0], P)
+        self.assertIsInstance(r[0][0], P)
 
-        dps.collapse(onself=True) # now it should mutate
-        self.assertEqual(len(dps), 2)
-        self.assertNotIsInstance(dps[0], DraftingPens)
-        self.assertNotIsInstance(dps[1], DraftingPens)
+        r.collapse()
+        self.assertIsInstance(r[0], P)
+        self.assertIsInstance(r[1], P)
+
+        r = P([
+            P([P([P().rect(rr)])]),
+            P([P().rect(rr)]),
+        ])
+
+        r2 = r.copy().collapse()
+        self.assertEqual(len(r), 2)
+
+        self.assertIsInstance(r[0], P)
+        self.assertIsInstance(r[0][0], P)
+
+        self.assertIsInstance(r2[0], P)
+        self.assertIsInstance(r2[1], P)
+
+        r = P([
+            P([P([P()])]),
+            P([P()]),
+        ])
+
+        r2 = r.copy().collapse()
+        self.assertEqual(len(r), 2)
+        self.assertEqual(len(r2), 0)
+
+        r = P([
+            P([P([P()])]),
+            P([P()]),
+        ])
+
+        r2 = r.copy().collapse(deblank=False)
+        self.assertEqual(len(r), 2)
+        self.assertEqual(len(r2), 2)
     
     def test_find(self):
-        dps = DraftingPens([
-            DraftingPens([DraftingPens([DraftingPen().tag("find-me").f(hsl(0.9))])]),
-            DraftingPen().tag("not-me"),
-            DraftingPens([DraftingPen().tag("find-me").f(hsl(0.3))])])
+        dps = P([
+            P([P([P().tag("find-me").f(hsl(0.9))])]),
+            P().tag("not-me"),
+            P([P().tag("find-me").f(hsl(0.3))])])
 
         self.assertEqual(dps.find("find-me")[0].f().h/360, 0.9)
         self.assertAlmostEqual(dps.find("find-me")[1].f().h/360, 0.3)
 
     def test_cond(self):
-        dps = (DraftingPens([
-            (DraftingPen().cond(True,
+        dps = (P([
+            (P().cond(True,
                 lambda p: p.f(rgb(1, 0, 0))))]))
         
         self.assertEqual(dps[0].f().r, 1)
 
         def _build(condition):
-            return (DraftingPens([
-                (DraftingPen().cond(condition,
+            return (P([
+                (P().cond(condition,
                     lambda p: p.f(rgb(0, 0, 1)),
                     lambda p: p.f(rgb(1, 0, 0))))]))
         
@@ -152,11 +164,11 @@ class TestDraftingPens(unittest.TestCase):
         self.assertEqual(_build(False)[0].f().r, 1)
     
     def test_alpha(self):
-        dps = (DraftingPens([
-            (DraftingPens([
-                (DraftingPen().a(0.5))
-            ]).a(0.5))
-        ]).a(0.25))
+        dps = (P([
+            (P([
+                (P().alpha(0.5))
+            ]).alpha(0.5))
+        ]).alpha(0.25))
 
         def walker(p, pos, data):
             if pos == 0:
@@ -169,10 +181,10 @@ class TestDraftingPens(unittest.TestCase):
         dps.walk(walker)
     
     def test_visibility(self):
-        dps = (DraftingPens([
-            (DraftingPens([
-                (DraftingPen().v(1).tag("visible")),
-                (DraftingPen().v(0).tag("invisible"))
+        dps = (P([
+            (P([
+                (P().visible(1).tag("visible")),
+                (P().visible(0).tag("invisible"))
             ]))
         ]))
 
@@ -190,7 +202,7 @@ class TestDraftingPens(unittest.TestCase):
         self.assertEqual(visible_pen_count, 2)
 
         visible_pen_count = 0
-        dps[0][0].v(0)
+        dps[0][0].visible(0)
         dps.walk(walker, visible_only=True)
         self.assertEqual(visible_pen_count, 0)
     
@@ -199,7 +211,7 @@ class TestDraftingPens(unittest.TestCase):
 from coldtype import *
 
 def two_styles(r):
-    return (DATPen()
+    return (P()
         .oval(r.inset(50).square())
         .f(hsl(0.8))
         .attr("alt", fill=hsl(0.3)))
@@ -213,7 +225,7 @@ def style_set(r):
     return two_styles(r)
 
 def lattr_styles(r):
-    return (DATPen()
+    return (P()
         .oval(r.inset(50).square())
         .f(hsl(0.5)).s(hsl(0.7)).sw(5)
         .lattr("alt", lambda p: p.f(hsl(0.7)).s(hsl(0.5)).sw(15)))
@@ -232,18 +244,18 @@ def lattr_style_set(r):
         sr.unlink()
 
         self.assertNotEqual(
-            rs[0][-1][0].attr(rs[0][0].style, "fill"),
-            rs[1][-1][0].attr(rs[1][0].style, "fill"))
+            rs[0][-1].attr(rs[0][0].style, "fill"),
+            rs[1][-1].attr(rs[1][0].style, "fill"))
         
         self.assertNotEqual(
-            rs[2][-1][0].attr(rs[2][0].style, "fill"),
-            rs[3][-1][0].attr(rs[3][0].style, "fill"))
+            rs[2][-1].attr(rs[2][0].style, "fill"),
+            rs[3][-1].attr(rs[3][0].style, "fill"))
         
-        self.assertEqual(rs[2][-1][0].attr(rs[2][0].style, "stroke").get("weight"), 5)
-        self.assertEqual(rs[3][-1][0].attr(rs[3][0].style, "stroke").get("weight"), 15)
+        self.assertEqual(rs[2][-1].attr(rs[2][0].style, "strokeWidth"), 5)
+        self.assertEqual(rs[3][-1].attr(rs[3][0].style, "strokeWidth"), 15)
 
         dpm = DrawablePenMixin()
-        dpm.dat = rs[3][-1][0]
+        dpm.dat = rs[3][-1]
         attrs = [x for _, x in list(dpm.findStyledAttrs(rs[3][0].style))]
         self.assertEqual(len(attrs), 2)
         self.assertEqual(attrs[1][1].get("weight"), 15)
@@ -296,7 +308,7 @@ def lattr_style_set(r):
     
     def test_scaleToRect(self):
         r = Rect(1000, 500)
-        dps = DraftingPens([
+        dps = P([
             (StSt("SPACEFILLING", mutator, 50)
                 .align(r)
                 .f(hsl(0.8))
@@ -322,22 +334,24 @@ def lattr_style_set(r):
         dps.picklejar(r)
     
     def test_distribute_and_track(self):
-        dps = DraftingPens()
+        dps = P()
         rnd = Random(0)
         r = Rect(1000, 500)
 
         for _ in range(0, 11):
-            dps += (DraftingPen()
+            dps += (P()
                 .rect(Rect(100, 100))
                 .f(hsl(rnd.random(), s=0.6))
                 .rotate(rnd.randint(-45, 45)))
         dps = (dps
             .distribute()
             .track(-50)
-            .reversePens()
-            .understroke(s=0.2).align(r))
+            .reverse()
+            .understroke(s=0.2)
+            .align(r)
+            )
         
-        self.assertEqual(len(dps), 22)
+        self.assertEqual(len(dps), 11)
         self.assertEqual(dps.ambit(th=1).round().w, 830)
     
         dps.picklejar(r)
@@ -352,22 +366,11 @@ def lattr_style_set(r):
         self.assertEqual(text[-1].ambit().round().x, 50)
         self.assertEqual(text[0].ambit().round().x, 883)
     
-    def test_sample(self):
-        r = Rect(1000, 500)
-        dp = (DraftingPen()
-            .define(r=r)
-            .gs("$r↖ $r↗ $r↙|↘|65 ɜ"))
-        # dp = (DraftingPen()
-        #     .define(r=r)
-        #     .gs("$r↙ $r↗ ɜ")
-        #     .fssw(None, 0, 5))
-        dp.picklejar(r)
-    
     def test_distribute_oval(self):
         r = Rect(1000, 500)
         txt = (StSt("COLDTYPE "*7, co, 64,
             tu=-50, r=1, ro=1)
-            .distribute_on_path(DraftingPen()
+            .distribute_on_path(P()
                 .oval(r.inset(50))
                 .reverse()
                 .repeat())
@@ -375,48 +378,15 @@ def lattr_style_set(r):
         
         txt.picklejar(r)
 
-        self.assertEqual(len(txt), 124)
+        self.assertEqual(len(txt), 62)
         
         x, y = txt[-1].ambit().xy()
         self.assertAlmostEqual(x, 500, 0)
         self.assertAlmostEqual(y, 50, 0)
-
-        x, y = txt[50].ambit().xy()
-        self.assertAlmostEqual(x, 657, 0)
-        self.assertAlmostEqual(y, 433, 0)
-    
-    def test_distribute_path_center(self):
-        r = Rect(1000, 500)
-        lockup = (DATPens()
-            .define(
-                r=r,
-                nx=100,
-                a="$rIX100SY+200")
-            .gs("$a↙ $a↑|$a↖OX+$nx|65 $a↘|$a↗OX-$nx|65 ɜ")
-            .f(None).s(0).sw(4)
-            .append(lambda ps: StSt(
-                "Coldtype Cdelopty".upper(),
-                co, 100, wdth=0.5)
-                .pens()
-                .distribute_on_path(ps[0], center=-5)
-                .f(hsl(0.9)))
-            .align(r))
-        
-        lockup.picklejar(r)
-        
-        x, y = lockup[1][10].ambit().xy()
-        self.assertAlmostEqual(x, 534, 0)
-        self.assertAlmostEqual(y, 362, 0)
-
-        x, y, w, h = lockup[1].ambit()
-        self.assertAlmostEqual(x, 196, 0)
-        self.assertAlmostEqual(y, 236, 0)
-        self.assertAlmostEqual(w, 643, 0)
-        self.assertAlmostEqual(h, 202, 0)
     
     def test_distribute_path_lines(self):
         r = Rect(1080, 1080).inset(200)
-        p = (DATPen()
+        p = (P()
             .moveTo(r.psw)
             .lineTo(r.pn)
             .lineTo(r.pse)
@@ -444,42 +414,36 @@ def lattr_style_set(r):
         r = Rect(540, 540)
         sr = Rect(100, 100)
 
-        res = (DraftingPens([
-            (DraftingPen()
-                .oval(sr)
+        res = (P([
+            (P().oval(sr)
                 .f(hsl(0.5))
                 .tag("A")),
-            (DraftingPen()
-                .oval(sr)
+            (P().oval(sr)
                 .f(hsl(0.7))
                 .tag("B")),
-            (DraftingPen()
-                .oval(sr)
+            (P().oval(sr)
                 .f(hsl(0.9))
                 .tag("C"))])
             .stack(10))
         
         res.picklejar(r)
 
-        self.assertEqual(res.fft("C").ambit().y, 0)
-        self.assertEqual(res.fft("B").ambit().y, 110)
-        self.assertEqual(res.fft("A").ambit().y, 220)
+        self.assertEqual(res.find_("C").ambit().y, 0)
+        self.assertEqual(res.find_("B").ambit().y, 110)
+        self.assertEqual(res.find_("A").ambit().y, 220)
     
     def test_stack_and_lead(self):
         r = Rect(540, 540)
         sr = Rect(100, 100)
 
-        res = (DraftingPens([
-            (DraftingPen()
-                .oval(sr)
+        res = (P([
+            (P().oval(sr)
                 .f(hsl(0.5))
                 .tag("A")),
-            (DraftingPen()
-                .oval(sr)
+            (P().oval(sr)
                 .f(hsl(0.7))
                 .tag("B")),
-            (DraftingPen()
-                .oval(sr)
+            (P().oval(sr)
                 .f(hsl(0.9))
                 .tag("C"))])
             .stack(10)
@@ -487,28 +451,28 @@ def lattr_style_set(r):
         
         res.picklejar(r)
 
-        self.assertEqual(res.fft("C").ambit().y, 0)
-        self.assertEqual(res.fft("B").ambit().y, 120)
-        self.assertEqual(res.fft("A").ambit().y, 240)
+        self.assertEqual(res.find_("C").ambit().y, 0)
+        self.assertEqual(res.find_("B").ambit().y, 120)
+        self.assertEqual(res.find_("A").ambit().y, 240)
     
     def test_chain(self):
         def c1(a):
-            def _c1(p:DraftingPen):
+            def _c1(p:P):
                 return [a]
             return Chainable(_c1)
         
         def c2(a):
-            def _c2(p:DraftingPen):
-                p.add_data("hello", a)
+            def _c2(p:P):
+                p.data(hello=a)
                 return None
             return Chainable(_c2)
         
-        p1 = DraftingPen() | c1(1)
+        p1 = P() | c1(1)
         self.assertEqual(p1, [1])
 
-        p2 = DraftingPen() | c2("chain")
-        self.assertTrue(isinstance(p2, DraftingPen))
-        self.assertEqual(p2.data["hello"], "chain")
+        p2 = P() | c2("chain")
+        self.assertTrue(isinstance(p2, P))
+        self.assertEqual(p2.data("hello"), "chain")
 
 
 if __name__ == "__main__":

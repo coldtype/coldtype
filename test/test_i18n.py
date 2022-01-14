@@ -2,8 +2,8 @@ import unicodedata, unittest
 from pathlib import Path
 from coldtype.geometry import Rect
 from coldtype.helpers import glyph_to_uni
-from coldtype.pens.datpen import DATPen, DATPens
-from coldtype.text.composer import StSt, Font, Style, Slug, Graf, SegmentedString
+from coldtype.runon.path import P
+from coldtype.text.composer import StSt, Font, Style, Slug, SegmentedString
 
 tf = Path(__file__).parent
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
@@ -48,11 +48,11 @@ class TestI18N(unittest.TestCase):
             .pens(flat=False)
             .align(r, th=1))
         
-        self.assertEqual(dps[0].data["lang"], "en")
+        self.assertEqual(dps[0].data("lang"), "en")
         self.assertEqual(dps[0][0].glyphName, "C")
         self.assertEqual(dps[0][1].glyphName, "O")
 
-        self.assertEqual(dps[1].data["lang"], "zh")
+        self.assertEqual(dps[1].data("lang"), "zh")
         self.assertEqual(dps[1][0].glyphName, "cid12378")
         self.assertEqual(dps[1][1].glyphName, "cid23039")
 
@@ -68,44 +68,17 @@ class TestI18N(unittest.TestCase):
         
         self.assertEqual(dps[1][-1].ambit().w, 300)
         
-        self.assertEqual(dps[0].data["lang"], "en")
+        self.assertEqual(dps[0].data("lang"), "en")
         self.assertEqual(dps[0][0].glyphName, "C")
         self.assertEqual(dps[0][1].glyphName, "O")
         
-        self.assertEqual(dps[1].data["lang"], "zh")
+        self.assertEqual(dps[1].data("lang"), "zh")
         self.assertEqual(dps[1][0].glyphName, "cid12378")
         self.assertEqual(dps[1][1].glyphName, "cid23039")
 
-        self.assertEqual(dps[2].data["lang"], "en")
+        self.assertEqual(dps[2].data("lang"), "en")
         self.assertEqual(dps[2][0].glyphName, "T")
         self.assertEqual(dps[2][1].glyphName, "Y")
-
-    def test_rtl_multiline(self):
-        ar = 'Limmmm/Satلل\nوصل الإستيرِو'
-        lines = ar.split("\n")
-        latin = Style(latin_font, 100, fill=("hr", 0.5, 0.5))
-        arabic = Style(ar_light, 150, lang="ar", bs=-1)
-        slugs = [
-            Slug(lines[0], arabic, latin),
-            Slug(lines[1], arabic, latin)
-        ]
-        graf = Graf(slugs, r, leading=30)
-        dps = graf.pens().xalign(r).align(r)
-
-        dps.picklejar(r)
-
-        lgn = dps[-1][-1].glyphName
-        lc = gn_to_c(lgn)
-        
-        self.assertEqual(
-            unicodedata.name(lc),
-            "ARABIC LETTER WAW")
-        self.assertEqual(
-            dps[-1][-1].ambit().round(),
-            Rect([707,148,42,87]))
-        
-        self.assertEqual(dps[0][0].glyphName, "L")
-        self.assertEqual(dps[0][-1].glyphName, "uniFEDF")
 
     def test_rtl_multiline_stst(self):
         txt = 'Limmmm/Satلل\nوصل الإستيرِو'
@@ -145,11 +118,13 @@ class TestI18N(unittest.TestCase):
         arabic = Style(arabic_font, 150, lang="ar", bs=-1)
         seg = SegmentedString(txt, dict(Arab=arabic, Latn=latin)).pens()
         slug = Slug(txt, arabic, latin).pens()
-        dps = DATPens([
+
+        dps = P([
             seg.align(r, th=1).translate(0, 100),
             slug.align(r, th=1).translate(0, -100)])
         
         self.assertEqual(dps[0][-1].glyphName, "plus")
+
         self.assertEqual(
             gn_to_uniname(dps[0][0].glyphName),
             "ARABIC LETTER TEH MARBUTA FINAL FORM")
@@ -161,10 +136,10 @@ class TestI18N(unittest.TestCase):
         
     def test_combine_slugs(self):
         s1 = Slug("YO", Style(co, 300, wdth=1)).pens()
-        line = DATPen().rect(Rect(100, 20))
+        line = P().rect(Rect(100, 20))
         s2 = Slug("OY", Style(co, 300, wdth=0)).pens()
-        shape = DATPen().oval(Rect(100, 100))
-        dps = DATPens([s1, line, s2, shape]).distribute().align(r, th=1)
+        shape = P().oval(Rect(100, 100))
+        dps = P([s1, line, s2, shape]).distribute().align(r, th=1)
         self.assertEqual(dps.ambit().round(),
             Rect([127,138,737,225]))
         self.assertEqual(dps[1].ambit().round(),

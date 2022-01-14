@@ -5,7 +5,7 @@ from pathlib import Path
 from coldtype.geometry import curve
 
 from coldtype.geometry.rect import Rect
-from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.runon.path import P
 from coldtype.pens.blenderpen import BlenderPen, BPH
 from coldtype.color import hsl
 
@@ -101,11 +101,11 @@ def b3d(collection,
         pen_mod = callback[0]
         callback = callback[1]
 
-    def annotate(pen:DATPen):
+    def annotate(pen:P):
         if bpy and pen_mod:
             pen_mod(pen)
         
-        prev = pen.data.get("b3d", {})
+        prev = pen.data("b3d", {})
         if prev:
             callbacks = [*prev.get("callbacks"), callback]
         else:
@@ -116,7 +116,7 @@ def b3d(collection,
         #    c = pen.ambit().pc
         #    pen.translate(-c.x, -c.y)
 
-        pen.add_data("b3d", dict(
+        pen.data(b3d=dict(
             collection=(collection
                 or prev.get("collection", "Coldtype")),
             callbacks=callbacks,
@@ -137,25 +137,25 @@ def b3d_post(callback):
     if not bpy: # short-circuit for non-bpy
         return lambda x: x
 
-    def _b3d_post(pen:DATPen):
-        prev = pen.data.get("b3d_post")
+    def _b3d_post(pen:P):
+        prev = pen.data("b3d_post")
         if prev:
             callbacks = [*prev, callback]
         else:
             callbacks = [callback]
-        pen.data["b3d_post"] = callbacks
+        pen.data(b3d_post=callbacks)
     
     return _b3d_post
 
 
 def b3d_pre(callback):
-    def _cast(pen:DATPen):
+    def _cast(pen:P):
         if bpy:
             callback(pen)
     return _cast
 
 
-def walk_to_b3d(result:DATPens,
+def walk_to_b3d(result:P,
     dn=False,
     renderable=None,
     ):
@@ -164,14 +164,14 @@ def walk_to_b3d(result:DATPens,
     center = renderable.center
     center_rect = renderable.rect
 
-    def walker(p:DATPen, pos, data):
+    def walker(p:P, pos, data):
         bp = None
 
         if pos == 0:
-            bdata = p.data.get("b3d")
+            bdata = p.data("b3d")
             if not bdata:
                 p.ch(b3d(lambda bp: bp.extrude(0.01)))
-                bdata = p.data.get("b3d")
+                bdata = p.data("b3d")
             
             zero = bdata.get("zero", False)
 
@@ -184,8 +184,8 @@ def walk_to_b3d(result:DATPens,
             if zero:
                 p.translate(-pc.x, -pc.y)
             
-            if p.tag() == "?" and data.get("idx"):
-                tag = "_".join([str(i) for i in data["idx"]])
+            if p.tag() is None:
+                tag = data["utag"]
                 if bdata.get("tag_prefix"):
                     tag = bdata.get("tag_prefix") + tag
                 else:
@@ -196,8 +196,8 @@ def walk_to_b3d(result:DATPens,
                 coll = BPH.Collection(bdata["collection"])
                 material = bdata.get("material", "ColdtypeDefault")
 
-                if len(p.value) == 0:
-                    p.v(0)
+                if len(p.v.value) == 0:
+                    p.hide()
                 
                 denovo = bdata.get("dn", dn)
                 cyclic = bdata.get("cyclic", True)
@@ -234,7 +234,7 @@ def walk_to_b3d(result:DATPens,
                 built[p.tag()] = (p, bp)
 
         if pos == 0 or pos == 1:
-            b3d_post = p.data.get("b3d_post")
+            b3d_post = p.data("b3d_post")
             if b3d_post:
                 for post in b3d_post:
                     post(bp)
@@ -353,7 +353,7 @@ class b3d_animation(animation):
                     dn=True,
                     tag_prefix=f"ct_baked_frame_{fi}_{self.name}")))
         
-        to_bake = DATPens([])
+        to_bake = P()
         for ps in self.passes(Action.RenderAll, None)[:]:
             to_bake += self.run_normal(ps, None)
         

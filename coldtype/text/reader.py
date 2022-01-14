@@ -9,9 +9,7 @@ from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
 
 from coldtype.color import normalize_color, rgb
-from coldtype.pens.draftingpen import DraftingPen
-from coldtype.pens.draftingpens import DraftingPens
-from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.runon.path import P
 from coldtype.geometry import Rect
 
 from typing import Union
@@ -22,16 +20,6 @@ try:
 except ImportError:
     Matrix = None
     SkiaPathPen = None
-
-_PenClass = DATPen
-_PensClass = DATPens
-
-# try:
-#     from fontgoggles.font import getOpener
-#     from fontgoggles.font.baseFont import BaseFont
-#     from fontgoggles.font.otfFont import OTFFont
-#     from fontgoggles.misc.textInfo import TextInfo
-# except ModuleNotFoundError:
 
 from coldtype.fontgoggles.font import getOpener
 from coldtype.fontgoggles.font.baseFont import BaseFont
@@ -194,38 +182,38 @@ class Font():
             results.extend(Font._ListDir(Path(dir), regex, regex_dir, log, depth=0))
         return sorted(results, key=lambda p: p.stem)
 
-    @lru_cache()
-    def List1(regex, regex_dir=None, log=False):
-        results = []
-        for dir in ALL_FONT_DIRS:
-            dir = normalize_font_prefix(dir)
-            #if regex_dir:
-            #    if not re.search(regex_dir, str(dir)):
-            #        continue
-            _depth = str(dir).count(os.sep)
-            for root, dirs, files in os.walk(dir):
-                depth = root.count(os.sep) - _depth
-                if max_depth is not None:
-                    if depth >= max_depth:
-                        continue
-                #print(depth)
-                for dir in dirs:
-                    path = Path(root + "/" + dir)
-                    if path.suffix == ".ufo":
-                        if re.search(regex, dir):
-                            results.append(path)
-                #print(dir)
-                for file in files:
-                    if regex_dir:
-                        if not re.search(regex_dir, str(root)):
-                            continue
-                    if log:
-                        print(file, re.search(regex, file))
-                    if re.search(regex, file):
-                        path = Path(root + "/" + file)
-                        if path.suffix in [".ttf", ".otf", ".ttc"]:
-                            results.append(path)
-        return sorted(results, key=lambda p: p.stem)
+    # @lru_cache()
+    # def List1(regex, regex_dir=None, log=False):
+    #     results = []
+    #     for dir in ALL_FONT_DIRS:
+    #         dir = normalize_font_prefix(dir)
+    #         #if regex_dir:
+    #         #    if not re.search(regex_dir, str(dir)):
+    #         #        continue
+    #         _depth = str(dir).count(os.sep)
+    #         for root, dirs, files in os.walk(dir):
+    #             depth = root.count(os.sep) - _depth
+    #             if max_depth is not None:
+    #                 if depth >= max_depth:
+    #                     continue
+    #             #print(depth)
+    #             for dir in dirs:
+    #                 path = Path(root + "/" + dir)
+    #                 if path.suffix == ".ufo":
+    #                     if re.search(regex, dir):
+    #                         results.append(path)
+    #             #print(dir)
+    #             for file in files:
+    #                 if regex_dir:
+    #                     if not re.search(regex_dir, str(root)):
+    #                         continue
+    #                 if log:
+    #                     print(file, re.search(regex, file))
+    #                 if re.search(regex, file):
+    #                     path = Path(root + "/" + file)
+    #                     if path.suffix in [".ttf", ".otf", ".ttc"]:
+    #                         results.append(path)
+    #     return sorted(results, key=lambda p: p.stem)
 
     def Find(regex, regex_dir=None, index=0):
         if isinstance(regex, Font):
@@ -306,7 +294,6 @@ class Style():
             lang=None,
             narrower=None,
             fallback=None,
-            include_blanks=False,
             palette=0,
             capHeight=None,
             ascender=None,
@@ -336,6 +323,7 @@ class Style():
             _skiaback=False,
             load_font=True, # should we attempt to load the font?
             tag=None, # way to differentiate in __eq__
+            _stst=False,
             **kwargs):
 
         self.input = locals()
@@ -363,10 +351,10 @@ class Style():
         self.removeOverlap = kwargs.get("ro", removeOverlap)
         self.q2c = q2c
         self.rotate = rotate
-        self.include_blanks = include_blanks
         self.scaleVariations = kwargs.get("sv", scaleVariations)
         self.rollVariations = kwargs.get("rv", rollVariations)
         self.tag = tag
+        self._stst = _stst
         
         self.metrics = metrics
         self.capHeight = kwargs.get("ch", capHeight)
@@ -588,7 +576,7 @@ class Style():
         def stretcher(w, xp, i, p):
             np = (p.flatten(flatten) if flatten else p).nonlinear_transform(lambda x,y: (x if x < xp else x + w, y))
             if debug:
-                (np.record(_PenClass()
+                (np.record(P()
                     .line([(xp, -250), (xp, 1000)])
                     .outline()))
             return np
@@ -607,10 +595,10 @@ class Style():
             np = (p.flatten(flatten) if flatten else p).nonlinear_transform(lambda x,y: (x if is_left((xdsc, -250), (xasc, 1000), (x, y)) else x + w, y))
             if debug:
                 (np
-                    .record(_PenClass()
+                    .record(P()
                         .line([(xdsc, -250), (xasc, 1000)])
                         .outline())
-                    .record(_PenClass()
+                    .record(P()
                         .moveTo((x0+50/2, y0+50/2))
                         .dots(radius=50)))
             return np
@@ -634,7 +622,7 @@ class Style():
             elif align == "mxy":
                 np.translate(0, -h)
             if debug:
-                (np.record(_PenClass()
+                (np.record(P()
                     .line([(0, yp), (p.ambit().point("E").x, yp)])
                     .outline()))
             return np
@@ -655,10 +643,10 @@ class Style():
             np = (p.flatten(flatten) if flatten else p).nonlinear_transform(lambda x,y: (x, y if not is_left(p0, p1, (x, y)) else y + h))
             if debug:
                 (np
-                    .record(_PenClass()
+                    .record(P()
                         .line([p0, p1])
                         .outline())
-                    .record(_PenClass()
+                    .record(P()
                         .moveTo((x0+50/2, y0+50/2))
                         .dots(radius=50)))
             return np
@@ -911,7 +899,7 @@ class StyledString(FittableMixin):
                     pass
         tx = glyph.frame.x#/self.scale()
         ty = ty + glyph.frame.y#/self.scale()
-        out_pen = _PenClass()
+        out_pen = P()
         skia_pen = SkiaPathPen(in_pen)
         skia_pen.path.transform(Matrix.Scale(s, s))
         skia_pen.path.transform(Matrix.Translate(tx, ty))
@@ -921,7 +909,7 @@ class StyledString(FittableMixin):
         #    w, mod = self.style.mods[glyph.name]
         #    mod(-1, ip)
 
-        out_pen = skia_pen.to_datpen()
+        out_pen = skia_pen.to_drawing()
 
         if self.style.rotate:
             out_pen.rotate(self.style.rotate)
@@ -959,9 +947,9 @@ class StyledString(FittableMixin):
         if s > 0:
             t = t.translate(glyph.frame.x/s, glyph.frame.y/s)
 
-        out_pen = _PenClass()
+        out_pen = P()
         tp = TransformPen(out_pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
-        ip = _PenClass().record(in_pen)
+        ip = P().record(in_pen)
         if self.style.mods and glyph.name in self.style.mods:
             w, mod = self.style.mods[glyph.name]
             mod(-1, ip)
@@ -983,21 +971,21 @@ class StyledString(FittableMixin):
         #attrs = dict(fill=self.style.fill)
         #if self.style.stroke:
         #    attrs["stroke"] = dict(color=self.style.stroke, weight=self.style.strokeWidth)
-        dp = _PenClass().f(self.style.fill)
+        dp = P().f(self.style.fill)
         if self.style.stroke:
             dp.s(self.style.stroke).sw(self.style.strokeWidth)
         return dp
 
-    def pens(self) -> DraftingPens:
+    def pens(self) -> P:
         """
-        Vectorize text into a ``DATPens``, such that each glyph (or ligature) is represented by a single `DATPen` (or a ``DATPens`` in the case of a color font, which will then nest a `DATPen` for each layer of that color glyph)
+        Vectorize text into a ``P``, such that each glyph (or ligature) is represented by a single `P` (or a ``P`` in the case of a color font, which will then nest a `P` for each layer of that color glyph)
         """
 
         self.resetGlyphRun()
         if not self.style.no_shapes:
             self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
         
-        pens = _PensClass()
+        pens = P()
         for idx, g in enumerate(self.glyphs):
 
             # TODO this is sketchy but seems to correct
@@ -1008,72 +996,84 @@ class StyledString(FittableMixin):
             dp_atom = self._emptyPenWithAttrs()
             if self.style.no_shapes:
                 if callable(self.style.show_frames):
-                    dp_atom.record(DATPen().rect(self.style.show_frames(g.frame)).outline(4))
+                    dp_atom.record(P().rect(self.style.show_frames(g.frame)).outline(4))
                 else:
-                    dp_atom.record(DATPen().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
-                dp_atom.typographic = True
-                dp_atom.addFrame(norm_frame)
-                dp_atom.glyphName = g.name
+                    dp_atom.record(P().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
+                dp_atom.data(
+                    frame=norm_frame,
+                    glyphName=g.name
+                )
+                # dp_atom.typographic = True
+                # dp_atom.addFrame(norm_frame)
+                # dp_atom.glyphName = g.name
             elif len(g.glyphDrawing.layers) == 1:
                 if self.style._skiaback:
-                    dp_atom.value = self._skia_scalePenToStyle(g, g.glyphDrawing.layers[0][0], idx).value
+                    dp_atom.v.value = self._skia_scalePenToStyle(g, g.glyphDrawing.layers[0][0], idx).v.value
                 else:
-                    dp_atom.value = self.scalePenToStyle(g, g.glyphDrawing.layers[0][0], idx).value
+                    dp_atom.v.value = self.scalePenToStyle(g, g.glyphDrawing.layers[0][0], idx).v.value
                 
                 if "d" in self.style.metrics:
                     dp_atom.translate(0, self.style.descender*self.scale())
                 
-                dp_atom.typographic = True
-                dp_atom.addFrame(norm_frame)
-                dp_atom.glyphName = g.name
+                dp_atom.data(
+                    frame=norm_frame,
+                    glyphName=g.name
+                )
+
                 if self.style.show_frames:
                     if callable(self.style.show_frames):
-                        #dp_atom.record(DATPen().rect(self.style.show_frames(g.frame)).outline(4))
+                        #dp_atom.record(P().rect(self.style.show_frames(g.frame)).outline(4))
                         dp_atom.rect(self.style.show_frames(g.frame))
                     else:
-                        dp_atom.record(DATPen().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
+                        dp_atom.record(P().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
                         #dp_atom.rect(g.frame)
                 if self.style.q2c:
                     dp_atom.q2c()
                 if self.style.removeOverlap:
                     dp_atom.removeOverlap()
             else:
-                dp_atom = _PensClass()
+                dp_atom = P()
                 dp_atom.layered = True
                 for lidx, layer in enumerate(g.glyphDrawing.layers):
                     dp_layer = self._emptyPenWithAttrs()
                     #dp_layer.value = layer[0].value
-                    dp_layer.value = self.scalePenToStyle(g, layer[0], idx).value
+                    dp_layer.v.value = self.scalePenToStyle(g, layer[0], idx).v.value
                     if isinstance(self.style.palette, int):
                         dp_layer.f(self.style.font.font.colorPalettes[self.style.palette][layer[1]])
                     else:
                         dp_layer.f(self.style.palette[layer[1]])
-                    if len(dp_layer.value) > 0:
+                    if len(dp_layer.v.value) > 0:
                         #dp_layer.addFrame(g.frame, typographic=True)
-                        dp_layer.glyphName = f"{g.name}_layer_{lidx}"
+                        dp_layer.data(glyphName=f"{g.name}_layer_{lidx}")
+                        #dp_layer.glyphName = 
                         dp_atom += dp_layer
-                dp_atom.addFrame(norm_frame, typographic=True)
-                dp_atom.glyphName = g.name
+                
+                dp_atom.data(
+                    frame=norm_frame,
+                    glyphName=g.name
+                )
+                # dp_atom.addFrame(norm_frame, typographic=True)
+                # dp_atom.glyphName = g.name
             
             #dp_atom._parent = pens
             if self.style.meta:
-                for k, v in self.style.meta.items():
-                    dp_atom.add_data(k, v)
+                dp_atom.data(**self.style.meta)
             
-            pens.append(dp_atom, allow_blank=self.style.include_blanks)
+            pens.append(dp_atom)
 
         if self.style.reverse:
             pens.reversePens()
         
-        for k, v in self.style.data.items():
-            pens.data[k] = v
+        pens.data(**self.style.data)
 
-        pens._stst = self
-        return pens
+        ro = pens
+        if self.style._stst:
+            ro._stst = self
+        return ro
 
-    def pen(self, frame=True) -> DraftingPen:
+    def pen(self, frame=True) -> P:
         """
-        Vectorize all text into single ``DATPen``
+        Vectorize all text into single ``P``
         """
         return self.pens().pen()
 
@@ -1109,18 +1109,18 @@ class SegmentedString(FittableMixin):
         return adjusted
 
     def pens(self, flat=True):
-        pens = _PensClass()
+        pens = P()
         x_off = 0
         for s in self.strings:
             dps = s.pens()
-            if dps.layered:
-                pens.layered = True
+            #if dps.layered:
+            #    pens.layered = True
             dps.translate(x_off, 0)
             if flat:
-                pens.extend(dps._pens)
+                pens.extend(dps._els)
             else:
                 if s.style.lang:
-                    dps.add_data("lang", s.style.lang)
+                    dps.data(lang=s.style.lang)
                 pens.append(dps)
             x_off += dps.ambit().w
         return pens

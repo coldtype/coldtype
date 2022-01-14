@@ -4,7 +4,7 @@ at = AsciiTimeline(1, 30, """
                                                                                         <
             [.big        ]
 *Oh,        hello.        • 
-                            *This       ≈some           ≈t  +e +x  +t +.            •  
+                            *This       ≈some           ≈t  +e  +x  +t +.            •  
                                   is            timed
 """)
 
@@ -18,6 +18,7 @@ def styler(c):
 def timedWords(f):
     return (f.t.words.currentGroup()
         .pens(f, styler)
+        #.printh()
         .cond(f.t.words.styles.ki("big").on(),
             λ.f(hsl(0.9)))
         .lead(30)

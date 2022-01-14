@@ -204,7 +204,7 @@ class SVGPen(DrawablePenMixin, SVGPathPen):
         else:
             self.path.set("fill", "transparent")
     
-    def stroke(self, weight=1, color=None, dash=None):
+    def stroke(self, weight=1, color=None, dash=None, miter=None):
         self.path.set("stroke-width", str(weight))
         if dash:
             self.path.set("stroke-dasharray", " ".join([str(x) for x in dash]))

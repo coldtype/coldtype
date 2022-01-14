@@ -23,12 +23,12 @@ for pickle in pickles:
     try:
         results.append([
             pickle,
-            DP().Unpickle(pickle)])
+            P().Unpickle(pickle)])
     except EOFError:
         print("invalid pickle")
 
 def make_renderable(name, result):
-    r = result.data.get("rect", Rect(1000, 1000))
+    r = result.data("rect", Rect(1000, 1000))
     @renderable(r)
     def pj(r): # TODO naming needs to be different?
         return result
@@ -40,8 +40,11 @@ for result in results:
     pickle, res = result
     try:
         RENDERABLES.append(make_renderable(pickle.stem, res))
-    except:
-        print("failed to load", pickle.stem)
+    except Exception as e:
+        import traceback
+        stack = traceback.format_exc()
+        print(stack)
+        print("> failed to load", pickle.stem)
 
 #if picklejar and picklejar.exists():
 #    rmtree(picklejar)

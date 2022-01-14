@@ -1,8 +1,14 @@
-from coldtype import *
+from textwrap import wrap
 
 from typing import Callable, Optional
 from inspect import signature
 from random import Random
+from time import sleep
+from copy import deepcopy
+from collections.abc import Iterable
+from collections import namedtuple
+
+from coldtype.fx.chainable import Chainable
 
 
 def _arg_count(fn):
@@ -16,6 +22,9 @@ def _call_idx_fn(fn, idx, arg):
         return fn(idx, arg)
 
 
+RunonEnumerable = namedtuple("RunonEnumerable", ["i", "el", "e", "len", "k"])
+
+
 class RunonException(Exception):
     pass
 
@@ -25,27 +34,45 @@ class RunonNoData:
 
 
 class Runon:
-    def __init__(self,
-        value=None,
-        els=None,
-        data=None,
-        attrs=None,
-        ):
+    def __init__(self, *val):
+        els = []
+        to_append = []
+
+        if len(val) == 1 and not isinstance(val[0], Runon):
+            if isinstance(val[0], Iterable):
+                to_append = val[0]
+                value = None
+            else:
+                value = val[0]
+        else:
+            value = None
+            els = []
+            to_append = val
+
         self._val = None
-        self._els = els if els is not None else []
+        self.reset_val()
+        
+        if value is not None:
+            self._val = self.normalize_val(value)
+
+        self._els = els
         
         self._visible = True
         self._alpha = 1
 
-        self._attrs = attrs if attrs else {}
-        self._data = data if data else {}
+        self._attrs = {}
+        self._data = {}
         self._parent = None
         self._tag = None
 
         self._tmp_attr_tag = None
 
-        if value is not None:
-            self._val = value
+        for el in to_append:
+            self.append(el)
+    
+    def post_init(self):
+        """subclass hook"""
+        pass
 
     # Value operations
 
@@ -62,14 +89,21 @@ class Runon:
 
     # Array Operations
 
-    def append(self, el):
+    def _norm_element(self, el):
+        if el is None:
+            return None
+        
         if callable(el):
             el = el(self)
+        if not isinstance(el, Runon):
+            el = type(self)(el)
+        return el
 
-        if isinstance(el, Runon):
-            self._els.append(el)
-        else:
-            self._els.append(Runon(el))
+    def append(self, el):
+        el = self._norm_element(el)
+        if el is None:
+            return self
+        self._els.append(el)
         return self
     
     def extend(self, els):
@@ -85,21 +119,59 @@ class Runon:
             [self.append(el) for el in els]
         return self
     
+    def insert(self, idx, el):
+        el = self._norm_element(el)
+        
+        if el is None:
+            return self
+        
+        parent = self
+        try:
+            p = self
+            for x in idx[:-1]:
+                if len(self) > 0:
+                    parent = p
+                    p = p[x]
+            
+            p._els.insert(idx[-1], el)
+            return self
+        except TypeError:
+            pass
+
+        parent._els.insert(idx, el)
+        return self
+    
+    def __iadd__(self, item):
+        """alias to append"""
+        return self.append(item)
+    
+    def __add__(self, item):
+        """yields new Runon with current nested, item after"""
+        return type(self)(self, item)
+    
     # Generic Interface
 
-    def __str__(self, data=False):
-        return self.__repr__(data)
+    def __str__(self):
+        return self.__repr__()
     
-    def __repr__(self, data=False):
-        v = self._val
+    def printable_val(self):
+        """subclass hook for __repr__"""
+        return self._val
+    
+    def printable_data(self):
+        """subclass hook for __repr__"""
+        return self._data
+    
+    def __repr__(self):
+        v = self.printable_val()
         t = self._tag
-        d = self._data
+        d = self.printable_data()
         l = len(self)
 
         if v is None:
             v = ""
         else:
-            v = f"\"{v}\""
+            v = f"({v})"
         
         if l == 0:
             l = ""
@@ -116,47 +188,75 @@ class Runon:
         else:
             d = " {" + ",".join([f"{k}={v}" for k,v in d.items()]) + "}"
         
+        if self.val_present():
+            tv = type(self._val).__name__
+            #if len(tv) > 5:
+            #    tv = tv[:5] + "..."
+        else:
+            tv = ""
+        
         ty = type(self).__name__
         if ty == "Runon":
             ty = ""
-        out = f"<®:{ty}{v}{l}{t}{d}>"
+        
+        out = f"<®:{ty}:{tv}{v}{l}{t}{d}>"
         return out
+    
+    def __bool__(self):
+        return len(self._els) > 0 or self._val is not None
+    
+    def val_present(self):
+        """subclass hook"""
+        return self._val is not None
+    
+    def normalize_val(self, val):
+        """subclass hook"""
+        return val
+    
+    def reset_val(self):
+        self._val = None
+        self._data = {}
+        self._attrs = {}
+        self._tag = None
+        return self
     
     def __len__(self):
         return len(self._els)
 
     def __getitem__(self, index):
-        #try:
-        return self._els[index]
-        #except IndexError:
-        #    return None
+        if isinstance(index, int) or isinstance(index, slice):
+            return self._els[index]
+        else:
+            tag = index
+            return self.find_(tag)
         
     def __setitem__(self, index, pen):
         self._els[index] = pen
     
-    def __iadd__(self, el):
-        return self.append(el)
-    
-    def __add__(self, el):
-        return self.append(el)
-    
-    def tree(self, out=None, depth=0) -> str:
-        """Hierarchical string representation"""
-        if out is None:
-            out = []
-        out.append(" |"*depth + " " + str(self))
-        for el in self._els:
-            if len(el._els) > 0:
-                el.tree(out=out, depth=depth+1)
-            else:
-                out.append(" |"*(depth+1) + " " + str(el))
-        return "\n".join(out)
+    def tree(self, v=True, limit=100):
+        out = []
+        def walker(el, pos, data):
+            if pos <= 0:
+                if pos == 0 and not v:
+                    return
+                
+                dep = data.get("depth", 0)
+                tab = " |"*dep
+                if pos == 0:
+                    tab = tab[:-1] + "-"
+                
+                sel = str(el)
+                sel = wrap(sel, limit, initial_indent="", subsequent_indent="  "*(dep+2) + " ")
+                out.append(tab + " " + "\n".join(sel))
+        
+        self.walk(walker)
+        return "\n" + "\n".join(out)
     
     def depth(self):
         if len(self) > 0:
             return 1 + max(p.depth() for p in self)
         else:
-            return 1
+            return 0
     
     # Iteration operations
 
@@ -166,7 +266,8 @@ class Runon:
         visible_only=False,
         parent=None,
         alpha=1,
-        idx=None
+        idx=None,
+        _selector=None,
         ):
         if visible_only and not self._visible:
             return
@@ -177,23 +278,51 @@ class Runon:
         alpha = self._alpha * alpha
         
         if len(self) > 0:
-            callback(self, -1, dict(depth=depth, alpha=alpha, idx=idx))
+            utag = "_".join([str(i) for i in idx]) if idx else None
+            if utag is None and parent is None:
+                utag = "ROOT"
+            if _selector is None or _selector == -1:
+                callback(self, -1, dict(depth=depth, alpha=alpha, idx=idx, utag=utag))
+            
             for pidx, el in enumerate(self._els):
                 idxs = [*idx] if idx else []
                 idxs.append(pidx)
-                el.walk(callback, depth=depth+1, visible_only=visible_only, parent=self, alpha=alpha, idx=idxs)
+                el.walk(callback, depth=depth+1, visible_only=visible_only,
+                    parent=self, alpha=alpha, idx=idxs, _selector=_selector)
+            
             utag = "_".join([str(i) for i in idx]) if idx else None
-            callback(self, 1, dict(depth=depth, alpha=alpha, idx=idx, utag=utag))
+            if utag is None and parent is None:
+                utag = "ROOT"
+            if _selector is None or _selector == +1:
+                callback(self, 1, dict(depth=depth, alpha=alpha, idx=idx, utag=utag))
         else:
-            #print("PARENT", idx)
             utag = "_".join([str(i) for i in idx]) if idx else None
+            if utag is None and parent is None:
+                utag = "ROOT"
+            
             res = callback(self, 0, dict(
                 depth=depth, alpha=alpha, idx=idx, utag=utag))
             
             if res is not None:
-                parent[idx[-1]] = res
+                if parent is None:
+                    return res
+                else:
+                    parent[idx[-1]] = res
         
         return self
+    
+    def prewalk(self, callback):
+        return self.walk(callback, _selector=-1)
+    
+    def postwalk(self, callback):
+        return self.walk(callback, _selector=+1)
+    
+    def parent(self):
+        if self._parent:
+            return self._parent
+        else:
+            print("no parent set")
+            return None
 
     def map(self, fn):
         for idx, p in enumerate(self._els):
@@ -214,6 +343,11 @@ class Runon:
         return self
     
     def mapv(self, fn):
+        if len(self) == 0:
+            if self.val_present():
+                print("! no els to mapv")
+            return self
+
         idx = 0
         def walker(el, pos, _):
             nonlocal idx
@@ -233,7 +367,7 @@ class Runon:
             if pos == 0:
                 res = _call_idx_fn(fn, idx, el)
                 if not res:
-                    el.data("_walk_delete", True)
+                    el.data(_walk_delete=True)
                 idx += 1
                 return None
             elif pos == 1:
@@ -241,57 +375,98 @@ class Runon:
         
         return self.walk(walker)
     
-    def unblank(self):
-        return self.filterv(lambda p: p.v is not None)
-    
-    def interpose(self, el_or_fn):
-        new_pens = []
-        for idx, el in enumerate(self._pens):
-            if idx > 0:
-                if callable(el_or_fn):
-                    new_pens.append(el_or_fn(idx-1))
-                else:
-                    new_pens.append(el_or_fn.copy())
-            new_pens.append(el)
-        self._pens = new_pens
+    def delete(self):
+        self._els = []
+        self.reset_val()
         return self
     
-    def split(self, fn):
-        out = self.multi_pen_class()
-        curr = self.multi_pen_class()
-        for pen in self:
-            if fn(pen):
-                out.append(curr)
-                curr = self.multi_pen_class()
+    def deblank(self):
+        return self.filterv(lambda p: p.val_present())
+    
+    removeBlanks = deblank
+    
+    def interpose(self, el_or_fn):
+        new_els = []
+        for idx, el in enumerate(self._els):
+            if idx > 0:
+                if callable(el_or_fn):
+                    new_els.append(el_or_fn(idx-1))
+                else:
+                    new_els.append(el_or_fn.copy())
+            new_els.append(el)
+        self._els = new_els
+        return self
+    
+    def split(self, fn, split=0):
+        out = type(self)()
+        curr = type(self)()
+
+        for el in self._els:
+            do_split = False
+            if callable(fn):
+                do_split = fn(el)
             else:
-                curr.append(pen)
+                if el._val == fn:
+                    do_split = True
+            
+            if do_split:
+                if split == -1:
+                    curr.append(el)
+                out.append(curr)
+                curr = type(self)()
+                if split == 1:
+                    curr.append(el)
+            else:
+                curr.append(el)
+        
         out.append(curr)
-        return out
+        self._els = out._els
+        return self
+    
+    def enumerate(self, enumerable, enumerator):
+        if len(enumerable) == 0:
+            return self
+        
+        es = list(enumerable)
+        length = len(es)
+
+        if isinstance(enumerable, dict):
+            for idx, k in enumerate(enumerable.keys()):
+                item = enumerable[k]
+                if idx == 0 and len(enumerable) == 1:
+                    e = 0.5
+                else:
+                    e = idx / (length-1)
+                self.append(enumerator(RunonEnumerable(idx, item, e, length, k)))
+        else:
+            for idx, item in enumerate(es):
+                if idx == 0 and len(enumerable) == 1:
+                    e = 0.5
+                else:
+                    e = idx / (length-1)
+                self.append(enumerator(RunonEnumerable(idx, item, e, length, idx)))
+        return self
     
     # Hierarchical Operations
 
-    def collapse(self, levels=100, onself=False):
+    def collapse(self, deblank=True):
         """AKA `flatten` in some programming contexts"""
         els = []
-        for el in self._els:
-            if el._val is not None:
+        def walk(el, pos, data):
+            if pos == 0 and (el.val_present() or not deblank):
                 els.append(el)
-            
-            if len(el) > 0 and levels > 0:
-                els.extend(el.collapse(levels=levels-1)._els)
         
-        out = type(self)(els=els)
-
-        if onself:
-            self._els = out._els
-            return self
-        else:
-            return out
+        self.walk(walk)
+        self._els = els
+        return self
     
     def sum(self):
-        r = self.collapse()
         out = []
-        for el in r:
+        if self.val_present():
+            out.append(self._val)
+        
+        r = self.copy().collapse()
+        for el in r._els:
             out.append(el._val)
         return out
     
@@ -310,59 +485,62 @@ class Runon:
         r.shuffle(self._els)
         return self
     
-    def copy(self):
-        if hasattr(self._val, "copy"):
-            v = self._val.copy()
+    def copy_val(self, val):
+        if hasattr(val, "copy"):
+            return val.copy()
         else:
-            v = self._val
+            return val
+    
+    def copy(self, deep=True, with_data=True):
+        """with_data is deprecated"""
+        val_copy = self.copy_val(self._val)
 
-        _copy = type(self)(
-            value=v,
-            data=self._data.copy(),
-            attrs=self._attrs.copy())
+        _copy = type(self)(val_copy)
+        copied = False
+        
+        if deep:
+            try:
+                _copy._data = deepcopy(self._data)
+                _copy._attrs = deepcopy(self._attrs)
+                copied = True
+            except TypeError:
+                pass
+        
+        if not copied:
+            _copy._data = self._data.copy()
+            _copy._attrs = self._attrs.copy()
+        
+        _copy._tag = self._tag
         
         for el in self._els:
             _copy.append(el.copy())
         
         return _copy
     
-    def insert(self, idx, el):
-        if callable(el):
-            el = el(self)
-        
-        parent = self
-        try:
-            p = self
-            for x in idx[:-1]:
-                if len(self) > 0:
-                    parent = p
-                    p = p[x]
-            
-            p._els.insert(idx[-1], el)
-            return self
-        except TypeError:
-            pass
-
-        parent._els.insert(idx, el)
-        return self
-    
     def index(self, idx, fn=None):
         parent = self
         lidx = idx
+
         try:
             p = self
             for x in idx:
-                if len(self) > 0:
+                if len(p) > 0:
                     parent = p
                     lidx = x
                     p = p[x]
                 else:
-                    return p.index(x, fn)
-        except TypeError:
+                    res = p.index(x, fn)
+                    if not fn:
+                        return res
+                    else:
+                        return self
+        except TypeError as e:
             p = self[idx]
 
         if fn:
-            parent[lidx] = _call_idx_fn(fn, lidx, p)
+            res = _call_idx_fn(fn, lidx, p)
+            if res is not None:
+                parent[lidx] = res
         else:
             return parent[lidx]
         return self
@@ -375,12 +553,22 @@ class Runon:
             return out
         return self
     
-    î = index
-    ï = indices
+    def î(self, idx, fn=None):
+        return self.index(idx, fn)
 
-    def find(self, finder_fn, fn=None):
+    def ï(self, idxs, fn=None):
+        return self.indices(idxs, fn)
+
+    def find(self,
+        finder_fn,
+        fn=None,
+        index=None
+        ):
         matches = []
         def finder(p, pos, _):
+            #if limit and len(matches) > limit:
+            #    return
+
             found = False
             if pos >= 0:
                 if isinstance(finder_fn, str):
@@ -388,29 +576,72 @@ class Runon:
                 elif callable(finder_fn):
                     found = finder_fn(p)
                 else:
-                    found = all(p.data.get(k) == v for k, v in finder_fn.items())
+                    found = all(p.data(k) == v for k, v in finder_fn.items())
             if found:
-                if fn:
-                    fn(p)
-                else:
-                    matches.append(p)
-        
+                matches.append(p)
+
         self.walk(finder)
+
+        narrowed = []
+        if index is not None:
+            for idx, match in enumerate(matches):
+                if isinstance(index, int):
+                    if idx == index:
+                        narrowed.append([idx, match])
+                else:
+                    if idx in index:
+                        narrowed.append([idx, match])
+        else:
+            for idx, match in enumerate(matches):
+                narrowed.append([idx, match])
+        
+        if fn:
+            for idx, match in narrowed:
+                _call_idx_fn(fn, idx, match)
+
         if fn:
             return self
         else:
-            return matches
+            return [m for (_, m) in narrowed]
     
-    def find_(self, finder_fn):
-        return self.find(finder_fn)[0]
+    def find_(self, finder_fn, fn=None, index=0):
+        res = self.find(finder_fn, fn, index=index)
+        if not fn:
+            try:
+                return res[0]
+            except IndexError:
+                raise Exception(f"Could not find `{finder_fn}`")
+        else:
+            return self
+        
+    def replace(self, tag, replacement, limit=None):
+        if isinstance(tag, str):
+            def walker(p, pos, data):
+                if pos in [0, 1]:
+                    if p.tag() == tag:
+                        self.index(data["idx"], replacement)
+            return self.walk(walker)
+        elif callable(tag):
+            def walker(p, pos, data):
+                if pos in [0, 1]:
+                    if tag(p):
+                        self.index(data["idx"], replacement)
+            return self.walk(walker)
+        else:
+            raise Exception("not yet supported")
     
     # Data-access methods
 
-    def data(self, key, value=RunonNoData(), default=None):
-        if isinstance(value, RunonNoData):
+    def data(self, key=None, default=None, **kwargs):
+        if key is None and len(kwargs) > 0:
+            for k, v in kwargs.items():
+                if callable(v):
+                    v = _call_idx_fn(v, k, self)
+                self._data[k] = v
+            return self
+        elif key is not None:
             return self._data.get(key, default)
         else:
-            self._data[key] = value
             return self
     
     def tag(self, value=RunonNoData()):
@@ -420,20 +651,34 @@ class Runon:
             self._tag = value
             return self
 
+    def style(self, style="_default"):
+        if style and style in self._attrs:
+            return self._attrs[style]
+        else:
+            return self._attrs.get("_default", {})
+
     def attr(self,
         tag=None,
         field=None,
         recursive=True,
         **kwargs
         ):
+
+        if field is None and len(kwargs) == 0:
+            field = tag
+            tag = None
+
         if tag is None:
             if self._tmp_attr_tag is not None:
                 tag = self._tmp_attr_tag
             else:
                 tag = "_default"
         
+        if tag == "default":
+            tag = "_default"
+        
         if field: # getting, not setting
-            return self._attrs.get(tag).get(field)
+            return self._attrs.get(tag, {}).get(field)
 
         attrs = self._attrs.get(tag, {})
         for k, v in kwargs.items():
@@ -446,6 +691,12 @@ class Runon:
                 el.attr(tag=tag, field=None, recursive=True, **kwargs)
         
         return self
+    
+    def cast(self, _class, *args):
+        """Quickly cast to a (different) subclass."""
+        res = _class(self, *args)
+        res._attrs = deepcopy(self._attrs)
+        return res
     
     def lattr(self, tag, fn):
         """temporarily change default tag to something other than 'default'"""
@@ -473,3 +724,202 @@ class Runon:
     
     def alpha(self, v=None):
         return self._get_set_prop("_alpha", v, float)
+    
+    def hide(self, *indices):
+        for idx in indices:
+            self.index(idx, lambda p: p.visible(False))
+        
+        if self.val_present():
+            self.visible(False)
+        return self
+    
+    # Logic Operations
+
+    def cond(self, condition,
+        if_true:Callable[["Runon"], None], 
+        if_false:Callable[["Runon"], None]=None
+        ):
+        if callable(condition):
+            condition = condition(self)
+
+        if condition:
+            if callable(if_true):
+                if_true(self)
+            else:
+                #self.gs(if_true)
+                pass # TODO?
+        else:
+            if if_false is not None:
+                if callable(if_false):
+                    if_false(self)
+                else:
+                    #self.gs(if_false)
+                    pass # TODO?
+        return self
+    
+    # Chaining
+
+    def chain(self,
+        fn:Callable[["Runon"], None],
+        *args
+        ):
+        """
+        For simple take-one callback functions in a chain
+        """
+        if fn:
+            if isinstance(fn, Chainable):
+                res = fn.func(self, *args)
+                if res:
+                    return res
+                return self
+            
+            try:
+                if isinstance(fn[0], Chainable):
+                    r = self
+                    for f in fn:
+                        r = r.chain(f, *args)
+                    return r
+            except TypeError:
+                pass
+
+            try:
+                fn, metadata = fn
+            except TypeError:
+                metadata = {}
+            
+            # So you can pass in a function
+            # without calling it (if it has no args)
+            # TODO what happens w/ no args but kwargs?
+            ac = _arg_count(fn)
+            if ac == 0:
+                fn = fn()
+
+            res = fn(self, *args)
+            if "returns" in metadata:
+                return res
+            elif isinstance(res, Runon):
+                return res
+            elif res:
+                return res
+        return self
+    
+    ch = chain
+
+    def __or__(self, other):
+        return self.chain(other)
+
+    def __ror__(self, other):
+        return self.chain(other)
+    
+    def __truediv__(self, other):
+        return self.mapv(other)
+    
+    def __sub__(self, other):
+        """noop"""
+        return self
+
+    def ups(self):
+        copy = self.copy()
+
+        self.reset_val()
+
+        self._els = [copy]
+        return self
+
+    def layer(self, *layers):
+        if len(layers) == 1 and isinstance(layers[0], int):
+            layers = [1]*layers[0]
+        
+        els = []
+        for layer in layers:
+            if callable(layer):
+                els.append(layer(self.copy()))
+            elif isinstance(layer, Chainable):
+                els.append(layer.func(self.copy()))
+            else:
+                els.append(self.copy())
+        
+        self.reset_val()
+        self._els = els
+        return self
+
+    def layerv(self, *layers):
+        if self.val_present():
+            if len(layers) == 1 and isinstance(layers[0], int):
+                layers = [1]*layers[0]
+            
+            els = []
+            for layer in layers:
+                if callable(layer):
+                    els.append(layer(self.copy()))
+                elif isinstance(layer, Chainable):
+                    els.append(layer.func(self.copy()))
+                else:
+                    els.append(self.copy())
+            
+            self.reset_val()
+            self.extend(els)
+        else:
+            for el in self._els:
+                el.layerv(*layers)
+        
+        return self
+    
+    # Utils
+
+    def declare(self, *whatever):
+        # TODO do something with what's declared somehow?
+        return self
+
+    def print(self, *args):
+        if len(args) == 0:
+            print(self.tree())
+            return self
+
+        for a in args:
+            if callable(a):
+                print(a(self))
+            else:
+                print(a)
+        return self
+    
+    def pprint(self, *args):
+        if len(args) == 0:
+            print(self.tree())
+            return self
+        
+        from pprint import pprint
+        for a in args:
+            if callable(a):
+                pprint(a(self))
+            else:
+                pprint(a)
+        return self
+    
+    def printh(self):
+        """print hierarchy, no values"""
+        print(self.tree(v=False))
+        return self
+    
+    def noop(self, *args, **kwargs):
+        """Does nothing"""
+        return self
+    
+    def null(self):
+        """For chaining; return an empty instead of this pen"""
+        self.reset_val()
+        self._els = []
+        return self
+    
+    def _null(self):
+        """For chaining; quickly disable a .null() call without a line-comment"""
+        return self
+    
+    def sleep(self, time):
+        """Sleep call within the chain (if you want to measure something)"""
+        sleep(time)
+        return self
+    
+    # Aliases
+
+    pmap = mapv

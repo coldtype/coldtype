@@ -1,10 +1,8 @@
-#from coldtype.pens.draftingpens import DraftingPen, DraftingPens
-from coldtype.pens.datpen import DATPen, DATPens
-from coldtype.pens.draftingpens import DraftingPens
+from coldtype.runon.path import P
 from coldtype.geometry import Rect, Point
 
 from coldtype.text.shaper import segment
-from coldtype.text.reader import Style, StyledString, FittableMixin, Font, normalize_font_path, SegmentedString,  _PenClass, _PensClass
+from coldtype.text.reader import Style, StyledString, FittableMixin, Font, SegmentedString
 
 import inspect
 from collections import namedtuple
@@ -20,7 +18,7 @@ class GrafStyle():
 class Graf():
     def __init__(self, lines, container, style=None, no_frames=False, **kwargs):
         if isinstance(container, Rect):
-            self.container = _PenClass().rect(container)
+            self.container = P().rect(container)
         else:
             self.container = container
         if style and isinstance(style, GrafStyle):
@@ -68,12 +66,12 @@ class Graf():
     
     def pens(self):
         rects = self.lineRects()
-        pens = _PensClass()
+        pens = P()
         for idx, l in enumerate(self.lines):
             r = rects[idx]
             dps = l.pens().translate(r.x, r.y) # r.x
             if not self.no_frames:
-                dps.addFrame(Rect(r.x, r.y, r.w, r.h))
+                dps.data(frame=Rect(r.x, r.y, r.w, r.h))
             pens.append(dps)
         return pens
 
@@ -113,7 +111,7 @@ class Lockup(FittableMixin):
                 if self.nestSlugs:
                     pens.append(dps)
                 else:
-                    pens.extend(dps._pens)
+                    pens.extend(dps._els)
             else:
                 dps = s.pen()
                 dps.translate(x_off, 0)
@@ -124,7 +122,7 @@ class Lockup(FittableMixin):
                 x_off += s.strings[-1].tracking
             except:
                 pass
-        return _PensClass(pens)
+        return P(pens)
     
     def pen(self):
         return self.pens().pen()
@@ -183,7 +181,7 @@ class Composer():
         """
         Structured representation of the multi-line text
         
-        In the return ``DATPens``, each line will be a ``DATPens``, then within those lines, each glyph/ligature for that line will be an individual ``DATPen``
+        In the result, each line will be a ``P``, then within those lines, each glyph/ligature for that line will be an individual ``P``
         """
         return self.graf.pens()
     
@@ -222,7 +220,7 @@ def StSt(text,
     leading = kwargs.get("leading", 10)
 
     if "\n" in text:
-        lines = DATPens()
+        lines = P()
         for l in text.split("\n"):
             lines.append(StSt(l, font, font_size, rect=rect, strip=strip, **{**kwargs, **dict(multline=False)}))
         return lines.stack(leading)
@@ -239,7 +237,7 @@ def StSt(text,
             lockup = lockup.pens()
         
         if multiline:
-            return DATPens([lockup])
+            return P([lockup])
 
         #lockup._stst_style = style
         return lockup
@@ -296,7 +294,7 @@ def Glyphwise(st, styler, start=0, line=0):
             for lidx, l in enumerate(lines):
                 gs.append(Glyphwise(l, styler, start=start, line=lidx))
                 start += len(l)
-            return _PensClass(gs).stack()
+            return P(gs).stack()
     except AttributeError:
         pass
 
@@ -306,7 +304,7 @@ def Glyphwise(st, styler, start=0, line=0):
     def krn(off, on, idx):
         return kx(off, idx) - kx(on, idx)
 
-    dps = DATPens()
+    dps = P()
     prev = 0
     tracks = []
 
@@ -347,11 +345,11 @@ def Glyphwise(st, styler, start=0, line=0):
 
         if idx == 0:
             if tkoff_tweak:
-                tkoff_frame = tkoff[0]._frame
+                tkoff_frame = tkoff[0].data("frame")
                 th = skon_tweak.input["kwargs"].get("th", 0)
                 tv = skon_tweak.input["kwargs"].get("tv", 0)
                 tkoff_glyph = tkoff_tweak[0].align(tkoff_frame, th=th, tv=tv)
-                tkoff_glyph._frame = tkoff_frame
+                tkoff_glyph.data(frame=tkoff_frame)
             else:
                 tkoff_glyph = tkoff[0]#.copy(with_data=True)
             
@@ -362,11 +360,11 @@ def Glyphwise(st, styler, start=0, line=0):
             prev_av = (prev+_prev)/2
 
             if tkoff_tweak:
-                tkoff_frame = tkoff[1]._frame
+                tkoff_frame = tkoff[1].data("frame")
                 th = skon_tweak.input["kwargs"].get("th", 0)
                 tv = skon_tweak.input["kwargs"].get("tv", 0)
                 tkoff_glyph = tkoff_tweak[1].align(tkoff_frame, th=th, tv=tv)
-                tkoff_glyph._frame = tkoff_frame
+                tkoff_glyph.data(frame=tkoff_frame)
             else:
                 tkoff_glyph = tkoff[1].copy(with_data=True)
             

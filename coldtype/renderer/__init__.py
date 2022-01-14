@@ -15,6 +15,7 @@ from functools import partial
 import coldtype
 from coldtype.helpers import *
 from coldtype.geometry import Rect
+from coldtype.runon.runon import Runon
 from coldtype.text.reader import Font
 
 from coldtype.renderer.winman import Winmans, WinmanGLFWSkiaBackground
@@ -23,7 +24,7 @@ from coldtype.renderer.config import ConfigOption
 from coldtype.renderer.reader import SourceReader
 from coldtype.renderer.state import RendererState
 from coldtype.renderable import renderable, animation, Action, Overlay, runnable
-from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.runon.path import P
 from coldtype.pens.svgpen import SVGPen
 from coldtype.time.viewer import timeViewer
 
@@ -274,11 +275,10 @@ class Renderer():
         
         r = rect
         render = renderable(r)
-        res = DATPens([
-            DATPen().rect(r).f(coldtype.Gradient.V(r,
-            coldtype.hsl(_random.random(), l=0.3),
-            coldtype.hsl(_random.random(), l=0.3))),
-        ])
+        res = P([
+            P().rect(r).f(coldtype.Gradient.V(r,
+                coldtype.hsl(_random.random(), l=0.3),
+                coldtype.hsl(_random.random(), l=0.3)))])
         render.show_error = short_error
         return render, res
 
@@ -530,7 +530,7 @@ class Renderer():
 
                         if not result and not render.direct_draw:
                             #print(">>> No result")
-                            result = DATPen().rect(render.rect).f(None)
+                            result = P().rect(render.rect).f(None)
 
                         if previewing:
                             if render.direct_draw:
@@ -562,7 +562,7 @@ class Renderer():
                                     if render.direct_draw:
                                         show_render = self.rasterize(partial(render.run, rp, self.state), render, output_path, rp)
                                     else:
-                                        show_render = self.rasterize(result or DATPen(), render, output_path, rp)
+                                        show_render = self.rasterize(result or P(), render, output_path, rp)
                                     # TODO a progress bar?
                                     if show_render:
                                         try:
@@ -1114,6 +1114,9 @@ class Renderer():
             return self.on_release(number=action_number)
         elif shortcut == KeyboardShortcut.CopySVGToClipboard:
             self.winmans.glsk.copy_previews_to_clipboard = True
+            return Action.PreviewStoryboard
+        elif shortcut == KeyboardShortcut.PrintResult:
+            self.winmans.glsk.print_result = True
             return Action.PreviewStoryboard
         elif shortcut in [
             KeyboardShortcut.LoadNextInDirectory,

@@ -1,10 +1,10 @@
 from pathlib import Path
-from coldtype.pens.datpen import DATPen, DATPens
+from coldtype.runon.path import P
 from coldtype.geometry import Rect
 from coldtype.img.blendmode import BlendMode
 
 
-class DATImage(DATPen):
+class DATImage(P):
     def __init__(self, src, img=None):
         if isinstance(src, Path) or isinstance(src, str):
             self.src = Path(str(src)).expanduser().absolute()
@@ -23,7 +23,7 @@ class DATImage(DATPen):
         self.alpha = 1
 
         super().__init__()
-        self.addFrame(self.rect())
+        self.data(frame=self.rect())
     
     def load_image(self, src):
         raise NotImplementedError()
@@ -35,7 +35,7 @@ class DATImage(DATPen):
         return Rect(self.width(), self.height())
     
     def bounds(self):
-        return self._frame
+        return self.data("frame")
     
     def img(self):
         return None
@@ -54,7 +54,7 @@ class DATImage(DATPen):
         raise NotImplementedError()
     
     def align(self, rect, x="mdx", y="mdy"):
-        self.addFrame(self.rect().align(rect, x, y))
+        self.data(frame=self.rect().align(rect, x, y))
         return self
     
     def _resize(self, fx, fy):
@@ -69,19 +69,19 @@ class DATImage(DATPen):
             return self
 
         self._resize(fx, fy)
-        self.addFrame(
-            self.rect().align(self._frame, "mnx", "mny"))
+        self.data(frame=
+            self.rect().align(self.data("frame"), "mnx", "mny"))
         return self
     
     def rotate(self, degrees, point=None):
-        self.transforms.append(["rotate", degrees, point or self._frame.pc])
+        self.transforms.append(["rotate", degrees, point or self.data("frame").pc])
         return self
     
     def _precompose_fn(self):
         raise NotImplementedError()
     
     def precompose(self, rect, as_image=True):
-        res = DATPens([self]).ch(self._precompose_fn()(rect))
+        res = P([self]).ch(self._precompose_fn()(rect))
         if as_image:
             return type(self).FromPen(res, original_src=self.src)
         else:
@@ -93,9 +93,9 @@ class DATImage(DATPen):
         
         xo, yo = -crop.bounds().x, -crop.bounds().y
 
-        cropped = DATPens([
+        cropped = P([
             (self.in_pen().translate(xo, yo)),
-            (DATPen()
+            (P()
                 .rect(self.bounds())
                 .difference(crop)
                 .f(0, 1)
@@ -106,7 +106,7 @@ class DATImage(DATPen):
         
         if mutate:
             self._img = cropped.img().get("src")
-            self.addFrame(self.rect())
+            self.data(frame=self.rect())
             return self
         else:
             return DATImage(self.src, img=cropped.img().get("src"))
@@ -114,13 +114,13 @@ class DATImage(DATPen):
         #return self
     
     def in_pen(self):
-        return (DATPen(self.bounds())
+        return (P(self.bounds())
             .img(self._img, self.bounds(), pattern=False))
         
     def to_pen(self, rect=None):
-        return self.precompose(rect or self._frame, as_image=False)
+        return self.precompose(rect or self.data("frame"), as_image=False)
     
-    def FromPen(pen:DATPen, original_src=None):
+    def FromPen(pen:P, original_src=None):
         return DATImage(original_src, img=pen.img().get("src"))
     
     def __str__(self):

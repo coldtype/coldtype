@@ -1,6 +1,5 @@
 # Mixin for attribute-application
 
-from coldtype.pens.draftingpen import DraftingPen
 from coldtype.color import Gradient, Color
 
 class DrawablePenMixin(object):
@@ -15,7 +14,7 @@ class DrawablePenMixin(object):
     def fill(self, el, color):
         raise Exception("Pen does not implement fill function")
     
-    def stroke(self, el, weight=1, color=None, dash=None):
+    def stroke(self, el, weight=1, color=None, dash=None, miter=None):
         raise Exception("Pen does not implement stroke function")
 
     def shadow(self, el, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
@@ -37,23 +36,19 @@ class DrawablePenMixin(object):
                 return self.image(**v)
     
     def findStyledAttrs(self, style):
-        if style and style in self.dat.attrs:
-            attrs = self.dat.attrs[style]
-        else:
-            attrs = self.dat.attrs["default"]
+        attrs = self.dat.style(style)
+
         for attr in attrs.items():
             if attr and attr[-1]:
                 yield attrs, attr
 
     def FindPens(pens):
-        if isinstance(pens, DraftingPen):
-            pens = pens.collapse()._pens
+        found = []
+        def walker(pen, pos, data):
+            if pos == 0:
+                found.append(pen)
         
-        for pen in pens:
-            if pen:
-                if hasattr(pen, "_pens"):
-                    for _p in pen.collapse()._pens:
-                        if _p:
-                            yield _p
-                else:
-                    yield pen
+        pens.walk(walker)
+
+        for pen in found:
+            yield pen

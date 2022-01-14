@@ -19,7 +19,7 @@ def justi(r):
         .track(110, v=1)
         .map(λ.trackToRect(r.inset(70)))
         .align(r.inset(50))
-        .remove_blanks()
+        .deblank()
         .pmap(lambda p: p
             .ch(b3d(lambda bp: bp
                 .extrude(0.275)

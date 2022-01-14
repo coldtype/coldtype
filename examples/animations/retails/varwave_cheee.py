@@ -17,8 +17,7 @@ at = AsciiTimeline(2, 30, """
 def cheee_wild(f):
     return (Glyphwise("CHEEE", lambda g: [
         Style("CheeeVariable", 270, tu=50),
-        at.kf("eeio", f.i-g.i*10)
-        ])
-        .f(1)
+        at.kf("eeio", f.i-g.i*10)])
+        .fssw(1, 0, 8, 1)
         .align(f.a.r, th=0)
-        .rp().understroke(0, 8))
+        .reverse())

@@ -26,5 +26,5 @@ def code1(f):
         .align(ri, "W")
         .removeSpacers()
         .collapse()
-        .pmap(lambda i, p: p.rotate(-30+rnds1[i]*30))
+        .pmap(lambda i, p: p.rotate(-15+rnds1[i]*30))
         .pmap(warp(2, 0, 0, mult=30)))

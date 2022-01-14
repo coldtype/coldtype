@@ -8,7 +8,7 @@ For instagram
 
 obv = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 
-@renderable(rstate=1)
+@renderable(rstate=1, solo=1)
 def logo(r, rs):
     nxl = LaunchControlXL(rs.midi)
     return PS([
@@ -24,8 +24,7 @@ def logo(r, rs):
             .align(r, th=1, tv=1)
             .rotate(15)
             .translate(-3, 3)
-            .understroke(sw=25)
-            .f(1)
+            .fssw(1, 0, 25, 1)
             .ch(phototype(r,
                 blur=2+10*nxl(10),
                 cut=50+200*nxl(20),

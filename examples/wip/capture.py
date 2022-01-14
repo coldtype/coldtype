@@ -12,7 +12,7 @@ def capture_with_midi(f:Frame, rs):
     nxl = LaunchControlXL(rs.midi)
     img = (read_frame(rs.cv2caps[0]).align(f.a.r))
     
-    return DPS([
+    return P([
         img.a(0.25),
         (StSt("CTRL", fnt, 200+nxl(10, 0)*500,
             r=1, # reverse

@@ -23,6 +23,6 @@ def render(f):
                 , fit=c1)
                 .align(c2)
                 .trackToRect(c2, pullToEdges=1, r=1))])
-        .f(1)
-        .understroke(sw=10)
+        .fssw(1, 0, 11, 1)
+        .sm(0.99)
         .ch(phototype(f.a.r, blur=2, cut=150, cutw=25)))

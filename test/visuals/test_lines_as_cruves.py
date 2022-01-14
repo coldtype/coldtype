@@ -6,7 +6,7 @@ def lines_to_curves(pen):
     # is the closePath case unnecessary if preceded by fully_close_path?
     mvpt = None
     lstpt = None
-    for idx, (mv, pts) in enumerate(pen.value):
+    for idx, (mv, pts) in enumerate(pen.v.value):
         if mv == "moveTo":
             if mvpt:
                 pass # do something?
@@ -14,7 +14,7 @@ def lines_to_curves(pen):
             lstpt = pts[0]
         elif mv == "lineTo":
             line = Line(lstpt, pts[0])
-            pen.value[idx] = ("curveTo",
+            pen.v.value[idx] = ("curveTo",
                 (line.t(0.25), line.t(0.75), line.end))
             lstpt = pts[-1]
         elif mv == "curveTo":
@@ -22,7 +22,7 @@ def lines_to_curves(pen):
         elif mv == "closePath":
             if lstpt != mvpt:
                 line = Line(lstpt, mvpt)
-                pen.value[idx] = ("curveTo",
+                pen.v.value[idx] = ("curveTo",
                     (line.t(0.25), line.t(0.75), line.end))
 
 #@animation(timeline=60)
@@ -45,9 +45,9 @@ def test_lines_to_curves_complex(f):
     dpa = StSt("Y", fnt, 1000).align(f.a.r)[0].fully_close_path()
     dpb = StSt("C", fnt, 1000).align(f.a.r)[0].fully_close_path()
     
-    ml = max([len(dpa.value), len(dpb.value)])
+    ml = max([len(dpa.v.value), len(dpb.v.value)])
     for dp in [dpa, dpb]:
-        while len(dp.value) < ml:
+        while len(dp.v.value) < ml:
             dp.add_pt_t(0, 0.5)
     
     dpa.ch(lines_to_curves).pvl()

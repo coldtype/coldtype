@@ -4,7 +4,6 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.colors import transparent
 
-from coldtype.pens.dattext import DATText
 from coldtype.geometry import Point
 from coldtype.pens.drawablepen import DrawablePenMixin
 
@@ -64,7 +63,7 @@ class ReportLabPen(DrawablePenMixin):
     def fill(self, color):
         self.canvas.setFillColorRGB(color.r, color.g, color.b)
     
-    def stroke(self, weight=1, color=None, dash=None):
+    def stroke(self, weight=1, color=None, dash=None, miter=None):
         #return
         if weight == 0:
             self.canvas.setStrokeColor(transparent)
@@ -92,7 +91,7 @@ class ReportLabPen(DrawablePenMixin):
             if state != 0 or not pen.visible:
                 return
             
-            if isinstance(pen, DATText):
+            if "text" in pen._data:
                 # TODO, look at SkiaPen for reference implementation
                 return
             

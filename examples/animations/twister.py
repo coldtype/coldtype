@@ -19,7 +19,7 @@ def pair(tx, f, x):
 @animation((1080, 1080), timeline=120)
 def twister(f:Frame):
     tx = 250
-    return (PS.Enumerate(range(0, 30),
+    return (P().enumerate(range(0, 30),
         partial(pair, tx, f))
         .translate(-tx*0.5, 300)
         .reversePens())

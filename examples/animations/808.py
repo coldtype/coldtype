@@ -163,9 +163,7 @@ def drummachine(f):
     return PS([
         P(f.a.r).f(0),
         ghz_logo.f(hsl(0.9, 0.55, 0.5)),
-        (pens.f(1)
+        (pens.fssw(1, 0, 15, 1)
             .reversePens()
             .translate(0, 100)
-            .understroke(s=0, sw=15)
-            .ch(phototype(f.a.r, cut=190, cutw=8))
-            )])
+            .ch(phototype(f.a.r, cut=190, cutw=8)))])

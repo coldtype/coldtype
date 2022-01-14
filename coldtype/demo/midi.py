@@ -56,7 +56,7 @@ def build_display():
         if args["text"]:
             out += StSt(f"{vn}", Font.RecursiveMono(), 20).align(rows[idx].take(xo, "W")).f(hsl(0.65))
         else:
-            out += DATText(f"{vn}", Style("Monaco", 24, load_font=0), rows[idx].take(xo, "W").offset(8, rows[idx].h/2-21/2))
+            out += P().text(f"{vn}", Style("Monaco", 24, load_font=0), rows[idx].take(xo, "W").offset(8, rows[idx].h/2-21/2))
 
     for t in mr.timeables:
         t:Timeable
@@ -85,7 +85,7 @@ def midi(f):
             .align(rt.take(px-10, "W"), "E")
             .f(hsl(0.65)))
     else:
-        frame = DATText("{:04d}".format(f.i),
+        frame = P().text("{:04d}".format(f.i),
             Style("Monaco", 18, load_font=0, fill=0),
             rt.offset(px-50, 8))
 

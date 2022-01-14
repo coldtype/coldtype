@@ -19,5 +19,4 @@ def render(f):
             r=1,
             ro=1)
         .align(f.a.r)
-        .f(hsl(0.9, s=0.6, l=0.4))
-        .understroke(s=1, sw=20))
+        .fssw(hsl(0.9, s=0.6, l=0.4), 1, 20, 1))

@@ -1,11 +1,12 @@
 from coldtype import *
 from coldtype.warping import warp
 
-font = Font.Cacheable("assets/ColdtypeObviously.designspace")
+font = Font.ColdtypeObviously()
+text = "COLDTYPE"
 
 @renderable(rect=(900, 500))
 def coldtype(r):
-    return (StSt("COLDTYPE", font, 450,
+    return (StSt(text, font, 450,
         wdth=1, tu=-50,
         r=1, ro=1, fit=r.w,
         kp={("L","D"): -5,
@@ -14,8 +15,8 @@ def coldtype(r):
             ("P","E"): -100})
         .align(r)
         .pmap(lambda idx, p: (p
-            .f(hsl(0.5+idx/len(p.parent())*0.15, s=0.6, l=0.55))
+            .f(hsl(0.5+idx/len(text)*0.15, s=0.6, l=0.55))
+            .s(0).sw(30).sf(1)
             .ch(warp(5, mult=25))))
-        .understroke(sw=30)
         .rotate(5)
         .scale(0.75))

@@ -28,7 +28,7 @@ def officehours(f):
         .xalign(f.a.r)
         .align(f.a.r))
 
-    bg = (P(txt.copy().ambit().inset(-50))
+    bg = (P(txt.ambit().inset(-50))
             .f(hsl(0.35, 0.8, 0.3)))
 
     # after bg, so it doesn't effect bounds 
@@ -36,7 +36,7 @@ def officehours(f):
         .translate(at.ki("Er").e("eeio", 1, r=(0, 24)), 0)
         .rotate(at.ki("Er").e("ceio", 0, r=(0, -360*2))))
 
-    return PS([
+    return PS(
         bg.copy().translate(5, -5).f(0),
         bg,
-        txt])
+        txt)

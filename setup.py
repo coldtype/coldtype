@@ -20,7 +20,6 @@ setuptools.setup(
     #package_dir={"": "coldtype"},
     packages=[
         "coldtype",
-        "coldtype.sh",
         "coldtype.fx",
         "coldtype.img",
         "coldtype.time",
@@ -29,6 +28,7 @@ setuptools.setup(
         "coldtype.text",
         "coldtype.grid",
         "coldtype.color",
+        "coldtype.runon",
         "coldtype.capture",
         "coldtype.blender",
         "coldtype.geometry",
@@ -37,6 +37,7 @@ setuptools.setup(
         "coldtype.renderable",
         "coldtype.fontgoggles",
         "coldtype.interpolation",
+        "coldtype.runon.mixins",
         "coldtype.renderer.winman",
         "coldtype.fontgoggles.font",
         "coldtype.fontgoggles.misc",
@@ -82,7 +83,7 @@ setuptools.setup(
             "noise",
         ],
         "c": [
-            "srt",
+            #"srt",
             "noise",
         ],
         "unicode": [

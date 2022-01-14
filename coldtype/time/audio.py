@@ -1,5 +1,6 @@
 import math
 from pathlib import Path
+from coldtype.runon.path import P
 
 try:
     import numpy as np
@@ -10,8 +11,6 @@ try:
     import soundfile as sf
 except:
     sf = None
-
-from coldtype.pens.datpen import DATPen
 
 class Wavfile():
     def __init__(self, path, fps=30):
@@ -45,7 +44,7 @@ class Wavfile():
         return np.average(np.fabs(self.samples_for_frame(i)))
     
     def frame_waveform(self, fi, r, inc=1, pen=None):
-        wave = pen or DATPen()
+        wave = pen or P()
         samples = self.samples_for_frame(fi)[::inc]
         ww = r.w/len(samples)
         wh = r.h

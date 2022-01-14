@@ -28,12 +28,12 @@ def wt1(u):
         return PS([StSt(x.el, fnt, args["fontSize"])
                 .align(rs[x.i])
                 .f(0),
-            DATText(x.el,
+            P().text(x.el,
                 Style("Times", 24
                     , load_font=0
                     , fill=hsl(0.8))
                 , rs[x.i].inset(5)) if args["showChars"] else None])
 
-    return PS([
+    return P(
         P().gridlines(u.r.inset(10), sq, sq),
-        (PS.Enumerate(all_chars, showChar))])
+        P().enumerate(all_chars, showChar))

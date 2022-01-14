@@ -89,8 +89,8 @@ def vf(f):
                 .cond(args["stroke"],
                     lambda p: p.fssw(-1, 1, 2),
                     lambda p: p.f(1))),
-            (DATText(",".join(["{:0.2f}".format(v) for v in x.el.values()]),
+            (P().text(",".join(["{:0.2f}".format(v) for v in x.el.values()]),
                 Style(Font.RecursiveMono(), 24, fill=bw(1, 0.5), load_font=0),
                 rs[x.i].inset(50, 0)))])
 
-    return (PS.Enumerate(anim_combos, txt))
+    return (P().enumerate(anim_combos, txt))

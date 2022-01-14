@@ -1,6 +1,7 @@
-from coldtype.pens.datpen import DATPen
 from fontTools.pens.basePen import BasePen
 from fontTools.pens.transformPen import TransformPen
+
+from coldtype.runon.path import P
 
 try:
     import skia
@@ -16,7 +17,10 @@ class SkiaPathPen(BasePen):
         
         if h is not None:
             tp = TransformPen(self, (1, 0, 0, -1, 0, h))
-            dat.replay(tp)
+            if hasattr(dat, "_val"):
+                dat._val.replay(tp)
+            else:
+                dat.replay(tp)
         else:
             for mv, pts in self.dat.value:
                 #if mv == "qCurveTo":
@@ -38,11 +42,11 @@ class SkiaPathPen(BasePen):
     def _closePath(self):
         self.path.close()
 
-    def to_datpen(self):
+    def to_drawing(self):
         def unwrap(p):
             return [p.x(), p.y()]
         
-        dp = DATPen()
+        dp = P()
         for mv, pts in self.path:
             if mv == skia.Path.Verb.kMove_Verb:
                 dp.moveTo(unwrap(pts[0]))

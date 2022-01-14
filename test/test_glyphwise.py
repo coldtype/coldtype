@@ -4,7 +4,7 @@ from coldtype.grid import Grid
 from coldtype.geometry import *
 from coldtype.color import hsl
 from coldtype.text.composer import StSt, Glyphwise, Style, Font
-from coldtype.pens.draftingpens import DraftingPens
+from coldtype.runon.path import P
 from coldtype.pens.svgpen import SVGPen
 
 from coldtype.text.reader import ALL_FONT_DIRS
@@ -29,7 +29,7 @@ class TestGlyphwise(unittest.TestCase):
 
         if pj:
             r = Rect(1500, 500)
-            DraftingPens([
+            P([
                 ss,
                 gw.f(None).s(0).sw(5),
                 gwo.copy().f(None).s(hsl(0.9)).sw(5),
@@ -37,12 +37,6 @@ class TestGlyphwise(unittest.TestCase):
 
         self.assertEqual(ss.ambit(), gw.ambit())
         self.assertNotEqual(ss.ambit(), gwo.ambit())
-
-        fp = Path(font_path)
-        op = (tf / f"ignorables/__{fp.name}.svg")
-        op.parent.mkdir(exist_ok=True)
-        op.write_text(SVGPen.Composite(DraftingPens([ss, gw.translate(0, 10)]), ss.ambit(), viewBox=True))
-
         return ss, gw
 
     def test_format_equality(self):
@@ -120,8 +114,8 @@ class TestGlyphwise(unittest.TestCase):
             #.picklejar(r)
             )
         
-        self.assertEqual(gs[0][0].ambit().xy(),
-            [454.49999999999994, 153.0])
+        self.assertAlmostEqual(gs[0][0].ambit().xy(),
+            [454.5, 153.0])
         self.assertEqual(gs[1][-1].ambit().xy(),
             [629.56, 42.0])
         self.assertEqual(gs[0][0].glyphName, gs[0][-1].glyphName)
@@ -192,7 +186,7 @@ class TestGlyphwise(unittest.TestCase):
 
         self.assertEqual(g1[-1].glyphName, "F")
         self.assertEqual(g2[-1].glyphName, "F")
-        self.assertEqual(g2[-1]._frame.w, g1[-1]._frame.w)
+        self.assertEqual(g2[-1].data("frame").w, g1[-1].data("frame").w)
         self.assertEqual(g1[-1].ambit(th=1).w, 28.0)
         self.assertEqual(g2[-1].ambit(th=1).w, 86.0)
     
@@ -205,7 +199,7 @@ class TestGlyphwise(unittest.TestCase):
             .collapse())
         
         for idx, g in enumerate(gw):
-            self.assertEqual(g.data.get("idx"), idx)
+            self.assertEqual(g.data("idx"), idx)
     
     def test_no_reverse(self):
         def styler(g):

@@ -144,7 +144,9 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
         self.dat = dat
         tag = self.dat.tag()
         self.material = None
-        self.tag = tag if tag and tag != "Unknown" else f"Curve_{random.randint(0, 1000000)}"
+        if tag is None:
+            raise Exception("BlenderPen pens must be tagged")
+        self.tag = tag
     
     def record(self, dat):
         self.set_origin(0, 0, 0)
@@ -223,7 +225,7 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
                 dv = bsdf.inputs[0].default_value
                 self.setColorValue(dv, color)
     
-    def stroke(self, weight=1, color=None, dash=None):
+    def stroke(self, weight=1, color=None, dash=None, miter=None):
         if not self.material == "auto" or not self.bsdf():
             return
         if weight and color and color.a > 0:
@@ -245,19 +247,19 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
     def specular(self, amount=0.5):
         if not self.material == "auto" or not self.bsdf():
             return
-        self.bsdf().inputs[5].default_value = amount
+        self.bsdf().inputs[7].default_value = amount
         return self
     
     def metallic(self, amount=1):
         if not self.material == "auto" or not self.bsdf():
             return
-        self.bsdf().inputs[4].default_value = amount
+        self.bsdf().inputs[6].default_value = amount
         return self
     
     def roughness(self, amount=0.5):
         if not self.material == "auto" or not self.bsdf():
             return
-        self.bsdf().inputs[7].default_value = amount
+        self.bsdf().inputs[9].default_value = amount
         return self
     
     def transmission(self, amount=1):

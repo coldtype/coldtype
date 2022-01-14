@@ -3,8 +3,7 @@ try:
 except:
     pass
 
-from coldtype.pens.draftingpen import DraftingPen
-from coldtype.pens.draftingpens import DraftingPens
+from coldtype.runon.path import P
 from coldtype.geometry import Rect, Edge, Point
 from coldtype.pens.drawablepen import DrawablePenMixin
 from coldtype.color import Color, Gradient
@@ -15,7 +14,7 @@ def get_image_rect(src):
     return Rect(0, 0, w, h)
 
 
-class DrawBotPen(DrawablePenMixin, DraftingPen):
+class DrawBotPen(DrawablePenMixin, P):
     def __init__(self, dat, rect=None):
         super().__init__()
         self.rect = rect
@@ -32,7 +31,7 @@ class DrawBotPen(DrawablePenMixin, DraftingPen):
         else:
             db.fill(None)
     
-    def stroke(self, weight=1, color=None, dash=None):
+    def stroke(self, weight=1, color=None, dash=None, miter=None):
         db.strokeWidth(weight)
         if dash:
             db.lineDash(dash)
@@ -87,12 +86,12 @@ class DrawBotPen(DrawablePenMixin, DraftingPen):
     
     def shadow(self, clip=None, radius=10, alpha=0.3, color=Color.from_rgb(0,0,0,1)):
         if clip:
-            cp = DraftingPen(clip).f(None)
+            cp = P(clip).f(None)
             bp = db.BezierPath()
             cp.replay(bp)
             db.clipPath(bp)
         #elif self.rect:
-        #    cp = DATPen(fill=None).rect(self.rect).xor(self.dat)
+        #    cp = P(fill=None).rect(self.rect).xor(self.dat)
         #    bp = db.BezierPath()
         #    cp.replay(bp)
         #    db.clipPath(bp)
@@ -103,8 +102,8 @@ class DrawBotPen(DrawablePenMixin, DraftingPen):
         db.linearGradient(stops[0][1], stops[1][1], [list(s[0]) for s in stops], [0, 1])
     
     def draw(self, scale=1, style=None):
-        if hasattr(self.dat, "_pens"):
-            for p in self.dat._pens:
+        if len(self.dat) > 0:
+            for p in self.dat._els:
                 DrawBotPen(p, rect=self.rect).draw(scale=scale)
         else:
             with db.savedState():

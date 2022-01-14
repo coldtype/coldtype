@@ -1,6 +1,6 @@
 from coldtype.pens.axidrawpen import AxiDrawPen
+from coldtype.runon.path import P
 from coldtype.renderable import renderable
-from coldtype.pens.datpen import DATPen
 from coldtype.geometry import Rect, Point
 from time import sleep
 
@@ -13,12 +13,12 @@ except:
 
 
 def aximeta(fn):
-    def _aximeta(pen:DATPen):
-        pen.add_data("aximeta", dict(fn=fn))
+    def _aximeta(pen:P):
+        pen.data(aximeta=dict(fn=fn))
     return _aximeta
 
 def dip_pen(seconds=1, location=(0, 0)):
-    return (DATPen()
+    return (P()
         .ch(aximeta(lambda ad: ad
             .moveto(*location)
             .pendown()
@@ -63,18 +63,22 @@ class axidrawing(renderable):
             super().__init__(rect=(1100, 850), **kwargs)
     
     def runpost(self, result, render_pass, renderer_state):
-        def color(p):
+        def normalize(p, pos, data):
+            if pos != 0:
+                return
+            
+            if self.flatten:
+                p.flatten(self.flatten, segmentLines=False)
+            
             s = p.s()
-            if not s or (s and s["color"].a == 0):
+            if not s or (s and s.a == 0):
                 p.fssw(-1, 0, 3)
             else:
-                p.fssw(-1, s["color"], 3)
+                p.fssw(-1, s, 3)
         
         res = (super()
             .runpost(result, render_pass, renderer_state)
-            .cond(self.flatten, lambda p: p
-                .flatten(self.flatten, segmentLines=False))
-            .pmap(color))
+            .walk(normalize))
         return res
     
     def draw(self,
@@ -90,9 +94,9 @@ class axidrawing(renderable):
         def _draw(_):
             ad = None
 
-            def walker(p:DATPen, pos, _):
+            def walker(p:P, pos, _):
                 if pos == 0:
-                    ameta = p.data.get("aximeta")
+                    ameta = p.data("aximeta")
                     if ameta:
                         fn = ameta.get("fn")
                         if fn:

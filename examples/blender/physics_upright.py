@@ -18,7 +18,7 @@ lockup = (StSt(txt, Font.Find("PlincBubbleGum33.otf"), 400)
     .track(100, v=1)
     .map(lambda p: p.track_to_rect(r.inset(70)))
     .align(r.inset(50))
-    .remove_blanks()
+    .deblank()
     .collapse())
 
 @b3d_renderable(center=(0, 1), upright=1)

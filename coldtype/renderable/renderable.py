@@ -1,7 +1,5 @@
 import inspect, platform, re, tempfile, math, datetime
 
-from coldtype.pens.draftingpens import DraftingPens
-
 try:
     import skia
     from coldtype.pens.skiapen import SkiaPen
@@ -16,8 +14,7 @@ from pathlib import Path
 from coldtype.geometry import Rect, Point
 from coldtype.color import normalize_color
 from coldtype.text.reader import normalize_font_prefix, Font
-from coldtype.pens.datpen import DATPen, DATPens
-from coldtype.pens.dattext import DATText
+from coldtype.runon.path import P
 from coldtype.img.datimage import DATImage
 
 class ColdtypeCeaseConfigException(Exception):
@@ -132,7 +129,7 @@ class renderable():
         interactable=False,
         cv2caps=None,
         render_bg=False,
-        style="default",
+        style="_default",
         viewBox=True,
         layer=False,
         cond=None,
@@ -259,8 +256,8 @@ class renderable():
             res = render_pass.fn(*render_pass.args)
         
         if self.render_bg:
-            return DATPens([
-                DATPen(self.rect).f(self.bg),
+            return P([
+                P(self.rect).f(self.bg),
                 res
             ])
         else:
@@ -293,25 +290,15 @@ class renderable():
     
     def _normalize_result(self, pens):
         if not pens:
-            return DATPens()
-        elif hasattr(pens, "_pens"):
-            if (isinstance(pens, DraftingPens)
-                and not isinstance(pens, DATPens)):
-                return DATPens(pens._pens)
-            return pens
-        elif isinstance(pens, DATPen):
-            return DATPens([pens])
-        elif isinstance(pens, DATText):
-            return DATPens([pens])
-        elif isinstance(pens, DATImage):
-            return DATPens([pens])
-        elif not isinstance(pens, DATPens):
-            return DATPens(pens)
+            return P()
+        elif not isinstance(pens, P):
+            return P(pens)
         else:
             return pens
     
     def normalize_result(self, pens):
         normalized = self._normalize_result(pens)
+        #print(">norm", pens, normalized)
         if self._hide:
             normalized.hide(*self._hide)
         return normalized

@@ -119,11 +119,15 @@ class Rect(Geometrical):
             x, y = 0, 0
             w, h = COMMON_PAPER_SIZES[rect[0].lower()]
         elif isinstance(rect[0], int) or isinstance(rect[0], float):
-            try:
-                x, y, w, h = rect
-            except:
-                w, h = rect
+            if len(rect) == 1:
                 x, y = 0, 0
+                w, h = rect[0], rect[0]
+            else:
+                try:
+                    x, y, w, h = rect
+                except:
+                    w, h = rect
+                    x, y = 0, 0
         else:
             try:
                 x, y, w, h = rect[0]
@@ -192,7 +196,7 @@ class Rect(Geometrical):
         return self.rect()[key]
 
     def __repr__(self):
-        return "Rect(" + str(self.rect()).replace(" ", "") + ")"
+        return "Rect({:.2f},{:.2f},{:.2f},{:.2f})".format(*self.rect())
     
     def __eq__(self, r):
         try:
@@ -205,6 +209,8 @@ class Rect(Geometrical):
     def rect(self):
         """x,y,w,h in list"""
         return [self.x, self.y, self.w, self.h]
+    
+    xywh = rect
     
     def round(self):
         """round the values in the rectangle to the nearest integer"""
@@ -442,6 +448,9 @@ class Rect(Geometrical):
 
     def zero(self):
         return Rect((0, 0, self.w, self.h))
+    
+    def nonzero(self):
+        return not (self.x == 0 and self.y == 0 and self.w == 0 and self.h == 0)
 
     def __add__(self, another_rect):
         return Rect(add(self, another_rect))
@@ -753,7 +762,3 @@ class Rect(Geometrical):
             _r, r = r.divide(w, "mxy")
             rs.append(_r)
         return rs
-    
-    def to_pen(self):
-        from coldtype.pens.draftingpen import DraftingPen
-        return DraftingPen(self)

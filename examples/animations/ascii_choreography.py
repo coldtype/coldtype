@@ -1,8 +1,6 @@
 from coldtype import *
 from coldtype.time.nle.ascii import AsciiTimeline
 
-fnt = Font.MutatorSans()
-
 at = AsciiTimeline(3, 30, """
                                                 <
 [0     ][1     ][2     ][3     ]
@@ -20,7 +18,7 @@ def choreography(f):
     li, lidx = letter.e(find=1)
 
     return (Glyphwise("TYPE", lambda g:
-        Style(fnt, 200,
+        Style(Font.MutatorSans(), 200,
             wght=at.ki(g.i).e(),
             wdth=at.ki(f"{g.i}w").e("qeio", 1)))
         .track(at.ki("tu", f.i).e(r=150))

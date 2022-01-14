@@ -1,7 +1,5 @@
 from coldtype.img.datimage import DATImage
 from coldtype.fx.skia import precompose
-from coldtype.geometry import Rect
-from coldtype.pens.datpen import DATPen, DATPens
 import skia
 
 class SkiaImage(DATImage):    
