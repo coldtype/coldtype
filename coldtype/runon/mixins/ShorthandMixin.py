@@ -49,7 +49,7 @@ class ShorthandMixin(SHContext):
         self.endPath()
         return self
     
-    def gs(self, s, fn=None, tag=None, writer=None, ctx=None, dps=None, macros={}, do_close=True, first_move="moveTo"):
+    def __gs(self, s, fn=None, tag=None, writer=None, ctx=None, dps=None, macros={}, do_close=True, first_move="moveTo"):
         ctx = ctx or self
         macros = {**self.macros, **macros}
 

@@ -12,13 +12,14 @@ from coldtype.fx.chainable import Chainable
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 mutator = Font.Cacheable("assets/MutatorSans.ttf")
 
-class TestP(unittest.TestCase):
+class TestPens(unittest.TestCase):
     def test_gs(self):
         r = Rect(0, 0, 100, 100)
         dps = P()
         dp = (P()
-            .define(r=r)
-            .gs("$r↖ $r↗ $r↙|↘|65 ɜ"))
+            .declare(r:=r)
+            .m(r.pnw).l(r.pne).bxc(r.psw, "se")
+            .ep())
         self.assertEqual(len(dp.v.value), 4)
         self.assertEqual(dp.v.value[-2][-1][0], Point(100, 35))
         self.assertEqual(dp.v.value[-1][0], "endPath")
@@ -30,44 +31,25 @@ class TestP(unittest.TestCase):
         
     def test_gs_arrowcluster(self):
         r = Rect(100, 100)
-        dp = (P()
-            .define(r=r)
-            .gs("$r↖↗↘"))
+        dp = (P().m(r.pnw).l(r.pne).l(r.pse).ep())
         
         self.assertEqual(len(dp.v.value), 4)
         self.assertEqual(dp.v.value[0][-1][0], Point(0, 100).xy())
         self.assertEqual(dp.v.value[1][-1][0], Point(100, 100).xy())
         self.assertEqual(dp.v.value[2][-1][0], Point(100, 0).xy())
     
-    def _test_gs_relative_moves(self):
+    def test_gs_relative_moves(self):
         r = Rect(100, 100)
-        dp = (P()
-            .define(r=r)
-            .gs("$r↖ ¬OX50OY-50 §OY-50"))
+        dp = (P().m(r.pnw).l(r.pnw.o(50,-50)).l(r.pnw.o(0,-50)).ep())
         
         self.assertEqual(len(dp.v.value), 4)
-        self.assertEqual(dp.v.value[0][-1][0], Point(0, 100))
-        self.assertEqual(dp.v.value[1][-1][0], Point(50, 50))
-        self.assertEqual(dp.v.value[2][-1][0], Point(0, 50))
-    
-    def test_gss(self):
-        """
-        A rect passed to gs and gss should create the same value on the pen
-        """
-        dp1 = (P()
-            .define(r=Rect(100, 100))
-            .gss("$r"))
-        
-        dp2 = (P()
-            .define(r=Rect(100, 100))
-            .gs("$r"))
-        
-        self.assertEqual(dp1.v.value, dp2.v.value)
+        self.assertEqual(dp.v.value[0][-1][0], Point(0, 100).xy())
+        self.assertEqual(dp.v.value[1][-1][0], Point(50, 50).xy())
+        self.assertEqual(dp.v.value[2][-1][0], Point(0, 50).xy())
         
     def test_reverse(self):
-        dp = (P()
-            .define(r=Rect(100, 100))
-            .gs("$r↖ $r↗ $r↘ ɜ"))
+        r = Rect(100, 100)
+        dp = (P().m(r.pnw).l(r.pne).l(r.pse).ep())
         p1 = dp.v.value[0][-1]
         p2 = dp.reverse().v.value[-2][-1]
         self.assertEqual(p1, p2)
@@ -384,17 +366,6 @@ def lattr_style_set(r):
         self.assertEqual(text[-1].ambit().round().x, 50)
         self.assertEqual(text[0].ambit().round().x, 883)
     
-    def test_sample(self):
-        r = Rect(1000, 500)
-        dp = (P()
-            .define(r=r)
-            .gs("$r↖ $r↗ $r↙|↘|65 ɜ"))
-        # dp = (P()
-        #     .define(r=r)
-        #     .gs("$r↙ $r↗ ɜ")
-        #     .fssw(None, 0, 5))
-        dp.picklejar(r)
-    
     def test_distribute_oval(self):
         r = Rect(1000, 500)
         txt = (StSt("COLDTYPE "*7, co, 64,
@@ -412,36 +383,6 @@ def lattr_style_set(r):
         x, y = txt[-1].ambit().xy()
         self.assertAlmostEqual(x, 500, 0)
         self.assertAlmostEqual(y, 50, 0)
-    
-    def _test_distribute_path_center(self):
-        r = Rect(1000, 500)
-        lockup = (P()
-            .define(
-                r=r,
-                nx=100,
-                a="$rIX100SY+200")
-            .gs("$a↙ $a↑|$a↖OX+$nx|65 $a↘|$a↗OX-$nx|65 ɜ")
-            .fssw(-1, 0, 4)
-            # .append(lambda ps: StSt(
-            #     "Coldtype Cdelopty".upper(),
-            #     co, 100, wdth=0.5)
-            #     .pens()
-            #     .distribute_on_path(ps[0], center=-5)
-            #     .f(hsl(0.9)))
-            # .align(r)
-            )
-        
-        lockup.picklejar(r)
-        
-        x, y = lockup[1][10].ambit().xy()
-        self.assertAlmostEqual(x, 534, 0)
-        self.assertAlmostEqual(y, 362, 0)
-
-        x, y, w, h = lockup[1].ambit()
-        self.assertAlmostEqual(x, 196, 0)
-        self.assertAlmostEqual(y, 236, 0)
-        self.assertAlmostEqual(w, 643, 0)
-        self.assertAlmostEqual(h, 202, 0)
     
     def test_distribute_path_lines(self):
         r = Rect(1080, 1080).inset(200)
@@ -474,16 +415,13 @@ def lattr_style_set(r):
         sr = Rect(100, 100)
 
         res = (P([
-            (P()
-                .oval(sr)
+            (P().oval(sr)
                 .f(hsl(0.5))
                 .tag("A")),
-            (P()
-                .oval(sr)
+            (P().oval(sr)
                 .f(hsl(0.7))
                 .tag("B")),
-            (P()
-                .oval(sr)
+            (P().oval(sr)
                 .f(hsl(0.9))
                 .tag("C"))])
             .stack(10))
@@ -499,16 +437,13 @@ def lattr_style_set(r):
         sr = Rect(100, 100)
 
         res = (P([
-            (P()
-                .oval(sr)
+            (P().oval(sr)
                 .f(hsl(0.5))
                 .tag("A")),
-            (P()
-                .oval(sr)
+            (P().oval(sr)
                 .f(hsl(0.7))
                 .tag("B")),
-            (P()
-                .oval(sr)
+            (P().oval(sr)
                 .f(hsl(0.9))
                 .tag("C"))])
             .stack(10)
