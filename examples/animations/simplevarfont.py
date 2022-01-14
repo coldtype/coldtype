@@ -6,9 +6,10 @@ def unfold(f):
         , Font.ColdObvi()
         , fontSize=300
         , wdth=f.e("eeio")
-        , tu=f.e("eeio", rng=(-190, 100))
+        , tu=f.e("eeio", rng=(-130, 100))
         , ro=1)
         .align(f.a.r)
         .pmap(lambda i,p: p
             .rotate(360*f.adj(-i*0.25).e("eeio", 1)))
+        .reverse()
         .fssw(hsl(0.7, a=0.75), 0, 10, 1))

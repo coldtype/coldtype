@@ -70,7 +70,7 @@ class LayoutMixin():
             return f
         
         # partial bounds
-        elif f and self._val:
+        elif f and (self.val_present() or (self.data("glyphName") and len(self) == 0)):
             if self.empty():
                 if th:
                     f = f.setw(0)

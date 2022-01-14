@@ -1115,6 +1115,9 @@ class Renderer():
         elif shortcut == KeyboardShortcut.CopySVGToClipboard:
             self.winmans.glsk.copy_previews_to_clipboard = True
             return Action.PreviewStoryboard
+        elif shortcut == KeyboardShortcut.PrintResult:
+            self.winmans.glsk.print_result = True
+            return Action.PreviewStoryboard
         elif shortcut in [
             KeyboardShortcut.LoadNextInDirectory,
             KeyboardShortcut.LoadPrevInDirectory,
