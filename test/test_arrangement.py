@@ -1,11 +1,11 @@
 import unittest
-from coldtype.runon.layout import * #INLINE
+from coldtype.runon.arrangement import * #INLINE
 from coldtype.geometry import Rect
 from coldtype.text import StSt, Font
 
-class TestLayout(unittest.TestCase):
+class TestArrangement(unittest.TestCase):
     def test_auto_recursion(self):
-        l = Layout(Rect(500, 500))
+        l = Arrangement(Rect(500, 500))
         self.assertEqual(l.depth(), 0)
         self.assertEqual(l.v, l.r)
         self.assertEqual(l.v, l.rect)
@@ -32,7 +32,7 @@ class TestLayout(unittest.TestCase):
         self.assertEqual(l[1][1][1].rect.w, 100)
     
     def test_duck(self):
-        l = Layout(Rect(500, 500))
+        l = Arrangement(Rect(500, 500))
         l.grid(2, 2, "abcd")
 
         self.assertEqual(l.val_present(), False)
