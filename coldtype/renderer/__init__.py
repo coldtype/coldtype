@@ -4,7 +4,6 @@ import pickle
 
 import time as ptime
 from pathlib import Path
-from pprint import pprint
 from shutil import rmtree
 from subprocess import Popen
 from typing import Tuple, List
@@ -14,26 +13,19 @@ from functools import partial
 
 import coldtype
 from coldtype.helpers import *
-from coldtype.geometry import Rect
-from coldtype.runon.runon import Runon
-from coldtype.text.reader import Font
 
-from coldtype.renderer.winman import Winmans, WinmanGLFWSkiaBackground
+from coldtype.runon.path import P
+from coldtype.geometry import Rect
+from coldtype.text.reader import Font
+from coldtype.pens.svgpen import SVGPen
 
 from coldtype.renderer.config import ConfigOption
 from coldtype.renderer.reader import SourceReader
 from coldtype.renderer.state import RendererState
+from coldtype.renderer.winman import Winmans, WinmanGLFWSkiaBackground
 from coldtype.renderable import renderable, animation, Action, Overlay, runnable
-from coldtype.runon.path import P
-from coldtype.pens.svgpen import SVGPen
-from coldtype.time.viewer import timeViewer
 
 from coldtype.renderer.keyboard import KeyboardShortcut
-
-try:
-    from coldtype.renderer.watchdog import AsyncWatchdog
-except ImportError:
-    AsyncWatchdog = None
 
 try:
     import skia
@@ -156,9 +148,7 @@ class Renderer():
         
         self.state = RendererState(self)
 
-        self.observers = []
         self.watchees = []
-        self.watchee_mods = {}
         self.rasterizer_warning = None
         self.needs_new_context = False
 
@@ -212,8 +202,7 @@ class Renderer():
 
         for _, cv2cap in self.state.cv2caps.items():
             cv2cap.release()
-
-        self.stop_watching_file_changes()
+        
         self.state.frame_offset = 0
         self.state.cv2caps = {}
 
@@ -238,21 +227,20 @@ class Renderer():
         
         self._codepath_offset = 0
         filepath = self.source_reader.reset_filepath(filepath, reload=False, dirdirection=dirdirection)
+        
         # TODO check exists here on filepath
-        self.watchees = [[Watchable.Source, self.source_reader.filepath, None]]
+        self.watchees = []
+        self.add_watchee([Watchable.Source, self.source_reader.filepath, None])
 
         ph = path_hash(self.source_reader.filepath)
-        self.watchees.append([Watchable.Generic, Path(f"~/.coldtype/{ph}_input.json").expanduser(), None])
+        self.add_watchee([Watchable.Generic, Path(f"~/.coldtype/{ph}_input.json").expanduser(), None])
 
         if pj:
             pjp = Path("~/.coldtype/picklejar").expanduser()
             if pjp.exists():
                 rmtree(pjp)
             pjp.mkdir()
-            self.watchees.append([Watchable.Generic, pjp, None])
-
-        if not self.args.is_subprocess:
-            self.watch_file_changes()
+            self.add_watchee([Watchable.Generic, pjp, None])
         
         if reload:
             self.reload_and_render(Action.Initial)
@@ -454,12 +442,12 @@ class Renderer():
             for watch, flag in render.watch:
                 if isinstance(watch, Font) and not watch.cacheable:
                     if watch.path not in self.watchee_paths():
-                        self.watchees.append([Watchable.Font, watch.path, flag])
+                        self.add_watchee([Watchable.Font, watch.path, flag])
                     for ext in watch.font.getExternalFiles():
                         if ext not in self.watchee_paths():
-                            self.watchees.append([Watchable.Font, ext, flag])
+                            self.add_watchee([Watchable.Font, ext, flag])
                 elif watch not in self.watchee_paths():
-                    self.watchees.append([Watchable.Generic, watch, flag])
+                    self.add_watchee([Watchable.Generic, watch, flag])
 
         if previewing and self.source_reader.config.load_only:
             renders = self.renderables(trigger)
@@ -772,10 +760,10 @@ class Renderer():
                 self.needs_new_context = True
             self.show_error()
 
-        if wl < len(self.watchees) and len(self.observers) > 0:
-            #pprint(self.watchees)
-            self.stop_watching_file_changes()
-            self.watch_file_changes()
+        # if wl < len(self.watchees) and len(self.observers) > 0:
+        #     #pprint(self.watchees)
+        #     self.stop_watching_file_changes()
+        #     self.watch_file_changes()
 
     def main(self):
         self.profiler = None
@@ -1239,13 +1227,6 @@ class Renderer():
             self.hotkey_waiting = None
         
         now = ptime.time()
-        # TODO what is this about?
-        if False:
-            for k, v in self.watchee_mods.items():
-                if v and (now - v) > 1:
-                    print("CAUGHT ONE")
-                    self.action_waiting = Action.PreviewStoryboard
-                    self.watchee_mods[k] = None
         
         if self.debounced_actions:
             now = ptime.time()
@@ -1277,10 +1258,25 @@ class Renderer():
         if self.state.playing > 0:
             self.on_action(Action.PreviewStoryboardNext)
         
+        for idx, (_, wp, flag, last_mod) in enumerate(self.watchees):
+            wp:Path = wp
+            if wp.exists():
+                mtime = wp.stat().st_mtime
+                if mtime > last_mod:
+                    #print("RELOAD", wp.name, mtime, last_mod)
+                    self.watchees[idx][-1] = ptime.time()
+                    self.on_modified(wp, flag)
+                    #self.reload_and_render(Action.Resave)
+                    return False
+                    #self.action_waiting = Action.Resave
+                    #self.action_waiting_reason = "polling_file_change_detected"
+                    return did_preview
+            #print(wp)
+        
         return did_preview
     
-    def on_modified(self, event):
-        path = Path(event.src_path)
+    def on_modified(self, path, flag):
+        #path = Path(event.src_path)
         #print("\n\n\n---\nMOD", path, ptime.time())
 
         if path.parent.stem == "picklejar" and "picklejar" in str(self.source_reader.filepath):
@@ -1293,18 +1289,8 @@ class Renderer():
             actual_path = path
             path = path.parent
         
-        if path in self.watchee_paths():
+        if True: #or path in self.watchee_paths():
             if path.suffix == ".json":
-                last = self.watchee_mods.get(path)
-                now = ptime.time()
-                self.watchee_mods[path] = now
-                if last is not None:
-                    diff = now - last
-                    if diff < 0.05:
-                        return
-                    else:
-                        pass
-
                 if path.stem == "command" or "_input" in path.stem:
                     data = json.loads(path.read_text())
                     if "action" in data:
@@ -1323,17 +1309,18 @@ class Renderer():
                     print("Error decoding watched json", path)
                     return
             
-            idx = self.watchee_paths().index(path)
-            wpath, wtype, wflag = self.watchees[idx]
-            if wflag == "soft":
+            #idx = self.watchee_paths().index(path)
+            #wpath, wtype, wflag = self.watchees[idx]
+            
+            if flag == "soft":
                 self.action_waiting = Action.PreviewStoryboard
                 self.action_waiting_reason = "soft_watch"
                 return
 
             try:
-                print(f">>> resave: {Path(event.src_path).relative_to(Path.cwd())}")
+                print(f">>> resave: {path.relative_to(Path.cwd())}")
             except:
-                print(f">>> resave: {event.src_path}")
+                print(f">>> resave: {path}")
             
             if self.args.memory and process:
                 memory = bytesto(process.memory_info().rss)
@@ -1343,57 +1330,12 @@ class Renderer():
             
             self.action_waiting = Action.PreviewStoryboardReload
             self.action_waiting_reason = "on_modified"
-
-    def watch_file_changes(self):
-
-        if self.winmans.bg:
-            return None
-        
-        if not AsyncWatchdog:
-            print('> pip install "watchdog<2.0.0"')
-            return None
-
-        self.observers = []
-
-        watcheable = set()
-        for w in self.watchees:
-            #print("...", w[1], w[1].is_dir(), w[1].is_file())
-            if w[1].is_dir():
-                watcheable.add(w[1])
-            else:
-                watcheable.add(w[1])
-        
-        #dirs = set([w[1] if w[1].is_dir() else w[1].parent for w in self.watchees])
-        
-        #for d in dirs:
-        print("\n>>> watching...")
-        for w in sorted(watcheable):
-            if w.is_dir():
-                try:
-                    print("  [d]", w.relative_to(Path.cwd()))
-                except:
-                    print("  [d]", w)
-                o = AsyncWatchdog(str(w), on_modified=self.on_modified, recursive=True)
-            else:
-                try:
-                    print("  [f]", w.relative_to(Path.cwd()))
-                except:
-                    print("  [f]", w)
-                o = AsyncWatchdog(str(w), on_modified=self.on_modified, recursive=False)
-            try:
-                o.start()
-                self.observers.append(o)
-            except Exception as e:
-                print("File watch error:", e)
-                pass
-        
-        print("")
-        return
-        if self.source_reader.filepath:
-            try:
-                print(f"... watching {self.source_reader.filepath.relative_to(Path.cwd())} for changes ...")
-            except ValueError:
-                print(f"... watching {self.source_reader.filepath} for changes ...")
+    
+    def add_watchee(self, watchee):
+        #wp:Path = watchee[1]
+        #wp.lstat()
+        watchee.append(ptime.time())
+        self.watchees.append(watchee)
     
     def execute_string_as_shortcut_or_action(self, shortcut, key, args=[]):
         #print("\n>>> shortcut:")
@@ -1427,10 +1369,6 @@ class Renderer():
             self.on_shortcut(KeyboardShortcut(shortcut))
         else:
             print("No shortcut/action", key, shortcut)
-    
-    def stop_watching_file_changes(self):
-        for o in self.observers:
-            o.stop()
         
     def reset_renderers(self):
         for r in self.running_renderers:
@@ -1500,7 +1438,6 @@ class Renderer():
             self.hotkeys.stop()
         
         self.reset_renderers()
-        self.stop_watching_file_changes()
         
         if self.args.memory:
             snapshot = tracemalloc.take_snapshot()

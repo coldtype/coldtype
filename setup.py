@@ -73,7 +73,6 @@ setuptools.setup(
             "PyOpenGL",
             "skia-python>=86.0",
             "skia-pathops", # can this be taken from skia-python?
-            "watchdog<2.0.0", # https://github.com/gorakhargosh/watchdog/issues/702
             "ufo2ft",
             "numpy",
         ],

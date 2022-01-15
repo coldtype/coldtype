@@ -30,7 +30,7 @@ def apply_syntax_mods(filepath, source_code, renderer=None):
         path = Path(inline.strip()).expanduser().absolute()
         if renderer:
             if path not in renderer.watchee_paths():
-                renderer.watchees.append([Watchable.Source, path, None])
+                renderer.add_watchee([Watchable.Source, path, None])
         src = path.read_text()
         codepath_offset = len(src.split("\n"))
         return src
@@ -44,7 +44,7 @@ def apply_syntax_mods(filepath, source_code, renderer=None):
             path = Path(cwd / (m.replace(".", "/")+".py"))
         if renderer:
             if path not in renderer.watchee_paths():
-                renderer.watchees.append([Watchable.Source, path, None])
+                renderer.add_watchee([Watchable.Source, path, None])
         src = path.read_text()
         codepath_offset = len(src.split("\n"))
         return src
