@@ -3,7 +3,7 @@ from coldtype.blender import *
 
 @b3d_animation(timeline=60, denoise=0)
 def varfont(f):
-    return (StSt("COLD", Font.ColdtypeObviously(),
+    return (StSt("TYPE", Font.ColdtypeObviously(),
         fontSize=f.e("seio", 1, rng=(300, 500)),
         wdth=f.e("seio", 1, rng=(1, 0)))
         .align(f.a.r)

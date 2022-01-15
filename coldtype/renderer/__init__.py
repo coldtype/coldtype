@@ -760,11 +760,6 @@ class Renderer():
                 self.needs_new_context = True
             self.show_error()
 
-        # if wl < len(self.watchees) and len(self.observers) > 0:
-        #     #pprint(self.watchees)
-        #     self.stop_watching_file_changes()
-        #     self.watch_file_changes()
-
     def main(self):
         self.profiler = None
         if self.args.c_profile:
