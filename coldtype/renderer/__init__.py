@@ -1336,6 +1336,7 @@ class Renderer():
         #wp.lstat()
         watchee.append(ptime.time())
         self.watchees.append(watchee)
+        print(">>> watching...", watchee[1])
     
     def execute_string_as_shortcut_or_action(self, shortcut, key, args=[]):
         #print("\n>>> shortcut:")
