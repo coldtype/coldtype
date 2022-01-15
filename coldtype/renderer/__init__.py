@@ -1327,8 +1327,9 @@ class Renderer():
             self.action_waiting_reason = "on_modified"
     
     def add_watchee(self, watchee):
-        #wp:Path = watchee[1]
-        #wp.lstat()
+        if self.args.is_subprocess:
+            return
+
         watchee.append(ptime.time())
         self.watchees.append(watchee)
         print(">>> watching...", watchee[1])
