@@ -103,7 +103,6 @@ setuptools.setup(
     install_requires=[
         "fonttools[ufo]",
         "fontPens",
-        "more-itertools",
         "easing-functions",
         "mido",
         "defcon",

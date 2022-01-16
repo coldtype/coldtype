@@ -8,7 +8,6 @@ from shutil import rmtree
 from subprocess import Popen
 from typing import Tuple, List
 from random import shuffle, Random
-from more_itertools import distribute
 from functools import partial
 
 import coldtype
@@ -624,11 +623,13 @@ class Renderer():
         tc = self.source_reader.config.thread_count
         print(f"<coldtype: thread-count:{tc}>")
         
-        group = math.floor(len(frames) / tc)
+        #group = math.floor(len(frames) / tc)
         ordered_frames = list(frames) #list(range(frames[0], frames[0]+len(frames)))
         shuffle(ordered_frames)
-        subslices = [list(s) for s in distribute(tc, ordered_frames)]
-        #print(subslices)
+
+        import numpy as np
+        subslices = np.array_split(ordered_frames, tc)
+        #subslices = [list(s) for s in distribute(tc, ordered_frames)]
         
         self.reset_renderers()
         self.running_renderers = []
