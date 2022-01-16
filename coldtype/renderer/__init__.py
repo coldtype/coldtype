@@ -1259,15 +1259,14 @@ class Renderer():
             if wp.exists():
                 mtime = wp.stat().st_mtime
                 if mtime > last_mod:
-                    #print("RELOAD", wp.name, mtime, last_mod)
+                    try:
+                        print(f">>> resave: {wp.relative_to(Path.cwd())}")
+                    except:
+                        print(f">>> resave: {wp}")
+
                     self.watchees[idx][-1] = ptime.time()
                     self.on_modified(wp, flag)
-                    #self.reload_and_render(Action.Resave)
                     return False
-                    #self.action_waiting = Action.Resave
-                    #self.action_waiting_reason = "polling_file_change_detected"
-                    return did_preview
-            #print(wp)
         
         return did_preview
     
@@ -1312,11 +1311,6 @@ class Renderer():
                 self.action_waiting = Action.PreviewStoryboard
                 self.action_waiting_reason = "soft_watch"
                 return
-
-            try:
-                print(f">>> resave: {path.relative_to(Path.cwd())}")
-            except:
-                print(f">>> resave: {path}")
             
             if self.args.memory and process:
                 memory = bytesto(process.memory_info().rss)
@@ -1333,7 +1327,7 @@ class Renderer():
 
         watchee.append(ptime.time())
         self.watchees.append(watchee)
-        print(">>> watching...", watchee[1])
+        print("    >>> watching...", watchee[1])
     
     def execute_string_as_shortcut_or_action(self, shortcut, key, args=[]):
         #print("\n>>> shortcut:")
