@@ -15,13 +15,13 @@
                     "name": "+B",
                     "text": "+B",
                     "start": 20,
-                    "end": 32
+                    "end": 47
                 },
                 {
-                    "name": "+D",
-                    "text": "+D",
-                    "start": 32,
-                    "end": 80
+                    "name": "+C",
+                    "text": "+C",
+                    "start": 47,
+                    "end": 67
                 }
             ]
         }

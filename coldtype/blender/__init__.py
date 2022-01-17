@@ -324,6 +324,9 @@ class b3d_animation(animation):
             else:
                 bpy.data.scenes[0].render.fps = self.t.fps
                 bpy.data.scenes[0].render.fps_base = 1
+        
+        if isinstance(self.timeline, BlenderTimeline):
+            self.add_watchee(self.timeline.file)
     
     def post_read(self):
         out = super().post_read()
@@ -339,7 +342,13 @@ class b3d_animation(animation):
             return super().rasterize(config, content, rp)
         
         fi = rp.args[0].i
-        blend_source(config.blender_app_path, self.filepath, self.blender_io.blend_file, fi, self.pass_path(index=None), self.samples, denoise=self.denoise)
+        blend_source(config.blender_app_path,
+            self.filepath,
+            self.blender_io.blend_file,
+            fi,
+            self.pass_path(index=None),
+            self.samples,
+            denoise=self.denoise)
         return True
     
     def baked_frames(self):
@@ -358,13 +367,6 @@ class b3d_animation(animation):
             to_bake += self.run_normal(ps, None)
         
         return to_bake.walk(bakewalk)
-    
-    # def data_path(self):
-    #     return self.blender_io.data_file
-    
-    # def data(self):
-    #     if self.blender_io.data_file.exists():
-    #         return json.loads(self.data_path().read_text())
 
 
 class b3d_sequencer(b3d_animation):
@@ -388,12 +390,3 @@ class b3d_sequencer(b3d_animation):
             autosave=autosave,
             renderer="b3d" if in_blender else "skia",
             **kwargs)
-        
-        if isinstance(self.timeline, BlenderTimeline):
-            self.add_watchee(self.timeline.file)
-    
-    # def post_read(self):
-    #     out = super().post_read()
-    #     if self._bt:
-    #         self.add_watchee(self.blender_io.data_file, "soft")
-    #     return out
