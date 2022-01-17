@@ -30,7 +30,7 @@ class ConfigOption(Enum):
     WindowBackground = ("window_background", None, "wb", true_false_or_none)
     WindowFloat = ("window_float", None, "wf", true_false_or_none)
     WindowOpacity = ("window_opacity", 1, "wo", lambda x: float(x))
-    WindowPin = ("window_pin", "NE", "wp")
+    WindowPin = ("window_pin", "SE", "wp")
     WindowPinInset = ("window_pin_inset", (0, 0), "wpi",
         lambda x: [int(n) for n in x.split(",")])
     WindowContentScale = ("window_content_scale", None, "wcs", lambda x: float(x))

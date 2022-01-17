@@ -123,7 +123,7 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 - Error where windows can't watch non-existent file
 - Error where windows barfs on os.uname
 
-## [0.9.0] - 2022-01-15
+## [0.9.0] - 2022-01-17
 ### Added
 - `coldtype.runon.runon` abstraction for chained/fluent method calling on nested lists
 - `coldtype.runon.path` i.e. `P` as a drop-in replacement for `DATPen/DATPens` (should be fully backwards compatible), which extends `coldtype.runon.runon`
