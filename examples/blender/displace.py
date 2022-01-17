@@ -8,11 +8,11 @@ def displace(r):
         .align(r)
         .pen()
         .tag("glyph")
-        .ch(b3d(λ.extrude(1)
+        .ch(b3d(lambda p: p.extrude(1)
             .convertToMesh()
             .remesh(7)
             .applyModifier("Remesh")
-            .makeVertexGroup(λ.co[2] > 0, name="front")
+            .makeVertexGroup(lambda p: p.co[2] > 0, name="front")
             .displace(
                 strength=0.85,
                 midlevel=1,

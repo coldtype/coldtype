@@ -25,12 +25,12 @@ def render(f):
     return (PS([
         (StSt("COLD", style, wdth=1-s*0.5))
             .f(hsl(hues[0], 0.75, 0.5))
-            .î(1, λ.rt((hat+1)*-45)),
+            .î(1, lambda p: p.rt((hat+1)*-45)),
         (StSt("TYPE", style, tu=-150-100*k, rotate=-8*k))
             .f(hsl(hues[1], 0.75, 0.5))
-            .î([2, 1], λ.t(70*c, 0))])
+            .î([2, 1], lambda p: p.t(70*c, 0))])
         .xalign(f.a.r)
         .stack(30)
         .align(f.a.r.inset(0, 150))
-        .map(λ.rp().ssw(0, 10).sf(1))
+        .map(lambda p: p.rp().ssw(0, 10).sf(1))
         .rotate(5))

@@ -20,7 +20,7 @@ def timedWords(f):
         .pens(f, styler)
         #.printh()
         .cond(f.t.words.styles.ki("big").on(),
-            λ.f(hsl(0.9)))
+            lambda p: p.f(hsl(0.9)))
         .lead(30)
         .xalign(f.a.r)
         .align(f.a.r)

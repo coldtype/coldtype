@@ -8,7 +8,7 @@ def render(f):
     c1, c2 = (f.a.r
         .inset(0, 50)
         .divide(f.e(1, rng=(0.15, 0.85)), "N")
-        .map(λ.inset(20, 5)))
+        .map(lambda p: p.inset(20, 5)))
 
     s = Style(fatface, t=-25, wdth=1, wght=1, ro=1, r=1)
 

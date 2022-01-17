@@ -17,7 +17,7 @@ def justi(r):
     return (StSt(txt,
         Font.MutatorSans(), 300, wght=0.25)
         .track(110, v=1)
-        .map(λ.trackToRect(r.inset(70)))
+        .map(lambda p: p.trackToRect(r.inset(70)))
         .align(r.inset(50))
         .deblank()
         .pmap(lambda p: p

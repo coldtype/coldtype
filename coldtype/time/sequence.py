@@ -22,9 +22,9 @@ class Marker(Timeable):
 
 
 class ClipGroupPens(P):
-    def __init__(self, clip_group):
-        super().__init__()
+    def setClipGroup(self, clip_group):
         self.cg = clip_group
+        return self
     
     def _iterate_tags(self, tag, pens):
         if len(pens) > 0:
@@ -323,7 +323,7 @@ class ClipGroup(Timeable):
         if not styles or len(styles) == 0:
             styles = self.styles
 
-        group_pens = ClipGroupPens(self)
+        group_pens = ClipGroupPens().setClipGroup(self)
         lines = []
         groupings = []
         if not use_lines or (use_lines and use_lines[0] is None):

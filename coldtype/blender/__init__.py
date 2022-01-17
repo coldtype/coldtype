@@ -198,7 +198,7 @@ def walk_to_b3d(result:P,
 
                 if len(p.v.value) == 0:
                     p.hide()
-                
+
                 denovo = bdata.get("dn", dn)
                 cyclic = bdata.get("cyclic", True)
 
