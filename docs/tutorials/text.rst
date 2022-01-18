@@ -72,15 +72,15 @@ Because of the line ``print(pens.tree())``, you should see something like this i
 
 .. code:: text
 
-    <DPS:8——tag:?/data{})>
-    | <DP(typo:int(True)(C))——tag:?/data:{}>
-    | <DP(typo:int(True)(O))——tag:?/data:{}>
-    | <DP(typo:int(True)(L))——tag:?/data:{}>
-    | <DP(typo:int(True)(D))——tag:?/data:{}>
-    | <DP(typo:int(True)(T))——tag:?/data:{}>
-    | <DP(typo:int(True)(Y))——tag:?/data:{}>
-    | <DP(typo:int(True)(P))——tag:?/data:{}>
-    | <DP(typo:int(True)(E))——tag:?/data:{}>
+    <®:P:/8...>
+        - <®:P:RecordingPen(12mvs) {frame=Rect(175.51,43.75,57.30,112.50),glyphName=C}>
+        - <®:P:RecordingPen(12mvs) {frame=Rect(255.31,43.75,70.50,112.50),glyphName=O}>
+        - <®:P:RecordingPen(12mvs) {frame=Rect(348.31,43.75,45.30,112.50),glyphName=L}>
+        - <®:P:RecordingPen(18mvs) {frame=Rect(416.11,43.75,70.80,112.50),glyphName=D}>
+        - <®:P:RecordingPen(16mvs) {frame=Rect(509.41,43.75,51.90,112.50),glyphName=T}>
+        - <®:P:RecordingPen(22mvs) {frame=Rect(583.81,43.75,63.75,112.50),glyphName=Y}>
+        - <®:P:RecordingPen(16mvs) {frame=Rect(670.06,43.75,67.05,112.50),glyphName=P}>
+        - <®:P:RecordingPen(22mvs) {frame=Rect(759.61,43.75,56.70,112.50),glyphName=E}>
 
 And because of the lines with calls to `rotate`, you should see this on your screen:
 
@@ -131,10 +131,10 @@ This also means that sometimes it is very necessary to ``copy`` pens in order to
             wdth=0.5, rotate=10, tu=250)
             .align(r)
             .f(1))
-        return DATPens([
+        
+        return P(
             pens.copy().translate(10, -10).f(0),
-            pens.s(hsl(0.9)).sw(3)
-        ])
+            pens.s(hsl(0.9)).sw(3))
 
 .. image:: /_static/renders/text_simpledrop.png
     :width: 500
@@ -193,7 +193,7 @@ One additional refinement you may want to make in an example like this is that y
     :width: 500
     :class: add-border
 
-Dang, you know I thought that example would just work, but it looks like there are some tiny little dots present, which I think are artifacts of the ``castshadow`` call. I didn’t write the guts of that (Loïc Sander wrote something called a ``TranslationPen`` which is used by coldtype internally), so I don’t understand it completely, but it shouldn’t be difficult to devise a way to clean up those tiny specks by testing the ``bounds`` of each of the contours created by the ``TranslationPen``. We can do that by iterating over the individual contours with the ``filter_contours`` method provided by the ``DATPen`` class (idiomatically called via the ``P`` shortcut). We can also use the opportunity demonstrate some debugging techniques, like isolating a single letter and blowing it up.
+Dang, you know I thought that example would just work, but it looks like there are some tiny little dots present, which I think are artifacts of the ``castshadow`` call. I didn’t write the guts of that (Loïc Sander wrote something called a ``TranslationPen`` which is used by coldtype internally), so I don’t understand it completely, but it shouldn’t be difficult to devise a way to clean up those tiny specks by testing the ``bounds`` of each of the contours created by the ``TranslationPen``. We can do that by iterating over the individual contours by exploding the path into its constituent contours, then filtering those contours, these imploding those contours back into a single path again. We can also use the opportunity to demonstrate some debugging techniques, like isolating a single letter and blowing it up.
 
 .. code:: python
 
@@ -205,8 +205,9 @@ Dang, you know I thought that example would just work, but it looks like there a
                 .reverse()
                 .removeOverlap()
                 .castshadow(-5, 500)
-                .filter_contours(lambda j, c:
-                    c.bounds().w > 50)
+                .explode()
+                .filter(lambda c: c.bounds().w > 50)
+                .implode()
                 .f(None)
                 .s(hsl(0.6, s=1, l=0.4))
                 .sw(4))
@@ -273,7 +274,7 @@ Multi-line Text
 Text-on-a-path
 --------------
 
-If you like to align glyphs along an arbitrary path, you can use the DATPens’ ``distribute_on_path`` method to set the glyphs returned from a ``StSt``.
+If you like to align glyphs along an arbitrary path, you can use the ``P::distribute_on_path`` method to set the glyphs returned from a ``StSt``.
 
 .. code:: python
 

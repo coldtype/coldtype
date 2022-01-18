@@ -30,10 +30,10 @@ def test_draw(r):
         .pmap(lambda p: p.removeOverlap())
         .tag("type"))
     
-    return P(border, hatches, typ)
+    return P(border, letters, typ)
 
 numpad = {
     1: test_draw.draw("border"),
-    2: test_draw.draw("hatches"),
+    2: test_draw.draw("letters"),
     3: test_draw.draw("type")
 }

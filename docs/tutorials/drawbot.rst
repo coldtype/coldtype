@@ -45,7 +45,7 @@ You might be wondering why you’d want to use DrawBot in Coldtype. To me, one b
 
     long_txt1 = "Here is a long string which needs line-breaks to be typeset correctly — something Coldtype can’t do but DrawBot (by leveraging the CoreText APIs on macOS) can handle with aplomb."
     
-    long_txt2 = "Here is another long string, this time set into an oval, made possible by sending textBox a BezierPath generated from a DATPen via the tobp method available in the coldtype.drawbot helpers module."
+    long_txt2 = "Here is another long string, this time set into an oval, made possible by sending textBox a BezierPath generated from a coldtype P via the tobp method available in the coldtype.drawbot helpers module."
 
     import coldtype.drawbot as ctdb
 

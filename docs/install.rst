@@ -31,7 +31,7 @@ To write your own script, make a python file in your repo, like `test.py`, and p
 
     @renderable()
     def test(r):
-        return DATPen().oval(r)
+        return P().oval(r)
 
 Then you can run that like so — `coldtype test.py` — and a large pink oval should pop up on your screen.
 
@@ -43,7 +43,7 @@ You may also notice the command is still hanging, meaning it hasn't exited. So i
 
     @renderable()
     def test(r):
-        return DATPen().oval(r.inset(100)).f(hsl(0.8))
+        return P().oval(r.inset(100)).f(hsl(0.8))
 
 Now the oval should have some padding and be purple-ish.
 

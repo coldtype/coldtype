@@ -17,10 +17,8 @@ Here’s an example of creating a somewhat complex text setting using the ``asse
     @renderable((1200, 300), watch=[ufo_ttf], bg=0)
     def ufo_monitor(r):
         return (StSt("CDELOPTY", ufo_ttf, 250, tu=-150, r=1)
-            .f(Gradient.H(r,
-                hsl(0.05, s=0.75),
-                hsl(0.8, s=0.75)))
-            .understroke(s=0, sw=15)
+            .fssw(Gradient.H(r, hsl(0.05, s=0.75), hsl(0.8, s=0.75))
+                , 0, 15, 1)
             .align(r))
 
 .. image:: /_static/renders/type_design_ufo_monitor.png

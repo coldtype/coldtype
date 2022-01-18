@@ -118,7 +118,7 @@ class axidrawing(renderable):
                 if isinstance(tag, int):
                     res = res[tag].copy(with_data=True)
                 else:
-                    res = res.fft(tag).copy(with_data=True)
+                    res = res.find_(tag).copy(with_data=True)
             
             if test:
                 print("-"*30)

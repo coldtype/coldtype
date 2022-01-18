@@ -17,8 +17,8 @@ An example:
         c1 = hsl(0.65, 0.7)
         c2 = hsl(0.53, 0.6)
 
-        return DATPens([
-            (DATPen(r.inset(10))
+        return P([
+            (P(r.inset(10))
                 .outline(10)
                 .f(Gradient.Horizontal(r,
                     c2.lighter(0.3),

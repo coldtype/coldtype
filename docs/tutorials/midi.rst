@@ -77,7 +77,7 @@ Again, the only thing we’re interested in is the 77 displayed there, which is 
     def use_midi(f, rs):
         controller = Generic("Launch Control XL", rs.midi, channel=9)
         fader = controller(77, 0.5) # returns a value between 0 and 1
-        return (DATPen()
+        return (P()
             .oval(f.a.r.take(fader, "mdx").square())
             .f(hsl(0.65)))
     

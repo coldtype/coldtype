@@ -171,6 +171,16 @@ class FXMixin():
         else:
             return exploded[contour_index]
     
+    def filterContours(self, filter_fn):
+        if self.val_present():
+            exploded = self.explode()
+            keep = []
+            for idx, c in enumerate(exploded):
+                if filter_fn(idx, c):
+                    keep.append(c)
+            self._val.value = type(self)(keep).implode()._val.value
+        return self
+    
     def repeat(self, times=1):
         for el in self._els:
             el.repeat(times)
