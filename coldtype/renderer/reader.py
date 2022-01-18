@@ -454,7 +454,7 @@ class SourceReader():
             #pys = sorted(list(self.dirpath.glob("*.py")), key=lambda p: p.stem)
             curr = pys.index(self.filepath)
             adj = (curr + dirdirection) % len(pys)
-            print(curr, adj)
+            #print(curr, adj)
             filepath = pys[adj]
         
         if filepath:
