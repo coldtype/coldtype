@@ -110,7 +110,7 @@ class P(Runon,
     
     def printable_data(self):
         out = {}
-        exclude = ["_last_align_rect"]
+        exclude = ["_last_align_rect", "_notebook_shown"]
         for k, v in self._data.items():
             if k not in exclude:
                 out[k] = v
