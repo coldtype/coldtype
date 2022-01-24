@@ -125,7 +125,6 @@ class WinmanGLFWSkia():
         self.context = skia.GrDirectContext.MakeGL()
         
         self.copy_previews_to_clipboard = False
-        self.print_result = False
     
     def find_primary_monitor(self):
         self.primary_monitor = glfw.get_primary_monitor()
@@ -343,12 +342,6 @@ class WinmanGLFWSkia():
             for idx, (render, result, rp) in enumerate(self.renderer.previews_waiting):
                 sr = render._stacked_rect
                 rect = sr.offset((extent.w-sr.w)/2, 0).round()
-            
-                if self.print_result:
-                    print("-"*90)
-                    print("@", ptime.time())
-                    result.print()
-                    print("\n" + "-"*90)
 
                 if self.copy_previews_to_clipboard:
                     try:
@@ -370,7 +363,6 @@ class WinmanGLFWSkia():
                     canvas.drawString(short_error, 10, 32, skia.Font(None, 36), paint)
             
             self.copy_previews_to_clipboard = False
-            self.print_result = False
         
         self.surface.flushAndSubmit()
         glfw.swap_buffers(self.window)

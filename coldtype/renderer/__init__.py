@@ -10,6 +10,8 @@ from typing import Tuple, List
 from random import shuffle, Random
 from functools import partial
 
+from numpy import short
+
 import coldtype
 from coldtype.helpers import *
 
@@ -150,6 +152,7 @@ class Renderer():
         self.watchees = []
         self.rasterizer_warning = None
         self.needs_new_context = False
+        self.print_result_once = False
 
         self.extent = None
         
@@ -527,6 +530,13 @@ class Renderer():
                                     preview_count += 1
                                     self.previews_waiting.append([render, result, rp])
                                 else:
+                                    if self.print_result_once or self.source_reader.config.print_result:
+                                        self.print_result_once = False
+                                        print("-"*90)
+                                        print("@", ptime.time())
+                                        result.print()
+                                        print("\n" + "-"*90)
+                                    
                                     preview_result = render.normalize_result(render.runpost(result, rp, self.state, self.source_reader.config))
                                     
                                     preview_count += 1
@@ -1019,6 +1029,13 @@ class Renderer():
             self.source_reader.config.show_xray = not self.source_reader.config.show_xray
             return Action.PreviewStoryboard
         
+        elif shortcut == KeyboardShortcut.TogglePrintResult:
+            self.source_reader.config.print_result = not self.source_reader.config.print_result
+            return Action.PreviewStoryboard
+        elif shortcut == KeyboardShortcut.PrintResultOnce:
+            self.print_result_once = True
+            return Action.PreviewStoryboard
+        
         elif shortcut == KeyboardShortcut.PreviewScaleUp:
             return self.state.mod_preview_scale(+0.1)
         elif shortcut == KeyboardShortcut.PreviewScaleDown:
@@ -1102,9 +1119,6 @@ class Renderer():
             return self.on_release(number=action_number)
         elif shortcut == KeyboardShortcut.CopySVGToClipboard:
             self.winmans.glsk.copy_previews_to_clipboard = True
-            return Action.PreviewStoryboard
-        elif shortcut == KeyboardShortcut.PrintResult:
-            self.winmans.glsk.print_result = True
             return Action.PreviewStoryboard
         elif shortcut in [
             KeyboardShortcut.LoadNextInDirectory,

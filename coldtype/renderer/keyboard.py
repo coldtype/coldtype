@@ -111,7 +111,8 @@ class KeyboardShortcut(Enum):
     CaptureOnce = "capture_once"
 
     CopySVGToClipboard = "copy_svg_to_clipboard"
-    PrintResult = "print_result"
+    TogglePrintResult = "toggle_print_result"
+    PrintResultOnce = "print_result_once"
 
     LoadNextInDirectory = "load_next_in_directory"
     LoadPrevInDirectory = "load_prev_in_directory"
@@ -200,7 +201,9 @@ KeyboardShortcutExplainers = {
         "Solo the third animation/renderable in the file",
     KeyboardShortcut.CopySVGToClipboard:
         "Copy the current vector to the clipboard as SVG (can be pasted into Illustrator)",
-    KeyboardShortcut.PrintResult:
+    KeyboardShortcut.TogglePrintResult:
+        "Print the tree representation of what's being returned to the renderer",
+    KeyboardShortcut.PrintResultOnce:
         "Print the tree representation of what's being returned to the renderer",
     KeyboardShortcut.LoadNextInDirectory:
         "If you have a directory of coldtype .py files, this will load the next one in the directory (alphabetically), so you can skip stopping and restarting the command-line process with different arguments",
@@ -554,8 +557,11 @@ SHORTCUTS = {
     KeyboardShortcut.CopySVGToClipboard: [
         [["cmd"], "c"]
     ],
-    KeyboardShortcut.PrintResult: [
+    KeyboardShortcut.TogglePrintResult: [
         [[], "p"]
+    ],
+    KeyboardShortcut.PrintResultOnce: [
+        [["cmd"], "p"]
     ],
 
     KeyboardShortcut.LoadNextInDirectory: [

@@ -61,6 +61,7 @@ class ConfigOption(Enum):
     EnableAudio = ("enable_audio", None, "ea", true_false_or_none)
     AddTimeViewers = ("add_time_viewers", None, "tv", true_false_or_none)
     ShowXray = ("show_xray", None, "x", true_false_or_none)
+    PrintResult = ("print_result", None, "pr", true_false_or_none)
     LoadOnly = ("load_only", None, "lo", true_false_or_none)
 
     @staticmethod
@@ -121,6 +122,8 @@ class ConfigOption(Enum):
             return "Begin with time-viewers visible?"
         elif e == ConfigOption.ShowXray:
             return "Show the Bezier xray instead of the thing itself?"
+        elif e == ConfigOption.PrintResult:
+            return "Print the result"
         
 
     @staticmethod

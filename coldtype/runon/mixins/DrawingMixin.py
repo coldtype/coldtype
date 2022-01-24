@@ -419,7 +419,9 @@ class DrawingMixin():
     
     def segments(self):
         if not self.val_present():
-            return # or map over?
+            for idx, el in enumerate(self._els):
+                self._els[idx] = el.segments()
+            return self
         
         segs = []
         last = None
