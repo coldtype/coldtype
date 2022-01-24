@@ -229,6 +229,10 @@ class Runon:
         else:
             tag = index
             return self.find_(tag)
+    
+    def subset(self, start, stop, step=1):
+        """return subset of self wrapped in same type as self (rather than raw list)"""
+        return type(self)(self._els[slice(start, stop, step)])
         
     def __setitem__(self, index, pen):
         self._els[index] = pen
