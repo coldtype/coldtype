@@ -62,7 +62,7 @@ class axidrawing(renderable):
         else:
             super().__init__(rect=(1100, 850), **kwargs)
     
-    def runpost(self, result, render_pass, renderer_state):
+    def runpost(self, result, render_pass, renderer_state, config):
         def normalize(p, pos, data):
             if pos != 0:
                 return
@@ -77,7 +77,7 @@ class axidrawing(renderable):
                 p.fssw(-1, s, 3)
         
         res = (super()
-            .runpost(result, render_pass, renderer_state)
+            .runpost(result, render_pass, renderer_state, config)
             .walk(normalize))
         return res
     

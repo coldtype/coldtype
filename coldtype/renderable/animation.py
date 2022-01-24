@@ -155,12 +155,12 @@ class animation(renderable, Timeable):
         self.t.hold(fi)
         return super().run(render_pass, renderer_state)
     
-    def runpost(self, result, render_pass, renderer_state):
+    def runpost(self, result, render_pass, renderer_state, config):
         #if Overlay.Rendered in renderer_state.overlays:
         #    from coldtype.img.skiaimage import SkiaImage
         #    return SkiaImage(render_pass.output_path)
 
-        res = super().runpost(result, render_pass, renderer_state)
+        res = super().runpost(result, render_pass, renderer_state, config)
 
         if Overlay.Recording in renderer_state.overlays and self.overlay:
             res.append(P().oval(Point(0, 0).rect(30, 30)).f(hsl(0, 1, 0.7)))

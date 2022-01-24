@@ -262,12 +262,28 @@ class renderable():
             ])
         else:
             return res
+        
+    def show_xray(self, result):
+        from coldtype.fx.xray import skeleton, hsl
+
+        out = P()
+        def xray(p, pos, _):
+            if pos == 0:
+                out.append(p.copy().ch(skeleton(0.5)))
+        
+        result.walk(xray)
+        return P(
+            result.fssw(-1, hsl(0.95, 1, 0.8), 4),
+            out.fssw(-1, hsl(0.65, 1, 0.6), 2))
     
-    def runpost(self, result, render_pass, renderer_state):
+    def runpost(self, result, render_pass, renderer_state, config):
+        post_res = result
         if self.postfn:
-            return self.postfn(self, result)
-        else:
-            return result
+            post_res = self.postfn(self, result)
+        
+        if config.show_xray:
+            post_res = self.show_xray(post_res)
+        return post_res
     
     def draw_preview(self, scale, canvas, rect, result, render_pass): # canvas:skia.Canvas
         sr = self.rect.scale(scale, "mnx", "mxx")

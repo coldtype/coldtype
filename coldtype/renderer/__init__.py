@@ -527,7 +527,8 @@ class Renderer():
                                     preview_count += 1
                                     self.previews_waiting.append([render, result, rp])
                                 else:
-                                    preview_result = render.normalize_result(render.runpost(result, rp, self.state))
+                                    preview_result = render.normalize_result(render.runpost(result, rp, self.state, self.source_reader.config))
+                                    
                                     preview_count += 1
                                     if preview_result:
                                         self.previews_waiting.append([render, preview_result, rp])
@@ -1014,6 +1015,9 @@ class Renderer():
         elif shortcut == KeyboardShortcut.ToggleTimeViewer:
             self.source_reader.config.add_time_viewers = not self.source_reader.config.add_time_viewers
             return Action.PreviewStoryboardReload
+        elif shortcut == KeyboardShortcut.ToggleXray:
+            self.source_reader.config.show_xray = not self.source_reader.config.show_xray
+            return Action.PreviewStoryboard
         
         elif shortcut == KeyboardShortcut.PreviewScaleUp:
             return self.state.mod_preview_scale(+0.1)
@@ -1403,6 +1407,14 @@ class Renderer():
         except ValueError:
             args.append("-tv")
             args.append(tv)
+        
+        x = str(int(self.source_reader.config.show_xray or 0))
+        try:
+            xi = args.index("-x")
+            args[xi+1] = x
+        except ValueError:
+            args.append("-x")
+            args.append(x)
         
         lc = []
         for c in self.state.cursor_history[-3:]:

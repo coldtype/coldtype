@@ -1,6 +1,7 @@
 import math
 
 from pathlib import Path
+from fontTools.pens.recordingPen import RecordingPen
 from coldtype.geometry import Rect, Line, Point, Atom
 
 
@@ -414,4 +415,37 @@ class DrawingMixin():
         self.gs(s, do_close=False, first_move="lineTo")
         self.lineTo(r.edge("E").t(end_y))
         self.endPath()
+        return self
+    
+    def segments(self):
+        if not self.val_present():
+            return # or map over?
+        
+        segs = []
+        last = None
+        for contour in self.copy().explode():
+            for mv, pts in contour.v.value:
+                if last:
+                    if mv == "curveTo":
+                        segs.append(type(self)().moveTo(last).curveTo(*pts))
+                    if mv == "lineTo":
+                        segs.append(type(self)().moveTo(last).lineTo(*pts))
+                
+                if len(pts) > 0:
+                    last = pts[-1]
+                else:
+                    last = None
+        
+        self._val = None
+        self._els = segs
+        return self
+
+    def join(self):
+        self._val = RecordingPen()
+
+        self._val.moveTo(self._els[0].v.value[0][-1][-1])
+        for el in self._els:
+            self._val.value.extend(el.v.value[1:])
+        
+        self._els = []
         return self
