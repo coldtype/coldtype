@@ -230,9 +230,15 @@ class Runon:
             tag = index
             return self.find_(tag)
     
-    def subset(self, start, stop, step=1):
+    def subset(self, *idxs):
         """return subset of self wrapped in same type as self (rather than raw list)"""
-        return type(self)(self._els[slice(start, stop, step)])
+        if isinstance(idxs[0], slice):
+            return type(self)(self._els[idxs[0]])
+        else:
+            out = type(self)()
+            for i in idxs:
+                out.append(self[i%len(self._els)])
+            return out
         
     def __setitem__(self, index, pen):
         self._els[index] = pen

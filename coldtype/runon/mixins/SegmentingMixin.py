@@ -4,7 +4,7 @@ from fontPens.marginPen import MarginPen
 from fontTools.misc.transform import Transform
 
 from coldtype.geometry import Line
-from coldtype.beziers import CurveCutter, splitCubicAtT
+from coldtype.beziers import CurveCutter, calcCubicArcLength_cached, splitCubicAtT, calcCubicArcLength
 
 
 class CurveSample():
@@ -167,3 +167,36 @@ class SegmentingMixin():
             if tries < 500:
                 return self.ease_t(e-0.01, tries=tries+1)
             return 0
+        
+    def divide(self, length=150, floor=True, count=None, idx=0, max=None):
+        a = self.v.value[0][-1][-1]
+        b, c, d = self.v.value[1][-1]
+        l = calcCubicArcLength(a, b, c, d)
+
+        if count is not None:
+            length = l / count
+            floor = False
+
+        if l < length:
+            if max is not None and len(self.v.value) < max:
+                self.add_pt_t(0, 0.5)
+                self.divide(length=length, floor=False, idx=idx+1, max=max)
+            return self
+        
+        if max is not None and len(self.v.value) >= max:
+            return self
+
+        if floor:
+            fl = math.floor(l/length)
+            length = l/fl
+        
+        t = 1/(l/length)
+        
+        if l > length*1.5:
+            self.add_pt_t(0, 1-t)
+            self.divide(length=length, floor=False, idx=idx+1, max=max)
+        elif max is not None:
+            self.add_pt_t(0, 0.5)
+            self.divide(length=length, floor=False, idx=idx+1, max=max)
+            pass
+        return self
