@@ -303,11 +303,11 @@ class renderable():
         if self.postfn:
             post_res = self.postfn(self, result)
         
-        if config.show_xray:
-            post_res = self.show_xray(post_res)
-        
-        if config.show_grid:
-            post_res = self.show_grid(post_res, config.grid_settings)
+        if config:
+            if config.show_xray:
+                post_res = self.show_xray(post_res)            
+            if config.show_grid:
+                post_res = self.show_grid(post_res, config.grid_settings)
 
         return post_res
     
@@ -353,7 +353,7 @@ class renderable():
         p = self.passes(None, None, [fi])[0]
         res = self.run_normal(p, None)
         if post:
-            return self.runpost(res, p, None)
+            return self.runpost(res, p, None, None)
         else:
             return res
     
