@@ -10,9 +10,7 @@ at = AsciiTimeline(3, 30, """
                                    [tu     ]
 """)
 
-@animation((1080, 1080)
-    , timeline=at
-    , bg=hsl(0.9, 1, 0.9))
+@animation((1080, 1080), timeline=at, bg=hsl(0.9, 1, 0.9))
 def choreography(f):
     letter = at.ki(list("0123"))
     li, lidx = letter.e(find=1)

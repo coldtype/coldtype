@@ -154,6 +154,12 @@ class Color:
     
     def darker(self, level):
         return Color.from_hsl(self.h, self.s, max(self.l - level, 0), self.a)
+    
+    def invert(self):
+        newR = 1.0 - self.r
+        newG = 1.0 - self.g
+        newB = 1.0 - self.b
+        return Color.from_rgb(newR, newG, newB, self.a)
 
     def from_hsl(h, s, l, a=1):
         r, g, b = hsl_to_rgb(h, s, l)

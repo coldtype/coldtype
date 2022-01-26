@@ -134,7 +134,8 @@ class renderable():
         layer=False,
         cond=None,
         sort=0,
-        hide=[]):
+        hide=[],
+        grid=None):
         """Base configuration for a renderable function"""
 
         self.rect = Rect(rect).round()
@@ -154,6 +155,7 @@ class renderable():
         self.single_frame = single_frame
         self.interactable = interactable
         self.cv2caps = cv2caps
+        self.grid = grid
         self._hide = hide
 
         self.watch = []
@@ -276,13 +278,37 @@ class renderable():
             result.fssw(-1, hsl(0.95, 1, 0.8), 4),
             out.fssw(-1, hsl(0.65, 1, 0.6), 2))
     
-    def runpost(self, result, render_pass, renderer_state, config):
+    def show_grid(self, result, settings):
+        from coldtype.color import hsl, bw, Color
+
+        invert_bg = self.bg.invert().with_alpha(0.5)
+        grid = P().gridlines(self.rect).fssw(-1, invert_bg, 2)
+
+        if self.grid is not None:
+            if isinstance(self.grid, Color):
+                g = {0:self.grid}
+            else:
+                g = {k:v for (k,v) in enumerate(self.grid)}
+            grid = (P().gridlines(self.rect, g.get(2, 20), g.get(3, g.get(2, 20)))
+                .fssw(-1, g.get(0, invert_bg), g.get(1, 2)))
+        elif settings:
+            g = {k:v for (k,v) in enumerate(settings)}
+            grid = (P().gridlines(self.rect, g.get(2, 20), g.get(3, g.get(2, 20)))
+                .fssw(-1, hsl(*g.get(0, invert_bg)), g.get(1, 2)))
+
+        return P(result, grid)
+    
+    def runpost(self, result, render_pass:RenderPass, renderer_state, config):
         post_res = result
         if self.postfn:
             post_res = self.postfn(self, result)
         
         if config.show_xray:
             post_res = self.show_xray(post_res)
+        
+        if config.show_grid:
+            post_res = self.show_grid(post_res, config.grid_settings)
+
         return post_res
     
     def draw_preview(self, scale, canvas, rect, result, render_pass): # canvas:skia.Canvas

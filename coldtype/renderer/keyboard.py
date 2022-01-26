@@ -50,6 +50,7 @@ class KeyboardShortcut(Enum):
     EnableAudio = "toggle_audio"
     ToggleTimeViewer = "toggle_time_viewer"
     ToggleXray = "toggle_xray"
+    ToggleGrid = "toggle_grid"
 
     PreviewScaleDown = "preview_scale_down"
     PreviewScaleUp = "preview_scale_up"
@@ -380,6 +381,9 @@ SHORTCUTS = {
     ],
     KeyboardShortcut.ToggleXray: [
         [[], "x"],
+    ],
+    KeyboardShortcut.ToggleGrid: [
+        [[], "g"],
     ],
 
     KeyboardShortcut.PreviewScaleUp: [

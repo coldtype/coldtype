@@ -1026,7 +1026,12 @@ class Renderer():
             self.source_reader.config.add_time_viewers = not self.source_reader.config.add_time_viewers
             return Action.PreviewStoryboardReload
         elif shortcut == KeyboardShortcut.ToggleXray:
+            self.clear_last_render()
             self.source_reader.config.show_xray = not self.source_reader.config.show_xray
+            return Action.PreviewStoryboard
+        elif shortcut == KeyboardShortcut.ToggleGrid:
+            self.clear_last_render()
+            self.source_reader.config.show_grid = not self.source_reader.config.show_grid
             return Action.PreviewStoryboard
         
         elif shortcut == KeyboardShortcut.TogglePrintResult:
@@ -1219,9 +1224,7 @@ class Renderer():
             self.source_reader.config.multiplex = not self.source_reader.config.multiplex
             print(f"<coldtype: multiplexing={self.source_reader.config.multiplex}>")
         elif action == Action.ClearLastRender:
-            self.last_render_cleared = True
-            for r in self.renderables(Action.PreviewStoryboard):
-                r.last_result = None
+            self.clear_last_render()
             self.action_waiting = Action.PreviewStoryboard
             self.action_waiting_reason = "clear_last_render"
         elif action == Action.ClearRenderedFrames:
@@ -1230,6 +1233,11 @@ class Renderer():
             print("Deleted rendered version")
         else:
             return False
+    
+    def clear_last_render(self):
+        self.last_render_cleared = True
+        for r in self.renderables(Action.PreviewStoryboard):
+            r.last_result = None
     
     def turn_over(self):
         if self.dead:
@@ -1429,6 +1437,14 @@ class Renderer():
         except ValueError:
             args.append("-x")
             args.append(x)
+        
+        g = str(int(self.source_reader.config.show_grid or 0))
+        try:
+            gi = args.index("-g")
+            args[gi+1] = g
+        except ValueError:
+            args.append("-g")
+            args.append(g)
         
         lc = []
         for c in self.state.cursor_history[-3:]:
