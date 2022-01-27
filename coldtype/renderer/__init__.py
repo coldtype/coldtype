@@ -1035,9 +1035,11 @@ class Renderer():
             return Action.PreviewStoryboard
         
         elif shortcut == KeyboardShortcut.TogglePrintResult:
+            self.clear_last_render()
             self.source_reader.config.print_result = not self.source_reader.config.print_result
             return Action.PreviewStoryboard
         elif shortcut == KeyboardShortcut.PrintResultOnce:
+            self.clear_last_render()
             self.print_result_once = True
             return Action.PreviewStoryboard
         

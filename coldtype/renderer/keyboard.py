@@ -562,10 +562,10 @@ SHORTCUTS = {
         [["cmd"], "c"]
     ],
     KeyboardShortcut.TogglePrintResult: [
-        [[], "p"]
+        [["shift"], "p"]
     ],
     KeyboardShortcut.PrintResultOnce: [
-        [["cmd"], "p"]
+        [[], "p"]
     ],
 
     KeyboardShortcut.LoadNextInDirectory: [
