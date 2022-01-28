@@ -15,6 +15,8 @@ class KeyboardShortcut(Enum):
     
     ClearLastRender = "clear_last_render"
     ClearRenderedFrames = "clear_rendered_frames"
+    ResetInitialMemory = "reset_initial_memory"
+    ResetMemory = "reset_memory"
     
     PlayRendered = "play_rendered"
     PlayPreview = "play_preview"
@@ -132,6 +134,10 @@ KeyboardShortcutExplainers = {
         "When compositing, delete the existing framebuffer",
     KeyboardShortcut.ClearRenderedFrames:
         "Delete all the rendered frames on disk for this animation",
+    KeyboardShortcut.ResetInitialMemory:
+        "When using dynamic memory, this resets it to the initial state defined in the decorator",
+    KeyboardShortcut.ResetMemory:
+        "When using dynamic memory, this calls the reset_memory function passed to the decorator",
     KeyboardShortcut.PlayRendered:
         "Play the rendered-to-disk version of this animation",
     KeyboardShortcut.PlayPreview:
@@ -248,6 +254,8 @@ def symbol_to_glfw(s):
         "/": glfw.KEY_SLASH,
         "'": glfw.KEY_APOSTROPHE,
         "<backslash>": glfw.KEY_BACKSLASH,
+        "<bracket-right>": glfw.KEY_RIGHT_BRACKET,
+        "<bracket-left>": glfw.KEY_LEFT_BRACKET,
     }
     if s in lookup:
         return lookup[s]
@@ -284,6 +292,12 @@ SHORTCUTS = {
     ],
     KeyboardShortcut.ClearRenderedFrames: [
         [["shift"], "<backslash>"]
+    ],
+    KeyboardShortcut.ResetInitialMemory: [
+        [[], "<bracket-right>"]
+    ],
+    KeyboardShortcut.ResetMemory: [
+        [[], "<bracket-left>"]
     ],
     
     KeyboardShortcut.PlayRendered: [

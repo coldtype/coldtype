@@ -138,17 +138,10 @@ class AsciiTimeline(Timeline):
                     return eases[t.name[1:]]
         return "eeio"
     
-    def kf(self, easefn=None, fi=None, lines=None, keyframes=None, eases=None):
-        fi = self._norm_held_fi(fi)
-        fi = fi % self.duration
-
-        if keyframes is None:
-            keyframes = self.keyframes
-        else:
-            keyframes = self._norm_keyframes(keyframes)
-
+    def keyframe_current(self, fi, keyframes, lines=None):
         for c1, c2 in self.enumerate(lines=lines, pairs=True, edges=True, filter=keyframes.keys()):
             start, end = c1.start, c2.start
+
             if c2.start < c1.end:
                 end += self.duration
                 if fi < c1.start:
@@ -159,20 +152,47 @@ class AsciiTimeline(Timeline):
                 timeline=self)
             
             if t.now(fi):
-                if c1.name == c2.name:
-                    return keyframes[c1.name]
-                else:
-                    easer = easefn
-                    if easer is None:
-                        if eases or self.eases:
-                            easer = self._find_kf_easer(t, eases or self.eases)
-                        else:
-                            easer = "eeio"
-                    
-                    return interp_dict(
-                        t.at(fi).e(easer, 0),
-                        keyframes[c1.name],
-                        keyframes[c2.name])
+                return [fi, t, c1, c2]
+    
+    def kf(self, easefn=None, fi=None, lines=None, keyframes=None, eases=None, offset=0):
+        fi = self._norm_held_fi(fi)
+
+        if keyframes is None:
+            keyframes = self.keyframes
+        else:
+            keyframes = self._norm_keyframes(keyframes)
+
+        if offset:
+            # if callable(offset):
+            #     res_ = self.keyframe_current(fi % self.duration, keyframes, lines)
+            #     if res_:
+            #         _, t, c1, c2 = res_
+            #         fi = fi + offset(f"{c1.name}->{c2.name}")
+            #     else:
+            #         fi = fi + offset(None)
+            # else:
+            fi = fi + offset
+        
+        fi = fi % self.duration
+
+        res = self.keyframe_current(fi, keyframes, lines)
+    
+        if res:
+            fi, t, c1, c2 = res
+            if c1.name == c2.name:
+                return keyframes[c1.name]
+            else:
+                easer = easefn
+                if easer is None:
+                    if eases or self.eases:
+                        easer = self._find_kf_easer(t, eases or self.eases)
+                    else:
+                        easer = "eeio"
+                
+                return interp_dict(
+                    t.at(fi).e(easer, 0),
+                    keyframes[c1.name],
+                    keyframes[c2.name])
     
         return list(keyframes.values())[0]
     

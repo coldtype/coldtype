@@ -17,6 +17,10 @@ from coldtype.text.reader import normalize_font_prefix, Font
 from coldtype.runon.path import P
 from coldtype.img.datimage import DATImage
 
+class Memory(object):
+    def __init__(self, i) -> None:
+        self.i = i
+
 class ColdtypeCeaseConfigException(Exception):
     pass
 
@@ -135,7 +139,9 @@ class renderable():
         cond=None,
         sort=0,
         hide=[],
-        grid=None):
+        grid=None,
+        memory=None,
+        reset_memory=None):
         """Base configuration for a renderable function"""
 
         self.rect = Rect(rect).round()
@@ -156,6 +162,8 @@ class renderable():
         self.interactable = interactable
         self.cv2caps = cv2caps
         self.grid = grid
+        self.memory = memory
+        self.reset_memory = reset_memory
         self._hide = hide
 
         self.watch = []
@@ -251,9 +259,36 @@ class renderable():
     def package(self):
         pass
 
+    def write_reset_memory(self, renderer_state, new_memory, overwrite):
+        if not renderer_state:
+            return
+        
+        if renderer_state.memory and not overwrite:
+            return
+
+        if not new_memory:
+            new_memory = self.memory
+
+        i = 0
+        if renderer_state.memory and overwrite:
+            i = renderer_state.memory.i
+        
+        if callable(new_memory):
+            m = new_memory(i+1)
+        else:
+            m = new_memory
+
+        renderer_state.memory = Memory(i+1)
+        for k, v in m.items():
+            setattr(renderer_state.memory, k, v)
+
     def run(self, render_pass, renderer_state):
+        self.write_reset_memory(renderer_state, self.memory, False)
+
         if self.rstate:
             res = render_pass.fn(*render_pass.args, renderer_state)
+        elif self.memory:
+            res = render_pass.fn(*render_pass.args, renderer_state.memory)
         else:
             res = render_pass.fn(*render_pass.args)
         

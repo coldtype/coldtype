@@ -952,6 +952,13 @@ class Renderer():
             return Action.ClearLastRender
         elif shortcut == KeyboardShortcut.ClearRenderedFrames:
             return Action.ClearRenderedFrames
+        elif shortcut == KeyboardShortcut.ResetInitialMemory:
+            self.state.memory = None
+            #self.last_animation.write_reset_memory(self.state, self.last_animation.memory, True)
+            return Action.PreviewStoryboard
+        elif shortcut == KeyboardShortcut.ResetMemory:
+            self.last_animation.write_reset_memory(self.state, self.last_animation.reset_memory, True)
+            return Action.PreviewStoryboard
         
         elif shortcut == KeyboardShortcut.PlayRendered:
             self.winmans.toggle_rendered()

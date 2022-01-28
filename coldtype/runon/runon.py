@@ -893,6 +893,10 @@ class Runon:
         
         return self
     
+    def overwrite(self, fn):
+        self.layer(fn)
+        return self[0]
+    
     # Utils
 
     def declare(self, *whatever):

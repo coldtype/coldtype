@@ -6,6 +6,9 @@ def lerp(start, stop, amt):
     return float(amt-start) / float(stop-start)
 
 def interp_dict(v, a, b=None):
+    if not isinstance(a, dict):
+        return norm(v, a, b)
+
     if b is None:
         a, b = a[0], a[1]
     

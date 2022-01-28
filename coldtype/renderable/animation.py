@@ -151,7 +151,7 @@ class animation(renderable, Timeable):
             if renderer_state.previewing:
                 if Overlay.Rendered in renderer_state.overlays:
                     return self.frame_img(fi)
-        
+
         self.t.hold(fi)
         return super().run(render_pass, renderer_state)
     
