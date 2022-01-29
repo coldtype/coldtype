@@ -260,7 +260,7 @@ class renderable():
         pass
 
     def write_reset_memory(self, renderer_state, new_memory, overwrite):
-        if not renderer_state:
+        if not renderer_state or not self.memory:
             return
         
         if renderer_state.memory and not overwrite:
