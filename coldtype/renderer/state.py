@@ -23,7 +23,10 @@ class RendererState():
         self._last_filepath = None
         self.cv2caps = {}
         self.inputs = []
-        self.memory = {}
+        
+        self.memory = None
+        self.memory_initial = None
+        
         self.playing = False
 
         self.mouse_down = False

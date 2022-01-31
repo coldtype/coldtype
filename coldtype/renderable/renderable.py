@@ -17,9 +17,33 @@ from coldtype.text.reader import normalize_font_prefix, Font
 from coldtype.runon.path import P
 from coldtype.img.datimage import DATImage
 
+
 class Memory(object):
-    def __init__(self, i) -> None:
+    def __init__(self, i, data) -> None:
         self.i = i
+        self._keys = []
+        
+        for k, v in data.items():
+            self._keys.append(k)
+            setattr(self, k, v)
+    
+    def add(self, k, v):
+        if k not in self._keys:
+            self._keys.append(k)
+        setattr(self, k, v)
+        return self
+
+    def __eq__(self, other):
+        equal = True
+        for k in self.keys:
+            if not equal:
+                return False
+            try:
+                equal = getattr(self, k) == getattr(other, k)
+            except:
+                equal = False
+        return equal
+
 
 class ColdtypeCeaseConfigException(Exception):
     pass
@@ -259,11 +283,19 @@ class renderable():
     def package(self):
         pass
 
-    def write_reset_memory(self, renderer_state, new_memory, overwrite):
+    def write_reset_memory(self, renderer_state, new_memory, overwrite, initial):
+        if initial and not renderer_state.memory_initial:
+            renderer_state.memory_initial = Memory(0, self.memory)
+
         if not renderer_state or not self.memory:
             return
         
         if renderer_state.memory and not overwrite:
+            if initial:
+                for k, v in self.memory.items():
+                    if getattr(renderer_state.memory_initial, k) != v:
+                        renderer_state.memory_initial.add(k, v)
+                        renderer_state.memory.add(k, v)
             return
 
         if not new_memory:
@@ -278,12 +310,10 @@ class renderable():
         else:
             m = new_memory
 
-        renderer_state.memory = Memory(i+1)
-        for k, v in m.items():
-            setattr(renderer_state.memory, k, v)
+        renderer_state.memory = Memory(i+1, m)
 
     def run(self, render_pass, renderer_state):
-        self.write_reset_memory(renderer_state, self.memory, False)
+        self.write_reset_memory(renderer_state, self.memory, False, True)
 
         if self.rstate:
             res = render_pass.fn(*render_pass.args, renderer_state)
