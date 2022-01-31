@@ -292,8 +292,9 @@ class renderable():
         
         if renderer_state.memory and not overwrite:
             if initial:
+                mi = renderer_state.memory_initial
                 for k, v in self.memory.items():
-                    if getattr(renderer_state.memory_initial, k) != v:
+                    if not hasattr(mi, k) or getattr(mi, k) != v:
                         renderer_state.memory_initial.add(k, v)
                         renderer_state.memory.add(k, v)
             return
