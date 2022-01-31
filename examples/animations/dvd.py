@@ -1,6 +1,8 @@
 from coldtype import *
 
-font = "OhnoFatfaceV"
+font, fontSize = Font.MutatorSans(), 100
+#font, fontSize = "OhnoFatfaceV", 200
+
 border = Rect(500, 250)
 speed = 5
 
@@ -25,10 +27,12 @@ def scratch(f, m):
         .drop(border.h, "N")
         .ipos(Point(m.x, m.y)))
     
-    c = hsl(m.c, 0.8, 0.7)
+    c = hsl(m.c, 1, 0.8)
+
     return P(
-        P(border).t(m.x, m.y).fssw(-1, c, 10),
-        (StSt("DVD", font, 220
-            , opsz=b, wdth=a)
+        P().oval(border).t(m.x, m.y).fssw(-1, c, 10),
+        (StSt("ABC", font, fontSize
+            , fvar_1=a
+            , fvar_0=b)
             .f(c)
             .align(border.offset(m.x, m.y))))

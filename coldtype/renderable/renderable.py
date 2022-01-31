@@ -23,9 +23,10 @@ class Memory(object):
         self.i = i
         self._keys = []
         
-        for k, v in data.items():
-            self._keys.append(k)
-            setattr(self, k, v)
+        if data:
+            for k, v in data.items():
+                self._keys.append(k)
+                setattr(self, k, v)
     
     def add(self, k, v):
         if k not in self._keys:
@@ -164,6 +165,7 @@ class renderable():
         sort=0,
         hide=[],
         grid=None,
+        xray=True,
         memory=None,
         reset_memory=None):
         """Base configuration for a renderable function"""
@@ -186,6 +188,7 @@ class renderable():
         self.interactable = interactable
         self.cv2caps = cv2caps
         self.grid = grid
+        self.xray = xray
         self.memory = memory
         self.reset_memory = reset_memory
         self._hide = hide
@@ -284,7 +287,7 @@ class renderable():
         pass
 
     def write_reset_memory(self, renderer_state, new_memory, overwrite, initial):
-        if initial and not renderer_state.memory_initial:
+        if initial and renderer_state and not renderer_state.memory_initial:
             renderer_state.memory_initial = Memory(0, self.memory)
 
         if not renderer_state or not self.memory:
@@ -332,6 +335,9 @@ class renderable():
             return res
         
     def show_xray(self, result):
+        if not self.xray:
+            return result
+        
         from coldtype.fx.xray import skeleton, hsl
 
         out = P()

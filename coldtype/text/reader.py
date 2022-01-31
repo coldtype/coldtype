@@ -435,13 +435,16 @@ class Style():
             except:
                 fvar = None
             if fvar:
-                for axis in fvar.axes:
+                for axidx, axis in enumerate(sorted(fvar.axes, key=lambda ax: ax.axisTag)):
+                    generic = f"fvar_{axidx}"
                     self.axes[axis.axisTag] = axis
                     self.variations[axis.axisTag] = axis.defaultValue
                     if axis.axisTag == "wdth": # the only reasonable default
                         self.variationLimits[axis.axisTag] = axis.minValue
                     if axis.axisTag in kwargs and axis.axisTag not in variations:
                         unnormalized_variations[axis.axisTag] = kwargs[axis.axisTag]
+                    if generic in kwargs and axis.axisTag not in variations:
+                        unnormalized_variations[axis.axisTag] = kwargs[generic]
 
             self.addVariations(unnormalized_variations)
     

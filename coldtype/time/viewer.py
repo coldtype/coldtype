@@ -99,7 +99,7 @@ def timeViewer(tl):
 
     outer += display
 
-    @renderable(r)
+    @renderable(r, xray=False)
     def timeViewBackground(r):
         return outer
 
@@ -110,6 +110,7 @@ def timeViewer(tl):
     , sort=-1
     , layer=1
     , offset=a.offset
+    , xray=False
     )
     def timeView(f):
         x = f.e("l", 0, rng=(rd.psw[0], rd.pse[0]))
