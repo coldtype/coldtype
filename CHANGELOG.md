@@ -131,3 +131,11 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 - File watching on windows
 ### Removed
 - `watchdog` dependency (using `stat().st_mtime` polling instead now since we’re already running an event loop out of necessity for the viewer)
+
+## [0.9.1] - 2022-01-31
+### Added
+- `memory=` keyword for renderables (attempting some kind of support for processing-style live-coded animations)
+- `fvar_<x>` generic style for addressing sorted variable font axes
+- `x` key for xray mode
+- `g` key for grid mode
+- `p` key to print renderable content
