@@ -4,20 +4,7 @@ from fontPens.marginPen import MarginPen
 from fontTools.misc.transform import Transform
 
 from coldtype.geometry import Line
-from coldtype.beziers import CurveCutter, calcCubicArcLength_cached, splitCubicAtT, calcCubicArcLength
-
-
-class CurveSample():
-    def __init__(self, idx, pt, e, tan):
-        self.idx = idx
-        self.pt = pt
-        self.e = e
-        self.tan = tan
-    
-    def neighbors(self, prev, next):
-        self.prev = prev
-        self.next = next
-        #self.difft = ((next-prev) + 180) % 360 - 180
+from coldtype.beziers import CurveCutter, CurveSample, splitCubicAtT, calcCubicArcLength
 
 
 class SegmentingMixin():

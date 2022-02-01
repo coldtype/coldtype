@@ -31,7 +31,7 @@ def scratch(f, m):
 
     return P(
         P().oval(border).t(m.x, m.y).fssw(-1, c, 10),
-        (StSt("ABC", font, fontSize
+        (StSt("DVD", font, fontSize
             , fvar_1=a
             , fvar_0=b)
             .f(c)

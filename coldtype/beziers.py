@@ -131,3 +131,16 @@ class CurveCutter():
         except ValueError as e:
             print(e)
             return None, None
+
+
+class CurveSample():
+    def __init__(self, idx, pt, e, tan):
+        self.idx = idx
+        self.pt = pt
+        self.e = e
+        self.tan = tan
+    
+    def neighbors(self, prev, next):
+        self.prev = prev
+        self.next = next
+        #self.difft = ((next-prev) + 180) % 360 - 180

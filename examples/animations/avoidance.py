@@ -5,11 +5,12 @@ import numpy as np
 
 minMouseDist = 20000
 words = """
-A sentence
-of letters
-just getting out
-of the way
+Just getting
+out of the
+way
 """
+
+# https://stackoverflow.com/questions/21030391/how-to-normalize-a-numpy-array-to-a-unit-vector
 
 def normalized(a, axis=-1, order=2):
     l2 = np.atleast_1d(np.linalg.norm(a, order, axis))
@@ -18,6 +19,7 @@ def normalized(a, axis=-1, order=2):
 
 def displacer(r, c):
     txt = (StSt(words, "Times", 100)
+        .lead(20)
         .align(r)
         .collapse())
     
