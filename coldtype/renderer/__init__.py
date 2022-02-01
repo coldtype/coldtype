@@ -1362,7 +1362,14 @@ class Renderer():
 
         watchee.append(ptime.time())
         self.watchees.append(watchee)
-        print("    >>> watching...", watchee[1])
+        if "_input.json" in str(watchee[1]):
+            return
+        
+        try:
+            print("    >>> watching...", watchee[1].relative_to(Path.cwd()))
+        except Exception as e:
+            #print(e)
+            print("    >>> watching...", watchee[1])
     
     def execute_string_as_shortcut_or_action(self, shortcut, key, args=[]):
         #print("\n>>> shortcut:")
