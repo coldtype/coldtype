@@ -141,12 +141,16 @@ class animation(renderable, Timeable):
             return pf + index
     
     def passes(self, action, renderer_state, indices=[]):
-        c = renderer_state.cursor
-        if self.clip_cursor:
-            c = c.clip(self.rect)
+        c, m = None, None
+
+        if renderer_state:
+            c = renderer_state.cursor
+            if self.clip_cursor:
+                c = c.clip(self.rect)
+            m = renderer_state.midi
 
         frames = self.active_frames(action, renderer_state, indices)
-        return [RenderPass(self, action, i, [Frame(i, self, c, renderer_state.midi)]) for i in frames]
+        return [RenderPass(self, action, i, [Frame(i, self, c, m)]) for i in frames]
 
     def running_in_viewer(self):
         return True
