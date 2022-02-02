@@ -1,4 +1,4 @@
-import math, os, re
+import math, os, re, json
 from typing import Tuple
 
 from subprocess import run
@@ -143,14 +143,33 @@ class animation(renderable, Timeable):
     def passes(self, action, renderer_state, indices=[]):
         c, m = None, None
 
+        rp = self.recording_path
+        recording = None
+        has_recording = False
+
+        if rp and rp.exists():
+            has_recording = True
+            recording = json.loads(rp.read_text())
+
         if renderer_state:
             c = renderer_state.cursor
             if self.clip_cursor:
                 c = c.clip(self.rect)
             m = renderer_state.midi
 
+            if Overlay.Recording in renderer_state.overlays and self.overlay and rp:
+                if not has_recording:
+                    recording = {"cursor":{}}
+
         frames = self.active_frames(action, renderer_state, indices)
-        return [RenderPass(self, action, i, [Frame(i, self, c, m)]) for i in frames]
+        
+        if renderer_state:
+            if Overlay.Recording in renderer_state.overlays and self.overlay and rp:
+                fi = frames[0]
+                recording["cursor"][str(fi)] = [c.x, c.y]
+                rp.write_text(json.dumps(recording))
+
+        return [RenderPass(self, action, i, [Frame(i, self, c, m, recording)]) for i in frames]
 
     def running_in_viewer(self):
         return True
@@ -165,6 +184,13 @@ class animation(renderable, Timeable):
         self.t.hold(fi)
         return super().run(render_pass, renderer_state)
     
+    @property
+    def recording_path(self):
+        try:
+            return self.filepath.parent / (self.filepath.stem + "_recording.json")
+        except:
+            return None
+    
     def runpost(self, result, render_pass, renderer_state, config):
         #if Overlay.Rendered in renderer_state.overlays:
         #    from coldtype.img.skiaimage import SkiaImage
@@ -172,8 +198,11 @@ class animation(renderable, Timeable):
 
         res = super().runpost(result, render_pass, renderer_state, config)
 
-        if Overlay.Recording in renderer_state.overlays and self.overlay:
-            res.append(P().oval(Point(0, 0).rect(30, 30)).f(hsl(0, 1, 0.7)))
+        if Overlay.Recording in renderer_state.overlays and self.overlay and self.recording_path:
+            t = self.rect.take(50, "mny")
+            frame:Frame = render_pass.args[0]
+            res.append(P().rect(Point(0, 0).rect(150, 60)).t(10, 10).f(hsl(0.95, 1, 0.7)))
+            res.append(P().text(f"{frame.i}", Style("Courier", 42, load_font=0, fill=bw(1)), t.inset(10)))
 
         if Overlay.Info in renderer_state.overlays and self.overlay:
             t = self.rect.take(50, "mny")

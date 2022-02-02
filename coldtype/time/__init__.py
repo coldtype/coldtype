@@ -16,7 +16,7 @@ class Frame(Easeable):
     
     (where `Frame` is an optional type-hint if you're looking to leverage autocomplete in your editor)
     """
-    def __init__(self, i, anim, cursor=None, midi=None):
+    def __init__(self, i, anim, cursor=None, midi=None, recording=None):
         if isinstance(anim, Timeline):
             self.i = i % anim.duration
         else:
@@ -25,6 +25,7 @@ class Frame(Easeable):
         self.a = anim
         self.c = cursor
         self.m = midi
+        self.rec = recording
     
     def adj(self, off):
         return Frame(self.i+off, self.a)
