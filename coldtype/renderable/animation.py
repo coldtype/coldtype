@@ -29,6 +29,7 @@ class animation(renderable, Timeable):
         overlay=True,
         audio=None,
         suffixer=None,
+        clip_cursor=True,
         **kwargs
         ):
         if "tl" in kwargs:
@@ -47,6 +48,7 @@ class animation(renderable, Timeable):
         self.single_frame = self.duration == 1
         self.audio = audio
         self.suffixer = suffixer
+        self.clip_cursor = clip_cursor
     
     def __call__(self, func):
         res = super().__call__(func)
@@ -139,8 +141,12 @@ class animation(renderable, Timeable):
             return pf + index
     
     def passes(self, action, renderer_state, indices=[]):
+        c = renderer_state.cursor
+        if self.clip_cursor:
+            c = c.clip(self.rect)
+
         frames = self.active_frames(action, renderer_state, indices)
-        return [RenderPass(self, action, i, [Frame(i, self)]) for i in frames]
+        return [RenderPass(self, action, i, [Frame(i, self, c, renderer_state.midi)]) for i in frames]
 
     def running_in_viewer(self):
         return True

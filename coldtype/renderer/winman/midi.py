@@ -83,7 +83,13 @@ class MIDIWatcher():
                 if not self.state.controller_values.get(device):
                     self.state.controller_values[device] = {}
                 for channel, numbers in channels.items():
-                    self.state.controller_values[device][channel] = {**self.state.controller_values.get(device, {}).get(channel, {}), **numbers}
+                    if not self.state.controller_values[device].get(channel):
+                        self.state.controller_values[device][channel] = {}
+                    for number, value in numbers.items():
+                        was = self.state.controller_values[device][channel].get(number)
+                        if was:
+                            self.state.controller_values[device][channel]["_" + str(number)] = was
+                        self.state.controller_values[device][channel][number] = value
 
             if not playing:
                 return True

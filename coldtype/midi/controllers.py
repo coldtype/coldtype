@@ -1,4 +1,7 @@
 
+def _norm(lookup, k, default):
+    return lookup.get(str(k), 63.5 if default == None else default*127) / 127
+
 
 def midi_controller_lookup_fn(name, column_starts=[], cmc={}, channel="9"):
     """
@@ -8,7 +11,7 @@ def midi_controller_lookup_fn(name, column_starts=[], cmc={}, channel="9"):
     whatever device you’d like)
     """
     # TODO use the name so individual devices are targetable
-    def lookup(ctrl, default=None):
+    def lookup(ctrl, default=None, relative=False):
         scoped = cmc.get(name, {})
         scoped = scoped.get(str(channel), {})
         if column_starts:
@@ -17,7 +20,13 @@ def midi_controller_lookup_fn(name, column_starts=[], cmc={}, channel="9"):
             mnum = column_starts[row]+(column-1)
         else:
             mnum = ctrl
-        return scoped.get(str(mnum), 63.5 if default == None else default*127) / 127
+        current = _norm(scoped, mnum, default)
+        if relative:
+            was = _norm(scoped, "_"+str(mnum), default)
+            rel = current - was
+            return rel
+        else:
+            return current
     return lookup
 
 
