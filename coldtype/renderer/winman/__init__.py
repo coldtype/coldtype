@@ -205,11 +205,18 @@ class Winmans():
             did_preview.append(self.glsk.turn_over())
 
         if len(did_preview) > 0:
-            if self.config.enable_audio:
-                la = self.renderer.last_animation
-                if self.audio and la:
-                    fo = abs(self.renderer.state.frame_offset%la.duration)
+            la = self.renderer.last_animation
+            if la:
+                fo = abs(self.renderer.state.frame_offset%la.duration)
+                if self.config.enable_audio and self.audio:
                     self.audio.play_frame(fo)
+
+                if fo == la.duration-1:
+                    if self.renderer.stop_at_end:
+                        self.renderer.stop_at_end = False
+                        self.renderer.action_waiting = Action.PreviewPlay
+                        self.renderer.action_waiting_reason = "stopping_at_end"
+                        print("END!")
         
         return did_preview
     
@@ -222,7 +229,7 @@ class Winmans():
 
             spf = 0.1
             if self.renderer.last_animation:
-                spf = 1 / float(self.renderer.last_animation.timeline.fps)
+                spf = 1 / (float(self.renderer.last_animation.timeline.fps)*self.renderer.viewer_playback_rate)
 
                 if td2 >= spf:
                     if self.print_approx_fps:

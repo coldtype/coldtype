@@ -20,6 +20,7 @@ class KeyboardShortcut(Enum):
     
     PlayRendered = "play_rendered"
     PlayPreview = "play_preview"
+    PlayToEnd = "play_to_end"
 
     ReloadSource = "reload_source"
     RestartApp = "restart_app"
@@ -64,6 +65,10 @@ class KeyboardShortcut(Enum):
     WindowOpacityUp = "window_opacity_up"
     WindowOpacityMin = "window_opacity_min"
     WindowOpacityMax = "window_opacity_max"
+
+    ViewerPlaybackSpeedIncrease = "viewer_playback_speed_increase"
+    ViewerPlaybackSpeedDecrease = "viewer_playback_speed_decrease"
+    ViewerPlaybackSpeedReset = "viewer_playback_speed_decrease"
 
     MIDIControllersPersist = "midi_controllers_persist"
     MIDIControllersClear = "midi_controllers_clear"
@@ -142,6 +147,8 @@ KeyboardShortcutExplainers = {
         "Play the rendered-to-disk version of this animation",
     KeyboardShortcut.PlayPreview:
         "Play the current animation as fast as possible, evaluating the code live",
+    KeyboardShortcut.PlayToEnd:
+        "Same as PlayPreview, but will not loop",
     KeyboardShortcut.EnableAudio:
         "If audio is defined on a renderable, toggle whether or not to play it",
     KeyboardShortcut.RestartApp:
@@ -308,6 +315,9 @@ SHORTCUTS = {
         [[], "<space>"],
         #[[], glfw.KEY_K]
     ],
+    KeyboardShortcut.PlayToEnd: [
+        [[], "e"]
+    ],
     KeyboardShortcut.EnableAudio: [
         [[], "."]
     ],
@@ -416,6 +426,16 @@ SHORTCUTS = {
         [["cmd"], "0"]
     ],
 
+    KeyboardShortcut.ViewerPlaybackSpeedDecrease: [
+        [["shift"], "-"]
+    ],
+    KeyboardShortcut.ViewerPlaybackSpeedIncrease: [
+        [["shift"], "="]
+    ],
+    # KeyboardShortcut.ViewerPlaybackSpeedReset: [
+    #     [["shift"], "0"]
+    # ],
+
     KeyboardShortcut.WindowOpacityDown: [
         [["cmd"], "<down>"]
     ],
@@ -428,6 +448,8 @@ SHORTCUTS = {
     KeyboardShortcut.WindowOpacityMax: [
         [["cmd", "shift"], "<up>"]
     ],
+
+
 
     KeyboardShortcut.JumpToFrameFunctionDef: [
         [["cmd"], "f"],

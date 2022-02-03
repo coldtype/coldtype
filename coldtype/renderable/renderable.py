@@ -66,6 +66,7 @@ class Action(Enum):
     PreviewStoryboard = "preview_storyboard"
     PreviewStoryboardReload = "preview_storyboard_reload"
     PreviewPlay = "preview_play"
+    PreviewOnce = "preview_play"
     PreviewIndices = "preview_indices"
     PreviewStoryboardNext = "preview_storyboard_next"
     PreviewStoryboardPrev = "preview_storyboard_prev"

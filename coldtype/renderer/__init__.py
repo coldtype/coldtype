@@ -182,6 +182,7 @@ class Renderer():
         self.last_animations = []
         self.hotkeys = None
         self.hotkey_waiting = None
+        self.stop_at_end = False
 
         if self.args.viewer_solos:
             self.viewer_solos = [int(x.strip()) for x in self.args.viewer_solos.split(",")]
@@ -189,6 +190,7 @@ class Renderer():
             self.viewer_solos = []
         
         self.viewer_sample_frames = 1
+        self.viewer_playback_rate = 1
 
     def on_args_parsed(self):
         pass
@@ -966,6 +968,9 @@ class Renderer():
             return Action.PreviewPlay
         elif shortcut == KeyboardShortcut.PlayPreview:
             return Action.PreviewPlay
+        elif shortcut == KeyboardShortcut.PlayToEnd:
+            self.stop_at_end = True
+            return Action.PreviewPlay
         elif shortcut == KeyboardShortcut.EnableAudio:
             self.source_reader.config.enable_audio = not self.source_reader.config.enable_audio
             self.winmans.mod_title("audio",
@@ -1069,6 +1074,11 @@ class Renderer():
             self.winmans.glsk.set_window_opacity(absolute=0.1)
         elif shortcut == KeyboardShortcut.WindowOpacityMax:
             self.winmans.glsk.set_window_opacity(absolute=1)
+        
+        elif shortcut == KeyboardShortcut.ViewerPlaybackSpeedIncrease:
+            self.viewer_playback_rate = self.viewer_playback_rate * 2
+        elif shortcut == KeyboardShortcut.ViewerPlaybackSpeedDecrease:
+            self.viewer_playback_rate = self.viewer_playback_rate / 2
         
         elif shortcut == KeyboardShortcut.MIDIControllersPersist:
             self.state.persist()
