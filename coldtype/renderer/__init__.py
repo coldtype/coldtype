@@ -325,12 +325,15 @@ class Renderer():
                 if trigger == Action.Initial:
                     if self.winmans.b3d:
                         self.winmans.b3d.launch(self.source_reader.blender_io())
-
             except SystemExit:
                 self.on_exit(restart=False)
                 return True
             except Exception as e:
                 self.show_error()
+
+            if self.last_animation:
+                if self.last_animation.reset_to_zero:
+                    self.state.frame_offset = 0
     
     def animation(self):
         renderables = self.renderables(Action.PreviewStoryboard)
