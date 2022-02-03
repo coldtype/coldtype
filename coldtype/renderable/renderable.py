@@ -346,9 +346,9 @@ class renderable():
             if pos == 0:
                 out.append(p.copy().ch(skeleton(0.5)))
         
-        result.walk(xray)
+        result.copy().walk(xray)
         return P(
-            result.fssw(-1, hsl(0.95, 1, 0.8), 4),
+            result.copy().fssw(-1, hsl(0.95, 1, 0.8), 4),
             out.fssw(-1, hsl(0.65, 1, 0.6), 2))
     
     def show_grid(self, result, settings):

@@ -121,6 +121,9 @@ class Line(Geometrical):
     def pts(self):
         return [self.start, self.end]
     
+    def splat(self):
+        return [(self.start.x, self.start.y), (self.end.x, self.end.y)]
+    
     def transform(self, t):
         pts = self.pts()
         x1, x2 = [t.transformPoint(pt) for pt in pts]
