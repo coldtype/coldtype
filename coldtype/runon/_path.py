@@ -85,7 +85,8 @@ class P(Runon):
     
     def copy_val(self, val):
         copy = RecordingPen()
-        copy.value = deepcopy(self._val.value)
+        if self.val_present():
+            copy.value = deepcopy(self._val.value)
         return copy
     
     def printable_val(self):

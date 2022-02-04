@@ -29,6 +29,7 @@ setuptools.setup(
         "coldtype.grid",
         "coldtype.color",
         "coldtype.runon",
+        "coldtype.physics",
         "coldtype.capture",
         "coldtype.blender",
         "coldtype.geometry",
