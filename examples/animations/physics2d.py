@@ -2,6 +2,8 @@ from coldtype import *
 from coldtype.fx.skia import phototype
 from coldtype.physics.pymunk import segments
 
+# pip install pymunk
+
 import pymunk
 from pymunk import Vec2d
 import random as rnd
