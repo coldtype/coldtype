@@ -819,7 +819,9 @@ class P(Runon):
         self.endPath()
         return self
     
-    def segments(self):
+
+    def segments(self, all_curves=False) -> "P":
+
         if not self.val_present():
             for idx, el in enumerate(self._els):
                 self._els[idx] = el.segments()
@@ -833,7 +835,11 @@ class P(Runon):
                     if mv == "curveTo":
                         segs.append(type(self)().moveTo(last).curveTo(*pts))
                     if mv == "lineTo":
-                        segs.append(type(self)().moveTo(last).lineTo(*pts))
+                        if all_curves:
+                            ln = Line(last, pts[0])
+                            segs.append(type(self)().moveTo(ln.start).curveTo(ln.t(0.25), ln.t(0.75), ln.end))
+                        else:
+                            segs.append(type(self)().moveTo(last).lineTo(*pts))
                 
                 if len(pts) > 0:
                     last = pts[-1]

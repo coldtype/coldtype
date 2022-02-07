@@ -1,8 +1,6 @@
 from coldtype import *
 from coldtype.time.nle.ascii import AsciiTimeline
 
-nudge = Font.MutatorSans()
-
 at = AsciiTimeline(1, """
                                                                 <
         [L                                   ]
@@ -14,19 +12,20 @@ at = AsciiTimeline(1, """
 @animation(timeline=at)
 def officehours(f):
     stx = Style.StretchX(0,
-        L=(730*at.ki("L").io(10, "eeio"), 310),
+        L=(730*at.ki("L").io(10, "eeio"), 210),
         F=(1220*at.ki("F").io(10, ["qeio", "eleio"]), 260),
         H=(1900*at.ki("H").io(10, "ceio"), 250))
     
     txt = (StSt("Coldtype\nOffice\nHours".upper()
-        , Font.MutatorSans()
+        , ["MDNichrome.*Dark", Font.MutatorSans()]
         , fontSize=125
-        , ss02=1
+        , ss03=1
         , mods=stx
         , leading=20)
         .f(1)
         .xalign(f.a.r)
-        .align(f.a.r))
+        .align(f.a.r)
+        .t(0, 150))
 
     bg = (P(txt.ambit().inset(-50))
             .f(hsl(0.35, 0.8, 0.3)))
@@ -35,8 +34,12 @@ def officehours(f):
     txt.index([0, -1], lambda p: p
         .translate(at.ki("Er").e("eeio", 1, r=(0, 24)), 0)
         .rotate(at.ki("Er").e("ceio", 0, r=(0, -360*2))))
+    
+    date = (StSt("X/X, XX:00 UTC", "MDNichrome.*R", 80)
+        .align(f.a.r.take(0.3, "S")))
 
-    return PS(
+    return P(
         bg.copy().translate(5, -5).f(0),
-        bg,
-        txt)
+        bg, txt,
+        P(date.ambit().inset(-20)).f(0),
+        date.f(1))

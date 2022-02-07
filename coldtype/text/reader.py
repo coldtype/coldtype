@@ -182,39 +182,6 @@ class Font():
             results.extend(Font._ListDir(Path(dir), regex, regex_dir, log, depth=0))
         return sorted(results, key=lambda p: p.stem)
 
-    # @lru_cache()
-    # def List1(regex, regex_dir=None, log=False):
-    #     results = []
-    #     for dir in ALL_FONT_DIRS:
-    #         dir = normalize_font_prefix(dir)
-    #         #if regex_dir:
-    #         #    if not re.search(regex_dir, str(dir)):
-    #         #        continue
-    #         _depth = str(dir).count(os.sep)
-    #         for root, dirs, files in os.walk(dir):
-    #             depth = root.count(os.sep) - _depth
-    #             if max_depth is not None:
-    #                 if depth >= max_depth:
-    #                     continue
-    #             #print(depth)
-    #             for dir in dirs:
-    #                 path = Path(root + "/" + dir)
-    #                 if path.suffix == ".ufo":
-    #                     if re.search(regex, dir):
-    #                         results.append(path)
-    #             #print(dir)
-    #             for file in files:
-    #                 if regex_dir:
-    #                     if not re.search(regex_dir, str(root)):
-    #                         continue
-    #                 if log:
-    #                     print(file, re.search(regex, file))
-    #                 if re.search(regex, file):
-    #                     path = Path(root + "/" + file)
-    #                     if path.suffix in [".ttf", ".otf", ".ttc"]:
-    #                         results.append(path)
-    #     return sorted(results, key=lambda p: p.stem)
-
     def Find(regex, regex_dir=None, index=0):
         if isinstance(regex, Font):
             return regex
@@ -233,6 +200,30 @@ class Font():
         if dir not in ALL_FONT_DIRS:
             ALL_FONT_DIRS.insert(0, dir)
     
+    def Normalize(font, fallback="Times"):
+        if isinstance(font, Path):
+            font = str(font)
+        
+        if isinstance(font, str):
+            try:
+                _font = Font.Find(font)
+                _font.load() # necessary?
+                return _font
+            except FontNotFoundException as e:
+                if fallback:
+                    return Font.Normalize(fallback)
+                else:
+                    raise e
+        elif isinstance(font, Font):
+            return font
+        else: # it's a list of fonts
+            for f in font:
+                try:
+                    return Font.Normalize(f, fallback=None)
+                except FontNotFoundException:
+                    pass
+            return Font.Normalize(fallback)
+
     @staticmethod
     def ColdtypeObviously():
         return Font.Cacheable(Path(__file__).parent.parent / "demo/ColdtypeObviously-VF.ttf")
@@ -330,14 +321,7 @@ class Style():
         self.input["self"] = None
 
         if load_font:
-            if isinstance(font, Path):
-                font = str(font)
-            if isinstance(font, str):
-                _font = Font.Find(font)
-                self.font:Font = _font
-                self.font.load()
-            else:
-                self.font:Font = font
+            self.font = Font.Normalize(font)
         else:
             self.font = font
 

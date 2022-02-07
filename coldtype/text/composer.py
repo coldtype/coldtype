@@ -212,8 +212,6 @@ def StSt(text,
     elif isinstance(font, dict):
         style = Style(**{**font, **kwargs})
     else:
-        if isinstance(font, str):
-            font = Font.Find(font)
         style = Style(font, font_size, **kwargs)
     
     fit = kwargs.get("fit", None)
