@@ -1,6 +1,18 @@
 from coldtype import *
 from coldtype.blender import *
 
+"""
+A 3D Physics simulation that uses two animations:
+
+-   the first uses lo-res polygons to do the actual physics
+
+-   the second uses bezier curves parented to the lo-res polygons,
+    which means in the end result you see the hi-res shapes
+    behaving in the manner of the lo-res polygons
+
+(both animations are based on a single "lockup")
+"""
+
 txt = "FALL\nING\nTEXT"
 
 @b3d_runnable()
