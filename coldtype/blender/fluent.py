@@ -30,12 +30,31 @@ class BpyWorld(_Chainable):
     
     deselectAll = deselect_all
     
-    def delete_previous(self, collection="Coldtype"):
+    def delete_previous(self, collection="Coldtype", orphans=True):
         self.deselect_all()
+
         BpyCollection.Find(collection).delete_hierarchy()
+        if orphans:
+            self.deleteOrphans()
         return self
     
     deletePrevious = delete_previous
+
+    def deleteOrphans(self):
+        from bpy import data as D
+        
+        props = ["curves", "meshes", "materials", "objects"]
+        for x in range(2):
+            for c in D.collections:
+                if "RigidBodyWorld" in c.name or c.users == 0:
+                    bpy.data.collections.remove(c)
+
+            for p in props:
+                for block in getattr(D, p):
+                    if block.users == 0:
+                        getattr(D, p).remove(block)
+        
+        return self
     
     def timeline(self, t:Timeline, resetFrame=None):
         self.scene.frame_start = 0
@@ -78,10 +97,11 @@ class BpyWorld(_Chainable):
             bpy.ops.rigidbody.world_remove()
             yield
         except RuntimeError:
-            print("Failed to reset rigidbody")
+            print("! Failed to reset rigidbody !")
             yield
         
         if self.scene:
+            bpy.ops.rigidbody.world_add()
             rw = self.scene.rigidbody_world
             if rw:
                 rw.time_scale = speed
