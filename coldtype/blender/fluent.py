@@ -101,7 +101,10 @@ class BpyWorld(_Chainable):
             yield
         
         if self.scene:
-            bpy.ops.rigidbody.world_add()
+            try:
+                bpy.ops.rigidbody.world_add()
+            except RuntimeError:
+                pass
             rw = self.scene.rigidbody_world
             if rw:
                 rw.time_scale = speed
