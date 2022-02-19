@@ -480,6 +480,10 @@ class Rect(Geometrical):
     def intercardinals(self):
         return self.point("NE"), self.point("SE"), self.point("SW"), self.point("NW")
     
+    def FromIntercardinals(pts):
+        ne, se, sw, nw = pts
+        return Rect(sw[0], sw[1], abs(ne[0] - sw[0]), abs(ne[1] - sw[1]))
+    
     def aspect(self):
         return self.h / self.w
     
@@ -762,3 +766,10 @@ class Rect(Geometrical):
             _r, r = r.divide(w, "mxy")
             rs.append(_r)
         return rs
+    
+    def interp(self, v, other):
+        """Interpolate with another rect"""
+        apts = self.intercardinals()
+        bpts = other.intercardinals()
+        ipts = [p1.interp(v, p2) for p1, p2 in zip(apts, bpts)]
+        return Rect.FromIntercardinals(ipts)

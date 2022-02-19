@@ -184,7 +184,7 @@ class P(Runon):
             out.append(_wp(pen))
         return out
     
-    def interpolate(self, value, other):
+    def interpolate(self, value, other, frame=False):
         if len(self.v.value) != len(other.v.value):
             raise Exception("Cannot interpolate / diff lens")
         vl = []
@@ -203,6 +203,13 @@ class P(Runon):
         
         np = type(self)()
         np.v.value = vl
+
+        if frame:
+            af = self.data("frame")
+            bf = other.data("frame")
+            ff = af.interp(value, bf)
+            np.data(frame=ff)
+
         return np
     
     def replaceGlyph(self, glyphName, replacement, limit=None):
