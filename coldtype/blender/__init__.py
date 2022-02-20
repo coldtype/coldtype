@@ -18,6 +18,7 @@ from coldtype.time.sequence import ClipTrack, Clip, Sequence
 
 from coldtype.blender.fluent import BpyWorld, BpyObj, BpyCollection
 
+from typing import Callable
 
 try:
     import bpy # noqa
@@ -79,8 +80,8 @@ class BlenderTimeline(Timeline):
         #     workarea_track=workarea_track-1)
 
 
-def b3d(collection,
-    callback=None,
+def b3d(callback:Callable[[BlenderPen], BlenderPen],
+    collection="Coldtype",
     plane=False,
     dn=False,
     cyclic=True,
@@ -91,10 +92,6 @@ def b3d(collection,
     ):
     if not bpy: # short-circuit if this is meaningless
         return lambda x: x
-
-    if not isinstance(collection, str):
-        callback = collection
-        collection = "Coldtype"
 
     pen_mod = None
     if callback and not callable(callback):
@@ -133,7 +130,7 @@ def b3d(collection,
     return annotate
 
 
-def b3d_post(callback):
+def b3d_post(callback:Callable[[BlenderPen], BlenderPen]):
     if not bpy: # short-circuit for non-bpy
         return lambda x: x
 
@@ -148,7 +145,7 @@ def b3d_post(callback):
     return _b3d_post
 
 
-def b3d_pre(callback):
+def b3d_pre(callback:Callable[[P], P]):
     def _cast(pen:P):
         if bpy:
             callback(pen)
@@ -244,11 +241,17 @@ def walk_to_b3d(result:P,
 
 
 class b3d_runnable(runnable):
-    def __init__(self, solo=False, cond=None):
+    def __init__(self,
+        solo=False,
+        cond=None,
+        once=True
+        ):
+        self.once = once
         if cond is not None:
             super().__init__(solo=solo, cond=lambda: cond and bool(bpy))
         else:
             super().__init__(solo=solo, cond=None)
+    
     def run(self):
         if not bpy:
             return None

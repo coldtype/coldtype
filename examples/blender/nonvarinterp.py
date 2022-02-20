@@ -22,18 +22,20 @@ b = build(mdpb)
 def nonvarinterp(f):
     i = "{:.7f}".format(f.e("eeio", 1))
 
-    return PS([
+    return P([
         (StSt(i, mdiob, 72)
             .align(f.a.r.take(0.4, "mny"), th=0)
             .pen()
             .f(hsl(0.65, 1, 0.3))
             .tag("Num")
-            .ch(b3d("Text", lambda bp: bp
-                .extrude(f.e(1, rng=(0.01, 0.5)))))),
+            .ch(b3d(lambda bp: bp
+                .extrude(f.e(1, rng=(0.01, 0.5)))
+                , collection="Text"))),
         (a.interpolate(f.e("eeio", 1), b)
             .î(18, lambda p: p.rotate(f.e("l", 3, cyclic=0, rng=(0, -360))))
             .f(hsl(0.4, 1, 0.3))
             .removeOverlap()
             .tag("Interpolation")
-            .ch(b3d("Text", lambda bp: bp
-                .extrude(f.e("eeio", 1, rng=(0.01, 3))))))])
+            .ch(b3d(lambda bp: bp
+                .extrude(f.e("eeio", 1, rng=(0.01, 3)))
+                , collection="Text")))])

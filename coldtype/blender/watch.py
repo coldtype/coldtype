@@ -157,7 +157,11 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
         for r in self.candidates:
             if isinstance(r, b3d_runnable):
-                r.run()
+                if r.once:
+                    if statics:
+                        r.run()
+                else:
+                    r.run()
             else:
                 out.append(r)
 
