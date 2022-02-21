@@ -139,3 +139,8 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 - `x` key for xray mode
 - `g` key for grid mode
 - `p` key to print renderable content
+
+## [0.9.2] - 2022-02-21
+### Added
+- support for platform-specific config files, `.coldtype.mac.py`, `.coldtype.win.py`, `.coldtype.lin.py`
+- minor Blender improvements for 3D workflow
