@@ -9,7 +9,7 @@ from coldtype.blender import BlenderIO
 
 from coldtype.renderable import renderable, ColdtypeCeaseConfigException, runnable, animation, aframe, ui
 
-from coldtype.renderer.utils import Watchable
+from coldtype.renderer.utils import Watchable, on_linux, on_mac, on_windows
 from coldtype.renderer.config import ColdtypeConfig
 from coldtype.helpers import sibling
 from coldtype.text.reader import ALL_FONT_DIRS
@@ -346,7 +346,16 @@ class SourceReader():
         embedded = Path(__file__).parent / ".coldtype.py"
         proj = Path(".coldtype.py")
         user = Path("~/.coldtype.py").expanduser()
-        files = [embedded, user, proj]
+        
+        if on_windows():
+            os = Path(".coldtype.win.py")
+        elif on_mac():
+            os = Path(".coldtype.mac.py")
+        elif on_linux():
+            os = Path(".coldtype.lin.py")
+
+        files = [embedded, user, proj, os]
+
         if args and hasattr(args, "config") and args.config:
             if args.config == "0":
                 files = []

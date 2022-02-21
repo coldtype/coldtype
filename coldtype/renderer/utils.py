@@ -61,3 +61,27 @@ def play_sound(name="Pop"):
 
 def path_hash(path):
     return hashlib.sha1(str(path.resolve()).encode("UTF-8")).hexdigest()[:10]
+
+
+class System(Enum):
+    Darwin = "Darwin"
+    Windows = "Windows"
+    Linux = "Linux"
+
+def operating_system():
+    sys = platform.system()
+    if sys == "Darwin":
+        return System.Darwin
+    elif sys == "Windows":
+        return System.Windows
+    elif sys == "Linux":
+        return System.Linux
+
+def on_windows():
+    return operating_system() == System.Windows
+
+def on_mac():
+    return operating_system() == System.Darwin
+
+def on_linux():
+    return operating_system() == System.Linux

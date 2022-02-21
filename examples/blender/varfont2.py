@@ -27,3 +27,5 @@ def varfont2(f):
             , material="auto")))
     
     return P(ct, three)
+
+release = varfont2.export("h264", loops=4)
