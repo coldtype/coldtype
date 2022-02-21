@@ -132,6 +132,12 @@ def render_as_image(r, res):
 
 # original idea: https://blender.stackexchange.com/questions/15670/send-instructions-to-blender-from-external-application
 
+def display_image_in_blender(img_path):
+    if img_path.name in bpy.data.images:
+        bpy.data.images[img_path.name].reload()
+    else:
+        bpy.data.images.load(str(img_path))
+
 class ColdtypeWatchingOperator(bpy.types.Operator):
     bl_idname = "wm.coldtype_watching_operator"
     bl_label = "Coldtype Watching Operator"
@@ -150,10 +156,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
         def display_image(r, result):
             lp_path = render_as_image(r, result)
-            if lp_path.name in bpy.data.images:
-                bpy.data.images[lp_path.name].reload()
-            else:
-                bpy.data.images.load(str(lp_path))
+            display_image_in_blender(lp_path)
 
         for r in self.candidates:
             if isinstance(r, b3d_runnable):
@@ -268,6 +271,11 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     bpy.ops.screen.frame_offset(delta=int(arg))
                 elif cmd == "refresh_sequencer":
                     bpy.ops.sequencer.refresh_all()
+                elif cmd == "refresh_sequencer_and_image":
+                    bpy.ops.sequencer.refresh_all()
+                    for k, v in bpy.data.images.items():
+                        if "_last_render.png" in k:
+                            v.reload()
                 elif cmd == 'cancel':
                     self.cancel(context)
                 else:

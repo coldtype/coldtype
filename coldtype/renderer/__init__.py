@@ -424,7 +424,7 @@ class Renderer():
 
         return needs_new_context
     
-    def _single_thread_render(self, trigger, indices=[], output_transform=None, no_sound=False) -> Tuple[int, int]:
+    def _single_thread_render(self, trigger, indices=[], output_transform=None, no_sound=False, ditto_last=False) -> Tuple[int, int]:
         if not self.args.is_subprocess:
             start = ptime.time()
         
@@ -572,6 +572,12 @@ class Renderer():
                                             print("<coldtype: saved: " + str(output_path.relative_to(Path.cwd())) + " >")
                                         except ValueError:
                                             print(">>> saved...", str(output_path))
+                                
+                                if ditto_last:
+                                    copy_to = output_path.parent.parent / re.sub(r"\_[0-9]{4}\.png", "_last_render.png", output_path.name)
+                                    print(">>>", output_path.name, re.sub(r"\_[0-9]{4}\.png", "_last_render.png", output_path.name))
+                                    shutil.copy2(output_path, copy_to)
+                                
                     except Exception as e:
                         #print(type(e))
                         self.show_error()
@@ -589,7 +595,7 @@ class Renderer():
         
         return preview_count, render_count, renders
 
-    def render(self, trigger, indices=[]) -> Tuple[int, int]:
+    def render(self, trigger, indices=[], ditto_last=False) -> Tuple[int, int]:
         #print(">RENDER!", trigger, self.action_waiting_reason)#, traceback.print_stack())
 
         if self.args.is_subprocess:
@@ -618,7 +624,7 @@ class Renderer():
             #all_frames = self.animation().all_frames()
             #self._single_thread_render(Action.RenderIndices, [0, all_frames[-1]])
         
-        preview_count, render_count, renders = self._single_thread_render(trigger, indices)
+        preview_count, render_count, renders = self._single_thread_render(trigger, indices, ditto_last=ditto_last)
         
         if not self.args.is_subprocess and render_count > 0:
             for render in renders:
@@ -629,7 +635,7 @@ class Renderer():
                     self.action_waiting = Action.PreviewStoryboard
                     self.action_waiting_reason = "unclear"
 
-            self.winmans.did_render(render_count)
+            self.winmans.did_render(render_count, ditto_last)
 
         return preview_count, render_count
     
@@ -1397,7 +1403,7 @@ class Renderer():
             return
         
         if shortcut == "render_index":
-            self.render(Action.RenderIndices, indices=[int(args[0])])
+            self.render(Action.RenderIndices, indices=[int(args[0])], ditto_last=True)
             return
         elif shortcut == "render_scratch":
             fi = int(args[0])

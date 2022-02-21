@@ -27,6 +27,18 @@ class Coldtype3DRenderOne(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class Coldtype3DRenderAll(bpy.types.Operator):
+    """Render all frames via Coldtype with the offline Blender renderer"""
+
+    bl_idname = "wm.coldtype_3d_render_all"
+    bl_label = "Coldtype 3D Render All"
+
+    def execute(self, _):
+        print("RENDER ALL")
+        remote("render_all", [bpy.data.scenes[0].frame_current])
+        return {'FINISHED'}
+
+
 class Coldtype3DOpenInEditor(bpy.types.Operator):
     """Open the current Coldtype source file in your configured text editor"""
 
@@ -35,6 +47,16 @@ class Coldtype3DOpenInEditor(bpy.types.Operator):
 
     def execute(self, _):
         remote("open_in_editor")
+        return {'FINISHED'}
+
+class Coldtype3DShowInFinder(bpy.types.Operator):
+    """Open the current Coldtype source file in the file browser"""
+
+    bl_idname = "wm.coldtype_3d_show_in_finder"
+    bl_label = "Coldtype 3D Show-in-finder"
+
+    def execute(self, _):
+        remote("show_in_finder")
         return {'FINISHED'}
 
 
@@ -50,16 +72,20 @@ class COLDTYPE_3D_PT_Panel(bpy.types.Panel):
 
         layout = self.layout
         layout.operator(Coldtype3DRenderOne.bl_idname, text="Render One", icon="IMAGE_DATA",)
-        layout.operator(Coldtype3DPrerender.bl_idname, text="Prerender Enabled" if prerendered else "Prerender Disabled", icon="TEXTURE_DATA",)
+        layout.operator(Coldtype3DRenderAll.bl_idname, text="Render All", icon="RENDER_ANIMATION",)
+        #layout.operator(Coldtype3DPrerender.bl_idname, text="Prerender Enabled" if prerendered else "Prerender Disabled", icon="TEXTURE_DATA",)
         layout.separator()
         layout.operator(Coldtype3DOpenInEditor.bl_idname, text="Open in Editor", icon="SCRIPT",)
+        layout.operator(Coldtype3DShowInFinder.bl_idname, text="Show in Finder", icon="FILEBROWSER",)
 
 addon_keymaps = []
 
 def register():
     bpy.utils.register_class(Coldtype3DPrerender)
     bpy.utils.register_class(Coldtype3DRenderOne)
+    bpy.utils.register_class(Coldtype3DRenderAll)
     bpy.utils.register_class(Coldtype3DOpenInEditor)
+    bpy.utils.register_class(Coldtype3DShowInFinder)
     
     bpy.utils.register_class(COLDTYPE_3D_PT_Panel)
  

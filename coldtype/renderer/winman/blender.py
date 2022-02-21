@@ -29,8 +29,11 @@ class WinmanBlender(WinmanPassthrough):
         except FileNotFoundError:
             pass
 
-    def did_render(self, count):
-        self.write_command("refresh_sequencer", count)
+    def did_render(self, count, ditto_last):
+        if ditto_last:
+            self.write_command("refresh_sequencer_and_image", count)
+        else:
+            self.write_command("refresh_sequencer", count)
     
     def reload(self, filepath):
         ph = path_hash(filepath)

@@ -24,3 +24,4 @@ def remote(command, args=None, sq=None):
             action=command if isinstance(command, str) else command.value,
             args=args,
             filepath=str(sq.filepath)))))
+    return sq
