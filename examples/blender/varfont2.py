@@ -15,12 +15,15 @@ def varfont2(f):
                     .e("seio", 1,
                         rng=(0.1, 1.75)))))))
     
-    three = (StSt("IN 3D", "Peshka", 100
-            , wght=f.e("eeio", loops:=1, rng=(1, 0))
-            , wdth=f.e("eeio", loops, rng=(0, 1)))
+    three = (StSt("Now in 3D!", "Kass-MediumItalic", 100)
         .align(f.a.r.take(0.2, "S"))
         .pen()
+        .f(hsl(0.65, f.e("eeio", 1), 0.6))
         .ch(b3d(lambda bp: bp
-            .extrude(f.e("eeio", loops, rng=(0.1, 1))))))
+            .extrude(f.e("eeio", 1, rng=(0.1, 3)))
+            .specular(0)
+            .roughness(1)
+            .metallic(f.e("eeio", 1))
+            , material="auto")))
     
     return P(ct, three)
