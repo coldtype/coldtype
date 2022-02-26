@@ -64,7 +64,7 @@ def animate_letter(f, l):
     return c
 
 tl = Timeline(60)
-l = "O"
+l = "T"
 
 @sonification(tl, f"_{l}.wav")
 def letter(f): return animate_letter(f, l)

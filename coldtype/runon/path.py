@@ -2098,7 +2098,7 @@ class P(Runon):
     def filterContours(self, filter_fn) -> "P":
 
         if self.val_present():
-            exploded = self.explode()
+            exploded = self.copy().explode()
             keep = []
             for idx, c in enumerate(exploded):
                 if filter_fn(idx, c):
