@@ -39,6 +39,9 @@ from coldtype.img.blendmode import BlendMode
 """
 Requires Runon.attr contract
 """
+from fontTools.pens.recordingPen import RecordingPen
+from fontTools.pens.transformPen import TransformPen
+from fontTools.misc.transform import Transform
 import pickle, json
 from pathlib import Path
 from fontTools.pens.recordingPen import RecordingPen
@@ -1480,13 +1483,39 @@ class P(Runon):
             return self.attr(field="blendmode")
 
 
-    def glyph(self, glyph, glyphSet=None) -> "P":
+    def glyph(self, glyph, glyphSet=None, layerComponents=False) -> "P":
 
         """Play a glyph (like from `defcon`) into this pen."""
-        if glyphSet:
-            self._glyphSet = glyphSet
-        glyph.draw(self._val)
-        return self
+        out = type(self)()
+        base = type(self)()
+        out.append(base)
+        glyph.draw(base._val)
+
+        new_val = []
+        for mv, pts in base._val.value:
+            if mv == "addComponent":
+                if glyphSet is None:
+                    raise Exception("addComponent requires glyphSet= on glyph()")
+                component_name, matrix = pts
+                rp = RecordingPen()
+                tp = TransformPen(rp, Transform(*matrix))
+                glyphSet[component_name].draw(tp)
+                p = type(self)()
+                p._val = rp
+                out.append(p)
+            else:
+                new_val.append((mv, pts))
+        
+        base._val.value = new_val
+        
+        if layerComponents:
+            return out
+        else:
+            try:
+                out.pen().replay(self._val)
+            except IndexError:
+                pass
+            return self
     
 
     def toGlyph(self, name=None, width=None, allow_blank=False):
@@ -2098,7 +2127,7 @@ class P(Runon):
     def filterContours(self, filter_fn) -> "P":
 
         if self.val_present():
-            exploded = self.copy().explode()
+            exploded = self.explode()
             keep = []
             for idx, c in enumerate(exploded):
                 if filter_fn(idx, c):
