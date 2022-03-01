@@ -159,6 +159,20 @@ class Easeable():
         else:
             return self.t.start <= self.i < self.t.end
     
+    def now(self):
+        if not self._ts:
+            if self.on():
+                return self
+            else:
+                return None
+        
+        for t in self.t:
+            e = Easeable(t, self.i)
+            if e.on():
+                return e
+        
+        return None
+    
     def tv(self,
         loops=0,
         cyclic=True,
