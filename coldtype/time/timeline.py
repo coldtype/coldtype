@@ -25,9 +25,11 @@ class Timeline(Timeable):
         start=None,
         end=None,
         findWords=True,
+        name=None,
         ):
         self.timeables:List[Timeable] = self._flatten(timeables)
-
+        
+        self.name = name
         self.fps = fps
         
         if start is not None:

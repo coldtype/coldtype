@@ -1,4 +1,4 @@
-from coldtype.time import Timeline, Timeable, TimeableSet
+from coldtype.time import Timeline, Timeable
 from coldtype.helpers import sibling
 
 from pathlib import Path
@@ -21,13 +21,13 @@ class AbletonMIDINote(Timeable):
         return f"<AbletonMIDINote {self.name},{self.start},{self.end}/>"
 
 
-class AbletonMIDIClip(TimeableSet):
+class AbletonMIDIClip(Timeline):
     def __init__(self, b2ff, clip):
         clip_name = clip.find("Name").attrib["Value"]
         clip_start = float(clip.find("CurrentStart").attrib["Value"])
         clip_end = float(clip.find("CurrentEnd").attrib["Value"])
 
-        super().__init__([], clip_name, start=b2ff(clip_start), end=b2ff(clip_end))
+        super().__init__(name=clip_name, findWords=False, start=b2ff(clip_start), end=b2ff(clip_end))
 
         for idx, kt in enumerate(clip.findall("Notes/KeyTracks/KeyTrack")):
             midi_key = kt.find("MidiKey").attrib["Value"]
@@ -39,12 +39,14 @@ class AbletonMIDIClip(TimeableSet):
                     self.timeables.append(AbletonMIDINote(b2ff(nt), b2ff(nt+nd), jdx, midi_key))
 
 
-class AbletonMIDITrack(TimeableSet):
+class AbletonMIDITrack(Timeline):
     def __init__(self, b2ff, track):
         self.b2ff = b2ff
         
         track_name = track.find("Name/EffectiveName").attrib["Value"]
-        super().__init__([AbletonMIDIClip(b2ff, clip) for clip in track.findall("DeviceChain/MainSequencer/ClipTimeable/ArrangerAutomation/Events/MidiClip")], track_name)
+        timeables = [AbletonMIDIClip(b2ff, clip) for clip in track.findall("DeviceChain/MainSequencer/ClipTimeable/ArrangerAutomation/Events/MidiClip")]
+        
+        super().__init__(timeables=timeables, findWords=False, name=track_name)
 
         automation = []
         for a in track.xpath("AutomationEnvelopes/Envelopes/AutomationEnvelope/Automation"):
@@ -64,10 +66,11 @@ class AbletonAudioClip(Timeable):
         clip_name = clip.find("Name").attrib["Value"]
         clip_start = float(clip.find("CurrentStart").attrib["Value"])
         clip_end = float(clip.find("CurrentEnd").attrib["Value"])
+
         super().__init__(b2ff(clip_start), b2ff(clip_end), name=clip_name)
 
 
-class AbletonAudioTrack(TimeableSet):
+class AbletonAudioTrack(Timeline):
     def __init__(self, b2ff, track):
         self.lx = track
         track_name = track.find("Name/EffectiveName").attrib["Value"]
@@ -80,7 +83,8 @@ class AbletonAudioTrack(TimeableSet):
             automation.append(a)
         self.automation = automation
 
-        super().__init__(clips, name=track_name)
+        super().__init__(timeables=clips, findWords=False, name=track_name)
+        #super().__init__(clips, name=track_name)
 
 
 class AbletonReader(Timeline):
@@ -89,8 +93,13 @@ class AbletonReader(Timeline):
         als_path = path if isinstance(path, Path) else Path(path).expanduser()
 
         lx = None
-        with gzip.open(str(als_path), "rb") as f:
-            lx = etree.fromstring(f.read())
+        if als_path.suffix == ".xml":
+            with open(str(als_path), "rb") as f:
+                lx = etree.fromstring(f.read())
+        else:
+            with gzip.open(str(als_path), "rb") as f:
+                lx = etree.fromstring(f.read())
+        
         self.lx = lx
 
         master_track = lx.find("LiveSet/MasterTrack")
@@ -107,7 +116,7 @@ class AbletonReader(Timeline):
             if t.tag == "MidiTrack":
                 tracks.append(AbletonMIDITrack(b2ff, t))
             elif t.tag == "AudioTrack":
-                tracks.append(AbletonAudioTrack(b2ff, t))
+                #tracks.append(AbletonAudioTrack(b2ff, t))
                 pass
             elif t.tag == "ReturnTrack":
                 self.returns.append(t)
@@ -115,10 +124,12 @@ class AbletonReader(Timeline):
         if duration == -1:
             duration = max([t.end for t in tracks])
         
-        for t in tracks:
-            t.constrain(0, duration)
+        # huh?
+        #for t in tracks:
+        #    t.constrain(0, duration)
 
-        super().__init__(duration, fps=fps, tracks=tracks)
+        super().__init__(duration=duration, fps=fps, timeables=tracks, findWords=False, name="Ableton")
+        #super().__init__(duration, fps=fps, tracks=tracks)
 
 if __name__ == "<run_path>":
     from coldtype import *
