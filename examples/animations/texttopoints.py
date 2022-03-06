@@ -10,6 +10,6 @@ def texttopoints(f):
         .pen()
         .removeOverlap()
         .flatten(10)
-        .nonlinear_transform(lambda x, y: (x+math.sin(f.i+(y*0.15))*10, y))
+        .nonlinear_transform(lambda x, y: (x+math.sin(f.i+(y*0.05))*10, y))
         .f(1)
         .ch(phototype(f.a.r, fill=hsl(0.6, 1, 0.7), cutw=10)))
