@@ -358,6 +358,12 @@ class TestRunon(unittest.TestCase):
 
         r = Runon().enumerate(range(0, 5), lambda en: Runon(en.e))
         self.assertEqual(r.sum(), [0, 0.25, 0.5, 0.75, 1])
+
+        r = Runon().enumerate(zip(["A", "B", "C"], [1, 2, 3]), lambda en:
+            Runon(f"{en.el[0]}{en.el[1]}"))
+        
+        self.assertEqual(r[0].v, "A1")
+        self.assertEqual(r[-1].v, "C3")
     
     def test_add(self):
         r = Runon(1, 2, 3)

@@ -39,7 +39,7 @@ class Runon:
         to_append = []
 
         if len(val) == 1 and not isinstance(val[0], Runon):
-            if isinstance(val[0], Iterable):
+            if isinstance(val[0], Iterable) and not isinstance(val[0], str):
                 to_append = val[0]
                 value = None
             else:
@@ -434,11 +434,11 @@ class Runon:
         return self
     
     def enumerate(self, enumerable, enumerator):
-        if len(enumerable) == 0:
-            return self
-        
         es = list(enumerable)
         length = len(es)
+
+        if length == 0:
+            return self
 
         if isinstance(enumerable, dict):
             for idx, k in enumerate(enumerable.keys()):
@@ -450,7 +450,7 @@ class Runon:
                 self.append(enumerator(RunonEnumerable(idx, item, e, length, k)))
         else:
             for idx, item in enumerate(es):
-                if idx == 0 and len(enumerable) == 1:
+                if idx == 0 and length == 1:
                     e = 0.5
                 else:
                     e = idx / (length-1)

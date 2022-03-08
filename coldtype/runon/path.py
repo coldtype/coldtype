@@ -1027,6 +1027,9 @@ class P(Runon):
 
     def xalign(self, rect=None, x="centerx", th=1, tv=0) -> "P":
 
+        if x == "C":
+            x = "CX"
+        
         if callable(rect):
             rect = rect(self)
         self.align(rect, x=x, y=None, th=th, tv=tv)
