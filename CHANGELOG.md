@@ -144,3 +144,10 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ### Added
 - support for platform-specific config files, `.coldtype.mac.py`, `.coldtype.win.py`, `.coldtype.lin.py`
 - minor Blender improvements for 3D workflow
+
+## [0.9.3] - 2022-03-08
+### Added
+- `C` as valid alias for `CX` on xalign
+### Fixed
+- `filterContours` copy before modify
+- Orphan-deletion in Blender
