@@ -75,6 +75,8 @@ class Renderer():
             
             all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
 
+            render_all_directory=parser.add_argument("-rad", "--render-all-directory", action="store_true", default=False, help="kick off KeyboardShortcut.RenderDirectory straightaway"),
+
             build=parser.add_argument("-b", "--build", action="store_true", default=False, help="Should the build function be run and the renderer quit immediately?"),
 
             release=parser.add_argument("-rls", "--release", action="store_true", default=False, help="Should the release function be run and the renderer quit immediately?"),
@@ -587,6 +589,9 @@ class Renderer():
         if not self.args.is_subprocess and not previewing:
             print(f"<coldtype: render: {render_count}(" + str(round(ptime.time() - start, 3)) + "s)>")
         
+        if len(self.actions_queued) > 0:
+            no_sound = True
+        
         if not previewing and not no_sound:
             if self.args.is_subprocess:
                 self.play_sound("Morse")
@@ -839,6 +844,8 @@ class Renderer():
                     return
             self.on_start()
             if not self.winmans.bg:
+                if self.args.render_all_directory:
+                    self.actions_queued.append(KeyboardShortcut.RenderDirectory)
                 self.winmans.run_loop()
             else:
                 self.on_exit()
@@ -980,6 +987,9 @@ class Renderer():
         elif shortcut == KeyboardShortcut.PlayToEnd:
             self.stop_at_end = True
             return Action.PreviewPlay
+        elif shortcut == KeyboardShortcut.Echo:
+            self.play_sound("Pop")
+            return Action.PreviewStoryboard
         elif shortcut == KeyboardShortcut.EnableAudio:
             self.source_reader.config.enable_audio = not self.source_reader.config.enable_audio
             self.winmans.mod_title("audio",
@@ -1153,6 +1163,14 @@ class Renderer():
         elif shortcut == KeyboardShortcut.CopySVGToClipboard:
             self.winmans.glsk.copy_previews_to_clipboard = True
             return Action.PreviewStoryboard
+        elif shortcut == KeyboardShortcut.RenderDirectory:
+            adjs = self.buildrelease_fn("adjacents")
+            if not adjs:
+                adjs = lambda: [1, 2, 3]
+            for _ in range(0, len(adjs())):
+                self.actions_queued.append(KeyboardShortcut.RenderAll)
+                self.actions_queued.append(KeyboardShortcut.LoadNextInDirectory)
+            return Action.PreviewStoryboardReload
         elif shortcut in [
             KeyboardShortcut.LoadNextInDirectory,
             KeyboardShortcut.LoadPrevInDirectory,

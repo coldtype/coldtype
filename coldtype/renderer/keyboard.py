@@ -22,6 +22,8 @@ class KeyboardShortcut(Enum):
     PlayPreview = "play_preview"
     PlayToEnd = "play_to_end"
 
+    Echo = "echo"
+
     ReloadSource = "reload_source"
     RestartApp = "restart_app"
     Quit = "quit"
@@ -33,8 +35,9 @@ class KeyboardShortcut(Enum):
     RenderOne = "render_one"
     RenderFrom = "render_from"
     RenderWorkarea = "render_workarea"
+    RenderDirectory = "render_directory"
     RenderAllAndPlay = "render_all_and_play"
-    RenderAllAndRelease = "render_all_and_release",
+    RenderAllAndRelease = "render_all_and_release"
     ToggleMultiplex = "toggle_multiplex"
 
     SetWorkareaIn = "set_workarea_in"
@@ -149,6 +152,8 @@ KeyboardShortcutExplainers = {
         "Play the current animation as fast as possible, evaluating the code live",
     KeyboardShortcut.PlayToEnd:
         "Same as PlayPreview, but will not loop",
+    KeyboardShortcut.Echo:
+        "Play a sound",
     KeyboardShortcut.EnableAudio:
         "If audio is defined on a renderable, toggle whether or not to play it",
     KeyboardShortcut.RestartApp:
@@ -171,6 +176,8 @@ KeyboardShortcutExplainers = {
         "Render all the frames starting with the current one",
     KeyboardShortcut.RenderWorkarea:
         "Render the workarea to disk (if a workarea is defined)",
+    KeyboardShortcut.RenderDirectory:
+        "Cycle adjacents and render all in each",
     KeyboardShortcut.ToggleMultiplex:
         "Toggle multiplexing (multicore rendering) on and off",
     KeyboardShortcut.OverlayInfo:
@@ -318,6 +325,9 @@ SHORTCUTS = {
     KeyboardShortcut.PlayToEnd: [
         [[], "e"]
     ],
+    KeyboardShortcut.Echo: [
+        [["shift"], "e"]
+    ],
     KeyboardShortcut.EnableAudio: [
         [[], "."]
     ],
@@ -346,6 +356,9 @@ SHORTCUTS = {
     ],
     KeyboardShortcut.RenderAllAndRelease: [
         [["shift", "cmd"], "a"],
+    ],
+    KeyboardShortcut.RenderDirectory: [
+        [["shift", "cmd", "alt"], "a"],
     ],
     KeyboardShortcut.RenderOne: [
         [["cmd"], "a"],
