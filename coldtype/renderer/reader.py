@@ -241,6 +241,7 @@ def filter_renderables(filtered_rs,
     viewer_solos=[],
     function_filters=[],
     class_filters=[],
+    previewing=False,
     ):
         
     if function_filters:
@@ -265,6 +266,13 @@ def filter_renderables(filtered_rs,
                         matches.append(r)
                 except re.error as e:
                     print("cf regex compilation error", e)
+        filtered_rs = matches
+    
+    if previewing:
+        matches = []
+        for r in filtered_rs:
+            if not r.render_only:
+                matches.append(r)
         filtered_rs = matches
     
     if len(viewer_solos) > 0:
@@ -547,6 +555,7 @@ class SourceReader():
         viewer_solos=[],
         function_filters=[],
         class_filters=[],
+        previewing=False,
         ):
         if not function_filters and self.config.function_filters:
             function_filters = self.config.function_filters
@@ -554,7 +563,8 @@ class SourceReader():
         return filter_renderables(self.candidates,
             viewer_solos=viewer_solos,
             function_filters=function_filters,
-            class_filters=class_filters)
+            class_filters=class_filters,
+            previewing=previewing)
     
     def frame_results(self, frame, class_filters=[], renderer_state=None):
         rs = self.renderables(class_filters=class_filters)

@@ -317,7 +317,7 @@ class Renderer():
             try:
                 for r in self.renderables(Action.PreviewStoryboardReload):
                     if isinstance(r, animation):
-                        if not r.preview_only:
+                        if not r.preview_only and not r.render_only:
                             self.last_animation = r
                         self.last_animations.append(r)
                     
@@ -372,10 +372,11 @@ class Renderer():
             render.rasterizer = "svg"
             render.fmt = "svg"
     
-    def renderables(self, trigger):
+    def renderables(self, trigger, previewing=False):
         _rs = self.source_reader.renderables(
             viewer_solos=self.viewer_solos,
-            class_filters=[])
+            class_filters=[],
+            previewing=previewing)
         
         for r in _rs:
             self.normalize_fmt(r)
@@ -431,7 +432,7 @@ class Renderer():
             start = ptime.time()
         
         if len(self.previews_waiting) > 0:
-            return 0, 0, []
+            return 0, 0, [], []
 
         previewing = (trigger in [
             Action.Initial,
@@ -462,7 +463,7 @@ class Renderer():
             renders = self.renderables(trigger)
             for r in renders:
                 check_watches(r)
-            return 0, 0, 0
+            return 0, 0, 0, []
 
         if previewing and not self.source_reader.config.load_only:
             if Overlay.Rendered in self.state.overlays:
@@ -481,16 +482,18 @@ class Renderer():
                         passes[0]
                     ])
                     overlay_count += 1
-                return overlay_count, 0, overlays
+                return overlay_count, 0, overlays, collected_passes
 
         self.state.previewing = previewing
         prev_renders = self.last_renders
         
-        renders = self.renderables(trigger)
+        renders = self.renderables(trigger, previewing)
 
         self.last_renders = renders
         preview_count = 0
         render_count = 0
+        collected_passes = []
+
         try:
             for render in renders:
                 if isinstance(render, runnable):
@@ -503,6 +506,8 @@ class Renderer():
                 render.last_passes = passes
                 
                 for rp in passes:
+                    collected_passes.append(rp)
+
                     output_path = rp.output_path
                     if output_transform:
                         output_path = output_transform(output_path)
@@ -598,7 +603,7 @@ class Renderer():
             else:
                 self.play_sound("Pop")
         
-        return preview_count, render_count, renders
+        return preview_count, render_count, renders, collected_passes
 
     def render(self, trigger, indices=[], ditto_last=False) -> Tuple[int, int]:
         #print(">RENDER!", trigger, self.action_waiting_reason)#, traceback.print_stack())
@@ -607,7 +612,7 @@ class Renderer():
             if trigger != Action.RenderIndices:
                 raise Exception("Invalid child process render action", trigger)
             else:
-                p, r, _ = self._single_thread_render(trigger, indices=indices)
+                p, r, _, _ = self._single_thread_render(trigger, indices=indices)
                 self.exit_code = 5 # mark as child-process
                 return p, r
         
@@ -629,7 +634,7 @@ class Renderer():
             #all_frames = self.animation().all_frames()
             #self._single_thread_render(Action.RenderIndices, [0, all_frames[-1]])
         
-        preview_count, render_count, renders = self._single_thread_render(trigger, indices, ditto_last=ditto_last)
+        preview_count, render_count, renders, passes = self._single_thread_render(trigger, indices, ditto_last=ditto_last)
         
         if not self.args.is_subprocess and render_count > 0:
             for render in renders:
@@ -641,6 +646,15 @@ class Renderer():
                     self.action_waiting_reason = "unclear"
 
             self.winmans.did_render(render_count, ditto_last)
+            
+        did_render_fn = self.buildrelease_fn("didRender")
+        if did_render_fn:
+            did_render_fn(trigger, passes)
+        
+        if trigger == Action.RenderAll:
+            did_render_all_fn = self.buildrelease_fn("didRenderAll")
+            if did_render_all_fn:
+                did_render_all_fn(passes)
 
         return preview_count, render_count
     
@@ -770,7 +784,7 @@ class Renderer():
             if should_halt:
                 return True
             if self.source_reader.program:
-                renders = self.renderables(Action.Resave)
+                renders = self.renderables(Action.Resave, previewing=True)
                 self.needs_new_context = self.calculate_window_size(renders)
                 if self.needs_new_context and trigger != Action.Initial:
                     self.debounced_actions["reset_extent"] = ptime.time()
@@ -910,6 +924,17 @@ class Renderer():
     def additional_actions(self):
         return []
     
+    def collect_passes(self):
+        trigger = Action.RenderAll
+        renders = self.renderables(trigger)
+        all_passes = []
+
+        for render in renders:
+            if not render.preview_only:
+                all_passes.extend(render.passes(trigger, self.state, [0]))
+        
+        return all_passes
+    
     def on_release(self, build=False, number=None):
         fnname = "build" if build else "release"
         if number is not None:
@@ -925,12 +950,8 @@ class Renderer():
                 return
         trigger = Action.RenderAll
         renders = self.renderables(trigger)
-        all_passes = []
+        all_passes = self.collect_passes()
         try:
-            for render in renders:
-                if not render.preview_only:
-                    all_passes.extend(render.passes(trigger, self.state, [0]))
-            
             if number is not None:
                 fn = fn[number]
 
@@ -1170,6 +1191,7 @@ class Renderer():
             for _ in range(0, len(adjs())):
                 self.actions_queued.append(KeyboardShortcut.RenderAll)
                 self.actions_queued.append(KeyboardShortcut.LoadNextInDirectory)
+            self.actions_queued.append(KeyboardShortcut.Release)
             return Action.PreviewStoryboardReload
         elif shortcut in [
             KeyboardShortcut.LoadNextInDirectory,

@@ -18,3 +18,7 @@ def render(f):
             .pen()
             .align(f.a.r.take(150, "mny"), th=0)
             .f(hsl((1-pe)+0.5)))))
+
+def didRenderAll(passes):
+    for p in passes:
+        print(p.output_path)

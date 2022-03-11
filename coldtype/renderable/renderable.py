@@ -108,6 +108,7 @@ class runnable():
         self.hidden = solo == -1
         self.solo = solo
         self.preview_only = True
+        self.render_only = False
         self.dst = None
         self.custom_folder = None
         self.name = None
@@ -152,6 +153,7 @@ class renderable():
         solo=False,
         rstate=False,
         preview_only=False,
+        render_only=False,
         direct_draw=False,
         clip=False,
         composites=False,
@@ -210,6 +212,7 @@ class renderable():
         self.hidden = solo == -1
         self.solo = solo
         self.preview_only = preview_only
+        self.render_only = render_only
         self.rstate = rstate
         self.clip = clip
         self.viewBox = viewBox
