@@ -22,7 +22,7 @@ def _call_idx_fn(fn, idx, arg):
         return fn(idx, arg)
 
 
-RunonEnumerable = namedtuple("RunonEnumerable", ["i", "el", "e", "len", "k"])
+RunonEnumerable = namedtuple("RunonEnumerable", ["i", "el", "e", "len", "k", "parent"])
 
 
 class RunonException(Exception):
@@ -162,7 +162,7 @@ class Runon:
         """subclass hook for __repr__"""
         return self._data
     
-    def __repr__(self):
+    def __repr__(self, **kwargs):
         v = self.printable_val()
         t = self._tag
         d = self.printable_data()
@@ -186,7 +186,14 @@ class Runon:
         if len(d) == 0:
             d = ""
         else:
-            d = " {" + ",".join([f"{k}={v}" for k,v in d.items()]) + "}"
+            if True:
+                ds = []
+                for k, _v in d.items():
+                    if len(kwargs) == 0 or kwargs.get(k, True):
+                        ds.append(f"{k}={_v}")
+                d = " {" + ",".join(ds) + "}"
+            else:
+                d = " {" + ",".join([f"{k}={v}" for k,v in d.items()]) + "}"
         
         if self.val_present():
             tv = type(self._val).__name__
@@ -243,7 +250,7 @@ class Runon:
     def __setitem__(self, index, pen):
         self._els[index] = pen
     
-    def tree(self, v=True, limit=100):
+    def tree(self, v=True, limit=100, **kwargs):
         out = []
         def walker(el, pos, data):
             if pos <= 0:
@@ -255,7 +262,7 @@ class Runon:
                 if pos == 0:
                     tab = tab[:-1] + "-"
                 
-                sel = str(el)
+                sel = el.__repr__(**kwargs)
                 sel = wrap(sel, limit, initial_indent="", subsequent_indent="  "*(dep+2) + " ")
                 out.append(tab + " " + "\n".join(sel))
         
@@ -447,14 +454,14 @@ class Runon:
                     e = 0.5
                 else:
                     e = idx / (length-1)
-                self.append(enumerator(RunonEnumerable(idx, item, e, length, k)))
+                self.append(enumerator(RunonEnumerable(idx, item, e, length, k, self)))
         else:
             for idx, item in enumerate(es):
                 if idx == 0 and length == 1:
                     e = 0.5
                 else:
                     e = idx / (length-1)
-                self.append(enumerator(RunonEnumerable(idx, item, e, length, idx)))
+                self.append(enumerator(RunonEnumerable(idx, item, e, length, idx, self)))
         return self
     
     # Hierarchical Operations
@@ -859,13 +866,19 @@ class Runon:
             layers = [1]*layers[0]
         
         els = []
+
         for layer in layers:
-            if callable(layer):
-                els.append(layer(self.copy()))
-            elif isinstance(layer, Chainable):
-                els.append(layer.func(self.copy()))
-            else:
-                els.append(self.copy())
+            try:
+                c = layer[0]
+                for x in range(0, c):
+                    els.append(layer[1](x, self.copy()))
+            except TypeError:
+                if callable(layer):
+                    els.append(layer(self.copy()))
+                elif isinstance(layer, Chainable):
+                    els.append(layer.func(self.copy()))
+                else:
+                    els.append(self.copy())
         
         self.reset_val()
         self._els = els
@@ -903,9 +916,9 @@ class Runon:
         # TODO do something with what's declared somehow?
         return self
 
-    def print(self, *args):
+    def print(self, *args, **kwargs):
         if len(args) == 0:
-            print(self.tree())
+            print(self.tree(**kwargs))
             return self
 
         for a in args:

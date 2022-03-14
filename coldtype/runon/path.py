@@ -1785,6 +1785,11 @@ class P(Runon):
         return samples
     
 
+    def onSamples(self, interval=10, fn=None):
+
+        return (type(self)().enumerate(self.samples(interval=interval), lambda s: fn(self, s)))
+    
+
     def length(self, t=1):
 
         """Get the length of the curve for time `t`"""
