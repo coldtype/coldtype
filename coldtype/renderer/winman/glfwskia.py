@@ -78,6 +78,8 @@ class WinmanGLFWSkia():
         glfw.window_hint(glfw.STENCIL_BITS, 8)
         #glfw.window_hint(glfw.SRGB_CAPABLE, glfw.TRUE)
         #GL.glEnable(GL.GL_FRAMEBUFFER_SRGB)
+
+        glfw.window_hint(glfw.RESIZABLE, glfw.FALSE)
         
         if self.config.window_chromeless:
             glfw.window_hint(glfw.DECORATED, glfw.FALSE)

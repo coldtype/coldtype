@@ -36,6 +36,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             for k, v in skia_paint_kwargs.items():
                 if not k.startswith("_"):
                     filtered_paint_kwargs[k] = v
+            #filtered_paint_kwargs["AntiAlias"] = False
             self.paint = skia.Paint(**filtered_paint_kwargs)
             if self.blendmode:
                 self.paint.setBlendMode(self.blendmode)
