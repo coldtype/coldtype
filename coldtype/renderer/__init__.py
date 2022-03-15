@@ -20,6 +20,8 @@ from coldtype.geometry import Rect
 from coldtype.text.reader import Font
 from coldtype.pens.svgpen import SVGPen
 
+from coldtype.renderable.tools import set_ffmpeg_command
+
 from coldtype.renderer.config import ConfigOption
 from coldtype.renderer.reader import SourceReader
 from coldtype.renderer.state import RendererState
@@ -169,6 +171,8 @@ class Renderer():
         self.exit_code = 0
         self.last_renders = []
         self.last_render_cleared = False
+
+        set_ffmpeg_command(self.source_reader.config.ffmpeg_command)
 
         # for multiplex mode
         self.running_renderers = []

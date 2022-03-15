@@ -16,7 +16,6 @@ from coldtype.color import bw, hsl
 
 from coldtype.renderable.renderable import renderable, Action, RenderPass, Overlay
 
-
 class animation(renderable, Timeable):
     """
     Base class for any frame-wise animation animatable by Coldtype
@@ -315,8 +314,12 @@ class FFMPEGExport():
         self.folder = template.parent.parent
 
         # https://github.com/typemytype/drawbot/blob/master/drawBot/context/tools/mp4Tools.py
+
+        from coldtype.renderable.tools import FFMPEG_COMMAND
+        print(">", FFMPEG_COMMAND)
+
         self.args = [
-            "ffmpeg",
+            FFMPEG_COMMAND,
             "-y", # overwrite existing files
             "-loglevel", "16", # 'error, 16' Show all errors
             "-r", str(self.a.timeline.fps)

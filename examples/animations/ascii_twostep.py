@@ -9,7 +9,7 @@ at = AsciiTimeline(1, """
                                 [c                        ]
 """)
 
-@animation((1080, 540), timeline=at, bg=1)
+@animation((1080, 540), timeline=at, bg=1, render_bg=1)
 def test_ascii(f):
     return (Glyphwise("TYPE", lambda g:
         Style(Font.ColdtypeObviously(), 100,

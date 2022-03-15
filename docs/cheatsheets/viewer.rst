@@ -19,6 +19,14 @@ The most common viewer shortcuts
 * ``r`` trigger an arbitrary ``release`` function defined in your source
 * ``b`` trigger an arbitrary ``build`` function defined in your source
 
+Utilities:
+
+* ``v`` opens the automatic timeline viewer (only applicable for animations, mostly used for MIDI and AsciiTimeline-based animations)
+* ``p`` prints the current tree
+* ``u`` loads the next file in the directory (sorted alphabetically)
+* ``y`` loads the previous file in the directory (sorted alphabetically)
+* ``s`` shows the current file output directory in the finder
+
 
 Command-line window modifications
 ---------------------------------
