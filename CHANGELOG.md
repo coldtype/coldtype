@@ -151,3 +151,7 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ### Fixed
 - `filterContours` copy before modify
 - Orphan-deletion in Blender
+
+## [0.9.5] - 2022-03-24
+### Fixed
+- `bake=True` for a `@b3d_animation`
