@@ -358,12 +358,12 @@ class b3d_animation(animation):
         def bakewalk(p, pos, data):
             if pos == 0:
                 fi = data["idx"][0]
-                (p.ch(b3d(f"CTBakedAnimation_{self.name}",
-                    lambda bp: bp
+                (p.ch(b3d(callback=lambda bp: bp
                         .show_on_frame(fi)
                         .print(f"Baking frame {fi}..."),
+                    collection=f"CTBakedAnimation_{self.name}",
                     dn=True,
-                    tag_prefix=f"ct_baked_frame_{fi}_{self.name}")))
+                    tag_prefix=f"ct_baked_frame_{fi}_{self.name}__")))
         
         to_bake = P()
         for ps in self.passes(Action.RenderAll, None)[:]:

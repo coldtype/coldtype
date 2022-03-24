@@ -186,6 +186,8 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     if r.bake:
                         if statics:
                             walk_to_b3d(r.baked_frames(), renderable=r)
+                            if r.reset_to_zero:
+                                bpy.data.scenes[0].frame_set(0)
                     else:
                         animation_found = True
                         result = run_passes()
