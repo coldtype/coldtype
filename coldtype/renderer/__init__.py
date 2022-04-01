@@ -316,7 +316,7 @@ class Renderer():
             self.source_reader.reload(
                 output_folder_override=self.args.output_folder)
             
-            self.winmans.did_reload(self.source_reader.filepath)
+            self.winmans.did_reload(self.source_reader.filepath, self.source_reader)
             
             try:
                 for r in self.renderables(Action.PreviewStoryboardReload):
@@ -1409,6 +1409,9 @@ class Renderer():
                 self.action_waiting = Action.PreviewStoryboard
                 self.action_waiting_reason = "soft_watch"
                 return
+            
+            if flag == "restart":
+                self.restart()
             
             if self.args.memory and process:
                 memory = bytesto(process.memory_info().rss)

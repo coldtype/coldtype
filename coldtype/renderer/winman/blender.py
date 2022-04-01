@@ -20,12 +20,12 @@ class WinmanBlender(WinmanPassthrough):
             blender_io.blend_file,
             self.command_file)
     
-    def write_command(self, cmd, arg):
+    def write_command(self, cmd, arg, kwargs=[]):
         try:
             cb = self.command_file
             if cb.exists():
                 cb.unlink()
-            cb.write_text(f"{cmd},{str(arg)}")
+            cb.write_text(f"{cmd},{str(arg)};{str(kwargs)}")
         except FileNotFoundError:
             pass
 
@@ -35,10 +35,10 @@ class WinmanBlender(WinmanPassthrough):
         else:
             self.write_command("refresh_sequencer", count)
     
-    def reload(self, filepath):
+    def reload(self, filepath, source_reader):
         ph = path_hash(filepath)
         self.command_file = Path(f"~/.coldtype/{ph}.txt").expanduser()
-        self.write_command("import", filepath)
+        self.write_command("import", filepath, source_reader.inputs)
     
     def toggle_playback(self, toggle):
         self.write_command("play_preview", toggle)

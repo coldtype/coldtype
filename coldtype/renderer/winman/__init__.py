@@ -97,9 +97,9 @@ class Winmans():
         if self.glsk:
             self.glsk.reset_extent(extent)
 
-    def did_reload(self, filepath):
+    def did_reload(self, filepath, source_reader):
         if self.b3d:
-            self.b3d.reload(filepath)
+            self.b3d.reload(filepath, source_reader)
     
     def did_reload_animation(self, rs):
         if self.audio:

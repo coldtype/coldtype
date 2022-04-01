@@ -219,9 +219,9 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         
         return animation_found
 
-    def reimport(self, arg):
+    def reimport(self, arg, inputs):
         try:
-            self.sr = SourceReader(arg, use_blender=True)
+            self.sr = SourceReader(arg, use_blender=True, inputs=inputs)
             self.sr.unlink()
             self.candidates = self.sr.renderables()
             #bpy.data.scenes[0].frame_start = 0
@@ -264,9 +264,11 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             
             for line in self.file.read_text().splitlines():
                 line = line.rstrip("\n")
-                cmd, arg = line.split(",")
+                start, kwargs = [t.strip() for t in line.split(";")]
+                kwargs = eval(kwargs)
+                cmd, arg = start.split(",")
                 if cmd == 'import':
-                    self.reimport(arg)
+                    self.reimport(arg, kwargs)
                 elif cmd == "play_preview":
                     bpy.ops.screen.animation_play()
                 elif cmd == "frame_offset":

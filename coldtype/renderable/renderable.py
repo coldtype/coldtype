@@ -150,6 +150,7 @@ class renderable():
         postfn=None,
         watch=[],
         watch_soft=[],
+        watch_restart=[],
         solo=False,
         rstate=False,
         preview_only=False,
@@ -203,6 +204,10 @@ class renderable():
         self.watch_soft = []
         for w in watch_soft:
             self.watch_soft.append(self.add_watchee(w, "soft"))
+        
+        self.watch_restart = []
+        for w in watch_restart:
+            self.watch_restart.append(self.add_watchee(w, "restart"))
 
         self.cond = cond
         self.name = name
