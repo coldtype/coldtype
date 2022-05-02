@@ -115,7 +115,7 @@ def render_as_image(r, res):
 
     path = r.filepath.parent / "renders" / (r.filepath.stem + "_livepreview.png")
 
-    if isinstance(res, Path) or isinstance(res, str):
+    if isinstance(res, Path) or isinstance(res, str) or False:
         prp = Path(str(res))
         if prp.exists():
             shutil.copy(str(prp), str(path))
@@ -133,10 +133,14 @@ def render_as_image(r, res):
 # original idea: https://blender.stackexchange.com/questions/15670/send-instructions-to-blender-from-external-application
 
 def display_image_in_blender(img_path):
-    if img_path.name in bpy.data.images:
-        bpy.data.images[img_path.name].reload()
-    else:
-        bpy.data.images.load(str(img_path))
+    try:
+        if img_path.name in bpy.data.images:
+            bpy.data.images[img_path.name].reload()
+        else:
+            bpy.data.images.load(str(img_path))
+    except RuntimeError:
+        print("> failed to load livepreview")
+
 
 class ColdtypeWatchingOperator(bpy.types.Operator):
     bl_idname = "wm.coldtype_watching_operator"

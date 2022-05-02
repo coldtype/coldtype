@@ -116,7 +116,7 @@ class SegmentingMixin():
                 self._val.value.insert(insert_idx+1, ("lineTo", c2))
         return self
     
-    def samples(self, interval=10):
+    def samples(self, interval=10, even=False):
         cc = CurveCutter(self)
         samples = []
         length = cc.calcCurveLength()

@@ -51,6 +51,8 @@ class AbletonMIDITrack(Timeline):
         automation = []
         for a in track.xpath("AutomationEnvelopes/Envelopes/AutomationEnvelope/Automation"):
             automation.append(a)
+
+        self.xml = track
         self.automation = automation
 
     def notes(self):

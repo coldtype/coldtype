@@ -1,4 +1,5 @@
 import skia, struct
+from pathlib import Path
 
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 from coldtype.pens.skiapathpen import SkiaPathPen
@@ -294,6 +295,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             img = img.resize(int(w), int(h))
         
         if disk:
+            Path(disk).parent.mkdir(exist_ok=True, parents=True)
             img.save(disk, skia.kPNG)
             #return disk
         return img

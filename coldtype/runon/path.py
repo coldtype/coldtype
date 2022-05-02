@@ -1764,7 +1764,7 @@ class P(Runon):
         return self
     
 
-    def samples(self, interval=10):
+    def samples(self, interval=10, even=False):
 
         cc = CurveCutter(self)
         samples = []
@@ -1785,9 +1785,9 @@ class P(Runon):
         return samples
     
 
-    def onSamples(self, interval=10, fn=None):
+    def onSamples(self, interval=10, even=False, fn=None):
 
-        return (type(self)().enumerate(self.samples(interval=interval), lambda s: fn(self, s)))
+        return (type(self)().enumerate(self.samples(interval=interval, even=even), lambda s: fn(self, s)))
     
 
     def length(self, t=1):

@@ -486,7 +486,7 @@ class Renderer():
                         passes[0]
                     ])
                     overlay_count += 1
-                return overlay_count, 0, overlays, collected_passes
+                return overlay_count, 0, overlays, []
 
         self.state.previewing = previewing
         prev_renders = self.last_renders
