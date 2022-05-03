@@ -14,6 +14,11 @@ from coldtype.geometry import Rect
 
 from typing import Union
 
+import os
+import platform
+
+my_os = platform.system()
+
 try:
     from skia import Matrix
     from coldtype.pens.skiapathpen import SkiaPathPen
@@ -58,13 +63,32 @@ _prefixes = [
 ]
 
 # TODO windows & linux?
+localappdata = os.environ["LOCALAPPDATA"]
 
-ALL_FONT_DIRS = [
+WINDOWS_FONT_DIRS = [
+    localappdata + "/Microsoft/Windows/Fonts/",
+    "C:/Windows/Fonts",
+
+]
+
+MAC_FONT_DIRS = [
+
     ".",
     "/System/Library/Fonts",
     "/Library/Fonts",
     "~/Library/Fonts",
+
 ]
+ALL_FONT_DIRS = []
+
+
+
+if(my_os == 'Darwin'):
+    ALL_FONT_DIRS += MAC_FONT_DIRS
+elif(my_os == 'Windows'):
+    ALL_FONT_DIRS += WINDOWS_FONT_DIRS
+else:
+    raise Exception("Audio file does not exist")
 
 FONT_FIND_DEPTH = 3
 
