@@ -215,7 +215,7 @@ class Font():
         if dir not in ALL_FONT_DIRS:
             ALL_FONT_DIRS.insert(0, dir)
     
-    def Normalize(font, fallback="Times"):
+    def Normalize(font, fallback=True):
         if isinstance(font, Path):
             font = str(font)
         
@@ -225,10 +225,9 @@ class Font():
                 _font.load() # necessary?
                 return _font
             except FontNotFoundException as e:
-                if on_windows() and fallback == "Times":
-                    fallback = "times"
                 if fallback:
-                    return Font.Normalize(fallback)
+                    print("font not found:", font)
+                    return Font.RecursiveMono()
                 else:
                     raise e
         elif isinstance(font, Font):
@@ -236,10 +235,13 @@ class Font():
         else: # it's a list of fonts
             for f in font:
                 try:
-                    return Font.Normalize(f, fallback=None)
+                    return Font.Normalize(f, fallback=False)
                 except FontNotFoundException:
                     pass
-            return Font.Normalize(fallback)
+            if fallback:
+                return Font.RecursiveMono()
+            else:
+                raise FontNotFoundException()
 
     @staticmethod
     def ColdtypeObviously():
