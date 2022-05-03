@@ -1,6 +1,9 @@
 import unittest
+from pathlib import Path
+
 from coldtype.geometry import Rect
 from coldtype.color import hsl
+from coldtype.os import on_mac, on_windows
 from coldtype.text.composer import StSt, Font, Style
 from coldtype.runon.path import P
 
@@ -50,6 +53,19 @@ class TestReader(unittest.TestCase):
         self.assertEqual(b[1].ambit().x, 155.75 + 20*(250/1000))
         self.assertEqual(a[2].ambit().x, 273.5)
         self.assertEqual(b[2].ambit().x, 273.5 + 20*(250/1000) + 100*(250/1000))
+    
+    def test_normalize(self):
+        style = Style("asdf", 100)
+        font_path = Path(style.font.path).relative_to(Path(".").absolute())
+
+        self.assertEqual(str(font_path), "coldtype/demo/RecMono-CasualItalic.ttf")
+
+        if on_mac():
+            style = Style("Times", 100)
+            self.assertEqual(style.font.path.name, "Times.ttc")
+        elif on_windows():
+            style = Style("times", 100)
+            self.assertEqual(style.font.path.name, "times.ttf")
 
 if __name__ == "__main__":
     unittest.main()

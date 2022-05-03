@@ -1,6 +1,7 @@
-import ast, platform, os, hashlib
+import ast, hashlib
 from enum import Enum
 
+from coldtype.os import on_linux, on_mac, on_windows, System, play_sound
 
 class Watchable(Enum):
     Source = "Source"
@@ -52,36 +53,7 @@ def file_and_line_to_def(filepath, lineno):
                 candidate = item
     if candidate:
         return candidate.name
-    
-
-def play_sound(name="Pop"):
-    if platform.system() == "Darwin":
-        os.system(f"afplay /System/Library/Sounds/{name}.aiff")
 
 
 def path_hash(path):
     return hashlib.sha1(str(path.resolve()).encode("UTF-8")).hexdigest()[:10]
-
-
-class System(Enum):
-    Darwin = "Darwin"
-    Windows = "Windows"
-    Linux = "Linux"
-
-def operating_system():
-    sys = platform.system()
-    if sys == "Darwin":
-        return System.Darwin
-    elif sys == "Windows":
-        return System.Windows
-    elif sys == "Linux":
-        return System.Linux
-
-def on_windows():
-    return operating_system() == System.Windows
-
-def on_mac():
-    return operating_system() == System.Darwin
-
-def on_linux():
-    return operating_system() == System.Linux
