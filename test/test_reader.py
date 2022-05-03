@@ -65,7 +65,7 @@ class TestReader(unittest.TestCase):
             self.assertEqual(style.font.path.name, "Times.ttc")
         elif on_windows():
             style = Style("times", 100)
-            self.assertEqual(style.font.path.name, "Times.ttc")
+            self.assertEqual(style.font.path.name, "times.ttf")
 
 if __name__ == "__main__":
     unittest.main()
