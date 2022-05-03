@@ -12,6 +12,8 @@ from coldtype.color import normalize_color, rgb
 from coldtype.runon.path import P
 from coldtype.geometry import Rect
 
+from coldtype.os import on_linux, on_mac, on_windows
+
 from typing import Union
 
 try:
@@ -57,14 +59,27 @@ _prefixes = [
     ["", "/Library/Fonts"]
 ]
 
-# TODO windows & linux?
+if on_mac():
+    ALL_FONT_DIRS = [
+        ".",
+        "/System/Library/Fonts",
+        "/Library/Fonts",
+        "~/Library/Fonts",
+    ]
 
-ALL_FONT_DIRS = [
-    ".",
-    "/System/Library/Fonts",
-    "/Library/Fonts",
-    "~/Library/Fonts",
-]
+elif on_windows():
+    ALL_FONT_DIRS = [
+        ".",
+        "C:/Windows/Fonts",
+    ]
+
+    localappdata = os.environ.get("LOCALAPPDATA")
+    if localappdata:
+        ALL_FONT_DIRS.append(localappdata + "/Microsoft/Windows/Fonts/")
+
+elif on_linux():
+    # TODO what are the default linux font installation dirs?
+    pass
 
 FONT_FIND_DEPTH = 3
 
