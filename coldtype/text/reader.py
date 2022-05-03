@@ -75,7 +75,7 @@ elif on_windows():
 
     localappdata = os.environ.get("LOCALAPPDATA")
     if localappdata:
-        ALL_FONT_DIRS.append(localappdata + "/Microsoft/Windows/Fonts/")
+        ALL_FONT_DIRS.append(str(Path(localappdata) / "Microsoft/Windows/Fonts/"))
 
 elif on_linux():
     # TODO what are the default linux font installation dirs?
