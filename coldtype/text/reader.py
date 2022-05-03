@@ -225,6 +225,8 @@ class Font():
                 _font.load() # necessary?
                 return _font
             except FontNotFoundException as e:
+                if on_windows() and fallback == "Times":
+                    fallback = "times"
                 if fallback:
                     return Font.Normalize(fallback)
                 else:
