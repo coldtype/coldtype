@@ -3,7 +3,7 @@ from pathlib import Path
 
 from coldtype.geometry import Rect
 from coldtype.color import hsl
-from coldtype.os import on_mac, on_windows
+from coldtype.osutil import on_mac, on_windows
 from coldtype.text.composer import StSt, Font, Style
 from coldtype.runon.path import P
 

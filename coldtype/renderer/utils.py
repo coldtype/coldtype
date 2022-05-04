@@ -1,7 +1,7 @@
 import ast, hashlib
 from enum import Enum
 
-from coldtype.os import on_linux, on_mac, on_windows, System, play_sound
+from coldtype.osutil import on_linux, on_mac, on_windows, System, play_sound
 
 class Watchable(Enum):
     Source = "Source"

@@ -12,7 +12,7 @@ from coldtype.color import normalize_color, rgb
 from coldtype.runon.path import P
 from coldtype.geometry import Rect
 
-from coldtype.os import on_linux, on_mac, on_windows
+from coldtype.osutil import on_linux, on_mac, on_windows
 
 from typing import Union
 
