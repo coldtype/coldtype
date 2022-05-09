@@ -59,6 +59,8 @@ _prefixes = [
     ["", "/Library/Fonts"]
 ]
 
+ALL_FONT_DIRS = []
+
 if on_mac():
     ALL_FONT_DIRS = [
         ".",
