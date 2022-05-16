@@ -6,7 +6,7 @@ from coldtype.geometry import curve
 
 from coldtype.geometry.rect import Rect
 from coldtype.runon.path import P
-from coldtype.pens.blenderpen import BlenderPen, BPH
+from coldtype.pens.blenderpen import BlenderPen, BlenderPenCube, BPH
 from coldtype.color import hsl
 
 from coldtype.time import Frame, Timeline, Timeable
@@ -82,7 +82,7 @@ class BlenderTimeline(Timeline):
 
 def b3d(callback:Callable[[BlenderPen], BlenderPen],
     collection="Coldtype",
-    plane=False,
+    primitive=None,
     dn=False,
     cyclic=True,
     material=None,
@@ -122,7 +122,7 @@ def b3d(callback:Callable[[BlenderPen], BlenderPen],
             tag_prefix=(tag_prefix or prev.get("tag_prefix")),
             dn=dn,
             cyclic=cyclic,
-            plane=plane,
+            primitive=primitive,
             zero=zero,
             #reposition=c,
             upright=upright))
@@ -199,8 +199,14 @@ def walk_to_b3d(result:P,
                 denovo = bdata.get("dn", dn)
                 cyclic = bdata.get("cyclic", True)
 
-                if bdata.get("plane"):
-                    bp = p.cast(BlenderPen).draw(coll, plane=True, material=material, dn=True)
+                primitive = bdata.get("primitive")
+
+                if primitive is not None:
+                    _class = BlenderPen
+                    if primitive == "cube":
+                        _class = BlenderPenCube
+                    
+                    bp = p.cast(_class).draw(coll, primitive=primitive, material=material, dn=True)
                 else:
                     bp = p.cast(BlenderPen).draw(coll, dn=denovo, material=material, cyclic=cyclic)
                 

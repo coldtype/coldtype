@@ -30,28 +30,28 @@ class BpyWorld(_Chainable):
     
     deselectAll = deselect_all
     
-    def delete_previous(self, collection="Coldtype", orphans=True):
+    def delete_previous(self, collection="Coldtype", orphans=True, keep=[]):
         self.deselect_all()
 
         BpyCollection.Find(collection).delete_hierarchy()
         if orphans:
-            self.deleteOrphans()
+            self.deleteOrphans(keep=keep)
         return self
     
     deletePrevious = delete_previous
 
-    def deleteOrphans(self):
+    def deleteOrphans(self, keep=[]):
         from bpy import data as D
         
         props = ["curves", "meshes", "materials", "objects"]
         for x in range(2):
             for c in D.collections:
-                if "RigidBodyWorld" in c.name or c.users == 0:
+                if ("RigidBodyWorld" in c.name or c.users == 0) and c.name not in keep:
                     bpy.data.collections.remove(c)
 
             for p in props:
                 for block in getattr(D, p):
-                    if block.users == 0:
+                    if block.users == 0 and block.name not in keep:
                         getattr(D, p).remove(block)
         
         return self

@@ -94,12 +94,15 @@ class BPH():
             created = True
             if _type == "Bezier":
                 bpy.ops.curve.primitive_bezier_curve_add()
-            elif _type == "Plane":
+            elif _type == "plane":
                 bpy.ops.mesh.primitive_plane_add()
+            elif _type == "cube":
+                bpy.ops.mesh.primitive_cube_add()
             bc = bpy.context.object
             bc.name = name
             bc.data.name = name
             #name = bc.name
+            
             if _type == "Bezier":
                 if cyclic:
                     bc.data.dimensions = "2D"
@@ -107,10 +110,20 @@ class BPH():
                     bc.data.extrude = 0.1
                 else:
                     bc.data.dimensions = "3D"
-            elif _type == "Plane":
+            elif _type == "plane":
                 if container:
                     bc.scale[0] = container.w/2
                     bc.scale[1] = container.h/2
+                    bc.location[0] = container.x + container.w/2
+                    bc.location[1] = container.y + container.h/2
+                    bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
+                    bpy.ops.object.transform_apply()
+            elif _type == "cube":
+                if container:
+                    bc.scale[0] = container.w/2
+                    bc.scale[1] = container.h/2
+                    bc.scale[2] = 0.1
+
                     bc.location[0] = container.x + container.w/2
                     bc.location[1] = container.y + container.h/2
                     bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
@@ -407,23 +420,13 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
         self.locate_relative(x=+c.x/100, y=+c.y/100)
         return self
     
-    def draw(self, collection, style=None, scale=0.01, cyclic=True, dn=False, plane=False, material="auto"):
+    def draw(self, collection, style=None, scale=0.01, cyclic=True, dn=False, primitive=None, material="auto"):
         self.material = material
 
-        if plane:
-            self.obj, self.created = BPH.Primitive("Plane", collection, self.tag, dn=dn, material=material, container=self.dat.ambit().scale(scale))
+        if primitive is not None:
+            self.obj, self.created = BPH.Primitive(primitive, collection, self.tag, dn=dn, material=material, container=self.dat.ambit().scale(scale))
         else:
             self.obj, self.created = BPH.Primitive("Bezier", collection, self.tag, dn=dn, material=material, cyclic=cyclic)
-
-            if material and material != "auto":
-                try:
-                    mat = bpy.data.materials[material]
-                except KeyError:
-                    mat = bpy.data.materials.new(material)
-                    mat.use_nodes = True
-                    
-                self.obj.data.materials.clear()
-                self.obj.data.materials.append(mat)
 
             if cyclic:
                 self.obj.data.fill_mode = "BOTH"
@@ -438,8 +441,20 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
                 self.draw_on_bezier_curve(self.obj.data, cyclic=cyclic)
             except:
                 pass
+        
+        if material and material != "auto":
+            try:
+                mat = bpy.data.materials[material]
+            except KeyError:
+                mat = bpy.data.materials.new(material)
+                mat.use_nodes = True
+                
+            self.obj.data.materials.clear()
+            self.obj.data.materials.append(mat)
+        
         for attrs, attr in self.findStyledAttrs(style):
             self.applyDATAttribute(attrs, attr)
+
         return self
 
     def draw_on_bezier_curve(self, bez, cyclic=True):
@@ -460,4 +475,12 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
                 pt.handle_right = BPH.Vector(r)
 
     def noop(self, *args, **kwargs):
+        return self
+
+class BlenderPenCube(BlenderPen):
+    def extrude(self, amount=0.1, apply=False):
+        with self.obj_selected():
+            self.obj.scale[2] = amount*10
+            if apply:
+                bpy.ops.object.transform_apply()
         return self
