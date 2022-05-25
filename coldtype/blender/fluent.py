@@ -345,6 +345,9 @@ class BpyObj(_Chainable):
     
     applyTransform = apply_transform
 
+    def applyScale(self):
+        return self.applyTransform(location=False, rotation=False, scale=True, properties=False)
+
     def apply_modifier(self, name):
         with self.obj_selected():        
             #bpy.ops.object.modifier_set_active(modifier=name)
