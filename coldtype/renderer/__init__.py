@@ -1195,6 +1195,7 @@ class Renderer():
             for _ in range(0, len(adjs())):
                 self.actions_queued.append(KeyboardShortcut.RenderAll)
                 self.actions_queued.append(KeyboardShortcut.LoadNextInDirectory)
+                self.actions_queued.append(Action.PreviewStoryboardReload)
             self.actions_queued.append(KeyboardShortcut.Release)
             return Action.PreviewStoryboardReload
         elif shortcut in [
@@ -1327,8 +1328,9 @@ class Renderer():
             for k, v in self.debounced_actions.items():
                 if v:
                     if (now - v) > self.source_reader.config.debounce_time:
-                        self.action_waiting = Action.PreviewStoryboardReload
-                        self.action_waiting_reason = "debouncing"
+                        #self.action_waiting = Action.PreviewStoryboardReload
+                        self.actions_queued.append(Action.PreviewStoryboardReload)
+                        #self.action_waiting_reason = "debouncing"
                         self.debounced_actions[k] = None
 
         if self.action_waiting:
