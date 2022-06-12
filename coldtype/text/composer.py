@@ -244,7 +244,7 @@ def StSt(text,
 GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e", "l", "li"])
 
 
-def Glyphwise(st, styler, start=0, line=0):
+def Glyphwise(st, styler, start=0, line=0, multiline=False):
     # TODO possible to have an implementation
     # aware of a non-1-to-1 mapping of characters
     # to glyphs? seems very difficult if not impossible,
@@ -286,7 +286,7 @@ def Glyphwise(st, styler, start=0, line=0):
 
     try:
         lines = st.split("\n")
-        if len(lines) > 1:
+        if len(lines) > 1 or multiline:
             gs = []
             start = 0
             for lidx, l in enumerate(lines):
