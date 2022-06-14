@@ -195,10 +195,14 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     else:
                         animation_found = True
                         result = run_passes()
-                        if r.renderer == "b3d":
-                            walk_to_b3d(result, renderable=r)
-                        else:
-                            raise Exception("r.renderer not supported", r.renderer)
+                        if result and len(result) > 0:
+                            if r.renderer == "b3d":
+                                walk_to_b3d(result, renderable=r)
+                            else:
+                                raise Exception("r.renderer not supported", r.renderer)
+                        
+                        if r.reset_to_zero:
+                            bpy.data.scenes[0].frame_set(0)
                         
                         if prerendered:
                             display_image(r, ps[0].output_path)

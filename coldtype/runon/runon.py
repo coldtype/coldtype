@@ -487,12 +487,12 @@ class Runon:
             out.append(el._val)
         return out
     
-    def reverse(self, recursive=False):
+    def reverse(self, recursive=False, winding=True):
         """in-place element reversal"""
         self._els = list(reversed(self._els))
         if recursive:
             for el in self._els:
-                el.reverse(recursive=True)
+                el.reverse(recursive=True, winding=winding)
         return self
     
     def shuffle(self, seed=0):

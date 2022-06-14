@@ -61,10 +61,6 @@ def drummachine(f):
     # Now with the `style` variable settled, we can construct a multi-line text lockup with the `StSt` class, by passing in a rectangle to hold the lockup, then the text itself, and the style object we created above.
 
     # We can also set the leading of the multi-line setting here, by specifying `leading=` as a function of the kick signal.
-
-    # pens = (StSt("COLD\nTYPE", style,
-    #     leading=10+kick.ease()*50))
-    #     .align(f.a.r))
     
     pens = (StSt("COLD\nTYPE", style,
         leading=kick.adsr(ar["KD"], r=(10, 50)))
@@ -164,6 +160,6 @@ def drummachine(f):
         P(f.a.r).f(0),
         ghz_logo.f(hsl(0.9, 0.55, 0.5)),
         (pens.fssw(1, 0, 15, 1)
-            .reversePens()
+            .reverse()
             .translate(0, 100)
             .ch(phototype(f.a.r, cut=190, cutw=8)))])

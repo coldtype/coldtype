@@ -30,17 +30,16 @@ class BpyWorld(_Chainable):
     
     deselectAll = deselect_all
     
-    def delete_previous(self, collection="Coldtype", orphans=True, keep=[]):
+    def delete_previous(self, collection="Coldtype", keep=[], materials=True, curves=True, meshes=True, objects=True):
         self.deselect_all()
 
         BpyCollection.Find(collection).delete_hierarchy()
-        if orphans:
-            self.deleteOrphans(keep=keep)
+        self.deleteOrphans(keep=keep, materials=materials, curves=curves, meshes=meshes, objects=objects)
         return self
     
     deletePrevious = delete_previous
 
-    def deleteOrphans(self, keep=[]):
+    def deleteOrphans(self, keep=[], **kwargs):
         from bpy import data as D
         
         props = ["curves", "meshes", "materials", "objects"]
@@ -50,9 +49,10 @@ class BpyWorld(_Chainable):
                     bpy.data.collections.remove(c)
 
             for p in props:
-                for block in getattr(D, p):
-                    if block.users == 0 and block.name not in keep:
-                        getattr(D, p).remove(block)
+                if kwargs.get(p):
+                    for block in getattr(D, p):
+                        if block.users == 0 and block.name not in keep:
+                            getattr(D, p).remove(block)
         
         return self
     
@@ -309,7 +309,6 @@ class BpyObj(_Chainable):
         bpy.ops.object.empty_add(type="PLAIN_AXES")
         bc = bpy.context.object
         bc.name = self.obj.name + "_EmptyOrigin"
-        print("EMPTY ORIGIN", bc.name)
         self.eo = bc
         BpyObj.Find(bc.name).collect(collection)
         return self

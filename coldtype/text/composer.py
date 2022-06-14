@@ -199,7 +199,7 @@ def StSt(text,
     strip=True,
     multiline=False,
     #xa="mdx",
-    **kwargs):
+    **kwargs) -> P:
 
     if not isinstance(text, str):
         text = "\n".join(text)

@@ -1,28 +1,48 @@
 from coldtype import *
 from coldtype.blender import *
 
+@b3d_runnable()
+def setup(bw:BpyWorld):
+    bw.deletePrevious(materials=False)
+
+@b3d_renderable(center=(0, 1), upright=1, reset_to_zero=1)
+def bg(r):
+    return (P(r)
+        .tag("bg")
+        .ch(b3d(lambda p: p
+            .extrude(0.1)
+            , material="bg_mat")))
+
 @b3d_renderable(center=(0, 1), upright=1)
 def displace(r):
-    return (StSt("ABC", Font.MutatorSans(), 350
-        , wdth=0, wght=1)
-        .align(r)
-        .pen()
+    return (
+        #StSt("S", "OhnoSoftieVariable.ttf", 850, wdth=1, wght=1)
+        #.align(r)
+        #.pen()
+        P().rect(r.inset(300))
         .tag("glyph")
-        .ch(b3d(lambda p: p.extrude(1)
+        .ch(b3d(lambda p: p
+            .extrude(1)
             .convertToMesh()
             .remesh(7)
             .applyModifier("Remesh")
             .makeVertexGroup(lambda p: p.co[2] > 0, name="front")
+            .addEmptyOrigin()
             .displace(
-                strength=0.85,
+                strength=0.65,
                 midlevel=1,
                 texture="Texture",
-                coords_object="Empty",
+                coords_object="glyph_EmptyOrigin",
                 direction="Z",
                 vertex_group="front")
             .subsurface()
             .smooth(factor=5, repeat=2, x=0, y=0, z=1)
             .shadeSmooth()
-            , dn=1
-            , material="sponge"
-            , upright=1)))
+            , material="sponge")))
+
+@b3d_animation(tl=60)
+def animator(f):
+    (BpyObj.Find("bg")
+        .locate(y=f.e("eeo", 1, r=(1, -0.65))))
+    (BpyObj.Find("glyph_EmptyOrigin")
+        .rotate(z=f.e("l", 0, r=(0, 360))))

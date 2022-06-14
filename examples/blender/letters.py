@@ -9,6 +9,7 @@ def letters(f):
         .translate(0, 200)
         .f(1)
         .pen()
+        .align(f.a.r)
         .ch(b3d(lambda bp: bp
             .extrude(0.01)
             .rotate(45))))
