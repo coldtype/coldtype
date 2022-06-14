@@ -250,9 +250,12 @@ class b3d_runnable(runnable):
     def __init__(self,
         solo=False,
         cond=None,
-        once=True
+        once=True,
+        delay=False
         ):
         self.once = once
+        self.delay = delay
+
         if cond is not None:
             super().__init__(solo=solo, cond=lambda: cond and bool(bpy))
         else:

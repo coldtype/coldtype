@@ -152,7 +152,10 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
     current_frame = -1
     persisted = None
 
+    _delayed_runnables = []
+
     def render_current_frame(self, statics=False):
+        delayed_runnables = []
         out = []
         animation_found = False
         frame = self.current_frame
@@ -166,9 +169,15 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             if isinstance(r, b3d_runnable):
                 if r.once:
                     if statics:
-                        r.run()
+                        if r.delay:
+                            delayed_runnables.append(r)
+                        else:
+                            r.run()
                 else:
-                    r.run()
+                    if r.delay:
+                        delayed_runnables.append(r)
+                    else:
+                        r.run()
             else:
                 out.append(r)
 
@@ -225,6 +234,8 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             if hasattr(o, "post_run") and o.post_run:
                 o.post_run()
         
+        if statics:
+            self._delayed_runnables = delayed_runnables
         return animation_found
 
     def reimport(self, arg, inputs):
@@ -260,6 +271,11 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
     def modal(self, context, event):
         if event.type == 'TIMER':
+            
+            for dr in self._delayed_runnables:
+                dr.run()
+            self._delayed_runnables = []
+
             if bpy.app.driver_namespace.get("_coldtype_needs_rerender", False):
                 bpy.app.driver_namespace["_coldtype_needs_rerender"] = False
                 self.render_current_frame(statics=False)

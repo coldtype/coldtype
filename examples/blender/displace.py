@@ -29,8 +29,8 @@ def displace(r):
             .makeVertexGroup(lambda p: p.co[2] > 0, name="front")
             .addEmptyOrigin()
             .displace(
-                strength=0.65,
-                midlevel=1,
+                strength=3.35,
+                midlevel=0,
                 texture="Texture",
                 coords_object="glyph_EmptyOrigin",
                 direction="Z",
@@ -43,6 +43,10 @@ def displace(r):
 @b3d_animation(tl=60)
 def animator(f):
     (BpyObj.Find("bg")
-        .locate(y=f.e("eeo", 1, r=(1, -0.65))))
+        .locate(y=f.e("seo", 1, r=(1, -2.95))))
     (BpyObj.Find("glyph_EmptyOrigin")
         .rotate(z=f.e("l", 0, r=(0, 360))))
+
+@b3d_runnable(delay=True)
+def post_setup(bw:BpyWorld):
+    bw.scene.frame_set(20)
