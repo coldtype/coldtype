@@ -11,9 +11,12 @@ def parse_inputs(inputs, defaults):
 
     parsed = {}
     if not isinstance(inputs, dict):
-        for input in inputs:
-            k, v = input.split("=")
-            parsed[k] = v
+        for idx, input in enumerate(inputs):
+            if "=" in input:
+                k, v = input.split("=")
+                parsed[k] = v
+            else:
+                parsed[list(defaults.keys())[idx]] = input
     else:
         parsed = {**inputs}
 

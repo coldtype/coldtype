@@ -332,6 +332,8 @@ class SourceReader():
             return root / "demo/midi.py"
         elif name == "vf":
             return root / "demo/vf.py"
+        elif name == "viewseq":
+            return root / "demo/viewseq.py"
         elif name == "pj":
             return root / "renderer/picklejar.py"
         return name
