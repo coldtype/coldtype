@@ -13,7 +13,7 @@ def setup(bw:BpyWorld):
 #             .extrude(0.1)
 #             , material="bg_mat")))
 
-big_c = "D"
+big_c = "A"
 
 @b3d_renderable(center=(0, 1), upright=1)
 def displace(r):
@@ -21,7 +21,8 @@ def displace(r):
         #StSt(big_c, "Streco-Stencil-Superfat.otf", 850, wdth=1, wght=1)
         #.align(r)
         #.pen()
-        P().oval(r.inset(200))
+        P().rect(r.inset(200))
+        #.outline(50)
         .tag("glyph")
         .ch(b3d(lambda p: p
             .extrude(1)
@@ -42,8 +43,8 @@ def displace(r):
             .shadeSmooth()
             , material="sponge")))
 
-@b3d_animation(tl=30)
-def animator_D(f):
+@b3d_animation(tl=30, name=f"animator_{big_c}")
+def animator(f):
     # (BpyObj.Find("bg")
     #     .locate(y=f.e("seo", 1, r=(1, -2.95))))
     if bpy:

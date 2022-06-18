@@ -204,7 +204,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     else:
                         animation_found = True
                         result = run_passes()
-                        if result and len(result) > 0:
+                        if result:
                             if r.renderer == "b3d":
                                 walk_to_b3d(result, renderable=r)
                             else:
