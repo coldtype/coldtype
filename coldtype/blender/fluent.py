@@ -470,6 +470,41 @@ class BpyObj(_Chainable):
         if z is not None:
             self.obj.scale[2] = z
         return self
+    
+    def addMaterial(self, material, clear=False):
+        if not material:
+           pass
+        elif material == "auto":
+            # auto material
+            pass
+        else:
+            if isinstance(material, str):
+                try:
+                    mat = bpy.data.materials[material]
+                except KeyError:
+                    mat = bpy.data.materials.new(material)
+                    mat.use_nodes = True
+            else:
+                mat = material
+            
+            if clear:
+                self.obj.data.materials.clear()
+            
+            if mat.name not in self.obj.data.materials:
+                print("adding material", mat.name)
+                self.obj.data.materials.append(mat)
+
+        return self
+
+        if material and material != "auto":
+            try:
+                mat = bpy.data.materials[material]
+            except KeyError:
+                mat = bpy.data.materials.new(material)
+                mat.use_nodes = True
+                
+            self.obj.data.materials.clear()
+            self.obj.data.materials.append(mat)
 
     # Convenience Methods
 
@@ -506,6 +541,8 @@ class BpyObj(_Chainable):
                 bpy.ops.rigidbody.bake_to_keyframes()
         
         return self
+    
+    # Modifiers
     
     def solidify(self, thickness=1):
         with self.obj_selected():
