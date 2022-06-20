@@ -33,7 +33,7 @@ class BpyWorld(_Chainable):
     def delete_previous(self, collection="Coldtype", keep=[], materials=True, curves=True, meshes=True, objects=True):
         self.deselect_all()
 
-        BpyCollection.Find(collection).delete_hierarchy()
+        BpyCollection.Find(collection, create=False).delete_hierarchy()
         self.deleteOrphans(keep=keep, materials=materials, curves=curves, meshes=meshes, objects=objects)
         return self
     
@@ -96,8 +96,8 @@ class BpyWorld(_Chainable):
         try:
             bpy.ops.rigidbody.world_remove()
             yield
-        except RuntimeError:
-            print("! Failed to reset rigidbody !")
+        except RuntimeError as e:
+            print("! Failed to reset rigidbody !", e)
             yield
         
         if self.scene:
@@ -125,23 +125,41 @@ class BpyWorld(_Chainable):
 
 class BpyCollection(_Chainable):
     @staticmethod
-    def Find(tag, create=True):
+    def Find(tag, create=True, parent=None):
         bc = BpyCollection()
-        try:
-            bc.c = bpy.data.collections[tag]
-        except KeyError:
+        c = None
+
+        if tag not in bpy.data.collections:
             if create:
-                bc.c = bpy.data.collections.new(tag)
-            else:
-                bc.c = None
+                c = bpy.data.collections.new(tag)
+                if parent:
+                    parent.children.link(c)
+                else:
+                    bpy.context.scene.collection.children.link(c)
+        
+        c = bpy.data.collections.get(tag)
+        bc.c = c
         return bc
+
+        # try:
+        #     bc.c = bpy.data.collections[tag]
+        # except KeyError:
+        #     if create:
+        #         print("CREATING", tag)
+        #         bc.c = bpy.data.collections.new(tag)
+        #     else:
+        #         bc.c = None
+        # return bc
 
     def delete_hierarchy(self):
         if not self.c: return
 
         bpy.context.view_layer.objects.active = None
         for obj in self.c.objects:
-            BpyObj.Find(obj.name).select()
+            try:
+                BpyObj.Find(obj.name).select()
+            except Exception as e:
+                print("deleteHierarchy failed to delete object:", obj.name, e)
         bpy.ops.object.delete()
         bpy.data.collections.remove(self.c)
         return None
@@ -169,15 +187,39 @@ class BpyObj(_Chainable):
         else:
             return BpyObj.Find(obj_or_tag)
     
+    @staticmethod
+    def Primitive(name=None, collection="Coldtype") -> "BpyObj":
+        created = bpy.context.object
+        bobj = BpyObj()
+        bobj.obj = created
+        if collection:
+            bobj.collect(collection)
+        created.select_set(False)
+        if name is not None:
+            bobj.obj.name = name
+        return bobj
+
+    @staticmethod
+    def Cube(name=None, collection="Coldtype") -> "BpyObj":
+        bpy.ops.mesh.primitive_cube_add()
+        return BpyObj.Primitive(name, collection)
+
+    @staticmethod
+    def Plane(name=None, collection="Coldtype") -> "BpyObj":
+        bpy.ops.mesh.primitive_plane_add()
+        return BpyObj.Primitive(name, collection)
+    
     def select(self, selected=True):
         self.obj.select_set(selected)
         return self
     
-    def collect(self, collectionTag, create=True):
-        for c in self.obj.users_collection:
-            c.objects.unlink(self.obj)
+    def collect(self, collectionTag, create=True, unlink=True):
         bc = BpyCollection.Find(collectionTag, create=create)
         bc.c.objects.link(self.obj)
+        if unlink:
+            for c in self.obj.users_collection:
+                if c != bc.c:
+                    c.objects.unlink(self.obj)
         return self
     
     @contextmanager
@@ -281,6 +323,11 @@ class BpyObj(_Chainable):
         return self
     
     selectAndDelete = select_and_delete
+
+    def separateByLooseParts(self):
+        with self.all_vertices_selected():
+            bpy.ops.mesh.separate(type="LOOSE")
+        return self
     
     def parent(self, parent_tag, hide=False):
         with self.obj_selection_sequence(parent_tag) as o:
@@ -355,6 +402,13 @@ class BpyObj(_Chainable):
         return self
     
     applyModifier = apply_modifier
+
+    def applyAllModifiers(self):
+        with self.obj_selected():
+            for mod in self.obj.modifiers:
+                bpy.ops.object.modifier_apply(modifier=mod.name)
+                self.obj.to_mesh(preserve_all_data_layers=True)
+        return self
     
     def origin_to_geometry(self):
         with self.obj_selected():
@@ -408,6 +462,15 @@ class BpyObj(_Chainable):
     
     locateRelative = locate_relative
 
+    def scale(self, x=None, y=None, z=None):
+        if x is not None:
+            self.obj.scale[0] = x
+        if y is not None:
+            self.obj.scale[1] = y
+        if z is not None:
+            self.obj.scale[2] = z
+        return self
+
     # Convenience Methods
 
     def rigidbody(self,
@@ -460,6 +523,35 @@ class BpyObj(_Chainable):
             m.use_remove_disconnected = False
             m.use_smooth_shade = smooth
         return self
+    
+    def array(self, count=2, relative=(1, 0, 0), constant=(0.1, 0, 0)):
+        with self.obj_selected():
+            bpy.ops.object.modifier_add(type='ARRAY')
+            m = self.obj.modifiers[-1]
+            m.count = count
+            
+            if relative:
+                m.use_relative_offset = True
+                m.relative_offset_displace[0] = relative[0]
+                m.relative_offset_displace[1] = relative[1]
+                m.relative_offset_displace[2] = relative[2]
+            else:
+                m.use_relative_offset = False
+
+            if constant:
+                m.use_constant_offset = True
+                m.constant_offset_displace[0] = constant[0]
+                m.constant_offset_displace[1] = constant[1]
+                m.constant_offset_displace[2] = constant[2]
+            else:
+                m.use_constant_offset = False
+        return self
+    
+    def arrayX(self, count=2, relative=1, constant=0.1):
+        return self.array(count=count, relative=(relative, 0, 0), constant=(constant, 0, 0))
+    
+    def arrayY(self, count=2, relative=-1, constant=-0.1):
+        return self.array(count=count, relative=(0, relative, 0), constant=(0, constant, 0))
     
     def remove_doubles(self, threshold=0.01):
         with self.all_vertices_selected():

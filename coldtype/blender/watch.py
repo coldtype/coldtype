@@ -153,6 +153,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
     persisted = None
 
     _delayed_runnables = []
+    _should_start_playing = False
 
     def render_current_frame(self, statics=False):
         delayed_runnables = []
@@ -160,13 +161,21 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         animation_found = False
         frame = self.current_frame
         prerendered = bpy.app.driver_namespace.get("_coldtype_prerendered", False)
+        playback = None
 
         def display_image(r, result):
             lp_path = render_as_image(r, result)
             display_image_in_blender(lp_path)
+        
+        if statics:
+            if bpy.context.screen.is_animation_playing:
+                bpy.ops.screen.animation_play() # stop it
 
         for r in self.candidates:
             if isinstance(r, b3d_runnable):
+                if statics and r.playback is not None:
+                    playback = r.playback
+                
                 if r.once:
                     if statics:
                         if r.delay:
@@ -236,6 +245,16 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         
         if statics:
             self._delayed_runnables = delayed_runnables
+
+            for dr in self._delayed_runnables:
+                dr.run()
+            
+            self._delayed_runnables = []
+
+            if playback is not None:
+                if playback > 0:
+                    bpy.ops.screen.animation_play()
+        
         return animation_found
 
     def reimport(self, arg, inputs):
@@ -272,9 +291,15 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
     def modal(self, context, event):
         if event.type == 'TIMER':
             
-            for dr in self._delayed_runnables:
-                dr.run()
-            self._delayed_runnables = []
+            # for dr in self._delayed_runnables:
+            #     dr.run()
+            
+            # self._delayed_runnables = []
+
+            # if self._should_start_playing:
+            #     if not bpy.context.screen.is_animation_playing:
+            #         bpy.ops.screen.animation_play()
+            #     self._should_start_playing = False
 
             if bpy.app.driver_namespace.get("_coldtype_needs_rerender", False):
                 bpy.app.driver_namespace["_coldtype_needs_rerender"] = False
