@@ -209,6 +209,16 @@ class BpyObj(_Chainable):
         bpy.ops.mesh.primitive_plane_add()
         return BpyObj.Primitive(name, collection)
     
+    @staticmethod
+    def UVSphere(name=None, collection="Coldtype") -> "BpyObj":
+        bpy.ops.mesh.primitive_uv_sphere_add()
+        return BpyObj.Primitive(name, collection)
+    
+    @staticmethod
+    def Monkey(name=None, collection="Coldtype") -> "BpyObj":
+        bpy.ops.mesh.primitive_monkey_add()
+        return BpyObj.Primitive(name, collection)
+    
     def select(self, selected=True):
         self.obj.select_set(selected)
         return self
@@ -491,7 +501,6 @@ class BpyObj(_Chainable):
                 self.obj.data.materials.clear()
             
             if mat.name not in self.obj.data.materials:
-                print("adding material", mat.name)
                 self.obj.data.materials.append(mat)
 
         return self
