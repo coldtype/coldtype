@@ -481,7 +481,7 @@ class BpyObj(_Chainable):
             self.obj.scale[2] = z
         return self
     
-    def addMaterial(self, material, clear=False):
+    def material(self, material, clear=False):
         if not material:
            pass
         elif material == "auto":
