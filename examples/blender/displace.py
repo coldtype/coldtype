@@ -3,7 +3,7 @@ from coldtype.blender import *
 
 @b3d_runnable()
 def setup(bw:BpyWorld):
-    bw.deletePrevious(materials=False)
+    (bw.deletePrevious(materials=False))
 
 # @b3d_renderable(center=(0, 1), upright=1, reset_to_zero=1)
 # def bg(r):

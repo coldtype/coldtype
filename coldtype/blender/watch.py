@@ -246,10 +246,10 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         if statics:
             self._delayed_runnables = delayed_runnables
 
-            for dr in self._delayed_runnables:
-                dr.run()
+            # for dr in self._delayed_runnables:
+            #     dr.run()
             
-            self._delayed_runnables = []
+            # self._delayed_runnables = []
 
             if playback is not None:
                 if playback > 0:
@@ -291,10 +291,10 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
     def modal(self, context, event):
         if event.type == 'TIMER':
             
-            # for dr in self._delayed_runnables:
-            #     dr.run()
+            for dr in self._delayed_runnables:
+                dr.run()
             
-            # self._delayed_runnables = []
+            self._delayed_runnables = []
 
             # if self._should_start_playing:
             #     if not bpy.context.screen.is_animation_playing:
