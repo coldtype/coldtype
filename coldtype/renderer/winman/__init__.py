@@ -165,9 +165,9 @@ class Winmans():
     def frame_offset(self, offset):
         self.renderer.state.frame_offset += offset
 
-        if not self.glsk:
-            if self.b3d:
-                self.b3d.frame_offset(offset)
+        # if not self.glsk:
+        #     if self.b3d:
+        #         self.b3d.frame_offset(offset)
     
     def should_close(self):
         return any([wm.should_close() for wm in self.map()])

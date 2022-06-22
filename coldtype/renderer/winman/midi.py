@@ -60,11 +60,27 @@ class MIDIWatcher():
                     cn = msg.getControllerNumber()
                     cv = msg.getControllerValue()
                     cc = msg.getChannel()
-                    shortcut = self.config.midi[device].get("controller", {}).get(cn)
-                    if shortcut:
-                        if cv in shortcut:
-                            print("shortcut!", shortcut, cv)
-                            self.on_shortcut(shortcut.get(cv), cn)
+                    
+                    mapping = self.config.midi[device].get("controller", {})
+                    shortcutA = mapping.get(cn)
+                    shortcutB = mapping.get((cn, cc))
+                    
+                    if shortcutA:
+                        if cv in shortcutA:
+                            print("shortcut!", shortcutA, cv)
+                            self.on_shortcut(shortcutA.get(cv), cn)
+                    
+                    if shortcutB:
+                        if callable(shortcutB):
+                            res = shortcutB(cv, self.state)
+                            if res is not None:
+                                print("shortcut!", res)
+                                self.on_shortcut(res, None)
+                        else:
+                            if cv in shortcutB:
+                                print("shortcut!", shortcutB, cv)
+                                self.on_shortcut(shortcutB.get(cv), cn)
+                    
                     else:
                         controllers["_".join([device, str(cc), str(cn)])] = cv
                 msg = mi.getMessage(0)

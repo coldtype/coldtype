@@ -55,4 +55,3 @@ def animator(f):
 @b3d_runnable(delay=True)
 def post_setup(bw:BpyWorld):
     bw.scene.frame_set(20)
-    #bpy.ops.screen.animation_play()
