@@ -1,3 +1,5 @@
+from coldtype.beziers import raise_quadratic
+from coldtype.runon.path import P
 from coldtype.time.timeline import Timeline
 from coldtype.geometry import Rect
 import math
@@ -15,6 +17,10 @@ except ImportError:
 
 class _Chainable():
     def noop(self):
+        return self
+    
+    def op(self, fn):
+        fn(self)
         return self
 
 class BpyWorld(_Chainable):
@@ -210,6 +216,12 @@ class BpyObj(_Chainable):
         return BpyObj.Primitive(name, collection)
     
     @staticmethod
+    def Curve(name=None, collection="Coldtype") -> "BpyObj":
+        bpy.ops.curve.primitive_bezier_curve_add()
+        bo = BpyObj.Primitive(name, collection)
+        return bo
+    
+    @staticmethod
     def UVSphere(name=None, collection="Coldtype") -> "BpyObj":
         bpy.ops.mesh.primitive_uv_sphere_add()
         return BpyObj.Primitive(name, collection)
@@ -371,19 +383,6 @@ class BpyObj(_Chainable):
         return self
     
     # Geometry Methods
-
-    def rotate(self, x=None, y=None, z=None):
-        if isinstance(x, Euler):
-            self.obj.rotation_euler = x
-            return self
-        
-        if x is not None:
-            self.obj.rotation_euler[0] = math.radians(x)
-        if y is not None:
-            self.obj.rotation_euler[1] = math.radians(y)
-        if z is not None:
-            self.obj.rotation_euler[2] = math.radians(z)
-        return self
     
     def apply_transform(self,
         location=True,
@@ -418,6 +417,21 @@ class BpyObj(_Chainable):
             for mod in self.obj.modifiers:
                 bpy.ops.object.modifier_apply(modifier=mod.name)
                 self.obj.to_mesh(preserve_all_data_layers=True)
+        return self
+
+#region Basic transformations
+
+    def rotate(self, x=None, y=None, z=None):
+        if isinstance(x, Euler):
+            self.obj.rotation_euler = x
+            return self
+        
+        if x is not None:
+            self.obj.rotation_euler[0] = math.radians(x)
+        if y is not None:
+            self.obj.rotation_euler[1] = math.radians(y)
+        if z is not None:
+            self.obj.rotation_euler[2] = math.radians(z)
         return self
     
     def origin_to_geometry(self):
@@ -480,7 +494,11 @@ class BpyObj(_Chainable):
         if z is not None:
             self.obj.scale[2] = z
         return self
-    
+
+#endregion Basic transformations
+
+#region Materials
+
     def material(self, material, clear=False):
         if not material:
            pass
@@ -515,7 +533,9 @@ class BpyObj(_Chainable):
             self.obj.data.materials.clear()
             self.obj.data.materials.append(mat)
 
-    # Convenience Methods
+#endregion Materials
+
+#region Convenience Methods
 
     def rigidbody(self,
         mode="active",
@@ -551,7 +571,9 @@ class BpyObj(_Chainable):
         
         return self
     
-    # Modifiers
+#endregion Convenience Methods
+    
+#region Modifiers
     
     def solidify(self, thickness=1):
         with self.obj_selected():
@@ -712,3 +734,92 @@ class BpyObj(_Chainable):
         return self
     
     decimatePlanar = decimate_planar
+
+#endregion Modifiers
+
+#region Curve functions
+
+    def draw(self, path:P, cyclic=True, fill=True) -> "BpyObj":
+        splines = []
+        spline = None
+        value = []
+
+        for mv, pts in path._val.value:
+            if mv == "moveTo":
+                p = pts[0]
+                if spline and len(spline) > 0 and spline not in splines:
+                    splines.append(spline)
+                spline = []
+                value.append([p])
+                spline.append(["BEZIER", "start", [p, p, p]])
+
+            elif mv == "lineTo":
+                p = pts[0]
+                value.append([p])
+                spline.append(["BEZIER", "curve", [p, p, p]])
+
+            elif mv == "curveTo":
+                p1, p2, p3 = pts
+                spline[-1][-1][-1] = p1
+                value.append([p1, p2, p3])
+                spline.append(["BEZIER", "curve", [p2, p3, p3]])
+
+            elif mv == "qCurveTo":
+                p1, p2 = pts
+                start = value[-1][-1]
+                q1, q2, q3 = raise_quadratic(start, (p1[0], p1[1]), (p2[0], p2[1]))
+                spline[-1][-1][-1] = q1
+                value.append([q1, q2, q3])
+                spline.append(["BEZIER", "curve", [q2, q3, q3]])
+
+            elif mv == "closePath":
+                if spline and len(spline) > 0 and spline not in splines:
+                    splines.append(spline)
+                    spline = None
+                spline = None
+            
+            if spline and len(spline) > 0 and spline not in splines:
+                splines.append(spline)
+
+        bez = self.obj.data
+
+        def zvec(pt, z=0):
+            x, y = pt
+            return Vector((x, y, z))
+
+        for spline in reversed(bez.splines): # clear existing splines
+            bez.splines.remove(spline)
+
+        for spline_data in splines:
+            bez.splines.new('BEZIER')
+            spline = bez.splines[-1]
+            spline.use_cyclic_u = cyclic
+            for i, (t, style, pts) in enumerate(spline_data):
+                l, c, r = pts
+                if i > 0:
+                    spline.bezier_points.add(1)
+                pt = spline.bezier_points[-1]
+                pt.co = zvec(c)
+                pt.handle_left = zvec(l)
+                pt.handle_right = zvec(r)
+        
+        if fill:
+            bez.dimensions = "2D"
+            bez.fill_mode = "BOTH"
+
+        return self
+
+    def extrude(self, amount=0.1) -> "BpyObj":
+        self.obj.data.extrude = amount
+        return self
+    
+    def bevel(self, depth=0.02) -> "BpyObj":
+        self.obj.data.bevel_depth = depth
+        return self
+    
+    def convertToMesh(self) -> "BpyObj":
+        with self.obj_selected():
+            bpy.ops.object.convert(target="MESH")
+        return self
+
+#endregion
