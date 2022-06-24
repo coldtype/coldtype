@@ -1144,6 +1144,15 @@ class P(Runon):
         return self
     
 
+    def centerZero(self, th=0, tv=0):
+
+        x, y, w, h = self.ambit(th=th, tv=tv)
+        nx, ny = -x-w/2, -y-h/2
+        return (self
+            .t(-x-w/2, -y-h/2)
+            .data(centerZeroOffset=(nx, ny)))
+    
+
     def centerPoint(self, rect, pt, interp=1, th=1, tv=0, **kwargs) -> "P":
 
         if "i" in kwargs:

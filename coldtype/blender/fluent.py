@@ -1,5 +1,7 @@
+from pathlib import Path
 from coldtype.beziers import raise_quadratic
 from coldtype.runon.path import P
+from coldtype.runon.runon import Runon
 from coldtype.time.timeline import Timeline
 from coldtype.geometry import Rect
 import math
@@ -22,6 +24,19 @@ class _Chainable():
     def op(self, fn):
         fn(self)
         return self
+    
+    def data(self, key=None, default=None, **kwargs):
+        if not hasattr(self, "_data"):
+            self._data = {}
+
+        if key is None and len(kwargs) > 0:
+            for k, v in kwargs.items():
+                self._data[k] = v
+            return self
+        elif key is not None:
+            return self._data.get(key, default)
+        else:
+            return self
 
 class BpyWorld(_Chainable):
     def __init__(self, scene="Scene"):
@@ -62,7 +77,7 @@ class BpyWorld(_Chainable):
         
         return self
     
-    def timeline(self, t:Timeline, resetFrame=None):
+    def timeline(self, t:Timeline, resetFrame=None, output=None, version=None):
         self.scene.frame_start = 0
         self.scene.frame_end = t.duration-1
 
@@ -75,6 +90,17 @@ class BpyWorld(_Chainable):
         
         if resetFrame is not None:
             self.scene.frame_set(resetFrame)
+        
+        if output:
+            output = Path(output)
+            if output.is_file():
+                folder = output.stem
+                if version:
+                    folder = f"{output.stem}_{version}"
+                
+                output = output.parent / "renders" / folder / f"{folder}_"
+            
+            self.scene.render.filepath = str(output)
 
         return self
     
@@ -132,6 +158,14 @@ class BpyWorld(_Chainable):
 class BpyCollection(_Chainable):
     @staticmethod
     def Find(tag, create=True, parent=None):
+        if "/" in tag:
+            if tag.startswith("/"):
+                parentTag = "Coldtype"
+                tag = tag[1:]
+            else:
+                parentTag, tag = tag.split("/")
+            parent = BpyCollection.Find(parentTag, create=create)
+
         bc = BpyCollection()
         c = None
 
@@ -139,6 +173,8 @@ class BpyCollection(_Chainable):
             if create:
                 c = bpy.data.collections.new(tag)
                 if parent:
+                    if isinstance(parent, BpyCollection):
+                        parent = parent.c
                     parent.children.link(c)
                 else:
                     bpy.context.scene.collection.children.link(c)
@@ -173,6 +209,11 @@ class BpyCollection(_Chainable):
     deleteHierarchy = delete_hierarchy
 
 
+class BpySelection(Runon):
+    def yields_wrapped(self):
+        return False
+
+
 class BpyObj(_Chainable):
     def __init__(self, dat=None) -> None:
         self.eo = None
@@ -195,6 +236,9 @@ class BpyObj(_Chainable):
     
     @staticmethod
     def Primitive(name=None, collection="Coldtype") -> "BpyObj":
+        if collection is None:
+            collection = "Coldtype"
+
         created = bpy.context.object
         bobj = BpyObj()
         bobj.obj = created
@@ -204,30 +248,35 @@ class BpyObj(_Chainable):
         if name is not None:
             bobj.obj.name = name
         return bobj
+    
+    @staticmethod
+    def Empty(name=None, collection=None) -> "BpyObj":
+        bpy.ops.object.empty_add(type="PLAIN_AXES")
+        return BpyObj.Primitive(name, collection)
 
     @staticmethod
-    def Cube(name=None, collection="Coldtype") -> "BpyObj":
+    def Cube(name=None, collection=None) -> "BpyObj":
         bpy.ops.mesh.primitive_cube_add()
         return BpyObj.Primitive(name, collection)
 
     @staticmethod
-    def Plane(name=None, collection="Coldtype") -> "BpyObj":
+    def Plane(name=None, collection=None) -> "BpyObj":
         bpy.ops.mesh.primitive_plane_add()
         return BpyObj.Primitive(name, collection)
     
     @staticmethod
-    def Curve(name=None, collection="Coldtype") -> "BpyObj":
+    def Curve(name=None, collection=None) -> "BpyObj":
         bpy.ops.curve.primitive_bezier_curve_add()
         bo = BpyObj.Primitive(name, collection)
         return bo
     
     @staticmethod
-    def UVSphere(name=None, collection="Coldtype") -> "BpyObj":
+    def UVSphere(name=None, collection=None) -> "BpyObj":
         bpy.ops.mesh.primitive_uv_sphere_add()
         return BpyObj.Primitive(name, collection)
     
     @staticmethod
-    def Monkey(name=None, collection="Coldtype") -> "BpyObj":
+    def Monkey(name=None, collection=None) -> "BpyObj":
         bpy.ops.mesh.primitive_monkey_add()
         return BpyObj.Primitive(name, collection)
     
@@ -235,8 +284,8 @@ class BpyObj(_Chainable):
         self.obj.select_set(selected)
         return self
     
-    def collect(self, collectionTag, create=True, unlink=True):
-        bc = BpyCollection.Find(collectionTag, create=create)
+    def collect(self, collectionTag, create=True, unlink=True, parent=None):
+        bc = BpyCollection.Find(collectionTag, create=create, parent=parent)
         bc.c.objects.link(self.obj)
         if unlink:
             for c in self.obj.users_collection:
@@ -739,7 +788,18 @@ class BpyObj(_Chainable):
 
 #region Curve functions
 
-    def draw(self, path:P, cyclic=True, fill=True) -> "BpyObj":
+    def draw(self, path:P, cyclic=True, fill=True, th=0, tv=0) -> "BpyObj":
+        if len(path) > 0:
+            path = path.pen()
+        
+        path = path.removeOverlap()#.centerZero()
+        amb = path.ambit(th=th, tv=tv)
+        origin = amb.x + amb.w/2, amb.y + amb.h/2
+
+        path = path.q2c()
+
+        #czOffset = path.data("centerZeroOffset")
+
         splines = []
         spline = None
         value = []
@@ -764,19 +824,22 @@ class BpyObj(_Chainable):
                 value.append([p1, p2, p3])
                 spline.append(["BEZIER", "curve", [p2, p3, p3]])
 
-            elif mv == "qCurveTo":
-                p1, p2 = pts
-                start = value[-1][-1]
-                q1, q2, q3 = raise_quadratic(start, (p1[0], p1[1]), (p2[0], p2[1]))
-                spline[-1][-1][-1] = q1
-                value.append([q1, q2, q3])
-                spline.append(["BEZIER", "curve", [q2, q3, q3]])
+            # elif mv == "qCurveTo":
+            #     p1, p2 = pts
+            #     start = value[-1][-1]
+            #     q1, q2, q3 = raise_quadratic(start, (p1[0], p1[1]), (p2[0], p2[1]))
+            #     spline[-1][-1][-1] = q1
+            #     value.append([q1, q2, q3])
+            #     spline.append(["BEZIER", "curve", [q2, q3, q3]])
 
             elif mv == "closePath":
                 if spline and len(spline) > 0 and spline not in splines:
                     splines.append(spline)
                     spline = None
                 spline = None
+        
+            else:
+                raise Exception("blender curve unhandled curve type", mv)
             
             if spline and len(spline) > 0 and spline not in splines:
                 splines.append(spline)
@@ -806,6 +869,8 @@ class BpyObj(_Chainable):
         if fill:
             bez.dimensions = "2D"
             bez.fill_mode = "BOTH"
+
+        self.setOrigin(*origin, 0)
 
         return self
 

@@ -14,13 +14,6 @@ from coldtype.fx.chainable import Chainable
 def _arg_count(fn):
     return len(signature(fn).parameters)
 
-def _call_idx_fn(fn, idx, arg):
-    ac = _arg_count(fn)
-    if ac == 1:
-        return fn(arg)
-    else:
-        return fn(idx, arg)
-
 
 RunonEnumerable = namedtuple("RunonEnumerable", ["i", "el", "e", "len", "k", "parent"])
 
@@ -74,6 +67,10 @@ class Runon:
         """subclass hook"""
         pass
 
+    def yields_wrapped(self):
+        """subclass hook"""
+        return True
+
     # Value operations
 
     def update(self, val):
@@ -88,6 +85,17 @@ class Runon:
         return self._val
 
     # Array Operations
+
+    def _call_idx_fn(self, fn, idx, arg:"Runon"):
+        if not self.yields_wrapped():
+            if arg.val_present():
+                arg = arg.v
+
+        ac = _arg_count(fn)
+        if ac == 1:
+            return fn(arg)
+        else:
+            return fn(idx, arg)
 
     def _norm_element(self, el):
         if el is None:
@@ -343,7 +351,7 @@ class Runon:
 
     def map(self, fn):
         for idx, p in enumerate(self._els):
-            res = _call_idx_fn(fn, idx, p)
+            res = self._call_idx_fn(fn, idx, p)
             if res:
                 self._els[idx] = res
         return self
@@ -351,7 +359,7 @@ class Runon:
     def filter(self, fn):
         to_delete = []
         for idx, p in enumerate(self._els):
-            res = _call_idx_fn(fn, idx, p)
+            res = self._call_idx_fn(fn, idx, p)
             if res == False:
                 to_delete.append(idx)
         to_delete = sorted(to_delete, reverse=True)
@@ -370,7 +378,7 @@ class Runon:
             nonlocal idx
             if pos != 0: return
             
-            res = _call_idx_fn(fn, idx, el)
+            res = self._call_idx_fn(fn, idx, el)
             idx += 1
             return res
         
@@ -382,7 +390,7 @@ class Runon:
             nonlocal idx
             
             if pos == 0:
-                res = _call_idx_fn(fn, idx, el)
+                res = self._call_idx_fn(fn, idx, el)
                 if not res:
                     el.data(_walk_delete=True)
                 idx += 1
@@ -555,7 +563,7 @@ class Runon:
             p = self[idx]
 
         if fn:
-            res = _call_idx_fn(fn, lidx, p)
+            res = self._call_idx_fn(fn, lidx, p)
             if res is not None:
                 parent[lidx] = res
         else:
@@ -614,7 +622,7 @@ class Runon:
         
         if fn:
             for idx, match in narrowed:
-                _call_idx_fn(fn, idx, match)
+                self._call_idx_fn(fn, idx, match)
 
         if fn:
             return self
@@ -653,7 +661,7 @@ class Runon:
         if key is None and len(kwargs) > 0:
             for k, v in kwargs.items():
                 if callable(v):
-                    v = _call_idx_fn(v, k, self)
+                    v = self._call_idx_fn(v, k, self)
                 self._data[k] = v
             return self
         elif key is not None:
