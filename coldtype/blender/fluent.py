@@ -212,6 +212,20 @@ class BpyCollection(_Chainable):
 class BpySelection(Runon):
     def yields_wrapped(self):
         return False
+    
+    @staticmethod
+    def Curves(pens:P, prefix=None, collection=None, cyclic=True, fill=True, th=0, tv=0):
+        curves = BpySelection()
+
+        def walker(p:P, pos, data):
+            if pos == 0:
+                name = None
+                if prefix:
+                    name = prefix + "_" + ".".join([str(s) for s in data["idx"]])
+                curves.append(BpyObj.Curve(name=name, collection=collection).draw(p, cyclic=cyclic, fill=fill, th=th, tv=tv))
+        
+        pens.walk(walker)
+        return curves
 
 
 class BpyObj(_Chainable):
