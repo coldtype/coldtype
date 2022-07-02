@@ -209,13 +209,13 @@ class BpyCollection(_Chainable):
     deleteHierarchy = delete_hierarchy
 
 
-class BpySelection(Runon):
+class BpyGroup(Runon):
     def yields_wrapped(self):
         return False
     
     @staticmethod
     def Curves(pens:P, prefix=None, collection=None, cyclic=True, fill=True, th=0, tv=0):
-        curves = BpySelection()
+        curves = BpyGroup()
 
         def walker(p:P, pos, data):
             if pos == 0:
