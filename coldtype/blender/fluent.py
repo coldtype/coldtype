@@ -4,6 +4,7 @@ from coldtype.runon.path import P
 from coldtype.runon.runon import Runon
 from coldtype.time.timeline import Timeline
 from coldtype.geometry import Rect
+from coldtype.color import Gradient, normalize_color
 import math
 from contextlib import contextmanager
 
@@ -207,6 +208,71 @@ class BpyCollection(_Chainable):
         return None
     
     deleteHierarchy = delete_hierarchy
+
+
+class BpyMaterial():
+    def __init__(self, material):
+        self.m = material
+    
+    def Find(tag, create=True, use_nodes=True):
+        if not isinstance(tag, str):
+            return BpyMaterial(tag)
+
+        try:
+            m = bpy.data.materials[tag]
+            return BpyMaterial(m)
+        except KeyError:
+            if create:
+                m = bpy.data.materials.new(tag)
+                m.use_nodes = use_nodes
+                return BpyMaterial(m)
+        
+        return None
+
+    def bsdf(self):
+        return self.m.node_tree.nodes["Principled BSDF"]
+    
+    def setColorValue(self, value, color):
+        value[0] = color.r
+        value[1] = color.g
+        value[2] = color.b
+        value[3] = 1
+        if color.a != 1:
+            self.transmission(1)
+
+    def f(self, color):
+        if isinstance(color, Gradient):
+            return self.f(color.stops[0][0])
+
+        bsdf = self.bsdf()
+        if bsdf:
+            dv = bsdf.inputs[0].default_value
+            self.setColorValue(dv, color)
+        
+        return self
+    
+    fill = f
+    
+    def specular(self, amount=0.5):
+        self.bsdf().inputs[7].default_value = amount
+        return self
+    
+    def metallic(self, amount=1):
+        self.bsdf().inputs[6].default_value = amount
+        return self
+    
+    def roughness(self, amount=0.5):
+        self.bsdf().inputs[9].default_value = amount
+        return self
+    
+    def transmission(self, amount=1):
+        self.bsdf().inputs[17].default_value = amount
+        return self
+
+    def emission(self, color, strength=1):
+        self.setColorValue(self.bsdf().inputs[19].default_value, normalize_color(color))
+        self.bsdf().inputs[20].default_value = strength
+        return self
 
 
 class BpyGroup(Runon):
@@ -562,39 +628,19 @@ class BpyObj(_Chainable):
 
 #region Materials
 
-    def material(self, material, clear=False):
-        if not material:
-           pass
-        elif material == "auto":
-            # auto material
-            pass
-        else:
-            if isinstance(material, str):
-                try:
-                    mat = bpy.data.materials[material]
-                except KeyError:
-                    mat = bpy.data.materials.new(material)
-                    mat.use_nodes = True
-            else:
-                mat = material
-            
-            if clear:
-                self.obj.data.materials.clear()
-            
-            if mat.name not in self.obj.data.materials:
-                self.obj.data.materials.append(mat)
+    def material(self, tag, modFn=None, clear=False):
+        if clear:
+            self.obj.data.materials.clear()
+
+        bm = BpyMaterial.Find(tag, create=True, use_nodes=True)
+
+        if bm.m.name not in self.obj.data.materials:
+            self.obj.data.materials.append(bm.m)
+        
+        if bm and modFn:
+            modFn(bm)
 
         return self
-
-        if material and material != "auto":
-            try:
-                mat = bpy.data.materials[material]
-            except KeyError:
-                mat = bpy.data.materials.new(material)
-                mat.use_nodes = True
-                
-            self.obj.data.materials.clear()
-            self.obj.data.materials.append(mat)
 
 #endregion Materials
 

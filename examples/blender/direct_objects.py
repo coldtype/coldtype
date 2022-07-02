@@ -3,12 +3,10 @@ from coldtype.blender import *
 
 @b3d_runnable(playback=0)
 def setup(blw:BpyWorld):
-    print(">>", __FILE__)
-
     (blw.deletePrevious("Coldtype"
-            , materials=False)
+            , materials=True)
         .deletePrevious("Cubes"
-            , materials=False)
+            , materials=True)
         .timeline(Timeline(120)
             , resetFrame=0
             , output=__FILE__
@@ -42,6 +40,11 @@ def setup(blw:BpyWorld):
         
         BpyObj.Find("Empty1").locate(z=-2)
 
+        (BpyMaterial.Find("monkey_material")
+            .f(hsl(0.3, 1))
+            .roughness(1)
+            .specular(0))
+
         (BpyObj.Monkey()
             .locate(z=11)
             .rotate(z=45)
@@ -51,16 +54,23 @@ def setup(blw:BpyWorld):
             .subsurface()
             .shadeSmooth())
         
+        (BpyMaterial.Find("monkey_material")
+            .f(hsl(0.6, 1)))
+        
         (BpyObj.UVSphere("Cube1", collection="Cubes")
             .scale(2, 2, 2)
             .locate(z=20)
             .rigidbody("active", bounce=0.3)
-            .material("cube_material")
+            .material("cube_material", lambda m: m
+                .f(hsl(0.85, 1))
+                .transmission(1))
             .subsurface()
             .shadeSmooth())
         
         (BpyObj.Plane()
-            .scale(x=20, y=20)
+            .scale(x=30, y=30)
             .applyScale()
             .rigidbody("passive", bounce=0.5)
-            .material("plane_material"))
+            .material("plane_material", lambda m: m
+                .f(hsl(0.17, 0.8, 0.5))
+                .specular(0)))

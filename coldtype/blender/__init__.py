@@ -16,7 +16,7 @@ from coldtype.renderable.animation import animation
 from coldtype.blender.render import blend_source
 from coldtype.time.sequence import ClipTrack, Clip, Sequence
 
-from coldtype.blender.fluent import BpyWorld, BpyObj, BpyCollection, BpyGroup
+from coldtype.blender.fluent import BpyWorld, BpyObj, BpyCollection, BpyGroup, BpyMaterial
 
 from typing import Callable
 
