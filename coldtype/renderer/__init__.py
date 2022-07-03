@@ -642,7 +642,11 @@ class Renderer():
         
         if not self.args.is_subprocess and render_count > 0:
             for render in renders:
-                result = render.package()
+                if hasattr(render, "package"):
+                    result = render.package()
+                else:
+                    result = None
+                
                 if result:
                     self.previews_waiting.append([render, result, None])
                 else:

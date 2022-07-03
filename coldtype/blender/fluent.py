@@ -1,10 +1,12 @@
 from pathlib import Path
+from typing import Callable
 from coldtype.beziers import raise_quadratic
 from coldtype.runon.path import P
 from coldtype.runon.runon import Runon
 from coldtype.time.timeline import Timeline
 from coldtype.geometry import Rect
 from coldtype.color import Gradient, normalize_color
+from coldtype.renderable.animation import animation
 import math
 from contextlib import contextmanager
 
@@ -243,6 +245,8 @@ class BpyMaterial():
     def f(self, color):
         if isinstance(color, Gradient):
             return self.f(color.stops[0][0])
+        else:
+            color = normalize_color(color)
 
         bsdf = self.bsdf()
         if bsdf:
@@ -272,6 +276,32 @@ class BpyMaterial():
     def emission(self, color, strength=1):
         self.setColorValue(self.bsdf().inputs[19].default_value, normalize_color(color))
         self.bsdf().inputs[20].default_value = strength
+        return self
+    
+    def animation(self, anim:animation, start=0):
+        src = anim.pass_path(start)
+        tl = anim.timeline
+        return self.image(src, timeline=tl)
+    
+    def image(self, src=None, opacity=1, rect=None, pattern=True, timeline:Timeline=None):
+        bsdf = self.bsdf()
+        
+        if "Image Texture" in self.m.node_tree.nodes:
+            tex = self.m.node_tree.nodes["Image Texture"]
+        else:
+            tex = self.m.node_tree.nodes.new("ShaderNodeTexImage")
+            self.m.node_tree.links.new(bsdf.inputs["Base Color"], tex.outputs["Color"])
+        
+        tex.image = bpy.data.images.load(str(src))
+        
+        if timeline is not None:
+            tex.image.source = "SEQUENCE"
+            tex.image_user.frame_duration = timeline.duration
+            tex.image_user.frame_start = 0
+            tex.image_user.frame_offset = -1
+            tex.image_user.use_cyclic = True
+            tex.image_user.use_auto_refresh = True
+
         return self
 
 
@@ -628,7 +658,7 @@ class BpyObj(_Chainable):
 
 #region Materials
 
-    def material(self, tag, modFn=None, clear=False):
+    def material(self, tag, modFn:Callable[[BpyMaterial], BpyMaterial]=None, clear=False):
         if clear:
             self.obj.data.materials.clear()
 
