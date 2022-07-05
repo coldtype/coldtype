@@ -653,7 +653,7 @@ class Renderer():
                     self.action_waiting = Action.PreviewStoryboard
                     self.action_waiting_reason = "unclear"
 
-            self.winmans.did_render(render_count, ditto_last)
+            self.winmans.did_render(render_count, ditto_last, renders)
             
         did_render_fn = self.buildrelease_fn("didRender")
         if did_render_fn:

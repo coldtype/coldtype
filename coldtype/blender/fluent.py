@@ -1,14 +1,15 @@
+import math, time
+
 from pathlib import Path
 from typing import Callable
-from coldtype.beziers import raise_quadratic
+from contextlib import contextmanager
+
 from coldtype.runon.path import P
 from coldtype.runon.runon import Runon
 from coldtype.time.timeline import Timeline
 from coldtype.geometry import Rect
 from coldtype.color import Gradient, normalize_color
 from coldtype.renderable.animation import animation
-import math
-from contextlib import contextmanager
 
 try:
     import bpy
@@ -283,7 +284,7 @@ class BpyMaterial():
         tl = anim.timeline
         return self.image(src, timeline=tl)
     
-    def image(self, src=None, opacity=1, rect=None, pattern=True, timeline:Timeline=None):
+    def image(self, src=None, opacity=1, rect=None, pattern=True, alpha=True, timeline:Timeline=None):
         bsdf = self.bsdf()
         
         if "Image Texture" in self.m.node_tree.nodes:
@@ -291,8 +292,21 @@ class BpyMaterial():
         else:
             tex = self.m.node_tree.nodes.new("ShaderNodeTexImage")
             self.m.node_tree.links.new(bsdf.inputs["Base Color"], tex.outputs["Color"])
+            if alpha:
+                self.m.node_tree.links.new(bsdf.inputs["Alpha"], tex.outputs["Alpha"])
+            
+            bx, by = bsdf.location
+            tex.location = (bx - 320, by)
         
-        tex.image = bpy.data.images.load(str(src))
+        found = False
+
+        for img in bpy.data.images:
+            if src.name in img.name:
+                found = True
+                img.reload()
+
+        if not found or not tex.image:
+            tex.image = bpy.data.images.load(str(src))
         
         if timeline is not None:
             tex.image.source = "SEQUENCE"

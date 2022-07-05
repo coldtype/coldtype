@@ -324,6 +324,9 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     bpy.ops.screen.frame_offset(delta=int(arg))
                 elif cmd == "refresh_sequencer":
                     bpy.ops.sequencer.refresh_all()
+                    for k, v in bpy.data.images.items():
+                        print("RELOAD", k, v)
+                        v.reload()
                 elif cmd == "refresh_sequencer_and_image":
                     bpy.ops.sequencer.refresh_all()
                     for k, v in bpy.data.images.items():
