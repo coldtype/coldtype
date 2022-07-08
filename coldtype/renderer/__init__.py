@@ -507,6 +507,7 @@ class Renderer():
                 check_watches(render)
                 
                 passes = render.passes(trigger, self.state, indices)
+
                 render.last_passes = passes
                 
                 for rp in passes:
