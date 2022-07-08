@@ -152,23 +152,41 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
     current_frame = -1
     persisted = None
 
+    _delayed_runnables = []
+    _should_start_playing = False
+
     def render_current_frame(self, statics=False):
+        delayed_runnables = []
         out = []
         animation_found = False
         frame = self.current_frame
         prerendered = bpy.app.driver_namespace.get("_coldtype_prerendered", False)
+        playback = None
 
         def display_image(r, result):
             lp_path = render_as_image(r, result)
             display_image_in_blender(lp_path)
+        
+        if statics:
+            if bpy.context.screen.is_animation_playing:
+                bpy.ops.screen.animation_play() # stop it
 
         for r in self.candidates:
             if isinstance(r, b3d_runnable):
+                if statics and r.playback is not None:
+                    playback = r.playback
+                
                 if r.once:
                     if statics:
-                        r.run()
+                        if r.delay:
+                            delayed_runnables.append(r)
+                        else:
+                            r.run()
                 else:
-                    r.run()
+                    if r.delay:
+                        delayed_runnables.append(r)
+                    else:
+                        r.run()
             else:
                 out.append(r)
 
@@ -195,10 +213,14 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     else:
                         animation_found = True
                         result = run_passes()
-                        if r.renderer == "b3d":
-                            walk_to_b3d(result, renderable=r)
-                        else:
-                            raise Exception("r.renderer not supported", r.renderer)
+                        if result:
+                            if r.renderer == "b3d":
+                                walk_to_b3d(result, renderable=r)
+                            else:
+                                raise Exception("r.renderer not supported", r.renderer)
+                        
+                        if r.reset_to_zero:
+                            bpy.data.scenes[0].frame_set(0)
                         
                         if prerendered:
                             display_image(r, ps[0].output_path)
@@ -220,6 +242,18 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         for o in out:
             if hasattr(o, "post_run") and o.post_run:
                 o.post_run()
+        
+        if statics:
+            self._delayed_runnables = delayed_runnables
+
+            # for dr in self._delayed_runnables:
+            #     dr.run()
+            
+            # self._delayed_runnables = []
+
+            if playback is not None:
+                if playback > 0:
+                    bpy.ops.screen.animation_play()
         
         return animation_found
 
@@ -256,6 +290,17 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
     def modal(self, context, event):
         if event.type == 'TIMER':
+            
+            for dr in self._delayed_runnables:
+                dr.run()
+            
+            self._delayed_runnables = []
+
+            # if self._should_start_playing:
+            #     if not bpy.context.screen.is_animation_playing:
+            #         bpy.ops.screen.animation_play()
+            #     self._should_start_playing = False
+
             if bpy.app.driver_namespace.get("_coldtype_needs_rerender", False):
                 bpy.app.driver_namespace["_coldtype_needs_rerender"] = False
                 self.render_current_frame(statics=False)
@@ -279,6 +324,9 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     bpy.ops.screen.frame_offset(delta=int(arg))
                 elif cmd == "refresh_sequencer":
                     bpy.ops.sequencer.refresh_all()
+                    for k, v in bpy.data.images.items():
+                        print("RELOAD", k, v)
+                        v.reload()
                 elif cmd == "refresh_sequencer_and_image":
                     bpy.ops.sequencer.refresh_all()
                     for k, v in bpy.data.images.items():

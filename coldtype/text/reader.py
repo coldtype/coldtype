@@ -209,7 +209,8 @@ class Font():
         found = Font.List(regex, regex_dir)
         try:
             return Font.Cacheable(found[index])
-        except:
+        except Exception as e:
+            print(">", e)
             raise FontNotFoundException(regex)
     
     def RegisterDir(dir):

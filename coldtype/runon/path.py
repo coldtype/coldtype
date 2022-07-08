@@ -193,9 +193,9 @@ class P(Runon):
 
     # multi-use overrides
     
-    def reverse(self, recursive=False):
+    def reverse(self, recursive=False, winding=True):
         """Reverse elements; if pen value present, reverse the winding direction of the pen."""
-        if self.val_present():
+        if winding and self.val_present():
             if self.unended():
                 self.closePath()
             dp = RecordingPen()
@@ -204,7 +204,7 @@ class P(Runon):
             self._val.value = dp.value
             return self
 
-        return super().reverse(recursive=recursive)
+        return super().reverse(recursive=recursive, winding=winding)
     
     def index(self, idx, fn=None):
         if not self.val_present():
@@ -1142,6 +1142,15 @@ class P(Runon):
         x, y, _, _ = self.ambit(th=th, tv=tv)
         self.translate(-x, -y)
         return self
+    
+
+    def centerZero(self, th=0, tv=0):
+
+        x, y, w, h = self.ambit(th=th, tv=tv)
+        nx, ny = -x-w/2, -y-h/2
+        return (self
+            .t(-x-w/2, -y-h/2)
+            .data(centerZeroOffset=(nx, ny)))
     
 
     def centerPoint(self, rect, pt, interp=1, th=1, tv=0, **kwargs) -> "P":

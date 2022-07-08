@@ -1,7 +1,15 @@
+import math, time
+
+from pathlib import Path
+from typing import Callable
+from contextlib import contextmanager
+
+from coldtype.runon.path import P
+from coldtype.runon.runon import Runon
 from coldtype.time.timeline import Timeline
 from coldtype.geometry import Rect
-import math
-from contextlib import contextmanager
+from coldtype.color import Gradient, normalize_color
+from coldtype.renderable.animation import animation
 
 try:
     import bpy
@@ -16,6 +24,23 @@ except ImportError:
 class _Chainable():
     def noop(self):
         return self
+    
+    def op(self, fn):
+        fn(self)
+        return self
+    
+    def data(self, key=None, default=None, **kwargs):
+        if not hasattr(self, "_data"):
+            self._data = {}
+
+        if key is None and len(kwargs) > 0:
+            for k, v in kwargs.items():
+                self._data[k] = v
+            return self
+        elif key is not None:
+            return self._data.get(key, default)
+        else:
+            return self
 
 class BpyWorld(_Chainable):
     def __init__(self, scene="Scene"):
@@ -30,33 +55,33 @@ class BpyWorld(_Chainable):
     
     deselectAll = deselect_all
     
-    def delete_previous(self, collection="Coldtype", orphans=True):
+    def delete_previous(self, collection="Coldtype", keep=[], materials=True, curves=True, meshes=True, objects=True):
         self.deselect_all()
 
-        BpyCollection.Find(collection).delete_hierarchy()
-        if orphans:
-            self.deleteOrphans()
+        BpyCollection.Find(collection, create=False).delete_hierarchy()
+        self.deleteOrphans(keep=keep, materials=materials, curves=curves, meshes=meshes, objects=objects)
         return self
     
     deletePrevious = delete_previous
 
-    def deleteOrphans(self):
+    def deleteOrphans(self, keep=[], **kwargs):
         from bpy import data as D
         
         props = ["curves", "meshes", "materials", "objects"]
         for x in range(2):
             for c in D.collections:
-                if "RigidBodyWorld" in c.name or c.users == 0:
+                if ("RigidBodyWorld" in c.name or c.users == 0) and c.name not in keep:
                     bpy.data.collections.remove(c)
 
             for p in props:
-                for block in getattr(D, p):
-                    if block.users == 0:
-                        getattr(D, p).remove(block)
+                if kwargs.get(p):
+                    for block in getattr(D, p):
+                        if block.users == 0 and block.name not in keep:
+                            getattr(D, p).remove(block)
         
         return self
     
-    def timeline(self, t:Timeline, resetFrame=None):
+    def timeline(self, t:Timeline, resetFrame=None, output=None, version=None):
         self.scene.frame_start = 0
         self.scene.frame_end = t.duration-1
 
@@ -69,6 +94,17 @@ class BpyWorld(_Chainable):
         
         if resetFrame is not None:
             self.scene.frame_set(resetFrame)
+        
+        if output:
+            output = Path(output)
+            if output.is_file():
+                folder = output.stem
+                if version:
+                    folder = f"{output.stem}_{version}"
+                
+                output = output.parent / "renders" / folder / f"{folder}_"
+            
+            self.scene.render.filepath = str(output)
 
         return self
     
@@ -96,8 +132,8 @@ class BpyWorld(_Chainable):
         try:
             bpy.ops.rigidbody.world_remove()
             yield
-        except RuntimeError:
-            print("! Failed to reset rigidbody !")
+        except RuntimeError as e:
+            print("! Failed to reset rigidbody !", e)
             yield
         
         if self.scene:
@@ -125,28 +161,181 @@ class BpyWorld(_Chainable):
 
 class BpyCollection(_Chainable):
     @staticmethod
-    def Find(tag, create=True):
-        bc = BpyCollection()
-        try:
-            bc.c = bpy.data.collections[tag]
-        except KeyError:
-            if create:
-                bc.c = bpy.data.collections.new(tag)
+    def Find(tag, create=True, parent=None):
+        if "/" in tag:
+            if tag.startswith("/"):
+                parentTag = "Coldtype"
+                tag = tag[1:]
             else:
-                bc.c = None
+                parentTag, tag = tag.split("/")
+            parent = BpyCollection.Find(parentTag, create=create)
+
+        bc = BpyCollection()
+        c = None
+
+        if tag not in bpy.data.collections:
+            if create:
+                c = bpy.data.collections.new(tag)
+                if parent:
+                    if isinstance(parent, BpyCollection):
+                        parent = parent.c
+                    parent.children.link(c)
+                else:
+                    bpy.context.scene.collection.children.link(c)
+        
+        c = bpy.data.collections.get(tag)
+        bc.c = c
         return bc
+
+        # try:
+        #     bc.c = bpy.data.collections[tag]
+        # except KeyError:
+        #     if create:
+        #         print("CREATING", tag)
+        #         bc.c = bpy.data.collections.new(tag)
+        #     else:
+        #         bc.c = None
+        # return bc
 
     def delete_hierarchy(self):
         if not self.c: return
 
         bpy.context.view_layer.objects.active = None
         for obj in self.c.objects:
-            BpyObj.Find(obj.name).select()
+            try:
+                BpyObj.Find(obj.name).select()
+            except Exception as e:
+                print("deleteHierarchy failed to delete object:", obj.name, e)
         bpy.ops.object.delete()
         bpy.data.collections.remove(self.c)
         return None
     
     deleteHierarchy = delete_hierarchy
+
+
+class BpyMaterial():
+    def __init__(self, material):
+        self.m = material
+    
+    def Find(tag, create=True, use_nodes=True):
+        if not isinstance(tag, str):
+            return BpyMaterial(tag)
+
+        try:
+            m = bpy.data.materials[tag]
+            return BpyMaterial(m)
+        except KeyError:
+            if create:
+                m = bpy.data.materials.new(tag)
+                m.use_nodes = use_nodes
+                return BpyMaterial(m)
+        
+        return None
+
+    def bsdf(self):
+        return self.m.node_tree.nodes["Principled BSDF"]
+    
+    def setColorValue(self, value, color):
+        value[0] = color.r
+        value[1] = color.g
+        value[2] = color.b
+        value[3] = 1
+        if color.a != 1:
+            self.transmission(1)
+
+    def f(self, color):
+        if isinstance(color, Gradient):
+            return self.f(color.stops[0][0])
+        else:
+            color = normalize_color(color)
+
+        bsdf = self.bsdf()
+        if bsdf:
+            dv = bsdf.inputs[0].default_value
+            self.setColorValue(dv, color)
+        
+        return self
+    
+    fill = f
+    
+    def specular(self, amount=0.5):
+        self.bsdf().inputs[7].default_value = amount
+        return self
+    
+    def metallic(self, amount=1):
+        self.bsdf().inputs[6].default_value = amount
+        return self
+    
+    def roughness(self, amount=0.5):
+        self.bsdf().inputs[9].default_value = amount
+        return self
+    
+    def transmission(self, amount=1):
+        self.bsdf().inputs[17].default_value = amount
+        return self
+
+    def emission(self, color, strength=1):
+        self.setColorValue(self.bsdf().inputs[19].default_value, normalize_color(color))
+        self.bsdf().inputs[20].default_value = strength
+        return self
+    
+    def animation(self, anim:animation, start=0):
+        src = anim.pass_path(start)
+        tl = anim.timeline
+        return self.image(src, timeline=tl)
+    
+    def image(self, src=None, opacity=1, rect=None, pattern=True, alpha=True, timeline:Timeline=None):
+        bsdf = self.bsdf()
+        
+        if "Image Texture" in self.m.node_tree.nodes:
+            tex = self.m.node_tree.nodes["Image Texture"]
+        else:
+            tex = self.m.node_tree.nodes.new("ShaderNodeTexImage")
+            self.m.node_tree.links.new(bsdf.inputs["Base Color"], tex.outputs["Color"])
+            if alpha:
+                self.m.node_tree.links.new(bsdf.inputs["Alpha"], tex.outputs["Alpha"])
+            
+            bx, by = bsdf.location
+            tex.location = (bx - 320, by)
+        
+        found = False
+
+        for img in bpy.data.images:
+            if src.name in img.name:
+                found = True
+                img.reload()
+
+        if not found or not tex.image:
+            tex.image = bpy.data.images.load(str(src))
+        
+        if timeline is not None:
+            tex.image.source = "SEQUENCE"
+            tex.image_user.frame_duration = timeline.duration
+            tex.image_user.frame_start = 0
+            tex.image_user.frame_offset = -1
+            tex.image_user.use_cyclic = True
+            tex.image_user.use_auto_refresh = True
+
+        return self
+
+
+class BpyGroup(Runon):
+    def yields_wrapped(self):
+        return False
+    
+    @staticmethod
+    def Curves(pens:P, prefix=None, collection=None, cyclic=True, fill=True, th=0, tv=0):
+        curves = BpyGroup()
+
+        def walker(p:P, pos, data):
+            if pos == 0:
+                name = None
+                if prefix:
+                    name = prefix + "_" + ".".join([str(s) for s in data["idx"]])
+                curves.append(BpyObj.Curve(name=name, collection=collection).draw(p, cyclic=cyclic, fill=fill, th=th, tv=tv))
+        
+        pens.walk(walker)
+        return curves
 
 
 class BpyObj(_Chainable):
@@ -169,15 +358,63 @@ class BpyObj(_Chainable):
         else:
             return BpyObj.Find(obj_or_tag)
     
+    @staticmethod
+    def Primitive(name=None, collection="Coldtype") -> "BpyObj":
+        if collection is None:
+            collection = "Coldtype"
+
+        created = bpy.context.object
+        bobj = BpyObj()
+        bobj.obj = created
+        if collection:
+            bobj.collect(collection)
+        created.select_set(False)
+        if name is not None:
+            bobj.obj.name = name
+        return bobj
+    
+    @staticmethod
+    def Empty(name=None, collection=None) -> "BpyObj":
+        bpy.ops.object.empty_add(type="PLAIN_AXES")
+        return BpyObj.Primitive(name, collection)
+
+    @staticmethod
+    def Cube(name=None, collection=None) -> "BpyObj":
+        bpy.ops.mesh.primitive_cube_add()
+        return BpyObj.Primitive(name, collection)
+
+    @staticmethod
+    def Plane(name=None, collection=None) -> "BpyObj":
+        bpy.ops.mesh.primitive_plane_add()
+        return BpyObj.Primitive(name, collection)
+    
+    @staticmethod
+    def Curve(name=None, collection=None) -> "BpyObj":
+        bpy.ops.curve.primitive_bezier_curve_add()
+        bo = BpyObj.Primitive(name, collection)
+        return bo
+    
+    @staticmethod
+    def UVSphere(name=None, collection=None) -> "BpyObj":
+        bpy.ops.mesh.primitive_uv_sphere_add()
+        return BpyObj.Primitive(name, collection)
+    
+    @staticmethod
+    def Monkey(name=None, collection=None) -> "BpyObj":
+        bpy.ops.mesh.primitive_monkey_add()
+        return BpyObj.Primitive(name, collection)
+    
     def select(self, selected=True):
         self.obj.select_set(selected)
         return self
     
-    def collect(self, collectionTag, create=True):
-        for c in self.obj.users_collection:
-            c.objects.unlink(self.obj)
-        bc = BpyCollection.Find(collectionTag, create=create)
+    def collect(self, collectionTag, create=True, unlink=True, parent=None):
+        bc = BpyCollection.Find(collectionTag, create=create, parent=parent)
         bc.c.objects.link(self.obj)
+        if unlink:
+            for c in self.obj.users_collection:
+                if c != bc.c:
+                    c.objects.unlink(self.obj)
         return self
     
     @contextmanager
@@ -281,6 +518,11 @@ class BpyObj(_Chainable):
         return self
     
     selectAndDelete = select_and_delete
+
+    def separateByLooseParts(self):
+        with self.all_vertices_selected():
+            bpy.ops.mesh.separate(type="LOOSE")
+        return self
     
     def parent(self, parent_tag, hide=False):
         with self.obj_selection_sequence(parent_tag) as o:
@@ -309,25 +551,11 @@ class BpyObj(_Chainable):
         bpy.ops.object.empty_add(type="PLAIN_AXES")
         bc = bpy.context.object
         bc.name = self.obj.name + "_EmptyOrigin"
-        print("EMPTY ORIGIN", bc.name)
         self.eo = bc
         BpyObj.Find(bc.name).collect(collection)
         return self
     
     # Geometry Methods
-
-    def rotate(self, x=None, y=None, z=None):
-        if isinstance(x, Euler):
-            self.obj.rotation_euler = x
-            return self
-        
-        if x is not None:
-            self.obj.rotation_euler[0] = math.radians(x)
-        if y is not None:
-            self.obj.rotation_euler[1] = math.radians(y)
-        if z is not None:
-            self.obj.rotation_euler[2] = math.radians(z)
-        return self
     
     def apply_transform(self,
         location=True,
@@ -345,6 +573,9 @@ class BpyObj(_Chainable):
     
     applyTransform = apply_transform
 
+    def applyScale(self):
+        return self.applyTransform(location=False, rotation=False, scale=True, properties=False)
+
     def apply_modifier(self, name):
         with self.obj_selected():        
             #bpy.ops.object.modifier_set_active(modifier=name)
@@ -353,6 +584,28 @@ class BpyObj(_Chainable):
         return self
     
     applyModifier = apply_modifier
+
+    def applyAllModifiers(self):
+        with self.obj_selected():
+            for mod in self.obj.modifiers:
+                bpy.ops.object.modifier_apply(modifier=mod.name)
+                self.obj.to_mesh(preserve_all_data_layers=True)
+        return self
+
+#region Basic transformations
+
+    def rotate(self, x=None, y=None, z=None):
+        if isinstance(x, Euler):
+            self.obj.rotation_euler = x
+            return self
+        
+        if x is not None:
+            self.obj.rotation_euler[0] = math.radians(x)
+        if y is not None:
+            self.obj.rotation_euler[1] = math.radians(y)
+        if z is not None:
+            self.obj.rotation_euler[2] = math.radians(z)
+        return self
     
     def origin_to_geometry(self):
         with self.obj_selected():
@@ -406,7 +659,36 @@ class BpyObj(_Chainable):
     
     locateRelative = locate_relative
 
-    # Convenience Methods
+    def scale(self, x=None, y=None, z=None):
+        if x is not None:
+            self.obj.scale[0] = x
+        if y is not None:
+            self.obj.scale[1] = y
+        if z is not None:
+            self.obj.scale[2] = z
+        return self
+
+#endregion Basic transformations
+
+#region Materials
+
+    def material(self, tag, modFn:Callable[[BpyMaterial], BpyMaterial]=None, clear=False):
+        if clear:
+            self.obj.data.materials.clear()
+
+        bm = BpyMaterial.Find(tag, create=True, use_nodes=True)
+
+        if bm.m.name not in self.obj.data.materials:
+            self.obj.data.materials.append(bm.m)
+        
+        if bm and modFn:
+            modFn(bm)
+
+        return self
+
+#endregion Materials
+
+#region Convenience Methods
 
     def rigidbody(self,
         mode="active",
@@ -442,6 +724,10 @@ class BpyObj(_Chainable):
         
         return self
     
+#endregion Convenience Methods
+    
+#region Modifiers
+    
     def solidify(self, thickness=1):
         with self.obj_selected():
             bpy.ops.object.modifier_add(type="SOLIDIFY")
@@ -458,6 +744,35 @@ class BpyObj(_Chainable):
             m.use_remove_disconnected = False
             m.use_smooth_shade = smooth
         return self
+    
+    def array(self, count=2, relative=(1, 0, 0), constant=(0.1, 0, 0)):
+        with self.obj_selected():
+            bpy.ops.object.modifier_add(type='ARRAY')
+            m = self.obj.modifiers[-1]
+            m.count = count
+            
+            if relative:
+                m.use_relative_offset = True
+                m.relative_offset_displace[0] = relative[0]
+                m.relative_offset_displace[1] = relative[1]
+                m.relative_offset_displace[2] = relative[2]
+            else:
+                m.use_relative_offset = False
+
+            if constant:
+                m.use_constant_offset = True
+                m.constant_offset_displace[0] = constant[0]
+                m.constant_offset_displace[1] = constant[1]
+                m.constant_offset_displace[2] = constant[2]
+            else:
+                m.use_constant_offset = False
+        return self
+    
+    def arrayX(self, count=2, relative=1, constant=0.1):
+        return self.array(count=count, relative=(relative, 0, 0), constant=(constant, 0, 0))
+    
+    def arrayY(self, count=2, relative=-1, constant=-0.1):
+        return self.array(count=count, relative=(0, relative, 0), constant=(0, constant, 0))
     
     def remove_doubles(self, threshold=0.01):
         with self.all_vertices_selected():
@@ -572,3 +887,108 @@ class BpyObj(_Chainable):
         return self
     
     decimatePlanar = decimate_planar
+
+#endregion Modifiers
+
+#region Curve functions
+
+    def draw(self, path:P, cyclic=True, fill=True, th=0, tv=0) -> "BpyObj":
+        if len(path) > 0:
+            path = path.pen()
+        
+        path = path.removeOverlap()#.centerZero()
+        amb = path.ambit(th=th, tv=tv)
+        origin = amb.x + amb.w/2, amb.y + amb.h/2
+
+        path = path.q2c()
+
+        #czOffset = path.data("centerZeroOffset")
+
+        splines = []
+        spline = None
+        value = []
+
+        for mv, pts in path._val.value:
+            if mv == "moveTo":
+                p = pts[0]
+                if spline and len(spline) > 0 and spline not in splines:
+                    splines.append(spline)
+                spline = []
+                value.append([p])
+                spline.append(["BEZIER", "start", [p, p, p]])
+
+            elif mv == "lineTo":
+                p = pts[0]
+                value.append([p])
+                spline.append(["BEZIER", "curve", [p, p, p]])
+
+            elif mv == "curveTo":
+                p1, p2, p3 = pts
+                spline[-1][-1][-1] = p1
+                value.append([p1, p2, p3])
+                spline.append(["BEZIER", "curve", [p2, p3, p3]])
+
+            # elif mv == "qCurveTo":
+            #     p1, p2 = pts
+            #     start = value[-1][-1]
+            #     q1, q2, q3 = raise_quadratic(start, (p1[0], p1[1]), (p2[0], p2[1]))
+            #     spline[-1][-1][-1] = q1
+            #     value.append([q1, q2, q3])
+            #     spline.append(["BEZIER", "curve", [q2, q3, q3]])
+
+            elif mv == "closePath":
+                if spline and len(spline) > 0 and spline not in splines:
+                    splines.append(spline)
+                    spline = None
+                spline = None
+        
+            else:
+                raise Exception("blender curve unhandled curve type", mv)
+            
+            if spline and len(spline) > 0 and spline not in splines:
+                splines.append(spline)
+
+        bez = self.obj.data
+
+        def zvec(pt, z=0):
+            x, y = pt
+            return Vector((x, y, z))
+
+        for spline in reversed(bez.splines): # clear existing splines
+            bez.splines.remove(spline)
+
+        for spline_data in splines:
+            bez.splines.new('BEZIER')
+            spline = bez.splines[-1]
+            spline.use_cyclic_u = cyclic
+            for i, (t, style, pts) in enumerate(spline_data):
+                l, c, r = pts
+                if i > 0:
+                    spline.bezier_points.add(1)
+                pt = spline.bezier_points[-1]
+                pt.co = zvec(c)
+                pt.handle_left = zvec(l)
+                pt.handle_right = zvec(r)
+        
+        if fill:
+            bez.dimensions = "2D"
+            bez.fill_mode = "BOTH"
+
+        self.setOrigin(*origin, 0)
+
+        return self
+
+    def extrude(self, amount=0.1) -> "BpyObj":
+        self.obj.data.extrude = amount
+        return self
+    
+    def bevel(self, depth=0.02) -> "BpyObj":
+        self.obj.data.bevel_depth = depth
+        return self
+    
+    def convertToMesh(self) -> "BpyObj":
+        with self.obj_selected():
+            bpy.ops.object.convert(target="MESH")
+        return self
+
+#endregion

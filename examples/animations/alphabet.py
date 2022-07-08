@@ -1,6 +1,6 @@
 from coldtype.test import *
 
-tl = Timeline(26, fps=14)
+tl = Timeline(26, fps=18)
 
 @animation(rect=(1080, 1080), timeline=tl, bg=0)
 def render(f):

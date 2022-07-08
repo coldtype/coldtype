@@ -6,7 +6,7 @@ from coldtype.geometry import curve
 
 from coldtype.geometry.rect import Rect
 from coldtype.runon.path import P
-from coldtype.pens.blenderpen import BlenderPen, BPH
+from coldtype.pens.blenderpen import BlenderPen, BlenderPenCube, BPH
 from coldtype.color import hsl
 
 from coldtype.time import Frame, Timeline, Timeable
@@ -16,7 +16,7 @@ from coldtype.renderable.animation import animation
 from coldtype.blender.render import blend_source
 from coldtype.time.sequence import ClipTrack, Clip, Sequence
 
-from coldtype.blender.fluent import BpyWorld, BpyObj, BpyCollection
+from coldtype.blender.fluent import BpyWorld, BpyObj, BpyCollection, BpyGroup, BpyMaterial
 
 from typing import Callable
 
@@ -82,7 +82,7 @@ class BlenderTimeline(Timeline):
 
 def b3d(callback:Callable[[BlenderPen], BlenderPen],
     collection="Coldtype",
-    plane=False,
+    primitive=None,
     dn=False,
     cyclic=True,
     material=None,
@@ -122,7 +122,7 @@ def b3d(callback:Callable[[BlenderPen], BlenderPen],
             tag_prefix=(tag_prefix or prev.get("tag_prefix")),
             dn=dn,
             cyclic=cyclic,
-            plane=plane,
+            primitive=primitive,
             zero=zero,
             #reposition=c,
             upright=upright))
@@ -199,8 +199,14 @@ def walk_to_b3d(result:P,
                 denovo = bdata.get("dn", dn)
                 cyclic = bdata.get("cyclic", True)
 
-                if bdata.get("plane"):
-                    bp = p.cast(BlenderPen).draw(coll, plane=True, material=material, dn=True)
+                primitive = bdata.get("primitive")
+
+                if primitive is not None:
+                    _class = BlenderPen
+                    if primitive == "cube":
+                        _class = BlenderPenCube
+                    
+                    bp = p.cast(_class).draw(coll, primitive=primitive, material=material, dn=True)
                 else:
                     bp = p.cast(BlenderPen).draw(coll, dn=denovo, material=material, cyclic=cyclic)
                 
@@ -244,9 +250,14 @@ class b3d_runnable(runnable):
     def __init__(self,
         solo=False,
         cond=None,
-        once=True
+        once=True,
+        delay=False,
+        playback=None,
         ):
         self.once = once
+        self.delay = delay
+        self.playback = playback
+
         if cond is not None:
             super().__init__(solo=solo, cond=lambda: cond and bool(bpy))
         else:

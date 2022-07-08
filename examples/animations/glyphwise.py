@@ -14,11 +14,11 @@ def glyphwise(f):
                 ro=1,
                 tv=1)]
 
-    return (Glyphwise("COLD\nTYPE", styler)
+    # should also work w/ a \n in between COLD & TYPE
+    return (Glyphwise("COLDTYPE", styler, multiline=1)
         .xalign(f.a.r, th=0)
         .lead(30)
         .align(f.a.r, th=0)
-        .collapse()
-        .rp()
+        .reverse(recursive=True)
         .fssw(1, 0, 7, 1)
         .ch(phototype(f.a.r, 3, 190, cutw=15)))

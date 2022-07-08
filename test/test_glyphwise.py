@@ -195,10 +195,30 @@ class TestGlyphwise(unittest.TestCase):
             return Style(Font.MutatorSans(), 120,
                 meta=dict(idx=g.i))
         
-        gw = (Glyphwise("AB\nCD\nEF", styler)
-            .collapse())
-        
+        gw = (Glyphwise("AB\nCD\nEF", styler))
+
+        self.assertEqual(len(gw), 3)
+        gw.collapse()
+        self.assertEqual(len(gw), 6)
+
         for idx, g in enumerate(gw):
+            self.assertEqual(g.data("idx"), idx)
+    
+        gw2 = (Glyphwise("ABC", styler, multiline=1))
+        
+        self.assertEqual(len(gw2), 1)
+        gw2.collapse()
+        self.assertEqual(len(gw2), 3)
+
+        for idx, g in enumerate(gw2):
+            self.assertEqual(g.data("idx"), idx)
+        
+        gw3 = (Glyphwise("ABC", styler, multiline=0))
+        self.assertEqual(len(gw3), 3)
+        gw3.collapse()
+        self.assertEqual(len(gw3), 3)
+
+        for idx, g in enumerate(gw3):
             self.assertEqual(g.data("idx"), idx)
     
     def test_no_reverse(self):

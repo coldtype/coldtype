@@ -75,6 +75,7 @@ setuptools.setup(
             "skia-python>=86.0",
             "skia-pathops", # can this be taken from skia-python?
             "ufo2ft",
+            #"ufoLib2",
             "numpy",
         ],
         "experimental": [

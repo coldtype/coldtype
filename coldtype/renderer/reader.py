@@ -332,6 +332,8 @@ class SourceReader():
             return root / "demo/midi.py"
         elif name == "vf":
             return root / "demo/vf.py"
+        elif name == "viewseq":
+            return root / "demo/viewseq.py"
         elif name == "pj":
             return root / "renderer/picklejar.py"
         return name
@@ -396,8 +398,7 @@ class SourceReader():
                         "__as_config__": True,
                         "__sibling__": partial(sibling, p),
                     })
-                    #self.midi_mapping = py_config.get("MIDI", self.midi_mapping)
-                    #self.hotkey_mapping = py_config.get("HOTKEYS", self.hotkey_mapping)
+                    
                     self.config = ColdtypeConfig(py_config, self.config if self.config else None, args)
 
                     for f in self.config.font_dirs:
@@ -407,8 +408,8 @@ class SourceReader():
                     if isinstance(e, ColdtypeCeaseConfigException):
                         pass
                     else:
-                        #print("Failed to load config", p)
-                        #print("Exception:", e)
+                        print("Failed to load config", p)
+                        print("Exception:", e)
                         pass
         
         if len(files) == 0 or not self.config:

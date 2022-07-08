@@ -507,6 +507,7 @@ class Renderer():
                 check_watches(render)
                 
                 passes = render.passes(trigger, self.state, indices)
+
                 render.last_passes = passes
                 
                 for rp in passes:
@@ -642,14 +643,18 @@ class Renderer():
         
         if not self.args.is_subprocess and render_count > 0:
             for render in renders:
-                result = render.package()
+                if hasattr(render, "package"):
+                    result = render.package()
+                else:
+                    result = None
+                
                 if result:
                     self.previews_waiting.append([render, result, None])
                 else:
                     self.action_waiting = Action.PreviewStoryboard
                     self.action_waiting_reason = "unclear"
 
-            self.winmans.did_render(render_count, ditto_last)
+            self.winmans.did_render(render_count, ditto_last, renders)
             
         did_render_fn = self.buildrelease_fn("didRender")
         if did_render_fn:
@@ -1195,6 +1200,7 @@ class Renderer():
             for _ in range(0, len(adjs())):
                 self.actions_queued.append(KeyboardShortcut.RenderAll)
                 self.actions_queued.append(KeyboardShortcut.LoadNextInDirectory)
+                self.actions_queued.append(Action.PreviewStoryboardReload)
             self.actions_queued.append(KeyboardShortcut.Release)
             return Action.PreviewStoryboardReload
         elif shortcut in [
@@ -1327,8 +1333,9 @@ class Renderer():
             for k, v in self.debounced_actions.items():
                 if v:
                     if (now - v) > self.source_reader.config.debounce_time:
-                        self.action_waiting = Action.PreviewStoryboardReload
-                        self.action_waiting_reason = "debouncing"
+                        #self.action_waiting = Action.PreviewStoryboardReload
+                        self.actions_queued.append(Action.PreviewStoryboardReload)
+                        #self.action_waiting_reason = "debouncing"
                         self.debounced_actions[k] = None
 
         if self.action_waiting:
