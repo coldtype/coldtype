@@ -166,7 +166,7 @@ Fixed! Also I did some completely unrelated things there.
 
 * When you cast a shadow like that, your text might look a little un-centered, so to fix that we’ve added an additional ``align`` call at the end, passing ``th=1`` and ``tv=1`` to indicate that we want the whole thing centered perfectly (true-horizontal and true-vertical) within the bounding rectangle ``r``. (Those flags are useful for a type-centric graphics engine, because up until now we’ve relied on the pre-set cap-height of the letters to vertically align glyphs, rather than their "true height" which varies from letter to letter.)
 
-* Instead of ``copy``ing anything, the example now uses the ``.layer`` method, which does the copying for you, and also removes the "original" in favor of the two lambda functions provided. Basically, this is a copy-and-replace operation, where we've provided two "replace" operations. So to recap: via ``StSt``, we created a set of pens (aka vectors aka shapes), then we reduced that to a single pen, then we layered that pen, resulting in two new pens (one for the shadow, one for the filled and stroked shape on top). The layer function also allows us to directly return the "chain," without having to declare intermediate variables.
+* Instead of ``copy``\ing anything, the example now uses the ``.layer`` method, which does the copying for you, and also removes the "original" in favor of the two lambda functions provided. Basically, this is a copy-and-replace operation, where we've provided two "replace" operations. So to recap: via ``StSt``, we created a set of pens (aka vectors aka shapes), then we reduced that to a single pen, then we layered that pen, resulting in two new pens (one for the shadow, one for the filled and stroked shape on top). The layer function also allows us to directly return the "chain," without having to declare intermediate variables.
 
 One additional refinement you may want to make in an example like this is that you'd want to individually cast shadows based on a glyph + a little bit of stroke set around it, in the style of the 19th-century type designers. So let’s do that:
 
@@ -193,7 +193,7 @@ One additional refinement you may want to make in an example like this is that y
     :width: 500
     :class: add-border
 
-Dang, you know I thought that example would just work, but it looks like there are some tiny little dots present, which I think are artifacts of the ``castshadow`` call. I didn’t write the guts of that (Loïc Sander wrote something called a ``TranslationPen`` which is used by coldtype internally), so I don’t understand it completely, but it shouldn’t be difficult to devise a way to clean up those tiny specks by testing the ``bounds`` of each of the contours created by the ``TranslationPen``. We can do that by iterating over the individual contours by exploding the path into its constituent contours, then filtering those contours, these imploding those contours back into a single path again. We can also use the opportunity to demonstrate some debugging techniques, like isolating a single letter and blowing it up.
+Dang, you know I thought that example would just work, but it looks like there are some tiny little dots present, which I think are artifacts of the ``castshadow`` call. I didn’t write the guts of that (Loïc Sander wrote something called a ``TranslationPen`` which is used by coldtype internally), so I don’t understand it completely, but it shouldn’t be difficult to devise a way to clean up those tiny specks by testing the ``bounds`` of each of the contours created by the ``TranslationPen``. We can do that by iterating over the individual contours by exploding the path into its constituent contours, then filtering those contours, then imploding those contours back into a single path again. We can also use the opportunity to demonstrate some debugging techniques, like isolating a single letter and blowing it up.
 
 .. code:: python
 
@@ -225,7 +225,7 @@ Dang, you know I thought that example would just work, but it looks like there a
     :width: 500
     :class: add-border
 
-Got it! If you comment out the ``.filter_contours`` line, you should see the little speck show up again.
+Got it! If you comment out the ``.filter`` line, you should see the little speck show up again.
 
 N.B. We pulled the lambda being passed to ``pmap`` (pens-map) out into its own function, ``shadow_and_clean``. It’s not really a "reusable" function, but it is a little clearer in this instance to have that logic separated from the main chained expression.
 
