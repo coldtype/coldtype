@@ -146,9 +146,10 @@ class Font():
     
     def variations(self):
         axes = {}
-        fvar = self.font.ttFont['fvar']
-        for axis in fvar.axes:
-            axes[axis.axisTag] = (axis.__dict__)
+        if "fvar" in self.font.ttFont:
+            fvar = self.font.ttFont['fvar']
+            for axis in fvar.axes:
+                axes[axis.axisTag] = (axis.__dict__)
         return axes
     
     @staticmethod

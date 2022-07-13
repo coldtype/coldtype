@@ -345,10 +345,14 @@ class BpyObj(_Chainable):
     @staticmethod
     def Find(tag):
         bobj = BpyObj()
-        try:
-            bobj.obj = bpy.data.objects[tag]
-        except KeyError:
-            bobj.obj = None
+        
+        if isinstance(tag, bpy.types.Object):
+            bobj.obj = tag
+        else:
+            try:
+                bobj.obj = bpy.data.objects[tag]
+            except KeyError:
+                bobj.obj = None
         return bobj
     
     @staticmethod
@@ -362,6 +366,9 @@ class BpyObj(_Chainable):
     def Primitive(name=None, collection="Coldtype") -> "BpyObj":
         if collection is None:
             collection = "Coldtype"
+        
+        if collection == "Global":
+            collection = None
 
         created = bpy.context.object
         bobj = BpyObj()
@@ -535,6 +542,27 @@ class BpyObj(_Chainable):
     def hide(self, hide=True):
         self.obj.hide_viewport = hide
         self.obj.hide_render = hide
+        return self
+    
+    def set_visibility_at_frame(self, frame, visibility, scene=None):
+        if scene is None:
+            scene = bpy.data.scenes[0]
+        scene.frame_set(frame)
+        self.hide(not visibility)
+        self.obj.keyframe_insert(data_path="hide_render")
+        self.obj.keyframe_insert(data_path="hide_viewport")
+        return self
+    
+    def show_on_frame(self, frame):
+        self.set_visibility_at_frame(0, False)
+        self.set_visibility_at_frame(frame, True)
+        self.set_visibility_at_frame(frame+1, False)
+        return self
+    
+    def show_at_frame(self, frame):
+        self.set_visibility_at_frame(0, False)
+        self.set_visibility_at_frame(frame-1, False)
+        self.set_visibility_at_frame(frame, True)
         return self
     
     # Manipulation Methods
@@ -892,12 +920,14 @@ class BpyObj(_Chainable):
 
 #region Curve functions
 
-    def draw(self, path:P, cyclic=True, fill=True, th=0, tv=0) -> "BpyObj":
+    def draw(self, path:P, cyclic=True, fill=True, th=0, tv=0, set_origin=True, clear=True) -> "BpyObj":
         if len(path) > 0:
             path = path.pen()
         
-        path = path.removeOverlap()#.centerZero()
+        path = path.removeOverlap()
+        
         amb = path.ambit(th=th, tv=tv)
+
         origin = amb.x + amb.w/2, amb.y + amb.h/2
 
         path = path.q2c()
@@ -974,7 +1004,8 @@ class BpyObj(_Chainable):
             bez.dimensions = "2D"
             bez.fill_mode = "BOTH"
 
-        self.setOrigin(*origin, 0)
+        if set_origin:
+            self.setOrigin(*origin, 0)
 
         return self
 
@@ -992,3 +1023,4 @@ class BpyObj(_Chainable):
         return self
 
 #endregion
+
