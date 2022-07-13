@@ -83,7 +83,7 @@ At this point you might be wondering, `how do I save what's on screen to a file 
 
 If you’re familiar with DrawBot, you might think you need to write some code to do that, but one of the core tenets of coldtype is that rendering and rasterizing are handled by the renderer, not by the source code. This makes some things that are easy in DrawBot difficult in Coldtype, but it also makes many things that are difficult in DrawBot extremely easy in Coldtype.
 
-If you have you’re program running, to render what you have so far to disk, you can focus on the Coldtype viewer window and hit the ``a`` key on your keyboard. That should print some things out on the command-line, including the path of a brand-new png file.
+If you have your program running, to render what you have so far to disk, you can focus on the Coldtype viewer window and hit the ``a`` key on your keyboard. That should print some things out on the command-line, including the path of a brand-new png file.
 
 A few notes:
 
