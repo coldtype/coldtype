@@ -155,3 +155,9 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ## [0.9.5] - 2022-03-24
 ### Fixed
 - `bake=True` for a `@b3d_animation`
+
+## [0.9.6] - 2022-07-13
+### Fixed
+- Spelling mistakes [h/t @HaydenBL]
+### Added
+- Tons of experimental additional functionality for more direct-style scripting of blender and forthcoming coldtype-based blender typography addon (all in fluent.py, with some supporting tweaks in other coldtyper.blender infrastructure)
