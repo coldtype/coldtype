@@ -57,7 +57,7 @@ class DocsWriter(Renderer):
     def buildrelease_fn(self, fnname="release"):
         candidate = super().buildrelease_fn(fnname=fnname)
 
-        def build_docs(passes):
+        def build_docs(trigger, passes):
             from shutil import copy2
             imgs = {}
             for pss in passes:
