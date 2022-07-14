@@ -23,7 +23,7 @@ from coldtype.pens.svgpen import SVGPen
 from coldtype.renderable.tools import set_ffmpeg_command
 
 from coldtype.renderer.config import ConfigOption
-from coldtype.renderer.reader import SourceReader
+from coldtype.renderer.reader import SourceReader, run_source
 from coldtype.renderer.state import RendererState
 from coldtype.renderer.winman import Winmans, WinmanGLFWSkiaBackground
 from coldtype.renderable import renderable, animation, Action, Overlay, runnable
@@ -202,7 +202,16 @@ class Renderer():
         pass
     
     def prenormalize_filepath(self, filepath):
-        return SourceReader.Demo(filepath)
+        script = SourceReader.Script(filepath)
+        if script:
+            print(">>>", script)
+            sr = SourceReader(renderer=self,
+                inputs=self.args.inputs,
+                cli_args=self.args)
+            run_source(script, script, {}, {}, reader=sr)
+            return -1
+        else:
+            return SourceReader.Demo(filepath)
     
     def reset_filepath(self, filepath, reload=False):
         dirdirection = 0

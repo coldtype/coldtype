@@ -316,6 +316,15 @@ class SourceReader():
             self.reset_filepath(filepath, code)
     
     @staticmethod
+    def Script(name):
+        root = Path(__file__).parent.parent
+        if name.startswith("script:"):
+            script = root / (name.replace(":", "s/") + ".py")
+            if script.exists():
+                return script
+        return False
+
+    @staticmethod
     def Demo(name):
         root = Path(__file__).parent.parent
         if not name:
