@@ -312,30 +312,34 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                 return {'PASS_THROUGH'}
             
             for line in self.file.read_text().splitlines():
-                line = line.rstrip("\n")
-                start, kwargs = [t.strip() for t in line.split(";")]
-                kwargs = eval(kwargs)
-                cmd, arg = start.split(",")
-                if cmd == 'import':
-                    self.reimport(arg, kwargs)
-                elif cmd == "play_preview":
-                    bpy.ops.screen.animation_play()
-                elif cmd == "frame_offset":
-                    bpy.ops.screen.frame_offset(delta=int(arg))
-                elif cmd == "refresh_sequencer":
-                    bpy.ops.sequencer.refresh_all()
-                    for k, v in bpy.data.images.items():
-                        print("RELOAD", k, v)
-                        v.reload()
-                elif cmd == "refresh_sequencer_and_image":
-                    bpy.ops.sequencer.refresh_all()
-                    for k, v in bpy.data.images.items():
-                        if "_last_render.png" in k:
+                print(line)
+                try:
+                    line = line.rstrip("\n")
+                    start, kwargs = [t.strip() for t in line.split(";")]
+                    kwargs = eval(kwargs)
+                    cmd, arg = start.split(",")
+                    if cmd == 'import':
+                        self.reimport(arg, kwargs)
+                    elif cmd == "play_preview":
+                        bpy.ops.screen.animation_play()
+                    elif cmd == "frame_offset":
+                        bpy.ops.screen.frame_offset(delta=int(arg))
+                    elif cmd == "refresh_sequencer":
+                        bpy.ops.sequencer.refresh_all()
+                        for k, v in bpy.data.images.items():
+                            print("RELOAD", k, v)
                             v.reload()
-                elif cmd == 'cancel':
-                    self.cancel(context)
-                else:
-                    print('unknown request=%s arg=%s' % (cmd,arg))
+                    elif cmd == "refresh_sequencer_and_image":
+                        bpy.ops.sequencer.refresh_all()
+                        for k, v in bpy.data.images.items():
+                            if "_last_render.png" in k:
+                                v.reload()
+                    elif cmd == 'cancel':
+                        self.cancel(context)
+                    else:
+                        print('unknown request=%s arg=%s' % (cmd,arg))
+                except Exception as e:
+                    print("Failed to read command file:", e)
             
             if self.file.exists():
                 self.file.unlink()
