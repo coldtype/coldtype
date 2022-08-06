@@ -423,3 +423,11 @@ class fontpreview(animation):
     def passes(self, action, renderer_state, indices=[]):
         frames = self.active_frames(action, renderer_state, indices)
         return [RenderPass(self, action, i, [Frame(i, self), self.matches[i]]) for i in frames]
+
+
+def gifski(a:animation, passes):
+    """simple wrapper for already-installed gifski"""
+    root = a.pass_path(f"%4d.{a.fmt}").parent.parent
+    gif = root / (a.name + ".gif")
+    run(["gifski", "--fps", str(a.timeline.fps), "-o", gif, *[p.output_path for p in passes if p.render == a]])
+    return gif

@@ -161,3 +161,12 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 - Spelling mistakes [h/t @HaydenBL]
 ### Added
 - Tons of experimental additional functionality for more direct-style scripting of blender and forthcoming coldtype-based blender typography addon (all in fluent.py, with some supporting tweaks in other coldtyper.blender infrastructure)
+
+## [0.9.7] - 2022-08-06
+### Added
+- New transparency background when `bg` not specified
+- `render_bg` now defaults to `True`, since that seems to be the most common use-case
+- `ufo2ft` in `[blender]` optional requirements
+- simple `gifski` wrapper importable from `coldtyper.renderable.animation`
+### Fixed
+- Better error message when trying to "release" via ffmpeg but no files have been rendered
