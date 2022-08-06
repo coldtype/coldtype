@@ -40,12 +40,12 @@ class TestGlyphwise(unittest.TestCase):
         return ss, gw
 
     def test_format_equality(self):
-        fnt = "~/Type/fonts/fonts/OhnoFatfaceVariable.ttf"
+        fnt = "OhnoFatfaceVariable.ttf"
         self._test_glyph_kerning(fnt, False, pj=False)
         self._test_glyph_kerning(fnt, True, pj=True)
     
     def test_ligature(self):
-        clarette = Font.Cacheable("~/Type/fonts/fonts/_wdths/ClaretteGX.ttf")
+        clarette = Font.Find("ClaretteGX.ttf")
         r = Rect(1080, 300)
         gl = (Glyphwise(["fi", "j", "o", "ff"],
             lambda g: Style(clarette, 200, wdth=g.i/3))

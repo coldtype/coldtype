@@ -211,7 +211,7 @@ class Font():
         try:
             return Font.Cacheable(found[index])
         except Exception as e:
-            print(">", e)
+            #print(">", e)
             raise FontNotFoundException(regex)
     
     def RegisterDir(dir):

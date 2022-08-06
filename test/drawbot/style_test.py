@@ -5,7 +5,7 @@ sys.path.insert(0, str(Path("~/Goodhertz/coldtype").expanduser()))
 from coldtype.drawbot import *
 
 with new_page() as r:
-    mistral = Font.Cacheable("~/Type/fonts/fonts/_script/MistralD.otf")
+    mistral = Font.Find("MistralD.otf")
 
     s = (StSt("Hello", mistral, 300)
         .f(hsl(0.3, s=1))

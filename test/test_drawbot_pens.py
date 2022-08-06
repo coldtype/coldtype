@@ -54,7 +54,7 @@ class TestDrawbotPens(unittest.TestCase):
             self.assertEqual(type(dp), P)
 
     def test_distribute_on_path(self):
-        mistral = Font.Cacheable("~/Type/fonts/fonts/_script/MistralD.otf")
+        mistral = Font.Find("MistralD.otf")
 
         with test_image(self, "test_distribute.png", Rect(1000, 1000)) as (i, r):
             s = (StyledString("Hello", Style(mistral, 300))

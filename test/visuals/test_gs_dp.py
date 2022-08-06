@@ -33,7 +33,7 @@ def test3(r):
             {c}↑|↖|{cc}~"""
     
     return (DPS()
-        .record(StyledString("o", Style("~/Type/fonts/fonts/vulf/VulfMonoRegular.otf", 700)).pen().align(r, tv=1))
+        .record(StyledString("o", Style("VulfMonoRegular.otf", 700)).pen().align(r, tv=1))
         .define(
             r=r,
             ri="$rI-8",

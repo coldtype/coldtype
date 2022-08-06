@@ -5,15 +5,18 @@ from coldtype.helpers import glyph_to_uni
 from coldtype.runon.path import P
 from coldtype.text.composer import StSt, Font, Style, Slug, SegmentedString
 
+from coldtype.text.reader import ALL_FONT_DIRS
+ALL_FONT_DIRS.insert(0, "~/Type/fonts/fonts")
+
 tf = Path(__file__).parent
 co = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
 mutator = Font.Cacheable("assets/MutatorSans.ttf")
 zh = Font.Cacheable("assets/NotoSansCJKsc-Black.otf")
 
 latin_font = Font("assets/NotoSans-Black.ttf")
-arabic_font = Font("~/Type/fonts/fonts/_i18n/GretaArabicCompressedAR-Heavy.otf")
-ar_light = Font("~/Type/fonts/fonts/_i18n/GretaArabicCondensedAR-Light.otf")
-hebrew_font = Font("~/Type/fonts/fonts/_i18n/GretaSansCondensedH+L-Medium.otf")
+arabic_font = Font.Find("GretaArabicCompressedAR-Heavy.otf")
+ar_light = Font.Find("GretaArabicCondensedAR-Light.otf")
+hebrew_font = Font.Find(r"GretaSansCondensedH\+L\-Medium\.otf")
 
 r = Rect(1000, 500)
 
@@ -155,7 +158,7 @@ class TestI18N(unittest.TestCase):
         self.assertEqual(txt[2].glyphName, "j")
     
     def test_language_specific_ufo(self):
-        hershey_gothic = Font.Cacheable("~/Type/fonts/fonts/hershey/Hershey-TriplexGothicGerman.ufo")
+        hershey_gothic = Font.Find("Hershey-TriplexGothicGerman.ufo")
         txt = StSt("Grieß".upper(), hershey_gothic, 200, tu=-100)
         self.assertEqual(len(txt), 6)
         self.assertEqual(txt[-1].glyphName, "S")

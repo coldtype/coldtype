@@ -31,7 +31,7 @@ class TestRichText(unittest.TestCase):
         rt.picklejar(r)
     
     def test_ligature(self):
-        clarette = Font.Cacheable("~/Type/fonts/fonts/_wdths/ClaretteGX.ttf")
+        clarette = Font.Find("ClaretteGX.ttf")
 
         txt = "fi¬joff≤asdf≥"
         r = Rect(1080, 300)

@@ -4,7 +4,7 @@ from fontTools.ttLib import TTFont
 from coldtype.img.skiaimage import SkiaImage
 from coldtype.fx.skia import skia, precompose
 
-lh = Font.Cacheable("~/Type/fonts/fonts/liebeheide-color.otf")
+lh = Font.Find("liebeheide-color.otf")
 ttfont = TTFont(lh.path)
 
 sbix = ttfont["sbix"]

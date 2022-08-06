@@ -2,7 +2,7 @@ from random import random
 from coldtype.drawbot import *
 from coldtype.text.reader import StyledString, Style, Font
 
-mistral = Font.Cacheable("~/Type/fonts/fonts/_script/MistralD.otf")
+mistral = Font.Find("MistralD.otf")
 
 save = "test/drawbot/hello.pdf"
 

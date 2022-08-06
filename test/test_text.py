@@ -67,19 +67,19 @@ class TestText(unittest.TestCase):
         self.assertEqual(f1.font.fontPath.stem, "ColdtypeObviously-VF")
     
     def test_color_font(self):
-        txt = StSt("C", "~/Type/fonts/fonts/PappardelleParty-VF.ttf", 100, palette=2)
+        txt = StSt("C", "PappardelleParty-VF.ttf", 100, palette=2)
         self.assertEqual(len(txt), 1)
         self.assertEqual(len(txt[0]), 3)
         self.assertEqual(txt[0][0].glyphName, "C_layer_0")
         self.assertEqual(txt[0][-1].glyphName, "C_layer_2")
         self.assertAlmostEqual(txt[0][0].f().h, 176.666, 2)
 
-        txt = StSt("C", "~/Type/fonts/fonts/PappardelleParty-VF.ttf", 100)
+        txt = StSt("C", "PappardelleParty-VF.ttf", 100)
         self.assertAlmostEqual(txt[0][0].f().h, 196.318, 2)
     
     def test_narrowing_family(self):
         r = Rect(1080, 300)
-        style = Style("~/Type/fonts/fonts/nikolai/Nikolai-Bold.otf", 200, narrower=Style("~/Type/fonts/fonts/nikolai/Nikolai-NarrowBold.otf", 200, narrower=Style("~/Type/fonts/fonts/nikolai/Nikolai-CondBold.otf", 200)))
+        style = Style("Nikolai-Bold.otf", 200, narrower=Style("Nikolai-NarrowBold.otf", 200, narrower=Style("Nikolai-CondBold.otf", 200)))
 
         txt = StSt("Narrowing", style, fit=r.w)
         self.assertEqual(int(txt.ambit().w), 928)

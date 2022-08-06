@@ -128,9 +128,9 @@ class TestTime(unittest.TestCase):
             gn = chr(65+i)
             if gn == "I":
                 gn = "I.narrow"
-            self.assertEqual(res[0][0].glyphName, gn)
+            self.assertEqual(res[1][0][0].glyphName, gn)
             if i == 13:
-                self.assertAlmostEqual(res[0][0].f().h/360, 0)
+                self.assertAlmostEqual(res[1][0][0].f().h/360, 0)
 
 if __name__ == "__main__":
     unittest.main()

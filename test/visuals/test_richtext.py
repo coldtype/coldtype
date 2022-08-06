@@ -3,10 +3,10 @@ from coldtype.text.richtext import RichText, PythonCode
 from functools import reduce
 
 
-mistral = Font.Cacheable("~/Type/fonts/fonts/_script/MistralD.otf")
-choc = Font.Cacheable("~/Type/fonts/fonts/_script/ChocStd.otf")
-blanco = Font.Cacheable("~/Type/fonts/fonts/_text/Blanco-Regular.otf")
-reiner = Font.Cacheable("~/Type/fonts/fonts/_script/ReinerScript-Bold.otf")
+mistral = Font.Find("MistralD.otf")
+choc = Font.Find("ChocStd.otf")
+blanco = Font.Find("Blanco-Regular.otf")
+reiner = Font.Find("ReinerScript-Bold.otf")
 
 
 def render_txt(txt, styles):
