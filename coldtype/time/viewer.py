@@ -99,7 +99,7 @@ def timeViewer(tl):
 
     outer += display
 
-    @renderable(r, xray=False)
+    @renderable(r, xray=False, bg=1)
     def timeViewBackground(r):
         return outer
 

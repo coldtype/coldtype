@@ -1,7 +1,7 @@
 from coldtype import *
 from coldtype.fx.skia import phototype, fill
 
-@animation(timeline=80, bg=0, composites=1)
+@animation(timeline=80, bg=0, composites=1, render_bg=0)
 def recursive(f):
     return (P(
         (StSt("COLDTYPE", Font.ColdtypeObviously()

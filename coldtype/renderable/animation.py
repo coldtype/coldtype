@@ -300,6 +300,7 @@ class FFMPEGExport():
         self.date = date
         self.loops = loops
         self.fmt = None
+        self.failed = False
         
         if audio:
             self.audio = Path(audio).expanduser()
@@ -316,7 +317,7 @@ class FFMPEGExport():
         # https://github.com/typemytype/drawbot/blob/master/drawBot/context/tools/mp4Tools.py
 
         from coldtype.renderable.tools import FFMPEG_COMMAND
-        print(">", FFMPEG_COMMAND)
+        print("> ffmpeg command ==", FFMPEG_COMMAND)
 
         self.args = [
             FFMPEG_COMMAND,
@@ -370,6 +371,12 @@ class FFMPEGExport():
         return self
     
     def write(self, verbose=False):
+        first_frame = self.a.pass_path(0)
+        if not Path(first_frame).exists():
+            self.failed = True
+            print("! Need to render before release")
+            return self
+
         print(f"writing {self.fmt}...")
 
         if not self.fmt:
@@ -392,6 +399,8 @@ class FFMPEGExport():
     
     def open(self):
         """i.e. Reveal-in-Finder"""
+        if self.failed:
+            return self
         os.system(f"open {self.output_path.parent}")
         return self
 

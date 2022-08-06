@@ -17,4 +17,4 @@ def ascii(f):
             wght=at.ki("wght").io(10)))
         .align(f.a.r, tv=1)
         .mapv(lambda i, p: p
-            .scale(at.ki(i).io(8, r=(1, 0.5)))))
+            .scale(at.ki(i).io(8, r=(1, 1.35)))))

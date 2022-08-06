@@ -5,7 +5,7 @@ import time as ptime
 from subprocess import Popen, PIPE
 from pathlib import Path
 
-from coldtype.color import rgb
+from coldtype.color import rgb, hsl
 
 try:
     import glfw
@@ -70,7 +70,11 @@ class WinmanGLFWSkia():
         self.prev_scale = 0
         self.surface = None
 
-        self.typeface = skia.Typeface.MakeFromFile(str(Path(__file__).parent / "../../demo/RecMono-CasualItalic.ttf"))
+        parent = Path(__file__).parent
+
+        self.typeface = skia.Typeface.MakeFromFile(str(parent / "../../demo/RecMono-CasualItalic.ttf"))
+
+        self.transparency_blocks = skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(parent / "../../demo/transparency_blocks.png")))
 
         if not glfw.init():
             raise RuntimeError('glfw.init() failed')
@@ -392,7 +396,18 @@ class WinmanGLFWSkia():
         canvas.translate(rect.x, rect.y)
         
         if not self.config.window_transparent:
-            canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
+            if render.has_bg:
+                canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
+            else:
+                matrix = skia.Matrix()
+                canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), {
+                    'Shader': self.transparency_blocks.makeShader(
+                        skia.TileMode.kRepeat,
+                        skia.TileMode.kRepeat,
+                        matrix
+                    )
+                })
+                #canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=hsl(0.3).skia()))
         
         if not hasattr(render, "show_error"):
             canvas.scale(scale, scale)

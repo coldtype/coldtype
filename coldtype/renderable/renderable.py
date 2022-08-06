@@ -139,7 +139,7 @@ class renderable():
     """
     def __init__(self,
         rect=(1080, 1080),
-        bg="whitesmoke",
+        bg=None,
         fmt="png",
         name=None,
         rasterizer=None,
@@ -161,7 +161,7 @@ class renderable():
         single_frame=True,
         interactable=False,
         cv2caps=None,
-        render_bg=False,
+        render_bg=True,
         style="_default",
         viewBox=True,
         layer=False,
@@ -177,7 +177,11 @@ class renderable():
         self.rect = Rect(rect).round()
         self._stacked_rect = None
 
-        self.bg = normalize_color(bg)
+        self.has_bg = bg is not None and bg is not False and bg != -1
+        if self.has_bg:
+            self.bg = normalize_color(bg)
+        else:
+            self.bg = normalize_color("whitesmoke")
         self.fmt = fmt
         self.prefix = prefix
         self.suffix = suffix
@@ -335,7 +339,7 @@ class renderable():
         else:
             res = render_pass.fn(*render_pass.args)
         
-        if self.render_bg:
+        if self.render_bg and self.has_bg:
             return P([
                 P(self.rect).f(self.bg),
                 res

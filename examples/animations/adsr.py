@@ -10,7 +10,7 @@ at = AsciiTimeline(2, 30, """
             snare
 """)
 
-@animation((1080, 1080), timeline=at, bg=1)
+@animation((1080, 1080), timeline=at, bg=1, render_bg=1)
 def adsr(f):
     return (P(
         (Glyphwise("COLD", lambda g:

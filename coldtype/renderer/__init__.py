@@ -961,7 +961,7 @@ class Renderer():
         fn = self.buildrelease_fn(fnname)
         if not fn:
             if fnname == "release" and self.last_animation:
-                print("DEFAULT RENDER ACTION")
+                print("DEFAULT RELEASE == ffmpeg mp4")
                 fn = self.last_animation.export("h264", audio=self.last_animation.audio)
             else:
                 print(f"No `{fnname}` fn defined in source")

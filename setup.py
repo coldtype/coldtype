@@ -47,6 +47,7 @@ setuptools.setup(
     include_package_data=True,
     package_data={
         "": [
+            "demo/transparency_blocks.png",
             "demo/RecMono-CasualItalic.ttf",
             "demo/ColdtypeObviously-VF.ttf",
             "demo/MutatorSans.ttf",
@@ -91,7 +92,8 @@ setuptools.setup(
             "unicodedata2"
         ],
         "blender": [
-            "skia-pathops"
+            "skia-pathops",
+            "ufo2ft",
         ],
         "notebook": [
             "skia-pathops",
