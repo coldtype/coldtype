@@ -1,4 +1,0 @@
-After Effects
-=============
-
-TODO
