@@ -55,9 +55,12 @@ class DocsWriter(Renderer):
         super().on_exit(restart=restart)
     
     def buildrelease_fn(self, fnname="release"):
+        if fnname == "didRender":
+            return None
+        
         candidate = super().buildrelease_fn(fnname=fnname)
 
-        def build_docs(trigger, passes):
+        def build_docs(passes):
             from shutil import copy2
             imgs = {}
             for pss in passes:

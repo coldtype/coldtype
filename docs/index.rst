@@ -69,17 +69,6 @@ Table of Contents
    goodhertz.com <https://goodhertz.com>
    questions & answers <https://github.com/goodhertz/coldtype/discussions>
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Examples
-
-   808.py <https://github.com/goodhertz/coldtype/tree/main/examples/animations/808.py>
-   banner.py <https://github.com/goodhertz/coldtype/tree/main/examples/animations/banner.py>
-   digestive_wind.py <https://github.com/goodhertz/coldtype/tree/main/examples/animations/digestive_wind.py>
-   metaprogramming.py <https://github.com/goodhertz/coldtype/tree/main/examples/animations/metaprogramming.py>
-   stacked_and_justified.py <https://github.com/goodhertz/coldtype/tree/main/examples/animations/stacked_and_justified.py>
-   vulfbach.py <https://github.com/goodhertz/coldtype/tree/main/examples/animations/vulfbach.py>
-
 
 Indices and tables
 ==================
