@@ -443,9 +443,6 @@ class Renderer():
     def _single_thread_render(self, trigger, indices=[], output_transform=None, no_sound=False, ditto_last=False) -> Tuple[int, int]:
         if not self.args.is_subprocess:
             start = ptime.time()
-        
-        if len(self.previews_waiting) > 0:
-            return 0, 0, [], []
 
         previewing = (trigger in [
             Action.Initial,
@@ -460,6 +457,9 @@ class Renderer():
             Action.RenderWorkarea,
             Action.RenderIndices,
         ])
+
+        if len(self.previews_waiting) > 0 and not rendering:
+            return 0, 0, [], []
 
         def check_watches(render):
             for watch, flag in render.watch:
