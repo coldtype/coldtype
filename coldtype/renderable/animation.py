@@ -429,5 +429,11 @@ def gifski(a:animation, passes):
     """simple wrapper for already-installed gifski"""
     root = a.pass_path(f"%4d.{a.fmt}").parent.parent
     gif = root / (a.name + ".gif")
-    run(["gifski", "--fps", str(a.timeline.fps), "-o", gif, *[p.output_path for p in passes if p.render == a]])
+    run([
+        "gifski",
+        "--fps", str(a.timeline.fps),
+        "--width", str(a.rect.w),
+        "-o", gif,
+        *[p.output_path for p in passes if p.render == a]])
+    print("\n")
     return gif
