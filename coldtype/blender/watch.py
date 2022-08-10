@@ -312,7 +312,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                 return {'PASS_THROUGH'}
             
             for line in self.file.read_text().splitlines():
-                print(line)
+                #print(line)
                 try:
                     line = line.rstrip("\n")
                     start, kwargs = [t.strip() for t in line.split(";")]

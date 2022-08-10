@@ -16,8 +16,7 @@ bt = BlenderTimeline(__BLENDER__, 275)
 
 @b3d_sequencer((1080, 1080)
 , timeline=bt
-, bg=hsl(0.3)
-, render_bg=1
+, bg=hsl(0.5)
 , live_preview_scale=0.25
 , audio=__sibling__("media/pleasecallstella.wav")
 )
