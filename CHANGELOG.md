@@ -170,3 +170,7 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 - simple `gifski` wrapper importable from `coldtyper.renderable.animation`
 ### Fixed
 - Better error message when trying to "release" via ffmpeg but no files have been rendered
+
+## [0.9.8] - 2022-08-25
+### Added
+- New arg `round_result` on `SkiaImage.align`, to fix jaggy image aligning; defaults to True but is disableable
