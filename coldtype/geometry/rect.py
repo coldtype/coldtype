@@ -36,7 +36,7 @@ for key, (w, h) in list(COMMON_PAPER_SIZES.items()):
     COMMON_PAPER_SIZES["%s-landscape" % key] = (h, w)
 
 
-def align(b, rect, x=Edge.CenterX, y=Edge.CenterY):
+def align(b, rect, x=Edge.CenterX, y=Edge.CenterY, round_result=False):
     if x in ["NE", "SE", "SW", "NW"]:
         if x == "NE":
             x, y = Edge.MaxX, Edge.MaxY
@@ -69,7 +69,10 @@ def align(b, rect, x=Edge.CenterX, y=Edge.CenterY):
             yoff = -(b.y-rect.y)
     
     #diff = rect.w - b.w
-    return (xoff, yoff)
+    if round_result:
+        return round(xoff), round(yoff)
+    else:
+        return (xoff, yoff)
 
 
 class GeoIterable():
@@ -252,8 +255,8 @@ class Rect(Geometrical):
         """take a square from the center of this rect"""
         return Rect(centered_square(self.rect()))
     
-    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY):
-        return self.offset(*align(self, rect, x, y))
+    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, round_result=False):
+        return self.offset(*align(self, rect, x, y, round_result=round_result))
     
     def ipos(self, pt, defaults=(0.5, 0.5), clamp=True):
         """

@@ -53,8 +53,8 @@ class DATImage(P):
     def height(self):
         raise NotImplementedError()
     
-    def align(self, rect, x="mdx", y="mdy"):
-        self.data(frame=self.rect().align(rect, x, y))
+    def align(self, rect, x="mdx", y="mdy", round_result=True):
+        self.data(frame=self.rect().align(rect, x, y, round_result=round_result))
         return self
     
     def _resize(self, fx, fy):
