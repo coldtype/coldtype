@@ -60,10 +60,12 @@ def test1(f):
 
     indicators = P()
     for g in br:
-       for p in g:
-           indicators.append(p.data("substructure"))
+        for p in g:
+            colr = p.attr("COLR")
+            colr[1]["colorLine"] = [(0, hsl(0.6, 0.7, 0.3)), (1, hsl(0.9, 0.7, 0.7))]
+            indicators.append(p.data("substructure"))
     
     return P(
         br,
-        indicators.s(hsl(0, 1, 0.5, a=0.75)).sw(2)
+        #indicators.s(hsl(0, 1, 0.5, a=0.75)).sw(2)
         )
