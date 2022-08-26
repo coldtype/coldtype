@@ -1087,6 +1087,14 @@ class P(Runon):
 
         """Perform an arbitrary transformation on the pen, using the fontTools `Transform` class."""
 
+        #print(">>>>>", self, transform)
+
+        _transforms = self.data("_transforms")
+        if not _transforms:
+            _transforms = []
+        _transforms.append(transform)
+        self.data(_transforms=_transforms)
+
         if self.val_present():
             op = RecordingPen()
             tp = TransformPen(op, transform)
@@ -1368,7 +1376,7 @@ class P(Runon):
         if "fill" not in st:
             st["fill"] = rgb(1, 0, 0.5)
         
-        rest = ["blendmode", "image", "skp"]
+        rest = ["blendmode", "image", "skp", "COLR"]
         if sf:
             order = ["shadow", "stroke", "fill", *rest]
         else:

@@ -9,6 +9,9 @@ from coldtype.geometry import Rect, Point
 from coldtype.text.reader import Style
 from coldtype.color import Color
 
+from fontTools.misc.transform import Transform
+from blackrenderer.backends.skia import SkiaShaders
+
 
 class SkiaPen(DrawablePenMixin, SkiaPathPen):
     def __init__(self, dat, rect, canvas, scale, style=None, alpha=1):
@@ -54,14 +57,36 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 pass
             else:
                 canvas.save()
-                did_draw = self.applyDATAttribute(attrs, attr)
+                if method == "COLR":
+                    did_draw = False
+                    self.colr(args[0], dat)
+                else:
+                    did_draw = self.applyDATAttribute(attrs, attr)
                 self.paint.setAlphaf(self.paint.getAlphaf()*self.alpha)
                 if not did_draw:
                     canvas.drawPath(self.path, self.paint)
                 canvas.restore()
     
+    def colr(self, data, pen:P):
+        to = Transform()
+        to = to.transform((1, 0, 0, -1, 0, self.rect.h))
+        for t in pen.data("_transforms"):
+            to = to.transform(t)
+        method, args = data
+        shader_fn = getattr(SkiaShaders, method)
+        if shader_fn:
+            keys = list(args.keys())
+            vals = list(args.values())
+            if keys[-1] == "gradientTransform":
+                final_transform = to.transform(vals[-1])#.transform(to)
+                vals[-1] = final_transform
+            shader = shader_fn(*vals)
+            self.paint.setStyle(skia.Paint.kFill_Style)
+            self.paint.setShader(shader)
+    
     def fill(self, color):
         self.paint.setStyle(skia.Paint.kFill_Style)
+
         if color:
             if isinstance(color, Gradient):
                 self.gradient(color)

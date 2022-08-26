@@ -26,7 +26,7 @@ class StylingMixin():
         if "fill" not in st:
             st["fill"] = rgb(1, 0, 0.5)
         
-        rest = ["blendmode", "image", "skp"]
+        rest = ["blendmode", "image", "skp", "COLR"]
         if sf:
             order = ["shadow", "stroke", "fill", *rest]
         else:

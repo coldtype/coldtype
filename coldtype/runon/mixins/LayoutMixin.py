@@ -213,6 +213,14 @@ class LayoutMixin():
     def transform(self, transform, transformFrame=True):
         """Perform an arbitrary transformation on the pen, using the fontTools `Transform` class."""
 
+        #print(">>>>>", self, transform)
+
+        _transforms = self.data("_transforms")
+        if not _transforms:
+            _transforms = []
+        _transforms.append(transform)
+        self.data(_transforms=_transforms)
+
         if self.val_present():
             op = RecordingPen()
             tp = TransformPen(op, transform)
