@@ -9,7 +9,8 @@ from coldtype.geometry import Rect, Point
 from coldtype.text.reader import Style
 from coldtype.color import Color
 
-from fontTools.misc.transform import Transform
+from fontTools.pens.transformPen import TransformPen
+from fontTools.pens.recordingPen import RecordingPen
 from blackrenderer.backends.skia import SkiaShaders
 
 
@@ -68,21 +69,22 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 canvas.restore()
     
     def colr(self, data, pen:P):
-        to = Transform()
-        to = to.transform((1, 0, 0, -1, 0, self.rect.h))
-        for t in pen.data("_transforms"):
-            to = to.transform(t)
         method, args = data
         shader_fn = getattr(SkiaShaders, method)
         if shader_fn:
-            keys = list(args.keys())
-            vals = list(args.values())
-            if keys[-1] == "gradientTransform":
-                final_transform = to.transform(vals[-1])#.transform(to)
-                vals[-1] = final_transform
-            shader = shader_fn(*vals)
+            rp = RecordingPen()
+            substructure = pen.data("substructure")
+            tp = TransformPen(rp, (1, 0, 0, -1, 0, self.rect.h))
+            substructure._val.replay(tp)
+            sval = rp.value
+            args["pt1"] = sval[0][1][0]
+            args["pt2"] = sval[1][1][0]
+
+            shader = shader_fn(*args.values())
             self.paint.setStyle(skia.Paint.kFill_Style)
             self.paint.setShader(shader)
+        else:
+            raise Exception("No matching SkiaShaders function for " + method)
     
     def fill(self, color):
         self.paint.setStyle(skia.Paint.kFill_Style)

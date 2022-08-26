@@ -1087,14 +1087,6 @@ class P(Runon):
 
         """Perform an arbitrary transformation on the pen, using the fontTools `Transform` class."""
 
-        #print(">>>>>", self, transform)
-
-        _transforms = self.data("_transforms")
-        if not _transforms:
-            _transforms = []
-        _transforms.append(transform)
-        self.data(_transforms=_transforms)
-
         if self.val_present():
             op = RecordingPen()
             tp = TransformPen(op, transform)
@@ -1107,6 +1099,10 @@ class P(Runon):
         
         for p in self._els:
             p.transform(transform, transformFrame=transformFrame)
+        
+        substructure = self._data.get("substructure")
+        if substructure:
+            substructure.transform(transform, transformFrame=transformFrame)
         
         img = self.img()
         if img:
