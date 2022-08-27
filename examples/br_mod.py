@@ -1,14 +1,37 @@
 from coldtype import *
 
 from blackrenderer.render import renderText
-from blackrenderer.backends.pathCollector import AnnotatedRecordingPen
+from blackrenderer.backends.pathCollector import PathCollectorRecordingPen
 
-from fontTools.misc.transform import Transform
+def buildLayeredGlyph(glyph, layer, frame):
+    layerGlyph = P().record(layer)
+    glyph.append(layerGlyph)
+
+    if layer.method == "drawPathSolid":
+        layerGlyph.f(layer.data["color"])
+    else:
+        gradientGlyph = P()
+        if layer.method == "drawPathLinearGradient":
+            (gradientGlyph
+                .line([layer.data["pt1"], layer.data["pt2"]])
+                .fssw(-1, 0, 2).translate(frame.x, 0))
+        elif layer.method == "drawPathSweepGradient":
+            gradientGlyph.moveTo(layer.data["center"])
+        elif layer.method == "drawPathRadialGradient":
+            gradientGlyph.line([layer.data["startCenter"], layer.data["endCenter"]])
+        else:
+            print(">", layer.method)
+            gradientGlyph.rect(frame)
+        
+        (layerGlyph
+            .f(-1)
+            .attr(COLR=[layer.method, layer.data])
+            .data(substructure=gradientGlyph))
+
 
 def BR(text, style):
     results = renderText(style.font.path, text, None,
-        returnResult=True,
-        backendName="paths",
+        returnGlyphs=True,
         fontSize=1000,
         features=style.features,
         variations=style.variations)
@@ -17,42 +40,25 @@ def BR(text, style):
     x = 0
 
     for r in results:
-        frame = Rect(x+r.info.xOffset, r.info.yOffset, r.info.xAdvance, style._asc)
+        frame = Rect(
+            x + r.info.xOffset,
+            r.info.yOffset,
+            r.info.xAdvance,
+            style._asc)
+        
         glyph = P().data(glyphName=r.info.name, frame=frame)
 
-        #print(r.info.name)
-
         layers = r.layers
-        if isinstance(layers, AnnotatedRecordingPen):
-            layers = [r.layers]
-
-        if len(layers) == 1 and layers[0].method == "drawPathSolid": # trad font
-            glyph.record(layers[0]).f(layers[0].data["color"])
-        else:
-            for layer in layers: # COLR
-                layerGlyph = P().record(layer)
-                if layer.method == "drawPathSolid":
-                    layerGlyph.f(layer.data["color"])
-                else:
-                    gradientGlyph = P()
-                    if layer.method == "drawPathLinearGradient":
-                        (gradientGlyph
-                            .line([layer.data["pt1"], layer.data["pt2"]])
-                            .fssw(-1, 0, 2).translate(frame.x, 0))
-                    elif layer.method == "drawPathSweepGradient":
-                        gradientGlyph.moveTo(layer.data["center"])
-                    elif layer.method == "drawPathRadialGradient":
-                        gradientGlyph.line([layer.data["startCenter"], layer.data["endCenter"]])
-                    else:
-                        print(">", layer.method)
-                        gradientGlyph.rect(frame)
-                    
-                    (layerGlyph
-                        .f(-1)
-                        .attr(COLR=[layer.method, layer.data])
-                        .data(substructure=gradientGlyph))
-                
-                glyph.append(layerGlyph)
+        if isinstance(layers, PathCollectorRecordingPen):
+            if layers.method == "drawPathSolid": # trad font
+                glyph.record(layers).f(layers.data["color"])
+                layers = None
+            else:
+                layers = [layers]
+        
+        if layers:
+            for layer in layers:
+                buildLayeredGlyph(glyph, layer, frame)
         
         glyphs.append(glyph)
         x += r.info.xAdvance
@@ -64,12 +70,12 @@ def test1(f):
     font = Font.MutatorSans()
     font = Font.Find("PappardelleParty-VF")
     font = Font.Find("Foldit_w")
-    font = Font.Find("glyf_colr_1")
+    #font = Font.Find("glyf_colr_1")
 
     text = "ABC"
     #text = "󰈀" # sweep pie chart thing
     #text = "󰨚" # empty weirdo
-    text = "󰔈" # radial with clip
+    #text = "󰔈" # radial with clip
 
     br = (BR(text, Style(font
             #, fontSize=1000
