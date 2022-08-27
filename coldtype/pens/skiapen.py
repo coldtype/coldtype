@@ -11,7 +11,8 @@ from coldtype.color import Color
 
 from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.recordingPen import RecordingPen
-from blackrenderer.backends.skia import SkiaShaders
+#from blackrenderer.backends.skia import SkiaShaders
+from coldtype.text.colr.skia import SkiaShaders
 
 
 class SkiaPen(DrawablePenMixin, SkiaPathPen):

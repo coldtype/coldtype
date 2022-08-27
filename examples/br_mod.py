@@ -67,8 +67,9 @@ def test1(f):
     font = Font.Find("glyf_colr_1")
 
     text = "ABC"
-    #text = "󰈀" #󰨚
-    text = "󰔈"
+    #text = "󰈀" # sweep pie chart thing
+    #text = "󰨚" # empty weirdo
+    text = "󰔈" # radial with clip
 
     br = (BR(text, Style(font
             #, fontSize=1000
