@@ -77,8 +77,15 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             tp = TransformPen(rp, (1, 0, 0, -1, 0, self.rect.h))
             substructure._val.replay(tp)
             sval = rp.value
-            args["pt1"] = sval[0][1][0]
-            args["pt2"] = sval[1][1][0]
+            
+            if method == "drawPathLinearGradient":
+                args["pt1"] = sval[0][1][0]
+                args["pt2"] = sval[1][1][0]
+            elif method == "drawPathSweepGradient":
+                args["center"] = sval[0][1][0]
+            elif method == "drawPathRadialGradient":
+                args["startCenter"] = sval[0][1][0]
+                args["endCenter"] = sval[1][1][0]
 
             shader = shader_fn(*args.values())
             self.paint.setStyle(skia.Paint.kFill_Style)

@@ -1,5 +1,7 @@
 from coldtype import *
+
 from blackrenderer.render import renderText
+from blackrenderer.backends.pathCollector import AnnotatedRecordingPen
 
 from fontTools.misc.transform import Transform
 
@@ -18,18 +20,33 @@ def BR(text, style):
         frame = Rect(x+r.info.xOffset, r.info.yOffset, r.info.xAdvance, style._asc)
         glyph = P().data(glyphName=r.info.name, frame=frame)
 
-        if len(r.layers) == 1: # trad font
-            glyph.record(r.layers[0]).f(r.layers[0].data["color"])
+        #print(r.info.name)
+
+        layers = r.layers
+        if isinstance(layers, AnnotatedRecordingPen):
+            layers = [r.layers]
+
+        if len(layers) == 1 and layers[0].method == "drawPathSolid": # trad font
+            glyph.record(layers[0]).f(layers[0].data["color"])
         else:
-            for layer in r.layers: # COLR
-                gradientGlyph = P()
+            for layer in layers: # COLR
                 layerGlyph = P().record(layer)
                 if layer.method == "drawPathSolid":
                     layerGlyph.f(layer.data["color"])
                 else:
-                    (gradientGlyph
-                        .line([layer.data["pt1"], layer.data["pt2"]])
-                        .fssw(-1, 0, 2).translate(frame.x, 0))
+                    gradientGlyph = P()
+                    if layer.method == "drawPathLinearGradient":
+                        (gradientGlyph
+                            .line([layer.data["pt1"], layer.data["pt2"]])
+                            .fssw(-1, 0, 2).translate(frame.x, 0))
+                    elif layer.method == "drawPathSweepGradient":
+                        gradientGlyph.moveTo(layer.data["center"])
+                    elif layer.method == "drawPathRadialGradient":
+                        gradientGlyph.line([layer.data["startCenter"], layer.data["endCenter"]])
+                    else:
+                        print(">", layer.method)
+                        gradientGlyph.rect(frame)
+                    
                     (layerGlyph
                         .f(-1)
                         .attr(COLR=[layer.method, layer.data])
@@ -47,10 +64,14 @@ def test1(f):
     font = Font.MutatorSans()
     font = Font.Find("PappardelleParty-VF")
     font = Font.Find("Foldit_w")
+    font = Font.Find("glyf_colr_1")
 
-    text = "FOLDIT"
+    text = "ABC"
+    #text = "󰈀" #󰨚
+    text = "󰔈"
 
     br = (BR(text, Style(font
+            #, fontSize=1000
             , fontSize=f.e(r=(200, 800))
             #, SPIN=f.e("l")
             #, wdth=f.e()
@@ -62,7 +83,7 @@ def test1(f):
     for g in br:
         for p in g:
             colr = p.attr("COLR")
-            colr[1]["colorLine"] = [(0, hsl(0.6, 0.7, 0.3)), (1, hsl(0.9, 0.7, 0.7))]
+            #colr[1]["colorLine"] = [(0, hsl(0.6, 0.7, 0.3)), (1, hsl(0.9, 0.7, 0.7))]
             indicators.append(p.data("substructure"))
     
     return P(
