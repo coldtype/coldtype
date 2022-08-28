@@ -688,6 +688,7 @@ class StyledString(FittableMixin):
     
     def resetGlyphRun(self):
         self.glyphs = self.style.font.font.getGlyphRunFromTextInfo(self.text_info, addDrawings=False, features=self.features, varLocation=self.variations)
+        print(self.glyphs)
         #self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations)
         x = 0
         for glyph in self.glyphs:

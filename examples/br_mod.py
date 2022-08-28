@@ -1,6 +1,6 @@
 from coldtype import *
 
-from blackrenderer.render import renderText
+from blackrenderer.render import getLineGlyphs, buildLineInfo, BlackRendererFont
 from blackrenderer.backends.pathCollector import PathCollectorRecordingPen
 
 def buildLayeredGlyph(glyph, layer, frame):
@@ -28,13 +28,14 @@ def buildLayeredGlyph(glyph, layer, frame):
             .attr(COLR=[layer.method, layer.data])
             .data(substructure=gradientGlyph))
 
-
 def BR(text, style):
-    results = renderText(style.font.path, text, None,
-        returnGlyphs=True,
-        fontSize=1000,
+    font = BlackRendererFont(style.font.path)
+    info = buildLineInfo(font, text,
+        lang=style.lang,
+        #script=style.script,
         features=style.features,
         variations=style.variations)
+    results = getLineGlyphs(font, info)
     
     glyphs = P()
     x = 0
