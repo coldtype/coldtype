@@ -939,7 +939,15 @@ class StyledString(FittableMixin):
         """
 
         self.resetGlyphRun()
-        if not self.style.no_shapes:
+
+        colrTable = self.style.font.font.ttFont.get("COLR")
+        if colrTable is not None and colrTable.version == 1:
+            #from blackrenderer.font import BlackRendererFont
+            #return BlackRendererFont(self.fontPath, fontNumber=self.fontNumber)
+            print("THIS IS COLRv1")
+            pass
+
+        elif not self.style.no_shapes:
             self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
         
         pens = P()
