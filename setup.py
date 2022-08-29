@@ -10,7 +10,7 @@ More info available at: [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
 
 setuptools.setup(
     name="coldtype",
-    version="0.9.8",
+    version="0.9.9",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",
@@ -107,13 +107,14 @@ setuptools.setup(
     },
     install_requires=[
         "fonttools[ufo]",
+        "blackrenderer>=0.5.3",
         "fontPens",
         "easing-functions",
         "mido",
         "defcon",
         "freetype-py",
         "uharfbuzz>=0.14.0",
-        "python-bidi"
+        "python-bidi",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
