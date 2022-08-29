@@ -1005,10 +1005,10 @@ class StyledString(FittableMixin):
                         for layer in layers:
                             self.buildLayeredGlyph(output, layer, frame)
 
-                canvas.translate(glyph.ax, glyph.ay)
+                #canvas.translate(glyph.ax, glyph.ay)
 
                 glyph.glyphDrawing = output
-                ax += glyph.ax
+                #ax += glyph.ax
 
     def pens(self) -> P:
         """
@@ -1045,13 +1045,7 @@ class StyledString(FittableMixin):
                 # dp_atom.typographic = True
                 # dp_atom.addFrame(norm_frame)
                 # dp_atom.glyphName = g.name
-            elif colrv1:
-                dp_atom = g.glyphDrawing
-                #dp_atom.data(
-                #    frame=norm_frame,
-                #    glyphName=g.name
-                #)
-            elif len(g.glyphDrawing.layers) == 1:
+            elif not colrv1 and len(g.glyphDrawing.layers) == 1:
                 dp_atom.v.value = self.scalePenToStyle(g, g.glyphDrawing.layers[0][0], idx).v.value
                 
                 if "d" in self.style.metrics:
@@ -1073,6 +1067,20 @@ class StyledString(FittableMixin):
                     dp_atom.q2c()
                 if self.style.removeOverlap:
                     dp_atom.removeOverlap()
+            elif colrv1:
+                dp_atom = g.glyphDrawing
+                dp_atom.layered = True
+
+                for idx, layer in enumerate(dp_atom):
+                    layer.v.value = self.scalePenToStyle(g, layer, idx).v.value
+
+                    ss = layer.data("substructure")
+                    ss.v.value = self.scalePenToStyle(g, ss, idx).v.value
+                
+                dp_atom.data(
+                   frame=norm_frame,
+                   glyphName=g.name
+                )
             else:
                 dp_atom = P()
                 dp_atom.layered = True
@@ -1103,8 +1111,8 @@ class StyledString(FittableMixin):
             
             pens.append(dp_atom)
         
-        if colrv1:
-            pens.scale(self.style.fontSize/1000, point=(0,0))
+        #if colrv1:
+        #    pens.scale(self.style.fontSize/1000, point=(0,0))
 
         if self.style.reverse:
             pens.reversePens()
