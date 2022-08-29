@@ -21,6 +21,13 @@ from coldtype.fontgoggles.font.baseFont import BaseFont
 from coldtype.fontgoggles.font.otfFont import OTFFont
 from coldtype.fontgoggles.misc.textInfo import TextInfo
 
+try:
+    from blackrenderer.font import BlackRendererFont
+    #from blackrenderer.backends.pathCollector import PathCollectorSurface, PathCollectorRecordingPen
+    from coldtype.text.colr.brsurface import BRPathCollectorSurface, BRPathCollectorRecordingPen
+except ImportError:
+    pass
+
 
 class FittableMixin():
     def textContent(self):
@@ -126,6 +133,16 @@ class Font():
         self._loaded = False
         self.load()
 
+        self._colr = self.font.ttFont.get("COLR")
+        self._colrv1 = self._colr is not None and self._colr.version == 1
+
+        if self._colrv1:
+            self._brFont = BlackRendererFont(self.path, fontNumber=number)
+        else:
+            self._brFont = None
+
+        self._variations = self.font.ttFont.get("fvar")
+
         if tmp and delete_tmp:
             os.unlink(tmp.name)
     
@@ -139,8 +156,8 @@ class Font():
     
     def variations(self):
         axes = {}
-        if "fvar" in self.font.ttFont:
-            fvar = self.font.ttFont['fvar']
+        if self._variations:
+            fvar = self._variations
             for axis in fvar.axes:
                 axes[axis.axisTag] = (axis.__dict__)
         return axes
@@ -932,6 +949,72 @@ class StyledString(FittableMixin):
         if self.style.stroke:
             dp.s(self.style.stroke).sw(self.style.strokeWidth)
         return dp
+    
+    def buildLayeredGlyph(self, output, layer, frame):
+        layerGlyph = P().record(layer)
+        output.append(layerGlyph)
+
+        if layer.method == "drawPathSolid":
+            layerGlyph.f(layer.data["color"])
+        else:
+            gradientGlyph = P()
+            if layer.method == "drawPathLinearGradient":
+                (gradientGlyph
+                    .line([layer.data["pt1"], layer.data["pt2"]])
+                    .fssw(-1, 0, 2).translate(frame.x, 0))
+            elif layer.method == "drawPathSweepGradient":
+                gradientGlyph.moveTo(layer.data["center"])
+            elif layer.method == "drawPathRadialGradient":
+                gradientGlyph.line([layer.data["startCenter"], layer.data["endCenter"]])
+            else:
+                print(">", layer.method)
+                gradientGlyph.rect(frame)
+            
+            (layerGlyph
+                .f(-1)
+                .attr(COLR=[layer.method, layer.data])
+                .data(substructure=gradientGlyph))
+    
+    def addBRGlyphDrawings(self, glyphs):
+        ax = 0
+        surface = BRPathCollectorSurface()
+
+        self.style.font._brFont.setLocation(self.variations)
+
+        with surface.canvas((0, 0, 1000, 1000)) as canvas:
+            for glyph in glyphs:
+                frame = Rect(
+                    ax + glyph.dx,
+                    glyph.dy,
+                    glyph.ax,
+                    self.style._asc) # how does ay play in?
+                
+                output = P().data(glyphName=glyph.name, frame=frame)
+
+                with canvas.savedState():
+                    canvas.translate(glyph.dx, glyph.dy)
+
+                    self.style.font._brFont.drawGlyph(glyph.name, canvas)
+
+                    layers = canvas.paths
+
+                    if isinstance(layers, BRPathCollectorRecordingPen):
+                        if layers.method == "drawPathSolid": # trad font
+                            output.record(layers).f(layers.data["color"])
+                            layers = None
+                        else:
+                            layers = [layers]
+                    
+                    if layers:
+                        for layer in layers:
+                            self.buildLayeredGlyph(output, layer, frame)
+                    
+                    canvas.paths = []
+
+                #canvas.translate(glyph.ax, glyph.ay)
+
+                glyph.glyphDrawing = output
+                #ax += glyph.ax
 
     def pens(self) -> P:
         """
@@ -939,7 +1022,12 @@ class StyledString(FittableMixin):
         """
 
         self.resetGlyphRun()
-        if not self.style.no_shapes:
+
+        colrv1 = self.style.font._colrv1
+        if colrv1:
+            self.addBRGlyphDrawings(self.glyphs)
+
+        elif not self.style.no_shapes:
             self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
         
         pens = P()
@@ -963,7 +1051,7 @@ class StyledString(FittableMixin):
                 # dp_atom.typographic = True
                 # dp_atom.addFrame(norm_frame)
                 # dp_atom.glyphName = g.name
-            elif len(g.glyphDrawing.layers) == 1:
+            elif not colrv1 and len(g.glyphDrawing.layers) == 1:
                 dp_atom.v.value = self.scalePenToStyle(g, g.glyphDrawing.layers[0][0], idx).v.value
                 
                 if "d" in self.style.metrics:
@@ -985,6 +1073,20 @@ class StyledString(FittableMixin):
                     dp_atom.q2c()
                 if self.style.removeOverlap:
                     dp_atom.removeOverlap()
+            elif colrv1:
+                dp_atom = g.glyphDrawing
+                dp_atom.layered = True
+
+                for idx, layer in enumerate(dp_atom):
+                    layer.v.value = self.scalePenToStyle(g, layer, idx).v.value
+
+                    ss = layer.data("substructure")
+                    ss.v.value = self.scalePenToStyle(g, ss, idx).v.value
+                
+                dp_atom.data(
+                   frame=norm_frame,
+                   glyphName=g.name
+                )
             else:
                 dp_atom = P()
                 dp_atom.layered = True
@@ -1014,6 +1116,9 @@ class StyledString(FittableMixin):
                 dp_atom.data(**self.style.meta)
             
             pens.append(dp_atom)
+        
+        #if colrv1:
+        #    pens.scale(self.style.fontSize/1000, point=(0,0))
 
         if self.style.reverse:
             pens.reversePens()

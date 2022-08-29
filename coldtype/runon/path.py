@@ -869,6 +869,15 @@ class P(Runon):
         
         self._els = []
         return self
+    
+    def substructure(self):
+        indicators = type(self)()
+        def append(p):
+            substructure = p.data("substructure")
+            if substructure:
+                indicators.append(substructure)
+        self.mapv(append)
+        return indicators
 
     def bounds(self):
         """Calculate the exact bounds of this shape, using a BoundPen"""
@@ -1100,10 +1109,23 @@ class P(Runon):
         for p in self._els:
             p.transform(transform, transformFrame=transformFrame)
         
+        substructure = self._data.get("substructure")
+        if substructure:
+            substructure.transform(transform, transformFrame=transformFrame)
+        
         img = self.img()
         if img:
             img["rect"] = img["rect"].transform(transform)
         
+        return self
+    
+
+    def invertYAxis(self, height) -> "P":
+
+        rp = RecordingPen()
+        tp = TransformPen(rp, (1, 0, 0, -1, 0, height))
+        self.replay(tp)
+        self._val.value = rp.value
         return self
     
 
@@ -1368,7 +1390,7 @@ class P(Runon):
         if "fill" not in st:
             st["fill"] = rgb(1, 0, 0.5)
         
-        rest = ["blendmode", "image", "skp"]
+        rest = ["blendmode", "image", "skp", "COLR"]
         if sf:
             order = ["shadow", "stroke", "fill", *rest]
         else:

@@ -455,3 +455,12 @@ class DrawingMixin():
         
         self._els = []
         return self
+    
+    def substructure(self):
+        indicators = type(self)()
+        def append(p):
+            substructure = p.data("substructure")
+            if substructure:
+                indicators.append(substructure)
+        self.mapv(append)
+        return indicators
