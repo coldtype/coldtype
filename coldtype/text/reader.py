@@ -26,6 +26,7 @@ try:
     #from blackrenderer.backends.pathCollector import PathCollectorSurface, PathCollectorRecordingPen
     from coldtype.text.colr.brsurface import BRPathCollectorSurface, BRPathCollectorRecordingPen
 except ImportError:
+    BlackRendererFont = None
     pass
 
 
@@ -134,7 +135,7 @@ class Font():
         self.load()
 
         self._colr = self.font.ttFont.get("COLR")
-        self._colrv1 = self._colr is not None and self._colr.version == 1
+        self._colrv1 = self._colr is not None and self._colr.version == 1 and BlackRendererFont is not None
 
         if self._colrv1:
             self._brFont = BlackRendererFont(self.path, fontNumber=number)
