@@ -23,7 +23,8 @@ from coldtype.fontgoggles.misc.textInfo import TextInfo
 
 try:
     from blackrenderer.font import BlackRendererFont
-    from blackrenderer.backends.pathCollector import PathCollectorSurface, PathCollectorRecordingPen
+    #from blackrenderer.backends.pathCollector import PathCollectorSurface, PathCollectorRecordingPen
+    from coldtype.text.colr.brsurface import BRPathCollectorSurface, BRPathCollectorRecordingPen
 except ImportError:
     pass
 
@@ -976,7 +977,7 @@ class StyledString(FittableMixin):
     
     def addBRGlyphDrawings(self, glyphs):
         ax = 0
-        surface = PathCollectorSurface()
+        surface = BRPathCollectorSurface()
 
         self.style.font._brFont.setLocation(self.variations)
 
@@ -993,8 +994,11 @@ class StyledString(FittableMixin):
                 with canvas.savedState():
                     canvas.translate(glyph.dx, glyph.dy)
 
-                    layers = self.style.font._brFont.drawGlyph(glyph.name, canvas)
-                    if isinstance(layers, PathCollectorRecordingPen):
+                    self.style.font._brFont.drawGlyph(glyph.name, canvas)
+
+                    layers = canvas.paths
+
+                    if isinstance(layers, BRPathCollectorRecordingPen):
                         if layers.method == "drawPathSolid": # trad font
                             output.record(layers).f(layers.data["color"])
                             layers = None
@@ -1004,6 +1008,8 @@ class StyledString(FittableMixin):
                     if layers:
                         for layer in layers:
                             self.buildLayeredGlyph(output, layer, frame)
+                    
+                    canvas.paths = []
 
                 #canvas.translate(glyph.ax, glyph.ay)
 
