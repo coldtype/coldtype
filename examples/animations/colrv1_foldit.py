@@ -7,7 +7,7 @@ at = AsciiTimeline(2, 30, """
 
 @animation((1080, 540/2), timeline=at, bg=0)
 def test1(f):
-    font = Font.Find("Foldit_w")
+    font = Font.Find("Foldit\[wght\]")
     text = "Foldit"
 
     br = (Glyphwise(text, lambda g: Style(font
