@@ -79,22 +79,11 @@ def test1(f):
     #text = "󰔈" # radial with clip
 
     br = (StSt(text, font
-            #, fontSize=1000
             , fontSize=f.e(r=(200, 800))
-            #, SPIN=f.e("l")
-            #, wdth=f.e()
             , wght=f.e(r=(1, 0)))
-            .align(f.a.r, x="CX", th=0, tv=0)
-            )
-
-    # indicators = P()
-    # for g in br:
-    #     for p in g:
-    #         colr = p.attr("COLR")
-    #         #colr[1]["colorLine"] = [(0, hsl(0.6, 0.7, 0.3)), (1, hsl(0.9, 0.7, 0.7))]
-    #         indicators.append(p.data("substructure"))
+            .align(f.a.r, x="CX", th=0, tv=0))
     
     return P(
         br,
-        #indicators.s(hsl(0, 1, 0.5, a=0.75)).sw(2)
+        #br.substructure()
         )

@@ -35,6 +35,7 @@ setuptools.setup(
         "coldtype.geometry",
         "coldtype.time.nle",
         "coldtype.renderer",
+        "coldtype.text.colr",
         "coldtype.renderable",
         "coldtype.fontgoggles",
         "coldtype.interpolation",

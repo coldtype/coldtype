@@ -226,10 +226,21 @@ class LayoutMixin():
         for p in self._els:
             p.transform(transform, transformFrame=transformFrame)
         
+        substructure = self._data.get("substructure")
+        if substructure:
+            substructure.transform(transform, transformFrame=transformFrame)
+        
         img = self.img()
         if img:
             img["rect"] = img["rect"].transform(transform)
         
+        return self
+    
+    def invertYAxis(self, height):
+        rp = RecordingPen()
+        tp = TransformPen(rp, (1, 0, 0, -1, 0, height))
+        self.replay(tp)
+        self._val.value = rp.value
         return self
     
     def nonlinear_transform(self, fn):

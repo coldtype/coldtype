@@ -9,6 +9,11 @@ from coldtype.geometry import Rect, Point
 from coldtype.text.reader import Style
 from coldtype.color import Color
 
+try:
+    from coldtype.text.colr.skia import SkiaShaders
+except ImportError:
+    pass
+
 
 class SkiaPen(DrawablePenMixin, SkiaPathPen):
     def __init__(self, dat, rect, canvas, scale, style=None, alpha=1):
@@ -54,12 +59,41 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 pass
             else:
                 canvas.save()
-                did_draw = self.applyDATAttribute(attrs, attr)
+                
+                if method == "COLR":
+                    did_draw = False
+                    self.colr(args[0], dat)
+                else:
+                    did_draw = self.applyDATAttribute(attrs, attr)
+
                 self.paint.setAlphaf(self.paint.getAlphaf()*self.alpha)
                 if not did_draw:
                     canvas.drawPath(self.path, self.paint)
                 canvas.restore()
-    
+
+    def colr(self, data, pen:P):
+        method, args = data
+        shader_fn = getattr(SkiaShaders, method)
+        if shader_fn:
+            ss = pen.data("substructure").copy()
+            ss.invertYAxis(self.rect.h)
+            sval = ss._val.value
+            
+            if method == "drawPathLinearGradient":
+                args["pt1"] = sval[0][1][0]
+                args["pt2"] = sval[1][1][0]
+            elif method == "drawPathSweepGradient":
+                args["center"] = sval[0][1][0]
+            elif method == "drawPathRadialGradient":
+                args["startCenter"] = sval[0][1][0]
+                args["endCenter"] = sval[1][1][0]
+
+            shader = shader_fn(*args.values())
+            self.paint.setStyle(skia.Paint.kFill_Style)
+            self.paint.setShader(shader)
+        else:
+            raise Exception("No matching SkiaShaders function for " + method)
+
     def fill(self, color):
         self.paint.setStyle(skia.Paint.kFill_Style)
         if color:
