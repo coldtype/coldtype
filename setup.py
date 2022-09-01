@@ -95,6 +95,7 @@ setuptools.setup(
         "blender": [
             "skia-pathops",
             "ufo2ft",
+            "ufoLib2", # temporary for a bug in ufo2ft
         ],
         "notebook": [
             "skia-pathops",
