@@ -174,3 +174,7 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ## [0.9.8] - 2022-08-25
 ### Added
 - New arg `round_result` on `SkiaImage.align`, to fix jaggy image aligning; defaults to True but is disableable
+
+## [0.9.10] - 2022-09-25
+### Fixed
+- `glyph_to_uni` in packaged mode
