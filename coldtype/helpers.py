@@ -39,7 +39,7 @@ def _populate_glyphs_unis():
 
     #try:
     if True:
-        lines = (Path(__file__).parent.parent / "assets/glyphNamesToUnicode.txt").read_text().split("\n")
+        lines = (Path(__file__).parent / "assets/glyphNamesToUnicode.txt").read_text().split("\n")
 
         for l in lines:
             if l.startswith("#"):
