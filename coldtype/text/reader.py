@@ -135,7 +135,9 @@ class Font():
         self.load()
 
         self._colr = self.font.ttFont.get("COLR")
-        self._colrv1 = self._colr is not None and self._colr.version == 1 and BlackRendererFont is not None
+        self._colrv1 = (self._colr is not None
+            #and self._colr.version == 1
+            and BlackRendererFont is not None)
 
         if self._colrv1:
             self._brFont = BlackRendererFont(self.path, fontNumber=number)
@@ -468,23 +470,18 @@ class Style():
         if not self.tag == other.tag:
             return False
         if not self.font == other.font:
-            #print("different font")
             return False
         elif not self.fontSize == other.fontSize:
-            #print("different fontSize")
             return False
         
         for key, value in self.variations.items():
             if self.variations[key] != other.variations[key]:
-                #print("different variation")
                 return False
             
         if self.rotate != other.rotate:
-            #print("different rotate")
             return False
         
         if self.fill != other.fill:
-            #print("different fill")
             return False
         
         return True
@@ -560,9 +557,8 @@ class Style():
             try:
                 axis = self.axes[k]
             except KeyError:
-                #print("Invalid axis", self.fontFile, k)
                 continue
-                #raise Exception("Invalid axis", self.fontFile, k)
+
             if v == "min":
                 variations[k] = axis.minValue
             elif v == "max":
@@ -712,8 +708,8 @@ class StyledString(FittableMixin):
             glyph.frame = Rect(x+glyph.dx, glyph.dy, glyph.ax, self.style._asc)
             if "d" in self.style.metrics:
                 glyph.frame = glyph.frame.expand(self.style.descender, "N")
-            
             x += glyph.ax
+        
         self.getGlyphFrames()
     
     def trackFrames(self, space_width=0):
@@ -770,7 +766,6 @@ class StyledString(FittableMixin):
             self.trackFrames(space_width=space_width)
 
         for glyph in self.glyphs:
-            #print(glyph, glyph.frame)
             glyph.frame = glyph.frame.scale(self.scale())
 
         if self.style.trackingMode == 0:
@@ -955,6 +950,8 @@ class StyledString(FittableMixin):
         layerGlyph = P().record(layer)
         output.append(layerGlyph)
 
+        #print(">>>>>>>>>>>>", layer.method)
+
         if layer.method == "drawPathSolid":
             layerGlyph.f(layer.data["color"])
         else:
@@ -962,7 +959,9 @@ class StyledString(FittableMixin):
             if layer.method == "drawPathLinearGradient":
                 (gradientGlyph
                     .line([layer.data["pt1"], layer.data["pt2"]])
-                    .fssw(-1, 0, 2).translate(frame.x, 0))
+                    .fssw(-1, 0, 2)
+                    #.translate(frame.x, 0)
+                    )
             elif layer.method == "drawPathSweepGradient":
                 gradientGlyph.moveTo(layer.data["center"])
             elif layer.method == "drawPathRadialGradient":
@@ -982,6 +981,15 @@ class StyledString(FittableMixin):
 
         self.style.font._brFont.setLocation(self.variations)
 
+        if self.style.palette:
+            p = self.style.palette
+            if isinstance(p, int):
+                palette = self.style.font._brFont.getPalette(p)
+            else:
+                palette = p
+        else:
+            palette = None
+
         with surface.canvas((0, 0, 1000, 1000)) as canvas:
             for glyph in glyphs:
                 frame = Rect(
@@ -993,9 +1001,9 @@ class StyledString(FittableMixin):
                 output = P().data(glyphName=glyph.name, frame=frame)
 
                 with canvas.savedState():
-                    canvas.translate(glyph.dx, glyph.dy)
+                    #canvas.translate(glyph.dx, glyph.dy)
 
-                    self.style.font._brFont.drawGlyph(glyph.name, canvas)
+                    self.style.font._brFont.drawGlyph(glyph.name, canvas, palette=palette)
 
                     layers = canvas.paths
 
@@ -1082,7 +1090,8 @@ class StyledString(FittableMixin):
                     layer.v.value = self.scalePenToStyle(g, layer, idx).v.value
 
                     ss = layer.data("substructure")
-                    ss.v.value = self.scalePenToStyle(g, ss, idx).v.value
+                    if ss:
+                        ss.v.value = self.scalePenToStyle(g, ss, idx).v.value
                 
                 dp_atom.data(
                    frame=norm_frame,

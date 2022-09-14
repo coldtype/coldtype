@@ -20,6 +20,7 @@ def spin(fa, g):
 def pappardelle(f):
     wave = (StSt("SPIN", ppvf, 500,
         palette=custom_palette,
+        #palette=1,
         SPIN=f.e("l", 0))
         .align(f.a.r))
 

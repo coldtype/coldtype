@@ -108,7 +108,7 @@ setuptools.setup(
     },
     install_requires=[
         "fonttools[ufo]",
-        "blackrenderer>=0.5.3",
+        "blackrenderer>=0.6.0",
         "fontPens",
         "easing-functions",
         "mido",

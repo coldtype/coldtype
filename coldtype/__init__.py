@@ -19,10 +19,10 @@ def monkeypatch_ctypes():
         ctypes.util.find_library = find_library
     return
 
-try:
-    monkeypatch_ctypes()
-except AttributeError:
-    pass
+# try:
+#     monkeypatch_ctypes()
+# except AttributeError:
+#     pass
 
 from coldtype.runon.path import P, PS, DP, DPS, DATPen, DATPens
 from coldtype.runon.arrangement import Arrangement, Ar
