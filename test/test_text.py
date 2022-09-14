@@ -4,8 +4,12 @@ from coldtype.geometry import *
 from coldtype.color import hsl
 from coldtype.runon.path import P
 from coldtype.text.composer import StSt, Font, Style
+from coldtype.text.reader import ALL_FONT_DIRS
 
 tf = Path(__file__).parent
+
+if "~/Type/fonts/fonts" not in ALL_FONT_DIRS:
+    ALL_FONT_DIRS.insert(0, "~/Type/fonts/fonts")
 
 class TestText(unittest.TestCase):
     def _test_glyph_names(self, r, font_path):

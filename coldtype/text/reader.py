@@ -29,6 +29,7 @@ except ImportError:
     BlackRendererFont = None
     pass
 
+BLACKRENDER_ALL = False
 
 class FittableMixin():
     def textContent(self):
@@ -139,7 +140,7 @@ class Font():
             #and self._colr.version == 1
             and BlackRendererFont is not None)
 
-        if self._colrv1:
+        if self._colrv1 or BLACKRENDER_ALL:
             self._brFont = BlackRendererFont(self.path, fontNumber=number)
         else:
             self._brFont = None
@@ -946,9 +947,12 @@ class StyledString(FittableMixin):
             dp.s(self.style.stroke).sw(self.style.strokeWidth)
         return dp
     
-    def buildLayeredGlyph(self, output, layer, frame):
+    def buildLayeredGlyph(self, idx, glyph, output, layer, frame):
         layerGlyph = P().record(layer)
-        output.append(layerGlyph)
+        if layerGlyph.v.value:
+            output.append(layerGlyph)
+        
+        layerGlyph.data(glyphName=f"{glyph.name}_layer_{idx}")
 
         #print(">>>>>>>>>>>>", layer.method)
 
@@ -1015,8 +1019,8 @@ class StyledString(FittableMixin):
                             layers = [layers]
                     
                     if layers:
-                        for layer in layers:
-                            self.buildLayeredGlyph(output, layer, frame)
+                        for idx, layer in enumerate(layers):
+                            self.buildLayeredGlyph(idx, glyph, output, layer, frame)
                     
                     canvas.paths = []
 
@@ -1033,7 +1037,9 @@ class StyledString(FittableMixin):
         self.resetGlyphRun()
 
         colrv1 = self.style.font._colrv1
-        if colrv1:
+        brFont = self.style.font._brFont
+
+        if brFont:
             self.addBRGlyphDrawings(self.glyphs)
 
         elif not self.style.no_shapes:
@@ -1060,7 +1066,8 @@ class StyledString(FittableMixin):
                 # dp_atom.typographic = True
                 # dp_atom.addFrame(norm_frame)
                 # dp_atom.glyphName = g.name
-            elif not colrv1 and len(g.glyphDrawing.layers) == 1:
+            
+            elif not brFont and len(g.glyphDrawing.layers) == 1:
                 dp_atom.v.value = self.scalePenToStyle(g, g.glyphDrawing.layers[0][0], idx).v.value
                 
                 if "d" in self.style.metrics:
@@ -1082,9 +1089,10 @@ class StyledString(FittableMixin):
                     dp_atom.q2c()
                 if self.style.removeOverlap:
                     dp_atom.removeOverlap()
-            elif colrv1:
+
+            elif brFont:
                 dp_atom = g.glyphDrawing
-                dp_atom.layered = True
+                dp_atom.layered = len(dp_atom) > 1 or colrv1
 
                 for idx, layer in enumerate(dp_atom):
                     layer.v.value = self.scalePenToStyle(g, layer, idx).v.value
@@ -1093,10 +1101,18 @@ class StyledString(FittableMixin):
                     if ss:
                         ss.v.value = self.scalePenToStyle(g, ss, idx).v.value
                 
+                if not dp_atom.layered:
+                    dp_atom = dp_atom[0]
+                
                 dp_atom.data(
                    frame=norm_frame,
-                   glyphName=g.name
-                )
+                   glyphName=g.name)
+
+                if self.style.q2c:
+                    dp_atom.q2c()
+                if self.style.removeOverlap:
+                    dp_atom.removeOverlap()
+                
             else:
                 dp_atom = P()
                 dp_atom.layered = True
@@ -1126,9 +1142,6 @@ class StyledString(FittableMixin):
                 dp_atom.data(**self.style.meta)
             
             pens.append(dp_atom)
-        
-        #if colrv1:
-        #    pens.scale(self.style.fontSize/1000, point=(0,0))
 
         if self.style.reverse:
             pens.reversePens()
