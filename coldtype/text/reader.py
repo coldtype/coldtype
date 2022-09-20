@@ -167,9 +167,11 @@ class Font():
         return axes
     
     @staticmethod
-    def Cacheable(path, suffix=None, delete_tmp=False):
+    def Cacheable(path, suffix=None, delete_tmp=False, actual_path=None):
+        """use actual_path to override a key path (if the actual path is the result of a networked call)"""
         if path not in FontCache:
-            FontCache[path] = Font(path,
+            FontCache[path] = Font(
+                actual_path if actual_path else path,
                 cacheable=True,
                 suffix=suffix,
                 delete_tmp=delete_tmp).load()
@@ -181,19 +183,27 @@ class Font():
         return Font.Cacheable(dwnl, suffix=suffix, delete_tmp=delete)
     
     @staticmethod
-    def GoogleFont(font_name, font_file_name=None):
-        """for ipynb notebook use"""
-        from subprocess import run
+    def GoogleFont(font_name) -> "Font":
+        import requests, zipfile, io
+
         font_name_short = font_name.replace(" ", "")
+        font_cache_key = f"GoogleFont_{font_name_short}"
+        if font_cache_key in FontCache:
+            return FontCache[font_cache_key]
+
         url = f"https://fonts.google.com/download?family={font_name}"
-        zip = f"{font_name_short}.zip"
-        run(["wget", url, "-O", zip])
-        run(["unzip", "-o", zip])
-        default_path = f"{font_name_short}-Regular.ttf"
-        font = Font.Cacheable(font_file_name if font_file_name else default_path)
-        from coldtype.notebook import clear_output
-        clear_output()
-        return font
+        folder = Path(f"_GoogleFonts/{font_name_short}")
+        folder.mkdir(exist_ok=True, parents=True)
+
+        r = requests.get(url)
+        if not r.ok:
+            raise FontNotFoundException("GoogleFont URL did not resolve")
+        
+        z = zipfile.ZipFile(io.BytesIO(r.content))
+        z.extractall(folder)
+        
+        font_path = list(folder.glob("*.ttf"))[0]
+        return Font.Cacheable(font_cache_key, actual_path=font_path)
     
     def _ListDir(dir, regex, regex_dir, log=False, depth=0):
         if dir.name in [".git", "venv"]:
