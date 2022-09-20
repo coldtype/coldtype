@@ -180,6 +180,21 @@ class Font():
         dwnl = f"https://drive.google.com/uc?id={id}&export=download"
         return Font.Cacheable(dwnl, suffix=suffix, delete_tmp=delete)
     
+    @staticmethod
+    def GoogleFont(font_name, font_file_name=None):
+        """for ipynb notebook use"""
+        from subprocess import run
+        font_name_short = font_name.replace(" ", "")
+        url = f"https://fonts.google.com/download?family={font_name}"
+        zip = f"{font_name_short}.zip"
+        run(["wget", url, "-O", zip])
+        run(["unzip", "-o", zip])
+        default_path = f"{font_name_short}-Regular.ttf"
+        font = Font.Cacheable(font_file_name if font_file_name else default_path)
+        from coldtype.notebook import clear_output
+        clear_output()
+        return font
+    
     def _ListDir(dir, regex, regex_dir, log=False, depth=0):
         if dir.name in [".git", "venv"]:
             return
