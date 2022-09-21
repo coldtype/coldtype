@@ -214,9 +214,12 @@ class Font():
 
         for p in dir.iterdir():
             if p.is_dir() and depth < FONT_FIND_DEPTH and p.suffix != ".ufo":
-                res = Font._ListDir(p, regex, regex_dir, log, depth=depth+1)
-                if res:
-                    results.extend(res)
+                try:
+                    res = Font._ListDir(p, regex, regex_dir, log, depth=depth+1)
+                    if res:
+                        results.extend(res)
+                except PermissionError:
+                    pass
             else:
                 if regex_dir and not re.search(regex_dir, str(p.parent)):
                     continue
