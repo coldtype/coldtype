@@ -22,8 +22,8 @@ def choreography(f):
         .track(at.ki("tu", f.i).e(r=150))
         .align(f.a.r)
         .f(hsl(0.7, 1))
-        .pmap(lambda i, p: p
-            .rt(at.ki("ro", f.i-i).e("eeio", 0, r=-360)))
+        .mapv(lambda i, p: p
+            .rotate(at.ki("ro", f.i-i).e("eeio", 0, r=360)))
         .centerPoint(f.a.r, (lidx, "tvC"), i=li)
-        .scale(letter.e(r=(1,2+lidx))
-            , pt=(lidx, "tvC")))
+        .scale(letter.e(r=(1,3)), pt=(lidx, "tvC"))
+        )
