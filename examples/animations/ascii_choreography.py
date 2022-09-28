@@ -1,5 +1,4 @@
 from coldtype import *
-from coldtype.time.nle.ascii import AsciiTimeline
 
 at = AsciiTimeline(3, 30, """
                                                 <
@@ -10,7 +9,7 @@ at = AsciiTimeline(3, 30, """
                                    [tu     ]
 """)
 
-@animation((1080, 1080), timeline=at, bg=hsl(0.9, 1, 0.9))
+@animation((1080, 1080), timeline=at, bg=hsl(0.7, 1, 0.5))
 def choreography(f):
     letter = at.ki(list("0123"))
     li, lidx = letter.e(find=1)
@@ -21,9 +20,8 @@ def choreography(f):
             wdth=at.ki(f"{g.i}w").e("qeio", 1)))
         .track(at.ki("tu", f.i).e(r=150))
         .align(f.a.r)
-        .f(hsl(0.7, 1))
-        .mapv(lambda i, p: p
-            .rotate(at.ki("ro", f.i-i).e("eeio", 0, r=360)))
+        .f(1)
+        .mapv(lambda i, p: p.rotate(at.ki("ro", f.i-i).e("eeio", 0, r=360)))
         .centerPoint(f.a.r, (lidx, "tvC"), i=li)
         .scale(letter.e(r=(1,3)), pt=(lidx, "tvC"))
         )

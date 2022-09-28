@@ -29,7 +29,7 @@ except ImportError:
     BlackRendererFont = None
     pass
 
-BLACKRENDER_ALL = False
+BLACKRENDER_ALL = 1
 
 class FittableMixin():
     def textContent(self):
@@ -114,7 +114,8 @@ class Font():
         number=0,
         cacheable=False,
         suffix=None,
-        delete_tmp=False
+        delete_tmp=False,
+        freetype=False,
         ):
         tmp = None
         if isinstance(path, str) and path.startswith("http"):
@@ -140,9 +141,11 @@ class Font():
             #and self._colr.version == 1
             and BlackRendererFont is not None)
 
-        if self._colrv1 or BLACKRENDER_ALL:
+        if self._colrv1 or (BLACKRENDER_ALL and not freetype):
+            #print("HERE")
             self._brFont = BlackRendererFont(self.path, fontNumber=number)
         else:
+            #print("FREETYPE!")
             self._brFont = None
 
         self._variations = self.font.ttFont.get("fvar")
@@ -167,15 +170,21 @@ class Font():
         return axes
     
     @staticmethod
-    def Cacheable(path, suffix=None, delete_tmp=False, actual_path=None):
+    def Cacheable(path, suffix=None, delete_tmp=False, actual_path=None, freetype=False):
         """use actual_path to override a key path (if the actual path is the result of a networked call)"""
-        if path not in FontCache:
-            FontCache[path] = Font(
+        if freetype:
+            path_key = str(path) + ":freetype"
+        else:
+            path_key = str(path)
+        
+        if path_key not in FontCache:
+            FontCache[path_key] = Font(
                 actual_path if actual_path else path,
                 cacheable=True,
                 suffix=suffix,
-                delete_tmp=delete_tmp).load()
-        return FontCache[path]
+                delete_tmp=delete_tmp,
+                freetype=freetype).load()
+        return FontCache[path_key]
     
     @staticmethod
     def GDrive(id, suffix, delete=True):
@@ -1130,7 +1139,14 @@ class StyledString(FittableMixin):
                         ss.v.value = self.scalePenToStyle(g, ss, idx).v.value
                 
                 if not dp_atom.layered:
-                    dp_atom = dp_atom[0]
+                    try:
+                        dp_atom = dp_atom[0]
+                    except IndexError:
+                        dp_atom = dp_atom
+                    
+                    dp_atom.f(self.style.fill)
+                    if self.style.stroke:
+                        dp_atom.s(self.style.stroke).sw(self.style.strokeWidth)
                 
                 dp_atom.data(
                    frame=norm_frame,

@@ -10,7 +10,7 @@ defaults = [vulfs[0], hsl(0.65, 0.6, 0.65)]
 lookup = PythonCode.DefaultStyles(*vulfs)
 rnds1 = random_series()
 
-@aframe(bg=0)
+@aframe(bg=0.1)
 def code1(f):
     def render_code(txt, styles):
         style = styles[0] if len(styles) > 0 else "default"

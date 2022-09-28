@@ -166,6 +166,7 @@ class RichText(P):
                 styles = gt[0][3]
                 style = gt[0][2].mod()
                 style.data = dict(style_names=styles, txt=full_text)
+                print(style)
                 slugs.append(StyledString(full_text, style))
             groupings.append(grouped_texts)
             lines.append(slugs)
