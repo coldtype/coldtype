@@ -14,7 +14,7 @@ def glyphwise(f):
                 ro=1,
                 tv=1)]
 
-    # should also work w/ a \n in between COLD & TYPE
+    # should also work w/o an \n in between COLD & TYPE
     return (Glyphwise("COLD\nTYPE", styler, multiline=1)
         .xalign(f.a.r, th=0)
         .lead(30)
