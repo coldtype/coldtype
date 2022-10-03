@@ -1,7 +1,7 @@
 from coldtype import *
 from coldtype.blender import *
 
-@b3d_runnable(playback=0)
+@b3d_runnable()
 def setup(blw:BpyWorld):
     (blw.deletePrevious("Coldtype"
             , materials=True)
