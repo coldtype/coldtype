@@ -1,14 +1,14 @@
 from coldtype import *
 from coldtype.blender import *
 
-fnt = Font.Cacheable("~/Type/fonts/fonts/ObviouslyVariable.ttf")
+fnt = Font.Find("ObviouslyV")
 
 d = 5
 
 @b3d_animation(timeline=120, center=(0, 1))
 def cube(f):
     def entry(g, x, y, z):
-        return (StSt("A", fnt,
+        return (StSt("B", fnt,
             f.e("seio", 1, rng=(50, 550)),
             ro=1,
             wght=x/(d-1),
