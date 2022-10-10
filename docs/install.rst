@@ -12,14 +12,12 @@ Install
 
 If you want to try coldtype in a blank virtual environment:
 
-Using a virtualenv (based on a python >= 3.7) (aka ``python3.9 -m venv venv`` and then ``source venv/bin/activate``), run:
+Using a virtualenv (based on a python >= 3.7) (aka ``python3.10 -m venv venv`` and then ``source venv/bin/activate``), run:
 
 * ``pip install "coldtype[viewer]"``
 * ``coldtype demo``
 
 That last command should pop up a window. If you hit the spacebar with that window focused, you should see an animation start playing.
-
-**Note for macOS Mojave users:** If you're getting an error when attempting to run the demo, you're probably running into an issue with more recent versions of the ``skia-python`` package. After you've installed coldtype in the virtual environment, try running ``pip install skia-python==86.1``, which will install an older version of that package, and should fix the skia-python installation issue completely.
 
 ---------------------
 

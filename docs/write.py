@@ -14,6 +14,7 @@ for p in sources:
         all_docs.append(p)
     all_docs = sorted(all_docs)
 
+
 class DocsWriter(Renderer):
     def on_stdin(self, stdin):
         stdin = stdin.strip()
@@ -22,43 +23,17 @@ class DocsWriter(Renderer):
         else:
             super().on_stdin(stdin)
     
-    def on_message(self, message, action):
-        if action == "next_test":
-            self.load_doc(+1)
-        elif action == "prev_test":
-            self.load_doc(-1)
-        else:
-            super().on_message(message, action)
-        
-    def load_doc(self, inc):
-        if hasattr(self, "doc_index"):
-            self.doc_index += inc
-        else:
-            self.doc_index = 0
-        if self.doc_index == -1:
-            self.doc_index = len(all_docs) - 1
-        elif self.doc_index == len(all_docs):
-            self.doc_index = 0
-        
-        doc_path = all_docs[self.doc_index]
-        print("---" * 20)
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>", doc_path)
-        self.reset_filepath(str(doc_path))
-        self.reload_and_render(Action.PreviewStoryboard)
+    # def initialize_gui_and_server(self):
+    #     self.webserver = subprocess.Popen(["python", "-m", "http.server", "8003", "-d", "docs/_build/html"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    #     super().initialize_gui_and_server()
     
-    def initialize_gui_and_server(self):
-        self.webserver = subprocess.Popen(["python", "-m", "http.server", "8003", "-d", "docs/_build/html"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        super().initialize_gui_and_server()
-    
-    def on_exit(self, restart=False):
-        self.webserver.terminate()
-        super().on_exit(restart=restart)
+    # def on_exit(self, restart=False):
+    #     self.webserver.terminate()
+    #     super().on_exit(restart=restart)
     
     def buildrelease_fn(self, fnname="release"):
-        if fnname == "didRender":
-            return None
-        
-        candidate = super().buildrelease_fn(fnname=fnname)
+        if fnname != "build":
+            return super().buildrelease_fn(fnname=fnname)
 
         def build_docs(passes):
             from shutil import copy2
@@ -93,13 +68,7 @@ class DocsWriter(Renderer):
                 finally:
                     os.chdir(owd)
         
-        if candidate:
-            def wrapped(passes):
-                candidate(passes)
-                build_docs(passes)
-            return wrapped
-        else:
-            return build_docs
+        return build_docs
     
     def upload(self):
         os.system("./upload_docs.sh")

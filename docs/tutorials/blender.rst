@@ -3,6 +3,10 @@ Blender
 
 Behind the scenes, Coldtype uses the Skia library to rasterize two-dimensional vectors. But what if we want to rasterize *three-dimensional* graphics? One very fun option is to use Blender.
 
+However, getting everything installed properly is kind of difficult, so I'd have to suggest [ST2](https://coldtype.xyz) instead (a GUI addon for Blender powered by Coldtype).
+
+That said, here are some instructions on attempting to get it all working for live-coding Blender from Coldtype.
+
 Because Blender has an incredible Python API, it's not too difficult to use it programmatically — i.e. to write a normal Coldtype script, mark a few things (with metadata specific to Blender), and then let Blender & Coldtype take care of the translation to three dimensions. Here's an example:
 
 .. code:: python
@@ -20,7 +24,7 @@ Because Blender has an incredible Python API, it's not too difficult to use it p
                 wght=f.adj(-g.i*15).e("seio", 1, rng=(0.98, 0))
                 ))
             .align(f.a.r)
-            .pmap(lambda i, p: p
+            .mapv(lambda i, p: p
                 .ch(b3d(lambda bp: bp
                     .extrude(f.adj(-i*5)
                         .e("ceio", 1, rng=(0.015, 3)))))))

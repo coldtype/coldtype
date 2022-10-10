@@ -19,16 +19,13 @@ An example:
 
         return P([
             (P(r.inset(10))
-                .outline(10)
-                .f(Gradient.Horizontal(r,
-                    c2.lighter(0.3),
-                    c1.lighter(0.3)))),
-            (StSt("COLDTYPE", "assets/ColdtypeObviously-VF.ttf", 250,
-                    wdth=1, tu=-170, r=1, rotate=15, kp={"P/E":-150, "T/Y":-50})
+                .outline(5)
+                .f(0)),
+            (StSt("COLDTYPE", Font.ColdtypeObviously(), 250,
+                    wdth=1, tu=-170, r=1, rotate=15, kp={"P/E":-100})
                 .align(r)
-                .f(Gradient.Horizontal(r, c1, c2))
-                .understroke(s=1, sw=5))
-                .translate(0, 5)])
+                .fssw(0, 1, 20, 1))
+            .translate(0, 5)])
 
 .. image:: /_static/renders/about_render.png
     :width: 600
@@ -48,7 +45,7 @@ Why is Coldtype?
 
 There are lots of ways to set type with code. Most ways — HTML/CSS/JS, Processing, etc. — are great for 90% of what most people want to do with Latin-based writing systems. Then the road runs out and you can’t do anything else.
 
-Coldtype is an offroad vehicle that lets you keep driving where there are no roads. Like many vehicles built for specialized use, it is not particularly user-friendly. It has no doors (please climb in through the window), and the steering wheel is not very intuitive, also it’s a stick-shift, and you should probably know how to code (or be willing to learn) if you’re going to drive it alone out into the desert. (I apologize for how automotive this metaphor is getting. Probably should’ve gone with some metaphor about people making custom synthesizers in the 70s.)
+Coldtype is an offroad vehicle that lets you keep driving where there are no roads. Like many vehicles built for specialized use, it is not particularly user-friendly. It has no doors (please climb in through the window), and the steering wheel is not very intuitive, also it’s got a manual transmission, and you should probably know how to code (or be willing to learn) if you’re going to drive it alone out into the desert. (I apologize for how automotive this metaphor is getting. Probably should’ve gone with some metaphor about people making custom synthesizers in the 70s.)
 
 What about DrawBot?
 -------------------

@@ -428,15 +428,22 @@ class SourceReader():
         #print(self.config.values())
     
     def find_sources(self, dirpath):
-        sources = list(dirpath.glob("*.py"))
-        sources.extend(list(dirpath.glob("*.md")))
+        globber = "**/*.py"
+        if self.filepath:
+            globber = "**/*" + self.filepath.suffix
+        sources = list(dirpath.glob(globber))
+        #sources.extend(list(dirpath.glob("*.md")))
 
         valid_sources = []
         for p in sources:
             if not p.name.startswith("_"):
                 valid_sources.append(p)
-            valid_sources = sorted(valid_sources, key=lambda p: p.stem)
-        
+            valid_sources = sorted(valid_sources, key=lambda p: str(p.relative_to(dirpath)))
+            valid_sources = sorted(valid_sources, key=lambda p: str(p.relative_to(dirpath)).count("/") > 0)
+
+        #for p in valid_sources:
+        #    print(p.relative_to(dirpath))
+
         return valid_sources
     
     def blender_io(self):
@@ -459,7 +466,8 @@ class SourceReader():
             #filepath = sorted(list(filepath.glob("*.py")), key=lambda p: p.stem)[dirindex]
             filepath = self.find_sources(self.dirpath)[dirindex]
         else:
-            self.dirpath = filepath.parent
+            if self.dirpath is None:
+                self.dirpath = filepath.parent
 
         if not filepath.exists():
             with_py = (filepath.parent / (filepath.stem + ".py"))
