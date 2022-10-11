@@ -170,9 +170,6 @@ def potrace(rect, invert=True,
     """Chainable function for tracing a pen/image-on-pen ; can be combined with a previous call to phototype for better control of blurring/edges"""
     from PIL import Image
 
-    pc = SkiaPen
-    ctx = SKIA_CONTEXT
-
     def _potrace(pen):
         if invert:
             pen = pen.copy().layer(1, lambda _: P(rect).f(1).blendmode(BlendMode.Difference))
