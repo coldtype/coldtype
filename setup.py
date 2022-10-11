@@ -79,6 +79,7 @@ setuptools.setup(
             "ufo2ft",
             #"ufoLib2",
             "numpy",
+            "potracer",
         ],
         "experimental": [
             "pynput",
@@ -100,6 +101,7 @@ setuptools.setup(
         "notebook": [
             "skia-pathops",
             "skia-python",
+            "potracer",
         ],
         "audio": [
             "pyaudio",

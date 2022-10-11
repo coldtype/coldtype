@@ -27,7 +27,7 @@ An example:
                 .fssw(0, 1, 20, 1))
             .translate(0, 5)])
 
-.. image:: /_static/renders/about_render.png
+.. image:: /_static/renders/about_render.png?t=1
     :width: 600
     :class: add-border
 

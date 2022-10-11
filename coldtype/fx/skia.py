@@ -10,6 +10,7 @@ from fontTools.misc.transform import Transform
 
 from coldtype.fx.chainable import Chainable
 from coldtype.color import normalize_color, bw
+from coldtype.img.blendmode import BlendMode
 from coldtype.runon.path import P
 from coldtype.pens.skiapen import SkiaPen
 
@@ -152,8 +153,26 @@ def fill(c):
             ColorFilter=Skfi.fill(c)))
     return _fill
 
+def invert():
+    """Chainable function for inverting everything in pen/image-on-pen"""
+    def _invert(pen):
+        return pen.attr(skp=dict(ColorFilter=Skfi.invert()))
+    return _invert
 
-def potrace(rect, poargs=[], invert=True):
+
+try:
+    import potrace as potracer
+except ImportError:
+    pass
+
+
+def potrace(rect, invert=True,
+    turdsize=2, # 0-infinity
+    turnpolicy=potracer.POTRACE_TURNPOLICY_MINORITY,
+    alphamax=1.0, #  0.0 (polygon) to 1.3333 (no corners)
+    opticurve=1,
+    opttolerance=0.2, # 0 -1
+    ):
     """Chainable function for tracing a pen/image-on-pen ; can be combined with a previous call to phototype for better control of blurring/edges"""
     from PIL import Image
 
@@ -161,34 +180,32 @@ def potrace(rect, poargs=[], invert=True):
     ctx = SKIA_CONTEXT
 
     def _potrace(pen):
-        img = pc.Precompose(pen, rect, context=ctx)
-        pilimg = Image.fromarray(img.convert(alphaType=skia.kUnpremul_AlphaType))
-        binpo = Path("bin/potrace")
-        if not binpo.exists():
-            binpo = Path(__file__).parent.parent.parent / "bin/potrace"
+        if invert:
+            pen.layer(1, lambda _: P(rect).f(1).blendmode(BlendMode.Difference))
 
-        with tempfile.NamedTemporaryFile(prefix="coldtype_tmp", suffix=".bmp") as tmp_bmp:
-            pilimg.save(tmp_bmp.name)
-            rargs = [str(binpo), "-s"]
-            if invert:
-                rargs.append("--invert")
-            rargs.extend([str(x) for x in poargs])
-            rargs.extend(["-o", "-", "--", tmp_bmp.name])
-            if False:
-                print(">>>", " ".join(rargs))
-            result = run(rargs, capture_output=True)
-            if False:
-                print(result)
-            t = Transform()
-            t = t.scale(0.1, 0.1)
-            svgp = SVGPath.fromstring(result.stdout, transform=t)
-            if False:
-                print(svgp)
-            rp = RecordingPen()
-            svgp.draw(rp)
-            dp = P()
-            dp.v.value = rp.value
-            return dp.f(0)
+        res = SkiaPen.Precompose(pen, rect, SKIA_CONTEXT)
+        
+        pilimg = Image.fromarray(res.convert(alphaType=skia.kUnpremul_AlphaType))
+
+        bmp = potracer.Bitmap(pilimg)
+
+        path = bmp.trace(turdsize, turnpolicy, alphamax, opticurve, opttolerance)
+
+        op = P()
+        for curve in path:
+            op.moveTo(curve.start_point.x, curve.start_point.y)
+            for segment in curve:
+                if segment.is_corner:
+                    op.lineTo(segment.c.x, segment.c.y)
+                else:
+                    op.curveTo(
+                        (segment.c1.x, segment.c1.y),
+                        (segment.c2.x, segment.c2.y),
+                        (segment.end_point.x, segment.end_point.y))
+            op.closePath()
+
+        op.scale(1, -1, point=rect.pc)
+        return op
     return _potrace
 
 def precompose(rect,
