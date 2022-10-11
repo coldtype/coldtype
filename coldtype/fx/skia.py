@@ -153,12 +153,6 @@ def fill(c):
             ColorFilter=Skfi.fill(c)))
     return _fill
 
-def invert():
-    """Chainable function for inverting everything in pen/image-on-pen"""
-    def _invert(pen):
-        return pen.attr(skp=dict(ColorFilter=Skfi.invert()))
-    return _invert
-
 
 try:
     import potrace as potracer
@@ -181,7 +175,7 @@ def potrace(rect, invert=True,
 
     def _potrace(pen):
         if invert:
-            pen.layer(1, lambda _: P(rect).f(1).blendmode(BlendMode.Difference))
+            pen = pen.copy().layer(1, lambda _: P(rect).f(1).blendmode(BlendMode.Difference))
 
         res = SkiaPen.Precompose(pen, rect, SKIA_CONTEXT)
         
