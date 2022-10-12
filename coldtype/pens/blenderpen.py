@@ -156,7 +156,7 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
         super().__init__(None)
         self.dat = dat
         tag = self.dat.tag()
-        self.material = None
+        self._material = None
         if tag is None:
             raise Exception("BlenderPen pens must be tagged")
         self.tag = tag
@@ -205,7 +205,7 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
         return self.obj.data.materials
 
     def bsdf(self):
-        if self.material:
+        if self._material:
             try:
                 return self.materials()[0].node_tree.nodes["Principled BSDF"]
             except:
@@ -227,7 +227,7 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
             #value[3] = 1
     
     def fill(self, color):
-        if not self.material == "auto" or not self.bsdf():
+        if not self._material == "auto" or not self.bsdf():
             return
         if color:
             if isinstance(color, Gradient):
@@ -239,7 +239,7 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
                 self.setColorValue(dv, color)
     
     def stroke(self, weight=1, color=None, dash=None, miter=None):
-        if not self.material == "auto" or not self.bsdf():
+        if not self._material == "auto" or not self.bsdf():
             return
         if weight and color and color.a > 0:
             #print("STROKE>>>", self.tag, weight, color)
@@ -258,31 +258,31 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
         return self
     
     def specular(self, amount=0.5):
-        if not self.material == "auto" or not self.bsdf():
+        if not self._material == "auto" or not self.bsdf():
             return
         self.bsdf().inputs[7].default_value = amount
         return self
     
     def metallic(self, amount=1):
-        if not self.material == "auto" or not self.bsdf():
+        if not self._material == "auto" or not self.bsdf():
             return
         self.bsdf().inputs[6].default_value = amount
         return self
     
     def roughness(self, amount=0.5):
-        if not self.material == "auto" or not self.bsdf():
+        if not self._material == "auto" or not self.bsdf():
             return
         self.bsdf().inputs[9].default_value = amount
         return self
     
     def transmission(self, amount=1):
-        if not self.material == "auto" or not self.bsdf():
+        if not self._material == "auto" or not self.bsdf():
             return
         self.bsdf().inputs[15].default_value = amount
         return self
 
     def emission(self, color=None, strength=1):
-        if not self.material == "auto" or not self.bsdf():
+        if not self._material == "auto" or not self.bsdf():
             return
         if color is not None:
             self.setColorValue(self.bsdf().inputs[17].default_value, normalize_color(color))
@@ -421,7 +421,7 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
         return self
     
     def draw(self, collection, style=None, scale=0.01, cyclic=True, dn=False, primitive=None, material="auto"):
-        self.material = material
+        self._material = material
 
         if primitive is not None:
             self.obj, self.created = BPH.Primitive(primitive, collection, self.tag, dn=dn, material=material, container=self.dat.ambit().scale(scale))

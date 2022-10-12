@@ -150,14 +150,17 @@ class Easeable():
         else:
             return int(self.i >= self.t.start) - 1
         
-    def on(self):
+    def on(self, end=None):
         if self._ts:
-            return bool(max([Easeable(t, self.i).on() for t in self.t]))
+            return bool(max([Easeable(t, self.i).on(end=end) for t in self.t]))
         
-        if self.t.start == self.t.end:
+        if end is None:
+            end = self.t.end
+
+        if self.t.start == end:
             return self.i == self.t.start
         else:
-            return self.t.start <= self.i < self.t.end
+            return self.t.start <= self.i < end
     
     def now(self):
         if not self._ts:
@@ -172,6 +175,9 @@ class Easeable():
                 return e
         
         return None
+    
+    def past(self):
+        return self.on(end=10000000000)
     
     def tv(self,
         loops=0,

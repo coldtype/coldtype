@@ -4,7 +4,7 @@ from collections import defaultdict
 from coldtype.renderable.animation import animation
 
 from coldtype.renderer.reader import SourceReader
-from coldtype.blender import b3d_animation, b3d_renderable, b3d_runnable, b3d_sequencer, walk_to_b3d
+from coldtype.blender import B3DPlayback, b3d_animation, b3d_renderable, b3d_runnable, b3d_sequencer, walk_to_b3d
 from coldtype.blender.timedtext import add_2d_panel
 from coldtype.blender.panel3d import add_3d_panel
 from coldtype.blender.util import remote
@@ -161,21 +161,25 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         animation_found = False
         frame = self.current_frame
         prerendered = bpy.app.driver_namespace.get("_coldtype_prerendered", False)
-        playback = None
+        playback = B3DPlayback.AlwaysStop
 
         def display_image(r, result):
             lp_path = render_as_image(r, result)
             display_image_in_blender(lp_path)
         
-        if statics:
+        candidates = self.candidates
+
+        for r in candidates:
+            if isinstance(r, b3d_runnable):
+                if statics:
+                    playback = r.playback
+        
+        if statics and playback != B3DPlayback.KeepPlaying:
             if bpy.context.screen.is_animation_playing:
                 bpy.ops.screen.animation_play() # stop it
 
-        for r in self.candidates:
-            if isinstance(r, b3d_runnable):
-                if statics and r.playback is not None:
-                    playback = r.playback
-                
+        for r in candidates:
+            if isinstance(r, b3d_runnable):                
                 if r.once:
                     if statics:
                         if r.delay:
@@ -251,9 +255,8 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             
             # self._delayed_runnables = []
 
-            if playback is not None:
-                if playback > 0:
-                    bpy.ops.screen.animation_play()
+            if playback == B3DPlayback.AlwaysPlay:
+                bpy.ops.screen.animation_play()
         
         return animation_found
 

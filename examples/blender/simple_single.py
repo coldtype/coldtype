@@ -9,4 +9,7 @@ def scratch(f):
         .f(hsl(0.65))
         .tag("single_shape")
         .ch(b3d(lambda p: p
-            .extrude(1.5))))
+            .extrude(1.5)
+            .roughness(1)
+            .specular(0)
+            , material="auto")))

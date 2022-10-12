@@ -5,7 +5,7 @@ r = Rect(1080, 540)
 font = Font.ColdObvi()
 
 def shapes(r):
-    return (StSt("COLD", font, 250)
+    return (StSt("TYPE", font, 250)
         .align(r))
 
 @renderable(r)

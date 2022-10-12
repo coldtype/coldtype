@@ -1,7 +1,7 @@
 from coldtype import *
 from coldtype.blender import *
 
-txt = "FALL\nING\nTEXT"
+txt = "FALL\nING\nABC"
 
 @b3d_runnable()
 def setup(bw:BpyWorld):

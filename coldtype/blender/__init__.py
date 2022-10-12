@@ -1,5 +1,6 @@
 # to be loaded from within Blender
 
+from enum import Enum
 import os, math, json, time
 from pathlib import Path
 from coldtype.geometry import curve
@@ -245,6 +246,11 @@ def walk_to_b3d(result:P,
     result.walk(walker)
 
 
+class B3DPlayback(Enum):
+    AlwaysStop = 0
+    AlwaysPlay = 1
+    KeepPlaying = 2
+
 
 class b3d_runnable(runnable):
     def __init__(self,
@@ -252,7 +258,7 @@ class b3d_runnable(runnable):
         cond=None,
         once=True,
         delay=False,
-        playback=None,
+        playback:B3DPlayback=B3DPlayback.AlwaysStop,
         ):
         self.once = once
         self.delay = delay
