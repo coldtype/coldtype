@@ -170,12 +170,58 @@ class Font():
         return axes
     
     @staticmethod
+    def FromDesignspace(path):
+        from ufo2ft import compileVariableTTF
+        from fontTools.designspaceLib import DesignSpaceDocument
+        from fontTools.fontBuilder import FontBuilder
+
+        doc = DesignSpaceDocument.fromfile(path)
+        doc.findDefault()
+
+        for source in doc.sources:
+        if source.layerName is None:
+            ttPath = ufoPathToTTPath[source.path]
+            if not os.path.exists(ttPath):
+                raise FileNotFoundError(ttPath)
+            source.font = TTFont(ttPath, lazy=False)
+
+        assert doc.default.font is not None
+        
+        #if "name" not in doc.default.font:
+        #    doc.default.font["name"] = newTable("name")  # This is the template for the VF, and needs a name table
+
+        if any(s.layerName is not None for s in doc.sources):
+            fb = FontBuilder(unitsPerEm=doc.default.font["head"].unitsPerEm)
+            fb.setupGlyphOrder(doc.default.font.getGlyphOrder())
+            fb.setupPost()  # This makes sure we store the glyph names
+            font = fb.font
+            for source in doc.sources:
+                if source.font is None:
+                    source.font = font
+
+        ttf = compileVariableTTF(ds)
+        #ttf = compileInterpolatableTTFsFromDS(ds)
+        print(ttf)
+        return None
+    
+    @staticmethod
     def Cacheable(path, suffix=None, delete_tmp=False, actual_path=None, freetype=False):
         """use actual_path to override a key path (if the actual path is the result of a networked call)"""
         if freetype:
             path_key = str(path) + ":freetype"
         else:
             path_key = str(path)
+
+            suffix = Path(path).suffix
+            if suffix == ".ufo":
+                from ufo2ft import compileTTF
+                print(compileTTF(str(path)))
+                return None
+            elif suffix == ".designspace":
+                return Font.FromDesignspace(path)
+            elif suffix in ".glyphs":
+                from glyphsLib import to_ufos
+                pass
         
         if path_key not in FontCache:
             FontCache[path_key] = Font(
