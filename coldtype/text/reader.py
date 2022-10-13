@@ -128,6 +128,17 @@ class Font():
                 path = tmp.name
                 tmp = tmp
         
+        else:
+            suffix = Path(path).suffix
+            if suffix == ".ufo":
+                print("yes")
+                freetype = True
+            elif suffix == ".designspace":
+                freetype = True
+            elif suffix in ".glyphs":
+                from glyphsLib import to_ufos
+                pass
+        
         self.path = Path(normalize_font_path(path))
         numFonts, opener, getSortInfo = getOpener(self.path)
         self.font:BaseFont = opener(self.path, number)
@@ -212,15 +223,6 @@ class Font():
             path_key = str(path) + ":freetype"
         else:
             path_key = str(path)
-
-            suffix = Path(path).suffix
-            if suffix == ".ufo":
-                freetype = True
-            elif suffix == ".designspace":
-                freetype = True
-            elif suffix in ".glyphs":
-                from glyphsLib import to_ufos
-                pass
         
         if path_key not in FontCache:
             FontCache[path_key] = Font(
