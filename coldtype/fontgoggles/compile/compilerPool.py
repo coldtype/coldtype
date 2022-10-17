@@ -21,6 +21,7 @@ def compileUFOToBytes(ufoPath, outputWriter):
 def compileDSToBytes(dsPath, ttFolder, outputWriter):
     with tempfile.NamedTemporaryFile(prefix="fontgoggles_temp", suffix=".ttf") as tmp:
         compileDSToPath(dsPath, ttFolder, tmp.name)
+        print(">>>>>>>>>>>>>", dsPath, tmp.name)
         with open(tmp.name, "rb") as f:
             fontData = f.read()
             if not fontData:

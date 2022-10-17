@@ -131,7 +131,6 @@ class Font():
         else:
             suffix = Path(path).suffix
             if suffix == ".ufo":
-                print("yes")
                 freetype = True
             elif suffix == ".designspace":
                 freetype = True
@@ -141,25 +140,25 @@ class Font():
         
         self.path = Path(normalize_font_path(path))
         numFonts, opener, getSortInfo = getOpener(self.path)
-        self.font:BaseFont = opener(self.path, number)
-        self.font.cocoa = False
+        
+        #self.font:BaseFont = opener(self.path, number)
+        #self.font.cocoa = False
         self.cacheable = cacheable
-        self._loaded = False
-        self.load()
-
-        self._colr = self.font.ttFont.get("COLR")
-        self._colrv1 = (self._colr is not None
+        
+        self._loaded = True
+        #self.load()
+        #self._colrv1 = (self._colr is not None
             #and self._colr.version == 1
-            and BlackRendererFont is not None)
+        #    and BlackRendererFont is not None)
 
-        if self._colrv1 or (BLACKRENDER_ALL and not freetype):
-            #print("HERE")
+        if BLACKRENDER_ALL and not freetype:
             self._brFont = BlackRendererFont(self.path, fontNumber=number)
         else:
             #print("FREETYPE!")
             self._brFont = None
 
-        self._variations = self.font.ttFont.get("fvar")
+        self._variations = self._brFont.ttFont.get("fvar")
+        self._colr = self._brFont.ttFont.get("COLR")
 
         if tmp and delete_tmp:
             os.unlink(tmp.name)
@@ -534,7 +533,7 @@ class Style():
             return
         else:
             try:
-                fvar = self.font.font.ttFont['fvar']
+                fvar = self.font._brFont.ttFont['fvar']
             except:
                 fvar = None
             if fvar:
@@ -592,11 +591,11 @@ class Style():
             a = True
 
         if self.descender is None and "d" in self.metrics:
-            d = True    
+            d = True
 
         try:
-            if "OS/2" in self.font.font.ttFont:
-                os2 = self.font.font.ttFont["OS/2"]
+            if "OS/2" in self.font._brFont.ttFont:
+                os2 = self.font._brFont.ttFont["OS/2"]
                 if c:
                     self.capHeight = os2.sCapHeight if hasattr(os2, "sCapHeight") else 0
                     if self.capHeight == 0:

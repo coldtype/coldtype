@@ -6,8 +6,6 @@ from coldtype.fx.skia import phototype
 For instagram
 """
 
-obv = Font.Cacheable("assets/ColdtypeObviously-VF.ttf")
-
 @renderable(rstate=1, solo=1)
 def logo(r, rs):
     nxl = LaunchControlXL(rs.midi)
@@ -16,7 +14,7 @@ def logo(r, rs):
         (P().oval(r.inset(-20))
             .f(None).s(1).sw(2)
             .ch(phototype(r, blur=10, cut=23, cutw=5))),
-        (StSt("COLD\nTYPE", obv, 500,
+        (StSt("COLD\nTYPE", Font.ColdObvi(), 500,
             wdth=0.5, tu=-50, r=1,
             kp={"P/E":-100}, leading=-10)
             .index(0, lambda p: p.translate(-130, 0))
@@ -38,7 +36,7 @@ def logo2(r):
         (P().oval(r.inset(-20))
             .f(None).s(1).sw(2)
             .ch(phototype(r, blur=10, cut=23, cutw=5))),
-        (StSt("C", obv, 850,
+        (StSt("C", Font.ColdObvi(), 850,
             wdth=1, tu=20, r=1)
             .align(r)
             .f(1)
