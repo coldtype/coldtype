@@ -22,6 +22,10 @@ class RunonException(Exception):
     pass
 
 
+class RunonSearchException(Exception):
+    pass
+
+
 class RunonNoData:
     pass
 
@@ -244,6 +248,13 @@ class Runon:
         else:
             tag = index
             return self.find_(tag)
+    
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except RunonSearchException:
+            return default
+
     
     def subset(self, *idxs):
         """return subset of self wrapped in same type as self (rather than raw list)"""
@@ -590,12 +601,12 @@ class Runon:
         index=None
         ):
         matches = []
-        def finder(p, pos, _):
+        def finder(p, pos, data):
             #if limit and len(matches) > limit:
             #    return
 
             found = False
-            if pos >= 0:
+            if pos <= 0 and data["depth"] > 0:
                 if isinstance(finder_fn, str):
                     found = p.tag() == finder_fn
                 elif callable(finder_fn):
@@ -606,6 +617,8 @@ class Runon:
                 matches.append(p)
 
         self.walk(finder)
+
+        #matches = list(reversed(sorted(matches, key=lambda m: m.depth())))
 
         narrowed = []
         if index is not None:
@@ -641,7 +654,7 @@ class Runon:
             try:
                 return res[0]
             except IndexError:
-                raise Exception(f"Could not find `{finder_fn}`")
+                raise RunonSearchException(f"Could not find `{finder_fn}`")
         else:
             return self
         

@@ -1,6 +1,7 @@
 import unittest
 from coldtype.runon.layout import * #INLINE
 from coldtype.geometry import Rect
+from coldtype.runon.runon import RunonSearchException, RunonException
 from coldtype.text import StSt, Font
 
 class TestLayout(unittest.TestCase):
@@ -32,7 +33,7 @@ class TestLayout(unittest.TestCase):
         self.assertEqual(l[1][1][1].rect.w, 100)
     
     def test_duck(self):
-        l = Plan(Rect(500, 500))
+        l = Layout(Rect(500, 500))
         l.grid(2, 2, "abcd")
 
         self.assertEqual(l.val_present(), False)
@@ -48,6 +49,27 @@ class TestLayout(unittest.TestCase):
         self.assertEqual(txt.ambit().x, 0)
         self.assertEqual(txt1.ambit().x, 333.725)
         self.assertEqual(txt2.ambit().x, 333.725)
+    
+    def test_cssgrid(self):
+        l = (Layout(Rect(500, 500))
+            .cssgrid(r"auto 30%", r"50% auto", "x y / z q",
+                x=("200 a", "a a", "a b / a c"),
+                c=("a a", "a a", "g a / i a"),
+                q=("a a", "a a", "q b / c d")))
+        
+        self.assertEqual(l.depth(), 3)
+        self.assertIsNotNone(l["x"])
+        self.assertIsNotNone(l["x/c"])
+        self.assertIsNotNone(l["x/c/a"])
+        
+        self.assertIsNone(l.get("x/c/q"))
+
+        self.assertRaises(RunonSearchException, lambda: l["x/c/z"])
+
+        self.assertNotEqual(l["x/a"], l["x/c/a"])
+        self.assertNotEqual(l["x/c/a"], l["a"])
+        self.assertNotEqual(l["q"], l["q/q"])
+
 
 if __name__ == "__main__":
     unittest.main()
