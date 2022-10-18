@@ -304,6 +304,8 @@ class Font():
     @staticmethod
     def RecursiveMono():
         return Font.Cacheable(Path(__file__).parent.parent / "demo/RecMono-CasualItalic.ttf")
+    
+    RecMono = RecursiveMono
 
 class Style():
     """

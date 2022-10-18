@@ -25,7 +25,7 @@ def monkeypatch_ctypes():
 #     pass
 
 from coldtype.runon.path import P, PS, DP, DPS, DATPen, DATPens
-from coldtype.runon.arrangement import Arrangement, Ar
+from coldtype.runon.layout import Layout
 from coldtype.text import *
 from coldtype.text.reader import Font
 from coldtype.geometry import *

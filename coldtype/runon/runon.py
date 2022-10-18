@@ -630,6 +630,12 @@ class Runon:
             return [m for (_, m) in narrowed]
     
     def find_(self, finder_fn, fn=None, index=0):
+        if isinstance(finder_fn, str) and "/" in finder_fn:
+            o = self
+            for k in finder_fn.split("/"):
+                o = o.find_(k)
+            return o
+
         res = self.find(finder_fn, fn, index=index)
         if not fn:
             try:

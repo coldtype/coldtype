@@ -8,7 +8,7 @@ from coldtype.random import random_series
 _view_rs1 = random_series()
 
 
-class Arrangement(Runon):
+class Layout(Runon):
     def sum(self):
         if self.val_present():
             return self._val
@@ -29,7 +29,7 @@ class Arrangement(Runon):
 
     def _extend_with_tags(self, rects, tags):
         for idx, r in enumerate(rects):
-            el = Arrangement(r)
+            el = Layout(r)
             try:
                 el.tag(tags[idx])
             except IndexError:
@@ -66,12 +66,14 @@ class Arrangement(Runon):
                 el.grid(columns, rows, tags)
         return self
     
-    def cssgrid(self, cols, rows, ascii):
+    def cssgrid(self, cols, rows, ascii, **kwargs):
         if self.val_present():
             g = Grid(self.r, cols, rows, ascii)
             for k, v in g.keyed.items():
-                self.append(Arrangement(v).tag(k))
+                self.append(Layout(v).tag(k))
             self._val = None
+        
+        for k, v in kwargs.items(): self[k].cssgrid(*v)
         return self
     
     def sort(self, attr="x", reverse=False):
@@ -144,5 +146,3 @@ class Arrangement(Runon):
     def ee(self): return self.r.ee
     @property
     def ew(self): return self.r.ew
-
-Ar = Arrangement
