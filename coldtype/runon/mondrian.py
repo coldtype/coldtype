@@ -8,7 +8,7 @@ from coldtype.random import random_series
 _view_rs1 = random_series()
 
 
-class Layout(Runon):
+class Mondrian(Runon):
     def sum(self):
         if self.val_present():
             return self._val
@@ -29,7 +29,7 @@ class Layout(Runon):
 
     def _extend_with_tags(self, rects, tags):
         for idx, r in enumerate(rects):
-            el = Layout(r)
+            el = Mondrian(r)
             try:
                 el.tag(tags[idx])
             except IndexError:
@@ -70,7 +70,7 @@ class Layout(Runon):
         if self.val_present():
             g = Grid(self.r, cols, rows, ascii)
             for k, v in g.keyed.items():
-                self.append(Layout(v).tag(k))
+                self.append(Mondrian(v).tag(k))
             self._val = None
         
         for k, v in kwargs.items(): self[k].cssgrid(*v)

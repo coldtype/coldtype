@@ -2,7 +2,7 @@ from coldtype import *
 
 @renderable()
 def boxes(r):
-    l = (Layout(r)
+    l = (Mondrian(r)
         .cssgrid(r"auto 30%", r"50% auto", "x y / z q",
             x=("200 a", "a a", "a b / a c"),
             c=("a a", "a a", "g a / i a"),
