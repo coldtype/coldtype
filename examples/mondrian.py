@@ -22,3 +22,12 @@ def boxes(r):
         StSt("I", "Comic Sans", 50).align(l["i"]).f(0),
         P().oval(l["x/c/a"].rect).fssw(-1, hsl(0.3, a=0.5), 10),
         StSt("Q/Q", "Comic Sans", 50).align(l["q/q"]).f(0),)
+
+@renderable((1080, 540))
+def boxes2(r):
+    l = (Mondrian(r).grid(2, 2))
+    
+    return P(
+        l.view(),
+        P().oval(l[0].rect.square().inset(10)).fssw(-1, hsl(0.9, 1), 2),
+    )
