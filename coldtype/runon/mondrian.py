@@ -68,13 +68,34 @@ class Mondrian(Runon):
     
     def cssgrid(self, cols, rows, ascii, **kwargs):
         if self.val_present():
+            if not hasattr(self, "_borders"):
+                self._borders = []
+
             g = Grid(self.r, cols, rows, ascii)
             for k, v in g.keyed.items():
                 self.append(Mondrian(v).tag(k))
+            
             self._val = None
+            self._borders.extend(g.borders)
         
         for k, v in kwargs.items(): self[k].cssgrid(*v)
         return self
+    
+    def borders(self, regular=None, bold=None):
+        if hasattr(self, "_borders"):
+            from coldtype.runon.path import P
+            out = P()
+            for b in sorted(self._borders, key=lambda b: b[2]):
+                if regular == -1 and not b[2]:
+                    continue
+                elif bold == -1 and b[2]:
+                    continue
+                
+                out.append(P()
+                    .line(b[0].edge(b[1]))
+                    .fssw(-1, 0, 4 if b[2] else 2)
+                    .ch(bold if b[2] else regular))
+            return out
     
     def sort(self, attr="x", reverse=False):
         if self.depth() == 1:

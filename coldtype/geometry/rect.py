@@ -118,6 +118,9 @@ class Rect(Geometrical):
         return Rect(w*dpi, h*dpi)
 
     def __init__(self, *rect):
+        if hasattr(rect[0], "rect") and not isinstance(rect[0], Rect):
+            rect = [rect[0].rect]
+
         if isinstance(rect[0], str):
             x, y = 0, 0
             w, h = COMMON_PAPER_SIZES[rect[0].lower()]

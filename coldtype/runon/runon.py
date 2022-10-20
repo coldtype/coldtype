@@ -613,12 +613,15 @@ class Runon:
                     found = finder_fn(p)
                 else:
                     found = all(p.data(k) == v for k, v in finder_fn.items())
+            
             if found:
-                matches.append(p)
+                matches.append([p, data["depth"]])
 
         self.walk(finder)
 
         #matches = list(reversed(sorted(matches, key=lambda m: m.depth())))
+
+        matches = list([m[0] for m in sorted(matches, key=lambda m: m[1])])
 
         narrowed = []
         if index is not None:

@@ -20,7 +20,7 @@ def boxes(r):
         StSt("G", "Comic Sans", 50).align(l["g"]).f(0),
         StSt("A", "Comic Sans", 50).align(l["x/c/a"]).f(0),
         StSt("I", "Comic Sans", 50).align(l["i"]).f(0),
-        P().oval(l["x/c/a"].rect).fssw(-1, hsl(0.3, a=0.5), 10),
+        P().oval(l["x/c/a"]).fssw(-1, hsl(0.3, a=0.5), 10),
         StSt("Q/Q", "Comic Sans", 50).align(l["q/q"]).f(0),)
 
 @renderable((1080, 540))
