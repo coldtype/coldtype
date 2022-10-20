@@ -144,8 +144,8 @@ class TestPens(unittest.TestCase):
             P().tag("not-me"),
             P([P().tag("find-me").f(hsl(0.3))])])
 
-        self.assertEqual(dps.find("find-me")[0].f().h/360, 0.9)
-        self.assertAlmostEqual(dps.find("find-me")[1].f().h/360, 0.3)
+        self.assertEqual(dps.find("find-me")[1].f().h/360, 0.9)
+        self.assertAlmostEqual(dps.find("find-me")[0].f().h/360, 0.3)
 
     def test_cond(self):
         dps = (P([

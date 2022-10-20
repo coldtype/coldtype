@@ -22,6 +22,10 @@ class RunonException(Exception):
     pass
 
 
+class RunonSearchException(Exception):
+    pass
+
+
 class RunonNoData:
     pass
 
@@ -244,6 +248,13 @@ class Runon:
         else:
             tag = index
             return self.find_(tag)
+    
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except RunonSearchException:
+            return default
+
     
     def subset(self, *idxs):
         """return subset of self wrapped in same type as self (rather than raw list)"""
@@ -590,22 +601,27 @@ class Runon:
         index=None
         ):
         matches = []
-        def finder(p, pos, _):
+        def finder(p, pos, data):
             #if limit and len(matches) > limit:
             #    return
 
             found = False
-            if pos >= 0:
+            if pos <= 0 and data["depth"] > 0:
                 if isinstance(finder_fn, str):
                     found = p.tag() == finder_fn
                 elif callable(finder_fn):
                     found = finder_fn(p)
                 else:
                     found = all(p.data(k) == v for k, v in finder_fn.items())
+            
             if found:
-                matches.append(p)
+                matches.append([p, data["depth"]])
 
         self.walk(finder)
+
+        #matches = list(reversed(sorted(matches, key=lambda m: m.depth())))
+
+        matches = list([m[0] for m in sorted(matches, key=lambda m: m[1])])
 
         narrowed = []
         if index is not None:
@@ -630,12 +646,18 @@ class Runon:
             return [m for (_, m) in narrowed]
     
     def find_(self, finder_fn, fn=None, index=0):
+        if isinstance(finder_fn, str) and "/" in finder_fn:
+            o = self
+            for k in finder_fn.split("/"):
+                o = o.find_(k)
+            return o
+
         res = self.find(finder_fn, fn, index=index)
         if not fn:
             try:
                 return res[0]
             except IndexError:
-                raise Exception(f"Could not find `{finder_fn}`")
+                raise RunonSearchException(f"Could not find `{finder_fn}`")
         else:
             return self
         

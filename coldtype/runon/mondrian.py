@@ -8,7 +8,7 @@ from coldtype.random import random_series
 _view_rs1 = random_series()
 
 
-class Arrangement(Runon):
+class Mondrian(Runon):
     def sum(self):
         if self.val_present():
             return self._val
@@ -29,7 +29,7 @@ class Arrangement(Runon):
 
     def _extend_with_tags(self, rects, tags):
         for idx, r in enumerate(rects):
-            el = Arrangement(r)
+            el = Mondrian(r)
             try:
                 el.tag(tags[idx])
             except IndexError:
@@ -66,13 +66,36 @@ class Arrangement(Runon):
                 el.grid(columns, rows, tags)
         return self
     
-    def cssgrid(self, cols, rows, ascii):
+    def cssgrid(self, cols, rows, ascii, **kwargs):
         if self.val_present():
+            if not hasattr(self, "_borders"):
+                self._borders = []
+
             g = Grid(self.r, cols, rows, ascii)
             for k, v in g.keyed.items():
-                self.append(Arrangement(v).tag(k))
+                self.append(Mondrian(v).tag(k))
+            
             self._val = None
+            self._borders.extend(g.borders)
+        
+        for k, v in kwargs.items(): self[k].cssgrid(*v)
         return self
+    
+    def borders(self, regular=None, bold=None):
+        if hasattr(self, "_borders"):
+            from coldtype.runon.path import P
+            out = P()
+            for b in sorted(self._borders, key=lambda b: b[2]):
+                if regular == -1 and not b[2]:
+                    continue
+                elif bold == -1 and b[2]:
+                    continue
+                
+                out.append(P()
+                    .line(b[0].edge(b[1]))
+                    .fssw(-1, 0, 4 if b[2] else 2)
+                    .ch(bold if b[2] else regular))
+            return out
     
     def sort(self, attr="x", reverse=False):
         if self.depth() == 1:
@@ -144,5 +167,3 @@ class Arrangement(Runon):
     def ee(self): return self.r.ee
     @property
     def ew(self): return self.r.ew
-
-Ar = Arrangement
