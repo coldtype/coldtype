@@ -4,6 +4,8 @@ from coldtype.grid import Grid
 from coldtype.color import hsl, bw
 from coldtype.random import random_series
 
+#self\.assertEqual\(([^,]+),([^)]+)\)
+#assert $1 ==$2
 
 _view_rs1 = random_series()
 

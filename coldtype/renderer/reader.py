@@ -1,4 +1,4 @@
-import re, os, unittest
+import re, os
 from pathlib import Path
 from runpy import run_path
 from functools import partial
@@ -187,20 +187,6 @@ def find_renderables(
     filtered_rs = []
     
     for k, v in program.items():
-        if "Test" in k:
-            iv = v()
-            if isinstance(iv, unittest.TestCase):
-                test_file = filepath.relative_to(Path.cwd())
-                # tests = unittest.defaultTestLoader.discover(
-                #     str(test_file.parent),
-                #     pattern=test_file.stem)
-                # print(">", tests)
-                if args and args.k:
-                    run(["python", test_file, "-k", args.k])
-                else:
-                    run(["python", test_file])
-                #print("TEST FILE", test_file, args.k if args else None)
-
         if (isinstance(v, renderable) or isinstance(v, runnable)) and not v.hidden:
             if v.cond is not None:
                 if callable(v.cond) and not v.cond():
