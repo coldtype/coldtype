@@ -28,6 +28,7 @@ class KeyboardShortcut(Enum):
     RestartApp = "restart_app"
     Quit = "quit"
     Kill = "kill"
+    Sleep = "sleep"
 
     Build = "build"
     Release = "release"
@@ -127,6 +128,8 @@ class KeyboardShortcut(Enum):
 
     LoadNextInDirectory = "load_next_in_directory"
     LoadPrevInDirectory = "load_prev_in_directory"
+
+    TestDirectory = "test_directory"
 
 
 KeyboardShortcutExplainers = {
@@ -230,6 +233,8 @@ KeyboardShortcutExplainers = {
         "If you have a directory of coldtype .py files, this will load the next one in the directory (alphabetically), so you can skip stopping and restarting the command-line process with different arguments",
     KeyboardShortcut.LoadPrevInDirectory:
         "If you have a directory of coldtype .py files, this will load the previous one in the directory (alphabetically), so you can skip stopping and restarting the command-line process with different arguments",
+    KeyboardShortcut.TestDirectory:
+        "Test everything in the directory",
 }
 
 
@@ -626,6 +631,10 @@ SHORTCUTS = {
         [["cmd", "alt"], "<left>"],
         [[], "<page-up>"],
         [[], "y"],
+    ],
+
+    KeyboardShortcut.TestDirectory: [
+        [["shift"], "t"]
     ],
 
     KeyboardShortcut.MIDIControllersPersist: [

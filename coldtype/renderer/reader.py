@@ -464,6 +464,10 @@ class SourceReader():
         
         return filepath
     
+    def adjacents(self):
+        if self.dirpath:
+            return self.find_sources(self.dirpath)
+    
     def reset_filepath(self, filepath:Path, code:str=None, reload:bool=True, dirdirection=0):
         self.unlink()
         self.should_unlink = False
