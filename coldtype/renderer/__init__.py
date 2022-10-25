@@ -77,7 +77,9 @@ class Renderer():
             
             all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
 
-            render_all_directory=parser.add_argument("-rad", "--render-all-directory", action="store_true", default=False, help="kick off KeyboardShortcut.RenderDirectory straightaway"),
+            render_directory=parser.add_argument("-rd", "--render-directory", action="store_true", default=False, help="kick off KeyboardShortcut.RenderDirectory straightaway"),
+
+            test_directory=parser.add_argument("-td", "--test-directory", action="store_true", default=False),
 
             build=parser.add_argument("-b", "--build", action="store_true", default=False, help="Should the build function be run and the renderer quit immediately?"),
 
@@ -876,8 +878,10 @@ class Renderer():
                     return
             self.on_start()
             if not self.winmans.bg:
-                if self.args.render_all_directory:
+                if self.args.render_directory:
                     self.actions_queued.append(KeyboardShortcut.RenderDirectory)
+                if self.args.test_directory:
+                    self.actions_queued.append(KeyboardShortcut.TestDirectory)
                 self.winmans.run_loop()
             else:
                 self.on_exit()
@@ -1211,6 +1215,23 @@ class Renderer():
                 self.actions_queued.append(KeyboardShortcut.LoadNextInDirectory)
                 self.actions_queued.append(Action.PreviewStoryboardReload)
             self.actions_queued.append(KeyboardShortcut.Release)
+            return Action.PreviewStoryboardReload
+        elif shortcut == KeyboardShortcut.Sleep:
+            # just delays dequeuing next action by a frame
+            return Action.PreviewStoryboard
+        elif shortcut == KeyboardShortcut.TestDirectory:
+            adjs = self.buildrelease_fn("adjacent")
+            if not adjs:
+                adjs = self.source_reader.adjacents()
+            
+            for _ in range(0, len(adjs)):
+                self.actions_queued.append(KeyboardShortcut.LoadNextInDirectory)
+                self.actions_queued.append(Action.PreviewStoryboardReload)
+                for _ in range(0, self.source_reader.config.test_directory_delay):
+                    self.actions_queued.append(KeyboardShortcut.Sleep)
+
+            self.actions_queued.append(KeyboardShortcut.Kill)
+
             return Action.PreviewStoryboardReload
         elif shortcut in [
             KeyboardShortcut.LoadNextInDirectory,

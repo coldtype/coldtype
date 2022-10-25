@@ -46,7 +46,7 @@ class ConfigOption(Enum):
     ThreadCount = ("thread_count", 8, "tc")
     Multiplex = ("multiplex", None, "mp", true_false_or_none)
     DebounceTime = ("debounce_time", 0.25, "dt")
-    RefreshDelay = ("refresh_delay", 0.025, "rd")
+    RefreshDelay = ("refresh_delay", 0.025, "rdly")
     InlineFiles = ("inline_files", [], "in", lambda x: x.split(","))
     FFMPEGCommand = ("ffmpeg_command", "ffmpeg", "ffc")
     BlenderWatch = ("blender_watch", None, "bw", true_false_or_none)
@@ -66,6 +66,7 @@ class ConfigOption(Enum):
     GridSettings = ("grid_settings", [], "gs", lambda x: x.split(","))
     PrintResult = ("print_result", None, "pr", true_false_or_none)
     LoadOnly = ("load_only", None, "lo", true_false_or_none)
+    TestDirectoryDelay = ("test_directory_delay", 10, "tdd", lambda x: int(x))
 
     @staticmethod
     def Help(e):

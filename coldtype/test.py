@@ -1,3 +1,4 @@
+import pytest
 from coldtype import *
 from functools import partial
 from random import Random
@@ -23,5 +24,8 @@ def show_error(r, txt):
 
 
 class test(renderable):
-    def __init__(self, rect=(1000, 500), bg=1, postfn=add_grid, **kwargs):
+    def __init__(self, rect=(800, 200), bg=1, postfn=add_grid, **kwargs):
+        if isinstance(rect, int):
+            rect = (800, rect)
+        
         super().__init__(rect=rect, bg=bg, postfn=postfn, **kwargs)

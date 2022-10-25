@@ -118,6 +118,10 @@ class Runon:
         self._els.append(el)
         return self
     
+    def attach(self, parent):
+        parent.append(self)
+        return self
+    
     def extend(self, els):
         if callable(els):
             els = els(self)
