@@ -178,3 +178,9 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ## [0.9.10] - 2022-09-25
 ### Fixed
 - `glyph_to_uni` in packaged mode
+
+## [0.9.11]
+### Added
+- `Runon.attach`
+### Fixed
+- Explicit include of ufoLib2 for blender
