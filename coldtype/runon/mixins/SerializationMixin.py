@@ -21,16 +21,6 @@ class SerializationMixin():
         fh.close()
         return self
     
-    def picklejar(self, rect=Rect(1000, 1000), name=None):
-        if not name:
-            from uuid import uuid4
-            name = str(uuid4())
-        
-        p = Path(f"~/.coldtype/picklejar/{name}.pickle").expanduser()
-        p.parent.mkdir(exist_ok=True)
-        (self.data(rect=rect).pickle(Path(p)))
-        return self
-    
     def Unpickle(self, src):
         if isinstance(src, str):
             src = Path(src)

@@ -228,10 +228,6 @@ class Renderer():
         self.state.cv2caps = {}
 
         root = Path(__file__).parent.parent
-        pj = False
-        if filepath:
-            if "picklejar.py" in str(filepath):
-                pj = True
         
         filepath = self.source_reader.normalize_filepath(filepath)
 
@@ -255,13 +251,6 @@ class Renderer():
 
         ph = path_hash(self.source_reader.filepath)
         self.add_watchee([Watchable.Generic, Path(f"~/.coldtype/{ph}_input.json").expanduser(), None])
-
-        if pj:
-            pjp = Path("~/.coldtype/picklejar").expanduser()
-            if pjp.exists():
-                rmtree(pjp)
-            pjp.mkdir()
-            self.add_watchee([Watchable.Generic, pjp, None])
         
         if reload:
             self.reload_and_render(Action.Initial)
@@ -1408,11 +1397,6 @@ class Renderer():
     def on_modified(self, path, flag):
         #path = Path(event.src_path)
         #print("\n\n\n---\nMOD", path, ptime.time())
-
-        if path.parent.stem == "picklejar" and "picklejar" in str(self.source_reader.filepath):
-            if path.exists():
-                self.debounced_actions["picklejar"] = ptime.time()
-            return
 
         actual_path = path
         if path.parent in self.watchee_paths():

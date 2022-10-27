@@ -16,11 +16,11 @@ def _test_glyph_kerning(font_path, kern, pj=False):
 
     if pj:
         r = Rect(1500, 500)
-        P([
+        P(
             ss,
             gw.f(None).s(0).sw(5),
             gwo.copy().f(None).s(hsl(0.9)).sw(5),
-        ]).translate(20, 20).scale(5, point=Point(0, 0)).picklejar(r, name=f"gw_kern_{kern}")
+        ).translate(20, 20).scale(5, point=Point(0, 0))
 
     assert ss.ambit() == gw.ambit()
     assert ss.ambit() != gwo.ambit()
