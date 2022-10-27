@@ -9,6 +9,8 @@ from coldtype.color import Color, normalize_color
 from coldtype.geometry import Rect, Point, txt_to_edge
 from coldtype.runon.runon import Runon
 
+from coldtype.runon.mondrian import Mondrian
+
 # IMPORTS
 
 class P(Runon):
@@ -44,8 +46,10 @@ class P(Runon):
                 out.data(glyphName=pens.glyphName)
         return out
     
-    def __init__(self, *vals, **kwargs):        
-        super().__init__(*vals)
+    def __init__(self, *vals, **kwargs):
+        prenorm = [v.rect if isinstance(v, Mondrian) else v for v in vals]
+
+        super().__init__(*prenorm)
 
         if isinstance(self._val, RecordingPen):
             pass

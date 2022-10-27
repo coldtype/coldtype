@@ -22,6 +22,8 @@ from coldtype.color import Color, normalize_color
 from coldtype.geometry import Rect, Point, txt_to_edge
 from coldtype.runon.runon import Runon
 
+from coldtype.runon.mondrian import Mondrian
+
 import math
 from pathlib import Path
 from fontTools.pens.recordingPen import RecordingPen
@@ -99,8 +101,10 @@ class P(Runon):
                 out.data(glyphName=pens.glyphName)
         return out
     
-    def __init__(self, *vals, **kwargs):        
-        super().__init__(*vals)
+    def __init__(self, *vals, **kwargs):
+        prenorm = [v.rect if isinstance(v, Mondrian) else v for v in vals]
+
+        super().__init__(*prenorm)
 
         if isinstance(self._val, RecordingPen):
             pass
@@ -501,6 +505,7 @@ class P(Runon):
     def rect(self, rect) -> "P":
 
         """Rectangle primitive — `moveTo/lineTo/lineTo/lineTo/closePath`"""
+        rect = Rect(rect)
         self.moveTo(rect.point("SW").xy())
         self.lineTo(rect.point("SE").xy())
         self.lineTo(rect.point("NE").xy())

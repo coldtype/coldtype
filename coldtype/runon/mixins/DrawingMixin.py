@@ -113,6 +113,7 @@ class DrawingMixin():
 
     def rect(self, rect):
         """Rectangle primitive — `moveTo/lineTo/lineTo/lineTo/closePath`"""
+        rect = Rect(rect)
         self.moveTo(rect.point("SW").xy())
         self.lineTo(rect.point("SE").xy())
         self.lineTo(rect.point("NE").xy())
