@@ -167,6 +167,12 @@ class P(Runon):
         st = {**super().style(style)}
         return self.groupedStyle(st)
     
+    def unframe(self):
+        def _unframe(el, _, __):
+            el.data(frame=None)
+
+        return self.walk(_unframe)
+    
     def pen(self):
         """collapse and combine into a single vector"""
         if len(self) == 0:
