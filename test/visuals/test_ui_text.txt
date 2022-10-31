@@ -1,5 +1,0 @@
-this is some text that is being written from the coldtype app, not from the text file itself
-
-does this work properly?
-
-it seems to.

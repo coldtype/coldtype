@@ -144,3 +144,14 @@ def test_stack_and_lead(_r):
     assert res.find_("A").ambit().y == 240
 
     return res.align(_r).scale(0.5)
+
+@test((800, 150))
+def test_projection(r):
+    return (P().rect((300, 300))
+        .difference(P().rect((-150, -150, 300, 300)))
+        .layer(
+            λ.castshadow(-35, 200).f(hsl(0.1, 1)),
+            λ.project(-35, 200).f(hsl(0.9, 0.8)),
+            λ.f(hsl(0.3, 0.6)))
+        .align(r)
+        .scale(0.25))

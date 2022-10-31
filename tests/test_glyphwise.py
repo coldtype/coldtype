@@ -1,7 +1,7 @@
 from coldtype.test import *
 
 
-def _test_glyph_kerning(font_path, kern, pj=False):
+def _test_glyph_kerning(font_path, kern):
     txt = "AVAMANAV"
     ss = StSt(txt, font_path, 100, wdth=0, kern=kern)
     gw = Glyphwise(txt, lambda g: Style(font_path, 100, wdth=0, kern=kern, ro=1))
@@ -13,14 +13,6 @@ def _test_glyph_kerning(font_path, kern, pj=False):
     assert len(gw) == len(txt)
     assert ss[0].glyphName == "A"
     assert ss[-1].glyphName == "V"
-
-    if pj:
-        r = Rect(1500, 500)
-        P(
-            ss,
-            gw.f(None).s(0).sw(5),
-            gwo.copy().f(None).s(hsl(0.9)).sw(5),
-        ).translate(20, 20).scale(5, point=Point(0, 0))
 
     assert ss.ambit() == gw.ambit()
     assert ss.ambit() != gwo.ambit()

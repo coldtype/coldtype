@@ -175,11 +175,8 @@ def potrace(rect, invert=True,
             pen = pen.copy().layer(1, lambda _: P(rect).f(1).blendmode(BlendMode.Difference))
 
         res = SkiaPen.Precompose(pen, rect, SKIA_CONTEXT)
-        
         pilimg = Image.fromarray(res.convert(alphaType=skia.kUnpremul_AlphaType))
-
         bmp = potracer.Bitmap(pilimg)
-
         path = bmp.trace(turdsize, turnpolicy, alphamax, opticurve, opttolerance)
 
         op = P()
