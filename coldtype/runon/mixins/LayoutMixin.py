@@ -373,13 +373,15 @@ class LayoutMixin():
                 off += frame.w
         return self
     
-    def track(self, t, v=False):
-        """Track-out/distribute elements"""
+    def spread(self, tracking, th=0, zero=False):
+        "Horizontal distribution of elements"
+        if zero:
+            for p in self:
+                p.zero()
+        ambits = [p.ambit(th=th, tv=0).expand(tracking, "E") for p in self._els]
         for idx, p in enumerate(self._els):
-            if v:
-                p.translate(0, -t*idx)
-            else:
-                p.translate(t*idx, 0)
+            for a in ambits[idx+1:]:
+                p.translate(a.w, 0)
         return self
     
     def stack(self, leading=0, tv=0, zero=False):
@@ -391,6 +393,15 @@ class LayoutMixin():
         for idx, p in enumerate(self._els):
             for a in ambits[idx+1:]:
                 p.translate(0, a.h)
+        return self
+    
+    def track(self, t, v=False):
+        """Track-out/distribute elements"""
+        for idx, p in enumerate(self._els):
+            if v:
+                p.translate(0, -t*idx)
+            else:
+                p.translate(t*idx, 0)
         return self
     
     def lead(self, leading):
