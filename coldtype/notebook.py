@@ -55,9 +55,10 @@ def show(fmt="png", rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=
 
         if align and rect is not None:
             pen.align(rect)
+        
         if rect is None:
             lar = pen.data("_last_align_rect")
-            if lar:
+            if lar and False:
                 rect = lar
                 pen = P([P(rect).fssw(-1, 0.75, 2), pen])
             else:
