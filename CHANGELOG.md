@@ -179,8 +179,14 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ### Fixed
 - `glyph_to_uni` in packaged mode
 
-## [0.9.11]
+## [0.9.11] - 2022-10-27
 ### Added
 - `Runon.attach`
 ### Fixed
 - Explicit include of ufoLib2 for blender
+
+## [0.9.12] - 2022-01-02
+### Added
+- `P.spread` as horizontal-only counterpart to `P.stack` (paired with `P.track` and `P.lead` respectively, funny that they rhyme oppositely whoops)
+### Fixed
+- Default `"."` in ALL_FONT_DIRS for linux (so colab notebooks search in their uploaded files by default)
