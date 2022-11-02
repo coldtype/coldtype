@@ -772,6 +772,9 @@ class P(Runon):
     def mirror(self, y=0, point=None):
 
         s = (1, -1) if y else (-1, 1)
+        if point == 0:
+            point = (0, 0)
+        
         return (self.layer(1,
             lambda p: p.scale(*s, point=point or self.ambit().psw)))
     
@@ -1294,16 +1297,20 @@ class P(Runon):
         return self
     
 
-    def spread(self, tracking, th=0, zero=False) -> "P":
+    def spread(self, tracking=0, th=0, zero=False) -> "P":
 
         "Horizontal distribution of elements"
         if zero:
             for p in self:
                 p.zero()
         ambits = [p.ambit(th=th, tv=0).expand(tracking, "E") for p in self._els]
+        
+        ax = 0
         for idx, p in enumerate(self._els):
-            for a in ambits[idx+1:]:
-                p.translate(a.w, 0)
+            aw = ambits[idx].w
+            p.translate(ax, 0)
+            ax += aw
+
         return self
     
 

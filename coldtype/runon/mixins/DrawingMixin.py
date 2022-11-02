@@ -362,6 +362,9 @@ class DrawingMixin():
     
     def mirror(self, y=0, point=None):
         s = (1, -1) if y else (-1, 1)
+        if point == 0:
+            point = (0, 0)
+        
         return (self.layer(1,
             lambda p: p.scale(*s, point=point or self.ambit().psw)))
     

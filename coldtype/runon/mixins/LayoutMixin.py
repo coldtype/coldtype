@@ -373,15 +373,19 @@ class LayoutMixin():
                 off += frame.w
         return self
     
-    def spread(self, tracking, th=0, zero=False):
+    def spread(self, tracking=0, th=0, zero=False):
         "Horizontal distribution of elements"
         if zero:
             for p in self:
                 p.zero()
         ambits = [p.ambit(th=th, tv=0).expand(tracking, "E") for p in self._els]
+        
+        ax = 0
         for idx, p in enumerate(self._els):
-            for a in ambits[idx+1:]:
-                p.translate(a.w, 0)
+            aw = ambits[idx].w
+            p.translate(ax, 0)
+            ax += aw
+
         return self
     
     def stack(self, leading=0, tv=0, zero=False):
