@@ -1053,8 +1053,12 @@ class P(Runon):
         if x == "C":
             x = "CX"
         
+        if rect is None:
+            rect = self.ambit(th=th, tv=tv)
+        
         if callable(rect):
             rect = rect(self)
+        
         self.align(rect, x=x, y=None, th=th, tv=tv)
         for el in self._els:
             el.align(rect, x=x, y=None, th=th, tv=tv)
@@ -1065,8 +1069,12 @@ class P(Runon):
 
     def yalign(self, rect=None, y="centery", th=0, tv=1) -> "P":
 
+        if rect is None:
+            rect = self.ambit(th=th, tv=tv)
+        
         if callable(rect):
             rect = rect(self)
+        
         self.align(rect, x=None, y=y, th=th, tv=tv)
         return self
     
