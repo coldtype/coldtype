@@ -82,6 +82,7 @@ elif on_windows():
         ALL_FONT_DIRS.append(str(Path(localappdata) / "Microsoft/Windows/Fonts/"))
 
 elif on_linux():
+    ALL_FONT_DIRS = ["."]
     # TODO what are the default linux font installation dirs?
     pass
 
