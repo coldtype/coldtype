@@ -393,4 +393,9 @@ renderable = notebook_renderable
 animation = notebook_animation
 aframe = notebook_aframe
 
+# to set up font paths correctly (seems fine?)
+from coldtype.renderer.reader import SourceReader
+sr = SourceReader()
+sr.read_configs(None, None)
+
 clear_output()

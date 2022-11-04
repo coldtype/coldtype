@@ -388,7 +388,13 @@ class Rect(Geometrical):
         Like `divide`, but here it just returns the "first" rect from a divide call, not all the resulting pieces, i.e. you can "take" 200px from the center of a rectangle by doing this ``Rect(0, 0, 300, 100).take(200, "mdx")`` which will result in ``Rect([50, 0, 200, 100])``
         """
         edge = txt_to_edge(edge)
-        return Rect(take(self.rect(), amount, edge, forcePixel=forcePixel))
+        if not isinstance(edge, Edge):
+            res = self
+            for e in edge:
+                res = res.take(amount, e, forcePixel=forcePixel)
+            return res
+        else:
+            return Rect(take(self.rect(), amount, edge, forcePixel=forcePixel))
 
     def takeOpposite(self, amount, edge, forcePixel=False):
         edge = txt_to_edge(edge)

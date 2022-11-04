@@ -37,19 +37,32 @@ class Edge(Enum):
 def txt_to_edge(txt):
     if isinstance(txt, str):
         txt = txt.lower()
-        if txt in ["maxy", "mxy", "n", "⊤"]:
+        if txt in ["maxy", "mxy", "n", "⊤", "↑"]:
             return Edge.MaxY
-        elif txt in ["maxx", "mxx", "e", "⊣"]:
+        elif txt in ["maxx", "mxx", "e", "⊣", "→"]:
             return Edge.MaxX
-        elif txt in ["miny", "mny", "s", "⊥"]:
+        elif txt in ["miny", "mny", "s", "⊥", "↓"]:
             return Edge.MinY
-        elif txt in ["minx", "mnx", "w", "⊢"]:
+        elif txt in ["minx", "mnx", "w", "⊢", "←"]:
             return Edge.MinX
         elif txt in ["centery", "cy", "midy", "mdy", "Ｈ"]:
             return Edge.CenterY
         elif txt in ["centerx", "cx", "midx", "mdx", "⌶"]:
             return Edge.CenterX
         else:
-            return None
+            return Edge.PairFromCompass(txt)
     else:
         return txt
+
+
+def edge_opposite(e):
+    if not isinstance(e, Edge):
+        return [edge_opposite(_e) for _e in e]
+    if e == Edge.MaxY:
+        return Edge.MinY
+    elif e == Edge.MinY:
+        return Edge.MaxY
+    elif e == Edge.MaxX:
+        return Edge.MinX
+    elif e == Edge.MinX:
+        return Edge.MaxX
