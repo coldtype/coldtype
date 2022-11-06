@@ -266,6 +266,14 @@ class Easeable():
         else:
             return ev
     
+    def ec(self, easefn="eeio", rng=(0, 1)):
+        if self._ts:
+            _ec = 0
+            for t in self.t:
+                _ec += Easeable(t, self.i).e(easefn, 0, rng=rng)
+            return _ec
+        return self.e(easefn, 0, rng=rng)
+    
     def interpDict(self, dicts, easefn, loops=0):
         v = self.tv(loops=loops).t
         vr = v*(len(dicts)-1)
