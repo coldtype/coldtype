@@ -79,7 +79,8 @@ def frame_render(file, frame, samples=-1, denoise=False):
 
     sr = SourceReader(file)
     for r, res in sr.frame_results(frame, class_filters=[r"^b3d_.*$"]):
-        walk_to_b3d(res, dn=True, renderable=r)
+        if hasattr(r, "center"):
+            walk_to_b3d(res, dn=True, renderable=r)
     sr.unlink()
 
     #time.sleep(1)
