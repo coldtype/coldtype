@@ -185,8 +185,13 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ### Fixed
 - Explicit include of ufoLib2 for blender
 
-## [0.9.12] - 2022-01-02
+## [0.9.12] - 2022-11-02
 ### Added
 - `P.spread` as horizontal-only counterpart to `P.stack` (paired with `P.track` and `P.lead` respectively, funny that they rhyme oppositely whoops)
 ### Fixed
 - Default `"."` in ALL_FONT_DIRS for linux (so colab notebooks search in their uploaded files by default)
+
+## [0.9.13] - 2022-11-08
+### Added
+- `Easeable.ec` as easing-cumulative (to help with partial rotations,
+as in the new truchet animation examples, and examples/animations/ec.py)
