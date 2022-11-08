@@ -28,6 +28,11 @@ at3 = AsciiTimeline(1, 24, """
                         is      t  +x  +t       •
 """)
 
+at4 = AsciiTimeline(1, 30, """
+                                    <
+[0   ]     [0  ]     [0 ] [0   ]
+""")
+
 class TestTime(unittest.TestCase):
     def test_ascii_timeline_1(self):
         self.assertEqual(at.duration, 36)
@@ -114,6 +119,13 @@ class TestTime(unittest.TestCase):
         self.assertEqual(cgp[0][1][0].data("position"), 0)
         self.assertEqual(cgp[0][2][0].data("position"), -1)
         self.assertEqual(cgp[0][1][0][-2].glyphName, "S.closed")
+    
+    def test_ascii_timeline_ec(self):
+        self.assertEqual(at4.duration, 36)
+
+        self.assertEqual(at4.ki(0, 0).ec("l", rng=(0, 90)), 0)
+        self.assertEqual(at4.ki(0, 10).ec("l", rng=(0, 90)), 90)
+        self.assertEqual(at4.ki(0, 35).ec("l", rng=(0, 90)), 360)
     
     def test_animation(self):
         src = "examples/animations/alphabet.py"
