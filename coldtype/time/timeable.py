@@ -267,6 +267,15 @@ class Easeable():
             return ev
     
     def ec(self, easefn="eeio", rng=(0, 1)):
+        """
+        (e)asing-(c)umulative — for performing partial
+        animations that accumulate over time, i.e. keys
+        on a timeline `[0 ]   [0   ]` will be added together,
+        so the "final" value of those 0's (`.ki(0).ec("l")`)
+        will be 2, not 1; use `rng` to define accumulation;
+        max of range refers to max of each phase, not max
+        of entire accumulation
+        """
         if self._ts:
             _ec = 0
             for t in self.t:
