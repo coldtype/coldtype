@@ -100,11 +100,11 @@ class Rect(Geometrical):
     
     Constructor handles multiple formats, including:
     
-    * ``x, y, w, h``
-    * ``[x, y, w, h]``
-    * ``w, h`` (x and y default to 0, 0)
+    * `x, y, w, h`
+    * `[x, y, w, h]`
+    * `w, h` (x and y default to 0, 0)
 
-    ``Rect`` objects can be splat'd where lists are expected as individual arguments (as in drawBot), i.e. ``rect(*my_rect)``, or can be passed directly to functions expected a list representation of a rectangle.
+    `Rect` objects can be splat'd where lists are expected as individual arguments (as in drawBot), i.e. `rect(*my_rect)`, or can be passed directly to functions expected a list representation of a rectangle.
     """
 
     def FromCenter(center, w, h=None):
@@ -146,7 +146,7 @@ class Rect(Geometrical):
         self.h = h
     
     def origin(self):
-        """``(x, y)`` as tuple"""
+        """`(x, y)` as tuple"""
         return self.x, self.y
 
     def from_obj(obj, w=None, h=None):
@@ -177,7 +177,7 @@ class Rect(Geometrical):
         return self
 
     def FromMnMnMxMx(extents):
-        """Create a rectangle from ``xmin, ymin, xmax, ymax``"""
+        """Create a rectangle from `xmin, ymin, xmax, ymax`"""
         xmin, ymin, xmax, ymax = extents
         return Rect(xmin, ymin, xmax - xmin, ymax - ymin)
 
@@ -281,25 +281,25 @@ class Rect(Geometrical):
 
         Derived from the behavior of the classic Cocoa function CGRectDivide, which takes a rectangle and breaks it into two pieces, based on a pixel amount and an edge.
 
-        A quick example: assume you have a rectangle, ``r``, defined as such:
+        A quick example: assume you have a rectangle, `r`, defined as such:
 
-        ``r = Rect(0, 0, 300, 100)``
+        `r = Rect(0, 0, 300, 100)`
         
         If you want to break that into a left-hand rectangle that’s 100 pixels wide and a right-hand rectangle that’s 200 pixels wide, you could either say:
         
-        ``left, right = r.divide(100, "mnx")``
+        `left, right = r.divide(100, "mnx")`
         
         `or you could say`
         
-        ``right, left = r.divide(200, "mxx")``
+        `right, left = r.divide(200, "mxx")`
 
-        where ``mxx`` is the rightmost edge, and ``mnx`` is the leftmost edge.
+        where `mxx` is the rightmost edge, and `mnx` is the leftmost edge.
 
         **Centering**
 
         A special use-case is if you want to break a rectangle into `three` rectangles, based on the center "edge", you can do something like this:
 
-        ``left, center, right = r.divide(200, "mdx")``
+        `left, center, right = r.divide(200, "mdx")`
 
         This will result in three rectangles, always left-to-right, where
         left is 50px wide, then center is 200px wide, then right is also 50px wide — anything not in the center will be evenly distributed between left and right, or top-and-bottom in the case of a Y edge.
@@ -314,7 +314,7 @@ class Rect(Geometrical):
 
     def subdivide(self, amount, edge):
         """
-        Like ``divide``, but here you specify the number of equal pieces you want (like columns or rows), and then what edge to start at, i.e.
+        Like `divide`, but here you specify the number of equal pieces you want (like columns or rows), and then what edge to start at, i.e.
         
         .. code:: python
             
@@ -385,7 +385,7 @@ class Rect(Geometrical):
 
     def take(self, amount, edge, forcePixel=False):
         """
-        Like `divide`, but here it just returns the "first" rect from a divide call, not all the resulting pieces, i.e. you can "take" 200px from the center of a rectangle by doing this ``Rect(0, 0, 300, 100).take(200, "mdx")`` which will result in ``Rect([50, 0, 200, 100])``
+        Like `divide`, but here it just returns the "first" rect from a divide call, not all the resulting pieces, i.e. you can "take" 200px from the center of a rectangle by doing this `Rect(0, 0, 300, 100).take(200, "mdx")` which will result in `Rect([50, 0, 200, 100])`
         """
         edge = txt_to_edge(edge)
         if not isinstance(edge, Edge):
@@ -402,11 +402,11 @@ class Rect(Geometrical):
 
     def subtract(self, amount, edge):
         """
-        The opposite of ``take``, this will remove and not return a piece of the given amount from the given edge.
+        The opposite of `take`, this will remove and not return a piece of the given amount from the given edge.
         
         Let's say you have a 100px-wide square and you want to drop 10px from the right-hand side, you would do:
 
-        ``Rect(100, 100).subtract(10, Edge.MaxX)``, which leaves you with ``Rect([0, 0, 90, 100])``
+        `Rect(100, 100).subtract(10, Edge.MaxX)`, which leaves you with `Rect([0, 0, 90, 100])`
         """
         edge = txt_to_edge(edge)
         return Rect(subtract(self.rect(), amount, edge))
@@ -519,7 +519,7 @@ class Rect(Geometrical):
 
     def point(self, eh, ev=Edge.MinX):
         """
-        Get a ``Point`` at a given compass direction, chosen from
+        Get a `Point` at a given compass direction, chosen from
         
         * C
         * W

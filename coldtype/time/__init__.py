@@ -6,7 +6,7 @@ class Frame(Easeable):
     """
     Container for information about a frame
 
-    Frame is the type of the first argument passed to all @animation rendering functions, usually abbreviated as ``f``, i.e.
+    Frame is the type of the first argument passed to all @animation rendering functions, usually abbreviated as `f`, i.e.
 
     .. code:: python
 

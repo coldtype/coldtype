@@ -314,24 +314,24 @@ class Style():
 
     **Keyword arguments**
 
-    * ``font``: can either be a ``coldtype.text.Font`` object, a ``pathlib.Path``, or a plain string path
-    * ``font_size``: standard point-based font-size, expressed as integer
-    * ``tracking`` (aka ``tu``): set the tracking, by default **in font-source-point-size** aka as if the font-size was always 1000; this means tracking is by default done relatively rather than absolutely (aka the relative tracking will not change when you change the font_size)
-    * ``trackingMode``: set to 0 to set tracking in a classic font_size-based (defaults to 1, as described just above)
-    * ``space``: set this to override the width of the standard space character (useful when setting text on a curve and the space is getting collapsed)
-    * ``baselineShift`` (aka ``bs``): if an integer, shifts glyphs by that amount in y axis; if a list, shifts glyphs at corresponding index in list by that amount in y axis
-    * ``xShift`` (aka ``xs``): if an integer, shifts glyphs by that amount in x axis; if a list, shifts glyphs at corresponding index in list by that amount in x axis
-    * ``rotate``: rotate glyphs by degree
-    * ``reverse`` (aka ``r``): reverse the order of the glyphs, so that the left-most glyph is first in when vectorized via ``.pens()``
-    * ``removeOverlaps`` (aka ``ro``): automatically use skia-pathops to remove overlaps from the glyphs (useful when using variable ttf fonts)
-    * ``lang``: set language directly, to access language-specific alternate characters/rules
+    * `font`: can either be a `coldtype.text.Font` object, a `pathlib.Path`, or a plain string path
+    * `font_size`: standard point-based font-size, expressed as integer
+    * `tracking` (aka `tu`): set the tracking, by default **in font-source-point-size** aka as if the font-size was always 1000; this means tracking is by default done relatively rather than absolutely (aka the relative tracking will not change when you change the font_size)
+    * `trackingMode`: set to 0 to set tracking in a classic font_size-based (defaults to 1, as described just above)
+    * `space`: set this to override the width of the standard space character (useful when setting text on a curve and the space is getting collapsed)
+    * `baselineShift` (aka `bs`): if an integer, shifts glyphs by that amount in y axis; if a list, shifts glyphs at corresponding index in list by that amount in y axis
+    * `xShift` (aka `xs`): if an integer, shifts glyphs by that amount in x axis; if a list, shifts glyphs at corresponding index in list by that amount in x axis
+    * `rotate`: rotate glyphs by degree
+    * `reverse` (aka `r`): reverse the order of the glyphs, so that the left-most glyph is first in when vectorized via `.pens()`
+    * `removeOverlaps` (aka `ro`): automatically use skia-pathops to remove overlaps from the glyphs (useful when using variable ttf fonts)
+    * `lang`: set language directly, to access language-specific alternate characters/rules
 
     **Shorthand kwargs**
 
-    * ``kp`` for ``kern_pairs`` — a dict of glyphName->[left,right] values in font-space
-    * ``tl`` for ``trackingLimit``
-    * ``bs`` for ``baselineShift``
-    * ``ch`` for ``capHeight`` — a number in font-space; not specified, read from font; specified as 'x', capHeight is set to xHeight as read from font
+    * `kp` for `kern_pairs` — a dict of glyphName->[left,right] values in font-space
+    * `tl` for `trackingLimit`
+    * `bs` for `baselineShift`
+    * `ch` for `capHeight` — a number in font-space; not specified, read from font; specified as 'x', capHeight is set to xHeight as read from font
     """
     def RegisterShorthandPrefix(prefix, expansion):
         global _prefixes
@@ -1062,7 +1062,7 @@ class StyledString(FittableMixin):
 
     def pens(self) -> P:
         """
-        Vectorize text into a ``P``, such that each glyph (or ligature) is represented by a single `P` (or a ``P`` in the case of a color font, which will then nest a `P` for each layer of that color glyph)
+        Vectorize text into a `P`, such that each glyph (or ligature) is represented by a single `P` (or a `P` in the case of a color font, which will then nest a `P` for each layer of that color glyph)
         """
 
         self.resetGlyphRun()
@@ -1186,7 +1186,7 @@ class StyledString(FittableMixin):
 
     def pen(self, frame=True) -> P:
         """
-        Vectorize all text into single ``P``
+        Vectorize all text into single `P`
         """
         return self.pens().pen()
 

@@ -181,7 +181,7 @@ class Composer():
         """
         Structured representation of the multi-line text
         
-        In the result, each line will be a ``P``, then within those lines, each glyph/ligature for that line will be an individual ``P``
+        In the result, each line will be a `P`, then within those lines, each glyph/ligature for that line will be an individual `P`
         """
         return self.graf.pens()
     

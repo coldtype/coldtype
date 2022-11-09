@@ -164,9 +164,9 @@ KeyboardShortcutExplainers = {
     KeyboardShortcut.Quit:
         "Quit the app and stop the renderer completely (alias of hitting the window X or hitting Ctrl-C in the terminal)",
     KeyboardShortcut.Build:
-        "Trigger the custom ``build`` function (if there’s one defined in your code)",
+        "Trigger the custom `build` function (if there’s one defined in your code)",
     KeyboardShortcut.Release:
-        "Trigger the custom ``release`` function (if there's one defined in your code)",
+        "Trigger the custom `release` function (if there's one defined in your code)",
     KeyboardShortcut.RenderAll:
         "Render all the frames in this animation to disk",
     KeyboardShortcut.RenderAllAndPlay:
@@ -674,11 +674,11 @@ Cheatsheet
         explain = KeyboardShortcutExplainers.get(shortcut)
         if not explain:
             continue
-        out += f"* **{name}** (``\"{KeyboardShortcut(shortcut).value}\"``)\n"
+        out += f"* **{name}** (`\"{KeyboardShortcut(shortcut).value}\"`)\n"
         out += ("\n  " + explain + "\n\n")
         for mods, key in key_combos:
             kc = " ".join([*mods, key])
-            out += ("  * " + f"``{kc}``\n")
+            out += ("  * " + f"`{kc}`\n")
         out += "\n\n"
     
     print(out)
