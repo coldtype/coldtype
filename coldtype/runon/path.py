@@ -286,8 +286,8 @@ class P(Runon):
         return self.find(lambda p: p.glyphName == glyphName, fn)
     
     def _repr_html_(self):
-        if self.data("_notebook_shown"):
-            return None
+        #if self.data("_notebook_shown"):
+        #    return None
         
         from coldtype.notebook import show, DEFAULT_DISPLAY
         self.ch(show(DEFAULT_DISPLAY, th=1, tv=1))

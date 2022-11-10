@@ -389,6 +389,11 @@ class notebook_aframe(_aframe):
             **kwargs)
 
 
+def nshow(self):
+    return self.ch(show(th=1, tv=1))
+
+P.nshow = nshow
+
 renderable = notebook_renderable
 animation = notebook_animation
 aframe = notebook_aframe

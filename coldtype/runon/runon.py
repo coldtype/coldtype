@@ -399,6 +399,18 @@ class Runon:
         
         return self.walk(walker)
     
+    def mapvrc(self, fn):
+        """
+        (map)-(v)alues with (r)ow-and-(c)olumn
+        __only works with spread/stack structure__
+        """
+        def walker(p, pos, data:dict):
+            if pos == 0:
+                r, c = data.get("idx", (-1, -1))
+                return fn(r, c, p)
+
+        return self.walk(walker)
+    
     def filterv(self, fn):
         idx = 0
         def walker(el, pos, data):
