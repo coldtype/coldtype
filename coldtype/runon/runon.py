@@ -399,7 +399,7 @@ class Runon:
         
         return self.walk(walker)
     
-    def mapvrc(self, fn):
+    def mapvrc(self, fn:Callable[[int, int, "Runon"]]):
         """
         (map)-(v)alues with (r)ow-and-(c)olumn
         __only works with spread/stack structure__
@@ -410,6 +410,12 @@ class Runon:
                 return fn(r, c, p)
 
         return self.walk(walker)
+    
+    def mapvch(self, fn:Callable[[bool, "Runon"]]):
+        """
+        (map)-(v)alues (ch)eckerboard style
+        """
+        return self.mapvrc(lambda r, c, p: fn(not((not r%2 and not c%2) or (r%2 and c%2)), p))
     
     def filterv(self, fn):
         idx = 0
