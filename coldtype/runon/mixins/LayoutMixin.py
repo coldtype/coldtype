@@ -430,6 +430,14 @@ class LayoutMixin():
             p.translate(0, leading*(ln-1-idx))
         return self
     
+    def gridlayer(self, nx, ny=None, track=0, lead=0):
+        """Spread nx copies and then stack ny copies, w/ optional tracking & leading"""
+        return (self
+            .layer(nx)
+            .spread(track)
+            .layer(ny if ny is not None else nx)
+            .stack(lead))
+    
     def track_with_width(self, t):
         """Track-out/distribute elements"""
         x = 0
