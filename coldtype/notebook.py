@@ -37,7 +37,7 @@ def update_ffmpeg():
     print('ffmpeg update finished')
 
 
-def show(fmt="png", rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=0.5):
+def show(fmt="png", rect=None, align=False, padding=[0, 0], th=0, tv=0, scale=0.5):
     if not precompose and fmt == "png":
         raise Exception("pip install skia-python")
     
