@@ -195,3 +195,7 @@ Starting at 0.5.0, all notable changes to Coldtype will be described here (brief
 ### Added
 - `Easeable.ec` as easing-cumulative (to help with partial rotations,
 as in the new truchet animation examples, and examples/animations/ec.py)
+
+## [0.9.14] - 2022-11-16
+### Added
+- `P.gridlayer`, `Runon.mapvch`, `Runon.mapvrc`
