@@ -255,12 +255,14 @@ class notebook_animation(_animation):
         render_bg=True,
         storyboard=None,
         interactive=True,
+        render_show=False,
         vars={},
         **kwargs
         ):
         self._display = display
         self.interactive = interactive
         self.preview_scale = preview_scale
+        self.render_show = render_show
         self.vars = vars
 
         if storyboard is None:
@@ -274,7 +276,9 @@ class notebook_animation(_animation):
     
     def __call__(self, func):
         res = super().__call__(func)
-        if self._display:
+        if self.render_show:
+            self.render().show()
+        elif self._display:
             self.display()
         return res
     
