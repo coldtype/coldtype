@@ -184,7 +184,7 @@ class Font():
         return Font.Cacheable(dwnl, suffix=suffix, delete_tmp=delete)
     
     @staticmethod
-    def GoogleFont(font_name) -> "Font":
+    def GoogleFont(font_name, index=0) -> "Font":
         import requests, zipfile, io
 
         font_name_short = font_name.replace(" ", "")
@@ -203,7 +203,7 @@ class Font():
         z = zipfile.ZipFile(io.BytesIO(r.content))
         z.extractall(folder)
         
-        font_path = list(folder.glob("*.ttf"))[0]
+        font_path = list(folder.glob("*.ttf"))[index]
         return Font.Cacheable(font_cache_key, actual_path=font_path)
     
     def _ListDir(dir, regex, regex_dir, log=False, depth=0):
