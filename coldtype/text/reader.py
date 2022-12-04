@@ -188,7 +188,7 @@ class Font():
         import requests, zipfile, io
 
         font_name_short = font_name.replace(" ", "")
-        font_cache_key = f"GoogleFont_{font_name_short}"
+        font_cache_key = f"GoogleFont_{font_name_short}_{index}"
         if font_cache_key in FontCache:
             return FontCache[font_cache_key]
 
