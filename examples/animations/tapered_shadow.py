@@ -19,7 +19,7 @@ def taper(f):
         .layer(
             lambda p: p.layer(
                 lambda p: p.f(1)
-                    .t(o:=15+f.e(1, rng=(0, 10)), -o)
+                    .t(o:=15+f.e(1, rng=(0, 10)), -o) 
                     .cond(SHAKE, warp(-1, rs[f.i//4], mult=5)),
                 lambda p: p
                     .fssw(0, 0, f.e(1, rng=(7, 11))))
