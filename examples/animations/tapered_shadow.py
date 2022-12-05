@@ -2,25 +2,29 @@ from coldtype import *
 from coldtype.fx.skia import phototype
 from coldtype.warping import warp
 
-SHAKE = 1
 fnt = Font.ColdtypeObviously()
 rs = random_series(0, 1000)
 
+# tx, ty, tw, th
+
 @animation(bg=0, timeline=Timeline(92, 24))
 def taper(f):
-    return (StSt("COLD\nTYPE", fnt, 330,
-        rotate=f.e(1, rng=(5, 10)),
-        wdth=f.e(1),
-        leading=f.e(1, rng=(65, 45)),
-        tu=70+f.e(1, rng=(80, 0)))
+    txt = (StSt("COLD\nTYPE", fnt, 330
+        , wdth=f.e(1)
+        , leading=f.e(1, rng=(45, 75))
+        , tu=70+f.e(1, rng=(80, 0)))
+        .mapv(lambda i, p: p.rotate(f.adj(-i).e(1, rng=(5, 15))))
         .align(f.a.r)
         .pen()
-        .cond(SHAKE, warp(-1, rs[f.i//4+10], mult=5))
+        .ch(warp(-1, rs[f.i//4+10], mult=5)))
+
+    return (txt
+        .ch(warp(-1, rs[f.i//4+10], mult=5))
         .layer(
             lambda p: p.layer(
                 lambda p: p.f(1)
                     .t(o:=15+f.e(1, rng=(0, 10)), -o) 
-                    .cond(SHAKE, warp(-1, rs[f.i//4], mult=5)),
+                    .ch(warp(-1, rs[f.i//4], mult=5)),
                 lambda p: p
                     .fssw(0, 0, f.e(1, rng=(7, 11))))
                 .ch(phototype(f.a.r,

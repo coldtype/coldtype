@@ -5,7 +5,7 @@ from coldtype.warping import warp
 fnt = Font.ColdtypeObviously()
 rs = random_series(0, 1000)
 
-@animation(bg=1, timeline=Timeline(92, 23.976), hide=[0])
+@animation(bg=1, timeline=Timeline(92, 23.976))
 def outline(f):
     return (StSt("COLD\nTYPE", fnt, 330,
             ro=1, rotate=10, leading=45,
