@@ -220,7 +220,7 @@ class notebook_renderable(_renderable):
         rect=(540, 540),
         preview=True,
         preview_scale=0.5,
-        render_bg=False,
+        render_bg=True,
         border=(0.75, 2),
         **kwargs
         ):
