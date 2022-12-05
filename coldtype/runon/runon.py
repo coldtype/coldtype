@@ -371,6 +371,14 @@ class Runon:
                 self._els[idx] = res
         return self
     
+    def mape(self, fn):
+        total = len(self._els)
+        for idx, p in enumerate(self._els):
+            res = fn(idx/total, p)
+            if res:
+                self._els[idx] = res
+        return self
+    
     def filter(self, fn):
         to_delete = []
         for idx, p in enumerate(self._els):
@@ -905,12 +913,19 @@ class Runon:
         """noop"""
         return self
 
-    def ups(self):
+    def up(self):
+        """up one level of hierarchy"""
         copy = self.copy()
 
         self.reset_val()
 
         self._els = [copy]
+        return self
+    
+    ups = up
+
+    def down(self):
+        """down one level of hierarchy — unimplemented by Runon"""
         return self
 
     def layer(self, *layers):

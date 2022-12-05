@@ -146,10 +146,13 @@ def applyRange(e, rng):
         rb, ra = ra, rb
     return ra + e*(rb - ra)
 
-def ez(t, easefn="eeio", loops=0, cyclic=True, rng=(0, 1)):
+def ez(t, easefn="eeio", loops=0, cyclic=True, rng=(0, 1), **kwargs):
     t = max(0, min(1, t))
     if loops > 0:
         t, _ = _loop(t, times=loops, cyclic=cyclic)
 
     e, _ = ease(easefn, t)
+    if "r" in kwargs:
+        rng = kwargs["r"]
+    
     return applyRange(e, rng)

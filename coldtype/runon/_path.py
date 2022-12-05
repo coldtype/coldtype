@@ -140,6 +140,9 @@ class P(Runon):
         self._els = []
         return self
     
+    def down(self):
+        return self.pen()
+    
     def pens(self):
         if self.val_present():
             return self.ups()

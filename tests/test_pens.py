@@ -155,3 +155,50 @@ def test_projection(r):
             λ.f(hsl(0.3, 0.6)))
         .align(r)
         .scale(0.25))
+
+@test((800, 150))
+def test_plural_boolean(r):
+    r = r.square()
+    res = (P(
+        P(r),
+        P().oval(r.inset(10)),
+        P().oval(r.inset(20)))
+        .intersection()
+        .f(0))
+
+    assert res.ambit() == r.inset(20)
+    
+    return res
+
+@test((800, 150))
+def test_gridlayer(r):
+    res = (P().rect(Rect(30, 30))
+        .gridlayer(3, 3, 10, 10)
+        .align(r))
+    
+    res2 = (P().rect(Rect(30, 30))
+        .layer(3)
+        .spread(10)
+        .layer(3)
+        .stack(10)
+        .align(r))
+    
+    assert res.ambit() == res2.ambit()
+    
+    assert len(res) == 3
+    assert len(res[0]) == 3
+    assert len(res[0][0]) == 0
+    assert len(res[0][0]._val.value) == 5
+
+    res.mapvch(lambda b, p: p.f(hsl(0.65 if b else 0.85)))
+
+    assert res[0][0].f().h/360 == pytest.approx(0.85)
+    assert res[0][1].f().h/360 == pytest.approx(0.65)
+
+    res.mapvrc(lambda r, c, p: p.rotate(45 if r == 1 and c == 1 else 0))
+
+    assert res[0][0].ambit().w == res[0][1].ambit().w
+    assert res[1][0].ambit().w != res[1][1].ambit().w # the rotated one has a bigger ambit
+    assert res[2][0].ambit().w == res[2][1].ambit().w
+
+    return res
