@@ -19,5 +19,5 @@ def cheee_wild(f):
         Style("CheeeVariable", 270, tu=50),
         at.kf("eeio", f.i-g.i*10)])
         .fssw(1, 0, 8, 1)
-        .align(f.a.r, th=0)
+        .align(f.a.r, tx=0)
         .reverse())

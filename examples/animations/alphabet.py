@@ -11,12 +11,12 @@ def render(f):
             , wdth=1-pe
             , wght=pe)
             .fssw(-1, hsl(pe, s=0.6, l=0.6), 3)
-            .align(f.a.r, tv=1)
+            .align(f.a.r, ty=1)
             .translate(0, 50)
             .removeOverlap()),
         (StSt("{:02d}".format(f.i), recmono, 24, wdth=1)
             .pen()
-            .align(f.a.r.take(150, "mny"), th=0)
+            .align(f.a.r.take(150, "mny"), tx=0)
             .f(hsl((1-pe)+0.5)))))
 
 def didRenderAll(passes):

@@ -24,7 +24,7 @@ def pappardelle(f):
         SPIN=f.e("l", 0))
         .align(f.a.r))
 
-    r_wave = wave.ambit(th=1, tv=1)
+    r_wave = wave.ambit(tx=1, ty=1)
     
     return P(
         P(r_wave.inset(-20, -15)).f(None).s(custom_palette[2]).sw(3),

@@ -9,11 +9,11 @@ def varfont_animation(f):
         Glyphwise("CDEL", lambda g:
             Style(Font.ColdObvi(), 250
                 , wdth=f.adj(-g.i*40).e("seio")))
-            .align(f.a.r, th=0)
+            .align(f.a.r, tx=0)
             .f(1),
         StSt(str(f.i)
             , Font.RecursiveMono(), 50)
-            .align(f.a.r.inset(50), th=0, y="S")
+            .align(f.a.r.inset(50), tx=0, y="S")
             .f(1)))
 
 @b3d_runnable()

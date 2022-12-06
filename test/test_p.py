@@ -164,7 +164,7 @@ class TestRunonPath(unittest.TestCase):
             r.index(1).index(2).v.value)
         
         before_rotate = r.index([1, 2]).bounds()
-        before_frame = r.index([1]).ambit(th=0, tv=0)
+        before_frame = r.index([1]).ambit(tx=0, ty=0)
 
         r.ffg("B", lambda p: p.î(2, lambda c: c.rotate(-5)))
 

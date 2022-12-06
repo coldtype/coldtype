@@ -238,7 +238,7 @@ class P(Runon):
         #    return None
         
         from coldtype.notebook import show, DEFAULT_DISPLAY
-        self.ch(show(DEFAULT_DISPLAY, th=1, tv=1))
+        self.ch(show(DEFAULT_DISPLAY, tx=1, ty=1))
         return None
     
     def text(self,
@@ -291,20 +291,6 @@ class P(Runon):
     
     def xAlignToFrame(self):
         return self.align(self.data("frame"), y=None)
-    
-    def frameSet(self, th=False, tv=False):
-        from coldtype.color import hsl
-        from random import random
-        frames = []
-
-        def walker(el, pos, data):
-            if pos <= 0:
-                f = el.data("frame")
-                if f:
-                    frames.append(type(self)(f).fssw(-1, hsl(random(), a=0.5), 1))
-
-        self.walk(walker)
-        return type(self)(frames)
     
     def pvl(self):
         for idx, (_, pts) in enumerate(self.v.value):

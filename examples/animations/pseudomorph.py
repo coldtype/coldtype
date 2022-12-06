@@ -11,4 +11,4 @@ def pseudomorph(f):
         , wdth=f.e()
         , rotate=f.e(rng=(0, 360))
         )
-        .align(f.a.r, th=0))
+        .align(f.a.r, tx=0))

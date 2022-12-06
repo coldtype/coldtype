@@ -8,6 +8,6 @@ def welcome(f):
             yest=f.e("ceio", 1),
             grvt=f.adj(g.i*10).e("seio", 3)))
         .fssw(-1, 1, 3)
-        .align(f.a.r, tv=1))
+        .align(f.a.r, ty=1))
 
 release = welcome.export("gif")

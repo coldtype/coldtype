@@ -20,8 +20,8 @@ def ds(e1):
     # 52.998 is a magic number for this string
     return StSt("Digestive", Font.Find("Digestive"), 52.98, wdth=e1, ro=1)
 
-minw = ds(0).ambit(th=1).point("SE").x
-maxw = ds(1).ambit(th=1).point("SE").x
+minw = ds(0).ambit(tx=1).point("SE").x
+maxw = ds(1).ambit(tx=1).point("SE").x
 
 def render_snake(f):
     e, l = f.e("eeio", 2, loop_info=1)
@@ -29,7 +29,7 @@ def render_snake(f):
 
     offset = 0
     if l in [1, 3]:
-        offset = maxw - dps.ambit(th=1).point("SE").x
+        offset = maxw - dps.ambit(tx=1).point("SE").x
     
     offset += math.floor(l/2)*(maxw-minw)
     dps.distributeOnPath(track, offset=offset)

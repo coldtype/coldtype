@@ -34,7 +34,7 @@ def stacking(r):
         .map(lambda p: p
             .xalign(r)
             .extend((lambda p:
-                (P(p.ambit(th=0))
+                (P(p.ambit(tx=0))
                     .fssw(-1, hsl(0.3, a=0.6), 2)),
-                (P(p.ambit(th=1, tv=1))
+                (P(p.ambit(tx=1, ty=1))
                     .fssw(-1, hsl(0.9, a=0.3), 2))))))

@@ -12,7 +12,7 @@ r = Rect(1080, 1080)
 ri = r.inset(-4, 0)
 
 txt = (StSt("C", Font.ColdObvi(), 1200, wdth=1)
-    .align(r, tv=1)
+    .align(r, ty=1)
     .fssw(-1, 1, 1))
 
 space = pymunk.Space()

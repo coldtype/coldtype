@@ -12,13 +12,13 @@ def glyphwise(f):
                 wdth=f.adj(-g.i*2).e("eeio", 2),
                 wght=f.adj(-g.i*3).e("seio", 3),
                 ro=1,
-                tv=1)]
+                ty=1)]
 
     # should also work w/o an \n in between COLD & TYPE
     return (Glyphwise("COLD\nTYPE", styler, multiline=1)
-        .xalign(f.a.r, th=0)
+        .xalign(f.a.r, tx=0)
         .lead(30)
-        .align(f.a.r, th=0)
+        .align(f.a.r, tx=0)
         .reverse(recursive=True)
         .fssw(1, 0, 7, 1)
         .ch(phototype(f.a.r, 3, 190, cutw=15)))

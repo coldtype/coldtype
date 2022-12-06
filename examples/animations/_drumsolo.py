@@ -27,8 +27,8 @@ def drumsolo(f):
             wght=0.25*lk1.get(g.c, 0)
         )])
         .lead(20)
-        .xalign(f.a.r, th=0)
-        .align(f.a.r, th=0)
+        .xalign(f.a.r, tx=0)
+        .align(f.a.r, tx=0)
         .f(1)
         .pen()
         .ch(phototype(f.a.r,

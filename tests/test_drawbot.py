@@ -46,7 +46,7 @@ def test_distribute_on_path(r):
         .distribute_on_path(circle)
         .chain(dbdraw))
     
-    s2a = (P(s2.ambit(th=1, tv=1)).fssw(-1, hsl(0.9, a=0.3), 10) | dbdraw)
+    s2a = (P(s2.ambit(tx=1, ty=1)).fssw(-1, hsl(0.9, a=0.3), 10) | dbdraw)
 
     with db.savedState():
         db.fill(None)
@@ -55,4 +55,4 @@ def test_distribute_on_path(r):
         db.oval(*circle.ambit())
     
     assert s.f() == s2.f()
-    assert s2a.ambit(th=1, tv=1).round() == Rect(403, 19, 265, 114)
+    assert s2a.ambit(tx=1, ty=1).round() == Rect(403, 19, 265, 114)

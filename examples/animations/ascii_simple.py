@@ -15,6 +15,6 @@ def ascii(f):
         Style(Font.MutatorSans(), 120,
             wdth=at.ki(g.i).io(8),
             wght=at.ki("wght").io(10)))
-        .align(f.a.r, tv=1)
+        .align(f.a.r, ty=1)
         .mapv(lambda i, p: p
             .scale(at.ki(i).io(8, r=(1, 1.35)))))

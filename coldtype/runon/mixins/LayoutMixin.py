@@ -37,28 +37,39 @@ class LayoutMixin():
         
         return b
     
-    def _normT(self, th, tv, t):
+    def _normT(self, th, tv, tx, ty, t):
+        import traceback
+
+        if th is not None:
+            traceback.print_stack()
+            tx = th
+            raise Exception("! API CHANGE: th is now: tx")
+        if tv is not None:
+            print("HELLO")
+            ty = tv
+            raise Exception("! API CHANGE: tv is now: ty")
+
         if t is not None:
-            th = bool(int(t))
-            if th:
-                tv = int((t-1)*10) == 1
+            tx = bool(int(t))
+            if tx:
+                ty = int((t-1)*10) == 1
             else:
-                tv = int(t)*10 == 1
+                ty = int(t)*10 == 1
         else:
-            th, tv = th, tv
-        return th, tv
+            tx, ty = tx, ty
+        return tx, ty
     
     def empty(self):
         return len(self._val.value) == 0
     
-    def ambit(self, th=False, tv=False, t=None):
+    def ambit(self, th=None, tv=None, tx=0, ty=0, t=None):
         """Get the calculated rect boundary;
         `th` means `(t)rue (h)orizontal`;
         `ty` means `(t)rue (v)ertical`;
         passing either ignores a non-bounds-derived frame
         in either dimension"""
         
-        th, tv = self._normT(th, tv, t)
+        th, tv = self._normT(th, tv, tx, ty, t)
         f = self._data.get("frame", None)
 
         # true bounds
@@ -87,9 +98,9 @@ class LayoutMixin():
         # pass-to-els
         elif len(self._els) > 0:
             try:
-                union = self._els[0].ambit(th=th, tv=tv)
+                union = self._els[0].ambit(tx=th, ty=tv)
                 for p in self._els[1:]:
-                    a = p.ambit(th=th, tv=tv)
+                    a = p.ambit(tx=th, ty=tv)
                     if a.x == 0 and a.y == 0 and a.w == 0 and a.h == 0:
                         continue
                     union = union.union(a)
@@ -126,8 +137,10 @@ class LayoutMixin():
         rect,
         x="mdx",
         y="mdy",
-        th=True,
-        tv=False,
+        th=None,
+        tv=None,
+        tx=1,
+        ty=0,
         transformFrame=True,
         h=None,
         returnOffset=False
@@ -140,7 +153,8 @@ class LayoutMixin():
         if not isinstance(rect, Rect):
             rect = rect.rect
         
-        r = self.ambit(th, tv)
+        th, tv = self._normT(th, tv, tx, ty, None)
+        r = self.ambit(tx=th, ty=tv)
 
         if h is not None:
             r = r.seth(h)
@@ -158,26 +172,30 @@ class LayoutMixin():
     
     å = align
 
-    def xalign(self, rect=None, x="centerx", th=1, tv=0):
+    def xalign(self, rect=None, x="centerx", th=None, tv=None, tx=1, ty=0):
+        th, tv = self._normT(th, tv, tx, ty, None)
+
         if x == "C":
             x = "CX"
         
         if rect is None:
-            rect = self.ambit(th=th, tv=tv)
+            rect = self.ambit(tx=th, ty=tv)
         
         if callable(rect):
             rect = rect(self)
         
-        self.align(rect, x=x, y=None, th=th, tv=tv)
+        self.align(rect, x=x, y=None, tx=th, ty=tv)
         for el in self._els:
-            el.align(rect, x=x, y=None, th=th, tv=tv)
+            el.align(rect, x=x, y=None, tx=th, ty=tv)
         return self
     
     xå = xalign
 
-    def yalign(self, rect=None, y="centery", th=0, tv=1):
+    def yalign(self, rect=None, y="centery", th=None, tv=None, tx=0, ty=1):
+        th, tv = self._normT(th, tv, tx, ty, None)
+
         if rect is None:
-            rect = self.ambit(th=th, tv=tv)
+            rect = self.ambit(tx=th, ty=tv)
         
         if callable(rect):
             rect = rect(self)
@@ -187,13 +205,13 @@ class LayoutMixin():
     
     xå = xalign
 
-    def _normPoint(self, point=None, th=0, tv=0, **kwargs):
-        th, tv = self._normT(th, tv, kwargs.get("t"))
+    def _normPoint(self, point=None, th=None, tv=None, tx=0, ty=0, **kwargs):
+        th, tv = self._normT(th, tv, tx, ty, kwargs.get("t"))
 
         if "pt" in kwargs:
             point = kwargs["pt"]
         
-        a = self.ambit(th=th, tv=tv)
+        a = self.ambit(tx=th, ty=tv)
         if point is None:
             return a.pc
         elif point == 0:
@@ -202,13 +220,13 @@ class LayoutMixin():
             return Point(0, 0)
         elif isinstance(point, str):
             if point.startswith("th"):
-                a = self.ambit(th=1, tv=0)
+                a = self.ambit(tx=1, ty=0)
                 point = point[2:]
             elif point.startswith("tv"):
-                a = self.ambit(th=0, tv=1)
+                a = self.ambit(tx=0, ty=1)
                 point = point[2:]
             elif point.startswith("t"):
-                a = self.ambit(th=1, tv=1)
+                a = self.ambit(tx=1, ty=1)
                 point = point[1:]
             return a.point(point)
         elif (not (isinstance(point[1], int)
@@ -277,38 +295,47 @@ class LayoutMixin():
     offset = translate
     t = translate
     
-    def zero(self, th=0, tv=0):
-        x, y, _, _ = self.ambit(th=th, tv=tv)
+    def zero(self, th=None, tv=None, tx=0, ty=0):
+        th, tv = self._normT(th, tv, tx, ty, None)
+        x, y, _, _ = self.ambit(tx=th, ty=tv)
         self.translate(-x, -y)
         return self
     
-    def centerZero(self, th=0, tv=0):
-        x, y, w, h = self.ambit(th=th, tv=tv)
+    def centerZero(self, th=None, tv=None, tx=0, ty=0):
+        th, tv = self._normT(th, tv, tx, ty, None)
+
+        x, y, w, h = self.ambit(tx=th, ty=tv)
         nx, ny = -x-w/2, -y-h/2
         return (self
             .t(-x-w/2, -y-h/2)
             .data(centerZeroOffset=(nx, ny)))
     
-    def centerPoint(self, rect, pt, interp=1, th=1, tv=0, **kwargs):
+    def centerPoint(self, rect, pt, interp=1, th=None, tv=None, tx=1, ty=0, **kwargs):
+        th, tv = self._normT(th, tv, tx, ty, None)
+
         if "i" in kwargs:
             interp = kwargs["i"]
         
-        x, y = self._normPoint(pt, th=th, tv=tv, **kwargs)
+        x, y = self._normPoint(pt, tx=th, ty=tv, **kwargs)
 
         return self.translate(norm(interp, 0, rect.w/2-x), norm(interp, 0, rect.h/2-y))
     
-    def skew(self, x=0, y=0, point=None, th=1, tv=0, **kwargs):
+    def skew(self, x=0, y=0, point=None, th=None, tv=None, tx=1, ty=0, **kwargs):
+        th, tv = self._normT(th, tv, tx, ty, None)
+
         t = Transform()
-        px, py = self._normPoint(point, th, tv, **kwargs)
+        px, py = self._normPoint(point, tx=th, ty=tv, **kwargs)
         t = t.translate(px, py)
         t = t.skew(x, y)
         t = t.translate(-px, -py)
         return self.transform(t)
     
-    def rotate(self, degrees, point=None, th=1, tv=1, **kwargs):
+    def rotate(self, degrees, point=None, th=None, tv=None, tx=1, ty=1, **kwargs):
         """Rotate this shape by a degree (in 360-scale, counterclockwise)."""
+        th, tv = self._normT(th, tv, tx, ty, None)
+
         t = Transform()
-        x, y = self._normPoint(point, th, tv, **kwargs)
+        x, y = self._normPoint(point, tx=th, ty=tv, **kwargs)
         t = t.translate(x, y)
         t = t.rotate(math.radians(degrees))
         t = t.translate(-x, -y)
@@ -316,10 +343,12 @@ class LayoutMixin():
     
     rt = rotate
     
-    def scale(self, scaleX, scaleY=None, point=None, th=1, tv=0, **kwargs):
+    def scale(self, scaleX, scaleY=None, point=None, th=None, tv=None, tx=1, ty=0, **kwargs):
         """Scale this shape by a percentage amount (1-scale)."""
+        th, tv = self._normT(th, tv, tx, ty, None)
+
         t = Transform()
-        x, y = self._normPoint(point, th, tv, **kwargs)
+        x, y = self._normPoint(point, tx=th, ty=tv, **kwargs)
         if point is not False:
             t = t.translate(x, y)
         t = t.scale(scaleX, scaleY or scaleX)
@@ -359,14 +388,16 @@ class LayoutMixin():
     
     # multi-elements
 
-    def distribute(self, v=False, tracks=None, th=0, tv=0):
+    def distribute(self, v=False, tracks=None, th=None, tv=None, tx=0, ty=0):
+        th, tv = self._normT(th, tv, tx, ty, None)
+
         off = 0
         for idx, p in enumerate(self):
             if tracks is not None and idx > 0:
                 t = tracks[idx-1]
                 #print(t)
                 off += t
-            frame = p.ambit(th=th, tv=tv)
+            frame = p.ambit(tx=th, ty=tv)
             if v:
                 if frame.y < 0:
                     p.translate(0, -frame.y)
@@ -386,7 +417,7 @@ class LayoutMixin():
         if zero:
             for p in self:
                 p.zero()
-        ambits = [p.ambit(th=th, tv=0).expand(tracking, "E") for p in self._els]
+        ambits = [p.ambit(tx=th, ty=0).expand(tracking, "E") for p in self._els]
         
         ax = 0
         for idx, p in enumerate(self._els):
@@ -396,12 +427,12 @@ class LayoutMixin():
 
         return self
     
-    def stack(self, leading=0, tv=0, zero=False):
+    def stack(self, leading=0, ty=0, zero=False):
         "Vertical distribution of elements"
         if zero:
             for p in self:
                 p.zero()
-        ambits = [p.ambit(th=0, tv=tv).expand(leading, "N") for p in self._els]
+        ambits = [p.ambit(tx=0, ty=ty).expand(leading, "N") for p in self._els]
         for idx, p in enumerate(self._els):
             for a in ambits[idx+1:]:
                 p.translate(0, a.h)
@@ -455,8 +486,8 @@ class LayoutMixin():
         pens = self._els
         if r:
             pens = list(reversed(pens))
-        start_x = pens[0].ambit(th=pullToEdges).x
-        end_x = pens[-1].ambit(th=pullToEdges).point("SE").x
+        start_x = pens[0].ambit(tx=pullToEdges).x
+        end_x = pens[-1].ambit(tx=pullToEdges).point("SE").x
         # TODO easy to knock out apostrophes here based on a callback, last "actual" frame
         total_width = end_x - start_x
         leftover_w = rect.w - total_width
@@ -489,10 +520,10 @@ class LayoutMixin():
     def h(self): return self.ambit().h
 
     @property
-    def tx(self): return self.ambit(th=1).x
+    def tx(self): return self.ambit(tx=1).x
     @property
-    def ty(self): return self.ambit(tv=1).y
+    def ty(self): return self.ambit(ty=1).y
     @property
-    def tw(self): return self.ambit(th=1).w
+    def tw(self): return self.ambit(tx=1).w
     @property
-    def th(self): return self.ambit(tv=1).h
+    def th(self): return self.ambit(ty=1).h

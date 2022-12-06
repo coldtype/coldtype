@@ -29,7 +29,7 @@ def countdown(f:Frame):
             , wght=rs[c.idx+1]*0.25
             , ro=1)
             .fssw(1, 1, 13)
-            .align(f.a.r, th=1, tv=1)
+            .align(f.a.r, tx=1, ty=1)
             .blendmode(BlendMode.Xor))
         .ch(phototype(f.a.r
             , cut=139, blur=2.5, cutw=20)))

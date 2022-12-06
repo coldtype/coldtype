@@ -85,7 +85,7 @@ def vf(f):
                 args["font_size"] or rs[x.i].h-50,
                 rv=1,
                 **x.el)
-                .align(rs[x.i], th=0)
+                .align(rs[x.i], tx=0)
                 .cond(args["stroke"],
                     lambda p: p.fssw(-1, 1, 2),
                     lambda p: p.f(1))),

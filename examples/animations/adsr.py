@@ -19,7 +19,7 @@ def adsr(f):
                     [5, 10], ["sei", "ceo"]),
                 wdth=at.ki(f"{g.i}").adsr(
                     [5, 50], ["eei", "eeo"])))
-            .align(f.a.r.take(0.5, "N"), th=1)
+            .align(f.a.r.take(0.5, "N"), tx=1)
             ._null()),
         (Glyphwise("TYPE", lambda g:
             [Style(Font.MutatorSans(), 350), dict(
@@ -33,7 +33,7 @@ def adsr(f):
                     ["eei", "eeio"],
                     dv=0.25,
                     rs=1))])
-            .align(f.a.r.take(0.5, "S"), th=0)
+            .align(f.a.r.take(0.5, "S"), tx=0)
             ._null()))
         .append(P(f.a.r
             .take(at

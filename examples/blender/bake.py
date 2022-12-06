@@ -13,7 +13,7 @@ def baketest2(f):
         wdth=f.e("eeio", 1),
         wght=f.e("eeio", 2),
         ro=1)
-        .align(f.a.r, tv=1)
+        .align(f.a.r, ty=1)
         .mapv(lambda p: p
             .ch(b3d(lambda bp: bp
                 .rotate(90)

@@ -28,7 +28,7 @@ def test_mixed_lang_slug(_r):
     dps = (Slug("CO同步", style, obv)
         .fit(r.w-100)
         .pens()
-        .align(r, th=1))
+        .align(r, tx=1))
     
     assert dps[-1].ambit().round() == Rect([657,138,300,220])
     
@@ -43,7 +43,7 @@ def test_mixed_lang_slug(_r):
     dps = (Slug("CO同步", style, obv)
         .fit(r.w-100)
         .pens(flat=False)
-        .align(r, th=1))
+        .align(r, tx=1))
     
     assert dps[0].data("lang") == "en"
     assert dps[0][0].glyphName == "C"
@@ -67,7 +67,7 @@ def test_mixed_lang_stst(_r):
         lang="zh",
         fallback=Style(co, 300, wdth=1, wght=0, lang="en"),
         fit=r.w-100)
-        .align(r, th=1))
+        .align(r, tx=1))
     
     dps[1].translate(10, 0)
     dps.attach(out)
@@ -117,7 +117,7 @@ def test_hebrew(_r):
 
     hebrew = Style(hebrew_font, 130)
     slug = Slug('קומפרסיה ועוד', hebrew)
-    dps = slug.pens().align(r, th=1).attach(out)
+    dps = slug.pens().align(r, tx=1).attach(out)
 
     assert gn_to_c(dps[-1].glyphName) == "ק"
     assert dps[-1].ambit().round() == Rect([719,212,52,76])
@@ -134,8 +134,8 @@ def test_multidir_seg_string(_r):
     slug = Slug(txt, arabic, latin).pens()
 
     dps = P([
-        seg.align(r, th=1).translate(0, 100),
-        slug.align(r, th=1).translate(0, -100)])
+        seg.align(r, tx=1).translate(0, 100),
+        slug.align(r, tx=1).translate(0, -100)])
     
     assert dps[0][-1].glyphName == "plus"
     assert gn_to_uniname(dps[0][0].glyphName) == "ARABIC LETTER TEH MARBUTA FINAL FORM"
@@ -150,7 +150,7 @@ def test_combine_slugs(_r):
     line = P().rect(Rect(100, 20))
     s2 = Slug("OY", Style(co, 300, wdth=0)).pens()
     shape = P().oval(Rect(100, 100))
-    dps = P([s1, line, s2, shape]).distribute().align(r, th=1)
+    dps = P([s1, line, s2, shape]).distribute().align(r, tx=1)
     assert dps.ambit().round() == Rect([127,138,737,225])
     assert dps[1].ambit().round() == Rect([540,138,100,20])
 

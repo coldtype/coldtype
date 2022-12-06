@@ -31,14 +31,14 @@ def render(f):
         (StSt("COLDTYPE", Font.ColdObvi(), 250
             , **at.kf("eeo", lines=(1,))
             , r=1 , ro=1)
-            .align(f.a.r.take(0.5, "N"), th=0)
+            .align(f.a.r.take(0.5, "N"), tx=0)
             .fssw(1, 0, 20)
             .sf(1)
             .ch(phototype(f.a.r, 1.5, 200, 30, 0))),
         (StSt("COLDTYPE", Font.ColdObvi(), 250
             , **at.kf("eeo", lines=(2,))
             , r=1 , ro=1)
-            .align(f.a.r.take(0.5, "S"), th=0)
+            .align(f.a.r.take(0.5, "S"), tx=0)
             .fssw(1, 0, 20)
             .sf(1)
             .ch(phototype(f.a.r, 1.5, 200, 30, 0)))])

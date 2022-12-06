@@ -20,10 +20,10 @@ def test_scaleToRect(_r):
             .f(hsl(0.3))
             .scaleToHeight(r.h-50))])
     
-    assert dps[0].ambit(th=1).w == pytest.approx(r.inset(100).w)
-    assert dps[0].ambit(tv=1).h == pytest.approx(r.inset(100).h)
-    assert dps[1].ambit(th=1).w == pytest.approx(r.w-20)
-    assert dps[2].ambit(tv=1).h == r.h-50
+    assert dps[0].ambit(tx=1).w == pytest.approx(r.inset(100).w)
+    assert dps[0].ambit(ty=1).h == pytest.approx(r.inset(100).h)
+    assert dps[1].ambit(tx=1).w == pytest.approx(r.w-20)
+    assert dps[2].ambit(ty=1).h == r.h-50
     
     return dps.align(_r).scale(0.5)
 
@@ -47,7 +47,7 @@ def test_distribute_and_track(_r):
         )
     
     assert len(dps) == 11
-    assert dps.ambit(th=1).round().w == 830
+    assert dps.ambit(tx=1).round().w == 830
 
     return dps.align(_r).scale(0.5)
 
@@ -95,7 +95,7 @@ def test_distribute_path_lines(_r):
     lockup = (StSt("COLDTYPE",
         Font.MutatorSans(), 220, wght=.4, wdth=0.5)
         .distribute_on_path(p)
-        .align(r, tv=1, th=1)
+        .align(r, ty=1, tx=1)
         .f(0))
 
     x, y = lockup[3].ambit().xy()

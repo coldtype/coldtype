@@ -10,7 +10,7 @@ def plus(f):
                 wdth=(fa:=f.adj(adj-5)).e("eeio", 1, rng=(1, 0)),
                 tu=fa.e("eeio", 1, rng=(-250, 0)),
                 ro=1))
-            .pmap(lambda p: p.align(f.a.r, tv=1, th=1))
+            .mapv(lambda p: p.align(f.a.r, ty=1, tx=1))
             .pen()
             .fssw(-1, 1, 10)
             .ch(phototype(f.a.r,

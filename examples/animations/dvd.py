@@ -41,4 +41,4 @@ def scratch(f, m):
             , fvar_0=b
             )
             .f(c)
-            .align(border.offset(m.x, m.y), th=0)))
+            .align(border.offset(m.x, m.y), tx=0)))
