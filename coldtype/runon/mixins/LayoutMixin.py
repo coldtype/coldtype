@@ -43,11 +43,11 @@ class LayoutMixin():
         if th is not None:
             traceback.print_stack()
             tx = th
-            raise Exception("! API CHANGE: th is now: tx")
+            print("! API CHANGE: th is now: tx")
         if tv is not None:
-            print("HELLO")
+            traceback.print_stack()
             ty = tv
-            raise Exception("! API CHANGE: tv is now: ty")
+            print("! API CHANGE: tv is now: ty")
 
         if t is not None:
             tx = bool(int(t))
