@@ -9,7 +9,7 @@ from coldtype.color import Color, normalize_color
 from coldtype.geometry import Rect, Point, txt_to_edge
 from coldtype.runon.runon import Runon
 
-from coldtype.runon.mondrian import Mondrian
+from coldtype.runon.scaffold import Scaffold
 
 # IMPORTS
 
@@ -47,7 +47,7 @@ class P(Runon):
         return out
     
     def __init__(self, *vals, **kwargs):
-        prenorm = [v.rect if isinstance(v, Mondrian) else v for v in vals]
+        prenorm = [v.rect if isinstance(v, Scaffold) else v for v in vals]
 
         super().__init__(*prenorm)
 

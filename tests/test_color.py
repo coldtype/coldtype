@@ -11,7 +11,7 @@ def test_interp(r):
     c = hsl(0.2).hsl_interp(0.5, hsl(0.6))
     assert c.hp == pytest.approx(0.4)
 
-    m = Mondrian(r).cssgrid("a a a", "a", "a b c")
+    m = Scaffold(r).cssgrid("a a a", "a", "a b c")
 
     return (P(
         P().rect(m["a"]).f(a),

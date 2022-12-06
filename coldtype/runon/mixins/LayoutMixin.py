@@ -478,3 +478,21 @@ class LayoutMixin():
         return (type(self)([self, *others])
             .distribute()
             .pen())
+
+    @property
+    def x(self): return self.ambit().x
+    @property
+    def y(self): return self.ambit().y
+    @property
+    def w(self): return self.ambit().w
+    @property
+    def h(self): return self.ambit().h
+
+    @property
+    def tx(self): return self.ambit(th=1).x
+    @property
+    def ty(self): return self.ambit(tv=1).y
+    @property
+    def tw(self): return self.ambit(th=1).w
+    @property
+    def th(self): return self.ambit(tv=1).h

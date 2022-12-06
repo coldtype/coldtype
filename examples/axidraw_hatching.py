@@ -11,29 +11,34 @@ def test_draw(r):
     letters = (StSt("COLD", co, 900, wdth=0.15, ro=1)
         .pen()
         .align(r)
-        .tag("letters"))
+        .tag("letters")
+        .flatten(10))
 
-    hatch_rs = r.inset(20).subdivide(250, "N")
+    hatch_rs = r.inset(20).subdivide(150, "N")
+
     hatches = (P().enumerate(hatch_rs, lambda x:
             P(x.el) if x.i%2==0 else None)
         .pen()
         .intersection(letters.copy())
         .explode()
         .map(lambda _, p: P().line(p.ambit().es))
+        .s(0, 0.25)
         .tag("hatches"))
 
     typ = (StSt("type", script, 500
+        , ro=1
         , tu=-120
         , kp={"y.italic/p":-20})
         .align(r, tv=1)
         .translate(0, -20)
-        .pmap(lambda p: p.removeOverlap())
+        .s(hsl(0.65))
         .tag("type"))
     
-    return P(border, letters, typ)
+    return P(border, letters, typ, hatches)
 
 numpad = {
     1: test_draw.draw("border"),
     2: test_draw.draw("letters"),
-    3: test_draw.draw("type")
+    3: test_draw.draw("type"),
+    4: test_draw.draw("hatches"),
 }

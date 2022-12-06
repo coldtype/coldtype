@@ -1,21 +1,18 @@
 from coldtype import *
 from coldtype.warping import warp
 
-font = Font.ColdtypeObviously()
-text = "COLDTYPE"
-
 @renderable(rect=(900, 500))
 def coldtype(r):
-    return (StSt(text, font, 450,
-        wdth=1, tu=-50,
-        r=1, ro=1, fit=r.w,
-        kp={("L","D"): -5,
-            ("T","Y"): -20,
-            ("Y","P"): 10,
-            ("P","E"): -100})
+    return (StSt("COLDTYPE", Font.ColdObvi()
+        , fontSize=450
+        , wdth=1
+        , tu=-50
+        , r=1
+        , ro=1
+        , fit=r.w)
         .align(r)
-        .pmap(lambda idx, p: (p
-            .f(hsl(0.5+idx/len(text)*0.15, s=0.6, l=0.55))
+        .mape(lambda e, p: (p
+            .f(hsl(0.5+e*0.15, s=0.6, l=0.55))
             .s(0).sw(30).sf(1)
             .ch(warp(5, mult=25))))
         .rotate(5)

@@ -25,7 +25,7 @@ def monkeypatch_ctypes():
 #     pass
 
 from coldtype.runon.path import P, PS, DP, DPS, DATPen, DATPens
-from coldtype.runon.mondrian import Mondrian
+from coldtype.runon.scaffold import Scaffold
 from coldtype.text import *
 from coldtype.text.reader import Font
 from coldtype.geometry import *

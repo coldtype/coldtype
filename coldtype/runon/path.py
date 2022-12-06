@@ -22,7 +22,7 @@ from coldtype.color import Color, normalize_color
 from coldtype.geometry import Rect, Point, txt_to_edge
 from coldtype.runon.runon import Runon
 
-from coldtype.runon.mondrian import Mondrian
+from coldtype.runon.scaffold import Scaffold
 
 import math
 from pathlib import Path
@@ -102,7 +102,7 @@ class P(Runon):
         return out
     
     def __init__(self, *vals, **kwargs):
-        prenorm = [v.rect if isinstance(v, Mondrian) else v for v in vals]
+        prenorm = [v.rect if isinstance(v, Scaffold) else v for v in vals]
 
         super().__init__(*prenorm)
 
@@ -1415,11 +1415,29 @@ class P(Runon):
     trackToRect = track_to_rect
 
 
-    def connect(self, *others):
+    def connect(self, *others) -> "P":
 
         return (type(self)([self, *others])
             .distribute()
             .pen())
+
+    @property
+    def x(self): return self.ambit().x
+    @property
+    def y(self): return self.ambit().y
+    @property
+    def w(self): return self.ambit().w
+    @property
+    def h(self): return self.ambit().h
+
+    @property
+    def tx(self): return self.ambit(th=1).x
+    @property
+    def ty(self): return self.ambit(tv=1).y
+    @property
+    def tw(self): return self.ambit(th=1).w
+    @property
+    def th(self): return self.ambit(tv=1).h
 
 
     def groupedStyle(self, st):

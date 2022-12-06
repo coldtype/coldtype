@@ -6,7 +6,7 @@ classes = [
     P,
     Style,
     Rect,
-    Mondrian,
+    Scaffold,
     Runon,
 ]
 

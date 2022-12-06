@@ -5,7 +5,7 @@ from coldtype.runon.runon import RunonSearchException, RunonException
 
 @test((500, 500))
 def test_auto_recursion(r):
-    l = Mondrian(r)
+    l = Scaffold(r)
     assert l.depth() == 0
     assert l.v == l.r
     assert l.v == l.rect
@@ -35,7 +35,7 @@ def test_auto_recursion(r):
 
 @test((500, 500))
 def test_duck(r):
-    l = Mondrian(r)
+    l = Scaffold(r)
     l.grid(2, 2, "abcd")
 
     assert l.val_present() == False
@@ -54,9 +54,9 @@ def test_duck(r):
 
     return txt1, P(l[0])
 
-@test()
+@test((500, 500))
 def test_cssgrid(_r):
-    l = (Mondrian(Rect(500, 500))
+    l = (Scaffold(Rect(500, 500))
         .cssgrid(r"auto 30%", r"50% auto", "x y / z q",
             x=("200 a", "a a", "a b / a c"),
             c=("a a", "a a", "g a / i a"),
@@ -75,3 +75,5 @@ def test_cssgrid(_r):
     assert l["x/a"] != l["x/c/a"]
     assert l["x/c/a"] != l["a"]
     assert l["q"] != l["q/q"]
+
+    return P(l["x/a"]) + P(l["q"])

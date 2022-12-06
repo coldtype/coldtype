@@ -199,3 +199,10 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ## [0.9.14] - 2022-11-16
 ### Added
 - `P.gridlayer`, `Runon.mapvch`, `Runon.mapvrc`
+
+## [0.9.15] - 2022-??-??
+### Added
+- `.up` as canonical form of `.ups`
+- Argument-less boolean operation methods for plural `P`
+### Changed
+- `Mondrian` -> `Scaffold`
