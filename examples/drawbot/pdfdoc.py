@@ -25,7 +25,7 @@ def multipage_doc(f):
 
     (StSt(f"This is page {f.i}", font, 50)
         .f(c)
-        .align(f.a.r.inset(50, 160), "NW", th=0)
+        .align(f.a.r.inset(50, 160), "NW", tx=0)
         | dbdraw)
 
 

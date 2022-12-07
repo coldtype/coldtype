@@ -20,10 +20,10 @@ def test_preserve_space(_r):
     assert rt[0][0][0].glyphName == "E"
     assert rt[0][0][-1].glyphName == "C"
 
-    space_width = rt[0][1][0].ambit(th=0).w
+    space_width = rt[0][1][0].ambit(tx=0).w
     assert space_width == 50
 
-    assert rt[0][1].ambit(th=0).w - space_width > rt[0][1].ambit(th=1).w
+    assert rt[0][1].ambit(tx=0).w - space_width > rt[0][1].ambit(tx=1).w
     
     return rt.align(_r).scale(0.5)
 

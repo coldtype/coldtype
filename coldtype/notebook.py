@@ -37,7 +37,7 @@ def update_ffmpeg():
     print('ffmpeg update finished')
 
 
-def show(fmt="png", rect=None, align=False, padding=[0, 0], th=0, tv=0, scale=0.5):
+def show(fmt="png", rect=None, align=False, padding=[0, 0], tx=0, ty=0, scale=0.5):
     if not precompose and fmt == "png":
         raise Exception("pip install skia-python")
     
@@ -62,7 +62,7 @@ def show(fmt="png", rect=None, align=False, padding=[0, 0], th=0, tv=0, scale=0.
                 rect = lar
                 pen = P([P(rect).fssw(-1, 0.75, 2), pen])
             else:
-                amb = pen.ambit(th=th, tv=tv)
+                amb = pen.ambit(tx=tx, ty=ty)
                 rect = Rect(amb.w+padding[0], amb.h+padding[1])
                 pen.align(rect)
         
@@ -80,8 +80,8 @@ def show(fmt="png", rect=None, align=False, padding=[0, 0], th=0, tv=0, scale=0.
     return _display
 
 
-def showpng(rect=None, align=False, padding=[60, 50], th=0, tv=0, scale=0.5):
-    return show("png", rect, align, padding, th, tv, scale)
+def showpng(rect=None, align=False, padding=[60, 50], tx=0, ty=0, scale=0.5):
+    return show("png", rect, align, padding, tx, ty, scale)
 
 def showlocalpng(rect, src, scale=0.5):
     with open(src, "rb") as img_file:
@@ -394,7 +394,7 @@ class notebook_aframe(_aframe):
 
 
 def nshow(self):
-    return self.ch(show(th=1, tv=1))
+    return self.ch(show(tx=1, ty=1))
 
 P.nshow = nshow
 

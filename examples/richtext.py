@@ -12,11 +12,11 @@ def styler(txt, styles):
 def highlight(r):
     return (RichText(r, "HELLO[h] World", styler)
         .xalign(r)
-        .align(r, tv=1)
+        .align(r, ty=1)
         .scale(1.5)
         .insert(0, lambda ps: P()
             .rect(ps[0][-1]
-                .ambit(th=1, tv=1)
+                .ambit(tx=1, ty=1)
                 .inset(-10))
             .fssw(-1, hsl(0.7, a=0.3), 10)))
 
@@ -30,7 +30,7 @@ def plainish(r):
     return (RichText(r, txt, styler, spacer="¶")
         .xalign(r)
         .align(r)
-        .scale(2, th=1)
+        .scale(2, tx=1)
         .f(0)
         .removeSpacers())
 

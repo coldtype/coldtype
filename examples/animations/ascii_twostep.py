@@ -21,10 +21,10 @@ def test_ascii(f):
         .layer(
             lambda p: p.layerv(1,
                 lambda g: P()
-                    .rect(g.ambit(th=1).inset(-20))
+                    .rect(g.ambit(tx=1).inset(-20))
                     .fssw(-1, 0, 2)
                     .null()),
             lambda p: P()
-                .rect(p.ambit(th=1, tv=1).inset(-50))
+                .rect(p.ambit(tx=1, ty=1).inset(-50))
                 .fssw(-1, 0, 2)
                 ._null()))

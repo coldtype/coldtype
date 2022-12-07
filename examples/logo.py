@@ -19,7 +19,7 @@ def logo(f):
                 , leading=-10)
                 .index(0, lambda p: p.translate(-130, 0))
                 .reverse()
-                .align(f.a.r, th=1, tv=1)
+                .align(f.a.r, tx=1, ty=1)
                 .rotate(15)
                 .translate(-3, 3)
                 .fssw(1, 0, 25, 1)

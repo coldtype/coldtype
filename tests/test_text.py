@@ -36,7 +36,7 @@ def test_space(r):
     assert space.ambit().w == 250
     assert txt.ambit().w == 1093
     assert space.ambit().x == 400
-    txt.align(_r, th=1)
+    txt.align(_r, tx=1)
     assert space.ambit().x == 863.5
 
     txt = StSt("A B", Font.MutatorSans(), 1000, space=500)
@@ -45,7 +45,7 @@ def test_space(r):
     assert space.ambit().w == 500
     assert txt.ambit().w == 1093+250
     assert space.ambit().x == 400
-    txt.align(_r, th=1)
+    txt.align(_r, tx=1)
     assert space.ambit().x == 863.5-(250/2)
 
     return txt.scale(0.1).align(r)
@@ -57,8 +57,8 @@ def test_static_fonts(r):
     co = (StSt("CDELOPTY", f1, 200)
         .align(_r))
     
-    assert co.ambit(th=0).w == pytest.approx(998.8)
-    assert co.ambit(th=1).w == pytest.approx(1018.8, 1)
+    assert co.ambit(tx=0).w == pytest.approx(998.8)
+    assert co.ambit(tx=1).w == pytest.approx(1018.8, 1)
     assert len(co) == 8
     assert f1.font.fontPath.stem == "ColdtypeObviously-VF"
 

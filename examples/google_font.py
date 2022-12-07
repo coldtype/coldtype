@@ -13,5 +13,5 @@ def nabla1(f):
     font_name, text = pairs[f.i]
     return (StSt(text, Font.GoogleFont(font_name)
         , fontSize=50)
-        .align(f.a.r, th=0, tv=1)
+        .align(f.a.r, tx=0, ty=1)
         .f(0))

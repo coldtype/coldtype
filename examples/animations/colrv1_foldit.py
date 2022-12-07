@@ -14,7 +14,7 @@ def test1(f):
             , fontSize=200
             , wght=at.ki("it").io(10, ["eei", "eeo"]) if g.i > 3
                 else at.ki("fold").io(10)))
-            .align(f.a.r, th=0, tv=0))
+            .align(f.a.r, tx=0, ty=0))
     
     return P(
         br,

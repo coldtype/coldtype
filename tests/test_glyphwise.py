@@ -163,13 +163,13 @@ def test_multistyle(r):
         .fssw(-1, 0, 1))
     
     assert g1.ambit().w == g2.ambit().w
-    assert g1.ambit(th=1).w != g2.ambit(th=1).w
+    assert g1.ambit(tx=1).w != g2.ambit(tx=1).w
 
     assert g1[-1].glyphName == "F"
     assert g2[-1].glyphName == "F"
     assert g2[-1].data("frame").w == g1[-1].data("frame").w
-    assert g1[-1].ambit(th=1).w == 28.0
-    assert g2[-1].ambit(th=1).w == 86.0
+    assert g1[-1].ambit(tx=1).w == 28.0
+    assert g2[-1].ambit(tx=1).w == 86.0
 
     return P(g1, g2).distribute().track(100).align(r).scale(0.5)
 

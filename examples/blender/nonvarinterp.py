@@ -24,7 +24,7 @@ def nonvarinterp(f):
 
     return P([
         (StSt(i, mdiob, 72)
-            .align(f.a.r.take(0.4, "mny"), th=0)
+            .align(f.a.r.take(0.4, "mny"), tx=0)
             .pen()
             .f(hsl(0.65, 1, 0.3))
             .tag("Num")

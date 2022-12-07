@@ -116,7 +116,7 @@ class Lockup(FittableMixin):
                 dps = s.pen()
                 dps.translate(x_off, 0)
                 pens.append(dps)
-            x_off += dps.ambit(th=0).w
+            x_off += dps.ambit(tx=0).w
             try:
                 x_off += s.margin[1]
                 x_off += s.strings[-1].tracking
@@ -344,9 +344,9 @@ def Glyphwise(st, styler, start=0, line=0, multiline=False):
         if idx == 0:
             if tkoff_tweak:
                 tkoff_frame = tkoff[0].data("frame")
-                th = skon_tweak.input["kwargs"].get("th", 0)
-                tv = skon_tweak.input["kwargs"].get("tv", 0)
-                tkoff_glyph = tkoff_tweak[0].align(tkoff_frame, th=th, tv=tv)
+                tx = skon_tweak.input["kwargs"].get("tx", 0)
+                ty = skon_tweak.input["kwargs"].get("ty", 0)
+                tkoff_glyph = tkoff_tweak[0].align(tkoff_frame, tx=tx, ty=ty)
                 tkoff_glyph.data(frame=tkoff_frame)
             else:
                 tkoff_glyph = tkoff[0]#.copy(with_data=True)
@@ -359,9 +359,9 @@ def Glyphwise(st, styler, start=0, line=0, multiline=False):
 
             if tkoff_tweak:
                 tkoff_frame = tkoff[1].data("frame")
-                th = skon_tweak.input["kwargs"].get("th", 0)
-                tv = skon_tweak.input["kwargs"].get("tv", 0)
-                tkoff_glyph = tkoff_tweak[1].align(tkoff_frame, th=th, tv=tv)
+                tx = skon_tweak.input["kwargs"].get("tx", 0)
+                ty = skon_tweak.input["kwargs"].get("ty", 0)
+                tkoff_glyph = tkoff_tweak[1].align(tkoff_frame, tx=tx, ty=ty)
                 tkoff_glyph.data(frame=tkoff_frame)
             else:
                 tkoff_glyph = tkoff[1].copy(with_data=True)

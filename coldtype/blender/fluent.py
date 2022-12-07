@@ -324,7 +324,7 @@ class BpyGroup(Runon):
         return False
     
     @staticmethod
-    def Curves(pens:P, prefix=None, collection=None, cyclic=True, fill=True, th=0, tv=0):
+    def Curves(pens:P, prefix=None, collection=None, cyclic=True, fill=True, tx=0, ty=0):
         curves = BpyGroup()
 
         def walker(p:P, pos, data):
@@ -332,7 +332,7 @@ class BpyGroup(Runon):
                 name = None
                 if prefix:
                     name = prefix + "_" + ".".join([str(s) for s in data["idx"]])
-                curves.append(BpyObj.Curve(name=name, collection=collection).draw(p, cyclic=cyclic, fill=fill, th=th, tv=tv))
+                curves.append(BpyObj.Curve(name=name, collection=collection).draw(p, cyclic=cyclic, fill=fill, tx=tx, ty=ty))
         
         pens.walk(walker)
         return curves
@@ -920,13 +920,13 @@ class BpyObj(_Chainable):
 
 #region Curve functions
 
-    def draw(self, path:P, cyclic=True, fill=True, th=0, tv=0, set_origin=True, clear=True) -> "BpyObj":
+    def draw(self, path:P, cyclic=True, fill=True, tx=0, ty=0, set_origin=True, clear=True) -> "BpyObj":
         if len(path) > 0:
             path = path.pen()
         
         path = path.removeOverlap()
         
-        amb = path.ambit(th=th, tv=tv)
+        amb = path.ambit(tx=tx, ty=ty)
 
         origin = amb.x + amb.w/2, amb.y + amb.h/2
 

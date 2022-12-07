@@ -29,7 +29,7 @@ def test_draw(r):
         , ro=1
         , tu=-120
         , kp={"y.italic/p":-20})
-        .align(r, tv=1)
+        .align(r, ty=1)
         .translate(0, -20)
         .s(hsl(0.65))
         .tag("type"))

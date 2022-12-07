@@ -24,7 +24,7 @@ def displacer(r, c):
         .collapse())
     
     for g in txt:
-        p = g.ambit(tv=1, th=1).psw
+        p = g.ambit(tx=1, ty=1).psw
         mouseDist = Line(p, c).length()
         p2 = np.array([p.x - c.x, p.y - c.y])
         distDifference = minMouseDist - mouseDist

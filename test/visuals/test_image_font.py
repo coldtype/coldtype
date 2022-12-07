@@ -38,12 +38,12 @@ def test_leibeheide(r):
         di = SkiaImage(img)
         imgs.append(di.translate(pen.ambit(th=1).x, 500))
     
-    #print(txt[1].ambit(th=1, tv=1).w, imgs[1].bounds().w)
+    #print(txt[1].ambit(tx=1, ty=1).w, imgs[1].bounds().w)
     
     return DPS([
         txt.frameSet(),
         txt,
-        DP(txt[0].ambit(th=1, tv=1)).f(0, 0.1),
+        DP(txt[0].ambit(tx=1, ty=1)).f(0, 0.1),
         #DP(imgs[0].bounds()).f(hsl(0.3, a=0.3)),
         imgs.ch(precompose(r))
     ])

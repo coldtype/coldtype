@@ -339,7 +339,7 @@ class Style():
 
     def __init__(self,
             font:Union[Font, str]=None,
-            font_size:int=12,            
+            font_size:int=12,
             tracking=0,
             trackingMode=1,
             kern_pairs=dict(),
