@@ -7,12 +7,13 @@ fnt = Font.MutatorSans()
 def glyphwise(f):
     def styler(g):
         return [
-            Style(fnt, 250, wdth=0.15),
-            Style(fnt, 250,
-                wdth=f.adj(-g.i*2).e("eeio", 2),
-                wght=f.adj(-g.i*3).e("seio", 3),
-                ro=1,
-                ty=1)]
+            Style(fnt, 250, wdth=0.15), # metrics
+            Style(fnt, 250 # animated
+                , wdth=f.adj(-g.i*2).e("eeio", 2)
+                , wght=f.adj(-g.i*3).e("seio", 3)
+                , ro=1
+                , ty=1
+                )]
 
     # should also work w/o an \n in between COLD & TYPE
     return (Glyphwise("COLD\nTYPE", styler, multiline=1)

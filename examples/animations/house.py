@@ -16,19 +16,15 @@ def render(f):
     hat = f.t.ki(42).index()
     hues = (0.6, 0.05) if hat < 2 else (0.75, 0.9)
 
-    style = dict(
-        font=Font.ColdObvi(),
-        fontSize=500,
-        tu=-150,
-        ro=1)
+    style = dict(font=Font.ColdObvi(), fontSize=500, tu=-150, ro=1)
     
-    return (PS([
-        (StSt("COLD", style, wdth=1-s*0.5))
+    return (P(
+        StSt("COLD", style, wdth=1-s*0.5)
             .f(hsl(hues[0], 0.75, 0.5))
             .î(1, lambda p: p.rt((hat+1)*-45)),
-        (StSt("TYPE", style, tu=-150-100*k, rotate=-8*k))
+        StSt("TYPE", style, tu=-150-100*k, rotate=-8*k)
             .f(hsl(hues[1], 0.75, 0.5))
-            .î([2, 1], lambda p: p.t(70*c, 0))])
+            .index([2, 1], lambda p: p.t(70*c, 0)))
         .xalign(f.a.r)
         .stack(30)
         .align(f.a.r.inset(0, 150))

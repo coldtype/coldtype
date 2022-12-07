@@ -21,8 +21,7 @@ colors = [hsl(0.17, 0.8), hsl(0.6, 0.8), hsl(0.95, 0.8)]
 @animation((tr.w*tn, tr.w*tn), tl=at, bg=0)
 def truchet1(f):
     def rotate(i, p):
-        #row, col = i//tn, i%tn
-        (p.rotate(90*int(rs[i]))
+        (p.rotate(90*int(rs[i])) # initial
             .rotate(f.t.ki(i%3).ec(eases[i%3], rng=(0, 90))))
 
     return (P(tr)

@@ -16,6 +16,9 @@ def drumloop(f):
     kicks = f.a.t.ki(0, f.i).index()
 
     def styler(g):
+        # return an array
+        # — first is style for metrics
+        # - second is mods to style for animation
         return [Style(Font.MuSan(), 350, tu=100),
             dict(wdth=f.a.t.ki(g.i).adsr((10, 130)),
                  wght=f.a.t.ki(g.i).adsr((5, 20), r=(0, 1)))]

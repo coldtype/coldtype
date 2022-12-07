@@ -17,9 +17,9 @@ def plus(f):
                 blur=5, cut=f.e("seio", 2, rng=(50, 150)), cutw=15, fill=fill))
             .blendmode(BlendMode.Plus))
     
-    return PS([
+    return P(
         lockup(0, hsl(f.e("l"))),
         lockup(1.25, hsl(f.adj(-5).e("l"))),
-        lockup(3.5, hsl(f.adj(-20).e("l")))])
+        lockup(3.5, hsl(f.adj(-20).e("l"))))
 
 release = plus.export("h264", loops=6)

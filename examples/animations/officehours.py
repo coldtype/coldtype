@@ -4,7 +4,7 @@ from coldtype.time.nle.ascii import AsciiTimeline
 at = AsciiTimeline(1, """
                                                                 <
         [L                                   ]
-                        [Er             ]
+                    [Er             ]
                      [F                                     ]
                [H                 ]             
 """)
@@ -32,7 +32,6 @@ def officehours(f):
 
     # after bg, so it doesn't effect bounds 
     txt.index([0, -1], lambda p: p
-        .translate(at.ki("Er").e("eeio", 1, r=(0, 24)), 0)
         .rotate(at.ki("Er").e("ceio", 0, r=(0, -360*2))))
     
     date = (StSt("X/X, XX:00 UTC", "MDNichrome.*R", 80)
@@ -40,6 +39,7 @@ def officehours(f):
 
     return P(
         bg.copy().translate(5, -5).f(0),
-        bg, txt,
+        bg,
+        txt,
         P(date.ambit().inset(-20)).f(0),
         date.f(1))
