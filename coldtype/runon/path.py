@@ -35,6 +35,7 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.recordingPen import RecordingPen
 from coldtype.geometry import Point, Rect, align
 from coldtype.interpolation import norm
+THTV_WARNING = False
 from coldtype.color import Color, normalize_color, rgb
 from coldtype.geometry import Rect
 from coldtype.img.blendmode import BlendMode
@@ -913,15 +914,20 @@ class P(Runon):
     def _normT(self, th, tv, tx, ty, t):
 
         import traceback
+        global THTV_WARNING
 
         if th is not None:
-            traceback.print_stack()
+            #traceback.print_stack()
             tx = th
-            print("! API CHANGE: th is now: tx")
+            if not THTV_WARNING:
+                print("! API CHANGE: th/tv are now tx/ty !")
+                THTV_WARNING = True
         if tv is not None:
-            traceback.print_stack()
+            #traceback.print_stack()
             ty = tv
-            print("! API CHANGE: tv is now: ty")
+            if not THTV_WARNING:
+                print("! API CHANGE: th/tv are now tx/ty !")
+                THTV_WARNING = True
 
         if t is not None:
             tx = bool(int(t))
