@@ -29,10 +29,10 @@ def casual1(f):
                 if z.on()
                     else at.ki(f"{g.i}w").io([8, 8], "eeo")))
         .align(f.a.r)
-        .centerPoint(f.a.r, (lidx, "thtvC"), i=li)
+        .centerPoint(f.a.r, (lidx, "txtyC"), i=li)
         .cond(True,
             lambda p: p
-                .scale(letter.io([15, 5], r=(1,10)), pt=(lidx, "tvC"))
+                .scale(letter.io([15, 5], r=(1,10)), pt=(lidx, "tyC"))
                 .scale(z.io([10, 15], ["eeo", "eei"], r=(1, 5))),
             lambda p: p
                 .scale(letter.e(r=(1,10)), pt=(lidx, "tvC"))

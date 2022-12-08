@@ -17,8 +17,10 @@ track = (P()
     .translate(0, -20))
 
 def ds(e1):
-    # 52.998 is a magic number for this string
-    return StSt("Digestive", Font.Find("Digestive"), 52.98, wdth=e1, ro=1)
+    # 52.98 is a magic number for this string
+    # uncomment the 119-rendered static at the bottom
+    # to calibrate for a different string/font
+    return StSt("Digestive", "Digestive", 52.98, wdth=e1, ro=1)
 
 minw = ds(0).ambit(tx=1).point("SE").x
 maxw = ds(1).ambit(tx=1).point("SE").x
@@ -38,15 +40,14 @@ def render_snake(f):
 @animation(rect=(1920,500), timeline=120, bg=hsl(0, l=0.97))
 def render(f):
     now = render_snake(f)
-    return (PS([
+    return (P(
             P(f.a.r).scale(0.3).fssw(-1, -1, 2),
             P(f.a.r).scale(0.25).fssw(-1, -1, 2),
             (track.copy()
                 .fssw(None, hsl(0.65, l=0.9), 15)
                 .translate(0, -8)),
             #render_snake(Frame(119, f.a)).f(0),
-            now.f(hsl(0.9, l=0.6, s=0.7)),
-        ])
+            now.f(hsl(0.9, l=0.6, s=0.7)))
         .translate(0, -30)
         .scale(4.1)
         .align(f.a.r))
