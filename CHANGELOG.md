@@ -204,6 +204,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ### Added
 - `.up` as canonical form of `.ups`
 - Argument-less boolean operation methods for plural `P`
+- Automatic _-prefixed versions of all P methods, to get clojure-style "phrase"-commenting
 ### Changed
 - `Mondrian` -> `Scaffold`
 - `th` & `tv` (true-horizontal & true-vertical) have been renamed to potential confusion (since `th` could be taken to mean `true-height`) — these are now `tx` and `ty` respectively

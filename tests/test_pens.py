@@ -27,6 +27,21 @@ def test_scaleToRect(_r):
     
     return dps.align(_r).scale(0.5)
 
+@test(10)
+def test_underscore_method(r):
+    p1 = P(r.take(0.5, "E"))
+    p1_a1 = p1.ambit()
+    p1._align(r) # this should do nothing
+    p1_a2 = p1.ambit()
+    p1.align(r)
+    p1_a3 = p1.ambit()
+
+    assert p1_a1 == p1_a2
+    assert p1_a1 != p1_a3
+    assert p1_a2 != p1_a3
+
+    return p1
+
 @test(100)
 def test_distribute_and_track(_r):
     dps = P()

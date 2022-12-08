@@ -31,6 +31,10 @@ def write_last(src):
             last_sig = (last_sig[:-1] + " -> \"P\":")
         annotated.append(last_sig)
         annotated.append(src)
+        commented_form = last_sig.replace("def ", "def _")
+        #annotated.append(commented_form)
+        annotated.append(f"{commented_form}\n        return self\n\n")
+        print(commented_form)
         print(last_sig.splitlines()[0])
 
 for f in matches:
