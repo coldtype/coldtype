@@ -79,24 +79,24 @@ class LayoutMixin():
         f = self._data.get("frame", None)
 
         # true bounds
-        if th and tv:
+        if tx and ty:
             return self.bounds()
         
         # true no-bounds
-        elif not th and not tv and f:
+        elif not tx and not ty and f:
             return f
         
         # partial bounds
         elif f and (self.val_present() or (self.data("glyphName") and len(self) == 0)):
             if self.empty():
-                if th:
+                if tx:
                     f = f.setw(0)
-                elif tv:
+                elif ty:
                     f = f.seth(0)
                 return f
             else:
                 b = self.bounds()
-                if th:
+                if tx:
                     return Rect(b.x, f.y, b.w, f.h)
                 else:
                     return Rect(f.x, b.y, f.w, b.h)
@@ -206,7 +206,7 @@ class LayoutMixin():
         if callable(rect):
             rect = rect(self)
         
-        self.align(rect, x=None, y=y, th=th, tv=tv)
+        self.align(rect, x=None, y=y, th=tx, tv=ty)
         return self
     
     xå = xalign
@@ -225,10 +225,10 @@ class LayoutMixin():
         elif point is False:
             return Point(0, 0)
         elif isinstance(point, str):
-            if point.startswith("th"):
+            if point.startswith("tx"):
                 a = self.ambit(tx=1, ty=0)
                 point = point[2:]
-            elif point.startswith("tv"):
+            elif point.startswith("ty"):
                 a = self.ambit(tx=0, ty=1)
                 point = point[2:]
             elif point.startswith("t"):
@@ -418,7 +418,7 @@ class LayoutMixin():
                 off += frame.w
         return self
     
-    def spread(self, tracking=0, th=0, zero=False):
+    def spread(self, tracking=0, tx=0, zero=False):
         "Horizontal distribution of elements"
         if zero:
             for p in self:
