@@ -951,7 +951,7 @@ class P(Runon):
         passing either ignores a non-bounds-derived frame
         in either dimension"""
         
-        th, tv = self._normT(th, tv, tx, ty, t)
+        tx, ty = self._normT(th, tv, tx, ty, t)
         f = self._data.get("frame", None)
 
         # true bounds
@@ -980,9 +980,9 @@ class P(Runon):
         # pass-to-els
         elif len(self._els) > 0:
             try:
-                union = self._els[0].ambit(tx=th, ty=tv)
+                union = self._els[0].ambit(tx=tx, ty=ty)
                 for p in self._els[1:]:
-                    a = p.ambit(tx=th, ty=tv)
+                    a = p.ambit(tx=tx, ty=ty)
                     if a.x == 0 and a.y == 0 and a.w == 0 and a.h == 0:
                         continue
                     union = union.union(a)
@@ -1037,8 +1037,8 @@ class P(Runon):
         if not isinstance(rect, Rect):
             rect = rect.rect
         
-        th, tv = self._normT(th, tv, tx, ty, None)
-        r = self.ambit(tx=th, ty=tv)
+        tx, ty = self._normT(th, tv, tx, ty, None)
+        r = self.ambit(tx=tx, ty=ty)
 
         if h is not None:
             r = r.seth(h)
@@ -1059,20 +1059,20 @@ class P(Runon):
 
     def xalign(self, rect=None, x="centerx", th=None, tv=None, tx=1, ty=0) -> "P":
 
-        th, tv = self._normT(th, tv, tx, ty, None)
+        tx, ty = self._normT(th, tv, tx, ty, None)
 
         if x == "C":
             x = "CX"
         
         if rect is None:
-            rect = self.ambit(tx=th, ty=tv)
+            rect = self.ambit(tx=tx, ty=ty)
         
         if callable(rect):
             rect = rect(self)
         
-        self.align(rect, x=x, y=None, tx=th, ty=tv)
+        self.align(rect, x=x, y=None, tx=tx, ty=ty)
         for el in self._els:
-            el.align(rect, x=x, y=None, tx=th, ty=tv)
+            el.align(rect, x=x, y=None, tx=tx, ty=ty)
         return self
     
     xå = xalign
@@ -1080,10 +1080,10 @@ class P(Runon):
 
     def yalign(self, rect=None, y="centery", th=None, tv=None, tx=0, ty=1) -> "P":
 
-        th, tv = self._normT(th, tv, tx, ty, None)
+        tx, ty = self._normT(th, tv, tx, ty, None)
 
         if rect is None:
-            rect = self.ambit(tx=th, ty=tv)
+            rect = self.ambit(tx=tx, ty=ty)
         
         if callable(rect):
             rect = rect(self)
@@ -1096,12 +1096,12 @@ class P(Runon):
 
     def _normPoint(self, point=None, th=None, tv=None, tx=0, ty=0, **kwargs) -> "P":
 
-        th, tv = self._normT(th, tv, tx, ty, kwargs.get("t"))
+        tx, ty = self._normT(th, tv, tx, ty, kwargs.get("t"))
 
         if "pt" in kwargs:
             point = kwargs["pt"]
         
-        a = self.ambit(tx=th, ty=tv)
+        a = self.ambit(tx=tx, ty=ty)
         if point is None:
             return a.pc
         elif point == 0:
@@ -1196,17 +1196,17 @@ class P(Runon):
 
     def zero(self, th=None, tv=None, tx=0, ty=0) -> "P":
 
-        th, tv = self._normT(th, tv, tx, ty, None)
-        x, y, _, _ = self.ambit(tx=th, ty=tv)
+        tx, ty = self._normT(th, tv, tx, ty, None)
+        x, y, _, _ = self.ambit(tx=tx, ty=ty)
         self.translate(-x, -y)
         return self
     
 
     def centerZero(self, th=None, tv=None, tx=0, ty=0):
 
-        th, tv = self._normT(th, tv, tx, ty, None)
+        tx, ty = self._normT(th, tv, tx, ty, None)
 
-        x, y, w, h = self.ambit(tx=th, ty=tv)
+        x, y, w, h = self.ambit(tx=tx, ty=ty)
         nx, ny = -x-w/2, -y-h/2
         return (self
             .t(-x-w/2, -y-h/2)
@@ -1215,22 +1215,22 @@ class P(Runon):
 
     def centerPoint(self, rect, pt, interp=1, th=None, tv=None, tx=1, ty=0, **kwargs) -> "P":
 
-        th, tv = self._normT(th, tv, tx, ty, None)
+        tx, ty = self._normT(th, tv, tx, ty, None)
 
         if "i" in kwargs:
             interp = kwargs["i"]
         
-        x, y = self._normPoint(pt, tx=th, ty=tv, **kwargs)
+        x, y = self._normPoint(pt, tx=tx, ty=ty, **kwargs)
 
         return self.translate(norm(interp, 0, rect.w/2-x), norm(interp, 0, rect.h/2-y))
     
 
     def skew(self, x=0, y=0, point=None, th=None, tv=None, tx=1, ty=0, **kwargs) -> "P":
 
-        th, tv = self._normT(th, tv, tx, ty, None)
+        tx, ty = self._normT(th, tv, tx, ty, None)
 
         t = Transform()
-        px, py = self._normPoint(point, tx=th, ty=tv, **kwargs)
+        px, py = self._normPoint(point, tx=tx, ty=ty, **kwargs)
         t = t.translate(px, py)
         t = t.skew(x, y)
         t = t.translate(-px, -py)
@@ -1240,10 +1240,10 @@ class P(Runon):
     def rotate(self, degrees, point=None, th=None, tv=None, tx=1, ty=1, **kwargs) -> "P":
 
         """Rotate this shape by a degree (in 360-scale, counterclockwise)."""
-        th, tv = self._normT(th, tv, tx, ty, None)
+        tx, ty = self._normT(th, tv, tx, ty, None)
 
         t = Transform()
-        x, y = self._normPoint(point, tx=th, ty=tv, **kwargs)
+        x, y = self._normPoint(point, tx=tx, ty=ty, **kwargs)
         t = t.translate(x, y)
         t = t.rotate(math.radians(degrees))
         t = t.translate(-x, -y)
@@ -1255,10 +1255,10 @@ class P(Runon):
     def scale(self, scaleX, scaleY=None, point=None, th=None, tv=None, tx=1, ty=0, **kwargs) -> "P":
 
         """Scale this shape by a percentage amount (1-scale)."""
-        th, tv = self._normT(th, tv, tx, ty, None)
+        tx, ty = self._normT(th, tv, tx, ty, None)
 
         t = Transform()
-        x, y = self._normPoint(point, tx=th, ty=tv, **kwargs)
+        x, y = self._normPoint(point, tx=tx, ty=ty, **kwargs)
         if point is not False:
             t = t.translate(x, y)
         t = t.scale(scaleX, scaleY or scaleX)
@@ -1307,7 +1307,7 @@ class P(Runon):
 
     def distribute(self, v=False, tracks=None, th=None, tv=None, tx=0, ty=0) -> "P":
 
-        th, tv = self._normT(th, tv, tx, ty, None)
+        tx, ty = self._normT(th, tv, tx, ty, None)
 
         off = 0
         for idx, p in enumerate(self):
@@ -1315,7 +1315,7 @@ class P(Runon):
                 t = tracks[idx-1]
                 #print(t)
                 off += t
-            frame = p.ambit(tx=th, ty=tv)
+            frame = p.ambit(tx=tx, ty=ty)
             if v:
                 if frame.y < 0:
                     p.translate(0, -frame.y)
@@ -1337,7 +1337,7 @@ class P(Runon):
         if zero:
             for p in self:
                 p.zero()
-        ambits = [p.ambit(tx=th, ty=0).expand(tracking, "E") for p in self._els]
+        ambits = [p.ambit(tx=tx, ty=0).expand(tracking, "E") for p in self._els]
         
         ax = 0
         for idx, p in enumerate(self._els):
