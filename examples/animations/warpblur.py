@@ -2,17 +2,15 @@ from coldtype import *
 from coldtype.fx.warping import warp
 from coldtype.fx.skia import phototype
 
-peshka = Font.Find("CoFoPeshkaV")
-
 keyframes = [
     dict(wdth=0, wght=0, rotate=-15, leading=200,
         font_size=700, warp=0, blur=15),
     dict(wdth=1, wght=1, rotate=0, leading=10,
         font_size=50, warp=200, blur=5),
     dict(wdth=0, wght=1, rotate=15, leading=100,
-        font_size=500, warp=50, blur=3),
+        font_size=320, warp=50, blur=3),
     dict(wdth=0.5, wght=0.5, rotate=0, leading=-470,
-        font_size=330, warp=0, blur=1)]
+        font_size=250, warp=0, blur=1)]
 
 at = AsciiTimeline(8, 30, """
                 <
@@ -22,7 +20,7 @@ at = AsciiTimeline(8, 30, """
 @animation(timeline=at, bg=0)
 def warp_blur(f):
     state = f.t.kf("eeio")
-    return (StSt("WARP\nBLUR", peshka, ro=1, **state)
+    return (StSt("WARP\nBLUR", Font.MuSan(), ro=1, **state)
         .xalign(f.a.r)
         .align(f.a.r)
         .pen()
