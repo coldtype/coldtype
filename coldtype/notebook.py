@@ -42,7 +42,7 @@ def show(fmt="png", rect=None, align=False, padding=[0, 0], tx=0, ty=0, scale=0.
         raise Exception("pip install skia-python")
     
     def _display(pen:P):
-        #pen = pen.copy(with_data=1)
+        pen = pen.copy(with_data=1)
         pen.data(_notebook_shown=True)
         nonlocal rect, fmt
 
