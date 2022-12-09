@@ -41,8 +41,8 @@ def show(fmt="png", rect=None, align=False, padding=[0, 0], tx=0, ty=0, scale=0.
     if not precompose and fmt == "png":
         raise Exception("pip install skia-python")
     
-    def _display(pen:P):
-        pen = pen.copy(with_data=1)
+    def _display(_pen:P):
+        pen = _pen.copy(with_data=1)
         pen.data(_notebook_shown=True)
         nonlocal rect, fmt
 
@@ -75,7 +75,8 @@ def show(fmt="png", rect=None, align=False, padding=[0, 0], tx=0, ty=0, scale=0.
         elif fmt == "svg":
             svg = SVGPen.Composite(pen, rect, viewBox=False)
             display(SVG(svg))
-        return pen
+        
+        return _pen
     
     return _display
 
