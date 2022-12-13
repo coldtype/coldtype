@@ -2361,7 +2361,7 @@ class P(Runon):
         return self
 
 
-    def toAudio(self, flatten=1, centered=False, loops=200, filename=None):
+    def toAudio(self, flatten=1, centered=False, loops=3, filename=None):
 
         import numpy as np
         from pedalboard.io import AudioFile
@@ -2380,10 +2380,10 @@ class P(Runon):
             with AudioFile(filename, "w", samplerate=48000, num_channels=2) as f:
                 f.write(audio)
         
-        return audio
+        return audio, len(left)
     
 
-    def _toAudio(self, flatten=1, centered=False, loops=200, filename=None):
+    def _toAudio(self, flatten=1, centered=False, loops=3, filename=None):
         return self
 
 
