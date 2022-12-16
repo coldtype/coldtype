@@ -1609,6 +1609,30 @@ class P(Runon):
         return self
 
 
+    def grid(self, every, spread=0, stack=0) -> "P":
+
+        top = type(self)()
+        row = None
+        
+        for idx, p in enumerate(self._els):
+            if idx%every == 0:
+                row = type(self)()
+                top.append(row)
+            row.append(p)
+        
+        self._els = top._els
+
+        for row in self:
+            row.spread(spread)
+        
+        self.stack(stack)
+        return self
+    
+
+    def _grid(self, every, spread=0, stack=0) -> "P":
+        return self
+
+
     def gridlayer(self, nx, ny=None, track=0, lead=0):
 
         """Spread nx copies and then stack ny copies, w/ optional tracking & leading"""

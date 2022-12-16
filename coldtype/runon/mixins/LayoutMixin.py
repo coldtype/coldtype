@@ -467,6 +467,24 @@ class LayoutMixin():
             p.translate(0, leading*(ln-1-idx))
         return self
     
+    def grid(self, every, spread=0, stack=0):
+        top = type(self)()
+        row = None
+        
+        for idx, p in enumerate(self._els):
+            if idx%every == 0:
+                row = type(self)()
+                top.append(row)
+            row.append(p)
+        
+        self._els = top._els
+
+        for row in self:
+            row.spread(spread)
+        
+        self.stack(stack)
+        return self
+    
     def gridlayer(self, nx, ny=None, track=0, lead=0):
         """Spread nx copies and then stack ny copies, w/ optional tracking & leading"""
         return (self
