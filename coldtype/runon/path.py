@@ -1456,24 +1456,27 @@ class P(Runon):
         return self
 
 
-    def scaleToRect(self, rect, preserveAspect=True, shrink_only=False) -> "P":
+    def scaleToRect(self, rect, preserveAspect=True, shrink_only=False, tx=1, ty=0) -> "P":
 
         """Scale this shape into a `Rect`."""
         bounds = self.bounds()
+        if not bounds.nonzero():
+            return self
+
         h = rect.w / bounds.w
         v = rect.h / bounds.h
         if preserveAspect:
             scale = h if h < v else v
             if shrink_only and scale >= 1:
                 return self
-            return self.scale(scale)
+            return self.scale(scale, tx=tx, ty=ty)
         else:
             if shrink_only and (h >= 1 or v >= 1):
                 return self
-            return self.scale(h, v)
+            return self.scale(h, v, tx=tx, ty=ty)
     
 
-    def _scaleToRect(self, rect, preserveAspect=True, shrink_only=False) -> "P":
+    def _scaleToRect(self, rect, preserveAspect=True, shrink_only=False, tx=1, ty=0) -> "P":
         return self
 
 

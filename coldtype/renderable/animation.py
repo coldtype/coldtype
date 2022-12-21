@@ -16,6 +16,24 @@ from coldtype.color import bw, hsl
 
 from coldtype.renderable.renderable import renderable, Action, RenderPass, Overlay
 
+
+def gifski(a:"animation", passes, open=False):
+    """simple wrapper for already-installed gifski"""
+    root = a.pass_path(f"%4d.{a.fmt}").parent.parent
+    gif = root / (a.name + ".gif")
+    run([
+        "gifski",
+        "--fps", str(a.timeline.fps),
+        "--width", str(a.rect.w),
+        "-o", gif,
+        *[p.output_path for p in passes if p.render == a]])
+    print("\n")
+    
+    if open:
+        os.system(f"open {gif.parent}")
+    return gif
+
+
 class animation(renderable, Timeable):
     """
     Base class for any frame-wise animation animatable by Coldtype
@@ -276,6 +294,11 @@ class animation(renderable, Timeable):
                 fe.open()
             return fe
         return _export
+    
+    def gifski(self, open=False):
+        def _gifski(passes):
+            return gifski(self, passes, open=open)
+        return _gifski
 
 
 class aframe(animation):
@@ -423,17 +446,3 @@ class fontpreview(animation):
     def passes(self, action, renderer_state, indices=[]):
         frames = self.active_frames(action, renderer_state, indices)
         return [RenderPass(self, action, i, [Frame(i, self), self.matches[i]]) for i in frames]
-
-
-def gifski(a:animation, passes):
-    """simple wrapper for already-installed gifski"""
-    root = a.pass_path(f"%4d.{a.fmt}").parent.parent
-    gif = root / (a.name + ".gif")
-    run([
-        "gifski",
-        "--fps", str(a.timeline.fps),
-        "--width", str(a.rect.w),
-        "-o", gif,
-        *[p.output_path for p in passes if p.render == a]])
-    print("\n")
-    return gif

@@ -492,7 +492,9 @@ class Style():
                     if axis.axisTag == "wdth": # the only reasonable default
                         self.variationLimits[axis.axisTag] = axis.minValue
                     if axis.axisTag in kwargs and axis.axisTag not in variations:
-                        unnormalized_variations[axis.axisTag] = kwargs[axis.axisTag]
+                        v = kwargs[axis.axisTag]
+                        if v is not None:
+                            unnormalized_variations[axis.axisTag] = kwargs[axis.axisTag]
                     if generic in kwargs and axis.axisTag not in variations:
                         unnormalized_variations[axis.axisTag] = kwargs[generic]
 

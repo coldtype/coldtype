@@ -242,6 +242,13 @@ class renderable():
             else:
                 self.rasterizer = "skia"
     
+    def choose(self, fields):
+        rec = {}
+        for f in fields:
+            if hasattr(self, f):
+                rec[f] = getattr(self, f)
+        return rec
+    
     def post_read(self):
         pass
     
@@ -454,6 +461,7 @@ class renderable():
     def profile(self, file="profile.profile"):
         import cProfile
         cProfile.runctx(f"self._profile_render_all()", {}, {"self": self}, filename=file)
+
 
 
 class skia_direct(renderable):

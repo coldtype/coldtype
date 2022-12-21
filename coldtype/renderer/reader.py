@@ -321,7 +321,9 @@ class SourceReader():
             return root / "demo/blank.py"
         elif name == "boiler":
             return root / "demo/boiler.py"
-        elif name == "glyphs":
+        elif name == "glyphloop" or name == "gl":
+            return root / "demo/glyphloop.py"
+        elif name == "glyphs" or name == "g":
             return root / "demo/glyphs.py"
         elif name == "midi":
             return root / "demo/midi.py"

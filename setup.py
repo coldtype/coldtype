@@ -54,6 +54,7 @@ setuptools.setup(
             "demo/MutatorSans.ttf",
             "demo/demo.py",
             "demo/glyphs.py",
+            "demo/glyphloop.py",
             "demo/midi.py",
             "demo/blank.py",
             "demo/boiler.py",
