@@ -11,6 +11,35 @@ def sibling(root, file):
 def raw_ufo(path):
     return DefconFont(normalize_font_path(path))
 
+def quick_ufo(path, familyName
+    , styleName="Regular"
+    , versionMajor=1
+    , versionMinor=0
+    , unitsPerEm=1000
+    , descender=-250
+    , ascender=750
+    , capHeight=750
+    , xHeight=500):
+    np:Path = Path(normalize_font_path(path))
+    if not np.exists():
+        ufo = DefconFont()
+        ufo.save(str(np))
+    
+    ufo = DefconFont(str(np))
+
+    ufo.info.familyName = familyName
+    ufo.info.styleName = styleName
+    ufo.info.versionMajor = versionMajor
+    ufo.info.versionMinor = versionMinor
+    ufo.info.unitsPerEm = unitsPerEm
+    ufo.info.descender = descender
+    ufo.info.xHeight = xHeight
+    ufo.info.capHeight = capHeight
+    ufo.info.ascender = ascender
+
+    return ufo
+
+
 def ßhide(el):
     return None
 

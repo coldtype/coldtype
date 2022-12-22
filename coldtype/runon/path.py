@@ -1929,15 +1929,18 @@ class P(Runon):
         new_val = []
         for mv, pts in base._val.value:
             if mv == "addComponent":
-                if glyphSet is None:
-                    raise Exception("addComponent requires glyphSet= on glyph()")
                 component_name, matrix = pts
                 rp = RecordingPen()
                 tp = TransformPen(rp, Transform(*matrix))
-                glyphSet[component_name].draw(tp)
+                component = glyphSet[component_name]
+                # recursively realize any nested components
+                realized = type(self)().glyph(component, glyphSet)
+                realized.replay(tp)
                 p = type(self)()
                 p._val = rp
                 out.append(p)
+                if "addComponent" in str(p._val.value):
+                    print("> NESTED COMPONENT", component_name)
             else:
                 new_val.append((mv, pts))
         

@@ -18,7 +18,12 @@ class SkiaPathPen(BasePen):
         if h is not None:
             tp = TransformPen(self, (1, 0, 0, -1, 0, h))
             if hasattr(dat, "_val"):
-                dat._val.replay(tp)
+                try:
+                    dat._val.replay(tp)
+                except TypeError:
+                    #print("FAIL")
+                    #print(dat._val.value)
+                    pass
             else:
                 dat.replay(tp)
         else:

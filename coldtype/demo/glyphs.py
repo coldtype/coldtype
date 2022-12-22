@@ -21,8 +21,7 @@ if by_char:
 else:
     os2 = fnt.font.ttFont["OS/2"]
     glyphSet = fnt.font.ttFont.getGlyphSet()
-    glyphs = glyphSet.keys()
-    els = glyphs
+    els = glyphSet.keys()
 
 sq = math.ceil(math.sqrt(len(els)))
 fs = args["fontSize"]
@@ -53,4 +52,4 @@ def wt1(u):
 
     return P(
         P().gridlines(u.r.inset(10), sq, sq),
-        P().enumerate(all_chars if by_char else glyphs, showChar))
+        P().enumerate(els, showChar))
