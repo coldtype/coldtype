@@ -11,7 +11,8 @@ def sibling(root, file):
 def raw_ufo(path):
     return DefconFont(normalize_font_path(path))
 
-def quick_ufo(path, familyName
+def quick_ufo(path
+    , familyName
     , styleName="Regular"
     , versionMajor=1
     , versionMinor=0
@@ -19,8 +20,10 @@ def quick_ufo(path, familyName
     , descender=-250
     , ascender=750
     , capHeight=750
-    , xHeight=500):
-    np:Path = Path(normalize_font_path(path))
+    , xHeight=500
+    ):
+    np:Path = Path(path).expanduser().resolve()
+    
     if not np.exists():
         ufo = DefconFont()
         ufo.save(str(np))
