@@ -62,6 +62,20 @@ class Scaffold(Runon):
         if self.val_present():
             self._extend_with_tags(
                 self.r.grid(columns, rows), tags)
+            
+            if not hasattr(self, "_borders"):
+                self._borders = []
+            
+            for _x in range(0, columns-1):
+                self._borders.append([
+                    self[_x].ee.pn,
+                    self[_x].ee.intersection(self.r.es)])
+            
+            for _y in range(0, rows-1):
+                self._borders.append([
+                    self[_y*columns].psw,
+                    self[_y*columns].es.intersection(self.r.ee)])
+            
             self._val = None
         else:
             for el in self._els:
@@ -83,7 +97,12 @@ class Scaffold(Runon):
         for k, v in kwargs.items(): self[k].cssgrid(*v)
         return self
     
-    def borders(self, regular=None, bold=None):
+    def borders(self):
+        if hasattr(self, "_borders"):
+            from coldtype.runon.path import P
+            return (P().enumerate(self._borders, lambda x: P().line(x.el).fssw(-1, 0, 1)))
+    
+    def cssborders(self, regular=None, bold=None):
         if hasattr(self, "_borders"):
             from coldtype.runon.path import P
             out = P()

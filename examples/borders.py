@@ -12,9 +12,12 @@ def borders(r):
     reg = lambda p: p.fssw(-1, hsl(0.5), 10)
     bold = lambda p: p.fssw(-1, hsl(0.9), 20)
 
+    s["b"].grid(4, 4)
+
     return P(
-        s["a"].borders(lambda p: p.fssw(-1, hsl(0.7), 5), -1),
-        s["a/d"].borders(),
-        s["d"].borders(),
-        s["a"].borders(-1, bold),
-        s.borders(reg, bold))
+        s["a"].cssborders(lambda p: p.fssw(-1, hsl(0.7), 5), -1),
+        s["a/d"].cssborders(),
+        s["d"].cssborders(),
+        s["a"].cssborders(-1, bold),
+        s.cssborders(reg, bold),
+        s["b"].borders().fssw(-1, hsl(0.07, 0.7), 2))
