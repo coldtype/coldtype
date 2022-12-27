@@ -35,7 +35,7 @@ def casual1(f):
                 .scale(letter.io([15, 5], r=(1,10)), pt=(lidx, "tyC"))
                 .scale(z.io([10, 15], ["eeo", "eei"], r=(1, 5))),
             lambda p: p
-                .scale(letter.e(r=(1,10)), pt=(lidx, "tvC"))
+                .scale(letter.e(r=(1,10)), pt=(lidx, "tyC"))
                 .scale(z.e("eeio", r=(1, 5))))
         .f(0))
 

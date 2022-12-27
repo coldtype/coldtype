@@ -23,7 +23,7 @@ def choreography(f):
         .align(f.a.r)
         .f(hsl(0.7, 1))
         .mapv(lambda i, p: p
-            .rotate(at.ki("ro", f.i-i).e("eeio", 0, r=360)))
-        .centerPoint(f.a.r, (lidx, "tvC"), i=li)
-        .scale(letter.e(r=(1,3)), pt=(lidx, "tvC"))
+            .rotate(at.ki("ro", f.i-i).e("eeio", 0, r=-360)))
+        .centerPoint(f.a.r, (lidx, "tyC"), i=li)
+        .scale(letter.e(r=(1,4)), pt=(lidx, "tyC"))
         )
