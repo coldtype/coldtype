@@ -89,6 +89,8 @@ class axidrawing(renderable):
         speed_pendown=100,
         speed_penup=100,
         pen_rate_raise=100,
+        pen_rate_lower=100,
+        pen_delay_down=0,
         move_delay=0,
         ):
         def _draw(_):
@@ -132,6 +134,8 @@ class axidrawing(renderable):
                 ad.options.speed_pendown = speed_pendown
                 ad.options.speed_penup = speed_penup
                 ad.options.pen_rate_raise = pen_rate_raise
+                ad.options.pen_rate_lower = pen_rate_lower
+                ad.options.pen_delay_down = pen_delay_down
                 ad.connect()
                 print("connected/")
                 ad.penup()
