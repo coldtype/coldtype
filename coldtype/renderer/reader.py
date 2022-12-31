@@ -517,6 +517,7 @@ class SourceReader():
             versions = re.findall(r"VERSIONS\s?=.*\#\/VERSIONS", source_code, re.DOTALL)[0]
             versions = eval(re.sub("VERSIONS\s?=", "", versions))
             version = versions[self.renderer.source_reader.config.version_index]
+            self.renderer.state.versions = versions
 
         self.program = run_source(
             self.filepath,

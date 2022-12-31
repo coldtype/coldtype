@@ -1227,6 +1227,14 @@ class Renderer():
                 self.actions_queued.append(Action.PreviewStoryboardReload)
             self.actions_queued.append(KeyboardShortcut.Release)
             return Action.PreviewStoryboardReload
+        elif shortcut == KeyboardShortcut.CycleVersions:
+            vi = self.source_reader.config.version_index
+            versions = self.state.versions
+            vi += 1
+            if vi >= len(versions):
+                vi = 0
+            self.source_reader.config.version_index = vi
+            return Action.PreviewStoryboardReload
         elif shortcut == KeyboardShortcut.Sleep:
             # just delays dequeuing next action by a frame
             return Action.PreviewStoryboard
@@ -1567,6 +1575,14 @@ class Renderer():
         except ValueError:
             args.append("-g")
             args.append(g)
+        
+        vi = str(int(self.source_reader.config.version_index))
+        try:
+            vii = args.index("-vi")
+            args[vii+1] = vi
+        except ValueError:
+            args.append("-vi")
+            args.append(vi)
         
         lc = []
         for c in self.state.cursor_history[-3:]:

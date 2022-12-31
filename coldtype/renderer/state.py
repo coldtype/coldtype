@@ -26,6 +26,8 @@ class RendererState():
         
         self.memory = None
         self.memory_initial = None
+
+        self.versions = []
         
         self.playing = False
 
