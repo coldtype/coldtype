@@ -516,10 +516,7 @@ class SourceReader():
         if re.findall(r"VERSIONS\s?=", source_code):
             versions = re.findall(r"VERSIONS\s?=.*\#\/VERSIONS", source_code, re.DOTALL)[0]
             versions = eval(re.sub("VERSIONS\s?=", "", versions))
-            version = versions[self.renderer.state.version_index]
-            
-            # if program.get("VERSIONS"):
-            #     version = program.get("VERSIONS")[0]
+            version = versions[self.renderer.source_reader.config.version_index]
 
         self.program = run_source(
             self.filepath,

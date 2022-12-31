@@ -75,7 +75,6 @@ class Action(Enum):
     ClearLastRender = "clear_last_render"
     ClearRenderedFrames = "clear_rendered_frames"
     RestartRenderer = "restart_renderer"
-    ToggleMultiplex = "toggle_multiplex"
     Kill = "kill"
 
 

@@ -1094,7 +1094,8 @@ class Renderer():
             self.on_action(Action.RenderWorkarea)
             return -1
         elif shortcut == KeyboardShortcut.ToggleMultiplex:
-            self.on_action(Action.ToggleMultiplex)
+            self.source_reader.config.multiplex = not self.source_reader.config.multiplex
+            print(f"<coldtype: multiplexing={self.source_reader.config.multiplex}>")
             return -1
         
         elif shortcut == KeyboardShortcut.OverlayInfo:
@@ -1338,9 +1339,6 @@ class Renderer():
         elif action == Action.Kill:
             os.kill(os.getpid(), signal.SIGINT)
             #self.on_exit(restart=False)
-        elif action == Action.ToggleMultiplex:
-            self.source_reader.config.multiplex = not self.source_reader.config.multiplex
-            print(f"<coldtype: multiplexing={self.source_reader.config.multiplex}>")
         elif action == Action.ClearLastRender:
             self.clear_last_render()
             self.action_waiting = Action.PreviewStoryboard
