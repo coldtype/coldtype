@@ -957,7 +957,7 @@ class Renderer():
         attr_functions = []
 
         for render in renders:
-            if hasattr(render, fnname):
+            if hasattr(render, fnname) and getattr(render, fnname):
                 attr_functions.append([render, getattr(render, fnname)])
                 print(fnname, attr_functions[-1])
         
@@ -972,6 +972,7 @@ class Renderer():
                 return
         
         if attr_functions:
+            print(">>>>>>>>>>>", attr_functions)
             def _fn(passes):
                 for render, af in attr_functions:
                     res = af(render) # filter passes?

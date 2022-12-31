@@ -23,6 +23,8 @@ class RendererState():
         self._last_filepath = None
         self.cv2caps = {}
         self.inputs = []
+
+        self.version_index = int(renderer.args.version_index)
         
         self.memory = None
         self.memory_initial = None

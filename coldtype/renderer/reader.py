@@ -509,6 +509,17 @@ class SourceReader():
         memory = {}
         if self.renderer:
             memory = self.renderer.state.memory
+        
+        source_code = self.codepath.read_text()
+        version = None
+
+        if re.findall(r"VERSIONS\s?=", source_code):
+            versions = re.findall(r"VERSIONS\s?=.*\#\/VERSIONS", source_code, re.DOTALL)[0]
+            versions = eval(re.sub("VERSIONS\s?=", "", versions))
+            version = versions[self.renderer.state.version_index]
+            
+            # if program.get("VERSIONS"):
+            #     version = program.get("VERSIONS")[0]
 
         self.program = run_source(
             self.filepath,
@@ -516,7 +527,8 @@ class SourceReader():
             self.inputs,
             memory,
             __RUNNER__=self.runner,
-            __BLENDER__=self.blender_io())
+            __BLENDER__=self.blender_io(),
+            __VERSION__=version)
         
         self.candidates = self.renderable_candidates(
             output_folder_override, self.config.add_time_viewers)

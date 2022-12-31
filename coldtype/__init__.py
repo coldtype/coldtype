@@ -45,6 +45,7 @@ __version__ = "0.10.0"
 
 __FILE__ = None # will be redefined contextually
 __BLENDER__ = None # will be redefined contextually
+__VERSION__ = {} # will be redefined contextually
 
 __sibling__ = lambda x: x # will be redefined contextually
 __inputs__ = [] # will be redefined contextually
