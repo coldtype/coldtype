@@ -951,16 +951,34 @@ class Renderer():
         if number is not None:
             fnname = "numpad"
         
+        trigger = Action.RenderAll
+        renders = self.renderables(trigger)
+
+        attr_functions = []
+
+        for render in renders:
+            if hasattr(render, fnname):
+                attr_functions.append([render, getattr(render, fnname)])
+                print(fnname, attr_functions[-1])
+        
         fn = self.buildrelease_fn(fnname)
-        if not fn:
+        
+        if not fn and not attr_functions:
             if fnname == "release" and self.last_animation:
                 print("DEFAULT RELEASE == ffmpeg mp4")
                 fn = self.last_animation.export("h264", audio=self.last_animation.audio)
             else:
                 print(f"No `{fnname}` fn defined in source")
                 return
-        trigger = Action.RenderAll
-        renders = self.renderables(trigger)
+        
+        if attr_functions:
+            def _fn(passes):
+                for render, af in attr_functions:
+                    res = af(render) # filter passes?
+                    if callable(res):
+                        res(passes)
+            fn = _fn
+
         all_passes = self.collect_passes()
         try:
             if number is not None:
@@ -977,6 +995,8 @@ class Renderer():
         except Exception as e:
             self.print_error()
             print("! Release failed !")
+        
+        print("/", fnname)
     
     def shortcut_to_action(self, shortcut):
         if shortcut == KeyboardShortcut.PreviewPrevMany:

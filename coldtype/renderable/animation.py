@@ -48,6 +48,7 @@ class animation(renderable, Timeable):
         suffixer=None,
         clip_cursor=True,
         reset_to_zero=False,
+        release=None,
         **kwargs
         ):
         if "tl" in kwargs:
@@ -68,6 +69,7 @@ class animation(renderable, Timeable):
         self.suffixer = suffixer
         self.clip_cursor = clip_cursor
         self.reset_to_zero = reset_to_zero
+        self.release = release
     
     def __call__(self, func):
         res = super().__call__(func)
