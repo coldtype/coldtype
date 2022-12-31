@@ -382,8 +382,25 @@ class Runon:
     def filter(self, fn):
         to_delete = []
         for idx, p in enumerate(self._els):
-            res = self._call_idx_fn(fn, idx, p)
+            if isinstance(fn, str):
+                res = p.tag() == fn
+            else:
+                res = self._call_idx_fn(fn, idx, p)
             if res == False:
+                to_delete.append(idx)
+        to_delete = sorted(to_delete, reverse=True)
+        for idx in to_delete:
+            del self._els[idx]
+        return self
+    
+    def remove(self, fn):
+        to_delete = []
+        for idx, p in enumerate(self._els):
+            if isinstance(fn, str):
+                res = p.tag() == fn
+            else:
+                res = self._call_idx_fn(fn, idx, p)
+            if res == True:
                 to_delete.append(idx)
         to_delete = sorted(to_delete, reverse=True)
         for idx in to_delete:

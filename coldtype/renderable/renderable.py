@@ -440,13 +440,15 @@ class renderable():
         return self.normalize_result(
             self.run(render_pass, renderer_state))
     
-    def frame_result(self, fi, post=False):
+    def frame_result(self, fi, post=False, frame=False):
         p = self.passes(None, None, [fi])[0]
         res = self.run_normal(p, None)
         if post:
-            return self.runpost(res, p, None, None)
-        else:
-            return res
+            res = self.runpost(res, p, None, None)
+        
+        if frame:
+            res.data(frame=self.rect)
+        return res
     
     def rasterize(self, config, content, render_pass):
         return False

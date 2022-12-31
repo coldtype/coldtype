@@ -248,35 +248,42 @@ class animation(renderable, Timeable):
         def offset_view(f):
             return self.func(Frame(f.i, self))
         return offset_view
-
-    def contactsheet(self, gx, sl=slice(0, None, None)):
-        try:
-            sliced = True
-            start, stop, step = sl.indices(self.duration)
-            duration = (stop - start) // step
-        except AttributeError: # indices storyboard
-            duration = len(sl)
-            sliced = False
+    
+    def contactsheet_renderable(self, scale=1, sl=slice(None, None, 1)):
+        sheet = self.contactsheet(None, scale, sl)
         
-        ar = self.rect
-        gy = math.ceil(duration / gx)
-        
-        @renderable(rect=(ar.w*gx, ar.h*gy), bg=self.bg, name=self.name + "_contactsheet")
-        def contactsheet(r:Rect):
-            _pngs = list(sorted(self.output_folder.glob("*.png")))
-            if sliced:
-                pngs = _pngs[sl]
-            else:
-                pngs = [p for i, p in enumerate(_pngs) if i in sl]
-            
-            dps = P()
-            dps += P().rect(r).f(self.bg)
-            for idx, g in enumerate(r.grid(gx, gy)):
-                if idx < len(pngs):
-                    dps += P().rect(g).f(None).img(pngs[idx], g, pattern=False)
-            return dps
+        @renderable(sheet.data("frame"), bg=self.bg)
+        def contactsheet(r):
+            return sheet
         
         return contactsheet
+    
+    def contactsheet(self, r:Rect=None, scale=1, sl=slice(None, None, 1)):
+        from coldtype.runon.scaffold import Scaffold
+
+        xs = list(range(0, self.timeline.duration)[sl])
+        sq = math.ceil(math.sqrt(len(xs)))
+
+        if r is None:
+            r = Rect(0, 0, sq*self.rect.w*scale, sq*self.rect.h*scale)
+
+        s = Scaffold(r).grid(sq, sq)
+
+        def frame(x):
+            try:
+                fi = xs[x.i]
+                return (self
+                    .frame_result(fi, frame=1)
+                    .align(x.el.rect, tx=0)
+                    .scale(scale, tx=0))
+            except IndexError:
+                return None
+        
+        return P(
+            P(s.r).tag("border").fssw(-1, 0, 1),
+            s.borders().tag("grid").fssw(-1, 0, 1),
+            P().enumerate(s, frame).tag("frames")
+        ).data(frame=r)
     
     def frame_img(self, fi):
         from coldtype.img.skiaimage import SkiaImage
