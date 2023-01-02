@@ -972,7 +972,7 @@ class Renderer():
                 return
         
         if attr_functions:
-            print(">>>>>>>>>>>", attr_functions)
+            #print(">>>>>>>>>>>", attr_functions)
             def _fn(passes):
                 for render, af in attr_functions:
                     res = af(render) # filter passes?

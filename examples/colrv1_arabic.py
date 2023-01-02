@@ -12,13 +12,6 @@ def arefRuqaa(r):
         .lead(60)
         .align(r))
 
-# @renderable((1080, 340), bg=1)
-# def amiriQuran(r):
-#     return (StSt(text1, "AmiriQuran", 70)
-#         .xalign(r)
-#         .lead(60)
-#         .align(r))
-
 @renderable((1080, 340), bg=1)
 def reemKufi(r):
     return (StSt(text1, "ReemKufi", 70)

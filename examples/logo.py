@@ -14,19 +14,18 @@ def logo(f):
             StSt("COLD\nTYPE", Font.ColdObvi(), 500
                 , wdth=0.5
                 , tu=-50
-                , r=1
-                , kp={"P/E":-100}
+                , kp={"P/E":-80}
                 , leading=-10)
                 .index(0, lambda p: p.translate(-130, 0))
-                .reverse()
+                .reverse(recursive=1)
                 .align(f.a.r, tx=1, ty=1)
                 .rotate(15)
                 .translate(-3, 3)
                 .fssw(1, 0, 25, 1)
                 .ch(phototype(f.a.r,
-                    blur=2+5,
-                    cut=50+150,
-                    cutw=1+6,
+                    blur=5,
+                    cut=170,
+                    cutw=11,
                     fill=bw(1))))
     else:
         return P(
@@ -39,5 +38,5 @@ def logo(f):
                 .ch(phototype(f.a.r,
                     blur=5,
                     cut=150,
-                    cutw=25,
+                    cutw=15,
                     fill=bw(1))))

@@ -1,5 +1,4 @@
 from coldtype import *
-from coldtype.warping import warp
 
 @renderable(rect=(900, 500))
 def coldtype(r):
@@ -13,7 +12,6 @@ def coldtype(r):
         .align(r)
         .mape(lambda e, p: (p
             .f(hsl(0.5+e*0.15, s=0.6, l=0.55))
-            .s(0).sw(30).sf(1)
-            .ch(warp(5, mult=25))))
+            .s(0).sw(30).sf(1)))
         .rotate(5)
         .scale(0.75))
