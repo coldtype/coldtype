@@ -270,6 +270,7 @@ class notebook_animation(_animation):
             self._storyboarded = False
             storyboard = [0]
         else:
+            self.interactive = False
             self._storyboarded = True
         
         self.storyboard = storyboard
@@ -337,6 +338,7 @@ class notebook_animation(_animation):
         
         for frame in frames:
             show_frame(self, frame, scale=self.preview_scale)
+        
         return self
     
     def render(self, scale=1):
