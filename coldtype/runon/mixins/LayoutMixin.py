@@ -7,6 +7,7 @@ from fontTools.pens.recordingPen import RecordingPen
 
 from coldtype.geometry import Point, Rect, align
 from coldtype.interpolation import norm
+from coldtype.color import bw, rgb, hsl
 
 THTV_WARNING = False
 
@@ -495,6 +496,12 @@ class LayoutMixin():
             .spread(track)
             .layer(ny if ny is not None else nx)
             .stack(lead))
+    
+    def pasteup(self, styler=lambda p: p.f(bw(1)), padding=(5, 5), tx=1, ty=0, x="CX", y="CY"):
+        r = self.ambit(tx=tx, ty=ty).inset(*[-x for x in padding]).zero()
+        board = type(self)(r).ch(styler)
+        self.align(r, tx=tx, ty=ty, x=x, y=y)
+        return self.up().insert(0, board)
     
     def track_with_width(self, t):
         """Track-out/distribute elements"""

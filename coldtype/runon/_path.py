@@ -122,6 +122,13 @@ class P(Runon):
 
         return self.walk(_unframe)
     
+    def frame(self, fn_or_rect):
+        if isinstance(fn_or_rect, Rect):
+            self.data(frame=fn_or_rect)
+        elif callable(fn_or_rect):
+            self.data(frame=fn_or_rect(self))
+        return self
+    
     def pen(self):
         """collapse and combine into a single vector"""
         if len(self) == 0:
