@@ -294,11 +294,12 @@ class notebook_animation(_animation):
         if not self._interaction_file.exists():
             self._interaction_file.parent.mkdir(parents=True, exist_ok=True)
             self._interaction_file.write_text("{}")
-        
-        self.interactive_preview(self.storyboard[0])
 
         if len(self.storyboard) > 1:
             self.preview(*self.storyboard[1:])
+        else:
+            self.interactive_preview(self.storyboard[0])
+
     
     def interactive_preview(self, start):
         from ipywidgets import IntSlider, FloatSlider, interact
