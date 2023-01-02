@@ -221,3 +221,19 @@ def test_no_reverse(r):
     
     assert "r=1 not possible" in str(context.value)
     return None
+
+@test(100)
+def test_multistyle_stst(r):
+    stst = (StSt("COLD\nCOLD", [
+        Style(Font.MuSan(), 30, wght=1),
+        Style(Font.ColdObvi(), 40, wght=1)])
+        .xalign(r)
+        .align(r))
+    
+    assert stst[0][0].glyphName == "C"
+    assert stst[-1][-1].glyphName == "D"
+
+    assert len(stst[0][0]._val.value) == 15
+    assert len(stst[1][0]._val.value) == 12
+    
+    return stst

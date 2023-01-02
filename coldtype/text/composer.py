@@ -207,10 +207,15 @@ def StSt(text,
         if strip:
             text = text.strip()
     
+    styles = []
+
     if isinstance(font, Style):
         style = font
     elif isinstance(font, dict):
         style = Style(**{**font, **kwargs})
+    elif isinstance(font, list):
+        style = font[0]
+        styles = font
     else:
         style = Style(font, font_size, **kwargs)
     
@@ -219,8 +224,12 @@ def StSt(text,
 
     if "\n" in text:
         lines = P()
-        for l in text.split("\n"):
-            lines.append(StSt(l, font, font_size, rect=rect, strip=strip, **{**kwargs, **dict(multline=False)}))
+        for idx, l in enumerate(text.split("\n")):
+            if styles:
+                _style = styles[idx]
+            else:
+                _style = style
+            lines.append(StSt(l, _style, rect=rect, strip=strip, **{**kwargs, **dict(multline=False)}))
         return lines.stack(leading)
     else:
         if style.fallback:

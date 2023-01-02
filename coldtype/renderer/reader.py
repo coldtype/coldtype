@@ -413,10 +413,11 @@ class SourceReader():
         self.config.args = args
         #print(self.config.values())
     
-    def find_sources(self, dirpath):
-        globber = "**/*.py"
+    def find_sources(self, dirpath, recursive=True):
+        prefix = "**/" if recursive else ""
+        globber = f"{prefix}*.py"
         if self.filepath:
-            globber = "**/*" + self.filepath.suffix
+            globber = f"{prefix}*" + self.filepath.suffix
         sources = list(dirpath.glob(globber))
         #sources.extend(list(dirpath.glob("*.md")))
 
@@ -516,8 +517,17 @@ class SourceReader():
         if re.findall(r"VERSIONS\s?=", source_code):
             versions = re.findall(r"VERSIONS\s?=.*\#\/VERSIONS", source_code, re.DOTALL)[0]
             versions = eval(re.sub("VERSIONS\s?=", "", versions))
-            version = versions[self.renderer.source_reader.config.version_index]
+            if not isinstance(versions, dict):
+                versions = {str(idx):v for idx, v in enumerate(versions)}
+            versions = {k:{**v, **dict(key=k)} for k,v in versions.items()}
+            versions = list(versions.values())
+            vi = self.renderer.source_reader.config.version_index
+            version = versions[vi]
             self.renderer.state.versions = versions
+
+            source_code = source_code.replace("ƒVERSION", version["key"])
+            self.codepath.write_text(source_code)
+
 
         self.program = run_source(
             self.filepath,

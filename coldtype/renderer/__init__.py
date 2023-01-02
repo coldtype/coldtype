@@ -1075,9 +1075,17 @@ class Renderer():
             self.actions_queued.append(KeyboardShortcut.PlayRendered)
             return -1
         elif shortcut == KeyboardShortcut.RenderAllAndRelease:
-            self.on_action(Action.RenderAll)
-            self.action_waiting = Action.Release
-            self.action_waiting_reason = shortcut
+            vs = self.state.versions
+            if vs:
+                for v in vs:
+                    self.actions_queued.insert(0, KeyboardShortcut.CycleVersions)
+                    self.actions_queued.insert(0, Action.Release)
+                    self.actions_queued.insert(0, Action.RenderAll)
+            else:
+                self.on_action(Action.RenderAll)
+                self.actions_queued.insert(0, Action.Release)
+            #self.action_waiting = Action.Release
+            #self.action_waiting_reason = shortcut
             return -1
         elif shortcut == KeyboardShortcut.RenderOne:
             la = self.last_animation
@@ -1220,12 +1228,19 @@ class Renderer():
         elif shortcut == KeyboardShortcut.RenderDirectory:
             adjs = self.buildrelease_fn("adjacents")
             if not adjs:
-                adjs = lambda: [1, 2, 3]
-            for _ in range(0, len(adjs())):
-                self.actions_queued.append(KeyboardShortcut.RenderAll)
-                self.actions_queued.append(KeyboardShortcut.LoadNextInDirectory)
-                self.actions_queued.append(Action.PreviewStoryboardReload)
-            self.actions_queued.append(KeyboardShortcut.Release)
+                adjs = self.source_reader.adjacents()
+            else:
+                adjs = adjs()
+
+            for idx in range(0, len(adjs)):
+                self.actions_queued.append(KeyboardShortcut.RenderAllAndRelease)
+                #self.actions_queued.append(KeyboardShortcut.Release)
+
+                if idx < (len(adjs) - 1):
+                    self.actions_queued.append(KeyboardShortcut.LoadNextInDirectory)
+                    self.actions_queued.append(Action.PreviewStoryboardReload)
+
+            #return Action.Kill
             return Action.PreviewStoryboardReload
         elif shortcut == KeyboardShortcut.CycleVersions:
             vi = self.source_reader.config.version_index
