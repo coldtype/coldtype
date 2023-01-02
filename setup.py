@@ -34,6 +34,7 @@ setuptools.setup(
         "coldtype.blender",
         "coldtype.geometry",
         "coldtype.time.nle",
+        "coldtype.notebook",
         "coldtype.renderer",
         "coldtype.text.colr",
         "coldtype.renderable",
