@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="alternate" type="application/atom+xml" title="The Coldtype Blog Feed" href="/feed.xml">
+  <title>Coldtype Tutorials</title>
+  <link href="/assets/style.css?t={{build_unix}}" rel="stylesheet">
+</head>
+<body>
+    <div id="main">
+        <div id="main-inner">
+            <div id="header">Tutorials</div>
+            <ul>
+            {% for post in posts %}
+                <li class="post-link">
+                    <a href="/{{ post.metadata.slug }}.html">
+                        <h2><span class="grocer">“</span>{{ post.metadata.title }}<span class="grocer">”</span> </h2>
+                    </a>
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+</body>
