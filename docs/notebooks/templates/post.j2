@@ -34,9 +34,9 @@
                     {% if cell.outputs is defined %}
                     <div class="code-outputs">
                         {% for output in cell.outputs %}
-                        {% for html in output %}
-                        {{ html|safe }}
-                        {% endfor %}
+                            {% for html in output %}
+                                {{ html|safe }}
+                            {% endfor %}
                         {% endfor %}
                     </div>
                     {% endif %}

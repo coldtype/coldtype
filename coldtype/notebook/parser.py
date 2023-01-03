@@ -72,9 +72,14 @@ class NotebookParser():
                     outputs = []
                     if "outputs" in c:
                         for o in c["outputs"]:
-                            #print(o)
                             if o["output_type"] == "display_data" and o["data"] and "text/html" in o["data"]:
                                 outputs.append(o["data"]["text/html"])
+                                #print(o["data"]["text/html"][:10])
+                            elif o.get("name") == "stdout":
+                                outputs.append(["<pre class='stdout'>" + "".join(o["text"]) + "</pre>"])
+                                #print(outputs[-1][10])
+                            else:
+                                pass
                     
                     if len(outputs) > 0:
                         cell["outputs"] = outputs

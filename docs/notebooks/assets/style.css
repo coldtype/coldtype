@@ -75,6 +75,10 @@ body, h1, h2, h3, h4, h5, h6, p, ol, ul {
     font-weight: normal;
 }
 
+h3 > * {
+    font-weight: normal;
+}
+
 ol, ul {
     list-style: none;
 }
@@ -259,14 +263,14 @@ hr {
     margin-bottom: 0;
 }
 
-/* .post pre {
+.post pre {
     display: block;
     overflow: scroll;
     padding: 10px 0;
-    margin: 25px 0;
-    border-top: 1px solid #ccc;
-    border-bottom: 1px solid #ccc;
-} */
+    margin: 5px 0 10px 0;
+    /* border-top: 1px solid #ccc; */
+    /* border-bottom: 1px solid #ccc; */
+}
 
 .text pre {
     margin-bottom: 20px;
