@@ -120,12 +120,22 @@ body {
     padding: 20px;
 }
 
+ul.menu h3 {
+    font-family: "MDIO-Web", sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+ul.menu ul {
+    padding: 0px 0 0 10px;
+}
+
 .post-link a {
     display: block;
     text-decoration: none;
-    color: dodgerblue;
-    /* padding: 10px; */
-    border-left: 2px solid dodgerblue;
+    padding-bottom: 4px;
 }
 
 .post-link a h2 {
@@ -133,6 +143,8 @@ body {
     padding: 2px 5px 2px 10px;
     font-family: "MDIO-Web";
     font-weight: 800;
+    color: dodgerblue;
+    border-left: 2px solid dodgerblue;
 }
 
 .post-link a:hover h2 {
@@ -292,7 +304,7 @@ hr {
     margin-bottom: 0px;
     background: whitesmoke;
     border: 1px solid #ccc;
-    border-bottom: none;
+    /* border-bottom: none; */
 }
 
 .highlight .hll { background-color: #ffffcc }

@@ -24,7 +24,9 @@ class NotebookParser():
         self.assets_dir = assets_dir
 
         self.build_dir.mkdir(exist_ok=True)
-        self.notebooks = list(self.notebook_dir.glob("*.ipynb"))
+
+        # TODO recursive glob to get a tree, to make a table-of-contents instead of only flat-list
+        self.notebooks = list(self.notebook_dir.glob("**/*.ipynb"))
 
         self.template_env = jinja2.Environment(loader=jinja2.FileSystemLoader(str(self.templates_dir)))
 
@@ -45,11 +47,12 @@ class NotebookParser():
             if notebook.stem.startswith("_"):
                 continue
 
+            path = notebook.relative_to(self.notebook_dir)
             data = json.loads(Path(notebook).read_text())
 
             frontmatter = eval("".join(data["cells"][0]["source"]))
 
-            slug = frontmatter["slug"]
+            slug = frontmatter.get("slug", ".".join(str(path).split(".")[:-1]))
             date = dateparser.parse(frontmatter["date"])
             date_string = date.strftime("%B %d, %Y")
 
@@ -84,10 +87,13 @@ class NotebookParser():
                     if len(outputs) > 0:
                         cell["outputs"] = outputs
                     cells.append(cell)
+            
+            # need to be nested somehow
 
             post = dict(
                 metadata={
                     **frontmatter,
+                    "slug": slug,
                     **dict(
                         path=notebook,
                         pubDate=format_datetime(date).strip(),
@@ -96,14 +102,54 @@ class NotebookParser():
                 notebook=notebook.stem,
                 cells=cells)
             
-            (self.build_dir / f"{slug}.html").write_text(self.post_template.render(dict(post=post, build_unix=self.build_unix)))
+            dst = self.build_dir / f"{slug}.html"
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            
+            dst.write_text(self.post_template.render(dict(post=post, build_unix=self.build_unix)))
 
             posts.append(post)
 
         posts = list(reversed(sorted(posts, key=lambda p: p["metadata"]["date"])))
 
+        #nested_posts = {"_posts":[]}
+
+        from coldtype.runon import Runon
+
+        class Post(Runon):
+            def __init__(self, val):
+                super().__init__(None)
+                self._val = val
+
+        nested_posts = Runon()
+
+        for p in posts:
+            slug = p["metadata"]["slug"]
+            slugs = slug.split("/")[:-1]
+            nested = nested_posts
+            for s in slugs:
+                n = nested.find_(s, none_ok=True)
+                if not n:
+                    n = Runon().tag(s)
+                    nested.append(n)
+                nested = n
+            nested.append(Post(p).tag(slug).data(post=True))
+        
+        def sorter(el, pos, data):
+            if pos != 0:
+                el._els = list(sorted(el._els, key=lambda x: x.tag()))
+        
+        nested_posts.prewalk(sorter)
+
+        #print(nested_posts.tree())
+
+        # for x in nested_posts:
+        #     print(x.tag())
+        #     if not x.data("post"):
+        #         for y in x:
+        #             print(">", y.tag())
+
         copytree(self.assets_dir, self.build_dir / "assets", dirs_exist_ok=True)
-        (self.build_dir / "index.html").write_text(self.index_template.render(dict(posts=posts, build_unix=self.build_unix)))
+        (self.build_dir / "index.html").write_text(self.index_template.render(dict(posts=nested_posts, build_unix=self.build_unix)))
         
         if self.feed_template:
             (self.build_dir / "feed.xml").write_text(self.feed_template.render(dict(posts=posts, build=self.build_time, build_unix=self.build_unix)))

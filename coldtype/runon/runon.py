@@ -692,7 +692,7 @@ class Runon:
         else:
             return [m for (_, m) in narrowed]
     
-    def find_(self, finder_fn, fn=None, index=0):
+    def find_(self, finder_fn, fn=None, index=0, none_ok=0):
         if isinstance(finder_fn, str) and "/" in finder_fn:
             o = self
             for k in finder_fn.split("/"):
@@ -704,6 +704,8 @@ class Runon:
             try:
                 return res[0]
             except IndexError:
+                if none_ok:
+                    return None
                 raise RunonSearchException(f"Could not find `{finder_fn}`")
         else:
             return self

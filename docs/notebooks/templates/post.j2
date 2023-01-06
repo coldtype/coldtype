@@ -13,14 +13,15 @@
     <div id="main">
         <div id="main-inner">
             <div id="header">
-                <a href="/">Coldtype Tutorials</a>
+                <a href="/">Coldtype Docs</a>
             </div>
             <div class="post">
                 <h1 id="headline">{{ post.metadata.get('title') }}</h1>
-                <div class="colab-callout">
+                <div class="colab-callout"></div>
+                {# <div class="colab-callout">
                     <a class="colab-link" href="https://colab.research.google.com/github/coldtype/coldtype/blob/main/docs/notebooks/tutorials/{{post.metadata.get('path').name}}"
                         target="_blank">💻 View/run on Colab</a>
-                </div>
+                </div> #}
                 <div class="notebook">
                     {% for cell in post.cells %}
                     {% if cell.text is defined %}
@@ -45,8 +46,6 @@
                 </div>
                 <div class="author">
                     — {{ post.metadata.get("author") }}
-                    <br />
-                    {{ post.metadata.get("date_string") }}
                 </div>
             </div>
         </div>

@@ -4,7 +4,7 @@ from coldtype.notebook.parser import NotebookParser
 root = Path(__FILE__).parent
 
 build_dir = root / "site"
-notebook_dir = root / "tutorials"
+notebook_dir = root / "notebooks"
 templates_dir = root / "templates"
 assets_dir = root / "assets"
 
