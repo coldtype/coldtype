@@ -8,7 +8,22 @@ notebook_dir = root / "notebooks"
 templates_dir = root / "templates"
 assets_dir = root / "assets"
 
-NotebookParser(notebook_dir, build_dir, templates_dir, assets_dir)
+NotebookParser(notebook_dir, build_dir, templates_dir, assets_dir, do_nest=True, sort={
+    None: [
+        "introduction",
+        "about",
+        "overview",
+        "install",
+        "tutorials",
+    ],
+    "tutorials": [
+        "shapes",
+        "geometry",
+        "text",
+        "animation",
+        "drawbot",
+    ]
+})
 
 @renderable((100, 100), watch=[
     assets_dir/"style.css",

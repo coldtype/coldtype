@@ -17,6 +17,8 @@ class NotebookParser():
         , build_dir:Path
         , templates_dir:Path
         , assets_dir:Path
+        , do_nest:bool = False
+        , sort:dict = {}
         ) -> None:
         self.notebook_dir = notebook_dir
         self.build_dir = build_dir
@@ -65,6 +67,13 @@ class NotebookParser():
                     src = "".join(c["source"])
                     if src.strip().startswith("#hide-publish"):
                         continue
+                
+                    lines = []
+                    for line in src.splitlines():
+                        if not line.strip().endswith("#hide-publish"):
+                            lines.append(line)
+                    
+                    src = "\n".join(lines)
                     
                     highlit = fragment_fromstring(
                         highlight(src, PythonLexer(),
@@ -113,42 +122,37 @@ class NotebookParser():
 
         posts = list(reversed(sorted(posts, key=lambda p: p["metadata"]["date"])))
 
-        #nested_posts = {"_posts":[]}
+        if do_nest:
+            from coldtype.runon import Runon
 
-        from coldtype.runon import Runon
+            class Post(Runon):
+                def __init__(self, val):
+                    super().__init__(None)
+                    self._val = val
 
-        class Post(Runon):
-            def __init__(self, val):
-                super().__init__(None)
-                self._val = val
+            nested_posts = Runon()
 
-        nested_posts = Runon()
-
-        for p in posts:
-            slug = p["metadata"]["slug"]
-            slugs = slug.split("/")[:-1]
-            nested = nested_posts
-            for s in slugs:
-                n = nested.find_(s, none_ok=True)
-                if not n:
-                    n = Runon().tag(s)
-                    nested.append(n)
-                nested = n
-            nested.append(Post(p).tag(slug).data(post=True))
-        
-        def sorter(el, pos, data):
-            if pos != 0:
-                el._els = list(sorted(el._els, key=lambda x: x.tag()))
-        
-        nested_posts.prewalk(sorter)
-
-        #print(nested_posts.tree())
-
-        # for x in nested_posts:
-        #     print(x.tag())
-        #     if not x.data("post"):
-        #         for y in x:
-        #             print(">", y.tag())
+            for p in posts:
+                slug = p["metadata"]["slug"]
+                slugs = slug.split("/")[:-1]
+                nested = nested_posts
+                for s in slugs:
+                    n = nested.find_(s, none_ok=True)
+                    if not n:
+                        n = Runon().tag(s)
+                        nested.append(n)
+                    nested = n
+                nested.append(Post(p).tag(slug).data(post=True))
+            
+            def sorter(el, pos, data):
+                if pos != 0:
+                    sorter = sort[el.tag()]
+                    def sortfn(x):
+                        return sorter.index(x.tag().split("/")[-1])
+                    el._els = list(sorted(el._els, key=sortfn))
+            
+            nested_posts.prewalk(sorter)
+            posts = nested_posts
 
         copytree(self.assets_dir, self.build_dir / "assets", dirs_exist_ok=True)
         (self.build_dir / "index.html").write_text(self.index_template.render(dict(posts=nested_posts, build_unix=self.build_unix)))
