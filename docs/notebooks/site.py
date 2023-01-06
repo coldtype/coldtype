@@ -15,6 +15,7 @@ NotebookParser(notebook_dir, build_dir, templates_dir, assets_dir, do_nest=True,
         "overview",
         "install",
         "tutorials",
+        "cheatsheets",
     ],
     "tutorials": [
         "shapes",
@@ -22,6 +23,13 @@ NotebookParser(notebook_dir, build_dir, templates_dir, assets_dir, do_nest=True,
         "text",
         "animation",
         "drawbot",
+    ],
+    "cheatsheets": [
+        "viewer",
+        "easing",
+        "rectangles",
+        "oneletter",
+        "text",
     ]
 })
 

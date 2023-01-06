@@ -111,6 +111,26 @@ body {
     background-color: dodgerblue;
 }
 
+#socials {
+    margin-top: -50px;
+    margin-bottom: 50px;
+}
+
+#socials ul {
+    display: flex;
+}
+
+#socials ul li a {
+    padding: 10px;
+    color: dodgerblue;
+    text-decoration: none;
+    border-bottom: 1px solid #eee;
+}
+
+#socials ul li a:hover {
+    border-bottom: 1px solid dodgerblue;
+}
+
 #main {
     max-width: 650px;
     margin: auto auto;
