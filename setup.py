@@ -72,6 +72,9 @@ setuptools.setup(
         "skia": [
             "skia-python>=86.0",
         ],
+        "drawbot": [
+            "numpy",
+        ],
         "viewer": [
             "glfw",
             "PyOpenGL",

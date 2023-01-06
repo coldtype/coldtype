@@ -12,6 +12,12 @@ from pathlib import Path
 from coldtype.renderer import renderable, Action
 from coldtype.renderable.animation import animation, RenderPass
 
+# from coldtype.osutil import in_notebook
+# _in_notebook = in_notebook()
+
+# if _in_notebook:
+#     from coldtype.notebook import animation, renderable
+
 try:
     import drawBot as db
     import AppKit
@@ -35,7 +41,7 @@ class drawbot_renderable(renderable):
             pool = AppKit.NSAutoreleasePool.alloc().init()
         try:
             db.newDrawing()
-            if renderer_state.previewing:
+            if renderer_state and renderer_state.previewing:
                 ps = renderer_state.preview_scale
                 db.size(self.rect.w*ps, self.rect.h*ps)
                 db.scale(ps, ps)
@@ -50,7 +56,7 @@ class drawbot_renderable(renderable):
             else:
                 render_pass.fn(*render_pass.args)
             result = None
-            if renderer_state.previewing:
+            if renderer_state and renderer_state.previewing:
                 previews = (render_pass.output_path.parent / "_previews")
                 previews.mkdir(exist_ok=True, parents=True)
                 preview_frame = previews / render_pass.output_path.name
@@ -65,6 +71,16 @@ class drawbot_renderable(renderable):
             if use_pool:
                 del pool
         return result
+    
+    def notebook_display(self, scale=0.5):
+        from base64 import b64encode
+        from IPython.display import display, HTML
+
+        for p in self.passes(Action.PreviewIndices, None):
+            self.run(p, None)
+            b64 = b64encode(p.output_path.read_bytes()).decode("utf-8")
+            display(HTML(f"<img width={self.rect.w*scale} src='data:image/png;base64,{b64}'/>"))
+
 
 class drawbot_animation(drawbot_renderable, animation):
     def passes(self, action, renderer_state, indices=[]):

@@ -259,6 +259,10 @@ hr {
     margin-bottom: 200px;
 }
 
+.code.no-output {
+    margin-bottom: 30px;
+}
+
 .code-outputs {
     margin-bottom: 60px;
     border: 1px solid #ccc;

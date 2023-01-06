@@ -86,6 +86,8 @@ class NotebookParser():
                     
                     if len(outputs) > 0:
                         cell["outputs"] = outputs
+                    else:
+                        cell["no-outputs"] = True
                     cells.append(cell)
             
             # need to be nested somehow

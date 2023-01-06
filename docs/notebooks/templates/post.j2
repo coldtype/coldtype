@@ -29,7 +29,7 @@
                         {{ cell.text }}
                     </div>
                     {% elif cell.html is defined %}
-                    <div class="code">
+                    <div class="code{% if cell.outputs is not defined %} no-output{% endif %}">
                         {{ cell.html|safe }}
                     </div>
                     {% if cell.outputs is defined %}
