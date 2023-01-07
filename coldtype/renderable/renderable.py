@@ -134,7 +134,7 @@ class runnable():
 
 class renderable():
     """
-    Base class for any content renderable by Coldtype
+    Base class for any content renderable by Coldtype.
     """
     def __init__(self,
         rect=(1080, 1080),
@@ -463,6 +463,10 @@ class renderable():
         import cProfile
         cProfile.runctx(f"self._profile_render_all()", {}, {"self": self}, filename=file)
 
+
+class example(renderable):
+    def __init__(self, rect=(800, 200), bg=1, **kwargs):
+        super().__init__(rect=rect, bg=bg, **kwargs)
 
 
 class skia_direct(renderable):

@@ -4,8 +4,9 @@ from coldtype.geometry import Rect, Point
 from coldtype.text.shaper import segment
 from coldtype.text.reader import Style, StyledString, FittableMixin, Font, SegmentedString
 
-import inspect
 from collections import namedtuple
+from typing import Callable
+
 
 class GrafStyle():
     def __init__(self, leading=10, x="centerx", xp=0, width=0, **kwargs):
@@ -200,6 +201,22 @@ def StSt(text,
     multiline=False,
     #xa="mdx",
     **kwargs) -> P:
+    """Set a line of text with a single Style object,
+    passed either with it’s constituent parts (i.e. kwargs)
+    or as an actual `Style` object.
+    ---
+    @example()
+    def stst_1(r):
+        # here the styling arguments are "flat"
+        return (StSt("COLDTYPE", Font.ColdObvi(), 100, wdth=0)
+            .align(r))
+    
+    @example()
+    def stst_2(r):
+        # here the styling arguments are encapsulated in the Style object
+        return (StSt("COLDTYPE", Style(Font.ColdObvi(), 100, wdth=1))
+            .align(r))
+    """
 
     if not isinstance(text, str):
         text = "\n".join(text)
@@ -253,7 +270,25 @@ def StSt(text,
 GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e", "l", "li"])
 
 
-def Glyphwise(st, styler, start=0, line=0, multiline=False):
+def Glyphwise(st:str
+    , styler:Callable[[GlyphwiseGlyph], Style]
+    , start:int=0
+    , line:int=0
+    , multiline=False):
+    """
+    Build text by applying unique style to each glyph.
+
+    Style is determined by a `styler` function (usually a lambda)
+    that is given a `GlyphwiseGlyph` containing information about
+    the glyph and its position (index, etc.); styler function
+    must return a Style object to be used for styling
+    ---
+    @example()
+    def glyphwise(r):
+        return (Glyphwise("COLDTYPE", lambda x:
+            Style(Font.ColdObvi(), 200, wdth=x.e))
+            .align(r))
+    """
     # TODO possible to have an implementation
     # aware of a non-1-to-1 mapping of characters
     # to glyphs? seems very difficult if not impossible,

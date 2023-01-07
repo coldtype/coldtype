@@ -331,6 +331,8 @@ class SourceReader():
             return root / "demo/vf.py"
         elif name == "viewseq":
             return root / "demo/viewseq.py"
+        elif name == "docstrings":
+            return root / "demo/docstrings.py"
         return name
     
     @staticmethod
