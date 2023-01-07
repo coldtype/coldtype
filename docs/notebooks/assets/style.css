@@ -118,17 +118,19 @@ body {
 
 #socials ul {
     display: flex;
+    flex-flow: wrap;
 }
 
 #socials ul li a {
-    padding: 10px;
+    display: block;
+    padding: 10px 10px 8px 10px;
     color: dodgerblue;
     text-decoration: none;
-    border-bottom: 1px solid #eee;
+    border-bottom: 2px solid #eee;
 }
 
 #socials ul li a:hover {
-    border-bottom: 1px solid dodgerblue;
+    border-bottom: 2px solid dodgerblue;
 }
 
 #main {
