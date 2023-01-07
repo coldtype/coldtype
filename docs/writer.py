@@ -1,4 +1,5 @@
 import inspect
+from collections import namedtuple
 from coldtype import *
 from coldtype.runon import Runon
 
@@ -21,16 +22,28 @@ functions = [
 ]
 
 root = Path("./coldtype").resolve()
-print(root)
 
-for d in decorators:
-    docstring = inspect.getdoc(d)
-    path = Path(inspect.getfile(d)).relative_to(root)
+output = {
+    "decorators": [],
+    "classes": [],
+    "functions": [],
+}
 
-for c in classes:
-    docstring = inspect.getdoc(c)
-    path = Path(inspect.getfile(c)).relative_to(root)
+doc = namedtuple("doc", ["itself", "path", "docstring"])
 
-for f in functions:
-    docstring = inspect.getdoc(f)
-    path = Path(inspect.getfile(f)).relative_to(root)
+for k, v in output.items():
+    for x in globals()[k]:
+        docstring = inspect.getdoc(x)
+        path = Path(inspect.getfile(x)).relative_to(root)
+        output[k].append(doc(x, path, docstring))
+        
+        #if inspect.isclass(x):
+        #    print(path, k, inspect.isclass(x))
+
+# for c in classes:
+#     docstring = inspect.getdoc(c)
+#     path = Path(inspect.getfile(c)).relative_to(root)
+
+# for f in functions:
+#     docstring = inspect.getdoc(f)
+#     path = Path(inspect.getfile(f)).relative_to(root)
