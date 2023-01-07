@@ -156,13 +156,15 @@ def fill(c):
 
 try:
     import potrace as potracer
+    turn_policy = potracer.POTRACE_TURNPOLICY_MINORITY
 except ImportError:
+    turn_policy = None
     pass
 
 
 def potrace(rect, invert=True,
     turdsize=2, # 0-infinity
-    turnpolicy=potracer.POTRACE_TURNPOLICY_MINORITY,
+    turnpolicy=turn_policy,
     alphamax=1.0, #  0.0 (polygon) to 1.3333 (no corners)
     opticurve=1,
     opttolerance=0.2, # 0 -1

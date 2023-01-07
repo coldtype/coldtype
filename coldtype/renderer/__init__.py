@@ -10,8 +10,6 @@ from typing import Tuple, List
 from random import shuffle, Random
 from functools import partial
 
-from numpy import short
-
 import coldtype
 from coldtype.helpers import *
 
