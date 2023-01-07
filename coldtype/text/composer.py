@@ -204,18 +204,24 @@ def StSt(text,
     """Set a line of text with a single Style object,
     passed either with it’s constituent parts (i.e. kwargs)
     or as an actual `Style` object.
-    ---
-    @example()
+
+    #### Examples:
+    
+    ```python
+    @renderable()
     def stst_1(r):
         # here the styling arguments are "flat"
         return (StSt("COLDTYPE", Font.ColdObvi(), 100, wdth=0)
             .align(r))
+    ```
     
-    @example()
+    ```python
+    @renderable()
     def stst_2(r):
         # here the styling arguments are encapsulated in the Style object
         return (StSt("COLDTYPE", Style(Font.ColdObvi(), 100, wdth=1))
             .align(r))
+    ```
     """
 
     if not isinstance(text, str):
@@ -274,7 +280,7 @@ def Glyphwise(st:str
     , styler:Callable[[GlyphwiseGlyph], Style]
     , start:int=0
     , line:int=0
-    , multiline=False):
+    , multiline=False) -> P:
     """
     Build text by applying unique style to each glyph.
 
@@ -282,12 +288,16 @@ def Glyphwise(st:str
     that is given a `GlyphwiseGlyph` containing information about
     the glyph and its position (index, etc.); styler function
     must return a Style object to be used for styling
-    ---
-    @example()
+
+    #### Examples:
+    
+    ```python
+    @renderable()
     def glyphwise(r):
         return (Glyphwise("COLDTYPE", lambda x:
             Style(Font.ColdObvi(), 200, wdth=x.e))
             .align(r))
+    ```
     """
     # TODO possible to have an implementation
     # aware of a non-1-to-1 mapping of characters

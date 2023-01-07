@@ -312,7 +312,7 @@ class Style():
     """
     Class for configuring font properties
 
-    **Keyword arguments**
+    #### Keyword arguments
 
     * `font`: can either be a `coldtype.text.Font` object, a `pathlib.Path`, or a plain string path
     * `font_size`: standard point-based font-size, expressed as integer
@@ -326,7 +326,7 @@ class Style():
     * `removeOverlaps` (aka `ro`): automatically use skia-pathops to remove overlaps from the glyphs (useful when using variable ttf fonts)
     * `lang`: set language directly, to access language-specific alternate characters/rules
 
-    **Shorthand kwargs**
+    #### Shorthand kwargs
 
     * `kp` for `kern_pairs` — a dict of glyphName->[left,right] values in font-space
     * `tl` for `trackingLimit`
@@ -338,51 +338,52 @@ class Style():
         _prefixes.append([prefix, str(expansion)])
 
     def __init__(self,
-            font:Union[Font, str]=None,
-            font_size:int=12,
-            tracking=0,
-            trackingMode=1,
-            kern_pairs=dict(),
-            space=None,
-            baselineShift=0,
-            xShift=None,
-            rotate=0,
-            reverse=False,
-            removeOverlap=False,
-            q2c=False,
-            lang=None,
-            narrower=None,
-            fallback=None,
-            palette=0,
-            capHeight=None,
-            ascender=None,
-            descender=None,
-            metrics="c",
-            data={},
-            layer=None,
-            liga=True,
-            kern=True,
-            fill=rgb(0, 0.5, 1),
-            stroke=None,
-            strokeWidth=0,
-            variations=dict(),
-            variationLimits=dict(),
-            trackingLimit=0,
-            scaleVariations=True,
-            rollVariations=False,
-            mods=None,
-            features=dict(),
-            increments=dict(),
-            varyFontSize=False,
-            preventHwid=False,
-            fitHeight=None,
-            meta=dict(),
-            no_shapes=False,
-            show_frames=False,
-            load_font=True, # should we attempt to load the font?
-            tag=None, # way to differentiate in __eq__
-            _stst=False,
-            **kwargs):
+        font:Union[Font, str]=None,
+        font_size:int=12,
+        tracking=0,
+        trackingMode=1,
+        kern_pairs=dict(),
+        space=None,
+        baselineShift=0,
+        xShift=None,
+        rotate=0,
+        reverse=False,
+        removeOverlap=False,
+        q2c=False,
+        lang=None,
+        narrower=None,
+        fallback=None,
+        palette=0,
+        capHeight=None,
+        ascender=None,
+        descender=None,
+        metrics="c",
+        data={},
+        layer=None,
+        liga=True,
+        kern=True,
+        fill=rgb(0, 0.5, 1),
+        stroke=None,
+        strokeWidth=0,
+        variations=dict(),
+        variationLimits=dict(),
+        trackingLimit=0,
+        scaleVariations=True,
+        rollVariations=False,
+        mods=None,
+        features=dict(),
+        increments=dict(),
+        varyFontSize=False,
+        preventHwid=False,
+        fitHeight=None,
+        meta=dict(),
+        no_shapes=False,
+        show_frames=False,
+        load_font=True, # should we attempt to load the font?
+        tag=None, # way to differentiate in __eq__
+        _stst=False,
+        **kwargs
+        ):
 
         self.input = locals()
         self.input["self"] = None

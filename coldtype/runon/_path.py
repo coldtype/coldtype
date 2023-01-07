@@ -14,6 +14,9 @@ from coldtype.runon.scaffold import Scaffold
 # IMPORTS
 
 class P(Runon):
+    """
+    P stands for Path (or Pen)
+    """
     def FromPens(pens):
         if hasattr(pens, "_pens"):
             out = P().data(**pens.data)
