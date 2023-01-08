@@ -6,7 +6,7 @@ from contextlib import contextmanager
 
 from coldtype.runon.path import P
 from coldtype.runon.runon import Runon
-from coldtype.time.timeline import Timeline
+from coldtype.timing.timeline import Timeline
 from coldtype.geometry import Rect
 from coldtype.color import Gradient, normalize_color
 from coldtype.renderable.animation import animation

@@ -2,8 +2,8 @@ from collections import defaultdict
 import mido, math
 from pathlib import Path
 
-from coldtype.time.timeline import Timeline, Timeable
-from coldtype.time.easing import ease, ez
+from coldtype.timing.timeline import Timeline, Timeable
+from coldtype.timing.easing import ease, ez
 
 
 class MidiNote():

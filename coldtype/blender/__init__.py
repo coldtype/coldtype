@@ -10,12 +10,12 @@ from coldtype.runon.path import P
 from coldtype.pens.blenderpen import BlenderPen, BlenderPenCube, BPH
 from coldtype.color import hsl
 
-from coldtype.time import Frame, Timeline, Timeable
+from coldtype.timing import Frame, Timeline, Timeable
 from coldtype.renderable import renderable, Overlay, Action, runnable
 from coldtype.renderable.animation import animation
 
 from coldtype.blender.render import blend_source
-from coldtype.time.sequence import ClipTrack, Clip, Sequence
+from coldtype.timing.sequence import ClipTrack, Clip, Sequence
 
 from coldtype.blender.fluent import BpyWorld, BpyObj, BpyCollection, BpyGroup, BpyMaterial
 

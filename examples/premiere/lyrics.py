@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.time.nle.premiere import PremiereTimeline
+from coldtype.timing.nle.premiere import PremiereTimeline
 
 pt = PremiereTimeline(
     __sibling__("projs/lyrics_coldtype.json"))

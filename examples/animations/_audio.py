@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.time.audio import Wavfile
+from coldtype.timing.audio import Wavfile
 from coldtype.fx.skia import phototype
 
 """

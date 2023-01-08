@@ -1,4 +1,4 @@
-from coldtype.time import Timeline, Timeable
+from coldtype.timing import Timeline, Timeable
 from coldtype.helpers import sibling
 
 from pathlib import Path

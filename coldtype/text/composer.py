@@ -236,9 +236,9 @@ def StSt(text,
         style = font
     elif isinstance(font, dict):
         style = Style(**{**font, **kwargs})
-    elif isinstance(font, list):
-        style = font[0]
-        styles = font
+    elif isinstance(font, list) and isinstance(font[0], Style):
+       style = font[0]
+       styles = font
     else:
         style = Style(font, font_size, **kwargs)
     

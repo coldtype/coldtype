@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.time.midi import MidiTimeline
+from coldtype.timing.midi import MidiTimeline
 from coldtype.tool import parse_inputs
 
 if __as_config__:

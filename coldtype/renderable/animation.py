@@ -5,9 +5,9 @@ from subprocess import run
 from pathlib import Path
 from datetime import datetime
 
-from coldtype.time.timeable import Timeable
-from coldtype.time import Frame
-from coldtype.time.timeline import Timeline
+from coldtype.timing.timeable import Timeable
+from coldtype.timing import Frame
+from coldtype.timing.timeline import Timeline
 
 from coldtype.text.reader import Style, Font
 from coldtype.runon.path import P

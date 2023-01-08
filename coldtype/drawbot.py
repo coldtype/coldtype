@@ -6,7 +6,7 @@ from coldtype.geometry import Point, Line, Rect
 from coldtype.text.reader import StyledString, Style, Font
 from coldtype.text.composer import StSt
 from coldtype.color import hsl, bw
-from coldtype.time import Frame
+from coldtype.timing import Frame
 from pathlib import Path
 
 from coldtype.renderer import renderable, Action

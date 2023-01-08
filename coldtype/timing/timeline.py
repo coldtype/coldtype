@@ -1,6 +1,6 @@
 from collections import defaultdict
 from re import match
-from coldtype.time.timeable import Timeable, Easeable
+from coldtype.timing.timeable import Timeable, Easeable
 from typing import List
 
 
@@ -91,7 +91,7 @@ class Timeline(Timeable):
         return ""
     
     def __str__(self):
-        return "<coldtype.time.timeline({:s}):{:04d}f@{:02.2f}fps[{:s}]>".format(self.__name__, self.duration, self.fps, ",".join([str(i) for i in self.storyboard]))
+        return "<coldtype.timing.timeline({:s}):{:04d}f@{:02.2f}fps[{:s}]>".format(self.__name__, self.duration, self.fps, ",".join([str(i) for i in self.storyboard]))
     
     def __getitem__(self, index):
         return self.timeables[index]
@@ -209,7 +209,7 @@ class Timeline(Timeable):
                 return [cg.start, cg.end]
     
     def interpretWords(self, include="*"):
-        from coldtype.time.sequence import ClipTrack, Clip
+        from coldtype.timing.sequence import ClipTrack, Clip
 
         includes = []
         excludes = []

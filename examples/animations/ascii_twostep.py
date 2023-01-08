@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.time.nle.ascii import AsciiTimeline
+from coldtype.timing.nle.ascii import AsciiTimeline
 
 at = AsciiTimeline(1, """
                                                               <

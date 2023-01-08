@@ -1,7 +1,7 @@
 import re
 from enum import Enum
-from coldtype.time.easing import ease
-from coldtype.time.timeable import Timeable
+from coldtype.timing.easing import ease
+from coldtype.timing.timeable import Timeable
 
 
 class ClipType(Enum):

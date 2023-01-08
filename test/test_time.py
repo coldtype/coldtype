@@ -1,9 +1,9 @@
 import unittest
-from coldtype.time.nle.ascii import AsciiTimeline
+from coldtype.timing.nle.ascii import AsciiTimeline
 from coldtype.renderable.animation import animation, Frame
 from coldtype.renderer.reader import SourceReader
-from coldtype.time.timeable import Timeable
-from coldtype.time.timeline import Timeline
+from coldtype.timing.timeable import Timeable
+from coldtype.timing.timeline import Timeline
 from coldtype.text import Font, Style, Rect
 
 at = AsciiTimeline(1, """
@@ -70,7 +70,7 @@ class TestTime(unittest.TestCase):
         self.assertAlmostEqual(at2.ki("2").adsr([5, 20], ["eei", "qeio"]), 0.0055, 3)
     
     def test_ascii_timeline_3(self):
-        from coldtype.time.sequence import ClipTrack, ClipGroup, Clip, ClipType
+        from coldtype.timing.sequence import ClipTrack, ClipGroup, Clip, ClipType
 
         self.assertEqual(at3.duration, 52)
         self.assertEqual(at3.fps, 24)

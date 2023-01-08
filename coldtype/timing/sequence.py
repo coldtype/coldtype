@@ -2,15 +2,15 @@ import re, math, copy
 from enum import Enum
 from collections import namedtuple
 
-from coldtype.time import Timeable, Frame
-from coldtype.time.easing import ease
-from coldtype.time.timeline import Timeline
+from coldtype.timing import Timeable, Frame
+from coldtype.timing.easing import ease
+from coldtype.timing.timeline import Timeline
 
 from coldtype.text import StyledString, Lockup, Graf, GrafStyle, Style, Rect
 from coldtype.runon.path import P
 from coldtype.color import *
 
-from coldtype.time.clip import Clip, ClipFlags, ClipType
+from coldtype.timing.clip import Clip, ClipFlags, ClipType
 
 from typing import Optional, Union, Callable, Tuple, List
 

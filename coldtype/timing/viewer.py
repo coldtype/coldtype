@@ -1,8 +1,8 @@
 from collections import defaultdict
 from coldtype.renderable.animation import animation, renderable
 from coldtype.text.composer import StSt, Font, Rect, Point, Style
-from coldtype.time.timeline import Timeline
-from coldtype.time.midi import MidiTimeline
+from coldtype.timing.timeline import Timeline
+from coldtype.timing.midi import MidiTimeline
 from coldtype.runon.path import P
 from coldtype.color import bw, hsl
 

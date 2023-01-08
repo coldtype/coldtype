@@ -1,5 +1,5 @@
-from coldtype.time.timeable import Timeable, Easeable
-from coldtype.time.timeline import Timeline
+from coldtype.timing.timeable import Timeable, Easeable
+from coldtype.timing.timeline import Timeline
 
 
 class Frame(Easeable):

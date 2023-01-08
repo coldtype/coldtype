@@ -33,10 +33,10 @@ from coldtype.color import *
 from coldtype.renderable import *
 from coldtype.renderer.reader import Programs
 from coldtype.helpers import loopidx, sibling, raw_ufo, quick_ufo, ßhide, ßshow, cycle_idx, random_series, glyph_to_uni, uni_to_glyph, glyph_to_class, DefconFont
-from coldtype.time import *
-from coldtype.time.easing import ez
-from coldtype.time.nle.ascii import AsciiTimeline
-from coldtype.time.midi import MidiTimeline
+from coldtype.timing import *
+from coldtype.timing.easing import ez
+from coldtype.timing.nle.ascii import AsciiTimeline
+from coldtype.timing.midi import MidiTimeline
 from coldtype.img.blendmode import BlendMode
 from coldtype.grid import Grid
 

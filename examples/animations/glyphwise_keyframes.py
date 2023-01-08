@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.time.nle.ascii import AsciiTimeline
+from coldtype.timing.nle.ascii import AsciiTimeline
 
 states = {
     "A": dict(wdth=0, wght=1, rotate=360),

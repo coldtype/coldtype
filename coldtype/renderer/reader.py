@@ -14,8 +14,8 @@ from coldtype.renderer.config import ColdtypeConfig
 from coldtype.helpers import sibling
 from coldtype.text.reader import ALL_FONT_DIRS
 from coldtype.geometry.rect import Rect
-from coldtype.time import Timeline
-from coldtype.time.viewer import timeViewer
+from coldtype.timing import Timeline
+from coldtype.timing.viewer import timeViewer
 
 try:
     from docutils.core import publish_doctree
