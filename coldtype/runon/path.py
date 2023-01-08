@@ -73,6 +73,9 @@ from coldtype.pens.misc import ExplodingPen, SmoothPointsPen
 from coldtype.random import random_series
 
 class P(Runon):
+    """
+    P stands for Path (or Pen)
+    """
     def FromPens(pens):
         if hasattr(pens, "_pens"):
             out = P().data(**pens.data)
@@ -1071,11 +1074,15 @@ class P(Runon):
 
     def ambit(self, th=None, tv=None, tx=0, ty=0, t=None) -> "P":
 
-        """Get the calculated rect boundary;
-        `th` means `(t)rue (h)orizontal`;
-        `ty` means `(t)rue (v)ertical`;
-        passing either ignores a non-bounds-derived frame
-        in either dimension"""
+        """
+        Get the calculated rect boundary.
+        
+        - `tx` means `(t)rue (x)` (i.e. the true width/horizontal dimension (was previously th));
+        - `ty` means `(t)rue (y)` (i.e. the true height/vertical dimension (was previously tv));
+        
+        Passing either ignores a non-bounds-derived frame
+        in either dimension
+        """
         
         tx, ty = self._normT(th, tv, tx, ty, t)
         f = self._data.get("frame", None)
@@ -1150,8 +1157,8 @@ class P(Runon):
         rect,
         x="mdx",
         y="mdy",
-        th=None,
-        tv=None,
+        th=None, # deprecated
+        tv=None, # deprecated
         tx=1,
         ty=0,
         transformFrame=True,
@@ -1159,10 +1166,13 @@ class P(Runon):
         returnOffset=False
         ) -> "P":
 
-        """Align this pen to another rect, defaults to the center;
-        `th` means true-horizontal (i.e. will disregard any invisible 'frame'
+        """
+        Align this pen to another rect, defaults to the center.
+
+        - `tx` means true-x (i.e. will disregard any invisible 'frame'
         set on the pen (as in the case of glyphs returned from StSt/Glyphwise));
-        `tv` means true-vertical, which is the same but for the vertical dimension"""
+        - `ty` means true-y, which is the same but for the vertical dimension
+        """
 
         if not isinstance(rect, Rect):
             rect = rect.rect
@@ -1191,8 +1201,8 @@ class P(Runon):
         rect,
         x="mdx",
         y="mdy",
-        th=None,
-        tv=None,
+        th=None, # deprecated
+        tv=None, # deprecated
         tx=1,
         ty=0,
         transformFrame=True,

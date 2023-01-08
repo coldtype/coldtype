@@ -223,6 +223,14 @@ a.colab-link:hover {
     line-height: 1.6rem;
 }
 
+.post p code {
+    font-weight: bold;
+}
+
+.post li code {
+    font-weight: bold;
+}
+
 .post h1 {
     font-weight: 900;
     margin-top: 30px;

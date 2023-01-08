@@ -111,14 +111,14 @@ class Rect(Geometrical):
     `Rect` objects can be splat'd where lists are expected as individual arguments (as in drawBot), i.e. `rect(*my_rect)`, or can be passed directly to functions expected a list representation of a rectangle.
     """
 
-    def FromCenter(center, w, h=None):
+    def FromCenter(center, w, h=None) -> "Rect":
         """Create a rect given a center point and a width and height (optional, height will default to width if not specified")"""
         x, y = center
         if not h:
             h = w
         return Rect((x - w/2, y - h/2, w, h))
     
-    def Inches(w, h, dpi=72.0):
+    def Inches(w, h, dpi=72.0) -> "Rect":
         return Rect(w*dpi, h*dpi)
 
     def __init__(self, *rect):
@@ -149,11 +149,11 @@ class Rect(Geometrical):
         self.w = w
         self.h = h
     
-    def origin(self):
+    def origin(self) -> tuple:
         """`(x, y)` as tuple"""
         return self.x, self.y
 
-    def from_obj(obj, w=None, h=None):
+    def from_obj(obj, w=None, h=None) -> "Rect":
         r = Rect((0, 0, 0, 0))
         try:
             r.x = obj.x
@@ -173,19 +173,19 @@ class Rect(Geometrical):
             r.y -= h/2
         return r
 
-    def FromExtents(extents):
+    def FromExtents(extents) -> "Rect":
         nw, ne, se, sw = extents
         return Rect(sw[0], sw[1], abs(ne[0] - sw[0]), abs(ne[1] - sw[1]))
     
-    def noop(self, *args, **kwargs):
+    def noop(self, *args, **kwargs) -> "Rect":
         return self
 
-    def FromMnMnMxMx(extents):
+    def FromMnMnMxMx(extents) -> "Rect":
         """Create a rectangle from `xmin, ymin, xmax, ymax`"""
         xmin, ymin, xmax, ymax = extents
         return Rect(xmin, ymin, xmax - xmin, ymax - ymin)
 
-    def FromPoints(*points):
+    def FromPoints(*points) -> "Rect":
         xmin, ymin, xmax, ymax = None, None, None, None
         for p in points:
             if xmin is None or p[0] < xmin:
@@ -198,7 +198,7 @@ class Rect(Geometrical):
                 ymax = p[1]
         return Rect.FromMnMnMxMx([xmin, ymin, xmax, ymax])
 
-    def mnmnmxmx(self):
+    def mnmnmxmx(self) -> tuple:
         """Return extents of rectangle as list"""
         return (self.x, self.y, self.x + self.w, self.y + self.h)
 
@@ -216,56 +216,56 @@ class Rect(Geometrical):
     
     __hash__ = object.__hash__
 
-    def rect(self):
+    def rect(self) -> list:
         """x,y,w,h in list"""
         return [self.x, self.y, self.w, self.h]
     
     xywh = rect
     
-    def round(self):
+    def round(self) -> "Rect":
         """round the values in the rectangle to the nearest integer"""
         return Rect([int(round(n)) for n in self])
 
-    def xy(self):
+    def xy(self) -> list:
         """equivalent to origin"""
         return [self.x, self.y]
 
-    def wh(self):
+    def wh(self) -> list:
         """the width and height as a tuple"""
         return [self.w, self.h]
     
     @property
-    def mnx(self):
+    def mnx(self) -> int:
         return self.x
     
     @property
-    def mny(self):
+    def mny(self) -> int:
         return self.y
 
     @property
-    def mxx(self):
+    def mxx(self) -> int:
         return self.x + self.w
     
     @property
-    def mxy(self):
+    def mxy(self) -> int:
         return self.y + self.h
     
     @property
-    def mdx(self):
+    def mdx(self) -> int:
         return self.point("C").x
     
     @property
-    def mdy(self):
+    def mdy(self) -> int:
         return self.point("C").y
 
-    def square(self):
+    def square(self) -> "Rect":
         """take a square from the center of this rect"""
         return Rect(centered_square(self.rect()))
     
-    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, round_result=False):
+    def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, round_result=False) -> "Rect":
         return self.offset(*align(self, rect, x, y, round_result=round_result))
     
-    def ipos(self, pt, defaults=(0.5, 0.5), clamp=True):
+    def ipos(self, pt, defaults=(0.5, 0.5), clamp=True) -> tuple:
         """
         Get scaled 0-1 bounded (optional) value
         from a point in a rectangle
@@ -279,7 +279,7 @@ class Rect(Geometrical):
             sy = min(1, max(0, sy))
         return sx, sy
 
-    def divide(self, amount, edge, forcePixel=False):
+    def divide(self, amount, edge, forcePixel=False) -> list:
         """
         **Dividing**
 
@@ -316,7 +316,7 @@ class Rect(Geometrical):
             a, b = divide(self.rect(), amount, edge, forcePixel=forcePixel)
             return GeoIterable(Rect(a), Rect(b))
 
-    def subdivide(self, amount, edge):
+    def subdivide(self, amount, edge) -> list:
         """
         Like `divide`, but here you specify the number of equal pieces you want (like columns or rows), and then what edge to start at, i.e.
         
@@ -333,13 +333,13 @@ class Rect(Geometrical):
         edge = txt_to_edge(edge)
         return [Rect(x) for x in subdivide(self.rect(), amount, edge)]
     
-    def subdivide_with_leading(self, count, leading, edge, forcePixel=True):
+    def subdivide_with_leading(self, count, leading, edge, forcePixel=True) -> list:
         """
         Same as `subdivide`, but inserts leading between each subdivision
         """
         return self.subdivide_with_leadings(count, [leading]*(count-1), edge, forcePixel)
 
-    def subdivide_with_leadings(self, count, leadings, edge, forcePixel=True):
+    def subdivide_with_leadings(self, count, leadings, edge, forcePixel=True) -> list:
         """
         Same as `subdivide_with_leadings`, but inserts leading between each subdivision, indexing the size of the leading from a list of leadings
         """
@@ -354,12 +354,12 @@ class Rect(Geometrical):
     subl = subdivide_with_leading
     subls = subdivide_with_leadings
 
-    def transform(self, t):
+    def transform(self, t) -> "Rect":
         pts = ["NW", "NE", "SE", "SW"]
         x1, x2, x3, x4 = [t.transformPoint(self.point(pt)) for pt in pts]
         return Rect.FromExtents([x1, x2, x3, x4])
 
-    def rotate(self, degrees, point=None):
+    def rotate(self, degrees, point=None) -> "Rect":
         if Transform:
             t = Transform()
             if not point:
@@ -371,7 +371,7 @@ class Rect(Geometrical):
         else:
             raise Exception("fontTools not installed")
 
-    def scale(self, s, x_edge=Edge.MinX, y_edge=Edge.MinY):
+    def scale(self, s, x_edge=Edge.MinX, y_edge=Edge.MinY) -> "Rect":
         return Rect(scale(self.rect(), s, x_edge, y_edge))
         #x_edge = txt_to_edge(x_edge)
         #y_edge = txt_to_edge(y_edge)
@@ -379,15 +379,15 @@ class Rect(Geometrical):
         #sy = self.h * s
         #return self.take(sx, x_edge, forcePixel=True).take(sy, y_edge, forcePixel=True)
 
-    def union(self, otherRect):
+    def union(self, otherRect) -> "Rect":
         return Rect.FromMnMnMxMx(unionRect(self.mnmnmxmx(), otherRect.mnmnmxmx()))
     
-    def intersection(self, otherRect):
+    def intersection(self, otherRect) -> "Rect":
         return Rect.FromMnMnMxMx(sectRect(self.mnmnmxmx(), otherRect.mnmnmxmx())[1])
     
     sect = intersection
 
-    def take(self, amount, edge, forcePixel=False):
+    def take(self, amount, edge, forcePixel=False) -> "Rect":
         """
         Like `divide`, but here it just returns the "first" rect from a divide call, not all the resulting pieces, i.e. you can "take" 200px from the center of a rectangle by doing this `Rect(0, 0, 300, 100).take(200, "mdx")` which will result in `Rect([50, 0, 200, 100])`
         """
@@ -400,11 +400,11 @@ class Rect(Geometrical):
         else:
             return Rect(take(self.rect(), amount, edge, forcePixel=forcePixel))
 
-    def takeOpposite(self, amount, edge, forcePixel=False):
+    def takeOpposite(self, amount, edge, forcePixel=False) -> "Rect":
         edge = txt_to_edge(edge)
         return self.divide(amount, edge, forcePixel=forcePixel)[1]
 
-    def subtract(self, amount, edge):
+    def subtract(self, amount, edge) -> "Rect":
         """
         The opposite of `take`, this will remove and not return a piece of the given amount from the given edge.
         
@@ -417,7 +417,7 @@ class Rect(Geometrical):
     
     drop = subtract
 
-    def expand(self, amount, edge):
+    def expand(self, amount, edge) -> "Rect":
         edges = None
         if edge == "NW":
             edges = ["mxy", "mnx"]
@@ -435,7 +435,7 @@ class Rect(Geometrical):
     
     add = expand
 
-    def inset(self, dx, dy=None):
+    def inset(self, dx, dy=None) -> "Rect":
         """
         Creates padding in the amount of dx and dy. Also does expansion with negative values, or both at once
         """
@@ -443,67 +443,69 @@ class Rect(Geometrical):
             dy = dx
         return Rect(inset(self.rect(), dx, dy))
     
-    def inset_x(self, dx):
+    def inset_x(self, dx) -> "Rect":
         return self.inset(dx, 0)
     
-    def inset_y(self, dy):
+    def inset_y(self, dy) -> "Rect":
         return self.inset(0, dy)
 
-    def offset(self, dx, dy=None):
+    def offset(self, dx, dy=None) -> "Rect":
         if dy == None:
             dy = dx
         return Rect(offset(self.rect(), dx, dy))
     
-    def offset_x(self, dx):
+    def offset_x(self, dx) -> "Rect":
         return self.offset(dx, 0)
     
-    def offset_y(self, dy):
+    def offset_y(self, dy) -> "Rect":
         return self.offset(0, dy)
     
     o = offset
 
-    def zero(self):
+    def zero(self) -> "Rect":
+        """disregard origin and set it to (0,0)"""
         return Rect((0, 0, self.w, self.h))
     
-    def nonzero(self):
+    def nonzero(self) -> bool:
+        """is this rect not just all zeros?"""
         return not (self.x == 0 and self.y == 0 and self.w == 0 and self.h == 0)
 
     def __add__(self, another_rect):
         return Rect(add(self, another_rect))
 
-    def grid(self, columns=2, rows=2):
+    def grid(self, columns=2, rows=2) -> list:
         """Construct a grid"""
         xs = [row.subdivide(columns, Edge.MinX) for row in self.subdivide(rows, Edge.MaxY)]
         return [item for sublist in xs for item in sublist]
 
-    def pieces(self, amount, edge):
+    def pieces(self, amount, edge) -> list:
         edge = txt_to_edge(edge)
         return [Rect(x) for x in pieces(self.rect(), amount, edge)]
 
-    def edge(self, edge):
+    def edge(self, edge) -> Line:
         edge = txt_to_edge(edge)
         return Line(*edgepoints(self.rect(), edge))
 
-    def center(self):
+    def center(self) -> Point:
         return Point(centerpoint(self.rect()))
 
-    def flip(self, h):
+    def flip(self, h) -> "Rect":
         return Rect([self.x, h - self.h - self.y, self.w, self.h])
 
-    def cardinals(self):
+    def cardinals(self) -> tuple:
         return self.point("N"), self.point("E"), self.point("S"), self.point("W")
 
-    def intercardinals(self):
+    def intercardinals(self) -> tuple:
         return self.point("NE"), self.point("SE"), self.point("SW"), self.point("NW")
     
-    def FromIntercardinals(pts):
+    def FromIntercardinals(pts) -> "Rect":
         ne, se, sw, nw = pts
         return Rect(sw[0], sw[1], abs(ne[0] - sw[0]), abs(ne[1] - sw[1]))
     
-    def aspect(self):
+    def aspect(self) -> float:
         return self.h / self.w
     
-    def fit(self, other):
+    def fit(self, other) -> "Rect":
         sx, sy, sw, sh = self
         ox, oy, ow, oh = other
         if ow > oh:
@@ -515,13 +517,13 @@ class Rect(Geometrical):
         #print(sh, fw, fh, other.aspect())
         return self.take(fh, "mdy")
     
-    def avg(self):
+    def avg(self) -> Point:
         pts = self.cardinals()
         return Point(
             sum([p.x for p in pts])/4,
             sum([p.y for p in pts])/4)
 
-    def point(self, eh, ev=Edge.MinX):
+    def point(self, eh, ev=Edge.MinX) -> Point:
         """
         Get a `Point` at a given compass direction, chosen from
         
@@ -559,54 +561,54 @@ class Rect(Geometrical):
     p = point
 
     @property
-    def pne(self): return self.point("NE")
+    def pne(self) -> Point: return self.point("NE")
 
     @property
-    def pe(self): return self.point("E")
+    def pe(self) -> Point: return self.point("E")
 
     @property
-    def ee(self): return self.edge("mxx")
+    def ee(self) -> Line: return self.edge("mxx")
 
     @property
-    def pse(self): return self.point("SE")
+    def pse(self) -> Point: return self.point("SE")
 
     @property
-    def ps(self): return self.point("S")
+    def ps(self) -> Point: return self.point("S")
 
     @property
-    def es(self): return self.edge("mny")
+    def es(self) -> Line: return self.edge("mny")
 
     @property
-    def psw(self): return self.point("SW")
+    def psw(self) -> Point: return self.point("SW")
 
     @property
-    def pw(self): return self.point("W")
+    def pw(self) -> Point: return self.point("W")
 
     @property
-    def ew(self): return self.edge("mnx")
+    def ew(self) -> Line: return self.edge("mnx")
 
     @property
-    def pnw(self): return self.point("NW")
+    def pnw(self) -> Point: return self.point("NW")
 
     @property
-    def pn(self): return self.point("N")
+    def pn(self) -> Point: return self.point("N")
 
     @property
-    def en(self): return self.edge("mxy")
+    def en(self) -> Line: return self.edge("mxy")
 
     @property
-    def pc(self): return self.point("C")
+    def pc(self) -> Point: return self.point("C")
 
     @property
-    def ecx(self): return self.edge("mdx")
+    def ecx(self) -> Line: return self.edge("mdx")
 
     @property
-    def ecy(self): return self.edge("mdy")
+    def ecy(self) -> Line: return self.edge("mdy")
 
-    def intersects(self, other):
+    def intersects(self, other) -> bool:
         return not (self.point("NE").x < other.point("SW").x or self.point("SW").x > other.point("NE").x or self.point("NE").y < other.point("SW").y or self.point("SW").y > other.point("NE").y)
     
-    def maxima(self, n, edge):
+    def maxima(self, n, edge) -> "Rect":
         e = txt_to_edge(edge)
         if e == Edge.MinX:
             return self.setmnx(n)
@@ -623,7 +625,7 @@ class Rect(Geometrical):
         else:
             raise Exception("HELLO")
     
-    def setmnx(self, x):
+    def setmnx(self, x) -> "Rect":
         mnx, mny, mxx, mxy = self.mnmnmxmx()
         return Rect.FromMnMnMxMx([x, mny, mxx, mxy])
     
@@ -783,7 +785,7 @@ class Rect(Geometrical):
             rs.append(_r)
         return rs
     
-    def interp(self, v, other):
+    def interp(self, v, other) -> "Rect":
         """Interpolate with another rect"""
         apts = self.intercardinals()
         bpts = other.intercardinals()

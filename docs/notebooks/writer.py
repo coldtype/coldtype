@@ -37,7 +37,7 @@ output = {
     "functions": [],
 }
 
-doc = namedtuple("doc", ["itself", "path", "docstring", "signature"])
+doc = namedtuple("doc", ["itself", "path", "docstring", "signature", "methods"])
 
 for k, v in output.items():
     for x in globals()[k]:
@@ -47,32 +47,41 @@ for k, v in output.items():
             path = Path(inspect.getfile(x)).relative_to(root)
             sig = None
             src = None
+            methods = []
+
             if inspect.isclass(x):
                 src = inspect.getsource(getattr(x, "__init__"))
                 src = dedent(f"class {x.__name__}:\n" + src.split("):")[0] + "):")
+                
+                _methods = inspect.getmembers(x)
+                for m in _methods:
+                    try:
+                        _path = Path(inspect.getfile(m[1])).relative_to(root)
+                    except TypeError:
+                        _path = None
+                    
+                    if _path == path and m[1].__name__ not in ["__init__", "__call__", "__repr__", "__eq__"]:
+                        ds = inspect.getdoc(m[1])
+                        if ds:
+                            ds_md = markdown.markdown(ds, extensions=["smarty", "mdx_linkify", "fenced_code", "codehilite"], extension_configs={"codehilite":{"css_class":"highlight"}})
+                            _src = dedent(inspect.getsource(m[1]).split("->")[0])
+                            _highlit = fragment_fromstring(highlight(_src, PythonLexer(), HtmlFormatter(linenos=False)))
+                            _sig = tostring(_highlit, pretty_print=True, encoding="utf-8").decode("utf-8")
+                            methods.append(doc(m[1], path, ds_md, _sig, None))
+                
+                methods = sorted([*set(methods)], key=lambda m: m.itself.__name__)
+
             else:
                 src = dedent(inspect.getsource(x).split("->")[0])
             
             if src:
                 highlit = fragment_fromstring(highlight(src, PythonLexer(), HtmlFormatter(linenos=False)))
                 sig = tostring(highlit, pretty_print=True, encoding="utf-8").decode("utf-8")
-            #src = inspect.getsource(x)
-            #if src.startswith("class"):
-            #    print(re.split(r"\)\:", src)[1])
-            output[k].append(doc(x.__name__, path, docstring_md, sig))
-            #print(x)
-            #print(inspect.getfullargspec(x))
+
+            output[k].append(doc(x.__name__, path, docstring_md, sig, methods))
         
         #if inspect.isclass(x):
         #    print(path, k, inspect.isclass(x))
-
-# for c in classes:
-#     docstring = inspect.getdoc(c)
-#     path = Path(inspect.getfile(c)).relative_to(root)
-
-# for f in functions:
-#     docstring = inspect.getdoc(f)
-#     path = Path(inspect.getfile(f)).relative_to(root)
 
 
 here = Path(__FILE__).parent.resolve()
