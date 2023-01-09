@@ -24,6 +24,8 @@ NotebookParser(notebook_dir, build_dir, templates_dir, assets_dir, do_nest=True,
         "text",
         "animation",
         "drawbot",
+        "blender",
+        
     ],
     "cheatsheets": [
         "viewer",

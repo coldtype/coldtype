@@ -408,7 +408,7 @@ aframe = notebook_aframe
 
 # to set up font paths correctly (seems fine?)
 from coldtype.renderer.reader import SourceReader
-sr = SourceReader()
-sr.read_configs(None, None)
+NOTEBOOK_SOURCE_READER = SourceReader()
+NOTEBOOK_SOURCE_READER.read_configs(None, None)
 
 clear_output()
