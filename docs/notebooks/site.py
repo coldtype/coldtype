@@ -1,5 +1,6 @@
 from coldtype import *
 from coldtype.notebook.parser import NotebookParser
+from docs.notebooks.writer import write
 
 root = Path(__FILE__).parent
 
@@ -35,6 +36,8 @@ NotebookParser(notebook_dir, build_dir, templates_dir, assets_dir, do_nest=True,
         "text",
     ]
 })
+
+write(root.resolve())
 
 @renderable((100, 100), watch=[
     assets_dir/"style.css",
