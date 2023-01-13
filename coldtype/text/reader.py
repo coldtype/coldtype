@@ -269,11 +269,16 @@ class Font():
     @staticmethod
     def LibraryFind(regex):
         matches = Font.LibraryList(regex)
-        if on_mac():
-            import AppKit, CoreText
-            font = AppKit.NSFont.fontWithName_size_(matches[0], 100)
-            path = Path(CoreText.CTFontDescriptorCopyAttribute(font.fontDescriptor(), CoreText.kCTFontURLAttribute).path())
-            return Font.Cacheable(path)
+        if len(matches) > 0:
+            if on_mac():
+                import AppKit, CoreText
+                try:
+                    font = AppKit.NSFont.fontWithName_size_(matches[0], 100)
+                    path = Path(CoreText.CTFontDescriptorCopyAttribute(font.fontDescriptor(), CoreText.kCTFontURLAttribute).path())
+                    return Font.Cacheable(path)
+                except:
+                    print("FAILED SYSTEM LOOKUP", matches[0])
+                    raise FontNotFoundException(regex)
     
     def RegisterDir(dir):
         global ALL_FONT_DIRS
