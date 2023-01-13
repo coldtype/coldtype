@@ -269,7 +269,6 @@ class Font():
     @staticmethod
     def LibraryFind(regex):
         matches = Font.LibraryList(regex)
-        print(">", matches)
         if on_mac():
             import AppKit, CoreText
             font = AppKit.NSFont.fontWithName_size_(matches[0], 100)
