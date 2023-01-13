@@ -6,7 +6,7 @@ from coldtype.blender import *
 @animation((540, 540), timeline=30, bg=0)
 def varfont_animation(f):
     return (P(
-        Glyphwise("CDEL", lambda g:
+        Glyphwise("COLD", lambda g:
             Style(Font.ColdObvi(), 250
                 , wdth=f.adj(-g.i*40).e("seio")))
             .align(f.a.r, tx=0)
