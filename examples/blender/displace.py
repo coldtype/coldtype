@@ -5,24 +5,14 @@ from coldtype.blender import *
 def setup(bw:BpyWorld):
     (bw.deletePrevious(materials=False))
 
-# @b3d_renderable(center=(0, 1), upright=1, reset_to_zero=1)
-# def bg(r):
-#     return (P(r)
-#         .tag("bg")
-#         .ch(b3d(lambda p: p
-#             .extrude(0.1)
-#             , material="bg_mat")))
-
 big_c = "A"
 
 @b3d_renderable(center=(0, 1), upright=1)
 def displace(r):
     return (
-        #StSt(big_c, "Streco-Stencil-Superfat.otf", 850, wdth=1, wght=1)
-        #.align(r)
-        #.pen()
-        P().rect(r.inset(200))
-        #.outline(50)
+        StSt("C", Font.ColdObvi(), 850, wght=1)
+        .align(r)
+        .pen()
         .tag("glyph")
         .ch(b3d(lambda p: p
             .extrude(1)

@@ -8,223 +8,223 @@
                 {
                     "name": "*p\u02b0liz",
                     "text": "*p\u02b0liz",
-                    "start": 0,
+                    "start": 0.0,
                     "end": 6
                 },
                 {
                     "name": "kal\u02e0",
                     "text": "kal\u02e0",
-                    "start": 6,
+                    "start": 6.0,
                     "end": 17
                 },
                 {
                     "name": "st\u025b",
                     "text": "st\u025b",
-                    "start": 17,
+                    "start": 17.0,
                     "end": 21
                 },
                 {
                     "name": "+l\u0258",
                     "text": "+l\u0258",
-                    "start": 21,
+                    "start": 21.0,
                     "end": 35
                 },
                 {
                     "name": "*\u00e6sk",
                     "text": "*\u00e6sk",
-                    "start": 35,
+                    "start": 35.0,
                     "end": 43
                 },
                 {
                     "name": "h\u025a",
                     "text": "h\u025a",
-                    "start": 43,
+                    "start": 43.0,
                     "end": 45
                 },
                 {
                     "name": "\u027e\u0258",
                     "text": "\u027e\u0258",
-                    "start": 45,
+                    "start": 45.0,
                     "end": 48
                 },
                 {
                     "name": "b\u0279\u026a\u014b",
                     "text": "b\u0279\u026a\u014b",
-                    "start": 48,
+                    "start": 48.0,
                     "end": 54
                 },
                 {
                     "name": "these",
                     "text": "these",
-                    "start": 54,
+                    "start": 54.0,
                     "end": 62
                 },
                 {
                     "name": "\u03b8\u026a\u014b\u0261z",
                     "text": "\u03b8\u026a\u014b\u0261z",
-                    "start": 62,
+                    "start": 62.0,
                     "end": 68
                 },
                 {
                     "name": "w\u026a\u00f0",
                     "text": "w\u026a\u00f0",
-                    "start": 68,
+                    "start": 68.0,
                     "end": 73
                 },
                 {
                     "name": "h\u025a.001",
                     "text": "h\u025a",
-                    "start": 73,
+                    "start": 73.0,
                     "end": 79
                 },
                 {
                     "name": "f\u0279\u0254m",
                     "text": "f\u0279\u0254m",
-                    "start": 79,
+                    "start": 79.0,
                     "end": 82
                 },
                 {
                     "name": "n\u0258",
                     "text": "n\u0258",
-                    "start": 82,
+                    "start": 82.0,
                     "end": 90
                 },
                 {
                     "name": "st\u0254\u0258",
                     "text": "st\u0254\u0258",
-                    "start": 90,
+                    "start": 90.0,
                     "end": 111
                 },
                 {
                     "name": "*s\u026aks",
                     "text": "*s\u026aks",
-                    "start": 111,
+                    "start": 111.0,
                     "end": 120
                 },
                 {
                     "name": "spu\u02d0nz",
                     "text": "spu\u02d0nz",
-                    "start": 120,
+                    "start": 120.0,
                     "end": 126
                 },
                 {
                     "name": "\u028cv",
                     "text": "\u028cv",
-                    "start": 126,
+                    "start": 126.0,
                     "end": 132
                 },
                 {
                     "name": "f\u0279\u025b\u0283",
                     "text": "f\u0279\u025b\u0283",
-                    "start": 132,
+                    "start": 132.0,
                     "end": 140
                 },
                 {
                     "name": "sno\u028a",
                     "text": "sno\u028a",
-                    "start": 140,
+                    "start": 140.0,
                     "end": 147
                 },
                 {
                     "name": "p\u02b0i\u02d0z",
                     "text": "p\u02b0i\u02d0z",
-                    "start": 147,
+                    "start": 147.0,
                     "end": 165
                 },
                 {
                     "name": "*fa\u026av",
                     "text": "*fa\u026av",
-                    "start": 165,
+                    "start": 165.0,
                     "end": 172
                 },
                 {
                     "name": "t\u026ak",
                     "text": "t\u026ak",
-                    "start": 172,
+                    "start": 172.0,
                     "end": 179
                 },
                 {
                     "name": "sl\u00e6bz",
                     "text": "sl\u00e6bz",
-                    "start": 179,
+                    "start": 179.0,
                     "end": 186
                 },
                 {
                     "name": "\u028cv.001",
                     "text": "\u028cv",
-                    "start": 186,
+                    "start": 186.0,
                     "end": 190
                 },
                 {
                     "name": "blu",
                     "text": "blu",
-                    "start": 190,
+                    "start": 190.0,
                     "end": 195
                 },
                 {
                     "name": "t\u0283i\u02d0z",
                     "text": "t\u0283i\u02d0z",
-                    "start": 195,
+                    "start": 195.0,
                     "end": 204
                 },
                 {
                     "name": "*n",
                     "text": "*n",
-                    "start": 204,
+                    "start": 204.0,
                     "end": 208
                 },
                 {
                     "name": "me\u026a",
                     "text": "me\u026a",
-                    "start": 208,
+                    "start": 208.0,
                     "end": 212
                 },
                 {
                     "name": "+bi",
                     "text": "+bi",
-                    "start": 212,
+                    "start": 212.0,
                     "end": 214
                 },
                 {
                     "name": "\u0258",
                     "text": "\u0258",
-                    "start": 214,
+                    "start": 214.0,
                     "end": 220
                 },
                 {
                     "name": "sn\u00e6k",
                     "text": "sn\u00e6k",
-                    "start": 220,
+                    "start": 220.0,
                     "end": 227
                 },
                 {
                     "name": "f\u0254\u0279",
                     "text": "f\u0254\u0279",
-                    "start": 227,
+                    "start": 227.0,
                     "end": 229
                 },
                 {
                     "name": "h\u025a.002",
                     "text": "h\u025a",
-                    "start": 229,
+                    "start": 229.0,
                     "end": 232
                 },
                 {
                     "name": "b\u0279\u028c",
                     "text": "b\u0279\u028c",
-                    "start": 232,
+                    "start": 232.0,
                     "end": 235
                 },
                 {
                     "name": "+\u00f0\u0258",
                     "text": "+\u00f0\u0258",
-                    "start": 235,
+                    "start": 235.0,
                     "end": 238
                 },
                 {
                     "name": "b\u0254\u0258b",
                     "text": "b\u0254\u0258b",
-                    "start": 238,
+                    "start": 238.0,
                     "end": 260
                 }
             ]

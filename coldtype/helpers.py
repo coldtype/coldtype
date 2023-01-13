@@ -25,6 +25,7 @@ def quick_ufo(path
     np:Path = Path(path).expanduser().resolve()
     
     if not np.exists():
+        np.parent.mkdir(exist_ok=True, parents=True)
         ufo = DefconFont()
         ufo.save(str(np))
     

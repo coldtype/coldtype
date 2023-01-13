@@ -20,4 +20,4 @@ img = (StSt("COLD\nTYPE", Font.ColdtypeObviously()
 @b3d_renderable()
 def show_img(r):
     return (P(r).f(-1).img(img_path, r)
-        | b3d(lambda p: p, material="auto", primitive="plane"))
+        .ch(b3d(lambda p: p, material="auto", primitive="plane")))

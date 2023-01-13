@@ -1036,7 +1036,7 @@ class P(Runon):
         return self
 
 
-    def _normT(self, th, tv, tx, ty, t):
+    def _normT(self, th, tv, tx, ty, t) -> "P":
 
         import traceback
         global THTV_WARNING
@@ -1067,13 +1067,7 @@ class P(Runon):
     def empty(self):
         return len(self._val.value) == 0
     
-
-    def __normT(self, th, tv, tx, ty, t):
-        return self
-
-
-    def ambit(self, th=None, tv=None, tx=0, ty=0, t=None) -> "P":
-
+    def ambit(self, th=None, tv=None, tx=0, ty=0, t=None) -> Rect:
         """
         Get the calculated rect boundary.
         
@@ -1149,7 +1143,7 @@ class P(Runon):
     getFrame = ambit
     
 
-    def _ambit(self, th=None, tv=None, tx=0, ty=0, t=None) -> "P":
+    def __normT(self, th, tv, tx, ty, t) -> "P":
         return self
 
 

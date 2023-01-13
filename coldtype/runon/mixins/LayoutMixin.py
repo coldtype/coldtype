@@ -69,7 +69,7 @@ class LayoutMixin():
     def empty(self):
         return len(self._val.value) == 0
     
-    def ambit(self, th=None, tv=None, tx=0, ty=0, t=None):
+    def ambit(self, th=None, tv=None, tx=0, ty=0, t=None) -> Rect:
         """
         Get the calculated rect boundary.
         

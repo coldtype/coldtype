@@ -1,4 +1,4 @@
-import setuptools
+import setuptools, sys
 
 long_description = """
 # Coldtype
@@ -7,6 +7,21 @@ long_description = """
 
 More info available at: [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
 """
+
+basic_deps = [
+    "fonttools[ufo]",
+    "blackrenderer>=0.6.0",
+    "fontPens",
+    "easing-functions",
+    "mido",
+    "defcon",
+    "freetype-py",
+    "uharfbuzz>=0.14.0",
+    "python-bidi",
+]
+
+if sys.platform.startswith("darwin"):
+    basic_deps.extend(["pyobjc-framework-Cocoa", "pyobjc-framework-CoreText"])
 
 setuptools.setup(
     name="coldtype",
@@ -112,17 +127,7 @@ setuptools.setup(
             "soundfile",
         ]
     },
-    install_requires=[
-        "fonttools[ufo]",
-        "blackrenderer>=0.6.0",
-        "fontPens",
-        "easing-functions",
-        "mido",
-        "defcon",
-        "freetype-py",
-        "uharfbuzz>=0.14.0",
-        "python-bidi",
-    ],
+    install_requires=basic_deps,
     classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",

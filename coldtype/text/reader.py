@@ -243,6 +243,7 @@ class Font():
             results.extend(Font._ListDir(Path(dir), regex, regex_dir, log, depth=0))
         return sorted(results, key=lambda p: p.stem)
 
+    @staticmethod
     def Find(regex, regex_dir=None, index=0):
         if isinstance(regex, Font):
             return regex
@@ -256,6 +257,24 @@ class Font():
         except Exception as e:
             #print(">", e)
             raise FontNotFoundException(regex)
+    
+    @staticmethod
+    def LibraryList(regex):
+        if on_mac():
+            import AppKit
+            return [x for x in list(AppKit.NSFontManager.sharedFontManager().availableFonts()) if re.search(regex, x)]
+        else:
+            raise Exception("Library not supported on this OS")
+    
+    @staticmethod
+    def LibraryFind(regex):
+        matches = Font.LibraryList(regex)
+        print(">", matches)
+        if on_mac():
+            import AppKit, CoreText
+            font = AppKit.NSFont.fontWithName_size_(matches[0], 100)
+            path = Path(CoreText.CTFontDescriptorCopyAttribute(font.fontDescriptor(), CoreText.kCTFontURLAttribute).path())
+            return Font.Cacheable(path)
     
     def RegisterDir(dir):
         global ALL_FONT_DIRS
