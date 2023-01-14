@@ -309,7 +309,7 @@ class Font():
                 return _font
             except FontNotFoundException as e:
                 if fallback:
-                    print("font not found:", font)
+                    #print("font not found:", font)
                     return Font.RecursiveMono()
                 else:
                     raise e

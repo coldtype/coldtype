@@ -62,6 +62,8 @@ def test_normalize(_r):
     font_path = Path(style.font.path).relative_to(Path(".").absolute())
 
     assert str(font_path) == "coldtype/demo/RecMono-CasualItalic.ttf"
+    assert style.font.names()[0] == "Rec Mono Casual Italic"
+    assert style.font.names()[1] == "Rec Mono Casual"
 
     if on_mac():
         style = Style("Times", 100)
