@@ -9,8 +9,8 @@ More info available at: [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
 """
 
 basic_deps = [
-    "fonttools[ufo]",
     "blackrenderer>=0.6.0",
+    "fonttools[ufo,unicode]",
     "fontPens",
     "easing-functions",
     "mido",
@@ -18,6 +18,7 @@ basic_deps = [
     "freetype-py",
     "uharfbuzz>=0.14.0",
     "python-bidi",
+    "requests"
 ]
 
 if sys.platform.startswith("darwin"):

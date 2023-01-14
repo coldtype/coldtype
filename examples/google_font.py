@@ -1,5 +1,10 @@
 from coldtype import *
 
+# if you're running this on windows, you'll
+# probably need to do an `export PYTHONUTF8=1`
+# in your shell before running it, or else
+# python won't be able to understand these strings
+
 pairs = [
     ["Noto Sans Tamil", "ஐக்கிய நாடுகள்"],
     ["Noto Sans Balinese", "ᬏᬢᬤᬢᬶᬭᬶᬓ᭄ᬢᬫ᭄,"],

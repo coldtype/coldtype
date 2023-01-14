@@ -415,7 +415,7 @@ class SourceReader():
         self.config.args = args
         #print(self.config.values())
     
-    def find_sources(self, dirpath, recursive=True):
+    def find_sources(self, dirpath, recursive=False):
         prefix = "**/" if recursive else ""
         globber = f"{prefix}*.py"
         if self.filepath:
