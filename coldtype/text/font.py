@@ -19,6 +19,88 @@ except ImportError:
     BlackRendererFont = None
     pass
 
+
+
+# OS Font paths
+try:
+    _HOME = Path.home()
+except Exception:  # Exceptions thrown by home() are not specified...
+    _HOME = Path(os.devnull)  # Just an arbitrary path with no children.
+MSFolders = \
+    r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders'
+MSFontDirectories = [
+    r'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts',
+    r'SOFTWARE\Microsoft\Windows\CurrentVersion\Fonts']
+MSUserFontDirectories = [
+    str(_HOME / 'AppData/Local/Microsoft/Windows/Fonts'),
+    str(_HOME / 'AppData/Roaming/Microsoft/Windows/Fonts'),
+]
+
+def list_fonts(directory, extensions):
+    """
+    Return a list of all fonts matching any of the extensions, found
+    recursively under the directory.
+    """
+    extensions = ["." + ext for ext in extensions]
+    return [os.path.join(dirpath, filename)
+            # os.walk ignores access errors, unlike Path.glob.
+            for dirpath, _, filenames in os.walk(directory)
+            for filename in filenames
+            if Path(filename).suffix.lower() in extensions]
+
+
+def win32FontDirectory():
+    r"""
+    Return the user-specified font directory for Win32.  This is
+    looked up from the registry key ::
+
+      \\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Fonts
+
+    If the key is not found, ``%WINDIR%\Fonts`` will be returned.
+    """
+    import winreg
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, MSFolders) as user:
+            return winreg.QueryValueEx(user, 'Fonts')[0]
+    except OSError:
+        return os.path.join(os.environ['WINDIR'], 'Fonts')
+
+
+def _get_win32_installed_fonts():
+    """List the font paths known to the Windows registry."""
+    import winreg
+    items = set()
+    # Search and resolve fonts listed in the registry.
+    for domain, base_dirs in [
+            (winreg.HKEY_LOCAL_MACHINE, [win32FontDirectory()]),  # System.
+            (winreg.HKEY_CURRENT_USER, MSUserFontDirectories),  # User.
+    ]:
+        for base_dir in base_dirs:
+            for reg_path in MSFontDirectories:
+                try:
+                    with winreg.OpenKey(domain, reg_path) as local:
+                        for j in range(winreg.QueryInfoKey(local)[1]):
+                            # value may contain the filename of the font or its
+                            # absolute path.
+                            key, value, tp = winreg.EnumValue(local, j)
+                            if not isinstance(value, str):
+                                continue
+                            try:
+                                # If value contains already an absolute path,
+                                # then it is not changed further.
+                                path = Path(base_dir, value).resolve()
+                            except RuntimeError:
+                                # Don't fail with invalid entries.
+                                continue
+                            items.add(path)
+                except (OSError, MemoryError):
+                    continue
+    return items
+
+
+
+
+
 _prefixes = [
     ["¬", "~/Library/Fonts"],
     ["", "/Library/Fonts"]
