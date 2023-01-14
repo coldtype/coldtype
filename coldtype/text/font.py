@@ -262,20 +262,6 @@ class Font():
                 for f in fonts:
                     print(" >", f)
             return fonts
-        elif on_windows():
-            import win32gui
-
-            def callback(font, tm, fonttype, names):
-                names.append(font.lfFaceName)
-                return True
-
-            font_names = []
-            hdc = win32gui.GetDC(None)
-            win32gui.EnumFontFamilies(hdc, None, callback, font_names)
-            print("\n".join(font_names))
-            win32gui.ReleaseDC(hdc, None)
-
-            print(">>>", font_names)
         else:
             raise Exception("Library not supported on this OS")
     
