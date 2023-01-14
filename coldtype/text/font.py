@@ -130,6 +130,29 @@ class Font():
                 axes[axis.axisTag] = (axis.__dict__)
         return axes
     
+    def names(self):
+        FONT_SPECIFIER_NAME_ID = 4
+        FONT_SPECIFIER_FAMILY_ID = 1
+        name = ""
+        family = ""
+
+        def decode(rec):
+            return str(rec)
+            # TODO should this be necessary?
+            try:
+                return rec.string.decode("utf-8")
+            except UnicodeDecodeError:
+                return rec.string.decode("utf-16-be")
+
+        for record in self.font.ttFont['name'].names:
+            if record.nameID == FONT_SPECIFIER_NAME_ID and not name:
+                name = decode(record)
+            elif record.nameID == FONT_SPECIFIER_FAMILY_ID and not family:
+                family = decode(record)
+            if name and family:
+                break
+        return name, family
+    
     @staticmethod
     def Cacheable(path, suffix=None, delete_tmp=False, actual_path=None):
         """use actual_path to override a key path (if the actual path is the result of a networked call)"""
@@ -185,9 +208,9 @@ class Font():
                 except PermissionError:
                     pass
             else:
-                if regex_dir and not re.search(regex_dir, str(p.parent)):
+                if regex_dir and not re.search(regex_dir, str(p.parent), re.IGNORECASE):
                     continue
-                if re.search(regex, p.name):
+                if re.search(regex, p.name, re.IGNORECASE):
                     if p.suffix in [".otf", ".ttf", ".ttc", ".ufo"]:
                         results.append(p)
         
@@ -222,10 +245,23 @@ class Font():
             raise FontNotFoundException(regex)
     
     @staticmethod
-    def LibraryList(regex):
+    def LibraryList(regex, print_list=False):
+        try:
+            regex.match("asdf")
+        except AttributeError:
+            regex = re.compile(f".*{regex}.*", re.IGNORECASE)
+
         if on_mac():
             import AppKit
-            return [x for x in list(AppKit.NSFontManager.sharedFontManager().availableFonts()) if re.search(regex, x)]
+            fonts = [x for x in list(AppKit.NSFontManager.sharedFontManager().availableFonts()) if not x.startswith(".")]
+            fonts = list(sorted(fonts, key=lambda x: len(x)))
+            fonts = [x for x in fonts if re.search(regex, x)]
+            if print_list:
+                print("---")
+                print("Font Matches")
+                for f in fonts:
+                    print(" >", f)
+            return fonts
         elif on_windows():
             import win32gui
 
@@ -244,8 +280,8 @@ class Font():
             raise Exception("Library not supported on this OS")
     
     @staticmethod
-    def LibraryFind(regex):
-        matches = Font.LibraryList(regex)
+    def LibraryFind(regex, print_list=False):
+        matches = Font.LibraryList(regex, print_list=print_list)
         if len(matches) > 0:
             if on_mac():
                 import AppKit, CoreText
