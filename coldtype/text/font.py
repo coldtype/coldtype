@@ -34,6 +34,7 @@ MSFontDirectories = [
 MSUserFontDirectories = [
     str(_HOME / 'AppData/Local/Microsoft/Windows/Fonts'),
     str(_HOME / 'AppData/Roaming/Microsoft/Windows/Fonts'),
+    str(_HOME / 'AppData/Roaming/Adobe/CoreSync/livetype/r'),
 ]
 
 def list_fonts(directory, extensions):
