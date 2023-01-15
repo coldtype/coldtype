@@ -200,7 +200,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ### Added
 - `P.gridlayer`, `Runon.mapvch`, `Runon.mapvrc`
 
-## [0.10.0] - 2022-??-??
+## [0.10.0] - 2023-01-15
 ### Added
 - `.up` as canonical form of `.ups`
 - Argument-less boolean operation methods for plural `P`
