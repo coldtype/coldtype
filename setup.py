@@ -21,8 +21,8 @@ basic_deps = [
     "requests"
 ]
 
-if sys.platform.startswith("darwin"):
-    basic_deps.extend(["pyobjc-framework-Cocoa", "pyobjc-framework-CoreText"])
+#if sys.platform.startswith("darwin"):
+#    basic_deps.extend(["pyobjc-framework-Cocoa", "pyobjc-framework-CoreText"])
 
 setuptools.setup(
     name="coldtype",
