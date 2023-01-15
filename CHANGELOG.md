@@ -206,7 +206,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 - Argument-less boolean operation methods for plural `P`
 - Automatic _-prefixed versions of all P methods, to get clojure-style "phrase"-commenting
 - `VERSIONS=` support for macro-like reversioning of a single animation
-- `Font.LibraryFind` and `Font.LibraryList` to search font registry
+- `Font.LibraryFind` and `Font.LibraryList` to search font registry (mac-only, windows is excruciatingly difficult)
 - `Font.names` to get style and family name of font via fontTools
 ### Changed
 - `Mondrian` -> `Scaffold`
