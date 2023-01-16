@@ -211,3 +211,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ### Changed
 - `Mondrian` -> `Scaffold`
 - `th` & `tv` (true-horizontal & true-vertical) have been renamed to potential confusion (since `th` could be taken to mean `true-height`) — these are now `tx` and `ty` respectively
+
+## [0.10.2] - 2023-01-16
+### Changed
+- The Blender integration now inlines your local venv into Blender, meaning you no longer need to install any python packages into Blender's embedded python.
