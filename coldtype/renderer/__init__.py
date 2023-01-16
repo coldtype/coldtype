@@ -4,7 +4,6 @@ import pickle
 
 import time as ptime
 from pathlib import Path
-from shutil import rmtree
 from subprocess import Popen
 from typing import Tuple, List
 from random import shuffle, Random

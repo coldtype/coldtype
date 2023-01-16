@@ -16,25 +16,21 @@ rs = random_series()
 def prerun(bw):
     bw.deletePrevious(materials=False)
 
-r = Rect(1080, 1080)
-
-@b3d_animation(r, timeline=midi, bg=None)
+@b3d_animation((1080, 1080), timeline=midi, bg=None)
 def simplebeat2(f):
     def styler(x):
         e = f.a.t.ki(x.i)
         tail = lengths[x.i]
 
         return [
-            Style("Peshka", 300, wght=0, wdth=0.35, ital=0),
-            Style("Peshka"
+            Style(Font.MuSan(), 300, wght=0, wdth=0.35, ital=0),
+            Style(Font.MuSan()
                 , fontSize=300
                 , ro=1
                 , wght=e.adsr([2, tail], ["sei", "ceo"]
                     , rng=(0, weights[x.i]))
                 , wdth=e.adsr([2, tail], ["sei", "ceo"]
-                    , rng=(0, weights[x.i]))
-                , ital=e.adsr([2, tail*2], ["eei", "eeo"]
-                    , rng=(0.5, round(rs[x.i]))))]
+                    , rng=(0, weights[x.i])))]
     
     return (Glyphwise("MIDI\nDATA", styler)
         .lead(30)
