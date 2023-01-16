@@ -43,10 +43,11 @@ def simplebeat2(f):
                     .extrude(2)
                     .locate(z=-5+5*f.a.t.ki(i)
                         .adsr([5, lengths[i]*2], ["sei", "seo"]))))),
-            lambda ps: ps.map(lambda i, p: p # stroke
-                .outline(1, miterLimit=1)
-                .ch(b3d(lambda bp: bp
-                    .extrude(2.025)
-                    .locate(z=-5+5*f.a.t.ki(i)
-                        .adsr([5, lengths[i]*2], ["sei", "seo"]))
-                    , material="outline")))))
+            # lambda ps: ps.map(lambda i, p: p # stroke
+            #     .outline(1, miterLimit=1)
+            #     .ch(b3d(lambda bp: bp
+            #         .extrude(2.025)
+            #         .locate(z=-5+5*f.a.t.ki(i)
+            #             .adsr([5, lengths[i]*2], ["sei", "seo"]))
+            #         , material="outline")))
+            ))
