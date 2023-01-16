@@ -1,9 +1,22 @@
-import subprocess, time
+import subprocess, time, sys
 from pathlib import Path
 
+from coldtype.osutil import on_windows
+
 def prefix_inline_venv(expr):
-    root = str(Path('.').absolute())
-    venv = str(Path('./venv/lib/python3.10/site-packages').absolute())
+    vi = sys.version_info
+    root = Path('.').absolute()
+
+    if on_windows():
+        venv = Path(f'./venv/Lib/site-packages').absolute()
+    else:
+        venv = Path(f'./venv/lib/python{vi.major}.{vi.minor}/site-packages').absolute()
+
+    editable_egg_link = venv / "coldtype.egg-link"
+    if editable_egg_link.exists():
+        print("EXPANDING EGG LINK")
+        root = Path(editable_egg_link.read_text().splitlines()[0])
+
     prefix = f"import sys; from pathlib import Path; sys.path.insert(0, '{venv}'); sys.path.insert(0, '{root}');"
     return prefix + " " + expr
 
@@ -16,6 +29,7 @@ def blender_launch_livecode(blender_app_path, file:Path, command_file):
     root = str(Path('.').absolute())
     venv = str(Path('./venv/lib/python3.10/site-packages').absolute())
     args = [blender_app_path, file, "--python-expr", prefix_inline_venv(f"from coldtype.blender.watch import watch; watch(r'{str(command_file)}')")]
+    print(">", args)
     return subprocess.Popen(args)
 
 

@@ -23,6 +23,14 @@ def default_blender_app_path():
         #raise Exception("No default blender app path for this platform, please configure via .coldtype.py file and `BLENDER_APP_PATH=`")
 
 
+def mod_blender_app_path(bap):
+    if isinstance(bap, str):
+        bap = Path(bap).expanduser().resolve()
+    if bap.suffix == ".app":
+        bap = bap / "Contents/MacOS/blender"
+    return bap
+
+
 class ConfigOption(Enum):
     WindowPassthrough = ("window_passthrough", None, "wpass", true_false_or_none)
     WindowTransparent = ("window_transparent", None, "wt", true_false_or_none)
@@ -51,7 +59,8 @@ class ConfigOption(Enum):
     FFMPEGCommand = ("ffmpeg_command", "ffmpeg", "ffc")
     BlenderWatch = ("blender_watch", None, "bw", true_false_or_none)
     BlenderAppPath = ("blender_app_path", default_blender_app_path(), "bap",
-        lambda x: Path(x).expanduser().resolve())
+        lambda x: Path(x).expanduser().resolve(),
+        mod_blender_app_path)
     BlenderFile = ("blender_file", None, "bf",
         lambda x: Path(x).expanduser().resolve())
     NoViewer = ("no_viewer", None, "nv", true_false_or_none)
@@ -169,7 +178,11 @@ class ColdtypeConfig():
             self.profile = args.profile
         
         for co in ConfigOption:
-            if len(co.value) > 3:
+            post_mod = None
+
+            if len(co.value) > 4:
+                prop, default_value, _, cli_mod, post_mod = co.value
+            elif len(co.value) > 3:
                 prop, default_value, _, cli_mod = co.value
             else:
                 prop, default_value, _ = co.value
@@ -178,10 +191,8 @@ class ColdtypeConfig():
             if prop in _set_paths and prev_config:
                 setattr(self, prop, getattr(prev_config, prop))
             else:
-                setattr(self,
-                    prop,
-                    config.get(prop.upper(),
-                        getattr(prev_config, prop) if prev_config else default_value))
+                value = config.get(prop.upper(), getattr(prev_config, prop) if prev_config else default_value)
+                setattr(self, prop, value)
             
             if self.profile and "PROFILES" in config and self.profile in config["PROFILES"]:
                 v = config["PROFILES"][self.profile].get(prop.upper())
@@ -194,6 +205,9 @@ class ColdtypeConfig():
                 if value is not None:
                     #print("CLI", prop, value)
                     setattr(self, prop, cli_mod(value))
+            
+            if post_mod:
+                setattr(self, prop, post_mod(getattr(self, prop)))
     
     def values(self):
         out = "<ColdtypeConfig:"
