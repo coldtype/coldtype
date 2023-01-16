@@ -17,19 +17,22 @@ def prefix_inline_venv(expr):
         print("EXPANDING EGG LINK")
         root = Path(editable_egg_link.read_text().splitlines()[0])
 
+    venv = venv.as_posix()
+    root = root.as_posix()
+
     prefix = f"import sys; from pathlib import Path; sys.path.insert(0, '{venv}'); sys.path.insert(0, '{root}');"
     return prefix + " " + expr
 
 def blender_launch_livecode(blender_app_path, file:Path, command_file):
+    import os
+
     if not file.exists():
         file.parent.mkdir(exist_ok=True, parents=True)
     
     #call = f"{BLENDER} {file}"
     print(f"Opening blend file: {file}...")
-    root = str(Path('.').absolute())
-    venv = str(Path('./venv/lib/python3.10/site-packages').absolute())
-    args = [blender_app_path, file, "--python-expr", prefix_inline_venv(f"from coldtype.blender.watch import watch; watch(r'{str(command_file)}')")]
-    print(">", args)
+    cf = Path(command_file).as_posix()
+    args = [blender_app_path, file, "--python-expr", prefix_inline_venv(f"print(sys.path); from coldtype.blender.watch import watch; watch('{cf}');")]
     return subprocess.Popen(args)
 
 

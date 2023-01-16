@@ -3,7 +3,6 @@ from fontTools.pens.filterPen import ContourFilterPen
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.misc.bezierTools import splitCubicAtT, calcCubicArcLength
 
-
 USE_SKIA_PATHOPS = True
 
 try:
@@ -17,7 +16,6 @@ try:
 except ImportError:
     if not USE_SKIA_PATHOPS:
         print(">>> NO PATHOPS FOUND; please install either skia-pathops or booleanOperations")
-
 
 class BooleanOp(Enum):
     Difference = 0
