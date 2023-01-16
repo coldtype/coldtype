@@ -8,7 +8,9 @@ def blender_launch_livecode(blender_app_path, file:Path, command_file):
     
     #call = f"{BLENDER} {file}"
     print(f"Opening blend file: {file}...")
-    args = [blender_app_path, file, "--python-expr", f"from coldtype.blender.watch import watch; watch(r'{str(command_file)}')"]
+    root = str(Path('.').absolute())
+    venv = str(Path('./venv/lib/python3.10/site-packages').absolute())
+    args = [blender_app_path, file, "--python-expr", f"import sys; from pathlib import Path; sys.path.insert(0, '{venv}'); sys.path.insert(0, '{root}'); from coldtype.blender.watch import watch; watch(r'{str(command_file)}')"]
     return subprocess.Popen(args)
 
 
