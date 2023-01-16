@@ -1,6 +1,11 @@
 import subprocess, time
 from pathlib import Path
 
+def prefix_inline_venv(expr):
+    root = str(Path('.').absolute())
+    venv = str(Path('./venv/lib/python3.10/site-packages').absolute())
+    prefix = f"import sys; from pathlib import Path; sys.path.insert(0, '{venv}'); sys.path.insert(0, '{root}');"
+    return prefix + " " + expr
 
 def blender_launch_livecode(blender_app_path, file:Path, command_file):
     if not file.exists():
@@ -10,7 +15,7 @@ def blender_launch_livecode(blender_app_path, file:Path, command_file):
     print(f"Opening blend file: {file}...")
     root = str(Path('.').absolute())
     venv = str(Path('./venv/lib/python3.10/site-packages').absolute())
-    args = [blender_app_path, file, "--python-expr", f"import sys; from pathlib import Path; sys.path.insert(0, '{venv}'); sys.path.insert(0, '{root}'); from coldtype.blender.watch import watch; watch(r'{str(command_file)}')"]
+    args = [blender_app_path, file, "--python-expr", prefix_inline_venv(f"from coldtype.blender.watch import watch; watch(r'{str(command_file)}')")]
     return subprocess.Popen(args)
 
 
@@ -56,7 +61,7 @@ def blend_source(blender_app_path
     """
     A facility for telling Blender to render a single frame in a background process
     """
-    expr = f"from coldtype.blender.render import frame_render; frame_render(r'{py_file}', {frame}, {samples}, {denoise})"
+    expr = prefix_inline_venv(f"from coldtype.blender.render import frame_render; frame_render(r'{py_file}', {frame}, {samples}, {denoise})")
     #print(expr)
     blend_frame(blender_app_path, py_file, blend_file, expr, output_dir, frame)
 
