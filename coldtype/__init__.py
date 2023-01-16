@@ -27,7 +27,6 @@ def monkeypatch_ctypes():
 from coldtype.runon.path import P, PS, DP, DPS, DATPen, DATPens
 from coldtype.runon.scaffold import Scaffold
 from coldtype.text import *
-from coldtype.text.reader import Font
 from coldtype.geometry import *
 from coldtype.color import *
 from coldtype.renderable import *
@@ -51,14 +50,8 @@ __sibling__ = lambda x: x # will be redefined contextually
 __inputs__ = [] # will be redefined contextually
 __memory__ = [] # will be redefined contextually
 __as_config__ = False # will be redefined contextually
-λ = None
-ι = None
-ℛ = lambda x: x
 
-def debug_txt(r, txt, font_size=42, **kwargs):
-    return P().text(txt,
-        Style("Times", font_size, load_font=0, **kwargs),
-        r.inset(20))
+λ = None
 
 def noop():
     return None
