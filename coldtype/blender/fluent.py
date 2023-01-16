@@ -21,6 +21,13 @@ except ImportError:
 # TODO easy, chainable interface for
 # blender objects (could be a separate library)
 
+def set_b3d_color(value, color):
+    color = normalize_color(color)
+    value[0] = color.r
+    value[1] = color.g
+    value[2] = color.b
+    value[3] = 1
+
 class _Chainable():
     def noop(self):
         return self
@@ -108,7 +115,9 @@ class BpyWorld(_Chainable):
 
         return self
     
-    def render_settings(self, samples=16, denoiser=False, canvas:Rect=None):
+    def cycles(self, samples=16, denoiser=False, canvas:Rect=None):
+        self.scene.render.engine = "CYCLES"
+
         if samples > 0:
             self.scene.cycles.samples = samples
         
@@ -125,6 +134,7 @@ class BpyWorld(_Chainable):
 
         return self
     
+    render_settings = cycles
     renderSettings = render_settings
     
     @contextmanager
@@ -157,6 +167,11 @@ class BpyWorld(_Chainable):
         self.scene.keyframe_insert(data_path=path)
         return self
         #setattr(self.obj, path, value)
+    
+    def background(self, color):
+        bg = bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value
+        set_b3d_color(bg, color)
+        return self
 
 
 class BpyCollection(_Chainable):
@@ -543,6 +558,15 @@ class BpyObj(_Chainable):
         self.obj.hide_viewport = hide
         self.obj.hide_render = hide
         return self
+    
+    def delete(self):
+        if not self.obj: return None
+        
+        bpy.context.view_layer.objects.active = None
+        bpy.context.view_layer.objects.active = self.obj
+        self.obj.select_set(True)
+        bpy.ops.object.delete()
+        return None
     
     def set_visibility_at_frame(self, frame, visibility, scene=None):
         if scene is None:
