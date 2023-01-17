@@ -1,10 +1,7 @@
 # 808 animation
 # 📽 You can view this code as an animation here: https://vimeo.com/479376752 📽
 
-# For this animation, we'll need the standard coldtype library as well as some optional bits, the `MidiReader` and the `warp_fn` from the warping library.
-
 from coldtype import *
-from coldtype.warping import warp
 from coldtype.fx.skia import phototype
 
 # This is the "logo font" for Coldtype, and it's packaged with the library itself
@@ -144,22 +141,22 @@ def drummachine(f):
 
     (pens[0].ffg("O").î(0, lambda p: p.translate(0, tom)))
 
-    # And a little branding: load the Goodhertz logo from the ufo via `glyph` and apply a `warp` to it, using the `warp` chainable. This lets you quickly & easily apply a "wavey" Perlin noise transform. To be honest I barely understand how it works, but it looks cool.
+    # And a little branding: load the Goodhertz logo from the ufo via `glyph`
 
     ghz_logo = (P()
         .glyph(logos["goodhertz_logo_2019"])
         .scale(0.2)
         .align(f.a.r, y="mny")
         .translate(0, 100)
-        .ch(warp(None, speed=f.e("l", 1, rng=(0, 3)), rz=3, mult=50))
+        #.ch(warp(None, speed=f.e("l", 1, rng=(0, 3)), rz=3, mult=50))
         .skew(cowbell.adsr(ar["CW"], rng=(0, 0.5))))
 
     # Now we return the data we’ve manipulated to the renderer. This is also where we apply the finishing touches to the `COLD\nTYPE` lockup, by reversing the lines so that the the first line is last (meaning it shows up on top, which is nice for when the C gets really big), and then by applying an `understroke`, which interleaves stroked copies of each letter in the composition, giving us a classic look that we can hit with a high-contrast `phototype` simulation. And then we’re done!
 
-    return PS([
+    return P(
         P(f.a.r).f(0),
         ghz_logo.f(hsl(0.9, 0.55, 0.5)),
         (pens.fssw(1, 0, 15, 1)
             .reverse()
             .translate(0, 100)
-            .ch(phototype(f.a.r, cut=190, cutw=8)))])
+            .ch(phototype(f.a.r, cut=190, cutw=8))))
