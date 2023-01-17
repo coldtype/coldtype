@@ -26,8 +26,9 @@ def default_blender_app_path():
 def mod_blender_app_path(bap):
     if isinstance(bap, str):
         bap = Path(bap).expanduser().resolve()
-    if bap.suffix == ".app":
-        bap = bap / "Contents/MacOS/blender"
+    if bap:
+        if bap.suffix == ".app":
+            bap = bap / "Contents/MacOS/blender"
     return bap
 
 
