@@ -3,6 +3,8 @@ from coldtype.blender import *
 
 rs1 = random_series(-5, 5)
 
+print(BpyObj.delete)
+
 @b3d_animation(timeline=180, upright=1)
 def var3d2(f):
     if bpy:
