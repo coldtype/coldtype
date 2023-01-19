@@ -84,7 +84,9 @@ class Timeable():
                 lt = 1 - lt
         return lt, ltf
 
-    def at(self, i) -> "Easeable":
+    def at(self, i, every=None) -> "Easeable":
+        if every:
+            i = (i//every)*every
         return Easeable(self, i)
 
 
