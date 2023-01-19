@@ -129,6 +129,10 @@ class Easeable():
         else:
             return min(vs)
     
+    def every(self, i) -> "Easeable":
+        self.i = (self.i//i)*i
+        return self
+    
     @property
     def name(self):
         if self._ts:
