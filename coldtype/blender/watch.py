@@ -381,4 +381,4 @@ def watch(command_file):
     add_3d_panel()
     add_2d_panel()
 
-    print("...waiting for coldtype...")
+    print("...blender waiting for coldtype...")
