@@ -32,7 +32,7 @@ def blender_launch_livecode(blender_app_path, file:Path, command_file):
     #call = f"{BLENDER} {file}"
     print(f"Opening blend file: {file}...")
     cf = Path(command_file).as_posix()
-    args = [blender_app_path, file, "--python-expr", prefix_inline_venv(f"print(sys.path); from coldtype.blender.watch import watch; watch('{cf}');")]
+    args = [blender_app_path, file, "--python-expr", prefix_inline_venv(f"from coldtype.blender.watch import watch; watch('{cf}');")]
     return subprocess.Popen(args)
 
 
