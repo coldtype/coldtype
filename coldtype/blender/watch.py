@@ -179,7 +179,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                 bpy.ops.screen.animation_play() # stop it
 
         for r in candidates:
-            if isinstance(r, b3d_runnable):                
+            if isinstance(r, b3d_runnable):
                 if r.once:
                     if statics:
                         if r.delay:
