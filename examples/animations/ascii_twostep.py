@@ -10,7 +10,7 @@ at = AsciiTimeline(1, """
 """)
 
 @animation((1080, 540), timeline=at, bg=1, render_bg=1)
-def test_ascii(f):
+def twostep(f):
     return (Glyphwise("COLD\nTYPE", lambda g:
         Style(Font.ColdtypeObviously(), 100,
             wdth=(at.ki("a" if g.l < 1 else "b").io(10)),

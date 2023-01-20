@@ -74,7 +74,9 @@ class Renderer():
             
             all=parser.add_argument("-a", "--all", action="store_true", default=False, help="If rendering an animation, pass the -a flag to render all frames sequentially"),
 
-            render_directory=parser.add_argument("-rd", "--render-directory", action="store_true", default=False, help="kick off KeyboardShortcut.RenderDirectory straightaway"),
+            render_directory=parser.add_argument("-rd", "--render-directory", action="store_true", default=False, help="kick off KeyboardShortcut.RenderDirectory straightaway and quit"),
+
+            render_and_release=parser.add_argument("-rar", "--render-and-release", action="store_true", default=False, help="kick off KeyboardShortcut.RenderAndRelease straightaway and quit"),
 
             test_directory=parser.add_argument("-td", "--test-directory", action="store_true", default=False),
 
@@ -866,6 +868,9 @@ class Renderer():
             if not self.winmans.bg:
                 if self.args.render_directory:
                     self.actions_queued.append(KeyboardShortcut.RenderDirectory)
+                if self.args.render_and_release:
+                    self.actions_queued.append(KeyboardShortcut.RenderAllAndRelease)
+                    self.actions_queued.append(KeyboardShortcut.Kill)
                 if self.args.test_directory:
                     self.actions_queued.append(KeyboardShortcut.TestDirectory)
                 self.winmans.run_loop()
@@ -1238,6 +1243,8 @@ class Renderer():
                     self.actions_queued.append(Action.PreviewStoryboardReload)
 
             #return Action.Kill
+            self.actions_queued.append(Action.Kill)
+
             return Action.PreviewStoryboardReload
         elif shortcut == KeyboardShortcut.CycleVersions:
             vi = self.source_reader.config.version_index
