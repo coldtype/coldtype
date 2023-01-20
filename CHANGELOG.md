@@ -215,3 +215,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ## [0.10.2] - 2023-01-17
 ### Changed
 - The Blender integration now inlines your local venv into Blender, meaning you no longer need to install any python packages into Blender's embedded python.
+
+## [0.10.4] - 2023-01-20
+### Added
+- `-rar` (`--render-and-release`) command-line option to render-and-release(-and-then-quit)
