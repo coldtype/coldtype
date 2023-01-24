@@ -8,8 +8,8 @@ A         B         B          A
 C           D     D            E
 """)
 
-@animation((1080, 540), tl=at, bg=0)
-def scratch(f):
+@animation((1080, 540), tl=at, bg=0, release=lambda x: x.gifski())
+def keyframes(f):
     def variate(x):
         fi = f.i - x.i
         wdth = at.kf(fi=fi
