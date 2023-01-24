@@ -17,6 +17,7 @@ at = AsciiTimeline(1, """
 
 @animation(tl=at, bg=0)
 def css1(f):
+    print(f.t.kf())
     return [
         (StSt("OK", Font.MutatorSans(), **{
             **f.t.kf(),
