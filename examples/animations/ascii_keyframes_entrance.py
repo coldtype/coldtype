@@ -14,7 +14,7 @@ def scratch(f):
         fi = f.i - x.i
         wdth = at.kf(fi=fi
             , keyframes=dict(N=0, W=1)
-            , eases=dict(i="eeio", o="eei"))
+            , eases=dict(i="eio", o="eei"))
         return Style(Font.ColdObvi(), 100, wdth=wdth)
 
     def animate(i, p):
@@ -25,7 +25,7 @@ def scratch(f):
         r = at.kf(fi=fi
             , keyframes=dict(C=360, D=0, E=-360*2)
             , eases=dict(i="eeio", o="seio"))
-        p.t(0, ty if i%2 == 0 else -ty).rotate(r)
+        p.t(0, ty if i%2 != 0 else -ty).rotate(r)
 
     return (Glyphwise("COLDTYPE", variate)
         .align(f.a.r)
