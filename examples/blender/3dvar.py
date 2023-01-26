@@ -5,7 +5,7 @@ rs1 = random_series(-5, 5)
 
 @b3d_animation(timeline=180, upright=1)
 def var3d2(f):
-    if bpy:
+    if bpy and bpy.data:
         bpy.data.cameras["Camera"].dof.aperture_fstop = f.e("ceio", 1, rng=(0.1, 0.01))
     
     return (StSt("DEPTH\nOF\nFIELD", Font.MutatorSans(),

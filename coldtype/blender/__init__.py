@@ -100,7 +100,7 @@ def b3d(callback:Callable[[BlenderPen], BlenderPen],
         callback = callback[1]
 
     def annotate(pen:P):
-        if bpy and pen_mod:
+        if bpy and bpy.data and pen_mod:
             pen_mod(pen)
         
         prev = pen.data("b3d", {})
@@ -148,7 +148,7 @@ def b3d_post(callback:Callable[[BlenderPen], BlenderPen]):
 
 def b3d_pre(callback:Callable[[P], P]):
     def _cast(pen:P):
-        if bpy:
+        if bpy and bpy.data:
             callback(pen)
     return _cast
 
@@ -332,11 +332,11 @@ class b3d_animation(animation):
         
         do_match_length = self.match_length
 
-        if bpy and do_match_length:
+        if bpy and bpy.data and do_match_length:
             bpy.data.scenes[0].frame_start = 0
             bpy.data.scenes[0].frame_end = self.t.duration-1
         
-        if bpy and self.match_fps:
+        if bpy and bpy.data and self.match_fps:
             # don't think this is totally accurate but good enough for now
             if isinstance(self.t.fps, float):
                 bpy.data.scenes[0].render.fps = round(self.t.fps)
@@ -350,12 +350,12 @@ class b3d_animation(animation):
     
     def post_read(self):
         out = super().post_read()
-        if bpy and self.match_output:
+        if bpy and bpy.data and self.match_output:
             bpy.data.scenes[0].render.filepath = str(self.pass_path(index=None))
         return out
         
     def running_in_viewer(self):
-        return not bpy
+        return not bpy or bpy.data
     
     def rasterize(self, config, content, rp):
         if self.renderer == "skia":

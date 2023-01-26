@@ -11,16 +11,19 @@ class WinmanBlender(WinmanPassthrough):
         self.command_file = None
         self.blender_app_path = config.blender_app_path
         self.reset_factory = config.blender_reset_factory
+        self.cli_args = config.blender_command_line_args
         print(">BLENDER>", self.blender_app_path)
     
     def launch(self, blender_io:BlenderIO):
         if self.subp:
             self.subp.kill()
+
         self.subp = blender_launch_livecode(
             self.blender_app_path,
             blender_io.blend_file,
             self.command_file,
-            reset_factory=self.reset_factory)
+            #reset_factory=self.reset_factory,
+            additional_args=self.cli_args)
     
     def write_command(self, cmd, arg, kwargs=[]):
         try:

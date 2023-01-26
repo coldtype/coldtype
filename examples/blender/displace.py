@@ -37,7 +37,7 @@ def displace(r):
 def animator(f):
     # (BpyObj.Find("bg")
     #     .locate(y=f.e("seo", 1, r=(1, -2.95))))
-    if bpy:
+    if bpy and bpy.data:
         (BpyObj.Find("glyph_EmptyOrigin")
             .locate(x=ord(big_c)+f.e("l", 0, r=(0, 2)))
             .rotate(x=f.e("l", 0, r=(0, 5))))

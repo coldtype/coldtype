@@ -261,6 +261,8 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         return animation_found
 
     def reimport(self, arg, inputs):
+        inputs_dict = {}
+
         try:
             self.sr = SourceReader(arg, use_blender=True, inputs=inputs)
             self.sr.unlink()
@@ -276,6 +278,9 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             animation_found = self.render_current_frame(statics=True)
             
             if not animation_found:
+                print(f"ran {arg}")
+                if inputs_dict.get("quit"):
+                    bpy.ops.wm.quit_blender()
                 return
 
             def _frame_update_handler(scene):
