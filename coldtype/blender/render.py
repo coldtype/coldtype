@@ -23,16 +23,22 @@ def prefix_inline_venv(expr):
     prefix = f"import sys; from pathlib import Path; sys.path.insert(0, '{venv}'); sys.path.insert(0, '{root}');"
     return prefix + " " + expr
 
-def blender_launch_livecode(blender_app_path, file:Path, command_file):
-    import os
-
+def blender_launch_livecode(blender_app_path, file:Path, command_file, reset_factory=False):
     if not file.exists():
         file.parent.mkdir(exist_ok=True, parents=True)
     
     #call = f"{BLENDER} {file}"
     print(f"Opening blend file: {file}...")
     cf = Path(command_file).as_posix()
-    args = [blender_app_path, file, "--python-expr", prefix_inline_venv(f"from coldtype.blender.watch import watch; watch('{cf}');")]
+    args = [
+        blender_app_path,
+        file,
+        "--python-expr", prefix_inline_venv(f"from coldtype.blender.watch import watch; watch('{cf}');")
+    ]
+    if reset_factory:
+        print("FACTORY RESET")
+        args.append("--factory-startup")
+    
     return subprocess.Popen(args)
 
 

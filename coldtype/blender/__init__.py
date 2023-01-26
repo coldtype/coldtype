@@ -265,9 +265,9 @@ class b3d_runnable(runnable):
         self.playback = playback
 
         if cond is not None:
-            super().__init__(solo=solo, cond=lambda: cond and bool(bpy))
+            super().__init__(solo=solo, cond=lambda: cond and bool(bpy) and bool(bpy.data))
         else:
-            super().__init__(solo=solo, cond=None)
+            super().__init__(solo=solo, cond=lambda: bool(bpy) and bool(bpy.data))
     
     def run(self):
         if not bpy:

@@ -53,7 +53,7 @@ class BpyWorld(_Chainable):
     def __init__(self, scene="Scene"):
         try:
             self.scene = bpy.data.scenes[scene]
-        except KeyError:
+        except Exception as _:
             self.scene = None
     
     def deselect_all(self):
@@ -354,7 +354,9 @@ class BpyGroup(Runon):
 
 
 class BpyObj(_Chainable):
-    def __init__(self, dat=None) -> None:
+    def __init__(self, obj=None) -> None:
+        if obj:
+            self.obj = obj
         self.eo = None
 
     @staticmethod
@@ -426,9 +428,18 @@ class BpyObj(_Chainable):
         bpy.ops.mesh.primitive_monkey_add()
         return BpyObj.Primitive(name, collection)
     
-    def select(self, selected=True):
-        self.obj.select_set(selected)
-        return self
+    def find_children(self):
+        children = []
+        for o in bpy.data.objects:
+            if o.parent == self.obj:
+                children.append(o)
+        return sorted(children, key=lambda c: c.name)
+
+    def delete_recursively(self):
+        for c in self.find_children():
+            bpy.data.objects.remove(c, do_unlink=True)
+        bpy.data.objects.remove(self.obj, do_unlink=True)
+        return None
     
     def collect(self, collectionTag, create=True, unlink=True, parent=None):
         bc = BpyCollection.Find(collectionTag, create=create, parent=parent)
@@ -437,6 +448,19 @@ class BpyObj(_Chainable):
             for c in self.obj.users_collection:
                 if c != bc.c:
                     c.objects.unlink(self.obj)
+        return self
+    
+    def select(self, selected=True, set_active=False, clear_active=False):
+        if selected:
+            if set_active:
+                if clear_active:
+                    bpy.context.view_layer.objects.active = None
+                bpy.context.view_layer.objects.active = self.obj
+            self.obj.select_set(True)
+        else:
+            self.obj.select_set(False)
+            if set_active:
+                bpy.context.view_layer.objects.active = None
         return self
     
     @contextmanager

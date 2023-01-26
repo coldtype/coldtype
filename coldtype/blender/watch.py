@@ -267,6 +267,9 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             self.candidates = self.sr.renderables()
             #bpy.data.scenes[0].frame_start = 0
 
+            from coldtype.tool import parse_inputs
+            inputs_dict = parse_inputs(self.sr.inputs, { "quit": [False, bool] })
+
             bpy.app.handlers.frame_change_pre.clear()
 
             self.current_frame = bpy.context.scene.frame_current
@@ -290,6 +293,9 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             print(stack)
         
         print(f"ran {arg}")
+        
+        if inputs_dict.get("quit"):
+            bpy.ops.wm.quit_blender()
 
     def modal(self, context, event):
         if event.type == 'TIMER':

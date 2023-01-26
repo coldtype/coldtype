@@ -64,6 +64,7 @@ class ConfigOption(Enum):
         mod_blender_app_path)
     BlenderFile = ("blender_file", None, "bf",
         lambda x: Path(x).expanduser().resolve())
+    BlenderResetFactory = ("blender_reset_factory", None, "brf", true_false_or_none)
     NoViewer = ("no_viewer", None, "nv", true_false_or_none)
     NoMIDI = ("no_midi", None, "nm", true_false_or_none)
     MIDIInfo = ("midi_info", None, "mi", true_false_or_none)
@@ -121,6 +122,8 @@ class ConfigOption(Enum):
             return "How long should the renderer delay between rendering frames?"
         elif e == ConfigOption.BlenderWatch:
             return "Enable experimental blender live-coding integration?"
+        elif e == ConfigOption.BlenderResetFactory:
+            return "Reset Blender to factory settings before running?"
         elif e == ConfigOption.NoViewer:
             return "Should there be no viewer at all?"
         elif e == ConfigOption.NoMIDI:
