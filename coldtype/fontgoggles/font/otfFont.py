@@ -34,7 +34,7 @@ class _OTFBaseFont(BaseFont):
             return GlyphDrawing([(rp, None)])
 
     def varLocationChanged(self, varLocation):
-        self.ftFont.setVarLocation(varLocation if varLocation else {})
+        pass
 
     @cachedProperty
     def colorPalettes(self):
@@ -70,7 +70,8 @@ class OTFFont(_OTFBaseFont):
             f = io.BytesIO()
             self.ttFont.save(f, reorderTables=False)
             fontData = f.getvalue()
-        self.ftFont = FTFont(fontData, fontNumber=self.fontNumber, ttFont=self.ttFont)
+        #self.ftFont = FTFont(fontData, fontNumber=self.fontNumber, ttFont=self.ttFont)
+        self.ftFont = None
         self.shaper = HBShape(fontData, fontNumber=self.fontNumber, ttFont=self.ttFont)
 
 

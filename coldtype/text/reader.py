@@ -712,14 +712,14 @@ class StyledString(FittableMixin):
 
         return out_pen
     
-    def _emptyPenWithAttrs(self):
-        #attrs = dict(fill=self.style.fill)
-        #if self.style.stroke:
-        #    attrs["stroke"] = dict(color=self.style.stroke, weight=self.style.strokeWidth)
-        dp = P().f(self.style.fill)
+    def applyDefaultAttrs(self, p):
+        p.f(self.style.fill)
         if self.style.stroke:
-            dp.s(self.style.stroke).sw(self.style.strokeWidth)
-        return dp
+            p.s(self.style.stroke).sw(self.style.strokeWidth)
+        return p
+    
+    def _emptyPenWithAttrs(self):
+        return self.applyDefaultAttrs(P())
     
     def buildLayeredGlyph(self, idx, glyph, output, layer, frame):
         layerGlyph = P().record(layer)
@@ -828,6 +828,7 @@ class StyledString(FittableMixin):
             norm_frame = Rect(g.frame.x, 0, g.frame.w, self.style._asc*self.scale())
 
             dp_atom = self._emptyPenWithAttrs()
+
             if self.style.no_shapes:
                 if callable(self.style.show_frames):
                     dp_atom.record(P().rect(self.style.show_frames(g.frame)).outline(4))
@@ -865,7 +866,7 @@ class StyledString(FittableMixin):
                     dp_atom.removeOverlap()
 
             elif brFont:
-                dp_atom = g.glyphDrawing
+                dp_atom = self.applyDefaultAttrs(g.glyphDrawing)
                 dp_atom.layered = len(dp_atom) > 1 or colrv1
 
                 for idx, layer in enumerate(dp_atom):
@@ -876,7 +877,10 @@ class StyledString(FittableMixin):
                         ss.v.value = self.scalePenToStyle(g, ss, idx).v.value
                 
                 if not dp_atom.layered:
-                    dp_atom = dp_atom[0]
+                    if len(dp_atom) > 0:
+                        dp_atom = dp_atom[0]
+                    else:
+                        dp_atom = P()
                 
                 dp_atom.data(
                    frame=norm_frame,

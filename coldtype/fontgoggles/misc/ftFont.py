@@ -2,7 +2,12 @@ import io
 import logging
 from fontTools.ttLib import TTFont
 from fontTools.pens.pointPen import PointToSegmentPen
-import freetype
+
+try:
+    import freetype
+except ImportError:
+    pass
+
 try:
     from ..mac.makePathFromOutline import makePathFromOutline
 except:

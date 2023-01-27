@@ -9,7 +9,7 @@ from coldtype.fontgoggles.font import getOpener
 from coldtype.fontgoggles.font.baseFont import BaseFont
 from coldtype.fontgoggles.font.otfFont import OTFFont
 
-BLACKRENDER_ALL = False
+BLACKRENDER_ALL = True
 
 try:
     from blackrenderer.font import BlackRendererFont
@@ -90,6 +90,14 @@ class Font():
                 urlretrieve(path, tmp.name)
                 path = tmp.name
                 tmp = tmp
+        
+        elif path.suffix == ".ufo":
+            from defcon import Font
+            from ufo2ft import compileTTF
+            with tempfile.NamedTemporaryFile(prefix="coldtype_ufo", suffix=".compiled.ttf", delete=False) as tmp:
+                ttf_src = compileTTF(Font(str(path)), removeOverlaps=False)
+                ttf_src.save(tmp.name)
+                path = tmp.name
         
         self.path = Path(normalize_font_path(path))
         numFonts, opener, getSortInfo = getOpener(self.path)
