@@ -78,7 +78,8 @@ class Font():
         number=0,
         cacheable=False,
         suffix=None,
-        delete_tmp=False
+        delete_tmp=False,
+        black=False,
         ):
         tmp = None
         if isinstance(path, str) and path.startswith("http"):
@@ -104,7 +105,7 @@ class Font():
             #and self._colr.version == 1
             and BlackRendererFont is not None)
 
-        if self._colrv1 or BLACKRENDER_ALL:
+        if self._colrv1 or BLACKRENDER_ALL or black:
             self._brFont = BlackRendererFont(self.path, fontNumber=number)
         else:
             self._brFont = None
