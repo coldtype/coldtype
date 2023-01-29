@@ -1,13 +1,14 @@
 from coldtype.geometry.rect import Rect
 
 
-def parse_inputs(inputs, defaults):
-    defaults["rect"] = [
-        Rect(1080, 1080),
-        lambda xs: Rect([int(x) for x in str(xs).split(",")])]
+def parse_inputs(inputs, defaults, ui=True):
+    if ui:
+        defaults["rect"] = [
+            Rect(1080, 1080),
+            lambda xs: Rect([int(x) for x in str(xs).split(",")])]
 
-    defaults["preview_only"] = [False, bool]
-    defaults["log"] = [False, bool]
+        defaults["preview_only"] = [False, bool]
+        defaults["log"] = [False, bool]
 
     parsed = {}
     if not isinstance(inputs, dict):
