@@ -5,22 +5,22 @@ from coldtype.osutil import on_windows
 
 def prefix_inline_venv(expr):
     vi = sys.version_info
-    root = Path('.').absolute()
 
     if on_windows():
         venv = Path(f'./venv/Lib/site-packages').absolute()
     else:
         venv = Path(f'./venv/lib/python{vi.major}.{vi.minor}/site-packages').absolute()
+    
+    paths = [venv]
 
-    editable_egg_link = venv / "coldtype.egg-link"
-    if editable_egg_link.exists():
-        print("EXPANDING EGG LINK")
-        root = Path(editable_egg_link.read_text().splitlines()[0])
+    for egg_link in venv.glob("*.egg-link"):
+        paths.append(Path(egg_link).read_text().splitlines()[0])
 
-    venv = venv.as_posix()
-    root = root.as_posix()
+    paths_str = ""
+    for p in paths:
+        paths_str += f"sys.path.append(\"{str(Path(p).as_posix())}\");"
 
-    prefix = f"import sys; from pathlib import Path; sys.path.append('{venv}'); sys.path.append('{root}');"
+    prefix = f"import sys; from pathlib import Path; {paths_str}"
     return prefix + " " + expr
 
 def blender_launch_livecode(blender_app_path, file:Path, command_file, additional_args=""):
