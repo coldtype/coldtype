@@ -115,7 +115,7 @@ class BpyWorld(_Chainable):
 
         return self
     
-    def cycles(self, samples=16, denoiser=False, canvas:Rect=None):
+    def cycles(self, samples=16, denoiser=False, canvas:Rect=None, transparent=False):
         self.scene.render.engine = "CYCLES"
 
         if samples > 0:
@@ -131,6 +131,9 @@ class BpyWorld(_Chainable):
         if canvas is not None:
             self.scene.render.resolution_x = canvas.w
             self.scene.render.resolution_y = canvas.h
+        
+        if transparent:
+            self.scene.render.film_transparent = True
 
         return self
     
@@ -591,6 +594,19 @@ class BpyObj(_Chainable):
         self.obj.select_set(True)
         bpy.ops.object.delete()
         return None
+    
+    def set_prop(self, prop, value):
+        setattr(self.obj, prop, value)
+        return self
+    
+    def set_props(self, pairs):
+        for prop, value in pairs:
+            self.set_prop(prop, value)
+        return self
+    
+    def calls(self, fn): # TODO call signature, but requires fake-bpy-module at top level, is that even possible?
+        fn(self.obj)
+        return self
     
     def set_visibility_at_frame(self, frame, visibility, scene=None):
         if scene is None:

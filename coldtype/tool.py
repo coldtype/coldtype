@@ -1,7 +1,7 @@
 from coldtype.geometry.rect import Rect
 
 
-def parse_inputs(inputs, defaults, ui=True):
+def parse_inputs(inputs, defaults, ui=True, positional=True):
     if ui:
         defaults["rect"] = [
             Rect(1080, 1080),
@@ -16,8 +16,11 @@ def parse_inputs(inputs, defaults, ui=True):
             if "=" in input:
                 k, v = input.split("=")
                 parsed[k] = v
-            else:
-                parsed[list(defaults.keys())[idx]] = input
+            elif positional:
+                try:
+                    parsed[list(defaults.keys())[idx]] = input
+                except KeyError:
+                    pass
     else:
         parsed = {**inputs}
 
