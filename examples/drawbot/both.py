@@ -30,4 +30,4 @@ def bounce(f):
         , wdth=f.e("eeio"))
         .t(50, 210)
         .f(hsl(0.4))
-        | dbdraw)
+        .ch(dbdraw))
