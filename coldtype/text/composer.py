@@ -197,7 +197,7 @@ def StSt(text,
     font,
     font_size=24,
     rect=Rect(1080, 1080),
-    strip=True,
+    strip=False,
     multiline=False,
     #xa="mdx",
     **kwargs) -> P:
