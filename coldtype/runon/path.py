@@ -2148,7 +2148,8 @@ class P(Runon):
         offset=0,
         cc=None,
         notfound=None,
-        center=False
+        center=False,
+        apply_tangent=True,
         ) -> "P":
 
         if len(self) == 0:
@@ -2178,7 +2179,10 @@ class P(Runon):
                 t = Transform()
                 t = t.translate(_p[0] + x_shift - f.x, _p[1] + y_shift - f.y)
                 t = t.translate(f.x, f.y)
-                t = t.rotate(math.radians(tangent-90))
+                if apply_tangent:
+                    t = t.rotate(math.radians(tangent-90))
+                else:
+                    p.data(tangent=tangent-90)
                 t = t.translate(-f.x, -f.y)
                 t = t.translate(-f.w*0.5)
                 p.transform(t)
