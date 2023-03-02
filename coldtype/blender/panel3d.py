@@ -26,6 +26,17 @@ class Coldtype3DRenderOne(bpy.types.Operator):
         remote("render_index", [bpy.data.scenes[0].frame_current])
         return {'FINISHED'}
 
+class Coldtype3DRenderFromCurrent(bpy.types.Operator):
+    """Render the current frame via Coldtype with the offline Blender renderer"""
+
+    bl_idname = "wm.coldtype_3d_render_from_current"
+    bl_label = "Coldtype 3D Render From Current"
+
+    def execute(self, _):
+        print("RENDER FROM CURRENT")
+        remote("render_after", [bpy.data.scenes[0].frame_current])
+        return {'FINISHED'}
+
 
 class Coldtype3DRenderAll(bpy.types.Operator):
     """Render all frames via Coldtype with the offline Blender renderer"""
@@ -72,6 +83,7 @@ class COLDTYPE_3D_PT_Panel(bpy.types.Panel):
 
         layout = self.layout
         layout.operator(Coldtype3DRenderOne.bl_idname, text="Render One", icon="IMAGE_DATA",)
+        layout.operator(Coldtype3DRenderFromCurrent.bl_idname, text="Render From Current", icon="RENDER_ANIMATION",)
         layout.operator(Coldtype3DRenderAll.bl_idname, text="Render All", icon="RENDER_ANIMATION",)
         #layout.operator(Coldtype3DPrerender.bl_idname, text="Prerender Enabled" if prerendered else "Prerender Disabled", icon="TEXTURE_DATA",)
         layout.separator()
@@ -83,6 +95,7 @@ addon_keymaps = []
 def register():
     bpy.utils.register_class(Coldtype3DPrerender)
     bpy.utils.register_class(Coldtype3DRenderOne)
+    bpy.utils.register_class(Coldtype3DRenderFromCurrent)
     bpy.utils.register_class(Coldtype3DRenderAll)
     bpy.utils.register_class(Coldtype3DOpenInEditor)
     bpy.utils.register_class(Coldtype3DShowInFinder)

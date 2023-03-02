@@ -1519,6 +1519,10 @@ class Renderer():
         if shortcut == "render_index":
             self.render(Action.RenderIndices, indices=[int(args[0])], ditto_last=True)
             return
+        elif shortcut == "render_after":
+            frames = list(range(args[0], self.last_animation.timeline.duration))
+            self.render(Action.RenderIndices, indices=frames)
+            return
         elif shortcut == "render_scratch":
             fi = int(args[0])
             print(f">/scratch:{fi}")
