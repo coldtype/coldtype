@@ -214,10 +214,10 @@ class LayoutMixin():
         if callable(rect):
             rect = rect(self)
         
-        self.align(rect, x=None, y=y, th=tx, tv=ty)
+        self.align(rect, x=None, y=y, tx=tx, ty=ty)
         return self
     
-    xå = xalign
+    yå = yalign
 
     def _normPoint(self, point=None, th=None, tv=None, tx=0, ty=0, **kwargs):
         tx, ty = self._normT(th, tv, tx, ty, kwargs.get("t"))

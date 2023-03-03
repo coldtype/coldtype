@@ -1241,10 +1241,10 @@ class P(Runon):
         if callable(rect):
             rect = rect(self)
         
-        self.align(rect, x=None, y=y, th=tx, tv=ty)
+        self.align(rect, x=None, y=y, tx=tx, ty=ty)
         return self
     
-    xå = xalign
+    yå = yalign
 
 
     def _yalign(self, rect=None, y="centery", th=None, tv=None, tx=0, ty=1) -> "P":
@@ -2148,8 +2148,7 @@ class P(Runon):
         offset=0,
         cc=None,
         notfound=None,
-        center=False,
-        apply_tangent=True,
+        center=False
         ) -> "P":
 
         if len(self) == 0:
@@ -2179,10 +2178,7 @@ class P(Runon):
                 t = Transform()
                 t = t.translate(_p[0] + x_shift - f.x, _p[1] + y_shift - f.y)
                 t = t.translate(f.x, f.y)
-                if apply_tangent:
-                    t = t.rotate(math.radians(tangent-90))
-                else:
-                    p.data(tangent=tangent-90)
+                t = t.rotate(math.radians(tangent-90))
                 t = t.translate(-f.x, -f.y)
                 t = t.translate(-f.w*0.5)
                 p.transform(t)
