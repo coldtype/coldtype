@@ -1619,7 +1619,7 @@ class Renderer():
             args.append(lc)
         
         print("> RESTART:", args)
-        os.execl(sys.executable, *(["-m"]+args))
+        os.execl(sys.executable, *(["-m"]+[str(a) for a in args]))
 
     def on_exit(self, restart=False):
         self.source_reader.unlink()
