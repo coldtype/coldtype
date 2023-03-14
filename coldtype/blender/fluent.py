@@ -302,7 +302,16 @@ class BpyMaterial():
         tl = anim.timeline
         return self.image(src, timeline=tl)
     
-    def image(self, src=None, opacity=1, rect=None, pattern=True, alpha=True, timeline:Timeline=None, emission=None):
+    def image(self, src=None, opacity=1, rect=None, pattern=True, alpha=True, timeline:Timeline=None, emission=None, render=False) -> "BpyObj":
+        from coldtype.renderable import renderable, animation
+
+        if isinstance(src, animation):
+            timeline = src.timeline
+            src = src.render_and_rasterize() if render else src.pass_path(0)
+        elif isinstance(src, renderable):
+            src = src.render_and_rasterize() if render else src.pass_path(0)
+        
+        src = Path(src)
         bsdf = self.bsdf()
         
         if "Image Texture" in self.m.node_tree.nodes:
@@ -319,15 +328,20 @@ class BpyMaterial():
             bx, by = bsdf.location
             tex.location = (bx - 320, by)
         
-        found = False
+        found = None
 
         for img in bpy.data.images:
-            if src.name in img.name:
-                found = True
+            if src.name in img.name or img.name == src.name:
+                found = img
                 img.reload()
 
-        if not found or not tex.image:
-            tex.image = bpy.data.images.load(str(src))
+        if found is None:
+            print("NOT FOUND", src.name)
+            print("exists?", src.exists())
+
+            found = bpy.data.images.load(str(src))
+        
+        tex.image = found
         
         if timeline is not None:
             tex.image.source = "SEQUENCE"
@@ -336,6 +350,9 @@ class BpyMaterial():
             tex.image_user.frame_offset = -1
             tex.image_user.use_cyclic = True
             tex.image_user.use_auto_refresh = True
+
+        tex.interpolation = "Closest"
+        tex.interpolation = "Linear"
 
         return self
 
@@ -754,7 +771,7 @@ class BpyObj(_Chainable):
     
     locateRelative = locate_relative
 
-    def scale(self, x=None, y=None, z=None):
+    def scale(self, x=None, y=None, z=None) -> "BpyObj":
         if x is not None:
             self.obj.scale[0] = x
         if y is not None:

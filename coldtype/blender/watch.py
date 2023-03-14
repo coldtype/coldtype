@@ -242,6 +242,15 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
 
         if statics:
             bpy.app.driver_namespace["_coldtypes"] = out
+        
+        for area in bpy.context.screen.areas:
+            if area.type == 'VIEW_3D':
+                for space in area.spaces: 
+                    if space.type == 'VIEW_3D':
+                        current = space.shading.type
+                        if current == "RENDERED":
+                            space.shading.type = 'WIREFRAME'
+                            space.shading.type = 'RENDERED'
 
         for o in out:
             if hasattr(o, "post_run") and o.post_run:

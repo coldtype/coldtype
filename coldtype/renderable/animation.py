@@ -161,6 +161,13 @@ class animation(renderable, Timeable):
         else:
             return pf + index
     
+    def render_and_rasterize(self, scale=1, style=None) -> str:
+        first = self.render_and_rasterize_frame(0, scale=scale, style=style)
+        for idx in range(1, self.timeline.duration):
+            print(">>>", idx)
+            self.render_and_rasterize_frame(idx, scale=scale, style=style)
+        return first
+    
     def passes(self, action, renderer_state, indices=[]):
         c, m = None, None
 

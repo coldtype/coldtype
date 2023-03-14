@@ -453,6 +453,18 @@ class renderable():
     def rasterize(self, config, content, render_pass):
         return False
     
+    def render_and_rasterize_frame(self, frame, scale=1, style=None) -> str:
+        SkiaPen.Composite(self.normalize_result(self.frame_result(frame)),
+            self.rect,
+            str(self.pass_path(frame)),
+            scale=scale,
+            context=None,
+            style=style)
+        return self.pass_path(frame)
+    
+    def render_and_rasterize(self, scale=1, style=None) -> str:
+        return self.render_and_rasterize_frame(0, scale=scale, style=style)
+    
     def _profile_render_all(self):
         ps = self.passes(Action.RenderAll, None)
         for p in ps:
