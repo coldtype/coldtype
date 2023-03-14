@@ -302,7 +302,7 @@ class BpyMaterial():
         tl = anim.timeline
         return self.image(src, timeline=tl)
     
-    def image(self, src=None, opacity=1, rect=None, pattern=True, alpha=True, timeline:Timeline=None):
+    def image(self, src=None, opacity=1, rect=None, pattern=True, alpha=True, timeline:Timeline=None, emission=None):
         bsdf = self.bsdf()
         
         if "Image Texture" in self.m.node_tree.nodes:
@@ -312,6 +312,9 @@ class BpyMaterial():
             self.m.node_tree.links.new(bsdf.inputs["Base Color"], tex.outputs["Color"])
             if alpha:
                 self.m.node_tree.links.new(bsdf.inputs["Alpha"], tex.outputs["Alpha"])
+            if emission:
+                self.m.node_tree.links.new(bsdf.inputs["Emission"], tex.outputs["Color"])
+                bsdf.inputs[20].default_value = emission
             
             bx, by = bsdf.location
             tex.location = (bx - 320, by)

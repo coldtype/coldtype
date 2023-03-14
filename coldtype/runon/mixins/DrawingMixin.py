@@ -123,18 +123,23 @@ class DrawingMixin():
     
     r = rect
     
-    def roundedRect(self, rect, hr, vr=None):
+    def roundedRect(self, rect, hr, vr=None, scale=True):
         """Rounded rectangle primitive"""
         if vr is None:
             vr = hr
         l, b, w, h = Rect(rect)
         r, t = l + w, b + h
         K = 4 * (math.sqrt(2)-1) / 3
-        circle = hr == 0.5 and vr == 0.5
-        if hr <= 0.5:
-            hr = w * hr
-        if vr <= 0.5:
-            vr = h * vr
+        
+        if scale:
+            circle = hr == 0.5 and vr == 0.5
+            if hr <= 0.5:
+                hr = w * hr
+            if vr <= 0.5:
+                vr = h * vr
+        else:
+            circle = False
+        
         self.moveTo((l + hr, b))
         if not circle:
             self.lineTo((r - hr, b))

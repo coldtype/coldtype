@@ -567,7 +567,7 @@ class P(Runon):
         return self
 
 
-    def roundedRect(self, rect, hr, vr=None) -> "P":
+    def roundedRect(self, rect, hr, vr=None, scale=True) -> "P":
 
         """Rounded rectangle primitive"""
         if vr is None:
@@ -575,11 +575,16 @@ class P(Runon):
         l, b, w, h = Rect(rect)
         r, t = l + w, b + h
         K = 4 * (math.sqrt(2)-1) / 3
-        circle = hr == 0.5 and vr == 0.5
-        if hr <= 0.5:
-            hr = w * hr
-        if vr <= 0.5:
-            vr = h * vr
+        
+        if scale:
+            circle = hr == 0.5 and vr == 0.5
+            if hr <= 0.5:
+                hr = w * hr
+            if vr <= 0.5:
+                vr = h * vr
+        else:
+            circle = False
+        
         self.moveTo((l + hr, b))
         if not circle:
             self.lineTo((r - hr, b))
@@ -599,7 +604,7 @@ class P(Runon):
     rr = roundedRect
     
 
-    def _roundedRect(self, rect, hr, vr=None) -> "P":
+    def _roundedRect(self, rect, hr, vr=None, scale=True) -> "P":
         return self
 
 
@@ -2148,7 +2153,8 @@ class P(Runon):
         offset=0,
         cc=None,
         notfound=None,
-        center=False
+        center=False,
+        apply_tangent=True
         ) -> "P":
 
         if len(self) == 0:
@@ -2178,7 +2184,10 @@ class P(Runon):
                 t = Transform()
                 t = t.translate(_p[0] + x_shift - f.x, _p[1] + y_shift - f.y)
                 t = t.translate(f.x, f.y)
-                t = t.rotate(math.radians(tangent-90))
+                if apply_tangent:
+                    t = t.rotate(math.radians(tangent-90))
+                else:
+                    p.data(tangent=tangent-90)
                 t = t.translate(-f.x, -f.y)
                 t = t.translate(-f.w*0.5)
                 p.transform(t)
@@ -2195,7 +2204,8 @@ class P(Runon):
         offset=0,
         cc=None,
         notfound=None,
-        center=False
+        center=False,
+        apply_tangent=True
         ) -> "P":
         return self
 

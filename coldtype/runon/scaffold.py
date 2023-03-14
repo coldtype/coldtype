@@ -4,6 +4,9 @@ from coldtype.grid import Grid
 from coldtype.color import hsl, bw
 from coldtype.random import random_series
 
+import re
+from typing import Pattern
+
 #self\.assertEqual\(([^,]+),([^)]+)\)
 #assert $1 ==$2
 
@@ -82,7 +85,7 @@ class Scaffold(Runon):
                 el.grid(columns, rows, tags)
         return self
     
-    def cssgrid(self, cols, rows, ascii, **kwargs):
+    def cssgrid(self, cols, rows, ascii, mods={}, **kwargs):
         if self.val_present():
             if not hasattr(self, "_borders"):
                 self._borders = []
@@ -94,7 +97,15 @@ class Scaffold(Runon):
             self._val = None
             self._borders.extend(g.borders)
         
-        for k, v in kwargs.items(): self[k].cssgrid(*v)
+        for k, v in mods.items():
+            rek = re.compile(k)
+            for el in self:
+                if rek.match(el.tag()):
+                    el.cssgrid(*v)
+
+        for k, v in kwargs.items():
+            self[k].cssgrid(*v)
+        
         return self
     
     def borders(self):
