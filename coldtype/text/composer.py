@@ -253,7 +253,11 @@ def StSt(text,
             else:
                 _style = style
             lines.append(StSt(l, _style, rect=rect, strip=strip, **{**kwargs, **dict(multline=False)}))
-        return lines.stack(leading)
+        
+        if leading < 0:
+            return lines
+        else:
+            return lines.stack(leading)
     else:
         if style.fallback:
             lockup = Slug(text, style, style.fallback)

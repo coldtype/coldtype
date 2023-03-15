@@ -442,6 +442,11 @@ class BpyObj(_Chainable):
         return bo
     
     @staticmethod
+    def Cylinder(name=None, collection=None) -> "BpyObj":
+        bpy.ops.mesh.primitive_cylinder_add()
+        return BpyObj.Primitive(name, collection)
+    
+    @staticmethod
     def UVSphere(name=None, collection=None) -> "BpyObj":
         bpy.ops.mesh.primitive_uv_sphere_add()
         return BpyObj.Primitive(name, collection)
