@@ -357,11 +357,12 @@ class Runon:
     def postwalk(self, callback):
         return self.walk(callback, _selector=+1)
     
-    def parent(self):
+    def parent(self, noexist_ok=False):
         if self._parent:
             return self._parent
         else:
-            print("no parent set")
+            if not noexist_ok:
+                print("no parent set")
             return None
 
     def map(self, fn):

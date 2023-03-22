@@ -102,5 +102,12 @@ def test_cssgrid_regexs(r):
         P(s["b/b"]),
         P(s["c/b"]),
         P(s["d/b"]),
-        P(s["e"])
-    )
+        P(s["e"]))
+
+@test((500, 250))
+def test_cssgrid_nested(r):
+    s = Scaffold(r).cssgrid("a a a", "a a a", "a b c / d e f", {
+        "a": ("a a", "a a", "a b / c d"),
+        "a/b": ("a a a", "a", "a b c"),
+    })
+    return P(s["a/b/b"])
