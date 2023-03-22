@@ -219,3 +219,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ## [0.10.4] - 2023-01-20
 ### Added
 - `-rar` (`--render-and-release`) command-line option to render-and-release(-and-then-quit)
+
+## [0.10.5] - 2023-03-22
+### Improved
+- `Scaffold.cssgrid` now supports arbitrary regex keys in a dictionary arg for targeting multiple children at once (shown in test_scaffold.py)
