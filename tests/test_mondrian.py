@@ -3,7 +3,7 @@ from coldtype.test import *
 from coldtype.runon.runon import RunonSearchException, RunonException
 
 
-@test((500, 500))
+@test((500, 250))
 def test_auto_recursion(r):
     l = Scaffold(r)
     assert l.depth() == 0
@@ -13,18 +13,18 @@ def test_auto_recursion(r):
     l.divide(0.5, "N")
     assert l.depth() == 1
     assert l.rect.w == 500
-    assert l.rect.h == 500
+    assert l.rect.h == 250
     assert l[0].rect.w == 500
-    assert l[0].rect.h == 250
-    assert l[1].rect.h == 250
+    assert l[0].rect.h == 250/2
+    assert l[1].rect.h == 250/2
 
     l.divide(200, "W")
     assert l.depth() == 2
     assert l.rect.w == 500
-    assert l.rect.h == 500
+    assert l.rect.h == 500/2
     assert l[0].rect.w == 500
-    assert l[0].rect.h == 250
-    assert l[1].rect.h == 250
+    assert l[0].rect.h == 250/2
+    assert l[1].rect.h == 250/2
     assert l[0][0].rect.w == 200
     assert l[1][0].rect.w == 200
     
@@ -33,7 +33,7 @@ def test_auto_recursion(r):
 
     return P(l[0])
 
-@test((500, 500))
+@test((500, 250))
 def test_duck(r):
     l = Scaffold(r)
     l.grid(2, 2, "abcd")
@@ -54,9 +54,9 @@ def test_duck(r):
 
     return txt1, P(l[0])
 
-@test((500, 500))
+@test((500, 250))
 def test_cssgrid(_r):
-    l = (Scaffold(Rect(500, 500))
+    l = (Scaffold(Rect(_r))
         .cssgrid(r"auto 30%", r"50% auto", "x y / z q",
             x=("200 a", "a a", "a b / a c"),
             c=("a a", "a a", "g a / i a"),
@@ -77,3 +77,30 @@ def test_cssgrid(_r):
     assert l["q"] != l["q/q"]
 
     return P(l["x/a"]) + P(l["q"])
+
+@test((500, 500))
+def test_cssgrid_regexs(r):
+    # vulf compressor adv (mini)
+
+    s = Scaffold(r).cssgrid("a a a", "a 100 60", "a || b || c _/ d d d _/ e e e", {
+            r"^[abc]": ("a a", "a 30", "a b _/ c c"),
+            "d": ("a 60", "a a", "a b / c d")})
+
+    assert s["a"].r.w == 166
+    assert s["a/b"].r.w == s["b/b"].r.w - 1
+    assert s["a/b"].r.w != s["d/b"].r.w
+    assert s["d/b"].r.w == 60
+
+    assert s["a"].depth() == 1
+    assert s["d"].depth() == 1
+    assert s["e"].depth() == 0
+
+    assert s["a/a"].depth() == 0
+
+    return P(
+        P(s["a/b"]),
+        P(s["b/b"]),
+        P(s["c/b"]),
+        P(s["d/b"]),
+        P(s["e"])
+    )

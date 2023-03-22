@@ -34,6 +34,7 @@ examples/*.pdf
 *.blend1
 *.blend
 examples/blender/blends
+examples/blender/fonts
 profile.profile
 profile_result
 deps.txt

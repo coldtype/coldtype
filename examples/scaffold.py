@@ -29,5 +29,4 @@ def boxes2(r):
     
     return P(
         l.view(),
-        P().oval(l[0].rect.square().inset(10)).fssw(-1, hsl(0.9, 1), 2),
-    )
+        P().oval(l[0].rect.square().inset(10)).fssw(-1, hsl(0.9, 1), 2))

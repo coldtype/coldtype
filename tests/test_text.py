@@ -105,15 +105,15 @@ def test_narrowing_family(r):
 
 @test((800, 150))
 def test_unstripped_text(r):
-    st1 = StSt("HELLO\n", Font.MutatorSans(), 100)
+    st1 = StSt("HELLO\n", Font.MutatorSans(), 100, strip=True)
     assert len(st1) == len("HELLO")
-    st2 = StSt("HELLO\n", Font.MutatorSans(), 100, strip=False)
+    st2 = StSt("HELLO\n", Font.MutatorSans(), 100)
     assert len(st2) == 2
     st3 = st2.collapse().deblank()
     assert len(st3) == len(st1)
-    st4 = StSt("\n\nHELLO\n", Font.MutatorSans(), 100)
+    st4 = StSt("\n\nHELLO\n", Font.MutatorSans(), 100, strip=True)
     assert len(st4) == len("HELLO")
-    st5 = StSt("\n\nHEL\nL\nO\n", Font.MutatorSans(), 100)
+    st5 = StSt("\n\nHEL\nL\nO\n", Font.MutatorSans(), 100, strip=True)
     assert len(st5) == 3
 
     return st5.scale(0.5).align(r)

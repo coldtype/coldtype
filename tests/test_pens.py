@@ -83,7 +83,7 @@ def test_track_to_rect(_r):
 def test_distribute_oval(_r):
     r = Rect(1000, 500)
     txt = (StSt("COLDTYPE "*7, co, 64,
-        tu=-50, r=1, ro=1)
+        tu=-50, r=1, ro=1, strip=True)
         .distribute_on_path(P()
             .oval(r.inset(50))
             .reverse()
