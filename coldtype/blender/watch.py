@@ -168,11 +168,14 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             display_image_in_blender(lp_path)
         
         candidates = self.candidates
+        force_refresh = False
 
         for r in candidates:
             if isinstance(r, b3d_runnable):
                 if statics:
                     playback = r.playback
+            if hasattr(r, "force_refresh") and r.force_refresh:
+                force_refresh = True
         
         if statics and playback != B3DPlayback.KeepPlaying:
             if bpy.context.screen.is_animation_playing:
@@ -217,7 +220,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     else:
                         animation_found = True
                         result = run_passes()
-                        if result:
+                        if result and (result.depth() > 0 or not result.empty()):
                             if r.renderer == "b3d":
                                 walk_to_b3d(result, renderable=r)
                             else:
@@ -243,14 +246,15 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         if statics:
             bpy.app.driver_namespace["_coldtypes"] = out
         
-        for area in bpy.context.screen.areas:
-            if area.type == 'VIEW_3D':
-                for space in area.spaces: 
-                    if space.type == 'VIEW_3D':
-                        current = space.shading.type
-                        if current == "RENDERED":
-                            space.shading.type = 'WIREFRAME'
-                            space.shading.type = 'RENDERED'
+        if force_refresh:
+            for area in bpy.context.screen.areas:
+                if area.type == 'VIEW_3D':
+                    for space in area.spaces: 
+                        if space.type == 'VIEW_3D':
+                            current = space.shading.type
+                            if current == "RENDERED":
+                                space.shading.type = 'WIREFRAME'
+                                space.shading.type = 'RENDERED'
 
         for o in out:
             if hasattr(o, "post_run") and o.post_run:

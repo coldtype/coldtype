@@ -259,10 +259,12 @@ class b3d_runnable(runnable):
         once=True,
         delay=False,
         playback:B3DPlayback=B3DPlayback.AlwaysStop,
+        force_refresh=False,
         ):
         self.once = once
         self.delay = delay
         self.playback = playback
+        self.force_refresh = force_refresh
 
         if cond is not None:
             super().__init__(solo=solo, cond=lambda: cond and bool(bpy) and bool(bpy.data))
@@ -283,6 +285,7 @@ class b3d_renderable(renderable):
         upright=False,
         post_run=None,
         reset_to_zero=False,
+        force_refresh=False,
         **kwargs
         ):
         self.center = center
@@ -290,6 +293,7 @@ class b3d_renderable(renderable):
         self.post_run = post_run
         self.blender_io:BlenderIO = None
         self.reset_to_zero = reset_to_zero
+        self.force_refresh = force_refresh
 
         super().__init__(rect, **kwargs)
 
@@ -307,11 +311,13 @@ class b3d_animation(animation):
         upright=False,
         autosave=False,
         renderer="b3d",
+        force_refresh=False,
         **kwargs
         ):
         self.func = None
         self.name = None
         self.current_frame = -1
+        
         self.samples = samples
         self.denoise = denoise
         self.bake = bake
@@ -322,6 +328,8 @@ class b3d_animation(animation):
         self.match_fps = match_fps
         self.renderer = renderer
         self.autosave = autosave
+        self.force_refresh = force_refresh
+
         self._bt = False
         self.blender_io:BlenderIO = None
 
