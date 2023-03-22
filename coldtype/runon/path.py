@@ -772,6 +772,18 @@ class P(Runon):
     def bxc(self, pt, point, factor=65, po=(0, 0), mods={}, flatten=False):
         return self.boxCurveTo(pt, point, factor, po, mods, flatten)
     
+
+    def _ioEaseCurveTo(self, pt, slope=0, fA=0, fB=85) -> "P":
+        return self
+
+
+    def roundedCorner(self, pt, point, multipliers, offset=4, factor=65) -> "P":
+
+        a, b, c, d = multipliers
+        return (self
+            .lineTo(pt.offset(offset*a, offset*b))
+            .boxCurveTo(pt.offset(offset*c, offset*d), point, factor=factor))
+    
     def boxCurveTo(self, pt, point, factor=65, po=(0, 0), mods={}, flatten=False):
         #print("BOX", point, factor, pt, po, mods)
 
@@ -853,7 +865,7 @@ class P(Runon):
         return self
     
 
-    def _ioEaseCurveTo(self, pt, slope=0, fA=0, fB=85) -> "P":
+    def _roundedCorner(self, pt, point, multipliers, offset=4, factor=65) -> "P":
         return self
 
 
