@@ -57,6 +57,10 @@ class BpyWorld(_Chainable):
             self.scene = None
     
     def deselect_all(self):
+        active = bpy.context.view_layer.objects.active
+        if active and active.mode == "EDIT":
+            bpy.ops.object.mode_set(mode='OBJECT')
+
         bpy.ops.object.select_all(action='DESELECT')
         return self
     
@@ -492,7 +496,7 @@ class BpyObj(_Chainable):
         return self
     
     @contextmanager
-    def obj_selected(self, yield_self=False):
+    def obj_selected(self, yield_self=False, exit=True):
         if not self.obj:
             if yield_self:
                 yield None
@@ -507,8 +511,10 @@ class BpyObj(_Chainable):
             yield self
         else:
             yield
-        self.obj.select_set(False)
-        bpy.context.view_layer.objects.active = None
+        
+        if exit:
+            self.obj.select_set(False)
+            bpy.context.view_layer.objects.active = None
         return self
     
     objSelected = obj_selected
@@ -844,6 +850,19 @@ class BpyObj(_Chainable):
 #endregion Convenience Methods
     
 #region Modifiers
+
+    #@contextmanager
+    def modifier(self, name, cb=None, apply=True, **kwargs):
+        with self.obj_selected():
+            bpy.ops.object.modifier_add(type=name.upper())
+            m = self.obj.modifiers[name]
+            for k, v in kwargs.items():
+                setattr(m, k, v)
+            if cb:
+                cb(m)
+        if apply:
+            self.apply_modifier(name)
+        return self
     
     def solidify(self, thickness=1):
         with self.obj_selected():
@@ -963,10 +982,13 @@ class BpyObj(_Chainable):
                 print("object for boolean not found", object)
         return self
     
-    def shade_smooth(self):
+    def shade_smooth(self, auto_smooth=False):
         with self.obj_selected():
-            bpy.ops.object.shade_smooth()
+            bpy.ops.object.shade_smooth(use_auto_smooth=True)
         return self
+    
+    def shade_auto_smooth(self):
+        return self.shade_smooth(auto_smooth=True)
     
     shadeSmooth = shade_smooth
     
