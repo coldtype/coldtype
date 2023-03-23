@@ -98,27 +98,13 @@ class Scaffold(Runon):
             self._borders.extend(g.borders)
         
         for k, v in mods.items():
-            rek = re.compile(k)
-            def walker(el, _, __):
-                p = el.path(self)
-                #print(rek, p)
-                if rek.match(p):
-                    el.cssgrid(*v)
-            
-            self.prewalk(walker)
+            for m in self.match(k):
+                m.cssgrid(*v)
 
         for k, v in kwargs.items():
             self[k].cssgrid(*v)
         
         return self
-    
-    def path(self, root):
-        tags = [self.tag()]
-        parent = self.parent(noexist_ok=True)
-        while parent and parent != root:
-            tags.insert(0, parent.tag())
-            parent = parent.parent(noexist_ok=True)
-        return "/".join([t for t in tags if t])
     
     def borders(self):
         if hasattr(self, "_borders"):

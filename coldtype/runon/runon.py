@@ -1,3 +1,5 @@
+import re
+
 from textwrap import wrap
 
 from typing import Callable, Optional
@@ -364,6 +366,30 @@ class Runon:
             if not noexist_ok:
                 print("no parent set")
             return None
+        
+    def match(self, regex, cb=None, partial=False):
+        matches = []
+        rek = re.compile(regex)
+
+        def walker(el, _, __):
+            p = el.path(self)
+            if partial:
+                m = rek.match(p)
+            else:
+                m = rek.fullmatch(p)
+            
+            if m:
+                if cb:
+                    cb(el)
+                else:
+                    matches.append(el)
+            
+        self.prewalk(walker)
+        
+        if not cb:
+            return matches
+        else:
+            return self
 
     def map(self, fn):
         for idx, p in enumerate(self._els):
@@ -754,6 +780,14 @@ class Runon:
         else:
             self._tag = value
             return self
+    
+    def path(self, root=None):
+        tags = [self.tag()]
+        parent = self.parent(noexist_ok=True)
+        while parent and parent != root:
+            tags.insert(0, parent.tag())
+            parent = parent.parent(noexist_ok=True)
+        return "/".join([t for t in tags if t])
 
     def style(self, style="_default"):
         if style and style in self._attrs:
