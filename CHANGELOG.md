@@ -223,3 +223,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ## [0.10.5] - 2023-03-22
 ### Improved
 - `Scaffold.cssgrid` now supports arbitrary regex keys in a dictionary arg for targeting multiple children at once (shown in test_scaffold.py)
+
+## [0.10.6] - 2023-03-23
+### Added
+- `Runon.path` and `Runon.match` (taken from `Scaffold`) as new generic features, to regex-match on nested/slashed tags (i.e. paths)
