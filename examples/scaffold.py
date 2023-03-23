@@ -3,10 +3,11 @@ from coldtype import *
 @renderable()
 def boxes(r):
     l = (Scaffold(r)
-        .cssgrid(r"auto 30%", r"50% auto", "x y / z q",
-            x=("200 a", "a a", "a b / a c"),
-            c=("a a", "a a", "g a / i a"),
-            q=("a a", "a a", "q b / c d")))
+        .cssgrid(r"auto 30%", r"50% auto", "x y / z q", {
+            "x": ("200 a", "a a", "a b / a c"),
+            "x/c": ("a a", "a a", "g a / i a"),
+            "q": ("a a", "a a", "q b / c d")
+        }))
 
     return P(
         l.view(),

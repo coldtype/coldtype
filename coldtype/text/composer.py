@@ -199,6 +199,7 @@ def StSt(text,
     rect=Rect(1080, 1080),
     strip=False,
     multiline=False,
+    lead=True,
     #xa="mdx",
     **kwargs) -> P:
     """Set a line of text with a single Style object,
@@ -254,7 +255,7 @@ def StSt(text,
                 _style = style
             lines.append(StSt(l, _style, rect=rect, strip=strip, **{**kwargs, **dict(multline=False)}))
         
-        if leading < 0:
+        if not lead:
             return lines
         else:
             return lines.stack(leading)
