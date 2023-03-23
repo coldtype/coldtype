@@ -1,4 +1,4 @@
-@font-face {
+/* @font-face {
     font-family: 'MDSystem-Web';
     src: url('/assets/MDSystem-Regular.woff2') format('woff2');
     font-weight: 500;
@@ -24,7 +24,7 @@
     src: url('/assets/MDSystem-BoldItalic.woff2') format('woff2');
     font-weight: 800;
     font-style: italic;
-}
+} */
 
 @font-face {
     font-family: 'MDIO-Web';
@@ -49,8 +49,8 @@
 
 html {
     box-sizing: border-box;
-    font-size: 16px;
-    font-family: "MDSystem-Web", sans-serif;
+    font-size: 14px;
+    font-family: "MDIO-Web", sans-serif;
 }
 
 pre, code {
@@ -134,7 +134,8 @@ body {
 }
 
 #main {
-    max-width: 650px;
+    max-width: 750px;
+    /* margin-left: 20px; */
     margin: auto auto;
 }
 
