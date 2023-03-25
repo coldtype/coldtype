@@ -54,9 +54,11 @@ class Grid():
         r,
         columns="auto",
         rows="auto",
-        areas=None
+        areas=None,
+        warn_float=True,
         ):
         self._rect = r
+        self.warn_float = warn_float
 
         if isinstance(columns, str):
             self.columns = columns
@@ -224,11 +226,12 @@ class Grid():
             if True:
                 for k, v in keyed.items():
                     x, y, w, h = v
-                    if (not float(x).is_integer()
-                        or not float(y).is_integer()
-                        or not float(w).is_integer()
-                        or not float(h).is_integer()):
-                        print(">>> FLOAT RECT:::", k, v, "///", r)
+                    if self.warn_float:
+                        if (not float(x).is_integer()
+                            or not float(y).is_integer()
+                            or not float(w).is_integer()
+                            or not float(h).is_integer()):
+                            print(">>> FLOAT RECT:::", k, v, "///", r)
             return keyed, b
         else:
             return _grid, []

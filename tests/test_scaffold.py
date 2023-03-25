@@ -142,15 +142,6 @@ def test_wildcards(r):
     assert len(s2.match("a")) == 16
     assert len(s2.match("b")) == 16
 
-    s3 = Scaffold(r).cssgrid("a", "a 64 60", "a __/ b __/ c", {
-        "a": ("a a a", "a", "a || b || c"),
-        "a/.*": ("a a", "$CLH a 60", "l l _/ a | b _/ c c"),
-        "b": ("64 40 a 112", "40 a", "sc scl se | st / sc scs se | st"),
-        "c": ("26 a 26 47 4", "a", "a b c d e")
-        })
-    
-    print(s3.tree())
-
     return P(
         P(s["a/a/a"]).f(hsl(0.5)),
         P(s["c/b/b"]).f(hsl(0.07, 0.7)),

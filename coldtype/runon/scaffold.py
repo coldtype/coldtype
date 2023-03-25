@@ -14,6 +14,11 @@ _view_rs1 = random_series()
 
 
 class Scaffold(Runon):
+    def __init__(self, *val, warn_float=True):
+        self.warn_float = warn_float
+        
+        super().__init__(*val)
+
     def sum(self):
         if self.val_present():
             return self._val
@@ -34,7 +39,7 @@ class Scaffold(Runon):
 
     def _extend_with_tags(self, rects, tags):
         for idx, r in enumerate(rects):
-            el = Scaffold(r)
+            el = Scaffold(r, warn_float=self.warn_float)
             try:
                 el.tag(tags[idx])
             except IndexError:
@@ -90,9 +95,9 @@ class Scaffold(Runon):
             if not hasattr(self, "_borders"):
                 self._borders = []
 
-            g = Grid(self.r, cols, rows, ascii)
+            g = Grid(self.r, cols, rows, ascii, warn_float=self.warn_float)
             for k, v in g.keyed.items():
-                self.append(Scaffold(v).tag(k))
+                self.append(Scaffold(v, warn_float=self.warn_float).tag(k))
             
             self._val = None
             self._borders.extend(g.borders)
@@ -197,3 +202,7 @@ class Scaffold(Runon):
     def ee(self): return self.r.ee
     @property
     def ew(self): return self.r.ew
+
+    def joinp(self, regex):
+        from coldtype.runon.path import P
+        return P().enumerate(self.match(regex), lambda x: P(x.el.r))
