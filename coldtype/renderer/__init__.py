@@ -1258,9 +1258,11 @@ class Renderer():
             # just delays dequeuing next action by a frame
             return Action.PreviewStoryboard
         elif shortcut == KeyboardShortcut.TestDirectory:
-            adjs = self.buildrelease_fn("adjacent")
+            adjs = self.buildrelease_fn("adjacents")
             if not adjs:
                 adjs = self.source_reader.adjacents()
+            else:
+                adjs = adjs()
             
             for _ in range(0, len(adjs)):
                 self.actions_queued.append(KeyboardShortcut.LoadNextInDirectory)
