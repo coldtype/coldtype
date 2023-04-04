@@ -9,22 +9,32 @@ def compileUFOToPath(ufoPath, ttPath, outputWriter):
     return ufo_compileUFOToPath(os.fspath(ufoPath), os.fspath(ttPath))
 
 def compileUFOToBytes(ufoPath, outputWriter):
-    with tempfile.NamedTemporaryFile(prefix="fontgoggles_temp", suffix=".ttf") as tmp:
+    to_delete = None
+    with tempfile.NamedTemporaryFile(prefix="fontgoggles_temp", suffix=".ttf", mode="wb", delete=False) as tmp:
+        to_delete = tmp
         compileUFOToPath(ufoPath, tmp.name, outputWriter)
         with open(tmp.name, "rb") as f:
             fontData = f.read()
             if not fontData:
                 fontData = None
+    if to_delete:
+        to_delete.close()
+        os.unlink(to_delete.name)
     return fontData
 
 
 def compileDSToBytes(dsPath, ttFolder, outputWriter):
-    with tempfile.NamedTemporaryFile(prefix="fontgoggles_temp", suffix=".ttf") as tmp:
+    to_delete = None
+    with tempfile.NamedTemporaryFile(prefix="fontgoggles_temp", suffix=".ttf", mode="wb", delete=False) as tmp:
+        to_delete = tmp
         compileDSToPath(dsPath, ttFolder, tmp.name)
         with open(tmp.name, "rb") as f:
             fontData = f.read()
             if not fontData:
                 fontData = None
+    if to_delete:
+        to_delete.close()
+        os.unlink(to_delete.name)
     return fontData
 
 
