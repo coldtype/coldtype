@@ -471,7 +471,8 @@ class Rect(Geometrical):
         return not (self.x == 0 and self.y == 0 and self.w == 0 and self.h == 0)
 
     def __add__(self, another_rect):
-        return Rect(add(self, another_rect))
+        return self.union(another_rect)
+        #return Rect(add(self, another_rect))
 
     def grid(self, columns=2, rows=2) -> list:
         """Construct a grid"""
@@ -522,6 +523,30 @@ class Rect(Geometrical):
         return Point(
             sum([p.x for p in pts])/4,
             sum([p.y for p in pts])/4)
+    
+    def asciih(self, layout, areas):
+        from coldtype.grid import Grid
+        g = Grid(self, layout, "a", areas)
+        out = []
+        for k, v in g.keyed.items():
+            try:
+                ki = int(k)
+                out.append([ki, v])
+            except ValueError:
+                pass
+        return [v[1] for v in sorted(out, key=lambda x: x[0])]
+
+    def asciiv(self, layout, areas):
+        from coldtype.grid import Grid
+        g = Grid(self, "a", layout, areas.replace(" ", " / "))
+        out = []
+        for k, v in g.keyed.items():
+            try:
+                ki = int(k)
+                out.append([ki, v])
+            except ValueError:
+                pass
+        return [v[1] for v in sorted(out, key=lambda x: x[0])]
 
     def point(self, eh, ev=Edge.MinX) -> Point:
         """

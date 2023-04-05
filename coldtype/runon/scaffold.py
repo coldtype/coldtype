@@ -95,8 +95,11 @@ class Scaffold(Runon):
             if not hasattr(self, "_borders"):
                 self._borders = []
 
+            r = self.r
             g = Grid(self.r, cols, rows, ascii, warn_float=self.warn_float)
             for k, v in g.keyed.items():
+                if v.w > r.w or v.h > r.h or v.x < 0 or v.y < 0 or v.w < 0 or v.h < 0:
+                    v = Rect(0, 0, 0, 0)
                 self.append(Scaffold(v, warn_float=self.warn_float).tag(k))
             
             self._val = None

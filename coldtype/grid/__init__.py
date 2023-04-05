@@ -70,8 +70,6 @@ class Grid():
         else:
             self.rows = ("a "*rows).strip()
         
-        #print("ROWS", self.rows)
-        
         self.areas = areas
         if not self.areas:
             ls = ascii_lowercase
