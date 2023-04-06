@@ -26,10 +26,17 @@ class Scaffold(Runon):
         r = None
         for el in self._els:
             if r:
-                r = r.union(el.rect)
+                rr = el.rect
+                if rr.nonzero():
+                    r = r.union(rr)
             else:
-                r = el.rect
-        return r
+                rr = el.rect
+                if rr.nonzero():
+                    r = rr
+        if r is not None:
+            return r
+        else:
+            return Rect(0,0,0,0)
 
     @property
     def rect(self) -> Rect:
@@ -90,6 +97,16 @@ class Scaffold(Runon):
                 el.grid(columns, rows, tags)
         return self
     
+    def cssgridmod(self, mods, **kwargs):
+        for k, v in mods.items():
+            for m in self.match(k):
+                m.cssgrid(*v)
+
+        for k, v in kwargs.items():
+            self[k].cssgrid(*v)
+        
+        return self
+    
     def cssgrid(self, cols, rows, ascii, mods={}, **kwargs):
         if self.val_present():
             if not hasattr(self, "_borders"):
@@ -105,12 +122,7 @@ class Scaffold(Runon):
             self._val = None
             self._borders.extend(g.borders)
         
-        for k, v in mods.items():
-            for m in self.match(k):
-                m.cssgrid(*v)
-
-        for k, v in kwargs.items():
-            self[k].cssgrid(*v)
+        self.cssgridmod(mods, **kwargs)
         
         return self
     

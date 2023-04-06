@@ -35,24 +35,30 @@ COMMON_PAPER_SIZES = {
 for key, (w, h) in list(COMMON_PAPER_SIZES.items()):
     COMMON_PAPER_SIZES["%s-landscape" % key] = (h, w)
 
+def pair_to_edges(x, y=None):
+    if x == "NE":
+        return Edge.MaxX, Edge.MaxY
+    elif x == "NW":
+        return Edge.MinX, Edge.MaxY
+    elif x == "SW":
+        return Edge.MinX, Edge.MinY
+    elif x == "SE":
+        return Edge.MaxX, Edge.MinY
+    elif x == "N":
+        return Edge.CenterX, Edge.MaxY
+    elif x == "S":
+        return Edge.CenterX, Edge.MinY
+    elif x == "C":
+        return Edge.CenterX, Edge.CenterY
+    
+    if y is not None:
+        return txt_to_edge(x), txt_to_edge(y)
+    else:
+        e = txt_to_edge(x)
+        return e, e
 
 def align(b, rect, x=Edge.CenterX, y=Edge.CenterY, round_result=False):
-    if x in ["NE", "SE", "SW", "NW", "N", "S"]:
-        if x == "NE":
-            x, y = Edge.MaxX, Edge.MaxY
-        elif x == "NW":
-            x, y = Edge.MinX, Edge.MaxY
-        elif x == "SW":
-            x, y = Edge.MinX, Edge.MinY
-        elif x == "SE":
-            x, y = Edge.MaxX, Edge.MinY
-        elif x == "N":
-            x, y = Edge.CenterX, Edge.MaxY
-        elif x == "S":
-            x, y = Edge.CenterX, Edge.MinY
-    else:
-        x = txt_to_edge(x)
-        y = txt_to_edge(y)
+    x, y = pair_to_edges(x, y)
     
     xoff = 0
     if x != None:
