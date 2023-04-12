@@ -221,3 +221,11 @@ class Scaffold(Runon):
     def joinp(self, regex):
         from coldtype.runon.path import P
         return P().enumerate(self.match(regex), lambda x: P(x.el.r))
+    
+    def scale(self, scale):
+        def walker(el, pos, _):
+            if pos == 0:
+                el._val = el._val.scale(scale, scale)
+        
+        self.walk(walker)
+        return self

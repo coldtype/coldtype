@@ -4,7 +4,7 @@ from string import ascii_lowercase
 
 
 def parse_line(d, line):
-    parts = re.split(r"\s", line)
+    parts = re.split(r"\s", line.strip())
     reified = []
     for p in parts:
         if p == "auto" or p == "a":
@@ -12,7 +12,9 @@ def parse_line(d, line):
         elif "%" in p:
             reified.append(float(p.replace("%", ""))/100 * d)
         else:
-            reified.append(float(p))
+            fp = float(p)
+            
+            reified.append(fp)
     remaining = d - sum([0 if r == "auto" else r for r in reified])
     if not float(remaining).is_integer():
         remaining = round(remaining)
