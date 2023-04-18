@@ -3,6 +3,11 @@ from coldtype.geometry.geometrical import Geometrical
 from coldtype.interpolation import norm
 from coldtype.geometry.primitives import polar_coord, line_intersection, calc_angle, calc_vector
 
+try:
+    from fontTools.misc.transform import Transform
+except ImportError:
+    Transform = None
+
 
 def rt(v, mult):
     rndd = float(round(v / mult) * mult)
@@ -113,6 +118,19 @@ class Point(Geometrical):
         if not y:
             y = x
         return Point((self.x * x, self.y * y))
+    
+    def transform(self, t) -> "Point":
+        return Point(*t.transformPoint((self.x, self.y)))
+
+    def rotate(self, degrees, point) -> "Point":
+        if Transform:
+            t = Transform()
+            t = t.translate(point.x, point.y)
+            t = t.rotate(math.radians(degrees))
+            t = t.translate(-point.x, -point.y)
+            return self.transform(t)
+        else:
+            raise Exception("fontTools not installed")
     
     def join(self, other):
         from coldtype.geometry.line import Line

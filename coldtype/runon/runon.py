@@ -645,7 +645,10 @@ class Runon:
                     else:
                         return self
         except TypeError as e:
-            p = self[idx]
+            try:
+                p = self[idx]
+            except IndexError:
+                return self
 
         if fn:
             res = self._call_idx_fn(fn, lidx, p)
