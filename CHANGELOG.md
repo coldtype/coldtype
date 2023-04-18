@@ -227,3 +227,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ## [0.10.6] - 2023-03-23
 ### Added
 - `Runon.path` and `Runon.match` (taken from `Scaffold`) as new generic features, to regex-match on nested/slashed tags (i.e. paths)
+
+## [0.10.7] - 2023-04-18
+### Fixed
+- `.ufo` font-reading on Windows
