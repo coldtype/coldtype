@@ -61,6 +61,16 @@ class DrawingMixin():
     def ep(self):
         return self.endPath()
     
+    def points(self, pts, close=True):
+        self.moveTo(pts[0])
+        for p in pts[1:]:
+            self.lineTo(p)
+        if close:
+            self.closePath()
+        else:
+            self.endPath()
+        return self
+    
     def replay(self, pen):
         self._val.replay(pen)
 

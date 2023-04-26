@@ -790,6 +790,15 @@ class BpyObj(_Chainable):
         if z is not None:
             self.obj.scale[2] = z
         return self
+    
+    def dimension(self, x=None, y=None, z=None) -> "BpyObj":
+        if x is not None:
+            self.obj.dimensions[0] = x
+        if y is not None:
+            self.obj.dimensions[1] = y
+        if z is not None:
+            self.obj.dimensions[2] = z
+        return self
 
 #endregion Basic transformations
 

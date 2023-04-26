@@ -487,6 +487,22 @@ class P(Runon):
         return self
 
 
+    def points(self, pts, close=True) -> "P":
+
+        self.moveTo(pts[0])
+        for p in pts[1:]:
+            self.lineTo(p)
+        if close:
+            self.closePath()
+        else:
+            self.endPath()
+        return self
+    
+
+    def _points(self, pts, close=True) -> "P":
+        return self
+
+
     def replay(self, pen) -> "P":
 
         self._val.replay(pen)
@@ -1186,7 +1202,12 @@ class P(Runon):
         """
 
         if not isinstance(rect, Rect):
-            rect = rect.rect
+            if hasattr(rect, "ambit"):
+                rect = rect.ambit(tx=tx, ty=ty)
+            elif hasattr(rect, "rect"):
+                rect = rect.rect
+            else:
+                raise Exception("can't align to this object")
         
         tx, ty = self._normT(th, tv, tx, ty, None)
         r = self.ambit(tx=tx, ty=ty)

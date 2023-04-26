@@ -165,7 +165,12 @@ class LayoutMixin():
         """
 
         if not isinstance(rect, Rect):
-            rect = rect.rect
+            if hasattr(rect, "ambit"):
+                rect = rect.ambit(tx=tx, ty=ty)
+            elif hasattr(rect, "rect"):
+                rect = rect.rect
+            else:
+                raise Exception("can't align to this object")
         
         tx, ty = self._normT(th, tv, tx, ty, None)
         r = self.ambit(tx=tx, ty=ty)

@@ -916,6 +916,12 @@ class Runon:
                     pass # TODO?
         return self
     
+    def attempt(self, exception_class, try_fn, except_fn):
+        try:
+            try_fn(self)
+        except exception_class:
+            except_fn(self)
+    
     # Chaining
 
     def chain(self,
