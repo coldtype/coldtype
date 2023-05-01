@@ -189,6 +189,8 @@ class Line(Geometrical):
     def intersection(self, other):
         return Point(line_intersection(self, other))
     
+    sect = intersection
+    
     def __and__(self, other):
         return self.intersection(other)
     
