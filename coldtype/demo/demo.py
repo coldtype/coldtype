@@ -1,6 +1,6 @@
 from coldtype import *
 
-co = Font.Cacheable("assets/ColdtypeObviously.designspace")
+co = Font.ColdtypeObviously()
 
 @animation((800, 200), timeline=60, bg=1)
 def demo(f):

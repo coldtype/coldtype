@@ -390,13 +390,16 @@ class BpyObj(_Chainable):
     def Find(tag):
         bobj = BpyObj()
         
-        if isinstance(tag, bpy.types.Object):
+        if isinstance(tag, BpyObj):
+            bobj.obj = tag.obj
+        elif isinstance(tag, bpy.types.Object):
             bobj.obj = tag
         else:
             try:
                 bobj.obj = bpy.data.objects[tag]
             except KeyError:
                 bobj.obj = None
+        
         return bobj
     
     @staticmethod
@@ -880,7 +883,12 @@ class BpyObj(_Chainable):
             m.thickness = thickness
         return self
     
-    def remesh(self, octree_depth=7, smooth=False):
+    def convert_to_mesh(self):
+        with self.obj_selected():
+            bpy.ops.object.convert(target="MESH")
+        return self
+    
+    def remesh(self, octree_depth=7, smooth=False, apply=False):
         with self.obj_selected():
             bpy.ops.object.modifier_add(type="REMESH")
             m = self.obj.modifiers["Remesh"]
@@ -888,6 +896,9 @@ class BpyObj(_Chainable):
             m.octree_depth = octree_depth
             m.use_remove_disconnected = False
             m.use_smooth_shade = smooth
+        
+        if apply:
+            self.apply_modifier("Remesh")
         return self
     
     def array(self, count=2, relative=(1, 0, 0), constant=(0.1, 0, 0)):
@@ -980,15 +991,21 @@ class BpyObj(_Chainable):
                 m.vertex_group = vertex_group
         return self
     
-    def boolean(self, object):
+    def boolean(self, object, operation="INTERSECT", apply=False):
         with self.obj_selected():
             bpy.ops.object.modifier_add(type="BOOLEAN")
             m = self.obj.modifiers["Boolean"]
-            m.operation = "INTERSECT"
-            try:
-                m.object = bpy.data.objects[object]
-            except KeyError:
-                print("object for boolean not found", object)
+            m.operation = operation
+            target = BpyObj.Find(object)
+            if target:
+                m.object = target.obj
+            
+            #try:
+            #    m.object = bpy.data.objects[object]
+            #except KeyError:
+            #    print("object for boolean not found", object)
+        if apply:
+            self.apply_modifier("Boolean")
         return self
     
     def shade_smooth(self, auto_smooth=False):
