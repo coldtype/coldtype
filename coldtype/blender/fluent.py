@@ -8,7 +8,7 @@ from coldtype.runon.path import P
 from coldtype.runon.runon import Runon
 from coldtype.timing.timeline import Timeline
 from coldtype.geometry import Rect
-from coldtype.color import Gradient, normalize_color
+from coldtype.color import Gradient, normalize_color, bw
 from coldtype.renderable.animation import animation
 
 try:
@@ -66,11 +66,11 @@ class BpyWorld(_Chainable):
     
     deselectAll = deselect_all
     
-    def delete_previous(self, collection="Coldtype", keep=[], materials=True, curves=True, meshes=True, objects=True):
+    def delete_previous(self, collection="Coldtype", keep=[], materials=True, curves=True, meshes=True, objects=True, grease_pencils=True):
         self.deselect_all()
 
         BpyCollection.Find(collection, create=False).delete_hierarchy()
-        self.deleteOrphans(keep=keep, materials=materials, curves=curves, meshes=meshes, objects=objects)
+        self.deleteOrphans(keep=keep, materials=materials, curves=curves, meshes=meshes, objects=objects, grease_pencils=grease_pencils)
         return self
     
     deletePrevious = delete_previous
@@ -78,7 +78,7 @@ class BpyWorld(_Chainable):
     def deleteOrphans(self, keep=[], **kwargs):
         from bpy import data as D
         
-        props = ["curves", "meshes", "materials", "objects"]
+        props = ["curves", "meshes", "materials", "objects", "grease_pencils"]
         for x in range(2):
             for c in D.collections:
                 if ("RigidBodyWorld" in c.name or c.users == 0) and c.name not in keep:
@@ -87,6 +87,7 @@ class BpyWorld(_Chainable):
             for p in props:
                 if kwargs.get(p):
                     for block in getattr(D, p):
+                        #print(">>", getattr(D, p))
                         if block.users == 0 and block.name not in keep:
                             getattr(D, p).remove(block)
         
@@ -410,16 +411,21 @@ class BpyObj(_Chainable):
             return BpyObj.Find(obj_or_tag)
     
     @staticmethod
-    def Primitive(name=None, collection="Coldtype") -> "BpyObj":
+    def Primitive(name=None, collection="Coldtype", created_obj=None) -> "BpyObj":
         if collection is None:
             collection = "Coldtype"
         
         if collection == "Global":
             collection = None
 
-        created = bpy.context.object
+        if created_obj:
+            created = created_obj
+        else:
+            created = bpy.context.object
+
         bobj = BpyObj()
         bobj.obj = created
+        
         if collection:
             bobj.collect(collection)
         created.select_set(False)
@@ -462,6 +468,40 @@ class BpyObj(_Chainable):
     def Monkey(name=None, collection=None) -> "BpyObj":
         bpy.ops.mesh.primitive_monkey_add()
         return BpyObj.Primitive(name, collection)
+    
+    @staticmethod
+    def GPencil(name, p:P=None, stroke=bw(0, 0.5), fill=None, collection=None):
+        gpencil_data = bpy.data.grease_pencils.new(name)
+        gpencil = bpy.data.objects.new(gpencil_data.name, gpencil_data)
+        gp = BpyObj.Primitive(name, collection, created_obj=gpencil)
+
+        gp_layer = gp.obj.data.layers.new("lines")
+        gp_frame = gp_layer.frames.new(bpy.context.scene.frame_current)
+
+        gp_stroke = gp_frame.strokes.new()
+        gp_stroke.line_width = 8
+        gp_stroke.start_cap_mode = 'ROUND'
+        gp_stroke.end_cap_mode = 'ROUND'
+        gp_stroke.use_cyclic = True
+
+        if p is not None:
+            pts = p.point_list()
+
+            gp_stroke.points.add(len(pts))
+
+            for idx, pt in enumerate(pts):
+                gp_stroke.points[idx].co = (pt.x, pt.y, 0)
+                gp_stroke.points[idx].pressure = 4
+            
+            mat = bpy.data.materials.new(name=f"{gp.obj.name}_Material")
+            bpy.data.materials.create_gpencil_data(mat)
+            gp.obj.data.materials.append(mat)
+            mat.grease_pencil.show_fill = fill is not None
+            if fill is not None:
+                mat.grease_pencil.fill_color = fill.rgba()
+            mat.grease_pencil.color = stroke.rgba() if stroke else None
+
+        return gp
     
     def find_children(self):
         children = []

@@ -71,6 +71,12 @@ class DrawingMixin():
             self.endPath()
         return self
     
+    def point_list(self):
+        all_pts = []
+        for idx, (mv, pts) in enumerate(self._val.value):
+            all_pts.extend([Point(*p) for p in pts])
+        return all_pts
+    
     def replay(self, pen):
         self._val.replay(pen)
 
