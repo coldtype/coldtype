@@ -1031,7 +1031,8 @@ class BpyObj(_Chainable):
                 m.vertex_group = vertex_group
         return self
     
-    def boolean(self, object, operation="INTERSECT", apply=False):
+    def boolean(self, object, operation="INTERSECT", apply=False, remove=False):
+        target = None
         with self.obj_selected():
             bpy.ops.object.modifier_add(type="BOOLEAN")
             m = self.obj.modifiers["Boolean"]
@@ -1046,7 +1047,13 @@ class BpyObj(_Chainable):
             #    print("object for boolean not found", object)
         if apply:
             self.apply_modifier("Boolean")
+        
+        if remove and target:
+            target.delete()
         return self
+    
+    def boolean_diff(self, object, apply=True, remove=True):
+        return self.boolean(object, "DIFFERENCE", apply, remove)
     
     def shade_smooth(self, auto_smooth=False):
         with self.obj_selected():
