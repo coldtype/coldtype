@@ -313,6 +313,11 @@ class LayoutMixin():
     
     offset = translate
     t = translate
+
+    def shift(self, dx, dy, tx=1, ty=1):
+        amb = self.ambit(tx=tx, ty=ty)
+        self.translate(amb.w*dx, amb.h*dy)
+        return self
     
     def zero(self, th=None, tv=None, tx=0, ty=0):
         tx, ty = self._normT(th, tv, tx, ty, None)

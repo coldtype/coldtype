@@ -48,12 +48,16 @@ def apply_syntax_mods(filepath, source_code, renderer=None):
         src = path.read_text()
         codepath_offset = len(src.split("\n"))
         return src
+    
+    def imperial(x):
+        return f"complex_imperial({x.group(0)})"
 
     if renderer and renderer.source_reader.config.inline_files:
         for inline in renderer.source_reader.config.inline_files:
             source_code = inline_arg(inline) + "\n" + source_code
 
     source_code = re.sub(r"from ([^\s]+) import \* \#INLINE", inline_other, source_code)
+    source_code = re.sub(r"[0-9]{0,}\+?[0-9\.]{1,}j", imperial, source_code)
     #source_code = re.sub(r"ℛ", "return ", source_code)
     #source_code = re.sub(r"\-\.[A-Za-z_ƒ]+([A-Za-z_0-9]+)?\(", ".nerp(", source_code)
     #source_code = re.sub(r"([\s]+)Ƨ\(", r"\1nerp(", source_code)

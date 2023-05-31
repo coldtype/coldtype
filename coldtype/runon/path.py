@@ -110,6 +110,9 @@ class P(Runon):
     
     def __init__(self, *vals, **kwargs):
         prenorm = [v.rect if isinstance(v, Scaffold) else v for v in vals]
+        
+        if len(vals) == 2 and isinstance(vals[0], float) and isinstance(vals[1], float):
+            prenorm = Rect(*vals)
 
         super().__init__(*prenorm)
 
@@ -1409,9 +1412,20 @@ class P(Runon):
     
     offset = translate
     t = translate
-    
+
 
     def _translate(self, x, y=None, transformFrame=True) -> "P":
+        return self
+
+
+    def shift(self, dx, dy, tx=1, ty=1) -> "P":
+
+        amb = self.ambit(tx=tx, ty=ty)
+        self.translate(amb.w*dx, amb.h*dy)
+        return self
+    
+
+    def _shift(self, dx, dy, tx=1, ty=1) -> "P":
         return self
 
 
