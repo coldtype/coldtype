@@ -39,19 +39,6 @@ from coldtype.timing.midi import MidiTimeline
 from coldtype.img.blendmode import BlendMode
 from coldtype.grid import Grid
 
-try:
-    from measurement.measures import Distance
-except:
-    Distance = None
-
-def complex_imperial(imperial):
-    if Distance:
-        ft = imperial.real
-        inches = imperial.imag
-        return Distance(ft=ft).m + Distance(inches=inches).m
-    else:
-        return imperial
-
 name = "coldtype"
 __version__ = "0.10.7"
 

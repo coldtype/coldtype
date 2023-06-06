@@ -32,11 +32,16 @@ class GeometryMixin():
         #print(len(xs), len(ys))
         #print("--------------------")
 
-        n = [l for l in xs if l.start.y == mxy or l.end.y == mxy][0]
-        s = [l for l in xs if l.start.y == mny or l.end.y == mny][0]
-        e = [l for l in ys if l.start.x == mxx or l.end.x == mxx][0]
-        w = [l for l in ys if l.start.x == mnx or l.end.x == mnx][0]
-        return n, s, e, w
+        try:
+            n = [l for l in xs if l.start.y == mxy or l.end.y == mxy][0]
+            s = [l for l in xs if l.start.y == mny or l.end.y == mny][0]
+            e = [l for l in ys if l.start.x == mxx or l.end.x == mxx][0]
+            w = [l for l in ys if l.start.x == mnx or l.end.x == mnx][0]
+            return n, s, e, w
+        except IndexError:
+            amb = self.ambit(tx=1, ty=1)
+            return [amb.en, amb.es, amb.ee, amb.ew]
+        
     
     def avg(self):
         self.pvl()

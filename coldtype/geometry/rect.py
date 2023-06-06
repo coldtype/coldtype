@@ -591,6 +591,9 @@ class Rect(Geometrical):
     
     p = point
 
+    def nsew(self):
+        return [self.en, self.es, self.ee, self.ew]
+
     @property
     def pne(self) -> Point: return self.point("NE")
 

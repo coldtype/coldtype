@@ -120,6 +120,11 @@ class Runon:
         self._els.append(el)
         return self
     
+    def replicate(self, *els):
+        for el in els:
+            self.append(el.copy())
+        return self
+    
     def attach(self, parent):
         parent.append(self)
         return self
@@ -891,6 +896,9 @@ class Runon:
         if self.val_present():
             self.visible(False)
         return self
+    
+    def __neg__(self):
+        return self.hide()
     
     # Logic Operations
 

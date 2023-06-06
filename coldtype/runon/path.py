@@ -36,6 +36,7 @@ from fontTools.pens.recordingPen import RecordingPen
 from coldtype.geometry import Point, Rect, align
 from coldtype.interpolation import norm
 from coldtype.color import bw, rgb, hsl
+from functools import partialmethod
 THTV_WARNING = False
 from coldtype.color import Color, normalize_color, rgb
 from coldtype.geometry import Rect
@@ -1235,8 +1236,6 @@ class P(Runon):
         else:
             return self
     
-    å = align
-
 
     def _align(self,
         rect,
@@ -1250,6 +1249,26 @@ class P(Runon):
         h=None,
         returnOffset=False
         ) -> "P":
+        return self
+
+
+    def _align_compass(self, compass, rect, tx=1, ty=0) -> "P":
+
+        return self.align(rect, compass, tx=tx, ty=ty)
+    
+    å = align
+
+    alne = partialmethod(_align_compass, "NE")
+    ale = partialmethod(_align_compass, "E")
+    alse = partialmethod(_align_compass, "SE")
+    als = partialmethod(_align_compass, "S")
+    alsw = partialmethod(_align_compass, "SW")
+    alw = partialmethod(_align_compass, "W")
+    alnw = partialmethod(_align_compass, "NW")
+    aln = partialmethod(_align_compass, "N")
+
+
+    def __align_compass(self, compass, rect, tx=1, ty=0) -> "P":
         return self
 
 
@@ -1423,6 +1442,8 @@ class P(Runon):
         amb = self.ambit(tx=tx, ty=ty)
         self.translate(amb.w*dx, amb.h*dy)
         return self
+    
+    sh = shift
     
 
     def _shift(self, dx, dy, tx=1, ty=1) -> "P":
@@ -2575,11 +2596,16 @@ class P(Runon):
         #print(len(xs), len(ys))
         #print("--------------------")
 
-        n = [l for l in xs if l.start.y == mxy or l.end.y == mxy][0]
-        s = [l for l in xs if l.start.y == mny or l.end.y == mny][0]
-        e = [l for l in ys if l.start.x == mxx or l.end.x == mxx][0]
-        w = [l for l in ys if l.start.x == mnx or l.end.x == mnx][0]
-        return n, s, e, w
+        try:
+            n = [l for l in xs if l.start.y == mxy or l.end.y == mxy][0]
+            s = [l for l in xs if l.start.y == mny or l.end.y == mny][0]
+            e = [l for l in ys if l.start.x == mxx or l.end.x == mxx][0]
+            w = [l for l in ys if l.start.x == mnx or l.end.x == mnx][0]
+            return n, s, e, w
+        except IndexError:
+            amb = self.ambit(tx=1, ty=1)
+            return [amb.en, amb.es, amb.ee, amb.ew]
+        
     
     def avg(self):
         self.pvl()

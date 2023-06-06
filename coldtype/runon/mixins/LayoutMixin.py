@@ -9,6 +9,8 @@ from coldtype.geometry import Point, Rect, align
 from coldtype.interpolation import norm
 from coldtype.color import bw, rgb, hsl
 
+from functools import partialmethod
+
 THTV_WARNING = False
 
 class LayoutMixin():
@@ -189,7 +191,19 @@ class LayoutMixin():
         else:
             return self
     
+    def _align_compass(self, compass, rect, tx=1, ty=0):
+        return self.align(rect, compass, tx=tx, ty=ty)
+    
     å = align
+
+    alne = partialmethod(_align_compass, "NE")
+    ale = partialmethod(_align_compass, "E")
+    alse = partialmethod(_align_compass, "SE")
+    als = partialmethod(_align_compass, "S")
+    alsw = partialmethod(_align_compass, "SW")
+    alw = partialmethod(_align_compass, "W")
+    alnw = partialmethod(_align_compass, "NW")
+    aln = partialmethod(_align_compass, "N")
 
     def xalign(self, rect=None, x="centerx", th=None, tv=None, tx=1, ty=0):
         tx, ty = self._normT(th, tv, tx, ty, None)
@@ -318,6 +332,8 @@ class LayoutMixin():
         amb = self.ambit(tx=tx, ty=ty)
         self.translate(amb.w*dx, amb.h*dy)
         return self
+    
+    sh = shift
     
     def zero(self, th=None, tv=None, tx=0, ty=0):
         tx, ty = self._normT(th, tv, tx, ty, None)

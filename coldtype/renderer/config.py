@@ -57,6 +57,7 @@ class ConfigOption(Enum):
     DebounceTime = ("debounce_time", 0.25, "dt")
     RefreshDelay = ("refresh_delay", 0.025, "rdly")
     InlineFiles = ("inline_files", [], "in", lambda x: x.split(","))
+    SrcMacros = ("src_macros", [], "srcm")
     FFMPEGCommand = ("ffmpeg_command", "ffmpeg", "ffc")
     BlenderWatch = ("blender_watch", None, "bw", true_false_or_none)
     BlenderAppPath = ("blender_app_path", default_blender_app_path(), "bap",
