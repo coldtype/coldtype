@@ -231,3 +231,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ## [0.10.7] - 2023-04-18
 ### Fixed
 - `.ufo` font-reading on Windows
+
+## [0.10.8] - 2023-06-11
+### Fixed
+- Font issue with `coldtype demo`
