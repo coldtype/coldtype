@@ -28,6 +28,7 @@ import math
 from pathlib import Path
 from fontTools.pens.recordingPen import RecordingPen
 from coldtype.geometry import Rect, Line, Point, Atom
+from typing import Callable
 import math
 from fontTools.pens.boundsPen import BoundsPen
 from fontTools.misc.transform import Transform
@@ -945,18 +946,12 @@ class P(Runon):
             return self.intersection(clip_box)
         return self
     
-
-    def _pattern(self, rect, clip=False) -> "P":
-        return self
-
-
-    def withRect(self, rect, fn):
-
+    def withRect(self, rect, fn:Callable[[Rect, "P"], "P"]) -> "P":
         r = Rect(rect)
         return fn(r, self).data(frame=r)
     
 
-    def _withRect(self, rect, fn):
+    def _pattern(self, rect, clip=False) -> "P":
         return self
 
 

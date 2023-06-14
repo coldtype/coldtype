@@ -4,6 +4,8 @@ from pathlib import Path
 from fontTools.pens.recordingPen import RecordingPen
 from coldtype.geometry import Rect, Line, Point, Atom
 
+from typing import Callable
+
 
 class DrawingMixin():
     def _normPointSplat(self, p):
@@ -418,7 +420,7 @@ class DrawingMixin():
             return self.intersection(clip_box)
         return self
     
-    def withRect(self, rect, fn):
+    def withRect(self, rect, fn:Callable[[Rect, "P"], "P"]) -> "P":
         r = Rect(rect)
         return fn(r, self).data(frame=r)
     
