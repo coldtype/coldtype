@@ -28,6 +28,7 @@ def blender_launch_livecode(blender_app_path, file:Path, command_file, additiona
         file.parent.mkdir(exist_ok=True, parents=True)
     
     #call = f"{BLENDER} {file}"
+    print("blender_app_path", blender_app_path)
     print(f"Opening blend file: {file}...")
     cf = Path(command_file).as_posix()
     args = [
