@@ -13,14 +13,9 @@ def true_false_or_none(x):
     
 
 def default_blender_app_path():
-    sys = platform.system()
-    if sys == "Darwin":
-        return Path("/Applications/Blender.app/Contents/MacOS/blender").resolve()
-    elif sys == "Windows":
-        return Path("C:/Program Files/Blender Foundation/Blender/blender.exe").resolve()
-    else:
-        return None
-        #raise Exception("No default blender app path for this platform, please configure via .coldtype.py file and `BLENDER_APP_PATH=`")
+    from b3denv import get_vars
+    b3d_vars = get_vars(None)
+    return Path(b3d_vars["blender"])
 
 
 def mod_blender_app_path(bap):
