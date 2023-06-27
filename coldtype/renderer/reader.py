@@ -23,7 +23,7 @@ except ImportError:
     publish_doctree = None
 
 
-def apply_syntax_mods(filepath, source_code, renderer=None):
+def apply_syntax_mods(filepath, source_code, renderer=None, source_reader=None):
     codepath_offset = 0
 
     def inline_arg(p):
@@ -49,8 +49,8 @@ def apply_syntax_mods(filepath, source_code, renderer=None):
         codepath_offset = len(src.split("\n"))
         return src
 
-    if renderer and renderer.source_reader.config.inline_files:
-        for inline in renderer.source_reader.config.inline_files:
+    if source_reader and source_reader.config.inline_files:
+        for inline in source_reader.config.inline_files:
             source_code = inline_arg(inline) + "\n" + source_code
 
     source_code = re.sub(r"from ([^\s]+) import \* \#INLINE", inline_other, source_code)
@@ -66,11 +66,10 @@ def apply_syntax_mods(filepath, source_code, renderer=None):
     #source_code = re.sub(r"λ", "lambda ", source_code)
     #source_code = re.sub(r"ßDPS\(([^\)]+)\)", r"(ß:=P(\1))", source_code)
 
-    if renderer and renderer.source_reader.config.src_macros:
-        src_macros = renderer.source_reader.config.src_macros
-        for macro in src_macros:
-            # should also pass file name
-            source_code = macro(filepath, source_code)
+    if source_reader and source_reader.config.src_macros:
+        for pattern, src_macro in source_reader.config.src_macros.items():
+            if re.match(pattern, str(filepath)):
+               source_code = src_macro(filepath, source_code)
 
     # while "nerp(" in source_code:
     #     start = source_code.find("nerp(")
@@ -98,7 +97,8 @@ def apply_syntax_mods(filepath, source_code, renderer=None):
 
 def read_source_to_tempfile(filepath:Path,
     codepath:Path=None,
-    renderer=None
+    renderer=None,
+    source_reader=None,
     ):
     data_out = {}
 
@@ -145,12 +145,12 @@ def read_source_to_tempfile(filepath:Path,
         if codepath and codepath.exists():
             codepath.unlink()
         with NamedTemporaryFile("w", prefix="coldtype_md_src", suffix=".py", delete=False) as tf:
-            mod_src, _ = apply_syntax_mods(filepath, source_code, renderer)
+            mod_src, _ = apply_syntax_mods(filepath, source_code, renderer, source_reader)
             tf.write(mod_src)
             codepath = Path(tf.name)
     
     elif filepath.suffix == ".py":
-        source_code, _ = apply_syntax_mods(filepath, filepath.read_text(), renderer)
+        source_code, _ = apply_syntax_mods(filepath, filepath.read_text(), renderer, source_reader)
         if codepath and codepath.exists():
             codepath.unlink()
         with NamedTemporaryFile("w", prefix=f"coldtype__{filepath.stem}_", suffix=".py", delete=False) as tf:
@@ -163,6 +163,7 @@ def read_source_to_tempfile(filepath:Path,
 
 
 def run_source(filepath, codepath, inputs, memory, **kwargs):
+    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>>", str(codepath))
     return run_path(str(codepath), init_globals={
         "__COLDTYPE__": True,
         "__FILE__": filepath,
@@ -514,7 +515,7 @@ class SourceReader():
         if code:
             self.write_code_to_tmpfile(code)
         
-        self.codepath, self.data_out = read_source_to_tempfile(self.filepath, self.codepath, renderer=self.renderer)
+        self.codepath, self.data_out = read_source_to_tempfile(self.filepath, self.codepath, renderer=self.renderer, source_reader=self)
         
         memory = {}
         if self.renderer:

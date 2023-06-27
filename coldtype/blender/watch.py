@@ -345,7 +345,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     start, kwargs = [t.strip() for t in line.split(";")]
                     kwargs = eval(kwargs)
                     cmd, arg = start.split(",")
-                    if cmd == 'import':
+                    if cmd == "import":
                         self.reimport(arg, kwargs)
                     elif cmd == "play_preview":
                         bpy.ops.screen.animation_play()

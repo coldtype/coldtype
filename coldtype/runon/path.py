@@ -2664,6 +2664,8 @@ class P(Runon):
             return e.mid
         elif pt == "W":
             return w.mid
+        elif pt == "C":
+            return self.ecx.sect(self.ecy)
 
     @property
     def pne(self): return self.point("NE")
@@ -2681,6 +2683,8 @@ class P(Runon):
     def pe(self): return self.point("E")
     @property
     def pw(self): return self.point("W")
+    @property
+    def pc(self): return self.point("C")
     @property
     def en(self): return self.nsew()[0]
     @property

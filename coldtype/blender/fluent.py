@@ -797,7 +797,7 @@ class BpyObj(_Chainable):
     
     setOrigin = set_origin
     
-    def locate(self, x=None, y=None, z=None):
+    def locate(self, x=None, y=None, z=None) -> "BpyObj":
         if isinstance(x, Vector):
             self.obj.location = x
             return self
@@ -841,6 +841,13 @@ class BpyObj(_Chainable):
             self.obj.dimensions[1] = y
         if z is not None:
             self.obj.dimensions[2] = z
+        return self
+    
+    def dimensions(self, x=None, y=None, z=None) -> "BpyObj":
+        for k, d in dict(x=x, y=y, z=z).items():
+            if d is not None:
+                self.dimension(**{k:d})
+                self.applyScale()
         return self
 
 #endregion Basic transformations
