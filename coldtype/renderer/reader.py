@@ -69,7 +69,8 @@ def apply_syntax_mods(filepath, source_code, renderer=None):
     if renderer and renderer.source_reader.config.src_macros:
         src_macros = renderer.source_reader.config.src_macros
         for macro in src_macros:
-            source_code = macro(source_code)
+            # should also pass file name
+            source_code = macro(filepath, source_code)
 
     # while "nerp(" in source_code:
     #     start = source_code.find("nerp(")
