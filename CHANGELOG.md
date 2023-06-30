@@ -239,3 +239,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ## [0.10.9] - 2023-06-23
 ### Added
 - `b3denv` requirement, to help get default blender app path
+
+## [0.10.10] - 2023-06-30
+### Fixed
+- `b3denv` assumes Blender exists, which is wrong
