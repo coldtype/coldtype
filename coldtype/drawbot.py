@@ -139,13 +139,19 @@ def pdfdoc(fn, path, frame_class=Frame):
     db.newDrawing()
     r = fn.rect
     w, h = r.wh()
-    for idx in range(0, fn.duration):
-        print(f"Saving page {idx}...")
+    
+    if hasattr(fn, "duration"):
+        for idx in range(0, fn.duration):
+            print(f"Saving page {idx}...")
+            db.newPage(w, h)
+            if frame_class:
+                fn.func(frame_class(idx, fn))
+            else:
+                fn.func(r)
+    else:
         db.newPage(w, h)
-        if frame_class:
-            fn.func(frame_class(idx, fn))
-        else:
-            fn.func(r)
+        fn.func(r)
+    
     pdf_path = Path(path)
     pdf_path.parent.mkdir(exist_ok=True)
     db.saveImage(str(pdf_path))

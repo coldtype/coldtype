@@ -373,13 +373,16 @@ class P(Runon):
                 self.v.value[idx][-1] = [Point(p) for p in self.v.value[idx][-1]]
         return self
     
-    def dots(self, radius=4):
+    def dots(self, radius=4, square=False):
         """(Necessary?) Create circles at moveTo commands"""
         dp = type(self)()
         for t, pts in self.v.value:
             if t == "moveTo":
                 x, y = pts[0]
-                dp.oval(Rect((x-radius, y-radius, radius, radius)))
+                if square:
+                    dp.rect(Rect((x-radius, y-radius, radius, radius)))
+                else:
+                    dp.oval(Rect((x-radius, y-radius, radius, radius)))
         self.v.value = dp.v.value
         return self
 
