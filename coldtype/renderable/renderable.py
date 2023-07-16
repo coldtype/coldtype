@@ -151,6 +151,7 @@ class renderable():
         watch_soft=[],
         watch_restart=[],
         solo=False,
+        mute=False,
         rstate=False,
         preview_only=False,
         render_only=False,
@@ -219,6 +220,7 @@ class renderable():
         self.self_rasterizing = False
         self.hidden = solo == -1
         self.solo = solo
+        self.mute = mute
         self.preview_only = preview_only
         self.render_only = render_only
         self.rstate = rstate

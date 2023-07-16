@@ -228,6 +228,7 @@ def find_renderables(
     else:
         filtered_rs = all_rs
     
+    filtered_rs = [r for r in filtered_rs if not r.mute]
     return filtered_rs
 
 
