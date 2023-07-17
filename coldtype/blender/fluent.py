@@ -1111,11 +1111,12 @@ class BpyObj(_Chainable):
 
 #region Curve functions
 
-    def draw(self, path:P, cyclic=True, fill=True, tx=0, ty=0, set_origin=True, clear=True) -> "BpyObj":
+    def draw(self, path:P, cyclic=True, fill=True, tx=0, ty=0, set_origin=True, clear=True, removeOverlap=True) -> "BpyObj":
         if len(path) > 0:
             path = path.pen()
         
-        path = path.removeOverlap()
+        if removeOverlap:
+            path = path.removeOverlap()
         
         amb = path.ambit(tx=tx, ty=ty)
 
@@ -1158,6 +1159,12 @@ class BpyObj(_Chainable):
             #     spline.append(["BEZIER", "curve", [q2, q3, q3]])
 
             elif mv == "closePath":
+                if spline and len(spline) > 0 and spline not in splines:
+                    splines.append(spline)
+                    spline = None
+                spline = None
+            
+            elif mv == "endPath":
                 if spline and len(spline) > 0 and spline not in splines:
                     splines.append(spline)
                     spline = None
