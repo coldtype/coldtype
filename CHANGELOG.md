@@ -247,3 +247,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ## [0.10.11] - 2023-07-31
 ### Added
 - `P.to_code` (for a Goodhertz project that used the legacy `DATPen(s).to_code`)
+
+## [0.10.12] - 2023-07-31
+### Added
+- Experimental support for reading control changes (cc messages) from midi files, via `MidiTimeline.ci` method
