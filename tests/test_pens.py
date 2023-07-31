@@ -185,7 +185,7 @@ def test_plural_boolean(r):
     
     return res
 
-@test((800, 150), solo=1)
+@test((800, 150))
 def test_to_code(r):
     res = P(r.square().inset(5)).f(hsl(0.3)).data(hello="world")
     encoded = res.to_code()

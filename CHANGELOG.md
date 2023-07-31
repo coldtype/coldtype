@@ -243,3 +243,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ## [0.10.10] - 2023-06-30
 ### Fixed
 - `b3denv` assumes Blender exists, which is wrong
+
+## [0.10.11] - 2023-07-31
+### Added
+- `P.to_code` (for a Goodhertz project that used the legacy `DATPen(s).to_code`)
