@@ -172,6 +172,74 @@ class P(Runon):
                 out[k] = v
         return out
     
+    def _to_code(self):
+        out = "(DATPens()"
+
+        t = None
+        if self._tag and self._tag != "?":
+            t = self._tag
+        if t:
+            out += f"\n    .tag(\"{t}\")"
+        
+        if self.data:
+            out += f"\n    .add_data({repr(self.data)})"
+
+        for pen in self._pens:
+            for idx, line in enumerate(pen.to_code().split("\n")):
+                if idx == 0:
+                    out += f"\n    .append{line}"
+                else:
+                    out += f"\n    {line}"
+            out += ""
+
+        out += ")"
+        return out
+    
+    def to_code(self, classname="P", additional_lines=[]):
+        t = None
+        if self._tag and self._tag != "?":
+            t = self._tag
+        
+        out = f"({classname}()"
+        if t:
+            out += f"\n    .tag(\"{t}\")"
+
+        if self.data:
+            out += f"\n    .data(**{repr(self.printable_data())})"
+
+        if self.val_present():
+            for mv, pts in self._val.value:
+                out += "\n"
+                if len(pts) > 0:
+                    spts = ", ".join([f"{(x, y)}" for (x, y) in pts])
+                    out += f"    .{mv}({spts})"
+                else:
+                    out += f"    .{mv}()"
+        else:
+            for pen in self:
+                for idx, line in enumerate(pen.to_code().split("\n")):
+                    if idx == 0:
+                        out += f"\n    .append{line}"
+                    else:
+                        out += f"\n    {line}"
+        
+        if self.attrs:
+            for k, v in self.attrs.get("default").items():
+                if v:
+                    if k == "fill":
+                        out += f"\n    .f({v.to_code()})"
+                    elif k == "stroke":
+                        out += f"\n    .s({v['color'].to_code()})"
+                        out += f"\n    .sw({v['weight']})"
+                    else:
+                        print("No code", k, v)
+        
+        for la in additional_lines:
+            out += f"\n    {la}"
+
+        out += ")"
+        return out
+    
     def normalize_attr_value(self, k, v):
         if k == "fill" and not isinstance(v, Color):
             return normalize_color(v)

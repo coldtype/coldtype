@@ -127,9 +127,9 @@ def test_distribute_path_lines(_r):
 
     return P(p, lockup).align(_r).scale(0.25)
 
-@test()
+@test((800, 100))
 def test_stack(_r):
-    sr = Rect(100, 100)
+    sr = Rect(50, 50)
 
     res = (P(
         P().oval(sr).f(hsl(0.5)).tag("A"),
@@ -138,14 +138,14 @@ def test_stack(_r):
         .stack(10))
 
     assert res.find_("C").ambit().y == 0
-    assert res.find_("B").ambit().y == 110
-    assert res.find_("A").ambit().y == 220
+    assert res.find_("B").ambit().y == 60
+    assert res.find_("A").ambit().y == 120
 
     return res.align(_r).scale(0.5)
 
-@test()
+@test((800, 100))
 def test_stack_and_lead(_r):
-    sr = Rect(100, 100)
+    sr = Rect(50, 50)
 
     res = (P(
         P().oval(sr).f(hsl(0.5)).tag("A"),
@@ -155,8 +155,8 @@ def test_stack_and_lead(_r):
         .lead(10))
 
     assert res.find_("C").ambit().y == 0
-    assert res.find_("B").ambit().y == 120
-    assert res.find_("A").ambit().y == 240
+    assert res.find_("B").ambit().y == 70
+    assert res.find_("A").ambit().y == 140
 
     return res.align(_r).scale(0.5)
 
@@ -184,6 +184,32 @@ def test_plural_boolean(r):
     assert res.ambit() == r.inset(20)
     
     return res
+
+@test((800, 150), solo=1)
+def test_to_code(r):
+    res = P(r.square().inset(5)).f(hsl(0.3)).data(hello="world")
+    encoded = res.to_code()
+    res2 = eval(encoded)
+    
+    assert res2.data("hello") == "world"
+    assert res.data("hello") == res2.data("hello")
+    assert res.f() == res2.f()
+
+    res3 = P(res, res2).distribute().track(2).align(r)
+    res4 = eval(res3.to_code())
+
+    assert len(res3) == len(res4)
+    assert res3.tree() == res4.tree()
+    assert res3[0].f() == res4[0].f()
+
+    print(res3[0].f(), res4.f())
+
+    res4.f(hsl(0.9))
+
+    assert res3.f() != res4.f()
+    assert res3[0].f() != res4[0].f()
+
+    return P(res3, res4).distribute().track(10).align(r)
 
 @test((800, 150))
 def test_gridlayer(r):
