@@ -202,7 +202,7 @@ class animation(renderable, Timeable):
     def running_in_viewer(self):
         return True
     
-    def run(self, render_pass, renderer_state):
+    def run(self, render_pass, renderer_state, render_bg=True):
         fi = render_pass.args[0].i
         if renderer_state and self.running_in_viewer():
             if renderer_state.previewing:
@@ -210,7 +210,7 @@ class animation(renderable, Timeable):
                     return self.frame_img(fi)
 
         self.t.hold(fi)
-        return super().run(render_pass, renderer_state)
+        return super().run(render_pass, renderer_state, render_bg=render_bg)
     
     @property
     def recording_path(self):
@@ -265,7 +265,7 @@ class animation(renderable, Timeable):
         
         return contactsheet
     
-    def contactsheet(self, r:Rect=None, scale=1, sl=slice(None, None, 1)):
+    def contactsheet(self, r:Rect=None, scale=1, sl=slice(None, None, 1), border=True, grid=True, bgs=False):
         from coldtype.runon.scaffold import Scaffold
 
         xs = list(range(0, self.timeline.duration)[sl])
@@ -280,15 +280,15 @@ class animation(renderable, Timeable):
             try:
                 fi = xs[x.i]
                 return (self
-                    .frame_result(fi, frame=1)
+                    .frame_result(fi, frame=1, render_bg=bgs)
                     .align(x.el.rect, tx=0)
                     .scale(scale, tx=0))
             except IndexError:
                 return None
         
         return P(
-            P(s.r).tag("border").fssw(-1, 0, 1),
-            s.borders().tag("grid").fssw(-1, 0, 1),
+            P(s.r).tag("border").fssw(-1, 0, 1) if border else None,
+            s.borders().tag("grid").fssw(-1, 0, 1) if grid else None,
             P().enumerate(s, frame).tag("frames")
         ).data(frame=r)
     

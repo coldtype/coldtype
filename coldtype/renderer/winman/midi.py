@@ -53,9 +53,13 @@ class MIDIWatcher():
                     print(device, msg)
                 if msg.isNoteOn(): # Maybe not forever?
                     nn = msg.getNoteNumber()
-                    shortcut = self.config.midi[device]["note_on"].get(nn)
-                    self.on_shortcut(shortcut, nn)
-                if msg.isController():
+                    print(">>> NOTE ON", nn, msg.getVelocity())
+                    #shortcut = self.config.midi[device]["note_on"].get(nn)
+                    #self.on_shortcut(shortcut, nn)
+                elif msg.isNoteOff():
+                    nn = msg.getNoteNumber()
+                    print(">>> NOTE OFF", nn)
+                elif msg.isController():
                     #print(">>>", msg)
                     cn = msg.getControllerNumber()
                     cv = msg.getControllerValue()

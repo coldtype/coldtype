@@ -337,7 +337,7 @@ class renderable():
 
         renderer_state.memory = Memory(i+1, m)
 
-    def run(self, render_pass, renderer_state):
+    def run(self, render_pass, renderer_state, render_bg=True):
         self.write_reset_memory(renderer_state, self.memory, False, True)
 
         if self.rstate:
@@ -347,7 +347,7 @@ class renderable():
         else:
             res = render_pass.fn(*render_pass.args)
         
-        if self.render_bg and self.has_bg:
+        if self.render_bg and self.has_bg and render_bg:
             return P([
                 P(self.rect).f(self.bg),
                 res
@@ -438,13 +438,13 @@ class renderable():
             normalized.hide(*self._hide)
         return normalized
     
-    def run_normal(self, render_pass, renderer_state=None):
+    def run_normal(self, render_pass, renderer_state=None, render_bg=True):
         return self.normalize_result(
-            self.run(render_pass, renderer_state))
+            self.run(render_pass, renderer_state, render_bg=render_bg))
     
-    def frame_result(self, fi, post=False, frame=False):
+    def frame_result(self, fi, post=False, frame=False, render_bg=True):
         p = self.passes(None, None, [fi])[0]
-        res = self.run_normal(p, None)
+        res = self.run_normal(p, None, render_bg=render_bg)
         if post:
             res = self.runpost(res, p, None, None)
         

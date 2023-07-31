@@ -11,12 +11,13 @@ res = ["media/DSC01540.JPG", 8, -0.45, -954, -333, 327, 233, 0, -9, 4]
 #res = ["media/DSC02565.JPG", 8, 0, -327, -80, 435, 302, -40, -10, 37]
 #res = ["media/DSC02821.JPG", 8, -0.5, -327, -180, 378, 258, 0, 0, 0]
 #res = ["media/DSC03077.JPG", 8, -0.75, -688, -448, 318, 219, 0, 0, 0]
+res = ["/Users/robstenson/Pictures/SigmaFPLTetherTest1/Output/SigmaFPLTetherTest10002 1 2.jpg", 8, 0, -684, -133, 912, 703, 0, -9, 4]
 
 imgp, sq, ro, xo, yo, xa, ya, xra, xf, yf = res
 img = __sibling__(imgp)
 
-@animation((540, 540), tl=Timeline(sq**2, 14), bg=0)
-def scratch_C_color1(f):
+@animation((1080, 1080), tl=Timeline(sq**2, 15), bg=0)
+def scratch_tupewow_3(f):
     x = f.i%sq
     y = f.i//sq
     

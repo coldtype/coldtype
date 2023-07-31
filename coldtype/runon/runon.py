@@ -771,6 +771,7 @@ class Runon:
     # Data-access methods
 
     def data(self, key=None, default=None, **kwargs):
+        """Set with kwargs, read with key= & default="""
         if key is None and len(kwargs) > 0:
             for k, v in kwargs.items():
                 if callable(v):
