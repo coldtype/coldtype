@@ -202,8 +202,6 @@ def test_to_code(r):
     assert res3.tree() == res4.tree()
     assert res3[0].f() == res4[0].f()
 
-    print(res3[0].f(), res4.f())
-
     res4.f(hsl(0.9))
 
     assert res3.f() != res4.f()
