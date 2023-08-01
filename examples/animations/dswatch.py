@@ -19,7 +19,7 @@ def dswatch(f):
         .fssw(0, 1, 5)
         .chain(shake(5, 2, seed=f.i))
         .chain(phototype(f.a.r,
-            blur=2,
-            cut=125,
+            blur=3,
+            cut=155,
             cutw=20,
             fill=1)))
