@@ -165,7 +165,7 @@ class MidiTrack():
             else:
                 return max(notes_on, key=lambda n: n.value)
 
-
+"""DEPRECATED"""
 class MidiReader(Timeline):
     def __init__(self, path, duration=None, fps=30, bpm=None, rounded=True, note_names={}):
         note_names_reversed = {v:k for (k,v) in note_names.items()}
@@ -218,7 +218,6 @@ class MidiReader(Timeline):
 
         for t in tracks:
             t.duration = self.duration
-            
         self.min = min([n.note for n in all_notes])
         self.max = max([n.note for n in all_notes])
         self.spread = self.max - self.min
@@ -266,10 +265,16 @@ class MidiTimeline(Timeline):
 
         midi_path = path if isinstance(path, Path) else Path(path).expanduser()
         self.midi_path = midi_path
-        mid = mido.MidiFile(str(midi_path))
+
+        try:
+            mid = mido.MidiFile(str(midi_path))
+        except FileNotFoundError:
+            print("FILE NOT FOUND", midi_path)
+            mid = mido.MidiFile()
         
         events = []
         open_notes = []
+        controls = {}
 
         self.mid = mid
         self.time_signature = (4, 4)
@@ -303,18 +308,44 @@ class MidiTimeline(Timeline):
                     
                     if msg.type == "note_on" and msg.velocity > 0:
                         open_notes[msg.note] = cumulative_time
+                
+                elif msg.is_cc():
+                    delta_s = mido.tick2second(msg.time, mid.ticks_per_beat, mido.bpm2tempo(bpm))
+                    cumulative_time += delta_s
+                    frame = s2f(cumulative_time)
+
+                    if msg.control not in controls:
+                        controls[msg.control] = {}
+                    
+                    controls[msg.control][frame] = msg.value
 
         self.midi_file = mid
         self.bpm = bpm
         self.fps = fps
+        self.controls = controls
         
-        end = sorted(events, key=lambda e: e.end)[-1].end
-        self._duration = int(duration or end)
-            
-        self.min = min([int(n.name) for n in events])
-        self.max = max([int(n.name) for n in events])
-        self.notes = list(reversed(sorted(set(int(n.name) for n in events))))
-        self.spread = self.max - self.min
+        if controls:
+            max_c_frame = 0
+            for c, frames in controls.items():
+                max_c_frame = max(max_c_frame, max(frames.keys()))
+            self._duration = max_c_frame
+        else:
+            try:
+                end = sorted(events, key=lambda e: e.end)[-1].end
+                self._duration = int(duration or end)
+            except IndexError:
+                self._duration = 1
+        
+        try:
+            self.min = min([int(n.name) for n in events])
+            self.max = max([int(n.name) for n in events])
+            self.notes = list(reversed(sorted(set(int(n.name) for n in events))))
+            self.spread = self.max - self.min
+        except ValueError:
+            self.min = 0
+            self.max = 0
+            self.notes = []
+            self.spread = 0
 
         self.lookup = {}
         if lookup:
@@ -324,6 +355,12 @@ class MidiTimeline(Timeline):
 
         for t in self.timeables:
             t.track = self.notes.index(int(t.name))
+
+    def __bool__(self):
+        if self.midi_path.exists():
+            return True
+        else:
+            return False
 
     @property
     def duration(self):
@@ -350,3 +387,27 @@ class MidiTimeline(Timeline):
             pass
         
         return super().ki(key, fi)
+    
+    def ci(self, control, default=0, fi=None):
+        fi = self._norm_held_fi(fi)
+
+        if control in self.controls:
+            frames = self.controls[control]
+            if fi in frames:
+                return frames[fi]/127
+            else:
+                _fi = fi
+                while _fi > 0:
+                    if _fi in frames:
+                        return frames[_fi]/127
+                    _fi -= 1
+                
+                _fi = fi
+                while _fi < self.duration:
+                    if _fi in frames:
+                        return frames[_fi]/127
+                    _fi += 1
+                
+                print("HERE")
+        
+        return default

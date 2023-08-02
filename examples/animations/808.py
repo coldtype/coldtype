@@ -8,7 +8,7 @@ from coldtype.fx.skia import phototype
 
 obvs = Font.ColdtypeObviously()
 
-# Here the `MidiReader` comes into play — this is a class that parses midi files and converts the native time values to more useful frame-based time-values, based on a frame-per-second (`fps`) value.
+# Here the `MidiTimeline` comes into play — this is a class that parses midi files and converts the native time values to more useful frame-based time-values, based on a frame-per-second (`fps`) value.
 
 # This is also useful to load before the render function, because this MIDI data doesn’t change once our program is loaded.
 
