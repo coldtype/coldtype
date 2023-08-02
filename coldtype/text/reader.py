@@ -552,7 +552,10 @@ class StyledString(FittableMixin):
         return self.fontSize / self.style.font.font.shaper.face.upem
     
     def width(self): # size?
-        w = self.glyphs[-1].frame.point("SE").x # TODO need to scale?
+        try:
+            w = self.glyphs[-1].frame.point("SE").x # TODO need to scale?
+        except IndexError:
+            return 0
         #return w * self.scale()
         return w
         return self.getGlyphFrames()[-1].frame.point("SE").x
