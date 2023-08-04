@@ -513,9 +513,62 @@ class SourceReader():
         
         return self.filepath
     
+    def find_versions(self, initial):
+        source_code = self.codepath.read_text()
+        versions = None
+
+        versions_file = self.filepath.parent / (self.filepath.stem + "_versions.py")
+
+        if versions_file.exists():
+            sr = SourceReader(versions_file)
+            versions = sr.program["VERSIONS"]
+
+        if re.findall(r"VERSIONS\s?=", source_code):
+            try:
+                versions = re.findall(r"VERSIONS\s?=.*\#\/VERSIONS", source_code, re.DOTALL)[0]
+            except IndexError:
+                return None, None
+            
+            versions = eval(re.sub("VERSIONS\s?=", "", versions))
+            
+            if not isinstance(versions, dict):
+                if not isinstance(versions[0], dict):
+                    versions = {v:dict(idx=idx) for idx, v in enumerate(versions)}
+                else:
+                    versions = {str(idx):v for idx, v in enumerate(versions)}
+        
+        if versions:
+            versions = {k:{**v, **dict(key=k)} for k,v in versions.items()}
+            versions = list(versions.values())
+
+            vi = self.renderer.source_reader.config.version_index
+
+            if initial and vi is None:
+                if len(self.inputs) > 0:
+                    for vidx, v in enumerate(versions):
+                        if self.inputs[0] == v["key"]:
+                            vi = vidx
+            
+            if vi is None:
+                vi = 0
+            
+            self.renderer.source_reader.config.version_index = vi
+            
+            version = versions[vi]
+            self.renderer.state.versions = versions
+
+            source_code = source_code.replace("ƒVERSION", version["key"])
+            self.codepath.write_text(source_code)
+
+            return version, versions
+        
+        return None, None
+
+    
     def reload(self,
         code:str=None,
-        output_folder_override=None
+        output_folder_override=None,
+        initial=False,
         ):
         if code:
             self.write_code_to_tmpfile(code)
@@ -525,24 +578,8 @@ class SourceReader():
         memory = {}
         if self.renderer:
             memory = self.renderer.state.memory
-        
-        source_code = self.codepath.read_text()
-        version = None
 
-        if re.findall(r"VERSIONS\s?=", source_code):
-            versions = re.findall(r"VERSIONS\s?=.*\#\/VERSIONS", source_code, re.DOTALL)[0]
-            versions = eval(re.sub("VERSIONS\s?=", "", versions))
-            if not isinstance(versions, dict):
-                versions = {str(idx):v for idx, v in enumerate(versions)}
-            versions = {k:{**v, **dict(key=k)} for k,v in versions.items()}
-            versions = list(versions.values())
-            vi = self.renderer.source_reader.config.version_index
-            version = versions[vi]
-            self.renderer.state.versions = versions
-
-            source_code = source_code.replace("ƒVERSION", version["key"])
-            self.codepath.write_text(source_code)
-
+        version, versions = self.find_versions(initial=initial)
 
         self.program = run_source(
             self.filepath,
@@ -551,7 +588,8 @@ class SourceReader():
             memory,
             __RUNNER__=self.runner,
             __BLENDER__=self.blender_io(),
-            __VERSION__=version)
+            __VERSION__=version,
+            __VERSIONS__=versions)
         
         self.candidates = self.renderable_candidates(
             output_folder_override, self.config.add_time_viewers)

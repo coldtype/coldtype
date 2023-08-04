@@ -78,7 +78,7 @@ class ConfigOption(Enum):
     PrintResult = ("print_result", None, "pr", true_false_or_none)
     LoadOnly = ("load_only", None, "lo", true_false_or_none)
     TestDirectoryDelay = ("test_directory_delay", 10, "tdd", lambda x: int(x))
-    VersionIndex = ("version_index", 0, "vi", lambda x: int(x))
+    VersionIndex = ("version_index", None, "vi", lambda x: int(x))
 
     @staticmethod
     def Help(e):

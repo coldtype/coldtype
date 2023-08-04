@@ -313,7 +313,18 @@ class Renderer():
         if True:
             self.state.reset()
             self.source_reader.reload(
-                output_folder_override=self.args.output_folder)
+                output_folder_override=self.args.output_folder,
+                initial=(trigger == Action.Initial))
+            
+            if trigger == Action.Initial:
+                if "__initials__" in self.source_reader.program:
+                    initials = self.source_reader.program["__initials__"]()
+                    for attr, setting in initials.items():
+                        if attr == "config":
+                            for k, v in setting.items():
+                                setattr(self.source_reader.config, k, v)
+                        else:
+                            setattr(self.state, attr, setting)
             
             self.winmans.did_reload(self.source_reader.filepath, self.source_reader)
             
