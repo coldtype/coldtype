@@ -3,8 +3,7 @@ from coldtype import *
 mt = MidiTimeline(__sibling__("media/midi_cc.mid"))
 wav = __sibling__("media/midi_cc.wav")
 
-fnt = Font.Find("Libido", index=1)
-#fnt = "BildVariableV4"
+fnt = Font.MutatorSans()
 
 @animation(tl=Timeline(120, 30), bg=0, audio=wav)
 def cc(f):
@@ -22,4 +21,4 @@ def cc(f):
         .align(f.a.r)
         .î(2, lambda p: p.scale(ez(mt.ci(104), "eeo", rng=(1, 5))))
         .fssw(1, 0, 4, 1)
-        .reverse( ))
+        .reverse())
