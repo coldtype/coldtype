@@ -513,7 +513,7 @@ class SourceReader():
         
         return self.filepath
     
-    def find_versions(self, initial):
+    def find_versions(self, initial, restart_count):
         source_code = self.codepath.read_text()
         versions = None
 
@@ -543,7 +543,7 @@ class SourceReader():
 
             vi = self.renderer.source_reader.config.version_index
 
-            if initial and vi is None:
+            if initial and restart_count == 0:
                 if len(self.inputs) > 0:
                     for vidx, v in enumerate(versions):
                         if self.inputs[0] == v["key"]:
@@ -569,6 +569,7 @@ class SourceReader():
         code:str=None,
         output_folder_override=None,
         initial=False,
+        restart_count=0,
         ):
         if code:
             self.write_code_to_tmpfile(code)
@@ -579,7 +580,7 @@ class SourceReader():
         if self.renderer:
             memory = self.renderer.state.memory
 
-        version, versions = self.find_versions(initial=initial)
+        version, versions = self.find_versions(initial, restart_count)
 
         self.program = run_source(
             self.filepath,

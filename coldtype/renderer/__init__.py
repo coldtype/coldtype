@@ -314,9 +314,10 @@ class Renderer():
             self.state.reset()
             self.source_reader.reload(
                 output_folder_override=self.args.output_folder,
-                initial=(trigger == Action.Initial))
+                initial=(trigger==Action.Initial),
+                restart_count=(self.source_reader.config.restart_count))
             
-            if trigger == Action.Initial:
+            if trigger == Action.Initial and self.source_reader.config.restart_count == 0:
                 if "__initials__" in self.source_reader.program:
                     initials = self.source_reader.program["__initials__"]()
                     for attr, setting in initials.items():
@@ -1630,6 +1631,10 @@ class Renderer():
         except ValueError:
             args.append("-lc")
             args.append(lc)
+        
+        rc = self.source_reader.config.restart_count + 1
+        args.append("-rc")
+        args.append(rc)
         
         print("> RESTART:", args)
         os.execl(sys.executable, *(["-m"]+[str(a) for a in args]))

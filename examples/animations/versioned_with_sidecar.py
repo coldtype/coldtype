@@ -15,4 +15,5 @@ def scratch_ƒVERSION(f):
         StSt(str(__VERSION__["file"].relative_to(root)), Font.RecMono(), 24),
         )
         .stack(20)
-        .align(f.a.r))
+        .align(f.a.r)
+        .rotate(f.e("l", 0, r=(0, 360))))
