@@ -27,7 +27,7 @@ basic_deps = [
 
 setuptools.setup(
     name="coldtype",
-    version="0.10.12",
+    version="0.10.13",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",

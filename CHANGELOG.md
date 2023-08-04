@@ -251,3 +251,9 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ## [0.10.12] - 2023-07-31
 ### Added
 - Experimental support for reading control changes (cc messages) from midi files, via `MidiTimeline.ci` method
+
+## [0.10.13] - 2023-08-04
+### Added
+- CycleVersionForward/CycleVersionBackward
+- Support for _version.py-style sidecar versioning
+- Support for special `__initials__` function to allow setting state from source file
