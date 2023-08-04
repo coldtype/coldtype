@@ -58,7 +58,8 @@ class KeyboardShortcut(Enum):
     ToggleTimeViewer = "toggle_time_viewer"
     ToggleXray = "toggle_xray"
     ToggleGrid = "toggle_grid"
-    CycleVersions = "cycle_versions"
+    CycleVersionsForward = "cycle_versions_forward"
+    CycleVersionsBack = "cycle_versions_back"
 
     PreviewScaleDown = "preview_scale_down"
     PreviewScaleUp = "preview_scale_up"
@@ -429,8 +430,13 @@ SHORTCUTS = {
         [[], "g"],
     ],
 
-    KeyboardShortcut.CycleVersions: [
-        [["shift"], "v"]
+    KeyboardShortcut.CycleVersionsForward: [
+        [["shift"], "v"],
+        [["shift"], "<up>"],
+    ],
+
+    KeyboardShortcut.CycleVersionsBack: [
+        [["shift"], "<down>"],
     ],
 
     KeyboardShortcut.PreviewScaleUp: [

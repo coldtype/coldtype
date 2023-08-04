@@ -13,7 +13,8 @@ class MidiTimeline(Timeline):
         bpm=None,
         track=0,
         rounded=True,
-        lookup={}
+        lookup={},
+        live=None
         ):
         def s2f(value):
             if rounded:
@@ -33,7 +34,7 @@ class MidiTimeline(Timeline):
         events = []
         open_notes = []
         controls = {}
-
+        
         self.mid = mid
         self.time_signature = (4, 4)
 
@@ -160,10 +161,10 @@ class MidiTimeline(Timeline):
                         return frames[_fi]/127
                     _fi -= 1
                 
-                _fi = fi
-                while _fi < self.duration:
-                    if _fi in frames:
-                        return frames[_fi]/127
-                    _fi += 1
+                # _fi = fi
+                # while _fi < self.duration:
+                #     if _fi in frames:
+                #         return frames[_fi]/127
+                #     _fi += 1
         
         return default

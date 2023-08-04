@@ -1092,7 +1092,7 @@ class Renderer():
             vs = self.state.versions
             if vs:
                 for v in vs:
-                    self.actions_queued.insert(0, KeyboardShortcut.CycleVersions)
+                    self.actions_queued.insert(0, KeyboardShortcut.CycleVersionsForward)
                     self.actions_queued.insert(0, Action.Release)
                     self.actions_queued.insert(0, Action.RenderAll)
             else:
@@ -1258,12 +1258,17 @@ class Renderer():
             self.actions_queued.append(Action.Kill)
 
             return Action.PreviewStoryboardReload
-        elif shortcut == KeyboardShortcut.CycleVersions:
+        elif shortcut in [KeyboardShortcut.CycleVersionsForward, KeyboardShortcut.CycleVersionsBack]:
             vi = self.source_reader.config.version_index
             versions = self.state.versions
-            vi += 1
-            if vi >= len(versions):
-                vi = 0
+            if shortcut == KeyboardShortcut.CycleVersionsForward:
+                vi += 1
+                if vi >= len(versions):
+                    vi = 0
+            else:
+                vi -= 1
+                if vi < 0:
+                    vi = len(versions) - 1
             self.source_reader.config.version_index = vi
             return Action.PreviewStoryboardReload
         elif shortcut == KeyboardShortcut.Sleep:
