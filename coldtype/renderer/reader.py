@@ -340,6 +340,8 @@ class SourceReader():
             return root / "demo/glyphs.py"
         elif name == "midi":
             return root / "demo/midi.py"
+        elif name == "midicc":
+            return root / "demo/midicc.py"
         elif name == "vf":
             return root / "demo/vf.py"
         elif name == "viewseq":
