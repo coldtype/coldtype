@@ -226,6 +226,11 @@ class Rect(Geometrical):
         """x,y,w,h in list"""
         return [self.x, self.y, self.w, self.h]
     
+    @property
+    def r(self) -> "Rect":
+        """A Scaffold has an .r, this was we can always 'cast' a Scaffold/Rect to a Rect"""
+        return self
+    
     xywh = rect
     
     def round(self) -> "Rect":
