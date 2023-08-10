@@ -738,6 +738,9 @@ class Runon:
             elif "/" in finder_fn:
                 o = self
                 for k in finder_fn.split("/"):
+                    if k == "<":
+                        o = self.parent()
+                        continue
                     o = o.find_(k)
                 return o
 

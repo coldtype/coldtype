@@ -113,6 +113,12 @@ class Scaffold(Runon):
                 self._borders = []
 
             r = self.r
+
+            if callable(cols):
+                cols = cols(self)
+            if callable(rows):
+                rows = rows(self)
+
             g = Grid(self.r, cols, rows, ascii, warn_float=self.warn_float)
             for k, v in g.keyed.items():
                 if v.w > r.w or v.h > r.h or v.x < 0 or v.y < 0 or v.w < 0 or v.h < 0:
