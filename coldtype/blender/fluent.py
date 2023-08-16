@@ -971,11 +971,14 @@ class BpyObj(_Chainable):
                 m.use_constant_offset = False
         return self
     
-    def arrayX(self, count=2, relative=1, constant=0.1):
+    def arrayX(self, count=2, relative=1, constant=0):
         return self.array(count=count, relative=(relative, 0, 0), constant=(constant, 0, 0))
     
-    def arrayY(self, count=2, relative=-1, constant=-0.1):
+    def arrayY(self, count=2, relative=-1, constant=0):
         return self.array(count=count, relative=(0, relative, 0), constant=(0, constant, 0))
+    
+    def arrayZ(self, count=2, relative=-1, constant=0):
+        return self.array(count=count, relative=(0, 0, relative), constant=(0, 0, constant))
     
     def remove_doubles(self, threshold=0.01):
         with self.all_vertices_selected():
