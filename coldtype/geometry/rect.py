@@ -49,9 +49,9 @@ def pair_to_edges(x, y=None):
     elif x == "S":
         return Edge.CenterX, Edge.MinY
     elif x == "E":
-        return Edge.MaxX, Edge.CenterY
+        return Edge.MaxX, txt_to_edge(y)
     elif x == "W":
-        return Edge.MinX, Edge.CenterY
+        return Edge.MinX, txt_to_edge(y)
     elif x == "C":
         return Edge.CenterX, Edge.CenterY
     
