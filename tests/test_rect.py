@@ -14,7 +14,7 @@ def test_contains(r):
     assert r0.contains(r3) == False
     assert r0.contains(r4) == False
     assert r3.contains(r4) == False
-    assert r0.contains(r5) == True
+    assert (r5 in r0) == True
     
     return P(P(x) for x in [r0,r1,r2,r3,r4,r5]).fssw(-1, 0, 1)
 
