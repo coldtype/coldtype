@@ -648,6 +648,10 @@ class Rect(Geometrical):
     @property
     def ecy(self) -> Line: return self.edge("mdy")
 
+    def contains(self, other) -> bool:
+        return (self.pne.x >= other.pne.x and self.pne.y >= other.pne.y
+            and self.psw.x <= other.psw.x and self.psw.y <= other.psw.y)
+
     def intersects(self, other) -> bool:
         return not (self.point("NE").x < other.point("SW").x or self.point("SW").x > other.point("NE").x or self.point("NE").y < other.point("SW").y or self.point("SW").y > other.point("NE").y)
     

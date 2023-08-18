@@ -1,5 +1,23 @@
 from coldtype.test import *
 
+@test((250, 250), solo=1)
+def test_contains(r):
+    r0 = r.take(150, "SW").offset(10)
+    r1 = r.take(50, "NE").offset(-10)
+    r2 = r.take(50, "SW").offset(20)
+    r3 = r.take(50, "S").take(50, "CX")
+    r4 = r.take(50, "W").take(50, "CY")
+    r5 = r0.take(50, "NE")
+    
+    assert r0.contains(r1) == False
+    assert r0.contains(r2) == True
+    assert r0.contains(r3) == False
+    assert r0.contains(r4) == False
+    assert r3.contains(r4) == False
+    assert r0.contains(r5) == True
+    
+    return P(P(x) for x in [r0,r1,r2,r3,r4,r5]).fssw(-1, 0, 1)
+
 @test((250, 250))
 def test_fit(r):
     r1 = P(r.take(20, "NE"))
