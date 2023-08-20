@@ -257,3 +257,11 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 - CycleVersionForward/CycleVersionBackward
 - Support for _version.py-style sidecar versioning
 - Support for special `__initials__` function to allow setting state from source file
+
+## [0.10.14] - 2023-08-18
+### Added
+- `Rect.contains`/`Rect.__contains__`/`in` operator for Rect
+- `E` and `W` supported on `pair_to_edges`
+- `<` as parent ref in `Scaffold.find`
+- Support `vert` as feature (without needing to specify `features=`)
+- `RestartCount` concept in renderer
