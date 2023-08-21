@@ -3,12 +3,13 @@ import math, time
 from pathlib import Path
 from typing import Callable
 from contextlib import contextmanager
+from typing import List
 
 from coldtype.runon.path import P
 from coldtype.runon.runon import Runon
 from coldtype.timing.timeline import Timeline
 from coldtype.geometry import Rect
-from coldtype.color import Gradient, normalize_color, bw
+from coldtype.color import Gradient, normalize_color, bw, Color
 from coldtype.renderable.animation import animation
 
 try:
@@ -359,6 +360,47 @@ class BpyMaterial():
         tex.interpolation = "Closest"
         tex.interpolation = "Linear"
 
+        return self
+    
+    def color_ramp(self, colors:List[Color]):
+        ramp = self.m.node_tree.nodes.new("ShaderNodeValToRGB")
+        cr = ramp.color_ramp
+
+        for idx, color in enumerate(colors):
+            if idx == 0:
+                cr.elements[0].color = color.rgba()
+            elif idx == idx == (len(colors) - 1):
+                cr.elements[-1].color = color.rgba()
+            else:
+                cr.elements.new(idx/(len(colors)-1))
+                cr.elements[idx].color = color.rgba()
+
+        bsdf = self.bsdf()
+        self.m.node_tree.links.new(bsdf.inputs["Base Color"], ramp.outputs["Color"])
+        return self
+    
+    def math(self, attrs={}, inputs=[]):
+        m = self.m.node_tree.nodes.new("ShaderNodeMath")
+        for k, v in attrs.items():
+            setattr(m, k, v)
+        for k, v in inputs.items():
+            m.inputs[k].default_value = v
+        return self
+    
+    def object_info(self):
+        _ = self.m.node_tree.nodes.new("ShaderNodeObjectInfo")
+        return self
+    
+    def connect(self, output, input):
+        nt = self.m.node_tree
+        self.m.node_tree.links.new(
+            nt.nodes[input[0]].inputs[input[1]],
+            nt.nodes[output[0]].outputs[output[1]])
+        return self
+    
+    def arrange(self):
+        for idx, node in enumerate(reversed(self.m.node_tree.nodes)):
+            node.location.x = -300 + idx * 200
         return self
 
 
