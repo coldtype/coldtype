@@ -26,6 +26,7 @@ from coldtype.renderer.winman import Winmans, WinmanGLFWSkiaBackground
 from coldtype.renderable import renderable, animation, Action, Overlay, runnable
 
 from coldtype.renderer.keyboard import KeyboardShortcut
+from coldtype.osutil import show_in_finder
 
 try:
     import skia
@@ -1198,8 +1199,7 @@ class Renderer():
         elif shortcut == KeyboardShortcut.ShowInFinder:
             folder = self.renderables(Action.PreviewStoryboard)[-1].output_folder
             folder.mkdir(parents=True, exist_ok=True)
-            os.system(f"open {folder}")
-        
+            show_in_finder(folder)
         elif shortcut == KeyboardShortcut.ViewerTakeFocus:
             self.winmans.glsk.focus(force=True)
         

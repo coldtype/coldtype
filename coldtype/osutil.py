@@ -36,6 +36,16 @@ def play_sound(name="Pop"):
         os.system(f"afplay /System/Library/Sounds/{name}.aiff")
 
 
+def show_in_finder(path):
+    p = path.expanduser().resolve()
+    if on_mac():
+        os.system(f"open {p}")
+    elif on_windows():
+        os.system(f"explorer {p}")
+    else:
+        print("show-in-finder not implemented for os")
+
+
 def in_notebook() -> bool:
     try:
         shell = get_ipython().__class__.__name__

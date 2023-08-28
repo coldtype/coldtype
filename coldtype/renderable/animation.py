@@ -15,6 +15,7 @@ from coldtype.geometry import Rect, Point
 from coldtype.color import bw, hsl
 
 from coldtype.renderable.renderable import renderable, Action, RenderPass, Overlay
+from coldtype.osutil import show_in_finder
 
 
 def gifski(a:"animation", passes, open=False):
@@ -30,7 +31,7 @@ def gifski(a:"animation", passes, open=False):
     print("\n")
     
     if open:
-        os.system(f"open {gif.parent}")
+        show_in_finder(gif.parent)
     return gif
 
 
@@ -440,7 +441,7 @@ class FFMPEGExport():
         """i.e. Reveal-in-Finder"""
         if self.failed:
             return self
-        os.system(f"open {self.output_path.parent}")
+        show_in_finder(self.output_path.parent)
         return self
 
 
