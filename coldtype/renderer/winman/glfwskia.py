@@ -33,7 +33,7 @@ except ImportError:
 from coldtype.geometry import Point, Rect, Edge
 from coldtype.renderable import Action
 from coldtype.renderer.config import ConfigOption, ColdtypeConfig
-from coldtype.renderer.keyboard import KeyboardShortcut, REPEATABLE_SHORTCUTS, shortcuts_keyed
+from coldtype.renderer.keyboard import KeyboardShortcut, REPEATABLE_SHORTCUTS, shortcuts_keyed, GLFW_SPECIALS_LOOKUP
 
 try:
     from coldtype.pens.svgpen import SVGPen
@@ -119,6 +119,7 @@ class WinmanGLFWSkia():
         glfw.make_context_current(self.window)
 
         glfw.set_key_callback(self.window, self.on_key)
+        #glfw.set_char_callback(self.window, self.on_char)
         glfw.set_mouse_button_callback(self.window, self.on_mouse_button)
         glfw.set_cursor_pos_callback(self.window, self.on_mouse_move)
         glfw.set_scroll_callback(self.window, self.on_scroll)
@@ -284,14 +285,23 @@ class WinmanGLFWSkia():
     
     def on_key(self, win, key, scan, action, mods):
         self.on_potential_shortcut(key, action, mods)
+        # if key in GLFW_SPECIALS_LOOKUP.values():
+        #     self.on_potential_shortcut(key, action, mods)
+        # elif mods:
+        #     self.on_potential_shortcut(key, action, mods)
+    
+    def on_char(self, win, key):
+        ck = chr(key)
+        print("CHAR", ck)
+        self.on_potential_shortcut(ck, glfw.PRESS, [])
     
     def repeatable_shortcuts(self):
         return REPEATABLE_SHORTCUTS
     
     def on_potential_shortcut(self, key, action, mods):
         for shortcut, options in self.all_shortcuts.items():
-            for modifiers, skey in options:
-                if key != skey:
+            for modifiers, skey, ckey in options:
+                if key != skey and key != ckey:
                     continue
 
                 if isinstance(mods, list):
@@ -314,7 +324,7 @@ class WinmanGLFWSkia():
                 if len(modifiers) == 0 and mods != 0 and not isinstance(mods, list):
                     mod_match = False
                 
-                if mod_match and key == skey:
+                if mod_match and (key == skey or key == ckey):
                     if (action == glfw.REPEAT and shortcut in self.repeatable_shortcuts()) or action == glfw.PRESS:
                         #print(shortcut, modifiers, skey, mod_match)
                         return self.renderer.on_shortcut(shortcut)
