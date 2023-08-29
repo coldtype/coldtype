@@ -200,20 +200,23 @@ class Font():
         #print(dir.stem, depth, len(os.listdir(dir)))
         results = []
 
-        for p in dir.iterdir():
-            if p.is_dir() and depth < FONT_FIND_DEPTH and p.suffix != ".ufo":
-                try:
-                    res = Font._ListDir(p, regex, regex_dir, log, depth=depth+1)
-                    if res:
-                        results.extend(res)
-                except PermissionError:
-                    pass
-            else:
-                if regex_dir and not re.search(regex_dir, str(p.parent), re.IGNORECASE):
-                    continue
-                if re.search(regex, p.name, re.IGNORECASE):
-                    if p.suffix in [".otf", ".ttf", ".ttc", ".ufo"]:
-                        results.append(p)
+        try:
+            for p in dir.iterdir():
+                if p.is_dir() and depth < FONT_FIND_DEPTH and p.suffix != ".ufo":
+                    try:
+                        res = Font._ListDir(p, regex, regex_dir, log, depth=depth+1)
+                        if res:
+                            results.extend(res)
+                    except PermissionError:
+                        pass
+                else:
+                    if regex_dir and not re.search(regex_dir, str(p.parent), re.IGNORECASE):
+                        continue
+                    if re.search(regex, p.name, re.IGNORECASE):
+                        if p.suffix in [".otf", ".ttf", ".ttc", ".ufo"]:
+                            results.append(p)
+        except FileNotFoundError:
+            pass
         
         return results
 
