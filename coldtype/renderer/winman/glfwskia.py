@@ -33,7 +33,7 @@ except ImportError:
 from coldtype.geometry import Point, Rect, Edge
 from coldtype.renderable import Action
 from coldtype.renderer.config import ConfigOption, ColdtypeConfig
-from coldtype.renderer.keyboard import KeyboardShortcut, REPEATABLE_SHORTCUTS, shortcuts_keyed, GLFW_SPECIALS_LOOKUP
+from coldtype.renderer.keyboard import KeyboardShortcut, REPEATABLE_SHORTCUTS, shortcuts_keyed
 
 try:
     from coldtype.pens.svgpen import SVGPen

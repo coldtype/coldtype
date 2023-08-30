@@ -251,34 +251,33 @@ REPEATABLE_SHORTCUTS = [
     KeyboardShortcut.JumpNext
 ]
 
-GLFW_SPECIALS_LOOKUP = {
-    "cmd": glfw.MOD_SUPER,
-    "ctrl": glfw.MOD_CONTROL,
-    "shift": glfw.MOD_SHIFT,
-    "alt": glfw.MOD_ALT,
-    "<up>": glfw.KEY_UP,
-    "<down>": glfw.KEY_DOWN,
-    "<left>": glfw.KEY_LEFT,
-    "<right>": glfw.KEY_RIGHT,
-    "<space>": glfw.KEY_SPACE,
-    "<home>": glfw.KEY_HOME,
-    "<end>": glfw.KEY_END,
-    "<enter>": glfw.KEY_ENTER,
-    "<page-up>": glfw.KEY_PAGE_UP,
-    "<page-down>": glfw.KEY_PAGE_DOWN,
-    "<tab>": glfw.KEY_TAB,
-    ",": glfw.KEY_COMMA,
-    ".": glfw.KEY_PERIOD,
-    "-": glfw.KEY_MINUS,
-    "=": glfw.KEY_EQUAL,
-    "/": glfw.KEY_SLASH,
-    "'": glfw.KEY_APOSTROPHE,
-    "<backslash>": glfw.KEY_BACKSLASH,
-    "<bracket-right>": glfw.KEY_RIGHT_BRACKET,
-    "<bracket-left>": glfw.KEY_LEFT_BRACKET,
-}
-
 def symbol_to_glfw(s):
+    GLFW_SPECIALS_LOOKUP = {
+        "cmd": glfw.MOD_SUPER,
+        "ctrl": glfw.MOD_CONTROL,
+        "shift": glfw.MOD_SHIFT,
+        "alt": glfw.MOD_ALT,
+        "<up>": glfw.KEY_UP,
+        "<down>": glfw.KEY_DOWN,
+        "<left>": glfw.KEY_LEFT,
+        "<right>": glfw.KEY_RIGHT,
+        "<space>": glfw.KEY_SPACE,
+        "<home>": glfw.KEY_HOME,
+        "<end>": glfw.KEY_END,
+        "<enter>": glfw.KEY_ENTER,
+        "<page-up>": glfw.KEY_PAGE_UP,
+        "<page-down>": glfw.KEY_PAGE_DOWN,
+        "<tab>": glfw.KEY_TAB,
+        ",": glfw.KEY_COMMA,
+        ".": glfw.KEY_PERIOD,
+        "-": glfw.KEY_MINUS,
+        "=": glfw.KEY_EQUAL,
+        "/": glfw.KEY_SLASH,
+        "'": glfw.KEY_APOSTROPHE,
+        "<backslash>": glfw.KEY_BACKSLASH,
+        "<bracket-right>": glfw.KEY_RIGHT_BRACKET,
+        "<bracket-left>": glfw.KEY_LEFT_BRACKET,
+    }
     if s in GLFW_SPECIALS_LOOKUP:
         return GLFW_SPECIALS_LOOKUP[s]
     else:
