@@ -3,9 +3,9 @@ from coldtype.blender import *
 
 @b3d_runnable()
 def setup(blw:BpyWorld):
-    (blw.deletePrevious("Coldtype"
+    (blw.delete_previous("Coldtype"
             , materials=True)
-        .deletePrevious("Cubes"
+        .delete_previous("Cubes"
             , materials=True)
         .timeline(Timeline(120)
             , resetFrame=0
@@ -21,9 +21,10 @@ def setup(blw:BpyWorld):
             .extrude(0.2)
             .locate(z=7.5)
             .rotate(x=90)
-            .convertToMesh()
+            .convert_to_mesh()
             .rigidbody("active", bounce=0.5)
-            .material("coldtype_material"))
+            .material("coldtype_material")
+            .shade_flat())
         
         (BpyGroup.Curves(
             StSt("COLD", Font.MuSan(), 3
@@ -52,7 +53,7 @@ def setup(blw:BpyWorld):
             .rigidbody("active", bounce=0.3)
             .material("monkey_material")
             .subsurface()
-            .shadeSmooth())
+            .shade_smooth())
         
         (BpyMaterial.Find("monkey_material")
             .f(hsl(0.6, 1)))
@@ -65,11 +66,11 @@ def setup(blw:BpyWorld):
                 .f(hsl(0.85, 1))
                 .transmission(1))
             .subsurface()
-            .shadeSmooth())
+            .shade_smooth())
         
         (BpyObj.Plane()
             .scale(x=30, y=30)
-            .applyScale()
+            .apply_scale()
             .rigidbody("passive", bounce=0.5)
             .material("plane_material", lambda m: m
                 .f(hsl(0.17, 0.8, 0.5))

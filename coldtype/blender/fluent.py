@@ -781,8 +781,10 @@ class BpyObj(_Chainable):
     
     applyTransform = apply_transform
 
-    def applyScale(self):
+    def apply_scale(self):
         return self.applyTransform(location=False, rotation=False, scale=True, properties=False)
+    
+    applyScale = apply_scale
 
     def apply_modifier(self, name):
         with self.obj_selected():        
@@ -977,6 +979,8 @@ class BpyObj(_Chainable):
             bpy.ops.object.convert(target="MESH")
         return self
     
+    convertToMesh = convert_to_mesh
+    
     def remesh(self, octree_depth=7, smooth=False, apply=False):
         with self.obj_selected():
             bpy.ops.object.modifier_add(type="REMESH")
@@ -1106,6 +1110,11 @@ class BpyObj(_Chainable):
     
     def boolean_diff(self, object, apply=True, remove=True):
         return self.boolean(object, "DIFFERENCE", apply, remove)
+    
+    def ops_object(self, method, *args, **kwargs):
+        with self.obj_selected():
+            getattr(bpy.ops.object, method)(*args, **kwargs)
+        return self
     
     def shade_flat(self):
         with self.obj_selected():
@@ -1263,11 +1272,6 @@ class BpyObj(_Chainable):
     
     def bevel(self, depth=0.02) -> "BpyObj":
         self.obj.data.bevel_depth = depth
-        return self
-    
-    def convertToMesh(self) -> "BpyObj":
-        with self.obj_selected():
-            bpy.ops.object.convert(target="MESH")
         return self
 
 #endregion
