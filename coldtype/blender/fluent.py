@@ -1107,6 +1107,11 @@ class BpyObj(_Chainable):
     def boolean_diff(self, object, apply=True, remove=True):
         return self.boolean(object, "DIFFERENCE", apply, remove)
     
+    def shade_flat(self):
+        with self.obj_selected():
+            bpy.ops.object.shade_flat()
+        return self
+
     def shade_smooth(self, auto_smooth=False):
         with self.obj_selected():
             bpy.ops.object.shade_smooth(use_auto_smooth=True)
