@@ -5,22 +5,21 @@ from coldtype.blender import *
 def setup(bw:BpyWorld):
     (bw.deletePrevious(materials=False))
 
-big_c = "A"
+big_c = "C"
 
 @b3d_renderable(center=(0, 1), upright=1)
 def displace(r):
-    return (
-        StSt("C", Font.ColdObvi(), 850, wght=1)
+    return (StSt(big_c, Font.ColdObvi(), 850, wght=1)
         .align(r)
         .pen()
         .tag("glyph")
         .ch(b3d(lambda p: p
             .extrude(1)
-            .convertToMesh()
+            .convert_to_mesh()
             .remesh(6)
-            .applyModifier("Remesh")
-            .makeVertexGroup(lambda p: p.co[2] > 0, name="front")
-            .addEmptyOrigin()
+            .apply_modifier("Remesh")
+            .make_vertex_group(lambda p: p.co[2] > 0, name="front")
+            .add_empty_origin()
             .displace(
                 strength=3.35,
                 midlevel=0,
@@ -30,7 +29,7 @@ def displace(r):
                 vertex_group="front")
             .subsurface()
             .smooth(factor=6, repeat=2, x=0, y=0, z=1)
-            .shadeSmooth()
+            .shade_smooth()
             , material="sponge")))
 
 @b3d_animation(tl=30, name=f"animator_{big_c}")

@@ -1,22 +1,18 @@
 from coldtype import *
-from coldtype.fx.skia import phototype
+from coldtype.blender import *
 
 r = Rect(1080, 540)
 font = Font.ColdObvi()
 
-def shapes(r):
+@renderable(r, bg=0, render_bg=1)
+def graphic(r):
     return (StSt("TYPE", font, 250)
+        .f(1)
         .align(r))
 
-@renderable(r)
-def graphic(r):
-    return P(r).f(0) + (shapes(r).f(1))
-
-from coldtype.blender import *
-
-@b3d_runnable()
+@b3d_runnable(force_refresh=True)
 def setup(blw:BpyWorld):
-    (blw.deletePrevious(materials=False)
+    (blw.delete_previous(materials=False)
         .timeline(Timeline(50, 12)
             , output=__FILE__
             , version=1))
@@ -24,6 +20,4 @@ def setup(blw:BpyWorld):
     (BpyObj.Plane("ImagePlane")
         .scale(2, 1)
         .material("asdf_image", lambda m: m
-            .image(graphic.pass_path())))
-
-#bpy.data.materials["asdf_image"].node_tree.nodes["Mapping.001"].inputs[1].default_value[0]
+            .image(graphic, emission=0, render=True)))

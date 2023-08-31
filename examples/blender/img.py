@@ -17,6 +17,17 @@ img = (StSt("COLD\nTYPE", Font.ColdtypeObviously()
         .f(Gradient.V(p.ambit(), hsl(0.3), hsl(0.7))))
     .ch(rasterize(Rect(1080, 1080), img_path)))
 
+@b3d_runnable()
+def show_img_direct(bpw:BpyWorld):
+    bpw.delete_previous()
+
+    (BpyObj.Plane("DirectImage")
+        .locate(z=0.25)
+        .rotate(z=15)
+        .scale(2, 2, 1)
+        .material("direct_image_mat", lambda m: m
+            .image(img_path)))
+
 @b3d_renderable()
 def show_img(r):
     return (P(r).f(-1).img(img_path, r)

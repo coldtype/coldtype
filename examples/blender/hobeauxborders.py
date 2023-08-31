@@ -39,7 +39,16 @@ def hobeauxBorder(r, style=0, fs=200):
         .pen()
         .unframe())
 
+@b3d_runnable()
+def setup(bpw:BpyWorld):
+    bpw.delete_previous()
 
-@b3d_animation(timeline=len(styles), bg=1)
+@b3d_animation(timeline=len(styles))
 def b1(f):
-    return hobeauxBorder(f.a.r.inset(150), f.i, 500).scale(0.9)
+    return (hobeauxBorder(f.a.r.inset(150), f.i, 500)
+        .scale(0.9)
+        .tag("Pattern")
+        .ch(b3d(lambda bp: bp
+            .extrude(0.25)
+            .material("Pattern_mat", lambda m: m
+                .f(hsl(0.17, 0.8, 0.7))))))

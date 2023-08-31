@@ -146,14 +146,15 @@ class BpyWorld(_Chainable):
     render_settings = cycles
     renderSettings = render_settings
     
-    @contextmanager
+    #@contextmanager
     def rigidbody(self, speed=1, frame_end=250):
+        print("THIS IS RUNNING")
         try:
             bpy.ops.rigidbody.world_remove()
-            yield
+            #yield
         except RuntimeError as e:
             print("! Failed to reset rigidbody !", e)
-            yield
+            #yield
         
         if self.scene:
             try:
@@ -164,6 +165,7 @@ class BpyWorld(_Chainable):
             if rw:
                 rw.time_scale = speed
                 rw.point_cache.frame_end = frame_end
+        
         return self
     
     def insertKeyframe(self, frame, path, value=None):
@@ -755,7 +757,7 @@ class BpyObj(_Chainable):
     
     vertexGroupAll = vertex_group_all
 
-    def addEmptyOrigin(self, collection="Coldtype"):
+    def add_empty_origin(self, collection="Coldtype"):
         bpy.ops.object.empty_add(type="PLAIN_AXES")
         bc = bpy.context.object
         bc.name = self.obj.name + "_EmptyOrigin"
@@ -763,6 +765,8 @@ class BpyObj(_Chainable):
         BpyObj.Find(bc.name).collect(collection)
         return self
     
+    addEmptyOrigin = add_empty_origin
+
     # Geometry Methods
     
     def apply_transform(self,
@@ -898,7 +902,7 @@ class BpyObj(_Chainable):
 
 #region Materials
 
-    def material(self, tag, modFn:Callable[[BpyMaterial], BpyMaterial]=None, clear=False):
+    def material(self, tag, modFn:Callable[[BpyMaterial], BpyMaterial]=None, clear=True):
         if clear:
             self.obj.data.materials.clear()
 
@@ -1123,7 +1127,7 @@ class BpyObj(_Chainable):
 
     def shade_smooth(self, auto_smooth=False):
         with self.obj_selected():
-            bpy.ops.object.shade_smooth(use_auto_smooth=True)
+            bpy.ops.object.shade_smooth(use_auto_smooth=auto_smooth)
         return self
     
     def shade_auto_smooth(self):
