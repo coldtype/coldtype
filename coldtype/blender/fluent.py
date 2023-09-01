@@ -429,12 +429,7 @@ class BpyGroup(Runon):
         new_curves.prefix = new_prefix
 
         for bp in self:
-            with bp.obj_selected():
-                bpy.ops.object.duplicate(linked=False)
-                c = bpy.context.object
-                c.name = bp.obj.name.replace(self.prefix, new_prefix)
-                new_curves.append(BpyObj(c).select(False))
-        
+            new_curves.append(bp.copy(self.prefix, new_prefix))
         return new_curves
 
 
@@ -581,6 +576,17 @@ class BpyObj(_Chainable):
                 if c != bc.c:
                     c.objects.unlink(self.obj)
         return self
+    
+    def copy(self, old_prefix=None, new_prefix=None):
+        new_obj = None
+        with self.obj_selected():
+            bpy.ops.object.duplicate(linked=False)
+            copied = bpy.context.object
+            if old_prefix is not None and new_prefix is not None:
+                copied.name = self.obj.name.replace(old_prefix, new_prefix)
+            new_obj = BpyObj(copied).select(False)
+        return new_obj
+
     
     def select(self, selected=True, set_active=False, clear_active=False):
         if selected:

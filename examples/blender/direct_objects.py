@@ -47,7 +47,7 @@ def setup(blw:BpyWorld):
         .roughness(1)
         .specular(0))
 
-    (BpyObj.Monkey()
+    monkey = (BpyObj.Monkey()
         .locate(z=11)
         .rotate(z=45)
         .scale(1,1,1)
@@ -55,6 +55,9 @@ def setup(blw:BpyWorld):
         .material("monkey_material")
         .subsurface()
         .shade_smooth())
+    
+    monkey.copy().locate(x=6)
+    monkey.copy().locate(x=-6)
     
     (BpyMaterial.Find("monkey_material")
         .f(hsl(0.6, 1)))
