@@ -172,29 +172,6 @@ class P(Runon):
                 out[k] = v
         return out
     
-    def _to_code(self):
-        out = "(DATPens()"
-
-        t = None
-        if self._tag and self._tag != "?":
-            t = self._tag
-        if t:
-            out += f"\n    .tag(\"{t}\")"
-        
-        if self.data:
-            out += f"\n    .add_data({repr(self.data)})"
-
-        for pen in self._pens:
-            for idx, line in enumerate(pen.to_code().split("\n")):
-                if idx == 0:
-                    out += f"\n    .append{line}"
-                else:
-                    out += f"\n    {line}"
-            out += ""
-
-        out += ")"
-        return out
-    
     def to_code(self, classname="P", additional_lines=[]):
         t = None
         if self._tag and self._tag != "?":
@@ -1825,6 +1802,15 @@ class P(Runon):
     
 
     def _track_with_width(self, t) -> "P":
+        return self
+
+
+    def track_to_width(self, width, pullToEdges=False, r=0) -> "P":
+
+        return self.track_to_rect(Rect(width, 0), pullToEdges=pullToEdges, r=r)
+    
+
+    def _track_to_width(self, width, pullToEdges=False, r=0) -> "P":
         return self
 
 

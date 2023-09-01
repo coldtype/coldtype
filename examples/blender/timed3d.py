@@ -12,15 +12,10 @@ def timed(f:Frame):
     def styler(c):
         return c.text.upper(), Style(Font.MutatorSans(), 250)
 
-    txt = (f.t.words.currentGroup()
+    return (f.t.words.currentGroup()
         .pens(f, styler)
         .align(f.a.r)
         .removeFutures()
         .pen()
         .copy()
         .ch(b3d(lambda p: p.extrude(1))))
-
-    return txt
-    
-    return (P([txt])
-        | b3d(lambda p: p.extrude(2)))

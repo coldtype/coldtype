@@ -148,7 +148,6 @@ class BpyWorld(_Chainable):
     
     #@contextmanager
     def rigidbody(self, speed=1, frame_end=250):
-        print("THIS IS RUNNING")
         try:
             bpy.ops.rigidbody.world_remove()
             #yield
@@ -413,6 +412,7 @@ class BpyGroup(Runon):
     @staticmethod
     def Curves(pens:P, prefix=None, collection=None, cyclic=True, fill=True, tx=0, ty=0):
         curves = BpyGroup()
+        curves.prefix = prefix
 
         def walker(p:P, pos, data):
             if pos == 0:
@@ -423,6 +423,19 @@ class BpyGroup(Runon):
         
         pens.walk(walker)
         return curves
+    
+    def copy(self, new_prefix):
+        new_curves = BpyGroup()
+        new_curves.prefix = new_prefix
+
+        for bp in self:
+            with bp.obj_selected():
+                bpy.ops.object.duplicate(linked=False)
+                c = bpy.context.object
+                c.name = bp.obj.name.replace(self.prefix, new_prefix)
+                new_curves.append(BpyObj(c).select(False))
+        
+        return new_curves
 
 
 class BpyObj(_Chainable):
@@ -819,6 +832,12 @@ class BpyObj(_Chainable):
             self.obj.rotation_euler[1] = math.radians(y)
         if z is not None:
             self.obj.rotation_euler[2] = math.radians(z)
+        return self
+    
+    def with_temp_origin(self, origin, fn):
+        self.set_origin(*origin)
+        fn(self)
+        self.origin_to_geometry()
         return self
     
     def origin_to_geometry(self):
@@ -1266,7 +1285,7 @@ class BpyObj(_Chainable):
             bez.fill_mode = "BOTH"
 
         if set_origin:
-            self.setOrigin(*origin, 0)
+            self.set_origin(*origin, 0)
 
         return self
 

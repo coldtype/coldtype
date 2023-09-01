@@ -545,6 +545,9 @@ class LayoutMixin():
             x += frame.w
         return self
     
+    def track_to_width(self, width, pullToEdges=False, r=0):
+        return self.track_to_rect(Rect(width, 0), pullToEdges=pullToEdges, r=r)
+    
     def track_to_rect(self, rect, pullToEdges=False, r=0):
         """Distribute pens evenly within a frame"""
         if len(self) == 1:

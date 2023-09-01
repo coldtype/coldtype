@@ -94,8 +94,11 @@ class Runon:
 
     def _call_idx_fn(self, fn, idx, arg:"Runon"):
         if not self.yields_wrapped():
-            if arg.val_present():
-                arg = arg.v
+            try:
+                if arg.val_present():
+                    arg = arg.v
+            except AttributeError:
+                arg = arg
 
         ac = _arg_count(fn)
         if ac == 1:

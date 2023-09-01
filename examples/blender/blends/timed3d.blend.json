@@ -8,19 +8,19 @@
                 {
                     "name": "*A",
                     "text": "*A",
-                    "start": 0,
+                    "start": 0.0,
                     "end": 20
                 },
                 {
                     "name": "+B",
                     "text": "+B",
-                    "start": 20,
+                    "start": 20.0,
                     "end": 47
                 },
                 {
                     "name": "+C",
                     "text": "+C",
-                    "start": 47,
+                    "start": 47.0,
                     "end": 67
                 }
             ]
