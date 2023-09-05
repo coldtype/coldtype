@@ -1,6 +1,12 @@
 from coldtype import *
 from coldtype.blender import *
 
+"""
+a 2d coldtype variable font animation;
+in the same file as @b3d_runnable that
+displays that 2d animation in a 3d world
+"""
+
 # to fully re-cache Rendered sequence in blender, make sure to set force_refresh=1 on your @b3d_runnable
 
 @animation((540, 540), timeline=30)
