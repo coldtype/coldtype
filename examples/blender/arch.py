@@ -1,6 +1,11 @@
 from coldtype import *
 from coldtype.blender import *
 
+"""
+An arch, dynamically generated from a bezier curve;
+then physics are enabled and the whole thing falls down
+"""
+
 @b3d_runnable()
 def setup(bw:BpyWorld):
     BpyObj.Find("Cube").delete()

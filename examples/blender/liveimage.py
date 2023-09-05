@@ -1,6 +1,11 @@
 from coldtype import *
 from coldtype.blender import *
 
+"""
+Demonstration of how to display a dynamic
+image on a plane
+"""
+
 chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 @renderable((1080, 1080), bg=0, render_bg=0)
@@ -15,10 +20,9 @@ def embedded_image(r):
         .f(1))
 
 @b3d_runnable()
-def setup(world:BpyWorld):
-    (world
-        .delete_previous()
-        .render_settings(128))
+def setup(bpw:BpyWorld):
+    (bpw.delete_previous()
+        .cycles(128))
 
 @b3d_animation(tl=len(chars), force_refresh=True)
 def anim1(f):

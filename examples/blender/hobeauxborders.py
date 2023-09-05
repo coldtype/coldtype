@@ -1,6 +1,12 @@
 from coldtype import *
 from coldtype.blender import *
 
+"""
+If you have a copy of Hobeaux Rococeaux Borders
+(https://ohnotype.co/fonts/hobeaux-rococeaux),
+you can make lovely frames using this code
+"""
+
 fnt = Font.Find("Hobeaux-Roc.*Bor")
 styles = [
     "Aa ", "B  ", "Cc3", "Dd4", "Ee5",

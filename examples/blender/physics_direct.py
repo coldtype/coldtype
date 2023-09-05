@@ -1,12 +1,17 @@
 from coldtype import *
 from coldtype.blender import *
 
+"""
+Some text falls from on high
+(using Blender directly via @b3d_runnable)
+"""
+
 txt = "FALL\nING\nTEXT"
 
 @b3d_runnable()
 def setup(bpw:BpyWorld):
     (bpw.delete_previous()
-        .timeline(Timeline(120), resetFrame=0)
+        .timeline(Timeline(60), resetFrame=0)
         .rigidbody(speed=3, frame_end=1000))
     
     (BpyObj.Find("Plane")
@@ -21,6 +26,6 @@ def setup(bpw:BpyWorld):
             .centerZero())
         .map(lambda bp: bp
             .extrude(0.275)
-            .locate(z=10)
+            .locate(z=30)
             .convert_to_mesh()
             .rigidbody(friction=0.5)))

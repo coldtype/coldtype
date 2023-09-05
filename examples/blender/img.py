@@ -3,7 +3,7 @@ from coldtype.blender import *
 from coldtype.fx.skia import rasterize
 
 """
-Demonstration of how to display
+Demonstration of two ways to display
 an image on a plane in Blender
 """
 

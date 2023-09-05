@@ -1,6 +1,13 @@
 from coldtype import *
 from coldtype.blender import *
 
+"""
+Here there is no simultaneous 2D/3D; we're just using
+Coldtype to script Blender directly
+
+(i.e. this script only works when Blender is running)
+"""
+
 @b3d_runnable()
 def setup(blw:BpyWorld):
     (blw.delete_previous("Coldtype"

@@ -718,6 +718,34 @@ class BpyObj(_Chainable):
                 o.hide()
         return self
     
+    def constrain_child_of(self
+        , target:"BpyObj"
+        , location=dict(x=1, y=1, z=1)
+        , rotation=dict(x=0, y=0, z=0)
+        , scale=dict(x=1, y=1, z=1)
+        , influence=1
+        , clear=True
+        ):
+        if clear:
+            for c in self.obj.constraints:
+                self.obj.constraints.remove(c)
+            
+            self.ops_object("constraint_add", type="CHILD_OF")
+            constraint = self.obj.constraints[0]
+            constraint.target = target.obj
+            
+            for k, v in location.items():
+                setattr(constraint, f"use_location_{k}", bool(v))
+
+            for k, v in rotation.items():
+                setattr(constraint, f"use_rotation_{k}", bool(v))
+            
+            for k, v in scale.items():
+                setattr(constraint, f"use_scale_{k}", bool(v))
+
+        constraint.influence = influence
+        return self
+    
     def hide(self, hide=True):
         self.obj.hide_viewport = hide
         self.obj.hide_render = hide
