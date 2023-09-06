@@ -432,11 +432,15 @@ class SourceReader():
         # Simple overrides from environment variables
 
         for co in ConfigOption:
-            if len(co.value) != 4: continue
-
-            prop, _, _, cli_mod = co.value
-            if prop.upper() in env:
-                setattr(self.config, prop, cli_mod(env[prop.upper()]))
+            if len(co.value) == 4:
+                prop, _, _, cli_mod = co.value
+                if prop.upper() in env:
+                    setattr(self.config, prop, cli_mod(env[prop.upper()]))
+            
+            if len(co.value) == 3:
+                prop, _, _ = co.value
+                if prop.upper() in env:
+                    setattr(self.config, prop, env[prop.upper()])
         
         self.config.args = args
         #print(self.config.values())
