@@ -10,7 +10,7 @@ from coldtype.blender import BlenderIO
 from coldtype.renderable import renderable, ColdtypeCeaseConfigException, runnable, animation, aframe, ui
 
 from coldtype.renderer.utils import Watchable, on_linux, on_mac, on_windows
-from coldtype.renderer.config import ColdtypeConfig
+from coldtype.renderer.config import ColdtypeConfig, ConfigOption
 from coldtype.helpers import sibling
 from coldtype.text.reader import ALL_FONT_DIRS
 from coldtype.geometry.rect import Rect
@@ -369,15 +369,16 @@ class SourceReader():
         embedded = Path(__file__).parent / ".coldtype.py"
         proj = Path(".coldtype.py")
         user = Path("~/.coldtype.py").expanduser()
+        env = os.environ
         
         if on_windows():
-            os = Path(".coldtype.win.py")
+            _os = Path(".coldtype.win.py")
         elif on_mac():
-            os = Path(".coldtype.mac.py")
+            _os = Path(".coldtype.mac.py")
         elif on_linux():
-            os = Path(".coldtype.lin.py")
+            _os = Path(".coldtype.lin.py")
 
-        files = [embedded, user, proj, os]
+        files = [embedded, user, proj, _os]
 
         if args and hasattr(args, "config") and args.config:
             if args.config == "0":
@@ -427,6 +428,15 @@ class SourceReader():
         
         if len(files) == 0 or not self.config:
             self.config = ColdtypeConfig({}, None, args)
+        
+        # Simple overrides from environment variables
+
+        for co in ConfigOption:
+            if len(co.value) != 4: continue
+
+            prop, _, _, cli_mod = co.value
+            if prop.upper() in env:
+                setattr(self.config, prop, cli_mod(env[prop.upper()]))
         
         self.config.args = args
         #print(self.config.values())
