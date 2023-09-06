@@ -27,7 +27,7 @@ def uiView(_renderable):
             KeyboardShortcut.ToggleUI,
         ])
 
-    @renderable(r, bg=0)
+    @renderable(r, bg=0, preview_only=1)
     def _uiView(r):
         rows = r.subdivide_with_leading(len(shortcuts), 2, "N")
 
