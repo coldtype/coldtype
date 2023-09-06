@@ -71,7 +71,10 @@ class ConfigOption(Enum):
     NoSound = ("no_sound", None, "ns", true_false_or_none)
     NoViewerErrors = ("no_viewer_errors", None, "nve", true_false_or_none)
     EnableAudio = ("enable_audio", None, "ea", true_false_or_none)
+    
     AddTimeViewers = ("add_time_viewers", None, "tv", true_false_or_none)
+    AddUI = ("add_ui", True, "ui", true_false_or_none)
+
     ShowXray = ("show_xray", None, "x", true_false_or_none)
     ShowGrid = ("show_grid", None, "g", true_false_or_none)
     GridSettings = ("grid_settings", [], "gs", lambda x: x.split(","))

@@ -13,7 +13,7 @@ import coldtype
 from coldtype.helpers import *
 
 from coldtype.runon.path import P
-from coldtype.geometry import Rect
+from coldtype.geometry import Rect, Point
 from coldtype.text.reader import Font
 from coldtype.pens.svgpen import SVGPen
 
@@ -1040,6 +1040,8 @@ class Renderer():
             return Action.ClearRenderedFrames
         elif shortcut == KeyboardShortcut.ResetInitialMemory:
             self.state.memory = None
+            self.state.cursor_history = []
+            self.state.cursor = Point(0, 0)
             #self.last_animation.write_reset_memory(self.state, self.last_animation.memory, True)
             return Action.PreviewStoryboard
         elif shortcut == KeyboardShortcut.ResetMemory:
@@ -1132,6 +1134,9 @@ class Renderer():
         
         elif shortcut == KeyboardShortcut.ToggleTimeViewer:
             self.source_reader.config.add_time_viewers = not self.source_reader.config.add_time_viewers
+            return Action.PreviewStoryboardReload
+        elif shortcut == KeyboardShortcut.ToggleUI:
+            self.source_reader.config.add_ui = not self.source_reader.config.add_ui
             return Action.PreviewStoryboardReload
         elif shortcut == KeyboardShortcut.ToggleXray:
             self.clear_last_render()
@@ -1601,6 +1606,14 @@ class Renderer():
         except ValueError:
             args.append("-tv")
             args.append(tv)
+        
+        ui = str(int(self.source_reader.config.add_ui or 0))
+        try:
+            uii = args.index("-ui")
+            args[uii+1] = ui
+        except ValueError:
+            args.append("-ui")
+            args.append(ui)
         
         x = str(int(self.source_reader.config.show_xray or 0))
         try:

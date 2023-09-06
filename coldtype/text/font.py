@@ -333,3 +333,9 @@ class Font():
         return Font.Cacheable(Path(__file__).parent.parent / "demo/RecMono-CasualItalic.ttf")
     
     RecMono = RecursiveMono
+
+    @staticmethod
+    def JetBrainsMono():
+        return Font.Cacheable(Path(__file__).parent.parent / "demo/JetBrainsMono.ttf")
+    
+    JBMono = JetBrainsMono

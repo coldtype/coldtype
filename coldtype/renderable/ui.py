@@ -8,7 +8,8 @@ class UIState():
         cursor_history,
         cursor_recording,
         midi,
-        frame
+        renderer_state,
+        frame,
         ):
         self.c = cursor
         self.ch = cursor_history
@@ -17,6 +18,7 @@ class UIState():
         self.i = frame.i
         self.r = frame.a.r
         self.midi = midi
+        self.rs = renderer_state
 
 
 class ui(animation):
@@ -27,13 +29,13 @@ class ui(animation):
         **kwargs
         ):
         
-        self.clip_cursor = clip_cursor
         self.cursor_recording = cursor_recording
 
         super().__init__(
             rect=rect,
             preview_only=True,
             interactable=True,
+            clip_cursor=clip_cursor,
             **kwargs)
     
     def passes(self, action, renderer_state, indices=[]):
@@ -56,4 +58,5 @@ class ui(animation):
                 renderer_state.cursor_history,
                 self.cursor_recording,
                 renderer_state.midi,
+                renderer_state,
                 Frame(i, self))]) for i in frames]

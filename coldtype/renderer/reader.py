@@ -16,6 +16,7 @@ from coldtype.text.reader import ALL_FONT_DIRS
 from coldtype.geometry.rect import Rect
 from coldtype.timing import Timeline
 from coldtype.timing.viewer import timeViewer
+from coldtype.renderer.ui import uiView
 
 try:
     from docutils.core import publish_doctree
@@ -595,7 +596,7 @@ class SourceReader():
             __VERSIONS__=versions)
         
         self.candidates = self.renderable_candidates(
-            output_folder_override, self.config.add_time_viewers)
+            output_folder_override, self.config.add_time_viewers, self.config.add_ui)
     
     def write_code_to_tmpfile(self, code):
         if self.filepath:
@@ -610,6 +611,7 @@ class SourceReader():
     def renderable_candidates(self,
         output_folder_override=None,
         add_time_viewers=False,
+        add_ui=False,
         ):
         candidates = find_renderables(
             self.filepath,
@@ -621,6 +623,9 @@ class SourceReader():
         
         if len(candidates) == 0:
             candidates.append(Programs.Blank())
+        
+        if len(candidates) > 0 and add_ui:
+            candidates.insert(0, uiView(candidates[0]))
         
         if add_time_viewers:
             out = []

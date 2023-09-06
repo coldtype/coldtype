@@ -69,6 +69,7 @@ setuptools.setup(
             "demo/transparency_blocks.png",
             "demo/RecMono-CasualItalic.ttf",
             "demo/ColdtypeObviously-VF.ttf",
+            "demo/JetBrainsMono.ttf",
             "demo/MutatorSans.ttf",
             "demo/demo.py",
             "demo/glyphs.py",

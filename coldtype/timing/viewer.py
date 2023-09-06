@@ -6,10 +6,6 @@ from coldtype.timing.midi import MidiTimeline
 from coldtype.runon.path import P
 from coldtype.color import bw, hsl
 
-from coldtype.runon.path import P as P
-
-PS = P
-
 def timeViewer(tl):
     a = None
     ow = 1080
@@ -41,7 +37,7 @@ def timeViewer(tl):
         wu = r.w / int(tl.duration)
         rows = r.subdivide(line_count, "N")
             
-        out = PS()
+        out = P()
         fs = 14
         
         for line in lines.keys():
@@ -83,9 +79,9 @@ def timeViewer(tl):
     if isinstance(tl, Timeline):
         display = build_timeable_display(rd)
     else:
-        display = PS()
+        display = P()
 
-    outer = PS([
+    outer = P([
         #P(rw).f(bw(0.95)),
         P(rt).f(bw(0.95))
         ])
@@ -114,7 +110,7 @@ def timeViewer(tl):
     )
     def timeView(f):
         x = f.e("l", 0, rng=(rd.psw[0], rd.pse[0]))
-        return PS([
+        return P([
             P(Rect(2, r.h)).t(x, 0),
             (P().text(str(f.i),
                 Style("Times", 20, load_font=0),

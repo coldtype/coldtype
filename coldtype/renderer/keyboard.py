@@ -56,6 +56,7 @@ class KeyboardShortcut(Enum):
     OverlayRecording = "overlay_recording"
     EnableAudio = "toggle_audio"
     ToggleTimeViewer = "toggle_time_viewer"
+    ToggleUI = "toggle_ui"
     ToggleXray = "toggle_xray"
     ToggleGrid = "toggle_grid"
     CycleVersionsForward = "cycle_versions_forward"
@@ -422,6 +423,9 @@ SHORTCUTS = {
 
     KeyboardShortcut.ToggleTimeViewer: [
         [[], "v"],
+    ],
+    KeyboardShortcut.ToggleUI: [
+        [["shift"], "u"],
     ],
     KeyboardShortcut.ToggleXray: [
         [[], "x"],
