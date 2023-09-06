@@ -33,14 +33,14 @@ def composition(r):
             hsl(0.15, s=0.7, l=0.6)))
         .s(0)
         .sw(3)
-        | dbdraw)
+        .ch(dbdraw))
     
     (StSt("COLDTYPE", co, 50, ro=1, r=1, tu=-100)
         .align(ri, "mnx", "mdy")
         .translate(0, 40)
         .f(0)
         .understroke(s=1, sw=5)
-        | dbdraw)
+        .ch(dbdraw))
 
 
 """

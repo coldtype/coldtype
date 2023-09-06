@@ -31,7 +31,7 @@ if on_mac():
             .f(hsl(0.3, a=0.1))
             .s(hsl(0.9))
             .sw(5)
-            | dbdraw)
+            .ch(dbdraw))
         
         assert len(dp.v.value) == 4
         assert type(dp) == P
