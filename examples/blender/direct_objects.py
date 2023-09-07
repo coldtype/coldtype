@@ -16,7 +16,7 @@ def setup(blw:BpyWorld):
             , materials=True)
         .timeline(Timeline(120)
             , resetFrame=0
-            , output=__FILE__
+            , output=setup.output_folder / "do1_"
             , version=1))
     
     blw.rigidbody(1.5, 120)

@@ -1,26 +1,28 @@
 from coldtype import *
 from coldtype.blender import *
+from coldtype.img.skiaimage import SkiaImage
 
 """
 An arch, dynamically generated from a bezier curve;
 then physics are enabled and the whole thing falls down
 """
 
+tl = Timeline(90, fps=30)
+
 @b3d_runnable()
-def setup(bw:BpyWorld):
+def setup(bpw:BpyWorld):
     BpyObj.Find("Cube").delete()
     BpyObj.Find("Light").locate(y=-5)
-    BpyObj.Find("Camera").locate(0,-20,5).rotate(90,0,0)
 
-    (bw.delete_previous()
+    (bpw.delete_previous()
         .cycles(32, False, Rect(1080, 1080))
-        .timeline(Timeline(90))
+        .timeline(tl, output=setup.output_folder / "arch1_")
         .rigidbody(2.5, 300))
  
     (BpyObj.Cube("Floor")
         .scale(x=10, y=10, z=0.2)
         .locate(z=1.65)
-        .applyScale()
+        .apply_scale()
         .rigidbody("passive", friction=1, bounce=0)
         .material("floor-material"))
 

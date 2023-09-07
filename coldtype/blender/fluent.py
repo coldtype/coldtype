@@ -167,7 +167,7 @@ class BpyWorld(_Chainable):
         
         return self
     
-    def insertKeyframe(self, frame, path, value=None):
+    def insert_keyframe(self, frame, path, value=None):
         bpy.data.scenes[0].frame_set(frame)
         if value is not None:
             if callable(value):
@@ -771,6 +771,45 @@ class BpyObj(_Chainable):
     
     def calls(self, fn): # TODO call signature, but requires fake-bpy-module at top level, is that even possible?
         fn(self.obj)
+        return self
+    
+    def insert_keyframe(self, frame, path, value=None, scene=None):
+        if scene is None:
+            scene = bpy.data.scenes[0]
+        scene.frame_set(frame)
+        
+        if value is not None:
+            if callable(value):
+                value(self)
+            else:
+                exec(f"self.obj.{path} = {value}")
+        self.obj.keyframe_insert(data_path=path)
+        return self
+    
+    def insert_keyframes(self, path, *settings):
+        for frame, value in settings:
+            self.insert_keyframe(frame, path, value)
+        return self
+    
+    def modify_keyframes(self, selector, action):
+        for fc in self.obj.animation_data.action.fcurves:
+            matches = False
+            if callable(selector) and selector(fc.data_path):
+                matches = True
+            elif selector == fc.data_path:
+                matches = True
+            
+            if matches:
+                action(fc)
+    
+    def make_keyframes_linear(self, selector):
+        def make_linear(fc):
+            fc.extrapolation = 'LINEAR'
+            for kp in fc.keyframe_points:
+                kp.handle_left_type  = 'VECTOR'
+                kp.handle_right_type = 'VECTOR'
+        
+        self.modify_keyframes(selector, make_linear)
         return self
     
     def set_visibility_at_frame(self, frame, visibility, scene=None):

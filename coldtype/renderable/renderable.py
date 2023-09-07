@@ -129,7 +129,7 @@ class runnable():
         return self.func()
     
     def folder(self, filepath):
-        return ""
+        return filepath.stem + "/" + self.name
 
 
 class renderable():

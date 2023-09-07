@@ -638,8 +638,16 @@ class SourceReader():
         if len(candidates) == 0:
             candidates.append(Programs.Blank())
         
-        if len(candidates) > 0 and add_ui:
-            candidates.insert(0, uiView(candidates[0]))
+        widest = None
+        if add_ui:
+            for c in candidates:
+                if not widest and hasattr(c, "rect"):
+                    widest = c
+                elif hasattr(c, "rect") and c.rect.w > widest.rect.w:
+                    widest = c
+
+            if widest:
+                candidates.insert(0, uiView(widest))
         
         if add_time_viewers:
             out = []
