@@ -10,7 +10,8 @@ txt = "COLD\nTYPE"
 @b3d_runnable()
 def setup(bpw:BpyWorld):
     (bpw.delete_previous()
-        .timeline(Timeline(150), resetFrame=0)
+        .timeline(Timeline(150), resetFrame=0
+            , output=setup.output_folder / "ct1_")
         .cycles(128)
         .rigidbody(speed=2, frame_end=150))
     

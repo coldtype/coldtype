@@ -14,17 +14,18 @@ def setup(bpw:BpyWorld):
     BpyObj.Find("Cube").delete()
     BpyObj.Find("Light").locate(y=-5)
 
-    (bpw.delete_previous()
+    (bpw.delete_previous(materials=False)
         .cycles(32, False, Rect(1080, 1080))
         .timeline(tl, output=setup.output_folder / "arch1_")
         .rigidbody(2.5, 300))
  
     (BpyObj.Cube("Floor")
-        .scale(x=10, y=10, z=0.2)
+        .scale(x=100, y=100, z=0.2)
         .locate(z=1.65)
         .apply_scale()
         .rigidbody("passive", friction=1, bounce=0)
-        .material("floor-material"))
+        .material("floor-material", lambda m: m
+            .f(hsl(0.17, 0.6, 0.3))))
 
 @b3d_renderable(reset_to_zero=1, upright=1, center=(0, 1))
 def arch(r):
