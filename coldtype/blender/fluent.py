@@ -773,10 +773,14 @@ class BpyObj(_Chainable):
         fn(self.obj)
         return self
     
-    def insert_keyframe(self, frame, path, value=None, scene=None):
+    def set_frame(self, frame, scene=None):
         if scene is None:
             scene = bpy.data.scenes[0]
         scene.frame_set(frame)
+        return self
+    
+    def insert_keyframe(self, frame, path, value=None, scene=None):
+        self.set_frame(frame, scene)
         
         if value is not None:
             if callable(value):
@@ -789,6 +793,8 @@ class BpyObj(_Chainable):
     def insert_keyframes(self, path, *settings):
         for frame, value in settings:
             self.insert_keyframe(frame, path, value)
+        
+        self.set_frame(settings[0][0])
         return self
     
     def modify_keyframes(self, selector, action):
