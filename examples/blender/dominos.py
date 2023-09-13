@@ -1,15 +1,11 @@
 from coldtype import *
 from coldtype.blender import *
 
-samples, x, y, z, frames = [
-    (1.5, 3, 0.5, 5, 120),
-    (0.5, 3, 0.25, 5, 120),
-    (0.25, 3, 0.15, 5, 180),
-    (1.2, 3, 0.25, 5, 120)
-][-1]
-
-letter = "A"
-suffix = f"alphabet_{samples}_{x}_{y}_{z}__"
+frames = 160
+suffix = "falling_"
+text = """FALLING
+FOR
+YOU"""
 
 @b3d_runnable(playback=B3DPlayback.KeepPlaying)
 def setup(bpw:BpyWorld):
@@ -25,32 +21,25 @@ def setup(bpw:BpyWorld):
         .material("floor_mat"))
 
     r = Rect(10)
-    curve = P().oval(Rect(10)).centerZero().repeat(1).subsegment(0, 0.505)
-    curve = P().line([r.pw, r.pe]).endPath().centerZero().t(0, -1)
     
-    points = curve.samples(samples)
+    curves = P(
+        P().line([r.pw, r.pe]).endPath().centerZero().t(0, 0),
+        P().line([r.pw, r.pe]).endPath().centerZero().t(0, -4),
+        P().line([r.pw, r.pe]).endPath().centerZero().t(0, -4*2),
+    ).t(-1.5, 2.5)
+
     dominos = []
+    
+    for idx, curve in enumerate(curves):
+        points = curve.samples(1.3)
+        txt = text.split("\n")[idx]
 
-    text = "FALLING"
-
-    for pt in points:
-        if False:
-            dominos.append(BpyObj.Cube(f"Cube_{pt.idx}")
-                .dimensions(x, y, z)
-                .locate(z=z/2)
-                .rotate(z=pt.tan)
-                .locate(x=pt.pt[0], y=pt.pt[1])
-                .material("letter_mat"))
-        else:
-            if False:
-                glyph = StSt(letter, "ObviouslyV", 4, wdth=pt.e, slnt=pt.e).pen()
+        for pt in points:
+            try:
+                glyph = StSt(txt[pt.idx], Font.MuSan(), 4, wdth=1, wght=0).pen()
                 glyph.t(-glyph.ambit(tx=1).x, -glyph.ambit(ty=1).y)
-            else:
-                try:
-                    glyph = StSt(text[pt.idx], "MDIO-VF.ttf", 4, wdth=1, wght=1, ss01=1).pen()
-                    glyph.t(-glyph.ambit(tx=1).x, -glyph.ambit(ty=1).y)
-                except IndexError:
-                    glyph = None
+            except IndexError:
+                glyph = None
 
             if glyph:
                 dominos.append(BpyObj.Curve(f"Letter_{pt.idx}")
@@ -59,33 +48,32 @@ def setup(bpw:BpyWorld):
                     .with_temp_origin((0,0,0), lambda bp: bp.rotate(y=-90))
                     .convert_to_mesh()
                     .apply_transform()
-                    #.rotate(z=pt.tan+180)
-                    #.rotate(z=pt.tan+180)
                     .locate(x=pt.pt[0], y=pt.pt[1])
-                    #.convert_to_mesh()
-                    #.apply_transform()
-                    .material("letter_mat")
-                    )
+                    .material("letter_mat"))
 
-    pt = points[0]
-    a = pt.pt.project(pt.tan, 0).project(pt.tan-90, -0.5)
-    b = pt.pt.project(pt.tan, 0).project(pt.tan-90, 1.5)
+        pt = points[0]
+        a = pt.pt.o(0, 1.25).project(pt.tan-90, -0.5)
+        b = pt.pt.o(0, 1.25).project(pt.tan-90, 0.5)
+        c = a.project(pt.tan-90, -3)
 
-    (BpyObj.Cube("Catalyst")
-        .dimensions(xx:=2, 0.25, zz:=1)
-        .locate(x=-1, y=0, z=zz)
-        .origin_to_cursor()
-        .rotate(z=pt.tan+180)
-        .apply_transform()
-        .rigidbody("passive", animated=True, friction=1)
-        .hide()
-        .insert_keyframes("location",
-            (0, lambda bp: bp.locate(x=a.x, y=a.y, z=zz/2)),
-            (20, lambda bp: bp.locate(x=b.x, y=b.y, z=zz/2)),
-            (50, lambda bp: bp.locate(x=a.x, y=a.y, z=zz/2)))
-        #.origin_to_geometry()
-        )
+        czh = 3
+        (BpyObj.Cube("Catalyst")
+            .dimensions(0.25, 2, cz:=0.5)
+            .locate(x=a.x, y=a.y, z=czh)
+            # .origin_to_cursor()
+            # .rotate(z=pt.tan+180)
+            # .apply_transform()
+            .rigidbody("passive", animated=True, friction=1)
+            .hide()
+            .insert_keyframes("location",
+                (0+idx*(n:=50), lambda bp: bp.locate(x=a.x, y=a.y, z=czh)),
+                (10+idx*n, lambda bp: bp.locate(x=b.x, y=b.y, z=czh)),
+                (20+idx*n, lambda bp: bp.locate(x=c.x, y=c.y, z=czh)))
+            # #.origin_to_geometry()
+            .set_frame(0)
+            )
 
+    dm:BpyObj
     for dm in dominos:
         (dm.apply_transform()
             .origin_to_geometry()

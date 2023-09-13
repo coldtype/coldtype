@@ -40,9 +40,9 @@ def setup(bpw:BpyWorld):
 
     lores.map(lambda bp: bp
         .convert_to_mesh()
-        .remesh(4)
+        .remesh(3)
         .apply_modifier("Remesh")
-        .rigidbody(friction=1, bounce=0))
+        .rigidbody(friction=1, bounce=0.5))
     
     hires.map(lambda idx, bp: bp
         .parent(f"Letter_Lores_{idx}", hide=True)

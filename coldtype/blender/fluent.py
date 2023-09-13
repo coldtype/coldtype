@@ -408,6 +408,9 @@ class BpyMaterial():
 class BpyGroup(Runon):
     def yields_wrapped(self):
         return False
+
+    def map(self, fn:Callable[["BpyObj"], "BpyObj"]):
+        return super().map(fn)
     
     @staticmethod
     def Curves(pens:P, prefix=None, collection=None, cyclic=True, fill=True, tx=0, ty=0):
