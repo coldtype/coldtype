@@ -64,6 +64,9 @@ def apply_syntax_mods(filepath, source_code, renderer=None, source_reader=None):
     #source_code = re.sub(r"ι,λ\.", "lambda ι, λ__: λ__.", source_code)
     source_code = re.sub(r"λ(\s+)?\.", "lambda λ__: λ__.", source_code)
     source_code = re.sub(r"λ__", "λ", source_code)
+    source_code = re.sub(r"ºº", "__", source_code)
+    #source_code = re.sub(r"_º", "__", source_code)
+    source_code
     #source_code = re.sub(r"λ", "lambda ", source_code)
     #source_code = re.sub(r"ßDPS\(([^\)]+)\)", r"(ß:=P(\1))", source_code)
 

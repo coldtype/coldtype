@@ -53,6 +53,8 @@ __memory__ = [] # will be redefined contextually
 __as_config__ = False # will be redefined contextually
 
 λ = None
+ººFILEºº = None
+ººsiblingºº = lambda x: x
 
 def noop():
     return None
