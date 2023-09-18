@@ -12,7 +12,7 @@ def capture_with_midi(f:Frame, rs):
     nxl = LaunchControlXL(rs.midi)
     img = (read_frame(rs.cv2caps[0]).align(f.a.r))
     
-    return P([
+    return P(
         img.a(0.25),
         (StSt("CTRL", fnt, 200+nxl(10, 0)*500,
             r=1, # reverse
@@ -23,4 +23,4 @@ def capture_with_midi(f:Frame, rs):
             tu=(1-nxl(30, 0))*-650)
             .align(f.a.r.take(0.75, "mxy"))
             .f(hsl(0.7, 1, 0.7))
-            .understroke(sw=nxl(50, 0)*100))])
+            .understroke(sw=nxl(50, 0)*100)))

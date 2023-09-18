@@ -1,4 +1,5 @@
 from coldtype import *
+from coldtype.fx.skia import phototype
 
 # inspired by https://mauricemeilleur.net/truchet_tiles
 
@@ -32,11 +33,10 @@ def truchet1(f):
             )
         .f(1)
         .data(frame=tr)
-        .layer(tn)
-        .spread()
-        .layer(tn)
-        .stack()
-        .mapv(rotate))
+        .gridlayer(tn)
+        .mapv(rotate)
+        .ch(phototype(f.a.r, blur=5, cut=20, cutw=6)) # uncomment for blobbiness
+        )
 
 def release(passes):
     from coldtype.renderable.animation import gifski

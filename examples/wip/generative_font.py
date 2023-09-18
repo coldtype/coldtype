@@ -94,7 +94,7 @@ def show_grid(render, result):
         print("! No glyph found")
     else:
         bbox = gfn.bbox.offset(0, 250)
-        return P([
+        return P(
             P(result).translate(0, 250),
             P().gridlines(render.rect).s(hsl(0.6, a=0.3)).sw(1).f(None),
             (P()
@@ -107,7 +107,7 @@ def show_grid(render, result):
             (P().text(gfn.glyph_name,
                 Style("Times", 48, load_font=0),
                 render.rect.inset(50)))
-        ])
+        )
 
 preview_frame = Rect(1000, (-descender*2)+cap_height)
 
