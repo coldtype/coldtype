@@ -58,7 +58,7 @@ def write(here):
                     for m in _methods:
                         try:
                             _path = Path(inspect.getfile(m[1])).relative_to(root)
-                        except TypeError:
+                        except (TypeError, ValueError):
                             _path = None
                         
                         if _path == path and m[1].__name__ not in ["__init__", "__call__", "__repr__", "__eq__"]:

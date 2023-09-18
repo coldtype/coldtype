@@ -63,6 +63,10 @@ class DrawingMixin():
     def ep(self):
         return self.endPath()
     
+    def addComponent(self, baseGlyphName, transformation):
+        print("pen.addComponent('%s', %s)" % (baseGlyphName, tuple(transformation)))
+        return self
+    
     def points(self, pts, close=True):
         self.moveTo(pts[0])
         for p in pts[1:]:

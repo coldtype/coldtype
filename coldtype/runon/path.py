@@ -540,6 +540,16 @@ class P(Runon):
         return self
 
 
+    def addComponent(self, baseGlyphName, transformation) -> "P":
+
+        print("pen.addComponent('%s', %s)" % (baseGlyphName, tuple(transformation)))
+        return self
+    
+
+    def _addComponent(self, baseGlyphName, transformation) -> "P":
+        return self
+
+
     def points(self, pts, close=True) -> "P":
 
         self.moveTo(pts[0])
