@@ -54,7 +54,9 @@ __as_config__ = False # will be redefined contextually
 
 λ = None
 ººFILEºº = None
-ººsiblingºº = lambda x: x
+
+def ººsiblingºº(x) -> Path:
+    return x
 
 def noop():
     return None

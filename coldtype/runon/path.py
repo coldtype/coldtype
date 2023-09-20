@@ -1600,7 +1600,7 @@ class P(Runon):
         return self
 
 
-    def scaleToRect(self, rect, preserveAspect=True, shrink_only=False, tx=1, ty=0) -> "P":
+    def scaleToRect(self, rect, preserveAspect=True, shrink_only=False, tx=1, ty=0, return_number=False) -> "P":
 
         """Scale this shape into a `Rect`."""
         bounds = self.bounds()
@@ -1612,15 +1612,26 @@ class P(Runon):
         if preserveAspect:
             scale = h if h < v else v
             if shrink_only and scale >= 1:
+                if return_number:
+                    return 1
                 return self
-            return self.scale(scale, tx=tx, ty=ty)
+            
+            if return_number:
+                return scale
+            else:
+                return self.scale(scale, tx=tx, ty=ty)
         else:
             if shrink_only and (h >= 1 or v >= 1):
+                if return_number:
+                    return 1, 1
                 return self
+            
+            if return_number:
+                return h, v
             return self.scale(h, v, tx=tx, ty=ty)
     
 
-    def _scaleToRect(self, rect, preserveAspect=True, shrink_only=False, tx=1, ty=0) -> "P":
+    def _scaleToRect(self, rect, preserveAspect=True, shrink_only=False, tx=1, ty=0, return_number=False) -> "P":
         return self
 
 
