@@ -71,6 +71,7 @@ def normalize_font_path(font, nonexist_ok=False):
         raise FontNotFoundException(literal)
 
 FontCache = {}
+FontmakeCache = {}
 
 class Font():
     # TODO support glyphs?
@@ -282,6 +283,41 @@ class Font():
                 except:
                     print("FAILED SYSTEM LOOKUP", matches[0])
                     raise FontNotFoundException(regex)
+
+    @staticmethod
+    def Fontmake(source, verbose=False):
+        import tempfile
+        from subprocess import run
+
+        path = Path(source).expanduser()
+        if not path.exists():
+            raise FontNotFoundException(path)
+
+        mtime = path.stat().st_mtime
+
+        if path in FontmakeCache:
+            _mtime, _font = FontmakeCache[path]
+            if _mtime == mtime:
+                return _font
+
+        print(f"fontmake compiling font {path.name}")
+
+        with tempfile.NamedTemporaryFile(prefix="coldtype_fontmake_", suffix=".ttf", delete=False) as tmp:
+            args = ["fontmake", path, "--output-path", tmp.name]
+            
+            if path.suffix == ".designspace":
+                args.extend(["-o", "variable"])
+            
+            output = run(args, capture_output=not verbose, check=True)
+        
+        print(f"/fontmake compiled font {path.name}")
+        print(tmp.name)
+
+        font = Font(tmp.name)
+        FontmakeCache[path] = [mtime, font]
+        os.unlink(tmp.name)
+
+        return font
     
     def RegisterDir(dir):
         global ALL_FONT_DIRS
