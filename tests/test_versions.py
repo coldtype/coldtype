@@ -4,4 +4,4 @@ from coldtype.test import *
 def test_versions_sidecar(r, rs):
     assert rs.renderer.source_reader.config.restart_count == 0
     assert __VERSION__["key"] == "test_color"
-    assert len(__VERSIONS__) == 14 # i.e. number of visual tests in this folder
+    assert len(__VERSIONS__) == 15 # i.e. number of visual tests in this folder
