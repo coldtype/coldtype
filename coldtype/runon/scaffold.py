@@ -73,7 +73,10 @@ class Scaffold(Runon):
                 el.subdivide(amt, edge, tags)
         return self
     
-    def grid(self, columns=2, rows=2, tags=[]):
+    def grid(self, columns=2, rows=None, tags=[]):
+        if rows is None:
+            rows = columns
+
         if self.val_present():
             self._extend_with_tags(
                 self.r.grid(columns, rows), tags)

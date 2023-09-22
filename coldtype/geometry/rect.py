@@ -489,8 +489,11 @@ class Rect(Geometrical):
         return self.union(another_rect)
         #return Rect(add(self, another_rect))
 
-    def grid(self, columns=2, rows=2) -> list:
-        """Construct a grid"""
+    def grid(self, columns=2, rows=None) -> list:
+        """Construct a grid; if rows is None, rows = columns"""
+        if rows is None:
+            rows = columns
+
         xs = [row.subdivide(columns, Edge.MinX) for row in self.subdivide(rows, Edge.MaxY)]
         return [item for sublist in xs for item in sublist]
 
