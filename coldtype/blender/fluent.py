@@ -412,6 +412,9 @@ class BpyGroup(Runon):
     def map(self, fn:Callable[["BpyObj"], "BpyObj"]):
         return super().map(fn)
     
+    def deselect(self):
+        return self.map(lambda bp: bp.select(False))
+    
     @staticmethod
     def Curves(pens:P, prefix=None, collection=None, cyclic=True, fill=True, tx=0, ty=0):
         curves = BpyGroup()
@@ -708,10 +711,18 @@ class BpyObj(_Chainable):
     
     selectAndDelete = select_and_delete
 
-    def separateByLooseParts(self):
+    def separate_by_loose_parts(self) -> BpyGroup:
         with self.all_vertices_selected():
             bpy.ops.mesh.separate(type="LOOSE")
-        return self
+        
+        bg = BpyGroup()
+        bg.append(self)
+
+        for obj in bpy.context.selected_objects:
+            bg.append(BpyObj(obj))
+        
+        bg.deselect()
+        return bg
     
     def parent(self, parent_tag, hide=False):
         with self.obj_selection_sequence(parent_tag) as o:
@@ -1100,6 +1111,9 @@ class BpyObj(_Chainable):
         return self
     
     def array(self, count=2, relative=(1, 0, 0), constant=(0.1, 0, 0)):
+        if any(v is None for v in relative): relative = None
+        if any(v is None for v in constant): constant = None
+
         with self.obj_selected():
             bpy.ops.object.modifier_add(type='ARRAY')
             m = self.obj.modifiers[-1]

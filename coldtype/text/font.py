@@ -285,7 +285,7 @@ class Font():
                     raise FontNotFoundException(regex)
 
     @staticmethod
-    def Fontmake(source, verbose=False):
+    def Fontmake(source, verbose=False, keep_overlaps=False, cli_args=[]):
         import tempfile
         from subprocess import run
 
@@ -308,13 +308,17 @@ class Font():
             if path.suffix == ".designspace":
                 args.extend(["-o", "variable"])
             
+            if keep_overlaps:
+                args.append("--keep-overlaps")
+            
+            args.extend(cli_args)
             output = run(args, capture_output=not verbose, check=True)
         
         print(f"/fontmake compiled font {path.name}")
         print(tmp.name)
 
         font = Font(tmp.name)
-        FontmakeCache[path] = [mtime, font]
+        FontmakeCache[path] = [mtime, font] # TODO creation args should also go in cache
         os.unlink(tmp.name)
 
         return font
