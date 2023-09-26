@@ -776,11 +776,11 @@ class Runon:
     
     # Data-access methods
 
-    def data(self, key=None, default=None, **kwargs):
+    def data(self, key=None, default=None, function_literals=False, **kwargs):
         """Set with kwargs, read with key= & default="""
         if key is None and len(kwargs) > 0:
             for k, v in kwargs.items():
-                if callable(v):
+                if not function_literals and callable(v):
                     v = self._call_idx_fn(v, k, self)
                 self._data[k] = v
             return self
@@ -788,6 +788,10 @@ class Runon:
             return self._data.get(key, default)
         else:
             return self
+    
+    def datafn(self, **kwargs):
+        """Set function literals with kwargs"""
+        return self.data(function_literals=True, **kwargs)
     
     def tag(self, value=RunonNoData()):
         if isinstance(value, RunonNoData):
