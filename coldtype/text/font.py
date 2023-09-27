@@ -295,6 +295,12 @@ class Font():
 
         mtime = path.stat().st_mtime
 
+        if path.suffix == ".designspace":
+            from fontTools.designspaceLib import DesignSpaceDocument
+            ds = DesignSpaceDocument.fromfile(path)
+            for source in ds.sources:
+                mtime = max(Path(source.path).stat().st_mtime, mtime)
+
         if path in FontmakeCache:
             _mtime, _font = FontmakeCache[path]
             if _mtime == mtime:
