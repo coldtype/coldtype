@@ -60,6 +60,9 @@ class Winmans():
             or config.args.build
             ):
             self.bg = True
+        
+        self.cron_start = 0
+        self.cron_interval = 0
 
     def should_glfwskia(self):
         return glfw is not None and skia is not None and not self.config.no_viewer
@@ -256,6 +259,12 @@ class Winmans():
                 if lls:
                     self.renderer.on_stdin(lls)
                 last_line = None
+            
+            if self.cron_start > 0 and self.cron_interval > 0:
+                if (time.time() - self.cron_start) > self.cron_interval:
+                    self.cron_start = time.time()
+                    self.renderer.action_waiting = Action.PreviewStoryboardReload
+                    self.renderer.action_waiting_reason = "cron_interval timer hit"
             
             self.poll()
     

@@ -83,6 +83,8 @@ class ConfigOption(Enum):
     TestDirectoryDelay = ("test_directory_delay", 10, "tdd", lambda x: int(x))
     VersionIndex = ("version_index", 0, "vi", lambda x: int(x))
     RestartCount = ("restart_count", 0, "rc", lambda x: int(x))
+    
+    CronInterval = ("cron_interval", 0, "ci", lambda x: float(x))
 
     @staticmethod
     def Help(e):

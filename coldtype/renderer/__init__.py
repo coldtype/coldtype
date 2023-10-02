@@ -352,6 +352,11 @@ class Renderer():
             if self.last_animation:
                 if self.last_animation.reset_to_zero:
                     self.state.frame_offset = 0
+        
+        ci = self.source_reader.config.cron_interval
+        if ci > 0:
+            self.winmans.cron_start = ptime.time()
+            self.winmans.cron_interval = ci
     
     def animation(self):
         renderables = self.renderables(Action.PreviewStoryboard)

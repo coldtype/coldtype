@@ -828,6 +828,8 @@ class BpyObj(_Chainable):
             for kp in fc.keyframe_points:
                 kp.handle_left_type  = 'VECTOR'
                 kp.handle_right_type = 'VECTOR'
+                kp.handle_left = kp.co
+                kp.handle_right = kp.co
         
         self.modify_keyframes(selector, make_linear)
         return self
