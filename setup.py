@@ -78,6 +78,7 @@ setuptools.setup(
             "demo/blank.py",
             "demo/boiler.py",
             "demo/vf.py",
+            "demo/gifski.py",
             "renderer/.coldtype.py"
         ],
     },

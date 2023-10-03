@@ -18,6 +18,21 @@ from coldtype.renderable.renderable import renderable, Action, RenderPass, Overl
 from coldtype.osutil import show_in_finder
 
 
+def raw_gifski(width, fps, frames, output_path, open=False):
+    """simpler wrapper for already-installed gifski"""
+    run([
+        "gifski",
+        "--fps", str(fps),
+        "--width", str(width),
+        "-o", output_path,
+        *frames])
+    print("\n")
+    
+    if open:
+       show_in_finder(output_path.parent)
+    return True
+
+
 def gifski(a:"animation", passes, open=False):
     """simple wrapper for already-installed gifski"""
     root = a.pass_path(f"%4d.{a.fmt}").parent.parent
