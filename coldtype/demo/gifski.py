@@ -9,18 +9,32 @@ if __as_config__:
 args = parse_inputs(__inputs__, dict(
     path=[None, str, "Must provide path to frames"],
     fps=[18, float],
-    output_folder=[".", str],
+    output_folder=[None, str],
+    name=[None, str],
     ))
 
-template = args["path"] + "{:04d}.png"
+template_path = Path(args["path"]).absolute()
+if template_path.exists() and template_path.is_dir():
+    template = str(template_path) + "/" + "{:04d}.png"
+else:
+    template = str(template_path) + "{:04d}.png"
 
 img0_path = ººsiblingºº(template.format(0))
+print(img0_path)
+
 img0 = SkiaImage(img0_path)
 
-name = (img0_path.parent.parent.stem + "_" + img0_path.stem).replace("_0000", "")
+name = args["name"]
+if name is None:
+    name = img0_path.parent.stem
+
 count = len(list(img0_path.parent.glob("*.png")))
 
-output_folder = Path(args["output_folder"])
+output_folder = args["output_folder"]
+if output_folder is None:
+    output_folder = img0_path.parent.parent
+
+output_folder = Path(output_folder)
 output_folder.mkdir(exist_ok=True, parents=True)
 
 #print(args)
