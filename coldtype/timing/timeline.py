@@ -167,6 +167,17 @@ class Timeline(Timeable):
         
         return Easeable(matches, fi)
     
+    def latest(self, track=None, fi=None) -> Easeable:
+        fi = self._norm_held_fi(fi)
+
+        matches = []
+        _fi = fi
+        while _fi >= 0 and not matches:
+            matches = self.current(track=track, fi=_fi).t or []
+            _fi -= 1
+        
+        return Easeable(matches, fi)
+    
     @property
     def tstart(self):
         if self._start > -1:
