@@ -122,6 +122,7 @@ class Style():
         load_font=True, # should we attempt to load the font?
         tag=None, # way to differentiate in __eq__
         _stst=False,
+        case=None,
         **kwargs
         ):
 
@@ -134,6 +135,7 @@ class Style():
             self.font = font
 
         self.meta = meta
+        self.case = case
 
         self.fallback = fallback
         self.narrower = narrower
@@ -460,6 +462,12 @@ class StyledString(FittableMixin):
     Lowest-level vectorized typesetting class
     """
     def __init__(self, text:str, style:Style):
+        if style.case is not None:
+            if style.case == "upper":
+                text = text.upper()
+            elif style.case == "lower":
+                text = text.lower()
+        
         self.text_info = TextInfo(text)
         self.text = text
         self.setStyle(style)
