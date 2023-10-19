@@ -214,7 +214,7 @@ class Font():
                     if regex_dir and not re.search(regex_dir, str(p.parent), re.IGNORECASE):
                         continue
                     if re.search(regex, p.name, re.IGNORECASE):
-                        if p.suffix in [".otf", ".ttf", ".ttc", ".ufo"]:
+                        if p.suffix in [".otf", ".ttf", ".ttc", ".ufo", ".woff", ".woff2"]:
                             results.append(p)
         except FileNotFoundError:
             pass
