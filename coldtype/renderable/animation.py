@@ -20,31 +20,34 @@ from coldtype.osutil import show_in_finder
 
 def raw_gifski(width, fps, frames, output_path, open=False):
     """simpler wrapper for already-installed gifski"""
-    run([
-        "gifski",
-        "--fps", str(fps),
-        "--width", str(width),
-        "-o", output_path,
-        *frames])
+    run(
+        ["gifski", "--fps", str(fps), "--width", str(width), "-o", output_path, *frames]
+    )
     print("\n")
-    
+
     if open:
-       show_in_finder(output_path.parent)
+        show_in_finder(output_path.parent)
     return True
 
 
-def gifski(a:"animation", passes, open=False):
+def gifski(a: "animation", passes, open=False):
     """simple wrapper for already-installed gifski"""
     root = a.pass_path(f"%4d.{a.fmt}").parent.parent
     gif = root / (a.name + ".gif")
-    run([
-        "gifski",
-        "--fps", str(a.timeline.fps),
-        "--width", str(a.rect.w),
-        "-o", gif,
-        *[p.output_path for p in passes if p.render == a]])
+    run(
+        [
+            "gifski",
+            "--fps",
+            str(a.timeline.fps),
+            "--width",
+            str(a.rect.w),
+            "-o",
+            gif,
+            *[p.output_path for p in passes if p.render == a],
+        ]
+    )
     print("\n")
-    
+
     if open:
         show_in_finder(gif.parent)
     return gif
@@ -54,9 +57,11 @@ class animation(renderable, Timeable):
     """
     Base class for any frame-wise animation animatable by Coldtype
     """
-    def __init__(self,
+
+    def __init__(
+        self,
         rect=(1080, 1080),
-        timeline:Timeline=10,
+        timeline: Timeline = 10,
         show_frame=True,
         offset=0,
         overlay=True,
@@ -65,14 +70,14 @@ class animation(renderable, Timeable):
         clip_cursor=True,
         reset_to_zero=False,
         release=None,
-        **kwargs
-        ):
+        **kwargs,
+    ):
         if "tl" in kwargs:
             timeline = kwargs["tl"]
             del kwargs["tl"]
 
         super().__init__(**kwargs)
-        
+
         self.rect = Rect(rect).round()
         self.r = self.rect
         self.overlay = overlay
@@ -86,7 +91,7 @@ class animation(renderable, Timeable):
         self.clip_cursor = clip_cursor
         self.reset_to_zero = reset_to_zero
         self.release = release
-    
+
     def __call__(self, func):
         res = super().__call__(func)
         self.prefix = self.name + "_"
@@ -101,28 +106,28 @@ class animation(renderable, Timeable):
                 timeline = Timeline(timeline[0], fps=timeline[1])
             except:
                 timeline = Timeline(timeline)
-        
+
         self.timeline = timeline
         self.t = timeline
         self.start = timeline.start
         self.end = timeline.end
-    
+
     def folder(self, filepath):
-        return filepath.stem + "/" + self.name # TODO necessary?
-    
+        return filepath.stem + "/" + self.name  # TODO necessary?
+
     def all_frames(self):
         return list(range(0, self.duration))
-    
+
     def _active_frames(self, renderer_state):
         frames = []
         if renderer_state:
             frames.append((renderer_state.frame_offset + self.offset) % self.duration)
         return frames
-    
+
     def active_frames(self, action, renderer_state, indices):
         if not action:
             return indices
-        
+
         frames = self._active_frames(renderer_state)
 
         if action == Action.RenderAll:
@@ -135,12 +140,12 @@ class animation(renderable, Timeable):
                     frames = self.workarea()
                 except:
                     frames = self.all_frames()
-                #if hasattr(self.timeline, "find_workarea"):
+                # if hasattr(self.timeline, "find_workarea"):
                 #    frames = self.timeline.find_workarea()
-        #else:
+        # else:
         #    frames = indices
         return frames
-    
+
     def workarea(self):
         if hasattr(self.timeline, "workarea"):
             return list(self.timeline.workarea)
@@ -148,7 +153,7 @@ class animation(renderable, Timeable):
             return list(self.timeline.workareas[0])
         else:
             return list(range(0, self.duration))
-    
+
     def jump(self, current, direction):
         c = current % self.duration
         js = self.timeline.jumps()
@@ -161,7 +166,7 @@ class animation(renderable, Timeable):
                 if c < j:
                     return j
         return current
-    
+
     def pass_suffix(self, index=0):
         idx = index % self.duration
 
@@ -171,19 +176,19 @@ class animation(renderable, Timeable):
             pf = self.suffix + "_"
         else:
             pf = ""
-        
+
         if isinstance(idx, int):
             return pf + "{:04d}".format(idx)
         else:
             return pf + index
-    
+
     def render_and_rasterize(self, scale=1, style=None) -> str:
         first = self.render_and_rasterize_frame(0, scale=scale, style=style)
         for idx in range(1, self.timeline.duration):
             print(">>>", idx)
             self.render_and_rasterize_frame(idx, scale=scale, style=style)
         return first
-    
+
     def passes(self, action, renderer_state, indices=[]):
         c, m = None, None
 
@@ -203,21 +208,24 @@ class animation(renderable, Timeable):
 
             if Overlay.Recording in renderer_state.overlays and self.overlay and rp:
                 if not has_recording:
-                    recording = {"cursor":{}}
+                    recording = {"cursor": {}}
 
         frames = self.active_frames(action, renderer_state, indices)
-        
+
         if renderer_state:
             if Overlay.Recording in renderer_state.overlays and self.overlay and rp:
                 fi = frames[0]
                 recording["cursor"][str(fi)] = [c.x, c.y]
                 rp.write_text(json.dumps(recording))
 
-        return [RenderPass(self, action, i, [Frame(i, self, c, m, recording)]) for i in frames]
+        return [
+            RenderPass(self, action, i, [Frame(i, self, c, m, recording)])
+            for i in frames
+        ]
 
     def running_in_viewer(self):
         return True
-    
+
     def run(self, render_pass, renderer_state, render_bg=True):
         fi = render_pass.args[0].i
         if renderer_state and self.running_in_viewer():
@@ -227,96 +235,137 @@ class animation(renderable, Timeable):
 
         self.t.hold(fi)
         return super().run(render_pass, renderer_state, render_bg=render_bg)
-    
+
     @property
     def recording_path(self):
         try:
             return self.filepath.parent / (self.filepath.stem + "_recording.json")
         except:
             return None
-    
+
     def runpost(self, result, render_pass, renderer_state, config):
-        #if Overlay.Rendered in renderer_state.overlays:
+        # if Overlay.Rendered in renderer_state.overlays:
         #    from coldtype.img.skiaimage import SkiaImage
         #    return SkiaImage(render_pass.output_path)
 
         res = super().runpost(result, render_pass, renderer_state, config)
 
-        if Overlay.Recording in renderer_state.overlays and self.overlay and self.recording_path:
+        if (
+            Overlay.Recording in renderer_state.overlays
+            and self.overlay
+            and self.recording_path
+        ):
             t = self.rect.take(50, "mny")
-            frame:Frame = render_pass.args[0]
-            res.append(P().rect(Point(0, 0).rect(150, 60)).t(10, 10).f(hsl(0.95, 1, 0.7)))
-            res.append(P().text(f"{frame.i}", Style("Courier", 42, load_font=0, fill=bw(1)), t.inset(10)))
+            frame: Frame = render_pass.args[0]
+            res.append(
+                P().rect(Point(0, 0).rect(150, 60)).t(10, 10).f(hsl(0.95, 1, 0.7))
+            )
+            res.append(
+                P().text(
+                    f"{frame.i}",
+                    Style("Courier", 42, load_font=0, fill=bw(1)),
+                    t.inset(10),
+                )
+            )
 
         if Overlay.Info in renderer_state.overlays and self.overlay:
             t = self.rect.take(50, "mny")
-            frame:Frame = render_pass.args[0]
-            return P([
-                res,
-                P().rect(t).f(bw(0, 0.75)) if self.show_frame else None,
-                P().text(f"{frame.i} / {self.duration}", Style("Times", 42, load_font=0, fill=bw(1)), t.inset(10)) if self.show_frame else None])
+            frame: Frame = render_pass.args[0]
+            return P(
+                [
+                    res,
+                    P().rect(t).f(bw(0, 0.75)) if self.show_frame else None,
+                    P().text(
+                        f"{frame.i} / {self.duration}",
+                        Style("Times", 42, load_font=0, fill=bw(1)),
+                        t.inset(10),
+                    )
+                    if self.show_frame
+                    else None,
+                ]
+            )
         return res
-    
+
     def package(self):
         pass
 
     def fn_to_frame(self, fn_name):
         return 0
-    
+
     def frame_to_fn(self, fi) -> Tuple[str, dict]:
         return None, {}
-    
+
     def viewOffset(self, offset):
         @animation(self.rect, timeline=self.timeline, offset=offset, preview_only=1)
         def offset_view(f):
             return self.func(Frame(f.i, self))
+
         return offset_view
-    
+
     def contactsheet_renderable(self, scale=1, sl=slice(None, None, 1)):
         sheet = self.contactsheet(None, scale, sl)
-        
+
         @renderable(sheet.data("frame"), bg=self.bg)
         def contactsheet(r):
             return sheet
-        
+
         return contactsheet
-    
-    def contactsheet(self, r:Rect=None, scale=1, sl=slice(None, None, 1), border=True, grid=True, bgs=False):
+
+    def contactsheet(
+        self,
+        r: Rect = None,
+        scale=1,
+        sl=slice(None, None, 1),
+        border=True,
+        grid=True,
+        bgs=False,
+    ):
         from coldtype.runon.scaffold import Scaffold
 
         xs = list(range(0, self.timeline.duration)[sl])
         sq = math.ceil(math.sqrt(len(xs)))
 
         if r is None:
-            r = Rect(0, 0, sq*self.rect.w*scale, sq*self.rect.h*scale)
+            r = Rect(0, 0, sq * self.rect.w * scale, sq * self.rect.h * scale)
 
         s = Scaffold(r).grid(sq, sq)
 
         def frame(x):
             try:
                 fi = xs[x.i]
-                return (self
-                    .frame_result(fi, frame=1, render_bg=bgs)
+                return (
+                    self.frame_result(fi, frame=1, render_bg=bgs)
                     .align(x.el.rect, tx=0)
-                    .scale(scale, tx=0))
+                    .scale(scale, tx=0)
+                )
             except IndexError:
                 return None
-        
+
         return P(
             P(s.r).tag("border").fssw(-1, 0, 1) if border else None,
             s.borders().tag("grid").fssw(-1, 0, 1) if grid else None,
-            P().enumerate(s, frame).tag("frames")
+            P().enumerate(s, frame).tag("frames"),
         ).data(frame=r)
-    
+
     def frame_img(self, fi):
         from coldtype.img.skiaimage import SkiaImage
+
         return SkiaImage(self.pass_path(fi))
-    
+
     frameImg = frame_img
-    
-    def export(self, fmt, date=False, loops=1, open=1, audio=None, audio_loops=None, vf=None):
+
+    def export(
+        self, fmt, date=False, loops=1, open=1, audio=None, audio_loops=None, vf=None
+    ):
         def _export(passes):
-            fe = FFMPEGExport(self, date=date, loops=loops, audio=audio, audio_loops=audio_loops, vf=vf)
+            fe = FFMPEGExport(
+                self,
+                date=date,
+                loops=loops,
+                audio=audio,
+                audio_loops=audio_loops,
+                vf=vf,
+            )
             if fmt == "gif":
                 fe.gif()
             elif fmt == "h264":
@@ -325,38 +374,39 @@ class animation(renderable, Timeable):
             if open:
                 fe.open()
             return fe
+
         return _export
-    
+
     def gifski(self, open=False):
         def _gifski(passes):
             return gifski(self, passes, open=open)
+
         return _gifski
 
 
 class aframe(animation):
-    def __init__(self,
-        rect=(1080, 1080),
-        **kwargs
-        ):
-        super().__init__(rect,
-            timeline=Timeline(1),
-            **kwargs)
+    def __init__(self, rect=(1080, 1080), **kwargs):
+        super().__init__(rect, timeline=Timeline(1), **kwargs)
 
 
-class FFMPEGExport():
-    def __init__(self, a:animation,
+class FFMPEGExport:
+    def __init__(
+        self,
+        a: animation,
         date=False,
         loops=1,
         audio=None,
         audio_loops=None,
         vf=None,
-        ):
+        scale=1,
+    ):
         self.a = a
         self.date = date
         self.loops = loops
         self.fmt = None
         self.failed = False
-        
+        self.scale = scale
+
         if audio:
             self.audio = Path(audio).expanduser()
             self.audio_loops = audio_loops if audio_loops is not None else loops
@@ -372,59 +422,71 @@ class FFMPEGExport():
         # https://github.com/typemytype/drawbot/blob/master/drawBot/context/tools/mp4Tools.py
 
         from coldtype.renderable.tools import FFMPEG_COMMAND
+
         print("> ffmpeg command ==", FFMPEG_COMMAND)
 
         self.args = [
             FFMPEG_COMMAND,
-            "-y", # overwrite existing files
-            "-loglevel", "16", # 'error, 16' Show all errors
-            "-r", str(self.a.timeline.fps)
+            "-y",  # overwrite existing files
+            "-loglevel",
+            "16",  # 'error, 16' Show all errors
+            "-r",
+            str(self.a.timeline.fps),
         ]
 
         if self.audio:
-            self.args.extend([
-                "-stream_loop", str(self.loops-1),
-                "-i", template, # input sequence
-                "-stream_loop", str(self.audio_loops-1),
-                "-i", str(self.audio),
-                #"-stream_loop", "-1",
-            ])
+            self.args.extend(
+                [
+                    "-stream_loop",
+                    str(self.loops - 1),
+                    "-i",
+                    template,  # input sequence
+                    "-stream_loop",
+                    str(self.audio_loops - 1),
+                    "-i",
+                    str(self.audio),
+                    # "-stream_loop", "-1",
+                ]
+            )
         else:
-            self.args.extend([
-                #"-stream_loop", str(self.loops-1),
-                "-i", template, # input sequence
-                "-filter_complex", f"loop=loop={self.loops-1}:size={self.a.timeline.duration}:start=0"
-            ])
-        
+            self.args.extend(
+                [
+                    # "-stream_loop", str(self.loops-1),
+                    "-i",
+                    template,  # input sequence
+                    "-filter_complex",
+                    f"loop=loop={self.loops-1}:size={self.a.timeline.duration}:start=0, scale=iw*{self.scale}:ih*{self.scale}",
+                ]
+            )
+
         if vf:
-           self.args.extend([
-               "-vf", vf
-           ])
-    
+            self.args.extend(["-vf", vf])
+
     def h264(self):
         self.fmt = "mp4"
-        self.args.extend([
-            "-c:v", "libx264",
-            "-crf", "20", # Constant Rate Factor
-            "-pix_fmt", "yuv420p", # pixel format
-        ])
+        self.args.extend(
+            [
+                "-c:v",
+                "libx264",
+                "-crf",
+                "20",  # Constant Rate Factor
+                "-pix_fmt",
+                "yuv420p",  # pixel format
+            ]
+        )
         return self
-    
+
     def prores(self):
         # https://video.stackexchange.com/questions/14712/how-to-encode-apple-prores-on-windows-or-linux
         self.fmt = "mov"
-        self.args.extend([
-            "-c:v", "prores_ks",
-            "-c:a", "pcm_s16le",
-            "-profile:v", "2"
-        ])
+        self.args.extend(["-c:v", "prores_ks", "-c:a", "pcm_s16le", "-profile:v", "2"])
         return self
-    
+
     def gif(self):
         self.fmt = "gif"
-        #self.args.extend([])
+        # self.args.extend([])
         return self
-    
+
     def write(self, verbose=False):
         first_frame = self.a.pass_path(0)
         if not Path(first_frame).exists():
@@ -436,7 +498,7 @@ class FFMPEGExport():
 
         if not self.fmt:
             raise Exception("No fmt specified")
-        
+
         now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         d = ("_" + now) if self.date else ""
         self.output_path = self.folder / f"{self.a.name}{d}.{self.fmt}"
@@ -451,7 +513,7 @@ class FFMPEGExport():
 
         print("...done")
         return self
-    
+
     def open(self):
         """i.e. Reveal-in-Finder"""
         if self.failed:
@@ -470,11 +532,14 @@ class fontpreview(animation):
             if re.search(self.re, str(font)):
                 if len(self.matches) < limit:
                     self.matches.append(font)
-        
+
         self.matches.sort()
 
         super().__init__(rect=rect, timeline=Timeline(len(self.matches)), **kwargs)
-    
+
     def passes(self, action, renderer_state, indices=[]):
         frames = self.active_frames(action, renderer_state, indices)
-        return [RenderPass(self, action, i, [Frame(i, self), self.matches[i]]) for i in frames]
+        return [
+            RenderPass(self, action, i, [Frame(i, self), self.matches[i]])
+            for i in frames
+        ]
