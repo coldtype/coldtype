@@ -101,15 +101,16 @@ class DrawBotPen(DrawablePenMixin, P):
         stops = gradient.stops
         db.linearGradient(stops[0][1], stops[1][1], [list(s[0]) for s in stops], [0, 1])
     
-    def draw(self, scale=1, style=None):
+    def draw(self, scale=1, style=None, attrs=True):
         if len(self.dat) > 0:
             for p in self.dat._els:
-                DrawBotPen(p, rect=self.rect).draw(scale=scale)
+                DrawBotPen(p, rect=self.rect).draw(scale=scale, attrs=attrs)
         else:
             with db.savedState():
                 db.scale(scale)
-                for attrs, attr in self.findStyledAttrs(style):
-                    self.applyDATAttribute(attrs, attr)
+                if attrs:
+                    for attrs, attr in self.findStyledAttrs(style):
+                        self.applyDATAttribute(attrs, attr)
                 db.drawPath(self.bp)
         return self
     

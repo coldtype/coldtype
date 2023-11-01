@@ -105,6 +105,10 @@ def dbdraw(p:P):
     p.cast(DrawBotPen).draw()
     return p
 
+def dbdraw_plain(p:P):
+    p.cast(DrawBotPen).draw(attrs=False)
+    return p
+
 def tobp(p:P):
     bp = db.BezierPath()
     p.replay(bp)

@@ -2200,6 +2200,20 @@ class P(Runon):
         return self
 
 
+    def withSVG(self, svg) -> "P":
+
+        from fontTools.svgLib import SVGPath
+        svg = SVGPath.fromstring(svg)
+        rp = RecordingPen()
+        svg.draw(rp)
+        self._val.value = rp.value
+        return self
+
+
+    def _withSVG(self, svg) -> "P":
+        return self
+
+
     def withSVGFile(self, svg_file) -> "P":
 
         from fontTools.svgLib import SVGPath
