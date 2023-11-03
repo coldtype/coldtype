@@ -1008,8 +1008,11 @@ class Renderer():
             arg_count = len(inspect.signature(fn).parameters)
             if arg_count == 0:
                 res = fn()
-            else:
+            elif arg_count == 1:
                 res = fn(all_passes)
+            elif arg_count == 2:
+                res = fn(all_passes, self)
+
             if isinstance(res, Action):
                 return res
             
