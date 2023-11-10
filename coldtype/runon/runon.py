@@ -578,6 +578,16 @@ class Runon:
         self._els = els
         return self
     
+    def collapseonce(self, deblank=True):
+        """Same as collapse, except only collapses one-level"""
+        els = []
+
+        for el in self._els:
+            els.extend(el._els)
+
+        self._els = els
+        return self
+    
     def sum(self):
         out = []
         if self.val_present():

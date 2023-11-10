@@ -361,6 +361,11 @@ class Font():
                 return Font.RecursiveMono()
             else:
                 raise FontNotFoundException()
+    
+    def copy_to(self, path:Path):
+        from shutil import copy2
+        copy2(self.path, path)
+        return self
 
     @staticmethod
     def ColdtypeObviously():

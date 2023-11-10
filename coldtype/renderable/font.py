@@ -94,7 +94,7 @@ class generativefont(animation):
         if False: # flip to true if you don't want to see the grid
             return result
 
-        gfn = result[0].data.get("gfn")
+        gfn = result[0].data("gfn")
         if not gfn:
             print("! No glyph found")
             return result
@@ -139,7 +139,7 @@ class generativefont(animation):
         self.ufo.insertGlyph(glyph)
         self.ufo.save()
         return P([
-            glyph_pen.data(gfn=glyph_fn)
+            glyph_pen.data(gfn=glyph_fn, function_literals=True)
         ])
     
     def spacecenter(self, r, text, fontSize=150):
