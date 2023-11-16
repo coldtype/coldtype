@@ -778,6 +778,10 @@ class BpyObj(_Chainable):
         setattr(self.obj, prop, value)
         return self
     
+    def set_data(self, prop, value):
+        setattr(self.obj.data, prop, value)
+        return self
+    
     def set_props(self, pairs):
         for prop, value in pairs:
             self.set_prop(prop, value)
