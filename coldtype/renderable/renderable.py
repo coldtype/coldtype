@@ -177,11 +177,18 @@ class renderable():
         self.rect = Rect(rect).round()
         self._stacked_rect = None
 
+        self.bg_img = None
         self.has_bg = bg is not None and bg is not False and bg != -1
+        
         if self.has_bg:
-            self.bg = normalize_color(bg)
+            try:
+                self.bg = normalize_color(bg)
+            except:
+                self.bg_img = Path(bg).expanduser()
+                self.has_bg = False
         else:
             self.bg = normalize_color("whitesmoke")
+        
         self.fmt = fmt
         self.prefix = prefix
         self.suffix = suffix
@@ -347,11 +354,20 @@ class renderable():
         else:
             res = render_pass.fn(*render_pass.args)
         
-        if self.render_bg and self.has_bg and render_bg:
+        if self.render_bg and render_bg and self.has_bg:
             return P([
                 P(self.rect).f(self.bg),
                 res
             ])
+        elif self.render_bg and render_bg and self.bg_img:
+            if self.bg_img.exists():
+                return P([
+                    P(self.rect).img(self.bg_img, self.rect),
+                    res
+                ])
+            else:
+                print("! bg=", self.bg_img, "does not exist")
+                return res
         else:
             return res
         
