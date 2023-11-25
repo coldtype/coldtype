@@ -203,16 +203,18 @@ class WinmanGLFWSkia():
         if pin and pin != "0":
             vm = glfw.get_video_mode(self.primary_monitor)
             work_rect = Rect(vm.size.width, vm.size.height)
-            #work_rect = Rect(glfw.get_monitor_workarea(self.primary_monitor))
+            _work_rect_start = Rect(glfw.get_monitor_workarea(self.primary_monitor))
             wrz = work_rect.zero()
             edges = Edge.PairFromCompass(pin)
             pinned = wrz.take(ww, edges[0]).take(wh, edges[1]).round()
             if edges[1] == "mdy":
                 pinned = pinned.offset(0, -30)
             pinned = pinned.flip(wrz.h)
-            pinned = pinned.offset(*work_rect.origin())
+            pinned = pinned.offset(*_work_rect_start.origin())
             wpi = self.config.window_pin_inset
             pinned = pinned.inset(-wpi[0], wpi[1])
+            wpo = self.config.window_pin_offset
+            pinned = pinned.offset(wpo[0], -wpo[1])
             glfw.set_window_pos(self.window, pinned.x, pinned.y)
         else:
             glfw.set_window_pos(self.window, 0, 0)

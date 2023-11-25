@@ -38,8 +38,8 @@ class ConfigOption(Enum):
     WindowFloat = ("window_float", None, "wf", true_false_or_none)
     WindowOpacity = ("window_opacity", 1, "wo", lambda x: float(x))
     WindowPin = ("window_pin", "SE", "wp")
-    WindowPinInset = ("window_pin_inset", (0, 0), "wpi",
-        lambda x: [int(n) for n in x.split(",")])
+    WindowPinInset = ("window_pin_inset", (0, 0), "wpi", lambda x: [int(n) for n in x.split(",")])
+    WindowPinOffset = ("window_pin_offset", (0, 0), "wpo", lambda x: [int(n) for n in x.split(",")])
     WindowContentScale = ("window_content_scale", None, "wcs", lambda x: float(x))
     MonitorName = ("monitor_name", None, "mn")
     EditorCommand = ("editor_command", "code", "ec")
