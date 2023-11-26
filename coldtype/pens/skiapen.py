@@ -68,7 +68,14 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
 
                 self.paint.setAlphaf(self.paint.getAlphaf()*self.alpha)
                 if not did_draw:
-                    canvas.drawPath(self.path, self.paint)
+                    print("HELLO", self.path)
+                    pass
+                    paint = skia.Paint(Color=skia.ColorBLUE)
+                    paint.setStyle(skia.Paint.kStroke_Style)
+                    paint.setAntiAlias(False)
+                    paint.setStrokeWidth(2)
+                    #paint = self.paint
+                    canvas.drawPath(self.path, paint)
                 canvas.restore()
 
     def colr(self, data, pen:P):
@@ -90,7 +97,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
 
             shader = shader_fn(*args.values())
             self.paint.setStyle(skia.Paint.kFill_Style)
-            self.paint.setShader(shader)
+            #self.paint.setShader(shader)
         else:
             raise Exception("No matching SkiaShaders function for " + method)
 
