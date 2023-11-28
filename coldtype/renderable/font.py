@@ -15,7 +15,7 @@ from typing import Tuple
 
 
 class glyphfn():
-    def __init__(self, width=1000, lsb=0, rsb=0):
+    def __init__(self, width=1000, lsb=None, rsb=None):
         """lsb = left-side-bearing / rsb = right-side-bearing"""
         self.width = width
         self.lsb = lsb
@@ -24,8 +24,24 @@ class glyphfn():
         self.bbox = None
     
     def add_font(self, font):
-        self.frame = Rect(self.width, font.ufo.info.capHeight)
-        self.bbox = Rect(self.lsb + self.width + self.rsb, font.ufo.info.capHeight)
+        width = self.width
+        if width == "auto":
+            width = self.func(None).ambit(tx=0,ty=0).w
+        
+        if self.lsb is None:
+            if font.default_lsb is not None:
+                self.lsb = font.default_lsb
+            else:
+                self.lsb = 10
+        
+        if self.rsb is None:
+            if font.default_rsb is not None:
+                self.rsb = font.default_rsb
+            else:
+                self.rsb = 10
+
+        self.frame = Rect(width, font.ufo.info.capHeight)
+        self.bbox = Rect(self.lsb + width + self.rsb, font.ufo.info.capHeight)
         return self
     
     def __call__(self, func):
@@ -46,6 +62,8 @@ class generativefont(animation):
         descender=-250,
         units_per_em=1000,
         preview_size=(1000, None),
+        default_lsb=None,
+        default_rsb=None,
         filter=None):
 
         pw, ph = preview_size
@@ -65,6 +83,10 @@ class generativefont(animation):
         ufo.info.unitsPerEm = units_per_em
         
         self.ufo = ufo
+        
+        self.default_lsb = default_lsb
+        self.default_rsb = default_rsb
+        
         self.filter = filter
 
         super().__init__(
@@ -103,6 +125,8 @@ class generativefont(animation):
             guides = result[0].all_guides()
         except:
             guides = P()
+
+        glyph_copy = gfn.func(gfn.frame).scale(0.5).align(render.rect.inset(20), "E")
         
         bbox = gfn.bbox.offset(0, 250)
         return P([
@@ -113,6 +137,7 @@ class generativefont(animation):
                 .line(bbox.en.extr(-100))
                 .line(bbox.ee.extr(-100))
                 .f(None).s(hsl(0.9, 1, a=0.5)).sw(4)),
+            glyph_copy.pen().f(0),
             guides.translate(gfn.lsb, 250),
             (P().text(gfn.glyph_name, Style("Times", 48, load_font=0),
                 render.rect.inset(50)))])
@@ -126,12 +151,22 @@ class generativefont(animation):
             .func(glyph_fn.frame)
             .fssw(-1, 0, 2))
         
+        tx = 0
+        if glyph_fn.width == "auto":
+            tx = glyph_pen.ambit(tx=0, ty=0).x
+        
         if self.filter:
             glyph_pen = self.filter(glyph_pen)
+        
+        glyph_pen.translate(-tx, 0)
 
         # shift over by the left-side-bearing
         glyph_pen.translate(glyph_fn.lsb, 0)
-        glyph = glyph_pen.toGlyph(
+        glyph_pen_no_guides = (glyph_pen
+            .copy()
+            .remove(lambda el: el.tag() == "guide"))
+
+        glyph = glyph_pen_no_guides.toGlyph(
             name=glyph_fn.glyph_name,
             width=glyph_fn.frame.w + glyph_fn.lsb + glyph_fn.rsb,
             allow_blank = True)
@@ -142,14 +177,22 @@ class generativefont(animation):
             glyph_pen.data(gfn=glyph_fn, function_literals=True)
         ])
     
-    def spacecenter(self, r, text, fontSize=150):
+    def spacecenter(self, r, text, fontSize=150, idx=None):
         """
         This function loads the ufo that’s been created by the code above and displays it "as a font" (i.e. it compiles the ufo to a font and then uses the actual font to do standard font-display logic)
         """
+        if text == "auto":
+            text = "".join([chr(x.unicode) for x in self.glyph_fns])
+        
         ufo = Font(self.ufo.path)
-        return (StSt(text, ufo, fontSize)
+        txt = (StSt(text, ufo, fontSize)
             .align(r)
             .f(0))
+        
+        if idx is not None:
+            txt.centerPoint(r, (idx, "C"))
+
+        return txt
 
     def fontmake(self):
         ufo = DFont(self.ufo.path)

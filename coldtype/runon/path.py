@@ -401,6 +401,18 @@ class P(Runon):
     def ffg(self, glyphName, fn=None, index=0):
         return self.find_({"glyphName":glyphName}, fn, index)
     
+    def drop(self, amount, edge):
+        amb = self.ambit(tx=1, ty=1).drop(amount, edge)
+        return self.intersection(P(amb))
+    
+    def take(self, amount, edge):
+        amb = self.ambit(tx=1, ty=1).take(amount, edge)
+        return self.intersection(P(amb))
+    
+    def inset(self, ax, ay):
+        amb = self.ambit(tx=1, ty=1).inset(ax, ay)
+        return self.intersection(P(amb))
+    
     @staticmethod
     def Enumerate(enumerable, enumerator):
         return P().enumerate(enumerable, enumerator)
