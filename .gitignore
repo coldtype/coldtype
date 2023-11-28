@@ -32,6 +32,7 @@ fontmakes
 test_cairo.pdf
 test/ignorables/
 examples/*.pdf
+examples/fonts/*.ufo
 *.blend1
 *.blend
 examples/blender/blends
