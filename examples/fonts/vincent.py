@@ -4,11 +4,13 @@ from coldtype.renderable.font import generativefont, glyphfn
 r0 = Rect(500, 500)
 rs = Rect(750, 1000).o(0,-250).grid(3, 4)
 rs_extra = Rect(250, 1000).o(750,-250).grid(1,4)
-
 rs = rs + rs_extra
 
 o1 = 30
 o2 = 10
+
+rC0 = Rect(750-o1*2, 750-o1*2)
+rC = rC0.grid(2, 2)
 
 q1 = (P().oval(r0.inset(o1)).outline(o1)
     .intersection(P(rs[6]))
@@ -19,24 +21,39 @@ q2 = (P().oval(r0.inset(o1*2+20)).outline(o1)
     .intersection(q1.copy())
     .f(hsl(0.6)))
 
+q3 = (P().oval(rC0.inset(o1)).outline(o1)
+    .intersection(P(rC[2]))
+    .f(hsl(0.8)))
+
+q4 = (P().oval(rC0.inset(o1*2+20)).outline(o1)
+    .intersection(P(rC[2]))
+    .intersection(q3.copy())
+    .f(hsl(0.6)))
+
 def cr(degree, ri, rotate, clip=None):
-    _c = ((q1 if degree == 0 else q2).copy()
-        .addFrame(rs[6])
-        .align(rs[ri], tx=0, ty=0)
-        .rotate(rotate*90, point=rs[ri].pc, tx=0, ty=0))
+    q = [q1,q2,q3,q4][degree]
+    _rs = rs if degree <= 1 else rC
+    zero_frame = _rs[6] if degree <= 1 else _rs[2]
+    
+    _c = (q.copy()
+        .addFrame(zero_frame)
+        .align(_rs[ri], tx=0, ty=0)
+        .rotate(rotate*90, point=_rs[ri].pc, tx=0, ty=0))
     
     if clip:
         for _clip in clip:
-            _c = _c.difference(P(rs[ri].take(o2/2, _clip)))
+            _c = _c.difference(P(_rs[ri].take(o2/2, _clip)))
     
     return _c
 
 def li(degree, ri, edges, clip=None):
-    _c = P(rs[ri].take(o1*2, edges[0]).drop(0 if degree == 0 else o1*2-o2, edges[1] if len(edges) > 1 else edges[0])).f(hsl(0.3) if degree else hsl(0.6))
+    _rs = rs if degree <= 1 else rC
+    minor = degree == 1 or degree == 3
+    _c = P(_rs[ri].take(o1*2, edges[0]).drop(0 if not minor else o1*2-o2, edges[1] if len(edges) > 1 else edges[0])).f(hsl(0.3) if minor else hsl(0.6))
 
     if clip:
         for _clip in clip:
-            _c = _c.difference(P(rs[ri].take(o2/2, _clip)))
+            _c = _c.difference(P(_rs[ri].take(o2/2, _clip)))
         
     return _c
 
@@ -347,14 +364,135 @@ def exclam(_):
         P(li(0,0,"W","S"),li(0,3,"W","N")).t(0,-o1*2),
         li(0,6,"W").take(o1*2,"S"))
 
+@glyphfn("auto")
+def A(_):
+    return P(
+        li(2,2,"W","N"),
+        li(2,2,"E","N"),
+        li(2,0,"E","S").drop(40, "N"),
+        cr(2,0,3,"S"),
+        di(rC[0].psw,rC[0].pse).reverse().inset(o1*2,0))
+
+@glyphfn("auto")
+def B(_):
+    return P(
+        li(2,2,"S","N").drop(40,"E"),
+        cr(2,2,2),
+        cr(2,0,2),
+        di(rC[0].psw,rC[0].pse).reverse(),
+        li(3,0,"WE"),
+        li(3,2,"WE"))
+
+@glyphfn("auto")
+def C(_):
+    return P(
+        cr(2,2,0,"N"),
+        cr(2,0,3,"S"))
+
+@glyphfn("auto")
+def D(_):
+    return P(
+        cr(2,2,1,"N"),
+        cr(2,0,2,"S"),
+        li(2,0,"W").drop(40,"N"),
+        li(3,2,"WE").drop(10,"S"))
+
+@glyphfn("auto")
+def E(_):
+    return P(
+        li(2,2,"S","N").drop(40,"W"),
+        cr(2,2,3),
+        cr(2,0,3),
+        di(rC[0].psw,rC[0].pse).reverse())
+
+@glyphfn("auto")
+def F(_):
+    return P(
+        cr(2,0,3,"S"),
+        di(rC[0].psw,rC[0].pse).reverse().inset(o1*2, 0),
+        li(2,2,"W","N"))
+
+@glyphfn("auto")
+def G(_):
+    return P(
+        cr(2,2,0,"N"),
+        cr(2,0,3,"S"),
+        di(rC[0].psw,rC[0].pse).reverse().drop(o1*2, "W"),
+        li(2,2,"E").drop(40,"S"))
+
+@glyphfn("auto")
+def H(_):
+    return P(
+        cr(2,2,3,"E"), cr(2,0,0,"E"),
+        cr(2,3,2,"W"), cr(2,1,1,"W"),
+        li(3,0,"WE"), li(3,2,"WE"),
+        li(3,1,"EW"), li(3,3,"EW"))
+
+@glyphfn("auto")
+def I(_):
+    return P(
+        li(2,2,"W","N"),
+        li(2,0,"W","S"))
+
+@glyphfn("auto")
+def J(_):
+    return P(
+        cr(2,2,1,"N"),
+        li(2,0,"E","S"))
+
+@glyphfn("auto")
+def K(_):
+    return P(
+        cr(2,2,2),
+        cr(2,0,1),
+        li(3,0,"WE"),
+        li(3,2,"WE"))
+
+@glyphfn("auto")
+def L(_):
+    return P(
+        cr(2,2,0,"N"),
+        li(2,0,"W","S"))
+
+@glyphfn("auto")
+def M(_):
+    return P(
+        cr(2,0,2),
+        cr(2,1,2,"S"),
+        li(2,0,"W","S").drop(40,"N"),
+        li(2,2,"W","N"),
+        li(2,3,"E","N"), 
+        li(3,1,"WE"), li(3,3,"WE"))
+
+@glyphfn("auto")
+def N(_):
+    return P(
+        cr(2,0,2,"S"),
+        li(2,0,"W","S").drop(40,"N"),
+        li(2,2,"W","N"),
+        li(2,2,"E","N"))
+
+@glyphfn("auto")
+def O(_):
+    return P(
+        cr(2,2,0,"NE"), cr(2,0,3,"SE"),
+        cr(2,1,2,"WS"), cr(2,3,1,"NW"),
+        )
+
 def show_grid(p):
     grid = (P().enumerate(rs, lambda x: P(
         StSt(str(x.i), Font.JBMono(), 100).align(x.el).f(hsl(0.7, a=0.3)),
         P(x.el).fssw(-1, hsl(0.9), 1))))
     
+    grid = P()
+    
     grid.append(P()
         .line([rs[0].pnw.o(0,-o1*2),rs[12].pne.o(0,-o1*2)])
         .fssw(-1, hsl(0.7), 2))
+    
+    grid.append(P().enumerate(rC, lambda x: P(
+        StSt(str(x.i), Font.JBMono(), 150).align(x.el).f(hsl(0.3, a=0.3)),
+        P(x.el).fssw(-1, hsl(0.6), 1))))
     
     return grid.tag("guide") + p
 
@@ -362,8 +500,8 @@ def show_grid(p):
     ººsiblingºº("vincent.ufo"),
     "Vincent",
     "Regular",
-    default_lsb=20,
-    default_rsb=20,
+    default_lsb=30,
+    default_rsb=30,
     filter=show_grid
     )
 def gufo(f):
