@@ -15,13 +15,14 @@ from typing import Tuple
 
 
 class glyphfn():
-    def __init__(self, width=1000, lsb=None, rsb=None):
+    def __init__(self, width=1000, lsb=None, rsb=None, glyph_name=None):
         """lsb = left-side-bearing / rsb = right-side-bearing"""
         self.width = width
         self.lsb = lsb
         self.rsb = rsb
         self.frame = None
         self.bbox = None
+        self._glyph_name_override = glyph_name
     
     def add_font(self, font):
         width = self.width
@@ -47,6 +48,8 @@ class glyphfn():
     def __call__(self, func):
         self.func = func
         self.glyph_name = func.__name__
+        if self._glyph_name_override is not None:
+            self.glyph_name = self._glyph_name_override
         self.unicode = glyph_to_uni(self.glyph_name)
         return self
 

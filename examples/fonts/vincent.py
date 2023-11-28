@@ -212,11 +212,7 @@ def v(_):
 
 @glyphfn("auto")
 def w(_):
-    return P(
-        li(0,4,"W","S"), cr(0,8,0,"N"),
-        di(rs[5].pnw,rs[8].psw).reverse(),
-        cr(0,7,0,"N"), li(0,5,"E","S"),
-        li(0,8,"E","N").drop(40,"S"))
+    return m.func(_).rotate(180)
 
 @glyphfn("auto")
 def x(_):
@@ -476,15 +472,137 @@ def N(_):
 def O(_):
     return P(
         cr(2,2,0,"NE"), cr(2,0,3,"SE"),
-        cr(2,1,2,"WS"), cr(2,3,1,"NW"),
-        )
+        cr(2,1,2,"WS"), cr(2,3,1,"NW"))
+
+@glyphfn("auto", glyph_name="P")
+def P_(_):
+    return P(
+        li(2,0,"W","S").drop(40,"N"),
+        li(2,2,"W","N"),
+        cr(2,0,2),
+        di(rC[0].psw,rC[0].pse).reverse().drop(o1*2,"W"))
+
+@glyphfn("auto")
+def Q(_):
+    _r0 = rC0.inset(o1)
+    start = _r0.pw.o(0,-o2/2)
+    end = start.o(75,-200)
+    return P(
+        cr(3,2,0,"N"), cr(2,0,3,"SE"),
+        cr(2,1,2,"WS"), cr(3,3,1,"N"),
+        cr(2,3,1,"N")
+            .intersection(P()
+                .m(rC0.pc).l(rC0.pse).l(rC0.pe).cp()),
+        P().m(start)
+            .q(start.o(0,-103), end)
+            .l(_r0.ps.o(0,-133))
+            .ep()
+            .outline(o1, cap="butt")
+            .reverse())
+
+@glyphfn("auto")
+def R(_):
+    return P(
+        cr(2,2,2),
+        cr(2,0,2),
+        li(3,0,"WE"),
+        li(3,2,"WE"),
+        li(2,0,"S").drop(40,"E"),
+        di(rC[0].psw,rC[0].pse).reverse())
+
+@glyphfn("auto")
+def S(_):
+    return P(
+        cr(2,2,1),
+        cr(2,1,3))
+
+@glyphfn("auto")
+def T(_):
+    return P(
+        cr(3,1,2),
+        cr(2,0,3),
+        li(2,0,"E","S").drop(40,"N"),
+        li(2,2,"E","N"))
+
+@glyphfn("auto")
+def U(_):
+    return P(
+        cr(2,2,0,"NE"),
+        li(2,1,"E","S"),
+        li(2,0,"W","S"),
+        cr(2,3,1,"NW"))
+
+@glyphfn("auto")
+def V(_):
+    return P(
+        li(2,2,"W","N").drop(40,"S"),
+        li(2,0,"E","S"),
+        li(2,0,"W","S"),
+        cr(2,2,1,"N"))
+
+@glyphfn("auto")
+def W(_):
+    return M.func(_).rotate(180)
+
+@glyphfn("auto")
+def X(_):
+    return P(
+        cr(2,2,1,"N"), cr(2,0,2,"S"),
+        cr(2,1,3,"S"), cr(2,3,0,"N"))
+
+@glyphfn("auto")
+def Y(_):
+    return P(
+        cr(2,0,0),
+        li(2,2,"E","N"),
+        li(3,0,"EW","S"))
+
+@glyphfn("auto")
+def Z(_):
+    return P(
+        li(2,0,"N").drop(40,"E"),
+        cr(2,0,1,"S"),
+        li(2,2,"W","N"),
+        li(2,2,"S"))
+
+@glyphfn("auto")
+def AE(_):
+    return P(
+        li(2,2,"W","N"),
+        li(3,3,"WE","N"),
+        li(3,1,"WE","S"),
+        cr(2,0,3,"S"),
+        di(rC[0].psw,rC[1].pse).reverse().drop(o1*2,"W"),
+        cr(2,1,3),
+        cr(2,3,3),
+        li(2,3,"S").drop(40,"W"))
+
+@glyphfn("auto")
+def Oslash(_):
+    return O.func(_) + di(rC[2].psw, rC[1].pne).reverse()
+
+@glyphfn("auto", 0)
+def period(_):
+    return P(li(0,6,"E").take(o1*2,"S"))
+
+@glyphfn("auto", 0)
+def comma(_):
+    return P(cr(0,6,1))
+
+@glyphfn("auto", 0)
+def semicolon(_):
+    return P(
+        #li(0,0,"E","S").take(o1*2,"N"),
+        #li(0,3,"E","NS"), li(0,6,"E","N"),
+        cr(0,6,1),
+        li(0,3,"E").take(o1*2,"N"))
 
 def show_grid(p):
     grid = (P().enumerate(rs, lambda x: P(
         StSt(str(x.i), Font.JBMono(), 100).align(x.el).f(hsl(0.7, a=0.3)),
         P(x.el).fssw(-1, hsl(0.9), 1))))
     
-    grid = P()
+    #grid = P()
     
     grid.append(P()
         .line([rs[0].pnw.o(0,-o1*2),rs[12].pne.o(0,-o1*2)])
