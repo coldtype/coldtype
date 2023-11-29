@@ -1,4 +1,4 @@
-import datetime
+import datetime, inspect
 
 from subprocess import run
 from defcon import Font as DFont
@@ -15,7 +15,7 @@ from typing import Tuple
 
 
 class glyphfn():
-    def __init__(self, width=1000, lsb=None, rsb=None, glyph_name=None):
+    def __init__(self, width=1000, lsb=None, rsb=None, glyph_name=None, cover_lower=False):
         """lsb = left-side-bearing / rsb = right-side-bearing"""
         self.width = width
         self.lsb = lsb
@@ -23,12 +23,17 @@ class glyphfn():
         self.frame = None
         self.bbox = None
         self._glyph_name_override = glyph_name
+        self.cover_lower = cover_lower
     
     def add_font(self, font, return_framed_glyph=False):
         width = self.width
         
         if return_framed_glyph or width == "auto":
-            glyph = self.func(None)
+            arg_count = len(inspect.signature(self.func).parameters)
+            if arg_count == 1:
+                glyph = self.func(None)
+            else:
+                glyph = self.func()
 
         tx = 0
         ambit = None
@@ -62,9 +67,19 @@ class glyphfn():
     def __call__(self, func):
         self.func = func
         self.glyph_name = func.__name__
+        
         if self._glyph_name_override is not None:
             self.glyph_name = self._glyph_name_override
-        self.unicode = glyph_to_uni(self.glyph_name)
+        
+        unicodes = [glyph_to_uni(self.glyph_name)]
+        if self.cover_lower:
+            unicodes.append(glyph_to_uni(self.glyph_name.lower()))
+
+        if unicodes[0] is None:
+            unicodes = None
+        
+        self.unicodes = unicodes
+
         return self
     
     def glyph_with_frame(self, font):
@@ -149,7 +164,12 @@ class generativefont(animation):
         except:
             guides = P()
 
-        glyph_copy = result[0].copy().f(0).scale(0.5).align(render.rect.drop(50, "E").drop(250, "S"), "SE", tx=0, ty=0)
+        glyph_copy = (result[0]
+            .copy()
+            .remove(lambda el: el.tag() == "guide")
+            .f(0)
+            .scale(0.5)
+            .align(render.rect.drop(50, "E").drop(250, "S"), "SE", tx=0, ty=0))
         
         bbox = gfn.bbox.offset(0, 250)
         return P([
@@ -169,10 +189,14 @@ class generativefont(animation):
     def buildGlyph(self, glyph_fn):
         glyph_fn.add_font(self)
 
-        #print(f"> drawing :{glyph_fn.glyph_name}:")
-        glyph_pen = (glyph_fn
-            .func(glyph_fn.frame)
-            .fssw(-1, 0, 2))
+        arg_count = len(inspect.signature(glyph_fn.func).parameters)
+
+        if arg_count == 1:
+            glyph_pen = glyph_fn.func(glyph_fn.frame)
+        else:
+            glyph_pen = glyph_fn.func()
+    
+        glyph_pen.fssw(-1, 0, 2)
         
         tx = 0
         if glyph_fn.width == "auto":
@@ -193,7 +217,10 @@ class generativefont(animation):
             name=glyph_fn.glyph_name,
             width=glyph_fn.frame.w + glyph_fn.lsb + glyph_fn.rsb,
             allow_blank = True)
-        glyph.unicode = glyph_to_uni(glyph_fn.glyph_name)
+        
+        if glyph_fn.unicodes:
+            glyph.unicodes = glyph_fn.unicodes
+
         self.ufo.insertGlyph(glyph)
         self.ufo.save()
 
@@ -230,9 +257,13 @@ class generativefont(animation):
         fontmakes = Path(self.ufo.path).parent / f"fontmakes"
         fontmakes.mkdir(exist_ok=True)
 
+        font_name_prefix = "_".join([
+            ufo.info.familyName.replace(" ", ""),
+            ufo.info.styleName.replace(" ", "")])
+
         if find and not version:
-            otfs = fontmakes.glob("*.otf")
-            if not otfs:
+            otfs = list(fontmakes.glob(f"{font_name_prefix}*.otf"))
+            if len(otfs) == 0:
                 return None
             return max(otfs, key=lambda file: file.stat().st_mtime)
 
@@ -240,10 +271,8 @@ class generativefont(animation):
             version = datetime.datetime.now().strftime("%y%m%d%H%M")
         
         font_name = "_".join([
-            ufo.info.familyName.replace(" ", ""),
-            ufo.info.styleName.replace(" ", ""),
-            version
-        ])
+            font_name_prefix,
+            version])
         
         return fontmakes / f"{font_name}.otf"
 
