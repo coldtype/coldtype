@@ -205,7 +205,7 @@ class generativefont(animation):
             ufo.info.styleName.replace(" ", ""),
             date
         ])
-        fontmade_path = self.ufo.path.parent / f"fontmakes/{font_name}.otf"
+        fontmade_path = Path(self.ufo.path).parent / f"fontmakes/{font_name}.otf"
         fontmade_path.parent.mkdir(exist_ok=True)
         run([
             "fontmake",

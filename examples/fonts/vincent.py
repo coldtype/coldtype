@@ -581,21 +581,31 @@ def AE(_):
 def Oslash(_):
     return O.func(_) + di(rC[2].psw, rC[1].pne).reverse()
 
-@glyphfn("auto", 0)
+@glyphfn("auto")
 def period(_):
     return P(li(0,6,"E").take(o1*2,"S"))
 
-@glyphfn("auto", 0)
-def comma(_):
-    return P(cr(0,6,1))
+@glyphfn("auto")
+def hyphen(_):
+    return P(li(0,3,"S").drop(o1*2,"E"))
 
-@glyphfn("auto", 0)
+@glyphfn("auto")
+def endash(_):
+    return P(li(0,3,"S"))
+
+@glyphfn("auto")
+def emdash(_):
+    return P(li(0,3,"S"), li(0,4,"S"))
+
+@glyphfn("auto", -100)
+def comma(_):
+    return P(cr(0,6,1)).t(0, -rs[0].h+o1*2)
+
+@glyphfn("auto", -100)
 def semicolon(_):
     return P(
-        #li(0,0,"E","S").take(o1*2,"N"),
-        #li(0,3,"E","NS"), li(0,6,"E","N"),
         cr(0,6,1),
-        li(0,3,"E").take(o1*2,"N"))
+        li(0,3,"E").take(o1*2,"N")).t(0, -rs[0].h+o1*2)
 
 def show_grid(p):
     grid = (P().enumerate(rs, lambda x: P(
@@ -628,3 +638,6 @@ def gufo(f):
 @animation((1080, 300), tl=gufo.timeline)
 def spacecenter(f):
     return gufo.spacecenter(f.a.r, "auto", idx=f.i)
+
+def release(_):
+    gufo.fontmake()
