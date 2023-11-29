@@ -676,7 +676,7 @@ def show_grid(p):
 def gufo(f):
     return gufo.glyphViewer(f)
 
-@animation((1080, 300), tl=gufo.timeline)
+@animation((1080, 270), tl=gufo.timeline)
 def spacecenter(f):
     #return gufo.spacecenter(f.a.r, "auto", idx=f.i)
 
@@ -686,9 +686,9 @@ def spacecenter(f):
         .f(0)
         .centerPoint(f.a.r, (f.i, "C")))
 
-@renderable((1080, 200))
+@renderable((1080, 290))
 def smoke(r):
-    return StSt("Less than 24 hours", Font(gufo.fontmake_path(find=True)), 100).align(r).f(0)
+    return StSt("Less than 24 hours left to go\nCan you believe this sale?", Font(gufo.fontmake_path(find=True)), 80).align(r, ty=1).f(0)
 
 def release(_):
     [gufo.buildGlyph(gf) for gf in gufo.glyph_fns]
@@ -699,4 +699,6 @@ feature liga {
     sub s s by ss_lig;
 } liga;
     """
-    gufo.fontmake(version="a1", features=features)
+    gufo.fontmake(version="a1", features=features, kerning={
+        ("e", "ss_lig"): -80
+    })

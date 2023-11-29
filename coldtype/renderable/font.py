@@ -247,12 +247,18 @@ class generativefont(animation):
         
         return fontmakes / f"{font_name}.otf"
 
-    def fontmake(self, version=None, features=None):
+    def fontmake(self, version=None, features=None, kerning=None):
         ufo = DFont(self.ufo.path)
         fontmade_path = self.fontmake_path(find=False, version=version)
 
         if features:
             ufo.features.text = features
+            ufo.save()
+        
+        if kerning:
+            ufo.kerning.clear()
+            for k, v in kerning.items():
+                ufo.kerning[k] = v
             ufo.save()
 
         run([
