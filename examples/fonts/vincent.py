@@ -1,13 +1,16 @@
 from coldtype import *
 from coldtype.renderable.font import generativefont, glyphfn
 
+# https://www.flickr.com/photos/stewf/52271541822/in/album-72157719832552236/
+# https://fontsinuse.com/static/inline-images/1692/Letraset-Letragraphica-Vincent-LG1624-LG1625.jpg
+
 r0 = Rect(500, 500)
 rs = Rect(750, 1000).o(0,-250).grid(3, 4)
 rs_extra = Rect(250, 1000).o(750,-250).grid(1,4)
 rs = rs + rs_extra
 
-o1 = 30
-o2 = 10
+o1 = 50
+o2 = 20
 
 rC0 = Rect(750-o1*2, 750-o1*2)
 rC = rC0.grid(2, 2)
@@ -16,7 +19,7 @@ q1 = (P().oval(r0.inset(o1)).outline(o1)
     .intersection(P(rs[6]))
     .f(hsl(0.8)))
 
-q2 = (P().oval(r0.inset(o1*2+20)).outline(o1)
+q2 = (P().oval(r0.inset(o1*3-o2)).outline(o1)
     .intersection(P(rs[6]))
     .intersection(q1.copy())
     .f(hsl(0.6)))
@@ -25,7 +28,7 @@ q3 = (P().oval(rC0.inset(o1)).outline(o1)
     .intersection(P(rC[2]))
     .f(hsl(0.8)))
 
-q4 = (P().oval(rC0.inset(o1*2+20)).outline(o1)
+q4 = (P().oval(rC0.inset(o1*3-o2)).outline(o1)
     .intersection(P(rC[2]))
     .intersection(q3.copy())
     .f(hsl(0.6)))
@@ -36,7 +39,7 @@ def cr(degree, ri, rotate, clip=None):
     zero_frame = _rs[6] if degree <= 1 else _rs[2]
     
     _c = (q.copy()
-        .addFrame(zero_frame)
+        .data(frame=zero_frame)
         .align(_rs[ri], tx=0, ty=0)
         .rotate(rotate*90, point=_rs[ri].pc, tx=0, ty=0))
     
@@ -60,35 +63,38 @@ def li(degree, ri, edges, clip=None):
 def di(*pts):
     return P().line(pts).outline(o2/2, cap="butt")
 
+spr = 20
+sps = 30
+
 @glyphfn(300)
 def space(r):
     return P()
 
-@glyphfn("auto")
+@glyphfn("auto", spr, sps)
 def a(_):
     return P(
         cr(0,3,3,"ES"), cr(0,4,2,"WS"), cr(0,6,0,"N"),
         cr(1,7,1,"N"),
         li(1,4,"E","S"), li(0,7,"E","N"))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, spr)
 def b(_):
     return P(
-        li(0,0,"E"), li(1, 3, "EW"), li(0,6,"E","N"),
+        li(0,0,"E"), li(1, 3, "EW", "S"), li(0,6,"E","N"),
         cr(0,4,2,"S"), cr(0,7,1, "N"))
 
-@glyphfn("auto")
+@glyphfn("auto", spr, sps)
 def c(_):
     return P(
-        cr(0,3,3,"ES"), cr(0,6,0,"N"))
+        cr(0,3,3,"S"), cr(0,6,0,"N"))
 
-@glyphfn("auto")
+@glyphfn("auto", spr, sps)
 def d(_):
     return P(
         cr(0,3,3,"S"), cr(0,6,0,"N"),
         li(0,1,"W"), li(1,4,"WE"), li(0,7,"W"))
 
-@glyphfn("auto")
+@glyphfn("auto", spr, spr)
 def e(_):
     return P(
         cr(0,3,3,"ES"),
@@ -97,15 +103,21 @@ def e(_):
         li(0,4,"S").drop(40, "E").t(0,-o2/2),
         di(rs[3].psw, rs[4].pse).drop(o1*2,"W"))
 
-@glyphfn("auto", 0)
+@glyphfn("auto", sps, sps)
 def f(_):
+    return P(
+        cr(0,1,3,"ES"), cr(0,4,3,"ES"), li(0,7,"W"), li(1,4,"WE","S")
+        #di(rs[0].psw, rs[1].pse).drop(110,"W").drop(70, "E"),
+        #li(0,3,"E","S"),
+        #li(0,6,"E","N")
+        )
     return P(
         cr(0,1,3,"ES"),
         di(rs[0].psw, rs[1].pse).drop(110,"W").drop(70, "E"),
         li(0,3,"E","S"),
         li(0,6,"E","N"))
 
-@glyphfn("auto")
+@glyphfn("auto", spr, sps)
 def g(_):
     return P(
         cr(0,3,3,"ES"), cr(0,6,0,"N"),
@@ -113,38 +125,38 @@ def g(_):
         li(1,3,"EW"), li(1,6,"EW"),
         cr(0,9,5))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, sps)
 def h(_):
     return P(
         li(0,0,"E"), li(1,3,"EW"), li(0,6,"E"),
         cr(0,4,2,"S"), li(0,7,"E","N"))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, sps)
 def i(_):
     return P(
         li(0,0,"E","S").take(o1*2,"N"),
         li(0,3,"E","NS"), li(0,6,"E","N"))
 
-@glyphfn("auto", 0)
+@glyphfn("auto", 0, sps)
 def j(_):
     return P(
         li(0,0,"E","S").take(o1*2,"N"),
         li(0,3,"E","NS"), li(0,6,"E","N"),
         cr(0,9,1,"N").t(0,-o2/2))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, spr)
 def k(_):
     return P(
         li(0,1,"W"), li(1, 4, "WE"), li(1,7,"WE"),
         cr(0,4,5), cr(0,7,2))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, sps)
 def l(_):
     return P(
         li(0,0,"E","S"),
         li(0,3,"E","NS"), li(0,6,"E","N"))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, sps)
 def m(_):
     return P(
         li(0,7,"W","N"),
@@ -152,44 +164,48 @@ def m(_):
         di(rs[5].pnw,rs[8].psw).reverse(),
         cr(0,5,2,"S"), li(0,8,"E","N"))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, sps)
 def n(_):
     return P(
         li(0,7,"W","N"),
         li(0,4,"W","S").drop(40,"N"), cr(0,4,2,"S"),
         li(0,7,"E","N"))
 
-@glyphfn("auto")
+@glyphfn("auto", spr, spr)
 def o(_):
     return P(
         cr(0,3,3,"ES"), cr(0,6,0,"NE"),
         cr(0,4,2,"WS"), cr(0,7,5,"NW"))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, spr)
 def p(_):
     return P(
         cr(0,3,3,"ES"), cr(0,4,2,"WS"), cr(0,7,5,"N"),
         cr(1,6,0,"N"),
         li(0,6,"W","NS"), li(0,9,"W","N"))
 
-@glyphfn("auto")
+@glyphfn("auto", spr, sps)
 def q(_):
     return P(
         cr(0,3,3,"ES"), cr(0,4,2,"WS"), cr(0,6,0,"N"),
         cr(1,7,1,"N"),
         li(0,7,"E","NS"), li(0,10,"E","N"))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, sps)
 def r(_):
     return P(
         cr(0,3,3,"ES"), li(0,6,"W","N"), li(1,3,"WE","S"))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, sps)
 def s(_):
-    return P(
-        cr(0,6,1), cr(0,4,3))
+    return P(cr(0,6,1), cr(0,3,3), di(rs[3].psw,rs[3].pse).reverse())
+    return P(cr(0,6,1), cr(0,4,3))
 
-@glyphfn("auto", 0)
+@glyphfn("auto", sps, sps)
+def ss_lig(_):
+    return P(cr(0,6,1), cr(0,4,3)) + P(cr(0,6,1), cr(0,4,3)).t(270, 0)
+
+@glyphfn("auto", 0, spr)
 def t(_):
     return P(
         cr(0,1,0),
@@ -197,37 +213,37 @@ def t(_):
         li(0,4,"W","S"),
         cr(0,7,0,"N"))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, sps)
 def u(_):
     return P(
         li(0,3,"W","S"), cr(0,6,0,"NE"),
         li(0,4,"E","S"), cr(0,7,5,"NW"))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, sps)
 def v(_):
     return P(
         li(0,4,"W","S"),
         li(0,7,"W","N").drop(40,"S"), cr(0,7,1,"N"),
         li(0,4,"E","S"))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, sps)
 def w(_):
     return m.func(_).rotate(180)
 
-@glyphfn("auto")
+@glyphfn("auto", sps, sps)
 def x(_):
     return P(
         cr(0,3,2,"S"), cr(0,6,1,"N"),
         cr(0,4,3,"S"), cr(0,7,0,"N"))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, sps)
 def y(_):
     return P(
         li(0,3,"W","S"), cr(0,6,0,"N"),
         li(1,7,"WE"), li(0,4,"W"),
         li(0,10,"W"))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, sps)
 def z(_):
     return P(
         li(0,3,"N","S"),
@@ -235,7 +251,7 @@ def z(_):
         cr(0,6,3),
         li(0,6,"S").drop(40,"W"))
 
-@glyphfn("auto")
+@glyphfn("auto", sps, sps)
 def germandbls(_):
     return P(
         li(0,0,"E"), cr(0,1,2),
@@ -244,7 +260,7 @@ def germandbls(_):
         cr(0,4,2,"S").drop(o2,"W"),
         cr(0,7,1,"N").drop(o2,"W"))
 
-@glyphfn("auto")
+@glyphfn("auto", spr, spr)
 def ae(_):
     return P(
         P(
@@ -253,7 +269,7 @@ def ae(_):
             li(1,7,"E","N")),
         e.func(None).t(rs[5].x-o1*2, 0))
 
-@glyphfn("auto")
+@glyphfn("auto", spr, spr)
 def oslash(_):
     return (P(
         o.func(_),
@@ -275,13 +291,20 @@ def two(_):
 
 @glyphfn("auto")
 def three(_):
-    return (P(
+    return P(
         cr(0,6,1,"N"), cr(0,3,2,"S"),
         c:=cr(0,0,1).drop(o1*2, "N"),
-        di(c.ambit(tx=1,ty=1).pne,c.ambit(tx=1,ty=1).pnw).reverse()))
+        li(1,0,"NS").t(0,-o1*2).drop(40,"E"),
+        #di(c.ambit(tx=1,ty=1).pne,c.ambit(tx=1,ty=1).pnw).reverse()
+        )
 
 @glyphfn("auto")
 def four(_):
+    return P(
+        cr(0,0,5).t(0,-o1*2),li(0,3,"N").t(0,-o1*2),
+        di(rs[3].pne,rs[6].pse).reverse(),
+        li(0,6,"E","N")
+        )
     return (P(
         cr(0,0,1).drop(o1*2,"N"),li(0,3,"N"),
         di(rs[3].pne,rs[6].pse).reverse(),
@@ -309,7 +332,8 @@ def six(_):
             .reverse(),
         cr(0,6,0,"NE"),
         cr(0,4,2,"S"), cr(0,7,5,"NW"),
-        di(rs[4].pnw,rs[4].psw).reverse())
+        #di(rs[4].pnw,rs[4].psw).reverse()
+        )
 
 @glyphfn("auto")
 def seven(_):
@@ -329,7 +353,8 @@ def eight(_):
 
 @glyphfn("auto")
 def nine(_):
-    return six.func(_).rotate(180)
+    pc = (rs[0]+rs[1]+rs[3]+rs[4]+rs[6]+rs[7]).drop(o1*2,"N").pc
+    return six.func(_).rotate(180, pt=pc)
 
 @glyphfn("auto")
 def zero(_):
@@ -418,6 +443,11 @@ def G(_):
 
 @glyphfn("auto")
 def H(_):
+    return P(
+        li(2,0,"W","S"),li(2,2,"W","N"),
+        li(2,0,"E","S"),li(2,2,"E","N"),
+        di(rC[0].psw,rC[0].pse).reverse().inset(o1*2,0),
+    )
     return P(
         cr(2,2,3,"E"), cr(2,0,0,"E"),
         cr(2,3,2,"W"), cr(2,1,1,"W"),
@@ -512,9 +542,8 @@ def R(_):
 
 @glyphfn("auto")
 def S(_):
-    return P(
-        cr(2,2,1),
-        cr(2,1,3))
+    #return P(cr(2,3,1), cr(2,0,3))
+    return P(cr(2,2,1), cr(2,1,3))
 
 @glyphfn("auto")
 def T(_):
@@ -607,19 +636,31 @@ def semicolon(_):
         cr(0,6,1),
         li(0,3,"E").take(o1*2,"N")).t(0, -rs[0].h+o1*2)
 
+@glyphfn("auto")
+def percent(_):
+    return P(
+        cr(0,0,3),
+        cr(0,7,1),
+        di(rs[6].psw,rs[1].pne).reverse()
+        )
+
+kern_groups = dict(
+    f_over=[a,c,d,e,g,m,n,o,p,q,r,s,u,v,w,x,y,z,ae,oslash]
+)
+
 def show_grid(p):
+    return p
+
     grid = (P().enumerate(rs, lambda x: P(
         StSt(str(x.i), Font.JBMono(), 100).align(x.el).f(hsl(0.7, a=0.3)),
         P(x.el).fssw(-1, hsl(0.9), 1))))
-    
-    #grid = P()
     
     grid.append(P()
         .line([rs[0].pnw.o(0,-o1*2),rs[12].pne.o(0,-o1*2)])
         .fssw(-1, hsl(0.7), 2))
     
     grid.append(P().enumerate(rC, lambda x: P(
-        StSt(str(x.i), Font.JBMono(), 150).align(x.el).f(hsl(0.3, a=0.3)),
+        #StSt(str(x.i), Font.JBMono(), 150).align(x.el).f(hsl(0.3, a=0.3)),
         P(x.el).fssw(-1, hsl(0.6), 1))))
     
     return grid.tag("guide") + p
@@ -630,14 +671,32 @@ def show_grid(p):
     "Regular",
     default_lsb=30,
     default_rsb=30,
-    filter=show_grid
-    )
+    filter=show_grid,
+    bg=1)
 def gufo(f):
     return gufo.glyphViewer(f)
 
 @animation((1080, 300), tl=gufo.timeline)
 def spacecenter(f):
-    return gufo.spacecenter(f.a.r, "auto", idx=f.i)
+    #return gufo.spacecenter(f.a.r, "auto", idx=f.i)
+
+    glyphs = P([gf.glyph_with_frame(gufo) for gf in gufo.glyph_fns])
+    return (glyphs.spread(10)
+        .scale(0.2, pt=(0,0))
+        .f(0)
+        .centerPoint(f.a.r, (f.i, "C")))
+
+@renderable((1080, 200))
+def smoke(r):
+    return StSt("Less than 24 hours", Font(gufo.fontmake_path(find=True)), 100).align(r).f(0)
 
 def release(_):
-    gufo.fontmake()
+    [gufo.buildGlyph(gf) for gf in gufo.glyph_fns]
+    features = """languagesystem DFLT dflt;
+languagesystem latn dflt;
+
+feature liga {
+    sub s s by ss_lig;
+} liga;
+    """
+    gufo.fontmake(version="a1", features=features)

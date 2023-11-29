@@ -24,10 +24,19 @@ class glyphfn():
         self.bbox = None
         self._glyph_name_override = glyph_name
     
-    def add_font(self, font):
+    def add_font(self, font, return_framed_glyph=False):
         width = self.width
+        
+        if return_framed_glyph or width == "auto":
+            glyph = self.func(None)
+
+        tx = 0
+        ambit = None
+        
         if width == "auto":
-            width = self.func(None).ambit(tx=0,ty=0).w
+            ambit = glyph.ambit(tx=0,ty=0)
+            width = ambit.w
+            tx = ambit.x
         
         if self.lsb is None:
             if font.default_lsb is not None:
@@ -43,6 +52,11 @@ class glyphfn():
 
         self.frame = Rect(width, font.ufo.info.capHeight)
         self.bbox = Rect(self.lsb + width + self.rsb, font.ufo.info.capHeight)
+
+        if return_framed_glyph:
+            glyph.translate(-tx, 0)
+            return glyph.t(self.lsb, 0).data(frame=self.bbox)
+        
         return self
     
     def __call__(self, func):
@@ -52,6 +66,9 @@ class glyphfn():
             self.glyph_name = self._glyph_name_override
         self.unicode = glyph_to_uni(self.glyph_name)
         return self
+    
+    def glyph_with_frame(self, font):
+        return self.add_font(font, return_framed_glyph=True)
 
 
 class generativefont(animation):
@@ -67,7 +84,9 @@ class generativefont(animation):
         preview_size=(1000, None),
         default_lsb=None,
         default_rsb=None,
-        filter=None):
+        filter=None,
+        bg=None
+        ):
 
         pw, ph = preview_size
         self.preview_frame = Rect(pw, ph if ph else (-descender*2) + cap_height)
@@ -91,6 +110,7 @@ class generativefont(animation):
         self.default_rsb = default_rsb
         
         self.filter = filter
+        self.bg = bg
 
         super().__init__(
             self.preview_frame, timeline=self.timeline(lookup),
@@ -129,10 +149,11 @@ class generativefont(animation):
         except:
             guides = P()
 
-        glyph_copy = gfn.func(gfn.frame).scale(0.5).align(render.rect.inset(20), "E")
+        glyph_copy = result[0].copy().f(0).scale(0.5).align(render.rect.drop(50, "E").drop(250, "S"), "SE", tx=0, ty=0)
         
         bbox = gfn.bbox.offset(0, 250)
         return P([
+            P(render.rect).f(render.bg) if render.bg else None,
             P(result).translate(0, 250),
             #P().gridlines(render.rect).s(hsl(0.6, a=0.3)).sw(1).f(None),
             (P()
@@ -140,16 +161,15 @@ class generativefont(animation):
                 .line(bbox.en.extr(-100))
                 .line(bbox.ee.extr(-100))
                 .f(None).s(hsl(0.9, 1, a=0.5)).sw(4)),
-            glyph_copy.pen().f(0),
+            glyph_copy.f(0),
             guides.translate(gfn.lsb, 250),
             (P().text(gfn.glyph_name, Style("Times", 48, load_font=0),
                 render.rect.inset(50)))])
     
-    def glyphViewer(self, f):
-        glyph_fn = self.glyph_fns[f.i]
+    def buildGlyph(self, glyph_fn):
         glyph_fn.add_font(self)
 
-        print(f"> drawing :{glyph_fn.glyph_name}:")
+        #print(f"> drawing :{glyph_fn.glyph_name}:")
         glyph_pen = (glyph_fn
             .func(glyph_fn.frame)
             .fssw(-1, 0, 2))
@@ -176,8 +196,15 @@ class generativefont(animation):
         glyph.unicode = glyph_to_uni(glyph_fn.glyph_name)
         self.ufo.insertGlyph(glyph)
         self.ufo.save()
+
+        return glyph_pen
+    
+    def glyphViewer(self, f):
+        glyph_fn = self.glyph_fns[f.i]
+        glyph_pen = self.buildGlyph(glyph_fn)
+
         return P([
-            glyph_pen.data(gfn=glyph_fn, function_literals=True)
+            glyph_pen.data(gfn=glyph_fn, frame=glyph_fn.frame, function_literals=True)
         ])
     
     def spacecenter(self, r, text, fontSize=150, idx=None):
@@ -196,17 +223,38 @@ class generativefont(animation):
             txt.centerPoint(r, (idx, "C"))
 
         return txt
-
-    def fontmake(self):
+    
+    def fontmake_path(self, find=True, version=None):
         ufo = DFont(self.ufo.path)
-        date = datetime.datetime.now().strftime("%y%m%d%H%M")
+        
+        fontmakes = Path(self.ufo.path).parent / f"fontmakes"
+        fontmakes.mkdir(exist_ok=True)
+
+        if find and not version:
+            otfs = fontmakes.glob("*.otf")
+            if not otfs:
+                return None
+            return max(otfs, key=lambda file: file.stat().st_mtime)
+
+        if version is None:
+            version = datetime.datetime.now().strftime("%y%m%d%H%M")
+        
         font_name = "_".join([
             ufo.info.familyName.replace(" ", ""),
             ufo.info.styleName.replace(" ", ""),
-            date
+            version
         ])
-        fontmade_path = Path(self.ufo.path).parent / f"fontmakes/{font_name}.otf"
-        fontmade_path.parent.mkdir(exist_ok=True)
+        
+        return fontmakes / f"{font_name}.otf"
+
+    def fontmake(self, version=None, features=None):
+        ufo = DFont(self.ufo.path)
+        fontmade_path = self.fontmake_path(find=False, version=version)
+
+        if features:
+            ufo.features.text = features
+            ufo.save()
+
         run([
             "fontmake",
             "-u", str(self.ufo.path),

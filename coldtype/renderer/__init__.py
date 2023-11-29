@@ -1393,6 +1393,7 @@ class Renderer():
         elif action == Action.Release:
             self.action_waiting = self.on_release()
             self.action_waiting_reason = "release"
+            self.actions_queued.append(KeyboardShortcut.ReloadSource)
         elif action == Action.RestartRenderer:
             self.on_exit(restart=True)
         elif action == Action.Kill:
