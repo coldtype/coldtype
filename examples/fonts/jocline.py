@@ -116,7 +116,7 @@ def N_ss01(): return quads(0, 1, 0, [0, 2])
 @glyphfn("auto", spr, spr, cover_lower=1)
 def O(): return quads(1, 1, 1, 1)
 
-@glyphfn("auto", sps, spr, glyph_name="P")
+@glyphfn("auto", sps, spr, glyph_name="P", cover_lower=1)
 def _P(): return quads(1, 1, 0, 1)
 
 @glyphfn("auto", spr, sps, cover_lower=1)
