@@ -266,3 +266,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 - Support `vert` as feature (without needing to specify `features=`)
 - `RestartCount` concept in renderer
 - `Font.Fontmake` for full font compilation to a tmp file
+
+## [0.10.15] - ?
+### Added
+- `coldtype.fx.skia.freeze` for in-memory "freezing" of vectors (to avoid recalculation)
