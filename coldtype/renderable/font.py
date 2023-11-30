@@ -83,7 +83,7 @@ class glyphfn():
         return self
     
     def glyph_with_frame(self, font):
-        return self.add_font(font, return_framed_glyph=True)
+        return self.add_font(font, return_framed_glyph=True).remove(lambda el: el.tag() == "guide")
 
 
 class generativefont(animation):
@@ -167,9 +167,13 @@ class generativefont(animation):
         glyph_copy = (result[0]
             .copy()
             .remove(lambda el: el.tag() == "guide")
-            .f(0)
+            .fssw(0, 0, 0)
             .scale(0.5)
-            .align(render.rect.drop(50, "E").drop(250, "S"), "SE", tx=0, ty=0))
+            .align(render.rect.drop(50, "E").drop(250, "S"), "SE", tx=0, ty=0)
+            .pen()
+            .ro())
+        
+        #print(glyph_copy._val.value)
         
         bbox = gfn.bbox.offset(0, 250)
         return P([
@@ -213,7 +217,7 @@ class generativefont(animation):
             .copy()
             .remove(lambda el: el.tag() == "guide"))
 
-        glyph = glyph_pen_no_guides.toGlyph(
+        glyph = glyph_pen_no_guides.pen().ro().q2c().toGlyph(
             name=glyph_fn.glyph_name,
             width=glyph_fn.frame.w + glyph_fn.lsb + glyph_fn.rsb,
             allow_blank = True)
