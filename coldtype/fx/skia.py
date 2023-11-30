@@ -332,3 +332,31 @@ def shake(seg_length=2, deviation=2, seed=0):
             seg_length, deviation, seed)
         return p.attr(skp=dict(PathEffect=effect))
     return _shake
+
+FREEZES = {}
+
+from inspect import getsource
+
+def freeze(do_freeze, as_image, callback):
+    src = getsource(callback)
+    src = "lambda:".join(src.split("lambda:")[1:])
+
+    if not do_freeze:
+        if src in FREEZES:
+            del FREEZES[src]
+        return callback()
+    
+    if src in FREEZES:
+        currently_image, res = FREEZES[src]
+        if as_image != currently_image:
+            del FREEZES[src]
+
+    if src not in FREEZES:
+        res = callback()
+        if as_image:
+            res_img = res.ch(precompose(res.bounds().inset(-100)))
+            FREEZES[src] = [1, res_img]
+        else:
+            FREEZES[src] = [0, res]
+    
+    return FREEZES[src][-1]
