@@ -2,13 +2,26 @@ from coldtype import *
 from coldtype.renderable.font import generativefont, glyphfn
 from textwrap import indent
 
+VERSIONS = {
+    "Regular": dict(),
+    "Front": dict(),
+    "Back": dict(),
+    "Lines": dict(),
+    "FilledFront": dict(),
+} #/VERSIONS
+
 spr = 0
 sps = 10
 
 basis = Font.Find("HEX Franklin v0.2 v")
 
+version = __VERSION__["key"]
+print(">>>>>>>>>>", version)
+
 def offset(c, *points, adds=[]):
     _offset = (233, 217)
+    #_offset = (420, 480)
+
     glyph = (StSt(c, basis, 1000, wght=1, wdth=0.4)
         .pen()
         .ro()
@@ -40,7 +53,27 @@ def offset(c, *points, adds=[]):
             .reverse())
     
     lines = P().enumerate(points, liner)
-    return doubled.append(lines)
+    doubled.append(lines)
+
+    frame = doubled.bounds()
+    
+    if version in ["Regular", "Lines"]:
+        lines = P().enumerate(points, liner)
+        if version == "Lines":
+            return lines.data(frame=frame)
+        elif version == "Regular":
+            return doubled
+    else:
+        if version == "Front":
+            return doubled[1].data(frame=frame)
+        elif version == "Back":
+            return doubled[2].data(frame=frame)
+        elif version == "FilledFront":
+            return (glyph.copy()
+                .difference(glyph.copy().outline(12, miterLimit=4).ro())
+                .data(frame=frame)
+                )
+        return doubled
 
 @glyphfn(200)
 def space(): return P()
@@ -150,9 +183,9 @@ def show_grid(p):
         return p
 
 @generativefont(globals(),
-    ººsiblingºº("bombere.ufo"),
+    ººsiblingºº(f"bombere_{version.lower()}.ufo"),
     "Bombere",
-    "Regular",
+    version,
     preview_size=(1300, 1100),
     default_lsb=sps,
     default_rsb=sps,
