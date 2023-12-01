@@ -30,7 +30,7 @@ class glyphfn():
         
         if return_framed_glyph or width == "auto":
             arg_count = len(inspect.signature(self.func).parameters)
-            if arg_count == 1:
+            if arg_count >= 1:
                 glyph = self.func(None)
             else:
                 glyph = self.func()
@@ -195,7 +195,7 @@ class generativefont(animation):
 
         arg_count = len(inspect.signature(glyph_fn.func).parameters)
 
-        if arg_count == 1:
+        if arg_count >= 1:
             glyph_pen = glyph_fn.func(glyph_fn.frame)
         else:
             glyph_pen = glyph_fn.func()

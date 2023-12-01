@@ -253,7 +253,10 @@ class P(Runon):
             el._val.replay(self._val)
             #self._val.record(el._val)
 
-        self._attrs = {**self._els[0]._attrs, **self._attrs}
+        try:
+            self._attrs = {**self._els[0]._attrs, **self._attrs}
+        except IndexError:
+            pass
             
         self.data(frame=frame)
         self._els = []

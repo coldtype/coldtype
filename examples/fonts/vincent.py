@@ -103,19 +103,18 @@ def e(_):
         li(0,4,"S").drop(40, "E").t(0,-o2/2),
         di(rs[3].psw, rs[4].pse).drop(o1*2,"W"))
 
-@glyphfn("auto", sps, sps)
+@glyphfn("auto", 0, 0)
 def f(_):
-    return P(
-        cr(0,1,3,"ES"), cr(0,4,3,"ES"), li(0,7,"W"), li(1,4,"WE","S")
-        #di(rs[0].psw, rs[1].pse).drop(110,"W").drop(70, "E"),
-        #li(0,3,"E","S"),
-        #li(0,6,"E","N")
-        )
     return P(
         cr(0,1,3,"ES"),
         di(rs[0].psw, rs[1].pse).drop(110,"W").drop(70, "E"),
         li(0,3,"E","S"),
         li(0,6,"E","N"))
+
+@glyphfn("auto", sps, sps)
+def f_ss01(_):
+    return P(
+        cr(0,1,3,"ES"), cr(0,4,3,"ES"), li(0,7,"W"), li(1,4,"WE","S"))
 
 @glyphfn("auto", spr, sps)
 def g(_):
@@ -198,8 +197,11 @@ def r(_):
 
 @glyphfn("auto", sps, sps)
 def s(_):
-    return P(cr(0,6,1), cr(0,3,3), di(rs[3].psw,rs[3].pse).reverse())
     return P(cr(0,6,1), cr(0,4,3))
+
+@glyphfn("auto", sps, sps)
+def s_ss01(_):
+    return P(cr(0,6,1), cr(0,3,3), di(rs[3].psw,rs[3].pse).reverse())
 
 @glyphfn("auto", sps, sps)
 def ss_lig(_):
@@ -318,7 +320,7 @@ def five(_):
         cr(0,3,2,"S"),cr(0,6,1,"N")))
 
 @glyphfn("auto")
-def six(_):
+def six(_, hanger=True):
     _r0 = r0.inset(o1)
     start = _r0.pw.o(0,o2/2)
     end = start.o(45,150)
@@ -332,8 +334,11 @@ def six(_):
             .reverse(),
         cr(0,6,0,"NE"),
         cr(0,4,2,"S"), cr(0,7,5,"NW"),
-        #di(rs[4].pnw,rs[4].psw).reverse()
-        )
+        di(rs[4].pnw,rs[4].psw).reverse() if hanger else None)
+    
+@glyphfn("auto")
+def six_ss01(_):
+    return six.func(_, hanger=False)
 
 @glyphfn("auto")
 def seven(_):
@@ -357,9 +362,14 @@ def nine(_):
     return six.func(_).rotate(180, pt=pc)
 
 @glyphfn("auto")
+def nine_ss01(_):
+    pc = (rs[0]+rs[1]+rs[3]+rs[4]+rs[6]+rs[7]).drop(o1*2,"N").pc
+    return six.func(_, hanger=False).rotate(180, pt=pc)
+
+@glyphfn("auto")
 def zero(_):
     return P(
-        P(li(1,3,"WE"),li(1,4,"EW")).drop(60, "N"),
+        P(li(1,3,"WE"),li(1,4,"EW")).drop(o1*2, "N"),
         P(cr(0,0,3,"E"), cr(0,1,2,"W")).t(0, -o1*2),
         cr(0,6,0,"E"), cr(0,7,5,"W"))
 
@@ -443,16 +453,22 @@ def G(_):
 
 @glyphfn("auto")
 def H(_):
-    return P(
-        li(2,0,"W","S"),li(2,2,"W","N"),
-        li(2,0,"E","S"),li(2,2,"E","N"),
-        di(rC[0].psw,rC[0].pse).reverse().inset(o1*2,0),
-    )
+    # return P(
+    #     li(2,0,"W","S"),li(2,2,"W","N"),
+    #     li(2,0,"E","S"),li(2,2,"E","N"),
+    #     di(rC[0].psw,rC[0].pse).reverse().inset(o1*2,0))
     return P(
         cr(2,2,3,"E"), cr(2,0,0,"E"),
         cr(2,3,2,"W"), cr(2,1,1,"W"),
         li(3,0,"WE"), li(3,2,"WE"),
         li(3,1,"EW"), li(3,3,"EW"))
+
+@glyphfn("auto")
+def H_ss01(_):
+    return P(
+        li(2,0,"W","S"),li(2,2,"W","N"),
+        li(2,0,"E","S"),li(2,2,"E","N"),
+        di(rC[0].psw,rC[0].pse).reverse().inset(o1*2,0))
 
 @glyphfn("auto")
 def I(_):
@@ -688,16 +704,30 @@ def spacecenter(f):
 
 @renderable((1080, 290))
 def smoke(r):
-    return StSt("Less than 24 hours left to go\nCan you believe this sale?", Font(gufo.fontmake_path(find=True)), 80).align(r, ty=1).f(0)
+    return StSt("Less than 24 Hours left to go\nCan you believe this sale?", Font(gufo.fontmake_path(find=True)), 80, ss01=1).align(r, ty=1).f(0)
 
 def release(_):
     [gufo.buildGlyph(gf) for gf in gufo.glyph_fns]
-    features = """languagesystem DFLT dflt;
+
+    ss01 = []
+    for gf in gufo.glyph_fns:
+        if "_ss01" in gf.glyph_name:
+            plain = gf.glyph_name.split("_")[0]
+            ss01.append(f"sub {plain} by {gf.glyph_name};")
+    
+    from textwrap import indent
+    ss01 = indent("\n".join(ss01), "    ")
+
+    features = f"""languagesystem DFLT dflt;
 languagesystem latn dflt;
 
-feature liga {
+feature liga {{
     sub s s by ss_lig;
-} liga;
+}} liga;
+
+feature ss01 {{
+{ss01}
+}} ss01;
     """
     gufo.fontmake(version="a1", features=features, kerning={
         ("e", "ss_lig"): -80
