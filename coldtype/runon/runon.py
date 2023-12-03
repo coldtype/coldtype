@@ -263,11 +263,10 @@ class Runon:
             tag = index
             el = self.find_(tag)
         
-        if el:
-            if self.data("vend"):
-                return el.copy()
-            else:
-                return el
+        if el and self.data("vend"):
+            return el.copy()
+        
+        return el
     
     def get(self, key, default=None):
         try:
