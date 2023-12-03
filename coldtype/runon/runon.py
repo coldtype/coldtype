@@ -258,10 +258,16 @@ class Runon:
 
     def __getitem__(self, index):
         if isinstance(index, int) or isinstance(index, slice):
-            return self._els[index]
+            el = self._els[index]
         else:
             tag = index
-            return self.find_(tag)
+            el = self.find_(tag)
+        
+        if el:
+            if self.data("vend"):
+                return el.copy()
+            else:
+                return el
     
     def get(self, key, default=None):
         try:
@@ -1110,6 +1116,10 @@ class Runon:
     def printh(self):
         """print hierarchy, no values"""
         print(self.tree(v=False))
+        return self
+    
+    def printdata(self, field):
+        print(self.data(field))
         return self
     
     def noop(self, *args, **kwargs):

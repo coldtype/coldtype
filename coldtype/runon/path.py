@@ -1590,9 +1590,18 @@ class P(Runon):
         return self.transform(t, transformFrame=False)
     
     rt = rotate
-    
+
 
     def _rotate(self, degrees, point=None, th=None, tv=None, tx=1, ty=1, **kwargs) -> "P":
+        return self
+
+
+    def r90(self, multiplier, point=None, tx=1, ty=1, **kwargs) -> "P":
+
+        return self.rotate(90*multiplier, point=point, tx=tx, ty=ty, **kwargs)
+    
+
+    def _r90(self, multiplier, point=None, tx=1, ty=1, **kwargs) -> "P":
         return self
 
 
@@ -1609,6 +1618,12 @@ class P(Runon):
         if point is not False:
             t = t.translate(-x, -y)
         return self.transform(t)
+    
+    def flipx(self):
+        return self.scale(-1,1)
+    
+    def flipy(self):
+        return self.scale(1,-1)
     
 
     def _scale(self, scaleX, scaleY=None, point=None, th=None, tv=None, tx=1, ty=0, **kwargs) -> "P":
@@ -1782,12 +1797,15 @@ class P(Runon):
         return self
 
 
-    def grid(self, every, spread=0, stack=0) -> "P":
+    def grid(self, every, spread=0, stack=0, zero=False) -> "P":
 
         top = type(self)()
         row = None
         
         for idx, p in enumerate(self._els):
+            if zero:
+                p.zero()
+            
             if idx%every == 0:
                 row = type(self)()
                 top.append(row)
@@ -1802,7 +1820,7 @@ class P(Runon):
         return self
     
 
-    def _grid(self, every, spread=0, stack=0) -> "P":
+    def _grid(self, every, spread=0, stack=0, zero=False) -> "P":
         return self
 
 
