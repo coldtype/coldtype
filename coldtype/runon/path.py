@@ -115,6 +115,12 @@ class P(Runon):
         
         if len(vals) == 2 and isinstance(vals[0], float) and isinstance(vals[1], float):
             prenorm = Rect(*vals)
+        
+        if len(vals) == 1 and isinstance(vals[0], dict):
+            unmapped = type(self)()
+            for k, v in vals[0].items():
+                unmapped.append(v.tag(k))
+            prenorm = unmapped
 
         super().__init__(*prenorm)
 

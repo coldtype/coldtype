@@ -67,7 +67,7 @@ class BpyWorld(_Chainable):
     
     deselectAll = deselect_all
     
-    def delete_previous(self, collection="Coldtype", keep=[], materials=True, curves=True, meshes=True, objects=True, grease_pencils=True):
+    def delete_previous(self, collection="Coldtype", keep=[], materials=True, curves=True, meshes=True, objects=True, grease_pencils=True) -> "BpyWorld":
         self.deselect_all()
 
         BpyCollection.Find(collection, create=False).delete_hierarchy()
