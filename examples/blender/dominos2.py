@@ -5,8 +5,8 @@ samples, x, y, z, frames = [
     (1.5, 3, 0.5, 5, 120),
     (0.5, 3, 0.25, 5, 120),
     (0.25, 3, 0.15, 5, 180),
-    (1.2, 3, 0.25, 5, 120)
-][-1]
+    (1.2, 3, 0.25, 5, 90)
+][3]
 
 letter = "A"
 suffix = f"alphabet_{samples}_{x}_{y}_{z}__"
@@ -47,7 +47,7 @@ def setup(bpw:BpyWorld):
                 glyph.t(-glyph.ambit(tx=1).x, -glyph.ambit(ty=1).y)
             else:
                 try:
-                    glyph = StSt(text[pt.idx], "MDIO-VF.ttf", 4, wdth=1, wght=1, ss01=1).pen()
+                    glyph = StSt(text[pt.idx], Font.MutatorSans(), 4, wdth=0.5, wght=0.5, ss01=1).pen()
                     glyph.t(-glyph.ambit(tx=1).x, -glyph.ambit(ty=1).y)
                 except IndexError:
                     glyph = None
@@ -72,13 +72,13 @@ def setup(bpw:BpyWorld):
     b = pt.pt.project(pt.tan, 0).project(pt.tan-90, 1.5)
 
     (BpyObj.Cube("Catalyst")
-        .dimensions(xx:=2, 0.25, zz:=1)
+        .dimensions(xx:=2, 0.65, zz:=1.75)
         .locate(x=-1, y=0, z=zz)
         .origin_to_cursor()
         .rotate(z=pt.tan+180)
         .apply_transform()
         .rigidbody("passive", animated=True, friction=1)
-        .hide()
+        #.hide()
         .insert_keyframes("location",
             (0, lambda bp: bp.locate(x=a.x, y=a.y, z=zz/2)),
             (20, lambda bp: bp.locate(x=b.x, y=b.y, z=zz/2)),

@@ -194,6 +194,26 @@ class Font():
         font_path = list(folder.glob("*.ttf"))[index]
         return Font.Cacheable(font_cache_key, actual_path=font_path)
     
+    def Download(url) -> "Font":
+        import requests
+
+        font_name = Path(url).name
+        
+        font_cache_key = f"Download_{font_name}"
+        if font_cache_key in FontCache:
+            return FontCache[font_cache_key]
+
+        folder = Path(f"_DownloadedFonts")
+        folder.mkdir(exist_ok=True, parents=True)
+        font_path = folder / font_name
+
+        r = requests.get(url)
+        if not r.ok:
+            raise FontNotFoundException("URL did not resolve")
+        
+        font_path.write_bytes(r.content)
+        return Font.Cacheable(font_cache_key, actual_path=font_path)
+    
     def _ListDir(dir, regex, regex_dir, log=False, depth=0):
         if dir.name in [".git", "venv"]:
             return

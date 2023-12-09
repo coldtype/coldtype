@@ -4,8 +4,7 @@ from coldtype.blender import *
 frames = 160
 suffix = "falling_"
 text = """FALLING
-FOR
-YOU"""
+DOWN"""
 
 @b3d_runnable(playback=B3DPlayback.KeepPlaying)
 def setup(bpw:BpyWorld):
@@ -25,7 +24,7 @@ def setup(bpw:BpyWorld):
     curves = P(
         P().line([r.pw, r.pe]).endPath().centerZero().t(0, 0),
         P().line([r.pw, r.pe]).endPath().centerZero().t(0, -4),
-        P().line([r.pw, r.pe]).endPath().centerZero().t(0, -4*2),
+        #P().line([r.pw, r.pe]).endPath().centerZero().t(0, -4*2),
     ).t(-1.5, 2.5)
 
     dominos = []

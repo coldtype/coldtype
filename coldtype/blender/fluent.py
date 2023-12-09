@@ -500,6 +500,11 @@ class BpyObj(_Chainable):
     def Cube(name=None, collection=None) -> "BpyObj":
         bpy.ops.mesh.primitive_cube_add()
         return BpyObj.Primitive(name, collection)
+    
+    @staticmethod
+    def Circle(name=None, collection=None) -> "BpyObj":
+        bpy.ops.mesh.primitive_circle_add()
+        return BpyObj.Primitive(name, collection)
 
     @staticmethod
     def Plane(name=None, collection=None) -> "BpyObj":
