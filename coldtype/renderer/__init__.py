@@ -1539,7 +1539,7 @@ class Renderer():
             print("    >>> watching...", watchee[1])
     
     def execute_string_as_shortcut_or_action(self, shortcut, key, args=[]):
-        #print("\n>>> shortcut:")
+        #print("\n>>> shortcut:", shortcut)
         #print(f"  \"{shortcut}\"({key if key else 'ø'}[{args}])\n")
         
         co = ConfigOption.ShortToConfigOption(shortcut)

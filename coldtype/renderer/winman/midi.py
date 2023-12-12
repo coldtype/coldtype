@@ -57,8 +57,9 @@ class MIDIWatcher():
                 if msg.isNoteOn(): # Maybe not forever?
                     nn = msg.getNoteNumber()
                     shortcut = self.config.midi[device]["note_on"].get(nn)
-                    self.on_shortcut(shortcut, nn)
-                    shortcut_triggered = True
+                    if shortcut:
+                        self.on_shortcut(shortcut, nn)
+                        shortcut_triggered = True
                 elif msg.isNoteOff():
                     nn = msg.getNoteNumber()
                 elif msg.isController():
