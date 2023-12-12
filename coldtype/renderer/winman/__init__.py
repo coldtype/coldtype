@@ -190,7 +190,8 @@ class Winmans():
                 return
 
         if self.midi:
-            if self.midi.monitor(self.renderer.state.playing):
+            tripped = self.midi.monitor(self.renderer.state.playing)
+            if tripped:
                 self.renderer.action_waiting = Action.PreviewStoryboard
                 self.renderer.action_waiting_reason = "midi_trigger"
 

@@ -46,22 +46,22 @@ class MIDIWatcher():
             return
 
         controllers = {}
+        shortcut_triggered = False
+
         for device, mi in self.devices:
             msg = mi.getMessage(0)
             while msg:
                 if self.config.midi_info:
                     print(device, msg)
+                
                 if msg.isNoteOn(): # Maybe not forever?
                     nn = msg.getNoteNumber()
-                    #print(">>> NOTE ON", nn, msg.getVelocity())
                     shortcut = self.config.midi[device]["note_on"].get(nn)
-                    #print(shortcut)
                     self.on_shortcut(shortcut, nn)
+                    shortcut_triggered = True
                 elif msg.isNoteOff():
                     nn = msg.getNoteNumber()
-                    #print(">>> NOTE OFF", nn)
                 elif msg.isController():
-                    #print(">>>", msg)
                     cn = msg.getControllerNumber()
                     cv = msg.getControllerValue()
                     cc = msg.getChannel()
@@ -72,8 +72,9 @@ class MIDIWatcher():
                     
                     if shortcutA:
                         if cv in shortcutA:
-                            print("shortcut!", shortcutA, cv)
+                            print("shortcut!", shortcutA, cv, shortcutA.get(cv))
                             self.on_shortcut(shortcutA.get(cv), cn)
+                            shortcut_triggered = True
                     
                     if shortcutB:
                         if callable(shortcutB):
@@ -81,13 +82,16 @@ class MIDIWatcher():
                             if res is not None:
                                 print("shortcut!", res)
                                 self.on_shortcut(res, None)
+                                shortcut_triggered = True
                         else:
                             if cv in shortcutB:
                                 print("shortcut!", shortcutB, cv)
                                 self.on_shortcut(shortcutB.get(cv), cn)
+                                shortcut_triggered = True
                     
                     else:
                         controllers["_".join([device, str(cc), str(cn)])] = cv
+                
                 msg = mi.getMessage(0)
         
         if len(controllers) > 0:
@@ -112,5 +116,5 @@ class MIDIWatcher():
                             self.state.controller_values[device][channel]["_" + str(number)] = was
                         self.state.controller_values[device][channel][number] = value
 
-            if not playing:
-                return True
+            if not playing and not shortcut_triggered:
+               return True

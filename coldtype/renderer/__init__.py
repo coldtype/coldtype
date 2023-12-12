@@ -1437,6 +1437,7 @@ class Renderer():
                         self.debounced_actions[k] = None
 
         if self.action_waiting:
+            #print("YES", self.action_waiting, self.action_waiting_reason)
             action_in = self.action_waiting
             self.on_action(self.action_waiting)
             if action_in != self.action_waiting:
