@@ -75,7 +75,7 @@ class KeyboardShortcut(Enum):
 
     ViewerPlaybackSpeedIncrease = "viewer_playback_speed_increase"
     ViewerPlaybackSpeedDecrease = "viewer_playback_speed_decrease"
-    ViewerPlaybackSpeedReset = "viewer_playback_speed_decrease"
+    ViewerPlaybackSpeedReset = "viewer_playback_speed_reset"
 
     MIDIControllersPersist = "midi_controllers_persist"
     MIDIControllersClear = "midi_controllers_clear"
