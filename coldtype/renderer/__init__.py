@@ -799,6 +799,7 @@ class Renderer():
         if (self.winmans.bg
             and not self.args.cpu_render
             and not self.winmans.glsk
+            and not self.source_reader.config.no_viewer
             ):
             self.winmans.glsk = WinmanGLFWSkiaBackground(self.source_reader.config, self)
 
