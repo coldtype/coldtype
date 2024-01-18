@@ -418,6 +418,7 @@ class WinmanGLFWSkia():
                     'Shader': self.transparency_blocks.makeShader(
                         skia.TileMode.kRepeat,
                         skia.TileMode.kRepeat,
+                        skia.SamplingOptions(),
                         matrix
                     )
                 })
@@ -437,7 +438,7 @@ class WinmanGLFWSkia():
                 render.show_error = short_error
                 error_color = rgb(0, 0, 0).skia()
         else:
-            if render.single_frame or render.composites and not render.interactable:
+            if render.single_frame or render.composites and not render.interactable or self.renderer.args.minimal_skia_context:
                 comp = result.ch(skfx.precompose(
                     render.rect,
                     scale=scale,

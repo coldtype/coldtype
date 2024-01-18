@@ -137,6 +137,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             self.paint.setShader(image.makeShader(
                 skia.TileMode.kRepeat,
                 skia.TileMode.kRepeat,
+                skia.SamplingOptions(),
                 matrix
             ))
         
