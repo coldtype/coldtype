@@ -30,4 +30,9 @@ PROFILES = dict(
         WINDOW_FLOAT = True,
         PREVIEW_SCALE = 1
     ),
+    headless = dict(
+        NO_VIEWER = 1,
+        NO_SOUND = 1,
+        NO_WATCH = 1,
+    ),
 )

@@ -54,10 +54,12 @@ class Winmans():
         self.print_approx_fps = False
 
         self.bg = False
+
         if (config.args.is_subprocess
             or config.args.all
             or config.args.release
             or config.args.build
+            or config.no_watch
             ):
             self.bg = True
         
