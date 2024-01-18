@@ -60,7 +60,7 @@ class Skfi():
         except:
             xblur, yblur = blur, blur
 
-        return skia.BlurImageFilter.Make(xblur, yblur)
+        return skia.ImageFilters.Blur(xblur, yblur)
 
     @staticmethod
     def improved_noise(e, xo=0, yo=0, xs=1, ys=1, base=1):

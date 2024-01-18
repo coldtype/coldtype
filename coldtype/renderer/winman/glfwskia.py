@@ -400,7 +400,7 @@ class WinmanGLFWSkia():
             if image:
                 canvas.save()
                 canvas.scale(scale, scale)
-                canvas.drawImage(image, rect.x, rect.y)
+                canvas.drawImage(image, rect.x, rect.y, skia.SamplingOptions())
                 canvas.restore()
             return
 
@@ -453,7 +453,7 @@ class WinmanGLFWSkia():
                 canvas.save()
                 canvas.scale(1/scale, 1/scale)
                 #render.draw_preview(1.0, canvas, render.rect, comp, rp)
-                canvas.drawImage(comp, 0, 0)
+                canvas.drawImage(comp, 0, 0, skia.SamplingOptions())
                 canvas.restore()
             else:
                 comp = result

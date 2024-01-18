@@ -172,7 +172,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 self.canvas.scale(sx, sy)
             was_alpha = self.paint.getAlphaf()
             self.paint.setAlphaf(was_alpha*self.alpha)
-            self.canvas.drawImage(image, bx/sx, by/sy, self.paint)
+            self.canvas.drawImage(image, bx/sx, by/sy, skia.SamplingOptions(), self.paint)
             self.paint.setAlphaf(was_alpha)
             self.canvas.restore()
             return True
@@ -289,7 +289,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 if bm:
                     paint.setBlendMode(bm.to_skia())
                 
-                canvas.drawImage(pen._img, f.x, f.y, paint)
+                canvas.drawImage(pen._img, f.x, f.y, skia.SamplingOptions(), paint)
                 canvas.restore()
                 return
             
