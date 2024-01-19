@@ -9,9 +9,9 @@ def value_as_skia_path_commands(self):
 
 @renderable(rect=(1200, 340), bg=0)
 def render(r):
-    return (StSt("T", "Brzo_Bold_v0.1", 200)
+    return (StSt("T", Font.MuSan(), 200)
         .align(r)
         .pen()
         .removeOverlap()
-        .print(lambda p: value_as_skia_path_commands(p))
+        #.print(lambda p: value_as_skia_path_commands(p))
         .f(1))
