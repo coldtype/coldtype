@@ -65,6 +65,7 @@ class ConfigOption(Enum):
         lambda x: Path(x).expanduser().resolve())
     BlenderResetFactory = ("blender_reset_factory", None, "brf", true_false_or_none)
     BlenderCommandLineArgs = ("blender_command_line_args", None, "bcli")
+    NoWatch = ("no_watch", None, "nw", true_false_or_none)
     NoViewer = ("no_viewer", None, "nv", true_false_or_none)
     NoMIDI = ("no_midi", None, "nm", true_false_or_none)
     MIDIInfo = ("midi_info", None, "mi", true_false_or_none)

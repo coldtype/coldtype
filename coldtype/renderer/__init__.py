@@ -109,7 +109,9 @@ class Renderer():
 
             last_cursor=parser.add_argument("-lc", "--last-cursor", type=str, default="0,0", help=argparse.SUPPRESS),
 
-            k=parser.add_argument("-k", "--k", type=str, default=None, help=argparse.SUPPRESS)
+            k=parser.add_argument("-k", "--k", type=str, default=None, help=argparse.SUPPRESS),
+
+            reuse_skia_context=parser.add_argument("-rsc", "--reuse-skia-context", action="store_true", default=False, help=argparse.SUPPRESS)
         )
 
         ConfigOption.AddCommandLineArgs(pargs, parser)
@@ -304,7 +306,9 @@ class Renderer():
 
     def reload(self, trigger):
         if self.winmans.glsk:
-            skfx.SKIA_CONTEXT = self.winmans.glsk.context
+            if self.args.reuse_skia_context:
+                print("... reusing SKIA_CONTEXT ...")
+                skfx.SKIA_CONTEXT = self.winmans.glsk.context
         
         self.last_animations = []
 
@@ -799,6 +803,7 @@ class Renderer():
         if (self.winmans.bg
             and not self.args.cpu_render
             and not self.winmans.glsk
+            and not self.source_reader.config.no_viewer
             ):
             self.winmans.glsk = WinmanGLFWSkiaBackground(self.source_reader.config, self)
 
