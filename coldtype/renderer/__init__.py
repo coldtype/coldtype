@@ -111,7 +111,7 @@ class Renderer():
 
             k=parser.add_argument("-k", "--k", type=str, default=None, help=argparse.SUPPRESS),
 
-            minimal_skia_context=parser.add_argument("-msc", "--minimal-skia-context", action="store_true", default=False, help=argparse.SUPPRESS)
+            reuse_skia_context=parser.add_argument("-rsc", "--reuse-skia-context", action="store_true", default=False, help=argparse.SUPPRESS)
         )
 
         ConfigOption.AddCommandLineArgs(pargs, parser)
@@ -306,9 +306,8 @@ class Renderer():
 
     def reload(self, trigger):
         if self.winmans.glsk:
-            if self.args.minimal_skia_context:
-                print("MINIMAL SKIA CONTEXT")
-            else:
+            if self.args.reuse_skia_context:
+                print("... reusing SKIA_CONTEXT ...")
                 skfx.SKIA_CONTEXT = self.winmans.glsk.context
         
         self.last_animations = []
