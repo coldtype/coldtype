@@ -306,7 +306,9 @@ class Renderer():
 
     def reload(self, trigger):
         if self.winmans.glsk:
-            if not self.args.minimal_skia_context:
+            if self.args.minimal_skia_context:
+                print("MINIMAL SKIA CONTEXT")
+            else:
                 skfx.SKIA_CONTEXT = self.winmans.glsk.context
         
         self.last_animations = []

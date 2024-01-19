@@ -14,6 +14,8 @@ from coldtype.img.blendmode import BlendMode
 from coldtype.runon.path import P
 from coldtype.pens.skiapen import SkiaPen
 
+import coldtype.skiashim as skiashim
+
 SKIA_CONTEXT = None
 
 class Skfi():
@@ -60,7 +62,7 @@ class Skfi():
         except:
             xblur, yblur = blur, blur
 
-        return skia.ImageFilters.Blur(xblur, yblur)
+        return skiashim.imageFilters_Blur(xblur, yblur)
 
     @staticmethod
     def improved_noise(e, xo=0, yo=0, xs=1, ys=1, base=1):

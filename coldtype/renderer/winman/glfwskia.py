@@ -2,6 +2,8 @@ from coldtype.renderable.renderable import Overlay
 from coldtype.renderer.winman.passthrough import WinmanPassthrough
 
 import time as ptime
+import coldtype.skiashim as skiashim
+
 from subprocess import Popen, PIPE
 from pathlib import Path
 
@@ -400,7 +402,7 @@ class WinmanGLFWSkia():
             if image:
                 canvas.save()
                 canvas.scale(scale, scale)
-                canvas.drawImage(image, rect.x, rect.y, skia.SamplingOptions())
+                skiashim.canvas_drawImage(canvas, image, rect.x, rect.y)
                 canvas.restore()
             return
 
@@ -415,12 +417,7 @@ class WinmanGLFWSkia():
             elif not render.layer:
                 matrix = skia.Matrix()
                 canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), {
-                    'Shader': self.transparency_blocks.makeShader(
-                        skia.TileMode.kRepeat,
-                        skia.TileMode.kRepeat,
-                        skia.SamplingOptions(),
-                        matrix
-                    )
+                    "Shader": skiashim.image_makeShader(self.transparency_blocks, matrix),
                 })
                 #canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=hsl(0.3).skia()))
         
@@ -454,7 +451,7 @@ class WinmanGLFWSkia():
                 canvas.save()
                 canvas.scale(1/scale, 1/scale)
                 #render.draw_preview(1.0, canvas, render.rect, comp, rp)
-                canvas.drawImage(comp, 0, 0, skia.SamplingOptions())
+                skiashim.canvas_drawImage(canvas, comp, 0, 0)
                 canvas.restore()
             else:
                 comp = result

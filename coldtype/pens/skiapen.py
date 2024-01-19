@@ -9,6 +9,8 @@ from coldtype.geometry import Rect, Point
 from coldtype.text.reader import Style
 from coldtype.color import Color
 
+import coldtype.skiashim as skiashim
+
 try:
     from coldtype.text.colr.skia import SkiaShaders
 except ImportError:
@@ -134,12 +136,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         if pattern:
             matrix = skia.Matrix()
             matrix.setScale(rect.w / iw, rect.h / ih)
-            self.paint.setShader(image.makeShader(
-                skia.TileMode.kRepeat,
-                skia.TileMode.kRepeat,
-                skia.SamplingOptions(),
-                matrix
-            ))
+            self.paint.setShader(skiashim.image_makeShader(image, matrix))
         
         if opacity != 1:
             tf = skia.ColorFilters.Matrix([
@@ -173,7 +170,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 self.canvas.scale(sx, sy)
             was_alpha = self.paint.getAlphaf()
             self.paint.setAlphaf(was_alpha*self.alpha)
-            self.canvas.drawImage(image, bx/sx, by/sy, skia.SamplingOptions(), self.paint)
+            skiashim.canvas_drawImage(self.canvas, image, bx/sx, by/sy, self.paint)
             self.paint.setAlphaf(was_alpha)
             self.canvas.restore()
             return True
@@ -290,7 +287,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 if bm:
                     paint.setBlendMode(bm.to_skia())
                 
-                canvas.drawImage(pen._img, f.x, f.y, skia.SamplingOptions(), paint)
+                skiashim.canvas_drawImage(canvas, pen._img, f.x, f.y, paint)
                 canvas.restore()
                 return
             
