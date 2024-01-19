@@ -89,7 +89,8 @@ setuptools.setup(
     },
     extras_require={
         "skia": [
-            "skia-python>=86.0",
+            "skia-python==87.5; python_version < 3.12",
+            "skia-python>87.5; python_version >= 3.12",
         ],
         "drawbot": [
             "numpy",
@@ -97,7 +98,8 @@ setuptools.setup(
         "viewer": [
             "glfw",
             "PyOpenGL",
-            "skia-python>=86.0",
+            "skia-python==87.5; python_version < 3.12",
+            "skia-python>87.5; python_version >= 3.12",
             "skia-pathops", # can this be taken from skia-python?
             "ufo2ft",
             #"ufoLib2",
