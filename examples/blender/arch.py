@@ -25,7 +25,7 @@ def setup(bpw:BpyWorld):
         .apply_scale()
         .rigidbody("passive", friction=1, bounce=0)
         .material("floor-material", lambda m: m
-            .f(hsl(0.17, 0.6, 0.3))))
+            .f(bw(0))))
 
 @b3d_renderable(reset_to_zero=1, upright=1, center=(0, 1))
 def arch(r):
@@ -49,7 +49,7 @@ def arch(r):
         .f(0)
         .tag(f"sample_{x.i}")
         .ch(b3d(lambda bp: bp
-            .extrude(0.5)
+            .extrude(1.0)
             .convert_to_mesh()
             .rigidbody(friction=1, bounce=0)
             , upright=1
