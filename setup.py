@@ -19,7 +19,7 @@ basic_deps = [
     "uharfbuzz>=0.14.0",
     "python-bidi",
     "requests",
-    "b3denv>=0.0.9",
+    "b3denv>=0.0.10",
 ]
 
 #if sys.platform.startswith("darwin"):
@@ -88,23 +88,23 @@ setuptools.setup(
         ],
     },
     extras_require={
-        "skia": [
-            "skia-python==87.5; python_version < 3.12",
-            "skia-python>87.5; python_version >= 3.12",
-        ],
         "drawbot": [
             "numpy",
         ],
         "viewer": [
             "glfw",
             "PyOpenGL",
-            "skia-python==87.5; python_version < 3.12",
-            "skia-python>87.5; python_version >= 3.12",
             "skia-pathops", # can this be taken from skia-python?
             "ufo2ft",
             #"ufoLib2",
             "numpy",
             "potracer",
+        ],
+        "viewer:python_version < '3.12'": [
+            "skia-python==87.5",
+        ],
+        "viewer:python_version >= '3.12'": [
+            "skia-python>87.5",
         ],
         "experimental": [
             "pynput",

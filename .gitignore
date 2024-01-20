@@ -7,6 +7,8 @@ venv37
 venv-arm
 venv_x64
 venv*
+benv
+benv*
 test/visuals/artifacts/*
 test/visuals/*.blend1
 test/visuals/test_media
