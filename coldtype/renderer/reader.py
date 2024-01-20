@@ -551,7 +551,7 @@ class SourceReader():
             except IndexError:
                 return None, None
             
-            versions = eval(re.sub("VERSIONS\s?=", "", versions))
+            versions = eval(re.sub(r"VERSIONS\s?=", "", versions))
             
             if not isinstance(versions, dict):
                 if not isinstance(versions[0], dict):
