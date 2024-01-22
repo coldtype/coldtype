@@ -1,6 +1,5 @@
 from coldtype import *
 from coldtype.blender import *
-from coldtype.img.skiaimage import SkiaImage
 
 """
 An arch, dynamically generated from a bezier curve;
