@@ -1,0 +1,6 @@
+assets/*.otf
+assets/*.ttf
+assets/*.woff2
+assets/*.woff
+site
+downloads

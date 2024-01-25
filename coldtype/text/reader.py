@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from functools import partial
+from subprocess import run
 
 import unicodedata, math
 
@@ -361,6 +362,9 @@ class Style():
                 else:
                     variations[k] = v
         return variations
+
+    def instance(self, remove_overlaps=False):
+        print(self.variations)
     
     def StretchX(flatten=10, debug=0, **kwargs):
         d = {}
