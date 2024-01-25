@@ -11,6 +11,8 @@ from datetime import datetime
 from email.utils import format_datetime
 from shutil import copytree
 
+from coldtype.runon import Runon
+
 class NotebookParser():
     def __init__(self
         , notebook_dir:Path
@@ -29,6 +31,7 @@ class NotebookParser():
 
         # TODO recursive glob to get a tree, to make a table-of-contents instead of only flat-list
         self.notebooks = list(self.notebook_dir.glob("**/*.ipynb"))
+        print(">>>", self.notebooks)
 
         self.template_env = jinja2.Environment(loader=jinja2.FileSystemLoader(str(self.templates_dir)))
 
@@ -65,12 +68,12 @@ class NotebookParser():
                     cells.append(dict(text=markdown.markdown("".join(c["source"]), extensions=["smarty", "mdx_linkify", "fenced_code"])))
                 elif ct == "code":
                     src = "".join(c["source"])
-                    if src.strip().startswith("#hide-publish"):
+                    if src.strip().startswith("#hide-publish") or src.strip().startswith("#hide-blog"):
                         continue
                 
                     lines = []
                     for line in src.splitlines():
-                        if not line.strip().endswith("#hide-publish"):
+                        if not line.strip().endswith("#hide-publish") and not line.strip().endswith("#hide-blog"):
                             lines.append(line)
                     
                     src = "\n".join(lines)
@@ -123,13 +126,11 @@ class NotebookParser():
         posts = list(reversed(sorted(posts, key=lambda p: p["metadata"]["date"])))
 
         if do_nest:
-            from coldtype.runon import Runon
-
             class Post(Runon):
                 def __init__(self, val):
                     super().__init__(None)
                     self._val = val
-
+                
             nested_posts = Runon()
 
             for p in posts:
@@ -155,7 +156,7 @@ class NotebookParser():
             posts = nested_posts
 
         copytree(self.assets_dir, self.build_dir / "assets", dirs_exist_ok=True)
-        (self.build_dir / "index.html").write_text(self.index_template.render(dict(posts=nested_posts, build_unix=self.build_unix)))
+        (self.build_dir / "index.html").write_text(self.index_template.render(dict(posts=posts, build_unix=self.build_unix)))
         
         if self.feed_template:
             (self.build_dir / "feed.xml").write_text(self.feed_template.render(dict(posts=posts, build=self.build_time, build_unix=self.build_unix)))

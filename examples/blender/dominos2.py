@@ -16,7 +16,7 @@ def setup(bpw:BpyWorld):
     (bpw.delete_previous(materials=False)
         .timeline(Timeline(frames, 30), resetFrame=0
             , output=setup.output_folder / suffix)
-        .rigidbody(2.5, frames))
+        .rigidbody(2.5, 250))
     
     (BpyObj.Cube("Floor")
         .dimensions(x=30, y=30, z=1)
@@ -31,7 +31,7 @@ def setup(bpw:BpyWorld):
     points = curve.samples(samples)
     dominos = []
 
-    text = "FALLING"
+    text = "MONUMENTAL"
 
     for pt in points:
         if False:
@@ -42,20 +42,16 @@ def setup(bpw:BpyWorld):
                 .locate(x=pt.pt[0], y=pt.pt[1])
                 .material("letter_mat"))
         else:
-            if False:
-                glyph = StSt(letter, "ObviouslyV", 4, wdth=pt.e, slnt=pt.e).pen()
+            try:
+                glyph = StSt(text[pt.idx], Font.MuSan(), 5, wdth=1, wght=0.25, opsz=1).pen()
                 glyph.t(-glyph.ambit(tx=1).x, -glyph.ambit(ty=1).y)
-            else:
-                try:
-                    glyph = StSt(text[pt.idx], Font.MutatorSans(), 4, wdth=0.5, wght=0.5, ss01=1).pen()
-                    glyph.t(-glyph.ambit(tx=1).x, -glyph.ambit(ty=1).y)
-                except IndexError:
-                    glyph = None
+            except IndexError:
+                glyph = None
 
             if glyph:
                 dominos.append(BpyObj.Curve(f"Letter_{pt.idx}")
                     .draw(glyph)
-                    .extrude(0.15)
+                    .extrude(0.35)
                     .with_temp_origin((0,0,0), lambda bp: bp.rotate(y=-90))
                     .convert_to_mesh()
                     .apply_transform()
