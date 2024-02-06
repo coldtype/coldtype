@@ -1,4 +1,4 @@
-import platform, os
+import platform, os, subprocess
 from enum import Enum
 
 class System(Enum):
@@ -57,3 +57,12 @@ def in_notebook() -> bool:
             return False  # Other type (?)
     except NameError:
         return False      # Probably standard Python interpreter
+
+
+def run_with_check(args):
+    print("---")
+    print("$", " ".join([str(s) for s in args]))
+    try:
+        subprocess.run(args, capture_output=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print(e.stderr.decode("utf-8"))

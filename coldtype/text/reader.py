@@ -1,12 +1,15 @@
 from collections import OrderedDict
 from functools import partial
 from subprocess import run
+from shutil import copy2
+from pathlib import Path
 
 import unicodedata, math
 
 from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
 
+from coldtype.osutil import run_with_check
 from coldtype.color import normalize_color, rgb
 from coldtype.runon.path import P
 from coldtype.geometry import Rect
@@ -362,9 +365,6 @@ class Style():
                 else:
                     variations[k] = v
         return variations
-
-    def instance(self, remove_overlaps=False):
-        print(self.variations)
     
     def StretchX(flatten=10, debug=0, **kwargs):
         d = {}
@@ -947,6 +947,39 @@ class StyledString(FittableMixin):
         Vectorize all text into single `P`
         """
         return self.pens().pen()
+    
+    def instance(self, output_path, remove_overlaps=False, freeze=False, freeze_suffix=None):
+        args = ["fonttools", "varLib.instancer", self.style.font.path.absolute()]
+        
+        for k,v in self.variations.items():
+            args.append(f"{k}={v}")
+        
+        args.extend(["-o", output_path])
+        
+        if remove_overlaps:
+            args.append("--remove-overlaps")
+        
+        run_with_check(args)
+
+        if freeze:
+            enabled_features = []
+            for k,v in self.features.items():
+                if v:
+                    enabled_features.append(k)
+            
+            features = ",".join(enabled_features)
+            args = ["pyftfeatfreeze", "-f", features]
+            if freeze_suffix:
+                args.extend(["-S", "-U", freeze_suffix])
+            
+            args.append(output_path)
+            run_with_check(args)
+            
+            frozen_otf = Path(str(output_path) + ".featfreeze.otf")
+            copy2(frozen_otf, output_path)
+            frozen_otf.unlink()
+        
+        return Font(str(output_path))
 
 class SegmentedString(FittableMixin):
     def __init__(self, text, styles):

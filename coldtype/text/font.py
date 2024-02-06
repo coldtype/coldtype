@@ -3,7 +3,7 @@ from pathlib import Path
 from functools import lru_cache
 from urllib.request import urlretrieve
 
-from coldtype.osutil import on_linux, on_mac, on_windows
+from coldtype.osutil import on_linux, on_mac, on_windows, run_with_check
 
 from coldtype.fontgoggles.font import getOpener
 from coldtype.fontgoggles.font.baseFont import BaseFont
@@ -154,6 +154,20 @@ class Font():
             if name and family:
                 break
         return name, family
+    
+    def subset(self, output_path, *args, unicodes="U+0000-00FF U+2B22 U+201C U+201D U+201D"):
+        _args = [
+            "pyftsubset", str(self.path),
+            f"--output-file={str(output_path)}",
+            f"--unicodes={unicodes}",
+            "--ignore-missing-unicodes",
+            "--ignore-missing-glyphs",
+            "--notdef-outline",
+            "--notdef-glyph",
+        ]
+        _args.extend(args)
+        run_with_check(_args)
+        return Font(str(output_path))
     
     @staticmethod
     def Cacheable(path, suffix=None, delete_tmp=False, actual_path=None):
