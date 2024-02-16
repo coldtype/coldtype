@@ -143,16 +143,19 @@ def T2L(text, primary, fallback=None):
 
 
 class Slug(SegmentedString):
-    def __init__(self, text, primary, fallback=None):
+    def __init__(self, text, primary, fallback=None, print_segments=False):
         self.text = text
         self.primary = primary
         self.fallback = fallback
         self.strings = []
+        self.print_segments = print_segments
         self.tag()
     
     def tag(self):
         if self.fallback:
-            segments = segment(self.text, "LATIN")
+            segments = segment(self.text, "LATIN", print_characters=self.print_segments)
+            if self.print_segments:
+                print(">>>", segments)
             self.strings = [StyledString(s[1], self.fallback if "LATIN" in s[0] else self.primary) for s in segments]
         else:
             self.strings = [StyledString(self.text, self.primary)]

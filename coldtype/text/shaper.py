@@ -16,10 +16,11 @@ modes = [
     "HEBREW",
     "SPACE",
     "CJK",
-    "KATAKANA"
+    "HANGUL",
+    "KATAKANA",
 ]
 
-def segment(txt, mode="LATIN", includeNames=False):
+def segment(txt, mode="LATIN", includeNames=False, print_characters=False):
     current_mode = mode
     runs = [[mode]]
     for i, c in enumerate(txt):
@@ -27,12 +28,17 @@ def segment(txt, mode="LATIN", includeNames=False):
             n = unicodedata.name(c)
         except ValueError:
             n = "PRIVATE"
+        
+        if print_characters:
+            print(">", n)
+        
         for m in modes:
             if m in n:
                 if current_mode != m:
                     current_mode = m
                     runs.append([m])
         runs[-1].append((n, c) if includeNames else c)
+    
     if len(runs[0]) == 0:
         runs = runs[1:]
     
