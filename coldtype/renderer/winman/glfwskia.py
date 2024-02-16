@@ -273,10 +273,14 @@ class WinmanGLFWSkia():
         
         pos = Point(glfw.get_cursor_pos(self.window)).scale(2) # TODO should this be preview-scale?
         pos[1] = self.renderer.extent.h - pos[1]
-        requested_action = self.renderer.state.on_mouse_button(pos, btn, action, mods)
-        if requested_action:
-            self.renderer.action_waiting = requested_action
-            self.renderer.action_waiting_reason = "mouse_trigger"
+
+        try:
+            requested_action = self.renderer.state.on_mouse_button(pos, btn, action, mods)
+            if requested_action:
+                self.renderer.action_waiting = requested_action
+                self.renderer.action_waiting_reason = "mouse_trigger"
+        except Exception as e:
+            print(e)
     
     def on_mouse_move(self, _, xpos, ypos):
         if not self.allow_mouse():
