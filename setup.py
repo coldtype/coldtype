@@ -27,7 +27,7 @@ basic_deps = [
 
 setuptools.setup(
     name="coldtype",
-    version="0.10.14",
+    version="0.10.15",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",
@@ -66,6 +66,7 @@ setuptools.setup(
     include_package_data=True,
     package_data={
         "": [
+            "assets/glyphNamesToUnicode.txt",
             "demo/transparency_blocks.png",
             "demo/RecMono-CasualItalic.ttf",
             "demo/ColdtypeObviously-VF.ttf",

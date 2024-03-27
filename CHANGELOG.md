@@ -267,6 +267,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 - `RestartCount` concept in renderer
 - `Font.Fontmake` for full font compilation to a tmp file
 
-## [0.10.15] - ?
+## [0.10.15] - 2024-03-27
 ### Added
 - `coldtype.fx.skia.freeze` for in-memory "freezing" of vectors (to avoid recalculation)
+- `Runon.collapseonce` for shallow collapsing
