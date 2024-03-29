@@ -19,7 +19,7 @@ basic_deps = [
     "uharfbuzz>=0.14.0",
     "python-bidi",
     "requests",
-    "b3denv>=0.0.10",
+    "b3denv>=0.0.12",
 ]
 
 #if sys.platform.startswith("darwin"):

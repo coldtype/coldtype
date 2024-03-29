@@ -217,7 +217,7 @@ class Timeline(Timeable):
         if self.words:
             cg = self.words.currentGroup(fi)
             if cg:
-                return [cg.start, cg.end]
+                return [int(cg.start), int(cg.end)]
     
     def interpretWords(self, include="*"):
         from coldtype.timing.sequence import ClipTrack, Clip
@@ -236,6 +236,7 @@ class Timeline(Timeable):
 
         clips = []
         styles = []
+
         for t in self.timeables:
             if len(includes) > 0:
                 if t.track not in includes:

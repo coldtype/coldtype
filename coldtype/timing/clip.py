@@ -202,4 +202,4 @@ class Clip(Timeable):
         return -1
     
     def __repr__(self):
-        return "<Clip:({:s}/{:04d}/{:04d}\"{:s}\")>".format([" -1", "NOW", " +1"][self.position+1], self.start, self.end, self.text)
+        return "<Clip:({:s}/{:04d}/{:04d}\"{:s}\")>".format([" -1", "NOW", " +1"][int(self.position)+1], int(self.start), int(self.end), self.text)
