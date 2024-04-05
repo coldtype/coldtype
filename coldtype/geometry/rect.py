@@ -825,3 +825,6 @@ class Rect(Geometrical):
         bpts = other.intercardinals()
         ipts = [p1.interp(v, p2) for p1, p2 in zip(apts, bpts)]
         return Rect.FromIntercardinals(ipts)
+
+    def is_integer(self):
+        return all(float(x).is_integer() for x in self.rect());
