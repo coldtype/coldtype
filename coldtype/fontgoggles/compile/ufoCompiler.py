@@ -68,8 +68,9 @@ def compileUFOToFont(ufoPath):
 
 def compileUFOToPath(ufoPath, ttPath):
     ttFont, error = compileUFOToFont(ufoPath)
-    if error:
-        print(error, file=sys.stderr)
+    #if error:
+    #    print("! UFO fea not compiled")
+    #    #print(error, file=sys.stderr)
     ttFont.save(ttPath, reorderTables=False)
 
 

@@ -6,6 +6,9 @@ venv2
 venv37
 venv-arm
 venv_x64
+venv*
+benv
+benv*
 test/visuals/artifacts/*
 test/visuals/*.blend1
 test/visuals/test_media
@@ -31,6 +34,9 @@ fontmakes
 test_cairo.pdf
 test/ignorables/
 examples/*.pdf
+examples/*.otf
+examples/*.woff2
+examples/fonts/*.ufo
 *.blend1
 *.blend
 examples/blender/blends
@@ -41,3 +47,4 @@ deps.txt
 _coldtype_notebook_tmp
 .ipynb_checkpoints
 _GoogleFonts
+_DownloadedFonts

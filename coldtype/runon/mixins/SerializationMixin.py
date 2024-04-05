@@ -32,6 +32,14 @@ class SerializationMixin():
             .read_text())
         return self
     
+    def withSVG(self, svg):
+        from fontTools.svgLib import SVGPath
+        svg = SVGPath.fromstring(svg)
+        rp = RecordingPen()
+        svg.draw(rp)
+        self._val.value = rp.value
+        return self
+
     def withSVGFile(self, svg_file):
         from fontTools.svgLib import SVGPath
         svg = SVGPath.fromstring(svg_file.read_bytes())

@@ -54,6 +54,12 @@ class P(Runon):
         
         if len(vals) == 2 and isinstance(vals[0], float) and isinstance(vals[1], float):
             prenorm = Rect(*vals)
+        
+        if len(vals) == 1 and isinstance(vals[0], dict):
+            unmapped = type(self)()
+            for k, v in vals[0].items():
+                unmapped.append(v.tag(k))
+            prenorm = unmapped
 
         super().__init__(*prenorm)
 
@@ -192,7 +198,10 @@ class P(Runon):
             el._val.replay(self._val)
             #self._val.record(el._val)
 
-        self._attrs = {**self._els[0]._attrs, **self._attrs}
+        try:
+            self._attrs = {**self._els[0]._attrs, **self._attrs}
+        except IndexError:
+            pass
             
         self.data(frame=frame)
         self._els = []
@@ -339,6 +348,18 @@ class P(Runon):
     
     def ffg(self, glyphName, fn=None, index=0):
         return self.find_({"glyphName":glyphName}, fn, index)
+    
+    def drop(self, amount, edge):
+        amb = self.ambit(tx=1, ty=1).drop(amount, edge)
+        return self.intersection(P(amb))
+    
+    def take(self, amount, edge):
+        amb = self.ambit(tx=1, ty=1).take(amount, edge)
+        return self.intersection(P(amb))
+    
+    def inset(self, ax, ay):
+        amb = self.ambit(tx=1, ty=1).inset(ax, ay)
+        return self.intersection(P(amb))
     
     @staticmethod
     def Enumerate(enumerable, enumerator):

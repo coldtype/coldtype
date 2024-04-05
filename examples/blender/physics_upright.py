@@ -2,67 +2,49 @@ from coldtype import *
 from coldtype.blender import *
 
 """
-A 3D Physics simulation that uses two animations:
-
--   the first uses lo-res polygons to do the actual physics
-
--   the second uses bezier curves parented to the lo-res polygons,
-    which means in the end result you see the hi-res shapes
-    behaving in the manner of the lo-res polygons
-
-(both animations are based on a single "lockup")
+A 3D Physics simulation that uses lo-res polygons to do the actual physics, then uses copied, hi-res bezier curves (parented to the lo-res polygons) to display
 """
 
-txt = "FALL\nING\nTEXT"
+txt = "COLD\nTYPE"
 
 @b3d_runnable()
-def setup(bw:BpyWorld):
-    (bw.deselect_all()
-        .delete_previous()
-        .timeline(Timeline(250), resetFrame=0)
-        .render_settings(128))
+def setup(bpw:BpyWorld):
+    (bpw.delete_previous()
+        .timeline(Timeline(150), resetFrame=0
+            , output=setup.output_folder / "ct1_")
+        .cycles(128)
+        .rigidbody(speed=2, frame_end=150))
+    
+    (BpyObj.Plane("Field")
+        .rigidbody("passive", friction=1, bounce=0)
+        .dimensions(x=160, y=130)
+        .material("field_mat", lambda m: m
+            .f(0)
+            .specular(0)
+            .roughness(1)))
 
-    with bw.rigidbody(speed=1.5, frame_end=1000):
-        (BpyObj.Find("Plane")
-            .rigidbody("passive", friction=1, bounce=0))
+    lockup = (StSt(txt, Font.ColdObvi(), 7, wdth=0.5, leading=1)
+        .map(lambda p: p.track_to_width(13))
+        .centerZero()
+        .translate(0, 6)
+        .deblank()
+        .collapse())
+    
+    lores = (BpyGroup.Curves(lockup, "Letter_Lores")
+        .map(lambda idx, bp: bp
+            .extrude(0.5)
+            .with_temp_origin((0, 0, 0), lambda bp: bp
+                .rotate(x=90))))
 
-r = Rect(1080, 1080)
-lockup = (StSt(txt, Font.Find("PlincBubbleGum33.otf"), 400)
-    .track(100, v=1)
-    .map(lambda p: p.track_to_rect(r.inset(70)))
-    .align(r.inset(50))
-    .deblank()
-    .collapse())
+    hires = lores.copy("Letter_Hires")
 
-# probably better as a single operation that duplicates each letter & then parents a lossless curve to a low-poly mesh
-
-@b3d_renderable(center=(0, 1), upright=1)
-def physics_upright(r):
-    return (lockup.copy()
-        .pmap(lambda i, p: p
-            .tag(f"glyph_{i}")
-            .ch(b3d(lambda bp: bp
-                .extrude(0.5)
-                .convert_to_mesh()
-                .remesh(3)
-                .apply_modifier("Remesh")
-                .rigidbody(friction=1, bounce=0),
-                dn=True,
-                upright=True,
-                zero=True))
-            .ch(b3d_post(lambda bp: bp
-                .locate_relative(0, i*0.1)))))
-
-@b3d_renderable(center=(0, 1), upright=1)
-def physics_upright_curves(r):
-    return (lockup.copy()
-        .pmap(lambda i, p: p
-            .tag(f"curve_{i}")
-            .ch(b3d(lambda bp: bp
-                .extrude(0.5),
-                dn=True,
-                upright=True,
-                zero=True))
-            .ch(b3d_post(lambda bp: bp
-                .locate_relative(0, i*0.1)
-                .parent(f"glyph_{i}", hide=True)))))
+    lores.map(lambda bp: bp
+        .convert_to_mesh()
+        .remesh(3)
+        .apply_modifier("Remesh")
+        .rigidbody(friction=1, bounce=0.5))
+    
+    hires.map(lambda idx, bp: bp
+        .parent(f"Letter_Lores_{idx}", hide=True)
+        .material("letter_mat", lambda m: m
+            .f(1)))

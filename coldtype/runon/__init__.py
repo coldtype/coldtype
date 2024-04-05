@@ -1,1 +1,1 @@
-from coldtype.runon.runon import Runon
+from coldtype.runon.runon import Runon, RunonEnumerable

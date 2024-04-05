@@ -5,11 +5,12 @@ from coldtype.osutil import on_windows
 
 def prefix_inline_venv(expr):
     vi = sys.version_info
+    venv_root = Path(sys.executable).parent.parent
 
     if on_windows():
-        venv = Path(f'./venv/Lib/site-packages').absolute()
+        venv = (venv_root / "Lib/site-packages").absolute()
     else:
-        venv = Path(f'./venv/lib/python{vi.major}.{vi.minor}/site-packages').absolute()
+        venv = (venv_root / f'lib/python{vi.major}.{vi.minor}/site-packages').absolute()
     
     paths = [venv]
 

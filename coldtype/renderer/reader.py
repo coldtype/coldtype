@@ -10,12 +10,13 @@ from coldtype.blender import BlenderIO
 from coldtype.renderable import renderable, ColdtypeCeaseConfigException, runnable, animation, aframe, ui
 
 from coldtype.renderer.utils import Watchable, on_linux, on_mac, on_windows
-from coldtype.renderer.config import ColdtypeConfig
+from coldtype.renderer.config import ColdtypeConfig, ConfigOption
 from coldtype.helpers import sibling
 from coldtype.text.reader import ALL_FONT_DIRS
 from coldtype.geometry.rect import Rect
 from coldtype.timing import Timeline
 from coldtype.timing.viewer import timeViewer
+from coldtype.renderer.ui import uiView
 
 try:
     from docutils.core import publish_doctree
@@ -63,6 +64,9 @@ def apply_syntax_mods(filepath, source_code, renderer=None, source_reader=None):
     #source_code = re.sub(r"ι,λ\.", "lambda ι, λ__: λ__.", source_code)
     source_code = re.sub(r"λ(\s+)?\.", "lambda λ__: λ__.", source_code)
     source_code = re.sub(r"λ__", "λ", source_code)
+    source_code = re.sub(r"ºº", "__", source_code)
+    #source_code = re.sub(r"_º", "__", source_code)
+    source_code
     #source_code = re.sub(r"λ", "lambda ", source_code)
     #source_code = re.sub(r"ßDPS\(([^\)]+)\)", r"(ß:=P(\1))", source_code)
 
@@ -340,12 +344,16 @@ class SourceReader():
             return root / "demo/glyphs.py"
         elif name == "midi":
             return root / "demo/midi.py"
+        elif name == "midicc":
+            return root / "demo/midicc.py"
         elif name == "vf":
             return root / "demo/vf.py"
         elif name == "viewseq":
             return root / "demo/viewseq.py"
         elif name == "docstrings":
             return root / "demo/docstrings.py"
+        elif name == "gifski":
+            return root / "demo/gifski.py"
         return name
     
     @staticmethod
@@ -366,15 +374,16 @@ class SourceReader():
         embedded = Path(__file__).parent / ".coldtype.py"
         proj = Path(".coldtype.py")
         user = Path("~/.coldtype.py").expanduser()
+        env = os.environ
         
         if on_windows():
-            os = Path(".coldtype.win.py")
+            _os = Path(".coldtype.win.py")
         elif on_mac():
-            os = Path(".coldtype.mac.py")
+            _os = Path(".coldtype.mac.py")
         elif on_linux():
-            os = Path(".coldtype.lin.py")
+            _os = Path(".coldtype.lin.py")
 
-        files = [embedded, user, proj, os]
+        files = [embedded, user, proj, _os]
 
         if args and hasattr(args, "config") and args.config:
             if args.config == "0":
@@ -424,6 +433,19 @@ class SourceReader():
         
         if len(files) == 0 or not self.config:
             self.config = ColdtypeConfig({}, None, args)
+        
+        # Simple overrides from environment variables
+
+        for co in ConfigOption:
+            if len(co.value) == 4:
+                prop, _, _, cli_mod = co.value
+                if prop.upper() in env:
+                    setattr(self.config, prop, cli_mod(env[prop.upper()]))
+            
+            if len(co.value) == 3:
+                prop, _, _ = co.value
+                if prop.upper() in env:
+                    setattr(self.config, prop, env[prop.upper()])
         
         self.config.args = args
         #print(self.config.values())
@@ -513,9 +535,63 @@ class SourceReader():
         
         return self.filepath
     
+    def find_versions(self, initial, restart_count):
+        source_code = self.codepath.read_text()
+        versions = None
+
+        versions_file = self.filepath.parent / (self.filepath.stem + "_versions.py")
+
+        if versions_file.exists():
+            sr = SourceReader(versions_file)
+            versions = sr.program["VERSIONS"]
+
+        if re.findall(r"VERSIONS\s?=", source_code):
+            try:
+                versions = re.findall(r"VERSIONS\s?=.*\#\/VERSIONS", source_code, re.DOTALL)[0]
+            except IndexError:
+                return None, None
+            
+            versions = eval(re.sub(r"VERSIONS\s?=", "", versions))
+            
+            if not isinstance(versions, dict):
+                if not isinstance(versions[0], dict):
+                    versions = {v:dict(idx=idx) for idx, v in enumerate(versions)}
+                else:
+                    versions = {str(idx):v for idx, v in enumerate(versions)}
+        
+        if versions:
+            versions = {k:{**v, **dict(key=k)} for k,v in versions.items()}
+            versions = list(versions.values())
+
+            vi = self.renderer.source_reader.config.version_index
+
+            if initial and restart_count == 0:
+                if len(self.inputs) > 0:
+                    for vidx, v in enumerate(versions):
+                        if self.inputs[0] == v["key"]:
+                            vi = vidx
+            
+            if vi is None:
+                vi = 0
+            
+            self.renderer.source_reader.config.version_index = vi
+            
+            version = versions[vi]
+            self.renderer.state.versions = versions
+
+            source_code = source_code.replace("ƒVERSION", version["key"])
+            self.codepath.write_text(source_code)
+
+            return version, versions
+        
+        return None, None
+
+    
     def reload(self,
         code:str=None,
-        output_folder_override=None
+        output_folder_override=None,
+        initial=False,
+        restart_count=0,
         ):
         if code:
             self.write_code_to_tmpfile(code)
@@ -525,24 +601,8 @@ class SourceReader():
         memory = {}
         if self.renderer:
             memory = self.renderer.state.memory
-        
-        source_code = self.codepath.read_text()
-        version = None
 
-        if re.findall(r"VERSIONS\s?=", source_code):
-            versions = re.findall(r"VERSIONS\s?=.*\#\/VERSIONS", source_code, re.DOTALL)[0]
-            versions = eval(re.sub("VERSIONS\s?=", "", versions))
-            if not isinstance(versions, dict):
-                versions = {str(idx):v for idx, v in enumerate(versions)}
-            versions = {k:{**v, **dict(key=k)} for k,v in versions.items()}
-            versions = list(versions.values())
-            vi = self.renderer.source_reader.config.version_index
-            version = versions[vi]
-            self.renderer.state.versions = versions
-
-            source_code = source_code.replace("ƒVERSION", version["key"])
-            self.codepath.write_text(source_code)
-
+        version, versions = self.find_versions(initial, restart_count)
 
         self.program = run_source(
             self.filepath,
@@ -551,10 +611,11 @@ class SourceReader():
             memory,
             __RUNNER__=self.runner,
             __BLENDER__=self.blender_io(),
-            __VERSION__=version)
+            __VERSION__=version,
+            __VERSIONS__=versions)
         
         self.candidates = self.renderable_candidates(
-            output_folder_override, self.config.add_time_viewers)
+            output_folder_override, self.config.add_time_viewers, self.config.add_ui)
     
     def write_code_to_tmpfile(self, code):
         if self.filepath:
@@ -569,6 +630,7 @@ class SourceReader():
     def renderable_candidates(self,
         output_folder_override=None,
         add_time_viewers=False,
+        add_ui=False,
         ):
         candidates = find_renderables(
             self.filepath,
@@ -580,6 +642,17 @@ class SourceReader():
         
         if len(candidates) == 0:
             candidates.append(Programs.Blank())
+        
+        widest = None
+        if add_ui:
+            for c in candidates:
+                if not widest and hasattr(c, "rect"):
+                    widest = c
+                elif hasattr(c, "rect") and c.rect.w > widest.rect.w:
+                    widest = c
+
+            if widest:
+                candidates.insert(0, uiView(widest))
         
         if add_time_viewers:
             out = []

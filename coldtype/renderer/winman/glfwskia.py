@@ -2,6 +2,8 @@ from coldtype.renderable.renderable import Overlay
 from coldtype.renderer.winman.passthrough import WinmanPassthrough
 
 import time as ptime
+import coldtype.skiashim as skiashim
+
 from subprocess import Popen, PIPE
 from pathlib import Path
 
@@ -119,6 +121,7 @@ class WinmanGLFWSkia():
         glfw.make_context_current(self.window)
 
         glfw.set_key_callback(self.window, self.on_key)
+        #glfw.set_char_callback(self.window, self.on_char)
         glfw.set_mouse_button_callback(self.window, self.on_mouse_button)
         glfw.set_cursor_pos_callback(self.window, self.on_mouse_move)
         glfw.set_scroll_callback(self.window, self.on_scroll)
@@ -202,16 +205,20 @@ class WinmanGLFWSkia():
         if pin and pin != "0":
             vm = glfw.get_video_mode(self.primary_monitor)
             work_rect = Rect(vm.size.width, vm.size.height)
-            #work_rect = Rect(glfw.get_monitor_workarea(self.primary_monitor))
+            _work_rect_x, _work_rect_y = Rect(glfw.get_monitor_workarea(self.primary_monitor)).xy()
+            #print(work_rect, _work_rect_start.xy())
             wrz = work_rect.zero()
             edges = Edge.PairFromCompass(pin)
             pinned = wrz.take(ww, edges[0]).take(wh, edges[1]).round()
-            if edges[1] == "mdy":
-                pinned = pinned.offset(0, -30)
+            #if edges[1] == "mdy":
+            #    pinned = pinned.offset(0, -30)
             pinned = pinned.flip(wrz.h)
-            pinned = pinned.offset(*work_rect.origin())
-            wpi = self.config.window_pin_inset
-            pinned = pinned.inset(-wpi[0], wpi[1])
+            #pinned.drop(_work_rect_x, "E")
+            #pinned.drop(_work_rect_y, "S")
+            #wpi = self.config.window_pin_inset
+            #pinned = pinned.inset(-wpi[0], wpi[1])
+            #wpo = self.config.window_pin_offset
+            #pinned = pinned.offset(wpo[0], -wpo[1])
             glfw.set_window_pos(self.window, pinned.x, pinned.y)
         else:
             glfw.set_window_pos(self.window, 0, 0)
@@ -266,10 +273,14 @@ class WinmanGLFWSkia():
         
         pos = Point(glfw.get_cursor_pos(self.window)).scale(2) # TODO should this be preview-scale?
         pos[1] = self.renderer.extent.h - pos[1]
-        requested_action = self.renderer.state.on_mouse_button(pos, btn, action, mods)
-        if requested_action:
-            self.renderer.action_waiting = requested_action
-            self.renderer.action_waiting_reason = "mouse_trigger"
+
+        try:
+            requested_action = self.renderer.state.on_mouse_button(pos, btn, action, mods)
+            if requested_action:
+                self.renderer.action_waiting = requested_action
+                self.renderer.action_waiting_reason = "mouse_trigger"
+        except Exception as e:
+            print(e)
     
     def on_mouse_move(self, _, xpos, ypos):
         if not self.allow_mouse():
@@ -284,14 +295,23 @@ class WinmanGLFWSkia():
     
     def on_key(self, win, key, scan, action, mods):
         self.on_potential_shortcut(key, action, mods)
+        # if key in GLFW_SPECIALS_LOOKUP.values():
+        #     self.on_potential_shortcut(key, action, mods)
+        # elif mods:
+        #     self.on_potential_shortcut(key, action, mods)
+    
+    def on_char(self, win, key):
+        ck = chr(key)
+        print("CHAR", ck)
+        self.on_potential_shortcut(ck, glfw.PRESS, [])
     
     def repeatable_shortcuts(self):
         return REPEATABLE_SHORTCUTS
     
     def on_potential_shortcut(self, key, action, mods):
         for shortcut, options in self.all_shortcuts.items():
-            for modifiers, skey in options:
-                if key != skey:
+            for modifiers, skey, ckey in options:
+                if key != skey and key != ckey:
                     continue
 
                 if isinstance(mods, list):
@@ -314,7 +334,7 @@ class WinmanGLFWSkia():
                 if len(modifiers) == 0 and mods != 0 and not isinstance(mods, list):
                     mod_match = False
                 
-                if mod_match and key == skey:
+                if mod_match and (key == skey or key == ckey):
                     if (action == glfw.REPEAT and shortcut in self.repeatable_shortcuts()) or action == glfw.PRESS:
                         #print(shortcut, modifiers, skey, mod_match)
                         return self.renderer.on_shortcut(shortcut)
@@ -386,7 +406,7 @@ class WinmanGLFWSkia():
             if image:
                 canvas.save()
                 canvas.scale(scale, scale)
-                canvas.drawImage(image, rect.x, rect.y)
+                skiashim.canvas_drawImage(canvas, image, rect.x, rect.y)
                 canvas.restore()
             return
 
@@ -401,11 +421,7 @@ class WinmanGLFWSkia():
             elif not render.layer:
                 matrix = skia.Matrix()
                 canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), {
-                    'Shader': self.transparency_blocks.makeShader(
-                        skia.TileMode.kRepeat,
-                        skia.TileMode.kRepeat,
-                        matrix
-                    )
+                    "Shader": skiashim.image_makeShader(self.transparency_blocks, matrix),
                 })
                 #canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=hsl(0.3).skia()))
         
@@ -423,7 +439,7 @@ class WinmanGLFWSkia():
                 render.show_error = short_error
                 error_color = rgb(0, 0, 0).skia()
         else:
-            if render.single_frame or render.composites and not render.interactable:
+            if render.single_frame or render.composites and not render.interactable or not self.renderer.args.reuse_skia_context:
                 comp = result.ch(skfx.precompose(
                     render.rect,
                     scale=scale,
@@ -439,7 +455,7 @@ class WinmanGLFWSkia():
                 canvas.save()
                 canvas.scale(1/scale, 1/scale)
                 #render.draw_preview(1.0, canvas, render.rect, comp, rp)
-                canvas.drawImage(comp, 0, 0)
+                skiashim.canvas_drawImage(canvas, comp, 0, 0)
                 canvas.restore()
             else:
                 comp = result

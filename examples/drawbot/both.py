@@ -1,7 +1,9 @@
 from coldtype import *
 from coldtype.drawbot import *
 
-co = Font.ColdObvi()
+"""
+The same variable font animation with drawBot and Coldtype
+"""
 
 @drawbot_animation((1080, 540)
 , timeline=Timeline(30)
@@ -9,8 +11,9 @@ co = Font.ColdObvi()
 , render_bg=1
 )
 def bounce(f):
-    # Using mostly DrawBot API
+    # Using DrawBot API
 
+    co = Font.ColdObvi()
     fontSize = 190
 
     fs = db.FormattedString("COLDTYPE",
@@ -24,7 +27,7 @@ def bounce(f):
     db.fill(*hsl(0.4))
     db.drawPath(bp)
 
-    # Using mostly Coldtype API
+    # Using Coldtype API
 
     (StSt("COLDTYPE", co, fontSize
         , wdth=f.e("eeio"))

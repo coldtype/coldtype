@@ -167,6 +167,17 @@ class Timeline(Timeable):
         
         return Easeable(matches, fi)
     
+    def latest(self, track=None, fi=None) -> Easeable:
+        fi = self._norm_held_fi(fi)
+
+        matches = []
+        _fi = fi
+        while _fi >= 0 and not matches:
+            matches = self.current(track=track, fi=_fi).t or []
+            _fi -= 1
+        
+        return Easeable(matches, fi)
+    
     @property
     def tstart(self):
         if self._start > -1:
@@ -206,7 +217,7 @@ class Timeline(Timeable):
         if self.words:
             cg = self.words.currentGroup(fi)
             if cg:
-                return [cg.start, cg.end]
+                return [int(cg.start), int(cg.end)]
     
     def interpretWords(self, include="*"):
         from coldtype.timing.sequence import ClipTrack, Clip
@@ -225,6 +236,7 @@ class Timeline(Timeable):
 
         clips = []
         styles = []
+
         for t in self.timeables:
             if len(includes) > 0:
                 if t.track not in includes:

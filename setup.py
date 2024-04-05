@@ -19,7 +19,7 @@ basic_deps = [
     "uharfbuzz>=0.14.0",
     "python-bidi",
     "requests",
-    "b3denv>=0.0.5",
+    "b3denv>=0.0.12",
 ]
 
 #if sys.platform.startswith("darwin"):
@@ -27,7 +27,7 @@ basic_deps = [
 
 setuptools.setup(
     name="coldtype",
-    version="0.10.12",
+    version="0.10.15",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",
@@ -66,9 +66,11 @@ setuptools.setup(
     include_package_data=True,
     package_data={
         "": [
+            "assets/glyphNamesToUnicode.txt",
             "demo/transparency_blocks.png",
             "demo/RecMono-CasualItalic.ttf",
             "demo/ColdtypeObviously-VF.ttf",
+            "demo/JetBrainsMono.ttf",
             "demo/MutatorSans.ttf",
             "demo/demo.py",
             "demo/glyphs.py",
@@ -77,6 +79,7 @@ setuptools.setup(
             "demo/blank.py",
             "demo/boiler.py",
             "demo/vf.py",
+            "demo/gifski.py",
             "renderer/.coldtype.py"
         ],
     },
@@ -86,21 +89,23 @@ setuptools.setup(
         ],
     },
     extras_require={
-        "skia": [
-            "skia-python>=86.0",
-        ],
         "drawbot": [
             "numpy",
         ],
         "viewer": [
             "glfw",
             "PyOpenGL",
-            "skia-python>=86.0",
             "skia-pathops", # can this be taken from skia-python?
             "ufo2ft",
             #"ufoLib2",
             "numpy",
             "potracer",
+        ],
+        "viewer:python_version < '3.12'": [
+            "skia-python==87.5",
+        ],
+        "viewer:python_version >= '3.12'": [
+            "skia-python>87.5",
         ],
         "experimental": [
             "pynput",

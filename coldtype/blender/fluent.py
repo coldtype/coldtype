@@ -3,12 +3,13 @@ import math, time
 from pathlib import Path
 from typing import Callable
 from contextlib import contextmanager
+from typing import List
 
 from coldtype.runon.path import P
 from coldtype.runon.runon import Runon
 from coldtype.timing.timeline import Timeline
 from coldtype.geometry import Rect
-from coldtype.color import Gradient, normalize_color, bw
+from coldtype.color import Gradient, normalize_color, bw, Color
 from coldtype.renderable.animation import animation
 
 try:
@@ -66,7 +67,7 @@ class BpyWorld(_Chainable):
     
     deselectAll = deselect_all
     
-    def delete_previous(self, collection="Coldtype", keep=[], materials=True, curves=True, meshes=True, objects=True, grease_pencils=True):
+    def delete_previous(self, collection="Coldtype", keep=[], materials=True, curves=True, meshes=True, objects=True, grease_pencils=True) -> "BpyWorld":
         self.deselect_all()
 
         BpyCollection.Find(collection, create=False).delete_hierarchy()
@@ -145,14 +146,14 @@ class BpyWorld(_Chainable):
     render_settings = cycles
     renderSettings = render_settings
     
-    @contextmanager
+    #@contextmanager
     def rigidbody(self, speed=1, frame_end=250):
         try:
             bpy.ops.rigidbody.world_remove()
-            yield
+            #yield
         except RuntimeError as e:
             print("! Failed to reset rigidbody !", e)
-            yield
+            #yield
         
         if self.scene:
             try:
@@ -163,9 +164,10 @@ class BpyWorld(_Chainable):
             if rw:
                 rw.time_scale = speed
                 rw.point_cache.frame_end = frame_end
+        
         return self
     
-    def insertKeyframe(self, frame, path, value=None):
+    def insert_keyframe(self, frame, path, value=None):
         bpy.data.scenes[0].frame_set(frame)
         if value is not None:
             if callable(value):
@@ -360,15 +362,63 @@ class BpyMaterial():
         tex.interpolation = "Linear"
 
         return self
+    
+    def color_ramp(self, colors:List[Color]):
+        ramp = self.m.node_tree.nodes.new("ShaderNodeValToRGB")
+        cr = ramp.color_ramp
+
+        for idx, color in enumerate(colors):
+            if idx == 0:
+                cr.elements[0].color = color.rgba()
+            elif idx == idx == (len(colors) - 1):
+                cr.elements[-1].color = color.rgba()
+            else:
+                cr.elements.new(idx/(len(colors)-1))
+                cr.elements[idx].color = color.rgba()
+
+        bsdf = self.bsdf()
+        self.m.node_tree.links.new(bsdf.inputs["Base Color"], ramp.outputs["Color"])
+        return self
+    
+    def math(self, attrs={}, inputs=[]):
+        m = self.m.node_tree.nodes.new("ShaderNodeMath")
+        for k, v in attrs.items():
+            setattr(m, k, v)
+        for k, v in inputs.items():
+            m.inputs[k].default_value = v
+        return self
+    
+    def object_info(self):
+        _ = self.m.node_tree.nodes.new("ShaderNodeObjectInfo")
+        return self
+    
+    def connect(self, output, input):
+        nt = self.m.node_tree
+        self.m.node_tree.links.new(
+            nt.nodes[input[0]].inputs[input[1]],
+            nt.nodes[output[0]].outputs[output[1]])
+        return self
+    
+    def arrange(self):
+        for idx, node in enumerate(reversed(self.m.node_tree.nodes)):
+            node.location.x = -300 + idx * 200
+        return self
 
 
 class BpyGroup(Runon):
     def yields_wrapped(self):
         return False
+
+    def map(self, fn:Callable[["BpyObj"], "BpyObj"]):
+        return super().map(fn)
+    
+    def deselect(self):
+        return self.map(lambda bp: bp.select(False))
     
     @staticmethod
     def Curves(pens:P, prefix=None, collection=None, cyclic=True, fill=True, tx=0, ty=0):
         curves = BpyGroup()
+        curves.prefix = prefix
 
         def walker(p:P, pos, data):
             if pos == 0:
@@ -379,6 +429,14 @@ class BpyGroup(Runon):
         
         pens.walk(walker)
         return curves
+    
+    def copy(self, new_prefix):
+        new_curves = BpyGroup()
+        new_curves.prefix = new_prefix
+
+        for bp in self:
+            new_curves.append(bp.copy(self.prefix, new_prefix))
+        return new_curves
 
 
 class BpyObj(_Chainable):
@@ -441,6 +499,11 @@ class BpyObj(_Chainable):
     @staticmethod
     def Cube(name=None, collection=None) -> "BpyObj":
         bpy.ops.mesh.primitive_cube_add()
+        return BpyObj.Primitive(name, collection)
+    
+    @staticmethod
+    def Circle(name=None, collection=None) -> "BpyObj":
+        bpy.ops.mesh.primitive_circle_add()
         return BpyObj.Primitive(name, collection)
 
     @staticmethod
@@ -524,6 +587,17 @@ class BpyObj(_Chainable):
                 if c != bc.c:
                     c.objects.unlink(self.obj)
         return self
+    
+    def copy(self, old_prefix=None, new_prefix=None):
+        new_obj = None
+        with self.obj_selected():
+            bpy.ops.object.duplicate(linked=False)
+            copied = bpy.context.object
+            if old_prefix is not None and new_prefix is not None:
+                copied.name = self.obj.name.replace(old_prefix, new_prefix)
+            new_obj = BpyObj(copied).select(False)
+        return new_obj
+
     
     def select(self, selected=True, set_active=False, clear_active=False):
         if selected:
@@ -642,10 +716,18 @@ class BpyObj(_Chainable):
     
     selectAndDelete = select_and_delete
 
-    def separateByLooseParts(self):
+    def separate_by_loose_parts(self) -> BpyGroup:
         with self.all_vertices_selected():
             bpy.ops.mesh.separate(type="LOOSE")
-        return self
+        
+        bg = BpyGroup()
+        bg.append(self)
+
+        for obj in bpy.context.selected_objects:
+            bg.append(BpyObj(obj))
+        
+        bg.deselect()
+        return bg
     
     def parent(self, parent_tag, hide=False):
         with self.obj_selection_sequence(parent_tag) as o:
@@ -653,6 +735,34 @@ class BpyObj(_Chainable):
         if hide:
             with o.obj_selected():
                 o.hide()
+        return self
+    
+    def constrain_child_of(self
+        , target:"BpyObj"
+        , location=dict(x=1, y=1, z=1)
+        , rotation=dict(x=0, y=0, z=0)
+        , scale=dict(x=1, y=1, z=1)
+        , influence=1
+        , clear=True
+        ):
+        if clear:
+            for c in self.obj.constraints:
+                self.obj.constraints.remove(c)
+            
+            self.ops_object("constraint_add", type="CHILD_OF")
+            constraint = self.obj.constraints[0]
+            constraint.target = target.obj
+            
+            for k, v in location.items():
+                setattr(constraint, f"use_location_{k}", bool(v))
+
+            for k, v in rotation.items():
+                setattr(constraint, f"use_rotation_{k}", bool(v))
+            
+            for k, v in scale.items():
+                setattr(constraint, f"use_scale_{k}", bool(v))
+
+        constraint.influence = influence
         return self
     
     def hide(self, hide=True):
@@ -673,6 +783,10 @@ class BpyObj(_Chainable):
         setattr(self.obj, prop, value)
         return self
     
+    def set_data(self, prop, value):
+        setattr(self.obj.data, prop, value)
+        return self
+    
     def set_props(self, pairs):
         for prop, value in pairs:
             self.set_prop(prop, value)
@@ -680,6 +794,53 @@ class BpyObj(_Chainable):
     
     def calls(self, fn): # TODO call signature, but requires fake-bpy-module at top level, is that even possible?
         fn(self.obj)
+        return self
+    
+    def set_frame(self, frame, scene=None):
+        if scene is None:
+            scene = bpy.data.scenes[0]
+        scene.frame_set(frame)
+        return self
+    
+    def insert_keyframe(self, frame, path, value=None, scene=None):
+        self.set_frame(frame, scene)
+        
+        if value is not None:
+            if callable(value):
+                value(self)
+            else:
+                exec(f"self.obj.{path} = {value}")
+        self.obj.keyframe_insert(data_path=path)
+        return self
+    
+    def insert_keyframes(self, path, *settings):
+        for frame, value in settings:
+            self.insert_keyframe(frame, path, value)
+        
+        self.set_frame(settings[0][0])
+        return self
+    
+    def modify_keyframes(self, selector, action):
+        for fc in self.obj.animation_data.action.fcurves:
+            matches = False
+            if callable(selector) and selector(fc.data_path):
+                matches = True
+            elif selector == fc.data_path:
+                matches = True
+            
+            if matches:
+                action(fc)
+    
+    def make_keyframes_linear(self, selector):
+        def make_linear(fc):
+            fc.extrapolation = 'LINEAR'
+            for kp in fc.keyframe_points:
+                kp.handle_left_type  = 'VECTOR'
+                kp.handle_right_type = 'VECTOR'
+                kp.handle_left = kp.co
+                kp.handle_right = kp.co
+        
+        self.modify_keyframes(selector, make_linear)
         return self
     
     def set_visibility_at_frame(self, frame, visibility, scene=None):
@@ -713,7 +874,7 @@ class BpyObj(_Chainable):
     
     vertexGroupAll = vertex_group_all
 
-    def addEmptyOrigin(self, collection="Coldtype"):
+    def add_empty_origin(self, collection="Coldtype"):
         bpy.ops.object.empty_add(type="PLAIN_AXES")
         bc = bpy.context.object
         bc.name = self.obj.name + "_EmptyOrigin"
@@ -721,6 +882,8 @@ class BpyObj(_Chainable):
         BpyObj.Find(bc.name).collect(collection)
         return self
     
+    addEmptyOrigin = add_empty_origin
+
     # Geometry Methods
     
     def apply_transform(self,
@@ -739,8 +902,10 @@ class BpyObj(_Chainable):
     
     applyTransform = apply_transform
 
-    def applyScale(self):
+    def apply_scale(self):
         return self.applyTransform(location=False, rotation=False, scale=True, properties=False)
+    
+    applyScale = apply_scale
 
     def apply_modifier(self, name):
         with self.obj_selected():        
@@ -771,6 +936,12 @@ class BpyObj(_Chainable):
             self.obj.rotation_euler[1] = math.radians(y)
         if z is not None:
             self.obj.rotation_euler[2] = math.radians(z)
+        return self
+    
+    def with_temp_origin(self, origin, fn):
+        self.set_origin(*origin)
+        fn(self)
+        self.origin_to_geometry()
         return self
     
     def origin_to_geometry(self):
@@ -854,7 +1025,7 @@ class BpyObj(_Chainable):
 
 #region Materials
 
-    def material(self, tag, modFn:Callable[[BpyMaterial], BpyMaterial]=None, clear=False):
+    def material(self, tag, modFn:Callable[[BpyMaterial], BpyMaterial]=None, clear=True):
         if clear:
             self.obj.data.materials.clear()
 
@@ -935,6 +1106,8 @@ class BpyObj(_Chainable):
             bpy.ops.object.convert(target="MESH")
         return self
     
+    convertToMesh = convert_to_mesh
+    
     def remesh(self, octree_depth=7, smooth=False, apply=False):
         with self.obj_selected():
             bpy.ops.object.modifier_add(type="REMESH")
@@ -949,6 +1122,9 @@ class BpyObj(_Chainable):
         return self
     
     def array(self, count=2, relative=(1, 0, 0), constant=(0.1, 0, 0)):
+        if any(v is None for v in relative): relative = None
+        if any(v is None for v in constant): constant = None
+
         with self.obj_selected():
             bpy.ops.object.modifier_add(type='ARRAY')
             m = self.obj.modifiers[-1]
@@ -971,11 +1147,14 @@ class BpyObj(_Chainable):
                 m.use_constant_offset = False
         return self
     
-    def arrayX(self, count=2, relative=1, constant=0.1):
+    def arrayX(self, count=2, relative=1, constant=0):
         return self.array(count=count, relative=(relative, 0, 0), constant=(constant, 0, 0))
     
-    def arrayY(self, count=2, relative=-1, constant=-0.1):
+    def arrayY(self, count=2, relative=-1, constant=0):
         return self.array(count=count, relative=(0, relative, 0), constant=(0, constant, 0))
+    
+    def arrayZ(self, count=2, relative=-1, constant=0):
+        return self.array(count=count, relative=(0, 0, relative), constant=(0, 0, constant))
     
     def remove_doubles(self, threshold=0.01):
         with self.all_vertices_selected():
@@ -1062,9 +1241,19 @@ class BpyObj(_Chainable):
     def boolean_diff(self, object, apply=True, remove=True):
         return self.boolean(object, "DIFFERENCE", apply, remove)
     
+    def ops_object(self, method, *args, **kwargs):
+        with self.obj_selected():
+            getattr(bpy.ops.object, method)(*args, **kwargs)
+        return self
+    
+    def shade_flat(self):
+        with self.obj_selected():
+            bpy.ops.object.shade_flat()
+        return self
+
     def shade_smooth(self, auto_smooth=False):
         with self.obj_selected():
-            bpy.ops.object.shade_smooth(use_auto_smooth=True)
+            bpy.ops.object.shade_smooth(use_auto_smooth=auto_smooth)
         return self
     
     def shade_auto_smooth(self):
@@ -1203,7 +1392,7 @@ class BpyObj(_Chainable):
             bez.fill_mode = "BOTH"
 
         if set_origin:
-            self.setOrigin(*origin, 0)
+            self.set_origin(*origin, 0)
 
         return self
 
@@ -1213,11 +1402,6 @@ class BpyObj(_Chainable):
     
     def bevel(self, depth=0.02) -> "BpyObj":
         self.obj.data.bevel_depth = depth
-        return self
-    
-    def convertToMesh(self) -> "BpyObj":
-        with self.obj_selected():
-            bpy.ops.object.convert(target="MESH")
         return self
 
 #endregion

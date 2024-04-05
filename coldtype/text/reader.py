@@ -1,11 +1,15 @@
 from collections import OrderedDict
 from functools import partial
+from subprocess import run
+from shutil import copy2
+from pathlib import Path
 
 import unicodedata, math
 
 from fontTools.misc.transform import Transform
 from fontTools.pens.transformPen import TransformPen
 
+from coldtype.osutil import run_with_check
 from coldtype.color import normalize_color, rgb
 from coldtype.runon.path import P
 from coldtype.geometry import Rect
@@ -122,6 +126,7 @@ class Style():
         load_font=True, # should we attempt to load the font?
         tag=None, # way to differentiate in __eq__
         _stst=False,
+        case=None,
         **kwargs
         ):
 
@@ -134,6 +139,7 @@ class Style():
             self.font = font
 
         self.meta = meta
+        self.case = case
 
         self.fallback = fallback
         self.narrower = narrower
@@ -196,7 +202,7 @@ class Style():
         for k, v in kwargs.items():
             if k.startswith("ss") and len(k) == 4:
                 found_features[k] = v
-            if k in ["dlig", "swsh", "onum", "tnum", "palt", "salt"]:
+            if k in ["dlig", "swsh", "onum", "tnum", "palt", "salt", "vert"]:
                 found_features[k] = v
             if k in ["slig"]:
                 if k == 0:
@@ -460,6 +466,12 @@ class StyledString(FittableMixin):
     Lowest-level vectorized typesetting class
     """
     def __init__(self, text:str, style:Style):
+        if style.case is not None:
+            if style.case == "upper":
+                text = text.upper()
+            elif style.case == "lower":
+                text = text.lower()
+        
         self.text_info = TextInfo(text)
         self.text = text
         self.setStyle(style)
@@ -552,7 +564,10 @@ class StyledString(FittableMixin):
         return self.fontSize / self.style.font.font.shaper.face.upem
     
     def width(self): # size?
-        w = self.glyphs[-1].frame.point("SE").x # TODO need to scale?
+        try:
+            w = self.glyphs[-1].frame.point("SE").x # TODO need to scale?
+        except IndexError:
+            return 0
         #return w * self.scale()
         return w
         return self.getGlyphFrames()[-1].frame.point("SE").x
@@ -932,6 +947,39 @@ class StyledString(FittableMixin):
         Vectorize all text into single `P`
         """
         return self.pens().pen()
+    
+    def instance(self, output_path, remove_overlaps=False, freeze=False, freeze_suffix=None):
+        args = ["fonttools", "varLib.instancer", self.style.font.path.absolute()]
+        
+        for k,v in self.variations.items():
+            args.append(f"{k}={v}")
+        
+        args.extend(["-o", output_path])
+        
+        if remove_overlaps:
+            args.append("--remove-overlaps")
+        
+        run_with_check(args)
+
+        if freeze:
+            enabled_features = []
+            for k,v in self.features.items():
+                if v:
+                    enabled_features.append(k)
+            
+            features = ",".join(enabled_features)
+            args = ["pyftfeatfreeze", "-f", features]
+            if freeze_suffix:
+                args.extend(["-S", "-U", freeze_suffix])
+            
+            args.append(output_path)
+            run_with_check(args)
+            
+            frozen_otf = Path(str(output_path) + ".featfreeze.otf")
+            copy2(frozen_otf, output_path)
+            frozen_otf.unlink()
+        
+        return Font(str(output_path))
 
 class SegmentedString(FittableMixin):
     def __init__(self, text, styles):

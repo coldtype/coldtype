@@ -1,12 +1,18 @@
 from coldtype import *
 from coldtype.blender import *
 
-# to fully re-cache Rendered sequence in blender, try switching to Material Preview and then back to Rendered
+"""
+a 2d coldtype variable font animation;
+in the same file as @b3d_runnable that
+displays that 2d animation in a 3d world
+"""
 
-@animation((540, 540), timeline=30, bg=0)
+# to fully re-cache Rendered sequence in blender, make sure to set force_refresh=1 on your @b3d_runnable
+
+@animation((540, 540), timeline=30)
 def varfont_animation(f):
     return (P(
-        Glyphwise("COLD", lambda g:
+        Glyphwise("TYPE", lambda g:
             Style(Font.ColdObvi(), 250
                 , wdth=f.adj(-g.i*40).e("seio")))
             .align(f.a.r, tx=0)
@@ -16,9 +22,9 @@ def varfont_animation(f):
             .align(f.a.r.inset(50), tx=0, y="S")
             .f(1)))
 
-@b3d_runnable()
+@b3d_runnable(force_refresh=1)
 def setup(blw:BpyWorld):
-    (blw.deletePrevious(materials=False))
+    blw.delete_previous(materials=False)
 
     (BpyObj.Plane("Projection")
         .scale(2, 2)

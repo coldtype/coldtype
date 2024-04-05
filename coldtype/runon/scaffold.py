@@ -73,7 +73,10 @@ class Scaffold(Runon):
                 el.subdivide(amt, edge, tags)
         return self
     
-    def grid(self, columns=2, rows=2, tags=[]):
+    def grid(self, columns=2, rows=None, tags=[]):
+        if rows is None:
+            rows = columns
+
         if self.val_present():
             self._extend_with_tags(
                 self.r.grid(columns, rows), tags)
@@ -113,6 +116,12 @@ class Scaffold(Runon):
                 self._borders = []
 
             r = self.r
+
+            if callable(cols):
+                cols = cols(self)
+            if callable(rows):
+                rows = rows(self)
+
             g = Grid(self.r, cols, rows, ascii, warn_float=self.warn_float)
             for k, v in g.keyed.items():
                 if v.w > r.w or v.h > r.h or v.x < 0 or v.y < 0 or v.w < 0 or v.h < 0:

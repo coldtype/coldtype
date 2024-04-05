@@ -1,44 +1,50 @@
 from coldtype import *
 from coldtype.blender import *
 
+"""
+A giant letter, w/ the top face displaced
+with a Displace modifier; then animated
+by moving the Displace modifier's coords
+object w/ a @b3d_animation
+"""
+
+big_c = "C"
+
 @b3d_runnable()
 def setup(bw:BpyWorld):
-    (bw.deletePrevious(materials=False))
+    (bw.deletePrevious(materials=True))
 
-big_c = "A"
-
-@b3d_renderable(center=(0, 1), upright=1)
-def displace(r):
-    return (
-        StSt("C", Font.ColdObvi(), 850, wght=1)
-        .align(r)
+    glyph = (StSt(big_c, Font.ColdObvi(), 8.5, wght=1)
         .pen()
-        .tag("glyph")
-        .ch(b3d(lambda p: p
-            .extrude(1)
-            .convertToMesh()
-            .remesh(6)
-            .applyModifier("Remesh")
-            .makeVertexGroup(lambda p: p.co[2] > 0, name="front")
-            .addEmptyOrigin()
-            .displace(
-                strength=3.35,
-                midlevel=0,
-                texture="Texture",
-                coords_object="glyph_EmptyOrigin",
-                direction="Z",
-                vertex_group="front")
-            .subsurface()
-            .smooth(factor=6, repeat=2, x=0, y=0, z=1)
-            .shadeSmooth()
-            , material="sponge")))
+        .shift(-0.5, 0.5))
+    
+    (BpyObj.Curve("Glyph")
+        .draw(glyph)
+        .extrude(1)
+        .origin_to_cursor()
+        .rotate(x=90)
+        .convert_to_mesh()
+        .remesh(6)
+        .apply_modifier("Remesh")
+        .make_vertex_group(lambda p: p.co[2] > 0, name="front")
+        .add_empty_origin()
+        .displace(
+            strength=3.35,
+            midlevel=0,
+            texture="Texture",
+            coords_object="Glyph_EmptyOrigin",
+            direction="Z",
+            vertex_group="front")
+        .subsurface()
+        .smooth(factor=6, repeat=2, x=0, y=0, z=1)
+        .shade_smooth()
+        .material("sponge", lambda m: m
+            .f(hsl(0.65))))
 
 @b3d_animation(tl=30, name=f"animator_{big_c}")
 def animator(f):
-    # (BpyObj.Find("bg")
-    #     .locate(y=f.e("seo", 1, r=(1, -2.95))))
     if bpy and bpy.data:
-        (BpyObj.Find("glyph_EmptyOrigin")
+        (BpyObj.Find("Glyph_EmptyOrigin")
             .locate(x=ord(big_c)+f.e("l", 0, r=(0, 2)))
             .rotate(x=f.e("l", 0, r=(0, 5))))
 

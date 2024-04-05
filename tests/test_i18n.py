@@ -4,12 +4,14 @@ import unicodedata
 co = Font.ColdObvi()
 mutator = Font.MutatorSans()
 
-zh = Font.Cacheable("assets/NotoSansCJKsc-Black.otf")
+zh = Font.Cacheable("assets/Noto-unhinted/NotoSansCJKsc-Black.otf")
 
-latin_font = Font("assets/NotoSans-Black.ttf")
+latin_font = Font("assets/Noto-unhinted/NotoSans-Black.ttf")
 arabic_font = Font.Find("GretaArabicCompressedAR-Heavy.otf")
 ar_light = Font.Find("GretaArabicCondensedAR-Light.otf")
 hebrew_font = Font.Find(r"GretaSansCondensedH\+L\-Medium\.otf")
+
+fnt_en = Font.Cacheable("assets/SourceSerif4-VariableFont_opsz,wght.ttf")
 
 r = Rect(1000, 500)
 
@@ -159,15 +161,24 @@ def test_combine_slugs(_r):
 @test(120)
 def test_language_specific_forms(_r):
     out = P()
-    fnt = "assets/SourceSerifPro-Black.ttf"
-    txt = StSt("ríjks", fnt, 350, lang="NLD").attach(out)
+    txt = StSt("ríjks", fnt_en, 350, lang="NLD").attach(out)
+    
     assert txt[1].glyphName == "iacute"
     assert txt[2].glyphName == "uni0237"
-    txt = StSt("ríjks", fnt, 350).attach(out)
+    txt = StSt("ríjks", fnt_en, 350).attach(out)
     assert txt[1].glyphName == "iacute"
     assert txt[2].glyphName == "j"
 
     return out.distribute().track(100).align(_r).scale(0.25)
+
+@test(120)
+def test_korean_fallback(_r):
+    txt = Slug("사이드체인 HPF", Style(zh, 72), Style(fnt_en, 72, fill=hsl(0.3)), print_segments=True).pens().align(_r)
+    
+    assert txt[0].glyphName == "cid52858"
+    assert txt[-1].glyphName == "F"
+    
+    return txt
 
 @test(120)
 def test_language_specific_ufo(_r):

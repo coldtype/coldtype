@@ -54,17 +54,17 @@ line = build_line()
 def render(f):
     time_offset = -f.i * note_width + r.w - note_width * 3
     time_offset += 10 # fudge
-    looped_line = PS([
+    looped_line = P(
         (line.copy()
             .translate(
                 time_offset - f.t.duration * note_width,
                 0)),
         (line.copy()
-            .translate(time_offset, 0))
-    ])
-    return PS([
+            .translate(time_offset, 0)))
+
+    return (P(
         P().rect(f.a.r).f(0),
         (looped_line.pen()
             .ch(color_phototype(f.a.r, blur=20, cut=215, cutw=40))),
         (looped_line.pen()
-            .ch(color_phototype(f.a.r, blur=3, cut=200, cutw=25)))])
+            .ch(color_phototype(f.a.r, blur=3, cut=200, cutw=25)))))

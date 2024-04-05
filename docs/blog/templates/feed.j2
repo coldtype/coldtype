@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>The Coldtype Blog</title>
+        <link>https://blog.coldtype.xyz</link>
+        <description>It’s the Coldtype blog.</description>
+        <atom:link href="https://blog.coldtype.xyz/feed.xml" rel="self"></atom:link>
+        <language>en-us</language>
+        <lastBuildDate>{{ build }}</lastBuildDate>
+        {% for post in posts %}
+        <item>
+            <title>{{ post.metadata.title|e }}</title>
+            <link>https://blog.coldtype.xyz/{{ post.metadata.slug }}.html</link>
+            <description>{{ post.metadata.description }}</description>
+            <guid>https://blog.coldtype.xyz/{{ post.metadata.slug }}.html</guid>
+            <pubDate>{{ post.metadata.pubDate }}</pubDate>
+        </item>
+        {% endfor %}
+    </channel>
+</rss>

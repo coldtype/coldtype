@@ -495,7 +495,7 @@ class ClipGroup(Timeable):
                 yield idx, clip, p
     
     def __repr__(self):
-        return "<ClipGroup {:04d}-{:04d} \"{:s}\">".format(self.start, self.end, self.text())
+        return "<ClipGroup {:04d}-{:04d} \"{:s}\">".format(int(self.start), int(self.end), self.text())
     
     def __hash__(self):
         return self.text()

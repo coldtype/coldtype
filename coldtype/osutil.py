@@ -1,4 +1,4 @@
-import platform, os
+import platform, os, subprocess
 from enum import Enum
 
 class System(Enum):
@@ -36,6 +36,16 @@ def play_sound(name="Pop"):
         os.system(f"afplay /System/Library/Sounds/{name}.aiff")
 
 
+def show_in_finder(path):
+    p = path.expanduser().resolve()
+    if on_mac():
+        os.system(f"open {p}")
+    elif on_windows():
+        os.system(f"explorer {p}")
+    else:
+        print("show-in-finder not implemented for os")
+
+
 def in_notebook() -> bool:
     try:
         shell = get_ipython().__class__.__name__
@@ -47,3 +57,12 @@ def in_notebook() -> bool:
             return False  # Other type (?)
     except NameError:
         return False      # Probably standard Python interpreter
+
+
+def run_with_check(args):
+    print("---")
+    print("$", " ".join([str(s) for s in args]))
+    try:
+        subprocess.run(args, capture_output=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print(e.stderr.decode("utf-8"))

@@ -3,7 +3,7 @@ from pathlib import Path
 from functools import lru_cache
 from urllib.request import urlretrieve
 
-from coldtype.osutil import on_linux, on_mac, on_windows
+from coldtype.osutil import on_linux, on_mac, on_windows, run_with_check
 
 from coldtype.fontgoggles.font import getOpener
 from coldtype.fontgoggles.font.baseFont import BaseFont
@@ -71,6 +71,7 @@ def normalize_font_path(font, nonexist_ok=False):
         raise FontNotFoundException(literal)
 
 FontCache = {}
+FontmakeCache = {}
 
 class Font():
     # TODO support glyphs?
@@ -154,6 +155,20 @@ class Font():
                 break
         return name, family
     
+    def subset(self, output_path, *args, unicodes="U+0000-00FF U+2B22 U+201C U+201D U+201D"):
+        _args = [
+            "pyftsubset", str(self.path),
+            f"--output-file={str(output_path)}",
+            f"--unicodes={unicodes}",
+            "--ignore-missing-unicodes",
+            "--ignore-missing-glyphs",
+            "--notdef-outline",
+            "--notdef-glyph",
+        ]
+        _args.extend(args)
+        run_with_check(_args)
+        return Font(str(output_path))
+    
     @staticmethod
     def Cacheable(path, suffix=None, delete_tmp=False, actual_path=None):
         """use actual_path to override a key path (if the actual path is the result of a networked call)"""
@@ -193,6 +208,26 @@ class Font():
         font_path = list(folder.glob("*.ttf"))[index]
         return Font.Cacheable(font_cache_key, actual_path=font_path)
     
+    def Download(url) -> "Font":
+        import requests
+
+        font_name = Path(url).name
+        
+        font_cache_key = f"Download_{font_name}"
+        if font_cache_key in FontCache:
+            return FontCache[font_cache_key]
+
+        folder = Path(f"_DownloadedFonts")
+        folder.mkdir(exist_ok=True, parents=True)
+        font_path = folder / font_name
+
+        r = requests.get(url)
+        if not r.ok:
+            raise FontNotFoundException("URL did not resolve")
+        
+        font_path.write_bytes(r.content)
+        return Font.Cacheable(font_cache_key, actual_path=font_path)
+    
     def _ListDir(dir, regex, regex_dir, log=False, depth=0):
         if dir.name in [".git", "venv"]:
             return
@@ -200,20 +235,23 @@ class Font():
         #print(dir.stem, depth, len(os.listdir(dir)))
         results = []
 
-        for p in dir.iterdir():
-            if p.is_dir() and depth < FONT_FIND_DEPTH and p.suffix != ".ufo":
-                try:
-                    res = Font._ListDir(p, regex, regex_dir, log, depth=depth+1)
-                    if res:
-                        results.extend(res)
-                except PermissionError:
-                    pass
-            else:
-                if regex_dir and not re.search(regex_dir, str(p.parent), re.IGNORECASE):
-                    continue
-                if re.search(regex, p.name, re.IGNORECASE):
-                    if p.suffix in [".otf", ".ttf", ".ttc", ".ufo"]:
-                        results.append(p)
+        try:
+            for p in dir.iterdir():
+                if p.is_dir() and depth < FONT_FIND_DEPTH and p.suffix != ".ufo":
+                    try:
+                        res = Font._ListDir(p, regex, regex_dir, log, depth=depth+1)
+                        if res:
+                            results.extend(res)
+                    except PermissionError:
+                        pass
+                else:
+                    if regex_dir and not re.search(regex_dir, str(p.parent), re.IGNORECASE):
+                        continue
+                    if re.search(regex, p.name, re.IGNORECASE):
+                        if p.suffix in [".otf", ".ttf", ".ttc", ".ufo", ".woff", ".woff2"]:
+                            results.append(p)
+        except FileNotFoundError:
+            pass
         
         return results
 
@@ -279,6 +317,51 @@ class Font():
                 except:
                     print("FAILED SYSTEM LOOKUP", matches[0])
                     raise FontNotFoundException(regex)
+
+    @staticmethod
+    def Fontmake(source, verbose=False, keep_overlaps=False, cli_args=[]):
+        import tempfile
+        from subprocess import run
+
+        path = Path(source).expanduser()
+        if not path.exists():
+            raise FontNotFoundException(path)
+
+        mtime = path.stat().st_mtime
+
+        if path.suffix == ".designspace":
+            from fontTools.designspaceLib import DesignSpaceDocument
+            ds = DesignSpaceDocument.fromfile(path)
+            for source in ds.sources:
+                mtime = max(Path(source.path).stat().st_mtime, mtime)
+
+        if path in FontmakeCache:
+            _mtime, _font = FontmakeCache[path]
+            if _mtime == mtime:
+                return _font
+
+        print(f"fontmake compiling font {path.name}")
+
+        with tempfile.NamedTemporaryFile(prefix="coldtype_fontmake_", suffix=".ttf", delete=False) as tmp:
+            args = ["fontmake", path, "--output-path", tmp.name]
+            
+            if path.suffix == ".designspace":
+                args.extend(["-o", "variable"])
+            
+            if keep_overlaps:
+                args.append("--keep-overlaps")
+            
+            args.extend(cli_args)
+            output = run(args, capture_output=not verbose, check=True)
+        
+        print(f"/fontmake compiled font {path.name}")
+        print(tmp.name)
+
+        font = Font(tmp.name)
+        FontmakeCache[path] = [mtime, font] # TODO creation args should also go in cache
+        os.unlink(tmp.name)
+
+        return font
     
     def RegisterDir(dir):
         global ALL_FONT_DIRS
@@ -312,6 +395,11 @@ class Font():
                 return Font.RecursiveMono()
             else:
                 raise FontNotFoundException()
+    
+    def copy_to(self, path:Path):
+        from shutil import copy2
+        copy2(self.path, path)
+        return self
 
     @staticmethod
     def ColdtypeObviously():
@@ -330,3 +418,9 @@ class Font():
         return Font.Cacheable(Path(__file__).parent.parent / "demo/RecMono-CasualItalic.ttf")
     
     RecMono = RecursiveMono
+
+    @staticmethod
+    def JetBrainsMono():
+        return Font.Cacheable(Path(__file__).parent.parent / "demo/JetBrainsMono.ttf")
+    
+    JBMono = JetBrainsMono

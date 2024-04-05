@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="alternate" type="application/atom+xml" title="The Coldtype Blog Feed" href="/feed.xml">
+    <title>The Coldtype Blog — {{ post.metadata.get("title") }}</title>
+    <link rel="stylesheet" href="https://use.typekit.net/emr0svx.css">
+    <link href="/assets/style.css?t={{build_unix}}" rel="stylesheet">
+    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="main">
+        <div id="main-inner">
+            <div id="header">
+                <a href="/">The Coldtype Blog</a>
+            </div>
+            <div class="post">
+                <h1 id="headline">{{ post.metadata.get('title') }}</h1>
+                <div class="colab-callout">
+                    <a class="colab-link" href="https://colab.research.google.com/drive/{{post.notebook}}"
+                        target="_blank">💻 View/run on Colab</a>
+                </div>
+                <div class="notebook">
+                    {% for cell in post.cells %}
+                    {% if cell.text is defined %}
+                    <div class="text">
+                        {{ cell.text }}
+                    </div>
+                    {% elif cell.html is defined %}
+                    <div class="code">
+                        {{ cell.html|safe }}
+                    </div>
+                    {% if cell.outputs is defined %}
+                    <div class="code-outputs">
+                        {% for output in cell.outputs %}
+                        {% for html in output %}
+                        {{ html|safe }}
+                        {% endfor %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="author">
+                    — {{ post.metadata.get("author") }}
+                    <br />
+                    {{ post.metadata.get("location") }}
+                    <br />
+                    {{ post.metadata.get("date_string") }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"
+        integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+    <script>
+        //$("video").addClass("video-js");
+
+        $("pre").on("click", function () {
+            $(this).toggleClass("clicked")
+        });
+    </script>
+    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+</body>

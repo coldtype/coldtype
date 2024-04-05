@@ -115,6 +115,12 @@ class P(Runon):
         
         if len(vals) == 2 and isinstance(vals[0], float) and isinstance(vals[1], float):
             prenorm = Rect(*vals)
+        
+        if len(vals) == 1 and isinstance(vals[0], dict):
+            unmapped = type(self)()
+            for k, v in vals[0].items():
+                unmapped.append(v.tag(k))
+            prenorm = unmapped
 
         super().__init__(*prenorm)
 
@@ -170,29 +176,6 @@ class P(Runon):
         for k, v in self._data.items():
             if k not in exclude:
                 out[k] = v
-        return out
-    
-    def _to_code(self):
-        out = "(DATPens()"
-
-        t = None
-        if self._tag and self._tag != "?":
-            t = self._tag
-        if t:
-            out += f"\n    .tag(\"{t}\")"
-        
-        if self.data:
-            out += f"\n    .add_data({repr(self.data)})"
-
-        for pen in self._pens:
-            for idx, line in enumerate(pen.to_code().split("\n")):
-                if idx == 0:
-                    out += f"\n    .append{line}"
-                else:
-                    out += f"\n    {line}"
-            out += ""
-
-        out += ")"
         return out
     
     def to_code(self, classname="P", additional_lines=[]):
@@ -276,7 +259,10 @@ class P(Runon):
             el._val.replay(self._val)
             #self._val.record(el._val)
 
-        self._attrs = {**self._els[0]._attrs, **self._attrs}
+        try:
+            self._attrs = {**self._els[0]._attrs, **self._attrs}
+        except IndexError:
+            pass
             
         self.data(frame=frame)
         self._els = []
@@ -424,6 +410,18 @@ class P(Runon):
     def ffg(self, glyphName, fn=None, index=0):
         return self.find_({"glyphName":glyphName}, fn, index)
     
+    def drop(self, amount, edge):
+        amb = self.ambit(tx=1, ty=1).drop(amount, edge)
+        return self.intersection(P(amb))
+    
+    def take(self, amount, edge):
+        amb = self.ambit(tx=1, ty=1).take(amount, edge)
+        return self.intersection(P(amb))
+    
+    def inset(self, ax, ay):
+        amb = self.ambit(tx=1, ty=1).inset(ax, ay)
+        return self.intersection(P(amb))
+    
     @staticmethod
     def Enumerate(enumerable, enumerator):
         return P().enumerate(enumerable, enumerator)
@@ -560,6 +558,16 @@ class P(Runon):
     
 
     def _c(self, *p) -> "P":
+        return self
+
+
+    def addComponent(self, baseGlyphName, transformation) -> "P":
+
+        print("pen.addComponent('%s', %s)" % (baseGlyphName, tuple(transformation)))
+        return self
+    
+
+    def _addComponent(self, baseGlyphName, transformation) -> "P":
         return self
 
 
@@ -1588,9 +1596,18 @@ class P(Runon):
         return self.transform(t, transformFrame=False)
     
     rt = rotate
-    
+
 
     def _rotate(self, degrees, point=None, th=None, tv=None, tx=1, ty=1, **kwargs) -> "P":
+        return self
+
+
+    def r90(self, multiplier, point=None, tx=1, ty=1, **kwargs) -> "P":
+
+        return self.rotate(90*multiplier, point=point, tx=tx, ty=ty, **kwargs)
+    
+
+    def _r90(self, multiplier, point=None, tx=1, ty=1, **kwargs) -> "P":
         return self
 
 
@@ -1608,12 +1625,18 @@ class P(Runon):
             t = t.translate(-x, -y)
         return self.transform(t)
     
+    def flipx(self):
+        return self.scale(-1,1)
+    
+    def flipy(self):
+        return self.scale(1,-1)
+    
 
     def _scale(self, scaleX, scaleY=None, point=None, th=None, tv=None, tx=1, ty=0, **kwargs) -> "P":
         return self
 
 
-    def scaleToRect(self, rect, preserveAspect=True, shrink_only=False, tx=1, ty=0) -> "P":
+    def scaleToRect(self, rect, preserveAspect=True, shrink_only=False, tx=1, ty=0, return_number=False) -> "P":
 
         """Scale this shape into a `Rect`."""
         bounds = self.bounds()
@@ -1625,15 +1648,26 @@ class P(Runon):
         if preserveAspect:
             scale = h if h < v else v
             if shrink_only and scale >= 1:
+                if return_number:
+                    return 1
                 return self
-            return self.scale(scale, tx=tx, ty=ty)
+            
+            if return_number:
+                return scale
+            else:
+                return self.scale(scale, tx=tx, ty=ty)
         else:
             if shrink_only and (h >= 1 or v >= 1):
+                if return_number:
+                    return 1, 1
                 return self
+            
+            if return_number:
+                return h, v
             return self.scale(h, v, tx=tx, ty=ty)
     
 
-    def _scaleToRect(self, rect, preserveAspect=True, shrink_only=False, tx=1, ty=0) -> "P":
+    def _scaleToRect(self, rect, preserveAspect=True, shrink_only=False, tx=1, ty=0, return_number=False) -> "P":
         return self
 
 
@@ -1769,12 +1803,15 @@ class P(Runon):
         return self
 
 
-    def grid(self, every, spread=0, stack=0) -> "P":
+    def grid(self, every, spread=0, stack=0, zero=False) -> "P":
 
         top = type(self)()
         row = None
         
         for idx, p in enumerate(self._els):
+            if zero:
+                p.zero()
+            
             if idx%every == 0:
                 row = type(self)()
                 top.append(row)
@@ -1789,7 +1826,7 @@ class P(Runon):
         return self
     
 
-    def _grid(self, every, spread=0, stack=0) -> "P":
+    def _grid(self, every, spread=0, stack=0, zero=False) -> "P":
         return self
 
 
@@ -1825,6 +1862,15 @@ class P(Runon):
     
 
     def _track_with_width(self, t) -> "P":
+        return self
+
+
+    def track_to_width(self, width, pullToEdges=False, r=0) -> "P":
+
+        return self.track_to_rect(Rect(width, 0), pullToEdges=pullToEdges, r=r)
+    
+
+    def _track_to_width(self, width, pullToEdges=False, r=0) -> "P":
         return self
 
 
@@ -2190,6 +2236,20 @@ class P(Runon):
     
 
     def _withJSONValue(self, path) -> "P":
+        return self
+
+
+    def withSVG(self, svg) -> "P":
+
+        from fontTools.svgLib import SVGPath
+        svg = SVGPath.fromstring(svg)
+        rp = RecordingPen()
+        svg.draw(rp)
+        self._val.value = rp.value
+        return self
+
+
+    def _withSVG(self, svg) -> "P":
         return self
 
 

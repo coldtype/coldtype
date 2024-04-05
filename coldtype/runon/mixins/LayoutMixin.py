@@ -382,6 +382,9 @@ class LayoutMixin():
         return self.transform(t, transformFrame=False)
     
     rt = rotate
+
+    def r90(self, multiplier, point=None, tx=1, ty=1, **kwargs):
+        return self.rotate(90*multiplier, point=point, tx=tx, ty=ty, **kwargs)
     
     def scale(self, scaleX, scaleY=None, point=None, th=None, tv=None, tx=1, ty=0, **kwargs):
         """Scale this shape by a percentage amount (1-scale)."""
@@ -396,7 +399,13 @@ class LayoutMixin():
             t = t.translate(-x, -y)
         return self.transform(t)
     
-    def scaleToRect(self, rect, preserveAspect=True, shrink_only=False, tx=1, ty=0):
+    def flipx(self):
+        return self.scale(-1,1)
+    
+    def flipy(self):
+        return self.scale(1,-1)
+    
+    def scaleToRect(self, rect, preserveAspect=True, shrink_only=False, tx=1, ty=0, return_number=False):
         """Scale this shape into a `Rect`."""
         bounds = self.bounds()
         if not bounds.nonzero():
@@ -407,11 +416,22 @@ class LayoutMixin():
         if preserveAspect:
             scale = h if h < v else v
             if shrink_only and scale >= 1:
+                if return_number:
+                    return 1
                 return self
-            return self.scale(scale, tx=tx, ty=ty)
+            
+            if return_number:
+                return scale
+            else:
+                return self.scale(scale, tx=tx, ty=ty)
         else:
             if shrink_only and (h >= 1 or v >= 1):
+                if return_number:
+                    return 1, 1
                 return self
+            
+            if return_number:
+                return h, v
             return self.scale(h, v, tx=tx, ty=ty)
     
     def scaleToWidth(self, w, shrink_only=False):
@@ -504,11 +524,14 @@ class LayoutMixin():
             p.translate(0, leading*(ln-1-idx))
         return self
     
-    def grid(self, every, spread=0, stack=0):
+    def grid(self, every, spread=0, stack=0, zero=False):
         top = type(self)()
         row = None
         
         for idx, p in enumerate(self._els):
+            if zero:
+                p.zero()
+            
             if idx%every == 0:
                 row = type(self)()
                 top.append(row)
@@ -544,6 +567,9 @@ class LayoutMixin():
             p.translate(x + t, 0)
             x += frame.w
         return self
+    
+    def track_to_width(self, width, pullToEdges=False, r=0):
+        return self.track_to_rect(Rect(width, 0), pullToEdges=pullToEdges, r=r)
     
     def track_to_rect(self, rect, pullToEdges=False, r=0):
         """Distribute pens evenly within a frame"""

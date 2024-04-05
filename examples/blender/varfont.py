@@ -3,7 +3,7 @@ from coldtype.blender import *
 
 @b3d_runnable(playback=B3DPlayback.KeepPlaying)
 def prerun(bw):
-    bw.deletePrevious()
+    bw.delete_previous()
 
 @b3d_animation(timeline=60, denoise=0)
 def varfont(f):

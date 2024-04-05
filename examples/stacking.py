@@ -21,14 +21,14 @@ def stacking(r):
             (t, Style("Trebuchet" if "h" in s else "Georgia", 150 if "b" in s else 50)))
             .f(hsl(0.7)))
         
-    return (PS([
+    return (P(
             graf(grafs[0]),
             P().oval(Rect(50, 50)).ups().f(hsl(0.07, 0.9)),
             graf(grafs[1]),
             graf(grafs[2]),
             P().oval(Rect(50, 50)).outline(10).ups().f(hsl(0.07, 0.9)),
             graf(grafs[3])
-        ])
+        )
         .stack(20, zero=1)
         .align(r)
         .map(lambda p: p

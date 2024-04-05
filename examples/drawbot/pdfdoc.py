@@ -7,7 +7,7 @@ font = Font.RecursiveMono()
 def multipage_doc(f):
     c = hsl(f.e("l", 0))
     
-    P(f.a.r.inset(10)).f(c).outline(10) | dbdraw
+    P(f.a.r.inset(10)).f(c).outline(10).ch(dbdraw)
     
     fontName = db.installFont(str(font.path))
     fs = db.FormattedString(
@@ -26,7 +26,7 @@ def multipage_doc(f):
     (StSt(f"This is page {f.i}", font, 50)
         .f(c)
         .align(f.a.r.inset(50, 160), "NW", tx=0)
-        | dbdraw)
+        .ch(dbdraw))
 
 
 # hit the 'R' key in the viewer to trigger this

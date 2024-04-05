@@ -5,11 +5,11 @@ txt = "LETTERS\nCOLORFUL\nA LOT OF\nCOME\nHERE"
 
 @b3d_runnable()
 def setup(bw:BpyWorld):
-    (bw.deletePrevious()
+    (bw.delete_previous()
         .timeline(Timeline(150), resetFrame=0)
-        .rigidbody(speed=1.5, frame_end=1000))
+        .rigidbody(speed=0.5, frame_end=1000))
 
-@b3d_renderable(center=(0, 1), upright=1)
+#@b3d_renderable(center=(0, 1), upright=1)
 def justi(r):
     #return None
     letters = (StSt(txt, "Streco", 150)
@@ -49,9 +49,10 @@ def justi(r):
     
     return (P(
         letters,
-        (P(
-            wall("_front_wall", r, 0.01, 0.4),
-            wall("_back_wall", r, 0.01, -0.4),
-            wall("_floor", r.take(50, "S")),
-            wall("_west_wall", r.take(50, "W")),
-            wall("_east_wall", r.take(50, "E"))))))
+        # (P(
+        #     wall("_front_wall", r, 0.01, 0.4),
+        #     wall("_back_wall", r, 0.01, -0.4),
+        #     wall("_floor", r.take(50, "S")),
+        #     wall("_west_wall", r.take(50, "W")),
+        #     wall("_east_wall", r.take(50, "E"))))
+            ))

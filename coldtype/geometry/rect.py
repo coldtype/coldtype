@@ -48,6 +48,10 @@ def pair_to_edges(x, y=None):
         return Edge.CenterX, Edge.MaxY
     elif x == "S":
         return Edge.CenterX, Edge.MinY
+    elif x == "E":
+        return Edge.MaxX, txt_to_edge(y)
+    elif x == "W":
+        return Edge.MinX, txt_to_edge(y)
     elif x == "C":
         return Edge.CenterX, Edge.CenterY
     
@@ -225,6 +229,11 @@ class Rect(Geometrical):
     def rect(self) -> list:
         """x,y,w,h in list"""
         return [self.x, self.y, self.w, self.h]
+    
+    @property
+    def r(self) -> "Rect":
+        """A Scaffold has an .r, this was we can always 'cast' a Scaffold/Rect to a Rect"""
+        return self
     
     xywh = rect
     
@@ -480,8 +489,11 @@ class Rect(Geometrical):
         return self.union(another_rect)
         #return Rect(add(self, another_rect))
 
-    def grid(self, columns=2, rows=2) -> list:
-        """Construct a grid"""
+    def grid(self, columns=2, rows=None) -> list:
+        """Construct a grid; if rows is None, rows = columns"""
+        if rows is None:
+            rows = columns
+
         xs = [row.subdivide(columns, Edge.MinX) for row in self.subdivide(rows, Edge.MaxY)]
         return [item for sublist in xs for item in sublist]
 
@@ -638,6 +650,13 @@ class Rect(Geometrical):
 
     @property
     def ecy(self) -> Line: return self.edge("mdy")
+
+    def contains(self, other) -> bool:
+        return (self.pne.x >= other.pne.x and self.pne.y >= other.pne.y
+            and self.psw.x <= other.psw.x and self.psw.y <= other.psw.y)
+    
+    def __contains__(self, item) -> bool:
+        return self.contains(item)
 
     def intersects(self, other) -> bool:
         return not (self.point("NE").x < other.point("SW").x or self.point("SW").x > other.point("NE").x or self.point("NE").y < other.point("SW").y or self.point("SW").y > other.point("NE").y)

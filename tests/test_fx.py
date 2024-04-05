@@ -25,13 +25,13 @@ def test_lookup(_r):
     assert len(lk["curveOn"]) == 0
     assert len(lk["qCurveOn"]) == 8
 
-    t = StSt("C", "assets/NotoSansCJKjp-Black.otf", 1000).pen().fssw(-1, 0, 2)
+    t = StSt("C", Font.MutatorSans(), 1000, wght=1).pen().fssw(-1, 0, 2)
     lk = skeletonLookup(t)
     t.copy().layer(None, skeleton()).attach(out)
     
     assert len(lk["moveTo"]) == 1
-    assert len(lk["lineTo"]) == 2
-    assert len(lk["curveOn"]) == 8
-    assert len(lk["qCurveOn"]) == 0
+    assert len(lk["lineTo"]) == 5
+    assert len(lk["curveOn"]) == 0
+    assert len(lk["qCurveOn"]) == 8
 
     return out.distribute().scale(0.25).align(_r)

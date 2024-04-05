@@ -56,9 +56,11 @@ class KeyboardShortcut(Enum):
     OverlayRecording = "overlay_recording"
     EnableAudio = "toggle_audio"
     ToggleTimeViewer = "toggle_time_viewer"
+    ToggleUI = "toggle_ui"
     ToggleXray = "toggle_xray"
     ToggleGrid = "toggle_grid"
-    CycleVersions = "cycle_versions"
+    CycleVersionsForward = "cycle_versions_forward"
+    CycleVersionsBack = "cycle_versions_back"
 
     PreviewScaleDown = "preview_scale_down"
     PreviewScaleUp = "preview_scale_up"
@@ -73,7 +75,7 @@ class KeyboardShortcut(Enum):
 
     ViewerPlaybackSpeedIncrease = "viewer_playback_speed_increase"
     ViewerPlaybackSpeedDecrease = "viewer_playback_speed_decrease"
-    ViewerPlaybackSpeedReset = "viewer_playback_speed_decrease"
+    ViewerPlaybackSpeedReset = "viewer_playback_speed_reset"
 
     MIDIControllersPersist = "midi_controllers_persist"
     MIDIControllersClear = "midi_controllers_clear"
@@ -251,7 +253,7 @@ REPEATABLE_SHORTCUTS = [
 ]
 
 def symbol_to_glfw(s):
-    lookup = {
+    GLFW_SPECIALS_LOOKUP = {
         "cmd": glfw.MOD_SUPER,
         "ctrl": glfw.MOD_CONTROL,
         "shift": glfw.MOD_SHIFT,
@@ -277,8 +279,8 @@ def symbol_to_glfw(s):
         "<bracket-right>": glfw.KEY_RIGHT_BRACKET,
         "<bracket-left>": glfw.KEY_LEFT_BRACKET,
     }
-    if s in lookup:
-        return lookup[s]
+    if s in GLFW_SPECIALS_LOOKUP:
+        return GLFW_SPECIALS_LOOKUP[s]
     else:
         k = f"KEY_{s.upper()}"
         if hasattr(glfw, k):
@@ -422,6 +424,9 @@ SHORTCUTS = {
     KeyboardShortcut.ToggleTimeViewer: [
         [[], "v"],
     ],
+    KeyboardShortcut.ToggleUI: [
+        [["shift"], "u"],
+    ],
     KeyboardShortcut.ToggleXray: [
         [[], "x"],
     ],
@@ -429,8 +434,13 @@ SHORTCUTS = {
         [[], "g"],
     ],
 
-    KeyboardShortcut.CycleVersions: [
-        [["shift"], "v"]
+    KeyboardShortcut.CycleVersionsForward: [
+        [["shift"], "v"],
+        [["shift"], "<up>"],
+    ],
+
+    KeyboardShortcut.CycleVersionsBack: [
+        [["shift"], "<down>"],
     ],
 
     KeyboardShortcut.PreviewScaleUp: [
@@ -658,10 +668,10 @@ def shortcuts_keyed():
     for k, v in SHORTCUTS.items():
         modded = []
         for mods, symbol in v:
-            modded.append([[symbol_to_glfw(s) for s in mods], symbol_to_glfw(symbol)])
+            modded.append([[symbol_to_glfw(s) for s in mods], symbol_to_glfw(symbol), symbol])
             if "cmd" in mods:
                 mod_mods = ["ctrl" if mod == "cmd" else mod for mod in mods]
-                modded.append([[symbol_to_glfw(s) for s in mod_mods], symbol_to_glfw(symbol)])
+                modded.append([[symbol_to_glfw(s) for s in mod_mods], symbol_to_glfw(symbol), symbol])
         keyed[k] = modded
     return keyed
 

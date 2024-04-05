@@ -40,11 +40,12 @@ from coldtype.img.blendmode import BlendMode
 from coldtype.grid import Grid
 
 name = "coldtype"
-__version__ = "0.10.12"
+__version__ = "0.10.15"
 
 __FILE__ = None # will be redefined contextually
 __BLENDER__ = None # will be redefined contextually
 __VERSION__ = {} # will be redefined contextually
+__VERSIONS__ = {} # will be redefined contextually
 
 __sibling__ = lambda x: x # will be redefined contextually
 __inputs__ = [] # will be redefined contextually
@@ -52,6 +53,10 @@ __memory__ = [] # will be redefined contextually
 __as_config__ = False # will be redefined contextually
 
 λ = None
+ººFILEºº = None
+
+def ººsiblingºº(x) -> Path:
+    return x
 
 def noop():
     return None

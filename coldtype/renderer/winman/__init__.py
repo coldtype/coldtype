@@ -54,12 +54,17 @@ class Winmans():
         self.print_approx_fps = False
 
         self.bg = False
+
         if (config.args.is_subprocess
             or config.args.all
             or config.args.release
             or config.args.build
+            or config.no_watch
             ):
             self.bg = True
+        
+        self.cron_start = 0
+        self.cron_interval = 0
 
     def should_glfwskia(self):
         return glfw is not None and skia is not None and not self.config.no_viewer
@@ -187,7 +192,8 @@ class Winmans():
                 return
 
         if self.midi:
-            if self.midi.monitor(self.renderer.state.playing):
+            tripped = self.midi.monitor(self.renderer.state.playing)
+            if tripped:
                 self.renderer.action_waiting = Action.PreviewStoryboard
                 self.renderer.action_waiting_reason = "midi_trigger"
 
@@ -256,6 +262,12 @@ class Winmans():
                 if lls:
                     self.renderer.on_stdin(lls)
                 last_line = None
+            
+            if self.cron_start > 0 and self.cron_interval > 0:
+                if (time.time() - self.cron_start) > self.cron_interval:
+                    self.cron_start = time.time()
+                    self.renderer.action_waiting = Action.PreviewStoryboardReload
+                    self.renderer.action_waiting_reason = "cron_interval timer hit"
             
             self.poll()
     

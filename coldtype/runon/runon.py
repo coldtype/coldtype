@@ -94,8 +94,11 @@ class Runon:
 
     def _call_idx_fn(self, fn, idx, arg:"Runon"):
         if not self.yields_wrapped():
-            if arg.val_present():
-                arg = arg.v
+            try:
+                if arg.val_present():
+                    arg = arg.v
+            except AttributeError:
+                arg = arg
 
         ac = _arg_count(fn)
         if ac == 1:
@@ -255,10 +258,15 @@ class Runon:
 
     def __getitem__(self, index):
         if isinstance(index, int) or isinstance(index, slice):
-            return self._els[index]
+            el = self._els[index]
         else:
             tag = index
-            return self.find_(tag)
+            el = self.find_(tag)
+        
+        if el and self.data("vend"):
+            return el.copy()
+        
+        return el
     
     def get(self, key, default=None):
         try:
@@ -575,6 +583,16 @@ class Runon:
         self._els = els
         return self
     
+    def collapseonce(self, deblank=True):
+        """Same as collapse, except only collapses one-level"""
+        els = []
+
+        for el in self._els:
+            els.extend(el._els)
+
+        self._els = els
+        return self
+    
     def sum(self):
         out = []
         if self.val_present():
@@ -738,6 +756,9 @@ class Runon:
             elif "/" in finder_fn:
                 o = self
                 for k in finder_fn.split("/"):
+                    if k == "<":
+                        o = self.parent()
+                        continue
                     o = o.find_(k)
                 return o
 
@@ -770,11 +791,11 @@ class Runon:
     
     # Data-access methods
 
-    def data(self, key=None, default=None, **kwargs):
+    def data(self, key=None, default=None, function_literals=False, **kwargs):
         """Set with kwargs, read with key= & default="""
         if key is None and len(kwargs) > 0:
             for k, v in kwargs.items():
-                if callable(v):
+                if not function_literals and callable(v):
                     v = self._call_idx_fn(v, k, self)
                 self._data[k] = v
             return self
@@ -782,6 +803,10 @@ class Runon:
             return self._data.get(key, default)
         else:
             return self
+    
+    def datafn(self, **kwargs):
+        """Set function literals with kwargs"""
+        return self.data(function_literals=True, **kwargs)
     
     def tag(self, value=RunonNoData()):
         if isinstance(value, RunonNoData):
@@ -1090,6 +1115,10 @@ class Runon:
     def printh(self):
         """print hierarchy, no values"""
         print(self.tree(v=False))
+        return self
+    
+    def printdata(self, field):
+        print(self.data(field))
         return self
     
     def noop(self, *args, **kwargs):

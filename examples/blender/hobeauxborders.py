@@ -1,6 +1,12 @@
 from coldtype import *
 from coldtype.blender import *
 
+"""
+If you have a copy of Hobeaux Rococeaux Borders
+(https://ohnotype.co/fonts/hobeaux-rococeaux),
+you can make lovely frames using this code
+"""
+
 fnt = Font.Find("Hobeaux-Roc.*Bor")
 styles = [
     "Aa ", "B  ", "Cc3", "Dd4", "Ee5",
@@ -39,7 +45,16 @@ def hobeauxBorder(r, style=0, fs=200):
         .pen()
         .unframe())
 
+@b3d_runnable()
+def setup(bpw:BpyWorld):
+    bpw.delete_previous()
 
-@b3d_animation(timeline=len(styles), bg=1)
+@b3d_animation(timeline=len(styles))
 def b1(f):
-    return hobeauxBorder(f.a.r.inset(150), f.i, 500).scale(0.9)
+    return (hobeauxBorder(f.a.r.inset(150), f.i, 500)
+        .scale(0.9)
+        .tag("Pattern")
+        .ch(b3d(lambda bp: bp
+            .extrude(0.25)
+            .material("Pattern_mat", lambda m: m
+                .f(hsl(0.17, 0.8, 0.7))))))

@@ -13,7 +13,7 @@ import coldtype
 from coldtype.helpers import *
 
 from coldtype.runon.path import P
-from coldtype.geometry import Rect
+from coldtype.geometry import Rect, Point
 from coldtype.text.reader import Font
 from coldtype.pens.svgpen import SVGPen
 
@@ -26,6 +26,7 @@ from coldtype.renderer.winman import Winmans, WinmanGLFWSkiaBackground
 from coldtype.renderable import renderable, animation, Action, Overlay, runnable
 
 from coldtype.renderer.keyboard import KeyboardShortcut
+from coldtype.osutil import show_in_finder
 
 try:
     import skia
@@ -108,7 +109,9 @@ class Renderer():
 
             last_cursor=parser.add_argument("-lc", "--last-cursor", type=str, default="0,0", help=argparse.SUPPRESS),
 
-            k=parser.add_argument("-k", "--k", type=str, default=None, help=argparse.SUPPRESS)
+            k=parser.add_argument("-k", "--k", type=str, default=None, help=argparse.SUPPRESS),
+
+            reuse_skia_context=parser.add_argument("-rsc", "--reuse-skia-context", action="store_true", default=False, help=argparse.SUPPRESS)
         )
 
         ConfigOption.AddCommandLineArgs(pargs, parser)
@@ -303,7 +306,9 @@ class Renderer():
 
     def reload(self, trigger):
         if self.winmans.glsk:
-            skfx.SKIA_CONTEXT = self.winmans.glsk.context
+            if self.args.reuse_skia_context:
+                print("... reusing SKIA_CONTEXT ...")
+                skfx.SKIA_CONTEXT = self.winmans.glsk.context
         
         self.last_animations = []
 
@@ -313,7 +318,19 @@ class Renderer():
         if True:
             self.state.reset()
             self.source_reader.reload(
-                output_folder_override=self.args.output_folder)
+                output_folder_override=self.args.output_folder,
+                initial=(trigger==Action.Initial),
+                restart_count=(self.source_reader.config.restart_count))
+            
+            if trigger == Action.Initial and self.source_reader.config.restart_count == 0:
+                if "__initials__" in self.source_reader.program:
+                    initials = self.source_reader.program["__initials__"]()
+                    for attr, setting in initials.items():
+                        if attr == "config":
+                            for k, v in setting.items():
+                                setattr(self.source_reader.config, k, v)
+                        else:
+                            setattr(self.state, attr, setting)
             
             self.winmans.did_reload(self.source_reader.filepath, self.source_reader)
             
@@ -339,6 +356,11 @@ class Renderer():
             if self.last_animation:
                 if self.last_animation.reset_to_zero:
                     self.state.frame_offset = 0
+        
+        ci = self.source_reader.config.cron_interval
+        if ci > 0:
+            self.winmans.cron_start = ptime.time()
+            self.winmans.cron_interval = ci
     
     def animation(self):
         renderables = self.renderables(Action.PreviewStoryboard)
@@ -781,6 +803,7 @@ class Renderer():
         if (self.winmans.bg
             and not self.args.cpu_render
             and not self.winmans.glsk
+            and not self.source_reader.config.no_viewer
             ):
             self.winmans.glsk = WinmanGLFWSkiaBackground(self.source_reader.config, self)
 
@@ -990,8 +1013,11 @@ class Renderer():
             arg_count = len(inspect.signature(fn).parameters)
             if arg_count == 0:
                 res = fn()
-            else:
+            elif arg_count == 1:
                 res = fn(all_passes)
+            elif arg_count == 2:
+                res = fn(all_passes, self)
+
             if isinstance(res, Action):
                 return res
             
@@ -1027,6 +1053,8 @@ class Renderer():
             return Action.ClearRenderedFrames
         elif shortcut == KeyboardShortcut.ResetInitialMemory:
             self.state.memory = None
+            self.state.cursor_history = []
+            self.state.cursor = Point(0, 0)
             #self.last_animation.write_reset_memory(self.state, self.last_animation.memory, True)
             return Action.PreviewStoryboard
         elif shortcut == KeyboardShortcut.ResetMemory:
@@ -1080,7 +1108,7 @@ class Renderer():
             vs = self.state.versions
             if vs:
                 for v in vs:
-                    self.actions_queued.insert(0, KeyboardShortcut.CycleVersions)
+                    self.actions_queued.insert(0, KeyboardShortcut.CycleVersionsForward)
                     self.actions_queued.insert(0, Action.Release)
                     self.actions_queued.insert(0, Action.RenderAll)
             else:
@@ -1119,6 +1147,9 @@ class Renderer():
         
         elif shortcut == KeyboardShortcut.ToggleTimeViewer:
             self.source_reader.config.add_time_viewers = not self.source_reader.config.add_time_viewers
+            return Action.PreviewStoryboardReload
+        elif shortcut == KeyboardShortcut.ToggleUI:
+            self.source_reader.config.add_ui = not self.source_reader.config.add_ui
             return Action.PreviewStoryboardReload
         elif shortcut == KeyboardShortcut.ToggleXray:
             self.clear_last_render()
@@ -1186,8 +1217,7 @@ class Renderer():
         elif shortcut == KeyboardShortcut.ShowInFinder:
             folder = self.renderables(Action.PreviewStoryboard)[-1].output_folder
             folder.mkdir(parents=True, exist_ok=True)
-            os.system(f"open {folder}")
-        
+            show_in_finder(folder)
         elif shortcut == KeyboardShortcut.ViewerTakeFocus:
             self.winmans.glsk.focus(force=True)
         
@@ -1246,12 +1276,17 @@ class Renderer():
             self.actions_queued.append(Action.Kill)
 
             return Action.PreviewStoryboardReload
-        elif shortcut == KeyboardShortcut.CycleVersions:
+        elif shortcut in [KeyboardShortcut.CycleVersionsForward, KeyboardShortcut.CycleVersionsBack]:
             vi = self.source_reader.config.version_index
             versions = self.state.versions
-            vi += 1
-            if vi >= len(versions):
-                vi = 0
+            if shortcut == KeyboardShortcut.CycleVersionsForward:
+                vi += 1
+                if vi >= len(versions):
+                    vi = 0
+            else:
+                vi -= 1
+                if vi < 0:
+                    vi = len(versions) - 1
             self.source_reader.config.version_index = vi
             return Action.PreviewStoryboardReload
         elif shortcut == KeyboardShortcut.Sleep:
@@ -1363,6 +1398,7 @@ class Renderer():
         elif action == Action.Release:
             self.action_waiting = self.on_release()
             self.action_waiting_reason = "release"
+            self.actions_queued.append(KeyboardShortcut.ReloadSource)
         elif action == Action.RestartRenderer:
             self.on_exit(restart=True)
         elif action == Action.Kill:
@@ -1406,6 +1442,7 @@ class Renderer():
                         self.debounced_actions[k] = None
 
         if self.action_waiting:
+            #print("YES", self.action_waiting, self.action_waiting_reason)
             action_in = self.action_waiting
             self.on_action(self.action_waiting)
             if action_in != self.action_waiting:
@@ -1507,7 +1544,7 @@ class Renderer():
             print("    >>> watching...", watchee[1])
     
     def execute_string_as_shortcut_or_action(self, shortcut, key, args=[]):
-        #print("\n>>> shortcut:")
+        #print("\n>>> shortcut:", shortcut)
         #print(f"  \"{shortcut}\"({key if key else 'ø'}[{args}])\n")
         
         co = ConfigOption.ShortToConfigOption(shortcut)
@@ -1585,6 +1622,14 @@ class Renderer():
             args.append("-tv")
             args.append(tv)
         
+        ui = str(int(self.source_reader.config.add_ui or 0))
+        try:
+            uii = args.index("-ui")
+            args[uii+1] = ui
+        except ValueError:
+            args.append("-ui")
+            args.append(ui)
+        
         x = str(int(self.source_reader.config.show_xray or 0))
         try:
             xi = args.index("-x")
@@ -1619,6 +1664,10 @@ class Renderer():
         except ValueError:
             args.append("-lc")
             args.append(lc)
+        
+        rc = self.source_reader.config.restart_count + 1
+        args.append("-rc")
+        args.append(rc)
         
         print("> RESTART:", args)
         os.execl(sys.executable, *(["-m"]+[str(a) for a in args]))
