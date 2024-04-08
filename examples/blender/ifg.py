@@ -7,7 +7,8 @@ bt = BlenderTimeline(__BLENDER__, 5400)
 
 ifg = bt.interpretWords(include="+1")
 action = bt.interpretWords(include="+2")
-emph = bt.interpretWords(include="+3")
+adlib = bt.interpretWords(include="+4")
+suggestion = bt.interpretWords(include="+5")
 
 @b3d_sequencer((1920, 1080)
 , timeline=bt
@@ -33,13 +34,57 @@ def lyrics(f:Frame):
         .pens(f.i, obvi, fit=r_ifg.w)
         .align(r_ifg, "S")
         .removeFutures()
-        #.print()
         .fssw(1, 0, 10, 1))
     
     try:
         if "a song" in bottom[0][0][0].data("clip").text:
             bottom[0][0][0].filter(lambda idx, p: idx > 3)
+        if "a bike" in bottom[0][0][0].data("clip").text:
+            bottom[0][0][0].filter(lambda idx, p: idx > 3)
+        if "a juice" in bottom[0][0][0].data("clip").text:
+            bottom[0][0][0].filter(lambda idx, p: idx > 3)
+        if "a cat" in bottom[0][0][0].data("clip").text:
+            bottom[0][0][0].filter(lambda idx, p: idx > 2)
     except Exception as _:
         pass
     
-    return P(top, bottom).t(0, -220)
+    lockup = P(top, bottom)#.t(0, -220)
+
+    ad = (adlib.currentGroup(f.i)
+        .pens(f.i, lambda x: (x.text, Style("Lovesong", 200)))
+        #.scale(0.5, 1)
+        .align(f.a.r, "CX")
+        .rotate(15)
+        .removeFutures()
+        .pen()
+        .fssw(hsl(0.9, 1, 0.7), 0, 10, 1))
+    
+    sugg = (suggestion.currentGroup(f.i)
+        .pens(f.i, lambda x: (x.text, Style("Softie", 100, wght=1)))
+        #.scale(0.5, 1)
+        .align(f.a.r.inset(150).drop(440, "S"), "N")
+        .rotate(-15)
+        .removeFutures()
+        .pen()
+        .fssw(hsl(0.3, 1, 0.7), 0, 10, 1))
+
+    style = bt.current(3)
+    if style.name:
+        if style.name == "scramble":
+            lockup[0].mapv(lambda p: p.rotate(35))
+            lockup[1].mapv(lambda p: p.rotate(-15))
+        elif style.name == "scramble3":
+            lockup[0].mapv(lambda p: p.rotate(-15))
+            lockup[1].mapv(lambda p: p.rotate(35))
+        elif style.name == "scramble2":
+            lockup[0].mapv(lambda p: p.rotate(-15))
+            lockup[1].mapv(lambda p: p.rotate(35))
+            lockup.rotate(-15)
+            ad.rotate(-50)
+        
+        if style.name == "fade":
+            o = style.e("l", 0, rng=(1, 0))
+            lockup.alpha(o)
+            ad.alpha(o)
+
+    return P(lockup + ad).t(0, -220) + sugg

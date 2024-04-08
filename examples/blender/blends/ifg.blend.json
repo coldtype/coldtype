@@ -1,0 +1,3571 @@
+{
+    "start": 4364,
+    "end": 5397,
+    "tracks": [
+        {
+            "index": 1,
+            "clips": [
+                {
+                    "name": "*It",
+                    "text": "*It",
+                    "start": 37.0,
+                    "end": 43
+                },
+                {
+                    "name": "feels",
+                    "text": "feels",
+                    "start": 43.0,
+                    "end": 50
+                },
+                {
+                    "name": "good",
+                    "text": "good",
+                    "start": 50.0,
+                    "end": 56
+                },
+                {
+                    "name": "to",
+                    "text": "to",
+                    "start": 56.0,
+                    "end": 85
+                },
+                {
+                    "name": "*It.001",
+                    "text": "*It",
+                    "start": 92.0,
+                    "end": 98
+                },
+                {
+                    "name": "feels.001",
+                    "text": "feels",
+                    "start": 98.0,
+                    "end": 105
+                },
+                {
+                    "name": "good.001",
+                    "text": "good",
+                    "start": 105.0,
+                    "end": 111
+                },
+                {
+                    "name": "to.001",
+                    "text": "to",
+                    "start": 111.0,
+                    "end": 140
+                },
+                {
+                    "name": "*It.002",
+                    "text": "*It",
+                    "start": 147.0,
+                    "end": 153
+                },
+                {
+                    "name": "feels.002",
+                    "text": "feels",
+                    "start": 153.0,
+                    "end": 160
+                },
+                {
+                    "name": "good.002",
+                    "text": "good",
+                    "start": 160.0,
+                    "end": 166
+                },
+                {
+                    "name": "to.002",
+                    "text": "to",
+                    "start": 166.0,
+                    "end": 242
+                },
+                {
+                    "name": "*It.003",
+                    "text": "*It",
+                    "start": 257.0,
+                    "end": 263
+                },
+                {
+                    "name": "feels.003",
+                    "text": "feels",
+                    "start": 263.0,
+                    "end": 270
+                },
+                {
+                    "name": "good.003",
+                    "text": "good",
+                    "start": 270.0,
+                    "end": 276
+                },
+                {
+                    "name": "to.003",
+                    "text": "to",
+                    "start": 276.0,
+                    "end": 305
+                },
+                {
+                    "name": "*It.004",
+                    "text": "*It",
+                    "start": 310.0,
+                    "end": 316
+                },
+                {
+                    "name": "feels.004",
+                    "text": "feels",
+                    "start": 316.0,
+                    "end": 323
+                },
+                {
+                    "name": "good.004",
+                    "text": "good",
+                    "start": 323.0,
+                    "end": 329
+                },
+                {
+                    "name": "to.004",
+                    "text": "to",
+                    "start": 329.0,
+                    "end": 358
+                },
+                {
+                    "name": "*It.005",
+                    "text": "*It",
+                    "start": 365.0,
+                    "end": 371
+                },
+                {
+                    "name": "feels.005",
+                    "text": "feels",
+                    "start": 371.0,
+                    "end": 378
+                },
+                {
+                    "name": "good.005",
+                    "text": "good",
+                    "start": 378.0,
+                    "end": 384
+                },
+                {
+                    "name": "to.005",
+                    "text": "to",
+                    "start": 384.0,
+                    "end": 471
+                },
+                {
+                    "name": "*How.001",
+                    "text": "*How",
+                    "start": 475.0,
+                    "end": 484
+                },
+                {
+                    "name": "good.006",
+                    "text": "good",
+                    "start": 484.0,
+                    "end": 584
+                },
+                {
+                    "name": "*How.002",
+                    "text": "*How",
+                    "start": 584.0,
+                    "end": 593
+                },
+                {
+                    "name": "good.010",
+                    "text": "good",
+                    "start": 593.0,
+                    "end": 652
+                },
+                {
+                    "name": "*How.003",
+                    "text": "*How",
+                    "start": 693.0,
+                    "end": 702
+                },
+                {
+                    "name": "good.011",
+                    "text": "good",
+                    "start": 702.0,
+                    "end": 802
+                },
+                {
+                    "name": "*How.004",
+                    "text": "*How",
+                    "start": 802.0,
+                    "end": 813
+                },
+                {
+                    "name": "good.015",
+                    "text": "good",
+                    "start": 813.0,
+                    "end": 912
+                },
+                {
+                    "name": "*It.006",
+                    "text": "*It",
+                    "start": 913.0,
+                    "end": 919
+                },
+                {
+                    "name": "feels.006",
+                    "text": "feels",
+                    "start": 919.0,
+                    "end": 926
+                },
+                {
+                    "name": "good.016",
+                    "text": "good",
+                    "start": 926.0,
+                    "end": 932
+                },
+                {
+                    "name": "to.006",
+                    "text": "to",
+                    "start": 932.0,
+                    "end": 960
+                },
+                {
+                    "name": "*It.007",
+                    "text": "*It",
+                    "start": 967.0,
+                    "end": 973
+                },
+                {
+                    "name": "feels.007",
+                    "text": "feels",
+                    "start": 973.0,
+                    "end": 980
+                },
+                {
+                    "name": "good.017",
+                    "text": "good",
+                    "start": 980.0,
+                    "end": 986
+                },
+                {
+                    "name": "to.007",
+                    "text": "to",
+                    "start": 986.0,
+                    "end": 1015
+                },
+                {
+                    "name": "*It.008",
+                    "text": "*It",
+                    "start": 1021.0,
+                    "end": 1027
+                },
+                {
+                    "name": "feels.008",
+                    "text": "feels",
+                    "start": 1027.0,
+                    "end": 1034
+                },
+                {
+                    "name": "good.018",
+                    "text": "good",
+                    "start": 1034.0,
+                    "end": 1040
+                },
+                {
+                    "name": "to.008",
+                    "text": "to",
+                    "start": 1040.0,
+                    "end": 1115
+                },
+                {
+                    "name": "*It.009",
+                    "text": "*It",
+                    "start": 1129.0,
+                    "end": 1135
+                },
+                {
+                    "name": "feels.009",
+                    "text": "feels",
+                    "start": 1135.0,
+                    "end": 1142
+                },
+                {
+                    "name": "good.019",
+                    "text": "good",
+                    "start": 1142.0,
+                    "end": 1148
+                },
+                {
+                    "name": "to.009",
+                    "text": "to",
+                    "start": 1148.0,
+                    "end": 1176
+                },
+                {
+                    "name": "*It.010",
+                    "text": "*It",
+                    "start": 1182.0,
+                    "end": 1188
+                },
+                {
+                    "name": "feels.010",
+                    "text": "feels",
+                    "start": 1188.0,
+                    "end": 1195
+                },
+                {
+                    "name": "good.020",
+                    "text": "good",
+                    "start": 1195.0,
+                    "end": 1201
+                },
+                {
+                    "name": "to.010",
+                    "text": "to",
+                    "start": 1201.0,
+                    "end": 1230
+                },
+                {
+                    "name": "*It.011",
+                    "text": "*It",
+                    "start": 1237.0,
+                    "end": 1243
+                },
+                {
+                    "name": "feels.011",
+                    "text": "feels",
+                    "start": 1243.0,
+                    "end": 1250
+                },
+                {
+                    "name": "good.021",
+                    "text": "good",
+                    "start": 1250.0,
+                    "end": 1256
+                },
+                {
+                    "name": "to.011",
+                    "text": "to",
+                    "start": 1256.0,
+                    "end": 1331
+                },
+                {
+                    "name": "*How.005",
+                    "text": "*How",
+                    "start": 1344.0,
+                    "end": 1354
+                },
+                {
+                    "name": "good.022",
+                    "text": "good",
+                    "start": 1354.0,
+                    "end": 1453
+                },
+                {
+                    "name": "*How.006",
+                    "text": "*How",
+                    "start": 1454.0,
+                    "end": 1463
+                },
+                {
+                    "name": "good.026",
+                    "text": "good",
+                    "start": 1463.0,
+                    "end": 1522
+                },
+                {
+                    "name": "*How.007",
+                    "text": "*How",
+                    "start": 1564.0,
+                    "end": 1573
+                },
+                {
+                    "name": "good.027",
+                    "text": "good",
+                    "start": 1573.0,
+                    "end": 1673
+                },
+                {
+                    "name": "*How.008",
+                    "text": "*How",
+                    "start": 1673.0,
+                    "end": 1684
+                },
+                {
+                    "name": "good.031",
+                    "text": "good",
+                    "start": 1684.0,
+                    "end": 1783
+                },
+                {
+                    "name": "*It.012",
+                    "text": "*It",
+                    "start": 1783.0,
+                    "end": 1789
+                },
+                {
+                    "name": "feels.012",
+                    "text": "feels",
+                    "start": 1789.0,
+                    "end": 1796
+                },
+                {
+                    "name": "good.032",
+                    "text": "good",
+                    "start": 1796.0,
+                    "end": 1802
+                },
+                {
+                    "name": "to.012",
+                    "text": "to",
+                    "start": 1802.0,
+                    "end": 1830
+                },
+                {
+                    "name": "*It.013",
+                    "text": "*It",
+                    "start": 1837.0,
+                    "end": 1843
+                },
+                {
+                    "name": "feels.013",
+                    "text": "feels",
+                    "start": 1843.0,
+                    "end": 1850
+                },
+                {
+                    "name": "good.033",
+                    "text": "good",
+                    "start": 1850.0,
+                    "end": 1856
+                },
+                {
+                    "name": "to.013",
+                    "text": "to",
+                    "start": 1856.0,
+                    "end": 1885
+                },
+                {
+                    "name": "*It.014",
+                    "text": "*It",
+                    "start": 1891.0,
+                    "end": 1897
+                },
+                {
+                    "name": "feels.014",
+                    "text": "feels",
+                    "start": 1897.0,
+                    "end": 1904
+                },
+                {
+                    "name": "good.034",
+                    "text": "good",
+                    "start": 1904.0,
+                    "end": 1910
+                },
+                {
+                    "name": "to.014",
+                    "text": "to",
+                    "start": 1910.0,
+                    "end": 1985
+                },
+                {
+                    "name": "*It.015",
+                    "text": "*It",
+                    "start": 1999.0,
+                    "end": 2005
+                },
+                {
+                    "name": "feels.015",
+                    "text": "feels",
+                    "start": 2005.0,
+                    "end": 2012
+                },
+                {
+                    "name": "good.035",
+                    "text": "good",
+                    "start": 2012.0,
+                    "end": 2018
+                },
+                {
+                    "name": "to.015",
+                    "text": "to",
+                    "start": 2018.0,
+                    "end": 2046
+                },
+                {
+                    "name": "*It.016",
+                    "text": "*It",
+                    "start": 2053.0,
+                    "end": 2059
+                },
+                {
+                    "name": "feels.016",
+                    "text": "feels",
+                    "start": 2059.0,
+                    "end": 2066
+                },
+                {
+                    "name": "good.036",
+                    "text": "good",
+                    "start": 2066.0,
+                    "end": 2072
+                },
+                {
+                    "name": "to.016",
+                    "text": "to",
+                    "start": 2072.0,
+                    "end": 2101
+                },
+                {
+                    "name": "*It.017",
+                    "text": "*It",
+                    "start": 2107.0,
+                    "end": 2113
+                },
+                {
+                    "name": "feels.017",
+                    "text": "feels",
+                    "start": 2113.0,
+                    "end": 2120
+                },
+                {
+                    "name": "good.037",
+                    "text": "good",
+                    "start": 2120.0,
+                    "end": 2126
+                },
+                {
+                    "name": "to.017",
+                    "text": "to",
+                    "start": 2126.0,
+                    "end": 2201
+                },
+                {
+                    "name": "*How.009",
+                    "text": "*How",
+                    "start": 2215.0,
+                    "end": 2225
+                },
+                {
+                    "name": "good.038",
+                    "text": "good",
+                    "start": 2225.0,
+                    "end": 2324
+                },
+                {
+                    "name": "*How.010",
+                    "text": "*How",
+                    "start": 2325.0,
+                    "end": 2334
+                },
+                {
+                    "name": "good.042",
+                    "text": "good",
+                    "start": 2334.0,
+                    "end": 2393
+                },
+                {
+                    "name": "*How.011",
+                    "text": "*How",
+                    "start": 2433.0,
+                    "end": 2442
+                },
+                {
+                    "name": "good.043",
+                    "text": "good",
+                    "start": 2442.0,
+                    "end": 2542
+                },
+                {
+                    "name": "*How.012",
+                    "text": "*How",
+                    "start": 2542.0,
+                    "end": 2553
+                },
+                {
+                    "name": "good.047",
+                    "text": "good",
+                    "start": 2553.0,
+                    "end": 2597
+                },
+                {
+                    "name": "*How.013",
+                    "text": "*How",
+                    "start": 3073.0,
+                    "end": 3083
+                },
+                {
+                    "name": "good.048",
+                    "text": "good",
+                    "start": 3083.0,
+                    "end": 3183
+                },
+                {
+                    "name": "*How.014",
+                    "text": "*How",
+                    "start": 3183.0,
+                    "end": 3192
+                },
+                {
+                    "name": "good.052",
+                    "text": "good",
+                    "start": 3192.0,
+                    "end": 3292
+                },
+                {
+                    "name": "*How.015",
+                    "text": "*How",
+                    "start": 3292.0,
+                    "end": 3302
+                },
+                {
+                    "name": "good.053",
+                    "text": "good",
+                    "start": 3302.0,
+                    "end": 3402
+                },
+                {
+                    "name": "*How.016",
+                    "text": "*How",
+                    "start": 3402.0,
+                    "end": 3411
+                },
+                {
+                    "name": "good.057",
+                    "text": "good",
+                    "start": 3411.0,
+                    "end": 3509
+                },
+                {
+                    "name": "*It.018",
+                    "text": "*It",
+                    "start": 3509.0,
+                    "end": 3515
+                },
+                {
+                    "name": "feels.018",
+                    "text": "feels",
+                    "start": 3515.0,
+                    "end": 3522
+                },
+                {
+                    "name": "good.058",
+                    "text": "good",
+                    "start": 3522.0,
+                    "end": 3528
+                },
+                {
+                    "name": "to.018",
+                    "text": "to",
+                    "start": 3528.0,
+                    "end": 3556
+                },
+                {
+                    "name": "*It.019",
+                    "text": "*It",
+                    "start": 3563.0,
+                    "end": 3569
+                },
+                {
+                    "name": "feels.019",
+                    "text": "feels",
+                    "start": 3569.0,
+                    "end": 3576
+                },
+                {
+                    "name": "good.059",
+                    "text": "good",
+                    "start": 3576.0,
+                    "end": 3582
+                },
+                {
+                    "name": "to.019",
+                    "text": "to",
+                    "start": 3582.0,
+                    "end": 3611
+                },
+                {
+                    "name": "*It.020",
+                    "text": "*It",
+                    "start": 3616.0,
+                    "end": 3622
+                },
+                {
+                    "name": "feels.020",
+                    "text": "feels",
+                    "start": 3622.0,
+                    "end": 3629
+                },
+                {
+                    "name": "good.060",
+                    "text": "good",
+                    "start": 3629.0,
+                    "end": 3635
+                },
+                {
+                    "name": "to.020",
+                    "text": "to",
+                    "start": 3635.0,
+                    "end": 3721
+                },
+                {
+                    "name": "*It.021",
+                    "text": "*It",
+                    "start": 3722.0,
+                    "end": 3728
+                },
+                {
+                    "name": "feels.021",
+                    "text": "feels",
+                    "start": 3728.0,
+                    "end": 3735
+                },
+                {
+                    "name": "good.061",
+                    "text": "good",
+                    "start": 3735.0,
+                    "end": 3741
+                },
+                {
+                    "name": "to.021",
+                    "text": "to",
+                    "start": 3741.0,
+                    "end": 3769
+                },
+                {
+                    "name": "*It.022",
+                    "text": "*It",
+                    "start": 3775.0,
+                    "end": 3781
+                },
+                {
+                    "name": "feels.022",
+                    "text": "feels",
+                    "start": 3781.0,
+                    "end": 3788
+                },
+                {
+                    "name": "good.062",
+                    "text": "good",
+                    "start": 3788.0,
+                    "end": 3794
+                },
+                {
+                    "name": "to.022",
+                    "text": "to",
+                    "start": 3794.0,
+                    "end": 3823
+                },
+                {
+                    "name": "*It.023",
+                    "text": "*It",
+                    "start": 3829.0,
+                    "end": 3835
+                },
+                {
+                    "name": "feels.023",
+                    "text": "feels",
+                    "start": 3835.0,
+                    "end": 3842
+                },
+                {
+                    "name": "good.063",
+                    "text": "good",
+                    "start": 3842.0,
+                    "end": 3848
+                },
+                {
+                    "name": "to.023",
+                    "text": "to",
+                    "start": 3848.0,
+                    "end": 3922
+                },
+                {
+                    "name": "*How.017",
+                    "text": "*How",
+                    "start": 3934.0,
+                    "end": 3944
+                },
+                {
+                    "name": "good.064",
+                    "text": "good",
+                    "start": 3944.0,
+                    "end": 4044
+                },
+                {
+                    "name": "*How.018",
+                    "text": "*How",
+                    "start": 4044.0,
+                    "end": 4053
+                },
+                {
+                    "name": "good.068",
+                    "text": "good",
+                    "start": 4053.0,
+                    "end": 4152
+                },
+                {
+                    "name": "*How.019",
+                    "text": "*How",
+                    "start": 4152.0,
+                    "end": 4163
+                },
+                {
+                    "name": "good.069",
+                    "text": "good",
+                    "start": 4163.0,
+                    "end": 4262
+                },
+                {
+                    "name": "*How.020",
+                    "text": "*How",
+                    "start": 4262.0,
+                    "end": 4272
+                },
+                {
+                    "name": "good.073",
+                    "text": "good",
+                    "start": 4272.0,
+                    "end": 4370
+                },
+                {
+                    "name": "*It.024",
+                    "text": "*It",
+                    "start": 4370.0,
+                    "end": 4377
+                },
+                {
+                    "name": "feels.024",
+                    "text": "feels",
+                    "start": 4377.0,
+                    "end": 4384
+                },
+                {
+                    "name": "good.074",
+                    "text": "good",
+                    "start": 4384.0,
+                    "end": 4390
+                },
+                {
+                    "name": "to.024",
+                    "text": "to",
+                    "start": 4390.0,
+                    "end": 4418
+                },
+                {
+                    "name": "*It.025",
+                    "text": "*It",
+                    "start": 4425.0,
+                    "end": 4431
+                },
+                {
+                    "name": "feels.025",
+                    "text": "feels",
+                    "start": 4431.0,
+                    "end": 4438
+                },
+                {
+                    "name": "good.075",
+                    "text": "good",
+                    "start": 4438.0,
+                    "end": 4444
+                },
+                {
+                    "name": "to.025",
+                    "text": "to",
+                    "start": 4444.0,
+                    "end": 4473
+                },
+                {
+                    "name": "*It.026",
+                    "text": "*It",
+                    "start": 4478.0,
+                    "end": 4484
+                },
+                {
+                    "name": "feels.026",
+                    "text": "feels",
+                    "start": 4484.0,
+                    "end": 4491
+                },
+                {
+                    "name": "good.076",
+                    "text": "good",
+                    "start": 4491.0,
+                    "end": 4497
+                },
+                {
+                    "name": "to.026",
+                    "text": "to",
+                    "start": 4497.0,
+                    "end": 4583
+                },
+                {
+                    "name": "*It.027",
+                    "text": "*It",
+                    "start": 4586.0,
+                    "end": 4592
+                },
+                {
+                    "name": "feels.027",
+                    "text": "feels",
+                    "start": 4592.0,
+                    "end": 4599
+                },
+                {
+                    "name": "good.077",
+                    "text": "good",
+                    "start": 4599.0,
+                    "end": 4605
+                },
+                {
+                    "name": "to.027",
+                    "text": "to",
+                    "start": 4605.0,
+                    "end": 4633
+                },
+                {
+                    "name": "*It.028",
+                    "text": "*It",
+                    "start": 4640.0,
+                    "end": 4646
+                },
+                {
+                    "name": "feels.028",
+                    "text": "feels",
+                    "start": 4646.0,
+                    "end": 4653
+                },
+                {
+                    "name": "good.078",
+                    "text": "good",
+                    "start": 4653.0,
+                    "end": 4659
+                },
+                {
+                    "name": "to.028",
+                    "text": "to",
+                    "start": 4659.0,
+                    "end": 4688
+                },
+                {
+                    "name": "*It.029",
+                    "text": "*It",
+                    "start": 4693.0,
+                    "end": 4699
+                },
+                {
+                    "name": "feels.029",
+                    "text": "feels",
+                    "start": 4699.0,
+                    "end": 4706
+                },
+                {
+                    "name": "good.079",
+                    "text": "good",
+                    "start": 4706.0,
+                    "end": 4712
+                },
+                {
+                    "name": "to.029",
+                    "text": "to",
+                    "start": 4712.0,
+                    "end": 4786
+                },
+                {
+                    "name": "*It.030",
+                    "text": "*It",
+                    "start": 4802.0,
+                    "end": 4809
+                },
+                {
+                    "name": "feels.030",
+                    "text": "feels",
+                    "start": 4809.0,
+                    "end": 4816
+                },
+                {
+                    "name": "good.080",
+                    "text": "good",
+                    "start": 4816.0,
+                    "end": 4822
+                },
+                {
+                    "name": "to.030",
+                    "text": "to",
+                    "start": 4822.0,
+                    "end": 4850
+                },
+                {
+                    "name": "*It.031",
+                    "text": "*It",
+                    "start": 4857.0,
+                    "end": 4863
+                },
+                {
+                    "name": "feels.031",
+                    "text": "feels",
+                    "start": 4863.0,
+                    "end": 4870
+                },
+                {
+                    "name": "good.081",
+                    "text": "good",
+                    "start": 4870.0,
+                    "end": 4876
+                },
+                {
+                    "name": "to.031",
+                    "text": "to",
+                    "start": 4876.0,
+                    "end": 4905
+                },
+                {
+                    "name": "*It.032",
+                    "text": "*It",
+                    "start": 4912.0,
+                    "end": 4918
+                },
+                {
+                    "name": "feels.032",
+                    "text": "feels",
+                    "start": 4918.0,
+                    "end": 4925
+                },
+                {
+                    "name": "good.082",
+                    "text": "good",
+                    "start": 4925.0,
+                    "end": 4931
+                },
+                {
+                    "name": "to.032",
+                    "text": "to",
+                    "start": 4931.0,
+                    "end": 5017
+                },
+                {
+                    "name": "*It.033",
+                    "text": "*It",
+                    "start": 5021.0,
+                    "end": 5027
+                },
+                {
+                    "name": "feels.033",
+                    "text": "feels",
+                    "start": 5027.0,
+                    "end": 5034
+                },
+                {
+                    "name": "good.083",
+                    "text": "good",
+                    "start": 5034.0,
+                    "end": 5040
+                },
+                {
+                    "name": "to.033",
+                    "text": "to",
+                    "start": 5040.0,
+                    "end": 5068
+                },
+                {
+                    "name": "*It.034",
+                    "text": "*It",
+                    "start": 5074.0,
+                    "end": 5080
+                },
+                {
+                    "name": "feels.034",
+                    "text": "feels",
+                    "start": 5080.0,
+                    "end": 5087
+                },
+                {
+                    "name": "good.084",
+                    "text": "good",
+                    "start": 5087.0,
+                    "end": 5093
+                },
+                {
+                    "name": "to.034",
+                    "text": "to",
+                    "start": 5093.0,
+                    "end": 5122
+                },
+                {
+                    "name": "*It.035",
+                    "text": "*It",
+                    "start": 5129.0,
+                    "end": 5135
+                },
+                {
+                    "name": "feels.035",
+                    "text": "feels",
+                    "start": 5135.0,
+                    "end": 5142
+                },
+                {
+                    "name": "good.085",
+                    "text": "good",
+                    "start": 5142.0,
+                    "end": 5148
+                },
+                {
+                    "name": "to.035",
+                    "text": "to",
+                    "start": 5148.0,
+                    "end": 5222
+                },
+                {
+                    "name": "*It.036",
+                    "text": "*It",
+                    "start": 5238.0,
+                    "end": 5245
+                },
+                {
+                    "name": "feels.036",
+                    "text": "feels",
+                    "start": 5245.0,
+                    "end": 5252
+                },
+                {
+                    "name": "good.086",
+                    "text": "good",
+                    "start": 5252.0,
+                    "end": 5258
+                },
+                {
+                    "name": "to.036",
+                    "text": "to",
+                    "start": 5258.0,
+                    "end": 5286
+                },
+                {
+                    "name": "*It.037",
+                    "text": "*It",
+                    "start": 5292.0,
+                    "end": 5299
+                },
+                {
+                    "name": "feels.037",
+                    "text": "feels",
+                    "start": 5299.0,
+                    "end": 5306
+                },
+                {
+                    "name": "good.087",
+                    "text": "good",
+                    "start": 5306.0,
+                    "end": 5312
+                },
+                {
+                    "name": "to.037",
+                    "text": "to",
+                    "start": 5312.0,
+                    "end": 5341
+                }
+            ]
+        },
+        {
+            "index": 2,
+            "clips": [
+                {
+                    "name": "*write",
+                    "text": "*write",
+                    "start": 60.0,
+                    "end": 67
+                },
+                {
+                    "name": "a",
+                    "text": "a",
+                    "start": 67.0,
+                    "end": 74
+                },
+                {
+                    "name": "song",
+                    "text": "song",
+                    "start": 74.0,
+                    "end": 85
+                },
+                {
+                    "name": "*write.001",
+                    "text": "*write",
+                    "start": 115.0,
+                    "end": 122
+                },
+                {
+                    "name": "a.001",
+                    "text": "a",
+                    "start": 122.0,
+                    "end": 129
+                },
+                {
+                    "name": "song.001",
+                    "text": "song",
+                    "start": 129.0,
+                    "end": 140
+                },
+                {
+                    "name": "*write.003",
+                    "text": "*write",
+                    "start": 170.0,
+                    "end": 177
+                },
+                {
+                    "name": "a.003",
+                    "text": "a song",
+                    "start": 177.0,
+                    "end": 184
+                },
+                {
+                    "name": "*write.002",
+                    "text": "*write",
+                    "start": 184.0,
+                    "end": 191
+                },
+                {
+                    "name": "a.002",
+                    "text": "a",
+                    "start": 191.0,
+                    "end": 197
+                },
+                {
+                    "name": "song.002",
+                    "text": "song",
+                    "start": 197.0,
+                    "end": 242
+                },
+                {
+                    "name": "*write.004",
+                    "text": "*write",
+                    "start": 280.0,
+                    "end": 286
+                },
+                {
+                    "name": "a.004",
+                    "text": "a",
+                    "start": 286.0,
+                    "end": 293
+                },
+                {
+                    "name": "song.003",
+                    "text": "song",
+                    "start": 293.0,
+                    "end": 305
+                },
+                {
+                    "name": "*write.005",
+                    "text": "*write",
+                    "start": 333.0,
+                    "end": 340
+                },
+                {
+                    "name": "a.005",
+                    "text": "a",
+                    "start": 340.0,
+                    "end": 347
+                },
+                {
+                    "name": "song.004",
+                    "text": "song",
+                    "start": 347.0,
+                    "end": 358
+                },
+                {
+                    "name": "*write.007",
+                    "text": "*write",
+                    "start": 388.0,
+                    "end": 395
+                },
+                {
+                    "name": "a.007",
+                    "text": "a song",
+                    "start": 395.0,
+                    "end": 402
+                },
+                {
+                    "name": "*write.006",
+                    "text": "*write",
+                    "start": 402.0,
+                    "end": 409
+                },
+                {
+                    "name": "a.006",
+                    "text": "a",
+                    "start": 409.0,
+                    "end": 415
+                },
+                {
+                    "name": "*How",
+                    "text": "*How good",
+                    "start": 415.0,
+                    "end": 471
+                },
+                {
+                    "name": "*does",
+                    "text": "*does",
+                    "start": 494.0,
+                    "end": 505
+                },
+                {
+                    "name": "it",
+                    "text": "it",
+                    "start": 505.0,
+                    "end": 515
+                },
+                {
+                    "name": "feel?",
+                    "text": "feel?",
+                    "start": 515.0,
+                    "end": 584
+                },
+                {
+                    "name": "*does.001",
+                    "text": "*does",
+                    "start": 603.0,
+                    "end": 614
+                },
+                {
+                    "name": "it.001",
+                    "text": "it",
+                    "start": 614.0,
+                    "end": 624
+                },
+                {
+                    "name": "feel?.001",
+                    "text": "feel?",
+                    "start": 624.0,
+                    "end": 652
+                },
+                {
+                    "name": "*does.002",
+                    "text": "*does",
+                    "start": 712.0,
+                    "end": 723
+                },
+                {
+                    "name": "it.002",
+                    "text": "it",
+                    "start": 723.0,
+                    "end": 733
+                },
+                {
+                    "name": "feel?.002",
+                    "text": "feel?",
+                    "start": 733.0,
+                    "end": 802
+                },
+                {
+                    "name": "*does.003",
+                    "text": "*does",
+                    "start": 824.0,
+                    "end": 834
+                },
+                {
+                    "name": "it.003",
+                    "text": "it",
+                    "start": 834.0,
+                    "end": 844
+                },
+                {
+                    "name": "feel",
+                    "text": "feel",
+                    "start": 844.0,
+                    "end": 859
+                },
+                {
+                    "name": "to...",
+                    "text": "to...",
+                    "start": 859.0,
+                    "end": 912
+                },
+                {
+                    "name": "*ride",
+                    "text": "*ride",
+                    "start": 936.0,
+                    "end": 942
+                },
+                {
+                    "name": "a.009",
+                    "text": "a",
+                    "start": 942.0,
+                    "end": 949
+                },
+                {
+                    "name": "bike",
+                    "text": "bike",
+                    "start": 949.0,
+                    "end": 960
+                },
+                {
+                    "name": "*ride.001",
+                    "text": "*ride",
+                    "start": 990.0,
+                    "end": 996
+                },
+                {
+                    "name": "a.010",
+                    "text": "a",
+                    "start": 996.0,
+                    "end": 1003
+                },
+                {
+                    "name": "bike.001",
+                    "text": "bike",
+                    "start": 1003.0,
+                    "end": 1015
+                },
+                {
+                    "name": "*ride.002",
+                    "text": "*ride",
+                    "start": 1044.0,
+                    "end": 1050
+                },
+                {
+                    "name": "a.012",
+                    "text": "a bike",
+                    "start": 1050.0,
+                    "end": 1058
+                },
+                {
+                    "name": "*ride.003",
+                    "text": "*ride",
+                    "start": 1058.0,
+                    "end": 1065
+                },
+                {
+                    "name": "a.011",
+                    "text": "a",
+                    "start": 1065.0,
+                    "end": 1071
+                },
+                {
+                    "name": "bike.002",
+                    "text": "bike",
+                    "start": 1071.0,
+                    "end": 1115
+                },
+                {
+                    "name": "*ride.004",
+                    "text": "*ride",
+                    "start": 1152.0,
+                    "end": 1158
+                },
+                {
+                    "name": "a.013",
+                    "text": "a",
+                    "start": 1158.0,
+                    "end": 1165
+                },
+                {
+                    "name": "bike.003",
+                    "text": "bike",
+                    "start": 1165.0,
+                    "end": 1176
+                },
+                {
+                    "name": "*ride.005",
+                    "text": "*ride",
+                    "start": 1205.0,
+                    "end": 1211
+                },
+                {
+                    "name": "a.014",
+                    "text": "a",
+                    "start": 1211.0,
+                    "end": 1218
+                },
+                {
+                    "name": "bike.004",
+                    "text": "bike",
+                    "start": 1218.0,
+                    "end": 1230
+                },
+                {
+                    "name": "*ride.007",
+                    "text": "*ride",
+                    "start": 1260.0,
+                    "end": 1266
+                },
+                {
+                    "name": "a.016",
+                    "text": "a bike",
+                    "start": 1266.0,
+                    "end": 1274
+                },
+                {
+                    "name": "*ride.006",
+                    "text": "*ride",
+                    "start": 1274.0,
+                    "end": 1281
+                },
+                {
+                    "name": "a.015",
+                    "text": "a",
+                    "start": 1281.0,
+                    "end": 1287
+                },
+                {
+                    "name": "bike.005",
+                    "text": "bike",
+                    "start": 1287.0,
+                    "end": 1331
+                },
+                {
+                    "name": "*does.004",
+                    "text": "*does",
+                    "start": 1364.0,
+                    "end": 1375
+                },
+                {
+                    "name": "it.004",
+                    "text": "it",
+                    "start": 1375.0,
+                    "end": 1385
+                },
+                {
+                    "name": "feel?.003",
+                    "text": "feel?",
+                    "start": 1385.0,
+                    "end": 1453
+                },
+                {
+                    "name": "*does.005",
+                    "text": "*does",
+                    "start": 1473.0,
+                    "end": 1484
+                },
+                {
+                    "name": "it.005",
+                    "text": "it",
+                    "start": 1484.0,
+                    "end": 1494
+                },
+                {
+                    "name": "feel?.004",
+                    "text": "feel?",
+                    "start": 1494.0,
+                    "end": 1522
+                },
+                {
+                    "name": "*does.006",
+                    "text": "*does",
+                    "start": 1583.0,
+                    "end": 1594
+                },
+                {
+                    "name": "it.006",
+                    "text": "it",
+                    "start": 1594.0,
+                    "end": 1604
+                },
+                {
+                    "name": "feel?.005",
+                    "text": "feel?",
+                    "start": 1604.0,
+                    "end": 1673
+                },
+                {
+                    "name": "*does.007",
+                    "text": "*does",
+                    "start": 1694.0,
+                    "end": 1704
+                },
+                {
+                    "name": "it.007",
+                    "text": "it",
+                    "start": 1704.0,
+                    "end": 1714
+                },
+                {
+                    "name": "feel.001",
+                    "text": "feel",
+                    "start": 1714.0,
+                    "end": 1729
+                },
+                {
+                    "name": "to...001",
+                    "text": "to...",
+                    "start": 1729.0,
+                    "end": 1783
+                },
+                {
+                    "name": "*drink.001",
+                    "text": "*drink",
+                    "start": 1806.0,
+                    "end": 1812
+                },
+                {
+                    "name": "a.018",
+                    "text": "a",
+                    "start": 1812.0,
+                    "end": 1819
+                },
+                {
+                    "name": "juice",
+                    "text": "juice",
+                    "start": 1819.0,
+                    "end": 1830
+                },
+                {
+                    "name": "*drink.002",
+                    "text": "*drink",
+                    "start": 1860.0,
+                    "end": 1866
+                },
+                {
+                    "name": "a.019",
+                    "text": "a",
+                    "start": 1866.0,
+                    "end": 1873
+                },
+                {
+                    "name": "juice.001",
+                    "text": "juice",
+                    "start": 1873.0,
+                    "end": 1885
+                },
+                {
+                    "name": "*drink.003",
+                    "text": "*drink",
+                    "start": 1914.0,
+                    "end": 1920
+                },
+                {
+                    "name": "a.021",
+                    "text": "a juice",
+                    "start": 1920.0,
+                    "end": 1928
+                },
+                {
+                    "name": "*drink.004",
+                    "text": "*drink",
+                    "start": 1928.0,
+                    "end": 1935
+                },
+                {
+                    "name": "a.020",
+                    "text": "a",
+                    "start": 1935.0,
+                    "end": 1941
+                },
+                {
+                    "name": "juice.002",
+                    "text": "juice",
+                    "start": 1941.0,
+                    "end": 1985
+                },
+                {
+                    "name": "*drink.005",
+                    "text": "*drink",
+                    "start": 2022.0,
+                    "end": 2028
+                },
+                {
+                    "name": "a.022",
+                    "text": "a",
+                    "start": 2028.0,
+                    "end": 2035
+                },
+                {
+                    "name": "juice.003",
+                    "text": "juice",
+                    "start": 2035.0,
+                    "end": 2046
+                },
+                {
+                    "name": "*drink.006",
+                    "text": "*drink",
+                    "start": 2076.0,
+                    "end": 2082
+                },
+                {
+                    "name": "a.023",
+                    "text": "a",
+                    "start": 2082.0,
+                    "end": 2089
+                },
+                {
+                    "name": "juice.004",
+                    "text": "juice",
+                    "start": 2089.0,
+                    "end": 2101
+                },
+                {
+                    "name": "*drink.008",
+                    "text": "*drink",
+                    "start": 2130.0,
+                    "end": 2136
+                },
+                {
+                    "name": "a.025",
+                    "text": "a juice",
+                    "start": 2136.0,
+                    "end": 2144
+                },
+                {
+                    "name": "*drink.007",
+                    "text": "*drink",
+                    "start": 2144.0,
+                    "end": 2151
+                },
+                {
+                    "name": "a.024",
+                    "text": "a",
+                    "start": 2151.0,
+                    "end": 2157
+                },
+                {
+                    "name": "juice.005",
+                    "text": "juice",
+                    "start": 2157.0,
+                    "end": 2201
+                },
+                {
+                    "name": "*does.008",
+                    "text": "*does",
+                    "start": 2235.0,
+                    "end": 2246
+                },
+                {
+                    "name": "it.008",
+                    "text": "it",
+                    "start": 2246.0,
+                    "end": 2256
+                },
+                {
+                    "name": "feel?.006",
+                    "text": "feel?",
+                    "start": 2256.0,
+                    "end": 2324
+                },
+                {
+                    "name": "*does.009",
+                    "text": "*does",
+                    "start": 2344.0,
+                    "end": 2355
+                },
+                {
+                    "name": "it.009",
+                    "text": "it",
+                    "start": 2355.0,
+                    "end": 2365
+                },
+                {
+                    "name": "feel?.007",
+                    "text": "feel?",
+                    "start": 2365.0,
+                    "end": 2393
+                },
+                {
+                    "name": "*does.010",
+                    "text": "*does",
+                    "start": 2452.0,
+                    "end": 2463
+                },
+                {
+                    "name": "it.010",
+                    "text": "it",
+                    "start": 2463.0,
+                    "end": 2473
+                },
+                {
+                    "name": "feel?.008",
+                    "text": "feel?",
+                    "start": 2473.0,
+                    "end": 2542
+                },
+                {
+                    "name": "*does.011",
+                    "text": "*does",
+                    "start": 2563.0,
+                    "end": 2573
+                },
+                {
+                    "name": "it.011",
+                    "text": "it",
+                    "start": 2573.0,
+                    "end": 2583
+                },
+                {
+                    "name": "feel?.009",
+                    "text": "feel?",
+                    "start": 2583.0,
+                    "end": 2597
+                },
+                {
+                    "name": "*does.012",
+                    "text": "*does",
+                    "start": 3093.0,
+                    "end": 3104
+                },
+                {
+                    "name": "it.012",
+                    "text": "it",
+                    "start": 3104.0,
+                    "end": 3114
+                },
+                {
+                    "name": "feel?.010",
+                    "text": "feel?",
+                    "start": 3114.0,
+                    "end": 3183
+                },
+                {
+                    "name": "*does.013",
+                    "text": "*does",
+                    "start": 3202.0,
+                    "end": 3213
+                },
+                {
+                    "name": "it.013",
+                    "text": "it",
+                    "start": 3213.0,
+                    "end": 3223
+                },
+                {
+                    "name": "feel?.011",
+                    "text": "feel?",
+                    "start": 3223.0,
+                    "end": 3292
+                },
+                {
+                    "name": "*does.014",
+                    "text": "*does",
+                    "start": 3312.0,
+                    "end": 3323
+                },
+                {
+                    "name": "it.014",
+                    "text": "it",
+                    "start": 3323.0,
+                    "end": 3333
+                },
+                {
+                    "name": "feel?.012",
+                    "text": "feel?",
+                    "start": 3333.0,
+                    "end": 3402
+                },
+                {
+                    "name": "*does.015",
+                    "text": "*does",
+                    "start": 3421.0,
+                    "end": 3432
+                },
+                {
+                    "name": "it.015",
+                    "text": "it",
+                    "start": 3432.0,
+                    "end": 3442
+                },
+                {
+                    "name": "feel.002",
+                    "text": "feel",
+                    "start": 3442.0,
+                    "end": 3456
+                },
+                {
+                    "name": "to...002",
+                    "text": "to...",
+                    "start": 3456.0,
+                    "end": 3509
+                },
+                {
+                    "name": "*draw.001",
+                    "text": "*draw",
+                    "start": 3532.0,
+                    "end": 3538
+                },
+                {
+                    "name": "a.027",
+                    "text": "a",
+                    "start": 3538.0,
+                    "end": 3545
+                },
+                {
+                    "name": "cat",
+                    "text": "cat",
+                    "start": 3545.0,
+                    "end": 3556
+                },
+                {
+                    "name": "*draw.002",
+                    "text": "*draw",
+                    "start": 3586.0,
+                    "end": 3592
+                },
+                {
+                    "name": "a.028",
+                    "text": "a",
+                    "start": 3592.0,
+                    "end": 3599
+                },
+                {
+                    "name": "cat.001",
+                    "text": "cat",
+                    "start": 3599.0,
+                    "end": 3611
+                },
+                {
+                    "name": "*draw.003",
+                    "text": "*draw",
+                    "start": 3638.0,
+                    "end": 3644
+                },
+                {
+                    "name": "a.030",
+                    "text": "a cat",
+                    "start": 3644.0,
+                    "end": 3652
+                },
+                {
+                    "name": "*draw.004",
+                    "text": "*draw",
+                    "start": 3652.0,
+                    "end": 3659
+                },
+                {
+                    "name": "a.029",
+                    "text": "a",
+                    "start": 3659.0,
+                    "end": 3665
+                },
+                {
+                    "name": "cat.002",
+                    "text": "cat",
+                    "start": 3665.0,
+                    "end": 3721
+                },
+                {
+                    "name": "*draw.005",
+                    "text": "*draw",
+                    "start": 3745.0,
+                    "end": 3751
+                },
+                {
+                    "name": "a.031",
+                    "text": "a",
+                    "start": 3751.0,
+                    "end": 3757
+                },
+                {
+                    "name": "cat.003",
+                    "text": "cat",
+                    "start": 3757.0,
+                    "end": 3769
+                },
+                {
+                    "name": "*draw.006",
+                    "text": "*draw",
+                    "start": 3798.0,
+                    "end": 3804
+                },
+                {
+                    "name": "a.032",
+                    "text": "a",
+                    "start": 3804.0,
+                    "end": 3811
+                },
+                {
+                    "name": "cat.004",
+                    "text": "cat",
+                    "start": 3811.0,
+                    "end": 3823
+                },
+                {
+                    "name": "*draw.007",
+                    "text": "*draw",
+                    "start": 3852.0,
+                    "end": 3858
+                },
+                {
+                    "name": "a.034",
+                    "text": "a cat",
+                    "start": 3858.0,
+                    "end": 3866
+                },
+                {
+                    "name": "*draw.008",
+                    "text": "*draw",
+                    "start": 3866.0,
+                    "end": 3873
+                },
+                {
+                    "name": "a.033",
+                    "text": "a",
+                    "start": 3873.0,
+                    "end": 3879
+                },
+                {
+                    "name": "cat.005",
+                    "text": "cat",
+                    "start": 3879.0,
+                    "end": 3922
+                },
+                {
+                    "name": "*does.016",
+                    "text": "*does",
+                    "start": 3954.0,
+                    "end": 3965
+                },
+                {
+                    "name": "it.016",
+                    "text": "it",
+                    "start": 3965.0,
+                    "end": 3975
+                },
+                {
+                    "name": "feel?.013",
+                    "text": "feel?",
+                    "start": 3975.0,
+                    "end": 4044
+                },
+                {
+                    "name": "*does.017",
+                    "text": "*does",
+                    "start": 4063.0,
+                    "end": 4074
+                },
+                {
+                    "name": "it.017",
+                    "text": "it",
+                    "start": 4074.0,
+                    "end": 4084
+                },
+                {
+                    "name": "feel?.014",
+                    "text": "feel?",
+                    "start": 4084.0,
+                    "end": 4152
+                },
+                {
+                    "name": "*does.018",
+                    "text": "*does",
+                    "start": 4173.0,
+                    "end": 4184
+                },
+                {
+                    "name": "it.018",
+                    "text": "it",
+                    "start": 4184.0,
+                    "end": 4194
+                },
+                {
+                    "name": "feel?.015",
+                    "text": "feel?",
+                    "start": 4194.0,
+                    "end": 4262
+                },
+                {
+                    "name": "*does.019",
+                    "text": "*does",
+                    "start": 4282.0,
+                    "end": 4293
+                },
+                {
+                    "name": "it.019",
+                    "text": "it",
+                    "start": 4293.0,
+                    "end": 4303
+                },
+                {
+                    "name": "feel.003",
+                    "text": "feel",
+                    "start": 4303.0,
+                    "end": 4317
+                },
+                {
+                    "name": "to...003",
+                    "text": "to...",
+                    "start": 4317.0,
+                    "end": 4370
+                },
+                {
+                    "name": "*write.009",
+                    "text": "*write",
+                    "start": 4394.0,
+                    "end": 4400
+                },
+                {
+                    "name": "a.036",
+                    "text": "a",
+                    "start": 4400.0,
+                    "end": 4407
+                },
+                {
+                    "name": "song.005",
+                    "text": "song",
+                    "start": 4407.0,
+                    "end": 4418
+                },
+                {
+                    "name": "*write.010",
+                    "text": "*write",
+                    "start": 4448.0,
+                    "end": 4454
+                },
+                {
+                    "name": "a.037",
+                    "text": "a",
+                    "start": 4454.0,
+                    "end": 4461
+                },
+                {
+                    "name": "song.006",
+                    "text": "song",
+                    "start": 4461.0,
+                    "end": 4473
+                },
+                {
+                    "name": "*write.011",
+                    "text": "*write",
+                    "start": 4500.0,
+                    "end": 4506
+                },
+                {
+                    "name": "a.039",
+                    "text": "a song",
+                    "start": 4506.0,
+                    "end": 4514
+                },
+                {
+                    "name": "*write.012",
+                    "text": "*write",
+                    "start": 4514.0,
+                    "end": 4521
+                },
+                {
+                    "name": "a.038",
+                    "text": "a",
+                    "start": 4521.0,
+                    "end": 4527
+                },
+                {
+                    "name": "song.007",
+                    "text": "song",
+                    "start": 4527.0,
+                    "end": 4583
+                },
+                {
+                    "name": "*write.013",
+                    "text": "*write",
+                    "start": 4609.0,
+                    "end": 4615
+                },
+                {
+                    "name": "a.040",
+                    "text": "a",
+                    "start": 4615.0,
+                    "end": 4622
+                },
+                {
+                    "name": "song.008",
+                    "text": "song",
+                    "start": 4622.0,
+                    "end": 4633
+                },
+                {
+                    "name": "*write.014",
+                    "text": "*write",
+                    "start": 4663.0,
+                    "end": 4669
+                },
+                {
+                    "name": "a.041",
+                    "text": "a",
+                    "start": 4669.0,
+                    "end": 4676
+                },
+                {
+                    "name": "song.009",
+                    "text": "song",
+                    "start": 4676.0,
+                    "end": 4688
+                },
+                {
+                    "name": "*write.015",
+                    "text": "*write",
+                    "start": 4716.0,
+                    "end": 4722
+                },
+                {
+                    "name": "a.043",
+                    "text": "a song",
+                    "start": 4722.0,
+                    "end": 4730
+                },
+                {
+                    "name": "*write.016",
+                    "text": "*write",
+                    "start": 4730.0,
+                    "end": 4737
+                },
+                {
+                    "name": "a.042",
+                    "text": "a",
+                    "start": 4737.0,
+                    "end": 4743
+                },
+                {
+                    "name": "song.010",
+                    "text": "song",
+                    "start": 4743.0,
+                    "end": 4786
+                },
+                {
+                    "name": "*write.017",
+                    "text": "*write",
+                    "start": 4826.0,
+                    "end": 4832
+                },
+                {
+                    "name": "a.044",
+                    "text": "a",
+                    "start": 4832.0,
+                    "end": 4839
+                },
+                {
+                    "name": "song.011",
+                    "text": "song",
+                    "start": 4839.0,
+                    "end": 4850
+                },
+                {
+                    "name": "*write.018",
+                    "text": "*write",
+                    "start": 4880.0,
+                    "end": 4886
+                },
+                {
+                    "name": "a.045",
+                    "text": "a",
+                    "start": 4886.0,
+                    "end": 4893
+                },
+                {
+                    "name": "song.012",
+                    "text": "song",
+                    "start": 4893.0,
+                    "end": 4905
+                },
+                {
+                    "name": "*write.020",
+                    "text": "*write",
+                    "start": 4934.0,
+                    "end": 4940
+                },
+                {
+                    "name": "a.047",
+                    "text": "a song",
+                    "start": 4940.0,
+                    "end": 4948
+                },
+                {
+                    "name": "*write.019",
+                    "text": "*write",
+                    "start": 4948.0,
+                    "end": 4955
+                },
+                {
+                    "name": "a.046",
+                    "text": "a",
+                    "start": 4955.0,
+                    "end": 4961
+                },
+                {
+                    "name": "song.013",
+                    "text": "song",
+                    "start": 4961.0,
+                    "end": 5017
+                },
+                {
+                    "name": "*write.021",
+                    "text": "*write",
+                    "start": 5044.0,
+                    "end": 5050
+                },
+                {
+                    "name": "a.048",
+                    "text": "a",
+                    "start": 5050.0,
+                    "end": 5057
+                },
+                {
+                    "name": "song.014",
+                    "text": "song",
+                    "start": 5057.0,
+                    "end": 5068
+                },
+                {
+                    "name": "*write.022",
+                    "text": "*write",
+                    "start": 5098.0,
+                    "end": 5104
+                },
+                {
+                    "name": "a.049",
+                    "text": "a",
+                    "start": 5104.0,
+                    "end": 5111
+                },
+                {
+                    "name": "song.015",
+                    "text": "song",
+                    "start": 5111.0,
+                    "end": 5123
+                },
+                {
+                    "name": "*write.024",
+                    "text": "*write",
+                    "start": 5152.0,
+                    "end": 5158
+                },
+                {
+                    "name": "a.051",
+                    "text": "a song",
+                    "start": 5158.0,
+                    "end": 5166
+                },
+                {
+                    "name": "*write.023",
+                    "text": "*write",
+                    "start": 5166.0,
+                    "end": 5173
+                },
+                {
+                    "name": "a.050",
+                    "text": "a",
+                    "start": 5173.0,
+                    "end": 5179
+                },
+                {
+                    "name": "song.016",
+                    "text": "song",
+                    "start": 5179.0,
+                    "end": 5222
+                },
+                {
+                    "name": "*write.025",
+                    "text": "*write",
+                    "start": 5262.0,
+                    "end": 5268
+                },
+                {
+                    "name": "a.052",
+                    "text": "a",
+                    "start": 5268.0,
+                    "end": 5275
+                },
+                {
+                    "name": "song.017",
+                    "text": "song",
+                    "start": 5275.0,
+                    "end": 5286
+                },
+                {
+                    "name": "*write.026",
+                    "text": "*write",
+                    "start": 5316.0,
+                    "end": 5322
+                },
+                {
+                    "name": "a.053",
+                    "text": "a",
+                    "start": 5322.0,
+                    "end": 5329
+                },
+                {
+                    "name": "song.018",
+                    "text": "song",
+                    "start": 5329.0,
+                    "end": 5341
+                }
+            ]
+        },
+        {
+            "index": 3,
+            "clips": [
+                {
+                    "name": "scramble",
+                    "text": "scramble",
+                    "start": 215.0,
+                    "end": 242
+                },
+                {
+                    "name": "scramble2",
+                    "text": "scramble2",
+                    "start": 433.0,
+                    "end": 471
+                },
+                {
+                    "name": "scramble.001",
+                    "text": "scramble",
+                    "start": 529.0,
+                    "end": 543
+                },
+                {
+                    "name": "scramble3",
+                    "text": "scramble3",
+                    "start": 543.0,
+                    "end": 556
+                },
+                {
+                    "name": "scramble.003",
+                    "text": "scramble",
+                    "start": 556.0,
+                    "end": 570
+                },
+                {
+                    "name": "scramble3.001",
+                    "text": "scramble3",
+                    "start": 570.0,
+                    "end": 584
+                },
+                {
+                    "name": "scramble.002",
+                    "text": "scramble",
+                    "start": 747.0,
+                    "end": 761
+                },
+                {
+                    "name": "scramble3.002",
+                    "text": "scramble3",
+                    "start": 761.0,
+                    "end": 774
+                },
+                {
+                    "name": "scramble.004",
+                    "text": "scramble",
+                    "start": 774.0,
+                    "end": 788
+                },
+                {
+                    "name": "scramble3.003",
+                    "text": "scramble3",
+                    "start": 788.0,
+                    "end": 802
+                },
+                {
+                    "name": "scramble.005",
+                    "text": "scramble",
+                    "start": 1088.0,
+                    "end": 1115
+                },
+                {
+                    "name": "scramble2.001",
+                    "text": "scramble2",
+                    "start": 1304.0,
+                    "end": 1331
+                },
+                {
+                    "name": "scramble.006",
+                    "text": "scramble",
+                    "start": 1399.0,
+                    "end": 1413
+                },
+                {
+                    "name": "scramble3.004",
+                    "text": "scramble3",
+                    "start": 1413.0,
+                    "end": 1426
+                },
+                {
+                    "name": "scramble.007",
+                    "text": "scramble",
+                    "start": 1426.0,
+                    "end": 1440
+                },
+                {
+                    "name": "scramble3.005",
+                    "text": "scramble3",
+                    "start": 1440.0,
+                    "end": 1453
+                },
+                {
+                    "name": "scramble.008",
+                    "text": "scramble",
+                    "start": 1618.0,
+                    "end": 1632
+                },
+                {
+                    "name": "scramble3.006",
+                    "text": "scramble3",
+                    "start": 1632.0,
+                    "end": 1645
+                },
+                {
+                    "name": "scramble.009",
+                    "text": "scramble",
+                    "start": 1645.0,
+                    "end": 1659
+                },
+                {
+                    "name": "scramble3.007",
+                    "text": "scramble3",
+                    "start": 1659.0,
+                    "end": 1673
+                },
+                {
+                    "name": "scramble.010",
+                    "text": "scramble",
+                    "start": 1958.0,
+                    "end": 1985
+                },
+                {
+                    "name": "scramble.011",
+                    "text": "scramble",
+                    "start": 2174.0,
+                    "end": 2201
+                },
+                {
+                    "name": "scramble.012",
+                    "text": "scramble",
+                    "start": 2270.0,
+                    "end": 2284
+                },
+                {
+                    "name": "scramble3.008",
+                    "text": "scramble3",
+                    "start": 2284.0,
+                    "end": 2297
+                },
+                {
+                    "name": "scramble.013",
+                    "text": "scramble",
+                    "start": 2297.0,
+                    "end": 2311
+                },
+                {
+                    "name": "scramble3.009",
+                    "text": "scramble3",
+                    "start": 2311.0,
+                    "end": 2324
+                },
+                {
+                    "name": "scramble.014",
+                    "text": "scramble",
+                    "start": 2487.0,
+                    "end": 2501
+                },
+                {
+                    "name": "scramble3.010",
+                    "text": "scramble3",
+                    "start": 2501.0,
+                    "end": 2514
+                },
+                {
+                    "name": "scramble.015",
+                    "text": "scramble",
+                    "start": 2514.0,
+                    "end": 2528
+                },
+                {
+                    "name": "scramble3.011",
+                    "text": "scramble3",
+                    "start": 2528.0,
+                    "end": 2542
+                },
+                {
+                    "name": "scramble.016",
+                    "text": "scramble",
+                    "start": 3682.0,
+                    "end": 3721
+                },
+                {
+                    "name": "scramble.017",
+                    "text": "scramble",
+                    "start": 3896.0,
+                    "end": 3922
+                },
+                {
+                    "name": "scramble.018",
+                    "text": "scramble",
+                    "start": 4546.0,
+                    "end": 4583
+                },
+                {
+                    "name": "scramble.019",
+                    "text": "scramble",
+                    "start": 4762.0,
+                    "end": 4786
+                },
+                {
+                    "name": "fade",
+                    "text": "fade",
+                    "start": 5117.0,
+                    "end": 5372
+                }
+            ]
+        },
+        {
+            "index": 4,
+            "clips": [
+                {
+                    "name": "*yeah",
+                    "text": "*yeah",
+                    "start": 225.0,
+                    "end": 232
+                },
+                {
+                    "name": "+eah",
+                    "text": "+eah",
+                    "start": 232.0,
+                    "end": 236
+                },
+                {
+                    "name": "+eah.001",
+                    "text": "+eah",
+                    "start": 236.0,
+                    "end": 239
+                },
+                {
+                    "name": "+eah.002",
+                    "text": "+eah",
+                    "start": 239.0,
+                    "end": 242
+                },
+                {
+                    "name": "+eah.003",
+                    "text": "+eah",
+                    "start": 242.0,
+                    "end": 249
+                },
+                {
+                    "name": "+!",
+                    "text": "+!",
+                    "start": 249.0,
+                    "end": 253
+                },
+                {
+                    "name": "*yeah.001",
+                    "text": "*yeah",
+                    "start": 443.0,
+                    "end": 450
+                },
+                {
+                    "name": "+eah.004",
+                    "text": "+eah",
+                    "start": 450.0,
+                    "end": 454
+                },
+                {
+                    "name": "+eah.005",
+                    "text": "+eah",
+                    "start": 454.0,
+                    "end": 457
+                },
+                {
+                    "name": "+eah.006",
+                    "text": "+eah",
+                    "start": 457.0,
+                    "end": 460
+                },
+                {
+                    "name": "+eah.007",
+                    "text": "+eah",
+                    "start": 460.0,
+                    "end": 467
+                },
+                {
+                    "name": "+!.001",
+                    "text": "+!",
+                    "start": 467.0,
+                    "end": 471
+                },
+                {
+                    "name": "*So",
+                    "text": "*So",
+                    "start": 535.0,
+                    "end": 543
+                },
+                {
+                    "name": "good.007",
+                    "text": "good",
+                    "start": 543.0,
+                    "end": 549
+                },
+                {
+                    "name": "\u2248so",
+                    "text": "\u2248so",
+                    "start": 549.0,
+                    "end": 556
+                },
+                {
+                    "name": "good.008",
+                    "text": "good",
+                    "start": 556.0,
+                    "end": 563
+                },
+                {
+                    "name": "\u2248so.001",
+                    "text": "\u2248so",
+                    "start": 563.0,
+                    "end": 566
+                },
+                {
+                    "name": "good.009",
+                    "text": "good",
+                    "start": 566.0,
+                    "end": 584
+                },
+                {
+                    "name": "*So.001",
+                    "text": "*So",
+                    "start": 673.0,
+                    "end": 680
+                },
+                {
+                    "name": "good!",
+                    "text": "good!",
+                    "start": 680.0,
+                    "end": 693
+                },
+                {
+                    "name": "*So.002",
+                    "text": "*So",
+                    "start": 753.0,
+                    "end": 761
+                },
+                {
+                    "name": "good.012",
+                    "text": "good",
+                    "start": 761.0,
+                    "end": 767
+                },
+                {
+                    "name": "\u2248so.002",
+                    "text": "\u2248so",
+                    "start": 767.0,
+                    "end": 774
+                },
+                {
+                    "name": "good.013",
+                    "text": "good",
+                    "start": 774.0,
+                    "end": 781
+                },
+                {
+                    "name": "\u2248so.003",
+                    "text": "\u2248so",
+                    "start": 781.0,
+                    "end": 784
+                },
+                {
+                    "name": "good.014",
+                    "text": "good",
+                    "start": 784.0,
+                    "end": 802
+                },
+                {
+                    "name": "*I",
+                    "text": "*I",
+                    "start": 1010.0,
+                    "end": 1013
+                },
+                {
+                    "name": "said",
+                    "text": "said",
+                    "start": 1013.0,
+                    "end": 1017
+                },
+                {
+                    "name": "*yeah.002",
+                    "text": "*yeah",
+                    "start": 1099.0,
+                    "end": 1104
+                },
+                {
+                    "name": "+eah.008",
+                    "text": "+eah",
+                    "start": 1104.0,
+                    "end": 1108
+                },
+                {
+                    "name": "+eah.009",
+                    "text": "+eah",
+                    "start": 1108.0,
+                    "end": 1112
+                },
+                {
+                    "name": "+eah.010",
+                    "text": "+eah",
+                    "start": 1112.0,
+                    "end": 1115
+                },
+                {
+                    "name": "+eah.011",
+                    "text": "+eah",
+                    "start": 1115.0,
+                    "end": 1123
+                },
+                {
+                    "name": "+!.002",
+                    "text": "+!",
+                    "start": 1123.0,
+                    "end": 1127
+                },
+                {
+                    "name": "*yeah.003",
+                    "text": "*yeah",
+                    "start": 1314.0,
+                    "end": 1320
+                },
+                {
+                    "name": "+eah.012",
+                    "text": "+eah",
+                    "start": 1320.0,
+                    "end": 1324
+                },
+                {
+                    "name": "+eah.013",
+                    "text": "+eah",
+                    "start": 1324.0,
+                    "end": 1328
+                },
+                {
+                    "name": "+eah.014",
+                    "text": "+eah",
+                    "start": 1328.0,
+                    "end": 1331
+                },
+                {
+                    "name": "+eah.015",
+                    "text": "+eah",
+                    "start": 1331.0,
+                    "end": 1339
+                },
+                {
+                    "name": "+!.003",
+                    "text": "+!",
+                    "start": 1339.0,
+                    "end": 1343
+                },
+                {
+                    "name": "*So.003",
+                    "text": "*So",
+                    "start": 1405.0,
+                    "end": 1413
+                },
+                {
+                    "name": "good.023",
+                    "text": "good",
+                    "start": 1413.0,
+                    "end": 1419
+                },
+                {
+                    "name": "\u2248so.004",
+                    "text": "\u2248so",
+                    "start": 1419.0,
+                    "end": 1426
+                },
+                {
+                    "name": "good.024",
+                    "text": "good",
+                    "start": 1426.0,
+                    "end": 1433
+                },
+                {
+                    "name": "\u2248so.005",
+                    "text": "\u2248so",
+                    "start": 1433.0,
+                    "end": 1436
+                },
+                {
+                    "name": "good.025",
+                    "text": "good",
+                    "start": 1436.0,
+                    "end": 1453
+                },
+                {
+                    "name": "*So.004",
+                    "text": "*So",
+                    "start": 1543.0,
+                    "end": 1550
+                },
+                {
+                    "name": "good!.001",
+                    "text": "good!",
+                    "start": 1550.0,
+                    "end": 1563
+                },
+                {
+                    "name": "*So.005",
+                    "text": "*So",
+                    "start": 1624.0,
+                    "end": 1632
+                },
+                {
+                    "name": "good.028",
+                    "text": "good",
+                    "start": 1632.0,
+                    "end": 1638
+                },
+                {
+                    "name": "\u2248so.006",
+                    "text": "\u2248so",
+                    "start": 1638.0,
+                    "end": 1645
+                },
+                {
+                    "name": "good.029",
+                    "text": "good",
+                    "start": 1645.0,
+                    "end": 1652
+                },
+                {
+                    "name": "\u2248so.007",
+                    "text": "\u2248so",
+                    "start": 1652.0,
+                    "end": 1655
+                },
+                {
+                    "name": "good.030",
+                    "text": "good",
+                    "start": 1655.0,
+                    "end": 1673
+                },
+                {
+                    "name": "*I.001",
+                    "text": "*I",
+                    "start": 1880.0,
+                    "end": 1883
+                },
+                {
+                    "name": "said.001",
+                    "text": "said",
+                    "start": 1883.0,
+                    "end": 1887
+                },
+                {
+                    "name": "*yeah.004",
+                    "text": "*yeah",
+                    "start": 1969.0,
+                    "end": 1974
+                },
+                {
+                    "name": "+eah.016",
+                    "text": "+eah",
+                    "start": 1974.0,
+                    "end": 1978
+                },
+                {
+                    "name": "+eah.017",
+                    "text": "+eah",
+                    "start": 1978.0,
+                    "end": 1982
+                },
+                {
+                    "name": "+eah.018",
+                    "text": "+eah",
+                    "start": 1982.0,
+                    "end": 1985
+                },
+                {
+                    "name": "+eah.019",
+                    "text": "+eah",
+                    "start": 1985.0,
+                    "end": 1993
+                },
+                {
+                    "name": "+!.004",
+                    "text": "+!",
+                    "start": 1993.0,
+                    "end": 1997
+                },
+                {
+                    "name": "*yeah.005",
+                    "text": "*yeah",
+                    "start": 2185.0,
+                    "end": 2190
+                },
+                {
+                    "name": "+eah.020",
+                    "text": "+eah",
+                    "start": 2190.0,
+                    "end": 2194
+                },
+                {
+                    "name": "+eah.021",
+                    "text": "+eah",
+                    "start": 2194.0,
+                    "end": 2198
+                },
+                {
+                    "name": "+eah.022",
+                    "text": "+eah",
+                    "start": 2198.0,
+                    "end": 2201
+                },
+                {
+                    "name": "+eah.023",
+                    "text": "+eah",
+                    "start": 2201.0,
+                    "end": 2209
+                },
+                {
+                    "name": "+!.005",
+                    "text": "+!",
+                    "start": 2209.0,
+                    "end": 2213
+                },
+                {
+                    "name": "*So.006",
+                    "text": "*So",
+                    "start": 2276.0,
+                    "end": 2284
+                },
+                {
+                    "name": "good.039",
+                    "text": "good",
+                    "start": 2284.0,
+                    "end": 2290
+                },
+                {
+                    "name": "\u2248so.008",
+                    "text": "\u2248so",
+                    "start": 2290.0,
+                    "end": 2297
+                },
+                {
+                    "name": "good.040",
+                    "text": "good",
+                    "start": 2297.0,
+                    "end": 2304
+                },
+                {
+                    "name": "\u2248so.009",
+                    "text": "\u2248so",
+                    "start": 2304.0,
+                    "end": 2307
+                },
+                {
+                    "name": "good.041",
+                    "text": "good",
+                    "start": 2307.0,
+                    "end": 2324
+                },
+                {
+                    "name": "*So.007",
+                    "text": "*So",
+                    "start": 2412.0,
+                    "end": 2419
+                },
+                {
+                    "name": "good!.002",
+                    "text": "good!",
+                    "start": 2419.0,
+                    "end": 2432
+                },
+                {
+                    "name": "*So.008",
+                    "text": "*So",
+                    "start": 2493.0,
+                    "end": 2501
+                },
+                {
+                    "name": "good.044",
+                    "text": "good",
+                    "start": 2501.0,
+                    "end": 2507
+                },
+                {
+                    "name": "\u2248so.010",
+                    "text": "\u2248so",
+                    "start": 2507.0,
+                    "end": 2514
+                },
+                {
+                    "name": "good.045",
+                    "text": "good",
+                    "start": 2514.0,
+                    "end": 2521
+                },
+                {
+                    "name": "\u2248so.011",
+                    "text": "\u2248so",
+                    "start": 2521.0,
+                    "end": 2524
+                },
+                {
+                    "name": "good.046",
+                    "text": "good",
+                    "start": 2524.0,
+                    "end": 2542
+                },
+                {
+                    "name": "*so",
+                    "text": "*so",
+                    "start": 3135.0,
+                    "end": 3143
+                },
+                {
+                    "name": "good.049",
+                    "text": "good",
+                    "start": 3143.0,
+                    "end": 3149
+                },
+                {
+                    "name": "\u2248so.012",
+                    "text": "\u2248so",
+                    "start": 3149.0,
+                    "end": 3156
+                },
+                {
+                    "name": "good.050",
+                    "text": "good",
+                    "start": 3156.0,
+                    "end": 3163
+                },
+                {
+                    "name": "\u2248so.013",
+                    "text": "\u2248so",
+                    "start": 3163.0,
+                    "end": 3166
+                },
+                {
+                    "name": "good.051",
+                    "text": "good",
+                    "start": 3166.0,
+                    "end": 3183
+                },
+                {
+                    "name": "*so.002",
+                    "text": "*so",
+                    "start": 3272.0,
+                    "end": 3279
+                },
+                {
+                    "name": "good!.003",
+                    "text": "good!",
+                    "start": 3279.0,
+                    "end": 3292
+                },
+                {
+                    "name": "*so.001",
+                    "text": "*so",
+                    "start": 3354.0,
+                    "end": 3362
+                },
+                {
+                    "name": "good.054",
+                    "text": "good",
+                    "start": 3362.0,
+                    "end": 3368
+                },
+                {
+                    "name": "\u2248so.014",
+                    "text": "\u2248so",
+                    "start": 3368.0,
+                    "end": 3375
+                },
+                {
+                    "name": "good.055",
+                    "text": "good",
+                    "start": 3375.0,
+                    "end": 3382
+                },
+                {
+                    "name": "\u2248so.015",
+                    "text": "\u2248so",
+                    "start": 3382.0,
+                    "end": 3386
+                },
+                {
+                    "name": "good.056",
+                    "text": "good",
+                    "start": 3386.0,
+                    "end": 3402
+                },
+                {
+                    "name": "*I.002",
+                    "text": "*I",
+                    "start": 3606.0,
+                    "end": 3609
+                },
+                {
+                    "name": "said.002",
+                    "text": "said",
+                    "start": 3609.0,
+                    "end": 3613
+                },
+                {
+                    "name": "*yeah.006",
+                    "text": "*yeah",
+                    "start": 3691.0,
+                    "end": 3696
+                },
+                {
+                    "name": "+eah.024",
+                    "text": "+eah",
+                    "start": 3696.0,
+                    "end": 3700
+                },
+                {
+                    "name": "+eah.025",
+                    "text": "+eah",
+                    "start": 3700.0,
+                    "end": 3704
+                },
+                {
+                    "name": "+eah.026",
+                    "text": "+eah",
+                    "start": 3704.0,
+                    "end": 3707
+                },
+                {
+                    "name": "+eah!",
+                    "text": "+eah!",
+                    "start": 3707.0,
+                    "end": 3721
+                },
+                {
+                    "name": "*yeah.007",
+                    "text": "*yeah",
+                    "start": 3906.0,
+                    "end": 3911
+                },
+                {
+                    "name": "+eah.028",
+                    "text": "+eah",
+                    "start": 3911.0,
+                    "end": 3915
+                },
+                {
+                    "name": "+eah.029",
+                    "text": "+eah",
+                    "start": 3915.0,
+                    "end": 3919
+                },
+                {
+                    "name": "+eah.030",
+                    "text": "+eah",
+                    "start": 3919.0,
+                    "end": 3922
+                },
+                {
+                    "name": "+eah!.001",
+                    "text": "+eah!",
+                    "start": 3922.0,
+                    "end": 3934
+                },
+                {
+                    "name": "*so.003",
+                    "text": "*so",
+                    "start": 3996.0,
+                    "end": 4004
+                },
+                {
+                    "name": "good.065",
+                    "text": "good",
+                    "start": 4004.0,
+                    "end": 4010
+                },
+                {
+                    "name": "\u2248so.016",
+                    "text": "\u2248so",
+                    "start": 4010.0,
+                    "end": 4017
+                },
+                {
+                    "name": "good.066",
+                    "text": "good",
+                    "start": 4017.0,
+                    "end": 4024
+                },
+                {
+                    "name": "\u2248so.017",
+                    "text": "\u2248so",
+                    "start": 4024.0,
+                    "end": 4027
+                },
+                {
+                    "name": "good.067",
+                    "text": "good",
+                    "start": 4027.0,
+                    "end": 4044
+                },
+                {
+                    "name": "*So.009",
+                    "text": "*So",
+                    "start": 4133.0,
+                    "end": 4140
+                },
+                {
+                    "name": "good!.004",
+                    "text": "good!",
+                    "start": 4140.0,
+                    "end": 4152
+                },
+                {
+                    "name": "*so.005",
+                    "text": "*so",
+                    "start": 4214.0,
+                    "end": 4221
+                },
+                {
+                    "name": "good.070",
+                    "text": "good",
+                    "start": 4221.0,
+                    "end": 4227
+                },
+                {
+                    "name": "\u2248so.018",
+                    "text": "\u2248so",
+                    "start": 4227.0,
+                    "end": 4234
+                },
+                {
+                    "name": "good.071",
+                    "text": "good",
+                    "start": 4234.0,
+                    "end": 4241
+                },
+                {
+                    "name": "\u2248so.019",
+                    "text": "\u2248so",
+                    "start": 4241.0,
+                    "end": 4245
+                },
+                {
+                    "name": "good.072",
+                    "text": "good",
+                    "start": 4245.0,
+                    "end": 4262
+                },
+                {
+                    "name": "*I.003",
+                    "text": "*I",
+                    "start": 4468.0,
+                    "end": 4471
+                },
+                {
+                    "name": "said.003",
+                    "text": "said",
+                    "start": 4471.0,
+                    "end": 4475
+                },
+                {
+                    "name": "*yeah.008",
+                    "text": "*yeah",
+                    "start": 4556.0,
+                    "end": 4561
+                },
+                {
+                    "name": "+eah.027",
+                    "text": "+eah",
+                    "start": 4561.0,
+                    "end": 4565
+                },
+                {
+                    "name": "+eah.031",
+                    "text": "+eah",
+                    "start": 4565.0,
+                    "end": 4569
+                },
+                {
+                    "name": "+eah.032",
+                    "text": "+eah",
+                    "start": 4569.0,
+                    "end": 4572
+                },
+                {
+                    "name": "+eah.036",
+                    "text": "+eah",
+                    "start": 4572.0,
+                    "end": 4574
+                },
+                {
+                    "name": "+!.006",
+                    "text": "+!",
+                    "start": 4574.0,
+                    "end": 4586
+                },
+                {
+                    "name": "*yeah.009",
+                    "text": "*yeah",
+                    "start": 4771.0,
+                    "end": 4777
+                },
+                {
+                    "name": "+eah.033",
+                    "text": "+eah",
+                    "start": 4777.0,
+                    "end": 4781
+                },
+                {
+                    "name": "+eah.034",
+                    "text": "+eah",
+                    "start": 4781.0,
+                    "end": 4785
+                },
+                {
+                    "name": "+eah.035",
+                    "text": "+eah",
+                    "start": 4785.0,
+                    "end": 4788
+                },
+                {
+                    "name": "+eah!.003",
+                    "text": "+eah!",
+                    "start": 4788.0,
+                    "end": 4800
+                },
+                {
+                    "name": "*said",
+                    "text": "*said",
+                    "start": 4850.0,
+                    "end": 4854
+                },
+                {
+                    "name": "*yeah.010",
+                    "text": "*yeah",
+                    "start": 4990.0,
+                    "end": 4995
+                },
+                {
+                    "name": "+eah.037",
+                    "text": "+eah",
+                    "start": 4995.0,
+                    "end": 4999
+                },
+                {
+                    "name": "+eah.038",
+                    "text": "+eah",
+                    "start": 4999.0,
+                    "end": 5003
+                },
+                {
+                    "name": "+eah.039",
+                    "text": "+eah",
+                    "start": 5003.0,
+                    "end": 5006
+                },
+                {
+                    "name": "+eah.043",
+                    "text": "+eah",
+                    "start": 5006.0,
+                    "end": 5008
+                },
+                {
+                    "name": "+!.007",
+                    "text": "+!",
+                    "start": 5008.0,
+                    "end": 5020
+                },
+                {
+                    "name": "*yeah.011",
+                    "text": "*yeah",
+                    "start": 5207.0,
+                    "end": 5213
+                },
+                {
+                    "name": "+eah.040",
+                    "text": "+eah",
+                    "start": 5213.0,
+                    "end": 5217
+                },
+                {
+                    "name": "+eah.041",
+                    "text": "+eah",
+                    "start": 5217.0,
+                    "end": 5221
+                },
+                {
+                    "name": "+eah.042",
+                    "text": "+eah",
+                    "start": 5221.0,
+                    "end": 5224
+                },
+                {
+                    "name": "+eah!.004",
+                    "text": "+eah!",
+                    "start": 5224.0,
+                    "end": 5236
+                }
+            ]
+        },
+        {
+            "index": 5,
+            "clips": [
+                {
+                    "name": "*Ride",
+                    "text": "*Ride",
+                    "start": 886.0,
+                    "end": 892
+                },
+                {
+                    "name": "a.008",
+                    "text": "a",
+                    "start": 892.0,
+                    "end": 898
+                },
+                {
+                    "name": "bike!",
+                    "text": "bike!",
+                    "start": 898.0,
+                    "end": 912
+                },
+                {
+                    "name": "*drink",
+                    "text": "*drink",
+                    "start": 1755.0,
+                    "end": 1763
+                },
+                {
+                    "name": "a.017",
+                    "text": "a",
+                    "start": 1763.0,
+                    "end": 1769
+                },
+                {
+                    "name": "juice!",
+                    "text": "juice!",
+                    "start": 1769.0,
+                    "end": 1783
+                },
+                {
+                    "name": "*drums!",
+                    "text": "*drums!",
+                    "start": 2635.0,
+                    "end": 2648
+                },
+                {
+                    "name": "*bass!",
+                    "text": "*bass!",
+                    "start": 2861.0,
+                    "end": 2874
+                },
+                {
+                    "name": "*draw",
+                    "text": "*draw",
+                    "start": 3483.0,
+                    "end": 3489
+                },
+                {
+                    "name": "a.026",
+                    "text": "a",
+                    "start": 3489.0,
+                    "end": 3496
+                },
+                {
+                    "name": "cat!",
+                    "text": "cat!",
+                    "start": 3496.0,
+                    "end": 3509
+                },
+                {
+                    "name": "*write.008",
+                    "text": "*write",
+                    "start": 4344.0,
+                    "end": 4350
+                },
+                {
+                    "name": "a.035",
+                    "text": "a",
+                    "start": 4350.0,
+                    "end": 4357
+                },
+                {
+                    "name": "song!",
+                    "text": "song!",
+                    "start": 4357.0,
+                    "end": 4370
+                }
+            ]
+        }
+    ]
+}
