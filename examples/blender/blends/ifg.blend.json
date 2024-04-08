@@ -1,6 +1,6 @@
 {
-    "start": 4364,
-    "end": 5397,
+    "start": 147,
+    "end": 241,
     "tracks": [
         {
             "index": 1,
@@ -1165,19 +1165,19 @@
                 {
                     "name": "*write",
                     "text": "*write",
-                    "start": 60.0,
+                    "start": 61.0,
                     "end": 67
                 },
                 {
                     "name": "a",
                     "text": "a",
                     "start": 67.0,
-                    "end": 74
+                    "end": 75
                 },
                 {
                     "name": "song",
                     "text": "song",
-                    "start": 74.0,
+                    "start": 75.0,
                     "end": 85
                 },
                 {
