@@ -1,11 +1,11 @@
 from coldtype import *
 
-root = __sibling__("../..").resolve()
+root = ººsiblingºº("../..").resolve()
 
 """
 __VERSION__ is populated by VERSIONS
-defined in *._versions.py versions of
-this file
+defined in <filename>_versions.py versions of
+this <filename>.py
 """
 
 @animation(bg=0)
