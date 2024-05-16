@@ -5,11 +5,20 @@ from coldtype.img.skiaimage import SkiaImage
 def test_image(r):
     return StSt("HELLO", Font.MuSan(), 100, wght=1).align(r, ty=1).f(hsl(0.9, 0.6, 0.6))
 
-@animation()
-def scratch(f):
+@animation((540, 540))
+def rotate(f):
     return (SkiaImage(test_image.pass_path(0))
         #.align(f.a.r)
         #.resize(4)
         #.t(-600, 0)
         .rotate(10)
+        )
+
+@animation((540, 540))
+def resize(f):
+    return (SkiaImage(test_image.pass_path(0))
+        #.align(f.a.r)
+        .resize(0.85)
+        #.t(-600, 0)
+        #.rotate(10)
         )

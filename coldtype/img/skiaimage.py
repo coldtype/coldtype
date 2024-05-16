@@ -2,7 +2,7 @@ from coldtype.img.datimage import DATImage
 from coldtype.fx.skia import precompose
 import skia
 
-class SkiaImage(DATImage):    
+class SkiaImage(DATImage):
     def load_image(self, src):
         return skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(src)))
     
