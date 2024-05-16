@@ -271,3 +271,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ### Added
 - `coldtype.fx.skia.freeze` for in-memory "freezing" of vectors (to avoid recalculation)
 - `Runon.collapseonce` for shallow collapsing
+
+## [0.10.16] - 2024-05-16
+### Added
+- Support for skia-python 87.6 on python3.12
