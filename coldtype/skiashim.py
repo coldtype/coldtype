@@ -1,6 +1,6 @@
 import skia
 
-SKIA_87 = skia.__version__.split(".")[0] == "87"
+SKIA_87 = int(skia.__version__.split(".")[0]) <= 87
 print(f"skia: m87={SKIA_87} ({skia.__version__})")
 
 def image_makeShader(image, matrix):
