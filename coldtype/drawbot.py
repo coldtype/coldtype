@@ -22,6 +22,7 @@ try:
     import drawBot as db
     import AppKit
 except ImportError:
+    print("No DrawBot installed! `pip install git+https://github.com/typemytype/drawbot`")
     db = None
 
 class drawbot_renderable(renderable):
