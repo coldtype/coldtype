@@ -8,6 +8,7 @@ from subprocess import Popen, PIPE
 from pathlib import Path
 
 from coldtype.color import rgb, hsl
+from coldtype.osutil import on_mac
 
 try:
     import glfw
@@ -42,6 +43,16 @@ try:
 except ModuleNotFoundError:
     SVGPen = None
 
+def glfw_generic_setup():
+    glfw.window_hint(glfw.STENCIL_BITS, 8)
+
+    # https://www.glfw.org/faq#macos
+
+    if on_mac():
+        glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
+        glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 2)
+        glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, True)
+        glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 
 class WinmanGLFWSkiaBackground(WinmanPassthrough):
     def __init__(self, config:ColdtypeConfig, renderer):
@@ -51,12 +62,7 @@ class WinmanGLFWSkiaBackground(WinmanPassthrough):
             raise RuntimeError('glfw.init() failed')
         
         glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
-        glfw.window_hint(glfw.STENCIL_BITS, 8)
-
-        glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)                    #    <- 
-        glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 2)                     #  <-
-        glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, True)                     #  <-
-        glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)    #   <-
+        glfw_generic_setup()
 
         window = glfw.create_window(640, 480, '', None, None)
         glfw.make_context_current(window)
@@ -78,6 +84,9 @@ class WinmanGLFWSkia():
         self.prev_scale = 0
         self.surface = None
 
+        if self.renderer.args.print_skia_version:
+            print(f"skia version: {skia.__version__} (m87={skiashim.SKIA_87})")
+
         parent = Path(__file__).parent
 
         self.typeface = skia.Typeface.MakeFromFile(str(parent / "../../demo/RecMono-CasualItalic.ttf"))
@@ -87,14 +96,7 @@ class WinmanGLFWSkia():
         if not glfw.init():
             raise RuntimeError('glfw.init() failed')
         
-        glfw.window_hint(glfw.STENCIL_BITS, 8)
-        #glfw.window_hint(glfw.SRGB_CAPABLE, glfw.TRUE)
-        #GL.glEnable(GL.GL_FRAMEBUFFER_SRGB)
-
-        glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)                    #    <- 
-        glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 2)                     #  <-
-        glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, True)                     #  <-
-        glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)    #   <-
+        glfw_generic_setup()
 
         glfw.window_hint(glfw.RESIZABLE, glfw.FALSE)
         
@@ -450,7 +452,7 @@ class WinmanGLFWSkia():
                 render.show_error = short_error
                 error_color = rgb(0, 0, 0).skia()
         else:
-            if render.single_frame or render.composites and not render.interactable or not self.renderer.args.reuse_skia_context:
+            if self.renderer.args.never_reuse_skia_context or render.single_frame or render.composites and not render.interactable:
                 comp = result.ch(skfx.precompose(
                     render.rect,
                     scale=scale,
