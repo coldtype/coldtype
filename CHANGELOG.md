@@ -275,3 +275,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ## [0.10.16] - 2024-05-16
 ### Added
 - Support for skia-python 87.6 on python3.12
+
+## [0.10.17]
+### Added
+- Fix for >= m87 skia-python with glfw gl-version setting (https://www.glfw.org/faq#macos / https://github.com/kyamagu/skia-python/issues/214)
