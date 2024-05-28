@@ -52,6 +52,12 @@ class WinmanGLFWSkiaBackground(WinmanPassthrough):
         
         glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
         glfw.window_hint(glfw.STENCIL_BITS, 8)
+
+        glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)                    #    <- 
+        glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 2)                     #  <-
+        glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, True)                     #  <-
+        glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)    #   <-
+
         window = glfw.create_window(640, 480, '', None, None)
         glfw.make_context_current(window)
 
@@ -84,6 +90,11 @@ class WinmanGLFWSkia():
         glfw.window_hint(glfw.STENCIL_BITS, 8)
         #glfw.window_hint(glfw.SRGB_CAPABLE, glfw.TRUE)
         #GL.glEnable(GL.GL_FRAMEBUFFER_SRGB)
+
+        glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)                    #    <- 
+        glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 2)                     #  <-
+        glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, True)                     #  <-
+        glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)    #   <-
 
         glfw.window_hint(glfw.RESIZABLE, glfw.FALSE)
         

@@ -1675,6 +1675,10 @@ class Renderer():
     def on_exit(self, restart=False):
         self.source_reader.unlink()
 
+        exit_fn = self.buildrelease_fn("exit")
+        if exit_fn:
+            exit_fn(self)
+
         for _, p in self.subprocesses.items():
             p.kill()
 
