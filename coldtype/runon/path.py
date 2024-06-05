@@ -2354,7 +2354,8 @@ class P(Runon):
         cc=None,
         notfound=None,
         center=False,
-        apply_tangent=True
+        apply_tangent=True,
+        baseline=0,
         ) -> "P":
 
         if len(self) == 0:
@@ -2381,6 +2382,8 @@ class P(Runon):
                 _p, tangent = cutter.subsegmentPoint(end=ow)
                 x_shift = bs * math.cos(math.radians(tangent))
                 y_shift = bs * math.sin(math.radians(tangent))
+                if baseline == 1:
+                    p.translate(0, -f.h)
                 t = Transform()
                 t = t.translate(_p[0] + x_shift - f.x, _p[1] + y_shift - f.y)
                 t = t.translate(f.x, f.y)
@@ -2405,7 +2408,8 @@ class P(Runon):
         cc=None,
         notfound=None,
         center=False,
-        apply_tangent=True
+        apply_tangent=True,
+        baseline=0,
         ) -> "P":
         return self
 
