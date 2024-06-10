@@ -154,6 +154,8 @@ class Renderer():
             inputs=self.args.inputs,
             cli_args=self.args)
         
+        self.on_load_reader(self.source_reader)
+        
         self.winmans = None
         self.winmans = winmans_class(self, self.source_reader.config)
         
@@ -205,6 +207,9 @@ class Renderer():
         self.viewer_playback_rate = 1
 
     def on_args_parsed(self):
+        pass
+
+    def on_load_reader(self, source_reader):
         pass
     
     def prenormalize_filepath(self, filepath):
