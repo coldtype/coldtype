@@ -1577,6 +1577,11 @@ class Renderer():
                 return Path(re.sub(r"[0-9]{4}", "XXXX", str(p)))
             self._single_thread_render(Action.RenderIndices, [fi], output_transform=to_scratch, no_sound=True)
             return
+        elif shortcut == "custom_hotkey":
+            custom_hotkey_fn = self.buildrelease_fn("custom_hotkey")
+            if custom_hotkey_fn:
+                custom_hotkey_fn(key, self)
+                return
 
         try:
             ksc = KeyboardShortcut(shortcut)
