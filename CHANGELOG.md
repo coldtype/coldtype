@@ -279,3 +279,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ## [0.10.17]
 ### Added
 - Fix for >= m87 skia-python with glfw gl-version setting (https://www.glfw.org/faq#macos / https://github.com/kyamagu/skia-python/issues/214)
+
+## [0.10.18]
+### Added
+- Support for custom global hotkeys via `custom_hotkey` function in source files
