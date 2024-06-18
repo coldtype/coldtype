@@ -920,16 +920,17 @@ class Renderer():
             self.winmans.set_title("coldtype")
 
         self.hotkeys = None
-        try:
-            if self.source_reader.config.hotkeys:
+        if self.source_reader.config.hotkeys:
+            try:
                 from pynput import keyboard
                 mapping = {}
                 for k, v in self.source_reader.config.hotkeys.items():
+                    print("hotkey ::", k, v)
                     mapping[k] = partial(self.on_hotkey, k, v)
                 self.hotkeys = keyboard.GlobalHotKeys(mapping)
                 self.hotkeys.start()
-        except:
-            pass
+            except Exception as e:
+                print(e)
 
     def on_start(self):
         pass
@@ -938,6 +939,7 @@ class Renderer():
         print("request (noop)>", render, request, action)
 
     def on_hotkey(self, key_combo, action):
+        print("HELLO WORLD")
         self.hotkey_waiting = (action, key_combo, None)
     
     def on_message(self, message, action):
