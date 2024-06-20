@@ -274,8 +274,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                     skia.Paint(AntiAlias=True, Color=style.fill.skia()))
                 return
             elif isinstance(pen, DATImage):
-                paint = skia.Paint(AntiAlias=True, FilterQuality=skia.FilterQuality.kHigh_FilterQuality)
-                #paint.FilterQuality = skia.FilterQuality.kHigh_FilterQuality
+                paint = skiashim.paint_withFilterQualityHigh()
                 f = pen.data("frame")
                 canvas.save()
                 for action, *args in pen.transforms:

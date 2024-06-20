@@ -429,9 +429,7 @@ class WinmanGLFWSkia():
         canvas.translate(rect.x, rect.y)
         
         if not self.config.window_transparent:
-            if render.has_bg:
-                canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), skia.Paint(Color=render.bg.skia()))
-            elif not render.layer:
+            if not render.layer:
                 matrix = skia.Matrix()
                 canvas.drawRect(skia.Rect(0, 0, rect.w, rect.h), {
                     "Shader": skiashim.image_makeShader(self.transparency_blocks, matrix),

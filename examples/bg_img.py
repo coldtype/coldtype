@@ -1,5 +1,6 @@
 from coldtype import *
 from coldtype.fx.skia import phototype
+from coldtype.img.skiaimage import SkiaImage
 
 r = Rect(1080, 540)
 
@@ -13,6 +14,6 @@ def bg_maker(r):
             .align(r)
             .ch(phototype(r, blur=3, cutw=30)))
 
-@renderable(r, bg="examples/renders/bg_img_bg_maker.png")
+@renderable(r, bg=lambda: SkiaImage("examples/renders/bg_img_bg_maker.png"))
 def bg_user(r):
-   return P(r.inset(100)).fssw(-1, 1, 6)
+   return P(r.inset(50)).fssw(-1, 1, 6)

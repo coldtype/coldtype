@@ -13,7 +13,9 @@ def canvas_drawImage(canvas, image, x, y, paint=None):
     if SKIA_87:
         canvas.drawImage(image, x, y, paint)
     else:
-        canvas.drawImage(image, x, y, skia.SamplingOptions(), paint)
+        so = skia.SamplingOptions(skia.CubicResampler.Mitchell())
+        #so = skia.SamplingOptions()
+        canvas.drawImage(image, x, y, so, paint)
 
 
 def imageFilters_Blur(xblur, yblur):
@@ -21,3 +23,11 @@ def imageFilters_Blur(xblur, yblur):
         return skia.BlurImageFilter.Make(xblur, yblur)
     else:
         return skia.ImageFilters.Blur(xblur, yblur)
+
+
+def paint_withFilterQualityHigh():
+    if SKIA_87:
+        return skia.Paint(AntiAlias=True, FilterQuality=skia.FilterQuality.kHigh_FilterQuality)
+    else:
+        #SamplingOptions=skia.SamplingOptions(skia.CubicResampler.Mitchell())
+        return skia.Paint(AntiAlias=True)

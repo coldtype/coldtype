@@ -176,18 +176,17 @@ class renderable():
 
         self.rect = Rect(rect).round()
         self._stacked_rect = None
-
-        self.bg_img = None
-        self.has_bg = bg is not None and bg is not False and bg != -1
         
-        if self.has_bg:
-            try:
+        if bg is not None and bg != -1:
+            if callable(bg):
+                self.bg_fn = bg
+                self.bg = None
+            else:
+                self.bg_fn = None
                 self.bg = normalize_color(bg)
-            except:
-                self.bg_img = Path(bg).expanduser()
-                self.has_bg = False
         else:
-            self.bg = normalize_color("whitesmoke")
+            self.bg_fn = None
+            self.bg = None
         
         self.fmt = fmt
         self.prefix = prefix
@@ -354,19 +353,23 @@ class renderable():
         else:
             res = render_pass.fn(*render_pass.args)
         
-        if self.render_bg and render_bg and self.has_bg:
-            return P([
-                P(self.rect).f(self.bg),
-                res
-            ])
-        elif self.render_bg and render_bg and self.bg_img:
-            if self.bg_img.exists():
+        previewing = renderer_state.previewing
+        show_bg = (previewing or self.render_bg) and render_bg
+
+        if show_bg:
+            if self.bg_fn:
+                arg_count = len(inspect.signature(self.bg_fn).parameters)
+                args = [self.rect, render_pass]
                 return P([
-                    P(self.rect).img(self.bg_img, self.rect),
+                    self.bg_fn(*args[:arg_count]),
+                    res
+                ])
+            elif self.bg:
+                return P([
+                    P(self.rect).f(self.bg),
                     res
                 ])
             else:
-                print("! bg=", self.bg_img, "does not exist")
                 return res
         else:
             return res
