@@ -284,6 +284,6 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ### Added
 - Support for custom global hotkeys via `custom_hotkey` function in source files
 
-## [0.10.19]
+## [0.10.19] - 2024-06-20
 ### Fixed
 - High quality filter support for skia > m87
