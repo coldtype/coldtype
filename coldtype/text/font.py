@@ -133,6 +133,9 @@ class Font():
         return axes
     
     def names(self):
+        """
+        returns name, family
+        """
         FONT_SPECIFIER_NAME_ID = 4
         FONT_SPECIFIER_FAMILY_ID = 1
         name = ""

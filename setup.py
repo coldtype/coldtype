@@ -39,6 +39,7 @@ setuptools.setup(
         "coldtype",
         "coldtype.fx",
         "coldtype.img",
+        "coldtype.web",
         "coldtype.midi",
         "coldtype.pens",
         "coldtype.text",
@@ -80,7 +81,8 @@ setuptools.setup(
             "demo/boiler.py",
             "demo/vf.py",
             "demo/gifski.py",
-            "renderer/.coldtype.py"
+            "renderer/.coldtype.py",
+            "web/templates/page.j2",
         ],
     },
     entry_points={

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ title }}</title>
+  {% if atom %}<link rel="alternate" type="application/atom+xml" title="{{ title }}" href="/atom.xml">{% endif %}
+  <meta name="description" content="{{ description }}">
+  <meta property="og:title" content="{{ title }}"/>
+  <meta property="og:type" content="website"/>
+  <link rel="stylesheet" href="/assets/style.css?t={{ version }}"/>
+  <style type="text/css">{% for family in info['fonts'] %}{% for font in family.fonts %}
+    @font-face {
+      {% if font["variations"] %}/* {% for k, v in font["variations"].items() %} {{ k }} {{ v["minValue"] }} {{ v["maxValue"] }} ({{ v["defaultValue"] }}) {% endfor %}*/{% else %}/* static font */{% endif %}
+      font-family: '{{family.name}}Web';
+      src: url('/{{font.woff2.relative_to(root)}}?t=1') format('woff2');
+      font-weight: {% if font.bold %}bold{% else %}regular{% endif %};
+      font-style: {% if font.italic %}italic{% else %}normal{% endif %};
+    }{% endfor %}{% endfor %}
+
+    :root { {% for family in info['fonts'] %}
+      --{{ family.variable_name }}: {{ family.name }}Web, sans-serif;{% endfor %}
+    }
+
+    #skip-to-main {
+      color: white;
+      background: black;
+      display: inline-block;
+      position: absolute;
+      top: 0px;
+      left: 100%;
+      padding: 10px;
+      z-index: 100;
+    }
+
+    #skip-to-main:focus {
+      left: 0px;
+    }
+  </style>
+  <script type="text/javascript">
+    const fontdata = {};
+    {% for family in info["fonts"] %}{% for font in family.fonts %}{% if font.variations %}
+    fontdata['{{ family.name }}Web'] = {{ font.variations }};{% endif %}{% endfor %}{% endfor %}
+  </script>
+  <script type="text/javascript" src="/assets/script/jquery-3.7.1.slim.min.js"></script>
+</head>
+<body>
+  <header id="header">
+    <a href="#maincontent" id="skip-to-main">Skip to main content</a>
+    {{ header|safe }}
+  </header>
+  <main id="maincontent">
+    {{ content|safe }}
+  </main>
+  <footer id="footer">
+    {{ footer|safe }}
+  </footer>
+</body>
+</html>
