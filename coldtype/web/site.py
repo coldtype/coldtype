@@ -15,71 +15,9 @@ generic_templates = {
     "page": generics_env.get_template("page.j2"),
 }
 
-def render(metadata, pages, links, font_families):
-    watch.append(root / "parts/header.j2")
-    watch.append(root / "parts/footer.j2")
-
-    footer = site_parts_env.get_template("footer.j2").render(standard_data)
-
-    def render_page(template, title):
-        template_path = root / "pages" / template
-        watch.append(template_path)
-
-        if title == None or title == "Home":
-            header_title = metadata.get("title")
-            path = sitedir / "index.html"
-        else:
-            header_title = metadata.get("title") + " | " + title
-            path = sitedir / f"{template_path.stem}/index.html"
-
-        page_links = []
-        for k, v in links.items():
-            current = k == title
-            
-            if isinstance(v, str):
-                classes = []
-            else:
-                v, classes = v
-            
-            if current: classes.append("current")
-            
-            page_links.append(dict(title=k
-                , current=current
-                , href=v
-                , external=v.startswith("http")
-                , classes=" ".join(classes)))
-
-        header = (site_parts_env.get_template("header.j2")
-            .render({**standard_data, **dict(page_links=page_links)}))
-
-        page_template = site_env.get_template(template)
-        content = page_template.render(standard_data)
-        
-        path.parent.mkdir(exist_ok=True)
-
-        path.write_text(generic_templates["page"].render({
-            **standard_data, **dict(
-                font_families=font_families
-                , fonts=fonts
-                , content=content
-                , header=header
-                , footer=footer
-                , title=header_title
-                , description=metadata["description"])}))
-    
-    for template, title in pages.items():
-        render_page(template, title)
-
 def todo():
     watch = []
     assetsdir = root / "assets"
-
-    if assetsdir.exists():
-        style = assetsdir / "style.css"
-        if style.exists():
-            watch.append(style)
-        
-        shutil.copytree(root / "assets", sitedir / "assets", dirs_exist_ok=True)
 
     def copy_to_multiserve():
         dst = multisitedir / root.stem
@@ -117,25 +55,36 @@ class site(renderable):
         year = int(datetime.now().year)
 
         if not is_port_in_use(self.port):
-            print("HELLO WORLD")
-            print(" ".join(["livereload", "-p", str(self.port), str(self.sitedir), "&>/dev/null", "&"]))
             os.system(" ".join(["livereload", "-p", str(self.port), str(self.sitedir), "&>/dev/null", "&"]))
 
         if self.multiport:
             if not is_port_in_use(multiport):
                 os.system(" ".join(["livereload", "-p", str(multiport), str(self.multisitedir), "&>/dev/null", "&"]))
+        
+        assetsdir = self.root / "assets"
+
+        if assetsdir.exists():
+            style = assetsdir / "style.css"
+            if style.exists():
+                watch.append(style)
+        
+        os.system(f'rsync -vr {assetsdir}/ {self.sitedir / "assets"}')
 
         standard_data = dict(
             version=version
             , year=year
             , root=self.root
             , sitedir=self.sitedir)
-        
-        page_links = []
-        
+
+        for template, title in self.info.get("pages").items():
+            self.render_page(template, title, watch, standard_data)
+
+        super().__init__(rect, watch=watch, **kwargs)
+    
+    def header_footer(self, watch, nav_links, standard_data):
         try:
             header = (self.site_env.get_template("_header.j2")
-                .render({**standard_data, **dict(page_links=page_links)}))
+                .render({**standard_data, **dict(nav_links=nav_links)}))
             watch.append(self.root / "templates/_header.j2")
         except Exception as _:
             header = False
@@ -143,25 +92,61 @@ class site(renderable):
         
         try:
             footer = (self.site_env.get_template("_footer.j2")
-                .render({**standard_data, **dict(page_links=page_links)}))
+                .render({**standard_data, **dict(nav_links=nav_links)}))
             watch.append(self.root / "templates/_footer.j2")
         except Exception as _:
             footer = False
             print("no _footer.j2 found")
+        
+        return header, footer
+    
+    def render_page(self, template, title, watch, standard_data):
+        template_path = self.root / "templates" / template
+        watch.append(template_path)
 
-        print(standard_data)
+        nav = self.info.get("navigation")
+        header_title = self.info.get("title")
 
-        (self.sitedir / "index.html").write_text(generic_templates["page"].render({
-            **standard_data, **dict(info=self.info
-                , content="hello world"
+        if title == None or title == "Home":
+            path = self.sitedir / "index.html"
+        else:
+            header_title = header_title + " | " + title
+            path = self.sitedir / f"{template_path.stem}/index.html"
+
+        nav_links = []
+        for k, v in nav.items():
+            current = k == title
+            
+            if isinstance(v, str):
+                classes = []
+            else:
+                v, classes = v
+            
+            if current: classes.append("current")
+            
+            nav_links.append(dict(title=k
+                , current=current
+                , href=v
+                , external=v.startswith("http")
+                , classes=" ".join(classes)))
+        
+        header, footer = self.header_footer(watch, nav_links, standard_data)
+
+        page_template = self.site_env.get_template(template)
+        
+        content = page_template.render(standard_data)
+
+        print("RENDER", template_path, content)
+        
+        path.parent.mkdir(exist_ok=True)
+
+        path.write_text(generic_templates["page"].render({
+            **standard_data, **dict(
+                content=content
+                , info=self.info
                 , header=header
                 , footer=footer
-                #, title=header_title
-                #, description=metadata["description"]
-                )
-                }))
-
-        super().__init__(rect, watch=watch, **kwargs)
+                , title=header_title)}))
     
     def kill(self):
         for _ in range(3):

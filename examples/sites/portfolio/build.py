@@ -8,9 +8,11 @@ from coldtype.web.fonts import woff2s
     description="This is the Coldtype portfolio",
     pages={
         "index.j2": "Home",
+        "about.j2": "About",
     },
     navigation={
         "Home": "/",
+        "About": "/about"
     },
     fonts=woff2s("assets", ººsiblingºº("./assets/fonts"), {
         "mono-font": dict(

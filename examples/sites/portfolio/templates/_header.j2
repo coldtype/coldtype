@@ -1,1 +1,24 @@
-<h3>HEADER</h3>
+<style type="text/css">
+  header {
+    margin-bottom: 100px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid white;
+  }
+  #mobile-nav {
+    display: none;
+  }
+</style>
+<h1>
+  <a href="/">Coldtype</a>
+</h1>
+<div id="pages">
+  <div id="mobile-nav">
+    <a id="nav-open" href="#navigation">☰</a>
+    <a id="nav-close" href="#navigation-close">✖</a>
+  </div>
+  <ul>
+    {% for page in nav_links %}
+    <li><a href="{{ page.href }}" {% if page.classes %}class="{{ page.classes }}" {% endif %}>{{ page.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>

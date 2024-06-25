@@ -42,7 +42,6 @@
     {% for family in info["fonts"] %}{% for font in family.fonts %}{% if font.variations %}
     fontdata['{{ family.name }}Web'] = {{ font.variations }};{% endif %}{% endfor %}{% endfor %}
   </script>
-  <script type="text/javascript" src="/assets/script/jquery-3.7.1.slim.min.js"></script>
 </head>
 <body>
   <header id="header">
