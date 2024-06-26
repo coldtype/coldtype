@@ -160,11 +160,11 @@ info = dict(
 
 @site(ººsiblingºº(".")
       , port=8008
-      , multiport=8009
+      #, multiport=8009
       , info=info)
-def coldtypexyz(_):
+def site(_):
     return None
 
 
 def release(_):
-    coldtypexyz.upload("coldtype.xyz", "us-west-1", "personal")
+    site.upload("coldtype.xyz", "us-west-1", "personal")

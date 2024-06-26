@@ -54,11 +54,6 @@
     {% for family in info["fonts"] %}{% for font in family.fonts %}{% if font.variations %}
     fontdata['{{ family.name }}Web'] = {{ font.variations }};{% endif %}{% endfor %}{% endfor %}
   </script>
-  {% if info["script"] %}
-  <script type="text/javascript">
-  {{ info["script"] }}
-  </script>
-  {% endif %}
 </head>
 <body>
   <header id="header">
@@ -81,5 +76,10 @@
     </div><!-- /wrapper -->
     {% endif %}
   </footer>
+  {% if info["script"] %}
+  <script type="text/javascript">
+  {{ info["script"] }}
+  </script>
+  {% endif %}
 </body>
 </html>

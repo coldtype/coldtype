@@ -188,7 +188,9 @@ class site(renderable):
                 , title=header_title)}))
     
     def exit(self):
-        for _ in range(3):
+        print("EXITING")
+        from time import sleep
+        for _ in range(1):
             kill_process_on_port_unix(self.port)
             if self.multiport:
                 kill_process_on_port_unix(self.multiport)
