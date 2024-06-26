@@ -68,7 +68,8 @@ header, footer {
     display: flex;
     justify-content: center;
     align-items: center;
-    max-height: 20vh;
+    max-height: 300px;
+    min-height: 200px;
 }
 .link-list {
     list-style: none;
