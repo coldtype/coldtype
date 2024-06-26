@@ -21,6 +21,10 @@
       --{{ family.variable_name }}: "{{ family.name }}Web", sans-serif;{% endfor %}
     }
 
+    body {
+      font-family: var(--text-font), sans-serif;
+    }
+
     * { padding: 0; margin: 0; font-weight: normal; }
 
     #skip-to-main {
@@ -59,13 +63,23 @@
 <body>
   <header id="header">
     <a href="#maincontent" id="skip-to-main">Skip to main content</a>
-    {{ header|safe }}
+    {% if header %}
+    <div class="wrapper">
+      {{ header|safe }}
+    </div><!-- /wrapper -->
+    {% endif %}
   </header>
   <main id="maincontent">
+    <div class="wrapper">
     {{ content|safe }}
+    </div><!-- /wrapper -->
   </main>
   <footer id="footer">
+    {% if footer %}
+    <div class="wrapper">
     {{ footer|safe }}
+    </div><!-- /wrapper -->
+    {% endif %}
   </footer>
 </body>
 </html>

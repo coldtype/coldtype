@@ -12,27 +12,23 @@ header: jinja_html = """
 </div>
 """
 index: jinja_html = """
-<div class="wrapper">
-    <p><em>Coldtype makes tools for advanced typography (and some other related stuff).</em></p>
-    <hr/>
-    <p>Currently those tools include:</p>
-    <ul>
-        <li><a href="">coldtype</a>: an open-source <strong>Python library</strong> for programming animated display typography</li>
-        <li><a href="">ST2</a>: an open-source <strong>Blender add-on</strong> for doing good typography in 3D</li>
-        <li><a href="">b3denv</a>: an open-source command-line utility for working with Blender and its embedded Python</li>
-    </ul>
-    <hr/>
-    <p>Here are some talks about Coldtype & ST2:</p>
-    <ul>
-        <li><a href="https://vimeo.com/864468653">“A Font is a Percussion Instrument”</a> (Typographics 2023)</li>
-        <li><a href="https://youtu.be/gV2laWd727U">The How & Why of ST2</a> (inScript 2022)</li>
-    </ul>
-</div>
+<p><em>Coldtype makes tools for advanced typography (and some other related stuff).</em></p>
+<hr/>
+<p>Currently those tools include:</p>
+<ul>
+    <li><a href="">coldtype</a>: an open-source <strong>Python library</strong> for programming animated display typography</li>
+    <li><a href="">ST2</a>: an open-source <strong>Blender add-on</strong> for doing good typography in 3D</li>
+    <li><a href="">b3denv</a>: an open-source command-line utility for working with Blender and its embedded Python</li>
+</ul>
+<hr/>
+<p>Here are some talks about Coldtype & ST2:</p>
+<ul>
+    <li><a href="https://vimeo.com/864468653">“A Font is a Percussion Instrument”</a> (Typographics 2023)</li>
+    <li><a href="https://youtu.be/gV2laWd727U">The How & Why of ST2</a> (inScript 2022)</li>
+</ul>
 """
 footer: jinja_html = """
-<div class="wrapper">
-    <p>Coldtype is a project of <a href="https://goodhertz.com">Goodhertz</a>;<br/>development is led by <a href="https://robstenson.com">Rob Stenson</a>.</p>
-</div>
+<p>Coldtype is a project of <a href="https://goodhertz.com">Goodhertz</a>;<br/>development is led by <a href="https://robstenson.com">Rob Stenson</a>.</p>
 """
 
 style: css = """
@@ -73,9 +69,6 @@ header, footer {
     justify-content: center;
     align-items: center;
     max-height: 20vh;
-}
-header .wrapper, footer .wrapper {
-    /* height: 100px; */
 }
 .link-list {
     list-style: none;

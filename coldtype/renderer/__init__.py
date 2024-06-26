@@ -939,7 +939,6 @@ class Renderer():
         print("request (noop)>", render, request, action)
 
     def on_hotkey(self, key_combo, action):
-        print("HELLO WORLD")
         self.hotkey_waiting = (action, key_combo, None)
     
     def on_message(self, message, action):

@@ -14,7 +14,17 @@ from random import randint
 from datetime import datetime
 
 generics_folder = Path(__file__).parent / "templates"
+
 generics_env = jinja2.Environment(loader=jinja2.FileSystemLoader(generics_folder))
+
+string_env = jinja2.Environment(loader=jinja2.BaseLoader())
+
+from sourcetypes import jinja_html
+nav_template: jinja_html = """
+<ul>{% for n in nav_links %}
+    <li><a href="{{n.href}}" {% if n.classes %}class="{{ n.classes }}" {% endif %}>{{n.title}}</a></li>
+{% endfor %}</ul>
+"""
 
 class site(renderable):
     def stub(self, _path, content=None):
@@ -49,8 +59,6 @@ class site(renderable):
         }
 
         self.site_env = jinja2.Environment(loader=jinja2.FileSystemLoader(str(self.root / "templates")))
-        
-        self.string_env = jinja2.Environment(loader=jinja2.BaseLoader())
 
         self.sitedir = self.root / Path("_site")
         self.sitedir.mkdir(exist_ok=True)
@@ -91,7 +99,7 @@ class site(renderable):
             templates[j2.stem] = self.site_env.get_template(j2.name)
         
         for k, v in self.info.get("templates", {}).items():
-            templates[k] = self.string_env.from_string(v)
+            templates[k] = string_env.from_string(v)
         
         self.templates = templates
 
@@ -114,13 +122,15 @@ class site(renderable):
                 Path(page).write_text(html)
     
     def header_footer(self, nav_links, standard_data):
+        nav_html = string_env.from_string(nav_template).render(nav_links=nav_links)
+
         header = self.templates.get("_header", False)
         if header:
-            header = header.render({**standard_data, **dict(nav_links=nav_links)})
+            header = header.render({**standard_data, **dict(nav_links=nav_links, nav_html=nav_html)})
         
         footer = self.templates.get("_footer", False)
         if footer:
-            footer = footer.render({**standard_data, **dict(nav_links=nav_links)})
+            footer = footer.render({**standard_data, **dict(nav_links=nav_links, nav_html=nav_html)})
         
         return header, footer
     
@@ -133,14 +143,16 @@ class site(renderable):
 
         if template_name == "index":
             path = self.sitedir / "index.html"
+            url = "/"
         else:
             if title:
                 header_title = header_title + " | " + title
             path = self.sitedir / f"{template_name}/index.html"
+            url = f"/{template_name}"
 
         nav_links = []
         for k, v in nav.items():
-            current = k == title
+            current = v == url
             
             if isinstance(v, str):
                 classes = []
