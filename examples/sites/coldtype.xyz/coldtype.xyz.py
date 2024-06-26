@@ -1,7 +1,5 @@
 from coldtype import *
 from coldtype.web.site import *
-from coldtype.web.fonts import woff2s
-from sourcetypes import jinja_html, css, js
 
 header: jinja_html = """
 <div class="wrapper">
@@ -147,21 +145,14 @@ info = dict(
         "tutorials": "https://coldtype.goodhertz.com/",
         "q&a forum": "https://github.com/goodhertz/coldtype/discussions",
     },
-    fonts=woff2s(
-        ººsiblingºº("./assets/fonts"),
-        {"text-font": dict(
-            regular="MDIO-VF",
-            #regularitalic="MDIO0.6-Italic",
-            #bold="MDIO0.6-Bold",
-        )},
-    ),
 )
 
 
 @site(ººsiblingºº(".")
       , port=8008
       #, multiport=8009
-      , info=info)
+      , info=info
+      , fonts={"text-font": dict(regular="MDIO-VF")})
 def site(_):
     return None
 

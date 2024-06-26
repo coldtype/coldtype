@@ -7,7 +7,9 @@ except ImportError:
 
 from coldtype.renderable import renderable
 from coldtype.geometry import Rect
+
 from coldtype.web.server import is_port_in_use, kill_process_on_port_unix
+from coldtype.web.fonts import woff2s
 
 from pathlib import Path
 from random import randint
@@ -21,7 +23,7 @@ string_env = jinja2.Environment(loader=jinja2.BaseLoader())
 
 
 try:
-    from sourcetypes import jinja_html
+    from sourcetypes import jinja_html, css, js
 except ImportError:
     jinja_html = str
 
@@ -43,7 +45,7 @@ class site(renderable):
                 path.write_text(content)
         return path
     
-    def __init__(self, root, port=8008, multiport=None, info=dict(), rect=Rect(200, 200), watch=None, **kwargs):
+    def __init__(self, root, port=8008, multiport=None, info=dict(), fonts=None, rect=Rect(200, 200), watch=None, **kwargs):
         watch = watch or []
 
         watch.append(generics_folder / "page.j2")
@@ -73,6 +75,11 @@ class site(renderable):
             self.multisitedir = Path("_site")
             self.multisitedir.mkdir(exist_ok=True)
         
+        if fonts:
+            self.fonts = woff2s(self.sitedir / "assets/fonts", fonts)
+        else:
+            self.fonts = []
+        
         version = randint(0, 100000000)
         year = int(datetime.now().year)
 
@@ -90,14 +97,16 @@ class site(renderable):
             if style.exists():
                 watch.append(style)
         
-        os.system(f'rsync -r {assetsdir}/ {self.sitedir / "assets"}')
+            os.system(f'rsync -r {assetsdir}/ {self.sitedir / "assets"}')
 
         standard_data = dict(
             version=version
             , info=self.info
             , year=year
             , root=self.root
-            , sitedir=self.sitedir)
+            , sitedir=self.sitedir
+            , fonts=self.fonts
+            , str=str)
     
         templates = {}
         for j2 in (self.root / "templates").glob("*.j2"):
