@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import List
 from shutil import copy2
 
+
 @dataclass
 class WebFont():
     font: Font
@@ -13,6 +14,7 @@ class WebFont():
     italic: bool
     variations: dict
 
+
 @dataclass
 class WebFontFamily():
     name: str
@@ -20,8 +22,9 @@ class WebFontFamily():
     fonts: List[WebFont]
 
 
-def get_woff2(src_folder, dst_folder, font_file, bold=False, italic=False):
-    src = Font.Cacheable(src_folder / font_file)
+def get_woff2(dst_folder, font_file, bold=False, italic=False):
+    #src = Font.Cacheable(src_folder / font_file)
+    src = Font.Find(font_file)
     
     if Path(src.path).suffix == ".woff2":
         woff2_src = Path(src.path)
@@ -52,25 +55,21 @@ def get_woff2(src_folder, dst_folder, font_file, bold=False, italic=False):
         vs["spread"] = vs["maxValue"] - vs["minValue"]
     
     return WebFont(src, woff2_dst, bold, italic, variations)
-
-
-def woff2_family(src_folder, dst_folder, font_var, font_dict):
-    fonts = []
-    for k, v in font_dict.items():
-        fonts.append(get_woff2(src_folder, dst_folder, v, bold="bold" in k, italic="italic" in k))
-    
-    _, family = fonts[-1].font.names()
-    return WebFontFamily(family.replace(" ", ""), font_var, fonts)
     
 
-def woff2s(src_folder, dst_folder, families_info):
-    src_folder = Path(src_folder).expanduser()
+def woff2s(dst_folder, families_info):
     dst_folder = Path(dst_folder).expanduser()
     dst_folder.mkdir(exist_ok=True, parents=True)
 
     families = []
     for var_name, family in families_info.items():
-        families.append(woff2_family(src_folder, dst_folder, var_name, family))
+        fonts = []
+        for style_name, font in family.items():
+            fonts.append(get_woff2(dst_folder, font,
+                bold="bold" in style_name,
+                italic="italic" in style_name))
+        _, family = fonts[-1].font.names()
+        families.append(WebFontFamily(family.replace(" ", ""), var_name, fonts))
     
     return families
 

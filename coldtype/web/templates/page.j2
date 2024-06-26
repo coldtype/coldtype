@@ -8,7 +8,6 @@
   <meta name="description" content="{{ description }}">
   <meta property="og:title" content="{{ title }}"/>
   <meta property="og:type" content="website"/>
-  <link rel="stylesheet" href="/assets/style.css?t={{ version }}"/>
   <style type="text/css">{% for family in info['fonts'] %}{% for font in family.fonts %}
     @font-face {
       {% if font["variations"] %}/* {% for k, v in font["variations"].items() %} {{ k }} {{ v["minValue"] }} {{ v["maxValue"] }} ({{ v["defaultValue"] }}) {% endfor %}*/{% else %}/* static font */{% endif %}
@@ -19,8 +18,10 @@
     }{% endfor %}{% endfor %}
 
     :root { {% for family in info['fonts'] %}
-      --{{ family.variable_name }}: {{ family.name }}Web, sans-serif;{% endfor %}
+      --{{ family.variable_name }}: "{{ family.name }}Web", sans-serif;{% endfor %}
     }
+
+    * { padding: 0; margin: 0; font-weight: normal; }
 
     #skip-to-main {
       color: white;
@@ -37,11 +38,23 @@
       left: 0px;
     }
   </style>
+  {% if info["style"] %}
+  <style type="text/css">
+  {{ info["style"] }}
+  </style>
+  {% else %}
+  <link rel="stylesheet" href="/assets/style.css?t={{ version }}"/>
+  {% endif %}
   <script type="text/javascript">
     const fontdata = {};
     {% for family in info["fonts"] %}{% for font in family.fonts %}{% if font.variations %}
     fontdata['{{ family.name }}Web'] = {{ font.variations }};{% endif %}{% endfor %}{% endfor %}
   </script>
+  {% if info["script"] %}
+  <script type="text/javascript">
+  {{ info["script"] }}
+  </script>
+  {% endif %}
 </head>
 <body>
   <header id="header">

@@ -12,9 +12,8 @@ info = dict(
     },
     navigation={"Home": "/", "About": "/about"},
     fonts=woff2s(
-        "assets",
         ººsiblingºº("./assets/fonts"),
-        {"mono-font": dict(regularitalic="RecMono-CasualItalic.ttf")},
+        {"mono-font": dict(regularitalic="Casserole-Sans")},
     ),
 )
 

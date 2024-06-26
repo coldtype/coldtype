@@ -1,4 +1,9 @@
-import jinja2, os, shutil, re, livereload
+import jinja2, os, re
+
+try:
+    import livereload
+except ImportError:
+    print("> pip install livereload")
 
 from coldtype.renderable import renderable
 from coldtype.geometry import Rect
@@ -16,16 +21,34 @@ generic_templates = {
 }
 
 class site(renderable):
+    def stub(self, _path, content=None):
+        path = self.root / _path
+        if not path.exists():
+            if content is None:
+                path.mkdir(parents=True)
+            else:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(content)
+        return path
+    
     def __init__(self, root, port=8008, multiport=None, info=dict(), rect=Rect(200, 200), watch=None, **kwargs):
         watch = watch or []
         
         self.root = root
         self.info = info
         
+        # self.stub("assets/style.css", "body { background: pink; }")
+        # self.stub("assets/fonts")
+        # self.stub("templates/_header.j2", "Header")
+        # self.stub("templates/index.j2", "This is the index page")
+        # self.stub("templates/_footer.j2", "Footer")
+        
         self.port = port
         self.multiport = multiport
 
         self.site_env = jinja2.Environment(loader=jinja2.FileSystemLoader(str(self.root / "templates")))
+        
+        self.string_env = jinja2.Environment(loader=jinja2.BaseLoader())
 
         self.sitedir = self.root / Path("_site")
         self.sitedir.mkdir(exist_ok=True)
@@ -58,9 +81,19 @@ class site(renderable):
             , year=year
             , root=self.root
             , sitedir=self.sitedir)
+    
+        templates = {}
+        for j2 in (self.root / "templates").glob("*.j2"):
+            watch.append(j2)
+            templates[j2.stem] = self.site_env.get_template(j2.name)
+        
+        for k, v in self.info.get("templates", {}).items():
+            templates[k] = self.string_env.from_string(v)
+        
+        self.templates = templates
 
-        for template, title in self.info.get("pages").items():
-            self.render_page(template, title, watch, standard_data)
+        for k, _ in self.templates.items():
+            self.render_page(k, None, standard_data)
 
         super().__init__(rect, watch=watch, **kwargs)
 
@@ -77,37 +110,27 @@ class site(renderable):
                 html = re.sub(r"url\('/", f"url('/{root.stem}/", html)
                 Path(page).write_text(html)
     
-    def header_footer(self, watch, nav_links, standard_data):
-        try:
-            header = (self.site_env.get_template("_header.j2")
-                .render({**standard_data, **dict(nav_links=nav_links)}))
-            watch.append(self.root / "templates/_header.j2")
-        except Exception as _:
-            header = False
-            print("no _header.j2 found")
+    def header_footer(self, nav_links, standard_data):
+        header = self.templates.get("_header", False)
+        if header:
+            header = header.render({**standard_data, **dict(nav_links=nav_links)})
         
-        try:
-            footer = (self.site_env.get_template("_footer.j2")
-                .render({**standard_data, **dict(nav_links=nav_links)}))
-            watch.append(self.root / "templates/_footer.j2")
-        except Exception as _:
-            footer = False
-            print("no _footer.j2 found")
+        footer = self.templates.get("_footer", False)
+        if footer:
+            footer = footer.render({**standard_data, **dict(nav_links=nav_links)})
         
         return header, footer
     
-    def render_page(self, template, title, watch, standard_data):
-        template_path = self.root / "templates" / template
-        watch.append(template_path)
-
-        nav = self.info.get("navigation")
+    def render_page(self, template_name, title, standard_data):
+        nav = self.info.get("navigation", {})
         header_title = self.info.get("title")
 
-        if title == None or title == "Home":
+        if template_name == "index":
             path = self.sitedir / "index.html"
         else:
-            header_title = header_title + " | " + title
-            path = self.sitedir / f"{template_path.stem}/index.html"
+            if title:
+                header_title = header_title + " | " + title
+            path = self.sitedir / f"{template_name}/index.html"
 
         nav_links = []
         for k, v in nav.items():
@@ -126,10 +149,9 @@ class site(renderable):
                 , external=v.startswith("http")
                 , classes=" ".join(classes)))
         
-        header, footer = self.header_footer(watch, nav_links, standard_data)
-
-        page_template = self.site_env.get_template(template)
-        content = page_template.render(standard_data)
+        header, footer = self.header_footer(nav_links, standard_data)
+        
+        content = self.templates[template_name].render(standard_data)
         
         path.parent.mkdir(exist_ok=True)
 

@@ -457,10 +457,11 @@ class SourceReader():
             globber = f"{prefix}*" + self.filepath.suffix
         sources = list(dirpath.glob(globber))
         #sources.extend(list(dirpath.glob("*.md")))
+        print(">", sources)
 
         valid_sources = []
         for p in sources:
-            if not p.name.startswith("_"):
+            if not p.name.startswith("_") or p.name.startswith("__init"):
                 valid_sources.append(p)
             valid_sources = sorted(valid_sources, key=lambda p: str(p.relative_to(dirpath)))
             valid_sources = sorted(valid_sources, key=lambda p: str(p.relative_to(dirpath)).count("/") > 0)
