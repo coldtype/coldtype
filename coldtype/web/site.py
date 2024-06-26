@@ -19,7 +19,13 @@ generics_env = jinja2.Environment(loader=jinja2.FileSystemLoader(generics_folder
 
 string_env = jinja2.Environment(loader=jinja2.BaseLoader())
 
-from sourcetypes import jinja_html
+
+try:
+    from sourcetypes import jinja_html
+except ImportError:
+    jinja_html = str
+
+
 nav_template: jinja_html = """
 <ul>{% for n in nav_links %}
     <li><a href="{{n.href}}" {% if n.classes %}class="{{ n.classes }}" {% endif %}>{{n.title}}</a></li>
