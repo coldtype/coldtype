@@ -1,4 +1,4 @@
-import jinja2, os, re
+import jinja2, os, re, subprocess
 
 try:
     import livereload
@@ -16,10 +16,6 @@ from datetime import datetime
 generics_folder = Path(__file__).parent / "templates"
 generics_env = jinja2.Environment(loader=jinja2.FileSystemLoader(generics_folder))
 
-generic_templates = {
-    "page": generics_env.get_template("page.j2"),
-}
-
 class site(renderable):
     def stub(self, _path, content=None):
         path = self.root / _path
@@ -33,6 +29,8 @@ class site(renderable):
     
     def __init__(self, root, port=8008, multiport=None, info=dict(), rect=Rect(200, 200), watch=None, **kwargs):
         watch = watch or []
+
+        watch.append(generics_folder / "page.j2")
         
         self.root = root
         self.info = info
@@ -45,6 +43,10 @@ class site(renderable):
         
         self.port = port
         self.multiport = multiport
+
+        self.generic_templates = {
+            "page": generics_env.get_template("page.j2"),
+        }
 
         self.site_env = jinja2.Environment(loader=jinja2.FileSystemLoader(str(self.root / "templates")))
         
@@ -74,10 +76,11 @@ class site(renderable):
             if style.exists():
                 watch.append(style)
         
-        os.system(f'rsync -vr {assetsdir}/ {self.sitedir / "assets"}')
+        os.system(f'rsync -r {assetsdir}/ {self.sitedir / "assets"}')
 
         standard_data = dict(
             version=version
+            , info=self.info
             , year=year
             , root=self.root
             , sitedir=self.sitedir)
@@ -102,7 +105,7 @@ class site(renderable):
             dst.mkdir(exist_ok=True, parents=True)
             #shutil.copytree(sitedir, dst, dirs_exist_ok=True)
 
-            os.system(f'rsync -vr {self.sitedir}/ {dst}')
+            os.system(f'rsync -r {self.sitedir}/ {dst}')
 
             for page in dst.glob("**/*.html"):
                 html = Path(page).read_text()
@@ -122,6 +125,9 @@ class site(renderable):
         return header, footer
     
     def render_page(self, template_name, title, standard_data):
+        if template_name in ["_header", "_footer"]:
+            return None
+        
         nav = self.info.get("navigation", {})
         header_title = self.info.get("title")
 
@@ -155,7 +161,7 @@ class site(renderable):
         
         path.parent.mkdir(exist_ok=True)
 
-        path.write_text(generic_templates["page"].render({
+        path.write_text(self.generic_templates["page"].render({
             **standard_data, **dict(
                 content=content
                 , info=self.info
@@ -168,3 +174,36 @@ class site(renderable):
             kill_process_on_port_unix(self.port)
             if self.multiport:
                 kill_process_on_port_unix(self.multiport)
+    
+    def upload(self, bucket, region="us-east-1", profile=None):
+        args_nocache = [
+            "aws", "s3",
+            "--region", region,
+            "sync",
+            "--cache-control", "no-cache",
+            "--exclude", "*",
+            "--include", "*.html",
+            "--include", "*.xml",
+            self.sitedir,
+            f"s3://{bucket}"
+        ]
+        
+        args_cache = [
+            "aws", "s3",
+            "--region", region,
+            "sync",
+            self.sitedir,
+            f"s3://{bucket}",
+            "--exclude", ".git/*",
+            "--exclude", "venv/*",
+            "--exclude", "*.html"
+        ]
+
+        if profile is not None:
+            args_nocache.extend(["--profile", profile])
+            args_cache.extend(["--profile", profile])
+        
+        subprocess.run(args_nocache)
+        subprocess.run(args_cache)
+
+        print("/upload")
