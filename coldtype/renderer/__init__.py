@@ -1688,6 +1688,11 @@ class Renderer():
         os.execl(sys.executable, *(["-m"]+[str(a) for a in args]))
 
     def on_exit(self, restart=False):
+        renderables = self.renderables(Action.PreviewStoryboard)
+        for r in renderables:
+            if hasattr(r, "exit"):
+                r.exit()
+        
         self.source_reader.unlink()
 
         exit_fn = self.buildrelease_fn("exit")

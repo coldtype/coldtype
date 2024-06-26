@@ -15,23 +15,6 @@ generic_templates = {
     "page": generics_env.get_template("page.j2"),
 }
 
-def todo():
-    watch = []
-    assetsdir = root / "assets"
-
-    def copy_to_multiserve():
-        dst = multisitedir / root.stem
-        shutil.copytree(sitedir, dst, dirs_exist_ok=True)
-
-        for page in dst.glob("**/*.html"):
-            html = Path(page).read_text()
-            html = re.sub(r"=\"/", f'="/{root.stem}/', html)
-            html = re.sub(r"url\('/", f"url('/{root.stem}/", html)
-            Path(page).write_text(html)
-
-
-#r = Rect(540/4, 540/4)
-
 class site(renderable):
     def __init__(self, root, port=8008, multiport=None, info=dict(), rect=Rect(200, 200), watch=None, **kwargs):
         watch = watch or []
@@ -80,6 +63,19 @@ class site(renderable):
             self.render_page(template, title, watch, standard_data)
 
         super().__init__(rect, watch=watch, **kwargs)
+
+        if self.multiport:
+            dst = self.multisitedir / root.stem
+            dst.mkdir(exist_ok=True, parents=True)
+            #shutil.copytree(sitedir, dst, dirs_exist_ok=True)
+
+            os.system(f'rsync -vr {self.sitedir}/ {dst}')
+
+            for page in dst.glob("**/*.html"):
+                html = Path(page).read_text()
+                html = re.sub(r"=\"/", f'="/{root.stem}/', html)
+                html = re.sub(r"url\('/", f"url('/{root.stem}/", html)
+                Path(page).write_text(html)
     
     def header_footer(self, watch, nav_links, standard_data):
         try:
@@ -133,10 +129,7 @@ class site(renderable):
         header, footer = self.header_footer(watch, nav_links, standard_data)
 
         page_template = self.site_env.get_template(template)
-        
         content = page_template.render(standard_data)
-
-        print("RENDER", template_path, content)
         
         path.parent.mkdir(exist_ok=True)
 
@@ -148,17 +141,8 @@ class site(renderable):
                 , footer=footer
                 , title=header_title)}))
     
-    def kill(self):
+    def exit(self):
         for _ in range(3):
             kill_process_on_port_unix(self.port)
             if self.multiport:
                 kill_process_on_port_unix(self.multiport)
-
-
-def exit(_):
-    print("EXITING")
-    return
-
-    for _ in range(3):
-        kill_process_on_port_unix(port)
-        kill_process_on_port_unix(multiport)
