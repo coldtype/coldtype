@@ -1,14 +1,9 @@
 import jinja2, os, re, subprocess
 
-try:
-    import livereload
-except ImportError:
-    print("> pip install livereload")
-
 from coldtype.renderable import renderable
 from coldtype.geometry import Rect
 
-from coldtype.web.server import is_port_in_use, kill_process_on_port_unix
+from coldtype.web.server import maybe_run_livereload, kill_process_on_port_unix
 from coldtype.web.fonts import woff2s
 
 from pathlib import Path
@@ -82,13 +77,6 @@ class site(renderable):
         
         version = randint(0, 100000000)
         year = int(datetime.now().year)
-
-        if not is_port_in_use(self.port):
-            os.system(" ".join(["livereload", "-p", str(self.port), str(self.sitedir), "&>/dev/null", "&"]))
-
-        if self.multiport:
-            if not is_port_in_use(multiport):
-                os.system(" ".join(["livereload", "-p", str(multiport), str(self.multisitedir), "&>/dev/null", "&"]))
         
         assetsdir = self.root / "assets"
 
@@ -195,14 +183,18 @@ class site(renderable):
                 , header=header
                 , footer=footer
                 , title=header_title)}))
+        
+    def initial(self):
+        kill_process_on_port_unix(self.port)
+        maybe_run_livereload(self.port, self.sitedir)
+        if self.multiport:
+            kill_process_on_port_unix(self.multiport)
+            maybe_run_livereload(self.multiport, self.multisitedir)
     
     def exit(self):
-        print("EXITING")
-        from time import sleep
-        for _ in range(1):
-            kill_process_on_port_unix(self.port)
-            if self.multiport:
-                kill_process_on_port_unix(self.multiport)
+        kill_process_on_port_unix(self.port)
+        if self.multiport:
+            kill_process_on_port_unix(self.multiport)
     
     def upload(self, bucket, region="us-east-1", profile=None):
         args_nocache = [

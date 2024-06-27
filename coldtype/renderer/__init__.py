@@ -348,6 +348,10 @@ class Renderer():
                         if not r.preview_only and not r.render_only:
                             self.last_animation = r
                         self.last_animations.append(r)
+                
+                    if trigger == Action.Initial:
+                        if hasattr(r, "initial"):
+                            r.initial()
                     
                 if self.last_animation:
                     self.winmans.did_reload_animation(self.last_animation)
