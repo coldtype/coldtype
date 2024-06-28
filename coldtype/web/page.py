@@ -32,21 +32,23 @@ def wrap_images_with_links(html_string, grab_image, root:Path):
         src = img_tag["src"]
         src_path = root / Path(src[1:])
         if not src_path.exists():
-            raise Exception("Image not found", src_path)
-        img = SkiaImage(src_path)
-        width = img.width()
-        mtime = int(src_path.stat().st_mtime)
-        tq = "?t=" + str(mtime)
-        img_tag['src'] = src + tq
-        hires_version = src_path.parent / "hires" / src_path.name
-        if hires_version.exists():
-            a_tag["href"] = "/" + str(hires_version) + tq
+            print("Image not found", src_path)
+            img_tag['style'] = f"width:200px;height:200px"
         else:
-            a_tag['href'] = img_tag['src']
-        a_tag["target"] = "_blank"
-        a_tag['style'] = f"max-width:{int(width/2)}px"
-        img_tag['style'] = f"max-width:{int(width/2)}px"
-        img_tag.wrap(a_tag)
+            img = SkiaImage(src_path)
+            width = img.width()
+            mtime = int(src_path.stat().st_mtime)
+            tq = "?t=" + str(mtime)
+            img_tag['src'] = src + tq
+            hires_version = src_path.parent / "hires" / src_path.name
+            if hires_version.exists():
+                a_tag["href"] = "/" + str(hires_version) + tq
+            else:
+                a_tag['href'] = img_tag['src']
+            a_tag["target"] = "_blank"
+            a_tag['style'] = f"max-width:{int(width/2)}px"
+            img_tag['style'] = f"max-width:{int(width/2)}px"
+            img_tag.wrap(a_tag)
     
     for p_tag in soup.find_all('p'):
         length = len(p_tag.get_text(strip=True))
@@ -109,7 +111,6 @@ class Page:
         template = data.get("template")
         if template is None:
             template = "_" + str(file.parent.stem)[:-1]
-            print("TEMPLATE", template)
 
         preview_txt = data.content.split("+++")[0].replace("ßßß", "")
         preview_txt = re.sub(r'\[\^(\d+)\]', '', preview_txt)

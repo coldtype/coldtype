@@ -9,7 +9,7 @@ from coldtype.web.page import Page
 
 from pathlib import Path
 from random import randint
-from datetime import datetime
+from datetime import datetime, timezone
 
 generics_folder = Path(__file__).parent / "templates"
 generics_env = jinja2.Environment(loader=jinja2.FileSystemLoader(generics_folder))
@@ -43,6 +43,8 @@ class site(renderable):
         , multiport=None
         , livereload=True
         , info=dict()
+        , sources=None
+        , generators=None
         , fonts=None
         , rect=Rect(200, 200)
         , watch=None
@@ -55,6 +57,8 @@ class site(renderable):
         self.root = root
         self.info = info
         self.livereload = livereload
+        self.sources = sources or {}
+        self.generators = generators or {}
         
         # self.stub("assets/style.css", "body { background: pink; }")
         # self.stub("assets/fonts")
@@ -93,21 +97,16 @@ class site(renderable):
             if style.exists():
                 watch.append(style)
         
-            os.system(f'rsync -r {assetsdir}/ {self.sitedir / "assets"}')
+            print("rsync assets")
+            os.system(f'rsync -rW {assetsdir}/ {self.sitedir / "assets"}')
+            print("/rsync assets")
     
         rendersdir = self.root / "renders"
 
         if rendersdir.exists():
+            print("rsync renders")
             os.system(f'rsync -r {rendersdir}/ {self.sitedir / "renders"}')
-
-        standard_data = dict(
-            version=version
-            , info=self.info
-            , year=year
-            , root=self.root
-            , sitedir=self.sitedir
-            , fonts=self.fonts
-            , str=str)
+            print("/rsync renders")
     
         self.templates = {}
         for j2 in (self.root / "templates").glob("*.j2"):
@@ -116,19 +115,42 @@ class site(renderable):
         
         for k, v in self.info.get("templates", {}).items():
             self.templates[k] = string_env.from_string(v)
-
-        for k, _ in self.templates.items():
-            if not k.startswith("_"):
-                self.render_page(k, standard_data)
-            
-        self.pages = {}
+        
+        self.pages = []
         for file in (self.root / "pages").glob("**/*.md"):
             watch.append(file)
             page = Page.load(file, self.root)
-            self.pages[page.slug] = page
-            self.render_page(page.template, standard_data, page)
+            self.pages.append(page)
 
         super().__init__(rect, watch=watch, **kwargs)
+
+        build_time_utc = datetime.now(timezone.utc)
+        rfc_822_format = "%a, %d %b %Y %H:%M:%S %z"
+        formatted_time = build_time_utc.strftime(rfc_822_format)
+
+        self.standard_data = dict(
+            version=version
+            , build=formatted_time
+            , info=self.info
+            , year=year
+            , root=self.root
+            , sitedir=self.sitedir
+            , fonts=self.fonts
+            , str=str)
+        
+        for k, v in self.sources.items():
+            print(">", k)
+            self.standard_data[k] = v(self)
+
+        for k, _ in self.templates.items():
+            if not k.startswith("_"):
+                self.render_page(k)
+            
+        for page in self.pages:
+            self.render_page(page)
+        
+        for k, g in self.generators.items():
+            g(self)
 
         if self.multiport:
             dst = self.multisitedir / root.stem
@@ -143,22 +165,30 @@ class site(renderable):
                 html = re.sub(r"url\('/", f"url('/{root.stem}/", html)
                 Path(page).write_text(html)
     
-    def header_footer(self, nav_links, standard_data, url):
+    def header_footer(self, nav_links, url):
         nav_html = string_env.from_string(nav_template).render(nav_links=nav_links)
 
         header = self.templates.get("_header", False)
         if header:
-            header = header.render({**standard_data, **dict(nav_links=nav_links, nav_html=nav_html, url=url)})
+            header = header.render({**self.standard_data, **dict(nav_links=nav_links, nav_html=nav_html, url=url)})
         
         footer = self.templates.get("_footer", False)
         if footer:
-            footer = footer.render({**standard_data, **dict(nav_links=nav_links, nav_html=nav_html, url=url)})
+            footer = footer.render({**self.standard_data, **dict(nav_links=nav_links, nav_html=nav_html, url=url)})
         
         return header, footer
     
-    def render_page(self, template_name, standard_data, page:Page=None):
+    def render_page(self, page:Page=None, data=None):
         nav = self.info.get("navigation", {})
         header_title = self.info.get("title")
+
+        if isinstance(page, str):
+            template_name = page
+            page = None
+        else:
+            template_name = page.template
+        
+        wrap = True
 
         if template_name == "index":
             path = self.sitedir / "index.html"
@@ -169,9 +199,14 @@ class site(renderable):
             path = self.sitedir / page.slug / "index.html"
             url = f"/{page.slug}"
         else:
-            # TODO way to get a custom title
-            path = self.sitedir / f"{template_name}/index.html"
+            # TODO way to get a custom title on a bare template
             url = f"/{template_name}"
+            if "." in template_name:
+                wrap = False
+                path = self.sitedir / f"{template_name}"
+            else:
+                path = self.sitedir / f"{template_name}/index.html"
+                
 
         nav_links = []
         for k, v in nav.items():
@@ -190,21 +225,25 @@ class site(renderable):
                 , external=v.startswith("http")
                 , classes=" ".join(classes)))
         
-        header, footer = self.header_footer(nav_links, standard_data, url)
+        header, footer = self.header_footer(nav_links, url)
         
-        content = self.templates[template_name].render({**standard_data, **dict(page=page)})
+        content = self.templates[template_name].render({**self.standard_data, **dict(page=page), **(data or {})})
         
-        path.parent.mkdir(exist_ok=True)
+        path.parent.mkdir(exist_ok=True, parents=True)
 
-        print("URL", url)
-        path.write_text(self.generic_templates["page"].render({
-            **standard_data, **dict(
-                content=content
-                , url=url
-                , info=self.info
-                , header=header
-                , footer=footer
-                , title=header_title)}))
+        #print("URL", url)
+        
+        if wrap:
+            path.write_text(self.generic_templates["page"].render({
+                **self.standard_data, **dict(
+                    content=content
+                    , url=url
+                    , info=self.info
+                    , header=header
+                    , footer=footer
+                    , title=header_title)}))
+        else:
+            path.write_text(content)
         
     def initial(self):
         kill_process_on_port_unix(self.port)

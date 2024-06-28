@@ -15,10 +15,8 @@ def is_port_in_use(port: int) -> bool:
 def maybe_run_server(livereload:bool, port:int, dir:Path):
     if not is_port_in_use(port):
         if livereload:
-            print("LIVERELOAD")
             os.system(" ".join(["livereload", "-p", str(port), str(dir), "&>/dev/null", "&"]))
         else:
-            print("NOT LIVERELOAD")
             os.system(f"python -m http.server {port} -d {dir} &>/dev/null &")
         return True
     else:

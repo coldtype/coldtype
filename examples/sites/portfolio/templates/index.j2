@@ -1,2 +1,8 @@
 <h1>Index</h1>
 <p>This is the index page of the Coldtype portfolio site</p>
+
+<div style="margin-top:100px">
+  <ul>{% for p in public_posts %}
+  <li><a href="/{{ p.slug }}">{{ p.title }}</a></li>
+  {% endfor %}</ul>
+</div>

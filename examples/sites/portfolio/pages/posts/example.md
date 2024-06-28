@@ -10,4 +10,4 @@ This is an example post.
 
 +++
 
-![Another example](/renders/build_test.png)
+![Another example](/renders/build_testb.png)

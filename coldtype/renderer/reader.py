@@ -457,7 +457,7 @@ class SourceReader():
             globber = f"{prefix}*" + self.filepath.suffix
         sources = list(dirpath.glob(globber))
         #sources.extend(list(dirpath.glob("*.md")))
-        print(">", sources)
+        #print(">", sources)
 
         valid_sources = []
         for p in sources:
