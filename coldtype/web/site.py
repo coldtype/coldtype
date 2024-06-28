@@ -5,17 +5,15 @@ from coldtype.geometry import Rect
 
 from coldtype.web.server import maybe_run_livereload, kill_process_on_port_unix
 from coldtype.web.fonts import woff2s
+from coldtype.web.page import Page
 
 from pathlib import Path
 from random import randint
 from datetime import datetime
 
 generics_folder = Path(__file__).parent / "templates"
-
 generics_env = jinja2.Environment(loader=jinja2.FileSystemLoader(generics_folder))
-
 string_env = jinja2.Environment(loader=jinja2.BaseLoader())
-
 
 try:
     from sourcetypes import jinja_html, css, js
@@ -114,12 +112,14 @@ class site(renderable):
 
         for k, _ in self.templates.items():
             if not k.startswith("_"):
-                self.render_page(k, None, standard_data)
+                self.render_page(k, standard_data)
             
         self.pages = {}
-        for page in (self.root / "pages").glob("*.md"):
-            watch.append(page)
-            
+        for file in (self.root / "pages").glob("**/*.md"):
+            watch.append(file)
+            page = Page.load(file)
+            self.pages[page.slug] = page
+            self.render_page(page.template, standard_data, page)
 
         super().__init__(rect, watch=watch, **kwargs)
 
@@ -149,16 +149,20 @@ class site(renderable):
         
         return header, footer
     
-    def render_page(self, template_name, title, standard_data):
+    def render_page(self, template_name, standard_data, page:Page=None):
         nav = self.info.get("navigation", {})
         header_title = self.info.get("title")
 
         if template_name == "index":
             path = self.sitedir / "index.html"
             url = "/"
+        elif page is not None:
+            if page.title:
+                header_title = header_title + " | " + page.title
+            path = self.sitedir / page.slug / "index.html"
+            url = f"/{page.slug}"
         else:
-            if title:
-                header_title = header_title + " | " + title
+            # TODO way to get a custom title
             path = self.sitedir / f"{template_name}/index.html"
             url = f"/{template_name}"
 
@@ -181,7 +185,7 @@ class site(renderable):
         
         header, footer = self.header_footer(nav_links, standard_data, url)
         
-        content = self.templates[template_name].render(standard_data)
+        content = self.templates[template_name].render({**standard_data, **dict(page=page)})
         
         path.parent.mkdir(exist_ok=True)
 

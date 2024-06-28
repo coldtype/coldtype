@@ -134,6 +134,15 @@ setuptools.setup(
         "audio": [
             "pyaudio",
             "soundfile",
+        ],
+        "website": [
+            "jinja2",
+            "python-frontmatter",
+            "livereload",
+            "Markdown",
+            "markdown-captions",
+            "mdx_linkify",
+            "beautifulsoup4",
         ]
     },
     install_requires=basic_deps,
