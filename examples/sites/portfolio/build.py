@@ -24,3 +24,8 @@ info = dict(
       , info=info)
 def portfolio(_):
     return None
+
+
+# @renderable((1080, 540), bg=1, solo=1)
+# def test(r):
+#     return (StSt("TEST", Font.MuSan(), 400).align(r))

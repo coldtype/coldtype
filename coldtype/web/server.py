@@ -12,9 +12,14 @@ def is_port_in_use(port: int) -> bool:
         return s.connect_ex(('localhost', port)) == 0
 
 
-def maybe_run_livereload(port:int, dir:Path):
+def maybe_run_server(livereload:bool, port:int, dir:Path):
     if not is_port_in_use(port):
-        os.system(" ".join(["livereload", "-p", str(port), str(dir), "&>/dev/null", "&"]))
+        if livereload:
+            print("LIVERELOAD")
+            os.system(" ".join(["livereload", "-p", str(port), str(dir), "&>/dev/null", "&"]))
+        else:
+            print("NOT LIVERELOAD")
+            os.system(f"python -m http.server {port} -d {dir} &>/dev/null &")
         return True
     else:
         return False

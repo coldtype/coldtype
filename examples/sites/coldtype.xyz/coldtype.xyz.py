@@ -150,7 +150,7 @@ info = dict(
 
 @site(ººsiblingºº(".")
       , port=8008
-      #, multiport=8009
+      , livereload=True
       , info=info
       , fonts={"text-font": dict(regular="MDIO-VF")})
 def site(_):

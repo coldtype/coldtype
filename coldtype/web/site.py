@@ -3,7 +3,7 @@ import jinja2, os, re, subprocess
 from coldtype.renderable import renderable
 from coldtype.geometry import Rect
 
-from coldtype.web.server import maybe_run_livereload, kill_process_on_port_unix
+from coldtype.web.server import maybe_run_server, kill_process_on_port_unix
 from coldtype.web.fonts import woff2s
 from coldtype.web.page import Page
 
@@ -41,6 +41,7 @@ class site(renderable):
     def __init__(self, root
         , port=8008
         , multiport=None
+        , livereload=True
         , info=dict()
         , fonts=None
         , rect=Rect(200, 200)
@@ -53,6 +54,7 @@ class site(renderable):
         
         self.root = root
         self.info = info
+        self.livereload = livereload
         
         # self.stub("assets/style.css", "body { background: pink; }")
         # self.stub("assets/fonts")
@@ -92,6 +94,11 @@ class site(renderable):
                 watch.append(style)
         
             os.system(f'rsync -r {assetsdir}/ {self.sitedir / "assets"}')
+    
+        rendersdir = self.root / "renders"
+
+        if rendersdir.exists():
+            os.system(f'rsync -r {rendersdir}/ {self.sitedir / "renders"}')
 
         standard_data = dict(
             version=version
@@ -117,7 +124,7 @@ class site(renderable):
         self.pages = {}
         for file in (self.root / "pages").glob("**/*.md"):
             watch.append(file)
-            page = Page.load(file)
+            page = Page.load(file, self.root)
             self.pages[page.slug] = page
             self.render_page(page.template, standard_data, page)
 
@@ -201,10 +208,10 @@ class site(renderable):
         
     def initial(self):
         kill_process_on_port_unix(self.port)
-        maybe_run_livereload(self.port, self.sitedir)
+        maybe_run_server(self.livereload, self.port, self.sitedir)
         if self.multiport:
             kill_process_on_port_unix(self.multiport)
-            maybe_run_livereload(self.multiport, self.multisitedir)
+            maybe_run_server(self.livereload, self.multiport, self.multisitedir)
     
     def exit(self):
         kill_process_on_port_unix(self.port)
