@@ -143,6 +143,7 @@ setuptools.setup(
             "markdown-captions",
             "mdx_linkify",
             "beautifulsoup4",
+            "brotli",
         ]
     },
     install_requires=basic_deps,
