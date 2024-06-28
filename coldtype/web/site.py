@@ -40,7 +40,15 @@ class site(renderable):
                 path.write_text(content)
         return path
     
-    def __init__(self, root, port=8008, multiport=None, info=dict(), fonts=None, rect=Rect(200, 200), watch=None, **kwargs):
+    def __init__(self, root
+        , port=8008
+        , multiport=None
+        , info=dict()
+        , fonts=None
+        , rect=Rect(200, 200)
+        , watch=None
+        , **kwargs
+        ):
         watch = watch or []
 
         watch.append(generics_folder / "page.j2")
@@ -96,18 +104,22 @@ class site(renderable):
             , fonts=self.fonts
             , str=str)
     
-        templates = {}
+        self.templates = {}
         for j2 in (self.root / "templates").glob("*.j2"):
             watch.append(j2)
-            templates[j2.stem] = self.site_env.get_template(j2.name)
+            self.templates[j2.stem] = self.site_env.get_template(j2.name)
         
         for k, v in self.info.get("templates", {}).items():
-            templates[k] = string_env.from_string(v)
-        
-        self.templates = templates
+            self.templates[k] = string_env.from_string(v)
 
         for k, _ in self.templates.items():
-            self.render_page(k, None, standard_data)
+            if not k.startswith("_"):
+                self.render_page(k, None, standard_data)
+            
+        self.pages = {}
+        for page in (self.root / "pages").glob("*.md"):
+            watch.append(page)
+            
 
         super().__init__(rect, watch=watch, **kwargs)
 
@@ -124,23 +136,20 @@ class site(renderable):
                 html = re.sub(r"url\('/", f"url('/{root.stem}/", html)
                 Path(page).write_text(html)
     
-    def header_footer(self, nav_links, standard_data):
+    def header_footer(self, nav_links, standard_data, url):
         nav_html = string_env.from_string(nav_template).render(nav_links=nav_links)
 
         header = self.templates.get("_header", False)
         if header:
-            header = header.render({**standard_data, **dict(nav_links=nav_links, nav_html=nav_html)})
+            header = header.render({**standard_data, **dict(nav_links=nav_links, nav_html=nav_html, url=url)})
         
         footer = self.templates.get("_footer", False)
         if footer:
-            footer = footer.render({**standard_data, **dict(nav_links=nav_links, nav_html=nav_html)})
+            footer = footer.render({**standard_data, **dict(nav_links=nav_links, nav_html=nav_html, url=url)})
         
         return header, footer
     
     def render_page(self, template_name, title, standard_data):
-        if template_name in ["_header", "_footer"]:
-            return None
-        
         nav = self.info.get("navigation", {})
         header_title = self.info.get("title")
 
@@ -170,15 +179,17 @@ class site(renderable):
                 , external=v.startswith("http")
                 , classes=" ".join(classes)))
         
-        header, footer = self.header_footer(nav_links, standard_data)
+        header, footer = self.header_footer(nav_links, standard_data, url)
         
         content = self.templates[template_name].render(standard_data)
         
         path.parent.mkdir(exist_ok=True)
 
+        print("URL", url)
         path.write_text(self.generic_templates["page"].render({
             **standard_data, **dict(
                 content=content
+                , url=url
                 , info=self.info
                 , header=header
                 , footer=footer

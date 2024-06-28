@@ -129,6 +129,9 @@ class Renderer():
         else:
             self.args = parser.parse_args()
 
+        if self.args.file == None:
+            self.args.file = "."
+
         if self.args.version:
             print(coldtype.__version__)
             self.dead = True
