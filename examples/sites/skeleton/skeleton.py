@@ -38,7 +38,6 @@ info = dict(
     navigation={"Home": "/", "About": "/about"},
 )
 
-
 @site(ººsiblingºº(".")
       , port=8008
       , info=info
@@ -47,7 +46,6 @@ info = dict(
       })
 def website(_):
     return None
-
 
 def release(_):
     website.upload("example.com", "us-west-1", "personal")

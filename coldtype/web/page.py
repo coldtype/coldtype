@@ -48,6 +48,7 @@ def wrap_images_with_links(html_string, grab_image, root:Path):
             a_tag["target"] = "_blank"
             a_tag['style'] = f"max-width:{int(width/2)}px"
             img_tag['style'] = f"max-width:{int(width/2)}px"
+            img_tag['alt'] = img_tag.find_parent('figure').find("figcaption").get_text(strip=True)
             img_tag.wrap(a_tag)
     
     for p_tag in soup.find_all('p'):
