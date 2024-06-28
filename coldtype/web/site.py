@@ -139,7 +139,6 @@ class site(renderable):
             , str=str)
         
         for k, v in self.sources.items():
-            print(">", k)
             self.standard_data[k] = v(self)
 
         for k, _ in self.templates.items():
