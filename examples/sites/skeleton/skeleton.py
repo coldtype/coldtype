@@ -36,18 +36,11 @@ info = dict(
     script=script,
     templates=dict(_header=header, _footer=footer, index=index, about=about),
     navigation={"Home": "/", "About": "/about"},
-    # fonts=woff2s(
-    #     ººsiblingºº("./_site/assets/fonts"),
-    #     {"text-font": dict(
-    #         regular="JetBrainsMono",
-    #     )},
-    # ),
 )
 
 
 @site(ººsiblingºº(".")
       , port=8008
-      #, multiport=8009
       , info=info
       , fonts={
         "text-font": dict(regular="JetBrainsMono")
