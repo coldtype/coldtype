@@ -98,7 +98,7 @@ class site(renderable):
                 watch.append(style)
         
             print("rsync assets")
-            os.system(f'rsync -rW {assetsdir}/ {self.sitedir / "assets"}')
+            os.system(f'rsync -r {assetsdir}/ {self.sitedir / "assets"}')
             print("/rsync assets")
     
         rendersdir = self.root / "renders"
