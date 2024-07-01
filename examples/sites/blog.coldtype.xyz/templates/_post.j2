@@ -1,8 +1,10 @@
 <div class="post">
-  <h1 id="headline">{{ page.title }}</h1>
-  <!--<div class="colab-callout">
+  <div class="headline">
+    <h1>{{ page.title }}</h1>
+    <!--<div class="colab-callout">
     <a class="colab-link" href="https://colab.research.google.com/drive/{{page.path.stem}}" target="_blank">💻 View/run
       on Colab</a>
   </div>-->
+  </div>
   {{ page.content|safe }}
 </div>

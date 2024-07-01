@@ -91,7 +91,6 @@ class Page:
     content: str
     data: dict
     preview_image: str
-    slugs: str
 
     def date_rfc_822(self):
         if "/" in str(self.date):
@@ -193,7 +192,7 @@ class Page:
             if page_template is None:
                 page_template = "_" + str(file.parent.stem)[:-1]
         
-        return Page(file, frontmatter.get("date"), slug, title, page_template, None, notebook_html, frontmatter, None, slugs)
+        return Page(file, frontmatter.get("date"), slug, title, page_template, None, notebook_html, frontmatter, None)
     
 
     @staticmethod
@@ -221,4 +220,4 @@ class Page:
             .replace("ßßß", "<div class='spacer'></div>")
             .replace("---", "<div class='section'>•••</div>"), None, root)
 
-        return Page(file, data.get("date"), slug, title, template, preview, content, data, preview_image, slugs)
+        return Page(file, data.get("date"), slug, title, template, preview, content, data, preview_image)

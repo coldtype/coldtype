@@ -116,6 +116,10 @@ a.colab-link:hover {
     opacity: 1;
 }
 
+.post .headline {
+    margin-bottom: 90px;
+}
+
 .post {
     margin-bottom: 50px;
     /* padding: 20px; */

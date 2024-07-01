@@ -1,0 +1,90 @@
+<style>
+  a {
+    color: dodgerblue;
+  }
+
+  h2 {
+    color: darkorchid;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    margin-top: 50px;
+  }
+
+  h3 {
+    color: darkorchid;
+    margin-bottom: 10px;
+    margin-top: 30px;
+  }
+
+  h4 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
+  .doc ul {
+    padding: 0px 30px 10px 10px;
+  }
+
+  .doc li {
+    list-style: disc;
+    padding: 5px;
+  }
+
+  .source-link {
+    color: darkorchid;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+
+  .docstring {
+    padding: 10px;
+  }
+
+  .docstring p {
+    margin-bottom: 10px;
+  }
+
+  .docstring code {
+    color: deeppink;
+  }
+
+  .docstring pre {
+    margin-bottom: 20px;
+  }
+
+  .signature pre {
+    border-bottom: 1px solid #ddd;
+  }
+</style>
+</head>
+
+<div id="docs" class="post">
+  {% for k,v in docs.items() %}
+  <h2>{{k}}</h2>
+  <ul>
+    {% for d in v %}
+    <li>
+      <div class="doc">
+        <h3>{{ d.itself }}</h3>
+        <div class="source-link"><em>source:</em> <a
+            href="https://github.com/coldtype/coldtype/tree/main/coldtype/{{ d.path }}"> coldtype/{{ d.path }}</a>
+        </div>
+        <div class="signature">{{ d.signature }}</div>
+        <div class="docstring">{{ d.docstring }}</div>
+        {% if d.methods %}
+        <ul>
+          {% for method in d.methods %}
+          <li>
+            <h4>{{ method.itself.__name__ }}</h4>
+            <div class="signature">{{ method.signature }}</div>
+            <div class="docstring">{{ method.docstring }}</div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endfor %}
+</div>
