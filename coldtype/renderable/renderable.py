@@ -353,7 +353,10 @@ class renderable():
         else:
             res = render_pass.fn(*render_pass.args)
         
-        previewing = renderer_state.previewing
+        if renderer_state:
+            previewing = renderer_state.previewing
+        else:
+            previewing = False
         show_bg = (previewing or self.render_bg) and render_bg
 
         if show_bg:

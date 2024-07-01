@@ -65,7 +65,7 @@ class NotebookParser():
             for c in data["cells"][1:]:
                 ct = c["cell_type"]
                 if ct == "markdown":
-                    cells.append(dict(text=markdown.markdown("".join(c["source"]), extensions=["smarty", "mdx_linkify", "fenced_code"])))
+                    cells.append(dict(text=markdown.markdown("".join(c["source"]), extensions=["smarty", "fenced_code"])))
                 elif ct == "code":
                     src = "".join(c["source"])
                     if src.strip().startswith("#hide-publish") or src.strip().startswith("#hide-blog"):

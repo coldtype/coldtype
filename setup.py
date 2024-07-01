@@ -131,6 +131,7 @@ setuptools.setup(
             "skia-pathops",
             "skia-python",
             "potracer",
+            "tdqm",
         ],
         "audio": [
             "pyaudio",
@@ -142,7 +143,6 @@ setuptools.setup(
             "livereload",
             "Markdown",
             "markdown-captions",
-            "mdx_linkify",
             "beautifulsoup4",
             "brotli",
             "lxml",

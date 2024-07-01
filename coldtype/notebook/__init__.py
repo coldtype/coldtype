@@ -154,7 +154,11 @@ def show_animation(a:_animation, start=False):
     display(HTML(html + js_call), display_id=a.name)
 
 def render_animation(a, show=[], preview_scale=0.5, scale=1):
-    from tqdm.notebook import tqdm
+    try:
+        from tqdm.notebook import tqdm
+    except (ImportError, ModuleNotFoundError):
+        tqdm = None
+        print("no tqdm")
 
     idxs = list(range(0, a.duration))
     passes = a.passes(Action.PreviewIndices, None, idxs)
@@ -163,7 +167,11 @@ def render_animation(a, show=[], preview_scale=0.5, scale=1):
         rmtree(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    for idx, rp in enumerate(tqdm(passes, leave=False)):
+    xs = passes
+    if tqdm:
+        xs = tqdm(passes, leave=False)
+
+    for idx, rp in enumerate(xs):
         res = a.run_normal(rp)
         if a.fmt == "png":
             SkiaPen.Composite(res, a.rect, str(rp.output_path), scale=scale)

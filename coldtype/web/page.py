@@ -76,7 +76,8 @@ def wrap_images_with_links(html_string, grab_image, root:Path):
 
 def md_process(text, grab_image, root:Path):
     #text = text.replace("?_", "?_&nbsp;")
-    raw = markdown.markdown(text, extensions=["smarty", "mdx_linkify", "markdown_captions", "footnotes"])
+    raw = markdown.markdown(text, extensions=["smarty", "markdown_captions", "footnotes"])
+    #return None, raw
     return wrap_images_with_links(raw, grab_image, root)
 
 @dataclass
@@ -90,6 +91,7 @@ class Page:
     content: str
     data: dict
     preview_image: str
+    slugs: str
 
     def date_rfc_822(self):
         if "/" in str(self.date):
@@ -111,17 +113,39 @@ class Page:
     def unpublished(self):
         return self.date is None
     
+    def output_path(self, sitedir:Path):
+        op = sitedir / self.slug
+        if str(op).endswith(".html"):
+            return op
+        else:
+            return op / "index.html"
+    
     @staticmethod
-    def load_notebook(file:Path, root:Path, template:Template) -> "Page":
+    def get_slug(file:Path, root:Path, slugs:str):
+        if "nested" in slugs:
+            slug = str(Path(file).relative_to(root / "pages").with_suffix(""))
+        else:
+            slug = file.stem
+        
+        if "html" in slugs:
+            return slug + ".html"
+        return slug
+    
+    @staticmethod
+    def load_notebook(file:Path, root:Path, template:Template, template_fn=None, slugs="flat") -> "Page":
         data = json.loads(file.read_text())
         frontmatter = eval("".join(data["cells"][0]["source"]))
-        slug = frontmatter.get("slug", file.stem)
+
+        default_slug = Page.get_slug(file, root, slugs)
+        slug = frontmatter.get("slug", default_slug)
+        
+        frontmatter["notebook"] = True
 
         cells = []
         for c in data["cells"][1:]:
             ct = c["cell_type"]
             if ct == "markdown":
-                cells.append(dict(text=markdown.markdown("".join(c["source"]), extensions=["smarty", "mdx_linkify", "fenced_code"])))
+                cells.append(dict(text=markdown.markdown("".join(c["source"]), extensions=["smarty", "fenced_code"])))
             elif ct == "code":
                 src = "".join(c["source"])
                 if src.strip().startswith("#hide-publish") or src.strip().startswith("#hide-blog"):
@@ -155,27 +179,38 @@ class Page:
                 if len(outputs) > 0:
                     cell["outputs"] = outputs
                 else:
-                    cell["no-outputs"] = True
+                    cell["no_outputs"] = True
                 cells.append(cell)
         
         notebook_html = template.render(cells=cells)
         
         title = frontmatter.get("title", "Untitled")
-        page_template = data.get("template")
-        if page_template is None:
-            page_template = "_" + str(file.parent.stem)[:-1]
         
-        return Page(file, frontmatter.get("date"), slug, title, page_template, None, notebook_html, frontmatter, None)
+        if template_fn:
+            page_template = template_fn(data)
+        else:
+            page_template = data.get("template")
+            if page_template is None:
+                page_template = "_" + str(file.parent.stem)[:-1]
+        
+        return Page(file, frontmatter.get("date"), slug, title, page_template, None, notebook_html, frontmatter, None, slugs)
     
+
     @staticmethod
-    def load_markdown(file:Path, root:Path) -> "Page":
+    def load_markdown(file:Path, root:Path, template_fn=None, slugs="flat") -> "Page":
         data = frontmatter.loads(file.read_text())
+
+        default_slug = Page.get_slug(file, root, slugs)
         
-        slug = data.get("slug", file.stem)
+        slug = data.get("slug", default_slug)
         title = data.get("title", "Untitled")
-        template = data.get("template")
-        if template is None:
-            template = "_" + str(file.parent.stem)[:-1]
+
+        if template_fn:
+            template = template_fn(data)
+        else:
+            template = data.get("template")
+            if template is None:
+                template = "_" + str(file.parent.stem)[:-1]
 
         preview_txt = data.content.split("+++")[0].replace("ßßß", "")
         preview_txt = re.sub(r'\[\^(\d+)\]', '', preview_txt)
@@ -186,4 +221,4 @@ class Page:
             .replace("ßßß", "<div class='spacer'></div>")
             .replace("---", "<div class='section'>•••</div>"), None, root)
 
-        return Page(file, data.get("date"), slug, title, template, preview, content, data, preview_image)
+        return Page(file, data.get("date"), slug, title, template, preview, content, data, preview_image, slugs)

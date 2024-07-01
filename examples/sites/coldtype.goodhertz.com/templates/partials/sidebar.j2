@@ -1,0 +1,27 @@
+<div class="menu">
+  <ul>
+    {% for post in mains %}
+    <li class="post-link">
+      <a href="/{{ post.slug }}" {% if url == "/" + post.slug %}class="current"{% endif %}>{{ post.title }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+
+  <h3>Tutorials</h3>
+  <ul>
+    {% for post in tutorials %}
+    <li class="post-link">
+      <a href="/{{post.slug}}" {% if url == "/" + post.slug %}class="current"{% endif %}>{{ post.title.replace(" Tutorial" , "") }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+
+  <h3>Cheatsheets</h3>
+  <ul>
+    {% for post in cheatsheets %}
+    <li class="post-link">
+      <a href="/{{ post.slug }}" {% if url == "/" + post.slug %}class="current"{% endif %}>{{ post.title.replace(" Cheatsheet", "") }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</div>

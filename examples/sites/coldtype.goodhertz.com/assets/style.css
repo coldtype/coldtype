@@ -1,0 +1,73 @@
+@import "examples/sites/blog.coldtype.xyz/assets/style.css";
+
+.wrapper {
+    max-width: 950px;
+    margin: auto auto;
+    padding: 20px;
+}
+
+.index .wrapper {
+    max-width: 500px;
+}
+
+.page {
+    display: flex;
+}
+
+.page aside {
+    width: 30%;
+    font-size: 85%;
+}
+
+.page .post {
+    width: 70%;
+}
+
+@media (max-width: 700px) {
+    .page aside {
+        display: none;
+    }
+    .page .post {
+        width: 100%;
+    }
+}
+
+header h1 {
+    text-align: center;
+}
+
+.post h1 {
+    margin-top: 0px;
+}
+
+.post .headline {
+    margin-bottom: 90px;
+}
+
+.colab-callout {
+    margin-bottom: 0px;
+}
+
+.menu {
+    padding-right: 10px;
+}
+
+.menu h3 {
+    --mono-font: fvs(wght=0.75);
+    text-transform: uppercase;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.menu a {
+    --mono-font: fvs(wght=0.65);
+    padding: 2px 2px 2px 20px;
+}
+
+.menu a:hover {
+    background-color: hsl(330, 80%, 95%);
+}
+
+.menu .current {
+    color: #555;
+}

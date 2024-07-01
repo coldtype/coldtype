@@ -51,7 +51,7 @@
     fontdata['{{ family.name }}Web'] = {{ font.variations }};{% endif %}{% endfor %}{% endfor %}
   </script>
 </head>
-<body>
+<body{% if url == "/" %} class="index"{% endif %}>
   <header id="header">
     <a href="#maincontent" id="skip-to-main">Skip to main content</a>
     {% if header %}

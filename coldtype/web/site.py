@@ -23,22 +23,14 @@ except ImportError:
 
 
 nav_template: jinja_html = """
-<ul>{% for n in nav_links %}
-    <li><a href="{{n.href}}" {% if n.classes %}class="{{ n.classes }}" {% endif %}>{{n.title}}</a></li>
-{% endfor %}</ul>
+<nav>
+    <ul>{% for n in nav_links %}
+        <li><a href="{{n.href}}" {% if n.classes %}class="{{ n.classes }}" {% endif %}>{{n.title}}</a></li>
+    {% endfor %}</ul>
+</nav>
 """
 
 class site(renderable):
-    def stub(self, _path, content=None):
-        path = self.root / _path
-        if not path.exists():
-            if content is None:
-                path.mkdir(parents=True)
-            else:
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(content)
-        return path
-    
     def __init__(self, root
         , port=8008
         , multiport=None
@@ -49,23 +41,21 @@ class site(renderable):
         , fonts=None
         , rect=Rect(200, 200)
         , watch=None
+        , template=None
+        , slugs="flat"
         , **kwargs
         ):
-        watch = watch or []
+        self._watch = watch or []
 
-        watch.append(generics_folder / "page.j2")
+        self._watch.append(generics_folder / "page.j2")
         
         self.root = root
         self.info = info
         self.livereload = livereload
         self.sources = sources or {}
         self.generators = generators or {}
-        
-        # self.stub("assets/style.css", "body { background: pink; }")
-        # self.stub("assets/fonts")
-        # self.stub("templates/_header.j2", "Header")
-        # self.stub("templates/index.j2", "This is the index page")
-        # self.stub("templates/_footer.j2", "Footer")
+        self.template_fn = template
+        self.slugs = slugs
         
         self.port = port
         self.multiport = multiport
@@ -97,7 +87,7 @@ class site(renderable):
         if assetsdir.exists():
             style = assetsdir / "style.css"
             if style.exists():
-                watch.append(style)
+                self._watch.append(style)
         
             print("rsync assets")
             os.system(f'rsync -r {assetsdir}/ {self.sitedir / "assets"}')
@@ -105,7 +95,7 @@ class site(renderable):
 
             if style.exists():
                 style2 = (self.sitedir / "assets/style.css")
-                style2.write_text(self.expand_fvs_shorthand(style2.read_text()))
+                style2.write_text(self.mod_css(style2.read_text()))
     
         rendersdir = self.root / "renders"
 
@@ -116,7 +106,7 @@ class site(renderable):
     
         self.templates = {}
         for j2 in (self.root / "templates").glob("*.j2"):
-            watch.append(j2)
+            self._watch.append(j2)
             self.templates[j2.stem] = self.site_env.get_template(j2.name)
         
         for k, v in self.info.get("templates", {}).items():
@@ -125,17 +115,17 @@ class site(renderable):
         self.pages = []
         
         for file in (self.root / "pages").glob("**/*.md"):
-            watch.append(file)
-            page = Page.load_markdown(file, self.root)
+            self._watch.append(file)
+            page = Page.load_markdown(file, self.root, self.template_fn, self.slugs)
             self.pages.append(page)
         
         for file in (self.root / "pages").glob("**/*.ipynb"):
             # TODO could check gitignore here?
-            watch.append(file)
-            page = Page.load_notebook(file, self.root, self.generic_templates["notebook"])
+            self._watch.append(file)
+            page = Page.load_notebook(file, self.root, self.generic_templates["notebook"], self.template_fn, self.slugs)
             self.pages.append(page)
 
-        super().__init__(rect, watch=watch, **kwargs)
+        super().__init__(rect, watch=self._watch, **kwargs)
 
         build_time_utc = datetime.now(timezone.utc)
         rfc_822_format = "%a, %d %b %Y %H:%M:%S %z"
@@ -177,7 +167,7 @@ class site(renderable):
                 html = re.sub(r"url\('/", f"url('/{root.stem}/", html)
                 Path(page).write_text(html)
     
-    def expand_fvs_shorthand(self, css):
+    def mod_css(self, css):
         def expander(m):
             fontvar = f"{m[1]}-font"
             font = [f for f in self.fonts if f.variable_name == fontvar][0]
@@ -185,7 +175,17 @@ class site(renderable):
             style = Style(font.fonts[0].font, **props)
             fvs = ", ".join([f'"{k}" {int(v)}' for k,v in style.variations.items()])
             return f'font-family: var(--{fontvar}), sans-serif;\n    font-variation-settings: {fvs}'
-        return re.sub(r"--([a-z]+)-font:\s?fvs\(([^\)]+)\)", expander, css)
+        
+        def inline_import(m):
+            path = Path(m[1])
+            if path.exists():
+                self._watch.append(path)
+                return f"/* start:{path} */\n\n" + self.mod_css(path.read_text()) + f"\n\n/* end:{path} */"
+        
+        css = re.sub(r"--([a-z]+)-font:\s?fvs\(([^\)]+)\)", expander, css)
+        css = re.sub(r"@import \"([^\"]+)\";", inline_import, css)
+
+        return css
 
     def header_footer(self, nav_links, url):
         nav_html = string_env.from_string(nav_template).render(nav_links=nav_links)
@@ -218,7 +218,8 @@ class site(renderable):
         elif page is not None:
             if page.title:
                 header_title = header_title + " | " + page.title
-            path = self.sitedir / page.slug / "index.html"
+            
+            path = page.output_path(self.sitedir)
             url = f"/{page.slug}"
         else:
             # TODO way to get a custom title on a bare template
@@ -249,7 +250,7 @@ class site(renderable):
         
         header, footer = self.header_footer(nav_links, url)
         
-        content = self.templates[template_name].render({**self.standard_data, **dict(page=page), **(data or {})})
+        content = self.templates[template_name].render({**self.standard_data, **dict(page=page, url=url), **(data or {})})
         
         path.parent.mkdir(exist_ok=True, parents=True)
 

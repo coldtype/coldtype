@@ -17,9 +17,8 @@ info = dict(
     , sources=dict(public_posts=public_posts)
     , info=info
     , fonts={
-        "text-font": dict(regular="MDSystemV"),
-        "mono-font": dict(regular="MDIO-V"),
-        "header-font": dict(regular="Casserole-Sans")})
+        "text-font": dict(regular="MDSystem-VF"),
+        "mono-font": dict(regular="MDIO-VF")})
 def website(_):
     return None
 

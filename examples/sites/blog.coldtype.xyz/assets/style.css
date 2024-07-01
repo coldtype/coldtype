@@ -33,8 +33,32 @@ header a:hover {
 }
 
 header h1 {
-    font-size: 1.5em;
+    font-size: 1.75em;
     --mono-font: fvs(wght=1);
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    justify-content: center;
+    row-gap: 12px;
+
+}
+nav li {
+    /* display: flex; */
+}
+nav li:not(:last-child)::after {
+    content: "///";
+    color: #ccc;
+}
+nav li a {
+    padding: 4px 7px;
+    background: whitesmoke;
+}
+nav li a:hover {
+    background: deeppink;
 }
 
 .wrapper {
@@ -72,16 +96,6 @@ header h1 {
     display: none;
 }
 
-h1#headline {
-    padding-bottom: 10px;
-    margin-top: 50px;
-    margin-bottom: 0px;
-}
-
-h1#headline img {
-    width: 100%;
-}
-
 .colab-callout {
     margin-bottom: 100px;
 }
@@ -109,12 +123,12 @@ a.colab-link:hover {
 
 .post p {
     margin-bottom: 14px;
-    font-size: 1.2rem;
-    line-height: 1.6rem;
+    font-size: 1.1rem;
+    line-height: 150%;
 }
 
 .post h1 {
-    --mono-font: fvs(wght=0.75);
+    --mono-font: fvs(wght=0.85);
     margin-top: 30px;
     margin-bottom: 10px;
 }
@@ -144,12 +158,24 @@ a.colab-link:hover {
 }
 
 .post code {
-    color: deeppink;
+    --mono-font: fvs(wght=0.35);
+    color: hsl(320, 80%, 50%);
+}
+
+.post strong {
+    --text-font: fvs(wght=0.85);
+}
+
+.post em {
+    --text-font: fvs(slnt=0);
+    font-style: normal;
 }
 
 hr {
     border: none;
     border-bottom: 1px solid #eee;
+    margin-top: 40px;
+    margin-bottom: 40px;
 }
 
 /* .post iframe {
@@ -162,6 +188,11 @@ hr {
     font-style: italic;
     color: #555;
     margin-bottom: 200px;
+}
+
+.code.no-outputs {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #ccc;
 }
 
 .code-outputs {
@@ -188,6 +219,10 @@ hr {
     border-top: 1px solid #ccc;
     border-bottom: 1px solid #ccc;
 } */
+
+.text {
+    margin-bottom: 40px;
+}
 
 .text pre {
     margin-bottom: 20px;
