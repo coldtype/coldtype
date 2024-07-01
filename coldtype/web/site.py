@@ -2,6 +2,7 @@ import jinja2, os, re, subprocess
 
 from coldtype.renderable import renderable
 from coldtype.geometry import Rect
+from coldtype.text import Style
 
 from coldtype.web.server import maybe_run_server, kill_process_on_port_unix
 from coldtype.web.fonts import woff2s
@@ -71,6 +72,7 @@ class site(renderable):
 
         self.generic_templates = {
             "page": generics_env.get_template("page.j2"),
+            "notebook": generics_env.get_template("notebook.j2")
         }
 
         self.site_env = jinja2.Environment(loader=jinja2.FileSystemLoader(str(self.root / "templates")))
@@ -100,6 +102,10 @@ class site(renderable):
             print("rsync assets")
             os.system(f'rsync -r {assetsdir}/ {self.sitedir / "assets"}')
             print("/rsync assets")
+
+            if style.exists():
+                style2 = (self.sitedir / "assets/style.css")
+                style2.write_text(self.expand_fvs_shorthand(style2.read_text()))
     
         rendersdir = self.root / "renders"
 
@@ -117,9 +123,16 @@ class site(renderable):
             self.templates[k] = string_env.from_string(v)
         
         self.pages = []
+        
         for file in (self.root / "pages").glob("**/*.md"):
             watch.append(file)
-            page = Page.load(file, self.root)
+            page = Page.load_markdown(file, self.root)
+            self.pages.append(page)
+        
+        for file in (self.root / "pages").glob("**/*.ipynb"):
+            # TODO could check gitignore here?
+            watch.append(file)
+            page = Page.load_notebook(file, self.root, self.generic_templates["notebook"])
             self.pages.append(page)
 
         super().__init__(rect, watch=watch, **kwargs)
@@ -164,6 +177,16 @@ class site(renderable):
                 html = re.sub(r"url\('/", f"url('/{root.stem}/", html)
                 Path(page).write_text(html)
     
+    def expand_fvs_shorthand(self, css):
+        def expander(m):
+            fontvar = f"{m[1]}-font"
+            font = [f for f in self.fonts if f.variable_name == fontvar][0]
+            props = eval(f"dict({m[2]})")
+            style = Style(font.fonts[0].font, **props)
+            fvs = ", ".join([f'"{k}" {int(v)}' for k,v in style.variations.items()])
+            return f'font-family: var(--{fontvar}), sans-serif;\n    font-variation-settings: {fvs}'
+        return re.sub(r"--([a-z]+)-font:\s?fvs\(([^\)]+)\)", expander, css)
+
     def header_footer(self, nav_links, url):
         nav_html = string_env.from_string(nav_template).render(nav_links=nav_links)
 

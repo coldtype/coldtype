@@ -83,6 +83,7 @@ setuptools.setup(
             "demo/gifski.py",
             "renderer/.coldtype.py",
             "web/templates/page.j2",
+            "web/templates/notebook.j2",
         ],
     },
     entry_points={
@@ -144,6 +145,8 @@ setuptools.setup(
             "mdx_linkify",
             "beautifulsoup4",
             "brotli",
+            "lxml",
+            "pygments",
         ]
     },
     install_requires=basic_deps,

@@ -1,9 +1,14 @@
-import re, frontmatter, markdown
+import re, frontmatter, markdown, json
 
 from pathlib import Path
 from dataclasses import dataclass
 from datetime import datetime
 from bs4 import BeautifulSoup
+from jinja2 import Template
+from pygments import highlight
+from pygments.lexers import PythonLexer
+from pygments.formatters import HtmlFormatter
+from lxml.html import fragment_fromstring, tostring
 
 from coldtype.img.skiaimage import SkiaImage
 
@@ -87,7 +92,10 @@ class Page:
     preview_image: str
 
     def date_rfc_822(self):
-        input_date = datetime.strptime(str(self.date) + " 18:00:00 +0000", "%Y-%m-%d %H:%M:%S %z")
+        if "/" in str(self.date):
+            input_date = datetime.strptime(str(self.date) + " 18:00:00 +0000", "%m/%d/%Y %H:%M:%S %z")
+        else:
+            input_date = datetime.strptime(str(self.date) + " 18:00:00 +0000", "%Y-%m-%d %H:%M:%S %z")
         return input_date.strftime("%a, %d %b %Y %H:%M:%S %z")
 
     def word_count(self):
@@ -104,7 +112,63 @@ class Page:
         return self.date is None
     
     @staticmethod
-    def load(file:Path, root:Path) -> "Page":
+    def load_notebook(file:Path, root:Path, template:Template) -> "Page":
+        data = json.loads(file.read_text())
+        frontmatter = eval("".join(data["cells"][0]["source"]))
+        slug = frontmatter.get("slug", file.stem)
+
+        cells = []
+        for c in data["cells"][1:]:
+            ct = c["cell_type"]
+            if ct == "markdown":
+                cells.append(dict(text=markdown.markdown("".join(c["source"]), extensions=["smarty", "mdx_linkify", "fenced_code"])))
+            elif ct == "code":
+                src = "".join(c["source"])
+                if src.strip().startswith("#hide-publish") or src.strip().startswith("#hide-blog"):
+                    continue
+            
+                lines = []
+                for line in src.splitlines():
+                    if not line.strip().endswith("#hide-publish") and not line.strip().endswith("#hide-blog"):
+                        lines.append(line)
+                
+                src = "\n".join(lines)
+                
+                highlit = fragment_fromstring(
+                    highlight(src, PythonLexer(),
+                        HtmlFormatter(linenos=False)))
+                html = tostring(highlit, pretty_print=True, encoding="utf-8").decode("utf-8")
+                cell = dict(html=html)
+
+                outputs = []
+                if "outputs" in c:
+                    for o in c["outputs"]:
+                        if o["output_type"] == "display_data" and o["data"] and "text/html" in o["data"]:
+                            outputs.append(o["data"]["text/html"])
+                            #print(o["data"]["text/html"][:10])
+                        elif o.get("name") == "stdout":
+                            outputs.append(["<pre class='stdout'>" + "".join(o["text"]) + "</pre>"])
+                            #print(outputs[-1][10])
+                        else:
+                            pass
+                
+                if len(outputs) > 0:
+                    cell["outputs"] = outputs
+                else:
+                    cell["no-outputs"] = True
+                cells.append(cell)
+        
+        notebook_html = template.render(cells=cells)
+        
+        title = frontmatter.get("title", "Untitled")
+        page_template = data.get("template")
+        if page_template is None:
+            page_template = "_" + str(file.parent.stem)[:-1]
+        
+        return Page(file, frontmatter.get("date"), slug, title, page_template, None, notebook_html, frontmatter, None)
+    
+    @staticmethod
+    def load_markdown(file:Path, root:Path) -> "Page":
         data = frontmatter.loads(file.read_text())
         
         slug = data.get("slug", file.stem)
