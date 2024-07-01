@@ -1,0 +1,22 @@
+<div class="notebook">
+  {% for cell in cells %}
+  {% if cell.text is defined %}
+  <div class="text">
+    {{ cell.text }}
+  </div>
+  {% elif cell.html is defined %}
+  <div class="code">
+    {{ cell.html|safe }}
+  </div>
+  {% if cell.outputs is defined %}
+  <div class="code-outputs">
+    {% for output in cell.outputs %}
+    {% for html in output %}
+    {{ html|safe }}
+    {% endfor %}
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+</div>

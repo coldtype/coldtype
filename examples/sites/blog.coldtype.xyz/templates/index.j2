@@ -1,0 +1,10 @@
+<ul>
+  {% for post in public_posts %}
+  <li class="post-link">
+    <a href="/{{ post.slug }}">
+      <h2><span class="grocer">“</span>{{ post.title }}<span class="grocer">”</span> <span class="date">{{
+          post.date }}</span></h2>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
