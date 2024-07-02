@@ -176,7 +176,6 @@ class site(renderable):
             font = [f for f in self.fonts if f.variable_name == fontvar][0]
             props = eval(f"dict({m[2]})")
             style = Style(font.fonts[0].font, **props)
-            print(font.fonts[0].font.variations())
             fvs = ", ".join([f'"{k}" {int(v)}' for k,v in style.variations.items()])
             return f'font-family: var(--{fontvar}), sans-serif;\n    font-variation-settings: {fvs}'
         
