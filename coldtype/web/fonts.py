@@ -14,12 +14,22 @@ class WebFont():
     italic: bool
     variations: dict
 
+    def js_args(self):
+        return ", ".join([f"{k}={(v['defaultValue']-v['minValue'])/(v['maxValue']-v['minValue'])}" for k, v in self.variations.items()])
+    
+    def js_setter(self):
+        return ", ".join([f"'{k}' ${{{v['minValue']}+({v['maxValue']}-{v['minValue']})*{k}}}" for k, v in self.variations.items()])
+
 
 @dataclass
 class WebFontFamily():
     name: str
     variable_name: str
     fonts: List[WebFont]
+
+    @property
+    def variable_name_js(self):
+        return self.variable_name.replace("-", "_")
 
 
 def get_woff2(dst_folder, font_file, bold=False, italic=False):

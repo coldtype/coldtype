@@ -3,7 +3,7 @@ from coldtype.web.site import *
 
 header: jinja_html = """
 <div class="wrapper">
-    <h1>Coldtype</h1>
+    <h1 id="var">Coldtype</h1>
     <ul class="link-list">{% for k,v in info["externals"].items() %}
         <li><a href="{{v}}">{{k}}</a></li>
     {% endfor %}</ul>
@@ -120,17 +120,23 @@ main li {
     margin-bottom: 10px;
 }
 main li a {
-    font-variation-settings: "wght" 800;
+    --text-font: fvs(wght=0.75);
+    /* font-variation-settings: "wght" 800; */
 }
 h1 {
-    font-variation-settings: "wght" 900;
+    --text-font: fvs(wght=1);
+    /* font-variation-settings: "wght" 900; */
 }
 """
 
 script: js = """
-// window.addEventListener("mousemove", function(event) {
-//   console.log("mousemouse");
-// });
+const el = document.getElementById("var");
+const ff = window.getComputedStyle(el).fontFamily.split(",")[0];
+const data = fontdata[ff];
+
+window.addEventListener("mousemove", function(event) {
+  fvs_text_font(el, event.clientX / window.innerWidth, 0);
+});
 """
 
 info = dict(

@@ -49,6 +49,12 @@
     const fontdata = {};
     {% for family in fonts %}{% for font in family.fonts %}{% if font.variations %}
     fontdata['{{ family.name }}Web'] = {{ font.variations }};{% endif %}{% endfor %}{% endfor %}
+
+    {% for family in fonts %}{% for font in family.fonts %}{% if font.variations %}
+    function fvs_{{family.variable_name_js}}(el, {{ font.js_args() }}) {
+      el.style.fontVariationSettings = `{{ font.js_setter() }}`;
+    }
+    {% endif %}{% endfor %}{% endfor %}
   </script>
 </head>
 <body{% if url == "/" %} class="index"{% endif %}>
