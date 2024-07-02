@@ -354,6 +354,8 @@ class SourceReader():
             return root / "demo/docstrings.py"
         elif name == "gifski":
             return root / "demo/gifski.py"
+        elif name == "glfw34":
+            return root / "demo/glfw34.py"
         return name
     
     @staticmethod

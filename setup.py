@@ -81,6 +81,7 @@ setuptools.setup(
             "demo/boiler.py",
             "demo/vf.py",
             "demo/gifski.py",
+            "demo/glfw34.py",
             "renderer/.coldtype.py",
             "web/templates/page.j2",
             "web/templates/notebook.j2",

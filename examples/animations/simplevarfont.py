@@ -4,7 +4,7 @@ from coldtype import *
 def unfold(f):
     return (StSt("Coldtype".upper()
         , Font.ColdObvi()
-        , fontSize=300
+        , fontSize=f.e("eeio", rng=(100, 300))
         , wdth=f.e("eeio")
         , tu=f.e("eeio", rng=(-130, 100))
         , ro=1)
