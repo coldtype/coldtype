@@ -259,6 +259,67 @@ def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
     
     return _mod_pixels
 
+
+def warp_image(image, rect, mod):
+    from skimage import img_as_ubyte
+    from skimage.transform import warp
+    import numpy as np
+
+    image_data = image.toarray()
+    image_data = image_data.reshape(rect.h, rect.w, 4)
+    image_rgb = image_data[..., :3]
+    image_rgb_uint8 = img_as_ubyte(image_rgb)
+    
+    swirled = warp(image_rgb_uint8,
+        mod,
+        output_shape=image_rgb_uint8.shape)
+
+    swirled_uint8 = (swirled * 255).astype(np.uint8)
+    image_rgb_uint8 = swirled_uint8
+
+    height, width, channels = image_rgb_uint8.shape
+    if channels == 3:
+        image_rgba = np.dstack((image_rgb_uint8, np.full((height, width), 255, dtype=np.uint8)))
+    else:
+        image_rgba = image_rgb_uint8
+    
+    return skia.Image.fromarray(image_rgba)
+
+
+def warp(rect, mod):
+    from skimage import img_as_ubyte
+    from skimage.transform import warp
+    import numpy as np
+
+    def _warp(pen):
+        raster = pen.ch(rasterized(rect))
+        image_data = raster.toarray()
+        image_data = image_data.reshape(rect.w, rect.h, 4)
+        image_rgb = image_data[..., :3]
+        image_rgb_uint8 = img_as_ubyte(image_rgb)
+        
+        swirled = warp(image_rgb_uint8,
+            mod,
+            output_shape=image_rgb_uint8.shape)
+    
+        swirled_uint8 = (swirled * 255).astype(np.uint8)
+        image_rgb_uint8 = swirled_uint8
+
+        height, width, channels = image_rgb_uint8.shape
+        if channels == 3:
+            image_rgba = np.dstack((image_rgb_uint8, np.full((height, width), 255, dtype=np.uint8)))
+        else:
+            image_rgba = image_rgb_uint8
+        
+        out = skia.Image.fromarray(image_rgba)
+        return (P()
+            .rect(rect)
+            .img(out, rect, False)
+            .f(None))
+    
+    return _warp
+
+
 def luma(rect):
     """Chainable function for converting light part of pen/image-on-pen into an alpha channel; see `LumaColorFilter <https://kyamagu.github.io/skia-python/reference/skia.LumaColorFilter.html>`_"""
     def _luma(pen):
