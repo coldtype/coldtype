@@ -46,15 +46,26 @@ def wrap_images_with_links(html_string, grab_image, root:Path):
             tq = "?t=" + str(mtime)
             img_tag['src'] = src + tq
             hires_version = src_path.parent / "hires" / src_path.name
+            hires_link = None
             if hires_version.exists():
-                a_tag["href"] = "/" + str(hires_version) + tq
-            else:
-                a_tag['href'] = img_tag['src']
+                hires_link = "/" + str(hires_version.relative_to(root)) + tq
+            
+            a_tag['href'] = img_tag['src']
             a_tag["target"] = "_blank"
             a_tag['style'] = f"max-width:{int(width/2)}px"
             img_tag['style'] = f"max-width:{int(width/2)}px"
-            img_tag['alt'] = img_tag.find_parent('figure').find("figcaption").get_text(strip=True)
+            figcaption = img_tag.find_parent('figure').find("figcaption")
+            img_tag['alt'] = figcaption.get_text(strip=True)
             img_tag.wrap(a_tag)
+            
+            if hires_link:
+                existing_text = figcaption.string
+                new_link = soup.new_tag('a', href=hires_link)
+                new_link.string = "Hi-Res"
+                figcaption.clear()  # Clear existing content
+                figcaption.append(existing_text or "")
+                figcaption.append(' / ')
+                figcaption.append(new_link)
     
     for p_tag in soup.find_all('p'):
         length = len(p_tag.get_text(strip=True))

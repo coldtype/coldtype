@@ -30,45 +30,37 @@ footer: jinja_html = """
 """
 
 style: css = """
-* {
-    box-sizing: border-box;
-}
-:root {
-    --border-color: #eee;
-}
-html, body {
-    height: 100%;
-}
+* { box-sizing: border-box; }
+:root { --border-color: #eee; }
+html, body { height: 100%; }
 body {
-    /* background: hsl(130, 70%, 93%); */
     background: white;
-    color: black;
+    color: #222;
     font-family: var(--text-font);
-    text-align: center;
     display: flex;
     flex-direction: column;
 }
-em {
-    font-style: normal;
-    font-variation-settings: "ital" 1;
-}
-a {
-    color: royalblue;
-    text-decoration: none;
-}
+em { font-style: normal; --text-font: fvs(ital=1); }
+a { color: royalblue; text-decoration: none; }
+h1 { --text-font: fvs(wght=1); }
 
 header { border-bottom: 1px solid var(--border-color); }
 footer { border-top: 1px solid var(--border-color); }
 
-header, footer {
+header, footer, main {
     flex: 1;
     padding: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+header, footer {
+    text-align: center;
     max-height: 300px;
     min-height: 200px;
 }
+.wrapper { max-width: 500px; }
+
 .link-list {
     list-style: none;
     display: flex;
@@ -76,57 +68,22 @@ header, footer {
     margin-top: 16px;
     justify-content: center;
     row-gap: 12px;
+}
+.link-list li:not(:last-child)::after { content: "///"; color: #ccc; }
+.link-list li a { padding: 4px 7px; background: whitesmoke; }
+.link-list li a:hover { background: lightpink; }
 
-}
-.link-list li {
-    /* display: flex; */
-}
-.link-list li:not(:last-child)::after {
-    content: "///";
-    color: #ccc;
-}
-.link-list li a {
-    padding: 4px 7px;
-    background: whitesmoke;
-}
-.link-list li a:hover {
-    background: lightpink;
-}
-main {
-    flex: 1;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-main .wrapper {
-    text-align: left;
-    max-width: 600px;
-    padding: 20px;
-    margin: auto auto;
-}
 main p { margin-bottom: 16px; }
+main strong { --text-font: fvs(wght=0.7); }
 main hr {
     border: none;
     border-top: 2px solid #eee;
     margin-bottom: 20px;
     margin: 26px 60px 30px;
 }
-main strong { font-variation-settings: "wght" 700; }
-main ul {
-    margin-left: 20px;
-}
-main li {
-    margin-bottom: 10px;
-}
-main li a {
-    --text-font: fvs(wght=0.75);
-    /* font-variation-settings: "wght" 800; */
-}
-h1 {
-    --text-font: fvs(wght=1);
-    /* font-variation-settings: "wght" 900; */
-}
+main ul { margin-left: 20px; }
+main li { margin-bottom: 10px; }
+main li a { --text-font: fvs(wght=0.75); }
 """
 
 script: js = """
@@ -149,7 +106,7 @@ info = dict(
         "github": "https://github.com/coldtype",
         "youtube": "https://www.youtube.com/channel/UCIRaiGAVFaM-pSErJG1UZFA",
         "tutorials": "https://coldtype.goodhertz.com/",
-        "q&a forum": "https://github.com/goodhertz/coldtype/discussions",
+        # "q&a forum": "https://github.com/goodhertz/coldtype/discussions",
     },
 )
 
