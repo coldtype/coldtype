@@ -3,7 +3,7 @@ from coldtype.web.site import *
 
 header: jinja_html = """
 <div class="wrapper">
-    <h1 id="var">Coldtype</h1>
+    <h1 style="max-width:400px"><img alt="Coldtype" style="width:100%" src="/renders/coldtype.xyz_logo.png"/></h1>
     <ul class="link-list">{% for k,v in info["externals"].items() %}
         <li><a href="{{v}}">{{k}}</a></li>
     {% endfor %}</ul>
@@ -31,7 +31,7 @@ footer: jinja_html = """
 
 style: css = """
 * { box-sizing: border-box; }
-:root { --border-color: #eee; }
+:root { --border-color: #ddd; }
 html, body { height: 100%; }
 body {
     background: white;
@@ -44,20 +44,24 @@ em { font-style: normal; --text-font: fvs(ital=1); }
 a { color: royalblue; text-decoration: none; }
 h1 { --text-font: fvs(wght=1); }
 
+header, footer { background: white; }
 header { border-bottom: 1px solid var(--border-color); }
 footer { border-top: 1px solid var(--border-color); }
 
 header, footer, main {
     flex: 1;
-    padding: 20px;
+    padding: 30px 20px;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 header, footer {
     text-align: center;
-    max-height: 300px;
+    max-height: 200px;
     min-height: 200px;
+}
+main {
+    padding: 50px 20px;
 }
 .wrapper { max-width: 500px; }
 
@@ -65,7 +69,7 @@ header, footer {
     list-style: none;
     display: flex;
     flex-wrap: wrap;
-    margin-top: 16px;
+    margin-top: 6px;
     justify-content: center;
     row-gap: 12px;
 }
@@ -86,21 +90,10 @@ main li { margin-bottom: 10px; }
 main li a { --text-font: fvs(wght=0.75); }
 """
 
-script: js = """
-const el = document.getElementById("var");
-const ff = window.getComputedStyle(el).fontFamily.split(",")[0];
-const data = fontdata[ff];
-
-window.addEventListener("mousemove", function(event) {
-  fvs_text_font(el, event.clientX / window.innerWidth, 0);
-});
-"""
-
 info = dict(
     title="Coldtype",
     description="Coldtype is a programming library for advanced typography (and other stuff)",
     style=style,
-    script=script,
     templates=dict(_header=header, _footer=footer, index=index),
     externals={
         "github": "https://github.com/coldtype",
@@ -110,7 +103,6 @@ info = dict(
     },
 )
 
-
 @site(ººsiblingºº(".")
       , port=8008
       , livereload=True
@@ -119,6 +111,11 @@ info = dict(
 def site(_):
     return None
 
+@renderable((1080, 200), fmt="png")
+def logo(r):
+    return (Glyphwise("COLDTYPE", lambda g: Style(Font.ColdObvi(), 200, wdth=ez(g.e, "l", 1, rng=(1, 0))))
+        .f(0)
+        .align(r))
 
 def release(_):
     site.upload("coldtype.xyz", "us-west-1", "personal")
