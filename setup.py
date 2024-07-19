@@ -148,6 +148,7 @@ setuptools.setup(
             "brotli",
             "lxml",
             "pygments",
+            "sourcetypes",
         ]
     },
     install_requires=basic_deps,
