@@ -122,6 +122,8 @@ class Runon:
             return self
         self._els.append(el)
         return self
+
+    å = append
     
     def replicate(self, *els):
         for el in els:

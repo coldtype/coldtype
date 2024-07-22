@@ -194,7 +194,7 @@ class LayoutMixin():
     def _align_compass(self, compass, rect, tx=1, ty=0):
         return self.align(rect, compass, tx=tx, ty=ty)
     
-    å = align
+    #å = align
 
     alne = partialmethod(_align_compass, "NE")
     ale = partialmethod(_align_compass, "E")
@@ -222,7 +222,7 @@ class LayoutMixin():
             el.align(rect, x=x, y=None, tx=tx, ty=ty)
         return self
     
-    xå = xalign
+    #xå = xalign
 
     def yalign(self, rect=None, y="centery", th=None, tv=None, tx=0, ty=1):
         tx, ty = self._normT(th, tv, tx, ty, None)
@@ -236,7 +236,7 @@ class LayoutMixin():
         self.align(rect, x=None, y=y, tx=tx, ty=ty)
         return self
     
-    yå = yalign
+    #yå = yalign
 
     def _normPoint(self, point=None, th=None, tv=None, tx=0, ty=0, **kwargs):
         tx, ty = self._normT(th, tv, tx, ty, kwargs.get("t"))
