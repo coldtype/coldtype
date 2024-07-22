@@ -241,3 +241,9 @@ def test_gridlayer(r):
     assert res[2][0].ambit().w == res[2][1].ambit().w
 
     return res
+
+@test((800, 200))
+def test_dash_line(r):
+    return (P().line([(_r:=r.inset(30)).psw, _r.pne])
+        .fssw(-1,0,6)
+        .dash([15, 10.0], -9))

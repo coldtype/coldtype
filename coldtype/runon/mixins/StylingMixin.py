@@ -26,7 +26,7 @@ class StylingMixin():
         if "fill" not in st:
             st["fill"] = rgb(1, 0, 0.5)
         
-        rest = ["blendmode", "image", "skp", "COLR"]
+        rest = ["blendmode", "image", "skp", "COLR", "dash"]
         if sf:
             order = ["shadow", "stroke", "fill", *rest]
         else:
@@ -65,6 +65,9 @@ class StylingMixin():
             return self.attr(field="strokeWidth")
     
     strokeWidth = sw
+
+    def dash(self, pattern, phase=0):
+        return self.attr(dash=[pattern, phase])
 
     def ssw(self, s, sw):
         self.s(s)

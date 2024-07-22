@@ -1956,7 +1956,7 @@ class P(Runon):
         if "fill" not in st:
             st["fill"] = rgb(1, 0, 0.5)
         
-        rest = ["blendmode", "image", "skp", "COLR"]
+        rest = ["blendmode", "image", "skp", "COLR", "dash"]
         if sf:
             order = ["shadow", "stroke", "fill", *rest]
         else:
@@ -2016,6 +2016,15 @@ class P(Runon):
 
 
     def _sw(self, value) -> "P":
+        return self
+
+
+    def dash(self, pattern, phase=0) -> "P":
+
+        return self.attr(dash=[pattern, phase])
+
+
+    def _dash(self, pattern, phase=0) -> "P":
         return self
 
 
