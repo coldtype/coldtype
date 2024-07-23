@@ -62,6 +62,13 @@ def ujoin(a, b, side="→", d=100, arrow=None):
     
     out = P()
     if arrow:
-        out.insert(0, arrowhead(a_pt, arrow))
-        out.insert(0, arrowhead(b_pt, arrow))
+        if len(arrow) > 1:
+            a_arrow = arrow[0]
+            b_arrow = arrow[1]
+        else:
+            a_arrow, b_arrow = arrow, arrow
+        if a_arrow != "-":
+            out.insert(0, arrowhead(a_pt, a_arrow))
+        if b_arrow != "-":
+            out.insert(0, arrowhead(b_pt, b_arrow))
     return out.append(bar.fssw(-1, 0, 2))
