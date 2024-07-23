@@ -230,6 +230,9 @@ class Rect(Geometrical):
         """x,y,w,h in list"""
         return [self.x, self.y, self.w, self.h]
     
+    def ambit(self, tx=None, ty=None) -> "Rect":
+        return self
+    
     @property
     def r(self) -> "Rect":
         """A Scaffold has an .r, this was we can always 'cast' a Scaffold/Rect to a Rect"""
