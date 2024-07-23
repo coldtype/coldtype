@@ -81,6 +81,10 @@ class site(renderable):
         
         version = randint(0, 100000000)
         year = int(datetime.now().year)
+
+        mediadir = self.root / "media"
+        if mediadir.exists() and not (self.sitedir / "media").exists():
+            os.symlink(mediadir, self.sitedir / "media")
         
         assetsdir = self.root / "assets"
 

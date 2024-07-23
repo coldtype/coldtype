@@ -3,7 +3,7 @@ from coldtype.web.site import *
 
 header: jinja_html = """
 <div class="wrapper">
-    <h1 style="max-width:400px"><img alt="Coldtype" style="width:100%" src="/renders/coldtype.xyz_logo.png"/></h1>
+    <h1 style="max-width:400px"><img alt="Coldtype" style="width:100%" src="/media/coldtype_wavey.jpg"/></h1>
     <ul class="link-list">{% for k,v in info["externals"].items() %}
         <li><a href="{{v}}">{{k}}</a></li>
     {% endfor %}</ul>
