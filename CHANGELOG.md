@@ -287,3 +287,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ## [0.10.19] - 2024-06-20
 ### Fixed
 - High quality filter support for skia > m87
+
+## [0.10.20] - 2024-07-23
+### Fixed
+- Spec <=0.4.2 for python-bidi since 0.5.0 is beefed
