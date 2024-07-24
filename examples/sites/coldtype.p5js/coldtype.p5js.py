@@ -10,7 +10,7 @@ index: jinja_html = """
 {% for k, v in fonts[0].fonts[0].variations.items() %}
 <p><label>{{ k }}</label><input type="range" id="{{ k }}" min="{{ v.minValue }}" max="{{ v.maxValue }}" value="{{ v.defaultValue }}" step=1/></p>
 {% endfor %}
-<p><input type="text" value="Hello, World!" id="text"></p>
+<p><input type="text" value="AB" id="text"></p>
 <p><span id="svgResult"></span></p>
 <p>Result:<div id="shapeResult"></div></p>
 <p id="yoyoma"></p>
@@ -34,7 +34,7 @@ info = dict(
     style=style,
     #script=script,
     font_name=font,
-    scripts=["assets/hbjs.js", "assets/script.js"],
+    scripts=["https://cdn.rawgit.com/nodebox/g.js/master/dist/g.min.js", "assets/hbjs.js", "assets/script.js"],
     templates=dict(_header=header, _footer=footer, index=index),
 )
 

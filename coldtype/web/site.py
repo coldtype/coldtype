@@ -106,11 +106,14 @@ class site(renderable):
 
         if self.info.get("scripts"):
             for script in self.info["scripts"]:
-                ps = self.root / script
-                if ps.exists():
-                    self._watch.append(ps)
+                if script.startswith("http"):
+                    pass
                 else:
-                    print(ps, "does not exist")
+                    ps = self.root / script
+                    if ps.exists():
+                        self._watch.append(ps)
+                    else:
+                        print(ps, "does not exist")
     
         rendersdir = self.root / "renders"
 
