@@ -2,6 +2,22 @@
 //'use strict';
 var hb, fontBlob;
 
+function pathToRelative(pathArray) {
+  if (!pathArray.length) return [];
+  var x = pathArray[0][1], y = pathArray[0][2];
+  var prevCmd = '';
+  return [["M", x, y]].concat(pathArray.slice(1).map(function (pa) {
+    var r = [prevCmd === pa[0] ? ' ' : pa[0].toLowerCase()].concat(pa.slice(1).map(function (z, i) {
+      return z - ((i % 2) ? y : x);
+    }));
+    var lastPoint = r.slice(-2);
+    x += lastPoint[0];
+    y += lastPoint[1];
+    prevCmd = pa[0];
+    return r;
+  }));
+}
+
 class HBGlyph {
   constructor(x, y, path) {
     this.x = x;
@@ -57,31 +73,58 @@ class HBFont {
     face.destroy();
     blob.destroy();
 
-    var hb_glyphs = [];
+    var xmin = 10000;
+    var xmax = -10000;
+    var ymin = 10000;
+    var ymax = -10000;
     var ax = 0;
     var ay = 0;
-
-    result.map((x) => {
-      let p = new skia.Path();
-      let commands = [];
-      glyphs[x.g].map((g) => {
-        commands.push(g);
-        if (g.type == "M") {
-          p.moveTo(...g.values);
-        } else if (g.type == "Q") {
-          p.quadTo(...g.values);
-        } else if (g.type == "Z") {
-          p.close();
-        }
+    var path = pathToRelative(result.map(function (x) {
+      var result = glyphs[x.g].filter(function (command) {
+        return command.type !== 'Z';
+      }).map(function (command) {
+        var result = command.values.map(function (p, i) {
+          return i % 2 ? -(p + ay + x.dy) : p + ax + x.dx;
+        }).map(function (x, i) {
+          // bbox calc
+          if (i % 2) {
+            if (x < ymin) ymin = x;
+            if (x > ymax) ymax = x;
+          } else {
+            if (x < xmin) xmin = x;
+            if (x > xmax) xmax = x;
+          }
+          return x;
+        });
+        return [command.type].concat(result);
       });
-      console.log(p);
-      
-      hb_glyphs.push(new HBGlyph(ax+x.dx, ay+x.dy, commands));
-      ax += x.ax;
-      ay += x.ay;
-    });
+      ax += x.ax; ay += x.ay;
+      return result;
+    }).reduce((acc, val) => acc.concat(val), [])).map(x => x[0] + x.slice(1).join(' ')).join('').replace(/ -/g, '-');
+    var width = xmax - xmin;
+    var height = ymax - ymin;
 
-    return hb_glyphs;
+    var bbox = xmin + ' ' + ymin + ' ' + width + ' ' + height;
+
+    svgResult.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="128" viewBox="' + bbox + '">' +
+      '<path d="' + path + '" /></svg>';
+
+    // var hb_glyphs = [];
+    // var ax = 0;
+    // var ay = 0;
+
+    // result.map((x) => {
+    //   let commands = [];
+    //   glyphs[x.g].map((g) => {
+    //     commands.push(g);
+    //   });
+      
+    //   hb_glyphs.push(new HBGlyph(ax+x.dx, ay+x.dy, commands));
+    //   ax += x.ax;
+    //   ay += x.ay;
+    // });
+
+    // return hb_glyphs;
   }
 }
 
@@ -96,14 +139,8 @@ function updateResult() {
 }
 
 async function loadWasmAndFont() {
-  window.skia = await CanvasKitInit({locateFile: (file) => 'https://unpkg.com/canvaskit-wasm@0.19.0/bin/'+file});
   window.hbFont = await HBFont.loadFont(fontName.innerHTML);
   updateResult();
-
-  let p = new skia.Path();
-  p.moveTo(100, 200);
-
-  console.log(p);
 }
 
 loadWasmAndFont();

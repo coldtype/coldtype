@@ -10,9 +10,8 @@ index: jinja_html = """
 {% for k, v in fonts[0].fonts[0].variations.items() %}
 <p><label>{{ k }}</label><input type="range" id="{{ k }}" min="{{ v.minValue }}" max="{{ v.maxValue }}" value="{{ v.defaultValue }}" step=1/></p>
 {% endfor %}
-<p><input type="text" value="AB" id="text"></p>
+<p><input type="text" value="ABC" id="text"></p>
 <p><span id="svgResult"></span></p>
-<p id="yoyoma"></p>
 """
 footer: jinja_html = """
 """
