@@ -12,7 +12,6 @@ index: jinja_html = """
 {% endfor %}
 <p><input type="text" value="AB" id="text"></p>
 <p><span id="svgResult"></span></p>
-<p>Result:<div id="shapeResult"></div></p>
 <p id="yoyoma"></p>
 """
 footer: jinja_html = """
@@ -34,7 +33,13 @@ info = dict(
     style=style,
     #script=script,
     font_name=font,
-    scripts=["https://cdn.rawgit.com/nodebox/g.js/master/dist/g.min.js", "assets/hbjs.js", "assets/script.js"],
+    scripts=[
+        "https://unpkg.com/canvaskit-wasm@0.19.0/bin/canvaskit.js",
+        #"https://cdn.rawgit.com/nodebox/g.js/master/dist/g.min.js",
+        "assets/hbjs.js",
+        "assets/p5.min.js",
+        "assets/script.js",
+    ],
     templates=dict(_header=header, _footer=footer, index=index),
 )
 
