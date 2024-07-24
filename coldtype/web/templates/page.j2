@@ -78,6 +78,11 @@
     </div><!-- /wrapper -->
     {% endif %}
   </footer>
+  {% if info["scripts"] %}
+  {% for script in info["scripts"] %}
+  <script type="text/javascript" src="{{ script }}?t={{ version }}"></script>
+  {% endfor %}
+  {% endif %}
   {% if info["script"] %}
   <script type="text/javascript">
   {{ info["script"] }}

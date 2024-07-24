@@ -158,7 +158,7 @@ class Font():
                 break
         return name, family
     
-    def subset(self, output_path, *args, unicodes="U+0000-00FF U+2B22 U+201C U+201D U+201D"):
+    def subset(self, output_path, *args, unicodes="U+0000-00FF U+2B22 U+201C U+201D U+201D", features={}):
         _args = [
             "pyftsubset", str(self.path),
             f"--output-file={str(output_path)}",
@@ -168,7 +168,25 @@ class Font():
             "--notdef-outline",
             "--notdef-glyph",
         ]
+        
+        add_features = []
+        subtract_features = []
+
+        for k, v in features.items():
+            if v:
+                add_features.append(k)
+            else:
+                subtract_features.append(k)
+        
+        print(add_features, subtract_features)
+
+        if len(add_features) > 0:
+            _args.append("--layout-features+="+",".join(add_features))
+        if len(subtract_features) > 0:
+            _args.append("--layout-features-="+",".join(subtract_features))
+
         _args.extend(args)
+        print(">>", _args, "<<")
         run_with_check(_args)
         return Font(str(output_path))
     

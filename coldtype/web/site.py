@@ -75,7 +75,7 @@ class site(renderable):
             self.multisitedir.mkdir(exist_ok=True)
         
         if fonts:
-            self.fonts = woff2s(self.sitedir / "assets/fonts", fonts)
+            self.fonts = woff2s(self.sitedir / "assets/fonts", fonts, self.sitedir)
         else:
             self.fonts = []
         
@@ -103,6 +103,14 @@ class site(renderable):
         
         if self.info.get("style"):
             self.info["style"] = self.mod_css(self.info["style"])
+
+        if self.info.get("scripts"):
+            for script in self.info["scripts"]:
+                ps = self.root / script
+                if ps.exists():
+                    self._watch.append(ps)
+                else:
+                    print(ps, "does not exist")
     
         rendersdir = self.root / "renders"
 
