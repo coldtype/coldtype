@@ -349,6 +349,7 @@ class FFMPEGExport():
         loops=1,
         audio=None,
         audio_loops=None,
+        output_folder=None,
         vf=None,
         ):
         self.a = a
@@ -365,9 +366,13 @@ class FFMPEGExport():
         else:
             self.audio = None
             self.audio_loops = loops
-
+        
         template = a.pass_path(f"%4d.{a.fmt}")
-        self.folder = template.parent.parent
+
+        if output_folder is not None:
+            self.output_folder = output_folder
+        else:
+            self.output_folder = template.parent.parent
 
         # https://github.com/typemytype/drawbot/blob/master/drawBot/context/tools/mp4Tools.py
 
@@ -439,7 +444,7 @@ class FFMPEGExport():
         
         now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         d = ("_" + now) if self.date else ""
-        self.output_path = self.folder / f"{self.a.name}{d}.{self.fmt}"
+        self.output_path = self.output_folder / f"{self.a.name}{d}.{self.fmt}"
 
         self.args.append(self.output_path)
         if verbose:
@@ -478,3 +483,51 @@ class fontpreview(animation):
     def passes(self, action, renderer_state, indices=[]):
         frames = self.active_frames(action, renderer_state, indices)
         return [RenderPass(self, action, i, [Frame(i, self), self.matches[i]]) for i in frames]
+
+
+import shutil
+try:
+    from coldtype.img.skiaimage import SkiaImage
+except ImportError:
+    SkiaImage = None
+
+
+class image_sequence(animation):
+    """
+    Preview pre-rendered image-based animations;
+    move images into renders folder with shutil.copy
+    (good for something like making a prores file from
+    an image sequence (if you use the FFMPEGExport))
+    """
+    def __init__(self, images, fps, looping=False, **kwargs):
+        self.images = images
+        self.looping = looping
+
+        if self.looping:
+            timeline = Timeline(len(self.images)*2-2, fps)
+        else:
+            timeline = Timeline(len(self.images), fps)
+        
+        img = SkiaImage(self.images[0])
+        super().__init__(img.rect(), timeline, fmt=self.images[0].suffix[1:], **kwargs)
+        self.self_rasterizing = True
+    
+    def normalize_result(self, pens):
+        return pens
+    
+    def run(self, render_pass, renderer_state):
+        from coldtype.timing.easing import ez
+
+        idx = render_pass.idx
+        if self.looping:
+            t = idx/self.timeline.duration
+            idx = round(ez(t, "l", 1, rng=(0, len(self.images)-1)))
+        
+        result = None
+        if renderer_state and renderer_state.previewing:
+            return self.images[idx]
+        else:
+            render_pass.output_path.parent.mkdir(exist_ok=True, parents=True)
+            shutil.copy(self.images[idx], render_pass.output_path)
+            result = render_pass.output_path
+        return result

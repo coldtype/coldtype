@@ -1,46 +1,38 @@
 from coldtype import *
-from coldtype.img.skiaimage import SkiaImage
-from coldtype.timing.timeline import Timeline
+from coldtype.renderable.animation import image_sequence, shutil
 
-from shutil import copy
+def sorted_images(folder, suffix="*.jpg"):
+    return list(sorted(folder.glob(suffix), key=lambda p: p.name))
 
-images = list(sorted(Path(__inputs__[0]).glob("*.jpg"), key=lambda p: p.name))
-img = SkiaImage(images[0])
+folder = Path(__inputs__[0])
 
-class passthrough(animation):
-    def __init__(self, images, fps, looping=False, **kwargs):
-        self.images = images
-        self.looping = looping
+images = sorted_images(folder)
+images_hires = None
 
-        if self.looping:
-            timeline = Timeline(len(images)*2-2, fps)
-        else:
-            timeline = Timeline(len(images), fps)
-        
-        img = SkiaImage(images[0])
-        super().__init__(img.rect(), timeline, fmt=images[0].suffix[1:], **kwargs)
-        self.self_rasterizing = True
-    
-    def normalize_result(self, pens):
-        return pens
-    
-    def run(self, render_pass, renderer_state):
-        idx = render_pass.idx
-        if self.looping:
-            t = idx/self.timeline.duration
-            idx = round(ez(t, "l", 1, rng=(0, len(self.images)-1)))
-        
-        result = None
-        if renderer_state and renderer_state.previewing:
-            return images[idx]
-        else:
-            render_pass.output_path.parent.mkdir(exist_ok=True, parents=True)
-            copy(images[idx], render_pass.output_path)
-            result = render_pass.output_path
-        return result
+if (folder / "hires").exists():
+    images_hires = sorted_images(folder / "hires")
 
-@passthrough(images, 24, looping=True)
+parent = folder.parent
+base_name = parent.name + "_" + folder.name
+name = base_name
+
+fps = 24
+
+if images_hires:
+    name = base_name + "_proxy"
+    @image_sequence(images_hires, fps, looping=True, name=base_name, render_only=True)
+    def viewer_hires(_): return None
+
+@image_sequence(images, fps, looping=True, name=name)
 def viewer(_): return None
 
 def release(_):
-    FFMPEGExport(viewer, loops=2).prores().write(True)
+    FFMPEGExport(viewer, loops=1, output_folder=parent).prores().write(True)
+    if images_hires:
+        FFMPEGExport(viewer_hires, loops=1, output_folder=parent).prores().write(True)
+    
+    if True:
+        # clean up unnecessary files
+        shutil.rmtree(viewer.output_folder)
+        if images_hires:
+            shutil.rmtree(viewer_hires.output_folder)
