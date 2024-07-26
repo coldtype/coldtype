@@ -181,7 +181,6 @@ class HBShape:
         if script is not None:
             buf.set_script_from_ot_tag(script)
 
-        print(features)
         hb.shape(self.font, buf, features)
 
         glyphOrder = self.glyphOrder
