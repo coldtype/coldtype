@@ -6,11 +6,7 @@ font = "PolymathVar"
 header: jinja_html = """
 """
 index: jinja_html = """
-<p id="fontName">{{ fonts[0].fonts[0].woff2_relative }}</p>
-{% for k, v in fonts[0].fonts[0].variations.items() %}
-<p><label>{{ k }}</label><input type="range" id="{{ k }}" min="{{ v.minValue }}" max="{{ v.maxValue }}" value="{{ v.defaultValue }}" step=1/></p>
-{% endfor %}
-<p><input type="text" value="ABC" id="text"></p>
+<!--<p id="fontName">{{ fonts[0].fonts[0].woff2_relative }}</p>-->
 <p><span id="svgResult"></span></p>
 """
 footer: jinja_html = """
@@ -18,7 +14,7 @@ footer: jinja_html = """
 
 style: css = """
 * { box-sizing: border-box; }
-body { text-align: center; }
+body { text-align: center; background: black; }
 h1 { font-variation-settings: "wght" 900; }
 h2 { font-variation-settings: "wght" 700; }
 header a { color: royalblue; }
@@ -35,6 +31,8 @@ info = dict(
     scripts=[
         "https://unpkg.com/canvaskit-wasm@0.19.0/bin/canvaskit.js",
         #"https://cdn.rawgit.com/nodebox/g.js/master/dist/g.min.js",
+        "https://cdn.jsdelivr.net/gh/generative-design/Code-Package-p5.js@master/libraries/gg-dep-bundle/gg-dep-bundle.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/opentype.js/0.7.3/opentype.min.js",
         "assets/hbjs.js",
         "assets/p5.min.js",
         "assets/script.js",
