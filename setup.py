@@ -89,7 +89,8 @@ setuptools.setup(
     },
     entry_points={
         'console_scripts': [
-            'coldtype = coldtype.renderer:main'
+            'coldtype = coldtype.renderer:main',
+            'ct = coldtype.renderer:main',
         ],
     },
     extras_require={
