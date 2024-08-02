@@ -49,6 +49,7 @@ __VERSIONS__ = {} # will be redefined contextually
 
 __sibling__ = lambda x: x # will be redefined contextually
 __inputs__ = [] # will be redefined contextually
+ººinputsºº = [] # will be redefined contextually
 __memory__ = [] # will be redefined contextually
 __as_config__ = False # will be redefined contextually
 
