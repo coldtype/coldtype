@@ -1,4 +1,4 @@
-import jinja2, os, re, subprocess
+import jinja2, os, re, subprocess, shutil
 
 from coldtype.renderable import renderable
 from coldtype.geometry import Rect
@@ -82,20 +82,19 @@ class site(renderable):
         version = randint(0, 100000000)
         year = int(datetime.now().year)
 
-        mediadir = self.root / "media"
-        if mediadir.exists() and not (self.sitedir / "media").exists():
-            os.symlink(mediadir, self.sitedir / "media")
+        for d in ["media", "renders"]:
+            src = self.root / d
+            symlink = self.sitedir / d
+            if src.exists() and not symlink.exists():
+                os.symlink(src, symlink)
         
         assetsdir = self.root / "assets"
-
         if assetsdir.exists():
             style = assetsdir / "style.css"
             if style.exists():
                 self._watch.append(style)
         
-            print("rsync assets")
-            os.system(f'rsync -r {assetsdir}/ {self.sitedir / "assets"}')
-            print("/rsync assets")
+            shutil.copytree(assetsdir, self.sitedir / "assets")
 
             if style.exists():
                 style2 = (self.sitedir / "assets/style.css")
@@ -114,13 +113,6 @@ class site(renderable):
                         self._watch.append(ps)
                     else:
                         print(ps, "does not exist")
-    
-        rendersdir = self.root / "renders"
-
-        if rendersdir.exists():
-            print("rsync renders")
-            os.system(f'rsync -r {rendersdir}/ {self.sitedir / "renders"}')
-            print("/rsync renders")
     
         self.templates = {}
         for j2 in (self.root / "templates").glob("*.j2"):
