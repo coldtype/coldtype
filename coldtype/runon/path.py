@@ -1330,7 +1330,7 @@ class P(Runon):
 
         return self.align(rect, compass, tx=tx, ty=ty)
     
-    å = align
+    #å = align
 
     alne = partialmethod(_align_compass, "NE")
     ale = partialmethod(_align_compass, "E")
@@ -1364,7 +1364,7 @@ class P(Runon):
             el.align(rect, x=x, y=None, tx=tx, ty=ty)
         return self
     
-    xå = xalign
+    #xå = xalign
 
 
     def _xalign(self, rect=None, x="centerx", th=None, tv=None, tx=1, ty=0) -> "P":
@@ -1384,7 +1384,7 @@ class P(Runon):
         self.align(rect, x=None, y=y, tx=tx, ty=ty)
         return self
     
-    yå = yalign
+    #yå = yalign
 
 
     def _yalign(self, rect=None, y="centery", th=None, tv=None, tx=0, ty=1) -> "P":
@@ -1847,6 +1847,29 @@ class P(Runon):
     
 
     def _gridlayer(self, nx, ny=None, track=0, lead=0) -> "P":
+        return self
+
+
+    def pattern_repeat(self, r) -> "P":
+
+        a = self.ambit(tx=1, ty=1)
+        copies = type(self)()
+        def repeater(_p):
+            if a.mxx > r.mxx:
+                copies.append(_p.copy().translate(-r.w, 0).fssw(hsl(0, a=0.5), -1, 0).rotate(0))
+            if a.mxy > r.mxy:
+                copies.append(_p.copy().translate(0, -r.h).fssw(hsl(0.25, a=0.5), -1, 0).rotate(0))
+            if a.mny < r.mny:
+                copies.append(_p.copy().translate(0, r.h).fssw(hsl(0.5, a=0.5), -1, 0).rotate(0))
+            if a.mnx < r.mnx:
+                copies.append(_p.copy().translate(r.w, 0).fssw(hsl(0.75, a=0.5), -1, 0).rotate(0))
+        repeater(self)
+        for c in list(copies):
+            repeater(c)
+        return self.up().append(copies)
+    
+
+    def _pattern_repeat(self, r) -> "P":
         return self
 
 

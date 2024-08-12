@@ -559,6 +559,23 @@ class LayoutMixin():
         self.align(r, tx=tx, ty=ty, x=x, y=y)
         return self.up().insert(0, board)
     
+    def pattern_repeat(self, r):
+        a = self.ambit(tx=1, ty=1)
+        copies = type(self)()
+        def repeater(_p):
+            if a.mxx > r.mxx:
+                copies.append(_p.copy().translate(-r.w, 0).fssw(hsl(0, a=0.5), -1, 0).rotate(0))
+            if a.mxy > r.mxy:
+                copies.append(_p.copy().translate(0, -r.h).fssw(hsl(0.25, a=0.5), -1, 0).rotate(0))
+            if a.mny < r.mny:
+                copies.append(_p.copy().translate(0, r.h).fssw(hsl(0.5, a=0.5), -1, 0).rotate(0))
+            if a.mnx < r.mnx:
+                copies.append(_p.copy().translate(r.w, 0).fssw(hsl(0.75, a=0.5), -1, 0).rotate(0))
+        repeater(self)
+        for c in list(copies):
+            repeater(c)
+        return self.up().append(copies)
+    
     def track_with_width(self, t):
         """Track-out/distribute elements"""
         x = 0
