@@ -1,6 +1,7 @@
 from random import Random
 
 def random_series(start=0, end=1, seed=0, count=5000, ease=None):
+    print("here")
     from coldtype.timing.easing import ez
 
     rnd = Random()

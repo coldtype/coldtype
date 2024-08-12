@@ -10,8 +10,7 @@ from typing import Pattern
 #self\.assertEqual\(([^,]+),([^)]+)\)
 #assert $1 ==$2
 
-_view_rs1 = random_series()
-
+_view_rs1 = None
 
 class Scaffold(Runon):
     def __init__(self, *val, warn_float=True):
@@ -162,6 +161,10 @@ class Scaffold(Runon):
         return self
     
     def view(self, fontSize=32):
+        global _view_rs1
+        if _view_rs1 is None:
+            _view_rs1 = random_series()
+
         from coldtype.runon.path import P
         from coldtype.text import Style
 
