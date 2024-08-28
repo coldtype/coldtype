@@ -38,7 +38,7 @@ def play_sound(name="Pop"):
 
 def show_in_finder(path):
     p = path.expanduser().resolve()
-    if on_mac() or or on_linux():
+    if on_mac() or on_linux():
         os.system(f"open {p}")
     elif on_windows():
         os.system(f"explorer {p}")
