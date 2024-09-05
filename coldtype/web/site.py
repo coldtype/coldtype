@@ -94,7 +94,7 @@ class site(renderable):
             if style.exists():
                 self._watch.append(style)
         
-            shutil.copytree(assetsdir, self.sitedir / "assets")
+            shutil.copytree(assetsdir, self.sitedir / "assets", dirs_exist_ok=True)
 
             if style.exists():
                 style2 = (self.sitedir / "assets/style.css")
