@@ -230,5 +230,5 @@ class Page:
             .replace("+++", "<h5 class='continuation' id='continue-reading'>•••</h5>")
             .replace("ßßß", "<div class='spacer'></div>")
             .replace("---", "<div class='section'>•••</div>"), None, root)
-
+        
         return Page(file, data.get("date"), slug, title, template, preview, content, data, preview_image)

@@ -43,6 +43,7 @@ class site(renderable):
         , watch=None
         , template=None
         , slugs="flat"
+        , pagemod=None
         , **kwargs
         ):
         self._watch = watch or []
@@ -56,6 +57,7 @@ class site(renderable):
         self.generators = generators or {}
         self.template_fn = template
         self.slugs = slugs
+        self.pagemod = pagemod or (lambda x: x)
         
         self.port = port
         self.multiport = multiport
@@ -127,13 +129,13 @@ class site(renderable):
         for file in (self.root / "pages").glob("**/*.md"):
             self._watch.append(file)
             page = Page.load_markdown(file, self.root, self.template_fn, self.slugs)
-            self.pages.append(page)
+            self.pages.append(self.pagemod(page))
         
         for file in (self.root / "pages").glob("**/*.ipynb"):
             # TODO could check gitignore here?
             self._watch.append(file)
             page = Page.load_notebook(file, self.root, self.generic_templates["notebook"], self.template_fn, self.slugs)
-            self.pages.append(page)
+            self.pages.append(self.pagemod(page))
 
         super().__init__(rect, watch=self._watch, **kwargs)
 
@@ -197,16 +199,16 @@ class site(renderable):
 
         return css
 
-    def header_footer(self, nav_links, url):
+    def header_footer(self, nav_links, url, page=None):
         nav_html = string_env.from_string(nav_template).render(nav_links=nav_links)
 
         header = self.templates.get("_header", False)
         if header:
-            header = header.render({**self.standard_data, **dict(nav_links=nav_links, nav_html=nav_html, url=url)})
+            header = header.render({**self.standard_data, **dict(nav_links=nav_links, nav_html=nav_html, url=url, page=page)})
         
         footer = self.templates.get("_footer", False)
         if footer:
-            footer = footer.render({**self.standard_data, **dict(nav_links=nav_links, nav_html=nav_html, url=url)})
+            footer = footer.render({**self.standard_data, **dict(nav_links=nav_links, nav_html=nav_html, url=url, page=page)})
         
         return header, footer
     
@@ -258,7 +260,7 @@ class site(renderable):
                 , external=v.startswith("http")
                 , classes=" ".join(classes)))
         
-        header, footer = self.header_footer(nav_links, url)
+        header, footer = self.header_footer(nav_links, url, page)
         
         content = self.templates[template_name].render({**self.standard_data, **dict(page=page, url=url), **(data or {})})
         

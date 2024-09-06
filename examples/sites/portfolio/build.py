@@ -9,15 +9,20 @@ info = dict(
     description="This is the Coldtype portfolio",
     navigation={"Home": "/", "About": "/about"})
 
+def pagemod(p):
+    print(p.title)
+    return p
+
 @site(ººsiblingºº(".")
     , port=8008
     , sources=dict(public_posts=public_posts)
     , info=info
+    , pagemod=pagemod
     , fonts={
         "text-font": dict(regular="Casserole-Sans")})
 def portfolio(_):
     return None
 
-@renderable((1080, 540), bg=1)
+#@renderable((1080, 540), bg=1)
 def test(r):
    return (StSt("TEST.A", Font.MuSan(), 400).align(r))
