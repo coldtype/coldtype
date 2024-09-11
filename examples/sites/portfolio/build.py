@@ -21,7 +21,7 @@ def pagemod(p):
     , fonts={
         "text-font": dict(regular="Casserole-Sans")})
 def portfolio(_):
-    return None
+    portfolio.build()
 
 #@renderable((1080, 540), bg=1)
 def test(r):

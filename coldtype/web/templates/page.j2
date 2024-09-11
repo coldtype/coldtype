@@ -8,6 +8,8 @@
   <meta name="description" content="{{ description }}">
   <meta property="og:title" content="{{ title }}"/>
   <meta property="og:type" content="website"/>
+  {% for favicon in favicons %}{{ favicon|safe }}
+  {% endfor %}
   <style type="text/css">{% for family in fonts %}{% for font in family.fonts %}
     @font-face {
       {% if font["variations"] %}/* {% for k, v in font["variations"].items() %} {{ k }} {{ v["minValue"] }} {{ v["maxValue"] }} ({{ v["defaultValue"] }}) {% endfor %}*/{% else %}/* static font */{% endif %}

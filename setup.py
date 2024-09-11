@@ -150,6 +150,7 @@ setuptools.setup(
             "lxml",
             "pygments",
             "sourcetypes",
+            "favicons",
         ]
     },
     install_requires=basic_deps,

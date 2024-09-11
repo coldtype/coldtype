@@ -45,7 +45,7 @@ info = dict(
         "text-font": dict(regular="JetBrainsMono")
       })
 def website(_):
-    return None
+    website.build()
 
 def release(_):
     website.upload("example.com", "us-west-1", "personal")

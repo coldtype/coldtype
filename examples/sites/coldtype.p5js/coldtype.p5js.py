@@ -47,7 +47,7 @@ info = dict(
         "text-font": dict(regular=font, _features=dict(ss01=True,ss02=True))
       })
 def website(_):
-    return None
+    website.build()
 
 def release(_):
     website.upload("example.com", "us-west-1", "personal")

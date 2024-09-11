@@ -103,13 +103,18 @@ info = dict(
     },
 )
 
+@renderable()
+def favicon(r):
+    return StSt("C", Font.ColdObvi(), 1300, wdth=1).align(r).f(0)
+
 @site(ººsiblingºº(".")
       , port=8008
       , livereload=True
       , info=info
+      , favicon=favicon
       , fonts={"text-font": dict(regular="MDIO-VF")})
-def site(_):
-    return None
+def website(_):
+    website.build()
 
 @renderable((1080, 200), fmt="png")
 def logo(r):
@@ -118,4 +123,4 @@ def logo(r):
         .align(r))
 
 def release(_):
-    site.upload("coldtype.xyz", "us-west-1", "personal")
+    website.upload("coldtype.xyz", "us-west-1", "personal")

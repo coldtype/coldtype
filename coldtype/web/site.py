@@ -44,6 +44,7 @@ class site(renderable):
         , template=None
         , slugs="flat"
         , pagemod=None
+        , favicon=None
         , **kwargs
         ):
         self._watch = watch or []
@@ -57,6 +58,7 @@ class site(renderable):
         self.generators = generators or {}
         self.template_fn = template
         self.slugs = slugs
+        self.favicon = favicon
         self.pagemod = pagemod or (lambda x: x)
         
         self.port = port
@@ -80,9 +82,6 @@ class site(renderable):
             self.fonts = woff2s(self.sitedir / "assets/fonts", fonts, self.sitedir)
         else:
             self.fonts = []
-        
-        version = randint(0, 100000000)
-        year = int(datetime.now().year)
 
         for d in ["media", "renders"]:
             src = self.root / d
@@ -138,7 +137,24 @@ class site(renderable):
             self.pages.append(self.pagemod(page))
 
         super().__init__(rect, watch=self._watch, **kwargs)
+    
+    def build(self):
+        favicons = []
 
+        if self.favicon:
+            from favicons import Favicons
+
+            if isinstance(self.favicon, renderable):
+                favicon_path = self.favicon.render_to_disk()[0]
+            else:
+                favicon_path = self.root / self.favicon
+
+            with Favicons(favicon_path, self.sitedir) as fs:
+                fs.generate()
+                favicons = fs.html()
+
+        version = randint(0, 100000000)
+        year = int(datetime.now().year)
         build_time_utc = datetime.now(timezone.utc)
         rfc_822_format = "%a, %d %b %Y %H:%M:%S %z"
         formatted_time = build_time_utc.strftime(rfc_822_format)
@@ -151,6 +167,7 @@ class site(renderable):
             , root=self.root
             , sitedir=self.sitedir
             , fonts=self.fonts
+            , favicons=favicons
             , str=str)
         
         for k, v in self.sources.items():
@@ -167,7 +184,7 @@ class site(renderable):
             g(self)
 
         if self.multiport:
-            dst = self.multisitedir / root.stem
+            dst = self.multisitedir / self.root.stem
             dst.mkdir(exist_ok=True, parents=True)
             #shutil.copytree(sitedir, dst, dirs_exist_ok=True)
 
@@ -175,8 +192,8 @@ class site(renderable):
 
             for page in dst.glob("**/*.html"):
                 html = Path(page).read_text()
-                html = re.sub(r"=\"/", f'="/{root.stem}/', html)
-                html = re.sub(r"url\('/", f"url('/{root.stem}/", html)
+                html = re.sub(r"=\"/", f'="/{self.root.stem}/', html)
+                html = re.sub(r"url\('/", f"url('/{self.root.stem}/", html)
                 Path(page).write_text(html)
     
     def mod_css(self, css):

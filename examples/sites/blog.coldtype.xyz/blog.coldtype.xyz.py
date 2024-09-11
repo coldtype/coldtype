@@ -20,7 +20,7 @@ info = dict(
         "text-font": dict(regular="MDSystem-VF"),
         "mono-font": dict(regular="MDIO-VF")})
 def website(_):
-    return None
+    website.build()
 
 def release(_):
     website.upload("blog.coldtype.xyz", "us-west-1", "personal")
