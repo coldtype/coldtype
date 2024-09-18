@@ -431,16 +431,15 @@ class Renderer():
         return _rs
     
     def calculate_window_size(self, rs:List[renderable]):
-        dscale = self.state.preview_scale
+        overall_preview_scale = self.state.preview_scale
         w = 0
         llh = -1
         lh = -1
         h = 0
         for r in rs:
-            if not hasattr(r, "rect"):
-                continue
-            
-            sr = r.rect.scale(dscale, "mnx", "mny").round()
+            if not hasattr(r, "rect"): continue
+            local_preview_scale = r.preview_scale * overall_preview_scale
+            sr = r.rect.scale(local_preview_scale, "mnx", "mny").round()
             w = max(sr.w, w)
             adjr = None
             if r.layer:

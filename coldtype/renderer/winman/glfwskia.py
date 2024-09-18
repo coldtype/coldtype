@@ -394,7 +394,8 @@ class WinmanGLFWSkia():
                         print("failed to copy to clipboard")
 
                 try:
-                    self.draw_preview(idx, self.renderer.state.preview_scale, canvas, rect, (render, result, rp))
+                    preview_scale = render.preview_scale * self.renderer.state.preview_scale
+                    self.draw_preview(idx, preview_scale, canvas, rect, (render, result, rp))
                     did_preview.append(rp)
                 except Exception as e:
                     short_error = self.renderer.print_error()

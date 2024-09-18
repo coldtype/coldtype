@@ -103,7 +103,7 @@ info = dict(
     },
 )
 
-@renderable()
+@renderable(preview_scale=0.25)
 def favicon(r):
     return StSt("C", Font.ColdObvi(), 1300, wdth=1).align(r).f(0)
 

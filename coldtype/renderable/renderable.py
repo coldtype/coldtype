@@ -154,6 +154,7 @@ class renderable():
         mute=False,
         rstate=False,
         preview_only=False,
+        preview_scale=1,
         render_only=False,
         direct_draw=False,
         clip=False,
@@ -228,6 +229,7 @@ class renderable():
         self.solo = solo
         self.mute = mute
         self.preview_only = preview_only
+        self.preview_scale = preview_scale
         self.render_only = render_only
         self.rstate = rstate
         self.clip = clip
