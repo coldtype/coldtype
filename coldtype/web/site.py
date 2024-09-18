@@ -45,6 +45,8 @@ class site(renderable):
         , slugs="flat"
         , pagemod=None
         , favicon=None
+        , symlink_renders=True
+        , symlink_media=True
         , **kwargs
         ):
         self._watch = watch or []
@@ -60,6 +62,9 @@ class site(renderable):
         self.slugs = slugs
         self.favicon = favicon
         self.pagemod = pagemod or (lambda x: x)
+
+        self.symlink_renders = symlink_renders
+        self.symlink_media = symlink_media
         
         self.port = port
         self.multiport = multiport
@@ -80,14 +85,21 @@ class site(renderable):
         
         if fonts:
             self.fonts = woff2s(self.sitedir / "assets/fonts", fonts, self.sitedir)
+            for family in self.fonts:
+                if family.embed:
+                    from base64 import b64encode
+                    for font in family.fonts:
+                        font.embedded = str(b64encode(font.woff2.read_bytes()), encoding="utf-8")
         else:
             self.fonts = []
 
         for d in ["media", "renders"]:
-            src = self.root / d
-            symlink = self.sitedir / d
-            if src.exists() and not symlink.exists():
-                os.symlink(src, symlink)
+            do_symlink = getattr(self, f"symlink_{d}")
+            if do_symlink:
+                src = self.root / d
+                symlink = self.sitedir / d
+                if src.exists() and not symlink.exists():
+                    os.symlink(src, symlink)
         
         assetsdir = self.root / "assets"
         if assetsdir.exists():

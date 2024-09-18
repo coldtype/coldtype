@@ -3,6 +3,7 @@ import inspect, platform, re, tempfile, math, datetime
 try:
     import skia
     from coldtype.pens.skiapen import SkiaPen
+    from coldtype.pens.svgpen import SVGPen
 except ImportError:
     skia = None
     SkiaPen = None
@@ -491,17 +492,27 @@ class renderable():
     def render_and_rasterize(self, scale=1, style=None) -> str:
         return self.render_and_rasterize_frame(0, scale=scale, style=style)
     
-    def render_to_disk(self):
+    def render_to_disk(self, print_paths=False):
         passes = self.passes(Action.RenderAll, None)
         paths = []
         for rp in passes:
             output_path = rp.output_path
+            output_path.parent.mkdir(exist_ok=True, parents=True)
+
+            if print_paths:
+                print(output_path)
             result = self.run_normal(rp, None, False)
-            SkiaPen.Composite(result,
-                self.rect,
-                str(output_path),
-                scale=1,
-                context=None)
+            if self.fmt == "png":
+                SkiaPen.Composite(result,
+                    self.rect,
+                    str(output_path),
+                    scale=1,
+                    context=None)
+            elif self.fmt == "svg":
+                output_path.write_text(SVGPen.Composite(result, self.rect, viewBox=self.viewBox))
+                #SkiaPen.SVG(result, self.rect, str(output_path), scale=1)
+            else:
+                print("render_to_disk", self.fmt, "not supported")
             paths.append(output_path)
         return paths
     

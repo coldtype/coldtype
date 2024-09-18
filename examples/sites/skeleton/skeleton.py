@@ -42,7 +42,7 @@ info = dict(
       , port=8008
       , info=info
       , fonts={
-        "text-font": dict(regular="JetBrainsMono")
+        "text-font": dict(regular="Cheee_Caption", _embed=True)
       })
 def website(_):
     website.build()

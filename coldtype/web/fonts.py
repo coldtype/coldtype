@@ -14,6 +14,7 @@ class WebFont():
     bold: bool
     italic: bool
     variations: dict
+    embedded: str = None
 
     def js_args(self):
         return ", ".join([f"{k}={(v['defaultValue']-v['minValue'])/(v['maxValue']-v['minValue'])}" for k, v in self.variations.items()])
@@ -27,6 +28,7 @@ class WebFontFamily():
     name: str
     variable_name: str
     fonts: List[WebFont]
+    embed: bool = False
 
     @property
     def variable_name_js(self):
@@ -76,6 +78,7 @@ def woff2s(dst_folder, families_info, root):
     for var_name, family in families_info.items():
         fonts = []
         features = family.get("_features", {})
+        embed = "_embed" in family
         for style_name, font in family.items():
             if not style_name.startswith("_"):
                 fonts.append(get_woff2(root, dst_folder, font,
@@ -83,7 +86,7 @@ def woff2s(dst_folder, families_info, root):
                     italic="italic" in style_name,
                     features=features))
         _, family = fonts[-1].font.names()
-        families.append(WebFontFamily(family.replace(" ", ""), var_name, fonts))
+        families.append(WebFontFamily(family.replace(" ", ""), var_name, fonts, embed=embed))
     
     return families
 
