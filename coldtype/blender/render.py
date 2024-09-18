@@ -1,4 +1,5 @@
-import subprocess, time, sys
+import subprocess, time, sys, json
+from urllib.parse import urlparse
 from pathlib import Path
 
 from coldtype.osutil import on_windows
@@ -16,6 +17,15 @@ def prefix_inline_venv(expr):
 
     for egg_link in venv.glob("*.egg-link"):
         paths.append(Path(egg_link).read_text().splitlines()[0])
+    
+    for direct_url in venv.glob("**/direct_url.json"):
+        try:
+            info = json.loads(direct_url.read_text())
+            if info.get("dir_info", {}).get("editable") == True:
+                direct_path = urlparse(info.get("url")).path
+                paths.append(Path(direct_path))
+        except:
+            print(">>> could not load direct_url.json for ", direct_url)
 
     paths_str = ""
     for p in paths:
