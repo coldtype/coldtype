@@ -102,9 +102,11 @@ class site(renderable):
                     os.symlink(src, symlink)
         
         assetsdir = self.root / "assets"
+        style_file = None
         if assetsdir.exists():
             style = assetsdir / "style.css"
             if style.exists():
+                style_file = True
                 self._watch.append(style)
         
             shutil.copytree(assetsdir, self.sitedir / "assets", dirs_exist_ok=True)
@@ -115,6 +117,9 @@ class site(renderable):
         
         if self.info.get("style"):
             self.info["style"] = self.mod_css(self.info["style"])
+        else:
+            if style_file is not None:
+                self.info["has_style"] = True
 
         if self.info.get("scripts"):
             for script in self.info["scripts"]:

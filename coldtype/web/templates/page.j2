@@ -49,7 +49,7 @@
   <style type="text/css">
   {{ info["style"] }}
   </style>
-  {% else %}
+  {% elif info["has_style"] %}
   <link rel="stylesheet" href="/assets/style.css?t={{ version }}"/>
   {% endif %}
   <script type="text/javascript">
