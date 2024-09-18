@@ -293,7 +293,8 @@ class site(renderable):
                     , info=self.info
                     , header=header
                     , footer=footer
-                    , title=header_title)}))
+                    , title=header_title
+                    , description=self.info.get("description"))}))
         else:
             path.write_text(content)
         
