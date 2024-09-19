@@ -91,6 +91,7 @@ setuptools.setup(
         'console_scripts': [
             'coldtype = coldtype.renderer:main',
             'ct = coldtype.renderer:main',
+            'ctb = coldtype.renderer:main_b3d',
         ],
     },
     extras_require={

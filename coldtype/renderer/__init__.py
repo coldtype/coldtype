@@ -119,7 +119,7 @@ class Renderer():
         ConfigOption.AddCommandLineArgs(pargs, parser)
         return pargs, parser
 
-    def __init__(self, parser, winmans_class=Winmans):
+    def __init__(self, parser, winmans_class=Winmans, profile=None):
         sys.path.insert(0, os.getcwd())
 
         self.subprocesses = {}
@@ -128,6 +128,9 @@ class Renderer():
             self.args = parser
         else:
             self.args = parser.parse_args()
+
+        if profile is not None:
+            self.args.profile = profile
 
         if self.args.file == None:
             self.args.file = "."
@@ -1734,10 +1737,13 @@ class Renderer():
             self.profiler.dump_stats("profile_result")
 
 
-def main(winmans=Winmans):
+def main(winmans=Winmans, profile=None):
     Path("~/.coldtype").expanduser().mkdir(exist_ok=True)
     _, parser = Renderer.Argparser()
-    Renderer(parser, winmans_class=winmans).main()
+    Renderer(parser, winmans_class=winmans, profile=profile).main()
+
+def main_b3d():
+    main(profile="b3dlo")
 
 if __name__ == "__main__":
     main()

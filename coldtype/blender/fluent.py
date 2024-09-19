@@ -1252,8 +1252,10 @@ class BpyObj(_Chainable):
         return self
 
     def shade_smooth(self, auto_smooth=False):
+        if auto_smooth:
+            print("shade smooth use_auto_smooth disabled")
         with self.obj_selected():
-            bpy.ops.object.shade_smooth(use_auto_smooth=auto_smooth)
+            bpy.ops.object.shade_smooth()
         return self
     
     def shade_auto_smooth(self):
@@ -1262,6 +1264,9 @@ class BpyObj(_Chainable):
     shadeSmooth = shade_smooth
     
     def auto_smooth(self, angle=30):
+        #print("auto smooth disabled")
+        bpy.ops.object.shade_auto_smooth(use_auto_smooth=True, angle=math.radians(angle))
+        return self
         if angle is None:
             self.obj.data.use_auto_smooth = False
         else:
