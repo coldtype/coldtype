@@ -37,7 +37,7 @@ def setup(bpw:BpyWorld):
                 #BpyObj.Cube(f"Cube_{pt.idx}")
                 #.dimensions(x, y, z)
                 BpyObj.Curve(f"Cube_{pt.idx}")
-                .draw(StSt("Z", "Done", 4, wdth=1).pen())
+                .draw(StSt("NICE", "AdGothic", 4, wdth=1).pen())
                 .rotate(x=90)
                 .extrude(0.05)
                 .convert_to_mesh()

@@ -369,8 +369,15 @@ class b3d_animation(animation):
         if self.renderer == "skia":
             return super().rasterize(config, content, rp)
         
+        try:
+            from b3denv import get_vars
+            b3d_vars = get_vars(None)
+            blender_path = Path(b3d_vars["blender"])
+        except:
+            raise Exception("NO BLENDER FOUND (via b3denv)")
+        
         fi = rp.args[0].i
-        blend_source(config.blender_app_path,
+        blend_source(blender_path,
             self.filepath,
             self.blender_io.blend_file,
             fi,

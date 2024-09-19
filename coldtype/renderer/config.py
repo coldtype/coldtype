@@ -10,24 +10,6 @@ def true_false_or_none(x):
         return True
     else:
         return None
-    
-
-def default_blender_app_path():
-    try:
-        from b3denv import get_vars
-        b3d_vars = get_vars(None)
-        return Path(b3d_vars["blender"])
-    except:
-        return None
-
-
-def mod_blender_app_path(bap):
-    if isinstance(bap, str):
-        bap = Path(bap).expanduser().resolve()
-    if bap:
-        if bap.suffix == ".app":
-            bap = bap / "Contents/MacOS/blender"
-    return bap
 
 
 class ConfigOption(Enum):
@@ -58,9 +40,6 @@ class ConfigOption(Enum):
     SrcMacros = ("src_macros", {}, "srcm")
     FFMPEGCommand = ("ffmpeg_command", "ffmpeg", "ffc")
     BlenderWatch = ("blender_watch", None, "bw", true_false_or_none)
-    BlenderAppPath = ("blender_app_path", default_blender_app_path(), "bap",
-        lambda x: Path(x).expanduser().resolve(),
-        mod_blender_app_path)
     BlenderFile = ("blender_file", None, "bf",
         lambda x: Path(x).expanduser().resolve())
     BlenderResetFactory = ("blender_reset_factory", None, "brf", true_false_or_none)

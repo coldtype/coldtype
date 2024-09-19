@@ -5,21 +5,29 @@ from coldtype.renderer.winman.passthrough import WinmanPassthrough
 from coldtype.blender.render import blender_launch_livecode
 from coldtype.blender import BlenderIO
 
+
+
 class WinmanBlender(WinmanPassthrough):
     def __init__(self, config):
         self.subp = None
         self.command_file = None
-        self.blender_app_path = config.blender_app_path
+
+        try:
+            from b3denv import get_vars
+            b3d_vars = get_vars(None)
+            self.blender_path = Path(b3d_vars["blender"])
+        except:
+            raise Exception("NO BLENDER FOUND (via b3denv)")
+
         self.reset_factory = config.blender_reset_factory
         self.cli_args = config.blender_command_line_args
-        print(">BLENDER>", self.blender_app_path)
     
     def launch(self, blender_io:BlenderIO):
         if self.subp:
             self.subp.kill()
 
         self.subp = blender_launch_livecode(
-            self.blender_app_path,
+            self.blender_path,
             blender_io.blend_file,
             self.command_file,
             #reset_factory=self.reset_factory,
