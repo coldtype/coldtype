@@ -1,6 +1,6 @@
 from coldtype import *
 
-@renderable()
+#@renderable()
 def boxes(r):
     l = (Scaffold(r)
         .cssgrid(r"auto 30%", r"50% auto", "x y / z q", {
@@ -31,3 +31,12 @@ def boxes2(r):
     return P(
         l.view(),
         P().oval(l[0].rect.square().inset(10)).fssw(-1, hsl(0.9, 1), 2))
+
+@renderable((1080, 540))
+def boxes2(r):
+    l = Scaffold(r).labeled_grid(5, 5)
+    
+    return P(
+        l.view(),
+        P().oval(l["D3"].rect.square().inset(10)).fssw(-1, hsl(0.9, 1), 2)
+        )
