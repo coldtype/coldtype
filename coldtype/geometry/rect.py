@@ -276,9 +276,12 @@ class Rect(Geometrical):
     def mdy(self) -> int:
         return self.point("C").y
 
-    def square(self) -> "Rect":
+    def square(self, outside=False) -> "Rect":
         """take a square from the center of this rect"""
-        return Rect(centered_square(self.rect()))
+        if not outside:
+            return Rect(centered_square_inside(self.rect()))
+        else:
+            return Rect(centered_square_outside(self.rect()))
     
     def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, round_result=False) -> "Rect":
         return self.offset(*align(self, rect, x, y, round_result=round_result))

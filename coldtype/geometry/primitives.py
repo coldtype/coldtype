@@ -43,7 +43,15 @@ def polar_coord(xy, angle, distance):
     return nx, ny
 
 
-def centered_square(rect):
+def centered_square_outside(rect):
+    x, y, w, h = rect
+    if w < h:
+        return [x + (w - h) / 2, y, h, h]
+    else:
+        return [x, y + (h - w) / 2, w, w]
+
+
+def centered_square_inside(rect):
     x, y, w, h = rect
     if w > h:
         return [x + (w - h) / 2, y, h, h]
