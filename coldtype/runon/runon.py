@@ -120,7 +120,11 @@ class Runon:
         el = self._norm_element(el)
         if el is None:
             return self
-        self._els.append(el)
+        if el.data("insert") is not None:
+            self._els.insert(el.data("insert"), el)
+            el.data(insert="delete")
+        else:
+            self._els.append(el)
         return self
 
     å = append
@@ -797,9 +801,12 @@ class Runon:
         """Set with kwargs, read with key= & default="""
         if key is None and len(kwargs) > 0:
             for k, v in kwargs.items():
-                if not function_literals and callable(v):
-                    v = self._call_idx_fn(v, k, self)
-                self._data[k] = v
+                if v == "delete":
+                    del self._data[k]
+                else:
+                    if not function_literals and callable(v):
+                        v = self._call_idx_fn(v, k, self)
+                    self._data[k] = v
             return self
         elif key is not None:
             return self._data.get(key, default)
