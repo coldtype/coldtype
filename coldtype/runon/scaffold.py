@@ -72,8 +72,8 @@ class Scaffold(Runon):
                 el.subdivide(amt, edge, tags)
         return self
     
-    def labeled_grid(self, rows=2, columns=2, start_1=False):
-        from string import ascii_uppercase
+    def labeled_grid(self, columns=2, rows=2, start_1=False):
+        from string import ascii_lowercase
 
         if start_1:
             inc = 1
@@ -84,7 +84,7 @@ class Scaffold(Runon):
         for ridx, row in enumerate(range(0, rows)):
             row_names = []
             for cidx, col in enumerate(range(0, columns)):
-                row_names.append(f"{ascii_uppercase[ridx]}{cidx+inc}")
+                row_names.append(f"{ascii_lowercase[ridx]}{cidx+inc}")
             names.append(" ".join(row_names))
         
         self.cssgrid(("a " * columns).strip(), ("a " * rows).strip(), " / ".join(names))
