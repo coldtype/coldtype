@@ -248,11 +248,14 @@ class Style():
             self.addVariations(unnormalized_variations)
     
     def __eq__(self, other):
-        if not self.tag == other.tag:
-            return False
-        if not self.font == other.font:
-            return False
-        elif not self.fontSize == other.fontSize:
+        try:
+            if not self.tag == other.tag:
+                return False
+            if not self.font == other.font:
+                return False
+            elif not self.fontSize == other.fontSize:
+                return False
+        except:
             return False
         
         for key, value in self.variations.items():
