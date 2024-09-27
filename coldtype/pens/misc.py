@@ -59,7 +59,7 @@ def calculate_pathop(pen1, pen2, operation, use_skia_pathops_draw=True):
                     elif method == PathVerb.CUBIC:
                         d0.curveTo(*pts)
                     elif method == PathVerb.QUAD:
-                        d0.curveTo(*pts)
+                        d0.qCurveTo(*pts)
                     elif method == PathVerb.LINE:
                         d0.lineTo(*pts)
                     elif method == PathVerb.CLOSE:

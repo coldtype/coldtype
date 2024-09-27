@@ -24,10 +24,13 @@ class FXMixin():
                 decomposed = decomposeQuadraticSegment(pts)
                 for dpts in decomposed:
                     qp1, qp2 = [Point(pt) for pt in dpts]
-                    qp0 = Point(new_vl[-1][-1][-1])
-                    cp1 = qp0 + (qp1 - qp0)*(2.0/3.0)
-                    cp2 = qp2 + (qp1 - qp2)*(2.0/3.0)
-                    new_vl.append(["curveTo", (cp1, cp2, qp2)])
+                    try:
+                        qp0 = Point(new_vl[-1][-1][-1])
+                        cp1 = qp0 + (qp1 - qp0)*(2.0/3.0)
+                        cp2 = qp2 + (qp1 - qp2)*(2.0/3.0)
+                        new_vl.append(["curveTo", (cp1, cp2, qp2)])
+                    except Exception as e:
+                        print("failed q2c", e)
             else:
                 new_vl.append([mv, pts])
         self.v.value = new_vl

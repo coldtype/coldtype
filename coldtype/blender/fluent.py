@@ -1312,6 +1312,10 @@ class BpyObj(_Chainable):
         if removeOverlap:
             path = path.removeOverlap(use_skia_pathops_draw=False)
         
+        #print("---"*30)
+        #from pprint import pprint
+        #pprint(path._val.value)
+        
         amb = path.ambit(tx=tx, ty=ty)
 
         origin = amb.x + amb.w/2, amb.y + amb.h/2
