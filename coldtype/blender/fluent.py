@@ -1310,7 +1310,7 @@ class BpyObj(_Chainable):
             path = path.pen()
         
         if removeOverlap:
-            path = path.removeOverlap()
+            path = path.removeOverlap(use_skia_pathops_draw=False)
         
         amb = path.ambit(tx=tx, ty=ty)
 

@@ -291,3 +291,7 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ## [0.10.20] - 2024-07-23
 ### Fixed
 - Spec <=0.4.2 for python-bidi since 0.5.0 is beefed
+
+## [0.10.21] - 2024-09-27
+### Added
+- `use_skia_pathops_draw=False` kwarg override for `P.removeOverlap` to make sure we don't get all-off-curve+None quadratics in situations where we don't know how to convert that to cubics (i.e. in Blender)
