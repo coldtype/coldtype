@@ -34,6 +34,7 @@ def adsr(f):
                     dv=0.25,
                     rs=1))])
             .align(f.a.r.take(0.5, "S"), tx=0)
+            .removeOverlap()
             ._null()))
         .append(P(f.a.r
             .take(at

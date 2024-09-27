@@ -17,6 +17,10 @@ class FXMixin():
         new_vl = []
         for mv, pts in self.v.value:
             if mv == "qCurveTo":
+                # does not handle all-offcurve+None mode
+                # https://forum.drawbot.com/topic/58/qcurve
+                # https://github.com/fonttools/skia-pathops/issues/45
+                # https://github.com/fonttools/skia-pathops/issues/71
                 decomposed = decomposeQuadraticSegment(pts)
                 for dpts in decomposed:
                     qp1, qp2 = [Point(pt) for pt in dpts]

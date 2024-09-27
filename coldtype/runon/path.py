@@ -2299,10 +2299,10 @@ class P(Runon):
         return self
 
 
-    def _pathop(self, otherPen=None, operation=BooleanOp.XOR) -> "P":
+    def _pathop(self, otherPen=None, operation=BooleanOp.XOR, use_skia_pathops_draw=True) -> "P":
 
         if self.val_present():
-            self._val.value = calculate_pathop(self, otherPen, operation)
+            self._val.value = calculate_pathop(self, otherPen, operation, use_skia_pathops_draw=use_skia_pathops_draw)
         
         if otherPen is not None or operation == BooleanOp.Simplify:
             for el in self._els:
@@ -2319,7 +2319,7 @@ class P(Runon):
         return self
     
 
-    def __pathop(self, otherPen=None, operation=BooleanOp.XOR) -> "P":
+    def __pathop(self, otherPen=None, operation=BooleanOp.XOR, use_skia_pathops_draw=True) -> "P":
         return self
 
 
@@ -2368,15 +2368,21 @@ class P(Runon):
         """Calculate and return the intersection of this shape and another."""
         return self._pathop(otherPen=otherPen, operation=BooleanOp.Intersection)
     
-    def removeOverlap(self):
+
+    def _intersection(self, otherPen=None) -> "P":
+        return self
+
+
+    def removeOverlap(self, use_skia_pathops_draw=True) -> "P":
+
         """Remove overlaps within this shape and return itself."""
-        return self._pathop(otherPen=None, operation=BooleanOp.Simplify)
+        return self._pathop(otherPen=None, operation=BooleanOp.Simplify, use_skia_pathops_draw=use_skia_pathops_draw)
     
     remove_overlap = removeOverlap
     ro = removeOverlap
 
 
-    def _intersection(self, otherPen=None) -> "P":
+    def _removeOverlap(self, use_skia_pathops_draw=True) -> "P":
         return self
 
 
@@ -2865,6 +2871,10 @@ class P(Runon):
         new_vl = []
         for mv, pts in self.v.value:
             if mv == "qCurveTo":
+                # does not handle all-offcurve+None mode
+                # https://forum.drawbot.com/topic/58/qcurve
+                # https://github.com/fonttools/skia-pathops/issues/45
+                # https://github.com/fonttools/skia-pathops/issues/71
                 decomposed = decomposeQuadraticSegment(pts)
                 for dpts in decomposed:
                     qp1, qp2 = [Point(pt) for pt in dpts]

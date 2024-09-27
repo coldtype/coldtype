@@ -14,5 +14,5 @@ def pixellation(f):
         .align(f.a.r)
         .map(lambda i, p: p
             .ch(precompose(f.a.r
-                , scale=at.ki(i).adsr([5, 25], ["qei", "l"]
-                    , r=(0.25, 0.02))))))
+                , scale=at.ki(i).adsr([5, 25], ["qeio", "l"]
+                    , r=(0.25, 0.015))))))

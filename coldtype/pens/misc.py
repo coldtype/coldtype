@@ -6,7 +6,7 @@ from fontTools.misc.bezierTools import splitCubicAtT, calcCubicArcLength
 USE_SKIA_PATHOPS = True
 
 try:
-    from pathops import Path, OpBuilder, PathOp
+    from pathops import Path, OpBuilder, PathOp, PathVerb
 except ImportError:
     USE_SKIA_PATHOPS = False
 
@@ -44,7 +44,7 @@ class BooleanOp(Enum):
         ][x.value]
 
 
-def calculate_pathop(pen1, pen2, operation):
+def calculate_pathop(pen1, pen2, operation, use_skia_pathops_draw=True):
     if USE_SKIA_PATHOPS:
         p1 = Path()
         pen1.replay(p1.getPen())
@@ -52,7 +52,20 @@ def calculate_pathop(pen1, pen2, operation):
             # ignore pen2
             p1.simplify(fix_winding=True, keep_starting_points=True)
             d0 = RecordingPen()
-            p1.draw(d0)
+            if not use_skia_pathops_draw:
+                for method, pts in p1:
+                    if method == PathVerb.MOVE:
+                        d0.moveTo(*pts)
+                    elif method == PathVerb.CUBIC:
+                        d0.curveTo(*pts)
+                    elif method == PathVerb.QUAD:
+                        d0.curveTo(*pts)
+                    elif method == PathVerb.LINE:
+                        d0.lineTo(*pts)
+                    elif method == PathVerb.CLOSE:
+                        d0.closePath()
+            else:
+                p1.draw(d0)
             return d0.value
         if pen2:
             p2 = Path()

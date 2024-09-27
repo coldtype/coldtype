@@ -2,9 +2,9 @@ from coldtype.pens.misc import BooleanOp, calculate_pathop
 
 
 class PathopsMixin():
-    def _pathop(self, otherPen=None, operation=BooleanOp.XOR):
+    def _pathop(self, otherPen=None, operation=BooleanOp.XOR, use_skia_pathops_draw=True):
         if self.val_present():
-            self._val.value = calculate_pathop(self, otherPen, operation)
+            self._val.value = calculate_pathop(self, otherPen, operation, use_skia_pathops_draw=use_skia_pathops_draw)
         
         if otherPen is not None or operation == BooleanOp.Simplify:
             for el in self._els:
@@ -40,9 +40,9 @@ class PathopsMixin():
         """Calculate and return the intersection of this shape and another."""
         return self._pathop(otherPen=otherPen, operation=BooleanOp.Intersection)
     
-    def removeOverlap(self):
+    def removeOverlap(self, use_skia_pathops_draw=True):
         """Remove overlaps within this shape and return itself."""
-        return self._pathop(otherPen=None, operation=BooleanOp.Simplify)
+        return self._pathop(otherPen=None, operation=BooleanOp.Simplify, use_skia_pathops_draw=use_skia_pathops_draw)
     
     remove_overlap = removeOverlap
     ro = removeOverlap
