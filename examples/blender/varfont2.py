@@ -29,5 +29,5 @@ def varfont2(f):
                 .roughness(1)
                 .metallic(f.e("eeio", 1))
                 , material="auto"))
-            #.hide()
+            .hide()
             ))
