@@ -1,6 +1,6 @@
 from coldtype.test import *
 
-@test((250, 250), solo=1)
+@test((250, 250), solo=0)
 def test_contains(r):
     r0 = r.take(150, "SW").offset(10)
     r1 = r.take(50, "NE").offset(-10)
@@ -57,3 +57,26 @@ def test_align_text(r):
     assert txt[2].ambit().x == pytest.approx(40.47, rel=1e-4)
 
     return txt
+
+@test((250, 250), solo=0)
+def test_aspects(r:Rect):
+    ri = r.inset(20)
+
+    r45 = ri.fit_aspect(4, 5)
+    assert r45.w == 168
+    assert r45.h == ri.h
+
+    r54 = ri.fit_aspect(5, 4)
+    assert r54.w == ri.w
+    assert r54.h == r45.w
+
+    r169 = ri.fit_aspect(16, 9)
+    assert r169.w == ri.w
+    assert r169.h == 118.125
+
+    return (P(
+        P(r45),
+        P(r54),
+        P(r169),
+        )
+        .fssw(-1, 0, 1))

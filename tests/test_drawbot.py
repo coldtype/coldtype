@@ -12,14 +12,14 @@ except ModuleNotFoundError:
         print("Must install drawBot")
 
 if on_mac():
-    @drawbot_renderable((800, 100))
+    @drawbot_renderable((800, 100), bg=1, render_bg=0)
     def test_setup(r):
         txt = StSt("ASDF", Font.RecMono(), 100).align(r).ch(dbdraw)
         assert txt.depth() == 1
         assert txt.ambit().round() == Rect(278, 15, 240, 70)
         return txt
 
-    @drawbot_renderable((800, 200))
+    @drawbot_renderable((800, 200), bg=1, render_bg=0)
     def test_gs_pen(r):
         rr = Rect(0, 0, 100, 100)
         dp = (P()
@@ -36,7 +36,7 @@ if on_mac():
         assert len(dp.v.value) == 4
         assert type(dp) == P
 
-    @drawbot_renderable((800, 300))
+    @drawbot_renderable((800, 300), bg=1, render_bg=0)
     def test_distribute_on_path(r):
         script = Font.RecMono()
 

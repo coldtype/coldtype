@@ -147,3 +147,14 @@ def test_wildcards(r):
         P(s["c/b/b"]).f(hsl(0.07, 0.7)),
         P(s["d/d/b"]).f(hsl(0.8)),
     )
+
+@test((500, 500))
+def test_labeled_grid(r):
+    ri = r.inset(20)
+    s = Scaffold.AspectGrid(ri, 4, 5)
+    assert s.r.w < ri.w
+    assert s.r.h == ri.h
+    assert len(s) == 20
+    assert s[0].tag() == "a0"
+    assert s[-1].tag() == "e3"
+    return s.view()

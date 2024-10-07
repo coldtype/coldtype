@@ -13,6 +13,7 @@ from typing import Pattern
 _view_rs1 = None
 
 class Scaffold(Runon):
+    @staticmethod
     def AspectGrid(r:Rect, x:int, y:int, align:str="C"):
         s = Scaffold(r.fit_aspect(x, y, align))
         return s.labeled_grid(x, y)
