@@ -283,6 +283,24 @@ class Rect(Geometrical):
         else:
             return Rect(centered_square_outside(self.rect()))
     
+    def fit_aspect(self, x, y, align="C", grid=False):
+        aspect_ratio = x / y
+
+        if self.w / self.h > aspect_ratio:
+            scale = self.h / y
+            inner_width = x * scale
+            inner_height = self.h
+        else:
+            scale = self.w / x
+            inner_width = self.w
+            inner_height = y * scale
+
+        r = Rect(self.x, self.y, inner_width, inner_height).align(self, align)
+        if grid:
+            return r.grid(x, y)
+        else:
+            return r
+    
     def align(self, rect, x=Edge.CenterX, y=Edge.CenterY, round_result=False) -> "Rect":
         return self.offset(*align(self, rect, x, y, round_result=round_result))
     

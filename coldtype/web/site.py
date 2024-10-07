@@ -126,7 +126,10 @@ class site(renderable):
                 if script.startswith("http"):
                     pass
                 else:
-                    ps = self.root / script
+                    if script.startswith("/"):
+                        ps = self.root / script[1:]
+                    else:
+                        ps = self.root / script
                     if ps.exists():
                         self._watch.append(ps)
                     else:

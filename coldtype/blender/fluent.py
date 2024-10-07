@@ -284,15 +284,15 @@ class BpyMaterial():
     fill = f
     
     def specular(self, amount=0.5):
-        self.bsdf().inputs[7].default_value = amount
+        self.bsdf().inputs[12].default_value = amount
         return self
     
     def metallic(self, amount=1):
-        self.bsdf().inputs[6].default_value = amount
+        self.bsdf().inputs[1].default_value = amount
         return self
     
     def roughness(self, amount=0.5):
-        self.bsdf().inputs[9].default_value = amount
+        self.bsdf().inputs[2].default_value = amount
         return self
     
     def transmission(self, amount=1):

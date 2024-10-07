@@ -12,7 +12,7 @@ displays that 2d animation in a 3d world
 @animation((540, 540), timeline=30)
 def varfont_animation(f):
     return (P(
-        Glyphwise("TYPE", lambda g:
+        Glyphwise("COLD", lambda g:
             Style(Font.ColdObvi(), 250
                 , wdth=f.adj(-g.i*40).e("seio")))
             .align(f.a.r, tx=0)
@@ -20,7 +20,7 @@ def varfont_animation(f):
         StSt(str(f.i)
             , Font.RecursiveMono(), 50)
             .align(f.a.r.inset(50), tx=0, y="S")
-            .f(1)))
+            .f(0)))
 
 @b3d_runnable(force_refresh=1)
 def setup(blw:BpyWorld):

@@ -583,7 +583,7 @@ class SourceReader():
             version = versions[vi]
             self.renderer.state.versions = versions
 
-            source_code = source_code.replace("ƒVERSION", version["key"])
+            source_code = source_code.replace("ƒVERSION", str(version["key"]))
             self.codepath.write_text(source_code)
 
             return version, versions

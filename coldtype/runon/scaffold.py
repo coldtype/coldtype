@@ -13,6 +13,10 @@ from typing import Pattern
 _view_rs1 = None
 
 class Scaffold(Runon):
+    def AspectGrid(r:Rect, x:int, y:int, align:str="C"):
+        s = Scaffold(r.fit_aspect(x, y, align))
+        return s.labeled_grid(x, y)
+
     def __init__(self, *val, warn_float=True):
         self.warn_float = warn_float
         
@@ -88,6 +92,20 @@ class Scaffold(Runon):
             names.append(" ".join(row_names))
         
         self.cssgrid(("a " * columns).strip(), ("a " * rows).strip(), " / ".join(names))
+
+        if not hasattr(self, "_borders"):
+            self._borders = []
+        
+        for _x in range(0, columns-1):
+            self._borders.append([
+                self[_x].ee.pn,
+                self[_x].ee.intersection(self.r.es)])
+        
+        for _y in range(0, rows-1):
+            self._borders.append([
+                self[_y*columns].psw,
+                self[_y*columns].es.intersection(self.r.ee)])
+        
         return self
     
     def grid(self, columns=2, rows=None, tags=[]):

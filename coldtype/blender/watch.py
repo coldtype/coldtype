@@ -366,6 +366,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     else:
                         print('unknown request=%s arg=%s' % (cmd,arg))
                 except Exception as e:
+                    print(">>>>>>>>>>>>>>>>>", line)
                     print("Failed to read command file:", e)
             
             if self.file.exists():
