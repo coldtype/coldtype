@@ -17,7 +17,7 @@ basic_deps = [
     "defcon",
     "freetype-py",
     "uharfbuzz>=0.14.0",
-    "python-bidi",
+    "python-bidi==0.4.2",
     "requests",
     "b3denv>=0.0.12",
 ]
