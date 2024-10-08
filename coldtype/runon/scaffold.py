@@ -77,7 +77,7 @@ class Scaffold(Runon):
                 el.subdivide(amt, edge, tags)
         return self
     
-    def labeled_grid(self, columns=2, rows=2, start_1=False):
+    def labeled_grid(self, columns=2, rows=2, column_gap=0, row_gap=0, start_1=False):
         from string import ascii_lowercase
 
         if start_1:
@@ -86,26 +86,53 @@ class Scaffold(Runon):
             inc = 0
 
         names = []
-        for ridx, row in enumerate(range(0, rows)):
-            row_names = []
-            for cidx, col in enumerate(range(0, columns)):
-                row_names.append(f"{ascii_lowercase[ridx]}{cidx+inc}")
-            names.append(" ".join(row_names))
-        
-        self.cssgrid(("a " * columns).strip(), ("a " * rows).strip(), " / ".join(names))
+
+        if column_gap == 0 and row_gap == 0:
+            for ridx, row in enumerate(range(0, rows)):
+                row_names = []
+                for cidx, col in enumerate(range(0, columns)):
+                    row_names.append(f"{ascii_lowercase[ridx]}{cidx+inc}")
+                names.append(" ".join(row_names))
+            
+            self.cssgrid(("a " * columns).strip(), ("a " * rows).strip(), " / ".join(names))
+        else:
+            _cols = []
+            _rows = []
+            for ridx, row in enumerate(range(0, rows)):
+                _rows.append("a")
+                _cols = []
+                row_names = []
+                for cidx, col in enumerate(range(0, columns)):
+                    _cols.append("a")
+                    row_names.append(f"{ascii_lowercase[ridx]}{cidx+inc}")
+                    if cidx != columns-1:
+                        _cols.append(str(column_gap))
+                        row_names.append(f"cg.{ascii_lowercase[ridx]}{cidx+inc}")
+                
+                names.append(" ".join(row_names))
+                if ridx != rows-1:
+                    _rows.append(str(row_gap))
+                    row_names = []
+                    for cidx, col in enumerate(range(0, columns)):
+                        row_names.append(f"rg.{ascii_lowercase[ridx]}{cidx+inc}")
+                        if cidx != columns-1:
+                            row_names.append(f"rcg.{ascii_lowercase[ridx]}{cidx+inc}")
+                    names.append(" ".join(row_names))
+
+            self.cssgrid(" ".join(_cols).strip(), " ".join(_rows), " / ".join(names))
 
         if not hasattr(self, "_borders"):
             self._borders = []
         
-        for _x in range(0, columns-1):
-            self._borders.append([
-                self[_x].ee.pn,
-                self[_x].ee.intersection(self.r.es)])
+        first_row = names[0].split(" ")
+        last_row = names[-1].split(" ")
+
+        for cidx, _ in enumerate(first_row[:-1]):
+            self._borders.append([self[first_row[cidx]].pne, self[last_row[cidx]].pse])
         
-        for _y in range(0, rows-1):
-            self._borders.append([
-                self[_y*columns].psw,
-                self[_y*columns].es.intersection(self.r.ee)])
+        for ridx, row in enumerate(names[:-1]):
+            rs = row.split(" ")
+            self._borders.append([self[rs[0]].psw, self[rs[-1]].pse])
         
         return self
     
@@ -197,13 +224,13 @@ class Scaffold(Runon):
             self._els = sorted(self._els, key=lambda el: getattr(el.r, attr), reverse=reverse)
         return self
     
-    def view(self, fontSize=32):
+    def view(self, fontSize=32, fill=True, vectors=False):
         global _view_rs1
         if _view_rs1 is None:
             _view_rs1 = random_series()
 
         from coldtype.runon.path import P
-        from coldtype.text import Style
+        from coldtype.text import Style, StSt, Font
 
         out = P()
         ridx = 0
@@ -212,11 +239,14 @@ class Scaffold(Runon):
             nonlocal ridx
             if pos == 0:
                 out.append(P(
-                    P(el.r).f(hsl(_view_rs1[ridx], 1)).alpha(0.1),
-                    P(el.r.inset(2)).fssw(-1, bw(0, 0.2), 4),
+                    P(el.r).f(hsl(_view_rs1[ridx], 1)).alpha(0.1) if fill else None,
+                    P(el.r.inset(2)).fssw(-1, bw(0, 0.2), 4) if fill else None,
                     P().text(el.tag() or ("u:" + data["utag"])
                         , Style("Times", fontSize, load_font=0, fill=bw(0, 0.5))
-                        , el.r.inset(7, 10))))
+                        , el.r.inset(7, 10)) if not vectors else
+                            StSt(el.tag(), Font.JBMono(), fontSize)
+                                .scaleToRect(el.r, shrink_only=True)
+                                .align(el.r.inset(2), "SW")))
                 ridx += 1
         
         self.postwalk(walker)
