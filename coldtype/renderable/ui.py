@@ -28,12 +28,15 @@ class ui(animation):
         cursor_recording={},
         **kwargs
         ):
+
+        if "preview_only" not in kwargs:
+            kwargs["preview_only"] = True
         
         self.cursor_recording = cursor_recording
 
         super().__init__(
             rect=rect,
-            preview_only=True,
+            #preview_only=True,
             interactable=True,
             clip_cursor=clip_cursor,
             **kwargs)

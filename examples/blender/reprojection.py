@@ -16,9 +16,9 @@ def varfont_animation(f):
             Style(Font.ColdObvi(), 250
                 , wdth=f.adj(-g.i*40).e("seio")))
             .align(f.a.r, tx=0)
-            .f(1),
+            .f(hsl(0.3)),
         StSt(str(f.i)
-            , Font.RecursiveMono(), 50)
+            , Font.JBMono(), 50)
             .align(f.a.r.inset(50), tx=0, y="S")
             .f(0)))
 
