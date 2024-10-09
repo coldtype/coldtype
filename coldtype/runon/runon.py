@@ -420,7 +420,7 @@ class Runon:
     def mape(self, fn):
         total = len(self._els)
         for idx, p in enumerate(self._els):
-            res = fn(idx/total, p)
+            res = fn(idx/(total-1), p)
             if res:
                 self._els[idx] = res
         return self

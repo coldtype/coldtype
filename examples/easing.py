@@ -9,5 +9,5 @@ def easing(r):
         .spread(4)
         .mape(lambda e, p: p
             .f(hsl(0.65+ez(e, "ceio"), 0.9, 0.5))
-            .t(0, ez(e, "ceio", r=(0, 300))))
+            .t(0, ez(e, "eeio", r=(0, 300))))
         .align(r))

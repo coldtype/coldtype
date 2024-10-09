@@ -14,7 +14,10 @@ def interp_dict(v, a, b=None):
     
     out = dict()
     for k, _v in a.items():
-        out[k] = norm(v, a[k], b[k])
+        if hasattr(a[k], "interp"):
+            out[k] = a[k].interp(v, b[k])
+        else:
+            out[k] = norm(v, a[k], b[k])
     return out
 
 def loopidx(lst, idx):

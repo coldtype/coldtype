@@ -94,6 +94,8 @@ class Color:
         self.s = s
         self.l = l
         self.html = self.to_html()
+
+        self.src = None
     
     def __eq__(self, other):
         if isinstance(other, Color):
@@ -163,10 +165,15 @@ class Color:
 
     def from_hsl(h, s, l, a=1):
         r, g, b = hsl_to_rgb(h, s, l)
-        return Color(r, g, b, a)
+        c = Color(r, g, b, a)
+        c.src = "from_hsl"
+        return c
     
     def rgba(self):
         return self.r, self.g, self.b, self.a
+    
+    def interp(self, v, other):
+        return self.hsl_interp(v, other)
     
     def hsl_interp(self, v, other):
         return hsl(norm(v, self.h, other.h)/360.0, norm(v, self.s, other.s), norm(v, self.l, other.l), norm(v, self.a, other.a))

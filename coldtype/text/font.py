@@ -290,14 +290,14 @@ class Font():
         return sorted(results, key=lambda p: p.stem)
 
     @staticmethod
-    def Find(regex, regex_dir=None, index=0):
+    def Find(regex, regex_dir=None, index=0, font_dir=None):
         if isinstance(regex, Font):
             return regex
 
         if Path(normalize_font_prefix(regex)).expanduser().exists():
             return Font.Cacheable(regex)
         
-        found = Font.List(regex, regex_dir)
+        found = Font.List(regex, regex_dir, font_dir=font_dir)
         try:
             return Font.Cacheable(found[index])
         except Exception as e:
