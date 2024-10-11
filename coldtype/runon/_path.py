@@ -186,12 +186,12 @@ class P(Runon):
             self.data(frame=fn_or_rect(self))
         return self
     
-    def pen(self):
+    def pen(self, frame=True):
         """collapse and combine into a single vector"""
         if len(self) == 0:
             return self
         
-        frame = self.ambit()
+        _frame = self.ambit()
         self.collapse()
 
         for el in self._els:
@@ -202,8 +202,9 @@ class P(Runon):
             self._attrs = {**self._els[0]._attrs, **self._attrs}
         except IndexError:
             pass
-            
-        self.data(frame=frame)
+        
+        if frame:
+            self.data(frame=_frame)
         self._els = []
         return self
     
