@@ -17,7 +17,11 @@ from coldtype.text.font import Font, normalize_font_path, normalize_font_prefix,
 
 from typing import Union
 
-from coldtype.fontgoggles.misc.textInfo import TextInfo
+from os import environ
+environ["FONTGOGGLES_COCOA"] = "0"
+
+from fontgoggles.misc.textInfo import TextInfo
+from fontgoggles.font.glyphDrawing import GlyphDrawing
 
 try:
     from blackrenderer.font import BlackRendererFont
@@ -491,7 +495,7 @@ class StyledString(FittableMixin):
         self.variations = self.style.variations.copy()
     
     def resetGlyphRun(self):
-        self.glyphs = self.style.font.font.getGlyphRunFromTextInfo(self.text_info, addDrawings=False, features=self.features, varLocation=self.variations)
+        self.glyphs = self.style.font.font.getGlyphRunFromTextInfo(self.text_info, features=self.features, varLocation=self.variations)
         #self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations)
         x = 0
         for glyph in self.glyphs:
@@ -835,7 +839,11 @@ class StyledString(FittableMixin):
             self.addBRGlyphDrawings(self.glyphs)
 
         elif not self.style.no_shapes:
-            self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
+            glyphNames = [g.name for g in self.glyphs]
+            glyphDrawings = list(self.style.font.font.getGlyphDrawings(glyphNames, True))
+            #self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
+            for glyph, glyphDrawing in zip(self.glyphs, glyphDrawings):
+                glyph.glyphDrawing = glyphDrawing
         
         pens = P()
         for idx, g in enumerate(self.glyphs):
@@ -859,8 +867,8 @@ class StyledString(FittableMixin):
                 # dp_atom.addFrame(norm_frame)
                 # dp_atom.glyphName = g.name
             
-            elif not brFont and len(g.glyphDrawing.layers) == 1:
-                dp_atom.v.value = self.scalePenToStyle(g, g.glyphDrawing.layers[0][0], idx).v.value
+            elif not brFont and isinstance(g.glyphDrawing, GlyphDrawing):
+                dp_atom.v.value = self.scalePenToStyle(g, g.glyphDrawing.path, idx).v.value
                 
                 if "d" in self.style.metrics:
                     dp_atom.translate(0, self.style.descender*self.scale())

@@ -5,9 +5,12 @@ from urllib.request import urlretrieve
 
 from coldtype.osutil import on_linux, on_mac, on_windows, run_with_check
 
-from coldtype.fontgoggles.font import getOpener
-from coldtype.fontgoggles.font.baseFont import BaseFont
-from coldtype.fontgoggles.font.otfFont import OTFFont
+from os import environ
+environ["FONTGOGGLES_COCOA"] = "0"
+
+from fontgoggles.font import getOpener
+from fontgoggles.font.baseFont import BaseFont
+#from coldtype.fontgoggles.font.otfFont import OTFFont
 
 BLACKRENDER_ALL = False
 
@@ -120,7 +123,8 @@ class Font():
         if self._loaded:
             return self
         else:
-            self.font.load(None)
+            from asyncio import run
+            run(self.font.load(None))
             self._loaded = True
             return self
     
