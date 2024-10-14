@@ -3,7 +3,7 @@ from coldtype.img.skiaimage import SkiaImage
 from coldtype.fx.skia import warp
 
 import numpy as np
-from skimage.transform import swirl
+#from skimage.transform import swirl
 
 @renderable((540, 540))
 def gradient(r):
