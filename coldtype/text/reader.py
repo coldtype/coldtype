@@ -1,6 +1,5 @@
 from collections import OrderedDict
 from functools import partial
-from subprocess import run
 from shutil import copy2
 from pathlib import Path
 
