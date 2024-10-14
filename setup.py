@@ -18,7 +18,7 @@ basic_deps = [
 
     # fontgoggles-derived (copied from the requirements.txt)
     #"fontgoggles @ https://github.com/coldtype/fontgoggles.git",
-    "fontgoggles @ git+https://github.com/coldtype/fontgoggles.git@b7a40ef3963b7ec2828339431beb62c26da09295#egg=fontgoggles",
+    "fontgoggles @ git+https://github.com/coldtype/fontgoggles.git@49ead8c4352ee0b81fa0eddbcfa717e66d4567ab#egg=fontgoggles",
     "blackrenderer==0.6.0",
     "fonttools[woff,lxml,unicode,ufo,type1]==4.53.1",
     "uharfbuzz==0.39.5",

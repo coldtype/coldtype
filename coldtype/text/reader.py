@@ -16,8 +16,8 @@ from coldtype.text.font import Font, normalize_font_path, normalize_font_prefix,
 
 from typing import Union
 
-from fontgoggles.misc.plotter import Plotter
-Plotter.UseCocoa = False
+from fontgoggles.misc.platform import Platform
+Platform.UseCocoa = False
 
 from fontgoggles.misc.textInfo import TextInfo
 from fontgoggles.font.glyphDrawing import GlyphDrawing
