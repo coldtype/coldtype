@@ -11,10 +11,10 @@ def monkeypatch_ctypes():
         def find_library(name):
             if name in {"OpenGL", "GLUT"}:  # add more names here if necessary
                 return f"/System/Library/Frameworks/{name}.framework/{name}"
-            elif name in {"freetype"}:
-                res = real_find_library(name)
-                if res.startswith("/usr/local") and platform.processor() == "arm":
-                    return "/opt/homebrew/lib/libfreetype.dylib"
+            #elif name in {"freetype"}:
+            #    res = real_find_library(name)
+            #    if res.startswith("/usr/local") and platform.processor() == "arm":
+            #        return "/opt/homebrew/lib/libfreetype.dylib"
             return real_find_library(name)
         ctypes.util.find_library = find_library
     return

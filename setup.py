@@ -9,17 +9,24 @@ More info available at: [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
 """
 
 basic_deps = [
-    "blackrenderer>=0.6.0",
-    "fonttools[ufo,unicode]",
     "fontPens",
     "easing-functions",
     "mido",
     "defcon",
-    "freetype-py",
-    "uharfbuzz>=0.14.0",
-    "python-bidi==0.4.2",
     "requests",
     "b3denv>=0.0.12",
+
+    # fontgoggles-derived (copied from the requirements.txt)
+    #"fontgoggles @ https://github.com/coldtype/fontgoggles.git",
+    "fontgoggles @ git+https://github.com/coldtype/fontgoggles.git@b7a40ef3963b7ec2828339431beb62c26da09295#egg=fontgoggles",
+    "blackrenderer==0.6.0",
+    "fonttools[woff,lxml,unicode,ufo,type1]==4.53.1",
+    "uharfbuzz==0.39.5",
+    "python-bidi==0.4.2", # pin for now
+    "ufo2ft==3.2.8",
+    "numpy", # ==2.1.1 version lock doesn't play with scipy (?)
+    "unicodedata2==15.1.0",
+    #"rcjktools @ git+https://github.com/BlackFoundryCom/rcjk-tools.git#egg=fontgoggles",
 ]
 
 #if sys.platform.startswith("darwin"):
@@ -56,13 +63,13 @@ setuptools.setup(
         "coldtype.renderer",
         "coldtype.text.colr",
         "coldtype.renderable",
-        "coldtype.fontgoggles",
+        #"coldtype.fontgoggles",
         "coldtype.interpolation",
         "coldtype.runon.mixins",
         "coldtype.renderer.winman",
-        "coldtype.fontgoggles.font",
-        "coldtype.fontgoggles.misc",
-        "coldtype.fontgoggles.compile",
+        #"coldtype.fontgoggles.font",
+        #"coldtype.fontgoggles.misc",
+        #"coldtype.fontgoggles.compile",
     ],
     include_package_data=True,
     package_data={
