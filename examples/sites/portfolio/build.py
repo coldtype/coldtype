@@ -23,6 +23,10 @@ def pagemod(p):
 def portfolio(_):
     portfolio.build()
 
-#@renderable((1080, 540), bg=1)
+@renderable((1080, 540), bg=1)
 def test(r):
-   return (StSt("TEST.A", Font.MuSan(), 400).align(r))
+   return (StSt("TESTA", Font.MuSan(), 400).align(r))
+
+@renderable((1080, 540), bg=1)
+def testb(r):
+   return (StSt("TESTB", Font.MuSan(), 400).align(r))

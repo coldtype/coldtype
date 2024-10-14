@@ -9,5 +9,6 @@ pillow
 imagehash
 scikit-image
 noise
+mdx-linkify
 
 #drawbot @ git+https://github.com/typemytype/drawbotq

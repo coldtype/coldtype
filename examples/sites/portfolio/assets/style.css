@@ -1,6 +1,6 @@
 body {
   background: lightgreen;
-  font-family: var(--mono-font), monospace;
+  font-family: var(--text-font), monospace;
 }
 
 a {
