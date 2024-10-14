@@ -840,7 +840,6 @@ class StyledString(FittableMixin):
         elif not self.style.no_shapes:
             glyphNames = [g.name for g in self.glyphs]
             glyphDrawings = list(self.style.font.font.getGlyphDrawings(glyphNames, True))
-            #self.style.font.font.addGlyphDrawings(self.glyphs, colorLayers=True)
             for glyph, glyphDrawing in zip(self.glyphs, glyphDrawings):
                 glyph.glyphDrawing = glyphDrawing
         
@@ -913,26 +912,28 @@ class StyledString(FittableMixin):
                     dp_atom.removeOverlap()
                 
             else:
-                dp_atom = P()
-                dp_atom.layered = True
-                for lidx, layer in enumerate(g.glyphDrawing.layers):
-                    dp_layer = self._emptyPenWithAttrs()
-                    #dp_layer.value = layer[0].value
-                    dp_layer.v.value = self.scalePenToStyle(g, layer[0], idx).v.value
-                    if isinstance(self.style.palette, int):
-                        dp_layer.f(self.style.font.font.colorPalettes[self.style.palette][layer[1]])
-                    else:
-                        dp_layer.f(self.style.palette[layer[1]])
-                    if len(dp_layer.v.value) > 0:
-                        #dp_layer.addFrame(g.frame, typographic=True)
-                        dp_layer.data(glyphName=f"{g.name}_layer_{lidx}")
-                        #dp_layer.glyphName = 
-                        dp_atom += dp_layer
+                print("HERE!")
+                # dp_atom = P()
+                # dp_atom.layered = True
+                # for lidx, layer in enumerate(g.glyphDrawing.layers):
+                #     dp_layer = self._emptyPenWithAttrs()
+                #     #dp_layer.value = layer[0].value
+                #     dp_layer.v.value = self.scalePenToStyle(g, layer[0], idx).v.value
+                #     if isinstance(self.style.palette, int):
+                #         dp_layer.f(self.style.font.font.colorPalettes[self.style.palette][layer[1]])
+                #     else:
+                #         dp_layer.f(self.style.palette[layer[1]])
+                #     if len(dp_layer.v.value) > 0:
+                #         #dp_layer.addFrame(g.frame, typographic=True)
+                #         dp_layer.data(glyphName=f"{g.name}_layer_{lidx}")
+                #         #dp_layer.glyphName = 
+                #         dp_atom += dp_layer
                 
-                dp_atom.data(
-                    frame=norm_frame,
-                    glyphName=g.name
-                )
+                # dp_atom.data(
+                #     frame=norm_frame,
+                #     glyphName=g.name
+                # )
+                
                 # dp_atom.addFrame(norm_frame, typographic=True)
                 # dp_atom.glyphName = g.name
             

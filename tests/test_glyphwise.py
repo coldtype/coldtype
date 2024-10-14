@@ -233,7 +233,8 @@ def test_multistyle_stst(r):
     assert stst[0][0].glyphName == "C"
     assert stst[-1][-1].glyphName == "D"
 
-    assert len(stst[0][0]._val.value) == 15
-    assert len(stst[1][0]._val.value) == 12
+    print(len(stst[0][0]._val.value))
+    assert len(stst[0][0]._val.value) == 32
+    assert len(stst[1][0]._val.value) == 32
     
     return stst

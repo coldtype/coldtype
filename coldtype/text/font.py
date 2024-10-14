@@ -1,4 +1,4 @@
-import os, re, tempfile
+import os, re, tempfile, sys
 from pathlib import Path
 from functools import lru_cache
 from urllib.request import urlretrieve
@@ -124,7 +124,7 @@ class Font():
             return self
         else:
             from asyncio import run
-            run(self.font.load(None))
+            run(self.font.load(sys.stderr.write))
             self._loaded = True
             return self
     
