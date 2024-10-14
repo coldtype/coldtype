@@ -230,11 +230,8 @@ class Style():
         if not load_font:
             return
         else:
-            try:
-                fvar = self.font.font.ttFont['fvar']
-            except:
-                fvar = None
-            if fvar:
+            fvar = self.font.font.ttFont.get("fvar")
+            if fvar is not None:
                 for axidx, axis in enumerate(sorted(fvar.axes, key=lambda ax: ax.axisTag)):
                     generic = f"fvar_{axidx}"
                     self.axes[axis.axisTag] = axis

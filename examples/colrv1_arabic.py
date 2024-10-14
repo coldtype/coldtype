@@ -7,14 +7,14 @@ text1 = """
 
 @renderable((1080, 340), bg=1)
 def arefRuqaa(r):
-    return (StSt(text1, Font.GoogleFont("Aref Ruqaa Ink"), 80, strip=True)
+    return (StSt(text1, "ArefRuqaaInk-Bold", 80, strip=True)
         .xalign(r)
         .lead(60)
         .align(r))
 
 @renderable((1080, 340), bg=1)
 def reemKufi(r):
-    return (StSt(text1, Font.GoogleFont("Reem Kufi Ink"), 70, strip=True)
+    return (StSt(text1, "ReemKufiInk-Regular", 70, strip=True)
         .xalign(r)
         .lead(60)
         .align(r))
