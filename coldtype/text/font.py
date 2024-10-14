@@ -5,8 +5,8 @@ from urllib.request import urlretrieve
 
 from coldtype.osutil import on_linux, on_mac, on_windows, run_with_check
 
-from os import environ
-environ["FONTGOGGLES_COCOA"] = "0"
+from fontgoggles.misc.plotter import Plotter
+Plotter.UseCocoa = False
 
 from fontgoggles.font import getOpener
 from fontgoggles.font.baseFont import BaseFont

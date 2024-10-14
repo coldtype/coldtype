@@ -4,7 +4,7 @@ from coldtype import *
 def scratch(f):
     ri = f.a.r.inset(30)
     rng = (1, 3)
-    fs = 170
+    fs = 110
 
     hello = (StSt("Hello", Font.MuSan(), fs, case="upper", wght=1, wdth=1, fit=ri.w)
         .align(ri, "N", tv=1, tx=0)
