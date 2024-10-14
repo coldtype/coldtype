@@ -1,0 +1,13 @@
+pytest
+pynput
+pymunk
+pygments
+opentype-feature-freezer
+fontmake
+measurement
+pillow
+imagehash
+scikit-image
+noise
+
+#drawbot @ git+https://github.com/typemytype/drawbotq
