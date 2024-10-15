@@ -134,7 +134,26 @@ class Scaffold(Runon):
             rs = row.split(" ")
             self._borders.append([self[rs[0]].psw, self[rs[-1]].pse])
         
+        for cell in self:
+            tag = cell.tag()
+            if "." not in tag:
+                _r, _c = list(cell.tag())
+                r = ascii_lowercase.index(_r)
+                c = int(_c)
+                ch = not((not r%2 and not c%2) or (r%2 and c%2))
+                if start_1:
+                    r += 1
+                    c += 1
+                
+                cell.data(r=r, c=c, ch=ch)
+        
         return self
+    
+    def cells(self):
+        return self.copy().filter(lambda x: "." not in x.tag())
+    
+    def gaps(self):
+        return self.copy().filter(lambda x: "." in x.tag())
     
     def grid(self, columns=2, rows=None, tags=[]):
         if rows is None:
