@@ -24,7 +24,7 @@ def show_error(r, txt):
 
 
 class test(renderable):
-    def __init__(self, rect=(800, 200), bg=1, postfn=add_grid, **kwargs):
+    def __init__(self, rect=(800, 200), bg=hsl(0.17, 0.8, 0.7, 0.2), postfn=add_grid, **kwargs):
         if isinstance(rect, int):
             rect = (800, rect)
         
