@@ -20,9 +20,11 @@ def recursive(f):
             .visible(f.e(1) > 0.5)))
         .translate(0, f.e("eeio", 1, rng=(y:=390, -y)))
         .insert(0, f.lastRender(lambda p: p
-            .scale(0.995)
-            .ch(fill(1))))
-        .ch(phototype(f.a.r, blur=1.5, cut=137, cutw=35,
-            fill=hsl(f.e(1, rng=(0.95, 0.75)), 0.6, 0.6))))
+           .scale(0.995)
+           #.ch(fill(1))
+           ))
+        .ch(phototype(f.a.r, blur=1.5, cut=67, cutw=35,
+            fill=hsl(f.e(1, rng=(0.95, 0.75)), 0.6, 0.6)))
+        )
 
 release = recursive.export("h264", loops=4)

@@ -1138,6 +1138,8 @@ class Runon:
         """Does nothing"""
         return self
     
+    _ch = noop
+    
     def null(self):
         """For chaining; return an empty instead of this pen"""
         self.reset_val()
