@@ -145,7 +145,7 @@ class Scaffold(Runon):
                     r += 1
                     c += 1
                 
-                cell.data(r=r, c=c, ch=ch)
+                cell.data(row=r, col=c, checker=ch)
         
         return self
     

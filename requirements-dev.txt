@@ -11,4 +11,6 @@ scikit-image
 noise
 mdx-linkify
 
+ipykernel
+
 #drawbot @ git+https://github.com/typemytype/drawbotq

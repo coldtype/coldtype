@@ -693,7 +693,7 @@ class Renderer():
                     self.action_waiting_reason = "unclear"
 
             self.winmans.did_render(render_count, ditto_last, renders)
-            
+
         did_render_fn = self.buildrelease_fn("didRender")
         if did_render_fn:
             did_render_fn(trigger, passes)
@@ -1474,6 +1474,10 @@ class Renderer():
             self.action_waiting_reason = "pop_from_queue"
         
         did_preview = self.winmans.turn_over()
+
+        did_preview_fn = self.buildrelease_fn("didPreview")
+        if did_preview_fn:
+            did_preview_fn()
         
         self.previews_waiting = []
         self.last_render_cleared = False

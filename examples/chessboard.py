@@ -1,21 +1,92 @@
 from coldtype import *
 from string import ascii_uppercase
 
+from collections import defaultdict
+
+def rows(self:Scaffold):
+    rows = defaultdict(list)
+    for cell in self:
+        row = cell.data("row")
+        if row is not None:
+            rows[row].append(cell.copy())
+    return list(rows.values())
+
+def cols(self:Scaffold):
+    cols = defaultdict(list)
+    for cell in self:
+        col = cell.data("col")
+        if col is not None:
+            cols[col].append(cell.copy())
+    return list(cols.values())
+
+Scaffold.rows = rows
+Scaffold.cols = cols
+
+fill = hsl(0.38, 0.7, 0.7)
+
+chessfont = Font.LibraryFind(r"AppleSymbols")
+
 @renderable(bg=1)
 def board(r):
     def cell(x):
-        if x.el.data("ch"):
-            return P().oval(x.el.r).f(hsl(0.07, 0.80, 0.6))
+        if x.el.data("checker"):
+            return P().oval(x.el.r).f(fill)
         else:
-            return P().rect(x.el.r.inset(1)).f(hsl(0.38, 0.7, 0.6))
+            return P().rect(x.el.r.inset(1)).f(fill)
 
     s = Scaffold(r.inset(100)).labeled_grid(8, 8, 14, 14)
 
     board = P().enumerate(s.cells(), cell)
     borders = s.borders().ssw(hsl(0.6, 0.6, 0.7), 2)
 
-    labels = P().enumerate(s.cells().filter(lambda x: x.tag().startswith("h")), lambda x: StSt(ascii_uppercase[x.i], Font.JBMono(), 30, wght=1).align(x.el.r).f(0).t(0, -x.el.r.h+10))
+    style = Style(Font.JBMono(), 30, wght=1)
 
-    labels2 = P().enumerate(s.cells().filter(lambda x: x.tag().endswith("0")), lambda x: StSt(str(x.i), Font.JBMono(), 30, wght=1).align(x.el.r).f(0).t(-x.el.r.w+10, 0))
+    labels = (P(
+        P().enumerate(s.rows()[0], lambda x:
+            StSt(ascii_uppercase[x.i], style)
+                .align(x.el.r)
+                .f(0)
+                .t(0, x.el.r.h-10)
+                .rotate(180)),
+        P().enumerate(s.rows()[-1], lambda x:
+            StSt(ascii_uppercase[x.i], style)
+                .align(x.el.r)
+                .f(0)
+                .t(0, -x.el.r.h+10)),
+        P().enumerate(s.cols()[0], lambda x:
+            StSt(str(8-x.i), style)
+                .align(x.el.r)
+                .f(0)
+                .t(-x.el.r.w+10, 0)),
+        P().enumerate(s.cols()[-1], lambda x:
+            StSt(str(8-x.i), style)
+                .align(x.el.r)
+                .f(0)
+                .t(x.el.r.w-10, 0)
+                .rotate(180))))
+    
+    rows = s.rows()
+    
+    player1 = (P().enumerate("♖♘♗♕♔♗♘♖", lambda x:
+        StSt(x.el, chessfont, 50)
+            .align(rows[0][x.i])
+            .rotate(180)
+            .f(0)))
+    
+    pawns1 = (StSt("♙", chessfont, 50).f(0)
+        .pen()
+        .unframe()
+        .rotate(180)
+        .replicate(rows[1]))
+    
+    player2 = (P().enumerate("♜♞♝♛♚♝♞♜", lambda x:
+        StSt(x.el, chessfont, 50)
+            .align(rows[-1][x.i])
+            .f(0)))
+    
+    pawns2 = (StSt("♟", chessfont, 50).f(0)
+        .pen()
+        .unframe()
+        .replicate(rows[-2]))
 
-    return P(borders, board, labels, labels2)
+    return P(borders, board, labels, player1, pawns1, player2, pawns2)

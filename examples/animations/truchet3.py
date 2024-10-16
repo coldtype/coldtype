@@ -8,7 +8,6 @@ rs = random_series(0, 3, seed=0)
 rs2 = random_series()
 rs3 = random_series(0.5, 3.5)
 
-tr = Rect(100)
 tn = 8
 
 at = AsciiTimeline(10, 30, """
@@ -20,6 +19,9 @@ at = AsciiTimeline(10, 30, """
                       [4 ]    [4 ]
             [5         ]           [5  ]   <
              [6  ]               [6  ]
+    [7  ]                [7  ]
+      [8  ]                     [8  ]
+        [9  ]      [9  ]
 """)
 
 spins = []
@@ -39,29 +41,26 @@ rnd.shuffle(ridxs)
 def setup(bw:BpyWorld):
     (bw.deletePrevious(materials=False))
 
-@b3d_animation((tr.w*tn, tr.w*tn), tl=at, bg=None)
+@b3d_animation(Rect(1000), tl=at, bg=None)
 def truchet1(f):
     t2.hold(f.i)
+
     def rotate(i, p):
-        ri = ridxs[i]
+        ri = ridxs[i]//6
         (p.rotate(90*int(rs[i]))
-            #.scale(t2.ki(str(ri))
-            #    .e("seio", rng=(1, 0.5)))
             .rotate(t2.ki(f"{ri}_spin")
                 .ec("eeio", (0, 90)))
             .ch(b3d(lambda bp: bp
                 .extrude(0.25)
                 .locate(z=t2.ki(f"{ri}")
                     .e("eeio", rng=(0, rs3[i]))))))
+    
+    s = Scaffold(f.a.r).labeled_grid(tn, tn)
 
-    return (P(tr.inset(0.05, 0.05))
+    return (P(tr:=s[0].r.inset(0.05, 0.05))
         .difference(P()
             .append(P().oval(tr).t(tr.w/2))
             .append(P().oval(tr).t(-tr.w/2)))
         .f(0)
-        .data(frame=tr)
-        .layer(tn)
-        .spread()
-        .layer(tn)
-        .stack()
-        .mapv(rotate))
+        .replicate(s.cells())
+        .map(rotate))

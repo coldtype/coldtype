@@ -9,6 +9,7 @@ from time import sleep
 from copy import deepcopy
 from collections.abc import Iterable
 from collections import namedtuple
+from functools import partial
 
 from coldtype.fx.chainable import Chainable
 
@@ -1040,6 +1041,9 @@ class Runon:
     def down(self):
         """down one level of hierarchy — unimplemented by Runon"""
         return self
+    
+    def replicate(self, cells, mod=None):
+        return (type(self)().enumerate(cells, lambda x: self.copy().align(x.el).ch(partial(mod, x.el) if mod else None)))
 
     def layer(self, *layers):
         if len(layers) == 1 and isinstance(layers[0], int):
