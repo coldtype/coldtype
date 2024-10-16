@@ -30,8 +30,6 @@ for t in at.timeables:
 
 t2 = Timeline(timeables=[*at.timeables, *spins])
 
-print(t2)
-
 rnd = Random()
 rnd.seed(4)
 ridxs = list(range(0, tn*tn))

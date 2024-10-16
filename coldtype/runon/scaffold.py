@@ -3,12 +3,7 @@ from coldtype.geometry import Rect
 from coldtype.grid import Grid
 from coldtype.color import hsl, bw
 from coldtype.random import random_series
-
-import re
-from typing import Pattern
-
-#self\.assertEqual\(([^,]+),([^)]+)\)
-#assert $1 ==$2
+from collections import defaultdict
 
 _view_rs1 = None
 
@@ -154,6 +149,22 @@ class Scaffold(Runon):
     
     def gaps(self):
         return self.copy().filter(lambda x: "." in x.tag())
+    
+    def rows(self):
+        rows = defaultdict(list)
+        for cell in self:
+            row = cell.data("row")
+            if row is not None:
+                rows[row].append(cell.copy())
+        return list(rows.values())
+
+    def cols(self):
+        cols = defaultdict(list)
+        for cell in self:
+            col = cell.data("col")
+            if col is not None:
+                cols[col].append(cell.copy())
+        return list(cols.values())
     
     def grid(self, columns=2, rows=None, tags=[]):
         if rows is None:

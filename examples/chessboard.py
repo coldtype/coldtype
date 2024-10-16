@@ -1,27 +1,6 @@
 from coldtype import *
 from string import ascii_uppercase
 
-from collections import defaultdict
-
-def rows(self:Scaffold):
-    rows = defaultdict(list)
-    for cell in self:
-        row = cell.data("row")
-        if row is not None:
-            rows[row].append(cell.copy())
-    return list(rows.values())
-
-def cols(self:Scaffold):
-    cols = defaultdict(list)
-    for cell in self:
-        col = cell.data("col")
-        if col is not None:
-            cols[col].append(cell.copy())
-    return list(cols.values())
-
-Scaffold.rows = rows
-Scaffold.cols = cols
-
 fill = hsl(0.38, 0.7, 0.7)
 
 chessfont = Font.LibraryFind(r"AppleSymbols")
