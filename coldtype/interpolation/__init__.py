@@ -16,6 +16,8 @@ def interp_dict(v, a, b=None):
     for k, _v in a.items():
         if hasattr(a[k], "interp"):
             out[k] = a[k].interp(v, b[k])
+        elif isinstance(a[k], str):
+            out[k] = b[k]
         else:
             out[k] = norm(v, a[k], b[k])
     return out
