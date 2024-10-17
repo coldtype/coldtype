@@ -236,10 +236,6 @@ class animation(renderable, Timeable):
             return None
     
     def runpost(self, result, render_pass, renderer_state, config):
-        #if Overlay.Rendered in renderer_state.overlays:
-        #    from coldtype.img.skiaimage import SkiaImage
-        #    return SkiaImage(render_pass.output_path)
-
         res = super().runpost(result, render_pass, renderer_state, config)
 
         if Overlay.Recording in renderer_state.overlays and self.overlay and self.recording_path:

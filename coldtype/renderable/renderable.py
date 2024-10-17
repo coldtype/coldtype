@@ -492,7 +492,7 @@ class renderable():
     def render_and_rasterize(self, scale=1, style=None) -> str:
         return self.render_and_rasterize_frame(0, scale=scale, style=style)
     
-    def render_to_disk(self, print_paths=False, return_base64=False, return_text=False):
+    def render_to_disk(self, print_paths=False, return_base64=False, return_text=False, render_bg=False):
         passes = self.passes(Action.RenderAll, None)
         paths = []
         for rp in passes:
@@ -502,7 +502,7 @@ class renderable():
             if print_paths:
                 print(output_path)
             
-            result = self.run_normal(rp, None, False)
+            result = self.run_normal(rp, None, render_bg)
             if self.fmt == "png":
                 SkiaPen.Composite(result,
                     self.rect,
