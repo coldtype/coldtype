@@ -22,8 +22,6 @@ def quick_ufo(path
     , capHeight=750
     , xHeight=500
     ):
-    # TODO can this be done without defcon?
-    
     from defcon import Font as DefconFont
 
     np:Path = Path(path).expanduser().resolve()
