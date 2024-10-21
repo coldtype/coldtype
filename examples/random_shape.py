@@ -9,11 +9,11 @@ def scribble(f):
     ry = random_series(ri.mny, ri.mxy, seed=seed+1)
 
     return (P().enumerate(range(0, int(f.e("seio", 1, rng=(1, 200)))), lambda x: P()
-        .moveTo(rx[0+x.i], ry[0+x.i])
+        .moveTo(rx[x.i], ry[x.i])
         .enumerate(range(0, 20), lambda y: y.parent
             .declare(yi:=y.i*10)
             .curveTo(
-                (rx[1+yi*10+x.i], ry[1+yi+x.i]),
+                (rx[1+yi+x.i], ry[1+yi+x.i]),
                 (rx[2+yi+x.i], ry[2+yi+x.i]),
                 (rx[3+yi+x.i], ry[3+yi+x.i])))
         .endPath()
