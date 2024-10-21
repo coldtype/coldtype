@@ -9,23 +9,13 @@ More info available at: [coldtype.goodhertz.com](https://coldtype.goodhertz.com)
 """
 
 basic_deps = [
-    "fontPens",
-    "easing-functions",
-    "mido",
+    "fontPens==0.2.4",
+    "easing-functions==1.0.4",
+    "mido==1.3.2",
     "defcon",
-    "requests",
+    "requests==2.32.3",
     "b3denv>=0.0.12",
-
-    # fontgoggles-derived (copied from the requirements.txt)
     "fontgoggles @ git+https://github.com/coldtype/fontgoggles.git@7341e09255c55d2df493233948628e3ff236df0d#egg=fontgoggles",
-    #"blackrenderer==0.6.0",
-    #"fonttools[woff,lxml,unicode,ufo,type1]==4.53.1",
-    #"uharfbuzz==0.39.5",
-    #"python-bidi==0.4.2", # pin for now
-    #"ufo2ft==3.2.8",
-    #"numpy", # ==2.1.1 version lock doesn't play with scipy (?)
-    #"unicodedata2==15.1.0",
-    #"rcjktools @ git+https://github.com/BlackFoundryCom/rcjk-tools.git#egg=fontgoggles",
 ]
 
 #if sys.platform.startswith("darwin"):
