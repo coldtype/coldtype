@@ -143,8 +143,6 @@ def drummachine(f):
 
     # And a little branding: load the Goodhertz logo from the ufo via `glyph`
 
-    print(logos["goodhertz_logo_2019"])
-
     ghz_logo = (P()
         .glyph(logos["goodhertz_logo_2019"])
         .scale(0.2)

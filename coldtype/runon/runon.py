@@ -567,14 +567,19 @@ class Runon:
                     e = 0.5
                 else:
                     e = idx / (length-1)
-                self.append(enumerator(RunonEnumerable(idx, item, e, length, k, self)))
+                result = enumerator(RunonEnumerable(idx, item, e, length, k, self))
+                if result != self:
+                    self.append(result)
         else:
             for idx, item in enumerate(es):
                 if idx == 0 and length == 1:
                     e = 0.5
                 else:
                     e = idx / (length-1)
-                self.append(enumerator(RunonEnumerable(idx, item, e, length, idx, self)))
+                
+                result = enumerator(RunonEnumerable(idx, item, e, length, idx, self))
+                if result != self:
+                    self.append(result)
         return self
     
     # Hierarchical Operations
