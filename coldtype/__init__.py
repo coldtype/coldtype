@@ -34,7 +34,7 @@ try:
     from coldtype.renderer.reader import Programs
 except ModuleNotFoundError:
     pass
-from coldtype.helpers import loopidx, sibling, raw_ufo, quick_ufo, ßhide, ßshow, cycle_idx, random_series, glyph_to_uni, uni_to_glyph, glyph_to_class, DefconFont
+from coldtype.helpers import loopidx, sibling, raw_ufo, quick_ufo, ßhide, ßshow, cycle_idx, random_series, glyph_to_uni, uni_to_glyph, glyph_to_class
 from coldtype.timing import *
 from coldtype.timing.easing import ez
 from coldtype.timing.nle.ascii import AsciiTimeline

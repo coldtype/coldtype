@@ -98,7 +98,7 @@ class DATImage(P):
             (P()
                 .rect(self.bounds())
                 .difference(crop)
-                .f(0, 1)
+                .f(-1)
                 .blendmode(BlendMode.Clear)
                 .translate(xo, yo))
             ]).ch(self._precompose_fn()(

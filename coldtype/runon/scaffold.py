@@ -5,6 +5,8 @@ from coldtype.color import hsl, bw
 from coldtype.random import random_series
 from collections import defaultdict
 
+import re
+
 _view_rs1 = None
 
 class Scaffold(Runon):
@@ -132,7 +134,9 @@ class Scaffold(Runon):
         for cell in self:
             tag = cell.tag()
             if "." not in tag:
-                _r, _c = list(cell.tag())
+                _r = re.search(r"[a-z]{1,2}", cell.tag())[0]
+                _c = re.search(r"[0-9]{1,2}", cell.tag())[0]
+                #_r, _c = list(cell.tag())
                 r = ascii_lowercase.index(_r)
                 c = int(_c)
                 ch = not((not r%2 and not c%2) or (r%2 and c%2))

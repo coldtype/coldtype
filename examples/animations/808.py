@@ -29,9 +29,9 @@ ar = {
     "TM": [5, 10]
 }
 
-# I like to keep things like logos in UFO source files, since they aren’t really typographic, so you don’t need to load them as fonts. Here we load a ufo of logos via `DefconFont`, which makes keyed lookups of vectors very easy.
+# I like to keep things like logos in UFO source files, since they aren’t really typographic, so you don’t need to load them as fonts. Here we load a ufo of logos via `raw_ufo`, which makes keyed lookups of vectors very easy.
 
-logos = DefconFont("assets/logos.ufo")
+logos = raw_ufo("assets/logos.ufo").getGlyphSet()
 
 # OK, here’s the main render function. To start this off, we'll define variables for `kick` and `cowbell`, since we'll be referencing those when we build the initial text lockup in the next code block.
 
@@ -142,6 +142,8 @@ def drummachine(f):
     (pens[0].ffg("O").î(0, lambda p: p.translate(0, tom)))
 
     # And a little branding: load the Goodhertz logo from the ufo via `glyph`
+
+    print(logos["goodhertz_logo_2019"])
 
     ghz_logo = (P()
         .glyph(logos["goodhertz_logo_2019"])

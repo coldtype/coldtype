@@ -28,7 +28,7 @@ Taken from https://github.com/typemytype/outlinerRoboFontExtension
 
 from fontTools.pens.basePen import BasePen
 from fontTools.pens.recordingPen import RecordingPen, replayRecording
-from fontTools.ufoLib.pointPen import AbstractPointPen, ReverseContourPointPen
+from fontTools.ufoLib.pointPen import AbstractPointPen, ReverseContourPointPen, PointToSegmentPen
 from fontTools.misc.bezierTools import splitCubicAtT
 from math import sqrt, cos, sin, acos, asin, degrees, radians, pi
 
@@ -36,7 +36,6 @@ try:
     from defcon import Glyph
 except:
     pass
-
 
 def roundFloat(f):
     error = 1000000.

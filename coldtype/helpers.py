@@ -1,5 +1,4 @@
 from pathlib import Path
-from defcon import Font as DefconFont
 from coldtype.text.reader import normalize_font_path
 from coldtype.interpolation import norm, interp_dict, lerp, loopidx
 from coldtype.random import random_series
@@ -9,7 +8,8 @@ def sibling(root, file):
     return Path(root).parent.joinpath(file)
 
 def raw_ufo(path):
-    return DefconFont(normalize_font_path(path))
+    from fontTools.ufoLib import UFOReader
+    return UFOReader(normalize_font_path(path))
 
 def quick_ufo(path
     , familyName
@@ -22,6 +22,10 @@ def quick_ufo(path
     , capHeight=750
     , xHeight=500
     ):
+    # TODO can this be done without defcon?
+    
+    from defcon import Font as DefconFont
+
     np:Path = Path(path).expanduser().resolve()
     
     if not np.exists():

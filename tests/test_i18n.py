@@ -188,4 +188,4 @@ def test_language_specific_ufo(_r):
     assert txt[-1].glyphName == "S"
     assert txt[-2].glyphName == "S"
 
-    return txt.outline().align(_r).scale(0.5)
+    return txt.outline(2).align(_r).scale(0.5)

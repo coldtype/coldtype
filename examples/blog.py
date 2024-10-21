@@ -1,6 +1,6 @@
 from coldtype import *
 
-logos = raw_ufo("assets/logos.ufo")
+logos = raw_ufo("assets/logos.ufo").getGlyphSet()
 
 @renderable((1200, 600), bg=0)
 def nameplate(r, fontSize=500, wdth=0.25, rotate=0):

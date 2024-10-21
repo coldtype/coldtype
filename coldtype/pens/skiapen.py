@@ -195,6 +195,9 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         if context:
             info = skia.ImageInfo.MakeN32Premul(rect.w, rect.h)
             surface = skia.Surface.MakeRenderTarget(context, skia.Budgeted.kNo, info)
+            if not surface:
+                print("SURFACE CREATION FAILED, USING CPU...")
+                surface = skia.Surface(rect.w, rect.h)
         else:
             #print("CPU RENDER")
             surface = skia.Surface(rect.w, rect.h)
