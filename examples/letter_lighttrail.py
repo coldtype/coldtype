@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.fx.skia import phototype
+from coldtype.fx.skia import phototype, precompose, temptone
 
 r = Rect(1080, 1080)
 letters = "RANDOM"

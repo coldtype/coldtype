@@ -70,6 +70,8 @@ def apply_syntax_mods(filepath, source_code, renderer=None, source_reader=None):
     #source_code = re.sub(r"λ", "lambda ", source_code)
     #source_code = re.sub(r"ßDPS\(([^\)]+)\)", r"(ß:=P(\1))", source_code)
 
+    source_code = re.sub(r"\.___([^_\(]+)\(", ".noop(", source_code)
+
     if source_reader and source_reader.config.src_macros:
         for pattern, src_macro in source_reader.config.src_macros.items():
             if re.match(pattern, str(filepath)):
