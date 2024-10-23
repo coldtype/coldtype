@@ -102,22 +102,40 @@ class Skfi():
     @staticmethod
     def saturate(s):
         matrix = [0 for _ in range(0, 20)]
-        matrix[0] = 0.213 + 0.787 * s;
-        matrix[1] = 0.715 - 0.715 * s;
-        matrix[2] = 0.072 - 0.072 * s;
-        matrix[3] = matrix[4] = 0;
-        matrix[5] = 0.213 - 0.213 * s;
-        matrix[6] = 0.715 + 0.285 * s;
-        matrix[7] = 0.072 - 0.072 * s;
-        matrix[8] = matrix[9] = 0;
-        matrix[10] = 0.213 - 0.213 * s;
-        matrix[11] = 0.715 - 0.715 * s;
-        matrix[12] = 0.072 + 0.928 * s;
-        matrix[13] = matrix[14] = 0;
-        matrix[15] = matrix[16] = matrix[17] = 0;
-        matrix[18] = 1;
-        matrix[19] = 0;
+        matrix[0] = 0.213 + 0.787 * s
+        matrix[1] = 0.715 - 0.715 * s
+        matrix[2] = 0.072 - 0.072 * s
+        matrix[3] = matrix[4] = 0
+        matrix[5] = 0.213 - 0.213 * s
+        matrix[6] = 0.715 + 0.285 * s
+        matrix[7] = 0.072 - 0.072 * s
+        matrix[8] = matrix[9] = 0
+        matrix[10] = 0.213 - 0.213 * s
+        matrix[11] = 0.715 - 0.715 * s
+        matrix[12] = 0.072 + 0.928 * s
+        matrix[13] = matrix[14] = 0
+        matrix[15] = matrix[16] = matrix[17] = 0
+        matrix[18] = 1
+        matrix[19] = 0
         return skia.ColorFilters.Matrix(matrix)
+    
+    @staticmethod
+    def temp(t):
+        return skia.ColorFilters.Matrix([
+            1+t, 0, 0, 0, 0,
+            0, 1, 0, 0, 0,
+            0, 0, 1-t, 0, 0,
+            0, 0, 0, 1, 0,
+        ])
+    
+    @staticmethod
+    def tone(t):
+        return skia.ColorFilters.Matrix([
+            1+t, 0, 0, 0, 0,
+            0, 1-t, 0, 0, 0,
+            0, 0, 1+t, 0, 0,
+            0, 0, 0, 1, 0,
+        ])
 
 # CHAINABLES
 
@@ -387,6 +405,21 @@ def saturate(c):
     def _fill(pen):
         return pen.attr(skp=dict(ColorFilter=Skfi.saturate(c)))
     return _fill
+
+def temp(t):
+    def _fill(pen):
+        return pen.attr(skp=dict(ColorFilter=Skfi.temp(t)))
+    return _fill
+
+def tone(t):
+    def _fill(pen):
+        return pen.attr(skp=dict(ColorFilter=Skfi.tone(t)))
+    return _fill
+
+def temptone(temp, tone):
+    def _fill(pen):
+        pen.attr(skp=dict(ColorFilter=Skfi.compose(Skfi.temp(temp), Skfi.tone(tone))))
+    return _fill 
 
 def shake(seg_length=2, deviation=2, seed=0):
     """shake up the path"""
