@@ -27,6 +27,7 @@ class ConfigOption(Enum):
     EditorCommand = ("editor_command", "code", "ec")
     ManyIncrement = ("many_increment", None, "minc")
     PreviewScale = ("preview_scale", 1, "ps", lambda x: float(x))
+    PreviewSaturation = ("preview_saturation", 1, "psat", lambda x: float(x))
     FontDirs = ("font_dirs", [], "fd")
     FunctionFilters = ("function_filters", "", "ff",
         lambda x: [re.compile(f.strip()) for f in x.split(",")])
@@ -94,6 +95,8 @@ class ConfigOption(Enum):
             return "How many frames should the renderer jump forward when you hit cmd+arrow to move prev/next?"
         elif e == ConfigOption.PreviewScale:
             return "What preview scale should the window open at?"
+        elif e == ConfigOption.PreviewSaturation:
+            return "Should the preview have a saturation value applied to compensate for your screen?"
         elif e == ConfigOption.FontDirs:
             return "What additional directories would you like to search for fonts?"
         elif e == ConfigOption.FunctionFilters:

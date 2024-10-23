@@ -467,7 +467,9 @@ class WinmanGLFWSkia():
                 canvas.save()
                 canvas.scale(1/scale, 1/scale)
                 #render.draw_preview(1.0, canvas, render.rect, comp, rp)
-                skiashim.canvas_drawImage(canvas, comp, 0, 0)
+                paint = skia.Paint()
+                paint.setColorFilter(skfx.Skfi.saturate(self.config.preview_saturation))
+                skiashim.canvas_drawImage(canvas, comp, 0, 0, paint)
                 canvas.restore()
             else:
                 comp = result
