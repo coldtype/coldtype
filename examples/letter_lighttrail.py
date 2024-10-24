@@ -7,12 +7,12 @@ letters = "RANDOM"
 rc = random_series()
 rstroke = random_series(0.45, 1)
 
-def colorize(render, result):
+def postprocess(render, result):
     return (result
         .ch(precompose(render.rect))
         .ch(temptone(0.05,0.02)))
 
-@animation(r, bg=1, tl=Timeline(240, 12), postfn=colorize)
+@animation(r, bg=1, tl=Timeline(240, 12), postfn=postprocess)
 def scribble_random(f):
     seed = f.i+2
     
