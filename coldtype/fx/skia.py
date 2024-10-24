@@ -419,7 +419,7 @@ def tone(t):
 def temptone(temp, tone):
     def _fill(pen):
         pen.attr(skp=dict(ColorFilter=Skfi.compose(Skfi.temp(temp), Skfi.tone(tone))))
-    return _fill 
+    return _fill
 
 def shake(seg_length=2, deviation=2, seed=0):
     """shake up the path"""
@@ -428,6 +428,12 @@ def shake(seg_length=2, deviation=2, seed=0):
             seg_length, deviation, seed)
         return p.attr(skp=dict(PathEffect=effect))
     return _shake
+
+def round_corners(roundedness=20):
+    def _round(p):
+        effect = skia.CornerPathEffect.Make(roundedness)
+        return p.attr(skp=dict(PathEffect=effect))
+    return _round
 
 FREEZES = {}
 

@@ -1,42 +1,44 @@
 from coldtype import *
-from coldtype.fx.skia import phototype
+from coldtype.fx.skia import phototype, precompose, temptone, shake
 from random import randint
 
 # a variation on https://github.com/djrrb/Python-for-Visual-Designers-Fall-2023/blob/main/session-4/challenges/snakes.py
 
 r = Rect(1000, 1000)
-segmentLength = r.h/5
-handleLength = segmentLength*1
-total = 5
+s = Scaffold(r).labeled_grid(1, 8)
 
-rxs = random_series(-400, 400, 0, mod=int, spread=200)
+rxs = random_series(-(d:=r.w/2-100), d, 0, mod=int, spread=200)
 
 def build_snake(seed):
     snake = P()
     snake.moveTo((0, 0))
     prevX = 0
     prevY = 0
-    for idx in range(0, total):
-        y = prevY + segmentLength
-        if idx < total-1:
+    for idx, x in enumerate(s):
+        y = prevY + s[0].r.h
+        if idx < len(s)-1:
             x = rxs[(idx+2)+seed*10]
         else:
             x = 0
         snake.curveTo(
-            (prevX, prevY+handleLength),
-            (x, y-handleLength),
+            (prevX, prevY+s[0].r.h),
+            (x, y-s[0].r.h),
             (x, y))
         prevX = x
         prevY = y
     return snake.endPath()
 
-@renderable(Rect(1000, 1000), bg=0)
-def snakes(r):
-    return (P().enumerate(range(0, 10), lambda x:       
+def finish(render, res):
+    return res.ch(precompose(render.rect)).ch(temptone(0.70, 0.10))
+
+@animation(r, bg=0, postfn=finish, tl=Timeline(60, 10))
+def snakes(f):
+    return (P().enumerate(range(0, 7), lambda x:
         build_snake(x.el)
             .t(x.el*20, 0)
-            .outline(2)
-            .f(1))
-        .align(r)
-        .ch(phototype(r.inset(-10), 3, 110, 17))
+            .fssw(-1, 1, 5)
+            .ch(shake(4, 2, seed=f.i))
+            )
+        .align(f.a.r)
+        .ch(phototype(f.a.r.inset(-10), 4, 120, 17))
         )
