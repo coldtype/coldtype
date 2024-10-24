@@ -40,5 +40,4 @@ def snakes(f):
             .ch(shake(4, 2, seed=f.i))
             )
         .align(f.a.r)
-        .ch(phototype(f.a.r.inset(-10), 4, 120, 17))
-        )
+        .ch(phototype(f.a.r.inset(-10), 4, 120, 17)))
