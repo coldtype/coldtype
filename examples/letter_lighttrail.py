@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.fx.skia import phototype, precompose, temptone
+from coldtype.fx.skia import phototype, precompose, temptone, spackle
 
 r = Rect(1080, 1080)
 letters = "RANDOM"
@@ -28,7 +28,7 @@ def scribble_random(f):
     points = letter.pen().flatten(10).point_list()
     rp = random_series(0, len(points), seed=seed, mod=int)
 
-    return (P().enumerate(range(0, int(f.e("eei", 1, rng=(15, 500)))), lambda x: P()
+    lines = (P().enumerate(range(0, int(f.e("eei", 1, rng=(15, 25)))), lambda x: P()
         .moveTo(points[rp[x.i]])
         .enumerate(range(0, int(f.e("seio", rng=(6, 20)))), lambda y: y.parent
             .declare(yi:=y.i*10)
@@ -46,6 +46,13 @@ def scribble_random(f):
             , cutw=15
             , fill=hsl(x.e*0.5+f.e("l", 0, rng=(0, 10)), 0.9, 0.4))))
         .blendmode(BlendMode.Cycle(16)))
+    
+    return P(
+        P(f.a.r)
+            .ch(spackle(cut=235, cutw=1, base=f.i, fill=bw(1)))
+            .ch(phototype(f.a.r,
+                blur=3, cut=170, fill=hsl(f.i*0.1))),
+        lines)
 
 
 release = scribble_random.export("h264", loops=2, date=True)
