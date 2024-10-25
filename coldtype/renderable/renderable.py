@@ -310,6 +310,10 @@ class renderable():
         else:
             return self.output_folder / f"{self.pass_prefix()}{self.pass_suffix(index)}"
     
+    def pass_img(self, index=0):
+        from coldtype.img.skiaimage import SkiaImage
+        return SkiaImage(self.pass_path(index=index))
+    
     def passes(self, action, renderer_state, indices=[]):
         return [RenderPass(self, action, 0, [self.rect])]
 
@@ -364,12 +368,17 @@ class renderable():
 
         if show_bg:
             if self.bg_fn:
-                arg_count = len(inspect.signature(self.bg_fn).parameters)
-                args = [self.rect, render_pass]
-                return P([
-                    self.bg_fn(*args[:arg_count]),
-                    res
-                ])
+                if isinstance(self.bg_fn, type(self)):
+                    from coldtype.img.skiaimage import SkiaImage
+                    path = self.bg_fn.render_to_disk()[0]
+                    return P(SkiaImage(path), res)
+                else:
+                    arg_count = len(inspect.signature(self.bg_fn).parameters)
+                    args = [self.rect, render_pass]
+                    return P([
+                        self.bg_fn(*args[:arg_count]),
+                        res
+                    ])
             elif self.bg:
                 return P([
                     P(self.rect).f(self.bg),
