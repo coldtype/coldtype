@@ -1,9 +1,9 @@
 from coldtype import *
 
-audio = __sibling__("media/house.wav")
+audio = ººsiblingºº("media/house.wav")
 
 midi = MidiTimeline(
-    __sibling__("media/house.mid")
+    ººsiblingºº("media/house.mid")
     , bpm=120
     , duration=60)
 
@@ -21,7 +21,7 @@ def render(f):
     return (P(
         StSt("COLD", style, wdth=1-s*0.5)
             .f(hsl(hues[0], 0.75, 0.5))
-            .î(1, lambda p: p.rt((hat+1)*-45)),
+            .index(1, lambda p: p.rt((hat+1)*-45)),
         StSt("TYPE", style, tu=-150-100*k, rotate=-8*k)
             .f(hsl(hues[1], 0.75, 0.5))
             .index([2, 1], lambda p: p.t(70*c, 0)))

@@ -13,10 +13,10 @@ obvs = Font.ColdtypeObviously()
 
 # This is also useful to load before the render function, because this MIDI data doesn’t change once our program is loaded.
 
-wav = __sibling__("media/808.wav")
+wav = ººsiblingºº("media/808.wav")
 
 midi = MidiTimeline(
-    __sibling__("media/808.mid")
+    ººsiblingºº("media/808.mid")
     , duration=120
     , bpm=120
     , fps=30)
@@ -84,15 +84,17 @@ def drummachine(f):
     else: # the second snare hit
         pens[0].translate(150*se, 0)
         pens[1].translate(-150*se, 0)
-        pens[1].find_(glyphName="P").î(0, lambda p: p.rotate(se*270))
+        pens[1].find_(glyphName="P").index(0, lambda p: p.rotate(se*270))
 
-    # Whew, ok that was a little complicated. Now let’s do something similar with `î` on the P, but this time rotate just the counter shape when the second rimshot hits (we can ignore the first rimshot b/c it hits at the same time as a hi-hat, which we'll visualize in a second).
+    # Whew, ok that was a little complicated. Now let’s do something similar with `index` on the P, but this time rotate just the counter shape when the second rimshot hits (we can ignore the first rimshot b/c it hits at the same time as a hi-hat, which we'll visualize in a second).
 
     rim = drums.ki(39)
     re, ri = rim.adsr(ar["RS"], rng=(0, -270), find=1)
 
     if ri == 1:
-        pens[1].find_(glyphName="P").î(1, lambda p: p.rotate(re))
+        (pens[1]
+            .find_(glyphName="P")
+            .index(1, lambda p: p.rotate(re)))
 
     # Wouldn’t it be cool if the letters corresponding to the kicks scaled up whenever the kick hit? That’s what’s happening here, along with a more programmer-y idiom, i.e. unpacking a tuple to the `line, glyph`. This is just a way of abbreviating a longer `if-else` statement that would contain redundant code.
 
@@ -111,34 +113,34 @@ def drummachine(f):
 
     if hi == 0:
         (pens[0].find_(glyphName="O")
-            .î(1, lambda p: p.translate(80*he, 0)))
+            .index(1, lambda p: p.translate(80*he, 0)))
 
     # And when the second hat hits, let’s move the counter of the D in the first line, this time translating it down & then rotating it, to make it seem like it’s falling and then bouncing back up from the bottom of the outer shape.
 
     elif hi == 1:
         (pens[0].find_(glyphName="D")
-            .î(1, lambda p: p.translate(-30*he, -100*he).rotate(he*110)))
+            .index(1, lambda p: p.translate(-30*he, -100*he).rotate(he*110)))
 
-    # And when the third and fourth hats hit, let’s move the left and right sides of the T crossbar, via the `ï` (indices) function, which lets you adjust the x and y values of a certain set of points (at the given indices) directly via a callback.
+    # And when the third and fourth hats hit, let’s move the left and right sides of the T crossbar, via the `indices` function, which lets you adjust the x and y values of a certain set of points (at the given indices) directly via a callback.
 
     elif hi == 2:
-        pens[1].find_(glyphName="T").ï(range(0, 7), lambda p: p.o(-150*he, 0))
+        pens[1].find_(glyphName="T").indices(range(0, 7), lambda p: p.o(-150*he, 0))
     elif hi == 3:
-        pens[1].find_(glyphName="T").ï(range(26, 35), lambda p: p.o(150*he, 0))
+        pens[1].find_(glyphName="T").indices(range(26, 35), lambda p: p.o(150*he, 0))
 
-    # Ok last hat! Here we exaggerate the horizontality of the E counters with the same `ï` function.
+    # Ok last hat! Here we exaggerate the horizontality of the E counters with the same `indices` function.
 
     elif hi == 4:
         (pens[1].find_(glyphName="E")
-            .ï(range(10, 15), lambda p: p.o(-35*he, 0))
-            .ï(range(23, 30), lambda p: p.o(-75*he, 0)))
+            .indices(range(10, 15), lambda p: p.o(-35*he, 0))
+            .indices(range(23, 30), lambda p: p.o(-75*he, 0)))
 
     # The last visualization is the tom-tom hit. Here we can just nudge up the outer contour of the O in the first line.
 
     tom = (drums.ki(50)
         .adsr(ar["TM"], rng=(0, -80)))
 
-    (pens[0].find_(glyphName="O").î(0, lambda p: p.translate(0, tom)))
+    (pens[0].find_(glyphName="O").index(0, lambda p: p.translate(0, tom)))
 
     # And a little branding: load the Goodhertz logo from the ufo via `glyph`
 
