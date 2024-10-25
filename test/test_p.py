@@ -46,16 +46,16 @@ class TestRunonPath(unittest.TestCase):
 
         self.assertEqual(
             r.find_({"glyphName":"B"}).tag(),
-            r.ffg("B").tag())
+            r.find_(glyphName="B").tag())
         
-        self.assertNotEqual(r.ffg("B"), r.ffg("B", index=1))
+        self.assertNotEqual(r.find_(glyphName="B"), r.find_(glyphName="B", index=1))
 
-        r.ffg("C", lambda e: e.tag("sizzler"))
+        r.find_(dict(glyphName="C"), lambda e: e.tag("sizzler"))
         self.assertEqual(r[0][-1].tag(), "sizzler")
         self.assertEqual(r[-1][-1].tag(), None)
 
         self.assertEqual(len(r[-1]), 3)
-        r.ffg("C", lambda e: e.delete(), index=1)
+        r.find_(dict(glyphName="C"), lambda e: e.delete(), index=1)
         r.deblank()
         self.assertEqual(len(r[-1]), 2)
     
@@ -166,7 +166,7 @@ class TestRunonPath(unittest.TestCase):
         before_rotate = r.index([1, 2]).bounds()
         before_frame = r.index([1]).ambit(tx=0, ty=0)
 
-        r.ffg("B", lambda p: p.î(2, lambda c: c.rotate(-5)))
+        r.find_(dict(glyphName="B"), lambda p: p.î(2, lambda c: c.rotate(-5)))
 
         self.assertNotEqual(before_rotate, r.î([1, 2]).bounds())
         self.assertEqual(before_frame, r.î(1).ambit())

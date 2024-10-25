@@ -408,9 +408,6 @@ class P(Runon):
     def glyphName(self):
         return self.data("glyphName")
     
-    def ffg(self, glyphName, fn=None, index=0):
-        return self.find_({"glyphName":glyphName}, fn, index)
-    
     def drop(self, amount, edge):
         amb = self.ambit(tx=1, ty=1).drop(amount, edge)
         return self.intersection(P(amb))

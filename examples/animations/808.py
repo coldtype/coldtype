@@ -3,6 +3,7 @@
 
 from coldtype import *
 from coldtype.fx.skia import phototype
+#from coldtype.warping import warp
 
 # This is the "logo font" for Coldtype, and it's packaged with the library itself
 
@@ -71,9 +72,7 @@ def drummachine(f):
 
     # A few notes:
 
-    # - `ffg` stands for `find-first-glyph`, which finds the first glyph with the given name. So we want to find the L in the first line of text, that’s `pens[0].ffg("L")`; we want to find the P on the second line, that’s `pens[1].ffg("P")`, etc.
-
-    # - `î` (aka index) allows you to modify a nested pen value in-place as a set of contours with a callback function (aka a `lambda`). Basically, the `î` function first "explodes" the glyph into all its component contours (in the P’s case, that’s the outer shape & the counter shape), and then gives you an opportunity to modify just the specified contour (at the "index") before reassembling the contours into the letter (so the counter is still a counter and not just another filled-in shape). That’s how we’re able to keep the counter of the P frozen in place. If we got rid of the `î` call and instead rotated the P glyph itself (ala `pens[1].ffg("P").rotate(rim.ease()*-270)`), then the counter shape would also rotate.
+    # - `î` (aka index) allows you to modify a nested pen value in-place as a set of contours with a callback function (aka a `lambda`). Basically, the `î` function first "explodes" the glyph into all its component contours (in the P’s case, that’s the outer shape & the counter shape), and then gives you an opportunity to modify just the specified contour (at the "index") before reassembling the contours into the letter (so the counter is still a counter and not just another filled-in shape). That’s how we’re able to keep the counter of the P frozen in place. If we got rid of the `î` call and instead rotated the P glyph itself (ala `pens[1].find_(glyphName="P").rotate(rim.ease()*-270)`), then the counter shape would also rotate.
 
     snare = drums.ki(40)
     se, si = snare.adsr(ar["SD"], find=1)
@@ -81,11 +80,11 @@ def drummachine(f):
     if si == 0: # the first snare hit
         pens[0].translate(-150*se, 0)
         pens[1].translate(150*se, 0)
-        pens[0].ffg("L").rotate(se*-270)
+        pens[0].find_(glyphName="L").rotate(se*-270)
     else: # the second snare hit
         pens[0].translate(150*se, 0)
         pens[1].translate(-150*se, 0)
-        pens[1].ffg("P").î(0, lambda p: p.rotate(se*270))
+        pens[1].find_(glyphName="P").î(0, lambda p: p.rotate(se*270))
 
     # Whew, ok that was a little complicated. Now let’s do something similar with `î` on the P, but this time rotate just the counter shape when the second rimshot hits (we can ignore the first rimshot b/c it hits at the same time as a hi-hat, which we'll visualize in a second).
 
@@ -93,14 +92,14 @@ def drummachine(f):
     re, ri = rim.adsr(ar["RS"], rng=(0, -270), find=1)
 
     if ri == 1:
-        pens[1].ffg("P").î(1, lambda p: p.rotate(re))
+        pens[1].find_(glyphName="P").î(1, lambda p: p.rotate(re))
 
     # Wouldn’t it be cool if the letters corresponding to the kicks scaled up whenever the kick hit? That’s what’s happening here, along with a more programmer-y idiom, i.e. unpacking a tuple to the `line, glyph`. This is just a way of abbreviating a longer `if-else` statement that would contain redundant code.
 
     ke, ki = kick.adsr(ar["KD"], rng=(1, 1.5), find=1)
     line, glyph = (0, "C") if ki == 0 else (1, "Y")
     (pens[line]
-        .ffg(glyph)
+        .find_(glyphName=glyph)
         .scale(ke))
 
     # OK, on to the hi-hats. Here we get the hat signal from the midi, with an even preverb-reverb (that’s the `[10, 10]` bit), because we want to mimic the regular action of a drummer hitting a hi-hat.
@@ -111,26 +110,26 @@ def drummachine(f):
     # When the first hat hits, let’s move the counter in the O to the right.
 
     if hi == 0:
-        (pens[0].ffg("O")
+        (pens[0].find_(glyphName="O")
             .î(1, lambda p: p.translate(80*he, 0)))
 
     # And when the second hat hits, let’s move the counter of the D in the first line, this time translating it down & then rotating it, to make it seem like it’s falling and then bouncing back up from the bottom of the outer shape.
 
     elif hi == 1:
-        (pens[0].ffg("D")
+        (pens[0].find_(glyphName="D")
             .î(1, lambda p: p.translate(-30*he, -100*he).rotate(he*110)))
 
     # And when the third and fourth hats hit, let’s move the left and right sides of the T crossbar, via the `ï` (indices) function, which lets you adjust the x and y values of a certain set of points (at the given indices) directly via a callback.
 
     elif hi == 2:
-        pens[1].ffg("T").ï(range(0, 7), lambda p: p.o(-150*he, 0))
+        pens[1].find_(glyphName="T").ï(range(0, 7), lambda p: p.o(-150*he, 0))
     elif hi == 3:
-        pens[1].ffg("T").ï(range(26, 35), lambda p: p.o(150*he, 0))
+        pens[1].find_(glyphName="T").ï(range(26, 35), lambda p: p.o(150*he, 0))
 
     # Ok last hat! Here we exaggerate the horizontality of the E counters with the same `ï` function.
 
     elif hi == 4:
-        (pens[1].ffg("E")
+        (pens[1].find_(glyphName="E")
             .ï(range(10, 15), lambda p: p.o(-35*he, 0))
             .ï(range(23, 30), lambda p: p.o(-75*he, 0)))
 
@@ -139,7 +138,7 @@ def drummachine(f):
     tom = (drums.ki(50)
         .adsr(ar["TM"], rng=(0, -80)))
 
-    (pens[0].ffg("O").î(0, lambda p: p.translate(0, tom)))
+    (pens[0].find_(glyphName="O").î(0, lambda p: p.translate(0, tom)))
 
     # And a little branding: load the Goodhertz logo from the ufo via `glyph`
 
@@ -154,7 +153,6 @@ def drummachine(f):
     # Now we return the data we’ve manipulated to the renderer. This is also where we apply the finishing touches to the `COLD\nTYPE` lockup, by reversing the lines so that the the first line is last (meaning it shows up on top, which is nice for when the C gets really big), and then by applying an `understroke`, which interleaves stroked copies of each letter in the composition, giving us a classic look that we can hit with a high-contrast `phototype` simulation. And then we’re done!
 
     return P(
-        #P(f.a.r).f(0),
         ghz_logo.f(hsl(0.9, 0.55, 0.5)),
         (pens.fssw(1, 0, 15, 1)
             .reverse()

@@ -757,7 +757,10 @@ class Runon:
         else:
             return [m for (_, m) in narrowed]
     
-    def find_(self, finder_fn, fn=None, index=0, none_ok=0):
+    def find_(self, finder_fn=None, fn=None, index=0, none_ok=0, **kwargs):
+        if len(kwargs) > 0 and finder_fn is None:
+            finder_fn = kwargs
+
         if isinstance(finder_fn, str):
             if "+" in finder_fn:
                 finders = finder_fn.split("+")
