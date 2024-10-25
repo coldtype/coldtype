@@ -360,8 +360,8 @@ class Easeable():
                 return a
     
     def adsr(self,
-        adsr=[5, 0, 0, 10],
-        es=["eei", "qeio", "eeo"],
+        adsr=(5, 0, 0, 10),
+        es=("eei", "qeio", "eeo"),
         rng=(0, 1),
         dv=None, # decay-value
         rs=False, # read-sustain

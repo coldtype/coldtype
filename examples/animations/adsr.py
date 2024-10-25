@@ -18,10 +18,8 @@ def adsr(f):
 
     line1 = (Glyphwise("COLD", lambda g:
         Style(Font.MutatorSans(), 350
-            , wght=at.ki(f"{g.i}").adsr(
-                [5, 10], ["sei", "ceo"])
-            , wdth=at.ki(f"{g.i}").adsr(
-                [5, 50], ["eei", "eeo"])))
+            , wght=at.ki(f"{g.i}").adsr([5, 10], ["sei", "ceo"])
+            , wdth=at.ki(f"{g.i}").adsr([5, 50], ["eei", "eeo"])))
         .align(f.a.r.take(0.5, "N"), tx=1))
     
     # line2 is non-standard, in that two values are
@@ -33,16 +31,8 @@ def adsr(f):
     
     line2 = (Glyphwise("TYPE", lambda g:
         [Style(Font.MutatorSans(), 350), dict(
-            wght=at.ki(f"{g.i}").adsr(
-                [5, 30],
-                ["sei", "ceio"],
-                dv=1,
-                rs=1),
-            wdth=at.ki(f"{g.i}").adsr(
-                [5, 30],
-                ["eei", "eeio"],
-                dv=0.25,
-                rs=1))])
+            wght=at.ki(f"{g.i}").adsr([5, 30], ["sei", "ceio"], dv=1, rs=1),
+            wdth=at.ki(f"{g.i}").adsr([5, 30], ["eei", "eeio"], dv=0.25, rs=1))])
         .align(f.a.r.take(0.5, "S"), tx=0)
         .removeOverlap())
     

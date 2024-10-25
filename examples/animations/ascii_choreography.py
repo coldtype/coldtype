@@ -25,5 +25,4 @@ def choreography(f):
         .mapv(lambda i, p: p
             .rotate(at.ki("ro", f.i-i).e("eeio", 0, r=-360)))
         .centerPoint(f.a.r, (lidx, "tyC"), i=li)
-        .scale(letter.e(r=(1,4)), pt=(lidx, "tyC"))
-        )
+        .scale(letter.e(r=(1,4)), pt=(lidx, "tyC")))

@@ -1146,16 +1146,10 @@ class Runon:
         """Does nothing"""
         return self
     
-    _ch = noop
-    
     def null(self):
         """For chaining; return an empty instead of this pen"""
         self.reset_val()
         self._els = []
-        return self
-    
-    def _null(self):
-        """For chaining; quickly disable a .null() call without a line-comment"""
         return self
     
     def sleep(self, time):

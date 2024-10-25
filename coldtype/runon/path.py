@@ -460,10 +460,6 @@ class P(Runon):
             return p
 
 
-    def __normPointSplat(self, p):
-        return self
-
-
     def moveTo(self, *p) -> "P":
 
         p = self._normPointSplat(p)
@@ -471,17 +467,9 @@ class P(Runon):
         return self
     
 
-    def _moveTo(self, *p) -> "P":
-        return self
-
-
     def m(self, *p) -> "P":
 
         return self.moveTo(*p)
-
-
-    def _m(self, *p) -> "P":
-        return self
 
 
     def lineTo(self, *p) -> "P":
@@ -494,17 +482,9 @@ class P(Runon):
         return self
     
 
-    def _lineTo(self, *p) -> "P":
-        return self
-
-
     def l(self, *p) -> "P":
 
         return self.lineTo(*p)
-
-
-    def _l(self, *p) -> "P":
-        return self
 
 
     def qCurveTo(self, *points) -> "P":
@@ -513,17 +493,9 @@ class P(Runon):
         return self
     
 
-    def _qCurveTo(self, *points) -> "P":
-        return self
-
-
     def q(self, *p) -> "P":
 
         return self.qCurveTo(*p)
-
-
-    def _q(self, *p) -> "P":
-        return self
 
 
     def curveTo(self, *points) -> "P":
@@ -531,10 +503,6 @@ class P(Runon):
         self._val.curveTo(*points)
         return self
     
-
-    def _curveTo(self, *points) -> "P":
-        return self
-
 
     def c(self, *p) -> "P":
 
@@ -555,19 +523,11 @@ class P(Runon):
         return self.endPath()
     
 
-    def _c(self, *p) -> "P":
-        return self
-
-
     def addComponent(self, baseGlyphName, transformation) -> "P":
 
         print("pen.addComponent('%s', %s)" % (baseGlyphName, tuple(transformation)))
         return self
     
-
-    def _addComponent(self, baseGlyphName, transformation) -> "P":
-        return self
-
 
     def points(self, pts, close=True) -> "P":
 
@@ -587,10 +547,6 @@ class P(Runon):
         return all_pts
     
 
-    def _points(self, pts, close=True) -> "P":
-        return self
-
-
     def replay(self, pen) -> "P":
 
         self._val.replay(pen)
@@ -599,10 +555,6 @@ class P(Runon):
             el.replay(pen)
         return self
     
-
-    def _replay(self, pen) -> "P":
-        return self
-
 
     def record(self, pen) -> "P":
 
@@ -649,10 +601,6 @@ class P(Runon):
     fullyClosePath = fully_close_path
 
 
-    def _record(self, pen) -> "P":
-        return self
-
-
     def rect(self, rect) -> "P":
 
         """Rectangle primitive — `moveTo/lineTo/lineTo/lineTo/closePath`"""
@@ -666,10 +614,6 @@ class P(Runon):
     
     r = rect
     
-
-    def _rect(self, rect) -> "P":
-        return self
-
 
     def roundedRect(self, rect, hr, vr=None, scale=True) -> "P":
 
@@ -708,10 +652,6 @@ class P(Runon):
     rr = roundedRect
     
 
-    def _roundedRect(self, rect, hr, vr=None, scale=True) -> "P":
-        return self
-
-
     def oval(self, rect) -> "P":
 
         """Oval primitive"""
@@ -722,10 +662,6 @@ class P(Runon):
         return self
     
     o = oval
-
-
-    def _oval(self, rect) -> "P":
-        return self
 
 
     def line(self, points, moveTo=True, endPath=True) -> "P":
@@ -746,10 +682,6 @@ class P(Runon):
         return self
     
 
-    def _line(self, points, moveTo=True, endPath=True) -> "P":
-        return self
-
-
     def hull(self, points) -> "P":
 
         """Same as `.line` but calls closePath instead of endPath`"""
@@ -762,10 +694,6 @@ class P(Runon):
     def round(self):
         """Round the values of this pen to integer values."""
         return self.round_to(1)
-
-
-    def _hull(self, points) -> "P":
-        return self
 
 
     def round_to(self, rounding) -> "P":
@@ -795,10 +723,6 @@ class P(Runon):
     # Compound curve mechanics
     
 
-    def _round_to(self, rounding) -> "P":
-        return self
-
-
     def interpCurveTo(self, p1, f1, p2, f2, to, inset=0) -> "P":
 
         a = Point(self._val.value[-1][-1][-1])
@@ -809,17 +733,9 @@ class P(Runon):
         return self.curveTo(b, c, d)
     
 
-    def _interpCurveTo(self, p1, f1, p2, f2, to, inset=0) -> "P":
-        return self
-
-
     def ioc(self, pt, slope=0, fA=0, fB=85) -> "P":
 
         return self.ioEaseCurveTo(pt, slope, fA, fB)
-
-
-    def _ioc(self, pt, slope=0, fA=0, fB=85) -> "P":
-        return self
 
 
     def ioEaseCurveTo(self, pt, slope=0, fA=0, fB=85) -> "P":
@@ -876,10 +792,6 @@ class P(Runon):
     def bxc(self, pt, point, factor=65, po=(0, 0), mods={}, flatten=False):
         return self.boxCurveTo(pt, point, factor, po, mods, flatten)
     
-
-    def _ioEaseCurveTo(self, pt, slope=0, fA=0, fB=85) -> "P":
-        return self
-
 
     def roundedCorner(self, pt, point, multipliers, offset=4, factor=65) -> "P":
 
@@ -969,10 +881,6 @@ class P(Runon):
         return self
     
 
-    def _roundedCorner(self, pt, point, multipliers, offset=4, factor=65) -> "P":
-        return self
-
-
     def mirror(self, y=0, point=None):
 
         s = (1, -1) if y else (-1, 1)
@@ -983,27 +891,15 @@ class P(Runon):
             lambda p: p.scale(*s, point=point or self.ambit().psw)))
     
 
-    def _mirror(self, y=0, point=None):
-        return self
-
-
     def mirrorx(self, point=None) -> "P":
 
         return self.mirror(y=0, point=point)
     
 
-    def _mirrorx(self, point=None) -> "P":
-        return self
-
-
     def mirrory(self, point=None) -> "P":
 
         return self.mirror(y=1, point=point)
     
-
-    def _mirrory(self, point=None) -> "P":
-        return self
-
 
     def pattern(self, rect, clip=False) -> "P":
 
@@ -1028,10 +924,6 @@ class P(Runon):
         return fn(r, self).data(frame=r)
     
 
-    def _pattern(self, rect, clip=False) -> "P":
-        return self
-
-
     def gridlines(self, rect, x=20, y=None, absolute=False) -> "P":
 
         """Construct a grid in the pen using `x` and (optionally) `y` subdivisions"""
@@ -1053,10 +945,6 @@ class P(Runon):
         return self.f(None).s(0, 0.1).sw(3)
     
 
-    def _gridlines(self, rect, x=20, y=None, absolute=False) -> "P":
-        return self
-
-
     def ez(self, r, start_y, end_y, s) -> "P":
 
         self.moveTo(r.edge("W").t(start_y))
@@ -1065,10 +953,6 @@ class P(Runon):
         self.endPath()
         return self
     
-
-    def _ez(self, r, start_y, end_y, s) -> "P":
-        return self
-
 
     def segments(self, all_curves=False) -> "P":
 
@@ -1146,10 +1030,6 @@ class P(Runon):
         
         return b
     
-
-    def _segments(self, all_curves=False) -> "P":
-        return self
-
 
     def _normT(self, th, tv, tx, ty, t) -> "P":
 
@@ -1258,10 +1138,6 @@ class P(Runon):
     getFrame = ambit
     
 
-    def __normT(self, th, tv, tx, ty, t) -> "P":
-        return self
-
-
     def align(self,
         rect,
         x="mdx",
@@ -1309,21 +1185,6 @@ class P(Runon):
             return self
     
 
-    def _align(self,
-        rect,
-        x="mdx",
-        y="mdy",
-        th=None, # deprecated
-        tv=None, # deprecated
-        tx=1,
-        ty=0,
-        transformFrame=True,
-        h=None,
-        returnOffset=False
-        ) -> "P":
-        return self
-
-
     def _align_compass(self, compass, rect, tx=1, ty=0) -> "P":
 
         return self.align(rect, compass, tx=tx, ty=ty)
@@ -1338,10 +1199,6 @@ class P(Runon):
     alw = partialmethod(_align_compass, "W")
     alnw = partialmethod(_align_compass, "NW")
     aln = partialmethod(_align_compass, "N")
-
-
-    def __align_compass(self, compass, rect, tx=1, ty=0) -> "P":
-        return self
 
 
     def xalign(self, rect=None, x="centerx", th=None, tv=None, tx=1, ty=0) -> "P":
@@ -1365,10 +1222,6 @@ class P(Runon):
     #xå = xalign
 
 
-    def _xalign(self, rect=None, x="centerx", th=None, tv=None, tx=1, ty=0) -> "P":
-        return self
-
-
     def yalign(self, rect=None, y="centery", th=None, tv=None, tx=0, ty=1) -> "P":
 
         tx, ty = self._normT(th, tv, tx, ty, None)
@@ -1383,10 +1236,6 @@ class P(Runon):
         return self
     
     #yå = yalign
-
-
-    def _yalign(self, rect=None, y="centery", th=None, tv=None, tx=0, ty=1) -> "P":
-        return self
 
 
     def _normPoint(self, point=None, th=None, tv=None, tx=0, ty=0, **kwargs) -> "P":
@@ -1422,10 +1271,6 @@ class P(Runon):
             return Point(point)
     
 
-    def __normPoint(self, point=None, th=None, tv=None, tx=0, ty=0, **kwargs) -> "P":
-        return self
-
-
     def transform(self, transform, transformFrame=True) -> "P":
 
         """Perform an arbitrary transformation on the pen, using the fontTools `Transform` class."""
@@ -1454,10 +1299,6 @@ class P(Runon):
         return self
     
 
-    def _transform(self, transform, transformFrame=True) -> "P":
-        return self
-
-
     def invertYAxis(self, height) -> "P":
 
         rp = RecordingPen()
@@ -1466,10 +1307,6 @@ class P(Runon):
         self._val.value = rp.value
         return self
     
-
-    def _invertYAxis(self, height) -> "P":
-        return self
-
 
     def nonlinear_transform(self, fn) -> "P":
 
@@ -1490,10 +1327,6 @@ class P(Runon):
     nlt = nonlinear_transform
     
 
-    def _nonlinear_transform(self, fn) -> "P":
-        return self
-
-
     def translate(self, x, y=None, transformFrame=True) -> "P":
 
         """Translate this shape by `x` and `y` (pixel values)."""
@@ -1505,10 +1338,6 @@ class P(Runon):
     t = translate
 
 
-    def _translate(self, x, y=None, transformFrame=True) -> "P":
-        return self
-
-
     def shift(self, dx, dy, tx=1, ty=1) -> "P":
 
         amb = self.ambit(tx=tx, ty=ty)
@@ -1518,10 +1347,6 @@ class P(Runon):
     sh = shift
     
 
-    def _shift(self, dx, dy, tx=1, ty=1) -> "P":
-        return self
-
-
     def zero(self, th=None, tv=None, tx=0, ty=0) -> "P":
 
         tx, ty = self._normT(th, tv, tx, ty, None)
@@ -1529,10 +1354,6 @@ class P(Runon):
         self.translate(-x, -y)
         return self
     
-
-    def _zero(self, th=None, tv=None, tx=0, ty=0) -> "P":
-        return self
-
 
     def centerZero(self, th=None, tv=None, tx=0, ty=0):
 
@@ -1544,10 +1365,6 @@ class P(Runon):
             .t(-x-w/2, -y-h/2)
             .data(centerZeroOffset=(nx, ny)))
     
-
-    def _centerZero(self, th=None, tv=None, tx=0, ty=0):
-        return self
-
 
     def centerPoint(self, rect, pt, interp=1, th=None, tv=None, tx=1, ty=0, **kwargs) -> "P":
 
@@ -1561,10 +1378,6 @@ class P(Runon):
         return self.translate(norm(interp, 0, rect.w/2-x), norm(interp, 0, rect.h/2-y))
     
 
-    def _centerPoint(self, rect, pt, interp=1, th=None, tv=None, tx=1, ty=0, **kwargs) -> "P":
-        return self
-
-
     def skew(self, x=0, y=0, point=None, th=None, tv=None, tx=1, ty=0, **kwargs) -> "P":
 
         tx, ty = self._normT(th, tv, tx, ty, None)
@@ -1576,10 +1389,6 @@ class P(Runon):
         t = t.translate(-px, -py)
         return self.transform(t)
     
-
-    def _skew(self, x=0, y=0, point=None, th=None, tv=None, tx=1, ty=0, **kwargs) -> "P":
-        return self
-
 
     def rotate(self, degrees, point=None, th=None, tv=None, tx=1, ty=1, **kwargs) -> "P":
 
@@ -1596,18 +1405,10 @@ class P(Runon):
     rt = rotate
 
 
-    def _rotate(self, degrees, point=None, th=None, tv=None, tx=1, ty=1, **kwargs) -> "P":
-        return self
-
-
     def r90(self, multiplier, point=None, tx=1, ty=1, **kwargs) -> "P":
 
         return self.rotate(90*multiplier, point=point, tx=tx, ty=ty, **kwargs)
     
-
-    def _r90(self, multiplier, point=None, tx=1, ty=1, **kwargs) -> "P":
-        return self
-
 
     def scale(self, scaleX, scaleY=None, point=None, th=None, tv=None, tx=1, ty=0, **kwargs) -> "P":
 
@@ -1629,10 +1430,6 @@ class P(Runon):
     def flipy(self):
         return self.scale(1,-1)
     
-
-    def _scale(self, scaleX, scaleY=None, point=None, th=None, tv=None, tx=1, ty=0, **kwargs) -> "P":
-        return self
-
 
     def scaleToRect(self, rect, preserveAspect=True, shrink_only=False, tx=1, ty=0, return_number=False) -> "P":
 
@@ -1665,10 +1462,6 @@ class P(Runon):
             return self.scale(h, v, tx=tx, ty=ty)
     
 
-    def _scaleToRect(self, rect, preserveAspect=True, shrink_only=False, tx=1, ty=0, return_number=False) -> "P":
-        return self
-
-
     def scaleToWidth(self, w, shrink_only=False) -> "P":
 
         """Scale this shape horizontally"""
@@ -1679,10 +1472,6 @@ class P(Runon):
             return self.scale(w / self.bounds().w, 1)
     
 
-    def _scaleToWidth(self, w, shrink_only=False) -> "P":
-        return self
-
-
     def scaleToHeight(self, h, shrink_only=False) -> "P":
 
         """Scale this shape horizontally"""
@@ -1692,10 +1481,6 @@ class P(Runon):
         return self.scale(1, h / self.bounds().h)
     
     # multi-elements
-
-
-    def _scaleToHeight(self, h, shrink_only=False) -> "P":
-        return self
 
 
     def distribute(self, v=False, tracks=None, th=None, tv=None, tx=0, ty=0) -> "P":
@@ -1724,10 +1509,6 @@ class P(Runon):
         return self
     
 
-    def _distribute(self, v=False, tracks=None, th=None, tv=None, tx=0, ty=0) -> "P":
-        return self
-
-
     def spread(self, tracking=0, tx=0, zero=False) -> "P":
 
         "Horizontal distribution of elements"
@@ -1745,10 +1526,6 @@ class P(Runon):
         return self
     
 
-    def _spread(self, tracking=0, tx=0, zero=False) -> "P":
-        return self
-
-
     def stack(self, leading=0, ty=0, zero=False) -> "P":
 
         "Vertical distribution of elements"
@@ -1762,10 +1539,6 @@ class P(Runon):
         return self
     
 
-    def _stack(self, leading=0, ty=0, zero=False) -> "P":
-        return self
-
-
     def track(self, t, v=False) -> "P":
 
         """Track-out/distribute elements"""
@@ -1776,10 +1549,6 @@ class P(Runon):
                 p.translate(t*idx, 0)
         return self
     
-
-    def _track(self, t, v=False) -> "P":
-        return self
-
 
     def lead(self, leading) -> "P":
 
@@ -1796,10 +1565,6 @@ class P(Runon):
             p.translate(0, leading*(ln-1-idx))
         return self
     
-
-    def _lead(self, leading) -> "P":
-        return self
-
 
     def grid(self, every, spread=0, stack=0, zero=False) -> "P":
 
@@ -1824,10 +1589,6 @@ class P(Runon):
         return self
     
 
-    def _grid(self, every, spread=0, stack=0, zero=False) -> "P":
-        return self
-
-
     def gridlayer(self, nx, ny=None, track=0, lead=0) -> "P":
 
         """Spread nx copies and then stack ny copies, w/ optional tracking & leading"""
@@ -1843,10 +1604,6 @@ class P(Runon):
         self.align(r, tx=tx, ty=ty, x=x, y=y)
         return self.up().insert(0, board)
     
-
-    def _gridlayer(self, nx, ny=None, track=0, lead=0) -> "P":
-        return self
-
 
     def pattern_repeat(self, r) -> "P":
 
@@ -1867,10 +1624,6 @@ class P(Runon):
         return self.up().append(copies)
     
 
-    def _pattern_repeat(self, r) -> "P":
-        return self
-
-
     def track_with_width(self, t) -> "P":
 
         """Track-out/distribute elements"""
@@ -1882,18 +1635,10 @@ class P(Runon):
         return self
     
 
-    def _track_with_width(self, t) -> "P":
-        return self
-
-
     def track_to_width(self, width, pullToEdges=False, r=0) -> "P":
 
         return self.track_to_rect(Rect(width, 0), pullToEdges=pullToEdges, r=r)
     
-
-    def _track_to_width(self, width, pullToEdges=False, r=0) -> "P":
-        return self
-
 
     def track_to_rect(self, rect, pullToEdges=False, r=0) -> "P":
 
@@ -1924,10 +1669,6 @@ class P(Runon):
     trackToRect = track_to_rect
 
 
-    def _track_to_rect(self, rect, pullToEdges=False, r=0) -> "P":
-        return self
-
-
     def connect(self, *others) -> "P":
 
         return (type(self)([self, *others])
@@ -1951,10 +1692,6 @@ class P(Runon):
     def tw(self): return self.ambit(tx=1).w
     @property
     def th(self): return self.ambit(ty=1).h
-
-
-    def _connect(self, *others) -> "P":
-        return self
 
 
     def groupedStyle(self, st):
@@ -1987,10 +1724,6 @@ class P(Runon):
         return sort
 
 
-    def _groupedStyle(self, st):
-        return self
-
-
     def f(self, *value) -> "P":
 
         """Get/set a (f)ill"""
@@ -2003,10 +1736,6 @@ class P(Runon):
     
     fill = f
     
-
-    def _f(self, *value) -> "P":
-        return self
-
 
     def s(self, *value) -> "P":
 
@@ -2021,10 +1750,6 @@ class P(Runon):
     stroke = s
     
 
-    def _s(self, *value) -> "P":
-        return self
-
-
     def sw(self, value) -> "P":
 
         """Get/set a (s)troke (w)idth"""
@@ -2036,17 +1761,9 @@ class P(Runon):
     strokeWidth = sw
 
 
-    def _sw(self, value) -> "P":
-        return self
-
-
     def dash(self, pattern, phase=0) -> "P":
 
         return self.attr(dash=[pattern, phase])
-
-
-    def _dash(self, pattern, phase=0) -> "P":
-        return self
 
 
     def ssw(self, s, sw) -> "P":
@@ -2056,10 +1773,6 @@ class P(Runon):
         return self
     
 
-    def _ssw(self, s, sw) -> "P":
-        return self
-
-
     def fssw(self, f, s, sw, sf=0) -> "P":
 
         self.f(f)
@@ -2068,10 +1781,6 @@ class P(Runon):
         self.sf(sf)
         return self
     
-
-    def _fssw(self, f, s, sw, sf=0) -> "P":
-        return self
-
 
     def strokeFirst(self, value=None) -> "P":
 
@@ -2084,19 +1793,11 @@ class P(Runon):
             return self.attr(field="strokeFirst")
     
 
-    def _strokeFirst(self, value=None) -> "P":
-        return self
-
-
     def sf(self, value=None) -> "P":
 
         "strokeFirst"
         return self.strokeFirst(value)
     
-
-    def _sf(self, value=None) -> "P":
-        return self
-
 
     def strokeMiter(self, value=None) -> "P":
 
@@ -2107,10 +1808,6 @@ class P(Runon):
             return self.attr(strokeMiter=value)
         else:
             return self.attr(field="strokeMiter")
-
-
-    def _strokeMiter(self, value=None) -> "P":
-        return self
 
 
     def sm(self, value=None) -> "P":
@@ -2136,10 +1833,6 @@ class P(Runon):
     # other
 
 
-    def _sm(self, value=None) -> "P":
-        return self
-
-
     def blendmode(self, blendmode=None, show=False) -> "P":
 
         if isinstance(blendmode, int):
@@ -2151,10 +1844,6 @@ class P(Runon):
             return self.attr(blendmode=blendmode)
         else:
             return self.attr(field="blendmode")
-
-
-    def _blendmode(self, blendmode=None, show=False) -> "P":
-        return self
 
 
     def glyph(self, glyph, glyphSet=None, layerComponents=False) -> "P":
@@ -2195,10 +1884,6 @@ class P(Runon):
             return self
     
 
-    def _glyph(self, glyph, glyphSet=None, layerComponents=False) -> "P":
-        return self
-
-
     def toGlyph(self, name=None, width=None, allow_blank=False):
 
         """
@@ -2222,10 +1907,6 @@ class P(Runon):
         return glyph
 
 
-    def _toGlyph(self, name=None, width=None, allow_blank=False):
-        return self
-
-
     def pickle(self, dst) -> "P":
 
         dst.parent.mkdir(parents=True, exist_ok=True)
@@ -2242,20 +1923,12 @@ class P(Runon):
         return self
     
 
-    def _pickle(self, dst) -> "P":
-        return self
-
-
     def Unpickle(self, src):
 
         if isinstance(src, str):
             src = Path(src)
         return pickle.load(open(str(src.expanduser()), "rb"))
     
-
-    def _Unpickle(self, src):
-        return self
-
 
     def withJSONValue(self, path) -> "P":
 
@@ -2264,10 +1937,6 @@ class P(Runon):
             .read_text())
         return self
     
-
-    def _withJSONValue(self, path) -> "P":
-        return self
-
 
     def withSVG(self, svg) -> "P":
 
@@ -2279,10 +1948,6 @@ class P(Runon):
         return self
 
 
-    def _withSVG(self, svg) -> "P":
-        return self
-
-
     def withSVGFile(self, svg_file) -> "P":
 
         from fontTools.svgLib import SVGPath
@@ -2290,10 +1955,6 @@ class P(Runon):
         rp = RecordingPen()
         svg.draw(rp)
         self._val.value = rp.value
-        return self
-
-
-    def _withSVGFile(self, svg_file) -> "P":
         return self
 
 
@@ -2317,19 +1978,11 @@ class P(Runon):
         return self
     
 
-    def __pathop(self, otherPen=None, operation=BooleanOp.XOR, use_skia_pathops_draw=True) -> "P":
-        return self
-
-
     def difference(self, otherPen=None) -> "P":
 
         """Calculate and return the difference of this shape and another."""
         return self._pathop(otherPen=otherPen, operation=BooleanOp.Difference)
     
-
-    def _difference(self, otherPen=None) -> "P":
-        return self
-
 
     def union(self, otherPen=None) -> "P":
 
@@ -2337,19 +1990,11 @@ class P(Runon):
         return self._pathop(otherPen=otherPen, operation=BooleanOp.Union)
     
 
-    def _union(self, otherPen=None) -> "P":
-        return self
-
-
     def xor(self, otherPen=None) -> "P":
 
         """Calculate and return the XOR of this shape and another."""
         return self._pathop(otherPen=otherPen, operation=BooleanOp.XOR)
     
-
-    def _xor(self, otherPen=None) -> "P":
-        return self
-
 
     def reverseDifference(self, otherPen=None) -> "P":
 
@@ -2357,19 +2002,11 @@ class P(Runon):
         return self._pathop(otherPen=otherPen, operation=BooleanOp.ReverseDifference)
     
 
-    def _reverseDifference(self, otherPen=None) -> "P":
-        return self
-
-
     def intersection(self, otherPen=None) -> "P":
 
         """Calculate and return the intersection of this shape and another."""
         return self._pathop(otherPen=otherPen, operation=BooleanOp.Intersection)
     
-
-    def _intersection(self, otherPen=None) -> "P":
-        return self
-
 
     def removeOverlap(self, use_skia_pathops_draw=True) -> "P":
 
@@ -2378,10 +2015,6 @@ class P(Runon):
     
     remove_overlap = removeOverlap
     ro = removeOverlap
-
-
-    def _removeOverlap(self, use_skia_pathops_draw=True) -> "P":
-        return self
 
 
     def distribute_on_path(self,
@@ -2438,18 +2071,6 @@ class P(Runon):
     distributeOnPath = distribute_on_path
 
 
-    def _distribute_on_path(self,
-        path,
-        offset=0,
-        cc=None,
-        notfound=None,
-        center=False,
-        apply_tangent=True,
-        baseline=0,
-        ) -> "P":
-        return self
-
-
     def subsegment(self, start=0, end=1) -> "P":
 
         """Return a subsegment of the pen based on `t` values `start` and `end`"""
@@ -2464,10 +2085,6 @@ class P(Runon):
         return self
     
 
-    def _subsegment(self, start=0, end=1) -> "P":
-        return self
-
-
     def point_t(self, t=0.5):
 
         """Get point value for time `t`"""
@@ -2478,10 +2095,6 @@ class P(Runon):
         return p, tangent
     
 
-    def _point_t(self, t=0.5):
-        return self
-
-
     def split_t(self, t=0.5):
 
         if not self.val_present():
@@ -2491,10 +2104,6 @@ class P(Runon):
         b, c, d = self._val.value[-1][-1]
         return splitCubicAtT(a, b, c, d, t)
     
-
-    def _split_t(self, t=0.5):
-        return self
-
 
     def add_pt_t(self, cuidx, t) -> "P":
 
@@ -2533,10 +2142,6 @@ class P(Runon):
         return self
     
 
-    def _add_pt_t(self, cuidx, t) -> "P":
-        return self
-
-
     def samples(self, interval=10, even=False):
 
         cc = CurveCutter(self)
@@ -2558,18 +2163,10 @@ class P(Runon):
         return samples
     
 
-    def _samples(self, interval=10, even=False):
-        return self
-
-
     def onSamples(self, interval=10, even=False, fn=None):
 
         return (type(self)().enumerate(self.samples(interval=interval, even=even), lambda s: fn(self, s)))
     
-
-    def _onSamples(self, interval=10, even=False, fn=None):
-        return self
-
 
     def length(self, t=1):
 
@@ -2579,10 +2176,6 @@ class P(Runon):
         tv = t * cc.calcCurveLength()
         return tv
     
-
-    def _length(self, t=1):
-        return self
-
 
     def ease_t(self, e, tries=0) -> "P":
 
@@ -2598,10 +2191,6 @@ class P(Runon):
                 return self.ease_t(e-0.01, tries=tries+1)
             return 0
         
-
-    def _ease_t(self, e, tries=0) -> "P":
-        return self
-
 
     def divide(self, length=150, floor=True, count=None, idx=0, max=None) -> "P":
 
@@ -2639,10 +2228,6 @@ class P(Runon):
 
     # contours?
 
-    def _divide(self, length=150, floor=True, count=None, idx=0, max=None) -> "P":
-        return self
-
-
     def _prep_for_wave(self, flatten=1, centered=False):
 
         prepped = self.copy()
@@ -2653,10 +2238,6 @@ class P(Runon):
             prepped.flatten(flatten)
         
         return prepped
-
-
-    def __prep_for_wave(self, flatten=1, centered=False):
-        return self
 
 
     def toAudio(self, flatten=1, centered=False, loops=3, filename=None):
@@ -2680,10 +2261,6 @@ class P(Runon):
         
         return audio, len(left)
     
-
-    def _toAudio(self, flatten=1, centered=False, loops=3, filename=None):
-        return self
-
 
     def fromAudio(self, audio, start=500, end=9500, step=1, mult=1360, scale=2) -> "P":
 
@@ -2795,10 +2372,6 @@ class P(Runon):
         return n.interp(0.5, s.reverse())
     
 
-    def _fromAudio(self, audio, start=500, end=9500, step=1, mult=1360, scale=2) -> "P":
-        return self
-
-
     def edge(self, e) -> "P":
 
         e = e.lower()
@@ -2810,10 +2383,6 @@ class P(Runon):
             return self.ee
         elif e == "w":
             return self.ew
-
-
-    def _edge(self, e) -> "P":
-        return self
 
 
     def point(self, pt) -> "P":
@@ -2889,10 +2458,6 @@ class P(Runon):
         return self
 
 
-    def _point(self, pt) -> "P":
-        return self
-
-
     def flatten(self, length=10, segmentLines=True) -> "P":
 
         """
@@ -2921,10 +2486,6 @@ class P(Runon):
         
         return self
     
-
-    def _flatten(self, length=10, segmentLines=True) -> "P":
-        return self
-
 
     def catmull(self, points, close=False) -> "P":
 
@@ -2957,10 +2518,6 @@ class P(Runon):
             self.closePath()
         return self
     
-
-    def _catmull(self, points, close=False) -> "P":
-        return self
-
 
     def roughen(self, amplitude=10, threshold=10, ignore_ends=False, seed=None) -> "P":
 
@@ -3024,10 +2581,6 @@ class P(Runon):
         return self
     
 
-    def _roughen(self, amplitude=10, threshold=10, ignore_ends=False, seed=None) -> "P":
-        return self
-
-
     def map_points(self, fn, filter_fn=None) -> "P":
 
         idx = 0
@@ -3046,10 +2599,6 @@ class P(Runon):
         return self
     
 
-    def _map_points(self, fn, filter_fn=None) -> "P":
-        return self
-
-
     def mod_contour(self, contour_index, mod_fn=None) -> "P":
 
         exploded = self.copy().explode()
@@ -3060,10 +2609,6 @@ class P(Runon):
         else:
             return exploded[contour_index]
     
-
-    def _mod_contour(self, contour_index, mod_fn=None) -> "P":
-        return self
-
 
     def filterContours(self, filter_fn) -> "P":
 
@@ -3076,10 +2621,6 @@ class P(Runon):
             self._val.value = type(self)(keep).implode()._val.value
         return self
     
-
-    def _filterContours(self, filter_fn) -> "P":
-        return self
-
 
     def repeat(self, times=1) -> "P":
 
@@ -3094,10 +2635,6 @@ class P(Runon):
             if times > 1:
                 self.repeat(times-1)
         
-        return self
-
-
-    def _repeat(self, times=1) -> "P":
         return self
 
 
@@ -3134,25 +2671,10 @@ class P(Runon):
     ol = outline
     
 
-    def _outline(self,
-        offset=1,
-        drawInner=True,
-        drawOuter=True,
-        cap="square",
-        miterLimit=None,
-        closeOpenPaths=True
-        ) -> "P":
-        return self
-
-
     def project(self, angle, width) -> "P":
 
         offset = polarCoord((0, 0), math.radians(angle), width)
         self.translate(offset[0], offset[1])
-        return self
-
-
-    def _project(self, angle, width) -> "P":
         return self
 
 
@@ -3184,15 +2706,6 @@ class P(Runon):
         return self
     
 
-    def _castshadow(self,
-        angle=-45,
-        width=100,
-        ro=1,
-        fill=True
-        ) -> "P":
-        return self
-
-
     def understroke(self,
         s=0,
         sw=5,
@@ -3216,16 +2729,6 @@ class P(Runon):
                 return p
 
         return self.layerv(mod_fn, 1)
-    def _understroke(self,
-        s=0,
-        sw=5,
-        outline=False,
-        dofill=0,
-        miterLimit=None
-        ) -> "P":
-        return self
-
-
 
 def runonCast():
     def _runonCast(p):

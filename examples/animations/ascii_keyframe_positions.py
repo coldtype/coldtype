@@ -28,7 +28,8 @@ def scratch(f):
     kfs1 = f.t.kf(**rs)
     kfs2 = f.t.kf(**txt)
 
-    return (StSt(kfs2["txt"], Font.MuSan(), 100, wght=kfs1["wght"])
+    return (StSt(kfs2["txt"], Font.MuSan(), 100
+        , wght=kfs1["wght"])
         .f(1)
         .align(kfs1["r"])
         .insert(0, P(kfs1["r"].inset(10)).f(0))

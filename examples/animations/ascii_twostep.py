@@ -24,4 +24,4 @@ def twostep(f):
             lambda p: P()
                 .rect(p.ambit(tx=1, ty=1).inset(-50))
                 .fssw(-1, 0, 2)
-                ._null()))
+                .___null()))

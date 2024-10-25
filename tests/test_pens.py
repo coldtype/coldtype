@@ -31,7 +31,7 @@ def test_scaleToRect(_r):
 def test_underscore_method(r):
     p1 = P(r.take(0.5, "E"))
     p1_a1 = p1.ambit()
-    p1._align(r) # this should do nothing
+    p1.___align(r) # this should do nothing
     p1_a2 = p1.ambit()
     p1.align(r)
     p1_a3 = p1.ambit()

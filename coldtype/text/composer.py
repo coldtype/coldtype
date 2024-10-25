@@ -5,7 +5,7 @@ from coldtype.text.shaper import segment
 from coldtype.text.reader import Style, StyledString, FittableMixin, Font, SegmentedString
 
 from collections import namedtuple
-from typing import Callable
+from typing import Callable, Any
 
 
 class GrafStyle():
@@ -285,7 +285,7 @@ GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e", "l", "li"])
 
 
 def Glyphwise(st:str
-    , styler:Callable[[GlyphwiseGlyph], Style]
+    , styler:Callable[[GlyphwiseGlyph], Style | list[Style | dict[str, Any]]]
     , start:int=0
     , line:int=0
     , multiline=False) -> P:
