@@ -5,6 +5,8 @@ from coldtype import *
 from coldtype.fx.skia import phototype
 #from coldtype.warping import warp
 
+from fontTools.ufoLib import UFOReader
+
 # This is the "logo font" for Coldtype, and it's packaged with the library itself
 
 obvs = Font.ColdtypeObviously()
@@ -30,9 +32,9 @@ ar = {
     "TM": [5, 10]
 }
 
-# I like to keep things like logos in UFO source files, since they aren’t really typographic, so you don’t need to load them as fonts. Here we load a ufo of logos via `raw_ufo`, which makes keyed lookups of vectors very easy.
+# I like to keep things like logos in UFO source files, since they aren’t really typographic, so you don’t need to load them as fonts. Here we load a ufo of logos via `UFOReader.getGlyphSet`, which makes keyed lookups of vectors very easy.
 
-logos = raw_ufo("assets/logos.ufo").getGlyphSet()
+logos = UFOReader("assets/logos.ufo").getGlyphSet()
 
 # OK, here’s the main render function. To start this off, we'll define variables for `kick` and `cowbell`, since we'll be referencing those when we build the initial text lockup in the next code block.
 
@@ -72,7 +74,7 @@ def drummachine(f):
 
     # A few notes:
 
-    # - `î` (aka index) allows you to modify a nested pen value in-place as a set of contours with a callback function (aka a `lambda`). Basically, the `î` function first "explodes" the glyph into all its component contours (in the P’s case, that’s the outer shape & the counter shape), and then gives you an opportunity to modify just the specified contour (at the "index") before reassembling the contours into the letter (so the counter is still a counter and not just another filled-in shape). That’s how we’re able to keep the counter of the P frozen in place. If we got rid of the `î` call and instead rotated the P glyph itself (ala `pens[1].find_(glyphName="P").rotate(rim.ease()*-270)`), then the counter shape would also rotate.
+    # - `index` allows you to modify a nested pen value in-place as a set of contours with a callback function (aka a `lambda`). Basically, the `index` function first "explodes" the glyph into all its component contours (in the P’s case, that’s the outer shape & the counter shape), and then gives you an opportunity to modify just the specified contour (at the "index") before reassembling the contours into the letter (so the counter is still a counter and not just another filled-in shape). That’s how we’re able to keep the counter of the P frozen in place. If we got rid of the `index` call and instead rotated the P glyph itself (ala `pens[1].find_(glyphName="P").rotate(rim.ease()*-270)`), then the counter shape would also rotate.
 
     snare = drums.ki(40)
     se, si = snare.adsr(ar["SD"], find=1)

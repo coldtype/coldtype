@@ -1,6 +1,7 @@
 from coldtype import *
+from fontTools.ufoLib import UFOReader
 
-logos = raw_ufo("assets/logos.ufo").getGlyphSet()
+logos = UFOReader("assets/logos.ufo").getGlyphSet()
 
 @renderable((1200, 600), bg=0)
 def nameplate(r, fontSize=500, wdth=0.25, rotate=0):

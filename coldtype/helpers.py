@@ -7,10 +7,6 @@ from coldtype.random import random_series
 def sibling(root, file):
     return Path(root).parent.joinpath(file)
 
-def raw_ufo(path):
-    from fontTools.ufoLib import UFOReader
-    return UFOReader(normalize_font_path(path))
-
 def quick_ufo(path
     , familyName
     , styleName="Regular"
