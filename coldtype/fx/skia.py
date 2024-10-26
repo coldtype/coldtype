@@ -136,6 +136,15 @@ class Skfi():
             0, 0, 1+t, 0, 0,
             0, 0, 0, 1, 0,
         ])
+    
+    @staticmethod
+    def expose(t):
+        return skia.ColorFilters.Matrix([
+            t, 0, 0, 0, 0,
+            0, t, 0, 0, 0,
+            0, 0, t, 0, 0,
+            0, 0, 0, 1, 0,
+        ])
 
 # CHAINABLES
 
@@ -404,6 +413,11 @@ def saturate(c):
     #c = c*360%360
     def _fill(pen):
         return pen.attr(skp=dict(ColorFilter=Skfi.saturate(c)))
+    return _fill
+
+def expose(t):
+    def _fill(pen):
+        return pen.attr(skp=dict(ColorFilter=Skfi.expose(t)))
     return _fill
 
 def temp(t):

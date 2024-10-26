@@ -8,9 +8,8 @@ def circles(r):
     return (P(
         circle,
         StSt("ABC", Font.MuSan(), 100, wght=0.5, wdth=0, tu=-90)
-            .distribute_on_path(circle, baseline=1, apply_tangent=1)
+            .distribute_on_path(circle.copy().scale(1.1), baseline=1)
             .f(hsl(0.7)),
         StSt("ABC", Font.MuSan(), 100, wght=0.5, wdth=0, tu=500)
-            .distribute_on_path(circle, 0, apply_tangent=1, baseline=0)
-            .f(hsl(0.3))
-    ))
+            .distribute_on_path(circle.copy().scale(0.9).rotate(-180), 0, baseline=0)
+            .f(hsl(0.3))))

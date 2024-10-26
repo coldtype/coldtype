@@ -23,5 +23,4 @@ def borders(r):
         s["a"].cssborders(-1, bold),
         s.cssborders(reg, bold),
         s["b"].borders().fssw(-1, hsl(0.07, 0.7), 2),
-        s["c"].borders().fssw(-1, hsl(0.7), 1)
-        )
+        s["c"].borders().fssw(-1, hsl(0.7), 1))
