@@ -881,24 +881,28 @@ class P(Runon):
         return self
     
 
-    def mirror(self, y=0, point=None):
+    def mirror(self, factors, point=None):
 
-        s = (1, -1) if y else (-1, 1)
         if point == 0:
             point = (0, 0)
         
         return (self.layer(1,
-            lambda p: p.scale(*s, point=point or self.ambit().psw)))
+            lambda p: p.scale(*factors, point=point or self.ambit().psw)))
     
 
     def mirrorx(self, point=None) -> "P":
 
-        return self.mirror(y=0, point=point)
+        return self.mirror((-1, 1), point=point)
     
 
     def mirrory(self, point=None) -> "P":
 
-        return self.mirror(y=1, point=point)
+        return self.mirror((1, -1), point=point)
+    
+
+    def mirrorxy(self, point=None) -> "P":
+
+        return self.mirror((-1, -1), point=point)
     
 
     def pattern(self, rect, clip=False) -> "P":
