@@ -77,10 +77,15 @@ class DrawingMixin():
             self.endPath()
         return self
     
-    def point_list(self):
+    def point_list(self, random_seed=None):
         all_pts = []
         for idx, (mv, pts) in enumerate(self._val.value):
             all_pts.extend([Point(*p) for p in pts])
+        if random_seed is not None:
+            from random import Random
+            rnd = Random()
+            rnd.seed(random_seed)
+            rnd.shuffle(all_pts)
         return all_pts
     
     def replay(self, pen):
