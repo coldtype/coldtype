@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.fx.skia import phototype, precompose, temptone, shake
+from coldtype.fx.skia import phototype, temptone, shake
 
 # a variation on https://github.com/djrrb/Python-for-Visual-Designers-Fall-2023/blob/main/session-4/challenges/snakes.py
 
@@ -33,8 +33,7 @@ def snakes(f):
         build_snake(x.el)
             .t(x.el*20, 0)
             .fssw(-1, 1, 5)
-            .ch(shake(4, 2, seed=f.i))
-            )
+            .ch(shake(4, 2, seed=f.i)))
         .align(f.a.r)
-        .ch(phototype(f.a.r.inset(-10), 4, 120, 17))
+        .ch(phototype(f.a.r.inset(-10), 4, 123, 17))
         .postprocess(lambda res: res.ch(temptone(0.70, 0.10))))
