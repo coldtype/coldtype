@@ -451,7 +451,7 @@ class WinmanGLFWSkia():
                 render.show_error = short_error
                 error_color = rgb(0, 0, 0).skia()
         else:
-            if self.renderer.args.never_reuse_skia_context or render.single_frame or render.composites and not render.interactable or self.config.preview_saturation != 1:
+            if True or self.renderer.args.never_reuse_skia_context or render.single_frame or render.composites and not render.interactable or self.config.preview_saturation != 1:
                 from coldtype.img.skiaimage import SkiaImage
 
                 postprocess = render.postprocessor(result)

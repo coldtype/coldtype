@@ -15,7 +15,7 @@ basic_deps = [
     "defcon==0.10.3",
     "requests==2.32.3",
     "b3denv>=0.0.12",
-    "fontgoggles @ git+https://github.com/coldtype/fontgoggles.git@7341e09255c55d2df493233948628e3ff236df0d#egg=fontgoggles",
+    "fontgoggles @ git+https://github.com/coldtype/fontgoggles.git@efd022e19d3d59c2ec54bbae2dc2e3cad36808bc#egg=fontgoggles",
 ]
 
 #if sys.platform.startswith("darwin"):
