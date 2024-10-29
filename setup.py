@@ -75,6 +75,7 @@ setuptools.setup(
             "demo/midi.py",
             "demo/blank.py",
             "demo/boiler.py",
+            "demo/boiler_renderable.py",
             "demo/vf.py",
             "demo/gifski.py",
             "demo/glfw34.py",

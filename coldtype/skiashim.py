@@ -27,7 +27,7 @@ def imageFilters_Blur(xblur, yblur):
 
 def paint_withFilterQualityHigh():
     if SKIA_87:
-        return skia.Paint(AntiAlias=True, FilterQuality=skia.FilterQuality.kHigh_FilterQuality)
+        return skia.Paint(AntiAlias=True, FilterQuality=skia.FilterQuality.kLow_FilterQuality)
     else:
         #SamplingOptions=skia.SamplingOptions(skia.CubicResampler.Mitchell())
         return skia.Paint(AntiAlias=True)

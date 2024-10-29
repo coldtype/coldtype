@@ -326,7 +326,10 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         with surface as canvas:
             canvas.save()
             canvas.scale(scale, scale)
-            SkiaPen.CompositeToCanvas(pens.translate(-rect.x, -rect.y), rect, canvas, style=style)
+            if callable(pens):
+                pens(canvas)
+            else:
+                SkiaPen.CompositeToCanvas(pens.translate(-rect.x, -rect.y), rect, canvas, style=style)
             canvas.restore()
         img = surface.makeImageSnapshot()
         if rescale is not None:

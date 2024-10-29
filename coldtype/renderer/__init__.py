@@ -249,10 +249,14 @@ class Renderer():
         if not filepath.exists():
             if filepath.suffix == ".py":
                 print(">>> That python file does not exist...")
-                create = input(">>> Do you want to create it and add some coldtype boilerplate? (y/n): ")
-                if create.lower() == "y":
+                create = input(">>> Do you want to create it and add some coldtype boilerplate? (y/n | a/r): ")
+                if create.lower() in ["y", "a"]:
                     filepath.parent.mkdir(exist_ok=True, parents=True)
                     filepath.write_text((root / "demo/boiler.py").read_text())
+                    self.open_in_editor(filepath)
+                elif create.lower() in ["r"]:
+                    filepath.parent.mkdir(exist_ok=True, parents=True)
+                    filepath.write_text((root / "demo/boiler_renderable.py").read_text())
                     self.open_in_editor(filepath)
             else:
                 raise Exception("That file does not exist")
