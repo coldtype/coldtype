@@ -710,10 +710,15 @@ class Runon:
     def find(self,
         finder_fn,
         fn=None,
-        index=None
+        index=None,
+        find_one=False,
         ):
         matches = []
+        found_one = []
+
         def finder(p, pos, data):
+            if len(found_one) > 0:
+                return
             #if limit and len(matches) > limit:
             #    return
 
@@ -728,6 +733,8 @@ class Runon:
             
             if found:
                 matches.append([p, data["depth"]])
+                if find_one:
+                    found_one.append(True)
 
         self.walk(finder)
 
@@ -777,7 +784,7 @@ class Runon:
                     o = o.find_(k)
                 return o
 
-        res = self.find(finder_fn, fn, index=index)
+        res = self.find(finder_fn, fn, index=index, find_one=True)
         if not fn:
             try:
                 return res[0]

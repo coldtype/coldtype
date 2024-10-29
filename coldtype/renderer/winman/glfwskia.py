@@ -454,6 +454,8 @@ class WinmanGLFWSkia():
             if self.renderer.args.never_reuse_skia_context or render.single_frame or render.composites and not render.interactable or self.config.preview_saturation != 1:
                 from coldtype.img.skiaimage import SkiaImage
 
+                postprocess = render.postprocessor(result)
+
                 comp = render.precompose(result, scale)
                 comp_img = comp.img().get("src")
 
@@ -465,8 +467,8 @@ class WinmanGLFWSkia():
                 canvas.save()
                 canvas.scale(1/scale, 1/scale)
 
-                if render.post_render:
-                    comp = render.precompose(render.post_render(render, comp), scale)
+                if postprocess:
+                    comp = render.precompose(postprocess(comp), scale)
                     comp_img = comp.img().get("src")
 
                 paint = skia.Paint()

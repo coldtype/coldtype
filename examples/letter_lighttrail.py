@@ -7,12 +7,8 @@ letters = "RANDOM"
 rc = random_series()
 rstroke = random_series(0.45, 1)
 
-def postprocess(render, result):
-    return result.ch(temptone(0.05,0.02))
-
 @animation(r, bg=1
     , tl=Timeline(240, 12)
-    , post_render=postprocess
     , release=lambda x: x.export("h264", loops=2, date=True))
 def scribble_random(f):
     seed = f.i+2
@@ -48,9 +44,10 @@ def scribble_random(f):
             , fill=hsl(x.e*0.5+f.e("l", 0, rng=(0, 10)), 0.9, 0.4))))
         .blendmode(BlendMode.Cycle(16)))
     
-    return P(
+    return (P(
         P(f.a.r)
             .ch(spackle(cut=235, cutw=1, base=f.i, fill=bw(1)))
             .ch(phototype(f.a.r,
                 blur=3, cut=170, fill=hsl(f.i*0.1))),
         lines)
+        .postprocess(lambda p: p.ch(temptone(.05,.02))))

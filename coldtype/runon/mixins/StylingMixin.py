@@ -134,3 +134,6 @@ class StylingMixin():
             return self.attr(blendmode=blendmode)
         else:
             return self.attr(field="blendmode")
+    
+    def postprocess(self, fn):
+        return self.data(postprocess=fn, function_literals=True)

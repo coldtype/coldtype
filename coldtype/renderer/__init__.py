@@ -787,7 +787,9 @@ class Renderer():
             if not skia:
                 raise Exception("pip install skia-python")
             if render.fmt == "png":
-                if render.composites or render.post_render:
+                postprocess = render.postprocessor(content)
+
+                if render.composites or postprocess:
                     from coldtype.img.skiaimage import SkiaImage
                     content = content.ch(skfx.precompose(render.rect, scale=scale))
                     render.last_result = SkiaImage(content.img().get("src"))
@@ -796,8 +798,8 @@ class Renderer():
                 if self.winmans.glsk and self.winmans.glsk.context and not self.args.cpu_render:
                     ctx = self.winmans.glsk.context
                 
-                if render.post_render:
-                    content = render.precompose(render.post_render(render, content), scale)
+                if postprocess:
+                    content = render.precompose(postprocess(content), scale)
 
                 SkiaPen.Composite(content,
                     render.rect,

@@ -1855,6 +1855,11 @@ class P(Runon):
             return self.attr(blendmode=blendmode)
         else:
             return self.attr(field="blendmode")
+    
+
+    def postprocess(self, fn) -> "P":
+
+        return self.data(postprocess=fn, function_literals=True)
 
 
     def glyph(self, glyph, glyphSet=None, layerComponents=False) -> "P":

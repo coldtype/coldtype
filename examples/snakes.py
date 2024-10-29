@@ -1,6 +1,5 @@
 from coldtype import *
 from coldtype.fx.skia import phototype, precompose, temptone, shake
-from random import randint
 
 # a variation on https://github.com/djrrb/Python-for-Visual-Designers-Fall-2023/blob/main/session-4/challenges/snakes.py
 
@@ -28,10 +27,7 @@ def build_snake(seed):
         prevY = y
     return snake.endPath()
 
-def finish(render, res):
-    return res.ch(precompose(render.rect)).ch(temptone(0.70, 0.10))
-
-@animation(r, bg=0, post_render=finish, tl=Timeline(60, 10))
+@animation(r, bg=0, tl=Timeline(60, 10))
 def snakes(f):
     return (P().enumerate(range(0, 7), lambda x:
         build_snake(x.el)
@@ -40,4 +36,5 @@ def snakes(f):
             .ch(shake(4, 2, seed=f.i))
             )
         .align(f.a.r)
-        .ch(phototype(f.a.r.inset(-10), 4, 120, 17)))
+        .ch(phototype(f.a.r.inset(-10), 4, 120, 17))
+        .postprocess(lambda res: res.ch(temptone(0.70, 0.10))))

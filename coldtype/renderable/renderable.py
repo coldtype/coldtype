@@ -148,7 +148,6 @@ class renderable():
         dst=None,
         custom_folder=None,
         post_preview=None,
-        post_render=None,
         watch=[],
         watch_soft=[],
         watch_restart=[],
@@ -197,7 +196,6 @@ class renderable():
         self.dst = Path(dst).expanduser().resolve() if dst else None
         self.custom_folder = custom_folder
         self.post_preview = post_preview
-        self.post_render = post_render
         self.last_passes = []
         self.last_result = None
         self.style = style
@@ -443,6 +441,16 @@ class renderable():
     def precompose(self, result, scale):
         from coldtype.fx.skia import precompose
         return result.ch(precompose(self.rect, scale=scale, style=self.style))
+    
+    def postprocessor(self, result):
+        from coldtype.runon.runon import RunonSearchException
+        try:
+            has_post = result.find_(lambda el: el.data("postprocess") is not None)
+            if has_post:
+                return has_post.data("postprocess")
+        except RunonSearchException:
+            pass
+        return None
     
     # def draw_preview(self, scale, canvas, rect, result, render_pass): # canvas:skia.Canvas
     #     sr = self.rect.scale(scale, "mnx", "mxx")
