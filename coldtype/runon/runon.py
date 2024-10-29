@@ -1113,11 +1113,13 @@ class Runon:
             print(self.tree(**kwargs))
             return self
 
+        out = []
         for a in args:
             if callable(a):
-                print(a(self))
+                out.append(str(a(self)))
             else:
-                print(a)
+                out.append(str(a))
+        print(" ".join(out))
         return self
     
     def pprint(self, *args):

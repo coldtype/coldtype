@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.fx.skia import phototype, spackle, luma, fill, precompose
+from coldtype.raster import *
 from coldtype.fx.motion import filmjitter
 
 at = AsciiTimeline(3, 18, """
@@ -9,11 +9,18 @@ C   O   L   D   T   Y   P   E
 
 rs = random_series(seed=8)
 
+def postprocess(render, result):
+    return P(
+        P(render.rect).f(hsl(0.7, 0.7, 0.8)),
+        result.ch(luma(render.rect, hsl(0.7, 0.7, 0.4))))
+
 @animation((1080, 800)
     , tl=at
     , bg=0
     , composites=1
-    , render_bg=1)
+    , render_bg=1
+    , post_render=postprocess
+    , release=lambda x: x.export("h264", loops=4))
 def countdown(f:Frame):
     c = at.current()
 
@@ -32,13 +39,4 @@ def countdown(f:Frame):
             .align(f.a.r, tx=1, ty=1)
             .blendmode(BlendMode.Xor))
         .ch(phototype(f.a.r
-            , cut=139, blur=2.5, cutw=20)))
-
-#@animation((1080, 800), tl=at, bg=hsl(0.7, 0.7, 0.8), render_bg=1, solo=1)
-def recolor(f):
-    return (countdown.frame_img(f.i)
-        .ch(luma(f.a.r))
-        .ch(precompose(f.a.r))
-        .ch(fill(hsl(0.7, 0.7, 0.4))))
-
-#release = recolor.export("h264", loops=4)
+            , cut=139, blur=2.5, cutw=20, fill=1)))

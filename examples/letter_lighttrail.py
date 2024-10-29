@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.fx.skia import phototype, precompose, temptone, spackle
+from coldtype.raster import *
 
 r = Rect(1080, 1080)
 letters = "RANDOM"
@@ -8,11 +8,12 @@ rc = random_series()
 rstroke = random_series(0.45, 1)
 
 def postprocess(render, result):
-    return (result
-        .ch(precompose(render.rect))
-        .ch(temptone(0.05,0.02)))
+    return result.ch(temptone(0.05,0.02))
 
-@animation(r, bg=1, tl=Timeline(240, 12), postfn=postprocess)
+@animation(r, bg=1
+    , tl=Timeline(240, 12)
+    , post_render=postprocess
+    , release=lambda x: x.export("h264", loops=2, date=True))
 def scribble_random(f):
     seed = f.i+2
     
@@ -53,6 +54,3 @@ def scribble_random(f):
             .ch(phototype(f.a.r,
                 blur=3, cut=170, fill=hsl(f.i*0.1))),
         lines)
-
-
-release = scribble_random.export("h264", loops=2, date=True)

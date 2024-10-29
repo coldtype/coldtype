@@ -41,11 +41,11 @@ class Frame(Easeable):
     @property
     def autowrap(self): return True
     
-    def last_render(self, modfn=lambda p: p):
+    def last_render(self, modfn=lambda img: img):
         if not self.a.composites:
             raise Exception("set `composites=1` on your @animation")
         if self.a.last_result:
-            return modfn(self.a.last_result.copy())
+            return modfn(self.a.last_result)
         else:
             return None
     

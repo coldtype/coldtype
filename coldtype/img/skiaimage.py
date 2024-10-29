@@ -14,8 +14,8 @@ class SkiaImage(DATImage):
 
     def _resize(self, fx, fy):
         self._img = self._img.resize(
-            int(self._img.width()*fx),
-            int(self._img.height()*fy))
+            round(self._img.width()*fx),
+            round(self._img.height()*fy))
     
     def _precompose_fn(self):
         return precompose

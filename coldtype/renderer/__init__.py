@@ -571,7 +571,7 @@ class Renderer():
                             if render.single_frame and not render.interactable and render.last_result:
                                 result = render.last_result
                             else:
-                                result = render.normalize_result(render.run(rp, self.state))
+                                result = render.run(rp, self.state)
 
                         if not result and not render.direct_draw:
                             #print(">>> No result")
@@ -787,13 +787,17 @@ class Renderer():
             if not skia:
                 raise Exception("pip install skia-python")
             if render.fmt == "png":
-                if render.composites:
+                if render.composites or render.post_render:
+                    from coldtype.img.skiaimage import SkiaImage
                     content = content.ch(skfx.precompose(render.rect, scale=scale))
-                    render.last_result = content
+                    render.last_result = SkiaImage(content.img().get("src"))
                 
                 ctx = None
                 if self.winmans.glsk and self.winmans.glsk.context and not self.args.cpu_render:
                     ctx = self.winmans.glsk.context
+                
+                if render.post_render:
+                    content = render.precompose(render.post_render(render, content), scale)
 
                 SkiaPen.Composite(content,
                     render.rect,

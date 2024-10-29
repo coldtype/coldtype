@@ -347,13 +347,16 @@ def warp(rect, mod):
     return _warp
 
 
-def luma(rect):
+def luma(rect, fill=None):
     """Chainable function for converting light part of pen/image-on-pen into an alpha channel; see `LumaColorFilter <https://kyamagu.github.io/skia-python/reference/skia.LumaColorFilter.html>`_"""
     def _luma(pen):
-        return (pen
-            .ch(precompose(rect))
-            .attr(skp=dict(
-                ColorFilter=skia.LumaColorFilter.Make())))
+        pen = pen.ch(precompose(rect))
+        pen.attr(skp=dict(ColorFilter=skia.LumaColorFilter.Make()))
+        if fill is not None:
+            pen = (pen
+                .ch(precompose(rect))
+                .attr(skp=dict(ColorFilter=Skfi.fill(normalize_color(fill)))))
+        return pen
     return _luma
 
 def phototype(rect=None,

@@ -317,6 +317,9 @@ class animation(renderable, Timeable):
                 fe.gif()
             elif fmt == "h264":
                 fe.h264()
+            elif fmt == "prores":
+                fe.prores()
+            print(fe.args)
             fe.write()
             if open:
                 fe.open()
@@ -394,7 +397,8 @@ class FFMPEGExport():
             self.args.extend([
                 #"-stream_loop", str(self.loops-1),
                 "-i", template, # input sequence
-                "-filter_complex", f"loop=loop={self.loops-1}:size={self.a.timeline.duration}:start=0"
+                "-filter_complex", f"[0:v]loop=loop={self.loops-1}:size={self.a.timeline.duration}:start=0,zscale=matrixin=709:transferin=709:primariesin=709:matrix=709:transfer=709:primaries=709,format=yuv420p[v]",
+                "-map", '[v]',
             ])
         
         if vf:
@@ -408,6 +412,7 @@ class FFMPEGExport():
             "-c:v", "libx264",
             "-crf", "20", # Constant Rate Factor
             "-pix_fmt", "yuv420p", # pixel format
+            #"", "",
         ])
         return self
     

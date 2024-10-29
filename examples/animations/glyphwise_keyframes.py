@@ -16,8 +16,9 @@ at = AsciiTimeline(2, 30, """
 @animation((1080, 520), timeline=at, bg=0)
 def cheee_wild(f):
     return (Glyphwise("COLD", lambda g: [
-        Style(Font.MuSan(), 270, tu=50, ty=1),
-        at.kf("eeio", f.i-g.i*10)])
+            Style(Font.MuSan(), 270, tu=50, ty=1),
+            at.kf("eeio", f.i-g.i*10)
+        ])
         .fssw(1, 0, 8, 1)
         .align(f.a.r, tx=0)
         .reverse())

@@ -147,7 +147,8 @@ class renderable():
         suffix=None,
         dst=None,
         custom_folder=None,
-        postfn=None,
+        post_preview=None,
+        post_render=None,
         watch=[],
         watch_soft=[],
         watch_restart=[],
@@ -195,7 +196,8 @@ class renderable():
         self.suffix = suffix
         self.dst = Path(dst).expanduser().resolve() if dst else None
         self.custom_folder = custom_folder
-        self.postfn = postfn
+        self.post_preview = post_preview
+        self.post_render = post_render
         self.last_passes = []
         self.last_result = None
         self.style = style
@@ -427,8 +429,8 @@ class renderable():
     
     def runpost(self, result, render_pass:RenderPass, renderer_state, config):
         post_res = result
-        if self.postfn:
-            post_res = self.postfn(self, result)
+        if self.post_preview:
+            post_res = self.post_preview(self, result)
         
         if config:
             if config.show_xray:
@@ -438,9 +440,13 @@ class renderable():
 
         return post_res
     
-    def draw_preview(self, scale, canvas, rect, result, render_pass): # canvas:skia.Canvas
-        sr = self.rect.scale(scale, "mnx", "mxx")
-        SkiaPen.CompositeToCanvas(result, sr, canvas, scale, style=self.style)
+    def precompose(self, result, scale):
+        from coldtype.fx.skia import precompose
+        return result.ch(precompose(self.rect, scale=scale, style=self.style))
+    
+    # def draw_preview(self, scale, canvas, rect, result, render_pass): # canvas:skia.Canvas
+    #     sr = self.rect.scale(scale, "mnx", "mxx")
+    #     SkiaPen.CompositeToCanvas(result, sr, canvas, scale, style=self.style)
     
     def noop(self, *args, **kwargs):
         return self
@@ -466,8 +472,12 @@ class renderable():
             return pens
     
     def normalize_result(self, pens):
+        #import inspect
         normalized = self._normalize_result(pens)
-        #print(">norm", pens, normalized)
+        #print(">norm", self, pens, normalized)
+        #curframe = inspect.currentframe()
+        #calframe = inspect.getouterframes(curframe, 2)
+        #print('caller name:', calframe[1])
         if self._hide:
             normalized.hide(*self._hide)
         return normalized

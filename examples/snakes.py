@@ -31,7 +31,7 @@ def build_snake(seed):
 def finish(render, res):
     return res.ch(precompose(render.rect)).ch(temptone(0.70, 0.10))
 
-@animation(r, bg=0, postfn=finish, tl=Timeline(60, 10))
+@animation(r, bg=0, post_render=finish, tl=Timeline(60, 10))
 def snakes(f):
     return (P().enumerate(range(0, 7), lambda x:
         build_snake(x.el)

@@ -452,28 +452,36 @@ class WinmanGLFWSkia():
                 error_color = rgb(0, 0, 0).skia()
         else:
             if self.renderer.args.never_reuse_skia_context or render.single_frame or render.composites and not render.interactable or self.config.preview_saturation != 1:
-                comp = result.ch(skfx.precompose(
-                    render.rect,
-                    scale=scale,
-                    style=render.style))
+                from coldtype.img.skiaimage import SkiaImage
+
+                comp = render.precompose(result, scale)
+                comp_img = comp.img().get("src")
 
                 if not self.renderer.last_render_cleared:
-                    render.last_result = comp
+                    render.last_result = SkiaImage(comp_img)
                 else:
                     render.last_result = None
-
-                comp = comp.img().get("src")
                 
                 canvas.save()
                 canvas.scale(1/scale, 1/scale)
-                #render.draw_preview(1.0, canvas, render.rect, comp, rp)
+
+                if render.post_render:
+                    comp = render.precompose(render.post_render(render, comp), scale)
+                    comp_img = comp.img().get("src")
+
                 paint = skia.Paint()
                 paint.setColorFilter(skfx.Skfi.saturate(self.config.preview_saturation))
-                skiashim.canvas_drawImage(canvas, comp, 0, 0, paint)
+                skiashim.canvas_drawImage(canvas, comp_img, 0, 0, paint)
+                
                 canvas.restore()
             else:
-                comp = result
-                render.draw_preview(1.0, canvas, render.rect, comp, rp)
+                from coldtype.pens.skiapen import SkiaPen
+                
+                sr = render.rect.scale(scale, "mnx", "mxx")
+                SkiaPen.CompositeToCanvas(result, sr, canvas, scale, style=render.style)
+
+                #comp = result
+                #render.draw_preview(1.0, canvas, render.rect, comp, rp)
         
         if hasattr(render, "show_error"):
             paint = skia.Paint(AntiAlias=True, Color=error_color)

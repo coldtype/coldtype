@@ -280,6 +280,10 @@ class Style():
         keyed.update(kwargs)
         return Style(**keyed)
     
+    def print(self, *args):
+        print(*args)
+        return self
+    
     def complete_metrics(self):
         c = False
         a = False
