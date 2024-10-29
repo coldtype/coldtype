@@ -18,7 +18,8 @@ def scribble_random(f):
         , font=Font.MuSan()
         , fontSize=1105
         , wght=f.e("l", 1)
-        , wdth=0.25)
+        , wdth=0.25
+        , ro=1)
         .align(r, ty=1)
         .scaleToRect(f.a.r.inset(50)))
     
@@ -27,7 +28,7 @@ def scribble_random(f):
 
     lines = (P().enumerate(range(0, int(f.e("eei", 1, rng=(15, 25)))), lambda x: P()
         .moveTo(points[rp[x.i]])
-        .enumerate(range(0, int(f.e("seio", rng=(6, 20)))), lambda y: y.parent
+        .enumerate(range(0, int(f.e("seio", rng=(6, 200)))), lambda y: y.parent
             .declare(yi:=y.i*10)
             .cond(rc[x.i+yi] > f.e("l", rng=(0.1, 0.75)),
                 lambda p: p.lineTo(points[rp[1+yi+x.i]]),
