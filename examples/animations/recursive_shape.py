@@ -18,7 +18,8 @@ def recursive_composite(f):
         f.lastRender(lambda img: img
             .resize(0.997)
             .align(f.a.r)
-            .translate(1, -3)),
+            .translate(1, -3)
+            ),
         (P(Rect(200, 200))
             .align(f.a.r.inset(100, 100), "NW")
             .rotate(f.e("eeio", 0)*-360)

@@ -443,13 +443,9 @@ class renderable():
         return result.ch(precompose(self.rect, scale=scale, style=self.style))
     
     def postprocessor(self, result):
-        from coldtype.runon.runon import RunonSearchException
-        try:
-            has_post = result.find_(lambda el: el.data("postprocess") is not None)
-            if has_post:
-                return has_post.data("postprocess")
-        except RunonSearchException:
-            pass
+        has_post = result.find_(lambda el: el.data("postprocess") is not None, none_ok=True)
+        if has_post:
+            return has_post.data("postprocess")
         return None
     
     # def draw_preview(self, scale, canvas, rect, result, render_pass): # canvas:skia.Canvas

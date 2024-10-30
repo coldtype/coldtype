@@ -764,7 +764,7 @@ class Runon:
         else:
             return [m for (_, m) in narrowed]
     
-    def find_(self, finder_fn=None, fn=None, index=0, none_ok=0, **kwargs):
+    def find_(self, finder_fn=None, fn=None, index=0, none_ok=0, find_one=False, **kwargs):
         if len(kwargs) > 0 and finder_fn is None:
             finder_fn = kwargs
 
@@ -784,7 +784,7 @@ class Runon:
                     o = o.find_(k)
                 return o
 
-        res = self.find(finder_fn, fn, index=index, find_one=True)
+        res = self.find(finder_fn, fn, index=index, find_one=find_one)
         if not fn:
             try:
                 return res[0]

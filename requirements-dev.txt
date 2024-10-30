@@ -13,4 +13,4 @@ mdx-linkify
 
 ipykernel
 
-#drawbot @ git+https://github.com/typemytype/drawbotq
+drawbot @ git+https://github.com/typemytype/drawbot

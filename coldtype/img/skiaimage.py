@@ -1,7 +1,7 @@
 import skia
 from coldtype.img.datimage import DATImage
 from coldtype.fx.skia import precompose
-from coldtype.skiashim import canvas_drawImage, paint_withFilterQualityHigh
+from coldtype.skiashim import canvas_drawImage, paint_withFilterQualityHigh, image_resize
 from coldtype.runon.path import P
 
 class SkiaImage(DATImage):
@@ -17,7 +17,8 @@ class SkiaImage(DATImage):
     def _resize(self, fx, fy):
         # should preserve the offset?
         # or somehow keep the alignment?
-        self._img = self._img.resize(
+        
+        self._img = image_resize(self._img,
             round(self._img.width()*fx),
             round(self._img.height()*fy))
     

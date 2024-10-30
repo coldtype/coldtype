@@ -169,9 +169,9 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 # TODO scale the image, or maybe that shouldn't be here? this scaling method is horrible for image quality
                 self.canvas.scale(sx, sy)
             was_alpha = self.paint.getAlphaf()
-            self.paint.setAlphaf(was_alpha*self.alpha)
+            paint = skiashim.paint_withFilterQualityHigh()
+            paint.setAlphaf(was_alpha*self.alpha)
             skiashim.canvas_drawImage(self.canvas, image, bx/sx, by/sy, self.paint)
-            self.paint.setAlphaf(was_alpha)
             self.canvas.restore()
             return True
     

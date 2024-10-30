@@ -19,6 +19,7 @@ dist
 coldtype.egg-info
 __pycache__
 *.pyc
+*.patch
 coldtype/scratch.svg
 *_frames
 *_layers

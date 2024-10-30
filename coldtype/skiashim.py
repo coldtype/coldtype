@@ -13,8 +13,9 @@ def canvas_drawImage(canvas, image, x, y, paint=None):
     if SKIA_87:
         canvas.drawImage(image, x, y, paint)
     else:
+        #so = skia.SamplingOptions()
+        so = skia.SamplingOptions(skia.CubicResampler.CatmullRom())
         #so = skia.SamplingOptions(skia.CubicResampler.Mitchell())
-        so = skia.SamplingOptions()
         canvas.drawImage(image, x, y, so, paint)
 
 
@@ -31,3 +32,12 @@ def paint_withFilterQualityHigh():
     else:
         #SamplingOptions=skia.SamplingOptions(skia.CubicResampler.Mitchell())
         return skia.Paint(AntiAlias=True)
+    
+
+def image_resize(img, width, height):
+    if SKIA_87:
+        return img.resize(width, height)
+    else:
+        so = skia.SamplingOptions(skia.CubicResampler.CatmullRom())
+        #so = skia.SamplingOptions()
+        return img.resize(width, height, so)
