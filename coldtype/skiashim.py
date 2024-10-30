@@ -13,8 +13,8 @@ def canvas_drawImage(canvas, image, x, y, paint=None):
     if SKIA_87:
         canvas.drawImage(image, x, y, paint)
     else:
-        so = skia.SamplingOptions(skia.CubicResampler.Mitchell())
-        #so = skia.SamplingOptions()
+        #so = skia.SamplingOptions(skia.CubicResampler.Mitchell())
+        so = skia.SamplingOptions()
         canvas.drawImage(image, x, y, so, paint)
 
 
