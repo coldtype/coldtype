@@ -123,8 +123,8 @@ class Font():
         if self._loaded:
             return self
         else:
-            from asyncio import run
-            run(self.font.load(sys.stderr.write))
+            from coldtype.helpers import run_coroutine_sync
+            run_coroutine_sync(self.font.load(sys.stderr.write))
             self._loaded = True
             return self
     
