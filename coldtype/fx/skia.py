@@ -66,14 +66,7 @@ class Skfi():
 
     @staticmethod
     def improved_noise(e, xo=0, yo=0, xs=1, ys=1, base=1):
-        noise = skia.PerlinNoiseShader.MakeImprovedNoise(0.015, 0.015, 3, base)
-        matrix = skia.Matrix()
-        matrix.setTranslate(e*xo, e*yo)
-        #matrix.setRotate(45, 0, 0)
-        matrix.setScaleX(xs)
-        matrix.setScaleY(ys)
-        return noise.makeWithLocalMatrix(matrix)
-    
+        return skiashim.make_improved_noise(e, xo, yo, xs, ys, 0.015, 0.015, 3, base)
     
     # straight from the chromium source https://chromium.googlesource.com/chromium/blink/+/refs/heads/main/Source/platform/graphics/filters/FEColorMatrix.cpp
 

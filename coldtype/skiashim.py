@@ -42,3 +42,16 @@ def image_resize(img, width, height):
         so = skia.SamplingOptions(skia.CubicResampler.CatmullRom())
         #so = skia.SamplingOptions()
         return img.resize(width, height, so)
+
+
+def make_improved_noise(e, xo, yo, xs, ys, x, y, scale, base):
+    if SKIA_87:
+        noise = skia.PerlinNoiseShader.MakeImprovedNoise(x, y, scale, base)
+    else:
+        noise = skia.PerlinNoiseShader.MakeTurbulence(x, y, scale, base)
+    matrix = skia.Matrix()
+    matrix.setTranslate(e*xo, e*yo)
+    #matrix.setRotate(45, 0, 0)
+    matrix.setScaleX(xs)
+    matrix.setScaleY(ys)
+    return noise.makeWithLocalMatrix(matrix)
