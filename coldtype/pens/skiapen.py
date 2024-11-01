@@ -232,6 +232,11 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
         stream.flush()
     
     def CompositeToCanvas(pens, rect, canvas, scale=1, style=None):
+        #import inspect
+        #curframe = inspect.currentframe()
+        #calframe = inspect.getouterframes(curframe, 2)
+        #print(calframe[1][3],"-> CompositeToCanvas:", pens)
+
         style_ = style
 
         if scale != 1:

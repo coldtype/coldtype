@@ -33,7 +33,7 @@ def play_sound(name="Pop"):
     platforms as well
     """
     if on_mac():
-        os.system(f"afplay /System/Library/Sounds/{name}.aiff")
+        os.system(f"afplay /System/Library/Sounds/{name}.aiff &")
 
 
 def show_in_finder(path):

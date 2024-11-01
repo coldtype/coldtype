@@ -364,6 +364,7 @@ class renderable():
             previewing = renderer_state.previewing
         else:
             previewing = False
+        
         show_bg = (previewing or self.render_bg) and render_bg
 
         if show_bg:
@@ -385,9 +386,9 @@ class renderable():
                     res
                 ])
             else:
-                return res
+                return P(res)
         else:
-            return res
+            return P(res)
         
     def show_xray(self, result):
         if not self.xray:
