@@ -492,6 +492,8 @@ class LayoutMixin():
     
     def stack(self, leading=0, ty=0, zero=False):
         "Vertical distribution of elements"
+        if isinstance(leading, str) and "%" in leading:
+            leading = self[0].ambit(ty=0).h * float(leading[:-1])/100
         if zero:
             for p in self:
                 p.zero()

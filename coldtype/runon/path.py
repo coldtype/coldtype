@@ -326,6 +326,34 @@ class P(Runon):
             out.append(_wp(pen))
         return out
     
+    def linebreak(self, w, leading=False, track_out=False):
+        x = 0
+
+        lines = P()
+        line = P()
+        lines.append(line)
+
+        for word in self:
+            word.t(-x, 0)
+            amb = word.ambit(tx=1, ty=0)
+            if amb.pse.x > w+0:
+                line = P()
+                lines.append(line)
+                print(word.data("word"), ":", amb)
+                word.t(-amb.x, 0)
+                x += amb.x
+                line.append(word)
+            else:
+                line.append(word)
+        
+        if leading:
+            lines.stack(leading)
+
+        if track_out:
+            lines.map(lambda p: p.track_to_rect(Rect(0, 0, w, 100).zero(), pullToEdges=track_out < 2), slice(-1))
+
+        return lines
+    
     def interpolate(self, value, other, frame=False):
         if len(self.v.value) != len(other.v.value):
             raise Exception("Cannot interpolate / diff lens")
@@ -1540,6 +1568,8 @@ class P(Runon):
     def stack(self, leading=0, ty=0, zero=False) -> "P":
 
         "Vertical distribution of elements"
+        if isinstance(leading, str) and "%" in leading:
+            leading = self[0].ambit(ty=0).h * float(leading[:-1])/100
         if zero:
             for p in self:
                 p.zero()

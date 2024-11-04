@@ -535,7 +535,8 @@ class renderable():
                     context=None)
             elif self.fmt == "svg":
                 output_path.write_text(SVGPen.Composite(result, self.rect, viewBox=self.viewBox))
-                #SkiaPen.SVG(result, self.rect, str(output_path), scale=1)
+            elif self.fmt == "pdf":
+                SkiaPen.PDFOnePage(result, self.rect, output_path, 1)
             else:
                 print("render_to_disk", self.fmt, "not supported")
             paths.append(output_path)

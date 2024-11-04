@@ -411,8 +411,8 @@ class Runon:
         else:
             return self
 
-    def map(self, fn):
-        for idx, p in enumerate(self._els):
+    def map(self, fn, range=slice(0)):
+        for idx, p in enumerate(self._els[range]):
             res = self._call_idx_fn(fn, idx, p)
             if res:
                 self._els[idx] = res

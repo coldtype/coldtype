@@ -9,6 +9,9 @@ folder = Path(__inputs__[0])
 images = sorted_images(folder)
 images_hires = None
 
+for img in images:
+    print(img)
+
 if (folder / "hires").exists():
     images_hires = sorted_images(folder / "hires")
 
@@ -16,14 +19,14 @@ parent = folder.parent
 base_name = parent.name + "_" + folder.name
 name = base_name
 
-fps = 24
+fps = 12
 
 if images_hires:
     name = base_name + "_proxy"
     @image_sequence(images_hires, fps, looping=True, name=base_name, render_only=True)
     def viewer_hires(_): return None
 
-@image_sequence(images, fps, looping=True, name=name)
+@image_sequence(images, fps, looping=False, name=name)
 def viewer(_): return None
 
 def release(_):
