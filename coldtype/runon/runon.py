@@ -827,7 +827,7 @@ class Runon:
         elif key is not None:
             return self._data.get(key, default)
         else:
-            return self
+            return self._data
     
     def datafn(self, **kwargs):
         """Set function literals with kwargs"""

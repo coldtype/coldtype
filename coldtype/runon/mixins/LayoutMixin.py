@@ -553,8 +553,7 @@ class LayoutMixin():
             .layer(nx)
             .spread(track)
             .layer(ny if ny is not None else nx)
-            .stack(lead)
-            .map(lambda i, p: p.data(idx=i)))
+            .stack(lead))
     
     def pasteup(self, styler=lambda p: p.f(bw(1)), padding=(5, 5), tx=1, ty=0, x="CX", y="CY"):
         r = self.ambit(tx=tx, ty=ty).inset(*[-x for x in padding]).zero()
