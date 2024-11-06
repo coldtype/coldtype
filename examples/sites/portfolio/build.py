@@ -19,7 +19,8 @@ def pagemod(p):
     , info=info
     , pagemod=pagemod
     , fonts={
-        "text-font": dict(regular="Casserole-Sans")})
+        "text-font": dict(regular="Casserole-Sans"),
+        "display-font": dict(regular="CheeeVariable.ttf")})
 def portfolio(_):
     portfolio.build()
 

@@ -299,7 +299,7 @@ class site(renderable):
         
         header, footer = self.header_footer(nav_links, url, page)
         
-        content = self.templates[template_name].render({**self.standard_data, **dict(page=page, url=url), **(data or {})})
+        content = self.mod_css(self.templates[template_name].render({**self.standard_data, **dict(page=page, url=url), **(data or {})}))
         
         path.parent.mkdir(exist_ok=True, parents=True)
 
