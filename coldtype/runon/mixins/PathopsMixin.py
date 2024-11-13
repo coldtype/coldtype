@@ -3,6 +3,9 @@ from coldtype.pens.misc import BooleanOp, calculate_pathop
 
 class PathopsMixin():
     def _pathop(self, otherPen=None, operation=BooleanOp.XOR, use_skia_pathops_draw=True):
+        if callable(otherPen):
+            otherPen = otherPen(self)
+
         if self.val_present():
             self._val.value = calculate_pathop(self, otherPen, operation, use_skia_pathops_draw=use_skia_pathops_draw)
         

@@ -14,3 +14,5 @@ mdx-linkify
 ipykernel
 
 drawbot @ git+https://github.com/typemytype/drawbot
+
+pyaxidraw @ https://cdn.evilmadscientist.com/dl/ad/public/AxiDraw_API.zip

@@ -2,7 +2,7 @@ from coldtype import *
 from coldtype.axidraw import *
 
 co = Font.ColdtypeObviously()
-script = Font.RecursiveMono()
+script = Font.JBMono()
 
 @axidrawing(flatten=50)
 def test_draw(r):

@@ -1637,8 +1637,7 @@ class P(Runon):
             .layer(nx)
             .spread(track)
             .layer(ny if ny is not None else nx)
-            .stack(lead)
-            .map(lambda i, p: p.data(idx=i)))
+            .stack(lead))
     
     def pasteup(self, styler=lambda p: p.f(bw(1)), padding=(5, 5), tx=1, ty=0, x="CX", y="CY"):
         r = self.ambit(tx=tx, ty=ty).inset(*[-x for x in padding]).zero()
@@ -2006,6 +2005,9 @@ class P(Runon):
 
 
     def _pathop(self, otherPen=None, operation=BooleanOp.XOR, use_skia_pathops_draw=True) -> "P":
+
+        if callable(otherPen):
+            otherPen = otherPen(self)
 
         if self.val_present():
             self._val.value = calculate_pathop(self, otherPen, operation, use_skia_pathops_draw=use_skia_pathops_draw)
