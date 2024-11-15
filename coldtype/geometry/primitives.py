@@ -143,8 +143,8 @@ def take(rect, amount, edge, forcePixel=False):
         return r
 
 
-def subtract(rect, amount, edge):
-    _, r = divide(rect, amount, edge)
+def subtract(rect, amount, edge, forcePixel=False):
+    _, r = divide(rect, amount, edge, forcePixel=forcePixel)
     return r
 
 

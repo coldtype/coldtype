@@ -207,10 +207,12 @@ def color_var(*rgba):
 
 
 def hex_to_tuple(h):
-    return tuple([c/255 for c in (palette.r, palette.g, palette.b, palette.a)])
+    return tuple([c/255 for c in (h.r, h.g, h.b, h.a)])
 
 
 def find_random(v):
+    from random import randint
+    
     if isinstance(v, str):
         if v == "random" or v == "r":
             return random()

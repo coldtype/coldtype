@@ -443,7 +443,7 @@ class Rect(Geometrical):
         edge = txt_to_edge(edge)
         return self.divide(amount, edge, forcePixel=forcePixel)[1]
 
-    def subtract(self, amount, edge) -> "Rect":
+    def subtract(self, amount, edge, forcePixel=False) -> "Rect":
         """
         The opposite of `take`, this will remove and not return a piece of the given amount from the given edge.
         
@@ -452,7 +452,7 @@ class Rect(Geometrical):
         `Rect(100, 100).subtract(10, Edge.MaxX)`, which leaves you with `Rect([0, 0, 90, 100])`
         """
         edge = txt_to_edge(edge)
-        return Rect(subtract(self.rect(), amount, edge))
+        return Rect(subtract(self.rect(), amount, edge, forcePixel=forcePixel))
     
     drop = subtract
 

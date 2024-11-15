@@ -413,6 +413,7 @@ class Style():
                 d[k] = (v[0], partial(stretcher, v[0], v[1]))
             elif len(v) == 1:
                 pass
+    
         return d
     
     def StretchY(flatten=10, align="mdy", debug=0, **kwargs):
@@ -512,8 +513,12 @@ class StyledString(FittableMixin):
         for idx, g in enumerate(self.glyphs):
             g.frame = g.frame.offset(x_off, 0)
             x_off += t
-            if self.style.mods and g.name in self.style.mods:
-                x_off += self.style.mods[g.name][0]
+            
+            if self.style.mods:
+                mod_data = self.style.mods.get(g.name, self.style.mods.get("_wildcard"))
+                if mod_data is not None:
+                    x_off += mod_data[0]
+            
             if self.style.space and g.name.lower() == "space":
                 x_off += (self.style.space - space_width)
     
@@ -717,9 +722,13 @@ class StyledString(FittableMixin):
         out_pen = P()
         tp = TransformPen(out_pen, (t[0], t[1], t[2], t[3], t[4], t[5]))
         ip = P().record(in_pen)
-        if self.style.mods and glyph.name in self.style.mods:
-            w, mod = self.style.mods[glyph.name]
-            mod(-1, ip)
+        if self.style.mods:
+            mod_data = self.style.mods.get(glyph.name)
+            if mod_data is None and "_wildcard" in self.style.mods:
+                mod_data = self.style.mods["_wildcard"]
+            if mod_data is not None:
+                w, mod = mod_data
+                mod(-1, ip)
         ip.replay(tp)
         if self.style.rotate:
             out_pen.rotate(self.style.rotate)
