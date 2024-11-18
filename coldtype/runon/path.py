@@ -309,13 +309,14 @@ class P(Runon):
         
         return self.map_points(apply)
     
-    def wordPens(self, pred=lambda x: x.glyphName == "space"):
+    def wordPens(self, pred=lambda x: x.glyphName == "space", consolidate=False):
         def _wp(p):
             return (p
                 .split(pred)
                 .map(lambda x: x
                     .data(word="/".join([p.glyphName for p in x]))
-                    .pen()))
+                    .cond(consolidate, lambda p: p.pen())
+                    ))
         
         d = self.depth()
         if d == 1:
@@ -339,7 +340,6 @@ class P(Runon):
             if amb.pse.x > w+0:
                 line = P()
                 lines.append(line)
-                print(word.data("word"), ":", amb)
                 word.t(-amb.x, 0)
                 x += amb.x
                 line.append(word)

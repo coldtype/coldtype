@@ -811,6 +811,15 @@ class Runon:
             return self.walk(walker)
         else:
             raise Exception("not yet supported")
+        
+    def swap(self, indices, replace_fn):
+        def _replace_fn(p):
+            pc = p.copy()
+            p.delete()
+            p.up()
+            p.append(replace_fn(pc))
+        
+        return self.index(indices, _replace_fn)
     
     # Data-access methods
 
