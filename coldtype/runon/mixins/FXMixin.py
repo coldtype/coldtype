@@ -180,7 +180,7 @@ class FXMixin():
     
     def filterContours(self, filter_fn):
         if self.val_present():
-            exploded = self.explode()
+            exploded = self.copy().explode()
             keep = []
             for idx, c in enumerate(exploded):
                 if filter_fn(idx, c):

@@ -505,6 +505,7 @@ class StyledString(FittableMixin):
                 glyph.frame = glyph.frame.expand(self.style.descender, "N")
             x += glyph.ax
         
+        #print("resetGlyphRun")
         self.getGlyphFrames()
     
     def trackFrames(self, space_width=0):
@@ -848,6 +849,7 @@ class StyledString(FittableMixin):
             self.addBRGlyphDrawings(self.glyphs)
 
         elif not self.style.no_shapes:
+            #print("ct.getGlyphDrawings")
             glyphNames = [g.name for g in self.glyphs]
             glyphDrawings = list(self.style.font.font.getGlyphDrawings(glyphNames, True))
             for glyph, glyphDrawing in zip(self.glyphs, glyphDrawings):
