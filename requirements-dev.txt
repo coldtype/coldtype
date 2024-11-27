@@ -2,6 +2,8 @@ pytest
 pynput
 pymunk
 pygments
+pyaudio
+soundfile
 opentype-feature-freezer
 fontmake
 measurement
