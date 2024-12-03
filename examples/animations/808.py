@@ -15,7 +15,7 @@ obvs = Font.ColdtypeObviously()
 
 # This is also useful to load before the render function, because this MIDI data doesn’t change once our program is loaded.
 
-wav = ººsiblingºº("media/808.wav")
+wav = download("https://coldtype.xyz/examples/media/808.wav", ººsiblingºº("media/808.wav"))
 
 midi = MidiTimeline(
     ººsiblingºº("media/808.mid")
