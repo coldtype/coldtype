@@ -3,7 +3,7 @@ from coldtype.raster import *
 
 drums = MidiTimeline(ººsiblingºº("media/cyber.mid"), bpm=100, fps=30)
 
-wav = ººsiblingºº("media/cyber.wav")
+wav = download("https://coldtype.xyz/examples/media/cyber.wav", ººsiblingºº("media/cyber.wav"))
 
 @animation((1080, 1350)
     , timeline=drums

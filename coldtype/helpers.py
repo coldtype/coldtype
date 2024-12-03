@@ -7,6 +7,22 @@ from coldtype.random import random_series
 def sibling(root, file):
     return Path(root).parent.joinpath(file)
 
+def download(url, save_to:Path, force=False):
+    import requests
+
+    if not force and save_to.exists():
+        return save_to
+
+    save_to.parent.mkdir(parents=True, exist_ok=True)
+    
+    response = requests.get(url)
+    response.raise_for_status()
+    
+    with save_to.open("wb") as f:
+        f.write(response.content)
+    
+    return save_to
+
 def quick_ufo(path
     , familyName
     , styleName="Regular"
