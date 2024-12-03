@@ -312,7 +312,7 @@ class animation(renderable, Timeable):
     
     def export(self, fmt, date=False, loops=1, open=1, audio=None, audio_loops=None, vf=None):
         def _export(passes):
-            fe = FFMPEGExport(self, date=date, loops=loops, audio=audio, audio_loops=audio_loops, vf=vf)
+            fe = FFMPEGExport(self, date=date, loops=loops, audio=audio or self.audio, audio_loops=audio_loops, vf=vf)
             if fmt == "gif":
                 fe.gif()
             elif fmt == "h264":
@@ -392,6 +392,9 @@ class FFMPEGExport():
                 "-stream_loop", str(self.audio_loops-1),
                 "-i", str(self.audio),
                 #"-stream_loop", "-1",
+                "-filter_complex", f"[0:v]loop=loop=0:size={self.a.timeline.duration}:start=0,zscale=matrixin=709:transferin=709:primariesin=709:matrix=709:transfer=709:primaries=709,format=yuv420p[v]",
+                "-map", '[v]',
+                "-map", "1:a",
             ])
         else:
             self.args.extend([
@@ -450,6 +453,7 @@ class FFMPEGExport():
         self.args.append(self.output_path)
         if verbose:
             print(" ".join([str(s) for s in self.args]))
+        
         run(self.args)
 
         if verbose:

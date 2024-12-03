@@ -78,7 +78,7 @@ def rgb_to_hsl(r, g=None, b=None):
     return (h, s, l)
 
 
-class Color:
+class Color():
     def __init__(self, *values):
         r, g, b = [float(v) for v in values[:3]]
         self.r = float(values[0])
@@ -102,9 +102,6 @@ class Color:
             return self.r == other.r and self.g == other.g and self.b == other.b and self.a == other.a
         else:
             return False
-    
-    def __str__(self):
-        return "<Color:rgb({:.1f},{:.1f},{:.1f})/a={:.1f}>".format(self.r, self.g, self.b, self.a)
     
     def to_code(self):
         if self.a == 1:
@@ -181,8 +178,11 @@ class Color:
     def rgb_interp(self, v, other):
         return rgb(norm(v, self.r, other.r), norm(v, self.g, other.g), norm(v, self.b, other.b), norm(v, self.a, other.a))
     
+    # def __str__(self):
+    #     return "<Color:rgb({:.1f},{:.1f},{:.1f})/a={:.1f}>".format(self.r, self.g, self.b, self.a)
+    
     def __repr__(self):
-        return "<Color:({:0.2f},{:0.2f},{:0.2f})/({:0.2f},{:0.2f},{:0.2f})a={:0.2f}/>".format(self.r, self.g, self.b, self.h, self.s, self.l, self.a)
+        return "<Color:({:0.2f},{:0.2f},{:0.2f})/({:0.2f},{:0.2f},{:0.2f})a={:0.2f}/>".format(self.r, self.g, self.b, self.h/360, self.s, self.l, self.a)
     
     def skia(self):
         if skia:
