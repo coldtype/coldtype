@@ -2,7 +2,6 @@ from coldtype import *
 from coldtype.raster import *
 
 drums = MidiTimeline(ººsiblingºº("media/cyber.mid"), bpm=100, fps=30)
-chords = MidiTimeline(ººsiblingºº("media/cyber_chords.mid"), bpm=100, fps=30)
 
 wav = ººsiblingºº("media/cyber.wav")
 
@@ -12,8 +11,6 @@ wav = ººsiblingºº("media/cyber.wav")
     , bg=hsl(0.95, 0.70, 0.55)
     , release=λ.export("h264", True, 4))
 def pixels(f):
-    chords.hold(f.i)
-
     def pixellate(idx, note, i, o, max, min):
         def _pixellate(p:P):
             value = drums.ki(note).adsr([i, o]
