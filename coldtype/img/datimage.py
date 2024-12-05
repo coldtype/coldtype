@@ -53,7 +53,10 @@ class DATImage(P):
     def height(self):
         raise NotImplementedError()
     
-    def align(self, rect, x="mdx", y="mdy", round_result=True):
+    def align(self, rect, x="mdx", y="mdy", round_result=True, tx=True, ty=True):
+        """
+        tx and ty are here for keyword compatibility, they don't do anything
+        """
         self.data(frame=self.rect().align(rect, x, y, round_result=round_result))
         return self
     

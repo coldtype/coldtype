@@ -13,6 +13,9 @@ class SkiaImage(DATImage):
     
     def height(self):
         return self._img.height()
+    
+    def copy(self):
+        return SkiaImage(self._img)
 
     def _resize(self, fx, fy):
         # should preserve the offset?

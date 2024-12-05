@@ -242,14 +242,19 @@ def precompose(rect,
     return Chainable(_precompose)
 
 
-def rasterized(rect, scale=1):
+def rasterized(rect, scale=1, wrapped=False):
     """
     Same as precompose but returns the Image created rather
     than setting that image as the attr-image of this pen
     """
+    from coldtype.img.skiaimage import SkiaImage
     def _rasterized(pen):
-        return SkiaPen.Precompose(pen, rect, scale=scale, context=SKIA_CONTEXT, disk=False)
-    return _rasterized, dict(returns=skia.Image)
+        precomposed = SkiaPen.Precompose(pen, rect, scale=scale, context=SKIA_CONTEXT, disk=False)
+        if wrapped:
+            return SkiaImage(precomposed)
+        else:
+            return precomposed
+    return _rasterized, dict(returns=SkiaImage if wrapped else skia.Image)
 
 
 def rasterize(rect, path):
