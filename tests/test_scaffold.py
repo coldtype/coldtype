@@ -158,3 +158,33 @@ def test_labeled_grid(r):
     assert s[0].tag() == "a0"
     assert s[-1].tag() == "e3"
     return s.view()
+
+@test((500, 500))
+def test_numeric_grid(r):
+    ri = r.inset(20)
+    s = Scaffold(ri).numeric_grid(5, gap=4, annotate_rings=1)
+    
+    assert len(s) == 81
+    assert len(s.cells()) == 25
+
+    assert s["2|2"].data("ring") == 0
+    assert s["2|2"].data("ring_e") == 0
+    assert s["3|2"].data("ring") == 1
+    assert s["4|1"].data("ring") == 2
+    assert s["4|4"].data("ring_e") == 1
+    
+    p = (P().enumerate(s.cells(), lambda x: P()
+        .oval(x.el.r)
+        .f(0)
+        .up()
+        .append(StSt(x.el.tag(), Font.JBMono(), 24, wght=1)
+            .f(1)
+            .align(x.el.r))
+        .tag(x.el.tag())))
+
+    assert p.find_("4|4").ambit().pne == ri.pne
+    assert p.find_("0|0").ambit().psw == ri.psw
+    assert p.find_("0|4").ambit().pnw == ri.pnw
+    assert p.find_("4|0").ambit().pse == ri.pse
+
+    return p

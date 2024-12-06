@@ -187,7 +187,7 @@ def test_depth(r):
         .scale(0.5)
         .map(lambda i,p: p.f(hsl(i*0.2))))
 
-@test((800, 100))
+@test((800, 100), solo=1)
 def test_word_splitting(r):
     st = (StSt("These are some words", Font.RecursiveMono()))
 
@@ -195,7 +195,7 @@ def test_word_splitting(r):
     assert st[0].glyphName == 'T'
     assert len(st) == 20
 
-    st = st.wordPens()
+    st = st.wordPens(consolidate=True)
 
     assert st.depth() == 1
     assert st[0].data("word") == 'T/h.italic/e.italic/s.italic/e.italic'
@@ -208,7 +208,7 @@ def test_word_splitting(r):
     assert st[0][0].glyphName == 'T'
     assert len(st[0]) == 20
 
-    st = st.wordPens()
+    st = st.wordPens(consolidate=True)
     assert st.depth() == 2
     assert st[0][0].data("word") == 'T/h.italic/e.italic/s.italic/e.italic'
     assert len(st[0]) == 4
@@ -219,7 +219,7 @@ def test_word_splitting(r):
     assert st[0][0].glyphName == 'T'
     assert len(st[0]) == 9
 
-    st = st.wordPens()
+    st = st.wordPens(consolidate=True)
     assert st.depth() == 2
     assert st[-1][-1].data("word") == 'w.italic/o/r.italic/d.italic/s.italic'
     assert len(st[0]) == 2

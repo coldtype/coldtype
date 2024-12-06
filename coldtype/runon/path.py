@@ -188,7 +188,9 @@ class P(Runon):
             out += f"\n    .tag(\"{t}\")"
 
         if self.data:
-            out += f"\n    .data(**{repr(self.printable_data())})"
+            pd = self.printable_data()
+            if pd:
+                out += f"\n    .data(**{repr(self.printable_data())})"
 
         if self.val_present():
             for mv, pts in self._val.value:
