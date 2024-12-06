@@ -74,8 +74,85 @@ class Scaffold(Runon):
                 el.subdivide(amt, edge, tags)
         return self
     
-    def labeled_grid(self, columns=2, rows=2, column_gap=0, row_gap=0, start_1=False):
+    def numeric_grid(self, columns=2, rows=None, column_gap=0, row_gap=None, start_1=False, start_bottom=True):
+        if rows is None:
+            rows = columns
+        if row_gap is None:
+            row_gap = column_gap
+
+        names = []
+
+        if column_gap == 0 and row_gap == 0:
+            for ridx, row in enumerate(range(0, rows)):
+                row_names = []
+                for cidx, col in enumerate(range(0, columns)):
+                    row_names.append(f"{cidx}|{ridx}")
+                names.append(" ".join(row_names))
+            
+            if start_bottom:
+                names = list(reversed(names))
+            
+            self.cssgrid(("a " * columns).strip(), ("a " * rows).strip(), " / ".join(names))
+        else:
+            _cols = []
+            _rows = []
+            for ridx, row in enumerate(range(0, rows)):
+                _rows.append("a")
+                _cols = []
+                row_names = []
+                for cidx, col in enumerate(range(0, columns)):
+                    _cols.append("a")
+                    row_names.append(f"{cidx}|{ridx}")
+                    if cidx != columns-1:
+                        _cols.append(str(column_gap))
+                        row_names.append(f"cg.{cidx}|{ridx}")
+                
+                names.append(" ".join(row_names))
+                if ridx != rows-1:
+                    _rows.append(str(row_gap))
+                    row_names = []
+                    for cidx, col in enumerate(range(0, columns)):
+                        row_names.append(f"rg.{cidx}|{ridx}")
+                        if cidx != columns-1:
+                            row_names.append(f"rcg.{cidx}|{ridx}")
+                    names.append(" ".join(row_names))
+
+            if start_bottom:
+                names = list(reversed(names))
+            
+            self.cssgrid(" ".join(_cols).strip(), " ".join(_rows), " / ".join(names))
+
+        if not hasattr(self, "_borders"):
+            self._borders = []
+        
+        first_row = names[0].split(" ")
+        last_row = names[-1].split(" ")
+
+        for cidx, _ in enumerate(first_row[:-1]):
+            self._borders.append([self[first_row[cidx]].pne, self[last_row[cidx]].pse])
+        
+        for ridx, row in enumerate(names[:-1]):
+            rs = row.split(" ")
+            self._borders.append([self[rs[0]].psw, self[rs[-1]].pse])
+        
+        for cell in self:
+            tag = cell.tag()
+            if "." not in tag:
+                c, r = [int(x) for x in cell.tag().split("|")]
+                ch = not((not r%2 and not c%2) or (r%2 and c%2))
+                if start_1:
+                    r += 1
+                    c += 1
+                
+                cell.data(row=r, col=c, checker=ch)
+        
+        return self
+    
+    def labeled_grid(self, columns=2, rows=2, column_gap=0, row_gap=0, start_1=False, start_bottom=False):
         from string import ascii_lowercase
+        possible_names = [a for a in ascii_lowercase]
+        possible_names.extend([f"{a}{a}" for a in ascii_lowercase])
+        possible_names.extend([f"{a}{a}{a}" for a in ascii_lowercase])
 
         if start_1:
             inc = 1
@@ -88,8 +165,11 @@ class Scaffold(Runon):
             for ridx, row in enumerate(range(0, rows)):
                 row_names = []
                 for cidx, col in enumerate(range(0, columns)):
-                    row_names.append(f"{ascii_lowercase[ridx]}{cidx+inc}")
+                    row_names.append(f"{possible_names[ridx]}{cidx+inc}")
                 names.append(" ".join(row_names))
+            
+            if start_bottom:
+                names = list(reversed(names))
             
             self.cssgrid(("a " * columns).strip(), ("a " * rows).strip(), " / ".join(names))
         else:
@@ -116,6 +196,9 @@ class Scaffold(Runon):
                             row_names.append(f"rcg.{ascii_lowercase[ridx]}{cidx+inc}")
                     names.append(" ".join(row_names))
 
+            if start_bottom:
+                names = list(reversed(names))
+            
             self.cssgrid(" ".join(_cols).strip(), " ".join(_rows), " / ".join(names))
 
         if not hasattr(self, "_borders"):
@@ -134,10 +217,10 @@ class Scaffold(Runon):
         for cell in self:
             tag = cell.tag()
             if "." not in tag:
-                _r = re.search(r"[a-z]{1,2}", cell.tag())[0]
-                _c = re.search(r"[0-9]{1,2}", cell.tag())[0]
+                _r = re.search(r"[a-z]{1,3}", cell.tag())[0]
+                _c = re.search(r"[0-9]{1,3}", cell.tag())[0]
                 #_r, _c = list(cell.tag())
-                r = ascii_lowercase.index(_r)
+                r = possible_names.index(_r)
                 c = int(_c)
                 ch = not((not r%2 and not c%2) or (r%2 and c%2))
                 if start_1:
