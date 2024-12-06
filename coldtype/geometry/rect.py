@@ -355,7 +355,7 @@ class Rect(Geometrical):
             a, b = divide(self.rect(), amount, edge, forcePixel=forcePixel)
             return GeoIterable(Rect(a), Rect(b))
 
-    def subdivide(self, amount, edge) -> list:
+    def subdivide(self, amount, edge, forcePixel=False) -> list:
         """
         Like `divide`, but here you specify the number of equal pieces you want (like columns or rows), and then what edge to start at, i.e.
         
@@ -370,7 +370,7 @@ class Rect(Geometrical):
         (N.B. Does not support center edges, as that makes no sense)
         """
         edge = txt_to_edge(edge)
-        return [Rect(x) for x in subdivide(self.rect(), amount, edge)]
+        return [Rect(x) for x in subdivide(self.rect(), amount, edge, forcePixel=forcePixel)]
     
     def subdivide_with_leading(self, count, leading, edge, forcePixel=True) -> list:
         """

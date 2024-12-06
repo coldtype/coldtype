@@ -41,38 +41,15 @@ def boxes3(r):
         P().oval(l["d3"].rect.square().inset(10)).fssw(-1, hsl(0.9, 1), 2)
         )
 
-@renderable((1080, 540), solo=1)
+@renderable((1080, 540), solo=0)
 def boxes4(r):
     d = 15
-    l = Scaffold(r.inset(4)).numeric_grid(d, d)
     
-    def rectangular_rings(grid_width, grid_height):
-        center_x, center_y = grid_width // 2, grid_height // 2
-        max_radius = max(center_x, center_y)
-        rings = []
-
-        for r in range(max_radius + 1):
-            ring = [
-                f"{x}|{y}"
-                for x in range(center_x - r, center_x + r + 1)
-                for y in range(center_y - r, center_y + r + 1)
-                if (
-                    (x == center_x - r or x == center_x + r or y == center_y - r or y == center_y + r)
-                    and 0 <= x < grid_width and 0 <= y < grid_height
-                )
-            ]
-            if ring:
-                rings.append(ring)
-        return rings
+    l = Scaffold(r.inset(4).square()).numeric_grid(d, gap=1, annotate_rings=True)
     
-    cells = (P().enumerate(l.cells(), lambda x: P(x.el.r.inset(2)).f(0).tag(x.el.tag())))
-    
-    for idx, ring in enumerate(rectangular_rings(d, d)):
-        for tag in ring:
-            cells.find_(tag).f(hsl(idx*0.25))
-
-    return P(
-        #l.view(),
-        cells,
-        #P().oval(l["d3"].rect.square().inset(10)).fssw(-1, hsl(0.9, 1), 2)
-        )
+    return (P().enumerate(l.cells(), lambda x:
+        P(x.el.r)
+            .f(hsl(x.el.data("ring_e")*2, 0.6, 0.6))
+            .tag(x.el.tag()))
+        .find_("3|12", lambda p: p.f(0))
+        .find_("11|2", lambda p: p.f(1)))

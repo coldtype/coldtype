@@ -74,11 +74,39 @@ class Scaffold(Runon):
                 el.subdivide(amt, edge, tags)
         return self
     
-    def numeric_grid(self, columns=2, rows=None, column_gap=0, row_gap=None, start_1=False, start_bottom=True):
+    def annotate_rings(self):
+        grid_data = self.data("grid")
+        columns = grid_data.get("columns")
+        rows = grid_data.get("rows")
+
+        def rectangular_rings(xs, ys):
+            center_x, center_y = xs // 2, ys // 2
+            max_radius = max(center_x, center_y)
+            rings = []
+
+            for r in range(max_radius + 1):
+                ring = [
+                    self[f"{x}|{y}"].data(ring=r, ring_e=r/max_radius)
+                    for x in range(center_x - r, center_x + r + 1)
+                    for y in range(center_y - r, center_y + r + 1)
+                    if (
+                        (x == center_x - r or x == center_x + r or y == center_y - r or y == center_y + r)
+                        and 0 <= x < xs and 0 <= y < ys)]
+                if ring:
+                    rings.append(ring)
+            return rings
+
+        return rectangular_rings(columns, rows)
+    
+    def numeric_grid(self, columns=2, rows=None, gap=None, column_gap=0, row_gap=0, start_1=False, start_bottom=True, annotate_rings=False
+        ):
         if rows is None:
             rows = columns
-        if row_gap is None:
-            row_gap = column_gap
+        if gap is not None:
+            column_gap = gap
+            row_gap = gap
+        
+        self.data(grid=dict(columns=columns, rows=rows))
 
         names = []
 
@@ -120,7 +148,7 @@ class Scaffold(Runon):
             if start_bottom:
                 names = list(reversed(names))
             
-            self.cssgrid(" ".join(_cols).strip(), " ".join(_rows), " / ".join(names))
+            self.cssgrid(" ".join(_cols).strip(), " ".join(_rows), " / ".join(names), forcePixel=True)
 
         if not hasattr(self, "_borders"):
             self._borders = []
@@ -145,6 +173,9 @@ class Scaffold(Runon):
                     c += 1
                 
                 cell.data(row=r, col=c, checker=ch)
+            
+        if annotate_rings:
+            self.annotate_rings()
         
         return self
     
@@ -290,7 +321,7 @@ class Scaffold(Runon):
         
         return self
     
-    def cssgrid(self, cols, rows, ascii, mods={}, **kwargs):
+    def cssgrid(self, cols, rows, ascii, mods={}, forcePixel=False, **kwargs):
         if self.val_present():
             if not hasattr(self, "_borders"):
                 self._borders = []
@@ -302,7 +333,7 @@ class Scaffold(Runon):
             if callable(rows):
                 rows = rows(self)
 
-            g = Grid(self.r, cols, rows, ascii, warn_float=self.warn_float)
+            g = Grid(self.r, cols, rows, ascii, warn_float=self.warn_float, forcePixel=forcePixel)
             for k, v in g.keyed.items():
                 if v.w > r.w or v.h > r.h or v.x < 0 or v.y < 0 or v.w < 0 or v.h < 0:
                     v = Rect(0, 0, 0, 0)

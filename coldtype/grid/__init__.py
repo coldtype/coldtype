@@ -58,9 +58,11 @@ class Grid():
         rows="auto",
         areas=None,
         warn_float=True,
+        forcePixel=False,
         ):
         self._rect = r
         self.warn_float = warn_float
+        self.force_pixel = forcePixel
 
         if isinstance(columns, str):
             self.columns = columns
@@ -157,8 +159,8 @@ class Grid():
         _grid = []
         keyed = {}
         borders = []
-        for idx, rr in enumerate(r.subdivide(rs[:-1], "mxy")):
-            cells = rr.subdivide(cs[:-1], "mnx")
+        for idx, rr in enumerate(r.subdivide(rs[:-1], "mxy", forcePixel=self.force_pixel)):
+            cells = rr.subdivide(cs[:-1], "mnx", forcePixel=self.force_pixel)
             _grid.extend(cells)
             if areas:
                 _keyed = {}
