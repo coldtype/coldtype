@@ -13,7 +13,7 @@ def separation(f):
     rs = random_series(0, seed, seed=4+seed)
     rr = random_series(-360*2, 360*2, seed=3+seed)
 
-    s = Scaffold(f.a.r.inset(300)).labeled_grid(4, 4)
+    s = Scaffold(f.a.r.inset(300)).numeric_grid(4)
     
     return (P().enumerate(s, lambda x: P()
         .rect(x.el.r.inset(12))

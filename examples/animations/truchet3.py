@@ -53,7 +53,7 @@ def truchet1(f):
                 .locate(z=t2.ki(f"{ri}")
                     .e("eeio", rng=(0, rs3[i]))))))
     
-    s = Scaffold(f.a.r).labeled_grid(tn, tn)
+    s = Scaffold(f.a.r).numeric_grid(tn)
 
     return (P(tr:=s[0].r.inset(0.05, 0.05))
         .difference(P()

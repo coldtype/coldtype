@@ -4,7 +4,7 @@ from coldtype.fx.skia import phototype, temptone, shake
 # a variation on https://github.com/djrrb/Python-for-Visual-Designers-Fall-2023/blob/main/session-4/challenges/snakes.py
 
 r = Rect(1000, 1000)
-s = Scaffold(r).labeled_grid(1, 8)
+s = Scaffold(r).numeric_grid(1, 8)
 
 rxs = random_series(-(d:=r.w/2-100), d, 0, mod=int, spread=200)
 

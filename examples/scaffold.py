@@ -34,11 +34,11 @@ def boxes2(r):
 
 @renderable((1080, 540))
 def boxes3(r):
-    l = Scaffold(r).labeled_grid(5, 5)
+    l = Scaffold(r).numeric_grid(5)
     
     return P(
         l.view(),
-        P().oval(l["d3"].rect.square().inset(10)).fssw(-1, hsl(0.9, 1), 2)
+        P().oval(l["3|1"].rect.square().inset(10)).fssw(-1, hsl(0.9, 1), 2)
         )
 
 @renderable((1080, 540), solo=0)

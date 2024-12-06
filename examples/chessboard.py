@@ -13,7 +13,7 @@ def board(r):
         else:
             return P().rect(x.el.r.inset(1)).f(fill)
 
-    s = Scaffold(r.inset(100)).labeled_grid(8, 8, 14, 14)
+    s = Scaffold(r.inset(100)).numeric_grid(8, gap=20)
 
     board = P().enumerate(s.cells(), cell)
     borders = s.borders().ssw(hsl(0.6, 0.6, 0.7), 2)

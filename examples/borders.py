@@ -13,7 +13,7 @@ def borders(r):
     bold = lambda p: p.fssw(-1, hsl(0.9), 20)
 
     s["b"].grid(4, 4)
-    s["c"].labeled_grid(5, 5)
+    s["c"].numeric_grid(5)
 
     return P(
         s.view(fontSize=18, fill=False),

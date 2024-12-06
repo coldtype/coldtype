@@ -7,14 +7,14 @@ A    A      B     B       C     C         D        D
 """)
 
 r = Rect(1000)
-s = Scaffold(r).labeled_grid(4, 4)
+s = Scaffold(r).numeric_grid(4)
 
 rs = dict(
     keyframes={
-        "A": dict(r=s["a0"].r, ro=0, wght=0),
-        "B": dict(r=s["d2"].r, ro=0, wght=1),
-        "C": dict(r=s["c0"].r, ro=90, wght=0.5),
-        "D": dict(r=s["b3"].r, ro=0, wght=1)})
+        "A": dict(r=s["0|3"].r, ro=0, wght=0),
+        "B": dict(r=s["2|0"].r, ro=0, wght=1),
+        "C": dict(r=s["0|1"].r, ro=90, wght=0.5),
+        "D": dict(r=s["3|2"].r, ro=0, wght=1)})
 
 txt = dict(
     keyframes={

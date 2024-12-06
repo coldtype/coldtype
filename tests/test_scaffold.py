@@ -155,8 +155,8 @@ def test_labeled_grid(r):
     assert s.r.w < ri.w
     assert s.r.h == ri.h
     assert len(s) == 20
-    assert s[0].tag() == "a0"
-    assert s[-1].tag() == "e3"
+    assert s[0].tag() == "0|4"
+    assert s[-1].tag() == "3|0"
     return s.view()
 
 @test((500, 500))

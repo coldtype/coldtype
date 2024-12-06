@@ -19,7 +19,7 @@ rs2 = random_series()
 
 @animation(Rect(1000, 1000), tl=at, bg=0)
 def truchet1(f):
-    s = Scaffold(f.a.r).labeled_grid(8, 8)
+    s = Scaffold(f.a.r).numeric_grid(8)
 
     def rotate(i, p):
         (p.rotate(90*int(rs[i])) # initial
