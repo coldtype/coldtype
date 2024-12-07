@@ -284,8 +284,13 @@ def StSt(text,
 GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e", "l", "li"])
 
 
+# def Glyphwise(st:str
+#     , styler:Callable[[GlyphwiseGlyph], Style | list[Style | dict[str, Any]]]
+#     , start:int=0
+#     , line:int=0
+#     , multiline=False) -> P:
 def Glyphwise(st:str
-    , styler:Callable[[GlyphwiseGlyph], Style | list[Style | dict[str, Any]]]
+    , styler
     , start:int=0
     , line:int=0
     , multiline=False) -> P:
