@@ -133,6 +133,16 @@ class Easeable():
         self.i = (self.i//i)*i
         return self
     
+    def inset(self, start=0, end=0) -> "Easeable":
+        return Easeable(Timeable(
+            start=self.t.start + start,
+            end=self.t.end - end,
+            name=self.t.name,
+            data=self.t.data,
+            track=self.t.track,
+            timeline=self.t.timeline,
+        ), self.i)
+    
     @property
     def name(self):
         if self._ts:

@@ -114,6 +114,22 @@ class Timeline(Timeable):
     def at(self, i) -> Easeable:
         return Easeable(self.timeables, i)
     
+    def timeable(self, name=None) -> Timeable:
+        return Timeable(
+            self.start,
+            self.duration,
+            name=name or "Clip",
+            data=dict(),
+            track=0,
+            timeline=self)
+    
+    def easeable(self, i=None, name=None) -> Easeable:
+        return Easeable(self.timeable(name), i or self._holding)
+    
+    def addClip(self, name=None, start=0, end=0):
+        self.timeables.append(self.timeable(name).retime(start, -end))
+        return self
+    
     def _keyed(self, k):
         k = str(k)
         all = []
@@ -139,7 +155,7 @@ class Timeline(Timeable):
                 return self._holding
             else:
                 raise Exception("Must .hold or provide fi=")
-        return fi
+        return fi % self.duration
     
     def ki(self, key, fi=None):
         """(k)eyed-at-(i)ndex"""
