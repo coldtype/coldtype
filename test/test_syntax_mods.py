@@ -51,10 +51,9 @@ class TestSyntaxMods(unittest.TestCase):
         self.assertEqual(sr.config.window_pin, "SW")
     
     def test_frame_read(self):
-        result = self.sr.frame_results(1)
-        self.assertEqual(len(result), 2)
-        self.assertEqual(len(result[0]), 2)
-        self.assertEqual(len(result[0][1]), 8)
+        a1, _ = self.sr.frame_results(1)
+        _, res = a1
+        self.assertEqual(len(res[0]), 8)
 
     def test_syntax_mods(self):
         return

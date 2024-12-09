@@ -6,7 +6,7 @@ from drawBot import *
 
 mutator = Font.MutatorSans()
 
-@drawbot_animation(timeline=60)
+@drawbot_animation(timeline=60, bg=1)
 def db_varfont(f):
     fontName = installFont(str(mutator.path))
     fs = FormattedString()

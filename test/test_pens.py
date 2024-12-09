@@ -244,18 +244,18 @@ def lattr_style_set(r):
         sr.unlink()
 
         self.assertNotEqual(
-            rs[0][-1].attr(rs[0][0].style, "fill"),
-            rs[1][-1].attr(rs[1][0].style, "fill"))
+            rs[0][1][0].attr(rs[0][0].style, "fill"),
+            rs[1][1][0].attr(rs[1][0].style, "fill"))
         
         self.assertNotEqual(
-            rs[2][-1].attr(rs[2][0].style, "fill"),
-            rs[3][-1].attr(rs[3][0].style, "fill"))
+            rs[2][-1][0].attr(rs[2][0].style, "fill"),
+            rs[3][-1][0].attr(rs[3][0].style, "fill"))
         
-        self.assertEqual(rs[2][-1].attr(rs[2][0].style, "strokeWidth"), 5)
-        self.assertEqual(rs[3][-1].attr(rs[3][0].style, "strokeWidth"), 15)
+        self.assertEqual(rs[2][-1][0].attr(rs[2][0].style, "strokeWidth"), 5)
+        self.assertEqual(rs[3][-1][0].attr(rs[3][0].style, "strokeWidth"), 15)
 
         dpm = DrawablePenMixin()
-        dpm.dat = rs[3][-1]
+        dpm.dat = rs[3][-1][0]
         attrs = [x for _, x in list(dpm.findStyledAttrs(rs[3][0].style))]
         self.assertEqual(len(attrs), 2)
         self.assertEqual(attrs[1][1].get("weight"), 15)

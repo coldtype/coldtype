@@ -17,6 +17,7 @@ index: jinja_html = """
     <li><a href="https://github.com/coldtype/coldtype">coldtype</a>: an open-source <strong>Python library</strong> for programming animated display typography</li>
     <li><a href="https://coldtype.xyz/st2">ST2</a>: an open-source <strong>Blender add-on</strong> for doing good typography in 3D</li>
     <li><a href="https://github.com/coldtype/b3denv">b3denv</a>: an open-source command-line utility for working with Blender and its embedded Python</li>
+    <li><a href="https://github.com/stenson/nudge">Nudge</a>: a VS Code extension that allows keyboard shortcuts to increment/decrement numeric values (and letters) and then immediately save the file</li>
 </ul>
 <hr/>
 <p>Here are some talks about Coldtype & ST2:</p>
