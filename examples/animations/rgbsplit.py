@@ -11,6 +11,7 @@ def rgbsplit(f):
         , wdth=f.e("eei")
         , leading=f.e("eeo", rng=(10, 50))
         , tu=f.e("eeio", rng=(-70, 0)))
+        .xalign(f.a.r)
         .align(f.a.r)
         .reverse(recursive=1)
         .layer(
@@ -18,7 +19,9 @@ def rgbsplit(f):
             lambda p: p.fssw(-1, "b", 20),
             lambda p: p.fssw("r", "b", 6))
         .ch(rgbmod(f.a.r
-            , r=phototype(f.a.r, 1.5, 120, 40
-                , fill=hsl(1.90,0.90,0.75))
-            , g=phototype(f.a.r, 3, 170, 15
-                , fill=hsl(0.37,0.8,0.75)))))
+            , r=lambda x: x
+                .ch(filmjitter(f.e("l", 0), 0, scale=(5, 6)))
+                .ch(phototype(f.a.r, 1.5, 120, 45, fill=hsl(1.90,0.90,0.75)))
+            , g=lambda x: x
+                .ch(filmjitter(f.e("l", 0), 1, scale=(5, 6)))
+                .ch(phototype(f.a.r, 3, 170, 15, fill=hsl(0.37,0.8,0.75))))))
