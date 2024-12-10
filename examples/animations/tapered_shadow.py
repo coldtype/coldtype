@@ -30,10 +30,10 @@ def taper(f):
                 .ch(phototype(f.a.r,
                     blur=5, cut=183, cutw=8,
                     fill=hsl(0.75, 0.94, 0.68)))
-                ._null(),
+                .___null(),
             lambda p: p.f(1)
                 .ch(phototype(f.a.r,
                     blur=3, cutw=15,
                     cut=230+f.e(1, rng=(-30, 5)),
                     fill=hsl(0.11, 0.86, 0.63)))
-                ._null()))
+                .null()))

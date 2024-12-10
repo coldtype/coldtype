@@ -4,7 +4,7 @@ from coldtype.fx.skia import phototype
 
 obv = Font.Find("ObviouslyV", "__variables")
 
-bt = BlenderTimeline(__BLENDER__, 5400)
+bt = BlenderTimeline(ººBLENDERºº, 5400)
 
 ifg = bt.interpretWords(include="+1")
 action = bt.interpretWords(include="+2")

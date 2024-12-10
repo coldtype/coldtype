@@ -138,6 +138,42 @@ class Skfi():
             0, 0, t, 0, 0,
             0, 0, 0, 1, 0,
         ])
+    
+    @staticmethod
+    def red():
+        return skia.ColorFilters.Matrix([
+            1, 0, 0, 0, 0,
+            1, 0, 0, 0, 0,
+            1, 0, 0, 0, 0,
+            0, 0, 0, 1, 0,
+        ])
+    
+    @staticmethod
+    def green():
+        return skia.ColorFilters.Matrix([
+            0, 1, 0, 0, 0,
+            0, 1, 0, 0, 0,
+            0, 1, 0, 0, 0,
+            0, 0, 0, 1, 0,
+        ])
+    
+    @staticmethod
+    def blue():
+        return skia.ColorFilters.Matrix([
+            0, 0, 1, 0, 0,
+            0, 0, 1, 0, 0,
+            0, 0, 1, 0, 0,
+            0, 0, 0, 1, 0,
+        ])
+    
+    @staticmethod
+    def invert():
+        return skia.ColorFilters.Matrix([
+            -1,  0,  0,  0,  1,  # Red
+            0, -1,  0,  0,  1,  # Green
+            0,  0, -1,  0,  1,  # Blue
+            0,  0,  0,  1,  0   # Alpha (unchanged)
+        ])
 
 # CHAINABLES
 
@@ -421,6 +457,11 @@ def expose(t):
         return pen.attr(skp=dict(ColorFilter=Skfi.expose(t)))
     return _fill
 
+def invert():
+    def _fill(pen):
+        return pen.attr(skp=dict(ColorFilter=Skfi.invert()))
+    return _fill
+
 def temp(t):
     def _fill(pen):
         return pen.attr(skp=dict(ColorFilter=Skfi.temp(t)))
@@ -435,6 +476,46 @@ def temptone(temp, tone):
     def _fill(pen):
         pen.attr(skp=dict(ColorFilter=Skfi.compose(Skfi.temp(temp), Skfi.tone(tone))))
     return _fill
+
+def channel(c):
+    filters = dict(red=Skfi.red, green=Skfi.green, blue=Skfi.blue)
+    
+    if isinstance(c, str):
+        filter = filters[c]
+    else:
+        filter = list(filters.values())[c]
+    
+    def _fill(pen):
+        pen.attr(skp=dict(ColorFilter=filter()))
+    return _fill
+
+def rgbmod(rect, r=None, g=None, b=None):
+    def _rgbmod(p):
+        raster = p.ch(rasterized(rect, wrapped=True))
+        return (P(
+            raster.copy()
+                .in_pen()
+                .f(-1)
+                .ch(channel(0))
+                .ch(luma(rect, fill=1))
+                .ch(r)
+                if r else None,
+            raster.copy()
+                .in_pen()
+                .f(-1)
+                .ch(channel(1))
+                .ch(luma(rect, fill=1))
+                .ch(g)
+                if g else None,
+            raster.copy()
+                .in_pen()
+                .f(-1)
+                .ch(channel(2))
+                .ch(luma(rect, fill=1))
+                .ch(b)
+                if b else None,
+            ))
+    return _rgbmod
 
 def shake(seg_length=2, deviation=2, seed=0):
     """shake up the path"""

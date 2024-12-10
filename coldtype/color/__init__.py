@@ -127,7 +127,13 @@ class Color():
 
     def from_html(html, a=1):
         html = html.strip().lower()
-        if html[0] == '#':
+        if html == "r":
+            return Color(1,0,0)
+        elif html == "g":
+            return Color(0,1,0)
+        elif html == "b":
+            return Color(0,0,1)
+        elif html[0] == '#':
             html = html[1:]
         elif html in NAMED_COLORS:
             html = NAMED_COLORS[html][1:]

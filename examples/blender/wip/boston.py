@@ -12,13 +12,13 @@ faɪv tɪk slæbz ʌv blu tʃiːz
 n meɪbi ɘ snæk fɔɹ hɚ bɹʌðɘ bɔɘb
 """
 
-bt = BlenderTimeline(__BLENDER__, 275)
+bt = BlenderTimeline(ººBLENDERºº, 275)
 
 @b3d_sequencer((1080, 1080)
 , timeline=bt
 , bg=hsl(0.5)
 , live_preview_scale=0.25
-, audio=__sibling__("media/pleasecallstella.wav")
+, audio=ººsiblingºº("media/pleasecallstella.wav")
 )
 def lyrics(f:Frame):
     return (f.t.words.currentWord()

@@ -58,6 +58,7 @@ __as_config__ = False # will be redefined contextually
 
 λ = None
 ººFILEºº = None
+ººBLENDERºº = None
 
 def ººsiblingºº(x) -> Path:
     return x
