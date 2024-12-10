@@ -300,3 +300,10 @@ as in the new truchet animation examples, and examples/animations/ec.py)
 ### Added
 - `Rect.fit_aspect` for easily getting an aspect inscribed by a rect
 - version lock on python-bidi
+
+## [0.11.0b1] - 2024-12-10
+Huge update, attempting to future proof things
+### Added
+- External dependency on coldtype/fontgoggles fork (instead of out-of-date inlined fontgoggles fork)
+### Fixed
+- Gonna be honest — fixed lots of stuff, should’ve been writing down what I was fixing!
