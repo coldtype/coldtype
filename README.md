@@ -45,7 +45,7 @@ The best way to get familiar with Coldtype is to look at and try modifying some 
 To get a development environment for Coldtype:
 
 ```
-python3.9 -m venv venv --prompt=coldtype
+python3.11 -m venv venv
 source venv/bin/activate
 pip install -e .[viewer]
 ```
