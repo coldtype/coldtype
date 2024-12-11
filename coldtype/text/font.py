@@ -10,7 +10,6 @@ platform.USE_COCOA = False
 
 from fontgoggles.font import getOpener
 from fontgoggles.font.baseFont import BaseFont
-#from coldtype.fontgoggles.font.otfFont import OTFFont
 
 BLACKRENDER_ALL = False
 

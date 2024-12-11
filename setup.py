@@ -15,7 +15,7 @@ basic_deps = [
     "defcon==0.10.3",
     "requests==2.32.3",
     "b3denv>=0.0.12",
-    "fontgoggles @ git+https://github.com/coldtype/fontgoggles.git@cbe8cd32efafd023e679345cd0075a0c4c6d58ae#egg=fontgoggles",
+    "coldtype-fontgoggles>=1.8.4",
 ]
 
 #if sys.platform.startswith("darwin"):
@@ -23,7 +23,7 @@ basic_deps = [
 
 setuptools.setup(
     name="coldtype",
-    version="0.11.0b1",
+    version="0.11.0",
     author="Rob Stenson / Goodhertz",
     author_email="rob@goodhertz.com",
     description="Functions for manual vectorized typesetting",
@@ -52,13 +52,9 @@ setuptools.setup(
         "coldtype.renderer",
         "coldtype.text.colr",
         "coldtype.renderable",
-        #"coldtype.fontgoggles",
         "coldtype.interpolation",
         "coldtype.runon.mixins",
         "coldtype.renderer.winman",
-        #"coldtype.fontgoggles.font",
-        #"coldtype.fontgoggles.misc",
-        #"coldtype.fontgoggles.compile",
     ],
     include_package_data=True,
     package_data={
