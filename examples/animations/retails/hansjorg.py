@@ -3,35 +3,64 @@ from coldtype.raster import *
 from string import ascii_lowercase
 from random import Random
 
+# adapted from Maurice Meilleur’s adaptation of a 1964 piece by Hansjörg Mayer
+
 futura = Font.Find("Futura", number=2)
 futura = Font.Find("PolymathV")
 
 ln = len(ascii_lowercase)-2
 
-@animation(1920, bg=hsl(0.91, 0.50, 0.55), tl=Timeline(ln*8, 12))
-def hj(f):
-    s = Scaffold(f.a.r.inset(30)).numeric_grid(1, 17)
+def scrambled(seed, split):
+    lxs = len(ascii_lowercase)
+    xs = [*ascii_lowercase]
+    r = Random()
+    r.seed(seed)
+    r.shuffle(xs)
+    xs = "".join(xs)
+    return "\n".join([xs[:lxs-split], xs[lxs-split:]])
+
+@animation(1920
+    , bg=hsl(0.11, 0.70, 0.65)
+    , tl=Timeline(ln*8, 12)
+    , release=λ.export("h264", loops=2))
+def hj(f:Frame):
+    s = Scaffold(f.a.r.inset(80)).numeric_grid(1, 17)
     
-    fs = f.e("l", rng=(60, 170))
-    tu = f.e("l", rng=(120, -150))
-    wght = f.e("l", rng=(0.65, 1))
-    cut = f.e("l", rng=(140, 50))
+    e1 = "l"
+    e2 = "ceio"
+
+    factor = f.e("seio", 2, rng=(1, 2))
 
     def row(x):
-        right = round(f.adj(x.i).e("l", 4, rng=(len(ascii_lowercase)-1, 1)))
+        right = round(f.adj(x.i*factor).e(e2, 4, rng=(len(ascii_lowercase)-1, 1)))
 
-        xs = [*ascii_lowercase]
-        r = Random()
-        r.seed(x.i-f.i)
-        r.shuffle(xs)
+        a = f.adj(-x.i*factor)
+        xs = scrambled(x.i-f.i, right)
         
-        return (P(
-            StSt("".join(xs[:len(ascii_lowercase)-right]), futura, fs, tu=tu, liga=0, wght=wght)
-                .align(x.el, "W"),
-            StSt("".join(xs[len(ascii_lowercase)-right:]), futura, fs, tu=tu, liga=0, wght=wght)
-                .align(x.el, "E"))
-            .ch(filmjitter(f.e("l"), scale=(10, 10), base=x.i)))
+        return (StSt(xs, futura
+            , fontSize=a.e(e1, rng=(50, 150))
+            , tu=a.e(e1, rng=(120, -150))
+            , wght=a.e(e1, rng=(0.65, 1))
+            , opsz=a.e(e1, rng=(0, 1))
+            , liga=0
+            , slig=0)
+            .î(0, λ.align(x.el, "W", tx=0))
+            .î(1, λ.align(x.el, "E", tx=0))
+            .ch(filmjitter(f.e("l")
+                , scale=(10, 10)
+                , base=x.i)))
 
     return (P().enumerate(s, row)
         .f(1)
-        .ch(phototype(f.a.r, 1.5, cut, 40, fill=0)))
+        .ch(phototype(f.a.r
+            , blur=1.5
+            , cut=f.e(e1, rng=(140, 50))
+            , cutw=40
+            , fill=0)))
+
+@animation(1080
+    , tl=hj.timeline
+    , solo=1
+    , release=λ.export("h264", loops=2))
+def hj_resize(f):
+    return hj.pass_img(f.i).resize(0.5625)

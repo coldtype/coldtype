@@ -44,6 +44,7 @@ eases = dict(
     eli=ef.ElasticEaseIn,
     elio=ef.ElasticEaseInOut)
 
+all_eases = ["l", *list(eases.keys())]
 
 def curve_pos_and_speed(curve, x):
     x1000 = x*1000
