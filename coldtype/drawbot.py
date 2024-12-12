@@ -9,7 +9,7 @@ from coldtype.color import hsl, bw
 from coldtype.timing import Frame
 from pathlib import Path
 
-from coldtype.renderer import renderable, Action
+from coldtype.renderable.renderable import renderable, Action
 from coldtype.renderable.animation import animation, RenderPass
 
 # from coldtype.osutil import in_notebook
