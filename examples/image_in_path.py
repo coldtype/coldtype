@@ -1,5 +1,5 @@
 from coldtype import *
-import coldtype.raster as raster
+from coldtype.raster import *
 
 @renderable(bg=0)
 def image(r):    
@@ -12,13 +12,12 @@ def image(r):
             .l(x.el))
         .ep()
         .fssw(-1, 1, 1)
-        .ch(raster.phototype(r, 1, 170, 50))
-        )
+        .ch(phototype(r, 1, 170, 50)))
 
 @renderable(bg=0, layer=0)
 def in_path(r):
     return (StSt("COLD\nTYPE", Font.ColdObvi(), 340, wdth=1, fit=r.inset(200).w)
         .align(r, ty=1)
-        .img(image.render_to_disk()[0], r, True)
-        .f(0)
-        .ch(raster.phototype(r, 0.1, 40, 30, fill=hsl(0.07, 1, 0.50))))
+        .img(image.render_to_disk()[0], r, pattern=1)
+        .f(0.1)
+        .ch(luma(r, hsl(0.57, 1, 0.50))))

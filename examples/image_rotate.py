@@ -12,11 +12,10 @@ def rotate(f):
     return (SkiaImage(src)
         .resize(1)
         .align(f.a.r)
-        .rotate(f.i*10)
+        .rotate(45-f.i*10)
         #.in_pen().fssw(bw(0, 0.1), 0, 1)
-        #.align(f.a.r)
-        .___ch(precompose(f.a.r))
-        .___ch(temptone(-0.40, 0.50)))
+        .ch(precompose(f.a.r))
+        .ch(temptone(-0.20, 0.70)))
 
 @animation((540, 540))
 def resize(f):

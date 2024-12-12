@@ -1,3 +1,7 @@
 from coldtype.fx.skia import *
 from coldtype.img.skiaimage import SkiaImage
-from coldtype.fx.motion import filmjitter
+
+try:
+    from coldtype.fx.motion import filmjitter
+except:
+    print("`pip install noise` for filmjitter")

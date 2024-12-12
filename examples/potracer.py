@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.fx.skia import phototype, potrace
+from coldtype.raster import phototype, potrace
 
 @renderable((1080, 540), bg=1)
 def potraced(r):
