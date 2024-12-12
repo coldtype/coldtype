@@ -194,14 +194,20 @@ class Font():
         return Font(str(output_path))
     
     @staticmethod
-    def Cacheable(path, suffix=None, delete_tmp=False, actual_path=None):
+    def Cacheable(path, suffix=None, delete_tmp=False, actual_path=None, number=0):
         """use actual_path to override a key path (if the actual path is the result of a networked call)"""
+        if number > 0:
+            if not actual_path:
+                actual_path = path
+            path = f"{path}_#{number}"
+        
         if path not in FontCache:
             FontCache[path] = Font(
                 actual_path if actual_path else path,
                 cacheable=True,
                 suffix=suffix,
-                delete_tmp=delete_tmp).load()
+                delete_tmp=delete_tmp,
+                number=number).load()
         return FontCache[path]
     
     @staticmethod
@@ -294,16 +300,16 @@ class Font():
         return sorted(results, key=lambda p: p.stem)
 
     @staticmethod
-    def Find(regex, regex_dir=None, index=0, font_dir=None):
+    def Find(regex, regex_dir=None, index=0, font_dir=None, number=0):
         if isinstance(regex, Font):
             return regex
 
         if Path(normalize_font_prefix(regex)).expanduser().exists():
-            return Font.Cacheable(regex)
+            return Font.Cacheable(regex, number=number)
         
         found = Font.List(regex, regex_dir, font_dir=font_dir)
         try:
-            return Font.Cacheable(found[index])
+            return Font.Cacheable(found[index], number=number)
         except Exception as e:
             #print(">", e)
             raise FontNotFoundException(regex)
