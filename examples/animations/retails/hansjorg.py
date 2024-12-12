@@ -10,14 +10,12 @@ futura = Font.Find("PolymathV")
 
 ln = len(ascii_lowercase)-2
 
+from string import ascii_lowercase
+
 def scrambled(seed, split):
-    lxs = len(ascii_lowercase)
-    xs = [*ascii_lowercase]
-    r = Random()
-    r.seed(seed)
-    r.shuffle(xs)
-    xs = "".join(xs)
-    return "\n".join([xs[:lxs-split], xs[lxs-split:]])
+    r = Random(seed)
+    xs = ''.join(r.sample(ascii_lowercase, len(ascii_lowercase)))
+    return f"{xs[:-split]}\n{xs[-split:]}"
 
 @animation(1920
     , bg=hsl(0.11, 0.70, 0.65)
