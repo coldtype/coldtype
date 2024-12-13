@@ -2102,8 +2102,8 @@ class P(Runon):
                 _p, tangent = cutter.subsegmentPoint(end=ow)
                 x_shift = bs * math.cos(math.radians(tangent))
                 y_shift = bs * math.sin(math.radians(tangent))
-                if baseline == 1:
-                    p.translate(0, -f.h)
+                if baseline > 1:
+                    p.translate(0, -f.h*baseline)
                 t = Transform()
                 t = t.translate(_p[0] + x_shift - f.x, _p[1] + y_shift - f.y)
                 t = t.translate(f.x, f.y)
