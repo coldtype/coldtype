@@ -6,6 +6,7 @@ try:
     import pyaudio
     import soundfile
     import numpy as np
+    from soundfile import SoundFile
 except ImportError:
     pyaudio = None
     soundfile = None
@@ -19,7 +20,7 @@ class WinmanAudio(WinmanPassthrough):
 
     def __init__(self):
         self.pa = pyaudio.PyAudio()
-        self.pa_src:soundfile.SoundFile = None
+        self.pa_src:SoundFile = None
         self.pa_stream = None
         self.pa_rate = 0
         self.a = None
