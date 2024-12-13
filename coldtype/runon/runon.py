@@ -13,9 +13,13 @@ from functools import partial
 
 from coldtype.fx.chainable import Chainable
 
+_ARG_COUNT_CACHE = {}
 
 def _arg_count(fn):
-    return len(signature(fn).parameters)
+    if fn not in _ARG_COUNT_CACHE:
+        count = len(signature(fn).parameters)
+        _ARG_COUNT_CACHE[fn] = count
+    return _ARG_COUNT_CACHE[fn]
 
 
 RunonEnumerable = namedtuple("RunonEnumerable", ["i", "el", "e", "len", "k", "parent"])
