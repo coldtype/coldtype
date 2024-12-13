@@ -22,14 +22,7 @@ curve = (P().withRect(1000, lambda r, p: p
 def understroke_cut(f):
     return (letters
         .copy()
-        .map(lambda p: p.track(f.e(curve, 0, rng=(0, 150))))
+        .map(lambda p: p
+            .track(f.e(curve, 0, rng=(0, 150))))
         .align(f.a.r)
-        .f(1)
-        .cond(0, lambda p: p
-            .append(curve
-                .copy()
-                .scale(0.5)
-                .align(f.a.r)
-                .layer(λ.fssw(-1, 1, 1),
-                    λ.subsegment(0, f.e("l", 0))
-                    .fssw(-1, 1, 4)))))
+        .f(1))
