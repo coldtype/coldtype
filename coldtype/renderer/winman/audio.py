@@ -15,7 +15,7 @@ except ImportError:
 class WinmanAudio(WinmanPassthrough):
     @staticmethod
     def Possible():
-        return pyaudio and soundfile and np
+        return bool(pyaudio and soundfile and np)
 
     def __init__(self):
         self.pa = pyaudio.PyAudio()

@@ -316,6 +316,7 @@ class Font():
     
     @staticmethod
     def LibraryList(regex, print_list=False):
+        """pass a compiled re (i.e. re.compile to _not_ ignore case)"""
         try:
             regex.match("asdf")
         except AttributeError:

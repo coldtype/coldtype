@@ -1102,9 +1102,12 @@ class Renderer():
             self.play_sound("Pop")
             return Action.PreviewStoryboard
         elif shortcut == KeyboardShortcut.EnableAudio:
-            self.source_reader.config.enable_audio = not self.source_reader.config.enable_audio
-            self.winmans.mod_title("audio",
-                self.source_reader.config.enable_audio)
+            if self.winmans.audio:
+                self.source_reader.config.enable_audio = not self.source_reader.config.enable_audio
+                self.winmans.mod_title("audio",
+                    self.source_reader.config.enable_audio)
+            else:
+                print('\n\n`pip install "coldtype[audio]"`\n\n')
         
         elif shortcut == KeyboardShortcut.ReloadSource:
             return Action.PreviewStoryboardReload
