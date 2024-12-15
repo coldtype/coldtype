@@ -308,7 +308,7 @@ Huge update, attempting to future proof things
 ### Fixed
 - Gonna be honest — fixed lots of stuff, should’ve been writing down what I was fixing!
 
-## [0.11.1] - 2024-12-
+## [0.11.1] - 2024-12-15
 ### Fixed
 - Make sure coldtype.drawbot does not require skia-python (via incorrect import)
 - try/except for filmjitter in coldtype.raster
