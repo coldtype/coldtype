@@ -6,7 +6,7 @@ from coldtype.timing.easing import all_eases
 # adapted from Maurice Meilleur’s adaption of a 1968 piece by Tim Ulrich
 
 r = Rect(1080)
-s = Scaffold(r.inset(20)).numeric_grid(9, gap=4, annotate_rings=True)
+s = Scaffold(r.inset(20)).numeric_grid(29, gap=4, annotate_rings=True)
 
 
 img = (StSt("e", "neuehaas", 85)
@@ -16,7 +16,7 @@ img = (StSt("e", "neuehaas", 85)
         .f(hsl(0.08, 0.8, 0.6, a=0.0)))
     .ch(rasterized(s[0].r.inset(-10), wrapped=True)))
 
-@animation(1080, tl=60, bg=hsl(0.11, 0.80, 0.88), mute=1)
+@animation(1080, tl=60, bg=hsl(0.11, 0.80, 0.88), mute=0)
 def manye_live(f):
     return (P().enumerate(s.cells(), lambda x: img.copy()
             .declare(
@@ -28,7 +28,7 @@ def manye_live(f):
         .ch(phototype(f.a.r, 1.5, 120, 30, fill=0.1)))
 
 
-@animation(1080, tl=60, bg=0, mute=0)
+@animation(1080, tl=60, bg=0, mute=1)
 def manye_live2(f):
     def letter(x):
         ring = x.el.data("ring")
