@@ -430,7 +430,7 @@ class Font():
     
     def copy_to(self, path:Path):
         from shutil import copy2
-        copy2(self.path, path)
+        copy2(self.path, Path(path).expanduser().absolute())
         return self
 
     @staticmethod

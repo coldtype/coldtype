@@ -41,6 +41,7 @@ class SerializationMixin():
         return self
 
     def withSVGFile(self, svg_file):
+        svg_file = Path(svg_file).expanduser().absolute()
         from fontTools.svgLib import SVGPath
         svg = SVGPath.fromstring(svg_file.read_bytes())
         rp = RecordingPen()

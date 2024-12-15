@@ -537,7 +537,12 @@ from inspect import getsource
 
 def freeze(do_freeze, as_image, callback):
     src = getsource(callback)
-    src = "lambda:".join(src.split("lambda:")[1:])
+
+    if "lambda:" in src:
+        src = "lambda:".join(src.split("lambda:")[1:]).strip()
+
+    if not src:
+        print("NO SRC FOUND FOR FREEZE")
 
     if not do_freeze:
         if src in FREEZES:

@@ -5,12 +5,9 @@ from random import Random
 
 # adapted from Maurice Meilleur’s adaptation of a 1964 piece by Hansjörg Mayer
 
-futura = Font.Find("Futura", number=2)
 futura = Font.Find("PolymathV")
 
 ln = len(ascii_lowercase)-2
-
-from string import ascii_lowercase
 
 def scrambled(seed, split):
     r = Random(seed)
