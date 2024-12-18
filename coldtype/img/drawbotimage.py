@@ -1,11 +1,11 @@
-from coldtype.img.datimage import DATImage
+from coldtype.img.abstract import AbstractImage
 
 try:
     import drawBot as db
 except ImportError:
     print("No DrawBot installed! `pip install git+https://github.com/typemytype/drawbot`")
 
-class DrawBotImage(DATImage):
+class DrawBotImage(AbstractImage):
     def load_image(self, src):
         w, h = db.imageSize(src)
         im = db.ImageObject()

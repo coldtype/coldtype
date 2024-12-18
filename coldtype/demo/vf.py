@@ -80,17 +80,17 @@ def vf(f):
 
     def txt(x):
         #return P(rs[x.i].inset(20))
-        return PS([
-            (StSt(args["text"], args["font"],
+        return P(
+            StSt(args["text"], args["font"],
                 args["font_size"] or rs[x.i].h-50,
                 rv=1,
                 **x.el)
                 .align(rs[x.i], tx=0)
                 .cond(args["stroke"],
                     lambda p: p.fssw(-1, 1, 2),
-                    lambda p: p.f(1))),
-            (P().text(",".join(["{:0.2f}".format(v) for v in x.el.values()]),
+                    lambda p: p.f(1)),
+            P().text(",".join(["{:0.2f}".format(v) for v in x.el.values()]),
                 Style(Font.RecursiveMono(), 24, fill=bw(1, 0.5), load_font=0),
-                rs[x.i].inset(50, 0)))])
+                rs[x.i].inset(50, 0)))
 
     return (P().enumerate(anim_combos, txt))

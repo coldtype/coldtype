@@ -45,10 +45,10 @@ def build_display():
     valid_notes = sorted(valid_notes)
     rows = rd.subdivide(len(valid_notes), "S")
 
-    out = PS([
-        (P(rt).f(hsl(0.6, 1, 0.85))),
-        (P().line(rd.subtract(xo, "W").ew)
-            .fssw(-1, hsl(0.65, 1, 0.8), 1))])
+    out = P(
+        P(rt).f(hsl(0.6, 1, 0.85)),
+        P().line(rd.subtract(xo, "W").ew)
+            .fssw(-1, hsl(0.65, 1, 0.8), 1))
 
     for idx, vn in enumerate(valid_notes):
         out += P(rows[idx]).f(1 if idx%2==0 else hsl(0.6, 1, 0.975))
@@ -89,12 +89,12 @@ def midi(f):
             Style("Monaco", 18, load_font=0, fill=0),
             rt.offset(px-50, 8))
 
-    return PS([
+    return P(
         static,
         frame,
-        (P().line(r.ew)
+        P().line(r.ew)
             .translate(xo, 0)
-            .fssw(-1, bw(0, 0.25), 1)),
-        (P().line(r.ew)
+            .fssw(-1, bw(0, 0.25), 1),
+        P().line(r.ew)
             .translate(px, 0)
-            .fssw(-1, 0, 1))])
+            .fssw(-1, 0, 1))

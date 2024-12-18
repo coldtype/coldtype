@@ -1,10 +1,10 @@
 import skia
-from coldtype.img.datimage import DATImage
+from coldtype.img.abstract import AbstractImage
 from coldtype.fx.skia import precompose
 from coldtype.skiashim import canvas_drawImage, paint_withFilterQualityHigh, image_resize
 from coldtype.runon.path import P
 
-class SkiaImage(DATImage):
+class SkiaImage(AbstractImage):
     def load_image(self, src):
         return skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(src)))
     

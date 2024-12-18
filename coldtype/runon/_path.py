@@ -425,9 +425,3 @@ def runonCast():
     def _runonCast(p):
         return P.FromPens(p)
     return _runonCast
-
-PS = P
-DATPens = P
-DATPen = P
-DPS = P
-DP = P

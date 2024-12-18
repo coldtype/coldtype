@@ -24,7 +24,7 @@ def monkeypatch_ctypes():
 # except AttributeError:
 #     pass
 
-from coldtype.runon.path import P, PS, DP, DPS, DATPen, DATPens
+from coldtype.runon.path import P
 from coldtype.runon.scaffold import Scaffold
 from coldtype.text import *
 from coldtype.geometry import *

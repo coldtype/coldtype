@@ -4,7 +4,7 @@ from pathlib import Path
 from coldtype.pens.drawablepen import DrawablePenMixin, Gradient
 from coldtype.pens.skiapathpen import SkiaPathPen
 from coldtype.runon.path import P
-from coldtype.img.datimage import DATImage
+from coldtype.img.abstract import AbstractImage
 from coldtype.geometry import Rect, Point
 from coldtype.text.reader import Style
 from coldtype.color import Color
@@ -281,7 +281,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                     skia.Font(font, style.fontSize),
                     skia.Paint(AntiAlias=True, Color=style.fill.skia()))
                 return
-            elif isinstance(pen, DATImage):
+            elif isinstance(pen, AbstractImage):
                 paint = skiashim.paint_withFilterQualityHigh()
                 f = pen.data("frame")
                 canvas.save()

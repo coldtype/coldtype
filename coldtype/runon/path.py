@@ -1861,8 +1861,8 @@ class P(Runon):
     def img(self, src=None, rect=Rect(0, 0, 500, 500), pattern=False, opacity=1.0):
         """Get/set an image fill"""
         if src:
-            from coldtype.img.datimage import DATImage
-            if isinstance(src, DATImage):
+            from coldtype.img.abstract import AbstractImage
+            if isinstance(src, AbstractImage):
                 return self.attr(image=dict(src=src.src, rect=rect, pattern=pattern, opacity=opacity))
             return self.attr(image=dict(src=src, rect=rect, pattern=pattern, opacity=opacity))
         else:
@@ -2786,9 +2786,3 @@ def runonCast():
     def _runonCast(p):
         return P.FromPens(p)
     return _runonCast
-
-PS = P
-DATPens = P
-DATPen = P
-DPS = P
-DP = P

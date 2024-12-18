@@ -15,7 +15,7 @@ def test2_(r):
 
 @renderable((500, 500))
 def test3_(r):
-    return (PS()
+    return (P()
         .declare(r:=r.inset(180), c:=335)
         .m(r.pw).bxc(r.pe, r.pn, c)
         .bxc(r.pw, r.ps, c).cp()

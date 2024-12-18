@@ -30,7 +30,7 @@ This works because the font is passed to ``watch=`` keyword argument of the ``@r
 
 Also worth noting: because the UFO font is loaded above by compiling it to a ttf (coldtype does this automatically via ``FontGoggles`` when you pass a ``.ufo`` to ``Font``), you can also use a coldtype program as a way to test OT feature code in realtime — simply edit the feature code, hit save, & the coldtype program above with automatically update.
 
-If you want to address glyphs in a UFO directly by their glyph names, you can also load a ``defcon.Font`` directly, as an alternate representation of the UFO source. (``DefconFont`` is provided by coldtype as an alternate name for ``defcon.Font``) This method skips any typesetting code and uses the glyphs in the UFO as pens, via the helper method ``glyph`` provided by ``DATPen`` (which records a ``defcon.Glyph`` to the given pen).
+If you want to address glyphs in a UFO directly by their glyph names, you can also load a ``defcon.Font`` directly, as an alternate representation of the UFO source. (``DefconFont`` is provided by coldtype as an alternate name for ``defcon.Font``) This method skips any typesetting code and uses the glyphs in the UFO as pens, via the helper method ``glyph`` provided by ``P`` (which records a ``defcon.Glyph`` to the given pen).
 
 .. code:: python
 
@@ -56,12 +56,12 @@ If you want to address glyphs in a UFO directly by their glyph names, you can al
 
     @renderable((800, 200), watch=[generic_txt])
     def txt(r):
-        return PS([
-            (StSt(
+        return P(
+            StSt(
                 "> " + generic_txt.read_text() + " <",
                 "assets/RecMono-CasualItalic.ttf", 50)
                 .f(0.25)
-                .align(r))])
+                .align(r))
 
 .. image:: /_static/renders/type_design_txt.png
     :width: 400

@@ -4,7 +4,7 @@ from coldtype.geometry import Rect
 from coldtype.img.blendmode import BlendMode
 
 
-class DATImage(P):
+class AbstractImage(P):
     def __init__(self, src, img=None):
         if isinstance(src, Path) or isinstance(src, str):
             self.src = Path(str(src)).expanduser().absolute()
@@ -112,7 +112,7 @@ class DATImage(P):
             self.data(frame=self.rect())
             return self
         else:
-            return DATImage(self.src, img=cropped.img().get("src"))
+            return AbstractImage(self.src, img=cropped.img().get("src"))
         
         #return self
     
@@ -124,13 +124,13 @@ class DATImage(P):
         return self.precompose(rect or self.data("frame"), as_image=False)
     
     def FromPen(pen:P, original_src=None):
-        return DATImage(original_src, img=pen.img().get("src"))
+        return AbstractImage(original_src, img=pen.img().get("src"))
     
     def __str__(self):
         if self.src:
             try:
-                return f"<DATImage({self.src.relative_to(Path.cwd())})/>"
+                return f"<AbstractImage({self.src.relative_to(Path.cwd())})/>"
             except ValueError:
-                return f"<DATImage({self.src})/>"
+                return f"<AbstractImage({self.src})/>"
         else:
-            return f"<DATImage(in-memory)/>"
+            return f"<AbstractImage(in-memory)/>"

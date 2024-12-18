@@ -16,7 +16,7 @@ from coldtype.geometry import Rect, Point
 from coldtype.color import normalize_color
 from coldtype.text.reader import normalize_font_prefix, Font
 from coldtype.runon.path import P
-from coldtype.img.datimage import DATImage
+from coldtype.img.abstract import AbstractImage
 
 
 class Memory(object):
