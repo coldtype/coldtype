@@ -112,6 +112,7 @@ class Style():
         fill=rgb(0, 0.5, 1),
         stroke=None,
         strokeWidth=0,
+        instance=None,
         variations=dict(),
         variationLimits=dict(),
         trackingLimit=0,
@@ -222,6 +223,8 @@ class Style():
             self.strokeWidth = strokeWidth
 
         unnormalized_variations = variations.copy()
+
+        self.instance = instance
         self.axes = OrderedDict()
         self.variations = dict()
         self.variationLimits = dict()
@@ -244,8 +247,16 @@ class Style():
                             unnormalized_variations[axis.axisTag] = kwargs[axis.axisTag]
                     if generic in kwargs and axis.axisTag not in variations:
                         unnormalized_variations[axis.axisTag] = kwargs[generic]
-
-            self.addVariations(unnormalized_variations)
+            
+            if self.instance:
+                self.scaleVariations = False
+                xs = self.font.instances(scaled=False, search=self.instance)
+                if xs:
+                    self.addVariations(xs)
+                else:
+                    self.addVariations(unnormalized_variations)
+            else:
+                self.addVariations(unnormalized_variations)
     
     def __eq__(self, other):
         try:
@@ -353,6 +364,12 @@ class Style():
                 variations[k] = axis.maxValue
             elif v == "default":
                 variations[k] = axis.defaultValue
+            elif isinstance(v, str):
+                coords = self.font.instances(scaled=False, search=v)
+                if coords:
+                    variations[k] = coords[axis.axisTag]
+                else:
+                    variations[k] = axis.defaultValue
             elif scale:
                 vv = v
                 if roll:

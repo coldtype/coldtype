@@ -74,6 +74,7 @@ setuptools.setup(
             "demo/boiler.py",
             "demo/boiler_renderable.py",
             "demo/vf.py",
+            "demo/instances.py",
             "demo/gifski.py",
             "demo/glfw34.py",
             "renderer/.coldtype.py",

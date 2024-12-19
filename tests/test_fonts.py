@@ -2,6 +2,20 @@ from coldtype.test import *
 from coldtype.text.font import FontmakeCache
 
 @test()
+def test_instances(r):
+    font = Font.MutatorSans()
+    instances = font.instances(scaled=True)
+    
+    assert len(instances) == 6
+
+    out = StyledString("HIHI", Style(font, 100, instance="BoldCondensed"))
+
+    assert out.variations["wdth"] == instances["BoldCondensed"]["wdth"]*1000
+    assert out.variations["wght"] == instances["BoldCondensed"]["wght"]*1000
+
+    return out.pens().align(r).f(0)
+
+@test()
 def test_fontmake(r):
     out = P()
 

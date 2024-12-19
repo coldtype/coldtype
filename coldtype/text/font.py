@@ -114,6 +114,7 @@ class Font():
             self._brFont = None
 
         self._variations = self.font.ttFont.get("fvar")
+        self._instances = None
 
         if tmp and delete_tmp:
             os.unlink(tmp.name)
@@ -134,6 +135,38 @@ class Font():
             for axis in fvar.axes:
                 axes[axis.axisTag] = (axis.__dict__)
         return axes
+    
+    def instances(self, scaled=True, search:re.Pattern=None):
+        if self._variations is None:
+            return None
+        
+        if self._instances is None:
+            self._instances = {}
+            for x in self._variations.instances:
+                name_id = x.subfamilyNameID
+                name_record = self.font.ttFont["name"].getDebugName(name_id)
+                self._instances[name_record] = x.coordinates
+        
+        if scaled:
+            axes = self.variations()
+            def scale(cs):
+                out = {}
+                for k, v in cs.items():
+                    axis = axes[k]
+                    out[k] = (v - axis["minValue"]) / (axis["maxValue"] - axis["minValue"])
+                return out
+            return {k:scale(v) for k, v in self._instances.items()}
+        
+        if search is not None:
+            keys = self._instances.keys()
+            matches = [key for key in keys if re.search(search, key, re.IGNORECASE)]
+            if len(matches) > 0:
+                return self._instances[matches[0]]
+            else:
+                print(f"No instance keys matching: {search} :for {self.path.stem}")
+                return None
+
+        return self._instances
     
     def names(self):
         """

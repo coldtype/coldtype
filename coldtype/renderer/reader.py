@@ -350,6 +350,8 @@ class SourceReader():
             return root / "demo/midicc.py"
         elif name == "vf":
             return root / "demo/vf.py"
+        elif name == "instances":
+            return root / "demo/instances.py"
         elif name == "viewseq":
             return root / "demo/viewseq.py"
         elif name == "docstrings":
