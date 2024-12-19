@@ -135,8 +135,8 @@ class BpyWorld(_Chainable):
                 self.scene.cycles.use_denoising = False
         
         if canvas is not None:
-            self.scene.render.resolution_x = canvas.w
-            self.scene.render.resolution_y = canvas.h
+            self.scene.render.resolution_x = round(canvas.w)
+            self.scene.render.resolution_y = round(canvas.h)
         
         if transparent:
             self.scene.render.film_transparent = True
