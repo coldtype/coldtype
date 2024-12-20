@@ -121,7 +121,7 @@ def frame_render(file, frame, samples=-1, denoise=False):
         bpy.data.scenes[0].cycles.denoiser = "OPENIMAGEDENOISE"
         bpy.data.scenes[0].cycles.use_denoising = True
 
-    sr = SourceReader(file)
+    sr = SourceReader(file, use_blender=True)
     for r, res in sr.frame_results(frame, class_filters=[r"^b3d_.*$"]):
         if hasattr(r, "center"):
             walk_to_b3d(res, dn=True, renderable=r)

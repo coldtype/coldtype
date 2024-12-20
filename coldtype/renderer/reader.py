@@ -168,12 +168,13 @@ def read_source_to_tempfile(filepath:Path,
     return codepath, data_out
 
 
-def run_source(filepath, codepath, inputs, memory, **kwargs):
+def run_source(filepath, codepath, inputs, memory, config, **kwargs):
     #print(">>>>>>>>>>>>>>>>>>>>>>>>>>>", str(codepath))
     return run_path(str(codepath), init_globals={
         "__COLDTYPE__": True,
         "__FILE__": filepath,
         "__inputs__": inputs,
+        "__config__": config,
         "__memory__": memory,
         "__as_config__": False,
         "__sibling__": partial(sibling, filepath),
@@ -612,13 +613,17 @@ class SourceReader():
 
         version, versions = self.find_versions(initial, restart_count)
 
+        blendering = bool(self.use_blender or self.config.blender_watch)
+
         self.program = run_source(
             self.filepath,
             self.codepath,
             self.inputs,
             memory,
+            self.config,
             __RUNNER__=self.runner,
             __BLENDER__=self.blender_io(),
+            __BLENDERING__=blendering,
             __VERSION__=version,
             __VERSIONS__=versions)
         

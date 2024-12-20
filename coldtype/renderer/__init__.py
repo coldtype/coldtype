@@ -225,7 +225,7 @@ class Renderer():
             sr = SourceReader(renderer=self,
                 inputs=self.args.inputs,
                 cli_args=self.args)
-            run_source(script, script, {}, {}, reader=sr)
+            run_source(script, script, {}, {}, None, reader=sr)
             return -1
         else:
             return SourceReader.Demo(filepath)
