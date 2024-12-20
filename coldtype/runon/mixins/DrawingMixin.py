@@ -195,6 +195,14 @@ class DrawingMixin():
     
     o = oval
 
+    def superellipse(self, r, factor=65):
+        return (self
+            .moveTo(r.pw)
+            .bxc(r.ps, "SW", factor)
+            .bxc(r.pe, "SE", factor)
+            .bxc(r.pn, "NE", factor)
+            .bxc(r.pw, "NW", factor))
+
     def line(self, points, moveTo=True, endPath=True):
         """Syntactic sugar for `moveTo`+`lineTo`(...)+`endPath`; can have any number of points"""
         if isinstance(points, Line):
@@ -309,7 +317,7 @@ class DrawingMixin():
         self.lineTo(d)
         return self
     
-    def bxc(self, pt, point, factor=65, po=(0, 0), mods={}, flatten=False):
+    def bxc(self, pt, point, factor=0.65, po=(0, 0), mods={}, flatten=False):
         return self.boxCurveTo(pt, point, factor, po, mods, flatten)
     
     def roundedCorner(self, pt, point, multipliers, offset=4, factor=65):
@@ -318,9 +326,7 @@ class DrawingMixin():
             .lineTo(pt.offset(offset*a, offset*b))
             .boxCurveTo(pt.offset(offset*c, offset*d), point, factor=factor))
     
-    def boxCurveTo(self, pt, point, factor=65, po=(0, 0), mods={}, flatten=False):
-        #print("BOX", point, factor, pt, po, mods)
-
+    def boxCurveTo(self, pt, point, factor=0.65, po=(0, 0), mods={}, flatten=False):
         if flatten:
             self.lineTo(pt)
             return self

@@ -31,7 +31,7 @@ def arch(r):
     r = r.inset(200)
     curve:P = (P()
         .moveTo(r.psw)
-        .boxCurveTo(r.pn, "NW", factor:=65)
+        .boxCurveTo(r.pn, "NW", factor:=.65)
         .boxCurveTo(r.pse, "NE", factor)
         .fssw(-1, 0, 2))
 

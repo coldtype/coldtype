@@ -7,13 +7,13 @@ at = AsciiTimeline(20, 30, "<\n"+letters).inflate()
 
 ease_curve1 = P().withRect(1000, lambda r, p: p
     .moveTo(r.psw)
-    .boxCurveTo(r.pc, "NW", (95, 65))
-    .boxCurveTo(r.pne, "SE", (75, 95)))
+    .boxCurveTo(r.pc, "NW", (.95, .65))
+    .boxCurveTo(r.pne, "SE", (.75, .95)))
 
 ease_curve2 = P().withRect(1000, lambda r, p: p
     .moveTo(r.psw)
-    .boxCurveTo(r.pc, "NW", (95, 95))
-    .boxCurveTo(r.pne, "SE", (65, 135)))
+    .boxCurveTo(r.pc, "NW", (.95, .95))
+    .boxCurveTo(r.pne, "SE", (.65, .135)))
 
 @animation((1080, 540), timeline=at, bg=1)
 def letters_easing(f):

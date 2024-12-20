@@ -313,3 +313,8 @@ Huge update, attempting to future proof things
 - Make sure coldtype.drawbot does not require skia-python (via incorrect import)
 - try/except for filmjitter in coldtype.raster
 - Don’t enable audio if audio can’t be enabled (print instructions on enabling audio instead)
+
+## [0.11.2] - 2024-12-?
+### Added
+- `Font.instances` to get variable font instance information
+- `coldtype instances font=<font-search>` tool
