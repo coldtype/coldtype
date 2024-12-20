@@ -318,3 +318,5 @@ Huge update, attempting to future proof things
 ### Added
 - `Font.instances` to get variable font instance information
 - `coldtype instances font=<font-search>` tool
+### Changed
+- `P.boxCurveTo` `factor=` keyword now expects float, not int
