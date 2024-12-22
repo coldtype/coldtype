@@ -535,11 +535,28 @@ FREEZES = {}
 
 from inspect import getsource
 
-def freeze(do_freeze, as_image, callback):
-    src = getsource(callback)
+def freeze(do_freeze, as_image, callback, additionals=[]):
+    """
+    Use this function to “freeze” the result of another (expensive) function
+    as an image, so you don’t have to recompute the same thing over and over
 
-    if "lambda:" in src:
-        src = "lambda:".join(src.split("lambda:")[1:]).strip()
+    N.B. Because of a quirk with Python’s introspection facilities, a multi-line
+    lambda will work with freeze, but the cache will not update if code changes
+    on any line but the first; if you need a multi-line function, pass in a def
+    and all the code will be read as a cache key
+    """
+    def getsrc(f):
+        _src = getsource(f)
+        if "lambda:" in _src:
+            _src = "lambda:".join(_src.split("lambda:")[1:]).strip()
+        return _src
+    
+    src = getsrc(callback)
+    for a in additionals:
+        if callable(a):
+            src += getsrc(a)
+        else:
+            src += repr(a)
 
     if not src:
         print("NO SRC FOUND FOR FREEZE")
@@ -555,6 +572,7 @@ def freeze(do_freeze, as_image, callback):
             del FREEZES[src]
 
     if src not in FREEZES:
+        #print("FREEZING", src)
         res = callback()
         if as_image:
             res_img = res.ch(precompose(res.bounds().inset(-100)))

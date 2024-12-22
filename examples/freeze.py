@@ -14,16 +14,21 @@ rs1 = random_series(r.mnx-100, r.mxx, 10+int(random()*40))
 rs2 = random_series(r.mny-100, r.mxy, 1)
 rs3 = random_series(seed=3)
 rs4 = random_series(seed=2)
-rs5 = random_series(0.4, 0.7, seed=4)
+rs5 = random_series(0.50, 0.70, seed=4)
 
 @renderable(r)
 def scratch(r):
+    def color(h):
+        return hsl(h, 0.95, a=0.15)
+
+    def freezeable():
+        return (P().enumerate(range(0, 5000), lambda x:
+                StSt("F", Font.MuSan(), 120, wght=rs3[x.i], wdth=rs4[x.i])
+            .t(rs1[x.i], rs2[x.i])
+            .f(color(rs5[x.i]))))
+
     return (P(
-        freeze(1, 1, lambda:
-            P().enumerate(range(0, 5000), lambda x: StSt("F", Font.MuSan(), 100, wght=rs3[x.i], wdth=rs4[x.i])
-                .t(rs1[x.i], rs2[x.i])
-                .f(hsl(rs5[x.i], 0.95, a=0.15)))),
+        freeze(1, 1, freezeable, additionals=[color, rs5]),
         StSt("F IS FROZEN", Font.MuSan(), 10+random()*100)
-            .align(r).f(1)
-    ))
+            .align(r).f(1)))
         
