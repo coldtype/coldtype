@@ -26,10 +26,13 @@ class SerializationMixin():
             src = Path(src)
         return pickle.load(open(str(src.expanduser()), "rb"))
     
-    def withJSONValue(self, path):
-        self._val.value = json.loads(Path(path)
-            .expanduser()
-            .read_text())
+    def withJSONValue(self, path, keys=None):
+        data = json.loads(Path(path).expanduser().read_text())
+        if keys is not None:
+            for key in keys:
+                data = data[key]
+        
+        self._val.value = data
         return self
     
     def withSVG(self, svg):

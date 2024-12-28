@@ -1986,11 +1986,14 @@ class P(Runon):
         return pickle.load(open(str(src.expanduser()), "rb"))
     
 
-    def withJSONValue(self, path) -> "P":
+    def withJSONValue(self, path, keys=None) -> "P":
 
-        self._val.value = json.loads(Path(path)
-            .expanduser()
-            .read_text())
+        data = json.loads(Path(path).expanduser().read_text())
+        if keys is not None:
+            for key in keys:
+                data = data[key]
+        
+        self._val.value = data
         return self
     
 

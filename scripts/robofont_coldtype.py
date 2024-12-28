@@ -30,12 +30,26 @@ class ColdtypeSerializer(BaseWindowController):
     def shouldDraw(self, notification):
         if not self.w.globalToggle.get():
             return
+        
         glyph = CurrentGlyph()
         data_out = {"name": glyph.name, "layers": {}}
+        
         for g in glyph.layers:
             rp = RecordingPen()
             g.draw(rp)
-            data_out["layers"][g.layer.name] = dict(value=rp.value, width=g.width)
+
+            contours = []
+            for c in glyph.contours:
+                contour = []
+                for pt in c.points:
+                    contour.append(dict(type=pt.type, x=pt.x, y=pt.y, smooth=pt.smooth, name=pt.name))
+                contours.append(contour)
+
+            data_out["layers"][g.layer.name] = dict(
+                value=rp.value,
+                width=g.width,
+                contours=contours)
+            
         self.path.write_text(json.dumps(data_out))
 
 ColdtypeSerializer()
