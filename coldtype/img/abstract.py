@@ -80,6 +80,10 @@ class AbstractImage(P):
         self.transforms.append(["rotate", degrees, point or self.data("frame").pc])
         return self
     
+    def matrix(self, a, b, c, d, e, f):
+        self.transforms.append(["matrix", [a, b, c, d, e, f]])
+        return self
+    
     def _precompose_fn(self):
         raise NotImplementedError()
     

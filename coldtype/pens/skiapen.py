@@ -10,6 +10,7 @@ from coldtype.text.reader import Style
 from coldtype.color import Color
 
 import coldtype.skiashim as skiashim
+from coldtype.img.skiasvg import SkiaSVG
 
 try:
     from coldtype.text.colr.skia import SkiaShaders
@@ -281,6 +282,9 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                     skia.Font(font, style.fontSize),
                     skia.Paint(AntiAlias=True, Color=style.fill.skia()))
                 return
+            elif isinstance(pen, SkiaSVG):
+                print("HELLO?", pen._img, pen.width(), pen.height())
+                pen._img.render(canvas)
             elif isinstance(pen, AbstractImage):
                 paint = skiashim.paint_withFilterQualityHigh()
                 f = pen.data("frame")
@@ -289,6 +293,16 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                     if action == "rotate":
                         deg, pt = args
                         canvas.rotate(-deg, pt.x, rect.h - pt.y)
+                    elif action == "matrix":
+                        xs = args
+                        a, b, c, d, e, f = xs[0]
+                        m = skia.Matrix([
+                            a, b, e,
+                            c, d, f,
+                            0, 0, 1
+                        ])
+                        canvas.setMatrix(m)
+                    
                 paint.setAlphaf(paint.getAlphaf()*data["alpha"]*pen.alpha)
                 bm = pen.blendmode()
                 if bm:

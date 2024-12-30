@@ -295,6 +295,9 @@ class LayoutMixin():
         
         return self
     
+    def matrix(self, a, b, c, d, e, f, transformFrame=False):
+        return self.transform(Transform(a, b, c, d, e, f), transformFrame=transformFrame)
+    
     def invertYAxis(self, height):
         rp = RecordingPen()
         tp = TransformPen(rp, (1, 0, 0, -1, 0, height))
@@ -479,7 +482,7 @@ class LayoutMixin():
         "Horizontal distribution of elements"
         if zero:
             for p in self:
-                p.zero()
+                p.zero(tx=tx)
         ambits = [p.ambit(tx=tx, ty=0).expand(tracking, "E") for p in self._els]
         
         ax = 0

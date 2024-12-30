@@ -2,7 +2,7 @@ from coldtype import *
 from coldtype.img.skiaimage import SkiaImage
 from coldtype.fx.skia import skia, precompose
 
-lh = Font.Find("california oranges")
+lh = Font.Find("liebe")
 ttfont = lh.font.ttFont
 
 sbix = ttfont["sbix"]
@@ -37,7 +37,7 @@ def test_leibeheide(r):
         print(g.glyphName)
         img = skia.Image.MakeFromEncoded(g.imageData)
         di = SkiaImage(img)
-        di.write("test.png")
+        #di.write("test.png")
         imgs.append(di.translate(pen.ambit(tx=1).x, pen.ambit(ty=1).y))
     
     return P(

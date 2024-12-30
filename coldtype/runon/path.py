@@ -1348,6 +1348,11 @@ class P(Runon):
         return self
     
 
+    def matrix(self, a, b, c, d, e, f, transformFrame=False) -> "P":
+
+        return self.transform(Transform(a, b, c, d, e, f), transformFrame=transformFrame)
+    
+
     def invertYAxis(self, height) -> "P":
 
         rp = RecordingPen()
@@ -1563,7 +1568,7 @@ class P(Runon):
         "Horizontal distribution of elements"
         if zero:
             for p in self:
-                p.zero()
+                p.zero(tx=tx)
         ambits = [p.ambit(tx=tx, ty=0).expand(tracking, "E") for p in self._els]
         
         ax = 0

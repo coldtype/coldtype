@@ -5,6 +5,18 @@ from coldtype.skiashim import canvas_drawImage, paint_withFilterQualityHigh, ima
 from coldtype.runon.path import P
 
 class SkiaImage(AbstractImage):
+    @staticmethod
+    def FromBase64(b64):
+        import base64
+        
+        if b64.startswith("data:image/"):
+            b64 = b64.split(",")[1]
+        
+        image_data = base64.b64decode(b64)
+        skia_image = skia.Image.MakeFromEncoded(skia.Data.MakeWithCopy(image_data))
+
+        return SkiaImage(skia_image)
+
     def load_image(self, src):
         return skia.Image.MakeFromEncoded(skia.Data.MakeFromFileName(str(src)))
     
@@ -27,6 +39,34 @@ class SkiaImage(AbstractImage):
     
     def _precompose_fn(self):
         return precompose
+    
+    def matrix(self, a, b, c, d, e, f, point=None):
+        from coldtype.fx.skia import SKIA_CONTEXT
+        from coldtype.pens.skiapen import SkiaPen
+        
+        frame = self.data("frame")
+        
+        #rotated = P(frame).rotate(degrees, point)
+        #rotated_frame = rotated.ambit()#.zero()
+        #dx, dy = rotated_frame.x - frame.x, rotated_frame.y - frame.y
+
+        matrix = skia.Matrix([
+            a, b, e,  # First row
+            c, d, f,  # Second row
+            0, 0, 1   # Third row (implicit)
+        ])
+
+        def rotator(canvas):
+            paint = paint_withFilterQualityHigh()
+            #canvas.translate(-dx, -dy)
+            #canvas.translate(center_x, center_y)
+            #canvas.rotate(-degrees)
+            #canvas.translate(-center_x, -center_y)
+            canvas.setMatrix(matrix)
+            canvas_drawImage(canvas, self._img, 0, 0, paint)
+        
+        img = SkiaPen.Precompose(rotator, frame.inset(0), context=SKIA_CONTEXT)
+        return SkiaImage(img)#.translate(dx, dy)
     
     def _rotate(self, degrees, point=None):
         #self.transforms.append(["rotate", degrees, point or self.data("frame").pc])
