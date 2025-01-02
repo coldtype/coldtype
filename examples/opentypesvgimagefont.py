@@ -1,16 +1,16 @@
 from coldtype import *
-from coldtype.raster import text_image, fill
+from coldtype.raster import text_image
 
-fnt = "California Oranges"
-#fnt = "Liebeheide"
+fnt, fs = "California Oranges", 200
+fnt, fs = "Liebeheide", 100
+fnt, fs = "PinkSugar", 500
 
 @renderable((1080, 540), bg=1)
 def texter(r):
-    return (P(
-        StSt("Hello", fnt, 500, annotate=1)
-            .align(r, ty=1)
-            .ch(text_image(r))
-            .ch(fill(hsl(0.6, 0.7, 0.5)))),
-        StSt("Hello", fnt, 500)
-            .align(r, ty=1)
-            .fssw(-1, hsl(0.9, 0.9, 0.6, 1), 2))
+    return (StSt("OTSVG", fnt, fs, annotate=1)
+        .align(r, ty=1)
+        .layer(
+            lambda p: p.align(r, "N", ty=1).ch(text_image(r)),
+            lambda p: p.align(r, "S", ty=1).ch(text_image(r)),
+            lambda p: p.mapv(lambda p: p.ch(text_image(r))),
+            lambda p: p.fssw(-1, rgb(1, 1, 1), 2)))

@@ -539,13 +539,27 @@ def text_image(r:Rect, in_pen=True):
     from coldtype.img.skiaimage import SkiaImage
 
     def _text_image(p:P):
-        stst = p._stst
+        try:
+            stst = p._stst
+            text = stst.text
+        except AttributeError:
+            try:
+                stst = p.parent()._stst
+                text = p.data("glyphName") # TODO this isn't a good assumption
+            except AttributeError:
+                stst = None
+                text = None
+        
+        if not stst:
+            print("! please pass annotate=1 to original `StSt` !")
+            return p
+        
         style = stst.style
 
         skia_font = skia.Font(skia.Typeface.MakeFromFile(str(style.font.path)), style.fontSize)
 
         builder = skia.TextBlobBuilder()
-        builder.allocRun(stst.text, skia_font, 0, 0)
+        builder.allocRun(text, skia_font, 0, 0)
         blob = builder.make()
 
         x, y = p.ambit(tx=0, ty=0).xy()

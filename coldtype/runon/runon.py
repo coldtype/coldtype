@@ -661,6 +661,10 @@ class Runon:
             _copy._attrs = self._attrs.copy()
         
         _copy._tag = self._tag
+
+        # kind of a hack but necessary
+        if hasattr(self, "_stst"):
+            _copy._stst = self._stst
         
         for el in self._els:
             _copy.append(el.copy())
