@@ -2,6 +2,7 @@ from coldtype import *
 from coldtype.raster import text_image, fill
 
 fnt = "California Oranges"
+#fnt = "Liebeheide"
 
 @renderable((1080, 540), bg=1)
 def texter(r):
@@ -12,4 +13,4 @@ def texter(r):
             .ch(fill(hsl(0.6, 0.7, 0.5)))),
         StSt("Hello", fnt, 500)
             .align(r, ty=1)
-            .fssw(-1, hsl(0.9, 0.9, 0.6, 0), 2))
+            .fssw(-1, hsl(0.9, 0.9, 0.6, 1), 2))
