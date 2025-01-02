@@ -283,7 +283,7 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                     skia.Paint(AntiAlias=True, Color=style.fill.skia()))
                 return
             elif isinstance(pen, SkiaSVG):
-                print("HELLO?", pen._img, pen.width(), pen.height())
+                #print("HELLO?", pen._img, pen.width(), pen.height())
                 pen._img.render(canvas)
             elif isinstance(pen, AbstractImage):
                 paint = skiashim.paint_withFilterQualityHigh()

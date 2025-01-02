@@ -40,33 +40,32 @@ class SkiaImage(AbstractImage):
     def _precompose_fn(self):
         return precompose
     
-    def matrix(self, a, b, c, d, e, f, point=None):
+    def css_scale(self, x, y=None):
+        if y is None:
+            y = x
+        self._img = self._redraw(lambda canvas, paint: canvas.scale(x, y))
+        return self
+    
+    def _redraw(self, modifier):
         from coldtype.fx.skia import SKIA_CONTEXT
         from coldtype.pens.skiapen import SkiaPen
-        
-        frame = self.data("frame")
-        
-        #rotated = P(frame).rotate(degrees, point)
-        #rotated_frame = rotated.ambit()#.zero()
-        #dx, dy = rotated_frame.x - frame.x, rotated_frame.y - frame.y
 
-        matrix = skia.Matrix([
-            a, b, e,  # First row
-            c, d, f,  # Second row
-            0, 0, 1   # Third row (implicit)
-        ])
+        frame = self.data("frame")
 
         def rotator(canvas):
             paint = paint_withFilterQualityHigh()
-            #canvas.translate(-dx, -dy)
-            #canvas.translate(center_x, center_y)
-            #canvas.rotate(-degrees)
-            #canvas.translate(-center_x, -center_y)
-            canvas.setMatrix(matrix)
+            modifier(canvas, paint)
             canvas_drawImage(canvas, self._img, 0, 0, paint)
         
-        img = SkiaPen.Precompose(rotator, frame.inset(0), context=SKIA_CONTEXT)
-        return SkiaImage(img)#.translate(dx, dy)
+        return SkiaPen.Precompose(rotator, frame.inset(0), context=SKIA_CONTEXT)
+    
+    def css_translate(self, x, y=None):
+        self._img = self._redraw(lambda canvas, paint: canvas.translate(x, y))
+    
+    def css_matrix(self, a, b, c, d, tx, ty):
+        matrix = skia.Matrix([a, c, tx, b, d, ty, 0, 0, 1])
+        self._img = self._redraw(lambda canvas, paint: canvas.setMatrix(matrix))
+        return self
     
     def _rotate(self, degrees, point=None):
         #self.transforms.append(["rotate", degrees, point or self.data("frame").pc])

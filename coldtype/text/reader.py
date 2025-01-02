@@ -129,7 +129,7 @@ class Style():
         show_frames=False,
         load_font=True, # should we attempt to load the font?
         tag=None, # way to differentiate in __eq__
-        _stst=False,
+        annotate=False,
         case=None,
         **kwargs
         ):
@@ -155,7 +155,7 @@ class Style():
         self.scaleVariations = kwargs.get("sv", scaleVariations)
         self.rollVariations = kwargs.get("rv", rollVariations)
         self.tag = tag
-        self._stst = _stst
+        self.annotate = annotate
         
         self.metrics = metrics
         self.capHeight = kwargs.get("ch", capHeight)
@@ -974,11 +974,11 @@ class StyledString(FittableMixin):
 
         if self.style.reverse:
             pens.reversePens()
-        
+
         pens.data(**self.style.data)
 
         ro = pens
-        if self.style._stst:
+        if self.style.annotate:
             ro._stst = self
         return ro
 

@@ -1,45 +1,60 @@
 from coldtype import *
 from coldtype.raster import *
+#from coldtype.img.skiasvg import SkiaSVG
 
-import xml.etree.ElementTree as ET
+from bs4 import BeautifulSoup
 
-import skia
-
-fnt = Font.Find("california oranges")
+fnt = Font.Find("hamilton sans svg")
+fnt = Font.Find("california oranges svg")
 ttfont = fnt.font.ttFont
 
 glyphs = {}
 for doc, start, end in ttfont["SVG "].docList:
     #dom = skia.SVGDOM.MakeFromStream(skia.MemoryStream(doc.encode('utf-8')))
-    #print(dom)
-
-    parsed = ET.fromstring(doc)
-    g = parsed.find(".//{http://www.w3.org/2000/svg}g")
-    
-    transform = g.attrib.get("transform", "")
-    img = g.find(".//{http://www.w3.org/2000/svg}image")
-    data = img.attrib.get("{http://www.w3.org/1999/xlink}href", "")#.split(",")[1]
-    img = SkiaImage.FromBase64(data)
-
-    transform = transform.split(" ")
-
-    glyphs[start] = dict(img=img, transform=transform)
+    glyphs[start] = dict(doc=doc)
     if end != start:
-        glyphs[end] = dict(img=img, transform=transform)
+        glyphs[end] = dict(doc=doc)
 
-@renderable((1080, 540), bg=1)
+def get_img(doc):
+    Path("glyph.svg").write_text(doc)
+
+    soup = BeautifulSoup(doc, "html.parser")
+    g = soup.find("g")
+    transform = g["transform"]
+    img = g.find("image")
+
+    data = img["xlink:href"]
+
+    x, y = float(img.get("x", 0)), float(img.get("y", 0))
+    w, h = float(img.get("width", 0)), float(img.get("height", 0))
+
+    print(x, y, w, h)
+
+    img = SkiaImage.FromBase64(data)
+    img.css_translate(x, h+y)
+    return img, transform.split(" ")
+
+@renderable((1080, 1080), bg=1)
 def scratch(r):
     def add_image(p):
         gid = ttfont.getGlyphID(p.data("glyphName"))
         data = glyphs[gid]
-        
-        img = data["img"].copy()#.align(p.ambit())
-        
-        #for t in data["transform"]:
-        #    img = eval(f"img.{t}")
+        img, transform = get_img(data["doc"])
 
-        return (p.up().append(img.align(p.ambit())))
+        print("AMBIT", p.ambit(tx=0, ty=0))
+        
+        for t in transform[:1]:
+            try:
+                pass
+                print(t)
+                eval(f"img.css_{t}")
+            except Exception as e:
+                print(e)
 
-    return (StSt("Hello", fnt, 600)
+        return p.up().insert(0, P(p.ambit()).fssw(-1, 0, 1)).append(img.align(p.ambit()))
+
+    return (StSt("XYZ", fnt, 750)
         .align(r)
-        .mapv(add_image))
+        .mapv(add_image)
+        #.t(100, 100)
+        )

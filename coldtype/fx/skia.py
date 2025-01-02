@@ -13,6 +13,7 @@ from coldtype.color import normalize_color, bw
 from coldtype.img.blendmode import BlendMode
 from coldtype.runon.path import P
 from coldtype.pens.skiapen import SkiaPen
+from coldtype.geometry import Rect
 
 import coldtype.skiashim as skiashim
 
@@ -530,6 +531,38 @@ def round_corners(roundedness=20):
         effect = skia.CornerPathEffect.Make(roundedness)
         return p.attr(skp=dict(PathEffect=effect))
     return _round
+
+def text_image(r:Rect, in_pen=True):
+    """
+    Requires that annotate=1 is passed to original StSt or Style
+    """
+    from coldtype.img.skiaimage import SkiaImage
+
+    def _text_image(p:P):
+        stst = p._stst
+        style = stst.style
+
+        skia_font = skia.Font(skia.Typeface.MakeFromFile(str(style.font.path)), style.fontSize)
+
+        builder = skia.TextBlobBuilder()
+        builder.allocRun(stst.text, skia_font, 0, 0)
+        blob = builder.make()
+
+        x, y = p.ambit(tx=0, ty=0).xy()
+
+        from coldtype.fx.skia import SKIA_CONTEXT
+        from coldtype.pens.skiapen import SkiaPen
+
+        def draw(canvas):
+            canvas.drawTextBlob(blob, x, r.h-y, skia.Paint(AntiAlias=True))
+
+        img = SkiaImage(SkiaPen.Precompose(draw, r, context=SKIA_CONTEXT))
+        if in_pen:
+            return img.in_pen().f(-1)
+        else:
+            return img
+    
+    return _text_image, dict(returns=P if in_pen else SkiaImage)
 
 FREEZES = {}
 

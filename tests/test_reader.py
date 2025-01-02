@@ -12,7 +12,7 @@ def test_fit(_r):
     out = P([
         P(ri).f(hsl(0.7, a=0.1)),
         (StSt("COLD", co, 500,
-            wdth=1, fit=ri.w, _stst=True)
+            wdth=1, fit=ri.w, annotate=True)
             .fssw(-1, hsl(0.7), 2)
             .align(r))])
     
@@ -23,7 +23,7 @@ def test_fit(_r):
 
 @test(120)
 def test_style_mod(r):
-    style = Style(co, 250, wdth=1, _stst=True)
+    style = Style(co, 250, wdth=1, annotate=True)
     a = StSt("CLDTP", style)
     b = StSt("CLDTP", style.mod(wdth=0))
     
@@ -34,7 +34,7 @@ def test_style_mod(r):
 
 @test(150)
 def test_fit_height(r):
-    style = Style(co, 250, wdth=1, _stst=True)
+    style = Style(co, 250, wdth=1, annotate=True)
     a = StSt("CLDTP", style)
     b = StSt("CLDTP", style.mod(fitHeight=300))
     
@@ -45,7 +45,7 @@ def test_fit_height(r):
 
 @test()
 def test_kern_pairs(_r):
-    style = Style(co, 250, wdth=1, _stst=True)
+    style = Style(co, 250, wdth=1, annotate=True)
     a = StSt("CLD", style)
     b = StSt("CLD", style.mod(kp={"C/L":20, "L/D":100}))
     
