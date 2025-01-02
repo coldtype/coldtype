@@ -1,14 +1,16 @@
 from coldtype import *
+from coldtype.fx.skia import rasterized
 from coldtype.renderable.animation import skia_direct_animation, skia
 
-image = skia.Image.open("examples/renders/displace_map_text.png")
+r = Rect(540)
+image = StSt("TYPE", Font.ColdObvi(), 500, wdth=0).align(r).ch(rasterized(r))
 
-@skia_direct_animation(540, tl=Timeline(60, 30))
+@skia_direct_animation(r, tl=Timeline(60, 30))
 def warper(f, canvas):
     sksl = f"""
     uniform shader image;
     half4 main(float2 coord) {{
-      coord.x += sin(coord.y / {f.e("eeio", rng=(20, 40))}) * {f.e("eeio", rng=(0, 60))};
+      coord.x += sin(coord.y / {f.e("eeio", rng=(40, 20))}) * {f.e("eeio", rng=(60, 0))};
       return image.eval(coord);
     }}"""
 
