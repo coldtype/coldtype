@@ -578,6 +578,36 @@ def text_image(r:Rect, in_pen=True):
     
     return _text_image, dict(returns=P if in_pen else SkiaImage)
 
+def image_shader(r:Rect, image, sksl, in_pen=True):
+    """
+    Requires that annotate=1 is passed to original StSt or Style
+    """
+    from coldtype.img.skiaimage import SkiaImage
+
+    def _image_shader(p:P):
+        from coldtype.fx.skia import SKIA_CONTEXT
+        from coldtype.pens.skiapen import SkiaPen
+
+        def draw(canvas):
+            imageShader = image.makeShader(skia.SamplingOptions(skia.FilterMode.kLinear))
+
+            effect = skia.RuntimeEffect.MakeForShader(sksl)
+
+            children = skia.RuntimeEffectChildPtr(imageShader)
+            myShader = effect.makeShader(None, skia.SpanRuntimeEffectChildPtr(children, 1))
+            
+            paint = skia.Paint()
+            paint.setShader(myShader)
+            canvas.drawPaint(paint)
+
+        img = SkiaImage(SkiaPen.Precompose(draw, r, context=SKIA_CONTEXT))
+        if in_pen:
+            return img.in_pen().f(-1)
+        else:
+            return img
+    
+    return _image_shader, dict(returns=P if in_pen else SkiaImage)
+
 FREEZES = {}
 
 from inspect import getsource
