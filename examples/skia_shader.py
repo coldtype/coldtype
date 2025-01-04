@@ -1,6 +1,5 @@
 from coldtype import *
 from coldtype.fx.skia import rasterized, image_shader
-from coldtype.renderable.animation import skia_direct_animation, skia
 
 r = Rect(540)
 image = StSt("TYPE", Font.ColdObvi(), 500, wdth=0).align(r).ch(rasterized(r))

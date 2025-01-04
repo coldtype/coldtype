@@ -532,6 +532,22 @@ def round_corners(roundedness=20):
         return p.attr(skp=dict(PathEffect=effect))
     return _round
 
+def draw_canvas(r:Rect, draw_function:callable, in_pen=False):
+    from coldtype.img.skiaimage import SkiaImage
+    from coldtype.fx.skia import SKIA_CONTEXT
+    from coldtype.pens.skiapen import SkiaPen
+
+    def draw(canvas):
+        return draw_function(r, canvas)
+
+    img = SkiaImage(SkiaPen.Precompose(draw, r, context=SKIA_CONTEXT))
+    
+    if in_pen:
+        return img.in_pen().f(-1)
+    else:
+        return img
+
+
 def text_image(r:Rect, in_pen=True):
     """
     Requires that annotate=1 is passed to original StSt or Style
@@ -564,17 +580,10 @@ def text_image(r:Rect, in_pen=True):
 
         x, y = p.ambit(tx=0, ty=0).xy()
 
-        from coldtype.fx.skia import SKIA_CONTEXT
-        from coldtype.pens.skiapen import SkiaPen
-
-        def draw(canvas):
+        def draw(r, canvas):
             canvas.drawTextBlob(blob, x, r.h-y, skia.Paint(AntiAlias=True))
-
-        img = SkiaImage(SkiaPen.Precompose(draw, r, context=SKIA_CONTEXT))
-        if in_pen:
-            return img.in_pen().f(-1)
-        else:
-            return img
+        
+        return draw_canvas(r, draw, in_pen=in_pen)
     
     return _text_image, dict(returns=P if in_pen else SkiaImage)
 
@@ -585,10 +594,7 @@ def image_shader(r:Rect, image, sksl, in_pen=True):
     from coldtype.img.skiaimage import SkiaImage
 
     def _image_shader(p:P):
-        from coldtype.fx.skia import SKIA_CONTEXT
-        from coldtype.pens.skiapen import SkiaPen
-
-        def draw(canvas):
+        def draw(r, canvas):
             imageShader = image.makeShader(skia.SamplingOptions(skia.FilterMode.kLinear))
 
             effect = skia.RuntimeEffect.MakeForShader(sksl)
@@ -600,11 +606,7 @@ def image_shader(r:Rect, image, sksl, in_pen=True):
             paint.setShader(myShader)
             canvas.drawPaint(paint)
 
-        img = SkiaImage(SkiaPen.Precompose(draw, r, context=SKIA_CONTEXT))
-        if in_pen:
-            return img.in_pen().f(-1)
-        else:
-            return img
+        return draw_canvas(r, draw, in_pen=in_pen)
     
     return _image_shader, dict(returns=P if in_pen else SkiaImage)
 
