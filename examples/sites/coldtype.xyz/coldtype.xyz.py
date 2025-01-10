@@ -20,6 +20,10 @@ index: jinja_html = """
     <li><a href="https://github.com/stenson/nudge">Nudge</a>: a VS Code extension that allows keyboard shortcuts to increment/decrement numeric values (and letters) and then immediately save the file</li>
 </ul>
 <hr/>
+<p>
+If you’re looking to take a class on Coldtype, <a href="https://coopertype.org/events/type-sound-code-an-introduction-to-coldtype">here’s one</a> that’s about to start in February.
+</p>
+<hr/>
 <p>Here are some talks about Coldtype & ST2:</p>
 <ul>
     <li><a href="https://vimeo.com/864468653">“A Font is a Percussion Instrument”</a> (Typographics 2023)</li>

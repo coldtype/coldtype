@@ -600,7 +600,8 @@ def image_shader(r:Rect, image, sksl, in_pen=True):
             effect = skia.RuntimeEffect.MakeForShader(sksl)
 
             children = skia.RuntimeEffectChildPtr(imageShader)
-            myShader = effect.makeShader(None, skia.SpanRuntimeEffectChildPtr(children, 1))
+            runtime_effect = skia.SpanRuntimeEffectChildPtr(children, 1)
+            myShader = effect.makeShader(None, runtime_effect)
             
             paint = skia.Paint()
             paint.setShader(myShader)

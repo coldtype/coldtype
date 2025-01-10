@@ -1,22 +1,24 @@
 from coldtype import *
 from coldtype.fx.skia import draw_canvas
 
-from skia import textlayout, ColorBLACK, Paint, Unicodes, FontMgr, FontStyle
+from skia import textlayout, ColorBLACK, Paint, Unicodes, FontMgr, FontStyle, ColorBLUE
 
 # adaptation of https://github.com/HinTak/skia-python-examples/blob/main/skparagraph-example.py
 
-@animation((1080, 540), bg=1, tl=30)
+@animation((1080, 540), bg=1, tl=Timeline(30, 30))
 def paragraph(f):
     def draw(r, canvas):
         font_collection = textlayout.FontCollection()
         font_collection.setDefaultFontManager(FontMgr())
 
-        sstyle = textlayout.StrutStyle()
-        sstyle.setStrutEnabled(True)
-        sstyle.setLeading(f.e("eeio", rng=(3.05, 0.75)))
+        strut_style = textlayout.StrutStyle()
+        strut_style.setStrutEnabled(True)
+        #strut_style.setLeading(f.e("eeio", rng=(3.05, 0.75)))
+
+        strut_style.setLeading(0)
 
         para_style = textlayout.ParagraphStyle()
-        para_style.setStrutStyle(sstyle)
+        para_style.setStrutStyle(strut_style)
 
         builder = textlayout.ParagraphBuilder.make(para_style, font_collection, Unicodes.ICU.Make())
 
@@ -27,7 +29,7 @@ def paragraph(f):
         style = textlayout.TextStyle()
         style.setFontSize(30.0)
         style.setForegroundPaint(paint)
-        style.setFontFamilies(["times", "georgia", "serif"])
+        style.setFontFamilies(["hex franklin v0.3 narrow", "times", "georgia", "serif"])
         builder.pushStyle(style)
 
         style_bold = style.cloneForPlaceholder()
@@ -40,6 +42,10 @@ def paragraph(f):
 
         style_italic = style.cloneForPlaceholder()
         style_italic.setFontStyle(FontStyle.Italic())
+        #style_italic.setLetterSpacing(-2.0)
+        style_italic.setWordSpacing(-10)
+        paint.setColor(ColorBLUE)
+        style_italic.setForegroundPaint(paint)
         builder.pushStyle(style_italic)
         builder.addText("art and technique")
         builder.pop()
