@@ -2502,6 +2502,27 @@ class P(Runon):
     @property
     def ew(self): return self.nsew()[3]
 
+    def trim_start(self):
+        self.pvl()
+        new_start = self._val.value[1][-1][-1]
+        self._val.value[1][0] = "moveTo"
+        self._val.value[1][-1] = [new_start]
+        self._val.value = self._val.value[1:]
+        return self
+
+    def trim_end(self):
+        self.pvl()
+        end = self._val.value[-1][0]
+        if end in ["closePath", "endPath"]:
+            self._val.value = self._val.value[:-2]
+            if end == "closePath":
+                self.cp()
+            else:
+                self.ep()
+        else:
+            self._val.value = self._val.value[:-1]
+        return self
+
     def q2c(self):
         new_vl = []
         for mv, pts in self.v.value:
