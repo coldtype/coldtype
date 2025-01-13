@@ -319,5 +319,6 @@ Huge update, attempting to future proof things
 - `Font.instances` to get variable font instance information
 - `coldtype instances font=<font-search>` tool
 - `ººBLENDERINGºº` variable to quickly know if your code is running in blender or as a blender-renderer
+- `P.trim_start` and `P.trim_end` to quickly drop points from either end of a curve
 ### Changed
 - `P.boxCurveTo` `factor=` keyword now expects float, not int
