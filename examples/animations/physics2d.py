@@ -18,6 +18,30 @@ txt = (StSt("C", Font.ColdObvi(), 1200, wdth=1)
 space = pymunk.Space()
 space.gravity = (0.0, -900.0)
 
+# def begin(arbiter, space, data):
+#     print("Collision started!")
+#     return True  # Allow the collision to occur
+
+# def pre_solve(arbiter, space, data):
+#     print("Collision is being solved!")
+#     return True  # Continue processing the collision
+
+# def post_solve(arbiter, space, data):
+#     print("Collision solved!")
+#     # Use arbiter.total_impulse to get collision force if needed
+
+# def separate(arbiter, space, data):
+#     print("Collision ended!")
+
+# Define the collision handler
+#handler = space.add_collision_handler(0, 0)
+
+# Attach callbacks to the handler
+#handler.begin = begin
+# handler.pre_solve = pre_solve
+# handler.post_solve = post_solve
+# handler.separate = separate
+
 static_body = space.static_body
 floor = pymunk.Segment(static_body, *ri.es.splat(), 0.0)
 static_lines = [
@@ -68,6 +92,8 @@ def scratch(f):
         particles.remove(particle)
 
     ### Update physics
+    # Running in a range since that smaller increments repeated
+    # seems to get better results
     for x in range(3):
         space.step(1 / 100.0)
 

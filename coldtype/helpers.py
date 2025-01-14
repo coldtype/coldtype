@@ -2,6 +2,7 @@ from pathlib import Path
 from coldtype.text.reader import normalize_font_path
 from coldtype.interpolation import norm, interp_dict, lerp, loopidx
 from coldtype.random import random_series
+from defcon import Font as DefconFont
 
 
 def sibling(root, file):
@@ -23,6 +24,9 @@ def download(url, save_to:Path, force=False):
     
     return save_to
 
+def raw_ufo(path):
+    return DefconFont(normalize_font_path(path))
+
 def quick_ufo(path
     , familyName
     , styleName="Regular"
@@ -34,8 +38,6 @@ def quick_ufo(path
     , capHeight=750
     , xHeight=500
     ):
-    from defcon import Font as DefconFont
-
     np:Path = Path(path).expanduser().resolve()
     
     if not np.exists():

@@ -39,6 +39,10 @@ class BlendMode(Enum):
     
     def to_skia(self):
         return _SKIA_MAPPING[self.value-1]
+    
+    def print(self):
+        print(self.name)
+        return self
 
     @staticmethod
     def Cycle(i, show=False):
