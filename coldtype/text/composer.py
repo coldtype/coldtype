@@ -280,9 +280,17 @@ def StSt(text,
         #lockup._stst_style = style
         return lockup
 
+from dataclasses import dataclass
 
-GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e", "l", "li"])
+@dataclass
+class GlyphwiseGlyph():
+    i: int
+    c: str
+    e: float
+    l: int
+    li: int
 
+#GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e", "l", "li"])
 
 # def Glyphwise(st:str
 #     , styler:Callable[[GlyphwiseGlyph], Style | list[Style | dict[str, Any]]]

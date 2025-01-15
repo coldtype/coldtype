@@ -513,10 +513,13 @@ class StyledString(FittableMixin):
         self.variations = self.style.variations.copy()
     
     def resetGlyphRun(self):
+        #print("RESET GLYPH RUN", self)
         self.glyphs = self.style.font.font.getGlyphRunFromTextInfo(self.text_info, features=self.features, varLocation=self.variations)
         #self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations)
         x = 0
         for glyph in self.glyphs:
+            #print(">>>>", glyph.gid)
+
             glyph.frame = Rect(x+glyph.dx, glyph.dy, glyph.ax, self.style._asc)
             if "d" in self.style.metrics:
                 glyph.frame = glyph.frame.expand(self.style.descender, "N")
@@ -857,7 +860,8 @@ class StyledString(FittableMixin):
         Vectorize text into a `P`, such that each glyph (or ligature) is represented by a single `P` (or a `P` in the case of a color font, which will then nest a `P` for each layer of that color glyph)
         """
 
-        self.resetGlyphRun()
+        # Guess this has been here for years but it seems to be redundant?
+        #self.resetGlyphRun()
 
         colrv1 = self.style.font._colrv1
         brFont = self.style.font._brFont
@@ -888,7 +892,8 @@ class StyledString(FittableMixin):
                     dp_atom.record(P().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
                 dp_atom.data(
                     frame=norm_frame,
-                    glyphName=g.name
+                    glyphName=g.name,
+                    #glyphID=g.gid,
                 )
                 # dp_atom.typographic = True
                 # dp_atom.addFrame(norm_frame)
@@ -902,7 +907,8 @@ class StyledString(FittableMixin):
                 
                 dp_atom.data(
                     frame=norm_frame,
-                    glyphName=g.name
+                    glyphName=g.name,
+                    #glyphID=g.gid,
                 )
 
                 if self.style.show_frames:
