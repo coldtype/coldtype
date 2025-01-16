@@ -39,7 +39,17 @@ def test_ligature(r):
     assert gl[0].glyphName == "f_i"
     assert gl[-1].glyphName == "f_f"
     
-    return gl.scale(0.5)
+    #return gl.scale(0.5)
+
+    gl2 = (Glyphwise2("fijoff",
+        lambda g: Style(clarette, 200, wdth=g.i/3))
+        .align(r))
+    
+    assert len(gl2) == 4
+    assert gl2[0].glyphName == "f_i"
+    assert gl2[-1].glyphName == "f_f"
+    
+    return gl2.scale(0.25)
 
 @test(160)
 def test_variable_args(r):

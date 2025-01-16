@@ -291,22 +291,51 @@ class GlyphwiseGlyph():
     li: int
 
 
-def Glyphwise2(txt:str, styler) -> P:
+def Glyphwise2(txt:str, styler, tx=0, ty=0, start=0, line=0) -> P:
     """
     Experimental Glyphwise alternative;
     hopefully supports ligatured and RTL
     scripts
     """
-    g0 = GlyphwiseGlyph(-1, None, 0, 0, 0)
+
+    if "\n" in txt:
+        txt = txt.split("\n")
+    
+    if not isinstance(txt, str):
+        count = 0
+        out = P()
+        for lidx, line in enumerate(txt):
+            res = Glyphwise2(line, styler, tx=tx, ty=ty, start=count, line=lidx)
+            count += len(res)
+            out.append(res)
+        out.stack(10)
+        return out
+
+    g0 = GlyphwiseGlyph(-1, None, 0, line, 0)
     initial = StSt(txt, styler(g0))
     glyphs = [p.data("glyphName") for p in initial]
     
     out = P()
+    mods = P()
+
     for idx, glyph in enumerate(glyphs):
-        res = StSt(txt, styler(GlyphwiseGlyph(idx, glyph, idx/len(glyphs), 0, idx)))[idx]
-        out.append(res.zero())
+        styling = styler(GlyphwiseGlyph(start+idx, glyph, idx/len(glyphs), line, idx))
+        if isinstance(styling, Style):
+            res = StSt(txt, styling)[idx]
+            out.append(res.zero())
+        else:
+            res1 = StSt(txt, styling[0])[idx]
+            res2 = StSt(txt, styling[0].mod(**styling[1]))[idx]
+            out.append(res1.zero())
+            mods.append(res2.zero())
     
-    return out.spread(0)
+    out.spread(0)
+
+    if len(mods) > 0:
+        for idx, o in enumerate(out):
+            out[idx] = mods[idx].align(o, tx=tx, ty=ty).data(frame=o.ambit(tx=0))
+    
+    return out
 
 
 # def Glyphwise(st:str
