@@ -248,6 +248,30 @@ class Font():
         dwnl = f"https://drive.google.com/uc?id={id}&export=download"
         return Font.Cacheable(dwnl, suffix=suffix, delete_tmp=delete)
     
+    @staticmethod
+    def UnzipURL(url, font_name, path, index=0) -> "Font":
+        import requests, zipfile, io
+
+        stem = Path(url).stem
+        font_name_short = font_name.replace(" ", "")
+        font_cache_key = f"DownloadedFont_{font_name_short}_{index}"
+        
+        if font_cache_key in FontCache:
+            return FontCache[font_cache_key]
+
+        folder = Path(f"_DownloadedFonts")
+        folder.mkdir(exist_ok=True, parents=True)
+
+        r = requests.get(url)
+        if not r.ok:
+            raise FontNotFoundException("URL did not resolve")
+        
+        z = zipfile.ZipFile(io.BytesIO(r.content))
+        z.extractall(folder)
+
+        font_path = folder / stem / path / font_name
+        return Font.Cacheable(font_cache_key, actual_path=font_path)
+    
     # Google broke this
     # @staticmethod
     # def GoogleFont(font_name, index=0) -> "Font":

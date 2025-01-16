@@ -290,7 +290,24 @@ class GlyphwiseGlyph():
     l: int
     li: int
 
-#GlyphwiseGlyph = namedtuple("GlyphwiseGlyph", ["i", "c", "e", "l", "li"])
+
+def Glyphwise2(txt:str, styler) -> P:
+    """
+    Experimental Glyphwise alternative;
+    hopefully supports ligatured and RTL
+    scripts
+    """
+    g0 = GlyphwiseGlyph(-1, None, 0, 0, 0)
+    initial = StSt(txt, styler(g0))
+    glyphs = [p.data("glyphName") for p in initial]
+    
+    out = P()
+    for idx, glyph in enumerate(glyphs):
+        res = StSt(txt, styler(GlyphwiseGlyph(idx, glyph, idx/len(glyphs), 0, idx)))[idx]
+        out.append(res.zero())
+    
+    return out.spread(0)
+
 
 # def Glyphwise(st:str
 #     , styler:Callable[[GlyphwiseGlyph], Style | list[Style | dict[str, Any]]]
