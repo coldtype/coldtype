@@ -291,7 +291,12 @@ class GlyphwiseGlyph():
     li: int
 
 
-def Glyphwise2(txt:str, styler, tx=0, ty=0, start=0, line=0) -> P:
+def Glyphwise2(txt:str, styler
+    , multiline=False
+    , tx=0
+    , ty=0
+    , start=0
+    , line=0) -> P:
     """
     Experimental Glyphwise alternative;
     hopefully supports ligatured and RTL
@@ -300,6 +305,9 @@ def Glyphwise2(txt:str, styler, tx=0, ty=0, start=0, line=0) -> P:
 
     if "\n" in txt:
         txt = txt.split("\n")
+
+    if multiline and isinstance(txt, str):
+        txt = [txt]
     
     if not isinstance(txt, str):
         count = 0
