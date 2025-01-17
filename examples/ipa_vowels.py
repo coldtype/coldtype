@@ -1,23 +1,15 @@
 from coldtype import *
 
-font = Font.Find("Brill-Bold")
+# https://brill.com/page/BrillFontDownloads/Download-The-Brill-Typeface
 
-vowels = """
-iy  ɨʉ  ɯu
- ɪʏ    ʊ
-eø  ɘɵ  ɤo
-e̞ø̞  ə   ɤ̞o̞
-ɛœ  ɜɞ  ʌɔ
-æ   ɐ
-aɶ  ä   ɑɒ
-"""
+font = Font.Find("Brill-Bold")
 
 @animation(bg=1)
 def scratch(f:Frame):
     r = f.a.r.inset(100)
     
     close = P().m(r.pnw).l(r.pne).ep()
-    open = P().m(open_front:=r.drop(0.5, "W").psw).l(r.pse).ep()
+    open = P().m(open_front:=r.drop(0.55, "W").psw).l(r.pse).ep()
     front = P().m(r.pnw).l(open_front).ep()
     back = P().m(r.pne).l(r.pse).ep()
     central = P().m(r.pn).l(open.point_t(0.5)[0]).ep()
@@ -35,10 +27,11 @@ def scratch(f:Frame):
     
     def v(c, line, t):
         o = line.point_t(t)[0]
-        p = StSt(c, font, 70).f(0)
+        p = StSt(c, font, 70).f(0).partition(lambda p: p.data("glyphCluster")).track(30)
+        p.align(Rect.FromCenter(o, 1), tx=1).t(0, 7)
         return P(
-            p.align(Rect.FromCenter(o, 1)).tag("symbols").t(0, 7),
-            P().rect(p.ambit(ty=1).inset(-20)).f(-1).tag("knockout"))
+            P().rect(p.ambit(tx=1, ty=1).inset(-20)).f(0.9).tag("knockout"),
+            p.tag("symbols"))
     
     def vs(cs, line, ts=(0, 0.5, 1.0)):
         return P().enumerate(cs, lambda x: v(x.el, line, ts[x.i]))
@@ -50,7 +43,8 @@ def scratch(f:Frame):
         vs(["e̞ø̞", "ə", "ɤ̞o̞"], mid),
         vs(["ɛœ", "ɜɞ", "ʌɔ"], open_mid),
         vs(["æ", "ɐ"], near_open),
-        vs(["aɶ", "ä", "ɑɒ"], open)))
+        vs(["aɶ", "ä", "ɑɒ"], open)
+        ))
     
     lines = lines.outline(1).difference(P(res.copy().find("knockout")))
 

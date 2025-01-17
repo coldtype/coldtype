@@ -829,6 +829,23 @@ class Runon:
         
         return self.index(indices, _replace_fn)
     
+    def partition(self, fn):
+        last = None
+        group = type(self)()
+        out = type(self)()
+        for p in self:
+            v = fn(p)
+            if last == v:
+                group.append(p)
+            else:
+                if len(group) > 0:
+                    out.append(group)
+                    group = type(self)()
+                group.append(p)
+            last = v
+        out.append(group)
+        return out
+    
     # Data-access methods
 
     def data(self, key=None, default=None, function_literals=False, **kwargs):

@@ -890,9 +890,11 @@ class StyledString(FittableMixin):
                     dp_atom.record(P().rect(self.style.show_frames(g.frame)).outline(4))
                 else:
                     dp_atom.record(P().rect(g.frame).outline(1 if self.style.show_frames is True else self.style.show_frames))
+                
                 dp_atom.data(
                     frame=norm_frame,
                     glyphName=g.name,
+                    glyphCluster=g.cluster,
                     #glyphID=g.gid,
                 )
                 # dp_atom.typographic = True
@@ -908,6 +910,7 @@ class StyledString(FittableMixin):
                 dp_atom.data(
                     frame=norm_frame,
                     glyphName=g.name,
+                    glyphCluster=g.cluster,
                     #glyphID=g.gid,
                 )
 
