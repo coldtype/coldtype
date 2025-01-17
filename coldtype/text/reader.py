@@ -17,10 +17,12 @@ from coldtype.text.font import Font, normalize_font_path, normalize_font_prefix,
 from typing import Union
 
 import fontgoggles.misc.platform as platform
-platform.USE_COCOA = False
+platform.setUseCocoa(False)
 
 from fontgoggles.misc.textInfo import TextInfo
 from fontgoggles.font.glyphDrawing import GlyphDrawing
+
+import uharfbuzz as hb
 
 try:
     from blackrenderer.font import BlackRendererFont
@@ -89,6 +91,7 @@ class Style():
         font_size:int=12,
         tracking=0,
         trackingMode=1,
+        postTracking=0,
         kern_pairs=dict(),
         space=None,
         baselineShift=0,
@@ -131,6 +134,7 @@ class Style():
         tag=None, # way to differentiate in __eq__
         annotate=False,
         case=None,
+        cluster=False,
         **kwargs
         ):
 
@@ -145,6 +149,7 @@ class Style():
         self.meta = meta
         self.case = case
 
+        self.cluster = cluster
         self.fallback = fallback
         self.narrower = narrower
         self.layer = layer
@@ -182,6 +187,7 @@ class Style():
         
         self.fontSize = max(self.fontSize, 0)
 
+        self.postTracking = postTracking
         self.tracking = kwargs.get("t", tracking)
         self.kern_pairs = kwargs.get("kp", kern_pairs)
         self.trackingMode = trackingMode
@@ -514,7 +520,10 @@ class StyledString(FittableMixin):
     
     def resetGlyphRun(self):
         #print("RESET GLYPH RUN", self)
-        self.glyphs = self.style.font.font.getGlyphRunFromTextInfo(self.text_info, features=self.features, varLocation=self.variations)
+        self.glyphs = self.style.font.font.getGlyphRunFromTextInfo(self.text_info
+            , features=self.features
+            , varLocation=self.variations
+            , clusterLevel=hb.BufferClusterLevel.DEFAULT)
         #self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations)
         x = 0
         for glyph in self.glyphs:
@@ -980,6 +989,22 @@ class StyledString(FittableMixin):
                 dp_atom.data(**self.style.meta)
             
             pens.append(dp_atom)
+        
+        if self.style.cluster:
+            def cluster(p:P):
+                first = p[0]
+                glyphName = "+".join([x.data("glyphName") for x in p])
+                for r in p[1:]:
+                    first.record(r)
+                return first.data(glyphName=glyphName)
+
+            pens = (pens
+                .partition(lambda p: p.data("glyphCluster"))
+                .map(cluster))
+        
+        if self.style.postTracking != 0:
+            #print(self.style.postTracking * self.style.fontSize/1000)
+            pens.track(self.style.postTracking * self.style.fontSize/1000)
 
         if self.style.reverse:
             pens.reversePens()

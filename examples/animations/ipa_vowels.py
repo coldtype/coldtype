@@ -99,5 +99,4 @@ def chart(f:Frame):
         lines.f(hsl(0.75, 0.6, 0.85)),
         highlight.fssw(-1, hsl(0.75, 0.6, 0.75), 20),
         P(res.find("symbols"))),
-        StSt("".join(active_symbols), font, 320).align(f.a.r.inset(100), "SW").f(0)
-        )
+        StSt("".join(active_symbols), font, 320).align(f.a.r.inset(100), "SW").f(0))

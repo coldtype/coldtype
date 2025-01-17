@@ -6,7 +6,7 @@ from urllib.request import urlretrieve
 from coldtype.osutil import on_linux, on_mac, on_windows, run_with_check
 
 import fontgoggles.misc.platform as platform
-platform.USE_COCOA = False
+platform.setUseCocoa(False)
 
 from fontgoggles.font import getOpener
 from fontgoggles.font.baseFont import BaseFont
