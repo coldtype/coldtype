@@ -3,9 +3,10 @@ from itertools import chain
 
 media = ººsiblingºº("media/vowels")
 
-mt = MidiTimeline(media / "midi1.mid")
-audio = media / "midi1.wav"
+mt = MidiTimeline(media / "midi2.mid")
+audio = media / "midi2.wav"
 
+# https://en.wikipedia.org/wiki/IPA_vowel_chart_with_audio
 # https://brill.com/page/BrillFontDownloads/Download-The-Brill-Typeface
 
 font = Font.Find("Brill-Bold")
@@ -81,7 +82,10 @@ def chart(f:Frame):
         vs(vowels[5], near_open),
         vs(vowels[6], open)))
     
-    P(res.find("symbols")).f(hsl(0.65, 0.7, 0.40))
+    for idx, symbol in enumerate(res.find("symbol")):
+        #P(res.find("symbols")).f(hsl(0.65, 0.7, 0.40))
+        #symbol.f(hsl(0.65, 0.7, 0.40))
+        symbol.append(StSt(f"{idx}", Font.JBMono(), 30, wght=1).align(symbol.ambit()).shift(0, -2))
     
     highlight = P()
     active_symbols = []

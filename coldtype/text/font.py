@@ -5,8 +5,15 @@ from urllib.request import urlretrieve
 
 from coldtype.osutil import on_linux, on_mac, on_windows, run_with_check
 
-import fontgoggles.misc.platform as platform
-platform.setUseCocoa(False)
+from fontgoggles.misc.platform import setUseCocoa
+setUseCocoa(False)
+
+import fontgoggles.misc.hbShape as hbShape
+try:
+    hbShape.CLUSTER_LEVEL = hbShape.hb.BufferClusterLevel.DEFAULT
+except:
+    print("! could not set hbShape.CLUSTER_LEVEL")
+    pass
 
 from fontgoggles.font import getOpener
 from fontgoggles.font.baseFont import BaseFont

@@ -16,8 +16,8 @@ from coldtype.text.font import Font, normalize_font_path, normalize_font_prefix,
 
 from typing import Union
 
-import fontgoggles.misc.platform as platform
-platform.setUseCocoa(False)
+# from fontgoggles.misc.platform import setUseCocoa
+# setUseCocoa(False)
 
 from fontgoggles.misc.textInfo import TextInfo
 from fontgoggles.font.glyphDrawing import GlyphDrawing
@@ -523,7 +523,7 @@ class StyledString(FittableMixin):
         self.glyphs = self.style.font.font.getGlyphRunFromTextInfo(self.text_info
             , features=self.features
             , varLocation=self.variations
-            , clusterLevel=hb.BufferClusterLevel.DEFAULT)
+            )
         #self.glyphs = self.style.font.font.getGlyphRun(self.text, features=self.features, varLocation=self.variations)
         x = 0
         for glyph in self.glyphs:
