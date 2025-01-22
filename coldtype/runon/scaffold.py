@@ -21,10 +21,40 @@ class Scaffold(Runon):
         super().__init__(*val)
     
     def find_(self, finder_fn=None, fn=None, index=0, none_ok=0, find_one=False, **kwargs):
-        if isinstance(finder_fn, str) and "*" in finder_fn:
-            start, extend = [[int(y) for y in x.split("|")] for x in finder_fn.split("*")]
-            end = [start[0]+(extend[0]-1), start[1]+(extend[1]-1)]
-            finder_fn = f"{start[0]}|{start[1]}+{end[0]}|{end[1]}"
+        if isinstance(finder_fn, str):
+            def to_xy(xy):
+                return [int(n) for n in xy.split("|")]
+            
+            def wrap(xy):
+                x, y = to_xy(xy)
+                w = len(self.cols())
+                h = len(self.rows())
+                if x < 0:
+                    x = w + x
+                if y < 0:
+                    y = h + y
+                return f"{x}|{y}"
+            
+            if "*" in finder_fn:
+                start, extend = finder_fn.split("*")
+                start = wrap(start)
+                start = to_xy(start)
+                extend = to_xy(extend)
+                x, y = start
+                ex, ey = extend
+                end = [x+(ex-1), y+(ey-1)]
+                
+                if ex == 0: end[0] = start[0]
+                elif ex < 0: end[0] = x+(ex+1)
+                
+                if ey == 0: end[1] = start[1]
+                elif ey < 0: end[1] = y+(ey+1)
+                
+                finder_fn = f"{start[0]}|{start[1]}+{end[0]}|{end[1]}"
+            
+            elif "-" in finder_fn:
+                finder_fn = wrap(finder_fn)
+        
         return super().find_(finder_fn=finder_fn, fn=fn, index=index, none_ok=none_ok, find_one=find_one, **kwargs)
 
     def sum(self):
@@ -379,7 +409,7 @@ class Scaffold(Runon):
             self._els = sorted(self._els, key=lambda el: getattr(el.r, attr), reverse=reverse)
         return self
     
-    def view(self, fontSize=32, fill=True, vectors=False):
+    def view(self, fontSize=22, fill=False, stroke=True, vectors=False):
         global _view_rs1
         if _view_rs1 is None:
             _view_rs1 = random_series()
@@ -395,9 +425,9 @@ class Scaffold(Runon):
             if pos == 0:
                 out.append(P(
                     P(el.r).f(hsl(_view_rs1[ridx], 1)).alpha(0.1) if fill else None,
-                    P(el.r.inset(2)).fssw(-1, bw(0, 0.2), 4) if fill else None,
+                    P(el.r.inset(0)).fssw(-1, bw(0, 0.2), 1) if stroke else None,
                     P().text(el.tag() or ("u:" + data["utag"])
-                        , Style("Times", fontSize, load_font=0, fill=bw(0, 0.5))
+                        , Style("Monaco", fontSize, load_font=0, fill=bw(0, 0.5))
                         , el.r.inset(7, 10)) if not vectors else
                             StSt(el.tag(), Font.JBMono(), fontSize)
                                 .scaleToRect(el.r, shrink_only=True)
