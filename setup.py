@@ -15,8 +15,8 @@ basic_deps = [
     "defcon==0.10.3",
     "requests==2.32.3",
     "b3denv>=0.0.12",
-    "ufo2ft==3.2.8", # pin for an issue in fg
-    "coldtype-fontgoggles==1.8.4.2",
+    "ufo2ft>=3.2.8", # pin for an issue in fg
+    "coldtype-fontgoggles>=1.8.4.3",
 ]
 
 #if sys.platform.startswith("darwin"):
