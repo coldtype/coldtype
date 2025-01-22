@@ -159,7 +159,7 @@ def test_labeled_grid(r):
     assert s[-1].tag() == "3|0"
     return s.view()
 
-@test((500, 500))
+@test((500, 500), solo=1)
 def test_numeric_grid(r):
     ri = r.inset(20)
     s = Scaffold(ri).numeric_grid(5, gap=4, annotate_rings=1)
@@ -186,5 +186,7 @@ def test_numeric_grid(r):
     assert p.find_("0|0").ambit().psw == ri.psw
     assert p.find_("0|4").ambit().pnw == ri.pnw
     assert p.find_("4|0").ambit().pse == ri.pse
+
+    assert s["0|1*3|2"].r == s["0|1+2|2"].r
 
     return p

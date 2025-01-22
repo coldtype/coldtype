@@ -19,6 +19,13 @@ class Scaffold(Runon):
         self.warn_float = warn_float
         
         super().__init__(*val)
+    
+    def find_(self, finder_fn=None, fn=None, index=0, none_ok=0, find_one=False, **kwargs):
+        if isinstance(finder_fn, str) and "*" in finder_fn:
+            start, extend = [[int(y) for y in x.split("|")] for x in finder_fn.split("*")]
+            end = [start[0]+(extend[0]-1), start[1]+(extend[1]-1)]
+            finder_fn = f"{start[0]}|{start[1]}+{end[0]}|{end[1]}"
+        return super().find_(finder_fn=finder_fn, fn=fn, index=index, none_ok=none_ok, find_one=find_one, **kwargs)
 
     def sum(self):
         if self.val_present():
