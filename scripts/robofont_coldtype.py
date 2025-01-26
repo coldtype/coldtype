@@ -19,6 +19,8 @@ class ColdtypeSerializer(BaseWindowController):
         
         self.setUpBaseWindowBehavior()
         self.w.open()
+        
+        self.writeGlyph()
     
     def editTextCallback(self, sender):
         self.path = Path(sender.get()).expanduser().absolute()
@@ -26,13 +28,21 @@ class ColdtypeSerializer(BaseWindowController):
     def windowCloseCallback(self, sender):
         removeObserver(self, 'fontWillSave')
         super(ColdtypeSerializer, self).windowCloseCallback(sender)
-
-    def shouldDraw(self, notification):
-        if not self.w.globalToggle.get():
-            return
         
+        self.writeGlyph()
+    
+    def writeGlyph(self):
         glyph = CurrentGlyph()
-        data_out = {"name": glyph.name, "layers": {}}
+        image = glyph.image
+        
+        print(">>>> writeGlyph", glyph, image)
+        
+        data_out = {
+            "font": CurrentFont().path,
+            "name": glyph.name,
+            "image": dict(offset=image.offset, scale=image.scale, fileName=image.__dict__["_wrapped"]["fileName"]),
+            "layers": {}
+        }
         
         for g in glyph.layers:
             rp = RecordingPen()
@@ -51,5 +61,11 @@ class ColdtypeSerializer(BaseWindowController):
                 contours=contours)
             
         self.path.write_text(json.dumps(data_out))
+
+    def shouldDraw(self, notification):
+        if not self.w.globalToggle.get():
+            return
+        
+        self.writeGlyph()
 
 ColdtypeSerializer()
