@@ -314,7 +314,7 @@ Huge update, attempting to future proof things
 - try/except for filmjitter in coldtype.raster
 - Don’t enable audio if audio can’t be enabled (print instructions on enabling audio instead)
 
-## [0.11.2] - 2024-12-?
+## [0.11.2] - 2025-01-26
 ### Added
 - `Font.instances` to get variable font instance information
 - `coldtype instances font=<font-search>` tool
@@ -322,3 +322,5 @@ Huge update, attempting to future proof things
 - `P.trim_start` and `P.trim_end` to quickly drop points from either end of a curve
 ### Changed
 - `P.boxCurveTo` `factor=` keyword now expects float, not int
+### Fixed
+- Updated coldtype-fontgoggles to latest to avoid Windows thinking it could do objc
