@@ -67,6 +67,8 @@ class ConfigOption(Enum):
     
     CronInterval = ("cron_interval", 0, "ci", lambda x: float(x))
 
+    KeyboardLayout = ("keyboard_layout", None, "kl")
+
     @staticmethod
     def Help(e):
         if e == ConfigOption.WindowPassthrough:

@@ -324,3 +324,7 @@ Huge update, attempting to future proof things
 - `P.boxCurveTo` `factor=` keyword now expects float, not int
 ### Fixed
 - Updated coldtype-fontgoggles to latest to avoid Windows thinking it could do objc
+
+## [0.11.3] - 2025-??-??
+### Added
+- Experimental support for limited keyboard layout remapping via command line

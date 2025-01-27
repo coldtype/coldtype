@@ -36,7 +36,7 @@ except ImportError:
 from coldtype.geometry import Point, Rect, Edge
 from coldtype.renderable import Action
 from coldtype.renderer.config import ConfigOption, ColdtypeConfig
-from coldtype.renderer.keyboard import KeyboardShortcut, REPEATABLE_SHORTCUTS, shortcuts_keyed
+from coldtype.renderer.keyboard import KeyboardShortcut, REPEATABLE_SHORTCUTS, shortcuts_keyed, LAYOUT_REMAPS
 
 try:
     from coldtype.pens.svgpen import SVGPen
@@ -322,8 +322,14 @@ class WinmanGLFWSkia():
         return REPEATABLE_SHORTCUTS
     
     def on_potential_shortcut(self, key, action, mods):
+        if self.config.keyboard_layout is not None and self.config.keyboard_layout in LAYOUT_REMAPS:
+            remap = LAYOUT_REMAPS[self.config.keyboard_layout]
+            if key in remap:
+                key = remap[key]
+
         for shortcut, options in self.all_shortcuts.items():
             for modifiers, skey, ckey in options:
+                #print(key, skey, ckey)
                 if key != skey and key != ckey:
                     continue
 

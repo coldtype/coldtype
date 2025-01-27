@@ -7,6 +7,11 @@ except ImportError:
     glfw = None
 
 
+LAYOUT_REMAPS = (
+    {'fr': {81: 65, 87: 90, 65: 81, 77: 44, 44: 59}}
+)
+
+
 class KeyboardShortcut(Enum):
     PreviewPrev = "prev_prev"
     PreviewPrevMany = "prev_prev_many"
@@ -275,6 +280,7 @@ def symbol_to_glfw(s):
         "=": glfw.KEY_EQUAL,
         "/": glfw.KEY_SLASH,
         "'": glfw.KEY_APOSTROPHE,
+        ";": glfw.KEY_SEMICOLON,
         "<backslash>": glfw.KEY_BACKSLASH,
         "<bracket-right>": glfw.KEY_RIGHT_BRACKET,
         "<bracket-left>": glfw.KEY_LEFT_BRACKET,
