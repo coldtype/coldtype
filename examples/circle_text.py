@@ -7,7 +7,7 @@ def circles(r):
     
     return (P(
         circle,
-        StSt("ABC", Font.MuSan(), 100, wght=0.5, wdth=0, tu=-90)
+        StSt("ABC", Font.MuSan(), 100, wght=0.5, wdth=0, tu=340)
             .distribute_on_path(circle.copy().scale(1.1), baseline=1)
             .f(hsl(0.7)),
         StSt("ABC", Font.MuSan(), 100, wght=0.5, wdth=0, tu=500)
