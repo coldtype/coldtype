@@ -325,6 +325,6 @@ Huge update, attempting to future proof things
 ### Fixed
 - Updated coldtype-fontgoggles to latest to avoid Windows thinking it could do objc
 
-## [0.11.3] - 2025-??-??
+## [0.11.3] - 2025-01-28
 ### Added
-- Experimental support for limited keyboard layout remapping via command line
+- Experimental support for limited keyboard layout remapping via command line -kl argument
