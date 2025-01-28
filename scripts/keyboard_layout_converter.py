@@ -1,58 +1,16 @@
 from coldtype import *
 from coldtype.renderer.keyboard import symbol_to_glfw, SHORTCUTS
 
-keyboards = {
-    "fr": {
-        "q": "a",
-        "w": "z",
-        "e": "e",
-        "r": "r",
-        "t": "t",
-        "y": "y",
-        "u": "u",
-        "i": "i",
-        "o": "o",
-        "p": "p",
-        "[": "^",
-        "{": "¨",
-        "]": "$",
-        "}": "£",
-        "|": "µ",
-        "`": "²",
-        "~": "~",
-        "a": "q",
-        "s": "s",
-        "d": "d",
-        "f": "f",
-        "g": "g",
-        "h": "h",
-        "j": "j",
-        "k": "k",
-        "l": "l",
-        ";": "m",
-        ":": "M",
-        "'": "ù",
-        "\"": "%",
-        "z": "w",
-        "x": "x",
-        "c": "c",
-        "v": "v",
-        "b": "b",
-        "n": "n",
-        "m": ",",
-        ",": ";",
-        "<": ".",
-        ".": ":",
-        ">": "/",
-        "/": "!",
-        "?": "§",
-        "@": "2",
-        "#": "3",
-        "$": "4",
-        "^": "6",
-        "&": "7"
-    }
-}
+import json
+
+# layouts downloaded from https://github.com/ai/convert-layout
+
+layouts = [x for x in list(Path("~/Downloads/convert-layout-main").expanduser().glob("*.json")) if x.stem not in ["package"]]
+
+keyboards = {l.stem:json.loads(l.read_text()) for l in layouts}
+
+for layout in layouts:
+    print(layout)
 
 ALT_LOOKUP = {
     "[": "<bracket-right>",
@@ -85,7 +43,15 @@ for name, keyboard in keyboards.items():
                 except:
                     print("UNMAPPABLE", k, v)
 
-print(remaps)
+remaps = {k:v for k,v in remaps.items() if len(v) > 0}
+
+#print(list(remaps.keys()))
+
+import black
+print(black.format_str(str(remaps), mode=black.Mode(line_length=300)))
+
+#for k, remap in remaps.items():
+#    print(k, remap)
 
 @animation((100, 100))
 def scratch(f:Frame):

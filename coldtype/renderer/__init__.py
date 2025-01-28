@@ -25,7 +25,7 @@ from coldtype.renderer.state import RendererState
 from coldtype.renderer.winman import Winmans, WinmanGLFWSkiaBackground
 from coldtype.renderable import renderable, animation, Action, Overlay, runnable
 
-from coldtype.renderer.keyboard import KeyboardShortcut
+from coldtype.renderer.keyboard import KeyboardShortcut, LAYOUT_REMAPS
 from coldtype.osutil import show_in_finder
 
 try:
@@ -937,6 +937,12 @@ class Renderer():
             self.winmans.set_title(self.watchees[0][1].name)
         else:
             self.winmans.set_title("coldtype")
+        
+        kl = self.source_reader.config.keyboard_layout
+
+        if kl is not None and kl not in LAYOUT_REMAPS:
+            print(f"! -kl {kl} not recognized; will be ignored")
+            print("valid kl options:", list(LAYOUT_REMAPS.keys()))
 
         self.hotkeys = None
         if self.source_reader.config.hotkeys:

@@ -2,6 +2,8 @@ from enum import Enum
 import argparse, re, platform
 from pathlib import Path
 
+from coldtype.renderer.keyboard import LAYOUT_REMAPS
+
 
 def true_false_or_none(x):
     if x in ["0", "false", "False", "n", "no", "N"]:
@@ -135,6 +137,8 @@ class ConfigOption(Enum):
             return "Add a grid to the output?"
         elif e == ConfigOption.PrintResult:
             return "Print the result"
+        elif e == ConfigOption.KeyboardLayout:
+            return f"Remap keyboard for layout, options: {list(LAYOUT_REMAPS.keys())}"
         
 
     @staticmethod
