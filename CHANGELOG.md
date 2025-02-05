@@ -328,3 +328,9 @@ Huge update, attempting to future proof things
 ## [0.11.3] - 2025-01-28
 ### Added
 - Experimental support for limited keyboard layout remapping via command line -kl argument
+
+## [0.11.4] - 2025-02-05
+### Added
+- `ViewerSoloFirst` and `ViewerSoloLast` shortcuts
+### Changed
+- `VIEWER_SOLO` is now a config option, not a one-off cli arg in renderer

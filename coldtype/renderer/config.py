@@ -43,8 +43,7 @@ class ConfigOption(Enum):
     SrcMacros = ("src_macros", {}, "srcm")
     FFMPEGCommand = ("ffmpeg_command", "ffmpeg", "ffc")
     BlenderWatch = ("blender_watch", None, "bw", true_false_or_none)
-    BlenderFile = ("blender_file", None, "bf",
-        lambda x: Path(x).expanduser().resolve())
+    BlenderFile = ("blender_file", None, "bf", lambda x: Path(x).expanduser().resolve())
     BlenderResetFactory = ("blender_reset_factory", None, "brf", true_false_or_none)
     BlenderCommandLineArgs = ("blender_command_line_args", None, "bcli")
     NoWatch = ("no_watch", None, "nw", true_false_or_none)
@@ -54,6 +53,8 @@ class ConfigOption(Enum):
     NoSound = ("no_sound", None, "ns", true_false_or_none)
     NoViewerErrors = ("no_viewer_errors", None, "nve", true_false_or_none)
     EnableAudio = ("enable_audio", None, "ea", true_false_or_none)
+
+    ViewerSolos = ("viewer_solos", [], "vs", lambda x: [int(n) for n in x.split(",")])
     
     AddTimeViewers = ("add_time_viewers", None, "tv", true_false_or_none)
     AddUI = ("add_ui", True, "ui", true_false_or_none)

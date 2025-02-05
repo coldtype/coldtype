@@ -105,7 +105,7 @@ class Renderer():
 
             frame_offset=parser.add_argument("-fo", "--frame-offset", type=int, default=0, help=argparse.SUPPRESS),
 
-            viewer_solos=parser.add_argument("-vs", "--viewer-solos", type=str, default=None, help=argparse.SUPPRESS),
+            #viewer_solos=parser.add_argument("-vs", "--viewer-solos", type=str, default=None, help=argparse.SUPPRESS),
 
             last_cursor=parser.add_argument("-lc", "--last-cursor", type=str, default="0,0", help=argparse.SUPPRESS),
 
@@ -204,10 +204,7 @@ class Renderer():
         self.hotkey_waiting = None
         self.stop_at_end = False
 
-        if self.args.viewer_solos:
-            self.viewer_solos = [int(x.strip()) for x in self.args.viewer_solos.split(",")]
-        else:
-            self.viewer_solos = []
+        self.viewer_solos = self.source_reader.config.viewer_solos
         
         self.viewer_sample_frames = 1
         self.viewer_playback_rate = 1
@@ -1270,6 +1267,16 @@ class Renderer():
             if len(self.viewer_solos):
                 for i, solo in enumerate(self.viewer_solos):
                     self.viewer_solos[i] = solo - 1
+            return Action.PreviewStoryboardReload
+        elif shortcut == KeyboardShortcut.ViewerSoloFirst:
+            if len(self.viewer_solos):
+                for i, solo in enumerate(self.viewer_solos):
+                    self.viewer_solos[i] = 0
+            return Action.PreviewStoryboardReload
+        elif shortcut == KeyboardShortcut.ViewerSoloLast:
+            if len(self.viewer_solos):
+                for i, solo in enumerate(self.viewer_solos):
+                    self.viewer_solos[i] = -1
             return Action.PreviewStoryboardReload
         elif shortcut in [
             KeyboardShortcut.ViewerSolo1,

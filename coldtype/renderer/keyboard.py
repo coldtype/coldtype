@@ -109,6 +109,8 @@ class KeyboardShortcut(Enum):
     ViewerSoloNone = "viewer_solo_none"
     ViewerSoloNext = "viewer_solo_next",
     ViewerSoloPrev = "viewer_solo_prev",
+    ViewerSoloFirst = "viewer_solo_first",
+    ViewerSoloLast = "viewer_solo_last",
     ViewerSolo1 = "viewer_solo_1"
     ViewerSolo2 = "viewer_solo_2"
     ViewerSolo3 = "viewer_solo_3"
@@ -490,16 +492,16 @@ SHORTCUTS = {
     # ],
 
     KeyboardShortcut.WindowOpacityDown: [
-        [["cmd"], "<down>"]
+        [["cmd", "shift"], "<down>"]
     ],
     KeyboardShortcut.WindowOpacityUp: [
-        [["cmd"], "<up>"]
+        [["cmd", "shift"], "<up>"]
     ],
     KeyboardShortcut.WindowOpacityMin: [
-        [["cmd", "shift"], "<down>"],
+        [["cmd", "shift", "alt"], "<down>"],
     ],
     KeyboardShortcut.WindowOpacityMax: [
-        [["cmd", "shift"], "<up>"]
+        [["cmd", "shift", "alt"], "<up>"]
     ],
 
 
@@ -523,6 +525,12 @@ SHORTCUTS = {
     ],
     KeyboardShortcut.ViewerSoloPrev: [
         [["cmd"], "<left>"]
+    ],
+    KeyboardShortcut.ViewerSoloFirst: [
+        [["cmd"], "<up>"]
+    ],
+    KeyboardShortcut.ViewerSoloLast: [
+        [["cmd"], "<down>"]
     ],
     KeyboardShortcut.ViewerSolo1: [
         [["shift"], "np1"],
