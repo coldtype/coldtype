@@ -429,7 +429,7 @@ class SourceReader():
 
                     for f in self.config.font_dirs:
                         if f not in ALL_FONT_DIRS:
-                            ALL_FONT_DIRS.insert(0, f)
+                            ALL_FONT_DIRS.insert(1, f)
                 except Exception as e:
                     if isinstance(e, ColdtypeCeaseConfigException):
                         pass
