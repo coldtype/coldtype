@@ -110,7 +110,9 @@ def ease(style, x):
     """
     if style == "linear" or style == "lin" or style == "l":
         return x, 0.5
+    
     e = eases.get(style)
+
     if e:
         return e().ease(x), 0.5
     elif hasattr(style, "moveTo"):
@@ -157,3 +159,6 @@ def ez(t, easefn="eeio", loops=0, cyclic=True, rng=(0, 1), **kwargs):
         rng = kwargs["r"]
     
     return applyRange(e, rng)
+
+def cycle(i):
+    return all_eases[i%len(all_eases)]

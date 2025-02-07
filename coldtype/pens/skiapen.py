@@ -104,6 +104,24 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 self.gradient(color)
             elif isinstance(color, Color):
                 self.paint.setColor(color.skia())
+        
+        if "blur" in self.dat._data:
+            args = self.dat._data["blur"]
+            try:
+                sigma = args[0] / 3
+                if len(args) > 1:
+                    style = args[1]
+                else:
+                    style = skia.kNormal_BlurStyle
+            except:
+                style = skia.kNormal_BlurStyle
+                sigma = args / 3
+            
+            self.paint.setMaskFilter(skia.MaskFilter.MakeBlur(style, sigma))
+        
+        if "shake" in self.dat._data:
+            args = self.dat._data["shake"]
+            self.paint.setPathEffect(skia.DiscretePathEffect.Make(*args))
     
     def stroke(self, weight=1, color=None, dash=None, miter=None):
         self.paint.setStyle(skia.Paint.kStroke_Style)
