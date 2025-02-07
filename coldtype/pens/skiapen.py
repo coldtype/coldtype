@@ -117,7 +117,8 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
                 style = skia.kNormal_BlurStyle
                 sigma = args / 3
             
-            self.paint.setMaskFilter(skia.MaskFilter.MakeBlur(style, sigma))
+            if sigma > 0:
+                self.paint.setMaskFilter(skia.MaskFilter.MakeBlur(style, sigma))
         
         if "shake" in self.dat._data:
             args = self.dat._data["shake"]
