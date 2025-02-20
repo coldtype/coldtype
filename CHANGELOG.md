@@ -329,7 +329,7 @@ Huge update, attempting to future proof things
 ### Added
 - Experimental support for limited keyboard layout remapping via command line -kl argument
 
-## [0.11.4] - 2025-02-05
+## [0.11.4] - 2025-02-20
 ### Added
 - `ViewerSoloFirst` and `ViewerSoloLast` shortcuts
 ### Changed
