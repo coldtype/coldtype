@@ -7,7 +7,7 @@ midi = MidiTimeline(
     , bpm=120
     , duration=60)
 
-@animation(timeline=midi, bg=0.1, audio=audio)
+@animation(timeline=midi, bg=0.1, audio=audio, release=λ.export("h264", loops=4))
 def render(f):
     k = f.t.ki(36).adsr([12, 10])
     s = f.t.ki(38).adsr([4, 35])
