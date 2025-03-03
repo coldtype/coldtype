@@ -45,7 +45,8 @@ The best way to get familiar with Coldtype is to look at and try modifying some 
 To get a development environment for Coldtype:
 
 ```
-python3.11 -m venv venv
-source venv/bin/activate
-pip install -e .[viewer]
+git clone https://github.com/coldtype/coldtype.git
+git co -b uv origin/uv
+uv sync --extra viewer --extra audio
+uv run examples/animations/808.py
 ```
