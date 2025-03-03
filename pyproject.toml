@@ -1,0 +1,49 @@
+[project]
+name = "coldtype"
+version = "0.11.5"
+description = "Functions for manual vectorized typesetting"
+readme = "README.md"
+authors = [
+    { name = "Rob Stenson", email = "rob.stenson@gmail.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "fontPens==0.2.4",
+    "easing-functions==1.0.4",
+    "mido==1.3.2",
+    "defcon==0.10.3",
+    "requests==2.32.3",
+    "b3denv>=0.0.12",
+    "ufo2ft>=3.2.8", # pin for fg issue
+    "coldtype-fontgoggles>=1.8.4.6",
+]
+
+[project.optional-dependencies]
+drawbot = ["numpy"]
+viewer = ["glfw", "PyOpenGL", "skia-python", "skia-pathops", "numpy", "potracer"]
+unicode = ["unicodedata2"]
+blender = ["skia-pathops", "ufoLib2"]
+notebook = ["skia-pathops", "skia-python", "potracer", "tdqm"]
+audio = ["pyaudio", "soundfile"]
+website = [
+    "jinja2",
+    "python-frontmatter",
+    "livereload",
+    "Markdown",
+    "markdown-captions",
+    "beautifulsoup4",
+    "brotli",
+    "lxml",
+    "pygments",
+    "sourcetypes",
+    "favicons",
+]
+
+[project.scripts]
+coldtype = "coldtype.renderer:main"
+ct = "coldtype.renderer:main"
+ctb = "coldtype.renderer:main_b3d"
+
+[build-system]
+requires = ["setuptools >= 61.0", "setuptools-scm >= 8.0"]
+build-backend = "setuptools.build_meta"
