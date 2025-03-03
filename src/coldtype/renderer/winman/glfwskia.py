@@ -223,7 +223,7 @@ class WinmanGLFWSkia():
             if _work_rect_y < 100:
                 _work_rect_y = 0
             else:
-                _work_rect_y -= 40
+                _work_rect_y -= 38
             
             if _work_rect_x < 100:
                 _work_rect_x = 0
