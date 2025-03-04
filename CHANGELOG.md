@@ -334,3 +334,7 @@ Huge update, attempting to future proof things
 - `ViewerSoloFirst` and `ViewerSoloLast` shortcuts
 ### Changed
 - `VIEWER_SOLO` is now a config option, not a one-off cli arg in renderer
+
+## [0.11.5] - 2025-03-04
+### Added
+- `set_709` on `animation.export`/`FFMPEGExport` (so you can use older `ffmpeg` releases to export animations)

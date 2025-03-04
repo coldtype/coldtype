@@ -24,3 +24,5 @@ SRC_MACROS = {
 FONT_DIRS = [
     "~/Type/fonts/fonts",
 ]
+
+#FFMPEG_COMMAND = "/Applications/DrawBot.app/Contents/Resources/ffmpeg"
