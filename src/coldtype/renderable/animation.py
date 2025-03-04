@@ -310,9 +310,9 @@ class animation(renderable, Timeable):
     
     frameImg = frame_img
     
-    def export(self, fmt, date=False, loops=1, open=1, audio=None, audio_loops=None, vf=None):
+    def export(self, fmt, date=False, loops=1, open=1, audio=None, audio_loops=None, vf=None, set_709=True):
         def _export(passes):
-            fe = FFMPEGExport(self, date=date, loops=loops, audio=audio or self.audio, audio_loops=audio_loops, vf=vf)
+            fe = FFMPEGExport(self, date=date, loops=loops, audio=audio or self.audio, audio_loops=audio_loops, vf=vf, set_709=set_709)
             if fmt == "gif":
                 fe.gif()
             elif fmt == "h264":
@@ -350,12 +350,14 @@ class FFMPEGExport():
         audio_loops=None,
         output_folder=None,
         vf=None,
+        set_709=True,
         ):
         self.a = a
         self.date = date
         self.loops = loops
         self.fmt = None
         self.failed = False
+        self.set_709 = set_709
         
         if audio:
             self.audio = Path(audio).expanduser()
@@ -385,6 +387,11 @@ class FFMPEGExport():
             "-r", str(self.a.timeline.fps)
         ]
 
+        if self.set_709:
+            set_709 = "zscale=matrixin=709:transferin=709:primariesin=709:matrix=709:transfer=709:primaries=709,"
+        else:
+            set_709 = ""
+
         if self.audio:
             self.args.extend([
                 "-stream_loop", str(self.loops-1),
@@ -392,7 +399,7 @@ class FFMPEGExport():
                 "-stream_loop", str(self.audio_loops-1),
                 "-i", str(self.audio),
                 #"-stream_loop", "-1",
-                "-filter_complex", f"[0:v]loop=loop=0:size={self.a.timeline.duration}:start=0,zscale=matrixin=709:transferin=709:primariesin=709:matrix=709:transfer=709:primaries=709,format=yuv420p[v]",
+                "-filter_complex", f"[0:v]loop=loop=0:size={self.a.timeline.duration}:start=0,{set_709}format=yuv420p[v]",
                 "-map", '[v]',
                 "-map", "1:a",
             ])
@@ -400,7 +407,7 @@ class FFMPEGExport():
             self.args.extend([
                 #"-stream_loop", str(self.loops-1),
                 "-i", template, # input sequence
-                "-filter_complex", f"[0:v]loop=loop={self.loops-1}:size={self.a.timeline.duration}:start=0,zscale=matrixin=709:transferin=709:primariesin=709:matrix=709:transfer=709:primaries=709,format=yuv420p[v]",
+                "-filter_complex", f"[0:v]loop=loop={self.loops-1}:size={self.a.timeline.duration}:start=0,{set_709}format=yuv420p[v]",
                 "-map", '[v]',
             ])
         

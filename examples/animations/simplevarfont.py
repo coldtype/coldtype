@@ -1,6 +1,6 @@
 from coldtype import *
 
-@animation((1920, 540), timeline=Timeline(60, 30))
+@animation((1920, 540), timeline=Timeline(60, 30), bg=1)
 def unfold(f):
     return (StSt("Coldtype".upper()
         , Font.ColdObvi()
