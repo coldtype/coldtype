@@ -1,7 +1,7 @@
 [project]
 name = "coldtype"
 version = "0.11.5"
-description = "Functions for manual vectorized typesetting"
+description = "Functions for manual vectorized typesetting. More info available at: [coldtype.xyz](https://coldtype.xyz)"
 readme = "README.md"
 authors = [
     { name = "Rob Stenson", email = "rob.stenson@gmail.com" }
@@ -17,6 +17,13 @@ dependencies = [
     "ufo2ft>=3.2.8", # pin for fg issue
     "coldtype-fontgoggles>=1.8.4.6",
 ]
+
+[project.urls]
+Homepage = "https://coldtype.xyz"
+Documentation = "https://coldtype.goodhertz.com"
+Repository = "https://github.com/coldtype/coldtype"
+Issues = "https://github.com/coldtype/coldtype/issues"
+Changelog = "https://github.com/coldtype/coldtype/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 drawbot = ["numpy"]
