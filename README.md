@@ -48,5 +48,5 @@ To get a development environment for Coldtype:
 git clone https://github.com/coldtype/coldtype.git
 git co -b uv origin/uv
 uv sync --extra viewer --extra audio
-uv run examples/animations/808.py
+uv run ct examples/animations/808.py
 ```
