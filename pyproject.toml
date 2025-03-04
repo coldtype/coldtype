@@ -1,7 +1,7 @@
 [project]
 name = "coldtype"
 version = "0.11.5"
-description = "Functions for manual vectorized typesetting. More info available at: [coldtype.xyz](https://coldtype.xyz)"
+description = "Functions for manual vectorized typesetting."
 readme = "README.md"
 authors = [
     { name = "Rob Stenson", email = "rob.stenson@gmail.com" }
@@ -51,6 +51,9 @@ coldtype = "coldtype.renderer:main"
 ct = "coldtype.renderer:main"
 ctb = "coldtype.renderer:main_b3d"
 
+[tool.setuptools]
+license-files = [] # https://github.com/astral-sh/uv/issues/9513#issuecomment-2519527822
+
 [build-system]
-requires = ["setuptools >= 61.0", "setuptools-scm >= 8.0"]
+requires = ["setuptools >= 61.0", "wheel", "setuptools-scm >= 8.0"]
 build-backend = "setuptools.build_meta"
