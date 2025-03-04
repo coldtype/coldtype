@@ -859,6 +859,8 @@ class Runon:
                         v = self._call_idx_fn(v, k, self)
                     self._data[k] = v
             return self
+        elif key is None and kwargs is not None:
+            return self
         elif key is not None:
             return self._data.get(key, default)
         else:
