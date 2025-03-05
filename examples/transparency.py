@@ -15,7 +15,7 @@ def appicon(r):
 def release(_):
     from shutil import copy2
     blocks_path = blocks.render_to_disk(render_bg=1)[0]
-    copy2(blocks_path, Path("coldtype/demo") / blocks_path.name)
+    copy2(blocks_path, Path("src/coldtype/demo") / blocks_path.name)
 
     icon_path = appicon.render_to_disk(render_bg=0)[0]
-    copy2(icon_path, Path("coldtype/demo") / icon_path.name)
+    copy2(icon_path, Path("src/coldtype/demo") / icon_path.name)

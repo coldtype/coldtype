@@ -143,6 +143,9 @@ class Font():
                 axes[axis.axisTag] = (axis.__dict__)
         return axes
     
+    def features(self):
+        return {*self.font.featuresGPOS, *self.font.featuresGSUB}
+    
     def instances(self, scaled=True, search:re.Pattern=None):
         if self._variations is None:
             return None

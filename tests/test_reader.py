@@ -61,7 +61,7 @@ def test_normalize(_r):
     style = Style("asdf", 100)
     font_path = Path(style.font.path).relative_to(Path(".").absolute())
 
-    assert font_path == Path("coldtype/demo/RecMono-CasualItalic.ttf")
+    assert font_path == Path("src/coldtype/demo/RecMono-CasualItalic.ttf")
 
     assert style.font.names()[0] == "Rec Mono Casual Italic"
     assert style.font.names()[1] == "Rec Mono Casual"

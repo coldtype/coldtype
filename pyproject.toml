@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "Rob Stenson", email = "rob.stenson@gmail.com" }
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "fontPens==0.2.4",
     "easing-functions==1.0.4",
@@ -44,6 +44,24 @@ website = [
     "pygments",
     "sourcetypes",
     "favicons",
+]
+dev = [
+    "pytest",
+    "pynput",
+    "pymunk",
+    "pygments",
+    "pyaudio",
+    "soundfile",
+    "opentype-feature-freezer",
+    "fontmake",
+    "measurement",
+    "pillow",
+    "imagehash",
+    "scikit-image",
+    "noise",
+    "mdx-linkify",
+    "ipykernel",
+    "drawbot @ git+https://github.com/typemytype/drawbot",
 ]
 
 [project.scripts]

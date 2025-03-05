@@ -49,3 +49,9 @@ git clone https://github.com/coldtype/coldtype.git
 uv sync --extra viewer
 uv run ct examples/animations/808.py
 ```
+
+To run tests, etc.
+
+```
+uv sync --extra dev
+```

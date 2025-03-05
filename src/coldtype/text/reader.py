@@ -218,7 +218,19 @@ class Style():
                 if k == 0:
                     found_features[k] = 0
         
-        self.features = {**dict(kern=kern, liga=liga), **found_features}
+        self.features = {}
+        all_features = {**dict(kern=kern, liga=liga), **found_features}
+
+        if not isinstance(self.font, str):
+            # making sure the features exist before we set them
+            try:
+                gpos = self.font.font.shaper.getFeatures("GPOS")
+                gsub = self.font.font.shaper.getFeatures("GSUB")
+                for feature, v in all_features.items():
+                    if feature in gpos or feature in gsub:
+                        self.features[feature] = int(v)
+            except Exception as e:
+                print("feature finder failed", e)
 
         self.fill = normalize_color(fill)
         self.stroke = normalize_color(stroke)
