@@ -199,30 +199,33 @@ class Color():
 
 class Theme():
     def __init__(self, **kwargs):
-        self._colors = {}
+        self.colors = {}
         for k, v in kwargs.items():
-            self._colors[k] = normalize_color(v)
+            self.colors[k] = normalize_color(v)
     
     def __getitem__(self, index):
-        return list(self._colors.values())[index]
+        if isinstance(index, int):
+            return list(self.colors.values())[index]
+        else:
+            return self.colors.get(index)
     
     def __len__(self):
-        return len(self._colors.values())
+        return len(self.colors.values())
     
     def __repr__(self):
-        return f"Theme(colors:{len(self._colors.values())})"
+        return f"Theme(colors:{len(self.colors.values())})"
     
     def with_alpha(self, a):
         if isinstance(a, float):
-            return Theme(**{k:v.with_alpha(a) for k,v in self._colors.items()})
+            return Theme(**{k:v.with_alpha(a) for k,v in self.colors.items()})
         else:
-            return Theme(**{k:v.with_alpha(a[i]) for i,(k,v) in enumerate(self._colors.items())})
+            return Theme(**{k:v.with_alpha(a[i]) for i,(k,v) in enumerate(self.colors.items())})
     
     def adjust(self, a):
         if isinstance(a, float):
-            return Theme(**{k:v.lighter(a) for k,v in self._colors.items()})
+            return Theme(**{k:v.lighter(a) for k,v in self.colors.items()})
         else:
-            return Theme(**{k:v.lighter(a[i]) for i,(k,v) in enumerate(self._colors.items())})
+            return Theme(**{k:v.lighter(a[i]) for i,(k,v) in enumerate(self.colors.items())})
 
 
 def lighten_max(color, maxLightness=0.55):

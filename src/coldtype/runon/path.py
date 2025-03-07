@@ -1792,7 +1792,7 @@ class P(Runon):
         """Get/set a (f)ill"""
         if value:
             if isinstance(value[0], Theme):
-                for k, v in value[0]._colors.items():
+                for k, v in value[0].colors.items():
                     self.attr(k, fill=v)
                 return self
             elif not isinstance(value, Color):
@@ -1809,7 +1809,7 @@ class P(Runon):
         """Get/set a (s)troke"""
         if value:
             if isinstance(value[0], Theme):
-                for k, v in value[0]._colors.items():
+                for k, v in value[0].colors.items():
                     self.attr(k, stroke=v)
                 return self
             elif not isinstance(value, Color):
@@ -1848,11 +1848,7 @@ class P(Runon):
 
         self.f(f)
         self.s(s)
-        if False and isinstance(s, Theme):
-            for k, _ in s._colors.items():
-                self.attr(k, strokeWidth=sw)
-        else:
-            self.sw(sw)
+        self.sw(sw)
         self.sf(sf)
         return self
     
