@@ -1,4 +1,4 @@
-from coldtype.color import Color, normalize_color, rgb
+from coldtype.color import Color, Theme, normalize_color, rgb
 from coldtype.geometry import Rect
 from coldtype.img.blendmode import BlendMode
 
@@ -7,12 +7,16 @@ Requires Runon.attr contract
 """
 
 class StylingMixin():
-    def groupedStyle(self, st):
+    def groupedStyle(self, st, default_style):
         sf = False
         if "stroke" in st:
             c = st["stroke"]
-            sw = st.get("strokeWidth", 1)
-            st["stroke"] = dict(color=c, weight=sw, miter=st.get("strokeMiter", None))
+            sw = st.get("strokeWidth", default_style.get("strokeWidth", 1))
+            miter = st.get("strokeMiter", default_style.get("strokeMiter", None))
+            st["stroke"] = dict(color=c, weight=sw, miter=miter)
+        
+        if "stroke" not in st and "stroke" in default_style:
+            st["stroke"] = self.groupedStyle(default_style, default_style)["stroke"]
         
         if "strokeWidth" in st:
             del st["strokeWidth"]
@@ -22,7 +26,6 @@ class StylingMixin():
             sf = True
             del st["strokeFirst"]
         
-
         if "fill" not in st:
             st["fill"] = rgb(1, 0, 0.5)
         
@@ -38,7 +41,11 @@ class StylingMixin():
     def f(self, *value):
         """Get/set a (f)ill"""
         if value:
-            if not isinstance(value, Color):
+            if isinstance(value[0], Theme):
+                for k, v in value[0]._colors.items():
+                    self.attr(k, fill=v)
+                return self
+            elif not isinstance(value, Color):
                 value = normalize_color(value)
             return self.attr(fill=value)
         else:
@@ -49,7 +56,11 @@ class StylingMixin():
     def s(self, *value):
         """Get/set a (s)troke"""
         if value:
-            if not isinstance(value, Color):
+            if isinstance(value[0], Theme):
+                for k, v in value[0]._colors.items():
+                    self.attr(k, stroke=v)
+                return self
+            elif not isinstance(value, Color):
                 value = normalize_color(value)
             return self.attr(stroke=value)
         else:
@@ -77,7 +88,11 @@ class StylingMixin():
     def fssw(self, f, s, sw, sf=0):
         self.f(f)
         self.s(s)
-        self.sw(sw)
+        if False and isinstance(s, Theme):
+            for k, _ in s._colors.items():
+                self.attr(k, strokeWidth=sw)
+        else:
+            self.sw(sw)
         self.sf(sf)
         return self
     

@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-runon = Path("coldtype/runon")
+runon = Path("src/coldtype/runon")
 _path = runon / "_path.py"
 mixins = runon / "mixins"
 out = runon / "path.py"

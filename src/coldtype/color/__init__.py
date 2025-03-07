@@ -196,6 +196,35 @@ class Color():
         else:
             raise Exception("Skia installation not found")
 
+
+class Theme():
+    def __init__(self, **kwargs):
+        self._colors = {}
+        for k, v in kwargs.items():
+            self._colors[k] = normalize_color(v)
+    
+    def __getitem__(self, index):
+        return list(self._colors.values())[index]
+    
+    def __len__(self):
+        return len(self._colors.values())
+    
+    def __repr__(self):
+        return f"Theme(colors:{len(self._colors.values())})"
+    
+    def with_alpha(self, a):
+        if isinstance(a, float):
+            return Theme(**{k:v.with_alpha(a) for k,v in self._colors.items()})
+        else:
+            return Theme(**{k:v.with_alpha(a[i]) for i,(k,v) in enumerate(self._colors.items())})
+    
+    def adjust(self, a):
+        if isinstance(a, float):
+            return Theme(**{k:v.lighter(a) for k,v in self._colors.items()})
+        else:
+            return Theme(**{k:v.lighter(a[i]) for i,(k,v) in enumerate(self._colors.items())})
+
+
 def lighten_max(color, maxLightness=0.55):
     return Color.from_hsl(color.h, color.s, max(maxLightness, color.l))
 

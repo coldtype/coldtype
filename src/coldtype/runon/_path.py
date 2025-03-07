@@ -173,7 +173,11 @@ class P(Runon):
     def style(self, style="_default"):
         """for backwards compatibility with defaults and grouped-stroke-properties"""
         st = {**super().style(style)}
-        return self.groupedStyle(st)
+        if style != "_default":
+            default_style = {**super().style("default")}
+        else:
+            default_style = st
+        return self.groupedStyle(st, default_style)
     
     def unframe(self):
         def _unframe(el, _, __):
