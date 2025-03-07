@@ -198,8 +198,10 @@ class Color():
 
 
 class Theme():
-    def __init__(self, **kwargs):
+    def __init__(self, default=None, **kwargs):
         self.colors = {}
+        if default is not None:
+            self.colors["default"] = normalize_color(default)
         for k, v in kwargs.items():
             self.colors[k] = normalize_color(v)
     
@@ -208,6 +210,9 @@ class Theme():
             return list(self.colors.values())[index]
         else:
             return self.colors.get(index)
+        
+    def get(self, key, default=None):
+        return self.colors.get(key, self.colors.get("default", default))
     
     def __len__(self):
         return len(self.colors.values())
