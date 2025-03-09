@@ -12,6 +12,6 @@ def varfont(f):
         , wdth=f.e("seio", 1, rng=(1, 0)))
         .align(f.a.r)
         .f(1)
-        .mapv(lambda p: p            
+        .mapv(lambda p: p
             .ch(b3d(lambda bp: bp
                 .extrude(f.e("seio", 1, rng=(0.5, 5.75)))))))

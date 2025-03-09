@@ -13,25 +13,31 @@ def prefix_inline_venv(expr):
     else:
         venv = (venv_root / f'lib/python{vi.major}.{vi.minor}/site-packages').absolute()
     
-    paths = [venv]
+    paths = [["venv", venv]]
 
     for egg_link in venv.glob("*.egg-link"):
-        paths.append(Path(egg_link).read_text().splitlines()[0])
+        paths.append(["egg-link", Path(egg_link).read_text().splitlines()[0]])
     
     for direct_url in venv.glob("**/direct_url.json"):
         try:
             info = json.loads(direct_url.read_text())
             if info.get("dir_info", {}).get("editable") == True:
-                direct_path = urlparse(info.get("url")).path
-                paths.append(Path(direct_path))
-        except:
+                direct_path = Path(urlparse(info.get("url")).path)
+                if (direct_path / "src").exists():
+                    direct_path = direct_path / "src"
+                paths.append(["direct_url", direct_path])
+        except Exception as e:
+            print(e)
             print(">>> could not load direct_url.json for ", direct_url)
+    
+    print(">>>", paths)
 
     paths_str = ""
-    for p in paths:
-        paths_str += f"sys.path.append(\"{str(Path(p).as_posix())}\");"
+    for src, path in paths:
+        paths_str += f"sys.path.append(\"{str(Path(path).as_posix())}\");"
 
     prefix = f"import sys; from pathlib import Path; {paths_str}"
+    print(prefix)
     return prefix + " " + expr
 
 def blender_launch_livecode(blender_path, file:Path, command_file, additional_args=""):
