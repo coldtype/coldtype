@@ -10,7 +10,7 @@ args = parse_inputs(__inputs__, dict(
     date=[False, bool],
     loops=[1, int],
     audio=[None, str],
-    set_709=[True, bool],
+    set709=[True, bool],
     dirsort=["x.name", str],
     ))
 
@@ -20,6 +20,10 @@ def find_pngs(_root):
     return sorted(list(_root.glob("*.png")), key=lambda p: p.stem.split("_")[-1])
 
 root = Path(args["path"]).expanduser().absolute()
+
+if not root.exists():
+    raise Exception("viewseq root path not found")
+
 images = find_pngs(root)
 
 if len(images) == 0:
@@ -28,7 +32,7 @@ if len(images) == 0:
             images.extend(find_pngs(dir))
 
 def releaser(x:animation):
-    fe = FFMPEGExport(x, date=args["date"], loops=args["loops"], audio=args["audio"], set_709=args["set_709"], output_folder=root.parent)
+    fe = FFMPEGExport(x, date=args["date"], loops=args["loops"], audio=args["audio"], set_709=args["set709"], output_folder=root.parent)
     
     if args["fmt"] == "h264":
         fe.h264()

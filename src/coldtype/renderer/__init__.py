@@ -388,6 +388,9 @@ class Renderer():
                 return r
     
     def buildrelease_fn(self, fnname="release"):
+        if not self.source_reader.program:
+            return []
+        
         candidate = None
         for k, v in self.source_reader.program.items():
             if k == fnname:
@@ -421,6 +424,9 @@ class Renderer():
             viewer_solos=self.viewer_solos,
             class_filters=[],
             previewing=previewing)
+        
+        if not _rs:
+            return []
         
         for r in _rs:
             self.normalize_fmt(r)
