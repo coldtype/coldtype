@@ -339,6 +339,9 @@ Huge update, attempting to future proof things
 ### Added
 - `set_709` on `animation.export`/`FFMPEGExport` (so you can use older `ffmpeg` releases to export animations)
 
-## [0.11.6] - 2025-03-09
+## [0.11.6] - 2025-03-11
+### Added
+- better support for custom output with ct viewseq
+- experimental support for `Theme` class to set multiple color styles from a single object
 ### Fixed
 - blender venv-inlining now look for a "src" directory if it exists (to match new pyproject.toml-enforced directory structure)
