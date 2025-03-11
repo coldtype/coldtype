@@ -45,8 +45,22 @@ website = [
     "sourcetypes",
     "favicons",
 ]
+
+[project.scripts]
+coldtype = "coldtype.renderer:main"
+ct = "coldtype.renderer:main"
+ctb = "coldtype.renderer:main_b3d"
+
+[tool.setuptools]
+license-files = [] # https://github.com/astral-sh/uv/issues/9513#issuecomment-2519527822
+
+[build-system]
+requires = ["setuptools >= 61.0", "wheel", "setuptools-scm >= 8.0"]
+build-backend = "setuptools.build_meta"
+
+[dependency-groups]
 dev = [
-    "pytest",
+    "pytest>=8.3.5",
     "pynput",
     "pymunk",
     "pygments",
@@ -63,15 +77,3 @@ dev = [
     "ipykernel",
     "drawbot @ git+https://github.com/typemytype/drawbot",
 ]
-
-[project.scripts]
-coldtype = "coldtype.renderer:main"
-ct = "coldtype.renderer:main"
-ctb = "coldtype.renderer:main_b3d"
-
-[tool.setuptools]
-license-files = [] # https://github.com/astral-sh/uv/issues/9513#issuecomment-2519527822
-
-[build-system]
-requires = ["setuptools >= 61.0", "wheel", "setuptools-scm >= 8.0"]
-build-backend = "setuptools.build_meta"
