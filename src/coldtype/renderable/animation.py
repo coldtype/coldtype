@@ -441,7 +441,7 @@ class FFMPEGExport():
         #self.args.extend([])
         return self
     
-    def write(self, verbose=False):
+    def write(self, verbose=False, name=None):
         first_frame = self.a.pass_path(0)
         if not Path(first_frame).exists():
             self.failed = True
@@ -455,7 +455,11 @@ class FFMPEGExport():
         
         now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         d = ("_" + now) if self.date else ""
-        self.output_path = self.output_folder / f"{self.a.name}{d}.{self.fmt}"
+
+        if name is None:
+            name = self.a.name
+        
+        self.output_path = self.output_folder / f"{name}{d}.{self.fmt}"
 
         self.args.append(self.output_path)
         if verbose:
@@ -511,7 +515,7 @@ class image_sequence(animation):
     (good for something like making a prores file from
     an image sequence (if you use the FFMPEGExport))
     """
-    def __init__(self, images, fps, looping=False, **kwargs):
+    def __init__(self, images, fps, looping=False, loops=1, **kwargs):
         self.images = images
         self.looping = looping
 

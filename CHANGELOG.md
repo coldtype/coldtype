@@ -338,3 +338,7 @@ Huge update, attempting to future proof things
 ## [0.11.5] - 2025-03-04
 ### Added
 - `set_709` on `animation.export`/`FFMPEGExport` (so you can use older `ffmpeg` releases to export animations)
+
+## [0.11.6] - 2025-03-09
+### Fixed
+- blender venv-inlining now look for a "src" directory if it exists (to match new pyproject.toml-enforced directory structure)
