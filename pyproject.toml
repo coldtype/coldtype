@@ -1,6 +1,6 @@
 [project]
 name = "coldtype"
-version = "0.11.6"
+version = "0.11.7a1"
 description = "Functions for manual vectorized typesetting."
 readme = "README.md"
 authors = [
@@ -11,11 +11,9 @@ dependencies = [
     "fontPens==0.2.4",
     "easing-functions==1.0.4",
     "mido==1.3.2",
-    "defcon==0.10.3",
-    "requests==2.32.3",
     "b3denv>=0.0.12",
-    "ufo2ft>=3.2.8", # pin for fg issue
-    "coldtype-fontgoggles>=1.8.4.6",
+    "coldtype-fontgoggles==1.8.4.7b1",
+    "skia-pathops",
 ]
 
 [project.urls]
@@ -26,10 +24,18 @@ Issues = "https://github.com/coldtype/coldtype/issues"
 Changelog = "https://github.com/coldtype/coldtype/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
+ufo = [
+    "ufo2ft>=3.2.8", # pin for fg issue
+    "defcon==0.10.3"
+]
+designspace = ["numpy"]
 drawbot = ["numpy"]
-viewer = ["glfw", "PyOpenGL", "skia-python", "skia-pathops", "numpy", "potracer"]
+viewer = ["glfw", "PyOpenGL", "skia-python", "skia-pathops", "numpy", "potracer", "requests"]
 unicode = ["unicodedata2"]
-blender = ["skia-pathops", "ufoLib2"]
+blender = [
+    "skia-pathops",
+    #"ufoLib2",
+]
 notebook = ["skia-pathops", "skia-python", "potracer", "tdqm"]
 audio = ["pyaudio", "soundfile"]
 website = [
@@ -54,26 +60,29 @@ ctb = "coldtype.renderer:main_b3d"
 [tool.setuptools]
 license-files = [] # https://github.com/astral-sh/uv/issues/9513#issuecomment-2519527822
 
+#[tool.uv.sources]
+#coldtype-fontgoggles = { path = "../fontgoggles", editable = true }
+
 [build-system]
 requires = ["setuptools >= 61.0", "wheel", "setuptools-scm >= 8.0"]
 build-backend = "setuptools.build_meta"
 
 [dependency-groups]
-dev = [
-    "pytest>=8.3.5",
-    "pynput",
-    "pymunk",
-    "pygments",
-    "pyaudio",
-    "soundfile",
-    "opentype-feature-freezer",
-    "fontmake",
-    "measurement",
-    "pillow",
-    "imagehash",
-    "scikit-image",
-    "noise",
-    "mdx-linkify",
-    "ipykernel",
-    "drawbot @ git+https://github.com/typemytype/drawbot",
-]
+# dev = [
+#     "pytest>=8.3.5",
+#     "pynput",
+#     "pymunk",
+#     "pygments",
+#     "pyaudio",
+#     "soundfile",
+#     "opentype-feature-freezer",
+#     "fontmake",
+#     "measurement",
+#     "pillow",
+#     "imagehash",
+#     "scikit-image",
+#     "noise",
+#     "mdx-linkify",
+#     "ipykernel",
+#     "drawbot @ git+https://github.com/typemytype/drawbot",
+# ]

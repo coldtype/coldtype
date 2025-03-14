@@ -1,6 +1,9 @@
-import skia
-
-SKIA_87 = int(skia.__version__.split(".")[0]) <= 87
+try:
+    import skia
+    SKIA_87 = int(skia.__version__.split(".")[0]) <= 87
+except ImportError:
+    skia = None
+    SKIA_87 = False
 
 def image_makeShader(image, matrix):
     if SKIA_87:

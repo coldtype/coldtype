@@ -4,6 +4,7 @@ from fontTools.pens.recordingPen import RecordingPen
 from fontTools.misc.bezierTools import splitCubicAtT, calcCubicArcLength
 
 USE_SKIA_PATHOPS = True
+NO_PATHOPS = False
 
 try:
     from pathops import Path, OpBuilder, PathOp, PathVerb
@@ -15,7 +16,9 @@ try:
     from booleanOperations.exceptions import UnsupportedContourError
 except ImportError:
     if not USE_SKIA_PATHOPS:
-        print(">>> NO PATHOPS FOUND; please install either skia-pathops or booleanOperations")
+        USE_SKIA_PATHOPS = True
+        NO_PATHOPS = True
+
 
 class BooleanOp(Enum):
     Difference = 0
@@ -45,6 +48,9 @@ class BooleanOp(Enum):
 
 
 def calculate_pathop(pen1, pen2, operation, use_skia_pathops_draw=True):
+    if NO_PATHOPS:
+        raise Exception("No pathops library found; please install either skia-pathops or booleanOperations")
+
     if USE_SKIA_PATHOPS:
         p1 = Path()
         pen1.replay(p1.getPen())

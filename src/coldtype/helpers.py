@@ -2,7 +2,11 @@ from pathlib import Path
 from coldtype.text.reader import normalize_font_path
 from coldtype.interpolation import norm, interp_dict, lerp, loopidx
 from coldtype.random import random_series
-from defcon import Font as DefconFont
+
+try:
+    from defcon import Font as DefconFont
+except ImportError:
+    DefconFont = None
 
 
 def sibling(root, file):
