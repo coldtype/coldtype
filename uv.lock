@@ -276,14 +276,14 @@ wheels = [
 
 [[package]]
 name = "coldtype"
-version = "0.11.6"
+version = "0.11.7a2"
 source = { editable = "." }
 dependencies = [
     { name = "b3denv" },
     { name = "coldtype-fontgoggles" },
+    { name = "defcon" },
     { name = "easing-functions" },
     { name = "fontpens" },
-    { name = "mido" },
     { name = "skia-pathops" },
 ]
 
@@ -292,14 +292,12 @@ audio = [
     { name = "pyaudio" },
     { name = "soundfile" },
 ]
-blender = [
-    { name = "skia-pathops" },
-]
-designspace = [
-    { name = "numpy" },
-]
 drawbot = [
     { name = "numpy" },
+]
+more-fonts = [
+    { name = "coldtype-fontgoggles", extra = ["more-fonts"] },
+    { name = "ufo2ft" },
 ]
 notebook = [
     { name = "potracer" },
@@ -307,21 +305,20 @@ notebook = [
     { name = "skia-python" },
     { name = "tdqm" },
 ]
-ufo = [
-    { name = "defcon" },
-    { name = "ufo2ft" },
-]
 unicode = [
     { name = "unicodedata2" },
 ]
 viewer = [
+    { name = "coldtype-fontgoggles", extra = ["more-fonts"] },
     { name = "glfw" },
+    { name = "mido" },
     { name = "numpy" },
     { name = "potracer" },
     { name = "pyopengl" },
     { name = "requests" },
     { name = "skia-pathops" },
     { name = "skia-python" },
+    { name = "ufo2ft" },
 ]
 website = [
     { name = "beautifulsoup4" },
@@ -342,8 +339,10 @@ requires-dist = [
     { name = "b3denv", specifier = ">=0.0.12" },
     { name = "beautifulsoup4", marker = "extra == 'website'" },
     { name = "brotli", marker = "extra == 'website'" },
-    { name = "coldtype-fontgoggles", specifier = "==1.8.4.7b1" },
-    { name = "defcon", marker = "extra == 'ufo'", specifier = "==0.10.3" },
+    { name = "coldtype-fontgoggles", specifier = "==1.8.4.7b2" },
+    { name = "coldtype-fontgoggles", extras = ["more-fonts"], marker = "extra == 'more-fonts'", specifier = "==1.8.4.7b2" },
+    { name = "coldtype-fontgoggles", extras = ["more-fonts"], marker = "extra == 'viewer'", specifier = "==1.8.4.7b2" },
+    { name = "defcon" },
     { name = "easing-functions", specifier = "==1.0.4" },
     { name = "favicons", marker = "extra == 'website'" },
     { name = "fontpens", specifier = "==0.2.4" },
@@ -353,8 +352,7 @@ requires-dist = [
     { name = "lxml", marker = "extra == 'website'" },
     { name = "markdown", marker = "extra == 'website'" },
     { name = "markdown-captions", marker = "extra == 'website'" },
-    { name = "mido", specifier = "==1.3.2" },
-    { name = "numpy", marker = "extra == 'designspace'" },
+    { name = "mido", marker = "extra == 'viewer'" },
     { name = "numpy", marker = "extra == 'drawbot'" },
     { name = "numpy", marker = "extra == 'viewer'" },
     { name = "potracer", marker = "extra == 'notebook'" },
@@ -365,7 +363,6 @@ requires-dist = [
     { name = "python-frontmatter", marker = "extra == 'website'" },
     { name = "requests", marker = "extra == 'viewer'" },
     { name = "skia-pathops" },
-    { name = "skia-pathops", marker = "extra == 'blender'" },
     { name = "skia-pathops", marker = "extra == 'notebook'" },
     { name = "skia-pathops", marker = "extra == 'viewer'" },
     { name = "skia-python", marker = "extra == 'notebook'" },
@@ -373,25 +370,33 @@ requires-dist = [
     { name = "soundfile", marker = "extra == 'audio'" },
     { name = "sourcetypes", marker = "extra == 'website'" },
     { name = "tdqm", marker = "extra == 'notebook'" },
-    { name = "ufo2ft", marker = "extra == 'ufo'", specifier = ">=3.2.8" },
+    { name = "ufo2ft", marker = "extra == 'more-fonts'", specifier = ">=3.2.8" },
+    { name = "ufo2ft", marker = "extra == 'viewer'", specifier = ">=3.2.8" },
     { name = "unicodedata2", marker = "extra == 'unicode'" },
 ]
-provides-extras = ["ufo", "designspace", "drawbot", "viewer", "unicode", "blender", "notebook", "audio", "website"]
+provides-extras = ["more-fonts", "drawbot", "viewer", "unicode", "notebook", "audio", "website"]
 
 [[package]]
 name = "coldtype-fontgoggles"
-version = "1.8.4.7b1"
+version = "1.8.4.7b2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "blackrenderer" },
-    { name = "fonttools", extra = ["lxml", "type1", "ufo", "unicode", "woff"] },
+    { name = "fonttools" },
     { name = "python-bidi" },
     { name = "uharfbuzz" },
     { name = "unicodedata2" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ad/90/8779f5ffa37f88a47f8cba0f95580af4fa3ae5d2df924bf9e4bfc5a3484c/coldtype_fontgoggles-1.8.4.7b1.tar.gz", hash = "sha256:4d0c8bb003a78c74b362ccc7c53a095f12032349a6c3f7d6c5466358533a56be", size = 12196475 }
+sdist = { url = "https://files.pythonhosted.org/packages/15/a5/b7b25ae390d6fe0a293813ce2085e4ff23f962d933ddd08995388ee0a92b/coldtype_fontgoggles-1.8.4.7b2.tar.gz", hash = "sha256:b2e5acaa408cba0db1f2a0c96bb1abab844761ba30f2cc7c61fb8f20c0f368df", size = 12196627 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bc/52/9e0ceb2360c9da55a8b7b6ae0e087e077bb20a387146e9a1f9a8939c98fb/coldtype_fontgoggles-1.8.4.7b1-py3-none-any.whl", hash = "sha256:27674d6a62befa10f35fee2206491c756eb309e2433ecaa10fa643052de92a21", size = 1083512 },
+    { url = "https://files.pythonhosted.org/packages/a0/d1/1f7bcf0f5a7d24e3014890afa7894e6af1265095bd15435126de4290359e/coldtype_fontgoggles-1.8.4.7b2-py3-none-any.whl", hash = "sha256:8da09bdf56229255823f3ac4f4d01afb207444a22120785cb595e3661c7b132c", size = 1083573 },
+]
+
+[package.optional-dependencies]
+more-fonts = [
+    { name = "fonttools", extra = ["lxml", "type1", "ufo", "unicode", "woff"] },
+    { name = "numpy" },
+    { name = "ufo2ft" },
 ]
 
 [[package]]

@@ -1,6 +1,6 @@
 [project]
 name = "coldtype"
-version = "0.11.7a1"
+version = "0.11.7a2"
 description = "Functions for manual vectorized typesetting."
 readme = "README.md"
 authors = [
@@ -10,10 +10,10 @@ requires-python = ">=3.11"
 dependencies = [
     "fontPens==0.2.4",
     "easing-functions==1.0.4",
-    "mido==1.3.2",
     "b3denv>=0.0.12",
-    "coldtype-fontgoggles==1.8.4.7b1",
+    "coldtype-fontgoggles==1.8.4.7b2",
     "skia-pathops",
+    "defcon", # for OutlinePen
 ]
 
 [project.urls]
@@ -24,18 +24,17 @@ Issues = "https://github.com/coldtype/coldtype/issues"
 Changelog = "https://github.com/coldtype/coldtype/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
-ufo = [
+more-fonts = [
     "ufo2ft>=3.2.8", # pin for fg issue
-    "defcon==0.10.3"
+    "coldtype-fontgoggles[more-fonts]==1.8.4.7b2"
 ]
-designspace = ["numpy"]
 drawbot = ["numpy"]
-viewer = ["glfw", "PyOpenGL", "skia-python", "skia-pathops", "numpy", "potracer", "requests"]
+viewer = ["glfw", "PyOpenGL", "skia-python", "skia-pathops", "numpy", "potracer", "requests", "mido", "ufo2ft>=3.2.8", "coldtype-fontgoggles[more-fonts]==1.8.4.7b2"]
 unicode = ["unicodedata2"]
-blender = [
-    "skia-pathops",
-    #"ufoLib2",
-]
+#blender = [
+#    "skia-pathops",
+#    "ufoLib2",
+#]
 notebook = ["skia-pathops", "skia-python", "potracer", "tdqm"]
 audio = ["pyaudio", "soundfile"]
 website = [

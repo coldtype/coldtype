@@ -1,9 +1,17 @@
+import math
+
 from collections import defaultdict
-import mido, math
 from pathlib import Path
 
 from coldtype.timing.timeline import Timeline, Timeable
 from coldtype.timing.easing import ease, ez
+
+
+try:
+    import mido
+except ImportError:
+    mido = None
+
 
 class MidiTimeline(Timeline):
     def __init__(self,
@@ -16,6 +24,10 @@ class MidiTimeline(Timeline):
         lookup={},
         live=None
         ):
+        if not mido:
+            print("please install mido library")
+            return
+
         def s2f(value):
             if rounded:
                 return math.floor(value * fps)

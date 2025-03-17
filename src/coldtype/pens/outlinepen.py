@@ -27,15 +27,16 @@ Taken from https://github.com/typemytype/outlinerRoboFontExtension
 """
 
 from fontTools.pens.basePen import BasePen
-from fontTools.pens.recordingPen import RecordingPen, replayRecording
-from fontTools.ufoLib.pointPen import AbstractPointPen, ReverseContourPointPen, PointToSegmentPen
 from fontTools.misc.bezierTools import splitCubicAtT
+from fontTools.pens.recordingPen import RecordingPen, replayRecording
+from fontTools.pens.pointPen import AbstractPointPen
+from fontTools.pens.pointPen import ReverseContourPointPen
+from fontTools.pens.pointPen import PointToSegmentPen
+
+
+from defcon import Glyph
 from math import sqrt, cos, sin, acos, asin, degrees, radians, pi
 
-try:
-    from defcon import Glyph
-except:
-    pass
 
 def roundFloat(f):
     error = 1000000.
@@ -146,6 +147,8 @@ class MathPoint(object):
         if not isinstance(p, self.__class__):
             return self.__class__(self.x / p, self.y / p)
         return self.__class__(self.x / p.x, self.y / p.y)
+
+    __truediv__ = __div__
 
     def __eq__(self, p):  # if p == p
         if not isinstance(p, self.__class__):
@@ -510,7 +513,7 @@ class OutlinePen(BasePen):
         elif not self.filterDoubles:
             self.innerPen.lineTo(self.innerCurrentPoint)
             self.outerPen.lineTo(self.outerCurrentPoint)
-    
+
     def connectionSquare(self, first, last, pen, close):
         angle_1 = radians(degrees(self.prevAngle)+90)
         angle_2 = radians(degrees(self.currentAngle)+90)
@@ -535,25 +538,28 @@ class OutlinePen(BasePen):
         angle_1 = radians(degrees(self.prevAngle)+90)
         angle_2 = radians(degrees(self.currentAngle)+90)
 
-        tempFirst = first - self.pointClass(cos(angle_1), sin(angle_1)) * self.miterLimit
-        tempLast = last + self.pointClass(cos(angle_2), sin(angle_2)) * self.miterLimit
+        tempFirst = first - self.pointClass(sin(angle_1), -cos(angle_1))
+        tempLast = last + self.pointClass(sin(angle_2), -cos(angle_2))
 
-        newPoint = interSect((first, tempFirst), (last, tempLast))
-        if newPoint is None:
-            pen.lineTo(last)
-            return
-        distance1 = newPoint.distance(first)
-        distance2 = newPoint.distance(last)
-        if roundFloat(distance1) > self.miterLimit + self.contrast:
-            distance1 = self.miterLimit + tempFirst.distance(tempLast) * .7
-        if roundFloat(distance2) > self.miterLimit + self.contrast:
-            distance2 = self.miterLimit + tempFirst.distance(tempLast) * .7
+        centerPoint = interSect((first, tempFirst), (last, tempLast))
+        if centerPoint is None:
+            # the lines are parallel, let's just take the middle
+            centerPoint = (first + last) / 2
 
-        distance1 *= self.magicCurve
-        distance2 *= self.magicCurve
+        angle_diff = (angle_1 - angle_2) % (2 * pi)
+        if angle_diff > pi:
+            angle_diff = 2 * pi - angle_diff
+        angle_half = angle_diff / 2
 
-        bcp1 = first - self.pointClass(cos(angle_1), sin(angle_1)) * distance1
-        bcp2 = last + self.pointClass(cos(angle_2), sin(angle_2)) * distance2
+        radius = centerPoint.distance(first)
+        D = radius * (1 - cos(angle_half))
+        if sin(angle_half) == 0:
+            handleLength = 0
+        else:
+            handleLength = (4 * D / 3) / sin(angle_half)  # length of the bcp line
+
+        bcp1 = first - self.pointClass(cos(angle_1), sin(angle_1)) * handleLength
+        bcp2 = last + self.pointClass(cos(angle_2), sin(angle_2)) * handleLength
         pen.curveTo(bcp1, bcp2, last)
 
     def connectionButt(self, first, last, pen, close):
@@ -595,7 +601,7 @@ class OutlinePen(BasePen):
 
         oncurve = p1 + (p2 - p1) * .5
 
-        roundness = .54
+        roundness = .54  # should be self.magicCurve
 
         h1 = first - self.pointClass(cos(hookedAngle), sin(hookedAngle)) * self.offset * roundness
         h2 = oncurve + self.pointClass(cos(angle), sin(angle)) * self.offset * roundness
