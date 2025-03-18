@@ -9,9 +9,9 @@ def release_apng(a:animation):
     fe.open()
 
 
-@animation((1080, 720), tl=30, release=release_apng)
-def scratch(f:Frame):
-    return (StSt(".PNG", Font.MuSan(), 300, wght=f.e("eeio"))
+@animation((540, 720/2), tl=Timeline(30, 30), release=release_apng)
+def apng(f:Frame):
+    return (StSt(".PNG", Font.MuSan(), 200, wght=f.e("eeio"))
         .align(f.a.r, ty=0)
         .f(hsl(f.e("l", 0 )))
         .rotate(f.e("eeio", 1, rng=(-20, 20))))
