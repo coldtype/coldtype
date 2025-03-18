@@ -315,7 +315,7 @@ wheels = [
 
 [[package]]
 name = "coldtype"
-version = "0.11.7a2"
+version = "0.12.0"
 source = { editable = "." }
 dependencies = [
     { name = "b3denv" },
@@ -398,9 +398,9 @@ requires-dist = [
     { name = "b3denv", specifier = ">=0.0.12" },
     { name = "beautifulsoup4", marker = "extra == 'website'" },
     { name = "brotli", marker = "extra == 'website'" },
-    { name = "coldtype-fontgoggles", specifier = "==1.8.4.7b2" },
-    { name = "coldtype-fontgoggles", extras = ["more-fonts"], marker = "extra == 'more-fonts'", specifier = "==1.8.4.7b2" },
-    { name = "coldtype-fontgoggles", extras = ["more-fonts"], marker = "extra == 'viewer'", specifier = "==1.8.4.7b2" },
+    { name = "coldtype-fontgoggles", specifier = "==1.8.4.7" },
+    { name = "coldtype-fontgoggles", extras = ["more-fonts"], marker = "extra == 'more-fonts'", specifier = "==1.8.4.7" },
+    { name = "coldtype-fontgoggles", extras = ["more-fonts"], marker = "extra == 'viewer'", specifier = "==1.8.4.7" },
     { name = "defcon" },
     { name = "easing-functions", specifier = "==1.0.4" },
     { name = "favicons", marker = "extra == 'website'" },
@@ -433,7 +433,7 @@ requires-dist = [
     { name = "ufo2ft", marker = "extra == 'viewer'", specifier = ">=3.2.8" },
     { name = "unicodedata2", marker = "extra == 'unicode'" },
 ]
-provides-extras = ["more-fonts", "drawbot", "viewer", "unicode", "notebook", "audio", "website"]
+provides-extras = ["more-fonts", "viewer", "drawbot", "unicode", "notebook", "audio", "website"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -457,7 +457,7 @@ dev = [
 
 [[package]]
 name = "coldtype-fontgoggles"
-version = "1.8.4.7b2"
+version = "1.8.4.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "blackrenderer" },
@@ -466,9 +466,9 @@ dependencies = [
     { name = "uharfbuzz" },
     { name = "unicodedata2" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/15/a5/b7b25ae390d6fe0a293813ce2085e4ff23f962d933ddd08995388ee0a92b/coldtype_fontgoggles-1.8.4.7b2.tar.gz", hash = "sha256:b2e5acaa408cba0db1f2a0c96bb1abab844761ba30f2cc7c61fb8f20c0f368df", size = 12196627 }
+sdist = { url = "https://files.pythonhosted.org/packages/95/6c/a8992135cee6b070cf028fb12d5393fd76823b6e1e5be75830b7df355c28/coldtype_fontgoggles-1.8.4.7.tar.gz", hash = "sha256:c8ae9225029c1504909f70da4e89177477bd6faa2eb84ba5028c2595f4edb6db", size = 12196511 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a0/d1/1f7bcf0f5a7d24e3014890afa7894e6af1265095bd15435126de4290359e/coldtype_fontgoggles-1.8.4.7b2-py3-none-any.whl", hash = "sha256:8da09bdf56229255823f3ac4f4d01afb207444a22120785cb595e3661c7b132c", size = 1083573 },
+    { url = "https://files.pythonhosted.org/packages/de/5a/f31adeeb3f71a974fcf737c5a2d15aba7ca445da1c4d5e226fcb1a6e1642/coldtype_fontgoggles-1.8.4.7-py3-none-any.whl", hash = "sha256:aa80f71af473de166a32a7a4fbcdb171b7d70503aaec66b386074fe98885fbc5", size = 1082330 },
 ]
 
 [package.optional-dependencies]
