@@ -11,7 +11,7 @@ dependencies = [
     "fontPens==0.2.4",
     "easing-functions==1.0.4",
     "b3denv>=0.0.12",
-    "coldtype-fontgoggles==1.8.4.7b2",
+    "coldtype-fontgoggles==1.8.4.7",
     "skia-pathops",
     "defcon", # for OutlinePen
 ]
@@ -26,15 +26,22 @@ Changelog = "https://github.com/coldtype/coldtype/blob/main/CHANGELOG.md"
 [project.optional-dependencies]
 more-fonts = [
     "ufo2ft>=3.2.8", # pin for fg issue
-    "coldtype-fontgoggles[more-fonts]==1.8.4.7b2"
+    "coldtype-fontgoggles[more-fonts]==1.8.4.7"
+]
+viewer = [
+    "glfw",
+    "PyOpenGL",
+    "skia-python",
+    "skia-pathops",
+    "numpy",
+    "potracer",
+    "requests",
+    "mido",
+    "ufo2ft>=3.2.8", # pin for fg issue
+    "coldtype-fontgoggles[more-fonts]==1.8.4.7"
 ]
 drawbot = ["numpy"]
-viewer = ["glfw", "PyOpenGL", "skia-python", "skia-pathops", "numpy", "potracer", "requests", "mido", "ufo2ft>=3.2.8", "coldtype-fontgoggles[more-fonts]==1.8.4.7b2"]
 unicode = ["unicodedata2"]
-#blender = [
-#    "skia-pathops",
-#    "ufoLib2",
-#]
 notebook = ["skia-pathops", "skia-python", "potracer", "tdqm"]
 audio = ["pyaudio", "soundfile"]
 website = [
