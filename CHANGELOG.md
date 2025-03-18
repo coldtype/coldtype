@@ -345,3 +345,7 @@ Huge update, attempting to future proof things
 - experimental support for `Theme` class to set multiple color styles from a single object
 ### Fixed
 - blender venv-inlining now look for a "src" directory if it exists (to match new pyproject.toml-enforced directory structure)
+
+## [0.12.0] - 2025-03-18
+### Changed
+- base dependencies for coldtype (i.e. coldtype installed without any extra) no longer support "extended" font formats (woff, ufo, etc.), though [viewer] extra does still provide support for these; mido requirement has also been moved out of base into viewer; the point of this is to reduce the complexity of a "minimal" coldtype installation (i.e. when embedded as a backend service in another python application or a Blender extension, e.g.)
