@@ -48,9 +48,13 @@ class BlenderTimeline(Timeline):
 
         self.file = file
         if not self.file.exists():
-            self.file.write_text("{}")
-        
-        data = json.loads(file.read_text())
+            self.file.parent.mkdir(parents=True, exist_ok=True)
+            self.file.write_text('{"fps":30}')
+
+        try:        
+            data = json.loads(file.read_text())
+        except:
+            data = dict(fps=30)
 
         timeables = []
         for track in data.get("tracks", []):
@@ -62,6 +66,8 @@ class BlenderTimeline(Timeline):
                     index=tidx,
                     track=track["index"]))
         
+        self.livepreview_disabled = bool(data.get("livepreview_disabled", False))
+        
         self.workarea = range(
             data.get("start", 0),
             data.get("end", 30)+1)
@@ -72,13 +78,6 @@ class BlenderTimeline(Timeline):
             , start=0
             , end=duration or data.get("end")+1
             , **kwargs)
-
-        # super().__init__(
-        #     duration,
-        #     fps,
-        #     [data.get("current_frame", 0)],
-        #     tracks,
-        #     workarea_track=workarea_track-1)
 
 
 def b3d(callback:Callable[[BlenderPen], BlenderPen],
@@ -410,15 +409,16 @@ class b3d_sequencer(b3d_animation):
         autosave=True,
         in_blender=False,
         match_output=False,
-        live_preview=True,
         live_preview_scale=0.25,
+        timeline:BlenderTimeline=None,
         **kwargs
         ):
-        self.live_preview = live_preview
+        self.live_preview = not timeline.livepreview_disabled
         self.live_preview_scale = live_preview_scale
 
         super().__init__(
             rect=rect,
+            timeline=timeline,
             match_fps=True,
             match_length=False,
             match_output=match_output,

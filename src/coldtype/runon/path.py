@@ -1160,9 +1160,13 @@ class P(Runon):
                     a = p.ambit(tx=tx, ty=ty)
                     if a.x == 0 and a.y == 0 and a.w == 0 and a.h == 0:
                         continue
-                    union = union.union(a)
+                    if union.nonzero():
+                        union = union.union(a)
+                    else:
+                        union = a
                 return union
-            except Exception as _:
+            except Exception as e:
+                #print("EXCEPTION", e)
                 return Rect(0,0,0,0)
         
         # catch-all

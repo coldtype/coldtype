@@ -1,18 +1,4 @@
-from coldtype.blender.timedtext import Coldtype2DPrerender
 from coldtype.blender.util import *
-
-
-class Coldtype3DPrerender(bpy.types.Operator):
-    """Enable to draw prerendered frames to live preview Image Editor image"""
-
-    bl_idname = "wm.coldtype_3d_prerendered"
-    bl_label = "Coldtype 3D Prerender"
-
-    def execute(self, context):
-        current = bpy.app.driver_namespace.get("_coldtype_prerendered", False)
-        bpy.app.driver_namespace["_coldtype_prerendered"] = not current
-        bpy.app.driver_namespace["_coldtype_needs_rerender"] = True
-        return {'FINISHED'}
 
 
 class Coldtype3DRenderOne(bpy.types.Operator):
@@ -79,13 +65,10 @@ class COLDTYPE_3D_PT_Panel(bpy.types.Panel):
     bl_category = 'Tool'
 
     def draw(self, context):
-        prerendered = bpy.app.driver_namespace.get("_coldtype_prerendered", False)
-
         layout = self.layout
         layout.operator(Coldtype3DRenderOne.bl_idname, text="Render One", icon="IMAGE_DATA",)
         layout.operator(Coldtype3DRenderFromCurrent.bl_idname, text="Render From Current", icon="RENDER_ANIMATION",)
         layout.operator(Coldtype3DRenderAll.bl_idname, text="Render All", icon="RENDER_ANIMATION",)
-        #layout.operator(Coldtype3DPrerender.bl_idname, text="Prerender Enabled" if prerendered else "Prerender Disabled", icon="TEXTURE_DATA",)
         layout.separator()
         layout.operator(Coldtype3DOpenInEditor.bl_idname, text="Open in Editor", icon="SCRIPT",)
         layout.operator(Coldtype3DShowInFinder.bl_idname, text="Show in Finder", icon="FILEBROWSER",)
@@ -93,7 +76,6 @@ class COLDTYPE_3D_PT_Panel(bpy.types.Panel):
 addon_keymaps = []
 
 def register():
-    bpy.utils.register_class(Coldtype3DPrerender)
     bpy.utils.register_class(Coldtype3DRenderOne)
     bpy.utils.register_class(Coldtype3DRenderFromCurrent)
     bpy.utils.register_class(Coldtype3DRenderAll)

@@ -86,9 +86,11 @@ def persist_sequence(last_persisted):
         return None
     
     jpath = str(Path(bpy.data.filepath)) + ".json"
+    jdata = json.loads(Path(jpath).read_text())
     out = dict(
         start=scene.frame_start,
         end=scene.frame_end,
+        livepreview_disabled=jdata.get("livepreview_disabled"),
         #current_frame=scene.frame_current,
         tracks=tracks)
     
@@ -160,7 +162,6 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
         out = []
         animation_found = False
         frame = self.current_frame
-        prerendered = bpy.app.driver_namespace.get("_coldtype_prerendered", False)
         playback = B3DPlayback.AlwaysStop
 
         def display_image(r, result):
@@ -205,10 +206,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                     animation_found = True
 
                     if r.live_preview:
-                        if prerendered:
-                            result = ps[0].output_path
-                        else:
-                            result = run_passes()
+                        result = run_passes()
                         display_image(r, result)
                 
                 elif isinstance(r, b3d_animation):
@@ -228,9 +226,6 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
                         
                         if r.reset_to_zero:
                             bpy.data.scenes[0].frame_set(0)
-                        
-                        if prerendered:
-                            display_image(r, ps[0].output_path)
             
                 elif isinstance(r, b3d_renderable):
                     # coolio
