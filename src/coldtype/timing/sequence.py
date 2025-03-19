@@ -1,6 +1,7 @@
 import re, math, copy
 from enum import Enum
 from collections import namedtuple
+from dataclasses import dataclass
 
 from coldtype.timing import Timeable, Frame
 from coldtype.timing.easing import ease
@@ -101,9 +102,17 @@ class ClipGroupPens(P):
         return self
 
 
-ClipGroupTextSetter = namedtuple(
-    "ClipGroupTextSetter",
-    ["frame", "i", "clip", "text", "styles"])
+@dataclass
+class ClipGroupTextSetter():
+    frame:Frame
+    i:int
+    clip:Clip
+    text:str
+    styles:Timeline
+
+#ClipGroupTextSetter = namedtuple(
+#    "ClipGroupTextSetter",
+#    ["frame", "i", "clip", "text", "styles"])
 
 
 class ClipGroup(Timeable):
@@ -343,6 +352,7 @@ class ClipGroup(Timeable):
                         if s.now(clip.start):
                             match_styles.append(s)
                     match_styles = Timeline(timeables=match_styles, findWords=False)
+                    match_styles.hold(fi)
                     
                     ftext = clip.ftext()
                     if clip.type == ClipType.Isolated and idx == 0:

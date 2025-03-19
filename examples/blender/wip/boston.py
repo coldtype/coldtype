@@ -1,9 +1,9 @@
 from coldtype import *
 from coldtype.blender import *
+from coldtype.timing.sequence import ClipGroupTextSetter
 
 # sound: https://accent.gmu.edu/browse_language.php?function=detail&speakerid=79
 # typed with: https://westonruter.github.io/ipa-chart/keyboard/
-
 
 """
 pʰliz kalˠ stɛlɘ
@@ -16,7 +16,7 @@ n meɪbi ɘ snæk fɔɹ hɚ bɹʌðɘ bɔɘb
 
 bt = BlenderTimeline(ººBLENDERºº, 275)
 
-ipa = bt.interpretWords(include="+1")
+ipa = bt.interpretWords(include="+1 +5 +6")
 english = bt.interpretWords(include="+2")
 
 
@@ -27,8 +27,15 @@ english = bt.interpretWords(include="+2")
 , audio=ººsiblingºº("../media/pleasecallstella.wav")
 )
 def lyrics(f:Frame):
-    style = bt.current(5)
-    accented = style and style.name == "accent"
+    def ipa_styler(c:ClipGroupTextSetter):
+        font, fs = "Brill Roman", 200
+        
+        if "accent" in c.styles.current().name:
+            font, fs = "Brill Italic", 400
+        if "emphasis" in c.styles.current().name:
+            font = "Brill Bold Italic"
+        
+        return (c.text, Style(font, fs))
 
     return (P(
         english.currentGroup(f.i)
@@ -40,8 +47,7 @@ def lyrics(f:Frame):
             .remove_futures()
             .f(1),
         ipa.currentWord(f.i)
-            .pens(f.i, lambda c:
-                (c.text, Style("Brill Italic" if accented else "Brill Roman", 400 if accented else 200)))
+            .pens(f.i, ipa_styler, styles=ipa.styles)
             .lead(40)
             .xalign(f.a.r)
             .align(f.a.r.take(0.85, "N"))
