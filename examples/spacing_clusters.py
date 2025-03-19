@@ -1,6 +1,6 @@
 from coldtype import *
 
-# https://brill.com/page/BrillFontDownloads/Download-The-Brill-Typeface
+# https://brill.com/page/resources_fontsdownloads
 
 font = Font.Find("Brill-Bold")
 

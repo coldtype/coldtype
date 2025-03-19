@@ -1,8 +1,8 @@
 from coldtype import *
 
 VERSIONS = {
-    "A": dict(text="COLD", font=(font:="Times")),
-    "B": dict(text="TYPE", font=font),
+    "A": dict(text="COLD", font="ObviouslyV"),
+    "B": dict(text="TYPE", font="ObviouslyV"),
 } #/VERSIONS
 
 @animation((1080, 1080/4), bg=1, tl=45, release=lambda a: a.gifski())

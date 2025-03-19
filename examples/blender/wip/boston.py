@@ -22,7 +22,7 @@ english = bt.interpretWords(include="+2")
 
 @b3d_sequencer((1080, 1080)
 , timeline=bt
-, bg=hsl(0.6, 0.7, 0.3)
+, bg=hsl(0.6, 0.7, 0.2)
 , live_preview_scale=0.25
 , audio=ººsiblingºº("../media/pleasecallstella.wav")
 )

@@ -195,6 +195,32 @@ class Coldtype2DImporter(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class Coldtype2DLivePreviewImporter(bpy.types.Operator):
+    """Import the current Coldtype animation livepreview file as a PNG (that you can display in the image viewer)"""
+
+    bl_idname = "wm.coldtype_2d_livepreview_importer"
+    bl_label = "Coldtype 2D Live Preview Importer"
+
+    def invoke(self, context, event):
+        sq = find_sequence()
+        if sq:
+            file = sq.filepath.parent / "renders" / (sq.filepath.stem + "_livepreview.png")
+            if file.exists():
+                bpy.data.images.load(str(file))
+            # bpy.ops.sequencer.image_strip_add(
+            #     directory=str(sq.output_folder) + "/",
+            #     files=[dict(name=str(p.output_path.name)) for p in sq.passes(Action.RenderAll, None)],
+            #     relative_path=True,
+            #     frame_start=0,
+            #     frame_end=sq.duration-1,
+            #     channel=2)
+        
+        #bpy.ops.sequencer.refresh_all()
+        return {'FINISHED'}
+
+#path = r.filepath.parent / "renders" / (r.filepath.stem + "_livepreview.png")
+
+
 class Coldtype2DSequenceDefaults(bpy.types.Operator):
     """Some good defaults for editing and rendering a 2D sequence based on PNG images"""
 
@@ -376,6 +402,7 @@ class COLDTYPE_2D_PT_Panel(bpy.types.Panel):
         layout = self.layout
         layout.operator(Coldtype2DSequenceDefaults.bl_idname, text="Set Defaults", icon="SETTINGS",)
         layout.operator(Coldtype2DImporter.bl_idname, text="Import Frames", icon="DOCUMENTS",)
+        layout.operator(Coldtype2DLivePreviewImporter.bl_idname, text="Import Live Preview", icon="IMAGE_DATA",)
         layout.operator(Coldtype2DLoadJSONData.bl_idname, text="Load JSON Data",
         icon="OUTLINER_DATA_GP_LAYER",)
         layout.separator()
@@ -413,6 +440,7 @@ def register():
     
     bpy.utils.register_class(Coldtype2DSequenceDefaults)
     bpy.utils.register_class(Coldtype2DImporter)
+    bpy.utils.register_class(Coldtype2DLivePreviewImporter)
     bpy.utils.register_class(Coldtype2DRenderOne)
     bpy.utils.register_class(Coldtype2DRenderWorkarea)
     bpy.utils.register_class(Coldtype2DRenderAll)
