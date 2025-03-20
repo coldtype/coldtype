@@ -1,0 +1,53 @@
+{
+    "start": 0,
+    "end": 119,
+    "livepreview_disabled": null,
+    "tracks": [
+        {
+            "index": 1,
+            "clips": [
+                {
+                    "name": "*Hello",
+                    "text": "*Hello",
+                    "start": 13.0,
+                    "end": 31
+                },
+                {
+                    "name": "world,",
+                    "text": "world,",
+                    "start": 31.0,
+                    "end": 53
+                },
+                {
+                    "name": "\u2248this",
+                    "text": "\u2248this",
+                    "start": 53.0,
+                    "end": 63
+                },
+                {
+                    "name": "is",
+                    "text": "is",
+                    "start": 63.0,
+                    "end": 75
+                },
+                {
+                    "name": "text.",
+                    "text": "text.",
+                    "start": 75.0,
+                    "end": 100
+                }
+            ]
+        },
+        {
+            "index": 2,
+            "clips": [
+                {
+                    "name": ".bolder",
+                    "text": ".bolder",
+                    "start": 75.0,
+                    "end": 100
+                }
+            ]
+        }
+    ]
+}
