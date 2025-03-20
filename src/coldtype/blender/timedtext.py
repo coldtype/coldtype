@@ -232,7 +232,7 @@ class Coldtype2DSequenceDefaults(bpy.types.Operator):
         context.scene.render.use_sequencer = True
         context.scene.use_audio_scrub = True
         context.scene.view_settings.view_transform = "Standard"
-        context.scene.use_follow = True
+        context.screen.use_follow = True
         return {'FINISHED'}
 
 

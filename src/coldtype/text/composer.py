@@ -83,6 +83,9 @@ class Lockup(FittableMixin):
         self.preserveLetters = preserveLetters
         self.nestSlugs = nestSlugs
     
+    def __repr__(self):
+        return f"<Lockup:{self.slugs}>"
+    
     def width(self):
         return sum([s.width() for s in self.slugs])
     

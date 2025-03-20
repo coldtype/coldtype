@@ -66,8 +66,8 @@ ctb = "coldtype.renderer:main_b3d"
 [tool.setuptools]
 license-files = [] # https://github.com/astral-sh/uv/issues/9513#issuecomment-2519527822
 
-#[tool.uv.sources]
-#coldtype-fontgoggles = { path = "../fontgoggles", editable = true }
+[tool.uv.sources]
+coldtype-fontgoggles = { path = "../fontgoggles", editable = true }
 
 [build-system]
 requires = ["setuptools >= 61.0", "wheel", "setuptools-scm >= 8.0"]

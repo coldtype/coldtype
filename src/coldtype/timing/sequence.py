@@ -401,6 +401,8 @@ class ClipGroup(Timeable):
         
         graf = Graf(lockups, rect, graf_style)
         pens = graf.pens()#.align(rect, x="minx")
+
+        return pens
         
         re_grouped = P()
         for idx, line in enumerate(lines):

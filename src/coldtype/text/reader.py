@@ -276,6 +276,12 @@ class Style():
             else:
                 self.addVariations(unnormalized_variations)
     
+    def __repr__(self):
+        if self.tag:
+            return f"<Style:{self.font.path.name}|{self.fontSize}|tag={self.tag}|{self.variations}>"
+        else:
+            return f"<Style:{self.font.path.name}|{self.fontSize}|{self.variations}>"
+
     def __eq__(self, other):
         try:
             if not self.tag == other.tag:
@@ -283,6 +289,8 @@ class Style():
             if not self.font == other.font:
                 return False
             elif not self.fontSize == other.fontSize:
+                return False
+            elif not self.variations == other.variations:
                 return False
         except:
             return False
@@ -521,6 +529,9 @@ class StyledString(FittableMixin):
         if self.style.lang:
             self.text_info.languageOverride = self.style.lang
         self.resetGlyphRun()
+    
+    def __repr__(self):
+        return f"<StyledString:{self.text}:{self.style}>"
     
     def setStyle(self, style):
         self.style = style
