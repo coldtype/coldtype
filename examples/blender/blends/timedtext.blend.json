@@ -42,8 +42,19 @@
             "index": 2,
             "clips": [
                 {
-                    "name": ".bolder",
-                    "text": ".bolder",
+                    "name": ".italic",
+                    "text": ".italic",
+                    "start": 75.0,
+                    "end": 100
+                }
+            ]
+        },
+        {
+            "index": 3,
+            "clips": [
+                {
+                    "name": ".blue",
+                    "text": ".blue",
                     "start": 75.0,
                     "end": 100
                 }

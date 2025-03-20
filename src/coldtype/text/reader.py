@@ -542,7 +542,6 @@ class StyledString(FittableMixin):
         self.variations = self.style.variations.copy()
     
     def resetGlyphRun(self):
-        #print("RESET GLYPH RUN", self)
         self.glyphs = self.style.font.font.getGlyphRunFromTextInfo(self.text_info
             , features=self.features
             , varLocation=self.variations
@@ -902,11 +901,13 @@ class StyledString(FittableMixin):
             self.addBRGlyphDrawings(self.glyphs)
 
         elif not self.style.no_shapes:
+            pass
             #print("ct.getGlyphDrawings")
-            glyphNames = [g.name for g in self.glyphs]
-            glyphDrawings = list(self.style.font.font.getGlyphDrawings(glyphNames, True))
-            for glyph, glyphDrawing in zip(self.glyphs, glyphDrawings):
-                glyph.glyphDrawing = glyphDrawing
+            #print(self.glyphs[0].glyphDrawing)
+            #glyphNames = [g.name for g in self.glyphs]
+            #glyphDrawings = list(self.style.font.font.getGlyphDrawings(glyphNames, True))
+            #for glyph, glyphDrawing in zip(self.glyphs, glyphDrawings):
+            #    glyph.glyphDrawing = glyphDrawing
         
         pens = P()
         for idx, g in enumerate(self.glyphs):

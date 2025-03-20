@@ -231,6 +231,9 @@ class Easeable():
             i = i % self.t.duration
         else:
             i = self.i
+        
+        if t.start == -1 and t.end == -1:
+            return EaseableTiming(0)
 
         if clip and i < t.start:
             return EaseableTiming(0)

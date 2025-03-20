@@ -13,15 +13,7 @@ from coldtype.timing.sequence import ClipGroupTextSetter
 #   - Import Frames
 
 bt = BlenderTimeline(ººBLENDERºº, 120)
-words = bt.interpretWords(include="+1 +2")
-
-fonts = [
-    "ObviouslyV",
-    "PolymathV",
-    Font.JBMono(),
-    "DegularV",
-    "CheeeV"
-]
+words = bt.interpretWords(include="+1 +2 +3")
 
 @b3d_sequencer((1080, 1080)
 , timeline=bt
@@ -29,26 +21,22 @@ fonts = [
 , live_preview_scale=0.25
 )
 def timedtext(f:Frame):
-    return (Lockup([
-        StyledString("A", Style("ObviouslyV", 100, wght=0, wdth=0)),
-        StyledString("B", Style("ObviouslyV", 100, wght=1, wdth=1))]
-        )
-        .pens()
-        .align(f.a.r))
-
     def styler(c:ClipGroupTextSetter):
-        font, fs = Font.JBMono(), 100
-        wght = c.styles.current().e("eeio", 0)
+        font, fs = "PolymathV", 100
+        
+        ital = c.styles.ki("italic").e("seo", 0)
+        blue = "blue" in c.styles.current().name
+        wght = Easeable(c.clip, f.i).e("sei", 0, rng=(0, 1))
 
-        return (c.text, Style(font, fs#+c.i*50
+        return (c.text, Style(font, fs
             , wght=wght
-            , fill=hsl(c.i*0.05)))
+            , ital=ital
+            , fill=hsl(0.6) if blue else hsl(c.i*0.05)))
 
     return (P(
         words.currentGroup(f.i)
-            .pens(f.i, styler, verbose=True)
-            #.lead(10)
-            #.xalign(f.a.r, tx=0)
-            #.align(f.a.r, tx=0)
-            #.remove_futures()
-            ))
+            .pens(f.i, styler)
+            .lead(10)
+            .xalign(f.a.r, "W", tx=0)
+            .align(f.a.r, tx=0)
+            .remove_futures()))

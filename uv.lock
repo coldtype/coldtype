@@ -398,9 +398,9 @@ requires-dist = [
     { name = "b3denv", specifier = ">=0.0.12" },
     { name = "beautifulsoup4", marker = "extra == 'website'" },
     { name = "brotli", marker = "extra == 'website'" },
-    { name = "coldtype-fontgoggles", editable = "../fontgoggles" },
-    { name = "coldtype-fontgoggles", extras = ["more-fonts"], marker = "extra == 'more-fonts'", editable = "../fontgoggles" },
-    { name = "coldtype-fontgoggles", extras = ["more-fonts"], marker = "extra == 'viewer'", editable = "../fontgoggles" },
+    { name = "coldtype-fontgoggles", specifier = "==1.8.4.7" },
+    { name = "coldtype-fontgoggles", extras = ["more-fonts"], marker = "extra == 'more-fonts'", specifier = "==1.8.4.7" },
+    { name = "coldtype-fontgoggles", extras = ["more-fonts"], marker = "extra == 'viewer'", specifier = "==1.8.4.7" },
     { name = "defcon" },
     { name = "easing-functions", specifier = "==1.0.4" },
     { name = "favicons", marker = "extra == 'website'" },
@@ -458,13 +458,17 @@ dev = [
 [[package]]
 name = "coldtype-fontgoggles"
 version = "1.8.4.7"
-source = { editable = "../fontgoggles" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "blackrenderer" },
     { name = "fonttools" },
     { name = "python-bidi" },
     { name = "uharfbuzz" },
     { name = "unicodedata2" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/95/6c/a8992135cee6b070cf028fb12d5393fd76823b6e1e5be75830b7df355c28/coldtype_fontgoggles-1.8.4.7.tar.gz", hash = "sha256:c8ae9225029c1504909f70da4e89177477bd6faa2eb84ba5028c2595f4edb6db", size = 12196511 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/de/5a/f31adeeb3f71a974fcf737c5a2d15aba7ca445da1c4d5e226fcb1a6e1642/coldtype_fontgoggles-1.8.4.7-py3-none-any.whl", hash = "sha256:aa80f71af473de166a32a7a4fbcdb171b7d70503aaec66b386074fe98885fbc5", size = 1082330 },
 ]
 
 [package.optional-dependencies]
@@ -473,19 +477,6 @@ more-fonts = [
     { name = "numpy" },
     { name = "ufo2ft" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "blackrenderer", specifier = ">=0.6.0" },
-    { name = "fonttools", specifier = ">=4.53.1" },
-    { name = "fonttools", extras = ["lxml", "type1", "ufo", "unicode", "woff"], marker = "extra == 'more-fonts'", specifier = ">=4.53.1" },
-    { name = "numpy", marker = "extra == 'more-fonts'" },
-    { name = "python-bidi", specifier = "==0.4.2" },
-    { name = "ufo2ft", marker = "extra == 'more-fonts'" },
-    { name = "uharfbuzz", specifier = "==0.39.1" },
-    { name = "unicodedata2", specifier = ">=15.1.0" },
-]
-provides-extras = ["more-fonts"]
 
 [[package]]
 name = "colorama"
@@ -4781,24 +4772,35 @@ wheels = [
 
 [[package]]
 name = "uharfbuzz"
-version = "0.39.1"
+version = "0.46.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/40/20/0d8066895bd262f8b85e4148c5ff467826d9facea36a5e4e25f883756e2f/uharfbuzz-0.39.1.zip", hash = "sha256:68c341f7cc9e43418b2db295eb679ed6dc638d58c11cf279d9bd28ce8a3ade06", size = 1855858 }
+sdist = { url = "https://files.pythonhosted.org/packages/1a/41/ac2ce0438ba0222d15334b53ad2f5271ba57da7593563c0b3d8b19382b33/uharfbuzz-0.46.0.tar.gz", hash = "sha256:b4ade2a584336227cc66e3db2e3947e4482dc37f643ac7719a616f8efd01488e", size = 1559433 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2a/7f/b87f0191b3db482a0b3e2b0bd86cf8e713aabf2774929804d4f2650fdc2c/uharfbuzz-0.39.1-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:d86e33895269b9a889fda963b8f9038bf22d132de62fbff963fbc91e33153ebb", size = 2906311 },
-    { url = "https://files.pythonhosted.org/packages/b1/54/fb3162dba41245d8e09aeb254deec030c5466f0187546cc00905c91dee2d/uharfbuzz-0.39.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:e0a3237ae13dc79ba282b00935b936640983ab8bcdf8fa9940403282543a5d0f", size = 1501620 },
-    { url = "https://files.pythonhosted.org/packages/17/66/ed0c66ac04f4a45ea6df769969ba563d5d1c53641893d549505a9faf1bc1/uharfbuzz-0.39.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:acff7e7be551c4b204500893e1691e7b63b6fa9828f8c621b708b47462607c33", size = 1384236 },
-    { url = "https://files.pythonhosted.org/packages/cc/30/9ec0cd5491bfeb710a30ace2ffb72fb5b2b50f093b40280e7cc93331e577/uharfbuzz-0.39.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6216e290fe8799ad29b2ac6fd789f88ea5a103a17341433d2a914d38dd0313de", size = 1492156 },
-    { url = "https://files.pythonhosted.org/packages/50/66/d1c0b6b2ad0bffa0dc1da75b571ff3c2a038fa7a12907340366cd77ef026/uharfbuzz-0.39.1-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:c3d568679e7f49f8a0cc5318c5186b5d717263e7c89bc5ec024f7df1fc752316", size = 15214953 },
-    { url = "https://files.pythonhosted.org/packages/d4/5d/a11cdfa4ff436a9716a488fcf8ad66be8197a5ecf642ad38f71070fa432a/uharfbuzz-0.39.1-cp311-cp311-win32.whl", hash = "sha256:2253b437c17b57ba6e8778711f85614ee957a115cdd2d81d206ac725c6f830b1", size = 929710 },
-    { url = "https://files.pythonhosted.org/packages/32/a3/ba6a2716559add39c4bf3eff4a7cdb38d240f73d76385dfb896f8bab3bb3/uharfbuzz-0.39.1-cp311-cp311-win_amd64.whl", hash = "sha256:cacd50d57dd7b9692beb1a6f9c4a94c1c6da13ae81b680566eeaf23ba50385cd", size = 1161789 },
-    { url = "https://files.pythonhosted.org/packages/cc/21/a97bd23dd301d3caa070b11c9da3081918ff75dc9f95d4a72427794dbe1e/uharfbuzz-0.39.1-cp312-cp312-macosx_10_9_universal2.whl", hash = "sha256:eecc13e303200b1b3a0d6cecc24f151a84fa8ef5381fc2cea638cf79b8b1ef8d", size = 2904128 },
-    { url = "https://files.pythonhosted.org/packages/c4/db/4c970c72010e5d3239663215a5e900f422c5d01e71af2a87cf68d19760d4/uharfbuzz-0.39.1-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:0f29e6d28886b86c6c9ec6881ad0c29dabbf01c8d7fd1ee2497ab4d46c1fc37a", size = 1499833 },
-    { url = "https://files.pythonhosted.org/packages/9a/e2/164f01a8565f307dbb4d8954cce4064d78c44e67c59003b410580385eaac/uharfbuzz-0.39.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:b5afee1a30a62eb0c3c96b795098b0ac8119efd35d30c63a553e0405e3d88f97", size = 1385605 },
-    { url = "https://files.pythonhosted.org/packages/8e/d8/c07a0d4ce0a7116d3f58e42d7ce83dc72c462a9c28699a95a109bdf4b809/uharfbuzz-0.39.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c686154f3845a0849f834e957f519ecbc65732a90e91f6246232f7c489d6f2c5", size = 1489883 },
-    { url = "https://files.pythonhosted.org/packages/eb/f8/912f61b8ae59c9f47621a306e263529e34e5040720dcedf4abe69dabfa3d/uharfbuzz-0.39.1-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:c1f801b0480a343839f599d3d653da7e575a64ad3c6de1fcb4d0e0d81f58657b", size = 15234678 },
-    { url = "https://files.pythonhosted.org/packages/c4/bd/438531f1297ef2bd8c06ffc55d4182b090ffcd05c4ce0fd77df4433a470a/uharfbuzz-0.39.1-cp312-cp312-win32.whl", hash = "sha256:ba4123730cf1488a470f4995fcf5d19c5838c7c488db14295843b4c2ed6575cf", size = 929501 },
-    { url = "https://files.pythonhosted.org/packages/dc/5b/6ac22fbfcb76e42bcc96ef89c002210e6f28d745185133bc2a3d6ac2d07f/uharfbuzz-0.39.1-cp312-cp312-win_amd64.whl", hash = "sha256:c748f500848ea1bb6ff18b776aecf87b3877df08e24ac1f1e74212e774b546ab", size = 1162653 },
+    { url = "https://files.pythonhosted.org/packages/aa/df/7ca9e71abc13add68840368c9fe458932aaddce1713a490e19b16bd1bec7/uharfbuzz-0.46.0-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:a5d39118cb16a8cb2a7644d7272fb62e2ffe83abcde0c9e71e28681c2d20070e", size = 2744245 },
+    { url = "https://files.pythonhosted.org/packages/ca/67/c69e07b2070d569a456d37aacd3c5afd26005462d2b1b8260f0d6c31245f/uharfbuzz-0.46.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:7e07de7e3d6bc9e19caeb7120afa62d84f9e7b59267f73f17a07b6f7d55bf14f", size = 1434268 },
+    { url = "https://files.pythonhosted.org/packages/a3/1f/13547ca407642a149158159ee2c7183901a64b6280a843ccba2e1999440c/uharfbuzz-0.46.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:9a07aefb6a3c86a3e14bccf7a25d6cc8d649faeb80bdd52357aa7e96d9b1274c", size = 1318223 },
+    { url = "https://files.pythonhosted.org/packages/73/6f/f1c358eefd4a6e83db61678b7c0ca3f918ab0aeb4c87e37bbab5b0ce12db/uharfbuzz-0.46.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:49dd51f0113e86cefee54e560eff565b8ad1019cc5574727cfdfc0576451f33d", size = 13235939 },
+    { url = "https://files.pythonhosted.org/packages/24/73/b751e9e73dad8f7918efe0bfc74e7e322fbb0563cfe8a32f512290908931/uharfbuzz-0.46.0-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:4b73db8192635a2f7574cfef1d723c22ba585bef0d58feafe8ae185d3c2e5355", size = 14304077 },
+    { url = "https://files.pythonhosted.org/packages/0d/8d/56e88c6f8fd224f799c51808516de5db3bee2711762585d3e3214b05a830/uharfbuzz-0.46.0-cp311-cp311-win32.whl", hash = "sha256:8d4f11c8d0c67b2dce41ce85289f90f762d15ec09c5c826a82c3e255473004b3", size = 935994 },
+    { url = "https://files.pythonhosted.org/packages/e1/01/ab13e5126ae3ada932df095914fd2fd39848ff905fb910df6a79c3b0b003/uharfbuzz-0.46.0-cp311-cp311-win_amd64.whl", hash = "sha256:425a9fef96e37c047a43538011dbb48f71d01f3bcad5af1c704d6e3a466ea426", size = 1168377 },
+    { url = "https://files.pythonhosted.org/packages/a5/8d/ef4454293bf203544813685437d814c202cea13e69d8c1d5d8965054b323/uharfbuzz-0.46.0-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:731de4653b752e2f7e8c4725f70b28cf562d050a2ef010bec6ca34676b371cef", size = 2745110 },
+    { url = "https://files.pythonhosted.org/packages/0e/13/6291d4d79b4ebcc05be5acc5e97123449c83d15ddfcfb1f6cac7b586090e/uharfbuzz-0.46.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:c157f2248da48a0c5c590f15f42902d7a791d088cf8dc8b7ade5953d90b36b72", size = 1435061 },
+    { url = "https://files.pythonhosted.org/packages/55/f9/af8169e6444e0792efa0cf7b2c98cb645bfe8ffadbabb7b50404ed452ae3/uharfbuzz-0.46.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:bd30471df2f7d380efc3d81337b51a0ac5ba165105fa7ca08ead7042009e9ab7", size = 1318399 },
+    { url = "https://files.pythonhosted.org/packages/64/0d/5c00fde4e684a7d53438698ce32eb35da0d0ae7e1be4579524e889994c74/uharfbuzz-0.46.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:70324fed61a0a2d9193163933a1af16017325861462941eb3b72da2c2d738bd0", size = 13201834 },
+    { url = "https://files.pythonhosted.org/packages/b0/dc/6023d1391657b49d71a27f7cac5f7191bc02fbe6b3c7d735c84ef1961925/uharfbuzz-0.46.0-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:c40a21fe39684d799f336415b27393d50400668170964b79deb61e8115b3fa58", size = 14379812 },
+    { url = "https://files.pythonhosted.org/packages/9e/35/6741b70f2ca6eb8cf1d9cb3f96fcfa94c3164e434b5d08371ea75aebbea2/uharfbuzz-0.46.0-cp312-cp312-win32.whl", hash = "sha256:85e0d3e28b6c20056b6e7550e4d63c921c083ed6e79c9467a1711fcca99c0d35", size = 932478 },
+    { url = "https://files.pythonhosted.org/packages/03/0c/b47a013211bb92102d81cd7bf676c6eb7be855899ecb222493d78a4aa35d/uharfbuzz-0.46.0-cp312-cp312-win_amd64.whl", hash = "sha256:8efc34d672798dacfdf6d5fd6771a8a4448972d084f9a7aa847c1424e87b23a6", size = 1167300 },
+    { url = "https://files.pythonhosted.org/packages/10/cd/36ffd50a7bff51ac18e4bf89929f9611105bb8dc2935c1a17ee13834551b/uharfbuzz-0.46.0-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:43b79e72ae0c321046bf6c23ddd3bfff1b701d5ca89270d77fd0f719b6a223c7", size = 2738316 },
+    { url = "https://files.pythonhosted.org/packages/19/1a/7e38883bfaf66309687a7f97156e60797c8f4d964c9be1ab525d73097e58/uharfbuzz-0.46.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:8cb237cf228fc11fa1a45fa0a2190a08783780c8be761e4a78fbc3fd08302340", size = 1431943 },
+    { url = "https://files.pythonhosted.org/packages/02/4b/058fa31ae58b54b2e8671bd172578925b7d45f57bd52b54139ddf70a5a2f/uharfbuzz-0.46.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:493375b03fb8555cbbc1e0b4f0241d818946fe22f7647ebb6082930a2cb9845e", size = 1315191 },
+    { url = "https://files.pythonhosted.org/packages/bc/81/a41e699197fc7d234a04f787607afc9a5d18e23a9981a89079cb10e4394f/uharfbuzz-0.46.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:65125bdc88e61214d5c9f25e2cabe81e18d2f8924cdac2766bd8389cfc6cdf30", size = 13256341 },
+    { url = "https://files.pythonhosted.org/packages/bf/ec/5a24bfcf4837641f4a93188b8dfab3cb7eb10d0ff4cd1b7cbb88d8225053/uharfbuzz-0.46.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:cecfe42901468d046782f48b1165b419b08ee21b2e3e2fdae5fcd8f6dc147177", size = 14374065 },
+    { url = "https://files.pythonhosted.org/packages/6b/12/92d35885c76647a42b989d8cc92054006ecab57d9e7814bec3e31d74bf44/uharfbuzz-0.46.0-cp313-cp313-win32.whl", hash = "sha256:deac89993d39feb08fa62d07854cf4ea1180c2c9a30c9274440df8ed96debc85", size = 930972 },
+    { url = "https://files.pythonhosted.org/packages/ba/55/44fe4de8fe367c451f59c85289b6365c0f36153416ee79b2f7754455e1f3/uharfbuzz-0.46.0-cp313-cp313-win_amd64.whl", hash = "sha256:b82b7bc85e4682195883b32435a075441593b03e2fb2ba13467669b25dc17a06", size = 1163916 },
+    { url = "https://files.pythonhosted.org/packages/11/3a/749079bc99fc358c19f9954e1732c31b789abd6c9f0848378fbdbe0394fa/uharfbuzz-0.46.0-pp311-pypy311_pp73-macosx_10_15_x86_64.whl", hash = "sha256:d9fd6de8739aca300da7d605879f81601da6eaca2c8c88e16a60288a208ecc8c", size = 1234296 },
+    { url = "https://files.pythonhosted.org/packages/d2/22/55d32b97ccea67d4ec8062c16805d73774f3c6ddae352544ed6ef941551a/uharfbuzz-0.46.0-pp311-pypy311_pp73-macosx_11_0_arm64.whl", hash = "sha256:3efa8074278cf919aa0680401e7066f1b255de25d028c3ef8fa4c2af523deabc", size = 1135823 },
+    { url = "https://files.pythonhosted.org/packages/7f/5f/04b955f9c7ba89ff5b78cc36294eb4f33702671adcac7130398344d3fcc7/uharfbuzz-0.46.0-pp311-pypy311_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f6edb779e202fe1743c2ef28a1211f1c6cd662a2d2c0fc715e6b82a9c22e6884", size = 1363588 },
+    { url = "https://files.pythonhosted.org/packages/6b/c8/d03596b82732c43b3845d2e8aeac5d285d5ef16c0e38d91a45614e40a29d/uharfbuzz-0.46.0-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:b9868b6b1b33d2e7c13e584474fd619badaaf24927053e53189492fd461c81f8", size = 1156138 },
 ]
 
 [[package]]
