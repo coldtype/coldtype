@@ -25,7 +25,7 @@ def timedtext(f:Frame):
         font, fs = "PolymathV", 100
         
         ital = c.styles.ki("italic").e("seo", 0)
-        blue = "blue" in c.styles.current().name
+        blue = c.styles.ki("blue")
         wght = Easeable(c.clip, f.i).e("sei", 0, rng=(0, 1))
 
         return (c.text, Style(font, fs

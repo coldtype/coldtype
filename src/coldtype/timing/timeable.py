@@ -34,6 +34,12 @@ class Timeable():
     def duration(self):
         return self.end - self.start
     
+    def __bool__(self):
+        if self.start == -1 and self.end == -1:
+            return False
+        else:
+            return True
+    
     def __repr__(self):
         if hasattr(self, "name") and self.name:
             return f"Timeable('{self.name}', {self.start}, {self.end} ({self.duration}))"
@@ -149,6 +155,12 @@ class Easeable():
             return "/".join([t.name for t in self.t])
         else:
             return self.t.name
+    
+    def __bool__(self):
+        if self._ts:
+            return any([bool(t) for t in self.t])
+        else:
+            return bool(self.t)
     
     @property
     def idx(self):

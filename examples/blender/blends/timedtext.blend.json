@@ -31,10 +31,16 @@
                     "end": 75
                 },
                 {
-                    "name": "text.",
-                    "text": "text.",
+                    "name": "text",
+                    "text": "text",
                     "start": 75.0,
                     "end": 100
+                },
+                {
+                    "name": "+.",
+                    "text": "+.",
+                    "start": 100.0,
+                    "end": 117
                 }
             ]
         },
