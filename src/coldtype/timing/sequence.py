@@ -110,10 +110,6 @@ class ClipGroupTextSetter():
     text:str
     styles:Timeline
 
-#ClipGroupTextSetter = namedtuple(
-#    "ClipGroupTextSetter",
-#    ["frame", "i", "clip", "text", "styles"])
-
 
 class ClipGroup(Timeable):
     def __init__(self, timeline, index, clips, regroup=True):

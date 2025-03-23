@@ -1,7 +1,7 @@
 {
     "start": 0,
     "end": 119,
-    "livepreview_disabled": null,
+    "livepreview_disabled": true,
     "tracks": [
         {
             "index": 1,
@@ -52,6 +52,12 @@
                     "text": ".italic",
                     "start": 75.0,
                     "end": 100
+                },
+                {
+                    "name": ".static",
+                    "text": ".static",
+                    "start": 100.0,
+                    "end": 117
                 }
             ]
         },

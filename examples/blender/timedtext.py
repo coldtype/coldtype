@@ -24,14 +24,14 @@ def timedtext(f:Frame):
     def styler(c:ClipGroupTextSetter):
         font, fs = "PolymathV", 100
         
-        ital = c.styles.ki("italic").e("seo", 0)
         blue = c.styles.ki("blue")
-        wght = Easeable(c.clip, f.i).e("sei", 0, rng=(0, 1))
+        ital = c.styles.ki("italic").e("seo", 0)
+        wght = 1 if c.styles.ki("static") else Easeable(c.clip, f.i).e("sei", 0, rng=(0, 1))
 
         return (c.text, Style(font, fs
             , wght=wght
             , ital=ital
-            , fill=hsl(0.6) if blue else hsl(c.i*0.05)))
+            , fill=hsl(0.6) if blue else hsl(c.clip.idx*0.025)))
 
     return (P(
         words.currentGroup(f.i)

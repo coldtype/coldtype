@@ -397,17 +397,20 @@ class COLDTYPE_2D_PT_Panel(bpy.types.Panel):
         jpath = str(Path(bpy.data.filepath)) + ".json"
         jdata = json.loads(Path(jpath).read_text())
 
-        #print("HERE", jdata.get("livepreview_disabled"))
-
         layout = self.layout
         row = layout.row()
-        row.operator(Coldtype2DSequenceDefaults.bl_idname, text="Set Defaults", icon="SETTINGS",)
-        row.operator(Coldtype2DLoadJSONData.bl_idname, text="Load Data",
-        icon="OUTLINER_DATA_GP_LAYER",)
-        row = layout.row()
-        row.operator(Coldtype2DImporter.bl_idname, text="Import Frames", icon="DOCUMENTS",)
-        row.operator(Coldtype2DLivePreviewImporter.bl_idname, text="Import Preview", icon="IMAGE_DATA",)
+        row.label(text="Livepreview")
+        if jdata.get("livepreview_disabled"):
+           row.operator(Coldtype2DLivePreviewToggle.bl_idname, text="Enable")
+        else:
+           row.operator(Coldtype2DLivePreviewToggle.bl_idname, text="Disable")
         layout.separator()
+        row = layout.row()
+        row.label(text="Settings")
+        row.operator(Coldtype2DSequenceDefaults.bl_idname, text="", icon="SETTINGS",)
+        row.operator(Coldtype2DLoadJSONData.bl_idname, text="", icon="OUTLINER_DATA_GP_LAYER",)
+        row.operator(Coldtype2DImporter.bl_idname, text="", icon="DOCUMENTS",)
+        row.operator(Coldtype2DLivePreviewImporter.bl_idname, text="", icon="IMAGE_DATA",)
         row = layout.row()
         row.label(text="Render")
         row.operator(Coldtype2DRenderOne.bl_idname, text="", icon="IMAGE_DATA",)
@@ -424,11 +427,7 @@ class COLDTYPE_2D_PT_Panel(bpy.types.Panel):
         row.operator(TimedTextReset.bl_idname, text="", icon="INDIRECT_ONLY_ON")
         row.operator(TimedTextNewline.bl_idname, text="", icon="OUTLINER_OB_FORCE_FIELD")
         row.operator(TimedTextSplitter.bl_idname, text="", icon="UV_ISLANDSEL")
-        layout.separator()
-        if jdata.get("livepreview_disabled"):
-           layout.operator(Coldtype2DLivePreviewToggle.bl_idname, text="Enable Livepreviewing", icon="OUTLINER_OB_IMAGE")
-        else:
-           layout.operator(Coldtype2DLivePreviewToggle.bl_idname, text="Disable Livepreviewing", icon="OUTLINER_OB_IMAGE")
+
         #layout.label(text="* to start a new text sequence")
         #layout.label(text="≈ to break a line")
         #layout.label(text="+ to continue without space")

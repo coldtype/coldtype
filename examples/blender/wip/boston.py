@@ -30,9 +30,9 @@ def lyrics(f:Frame):
     def ipa_styler(c:ClipGroupTextSetter):
         font, fs = "Brill Roman", 200
         
-        if "accent" in c.styles.current().name:
+        if c.styles.ki("accent"):
             font, fs = "Brill Italic", 400
-        if "emphasis" in c.styles.current().name:
+        if c.styles.ki("emphasis"):
             font = "Brill Bold Italic"
         
         return (c.text, Style(font, fs))
