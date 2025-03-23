@@ -87,9 +87,11 @@ def persist_sequence(last_persisted):
     
     jpath = str(Path(bpy.data.filepath)) + ".json"
     jdata = json.loads(Path(jpath).read_text())
+    #print(">>>>>>>>>>>>>>>>", scene.render.fps, scene.render.fps_base)
     out = dict(
         start=scene.frame_start,
         end=scene.frame_end,
+        #fps=scene.render.fps / scene.render.fps_base,
         livepreview_disabled=jdata.get("livepreview_disabled"),
         #current_frame=scene.frame_current,
         tracks=tracks)

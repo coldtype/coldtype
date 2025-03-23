@@ -5,14 +5,18 @@ from coldtype.timing.sequence import ClipGroupTextSetter
 # Blender
 #   - Switch to "Video Editing"
 #   - View "Tool" in Sequencer
-#   - Hit "Set Defaults"
+#   - CT2D: Hit "Settings > Defaults"
 #   - Author data
-#   - Import Live Preview
+#   - CT2D: Import > Preview
 #   - Create Image Editor, select image live preview
-#   - Render All
-#   - Import Frames
+#   - CT2D: Render > Film reel (render all)
+#   - CT2D: Import > Frames
 
-bt = BlenderTimeline(ººBLENDERºº, 120)
+# Gotchas
+# Only set timeline length and fps in Coldtype code
+#   (not in Blender itself)
+
+bt = BlenderTimeline(ººBLENDERºº, 120, 30)
 words = bt.interpretWords(include="+1 +2 +3")
 
 @b3d_sequencer((1080, 1080)

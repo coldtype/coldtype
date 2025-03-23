@@ -42,19 +42,19 @@ class BlenderIO():
 
 
 class BlenderTimeline(Timeline):
-    def __init__(self, file, duration=None, **kwargs):
+    def __init__(self, file, duration=None, fps=30, **kwargs):
         if isinstance(file, BlenderIO):
             file = file.data_file
 
         self.file = file
         if not self.file.exists():
             self.file.parent.mkdir(parents=True, exist_ok=True)
-            self.file.write_text('{"fps":30}')
+            self.file.write_text('{}')
 
         try:        
             data = json.loads(file.read_text())
         except:
-            data = dict(fps=30)
+            data = dict()
 
         timeables = []
         for track in data.get("tracks", []):
@@ -73,7 +73,7 @@ class BlenderTimeline(Timeline):
             data.get("end", 30)+1)
     
         super().__init__(
-            fps=data.get("fps", 30)
+            fps=fps #data.get("fps", 30)
             , timeables=timeables
             , start=0
             , end=duration or data.get("end")+1
@@ -420,7 +420,7 @@ class b3d_sequencer(b3d_animation):
             rect=rect,
             timeline=timeline,
             match_fps=True,
-            match_length=False,
+            match_length=True,
             match_output=match_output,
             autosave=autosave,
             renderer="b3d" if in_blender else "skia",
