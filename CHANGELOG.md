@@ -349,3 +349,7 @@ Huge update, attempting to future proof things
 ## [0.12.0] - 2025-03-18
 ### Changed
 - base dependencies for coldtype (i.e. coldtype installed without any extra) no longer support "extended" font formats (woff, ufo, etc.), though [viewer] extra does still provide support for these; mido requirement has also been moved out of base into viewer; the point of this is to reduce the complexity of a "minimal" coldtype installation (i.e. when embedded as a backend service in another python application or a Blender extension, e.g.)
+
+## [0.12.1] - 2025-03-23
+### Changed
+- refinements to Coldtype 2D panel in Blender for timeline workflow
