@@ -15,7 +15,6 @@ suggestion = bt.interpretWords(include="+5")
 , timeline=bt
 , bg=None
 , render_bg=False
-, live_preview=0
 , live_preview_scale=0.25
 )
 def lyrics(f:Frame):

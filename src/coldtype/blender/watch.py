@@ -9,56 +9,6 @@ from coldtype.blender.timedtext import add_2d_panel
 from coldtype.blender.panel3d import add_3d_panel
 from coldtype.blender.util import remote
 
-# def draw_png():
-#     import gpu, os
-#     from gpu_extras.batch import batch_for_shader
-
-#     imageName = "ldts.png"
-#     pathTexture = str(Path("~/Desktop/ldts.png").expanduser())
-#     foundSceneImage = 0
-#     loadedImage = None
-
-#     for image in bpy.data.images:
-#         if (image.name.find(imageName) != -1):
-#             foundSceneImage += 1
-#             loadedImage = image
-
-#     if (foundSceneImage == 0):
-#         loadedImage = bpy.data.images.load(pathTexture)
-
-#     width = 1080
-#     height = 1080
-#     scale = 0.25
-
-#     width = width*scale
-#     height = height*scale
-
-#     # For 2.93 specifically
-#     tex = gpu.texture.from_image(loadedImage)
-
-#     content = {
-#         "pos": ((0, 0), (width, 0), (width, height), (0, height)),
-#         "texCoord": ((0, 0), (1, 0), (1, 1), (0, 1)),
-#     }
-
-#     shader = gpu.shader.from_builtin("2D_IMAGE")
-#     batch = batch_for_shader(shader, 'TRI_FAN', content)
-
-#     def draw():
-#         gpu.state.blend_set("ALPHA")
-#         shader.bind()
-
-#         shader.uniform_sampler("image", tex)
-#         batch.draw(shader)
-
-#     # For toggling on/off run script again
-#     try:
-#         bpy.context.space_data.draw_handler_remove(bpy.h, "WINDOW")
-#         del bpy.h
-#     except AttributeError:
-#         bpy.h = bpy.context.space_data.draw_handler_add(draw, (), 'WINDOW', 'POST_PIXEL')
-#     bpy.context.region.tag_redraw()
-
 
 def persist_sequence(last_persisted):
     channels = defaultdict(lambda: [])
@@ -170,7 +120,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             lp_path = render_as_image(r, result)
             display_image_in_blender(lp_path)
         
-        candidates = self.candidates
+        candidates = sorted(self.candidates, key=lambda x: isinstance(x, b3d_runnable), reverse=True)
         force_refresh = False
 
         for r in candidates:

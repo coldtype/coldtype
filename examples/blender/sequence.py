@@ -8,7 +8,6 @@ channel1 = bt.interpretWords(include="+1 +2")
 , timeline=bt
 , bg=None
 , render_bg=False
-, live_preview=1
 , live_preview_scale=0.25
 )
 def sequence(f:Frame):
