@@ -14,6 +14,7 @@ dependencies = [
     "coldtype-fontgoggles==1.8.4.7",
     "skia-pathops",
     "defcon>=0.12.0", # for OutlinePen
+    "uharfbuzz<=0.47.0", # some kind of cached variations/memory bug introduced in 0.47.0
 ]
 
 [project.urls]
