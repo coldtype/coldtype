@@ -42,6 +42,7 @@ def persist_sequence(last_persisted):
         start=scene.frame_start,
         end=scene.frame_end,
         #fps=scene.render.fps / scene.render.fps_base,
+        workarea_set=jdata.get("workarea_set", False),
         livepreview_disabled=jdata.get("livepreview_disabled"),
         #current_frame=scene.frame_current,
         tracks=tracks)

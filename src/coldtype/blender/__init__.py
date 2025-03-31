@@ -67,7 +67,8 @@ class BlenderTimeline(Timeline):
                     track=track["index"]))
         
         self.livepreview_disabled = bool(data.get("livepreview_disabled", False))
-        
+        self.workarea_set = bool(data.get("workarea_set", 0))
+
         self.workarea = range(
             data.get("start", 0),
             data.get("end", 30)+1)
@@ -339,9 +340,14 @@ class b3d_animation(animation):
         
         do_match_length = self.match_length
 
-        if bpy and bpy.data and do_match_length:
-            bpy.data.scenes[0].frame_start = 0
-            bpy.data.scenes[0].frame_end = self.t.duration-1
+        if bpy and bpy.data and do_match_length and bpy:
+            scene = bpy.data.scenes[0]
+            
+            if hasattr(self.timeline, "workarea_set") and self.timeline.workarea_set:
+                pass
+            else:
+                scene.frame_start = 0
+                scene.frame_end = self.t.duration-1
         
         if bpy and bpy.data and self.match_fps:
             # don't think this is totally accurate but good enough for now

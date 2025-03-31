@@ -324,6 +324,7 @@ dependencies = [
     { name = "easing-functions" },
     { name = "fontpens" },
     { name = "skia-pathops" },
+    { name = "uharfbuzz" },
 ]
 
 [package.optional-dependencies]
@@ -432,6 +433,7 @@ requires-dist = [
     { name = "tdqm", marker = "extra == 'notebook'" },
     { name = "ufo2ft", marker = "extra == 'more-fonts'", specifier = ">=3.2.8" },
     { name = "ufo2ft", marker = "extra == 'viewer'", specifier = ">=3.2.8" },
+    { name = "uharfbuzz", specifier = "<0.47.0" },
     { name = "unicodedata2", marker = "extra == 'unicode'" },
 ]
 provides-extras = ["more-fonts", "viewer", "drawbot", "unicode", "notebook", "audio", "website"]

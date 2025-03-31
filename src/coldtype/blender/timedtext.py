@@ -283,6 +283,20 @@ class Coldtype2DRelease(bpy.types.Operator):
         return {'FINISHED'}
 
 
+def update_json_value(key, value, default=False):
+    jpath = Path(str(Path(bpy.data.filepath)) + ".json")
+    jdata = json.loads(jpath.read_text())
+    existing = jdata.get(key, default)
+    
+    if callable(value):
+        new_value = value(existing)
+    else:
+        new_value = value
+
+    jdata[key] = new_value
+    jpath.write_text(json.dumps(jdata))
+
+
 class Coldtype2DSetWorkarea(bpy.types.Operator):
     """Set a workarea based on the current frame and the text data in the sequence"""
 
@@ -290,15 +304,18 @@ class Coldtype2DSetWorkarea(bpy.types.Operator):
     bl_label = "Coldtype 2D Set Workarea"
 
     def execute(self, context):
+
         sq = find_sequence()
         if sq:
             fc = context.scene.frame_current
             work = sq.t.findWordsWorkarea(fc)
             if work:
+                update_json_value("workarea_set", True)
                 start, end = work
                 context.scene.frame_start = start
                 context.scene.frame_end = end-1
             else:
+                update_json_value("workarea_set", False)
                 context.scene.frame_start = 0
                 context.scene.frame_end = sq.t.duration-1
         
@@ -314,6 +331,7 @@ class Coldtype2DUnsetWorkarea(bpy.types.Operator):
     def execute(self, context):
         sq = find_sequence()
         if sq:
+            update_json_value("workarea_set", False)
             context.scene.frame_start = 0
             context.scene.frame_end = sq.t.duration-1
         return {'FINISHED'}
@@ -337,12 +355,7 @@ class Coldtype2DLivePreviewToggle(bpy.types.Operator):
     bl_label = "Coldtype 2D Livepreview Toggle"
 
     def execute(self, _):
-        jpath = Path(str(Path(bpy.data.filepath)) + ".json")
-        jdata = json.loads(jpath.read_text())
-        new_value = not bool(jdata.get("livepreview_disabled", False))
-        jdata["livepreview_disabled"] = new_value
-        jpath.write_text(json.dumps(jdata))
-
+        update_json_value("livepreview_disabled", lambda v: not bool(v), False)
         bpy.ops.sequencer.refresh_all()
         return {'FINISHED'}
 

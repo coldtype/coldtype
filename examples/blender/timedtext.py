@@ -16,7 +16,7 @@ from coldtype.timing.sequence import ClipGroupTextSetter
 # Only set timeline length and fps in Coldtype code
 #   (not in Blender itself)
 
-bt = BlenderTimeline(ººBLENDERºº, 120, 30)
+bt = BlenderTimeline(ººBLENDERºº, 130, 30)
 words = bt.interpretWords(include="+1 +2 +3")
 
 @b3d_sequencer((1080, 1080)

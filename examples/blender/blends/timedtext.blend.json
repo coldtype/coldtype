@@ -1,6 +1,7 @@
 {
     "start": 0,
-    "end": 119,
+    "end": 129,
+    "workarea_set": false,
     "livepreview_disabled": false,
     "tracks": [
         {
