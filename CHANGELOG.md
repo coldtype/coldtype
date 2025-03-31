@@ -353,3 +353,8 @@ Huge update, attempting to future proof things
 ## [0.12.1] - 2025-03-23
 ### Changed
 - refinements to Coldtype 2D panel in Blender for timeline workflow
+
+## [0.12.2] - 2025-03-31
+### Fixed
+- ability to set workarea in coldtype 2d panel (blender)
+- memory bug in harfbuzz bounding box calculation by downgrading to <0.47
