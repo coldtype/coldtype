@@ -9,6 +9,7 @@ args = parse_inputs(__inputs__, dict(
     fmt=["h264", str],
     date=[False, bool],
     loops=[1, int],
+    reverse=[False, bool],
     audio=[None, str],
     set709=[True, bool],
     dirsort=["x.name", str],
@@ -44,7 +45,7 @@ def releaser(x:animation):
     fe.write(verbose=True, name=root.stem)
     fe.open()
 
-@image_sequence(images, args["fps"], looping=False, release=releaser)
+@image_sequence(images, args["fps"], looping=args["reverse"], release=releaser)
 def viewseq(_): return None
 
 # def release():
