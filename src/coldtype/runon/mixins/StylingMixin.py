@@ -86,6 +86,12 @@ class StylingMixin():
         return self
     
     def fssw(self, f, s, sw, sf=0):
+        if not isinstance(f, Theme) and isinstance(s, Theme):
+            t = Theme(f)
+            for k in s.colors.keys():
+                t[k] = f
+            f = t
+
         self.f(f)
         self.s(s)
         self.sw(sw)

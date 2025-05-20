@@ -1160,13 +1160,9 @@ class P(Runon):
                     a = p.ambit(tx=tx, ty=ty)
                     if a.x == 0 and a.y == 0 and a.w == 0 and a.h == 0:
                         continue
-                    if union.nonzero():
-                        union = union.union(a)
-                    else:
-                        union = a
+                    union = union.union(a)
                 return union
-            except Exception as e:
-                #print("EXCEPTION", e)
+            except Exception as _:
                 return Rect(0,0,0,0)
         
         # catch-all
@@ -1849,6 +1845,12 @@ class P(Runon):
     
 
     def fssw(self, f, s, sw, sf=0) -> "P":
+
+        if not isinstance(f, Theme) and isinstance(s, Theme):
+            t = Theme(f)
+            for k in s.colors.keys():
+                t[k] = f
+            f = t
 
         self.f(f)
         self.s(s)

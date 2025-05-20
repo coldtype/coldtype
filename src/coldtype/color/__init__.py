@@ -115,6 +115,8 @@ class Color():
 
     def with_alpha(self, alpha):
         return Color(self.r, self.g, self.b, alpha)
+    
+    a = with_alpha
 
     def ints(self):
         return [self.r*255, self.g*255, self.b*255, self.a]
@@ -159,6 +161,11 @@ class Color():
     
     def darker(self, level):
         return Color.from_hsl(self.h, self.s, max(self.l - level, 0), self.a)
+    
+    def adjust(self, level):
+        return self.lighter(level)
+    
+    adj = adjust
     
     def invert(self):
         newR = 1.0 - self.r
@@ -211,6 +218,9 @@ class Theme():
         else:
             return self.colors.get(index)
         
+    def __setitem__(self, key, value):
+        self.colors[key] = value
+        
     def get(self, key, default=None):
         return self.colors.get(key, self.colors.get("default", default))
     
@@ -231,6 +241,9 @@ class Theme():
             return Theme(**{k:v.lighter(a) for k,v in self.colors.items()})
         else:
             return Theme(**{k:v.lighter(a[i]) for i,(k,v) in enumerate(self.colors.items())})
+        
+    a = with_alpha
+    adj = adjust
 
 
 def lighten_max(color, maxLightness=0.55):
