@@ -322,6 +322,33 @@ def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
     return _mod_pixels
 
 
+def vector_pixels(rect, scale=0.1, lut=dict()):
+    import PIL.Image
+    
+    def _vector_pixels(pen):
+        raster = pen.ch(rasterized(rect, scale=scale))
+        pi = PIL.Image.fromarray(raster, "RGBa")
+        out = P()
+        for x in range(pi.width):
+            for y in range(pi.height):
+                r, g, b, a = pi.getpixel((x, y))
+                res = (r, g, b, a)
+                if any(res):
+                    lookup = (int(r/255*100), int(g/255*100), int(b/255*100), int(a/255*100))
+                    if lookup in lut:
+                        color = lut[lookup]
+                    else:
+                        color = (r/255, g/255, b/255, a/255)
+                    
+                    out.append(P()
+                        .rect(Rect(x, pi.height-y, 1, 1))
+                        .f(color))
+        
+        return out.scale(1/scale, point=(0, 0))
+    
+    return _vector_pixels
+
+
 def warp_image(image, rect, mod):
     from skimage import img_as_ubyte
     from skimage.transform import warp
