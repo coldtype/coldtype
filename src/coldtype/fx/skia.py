@@ -322,7 +322,7 @@ def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
     return _mod_pixels
 
 
-def vector_pixels(rect, scale=0.1, lut=dict(), print_misses=True):
+def vector_pixels(rect, scale=0.1, lut=dict(), print_misses=True, shaper=lambda r: P().rect(r)):
     import PIL.Image
     
     def _vector_pixels(pen):
@@ -342,8 +342,7 @@ def vector_pixels(rect, scale=0.1, lut=dict(), print_misses=True):
                             print(lookup)
                         color = (r/255, g/255, b/255, a/255)
                     
-                    out.append(P()
-                        .rect(Rect(x, pi.height-y, 1, 1))
+                    out.append(shaper(Rect(x, pi.height-y, 1, 1))
                         .f(color))
         
         return out.scale(1/scale, point=(0, 0))
