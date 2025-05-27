@@ -322,7 +322,7 @@ def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
     return _mod_pixels
 
 
-def vector_pixels(rect, scale=0.1, lut=dict()):
+def vector_pixels(rect, scale=0.1, lut=dict(), print_misses=True):
     import PIL.Image
     
     def _vector_pixels(pen):
@@ -338,6 +338,8 @@ def vector_pixels(rect, scale=0.1, lut=dict()):
                     if lookup in lut:
                         color = lut[lookup]
                     else:
+                        if print_misses:
+                            print(lookup)
                         color = (r/255, g/255, b/255, a/255)
                     
                     out.append(P()
