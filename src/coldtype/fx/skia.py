@@ -322,7 +322,7 @@ def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
     return _mod_pixels
 
 
-def vector_pixels(rect, scale=0.1, lut=dict(), combine=False):
+def vector_pixels(rect, scale=0.1, lut=dict(), combine=True, print_misses=True, shaper=lambda r: P().rect(r)):
     import PIL.Image
     from collections import defaultdict
     
@@ -341,11 +341,13 @@ def vector_pixels(rect, scale=0.1, lut=dict(), combine=False):
                     if lookup in lut:
                         color = lut[lookup]
                     else:
+                        if print_misses:
+                            print(lookup)
                         color = (r/255, g/255, b/255, a/255)
                     
-                    layers[color].append(P()
-                        .rect(Rect(x, pi.height-y, 1, 1))
-                        .f(color))
+                    (layers[color]
+                        .append(shaper(Rect(x, pi.height-y, 1, 1))
+                            .f(color)))
         
         out = P(layers.values()).scale(1/scale, point=(0, 0))
         if combine:
