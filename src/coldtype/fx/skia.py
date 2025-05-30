@@ -322,13 +322,16 @@ def mod_pixels(rect, scale=0.1, mod=lambda rgba: None):
     return _mod_pixels
 
 
-def vector_pixels(rect, scale=0.1, lut=dict()):
+def vector_pixels(rect, scale=0.1, lut=dict(), combine=False):
     import PIL.Image
+    from collections import defaultdict
     
     def _vector_pixels(pen):
         raster = pen.ch(rasterized(rect, scale=scale))
         pi = PIL.Image.fromarray(raster, "RGBa")
-        out = P()
+        
+        layers = defaultdict(lambda: P())
+
         for x in range(pi.width):
             for y in range(pi.height):
                 r, g, b, a = pi.getpixel((x, y))
@@ -340,11 +343,15 @@ def vector_pixels(rect, scale=0.1, lut=dict()):
                     else:
                         color = (r/255, g/255, b/255, a/255)
                     
-                    out.append(P()
+                    layers[color].append(P()
                         .rect(Rect(x, pi.height-y, 1, 1))
                         .f(color))
         
-        return out.scale(1/scale, point=(0, 0))
+        out = P(layers.values()).scale(1/scale, point=(0, 0))
+        if combine:
+            return out.map(lambda p: p.pen())
+        else:
+            return out
     
     return _vector_pixels
 

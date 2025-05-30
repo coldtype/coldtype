@@ -103,6 +103,9 @@ class Color():
         else:
             return False
     
+    def __hash__(self):
+        return hash((self.r, self.g, self.b, self.a))
+    
     def to_code(self):
         if self.a == 1:
             if self.s == 0:
