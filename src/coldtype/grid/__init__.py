@@ -74,20 +74,22 @@ class Grid():
         else:
             self.rows = ("a "*rows).strip()
         
+        _rows = self.rows.replace("|", "").replace("  ", " ").split(" ")
+        _columns = self.columns.replace("|", "").replace(" ", " ").split(" ")
+        
         self.areas = areas
         if not self.areas:
-            ls = ascii_lowercase
+            ys = ascii_lowercase
+            xs = [f"{i}" for i in range(1, 100)]
             cs = []
-            cw = len(re.sub(r"\s", "", self.columns))
-            if len(self.rows) == 1:
-                cs = [" ".join(ls[0:cw])]
+            cw = len(_columns)
+            if len(_rows) == 1:
+                cs = [" ".join([f"a{i}" for i in xs[0:cw]])]
             else:
-                for ridx, r in enumerate(re.sub(r"\s", "", self.rows)):
-                    #print("ROW", r, li, ls[li:cw+li])
-                    pre = ls[ridx]
-                    cs.append(pre + f" {pre}".join(ls[0:cw]))
+                for ridx, r in enumerate(_rows):
+                    pre = ys[ridx]
+                    cs.append(pre + f" {pre}".join(xs[0:cw]))
             self.areas = " / ".join(cs)
-            #print(self.areas)
 
         self.cells = None
         self.keyed = None
