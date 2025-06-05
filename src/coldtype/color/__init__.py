@@ -234,13 +234,13 @@ class Theme():
         return f"Theme(colors:{len(self.colors.values())})"
     
     def with_alpha(self, a):
-        if isinstance(a, float):
+        if isinstance(a, float) or isinstance(a, int):
             return Theme(**{k:v.with_alpha(a) for k,v in self.colors.items()})
         else:
             return Theme(**{k:v.with_alpha(a[i]) for i,(k,v) in enumerate(self.colors.items())})
     
     def adjust(self, a):
-        if isinstance(a, float):
+        if isinstance(a, float) or isinstance(a, int):
             return Theme(**{k:v.lighter(a) for k,v in self.colors.items()})
         else:
             return Theme(**{k:v.lighter(a[i]) for i,(k,v) in enumerate(self.colors.items())})
