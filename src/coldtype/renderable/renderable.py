@@ -15,7 +15,7 @@ from pathlib import Path
 from coldtype.geometry import Rect, Point
 from coldtype.color import normalize_color
 from coldtype.text.reader import normalize_font_prefix, Font
-from coldtype.runon.path import P
+from coldtype.runon.path import P, Runon
 from coldtype.img.abstract import AbstractImage
 
 
@@ -444,9 +444,10 @@ class renderable():
         return result.ch(precompose(self.rect, scale=scale, style=self.style))
     
     def postprocessor(self, result):
-        has_post = result.find_(lambda el: el.data("postprocess") is not None, none_ok=True)
-        if has_post:
-            return has_post.data("postprocess")
+        if isinstance(result, Runon):
+            has_post = result.find_(lambda el: el.data("postprocess") is not None, none_ok=True)
+            if has_post:
+                return has_post.data("postprocess")
         return None
     
     # def draw_preview(self, scale, canvas, rect, result, render_pass): # canvas:skia.Canvas

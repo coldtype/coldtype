@@ -11,3 +11,15 @@ def scratch(r):
         .stack("100%")
         .align(ri)
         .f(0))
+
+@renderable(bg=1)
+def heterogenous(r):
+    ri = r.inset(50)
+    a = StSt("Hello", Font.JBMono(), 70, wght=1)
+    b = StSt("TYPE", Font.ColdObvi(), 70, wght=1)
+    c = StSt("WORLD", Font.MuSan(), 70, wght=1)
+    return (P(a, b, c)
+        .spread(40)
+        .linebreak(500)
+        .stack(20)
+        .align(ri))
