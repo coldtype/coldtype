@@ -3,11 +3,11 @@ from coldtype.blender import *
 
 @b3d_runnable(playback=B3DPlayback.KeepPlaying)
 def prerun(bw):
-    bw.delete_previous()
+    bw.delete_previous(materials=False)
 
 @b3d_animation(timeline=60, denoise=0)
 def varfont(f):
-    return (StSt("COLD\nTYPE", Font.ColdtypeObviously()
+    return (StSt("ABC\nDEF", Font.ColdtypeObviously()
         , fontSize=f.e("seio", 1, rng=(300, 500))
         , wdth=f.e("seio", 1, rng=(1, 0)))
         .align(f.a.r)

@@ -426,6 +426,7 @@ class ClipGroup(Timeable):
                     clip_dps = P(group_dps[tidx:tidx+len(text)])
                     clip_dps.tag("clip")
                     clip_dps.data(
+                        style=style,
                         clip=clip,
                         line_index=idx,
                         line=re_grouped_line,
