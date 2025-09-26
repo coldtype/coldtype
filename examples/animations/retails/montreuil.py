@@ -8,7 +8,7 @@ fnt = Font.Find("MontreuilPlay")
 import numpy as np
 import random
 
-txt = "VERY BIG NEWS"
+txt = "CLAWHAMMER"
 
 options = [
     [1, 2],
