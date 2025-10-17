@@ -213,6 +213,14 @@ def fill(c):
     return _fill
 
 
+def blur(x):
+    """Chainable function for blurring everything in pen/image-on-pen"""
+    def _blur(pen):
+        return pen.attr(skp=dict(
+            ImageFilter=Skfi.blur(x)))
+    return _blur
+
+
 try:
     import potrace as potracer
     turn_policy = potracer.POTRACE_TURNPOLICY_MINORITY

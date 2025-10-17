@@ -1,6 +1,8 @@
 {
-    "start": 1891,
-    "end": 1984,
+    "start": 0,
+    "end": 5399,
+    "workarea_set": false,
+    "livepreview_disabled": null,
     "tracks": [
         {
             "index": 1,
@@ -1175,8 +1177,8 @@
                     "end": 75
                 },
                 {
-                    "name": "song",
-                    "text": "song",
+                    "name": "song!.001",
+                    "text": "song!",
                     "start": 75.0,
                     "end": 85
                 },

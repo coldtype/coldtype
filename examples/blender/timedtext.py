@@ -22,7 +22,7 @@ words = bt.interpretWords(include="+1 +2 +3")
 @b3d_sequencer((1080, 1080)
 , timeline=bt
 , bg=0
-, live_preview_scale=0.25
+, live_preview_scale=0.1
 )
 def timedtext(f:Frame):
     def styler(c:ClipGroupTextSetter):
