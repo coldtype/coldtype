@@ -1,6 +1,7 @@
 from coldtype import *
 from coldtype.blender import BlenderTimeline, b3d_sequencer
 from coldtype.raster import *
+from noise import pnoise1
 
 fnt = Font.Find("NCND", "__variables")
 #fnt = Font.Find("MDPrimer-Bold")
@@ -10,6 +11,7 @@ bt = BlenderTimeline(ººBLENDERºº, 5400, fps=24)
 
 words = bt.interpretWords(include="+3")
 action = bt.interpretWords(include="+4")
+styling = bt.interpretWords(include="+5")
 #adlib = bt.interpretWords(include="+4")
 #suggestion = bt.interpretWords(include="+5")
 
@@ -28,6 +30,11 @@ def lyrics(f:Frame):
         word_by_word = action.current(f.i).text.strip() == "words"
     except:
         word_by_word = False
+    
+    try:
+        titles = styling.current(f.i).text.strip() == "titles"
+    except:
+        titles = False
 
     r = f.a.r.take(170, "S")
     yellow = hsl(0.14, 1, 0.65)
@@ -40,16 +47,19 @@ def lyrics(f:Frame):
             txt = " +"
         wght = rs1[c.clip.idx]
         wght = 0.85
+        if titles:
+            return (txt.upper(), Style(fnt, 32 if "Theo" in txt else 52, wght=0.85, space=2000 if "Rome" in txt else 600))
         return (txt.lower(), Style(fnt, 52, wght=wght, space=600))
     
     slug = (words.currentGroup(f.i)
         .pens(f.i, ncnd)
         .xalign(r)
-        .align(r, "N")
+        .cond(titles, lambda p: p.align(f.a.r.take(1, "S")), lambda p: p.align(r, "N"))
+        #.align(r, "N")
         .cond(word_by_word, lambda p: p.removeFutures())
         #.removeFutures()
         #.fssw(1, 0, 10, 1)
-        .ch(filmjitter(f.e("l", 20), scale=(1, 2.5)))
+        .ch(filmjitter(f.e("l", 20), scale=(1.5, 3)))
         .f(1)
         .layer(
             #lambda p: p.fssw(1, 1, 1).ch(phototype(f.a.r, 2, 130, 70, fill=0)).t(o:=1.75, -o).ch(precompose(f.a.r)).ch(fill(bw(0, 0.85))),
@@ -66,7 +76,7 @@ def lyrics(f:Frame):
         .up()
         .append(P().rect(f.a.r)
            .f(-1)
-           .ch(spackle(cut=6, cutw=1, base=f.i, fill=bw(1)))
+           .ch(spackle(cut=5, cutw=1, base=f.i, fill=bw(1)))
            .blendmode(BlendMode.Cycle(35)))
         .ch(precompose(f.a.r))
         .ch(blur(0.5))
@@ -79,10 +89,15 @@ def lyrics(f:Frame):
         #     img.ch(phototype(f.a.r, 3, 113, 0)).blendmode(BlendMode.Cycle(9)))
         #     .ch(precompose(f.a.r))),
         (P(analog_slug.copy().t(0, 0).ch(fill(bw(0))),
-            img.ch(phototype(f.a.r, 10, 103, 0)).blendmode(BlendMode.Cycle(38))
+            img.ch(phototype(f.a.r, 10, 70, 11)).blendmode(BlendMode.Cycle(38))
             )
             .ch(precompose(f.a.r))
             .ch(invert())
             .ch(precompose(f.a.r))
-            .ch(blur(1.05))),
+            .ch(blur(1.25)))
+            .ch(precompose(f.a.r))
+            #.ch(temptone(0.67, 0.36))
+            #.ch(precompose(f.a.r))
+            #.ch(expose(1.95+pnoise1(f.e("l", 5))*10))
+            ,
     ))
