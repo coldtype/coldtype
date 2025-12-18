@@ -20,6 +20,7 @@ class Timeable():
         data={},
         timeline=None,
         track=None,
+        id=None,
         ):
         self.start = start
         self.end = end
@@ -29,6 +30,9 @@ class Timeable():
         self.data = data
         self.timeline = timeline
         self.track = int(track) if track else 0
+        self.id = id
+
+        self.timeables = []
     
     @property
     def duration(self):

@@ -229,6 +229,11 @@ class Timeline(Timeable):
                 setattr(t, prop, attr + fn)
         return self
     
+    def find_by_id(self, id):
+        for t in self.timeables:
+            if t.id == id:
+                return t
+    
     def findWordsWorkarea(self, fi):
         if self.words:
             cg = self.words.currentGroup(fi)

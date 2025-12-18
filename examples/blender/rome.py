@@ -84,7 +84,7 @@ def lyrics(f:Frame):
     
 
     return (P(
-        #img.copy(),
+        img.copy(),
         # (P(analog_slug.copy(),
         #     img.ch(phototype(f.a.r, 3, 113, 0)).blendmode(BlendMode.Cycle(9)))
         #     .ch(precompose(f.a.r))),

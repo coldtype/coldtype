@@ -404,7 +404,7 @@ class Font():
             raise Exception("Library not supported on this OS")
     
     @staticmethod
-    def LibraryFind(regex, print_list=False):
+    def LibraryFind(regex, print_list=False) -> "Font":
         matches = Font.LibraryList(regex, print_list=print_list)
         if len(matches) > 0:
             if on_mac():
@@ -416,6 +416,13 @@ class Font():
                 except:
                     print("FAILED SYSTEM LOOKUP", matches[0])
                     raise FontNotFoundException(regex)
+    
+    @staticmethod
+    def LibraryGet(regex, directory="~/Desktop", print_list=False):
+        found = Font.LibraryFind(regex)
+        destination = Path(directory).expanduser().absolute() / f"{str(regex)}{found.path.suffix}"
+        found.copy_to(destination)
+        return Font.Cacheable(destination)
 
     @staticmethod
     def Fontmake(source, verbose=False, keep_overlaps=False, cli_args=[]):
