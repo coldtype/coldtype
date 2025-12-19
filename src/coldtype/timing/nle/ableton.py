@@ -29,18 +29,56 @@ def midi_to_note_name(midi_number):
 
     note_names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
     note_index = midi_number % 12
-    octave = (midi_number // 12) - 1
+    octave = (midi_number // 12) - 2
 
     note_name = note_names[note_index]
     return f"{note_name}{octave}"
 
 
+def note_name_to_midi(note_name):
+    note_names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+    
+    note = note_name[:-1]
+    octave = int(note_name[-1])
+    
+    if note not in note_names:
+        return "Invalid note name"
+    
+    note_index = note_names.index(note)
+    midi_number = (octave + 2) * 12 + note_index
+    
+    if not (0 <= midi_number <= 127):
+        return "MIDI number out of range"
+    
+    return midi_number
+
+
 strings = {
-    "D5": 4, "F5": 4, "G5": 4,
-    "C5": 3, #"D5": 3,
-    "G4": 2, "G#4": 2, "A4": 2, "B4": 2,
-    "C4": 1, "D4": 1, "E4": 1, "F4": 1,
+    "D4": 1, "F4": 1, "G4": 1,
+    "C4": 2,
+    "G3": 3, "G#3": 3, "A3": 3, "B3": 3,
+    "C3": 4, "D3": 4, "E3": 4, "F3": 4,
+    "C2": 0,
 }
+
+def string_and_note_to_fret(string, note):
+    return {
+        0: {
+            "C2": 0,
+        },
+        1: {
+            "D4": 0, "D#4": 1, "E4": 2, "F4": 3, "F#4": 4,"G4": 5,
+        },
+        2: {
+            "C4": 0, "C#4": 1, "D4": 2, "E4": 4,
+        },
+        3: {
+            "G3": 0, "G#3": 1, "A3": 2, "A#3": 3, "B3": 4, "C4": 5,
+        },
+        4: {
+            "C3": 0, "C#3": 1, "D3": 2, "D#3": 3, "E3": 4, "F3": 5
+        }
+    }[string][note]
 
 
 class AbletonMIDINote(Timeable):
@@ -68,12 +106,18 @@ class AbletonMIDIClip(Timeline):
                 note_id = na["NoteId"]
                 vel = float(na["Velocity"])
                 note_name = midi_to_note_name(int(midi_key))
+                
                 string = strings.get(note_name, None)
+                if string is None:
+                    string = 0
+
+                fret = string_and_note_to_fret(string, note_name)
                 end = b2ff(nt+nd)
-                if note_name == "G5" and vel < 100:
+                if note_name == "G4" and vel < 100:
                     end = b2ff(nt+nd+0.25)
                     string = 5
-                note = AbletonMIDINote(b2ff(nt), end, jdx, midi_key, id=note_id, data=dict(velocity=vel, note=note_name, string=string))
+                    fret = 0
+                note = AbletonMIDINote(b2ff(nt), end, jdx, midi_key, id=note_id, data=dict(velocity=vel, note=note_name, string=string, fret=fret))
                 self.timeables.append(note)
                 timeables_by_id[note_id] = note
         
@@ -82,15 +126,37 @@ class AbletonMIDIClip(Timeline):
             note = timeables_by_id[note_id]
             cc = el.attrib["CC"]
             if cc == "-2":
-                negatives = False
+                adjusted_negatives = False
+                string = note.data.get("string")
+                start_note = int(note.name)
+                start_note_name = midi_to_note_name(start_note)
+
                 for jdx, event in enumerate(el.find("Events")):
                     offset = float(event.attrib["TimeOffset"])
                     value = float(event.attrib["Value"])
-                    if value < 0.01:
-                        negatives = True
-                    note.timeables.append(Timeable(b2ff(offset), b2ff(offset)+1, jdx, data=dict(value=value)))
-                if negatives and note.data.get("note") == "D5":
-                    note.data["string"] = note.data.get("string") - 1
+                    
+                    if offset < 0.01 and abs(value) > 1:
+                        note.data["hammer"] = True
+                        continue
+                    
+                    if value < 0.01 and not adjusted_negatives: # pull-offs, always?
+                        if start_note_name == "D4":
+                            adjusted_negatives = True
+                            string = string + 1
+                            note.data["string"] = string
+                            note.data["fret"] = 2
+
+                    note_diff = value / 170
+                    new_note = int(start_note) + round(note_diff)
+                    new_note_name = midi_to_note_name(new_note)
+                    #print(midi_to_note_name(start_note), string, new_note_name, value)
+
+                    note.timeables.append(Timeable(b2ff(offset), b2ff(offset)+1, jdx, str(new_note)
+                        , data=dict(value=value
+                            , note=new_note_name
+                            , string=string
+                            , fret=string_and_note_to_fret(string, new_note_name)
+                            )))
 
 
 class AbletonMIDITrack(Timeline):
@@ -98,7 +164,10 @@ class AbletonMIDITrack(Timeline):
         self.b2ff = b2ff
         
         track_name = track.find("Name/EffectiveName").attrib["Value"]
-        timeables = [AbletonMIDIClip(b2ff, clip) for clip in track.findall("DeviceChain/MainSequencer/ClipTimeable/ArrangerAutomation/Events/MidiClip")]
+        if track_name == "banjo":
+            timeables = [AbletonMIDIClip(b2ff, clip) for clip in track.findall("DeviceChain/MainSequencer/ClipTimeable/ArrangerAutomation/Events/MidiClip")]
+        else:
+            timeables = []
         
         super().__init__(timeables=timeables, findWords=False, name=track_name)
 
@@ -190,7 +259,7 @@ class AbletonReader(Timeline):
 if __name__ == "<run_path>":
     from coldtype import *
     
-    ar = AbletonReader("~/Waves/projs/2024.02.05.1 Project/__silentnighttab2.als")
+    ar = AbletonReader("~/Waves/projs/2024.02.05.1 Project/__silentnighttab3.als")
 
     #print(ar.timeables[0].timeables[0].timeables)
     
@@ -215,45 +284,131 @@ if __name__ == "<run_path>":
 
     #reparsed = mini.parseString(ET.tostring(el, 'utf-8'))
     #print(reparsed.toprettyxml(indent="  "))
-    
-    from coldtype.raster import phototype
 
     colors = {
-        5: hsl(0.65, 0.6, 0.6),
-        4: hsl(0.3, 0.6, 0.6),
-        3: hsl(0.9, 0.7, 0.6),
-        2: hsl(0.6, 0.7, 0.6),
-        1: hsl(0, 0.7, 0.6),
+        0: bw(1),
+        1: hsl(0.3, 0.60, 0.6),
+        2: hsl(0.6, 0.7, 0.65),
+        3: hsl(0.9, 0.7, 0.5),
+        4: hsl(0.6, 0.90, 0.58),
+        5: hsl(0.9, 0.7, 0.6),
+    }
+
+    string_names = {
+        0: "X",
+        1: "D",
+        2: "C",
+        3: "G",
+        4: "C",
+        5: "g",
+    }
+
+    string_notes = {
+        "D4": 1,
+        "C4": 2,
+        "G3": 3,
+        "C3": 4,
+        "G4": 5,
+        "C2": 0,
     }
 
     @animation(Rect(1920*2-400, 1080), tl=ar, bg=0)
     def ableton(f):
-        xs = 2
-        ys = 15
+        xs = 4
+        ys = 32
         
         notes = P()
         hits = P()
+        frets = P()
+        bars = P()
+
+        g = 1725
         
         for t in ar.timeables[0].timeables[0].timeables:
             n:AbletonMIDINote = t
             note = n.data.get("note")
+            fret = str(n.data.get("fret"))
             string = n.data.get("string")
+            vel = n.data.get("velocity")
             color = colors.get(string, 1)
             x = n.start*xs
             y = int(n.name)*ys
+
+            def add_fret(_fret, x, y):
+                frets.append(StSt(_fret, "MDIO-VF", 32, wght=0.65).t(x-9, y+33).f(0)
+                    .pen().up().insert(0, lambda p: P().oval(p.ambit(tx=0, ty=0).inset(-9))
+                        .f(color.lighter(0.2).with_alpha(0.75))))
+
+            if note == "C2":
+                y = 1620
+                bars.append(P().line([Point(x, y).o(0, -2), Point(x, y).o(0, 1000)]).fssw(-1, bw(1, min(0.35, vel/127)), 2))
+                continue
+
+            show_note = True
+            if string == 5:
+                show_note = False
+                y = g
+            
             bend_points = [Point(x, y+ys/2)]
             last_y = y+ys/2
+            last_fret = fret
+
             for b in n.timeables:
-                if b.start < 0.01:
-                    continue
-                p = Point(x+b.start*xs, y+ys/2+(b.data["value"]/170)*ys)
+                #if b.start < 0.01:
+                #    continue
+                _x = x + b.start*xs
+                _y = y+ys/2+(b.data["value"]/170)*ys
+                p = Point(_x, _y)
                 last_y = p.y
                 bend_points.append(p)
+                bend_fret = str(b.data.get("fret"))
+                if b.start > 0.01 and last_fret != bend_fret:
+                    last_fret = bend_fret
+                    if bend_fret != "0":
+                        add_fret(bend_fret, _x, _y-12)
+                        # frets.append(StSt(bend_fret, "MDIO-VF", 32, wght=0.65).t(_x-9, _y+10).f(1)
+                        #     .pen().up().insert(0, lambda p: P().oval(p.ambit(tx=0, ty=0).inset(-9)).f(color.darker(0.2))))
+                        # #frets.append(StSt(bend_fret, "MDIO-VF", 32, wght=0.65).t(_x-9, _y+10).f(color))
+            
             bend_points.append(Point(x+n.duration*xs, last_y))
-            #out.append(P().rect(Rect(x, y, n.duration*xs, ys)).fssw(-1, hsl(0.65), 1))
-            notes.append(P().line(bend_points).f(color).outline(3, cap="butt").ro())
-            hits.append(P().line([Point(x, y).o(0, -2), Point(x, y).o(0, ys+2)]).fssw(-1, 1, 2))
-        return P(notes, hits).align(f.a.r.inset(60), "CX").scale(1, 2)#.ch(phototype(f.a.r, 0.5, 120, 40))
+            notes.append(P().line(bend_points).f(color).outline(5, cap="butt").ro())
+            
+            if n.data.get("hammer"):
+                hits.append(P().line([Point(x, y).o(0, -2).o(14, 0), Point(x, y).o(0, -2), Point(x, y).o(0, ys+2), Point(x, y).o(0, ys+2).o(14, 0)]).fssw(-1, hsl(0.17, 0.6, 0.8), 2))
+            else:
+                hits.append(P().line([Point(x, y).o(0, -2), Point(x, y).o(0, ys+2)]).fssw(-1, 1, 2))
+
+            if show_note and fret != "0":
+                add_fret(fret, x, y)
+        
+        opens = P()
+        last_string = None
+
+        for x in range(note_name_to_midi("C3"), note_name_to_midi("G4")+2):
+            note = midi_to_note_name(x)
+            if "#" not in note:
+                y = x*ys+ys/2
+
+                if note in string_notes:
+                    string = string_notes[note]
+                    if note != "G4":
+                        last_string = string
+                    _y = y
+                    if string == 5:
+                        _y = g + ys/2
+                    opens.append(P(
+                        P().line([Point(-100, _y), Point(notes.ambit().mxx + 100, _y)])
+                            .fssw(-1, colors[string].with_alpha(0.65), 3),
+                        StSt(string_names[string], "MDIO-VF", 66, wght=0.75).t(-180, _y-16).f(colors[string])))
+                
+                if note not in string_notes or note == "G4":
+                    color = bw(1)
+                    opens.append(P(
+                        P().line([Point(-100, y), Point(notes.ambit().mxx + 100, y)])
+                            .fssw(-1, colors[last_string].with_alpha(0.65), 1),
+                        StSt(note[0], "MDIO-VF", 32, wght=0.25).t(-126, y-9).f(colors[last_string])))
+
+        return P(bars, opens, notes, hits, frets).scale(0.75).align(f.a.r.inset(60), "W")
 
         #e1 = ar.timeables[1].timeables[0].ki(60, f.i).adsr([7, 0, 0, 30])
         #e2 = ar.timeables[1].timeables[0].ki(65, f.i).adsr([7, 0, 0, 30])
