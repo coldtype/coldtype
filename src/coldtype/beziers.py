@@ -1,7 +1,7 @@
 import math
 from re import sub
 from fontTools.pens.recordingPen import RecordingPen, replayRecording
-from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT, calcQuadraticArcLength
+from fontTools.misc.bezierTools import calcCubicArcLength, splitCubicAtT, calcQuadraticArcLength, splitQuadraticAtT
 from coldtype.geometry import Rect, Point, Line
 
 
@@ -26,6 +26,17 @@ def splitCubicAtT_cached(a, b, c, d, t):
         __split_cache[abcdt] = s
         return s
 
+def splitQuadraticAtT_cached(a, b, c, t):
+    global __split_cache
+    abct = (a, b, c, t)
+    sc = __split_cache.get(abct)
+    if sc:
+        return sc
+    else:
+        s = splitQuadraticAtT(a, b, c, t)
+        __split_cache[abct] = s
+        return s
+
 def calcCubicArcLength_cached(a, b, c, d):
     #return calcCubicArcLength(a, b, c, d)
     global __length_cache
@@ -36,6 +47,17 @@ def calcCubicArcLength_cached(a, b, c, d):
     else:
         l = calcCubicArcLength(a, b, c, d)
         __length_cache[abcd] = l
+        return l
+
+def calcQuadraticArcLength_cached(a, b, c):
+    global __length_cache
+    abc = (a, b, c)
+    lc = __length_cache.get(abc)
+    if lc:
+        return lc
+    else:
+        l = calcQuadraticArcLength(a, b, c)
+        __length_cache[abc] = l
         return l
 
 class CurveCutter():
@@ -60,7 +82,7 @@ class CurveCutter():
             elif t == "qCurveTo":
                 p1, p2 = pts
                 p0 = self.pen.value[i-1][-1][-1]
-                length += calcQuadraticArcLength(p0, p1, p2)
+                length += calcQuadraticArcLength_cached(p0, p1, p2)
             elif t == "lineTo":
                 p0 = self.pen.value[i-1][-1][-1]
                 p1, = pts
@@ -91,6 +113,24 @@ class CurveCutter():
                         if _length + length_a > end:
                             ended = True
                             out.append(("curveTo", a[1:]))
+                        else:
+                            t += inc
+                            tries += 1
+            elif t == "qCurveTo":
+                p1, p2 = pts
+                p0 = self.pen.value[i-1][-1][-1]
+                length_arc = calcQuadraticArcLength_cached(p0, p1, p2)
+                if _length + length_arc < end:
+                    _length += length_arc
+                else:
+                    t = inc
+                    tries = 0
+                    while not ended:
+                        a, b = splitQuadraticAtT_cached(p0, p1, p2, t)
+                        length_a = calcQuadraticArcLength_cached(*a)
+                        if _length + length_a > end:
+                            ended = True
+                            out.append(("qCurveTo", a[1:]))
                         else:
                             t += inc
                             tries += 1
@@ -128,6 +168,10 @@ class CurveCutter():
                 t, (a, b, c) = subsegment[-2]
                 tangent = math.degrees(math.atan2(c[1] - b[1], c[0] - b[0]) + math.pi*.5)
                 return Point(c), tangent
+            elif t == "qCurveTo":
+                t, (a, b) = subsegment[-2]
+                tangent = math.degrees(math.atan2(b[1] - a[1], b[0] - a[0]) + math.pi*.5)
+                return Point(b), tangent
         except ValueError as e:
             print(e)
             return None, None
