@@ -111,13 +111,17 @@ class AbletonMIDIClip(Timeline):
                 if string is None:
                     string = 0
 
+                thumb = False
+
                 fret = string_and_note_to_fret(string, note_name)
                 end = b2ff(nt+nd)
                 if note_name == "G4" and vel < 100:
                     end = b2ff(nt+nd+0.25)
                     string = 5
                     fret = 0
-                note = AbletonMIDINote(b2ff(nt), end, jdx, midi_key, id=note_id, data=dict(velocity=vel, note=note_name, string=string, fret=fret))
+                    thumb = True
+                
+                note = AbletonMIDINote(b2ff(nt), end, jdx, midi_key, id=note_id, data=dict(velocity=vel, note=note_name, string=string, fret=fret, thumb=thumb))
                 self.timeables.append(note)
                 timeables_by_id[note_id] = note
         
@@ -312,7 +316,7 @@ if __name__ == "<run_path>":
         "C2": 0,
     }
 
-    @animation(Rect(1920*2-400, 1080), tl=ar, bg=0)
+    @animation(Rect(1080*2.5, 1080), tl=Timeline(3400, 30), bg=0, fmt="png")
     def ableton(f):
         xs = 4
         ys = 32
@@ -321,8 +325,19 @@ if __name__ == "<run_path>":
         hits = P()
         frets = P()
         bars = P()
+        string_labels = P()
 
         g = 1725
+
+        ascii_tab = {
+            1: {},
+            2: {},
+            3: {},
+            4: {},
+            5: {},
+        }
+
+        denom = (36/6)
         
         for t in ar.timeables[0].timeables[0].timeables:
             n:AbletonMIDINote = t
@@ -334,10 +349,14 @@ if __name__ == "<run_path>":
             x = n.start*xs
             y = int(n.name)*ys
 
+            if note != "C2":
+                beat = n.start/denom
+                ascii_tab[string][round(beat)] = fret
+
             def add_fret(_fret, x, y):
-                frets.append(StSt(_fret, "MDIO-VF", 32, wght=0.65).t(x-9, y+33).f(0)
+                frets.append(StSt(_fret, "MDIO-VF", 26, wght=0.65).t(x-9, y+32).f(0)
                     .pen().up().insert(0, lambda p: P().oval(p.ambit(tx=0, ty=0).inset(-9))
-                        .f(color.lighter(0.2).with_alpha(0.75))))
+                        .f(color.lighter(0.2).with_alpha(1))))
 
             if note == "C2":
                 y = 1620
@@ -366,17 +385,22 @@ if __name__ == "<run_path>":
                     last_fret = bend_fret
                     if bend_fret != "0":
                         add_fret(bend_fret, _x, _y-12)
-                        # frets.append(StSt(bend_fret, "MDIO-VF", 32, wght=0.65).t(_x-9, _y+10).f(1)
-                        #     .pen().up().insert(0, lambda p: P().oval(p.ambit(tx=0, ty=0).inset(-9)).f(color.darker(0.2))))
-                        # #frets.append(StSt(bend_fret, "MDIO-VF", 32, wght=0.65).t(_x-9, _y+10).f(color))
+                    
+                    beat = (n.start+b.start)/(denom)
+                    ascii_tab[string][round(beat)] = bend_fret
             
             bend_points.append(Point(x+n.duration*xs, last_y))
             notes.append(P().line(bend_points).f(color).outline(5, cap="butt").ro())
             
+            a = Point(x, y).o(0, -2)
+            b = Point(x, y).o(0, ys+2)
+
             if n.data.get("hammer"):
-                hits.append(P().line([Point(x, y).o(0, -2).o(14, 0), Point(x, y).o(0, -2), Point(x, y).o(0, ys+2), Point(x, y).o(0, ys+2).o(14, 0)]).fssw(-1, hsl(0.17, 0.6, 0.8), 2))
+                hits.append(P().line([a, b]).rotate(-20).mirrorx().fssw(-1, 1, 2))
+            elif n.data.get("thumb"):
+                hits.append(P().m(a.o(12, 0)).bxc(a.interp(0.5, b), "SW").bxc(b.o(12, 0), "NW").ep().fssw(-1, 1, 2))
             else:
-                hits.append(P().line([Point(x, y).o(0, -2), Point(x, y).o(0, ys+2)]).fssw(-1, 1, 2))
+                hits.append(P().line([a, b]).fssw(-1, 1, 2))
 
             if show_note and fret != "0":
                 add_fret(fret, x, y)
@@ -398,17 +422,50 @@ if __name__ == "<run_path>":
                         _y = g + ys/2
                     opens.append(P(
                         P().line([Point(-100, _y), Point(notes.ambit().mxx + 100, _y)])
-                            .fssw(-1, colors[string].with_alpha(0.65), 3),
-                        StSt(string_names[string], "MDIO-VF", 66, wght=0.75).t(-180, _y-16).f(colors[string])))
+                            .fssw(-1, colors[string].with_alpha(0.65), 3)))
+                    string_labels.append(P(
+                        StSt(string_names[string], "MDPrimer-Bl", 66, wght=0.75).t(-160, _y-16).shift(-0.5, 0).f(colors[string])))
                 
                 if note not in string_notes or note == "G4":
                     color = bw(1)
                     opens.append(P(
                         P().line([Point(-100, y), Point(notes.ambit().mxx + 100, y)])
-                            .fssw(-1, colors[last_string].with_alpha(0.65), 1),
-                        StSt(note[0], "MDIO-VF", 32, wght=0.25).t(-126, y-9).f(colors[last_string])))
+                            .fssw(-1, colors[last_string].with_alpha(0.65), 1)))
+                    string_labels.append(P(
+                        StSt(note[0], "MDPrimer-Se", 32, wght=0.25).t(-126, y-9).f(colors[last_string])))
 
-        return P(bars, opens, notes, hits, frets).scale(0.75).align(f.a.r.inset(60), "W")
+        # ascii_out = []
+        # for string, beats in ascii_tab.items():
+        #     string_line = f"{string_names[string].upper()}|"
+        #     for x in range(0, 20):
+        #         if x in beats:
+        #             string_line += beats[x]
+        #         else:
+        #             string_line += "-"
+        #     string_line += "|"
+        #     ascii_out.append(string_line)
+        
+        #Path("ascii.txt").write_text("\n".join(ascii_out))
+
+        return P(
+            P(
+                opens,
+                P(
+                    bars,
+                    notes,
+                    hits,
+                    frets
+                ),
+                string_labels,
+            )
+                .align(f.a.r.inset(60), "W")
+                .index(-1, lambda p: p.insert(0, P(p.ambit().take(100, "W").inset(-44, -350).expand(100, "W")).f(bw(0))))
+                .index(1, lambda p: p.t(200+-f.i*2, 0))
+                .insert(0, P().rect(Rect(432, 0, 21, 2800))
+                    .f(hsl(0.17, 1.00, 1.00, 0.20)))
+                ,
+            #StSt("“Silent Night” — gCGCD tuning — 6/8, swung", "MDPrimer-Se", 40).align(f.a.r.inset(70), "NW").f(1),
+            )
 
         #e1 = ar.timeables[1].timeables[0].ki(60, f.i).adsr([7, 0, 0, 30])
         #e2 = ar.timeables[1].timeables[0].ki(65, f.i).adsr([7, 0, 0, 30])
