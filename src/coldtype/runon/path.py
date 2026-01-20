@@ -340,7 +340,7 @@ class P(Runon):
         line = P()
         lines.append(line)
 
-        for word in self:
+        for idx, word in enumerate(self):
             word.t(-x, 0)
             amb = word.ambit(tx=1, ty=0)
             if amb.pse.x > w+0:
@@ -350,6 +350,10 @@ class P(Runon):
                 x += amb.x
                 line.append(word)
             else:
+                # Align first word of first line to true x
+                if idx == 0:
+                    word.t(-amb.x, 0)
+                    x += amb.x
                 line.append(word)
         
         if leading:
