@@ -46,11 +46,11 @@ wheels = [
 
 [[package]]
 name = "b3denv"
-version = "0.0.19"
+version = "0.0.22"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/26/a3/0964f4454cc296ef81ebfc7819e0c54ca558dd08730b8218b37f51a2a717/b3denv-0.0.19.tar.gz", hash = "sha256:2c789d57e76d32b5d5eab0f65507e2edb55bbd3daad6126c18103a220109d4d1", size = 11493 }
+sdist = { url = "https://files.pythonhosted.org/packages/13/39/de9c7467ce61573a87b0981caa55ea93aa0d9050382d1be5705090e4c0c8/b3denv-0.0.22.tar.gz", hash = "sha256:bd5e40150a92526ee2d8e3080bfc8aab089c9ffda05c0fd4e65c0fc010bebd4b", size = 11163 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c3/83/6aa2d453f50cf8cd0c0ebca66cfb893bee4dc682c911a7de55081ad6c093/b3denv-0.0.19-py3-none-any.whl", hash = "sha256:58523cd169bf5e76cb39a0a3a1d799ce9147961d61e4b7d9697e55be94573d95", size = 10273 },
+    { url = "https://files.pythonhosted.org/packages/73/b2/6dac6112bf41186cce43c593d30440d8fd7d94684e8f4540a35850aa32d0/b3denv-0.0.22-py3-none-any.whl", hash = "sha256:9dc04c2e600169086b70638841f0d7cd48e4aed97eca5e8578a199aa7e76e6db", size = 10219 },
 ]
 
 [[package]]
@@ -397,7 +397,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "b3denv", specifier = ">=0.0.12" },
+    { name = "b3denv", specifier = ">=0.0.22" },
     { name = "beautifulsoup4", marker = "extra == 'website'" },
     { name = "brotli", marker = "extra == 'website'" },
     { name = "coldtype-fontgoggles", specifier = "==1.8.4.7" },
