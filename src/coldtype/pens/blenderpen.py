@@ -266,27 +266,27 @@ class BlenderPen(BpyObj, DrawablePenMixin, BasePen):
     def metallic(self, amount=1):
         if not self._material == "auto" or not self.bsdf():
             return
-        self.bsdf().inputs[6].default_value = amount
+        self.bsdf().inputs[1].default_value = amount
         return self
     
     def roughness(self, amount=0.5):
         if not self._material == "auto" or not self.bsdf():
             return
-        self.bsdf().inputs[9].default_value = amount
+        self.bsdf().inputs[2].default_value = amount
         return self
     
     def transmission(self, amount=1):
         if not self._material == "auto" or not self.bsdf():
             return
-        self.bsdf().inputs[15].default_value = amount
+        self.bsdf().inputs[18].default_value = amount
         return self
 
     def emission(self, color=None, strength=1):
         if not self._material == "auto" or not self.bsdf():
             return
         if color is not None:
-            self.setColorValue(self.bsdf().inputs[17].default_value, normalize_color(color))
-            self.bsdf().inputs[18].default_value = strength
+            self.setColorValue(self.bsdf().inputs[27].default_value, normalize_color(color))
+            self.bsdf().inputs[28].default_value = strength
         return self
     
     def image(self, src=None, opacity=1, rect=None, pattern=True):

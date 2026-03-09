@@ -5,7 +5,7 @@ from bpy_extras.io_utils import ImportHelper
 
 def text_in_channel(se, c, sort=True):
     matches = []
-    for s in se.sequences:
+    for s in se.strips:
         if hasattr(s, "text") and s.channel == c:
             matches.append(s)
     if sort: 
@@ -384,7 +384,7 @@ class Coldtype2DLoadJSONData(bpy.types.Operator, ImportHelper):
                 print(clip)
 
                 se = bpy.data.scenes[0].sequence_editor
-                text = se.sequences.new_effect(
+                text = se.strips.new_effect(
                     name=clip["name"],
                     #text=clip["text"],
                     type="TEXT",

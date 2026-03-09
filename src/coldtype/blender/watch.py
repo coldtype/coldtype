@@ -14,7 +14,7 @@ def persist_sequence(last_persisted):
     channels = defaultdict(lambda: [])
 
     scene = bpy.data.scenes[0]
-    for s in scene.sequence_editor.sequences:
+    for s in scene.sequence_editor.strips:
         channels[s.channel].append(s)
     
     tracks = []

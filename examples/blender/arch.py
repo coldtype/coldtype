@@ -35,7 +35,7 @@ def arch(r):
         .boxCurveTo(r.pse, "NE", factor)
         .fssw(-1, 0, 2))
 
-    return (P().enumerate(curve.samples(60), lambda x: P()
+    return (P().enumerate(curve.samples(20), lambda x: P()
         .declare(
             q:=0.49,
             start:=x.el.pt.project(x.el.tan, d:=100),
