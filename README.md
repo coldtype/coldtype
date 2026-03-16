@@ -55,3 +55,19 @@ To run tests, etc.
 ```
 uv sync --extra dev
 ```
+
+
+### Using with Blender
+
+Big thing: match your the Python version in your uv installation (or venv generally-speaking) to the Python version embedded 
+
+- Find the desired Blender version:
+    - `uvx b3denv python --version`
+- Create a project with that version:
+    - `uv init --python 3.XX`
+- Add Coldtype:
+    - `uv add "coldtype[viewer]"`
+- Verify Coldtype installation:
+    - `uv run coldtype demoblender`
+- Try a Blender-enabled Coldtype file:
+    - `uv run coldtype demoblender -p b3dlo`

@@ -337,6 +337,8 @@ class SourceReader():
             return root / "demo/demo.py"
         elif name == "demo":
             return root / "demo/demo.py"
+        elif name == "demoblender":
+            return root / "demo/demoblender.py"
         elif name == "blank":
             return root / "demo/blank.py"
         elif name == "boiler":

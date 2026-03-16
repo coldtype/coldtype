@@ -37,13 +37,17 @@ def play_sound(name="Pop"):
 
 
 def show_in_finder(path):
+    from showinfm import show_in_file_manager
+    
     p = path.expanduser().resolve()
-    if on_mac() or on_linux():
-        os.system(f"open {p}")
-    elif on_windows():
-        os.system(f"explorer {p}")
-    else:
-        print("show-in-finder not implemented for os")
+    show_in_file_manager(str(p))
+
+    # if on_mac() or on_linux():
+    #     os.system(f"open {p}")
+    # elif on_windows():
+    #     os.system(f"explorer {p}")
+    # else:
+    #     print("show-in-finder not implemented for os")
 
 
 def in_notebook() -> bool:

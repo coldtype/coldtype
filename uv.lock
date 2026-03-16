@@ -315,7 +315,7 @@ wheels = [
 
 [[package]]
 name = "coldtype"
-version = "0.12.2"
+version = "0.12.3"
 source = { editable = "." }
 dependencies = [
     { name = "b3denv" },
@@ -323,6 +323,7 @@ dependencies = [
     { name = "defcon" },
     { name = "easing-functions" },
     { name = "fontpens" },
+    { name = "show-in-file-manager" },
     { name = "skia-pathops" },
     { name = "uharfbuzz" },
 ]
@@ -423,6 +424,7 @@ requires-dist = [
     { name = "pyopengl", marker = "extra == 'viewer'" },
     { name = "python-frontmatter", marker = "extra == 'website'" },
     { name = "requests", marker = "extra == 'viewer'" },
+    { name = "show-in-file-manager", specifier = ">=1.1.6" },
     { name = "skia-pathops" },
     { name = "skia-pathops", marker = "extra == 'notebook'" },
     { name = "skia-pathops", marker = "extra == 'viewer'" },
@@ -4276,6 +4278,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pyxdg"
+version = "0.28"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b0/25/7998cd2dec731acbd438fbf91bc619603fc5188de0a9a17699a781840452/pyxdg-0.28.tar.gz", hash = "sha256:3267bb3074e934df202af2ee0868575484108581e6f3cb006af1da35395e88b4", size = 77776 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e5/8d/cf41b66a8110670e3ad03dab9b759704eeed07fa96e90fdc0357b2ba70e2/pyxdg-0.28-py2.py3-none-any.whl", hash = "sha256:bdaf595999a0178ecea4052b7f4195569c1ff4d344567bccdc12dfdf02d545ab", size = 49520 },
+]
+
+[[package]]
 name = "pyyaml"
 version = "6.0.2"
 source = { registry = "https://pypi.org/simple" }
@@ -4509,6 +4520,17 @@ sdist = { url = "https://files.pythonhosted.org/packages/d1/53/43d99d7687e8cdef5
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a9/38/7d7362e031bd6dc121e5081d8cb6aa6f6fedf2b67bf889962134c6da4705/setuptools-75.8.2-py3-none-any.whl", hash = "sha256:558e47c15f1811c1fa7adbd0096669bf76c1d3f433f58324df69f3f5ecac4e8f", size = 1229385 },
 ]
+
+[[package]]
+name = "show-in-file-manager"
+version = "1.1.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+    { name = "pywin32", marker = "sys_platform == 'win32'" },
+    { name = "pyxdg", marker = "sys_platform == 'linux'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/86/5e/1092f0054bd939d7ea471b06e2ab7895ebb5d6f7a7c2e736d0d1ce079582/show_in_file_manager-1.1.6.tar.gz", hash = "sha256:559b596e3e563800cf69d734cd236824279a9d820d1d841640c5f13e0058f9b6", size = 37156 }
 
 [[package]]
 name = "six"

@@ -358,3 +358,11 @@ Huge update, attempting to future proof things
 ### Fixed
 - ability to set workarea in coldtype 2d panel (blender)
 - memory bug in harfbuzz bounding box calculation by downgrading to <0.47
+
+## [0.12.3] - 2026-03-16
+### Fixed
+- Update to b3denv for Blender 5 compatibility
+### Changed
+- Use `showinfilemanager` for cross-platform showing-in-"finder"
+### Added
+- `demoblender` in addition to to `demo` for `uv run coldtype demoblender -p b3dlo`
