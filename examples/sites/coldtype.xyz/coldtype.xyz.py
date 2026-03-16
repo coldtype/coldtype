@@ -19,10 +19,10 @@ index: jinja_html = """
     <li><a href="https://github.com/coldtype/b3denv">b3denv</a>: an open-source command-line utility for working with Blender and its embedded Python</li>
     <li><a href="https://github.com/stenson/nudge">Nudge</a>: a VS Code extension that allows keyboard shortcuts to increment/decrement numeric values (and letters) and then immediately save the file</li>
 </ul>
-<hr/>
-<p>
+<!--<hr/>-->
+<!--<p>
 If you’re looking to take a class on Coldtype, <a href="https://coopertype.org/events/type-sound-code-an-introduction-to-coldtype">here’s one</a> that’s about to start in February.
-</p>
+</p>-->
 <hr/>
 <p>Here are some talks about Coldtype & ST2:</p>
 <ul>

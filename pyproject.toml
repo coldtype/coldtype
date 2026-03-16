@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "fontTools>=4.60.2",
     "fontPens==0.2.4",
     "easing-functions==1.0.4",
     "b3denv>=0.0.22",
@@ -37,7 +38,7 @@ viewer = [
     "skia-pathops",
     "numpy",
     "potracer",
-    "requests",
+    "requests>=2.32.4",
     "mido",
     "ufo2ft>=3.2.8", # pin for fg issue
     "coldtype-fontgoggles[more-fonts]==1.8.4.7"
@@ -50,14 +51,15 @@ website = [
     "jinja2",
     "python-frontmatter",
     "livereload",
-    "Markdown",
+    "Markdown>=3.8.1",
     "markdown-captions",
     "beautifulsoup4",
-    "brotli",
+    "brotli>=1.2.0",
     "lxml",
     "pygments",
     "sourcetypes",
     "favicons",
+    "tornado>=6.5.5"
 ]
 
 [project.scripts]
