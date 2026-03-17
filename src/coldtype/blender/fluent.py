@@ -1,4 +1,4 @@
-import math, time
+import math, time, re
 
 from pathlib import Path
 from typing import Callable
@@ -18,6 +18,62 @@ try:
 except ImportError:
     bpy = None
     pass
+
+
+# ensure_channelbag & get_fcurves are taken/modified from
+# https://blenderartists.org/t/how-to-access-fcurves-in-blender-5-0/1623022/6
+
+def ensure_channelbag(data_block):
+    """
+    Returns the channelbag of f-curves for a given ID, or `None` if the ID doesn't
+    have an animation data, an action, or a slot.
+    """
+
+    if data_block.animation_data is None: return None
+
+    anim_data = data_block.animation_data
+    if anim_data.action is None: return None
+
+    action = anim_data.action
+    if action.is_empty: return None
+
+    if anim_data.action_slot is None: return None
+
+    try:
+        from bpy_extras.anim_utils import action_ensure_channelbag_for_slot
+        return action_ensure_channelbag_for_slot(action, anim_data.action_slot)
+    except ImportError:
+        #print("could not import action_ensure_channelbag_for_slot")
+        pass
+
+
+def get_fcurves(obj, matching: re.Pattern = None):
+    if not obj.animation_data:
+        return None
+
+    fcurves_out = []
+
+    # --- Keyframed FCurves (action) ---
+    if obj.animation_data.action:
+        if hasattr(obj.animation_data.action, 'fcurves'):
+            fcurves = obj.animation_data.action.fcurves
+        else:
+            channelbag = ensure_channelbag(obj)
+            if channelbag is not None:
+                fcurves = channelbag.fcurves
+            else:
+                fcurves = []
+
+        for fcurve in fcurves:
+            if matching is None or re.match(matching, fcurve.data_path):
+                fcurves_out.append(fcurve)
+
+    # --- Driver FCurves ---
+    for fcurve in obj.animation_data.drivers:
+        if matching is None or re.match(matching, fcurve.data_path):
+            fcurves_out.append(fcurve)
+
+    return fcurves_out if fcurves_out else None
 
 # TODO easy, chainable interface for
 # blender objects (could be a separate library)
@@ -821,7 +877,8 @@ class BpyObj(_Chainable):
         return self
     
     def modify_keyframes(self, selector, action):
-        for fc in self.obj.animation_data.action.fcurves:
+        fcurves = get_fcurves(self.obj, r".*")
+        for fc in fcurves:
             matches = False
             if callable(selector) and selector(fc.data_path):
                 matches = True
