@@ -366,3 +366,7 @@ Huge update, attempting to future proof things
 - Use `showinfilemanager` for cross-platform showing-in-"finder"
 ### Added
 - `demoblender` in addition to to `demo` for `uv run coldtype demoblender -p b3dlo`
+
+## [0.12.4] - 2026-03-17
+### Fixed
+- Blender 5 fcurves utility
