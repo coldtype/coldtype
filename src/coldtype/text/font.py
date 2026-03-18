@@ -90,6 +90,7 @@ class Font():
         suffix=None,
         delete_tmp=False,
         black=False,
+        system_name=None,
         ):
         tmp = None
         if isinstance(path, str) and path.startswith("http"):
@@ -109,6 +110,8 @@ class Font():
         self.cacheable = cacheable
         self._loaded = False
         self.load()
+
+        self.system_name = system_name
 
         self._colr = self.font.ttFont.get("COLR")
         self._colrv1 = (self._colr is not None
@@ -237,7 +240,7 @@ class Font():
         return Font(str(output_path))
     
     @staticmethod
-    def Cacheable(path, suffix=None, delete_tmp=False, actual_path=None, number=0):
+    def Cacheable(path, suffix=None, delete_tmp=False, actual_path=None, number=0, system_name=None):
         """use actual_path to override a key path (if the actual path is the result of a networked call)"""
         if number > 0:
             if not actual_path:
@@ -250,7 +253,8 @@ class Font():
                 cacheable=True,
                 suffix=suffix,
                 delete_tmp=delete_tmp,
-                number=number).load()
+                number=number,
+                system_name=system_name).load()
         return FontCache[path]
     
     @staticmethod
@@ -382,7 +386,7 @@ class Font():
             raise FontNotFoundException(regex)
     
     @staticmethod
-    def LibraryList(regex, print_list=False):
+    def LibraryList(regex, print_list=False, expand=False, copy_to=None):
         """pass a compiled re (i.e. re.compile to _not_ ignore case)"""
         try:
             regex.match("asdf")
@@ -390,7 +394,7 @@ class Font():
             regex = re.compile(f".*{regex}.*", re.IGNORECASE)
 
         if on_mac():
-            import AppKit
+            import AppKit, CoreText
             fonts = [x for x in list(AppKit.NSFontManager.sharedFontManager().availableFonts()) if not x.startswith(".")]
             fonts = list(sorted(fonts, key=lambda x: len(x)))
             fonts = [x for x in fonts if re.search(regex, x)]
@@ -399,6 +403,20 @@ class Font():
                 print("Font Matches")
                 for f in fonts:
                     print(" >", f)
+            
+            if expand or copy_to:
+                expanded = []
+                for f in fonts:
+                    font = AppKit.NSFont.fontWithName_size_(f, 100)
+                    path = Path(CoreText.CTFontDescriptorCopyAttribute(font.fontDescriptor(), CoreText.kCTFontURLAttribute).path())
+                    cacheable = Font.Cacheable(path, system_name=f)
+                    expanded.append(cacheable)
+
+                    if copy_to:
+                        destination = Path(copy_to).expanduser().absolute() / f"{f}{path.suffix}"
+                        cacheable.copy_to(destination)
+                    
+                return expanded
             return fonts
         else:
             raise Exception("Library not supported on this OS")
