@@ -1,0 +1,50 @@
+[project]
+name = "coldtype-core"
+version = "0.13.0"
+dependencies = [
+    "coldtype-core==0.13.0",
+    "glfw",
+    "PyOpenGL",
+    "skia-python",
+    "skia-pathops",
+    "numpy",
+    "potracer",
+    "requests>=2.32.4",
+    "mido",
+    "ufo2ft>=3.2.8", # pin for fg issue
+    "coldtype-fontgoggles[more-fonts]==1.8.4.7",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+more-fonts = [
+    "ufo2ft>=3.2.8", # pin for fg issue
+    "coldtype-fontgoggles[more-fonts]==1.8.4.7"
+]
+drawbot = ["numpy"]
+unicode = ["unicodedata2"]
+audio = ["pyaudio", "soundfile"]
+website = [
+    "jinja2>=3.1.6",
+    "python-frontmatter",
+    "livereload",
+    "Markdown>=3.8.1",
+    "markdown-captions",
+    "beautifulsoup4",
+    "brotli>=1.2.0",
+    "lxml",
+    "pygments",
+    "sourcetypes",
+    "favicons",
+    "tornado>=6.5.5"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/coldtype"]
+
+[tool.uv.sources]
+coldtype-core = { workspace = true }

@@ -370,3 +370,5 @@ Huge update, attempting to future proof things
 ## [0.12.4] - 2026-03-17
 ### Fixed
 - Blender 5 fcurves utility
+
+## [0.13.0]
