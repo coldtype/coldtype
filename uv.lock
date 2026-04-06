@@ -381,6 +381,90 @@ wheels = [
 [[package]]
 name = "coldtype"
 version = "0.13.0"
+source = { editable = "packages/coldtype" }
+dependencies = [
+    { name = "coldtype-core" },
+    { name = "coldtype-fontgoggles", extra = ["more-fonts"] },
+    { name = "glfw" },
+    { name = "mido" },
+    { name = "numpy" },
+    { name = "potracer" },
+    { name = "pyopengl" },
+    { name = "requests" },
+    { name = "skia-pathops" },
+    { name = "skia-python" },
+    { name = "tqdm" },
+    { name = "ufo2ft" },
+]
+
+[package.optional-dependencies]
+audio = [
+    { name = "pyaudio" },
+    { name = "soundfile" },
+]
+drawbot = [
+    { name = "numpy" },
+]
+more-fonts = [
+    { name = "coldtype-fontgoggles", extra = ["more-fonts"] },
+    { name = "ufo2ft" },
+]
+unicode = [
+    { name = "unicodedata2" },
+]
+website = [
+    { name = "beautifulsoup4" },
+    { name = "brotli" },
+    { name = "favicons" },
+    { name = "jinja2" },
+    { name = "livereload" },
+    { name = "lxml" },
+    { name = "markdown" },
+    { name = "markdown-captions" },
+    { name = "pygments" },
+    { name = "python-frontmatter" },
+    { name = "sourcetypes" },
+    { name = "tornado" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "beautifulsoup4", marker = "extra == 'website'" },
+    { name = "brotli", marker = "extra == 'website'", specifier = ">=1.2.0" },
+    { name = "coldtype-core", editable = "packages/coldtype-core" },
+    { name = "coldtype-fontgoggles", extras = ["more-fonts"], specifier = "==1.8.4.7" },
+    { name = "coldtype-fontgoggles", extras = ["more-fonts"], marker = "extra == 'more-fonts'", specifier = "==1.8.4.7" },
+    { name = "favicons", marker = "extra == 'website'" },
+    { name = "glfw" },
+    { name = "jinja2", marker = "extra == 'website'", specifier = ">=3.1.6" },
+    { name = "livereload", marker = "extra == 'website'" },
+    { name = "lxml", marker = "extra == 'website'" },
+    { name = "markdown", marker = "extra == 'website'", specifier = ">=3.8.1" },
+    { name = "markdown-captions", marker = "extra == 'website'" },
+    { name = "mido" },
+    { name = "numpy" },
+    { name = "numpy", marker = "extra == 'drawbot'" },
+    { name = "potracer" },
+    { name = "pyaudio", marker = "extra == 'audio'" },
+    { name = "pygments", marker = "extra == 'website'" },
+    { name = "pyopengl" },
+    { name = "python-frontmatter", marker = "extra == 'website'" },
+    { name = "requests", specifier = ">=2.32.4" },
+    { name = "skia-pathops" },
+    { name = "skia-python" },
+    { name = "soundfile", marker = "extra == 'audio'" },
+    { name = "sourcetypes", marker = "extra == 'website'" },
+    { name = "tornado", marker = "extra == 'website'", specifier = ">=6.5.5" },
+    { name = "tqdm" },
+    { name = "ufo2ft", specifier = ">=3.2.8" },
+    { name = "ufo2ft", marker = "extra == 'more-fonts'", specifier = ">=3.2.8" },
+    { name = "unicodedata2", marker = "extra == 'unicode'" },
+]
+provides-extras = ["more-fonts", "drawbot", "unicode", "audio", "website"]
+
+[[package]]
+name = "coldtype-core"
+version = "0.13.0"
 source = { editable = "packages/coldtype-core" }
 dependencies = [
     { name = "b3denv" },
@@ -475,89 +559,6 @@ dev = [
     { name = "scikit-image" },
     { name = "soundfile" },
 ]
-
-[[package]]
-name = "coldtype-core"
-version = "0.13.0"
-source = { editable = "packages/coldtype" }
-dependencies = [
-    { name = "coldtype-fontgoggles", extra = ["more-fonts"] },
-    { name = "glfw" },
-    { name = "mido" },
-    { name = "numpy" },
-    { name = "potracer" },
-    { name = "pyopengl" },
-    { name = "requests" },
-    { name = "skia-pathops" },
-    { name = "skia-python" },
-    { name = "tqdm" },
-    { name = "ufo2ft" },
-]
-
-[package.optional-dependencies]
-audio = [
-    { name = "pyaudio" },
-    { name = "soundfile" },
-]
-drawbot = [
-    { name = "numpy" },
-]
-more-fonts = [
-    { name = "coldtype-fontgoggles", extra = ["more-fonts"] },
-    { name = "ufo2ft" },
-]
-unicode = [
-    { name = "unicodedata2" },
-]
-website = [
-    { name = "beautifulsoup4" },
-    { name = "brotli" },
-    { name = "favicons" },
-    { name = "jinja2" },
-    { name = "livereload" },
-    { name = "lxml" },
-    { name = "markdown" },
-    { name = "markdown-captions" },
-    { name = "pygments" },
-    { name = "python-frontmatter" },
-    { name = "sourcetypes" },
-    { name = "tornado" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "beautifulsoup4", marker = "extra == 'website'" },
-    { name = "brotli", marker = "extra == 'website'", specifier = ">=1.2.0" },
-    { name = "coldtype-core", editable = "packages/coldtype" },
-    { name = "coldtype-fontgoggles", extras = ["more-fonts"], specifier = "==1.8.4.7" },
-    { name = "coldtype-fontgoggles", extras = ["more-fonts"], marker = "extra == 'more-fonts'", specifier = "==1.8.4.7" },
-    { name = "favicons", marker = "extra == 'website'" },
-    { name = "glfw" },
-    { name = "jinja2", marker = "extra == 'website'", specifier = ">=3.1.6" },
-    { name = "livereload", marker = "extra == 'website'" },
-    { name = "lxml", marker = "extra == 'website'" },
-    { name = "markdown", marker = "extra == 'website'", specifier = ">=3.8.1" },
-    { name = "markdown-captions", marker = "extra == 'website'" },
-    { name = "mido" },
-    { name = "numpy" },
-    { name = "numpy", marker = "extra == 'drawbot'" },
-    { name = "potracer" },
-    { name = "pyaudio", marker = "extra == 'audio'" },
-    { name = "pygments", marker = "extra == 'website'" },
-    { name = "pyopengl" },
-    { name = "python-frontmatter", marker = "extra == 'website'" },
-    { name = "requests", specifier = ">=2.32.4" },
-    { name = "skia-pathops" },
-    { name = "skia-python" },
-    { name = "soundfile", marker = "extra == 'audio'" },
-    { name = "sourcetypes", marker = "extra == 'website'" },
-    { name = "tornado", marker = "extra == 'website'", specifier = ">=6.5.5" },
-    { name = "tqdm" },
-    { name = "ufo2ft", specifier = ">=3.2.8" },
-    { name = "ufo2ft", marker = "extra == 'more-fonts'", specifier = ">=3.2.8" },
-    { name = "unicodedata2", marker = "extra == 'unicode'" },
-]
-provides-extras = ["more-fonts", "drawbot", "unicode", "audio", "website"]
 
 [[package]]
 name = "coldtype-fontgoggles"

@@ -17,6 +17,7 @@ test/visuals/pdfs
 build
 dist
 coldtype.egg-info
+packages/**/*.egg-info
 __pycache__
 *.pyc
 *.patch

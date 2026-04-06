@@ -1,5 +1,5 @@
 [project]
-name = "coldtype-core"
+name = "coldtype"
 version = "0.13.0"
 dependencies = [
     "coldtype-core==0.13.0",

@@ -1,5 +1,5 @@
 [project]
-name = "coldtype"
+name = "coldtype-core"
 version = "0.13.0"
 description = "Functions for manual vectorized typesetting."
 readme = "README.md"
