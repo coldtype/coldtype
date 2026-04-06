@@ -21,6 +21,7 @@ more-fonts = [
     "ufo2ft>=3.2.8", # pin for fg issue
     "coldtype-fontgoggles[more-fonts]==1.8.4.7"
 ]
+viewer = []
 drawbot = ["numpy"]
 unicode = ["unicodedata2"]
 audio = ["pyaudio", "soundfile"]
