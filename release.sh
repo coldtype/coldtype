@@ -3,4 +3,4 @@ uv build
 cd ../coldtype
 uv build
 cd ../..
-uv publish
+uvx uv-publish
