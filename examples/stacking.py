@@ -18,7 +18,7 @@ grafs = txt.strip().split("\n\n")
 def stacking(r):
     def graf(txt):
         return (RichText(r, txt, lambda t, s:
-            (t, Style("Trebuchet" if "h" in s else "Georgia", 150 if "b" in s else 50)))
+            (t, Style("Trebuchet" if "h" in s else r"Georgia\.", 150 if "b" in s else 50)))
             .f(hsl(0.7)))
         
     return (P(

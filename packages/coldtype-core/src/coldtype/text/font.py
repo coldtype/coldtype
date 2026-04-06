@@ -58,7 +58,7 @@ elif on_linux():
     # TODO what are the default linux font installation dirs?
     pass
 
-FONT_FIND_DEPTH = 3
+FONT_FIND_DEPTH = 5
 
 class FontNotFoundException(Exception):
     pass
@@ -330,20 +330,25 @@ class Font():
         font_path.write_bytes(r.content)
         return Font.Cacheable(font_cache_key, actual_path=font_path)
     
-    def _ListDir(dir, regex, regex_dir, log=False, depth=0):
-        if dir.name in [".git", "venv"]:
+    def _ListDir(dir, regex, regex_dir, log=False, depth=0, bail=False):
+        if dir.name in [".git", "venv", ".venv"]:
             return
         
-        #print(dir.stem, depth, len(os.listdir(dir)))
         results = []
 
         try:
             for p in dir.iterdir():
+                #if len(results) > 0:
+                #    print("SKIP")
+                #    return results[0]
+
                 if p.is_dir() and depth < FONT_FIND_DEPTH and p.suffix != ".ufo":
                     try:
-                        res = Font._ListDir(p, regex, regex_dir, log, depth=depth+1)
+                        res = Font._ListDir(p, regex, regex_dir, log, depth=depth+1, bail=bail)
                         if res:
                             results.extend(res)
+                            if bail:
+                                return [results[0]]
                     except PermissionError:
                         pass
                 else:
@@ -352,13 +357,15 @@ class Font():
                     if re.search(regex, p.name, re.IGNORECASE):
                         if p.suffix in [".otf", ".ttf", ".ttc", ".ufo", ".woff", ".woff2"]:
                             results.append(p)
+                            if bail:
+                                return [p]
         except FileNotFoundError:
             pass
         
         return results
 
     @lru_cache()
-    def List(regex, regex_dir=None, log=False, font_dir=None, max_depth=FONT_FIND_DEPTH):
+    def List(regex, regex_dir=None, log=False, font_dir=None, max_depth=FONT_FIND_DEPTH, bail=False):
         results = []
         
         font_dirs = ALL_FONT_DIRS
@@ -366,19 +373,21 @@ class Font():
             font_dirs = [font_dir]
         
         for dir in font_dirs:
+            if bail and results: return [results[0]]
+            
             dir = normalize_font_prefix(dir)
-            results.extend(Font._ListDir(Path(dir), regex, regex_dir, log, depth=0))
+            results.extend(Font._ListDir(Path(dir), regex, regex_dir, log, depth=0, bail=bail))
         return sorted(results, key=lambda p: p.stem)
 
     @staticmethod
-    def Find(regex, regex_dir=None, index=0, font_dir=None, number=0):
+    def Find(regex, regex_dir=None, index=0, font_dir=None, number=0, bail=True):
         if isinstance(regex, Font):
             return regex
 
         if Path(normalize_font_prefix(regex)).expanduser().exists():
             return Font.Cacheable(regex, number=number)
         
-        found = Font.List(regex, regex_dir, font_dir=font_dir)
+        found = Font.List(regex, regex_dir, font_dir=font_dir, bail=bail)
         try:
             return Font.Cacheable(found[index], number=number)
         except Exception as e:

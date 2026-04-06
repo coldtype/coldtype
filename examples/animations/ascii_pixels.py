@@ -8,7 +8,7 @@ at = AsciiTimeline(1, 18, """
 
 @animation((1080, 1080/2), timeline=at, bg=hsl(0.6, 1, 0.7))
 def pixellation(f):
-    return (StSt("PIXEL", "Times", 460, tu=250)
+    return (StSt("PIXEL", "Times New Roman", 460, tu=250)
         .f(1)
         .scale(0.5, 1)
         .align(f.a.r)
