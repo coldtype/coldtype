@@ -1,0 +1,1 @@
+`coldtype-core` is all of the `coldtype` code without optional dependencies made non-optional by the standard `coldtype` library (since almost all use-cases for `coldtype` want those dependencies). If you’re using coldtype in an embedded context and have no need for a GUI counterpart, you can use `coldtype-core` directly.

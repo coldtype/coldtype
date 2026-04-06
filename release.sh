@@ -1,1 +1,6 @@
-rm -rf dist/ && python setup.py sdist bdist_wheel && python -m twine upload dist/* --verbose
+cd packages/coldtype-core
+uv build
+cd ../coldtype
+uv build
+cd ../..
+uv publish

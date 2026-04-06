@@ -16,6 +16,16 @@ dependencies = [
     "tqdm",
 ]
 
+[project.urls]
+Homepage = "https://coldtype.xyz"
+Documentation = "https://coldtype.goodhertz.com"
+Repository = "https://github.com/coldtype/coldtype"
+Issues = "https://github.com/coldtype/coldtype/issues"
+Changelog = "https://github.com/coldtype/coldtype/blob/main/CHANGELOG.md"
+
+[project.scripts]
+coldtype = "coldtype.cli:main"
+
 [project.optional-dependencies]
 more-fonts = [
     "ufo2ft>=3.2.8", # pin for fg issue
