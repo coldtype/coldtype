@@ -26,7 +26,7 @@ def render(r):
             .translate(0, 5))
 ```
 
-Saving that code in a file named test.py and running `uvx coldtype test.py` results in this image popping up on your screen in a dedicated window:
+If you have [uv](https://docs.astral.sh/uv/) installed, saving that code in a file named test.py and running `uvx coldtype test.py` results in this image popping up on your screen in a dedicated window:
 
 ![An example](https://raw.githubusercontent.com/goodhertz/coldtype/main/examples/renders/simple_render.png)
 
