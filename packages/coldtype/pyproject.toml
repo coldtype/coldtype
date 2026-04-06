@@ -1,8 +1,8 @@
 [project]
 name = "coldtype"
-version = "0.13.1"
+version = "0.13.2"
 dependencies = [
-    "coldtype-core==0.13.1",
+    "coldtype-core==0.13.2",
     "glfw",
     "PyOpenGL",
     "skia-python",
@@ -24,7 +24,9 @@ Issues = "https://github.com/coldtype/coldtype/issues"
 Changelog = "https://github.com/coldtype/coldtype/blob/main/CHANGELOG.md"
 
 [project.scripts]
-coldtype = "coldtype.cli:main"
+coldtype = "coldtype.renderer:main"
+ct = "coldtype.renderer:main"
+ctb = "coldtype.renderer:main_b3d"
 
 [project.optional-dependencies]
 more-fonts = [
