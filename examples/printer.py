@@ -9,7 +9,7 @@ txt = """
 
 @renderable("letter-landscape", bg=1, render_bg=0, fmt="pdf")
 def printed(r):
-    return (StSt(txt, "polymath", 72, space=300, tu=0, opsz=1, case="lower", leading=34, tnum=1, wght=0.65)
+    return (StSt(txt, "polymathvar.ttf", 72, space=300, tu=0, opsz=1, case="lower", leading=34, tnum=1, wght=0.65)
         .align(r)
         .f(0))
 

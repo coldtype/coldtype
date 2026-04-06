@@ -1,0 +1,72 @@
+[project]
+name = "coldtype"
+version = "0.13.0"
+description = "Functions for manual vectorized typesetting."
+readme = "README.md"
+authors = [
+    { name = "Rob Stenson", email = "rob.stenson@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "fontTools>=4.60.2",
+    "fontPens==0.2.4",
+    "easing-functions==1.0.4",
+    "b3denv>=0.0.22",
+    "coldtype-fontgoggles==1.8.4.7",
+    "skia-pathops",
+    "defcon>=0.12.0", # for OutlinePen
+    "uharfbuzz<0.47.0", # some kind of cached variations/memory bug introduced in 0.47.0
+    "show-in-file-manager>=1.1.6",
+]
+
+[project.urls]
+Homepage = "https://coldtype.xyz"
+Documentation = "https://coldtype.goodhertz.com"
+Repository = "https://github.com/coldtype/coldtype"
+Issues = "https://github.com/coldtype/coldtype/issues"
+Changelog = "https://github.com/coldtype/coldtype/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+more-fonts = [
+    "ufo2ft>=3.2.8", # pin for fg issue
+    "coldtype-fontgoggles[more-fonts]==1.8.4.7"
+]
+drawbot = ["numpy"]
+unicode = ["unicodedata2"]
+notebook = ["skia-pathops", "skia-python", "potracer", "tdqm"]
+
+[project.scripts]
+coldtype = "coldtype.renderer:main"
+ct = "coldtype.renderer:main"
+ctb = "coldtype.renderer:main_b3d"
+
+[tool.setuptools]
+license-files = [] # https://github.com/astral-sh/uv/issues/9513#issuecomment-2519527822
+
+#[tool.uv.sources]
+#coldtype-fontgoggles = { path = "../fontgoggles", editable = true }
+
+[build-system]
+requires = ["setuptools >= 61.0", "wheel", "setuptools-scm >= 8.0"]
+build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "pynput",
+    "pymunk",
+    "pygments",
+    "pyaudio",
+    "soundfile",
+    "opentype-feature-freezer",
+    "fontmake",
+    "measurement",
+    "pillow",
+    "imagehash",
+    "scikit-image",
+    "noise",
+    "mdx-linkify",
+    "ipykernel",
+    "drawbot @ git+https://github.com/typemytype/drawbot",
+    "numpy<2.2"
+]

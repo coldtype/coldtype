@@ -370,3 +370,7 @@ Huge update, attempting to future proof things
 ## [0.12.4] - 2026-03-17
 ### Fixed
 - Blender 5 fcurves utility
+
+## [0.13.0]
+### Changed
+- `coldtype` is now a metapackage that wraps `coldtype-core`, meaning `"coldtype[viewer]"` is no longer necessary, you can just do `uv add coldtype` or `uvx coldtype <source-file>.py` and it should work
