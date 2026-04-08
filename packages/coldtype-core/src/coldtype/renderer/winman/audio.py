@@ -40,7 +40,7 @@ class WinmanAudio(WinmanPassthrough):
         self.a = a
         if a.audio:
             try:
-                self.pa_src = soundfile.SoundFile(a.audio, "r+")
+                self.pa_src = soundfile.SoundFile(a.audio, "r")
             except:
                 print(">>> Could not load audio file (corrupted?)")
                 self.pa_src = None

@@ -1,6 +1,6 @@
 [project]
 name = "coldtype-core"
-version = "0.13.2"
+version = "0.13.3"
 description = "Functions for manual vectorized typesetting."
 readme = "README.md"
 authors = [
