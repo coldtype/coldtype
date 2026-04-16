@@ -47,18 +47,22 @@ def parse_inputs(inputs, defaults, ui=True, positional=True):
             else:
                 if isinstance(v, str):
                     if k == "font":
-                        fonts = Font.List(v)
+                        vs = v.split("@")
+                        fnt_idx = 0
+                        if len(vs) > 1:
+                            fnt_idx = int(vs[1])
+                        fonts = Font.List(vs[0])
                         if len(fonts) == 0:
                             print(f"\n\n‼️ Search \"{v}\" returned no fonts ‼️\n")
                             out[k] = Font.ColdtypeObviously()
                         else:
-                            print("\nMatching Fonts (first is selected):")
-                            for idx, f in enumerate(fonts): 
-                                if idx == 0:
-                                    print("  >", f)
+                            print(f"\nMatching Fonts ([{fnt_idx}] is selected):")
+                            for idx, f in enumerate(fonts):
+                                if idx == fnt_idx:
+                                    print(f"  > [{idx}]", f)
                                 else:
-                                    print("   ", f)
-                            out[k] = Font.Cacheable(fonts[0])
+                                    print(f"    [{idx}]", f)
+                            out[k] = Font.Cacheable(fonts[fnt_idx])
                             font_variations = out[k].variations()
                             # print("Matched:")
                             # print("="*len(str(out[k].path)))

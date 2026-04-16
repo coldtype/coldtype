@@ -421,6 +421,9 @@ class Font():
     @lru_cache()
     def List(regex, regex_dir=None, log=False, font_dir=None, max_depth=FONT_FIND_DEPTH, bail=False):
         results = []
+
+        if "/" in regex and regex_dir is None:
+            regex_dir, regex = regex.split("/")
         
         font_dirs = ALL_FONT_DIRS
         if font_dir is not None:
@@ -430,7 +433,8 @@ class Font():
             if bail and results: return [results[0]]
 
             dir = normalize_font_prefix(dir)
-            results.extend(Font._ListDir(Path(dir), regex, regex_dir, log, depth=0, max_depth=max_depth, bail=bail))
+            list_dir_results = Font._ListDir(Path(dir), regex, regex_dir, log, depth=0, max_depth=max_depth, bail=bail)
+            results.extend(list_dir_results)
         
         return sorted(results, key=lambda p: p.stem)
 
@@ -438,6 +442,11 @@ class Font():
     def Find(regex, regex_dir=None, index=0, font_dir=None, number=0, max_depth=FONT_FIND_DEPTH, bail=False):
         if isinstance(regex, Font):
             return regex
+        
+        parts = regex.split("@")
+        if len(parts) > 1:
+            index = int(parts[1])
+            regex = parts[0]
 
         if Path(normalize_font_prefix(regex)).expanduser().exists():
             return Font.Cacheable(regex, number=number)
@@ -445,6 +454,9 @@ class Font():
         found = Font.List(regex, regex_dir, font_dir=font_dir, max_depth=max_depth, bail=bail)
         try:
             return Font.Cacheable(found[index], number=number)
+        except IndexError:
+            print(f"> Could not get @{index}, returning 0 instead")
+            return Font.Cacheable(found[0], number=number)
         except Exception as e:
             #print(">", e)
             raise FontNotFoundException(regex)
