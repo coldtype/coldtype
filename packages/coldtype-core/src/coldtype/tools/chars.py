@@ -50,7 +50,7 @@ fs = args["fontSize"]
 def getGlyph(x):
     txt = x.el
     if txt.startswith("\\u"): txt = txt.encode().decode('unicode_escape')
-    return StSt(txt, fnt, fs).pen()
+    return StSt(txt, fnt, fs, variations=args["font_variations"]).pen()
 
 glyphs = P().enumerate(els, getGlyph)
 

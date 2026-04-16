@@ -59,7 +59,7 @@ elif on_linux():
     # TODO what are the default linux font installation dirs?
     pass
 
-FONT_FIND_DEPTH = 5
+FONT_FIND_DEPTH = int(os.environ.get("COLDTYPE_FONT_FIND_DEPTH", 3))
 
 class FontNotFoundException(Exception):
     pass
@@ -384,7 +384,7 @@ class Font():
         font_path.write_bytes(r.content)
         return Font.Cacheable(font_cache_key, actual_path=font_path)
     
-    def _ListDir(dir, regex, regex_dir, log=False, depth=0, bail=False):
+    def _ListDir(dir, regex, regex_dir, log=False, depth=0, max_depth=FONT_FIND_DEPTH, bail=False):
         if dir.name in [".git", "venv", ".venv"]:
             return
         
@@ -396,7 +396,7 @@ class Font():
                 #    print("SKIP")
                 #    return results[0]
 
-                if p.is_dir() and depth < FONT_FIND_DEPTH and p.suffix != ".ufo":
+                if p.is_dir() and depth < max_depth and p.suffix != ".ufo":
                     try:
                         res = Font._ListDir(p, regex, regex_dir, log, depth=depth+1, bail=bail)
                         if res:
@@ -428,20 +428,21 @@ class Font():
         
         for dir in font_dirs:
             if bail and results: return [results[0]]
-            
+
             dir = normalize_font_prefix(dir)
-            results.extend(Font._ListDir(Path(dir), regex, regex_dir, log, depth=0, bail=bail))
+            results.extend(Font._ListDir(Path(dir), regex, regex_dir, log, depth=0, max_depth=max_depth, bail=bail))
+        
         return sorted(results, key=lambda p: p.stem)
 
     @staticmethod
-    def Find(regex, regex_dir=None, index=0, font_dir=None, number=0, bail=True):
+    def Find(regex, regex_dir=None, index=0, font_dir=None, number=0, max_depth=FONT_FIND_DEPTH, bail=False):
         if isinstance(regex, Font):
             return regex
 
         if Path(normalize_font_prefix(regex)).expanduser().exists():
             return Font.Cacheable(regex, number=number)
         
-        found = Font.List(regex, regex_dir, font_dir=font_dir, bail=bail)
+        found = Font.List(regex, regex_dir, font_dir=font_dir, max_depth=max_depth, bail=bail)
         try:
             return Font.Cacheable(found[index], number=number)
         except Exception as e:

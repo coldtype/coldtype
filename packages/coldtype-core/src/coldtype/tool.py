@@ -37,6 +37,9 @@ def parse_inputs(inputs, defaults, ui=True, positional=True):
             if k not in parsed and len(v) > 2:
                 raise Exception(v[2])
     
+    font_variations = {}
+    out["font_variations"] = {}
+    
     for k, v in parsed.items():
         if k in defaults:
             if defaults[k][0] is None and v is None:
@@ -56,6 +59,7 @@ def parse_inputs(inputs, defaults, ui=True, positional=True):
                                 else:
                                     print("   ", f)
                             out[k] = Font.Cacheable(fonts[0])
+                            font_variations = out[k].variations()
                             # print("Matched:")
                             # print("="*len(str(out[k].path)))
                             # print(out[k].path)
@@ -70,6 +74,9 @@ def parse_inputs(inputs, defaults, ui=True, positional=True):
                     else:
                         out[k] = v
         else:
-            print(f"> key {k} not recognized")
-    
+            if k in font_variations:
+                out["font_variations"][k] = float(v)
+            else:
+                print(f"> key {k} not recognized")
+
     return out
