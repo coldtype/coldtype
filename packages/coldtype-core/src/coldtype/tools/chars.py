@@ -36,7 +36,7 @@ else:
         for codepoint, glyph_name in symbol_cmap.cmap.items():
             low_byte = codepoint & 0xFF
             char = chr(low_byte)
-            if char.isprintable() and low_byte >= 0x20:
+            if True: #char.isprintable() and low_byte >= 0x20:
                 display = f"'{char}'"
                 all_chars.append(char)
             else:
@@ -65,45 +65,14 @@ def wt1(u):
     rs = u.r.inset(10).grid(sq, sq)
     
     def showChar(x):
-        if u.c.inside(rs[x.i]): print(">", x.el)
+        if u.c.inside(rs[x.i]): print(f"> {x.el} \\u{ord(x.el):04X}")
         return (P(glyphs[x.i].copy().f(0).align(rs[x.i])))
 
     return P(
         P().gridlines(u.r.inset(10), sq, sq),
         P().enumerate(els, showChar))
 
+
 def build(_):
     from coldtype.osutil import show_in_finder
     show_in_finder(fnt.path)
-
-# @ui(args["rect"], bg=1)
-# def wt1(u):
-#     rs = u.r.inset(10).grid(sq, sq)
-    
-#     def showChar(x):
-#         if u.c.inside(rs[x.i]):
-#             print(">", x.el)
-
-#         if by_char:
-#             txt = x.el
-#             if txt.startswith("\\u"):
-#                 txt = txt.encode().decode('unicode_escape')
-            
-#             return P(StSt(txt, fnt, fs)
-#                     .align(rs[x.i])
-#                     .f(0),
-#                 P().text(x.el,
-#                     Style("Times", 24
-#                         , load_font=0
-#                         , fill=hsl(0.8))
-#                     , rs[x.i].inset(5)) if args["chars"] else None)
-#         else:
-#             glyph = glyphSet[x.el]
-#             return (P()
-#                 .glyph(glyph, glyphSet).f(0).scale(fs/750, pt=(0, 0))
-#                 .align(rs[x.i])
-#                 .scaleToRect(rs[x.i].inset(6), shrink_only=1, preserveAspect=1))
-
-#     return P(
-#         P().gridlines(u.r.inset(10), sq, sq),
-#         P().enumerate(els, showChar))
