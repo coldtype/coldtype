@@ -1,7 +1,8 @@
 import os, re, tempfile, sys
 from pathlib import Path
-from functools import lru_cache
+from functools import lru_cache, cached_property
 from urllib.request import urlretrieve
+from dataclasses import dataclass
 
 from coldtype.osutil import on_linux, on_mac, on_windows, run_with_check
 
@@ -82,6 +83,27 @@ def normalize_font_path(font, nonexist_ok=False):
 FontCache = {}
 FontmakeCache = {}
 
+
+@dataclass
+class FontMetrics:
+    _cap:float = 750
+    _asc:float = 1000
+    _dsc:float = -250
+    upem:float = 1000
+
+    @property
+    def cap(self):
+        return self._cap if self._cap > 0 else self._asc if self._asc > 0 else 750
+    
+    @property
+    def asc(self):
+        return self._asc if self._asc > 0 else self._cap if self._cap > 0 else 750
+    
+    @property
+    def dsc(self):
+        return self._dsc if self._dsc < 0 else -250
+
+
 class Font():
     # TODO support glyphs?
     def __init__(self, path,
@@ -148,6 +170,38 @@ class Font():
     
     def features(self):
         return {*self.font.featuresGPOS, *self.font.featuresGSUB}
+    
+    @cached_property
+    def metrics(self) -> FontMetrics:
+        upem = self.font.ttFont["head"].unitsPerEm
+
+        try:
+            if "OS/2" in self.font.ttFont:
+                os2 = self.font.ttFont["OS/2"]
+                return FontMetrics(
+                    os2.sCapHeight if hasattr(os2, "sCapHeight") else 750,
+                    os2.sTypoAscender if hasattr(os2, "sTypoAscender") else 750,
+                    -os2.sTypoDescender if hasattr(os2, "sTypoDescender") else 250,
+                    upem)
+            
+            # TODO does this every happen?
+            elif hasattr(self.font, "info"):
+                return FontMetrics(
+                    self.font.info.capHeight,
+                    self.font.info.ascender,
+                    -self.font.info.descender,
+                    upem)
+            
+            # TODO also does this ever happen?
+            elif hasattr(self.font, "defaultInfo"):
+                return FontMetrics(
+                    self.font.defaultInfo.capHeight,
+                    self.font.defaultInfo.ascender,
+                    -self.font.defaultInfo.descender,
+                    upem)
+        
+        except AttributeError:
+            return FontMetrics(upem=upem)
     
     def instances(self, scaled=True, search:re.Pattern=None):
         if self._variations is None:

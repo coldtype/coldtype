@@ -224,6 +224,18 @@ class Rect(Geometrical):
         except:
             return False
     
+    def __gt__(self, other):
+        return self.w > other.w and self.h > other.h
+
+    def __lt__(self, other):
+        return self.w < other.w and self.h < other.h
+
+    def __ge__(self, other):
+        return self.w >= other.w and self.h >= other.h
+
+    def __le__(self, other):
+        return self.w <= other.w and self.h <= other.h
+    
     __hash__ = object.__hash__
 
     def rect(self) -> list:

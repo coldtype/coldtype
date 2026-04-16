@@ -346,13 +346,15 @@ class SourceReader():
         elif name == "glyphloop" or name == "gl":
             return root / "demo/glyphloop.py"
         elif name == "glyphs" or name == "g":
-            return root / "demo/glyphs.py"
+            return root / "tools/glyphs.py"
+        elif name == "chars" or name == "c":
+            return root / "tools/chars.py"
         elif name == "midi":
             return root / "demo/midi.py"
         elif name == "midicc":
             return root / "demo/midicc.py"
         elif name == "vf":
-            return root / "demo/vf.py"
+            return root / "tools/vf.py"
         elif name == "instances":
             return root / "demo/instances.py"
         elif name == "viewseq":

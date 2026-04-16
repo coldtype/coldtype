@@ -378,3 +378,10 @@ Huge update, attempting to future proof things
 ## [0.13.3]
 ### Changed
 - Soundfiles are now opened with "r" instead of "r+" which I think was totally extraneous (h/t https://github.com/coldtype/coldtype/discussions/185)
+
+## [0.13.4]
+### Added
+- `<` and `>` support for `Rect` based on combo of `w` and `h`
+- `Font.metrics` for quickly-accessing somewhat normalized font metrics data
+### Changed
+- Moved source for glyphs.py to `tools` (as a new tools directory)

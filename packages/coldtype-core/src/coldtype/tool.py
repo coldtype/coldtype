@@ -1,4 +1,5 @@
 from coldtype.geometry.rect import Rect
+from coldtype.text.font import Font
 
 
 def parse_inputs(inputs, defaults, ui=True, positional=True):
@@ -16,6 +17,8 @@ def parse_inputs(inputs, defaults, ui=True, positional=True):
             if "=" in input:
                 k, v = input.split("=")
                 parsed[k] = v
+            elif input in defaults.keys():
+                parsed[input] = True
             elif positional:
                 try:
                     parsed[list(defaults.keys())[idx]] = input
@@ -40,7 +43,24 @@ def parse_inputs(inputs, defaults, ui=True, positional=True):
                 pass
             else:
                 if isinstance(v, str):
-                    if defaults[k][1] == bool:
+                    if k == "font":
+                        fonts = Font.List(v)
+                        if len(fonts) == 0:
+                            print(f"\n\n‼️ Search \"{v}\" returned no fonts ‼️\n")
+                            out[k] = Font.ColdtypeObviously()
+                        else:
+                            print("\nMatching Fonts (first is selected):")
+                            for idx, f in enumerate(fonts): 
+                                if idx == 0:
+                                    print("  >", f)
+                                else:
+                                    print("   ", f)
+                            out[k] = Font.Cacheable(fonts[0])
+                            # print("Matched:")
+                            # print("="*len(str(out[k].path)))
+                            # print(out[k].path)
+                            # print("="*len(str(out[k].path)))
+                    elif defaults[k][1] == bool:
                         out[k] = bool(eval(v))
                     else:
                         out[k] = defaults[k][1](v)
