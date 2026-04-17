@@ -3,43 +3,63 @@ from coldtype.tool import parse_inputs
 
 args = parse_inputs(__inputs__, dict(
     fontSearch=[None, str, "Must provide search string"],
-    fontSize=[64, int]))
+    fontSize=[64, int],
+    dst=["~/Desktop", str]))
 
-fontSearch = args["fontSearch"]
+results = Font.ListAll(args["fontSearch"])
+results = results[:30]
 
-results = Font.List(fontSearch, expand=True)
-paths = set([r.path for r in results])
+def fmt_path(path: Path) -> str:
+    try:
+        return "~/" + str(path.relative_to(Path.home()))
+    except ValueError:
+        return str(path)
 
-try:
-    library_results = Font.LibraryList(fontSearch, expand=True)
-    for l in library_results:
-        if l.path not in paths:
-            results.append(l)
-except:
-    pass
+if len(results) > 0:
+    maxsys = max([len(f.system_name) for f in results])
+    maxpat = max([len(fmt_path(f.path)) for f in results])
+    print("\n")
+    print(f"    # {'Name':<{maxsys}} Path")
+    print(f"  {'-'*(maxsys+maxpat+3)}")
+    for idx, result in enumerate(results):
+        print(f"  {idx:>{3}} {result.system_name:<{maxsys}} {fmt_path(result.path)}")
+    print("\n")
 
+    def build_preview(x):
+        return (P(
+            StSt(str(x.i), Font.JBMono(), 30, wght=1)
+                .t(0, 8),
+            StSt(x.el.names()[0], x.el, args["fontSize"])
+                .t(60, 0),
+            P().rect(Rect(50, 2)))
+            .data(font=x.el))
 
-print("\nRESULTS:")
-for result in results:
-    print("  ", result.path)
+    previews = P().enumerate(results, build_preview)
 
-def build_preview(x):
-    #print(x.el.names())
-    return (StSt(x.el.names()[0], x.el, args["fontSize"]))
+    w = max([p.ambit().w for p in previews])
+    h = sum([p.ambit().h for p in previews])
 
-previews = P().enumerate(results, build_preview)
+    rect = Rect(w+20, h + 20*(len(results)+1))
 
-w = max([p.ambit().w for p in previews])
-h = sum([p.ambit().h for p in previews])
-
-rect = Rect(w+20, h + 20*(len(results)+1))
-
-@ui(rect, bg=0)
-def wt1(u):
-    out = previews.copy().stack(20).f(0).xalign(u.r).align(u.r).f(1)
-    #for o in out:
-    #    print(o)
-    return P(out)
+    @renderable(rect, bg=0)
+    def show_results(r):
+        return (previews
+            .copy()
+            .stack(20)
+            #.xalign(r)
+            .align(r)
+            .f(1))
+    
+    def build(_):
+        for font in results:
+            print(f"  > Duplicated: {font.copy_to(args['dst'], return_dst=True)}")
+        
+else:
+    @renderable(540, bg=0)
+    def no_results(r):
+        return (StSt("NO\nRESULTS", Font.JBMono(), 72, wdth=1, wght=1)
+            .align(r)
+            .f("hotpink"))
 
 #def build(_):
 #    from coldtype.osutil import show_in_finder

@@ -14,6 +14,9 @@ dependencies = [
     "ufo2ft>=3.2.8", # pin for fg issue
     "coldtype-fontgoggles[more-fonts]==1.8.4.7",
     "tqdm",
+    "pyobjc-core",
+    "pyobjc-framework-Cocoa",
+    "pyobjc-framework-CoreText",
 ]
 
 [project.urls]

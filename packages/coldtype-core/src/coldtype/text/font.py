@@ -151,6 +151,9 @@ class Font():
         if tmp and delete_tmp:
             os.unlink(tmp.name)
     
+    def __repr__(self):
+        return f"<Font:{self.path}>"
+
     def load(self):
         if self._loaded:
             return self
@@ -235,6 +238,18 @@ class Font():
 
         return self._instances
     
+    def filename_stem(self, respacer="-"):
+        if self.system_name is not None:
+            return self.system_name.replace(" ", respacer)
+        else:
+            try:
+                return self.names()[0].replace(" ", respacer)
+            except:
+                return self.path.stem
+    
+    def filename(self, respacer="-"):
+        return f"{self.filename_stem(respacer)}{self.path.suffix}"
+
     def names(self):
         """
         returns name, family
@@ -265,7 +280,6 @@ class Font():
             
             return name, family
         except:
-            print("No names found")
             return self.path.stem, self.path.stem
     
     def subset(self, output_path, *args, unicodes="U+0000-00FF U+2B22 U+201C U+201D U+201D", features={}):
@@ -448,6 +462,18 @@ class Font():
         if expand:
             return [Font.Cacheable(p, system_name=p.stem) for p in results]
         return results
+    
+    @staticmethod
+    def ListAll(regex, log=False, font_dir=None, expand=True, max_depth=FONT_FIND_DEPTH, bail=False) -> list["Font"]:
+        results = Font.List(regex, expand=True)
+        paths = set([r.path for r in results])
+
+        library_results = Font.LibraryList(regex, expand=True)
+        for l in library_results:
+            if l.path not in paths:
+                results.append(l)
+        
+        return results
 
     @staticmethod
     def Find(regex, regex_dir=None, index=0, font_dir=None, number=0, max_depth=FONT_FIND_DEPTH, bail=False):
@@ -475,9 +501,13 @@ class Font():
     @staticmethod
     def LibraryList(regex, print_list=False, expand=False, copy_to=None):
         """pass a compiled re (i.e. re.compile to _not_ ignore case)"""
+        regex_dir = None
+
         try:
             regex.match("asdf")
         except AttributeError:
+            if "/" in regex:
+                regex_dir, regex = regex.split("/")
             regex = re.compile(f".*{regex}.*", re.IGNORECASE)
 
         if on_mac():
@@ -496,12 +526,12 @@ class Font():
                 for f in fonts:
                     font = AppKit.NSFont.fontWithName_size_(f, 100)
                     path = Path(CoreText.CTFontDescriptorCopyAttribute(font.fontDescriptor(), CoreText.kCTFontURLAttribute).path())
-                    cacheable = Font.Cacheable(path, system_name=f)
-                    expanded.append(cacheable)
+                    if not regex_dir or re.search(regex_dir, str(path)):
+                        cacheable = Font.Cacheable(path, system_name=f)
+                        expanded.append(cacheable)
 
-                    if copy_to:
-                        destination = Path(copy_to).expanduser().absolute() / f"{f}{path.suffix}"
-                        cacheable.copy_to(destination)
+                        if copy_to:
+                            cacheable.copy_to(copy_to)
                     
                 return expanded
             return fonts
@@ -607,9 +637,14 @@ class Font():
             else:
                 raise FontNotFoundException()
     
-    def copy_to(self, path:Path):
-        from shutil import copy2
-        copy2(self.path, Path(path).expanduser().absolute())
+    def copy_to(self, path:Path, filename_literal=False, return_dst=False):
+        from shutil import copyfile
+        dst = Path(path).expanduser().absolute()
+        if not filename_literal:
+            dst.mkdir(exist_ok=True, parents=True)
+            dst = dst / self.filename()
+        copyfile(self.path, dst)
+        if return_dst: return dst
         return self
 
     @staticmethod

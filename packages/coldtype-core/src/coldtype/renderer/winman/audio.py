@@ -67,7 +67,11 @@ class WinmanAudio(WinmanPassthrough):
             try:
                 self.pa_src.seek(chunk*audio_frame)
                 data = self.pa_src.read(chunk)
-                data = data.astype(np.float32).tostring()
+                try:
+                    data = data.astype(np.float32).tostring()
+                except AttributeError:
+                    # https://github.com/coldtype/coldtype/discussions/185#discussioncomment-16507693
+                    data = data.astype(np.float32).tobytes()
                 self.pa_stream.write(data)
             except wave.Error:
                 print(">>> Could not read audio at frame", audio_frame)
