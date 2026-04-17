@@ -383,5 +383,6 @@ Huge update, attempting to future proof things
 ### Added
 - `<` and `>` support for `Rect` based on combo of `w` and `h`
 - `Font.metrics` for quickly-accessing somewhat normalized font metrics data
+- `chars` tool
 ### Changed
 - Moved source for glyphs.py to `tools` (as a new tools directory)

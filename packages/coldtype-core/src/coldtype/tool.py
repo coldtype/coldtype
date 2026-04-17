@@ -1,5 +1,28 @@
+from pathlib import Path
+
 from coldtype.geometry.rect import Rect
 from coldtype.text.font import Font
+
+
+def fmt_path(path: Path) -> str:
+    try:
+        return "~/" + str(path.relative_to(Path.home()))
+    except ValueError:
+        return str(path)
+
+
+def print_font_results(results, selected=None):
+    maxsys = max([len(f.system_name) for f in results])
+    maxpat = max([len(fmt_path(f.path)) for f in results])
+    print("\n")
+    print(f"     # {'Name':<{maxsys}} Path")
+    print(f"   {'-'*(maxsys+maxpat+3)}")
+    for idx, result in enumerate(results):
+        if idx == selected:
+            print(f"➡️  {idx:>{3}} {result.system_name:<{maxsys}} {fmt_path(result.path)}")
+        else:
+            print(f"   {idx:>{3}} {result.system_name:<{maxsys}} {fmt_path(result.path)}")
+    print("\n")
 
 
 def parse_inputs(inputs, defaults, ui=True, positional=True):
@@ -51,18 +74,18 @@ def parse_inputs(inputs, defaults, ui=True, positional=True):
                         fnt_idx = 0
                         if len(vs) > 1:
                             fnt_idx = int(vs[1])
-                        fonts = Font.List(vs[0])
+                        fonts = Font.ListAll(vs[0])
                         if len(fonts) == 0:
                             print(f"\n\n‼️ Search \"{v}\" returned no fonts ‼️\n")
                             out[k] = Font.ColdtypeObviously()
                         else:
-                            print(f"\nMatching Fonts ([{fnt_idx}] is selected):")
-                            for idx, f in enumerate(fonts):
-                                if idx == fnt_idx:
-                                    print(f"  > [{idx}]", f)
-                                else:
-                                    print(f"    [{idx}]", f)
-                            out[k] = Font.Cacheable(fonts[fnt_idx])
+                            print_font_results(fonts, fnt_idx)
+                            # for idx, f in enumerate(fonts):
+                            #     if idx == fnt_idx:
+                            #         print(f"  > [{idx}]", fmt_path(f.path))
+                            #     else:
+                            #         print(f"    [{idx}]", fmt_path(f.path))
+                            out[k] = fonts[fnt_idx]
                             font_variations = out[k].variations()
                             # print("Matched:")
                             # print("="*len(str(out[k].path)))

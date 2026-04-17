@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.tool import parse_inputs
+from coldtype.tool import parse_inputs, fmt_path
 from pprint import pprint
 from itertools import combinations
 from random import Random

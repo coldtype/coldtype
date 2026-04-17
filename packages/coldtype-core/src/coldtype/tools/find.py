@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.tool import parse_inputs
+from coldtype.tool import parse_inputs, print_font_results
 
 args = parse_inputs(__inputs__, dict(
     fontSearch=[None, str, "Must provide search string"],
@@ -9,21 +9,8 @@ args = parse_inputs(__inputs__, dict(
 results = Font.ListAll(args["fontSearch"])
 results = results[:30]
 
-def fmt_path(path: Path) -> str:
-    try:
-        return "~/" + str(path.relative_to(Path.home()))
-    except ValueError:
-        return str(path)
-
 if len(results) > 0:
-    maxsys = max([len(f.system_name) for f in results])
-    maxpat = max([len(fmt_path(f.path)) for f in results])
-    print("\n")
-    print(f"    # {'Name':<{maxsys}} Path")
-    print(f"  {'-'*(maxsys+maxpat+3)}")
-    for idx, result in enumerate(results):
-        print(f"  {idx:>{3}} {result.system_name:<{maxsys}} {fmt_path(result.path)}")
-    print("\n")
+    print_font_results(results)
 
     def build_preview(x):
         return (P(
