@@ -239,27 +239,34 @@ class Font():
         """
         returns name, family
         """
-        FONT_SPECIFIER_NAME_ID = 4
-        FONT_SPECIFIER_FAMILY_ID = 1
-        name = ""
-        family = ""
+        try:
+            FONT_SPECIFIER_NAME_ID = 4
+            FONT_SPECIFIER_FAMILY_ID = 1
+            name = ""
+            family = ""
 
-        def decode(rec):
-            return str(rec)
-            # TODO should this be necessary?
-            try:
-                return rec.string.decode("utf-8")
-            except UnicodeDecodeError:
-                return rec.string.decode("utf-16-be")
+            def decode(rec):
+                return str(rec)
+                # TODO should this be necessary?
+                try:
+                    return rec.string.decode("utf-8")
+                except UnicodeDecodeError:
+                    return rec.string.decode("utf-16-be")
 
-        for record in self.font.ttFont['name'].names:
-            if record.nameID == FONT_SPECIFIER_NAME_ID and not name:
-                name = decode(record)
-            elif record.nameID == FONT_SPECIFIER_FAMILY_ID and not family:
-                family = decode(record)
-            if name and family:
-                break
-        return name, family
+            for record in self.font.ttFont['name'].names:
+                if record.nameID == FONT_SPECIFIER_NAME_ID and not name:
+                    name = decode(record)
+                    if name.endswith(" None"):
+                        name = re.sub(r"\sNone$", "", name)
+                elif record.nameID == FONT_SPECIFIER_FAMILY_ID and not family:
+                    family = decode(record)
+                if name and family:
+                    break
+            
+            return name, family
+        except:
+            print("No names found")
+            return self.path.stem, self.path.stem
     
     def subset(self, output_path, *args, unicodes="U+0000-00FF U+2B22 U+201C U+201D U+201D", features={}):
         _args = [
@@ -419,11 +426,12 @@ class Font():
         return results
 
     @lru_cache()
-    def List(regex, regex_dir=None, log=False, font_dir=None, max_depth=FONT_FIND_DEPTH, bail=False):
+    def List(regex, regex_dir=None, log=False, font_dir=None, expand=False, max_depth=FONT_FIND_DEPTH, bail=False):
         results = []
 
         if "/" in regex and regex_dir is None:
             regex_dir, regex = regex.split("/")
+            print(">>>", regex_dir, regex)
         
         font_dirs = ALL_FONT_DIRS
         if font_dir is not None:
@@ -436,7 +444,10 @@ class Font():
             list_dir_results = Font._ListDir(Path(dir), regex, regex_dir, log, depth=0, max_depth=max_depth, bail=bail)
             results.extend(list_dir_results)
         
-        return sorted(results, key=lambda p: p.stem)
+        results = sorted(results, key=lambda p: p.stem)
+        if expand:
+            return [Font.Cacheable(p, system_name=p.stem) for p in results]
+        return results
 
     @staticmethod
     def Find(regex, regex_dir=None, index=0, font_dir=None, number=0, max_depth=FONT_FIND_DEPTH, bail=False):

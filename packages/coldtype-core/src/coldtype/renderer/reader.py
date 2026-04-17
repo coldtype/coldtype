@@ -349,6 +349,8 @@ class SourceReader():
             return root / "tools/glyphs.py"
         elif name == "chars" or name == "c":
             return root / "tools/chars.py"
+        elif name == "find":
+            return root / "tools/find.py"
         elif name == "midi":
             return root / "demo/midi.py"
         elif name == "midicc":
