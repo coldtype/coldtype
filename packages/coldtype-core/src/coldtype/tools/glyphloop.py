@@ -5,7 +5,7 @@ args = parse_inputs(__inputs__, dict(
     font=[None, str, "Must provide font regex or path"],
     showChars=[False, bool]))
 
-fnt = Font.Find(args["font"])
+fnt = args["font"]
 
 os2 = fnt.font.ttFont["OS/2"]
 glyphSet = fnt.font.ttFont.getGlyphSet()

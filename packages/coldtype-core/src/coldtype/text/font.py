@@ -282,6 +282,34 @@ class Font():
         except:
             return self.path.stem, self.path.stem
     
+    def chars(self) -> list[str]:
+        ttf = self.font.ttFont
+        cmap = ttf["cmap"]
+        best = cmap.getBestCmap()
+
+        #for table in font["cmap"].tables:
+        #    print(f"Platform {table.platformID}, Encoding {table.platEncID}, Format {table.format}")
+
+        els = []
+
+        if best:
+            all_chars = []
+            cmap = ttf["cmap"]
+            for ch, name in cmap.getBestCmap().items():
+                all_chars.append([chr(ch), name])
+            return all_chars
+        else:
+            symbol_cmap = ttf["cmap"].getcmap(3, 0)
+
+            if symbol_cmap:
+                all_chars = []
+                for codepoint, glyph_name in symbol_cmap.cmap.items():
+                    low_byte = codepoint & 0xFF
+                    char = chr(low_byte)
+                    all_chars.append([char, glyph_name])
+                return all_chars
+    
+    
     def subset(self, output_path, *args, unicodes="U+0000-00FF U+2B22 U+201C U+201D U+201D", features={}):
         _args = [
             "pyftsubset", str(self.path),
@@ -473,7 +501,7 @@ class Font():
             if l.path not in paths:
                 results.append(l)
         
-        return results
+        return results #sorted(results, key=lambda p: p.system_name)
 
     @staticmethod
     def Find(regex, regex_dir=None, index=0, font_dir=None, number=0, max_depth=FONT_FIND_DEPTH, bail=False):

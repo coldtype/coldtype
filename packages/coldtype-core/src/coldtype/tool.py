@@ -16,7 +16,7 @@ def print_font_results(results, selected=None):
     maxpat = max([len(fmt_path(f.path)) for f in results])
     print("\n")
     print(f"     # {'Name':<{maxsys}} Path")
-    print(f"   {'-'*(maxsys+maxpat+3)}")
+    print(f"   {'-'*(maxsys+maxpat+7)}")
     for idx, result in enumerate(results):
         if idx == selected:
             print(f"➡️  {idx:>{3}} {result.system_name:<{maxsys}} {fmt_path(result.path)}")
