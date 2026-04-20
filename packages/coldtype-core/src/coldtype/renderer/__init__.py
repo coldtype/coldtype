@@ -134,6 +134,29 @@ class Renderer():
 
         if self.args.file == None:
             self.args.file = "."
+        
+        if self.args.file == "tools":
+            import ast, textwrap
+
+            for tool, file in SourceReader.Tools().items():
+                print(f"🔧 “{tool}”")
+                if tool == "chars" or True:
+                    tree = ast.parse(file.read_text())
+                    try:
+                        print(textwrap.indent(ast.get_docstring(tree), "        "))
+                    except:
+                        pass
+                    if False:
+                        print("  > Arguments:")
+                        for node in ast.walk(tree):
+                            if (isinstance(node, ast.Call) and
+                                isinstance(node.func, ast.Name) and
+                                node.func.id == "parse_inputs"):
+                                for keyword in node.args[1].keywords:
+                                    print("     ", keyword.arg, "->", ast.unparse(keyword.value))
+                print("")
+            self.dead = True
+            return
 
         if self.args.version:
             print(coldtype.__version__)
@@ -260,6 +283,11 @@ class Renderer():
         
         self._codepath_offset = 0
         filepath = self.source_reader.reset_filepath(filepath, reload=False, dirdirection=dirdirection)
+
+        try:
+            printed = self.source_reader.print_docstring()
+        except:
+            printed = False
         
         # TODO check exists here on filepath
         self.watchees = []
@@ -1591,11 +1619,12 @@ class Renderer():
         if "_input.json" in str(watchee[1]):
             return
         
-        try:
-            print("    >>> watching...", watchee[1].relative_to(Path.cwd()))
-        except Exception as e:
-            #print(e)
-            print("    >>> watching...", watchee[1])
+        if True:
+            try:
+                print("    >>> watching...", watchee[1].relative_to(Path.cwd()))
+            except Exception as e:
+                #print(e)
+                print("    >>> watching...", watchee[1])
     
     def execute_string_as_shortcut_or_action(self, shortcut, key, args=[]):
         #print("\n>>> shortcut:", shortcut)

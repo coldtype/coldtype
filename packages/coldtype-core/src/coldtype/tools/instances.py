@@ -1,3 +1,7 @@
+"""
+Display all available instances in variable font; click instance to see more info
+"""
+
 from coldtype import *
 from coldtype.tool import parse_inputs
 from pprint import pprint
@@ -40,6 +44,7 @@ if len(instances) > 0:
             print(" Scaled: ", x.data("instance"))
             print(" Unscaled: ", un)
             print(divider)
+            print("")
             return x
 
         return (vectors

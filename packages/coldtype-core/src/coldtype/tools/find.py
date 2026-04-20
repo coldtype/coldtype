@@ -1,3 +1,7 @@
+"""
+Find all fonts on computer matching passed regex
+"""
+
 from coldtype import *
 from coldtype.tool import parse_inputs, print_font_results
 

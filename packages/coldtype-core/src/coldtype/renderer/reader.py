@@ -321,6 +321,17 @@ class SourceReader():
         if filepath or code:
             self.reset_filepath(filepath, code)
     
+    def print_docstring(self):
+        import ast
+        tree = ast.parse(self.filepath.read_text())
+        docstring = ast.get_docstring(tree)
+        if docstring:
+            print("")
+            print("📓 Doc:", docstring)
+            print("")
+        if docstring:
+            return True
+    
     @staticmethod
     def Script(name):
         root = Path(__file__).parent.parent
@@ -329,45 +340,25 @@ class SourceReader():
             if script.exists():
                 return script
         return False
+    
+    @staticmethod
+    def Demos() -> dict[str,Path]:
+        return {p.stem:p for p in (Path(__file__).parent.parent / "demos").glob("*.py")}
+    
+    @staticmethod
+    def Tools() -> dict[str,Path]:
+        return {p.stem:p for p in sorted((Path(__file__).parent.parent / "tools").glob("*.py"))}
 
     @staticmethod
     def Demo(name):
         root = Path(__file__).parent.parent
-        if not name:
-            return root / "demo/demo.py"
-        elif name == "demo":
-            return root / "demo/demo.py"
-        elif name == "demoblender":
-            return root / "demo/demoblender.py"
-        elif name == "blank":
-            return root / "demo/blank.py"
-        elif name == "boiler":
-            return root / "demo/boiler.py"
-        elif name == "glyphloop" or name == "gl":
-            return root / "tools/glyphloop.py"
-        elif name == "glyphs" or name == "g":
-            return root / "tools/glyphs.py"
-        elif name == "chars" or name == "c":
-            return root / "tools/chars.py"
-        elif name == "find":
-            return root / "tools/find.py"
-        elif name == "midi":
-            return root / "tools/midi.py"
-        elif name == "midicc":
-            return root / "tools/midicc.py"
-        elif name == "vf":
-            return root / "tools/vf.py"
-        elif name == "instances":
-            return root / "tools/instances.py"
-        elif name == "viewseq":
-            return root / "tools/viewseq.py"
-        elif name == "docstrings":
-            return root / "demo/docstrings.py"
-        elif name == "gifski":
-            return root / "demo/gifski.py"
-        elif name == "glfw34":
-            return root / "demo/glfw34.py"
-        return name
+        demos = SourceReader.Demos()
+        tools = SourceReader.Tools()
+        
+        if not name: return root / "demo/demo.py"
+        elif name in demos.keys(): return demos[name]
+        elif name in tools.keys(): return tools[name]
+        else: return name
     
     @staticmethod
     def LoadDemo(demoname, **inputs):
@@ -732,42 +723,3 @@ class Programs():
     @staticmethod
     def Blank():
         return SourceReader.LoadDemo("blank")[0]
-    
-    @staticmethod
-    def Glyphs(
-        font=None,
-        fontSize=54,
-        showChars=False,
-        rect=(1080, 1080)
-        ):
-        return SourceReader.LoadDemo("glyphs", **locals())[0]
-
-    @staticmethod
-    def Midi(
-        file=None,
-        duration=None,
-        bpm=None,
-        lookup=None,
-        text=True,
-        fps=30,
-        rect=(1080, 540),
-        log=False,
-        preview_only=True,
-        ):
-        return SourceReader.LoadDemo("midi", **locals())[0]
-    
-    @staticmethod
-    def VF(
-        font=None,
-        text="A",
-        font_size=None,
-        positions=(0, 1),
-        stroke=False,
-        seed=0,
-        shuffle=False,
-        animate=False,
-        rect=(1080, 1080),
-        log=False,
-        preview_only=True,
-        ):
-        return SourceReader.LoadDemo("vf", **locals())[0]

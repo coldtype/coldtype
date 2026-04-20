@@ -1,3 +1,7 @@
+"""
+Display characters available in a font; when glyph is clicked in viewer, print glyph/character information
+"""
+
 from coldtype import *
 from coldtype.tool import parse_inputs
 
@@ -6,10 +10,6 @@ args = parse_inputs(__inputs__, dict(
     fontSize=[72, int]))
 
 fnt = args["font"]
-font = fnt.font.ttFont
-cmap = fnt.font.ttFont["cmap"]
-best = cmap.getBestCmap()
-
 chars = fnt.chars()
 
 sq = math.ceil(math.sqrt(len(chars)))

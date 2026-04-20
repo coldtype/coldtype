@@ -9,7 +9,7 @@ fnt = args["font"]
 
 os2 = fnt.font.ttFont["OS/2"]
 glyphSet = fnt.font.ttFont.getGlyphSet()
-glyphs = glyphSet.keys()
+glyphs = list(glyphSet.keys()) 
 
 @animation((1920, 1080), tl=Timeline(len(glyphs), 24), bg=0)
 def glyphViewer(f):

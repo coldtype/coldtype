@@ -14,7 +14,7 @@ def fmt_path(path: Path) -> str:
 def print_font_results(results, selected=None):
     maxsys = max([len(f.system_name) for f in results])
     maxpat = max([len(fmt_path(f.path)) for f in results])
-    print("\n")
+    print("")
     print(f"     # {'Name':<{maxsys}} Path")
     print(f"   {'-'*(maxsys+maxpat+7)}")
     for idx, result in enumerate(results):
