@@ -380,7 +380,7 @@ wheels = [
 
 [[package]]
 name = "coldtype"
-version = "0.13.3"
+version = "0.13.4"
 source = { editable = "packages/coldtype" }
 dependencies = [
     { name = "coldtype-core" },
@@ -470,7 +470,7 @@ provides-extras = ["more-fonts", "viewer", "drawbot", "unicode", "audio", "websi
 
 [[package]]
 name = "coldtype-core"
-version = "0.13.3"
+version = "0.13.4"
 source = { editable = "packages/coldtype-core" }
 dependencies = [
     { name = "b3denv" },

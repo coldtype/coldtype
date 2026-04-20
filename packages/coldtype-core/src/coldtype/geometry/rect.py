@@ -635,7 +635,7 @@ class Rect(Geometrical):
             if ev == Edge.CenterY:
                 py = self.y + self.h/2
 
-            return Point((px, py))
+            return Point((px, py), rect=self, corner=(eh, ev))
     
     p = point
 

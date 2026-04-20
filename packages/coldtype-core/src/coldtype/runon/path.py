@@ -1219,6 +1219,9 @@ class P(Runon):
         if not isinstance(rect, Rect):
             if hasattr(rect, "ambit"):
                 rect = rect.ambit(tx=tx, ty=ty)
+            elif isinstance(rect, Point) and rect._rect is not None:
+                x, y = rect._corner
+                rect = rect._rect
             elif hasattr(rect, "rect"):
                 rect = rect.rect
             else:

@@ -19,7 +19,10 @@ def rt(v, mult):
 
 class Point(Geometrical):
     """Representation of a point (x,y), indexable"""
-    def __init__(self, *points):
+    def __init__(self, *points, rect=None, corner=None):
+        self._rect = rect
+        self._corner = corner
+
         if len(points) == 2:
             self.x = points[0]
             self.y = points[1]
