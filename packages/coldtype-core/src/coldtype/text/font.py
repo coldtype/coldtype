@@ -419,7 +419,7 @@ class Font():
 
                 if p.is_dir() and depth < max_depth and p.suffix != ".ufo":
                     try:
-                        res = Font._ListDir(p, regex, regex_dir, log, depth=depth+1, bail=bail)
+                        res = Font._ListDir(p, regex, regex_dir, log, depth=depth+1, bail=bail, max_depth=max_depth)
                         if res:
                             results.extend(res)
                             if bail:
@@ -465,7 +465,7 @@ class Font():
     
     @staticmethod
     def ListAll(regex, log=False, font_dir=None, expand=True, max_depth=FONT_FIND_DEPTH, bail=False) -> list["Font"]:
-        results = Font.List(regex, expand=True)
+        results = Font.List(regex, expand=True, max_depth=max_depth)
         paths = set([r.path for r in results])
 
         library_results = Font.LibraryList(regex, expand=True)
@@ -489,6 +489,9 @@ class Font():
             return Font.Cacheable(regex, number=number)
         
         found = Font.List(regex, regex_dir, font_dir=font_dir, max_depth=max_depth, bail=bail)
+        if len(found) == 0:
+            raise FontNotFoundException(regex)
+
         try:
             return Font.Cacheable(found[index], number=number)
         except IndexError:

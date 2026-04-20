@@ -1,7 +1,7 @@
 from coldtype import *
 import uharfbuzz as hb
 
-ct_font = Font.Find("JetBrainsMono.ttf")
+ct_font = Font.Find("JetBrainsMono.ttf", max_depth=5)
 
 blob = hb.Blob.from_file_path(ct_font.path)
 face = hb.Face(blob)
