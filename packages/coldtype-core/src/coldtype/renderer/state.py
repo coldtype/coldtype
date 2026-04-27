@@ -1,4 +1,4 @@
-import json
+import json, inspect
 from pathlib import Path
 from coldtype.geometry import Point
 from coldtype.renderable import Action
@@ -90,6 +90,13 @@ class RendererState():
     
     def on_mouse_button(self, pos, btn, action, mods):
         self.mouse_down = action
+
+        if action == 0:
+            
+            if on_click := self.renderer.source_reader.program.get("on_click"):
+                arg_count = len(inspect.signature(on_click).parameters)
+                args = [pos, btn, mods][:arg_count]
+                on_click(*args)
 
         if not self.playing and action == 0:
             for r in self.renderer.renderables(None):

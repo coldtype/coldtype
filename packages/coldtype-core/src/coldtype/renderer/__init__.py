@@ -358,12 +358,16 @@ class Renderer():
         if trigger == Action.Initial:
             self.state.frame_offset = self.args.frame_offset
 
+        ui = dict(
+            monitor=self.winmans.glsk.primary_monitor_rect if self.winmans.glsk and self.winmans.glsk.primary_monitor else None)
+
         if True:
             self.state.reset()
             self.source_reader.reload(
-                output_folder_override=self.args.output_folder,
-                initial=(trigger==Action.Initial),
-                restart_count=(self.source_reader.config.restart_count))
+                output_folder_override=self.args.output_folder
+                , initial=trigger==Action.Initial
+                , restart_count=self.source_reader.config.restart_count
+                , ui=ui)
             
             if trigger == Action.Initial and self.source_reader.config.restart_count == 0:
                 if "__initials__" in self.source_reader.program:
@@ -452,7 +456,7 @@ class Renderer():
             viewer_solos=self.viewer_solos,
             class_filters=[],
             previewing=previewing)
-        
+
         if not _rs:
             return []
         
@@ -580,7 +584,6 @@ class Renderer():
                 check_watches(render)
                 
                 passes = render.passes(trigger, self.state, indices)
-
                 render.last_passes = passes
                 
                 for rp in passes:
@@ -607,6 +610,8 @@ class Renderer():
                                 result = render.last_result
                             else:
                                 result = render.run(rp, self.state)
+                        
+                        render.last_return = result
 
                         if not result and not render.direct_draw:
                             #print(">>> No result")
@@ -1619,7 +1624,7 @@ class Renderer():
         if "_input.json" in str(watchee[1]):
             return
         
-        if True:
+        if False:
             try:
                 print("    >>> watching...", watchee[1].relative_to(Path.cwd()))
             except Exception as e:

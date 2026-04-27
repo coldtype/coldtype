@@ -198,6 +198,7 @@ class renderable():
         self.post_preview = post_preview
         self.last_passes = []
         self.last_result = None
+        self.last_return = None
         self.style = style
         self.composites = composites
         self.single_frame = single_frame

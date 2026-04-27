@@ -1,13 +1,13 @@
 from coldtype import *
-from coldtype.tool import parse_inputs, fmt_path
+from coldtype.tool import parse_inputs
 from pprint import pprint
 from itertools import combinations
 from random import Random
 
-if __as_config__:
-    raise ColdtypeCeaseConfigException()
+#if __as_config__:
+#    raise ColdtypeCeaseConfigException()
 
-args = parse_inputs(__inputs__, dict(
+args = parse_inputs(ººinputsºº, dict(
     font=[None, str, "Must provide font"],
     font_size=[None, int],
     positions=[(0, 1), lambda xs: [float(x) for x in xs.split(",")]],

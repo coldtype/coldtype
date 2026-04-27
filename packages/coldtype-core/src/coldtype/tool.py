@@ -26,7 +26,7 @@ def print_font_results(results, selected=None):
 
 
 def parse_inputs(inputs, defaults, ui=True, positional=True):
-    if ui:
+    if ui is not None and ui is not False:
         defaults["rect"] = [
             Rect(1080, 1080),
             lambda xs: Rect([int(x) for x in str(xs).split(",")])]
@@ -70,6 +70,11 @@ def parse_inputs(inputs, defaults, ui=True, positional=True):
             else:
                 if isinstance(v, str):
                     if k == "font":
+                        sized = v.split(":")
+                        if len(sized) > 1:
+                            out["fontSize"] = int(sized[1])
+                        
+                        v = sized[0]
                         vs = v.split("@")
                         fnt_idx = 0
                         if len(vs) > 1:
@@ -79,24 +84,23 @@ def parse_inputs(inputs, defaults, ui=True, positional=True):
                             print(f"\n\n‼️ Search \"{v}\" returned no fonts ‼️\n")
                             out[k] = Font.ColdtypeObviously()
                         else:
+                            out["fonts"] = fonts
                             print_font_results(fonts, fnt_idx)
-                            # for idx, f in enumerate(fonts):
-                            #     if idx == fnt_idx:
-                            #         print(f"  > [{idx}]", fmt_path(f.path))
-                            #     else:
-                            #         print(f"    [{idx}]", fmt_path(f.path))
                             out[k] = fonts[fnt_idx]
                             font_variations = out[k].variations()
-                            # print("Matched:")
-                            # print("="*len(str(out[k].path)))
-                            # print(out[k].path)
-                            # print("="*len(str(out[k].path)))
+                    elif k == "rect":
+                        if v == "max":
+                            out[k] = ui.get("monitor").scale(2).inset(200).square().zero()
+                        else:
+                            out[k] = eval(f"Rect({v})")
+                        #raise Exception("IMPLEMENT MAX with screen size")
                     elif defaults[k][1] == bool:
                         out[k] = bool(eval(v))
                     else:
                         out[k] = defaults[k][1](v)
                 else:
                     if k == "rect":
+                        print("ALSO HERE")
                         out[k] = Rect(v)
                     else:
                         out[k] = v

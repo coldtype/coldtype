@@ -1,21 +1,23 @@
 """
 Find all fonts on computer matching passed regex
+- args: [font(search), dst]
+- build: duplicates fonts to dst
 """
 
 from coldtype import *
-from coldtype.tool import parse_inputs, print_font_results
+from coldtype.tool import parse_inputs
+
+from subprocess import run
 
 args = parse_inputs(__inputs__, dict(
-    fontSearch=[None, str, "Must provide search string"],
-    fontSize=[64, int],
+    font=[None, str, "Must provide search string"],
     dst=["~/Desktop", str]))
 
-results = Font.ListAll(args["fontSearch"])
+
+results = args["fonts"]
 results = results[:30]
 
 if len(results) > 0:
-    print_font_results(results)
-
     def build_preview(x):
         return (P(
             StSt(str(x.i), Font.JBMono(), 30, wght=1)
@@ -44,6 +46,10 @@ if len(results) > 0:
     def build(_):
         for font in results:
             print(f"  > Duplicated: {font.copy_to(args['dst'], return_dst=True)}")
+    
+    numpad = {
+        1: lambda _: run(["open", "-a", "FontGoggles", *[f.path for f in results]])
+    }
         
 else:
     @renderable(540, bg=0)

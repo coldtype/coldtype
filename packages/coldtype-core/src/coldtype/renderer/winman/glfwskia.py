@@ -80,6 +80,7 @@ class WinmanGLFWSkia():
         self.background = background
         self.renderer = renderer
         self.primary_monitor = None
+        self.primary_monitor_rect = None
         self.all_shortcuts = shortcuts_keyed()
         self.prev_scale = 0
         self.surface = None
@@ -150,6 +151,7 @@ class WinmanGLFWSkia():
     
     def find_primary_monitor(self):
         self.primary_monitor = glfw.get_primary_monitor()
+        
         found_primary = None
         if self.config.monitor_name:
             remn = self.config.monitor_name
@@ -167,6 +169,11 @@ class WinmanGLFWSkia():
                 found_primary = matches[0]
             if found_primary:
                 self.primary_monitor = found_primary
+        
+        vm = glfw.get_video_mode(self.primary_monitor)
+        work_rect = Rect(vm.size.width, vm.size.height)
+        
+        self.primary_monitor_rect = work_rect
     
     def create_surface(self, rect):
         mode = GL.GL_RGBA8
@@ -215,9 +222,12 @@ class WinmanGLFWSkia():
 
         pin = self.config.window_pin
 
+        vm = glfw.get_video_mode(self.primary_monitor)
+        work_rect = Rect(vm.size.width, vm.size.height)
+        
+        self.primary_monitor_rect = work_rect
+
         if pin and pin != "0":
-            vm = glfw.get_video_mode(self.primary_monitor)
-            work_rect = Rect(vm.size.width, vm.size.height)
             _work_rect_x, _work_rect_y = Rect(glfw.get_monitor_workarea(self.primary_monitor)).xy()
             
             if _work_rect_y < 100:

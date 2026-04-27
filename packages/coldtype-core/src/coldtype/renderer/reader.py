@@ -177,6 +177,7 @@ def run_source(filepath, codepath, inputs, memory, config, **kwargs):
         "__config__": config,
         "__memory__": memory,
         "__as_config__": False,
+        "__ui__": kwargs.get("ui"),
         "__sibling__": partial(sibling, filepath),
         **kwargs})
 
@@ -598,6 +599,7 @@ class SourceReader():
         output_folder_override=None,
         initial=False,
         restart_count=0,
+        ui={},
         ):
         if code:
             self.write_code_to_tmpfile(code)
@@ -622,7 +624,8 @@ class SourceReader():
             __BLENDER__=self.blender_io(),
             __BLENDERING__=blendering,
             __VERSION__=version,
-            __VERSIONS__=versions)
+            __VERSIONS__=versions,
+            ui=ui)
         
         self.candidates = self.renderable_candidates(
             output_folder_override, self.config.add_time_viewers, self.config.add_ui)

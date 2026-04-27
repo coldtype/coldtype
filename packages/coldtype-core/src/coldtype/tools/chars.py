@@ -1,46 +1,47 @@
 """
-Display characters available in a font; when glyph is clicked in viewer, print glyph/character information
+Display characters available in a font
 """
 
 from coldtype import *
 from coldtype.tool import parse_inputs
+from coldtype.osutil import show_in_finder
 
-args = parse_inputs(__inputs__, dict(
+print(ººuiºº)
+
+args = parse_inputs(ººinputsºº, dict(
     font=[None, str, "Must provide font regex or path"],
-    fontSize=[72, int]))
+    rect=[Rect(1080), int]), ui=ººuiºº)
 
-fnt = args["font"]
-chars = fnt.chars()
 
-sq = math.ceil(math.sqrt(len(chars)))
-fs = args["fontSize"]
+print("👉 Click something to see information printed in the terminal\n")
 
-def getGlyph(x):
-    return StSt(x.el[0], fnt, fs, variations=args["font_variations"]).pen()
 
-glyphs = P().enumerate(chars, getGlyph)
+@animation(Rect(args["rect"].w, args["rect"].h+(h:=100)), bg=1, tl=Timeline(len(args["fonts"])))
+def chars_display(f):
+    fnt = args["fonts"][f.i]
+    chars = fnt.chars()
+    sq = math.ceil(math.sqrt(len(chars)))
 
-maxr:Rect = max([g.ambit(tx=1, ty=1) for g in glyphs])
-maxr = maxr.square(outside=True).round().inset(-5).zero()
-
-sq = math.ceil(math.sqrt(len(chars)))
-rect = Rect(sq*maxr.w, sq*maxr.w)
-
-print("👉 Click a symbol to see information printed in the terminal\n")
-
-@ui(rect, bg=1)
-def wt1(u):
-    rs = u.r.inset(10).grid(sq, sq)
-    
-    def showChar(x):
-        if u.c.inside(rs[x.i]): print(f"> {x.el[0]} \\u{ord(x.el[0]):04X} {x.el[1]}")
-        return (P(glyphs[x.i].copy().f(0).align(rs[x.i])))
+    header, grid = f.a.r.divide(h, "N")
+    rs = grid.inset(10).grid(sq, sq)
 
     return P(
-        P().gridlines(u.r.inset(10), sq, sq),
-        P().enumerate(chars, showChar))
+        P(header).f(0),
+        StSt(fnt.names()[0], fnt, 50).align(header).f(1),
+        P().gridlines(grid, sq, sq),
+        P().enumerate(chars, lambda x:
+            StSt(x.el[0], fnt, rs[0].h-10, variations=args["font_variations"])
+                .data(char=x.el[0], gn=x.el[1])
+                .f(0)
+                .align(rs[x.i]))).data(fontPath=fnt.path)
 
 
 def build(_):
-    from coldtype.osutil import show_in_finder
-    show_in_finder(fnt.path)
+    show_in_finder(chars_display.last_return.data("fontPath"))
+
+
+def on_click(pos):
+    for m in (chars_display.last_return
+        .find(lambda x: x.data("char") and pos.inside(x.ambit()))):
+        char = m.data("char")
+        print(f"> {char} \\u{ord(char):04X} {m.data('gn')}")

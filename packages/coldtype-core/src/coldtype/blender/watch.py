@@ -231,7 +231,7 @@ class ColdtypeWatchingOperator(bpy.types.Operator):
             #bpy.data.scenes[0].frame_start = 0
 
             from coldtype.tool import parse_inputs
-            inputs_dict = parse_inputs(self.sr.inputs, { "quit": [False, bool] }, positional=False, ui=False)
+            inputs_dict = parse_inputs(self.sr.inputs, { "quit": [False, bool] }, positional=False, ui=None)
 
             bpy.app.handlers.frame_change_pre.clear()
 

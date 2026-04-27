@@ -45,19 +45,23 @@ from coldtype.grid import Grid
 name = "coldtype"
 __version__ = "0.13.4"
 
-__FILE__ = None # will be redefined contextually
-__BLENDER__ = None # will be redefined contextually
-__VERSION__ = {} # will be redefined contextually
-__VERSIONS__ = {} # will be redefined contextually
-__BLENDERING__ = False # will be redefined contextually
+# these will be redefined contextually
 
-__sibling__ = lambda x: x # will be redefined contextually
-__inputs__ = [] # will be redefined contextually
-ººinputsºº = [] # will be redefined contextually
+__FILE__ = None
+__BLENDER__ = None
+__VERSION__ = {}
+__VERSIONS__ = {}
+__BLENDERING__ = False
+
+__sibling__ = lambda x: x
+__inputs__ = []
+ººinputsºº = []
 __config__ = []
 ººconfigºº = []
-__memory__ = [] # will be redefined contextually
-__as_config__ = False # will be redefined contextually
+__memory__ = []
+__ui__ = {}
+ººuiºº = {}
+__as_config__ = False
 
 λ = None
 ººFILEºº = None
