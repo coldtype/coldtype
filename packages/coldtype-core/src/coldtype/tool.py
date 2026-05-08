@@ -73,6 +73,8 @@ def parse_inputs(inputs, defaults, ui=True, positional=True):
                         sized = v.split(":")
                         if len(sized) > 1:
                             out["fontSize"] = int(sized[1])
+                        else:
+                            out["fontSize"] = 72
                         
                         v = sized[0]
                         vs = v.split("@")

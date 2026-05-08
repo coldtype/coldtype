@@ -6,6 +6,7 @@ from coldtype import *
 from coldtype.tool import parse_inputs
 from coldtype.osutil import show_in_finder
 
+
 print(ººuiºº)
 
 args = parse_inputs(ººinputsºº, dict(
@@ -27,7 +28,7 @@ def chars_display(f):
 
     return P(
         P(header).f(0),
-        StSt(fnt.names()[0], fnt, 50).align(header).f(1),
+        StSt(fnt.names()[0], Font.JBMono(), 50).align(header).f(1),
         P().gridlines(grid, sq, sq),
         P().enumerate(chars, lambda x:
             StSt(x.el[0], fnt, rs[0].h-10, variations=args["font_variations"])
