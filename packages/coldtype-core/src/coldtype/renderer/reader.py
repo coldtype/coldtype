@@ -344,7 +344,7 @@ class SourceReader():
     
     @staticmethod
     def Demos() -> dict[str,Path]:
-        return {p.stem:p for p in (Path(__file__).parent.parent / "demos").glob("*.py")}
+        return {p.stem:p for p in (Path(__file__).parent.parent / "demo").glob("*.py")}
     
     @staticmethod
     def Tools() -> dict[str,Path]:
