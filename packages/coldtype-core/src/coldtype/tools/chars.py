@@ -7,8 +7,6 @@ from coldtype.tool import parse_inputs
 from coldtype.osutil import show_in_finder
 
 
-print(ººuiºº)
-
 args = parse_inputs(ººinputsºº, dict(
     font=[None, str, "Must provide font regex or path"],
     rect=[Rect(1080), int]), ui=ººuiºº)
