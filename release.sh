@@ -1,3 +1,4 @@
+rm -rf dist
 cd packages/coldtype-core
 uv build
 cd ../coldtype
