@@ -3,7 +3,7 @@ Display characters available in a font
 """
 
 from coldtype import *
-from coldtype.tool import parse_inputs
+from coldtype.tool import parse_inputs, fmt_path
 from coldtype.osutil import show_in_finder
 
 
@@ -15,9 +15,11 @@ args = parse_inputs(ººinputsºº, dict(
 print("👉 Click something to see information printed in the terminal\n")
 
 
-@animation(Rect(args["rect"].w, args["rect"].h+(h:=100)), bg=1, tl=Timeline(len(args["fonts"])))
+@animation(Rect(args["rect"].w, args["rect"].h+(h:=120)), bg=1, tl=Timeline(len(args["fonts"])))
 def chars_display(f):
     fnt = args["fonts"][f.i]
+    path = fmt_path(fnt.path)
+
     chars = fnt.chars()
     sq = math.ceil(math.sqrt(len(chars)))
 
@@ -26,7 +28,8 @@ def chars_display(f):
 
     return P(
         P(header).f(0),
-        StSt(fnt.names()[0], Font.JBMono(), 50).align(header).f(1),
+        StSt(fnt.names()[0], Font.JBMono(), 50, wght=1).align(header.inset(30), "N").f(1),
+        StSt(path, Font.JBMono(), 20, wght=0.25).align(header.inset(25), "S").f(0.75),
         P().gridlines(grid, sq, sq),
         P().enumerate(chars, lambda x:
             StSt(x.el[0], fnt, rs[0].h-10, variations=args["font_variations"])

@@ -249,6 +249,11 @@ class Font():
     
     def filename(self, respacer="-"):
         return f"{self.filename_stem(respacer)}{self.path.suffix}"
+    
+    def getName(self, nameID) -> str|None:
+        for record in self.font.ttFont['name'].names:
+            if record.nameID == nameID:
+                return str(record)
 
     def names(self):
         """
@@ -472,7 +477,7 @@ class Font():
         results = []
 
         if "/" in regex and regex_dir is None:
-            regex_dir, regex = regex.split("/")
+            regex_dir, regex = regex.rsplit("/", 1)
             print(">>>", regex_dir, regex)
         
         font_dirs = ALL_FONT_DIRS
@@ -538,7 +543,7 @@ class Font():
             regex.match("asdf")
         except AttributeError:
             if "/" in regex:
-                regex_dir, regex = regex.split("/")
+                regex_dir, regex = regex.rsplit("/", 1)
             regex = re.compile(f".*{regex}.*", re.IGNORECASE)
 
         if on_mac():
