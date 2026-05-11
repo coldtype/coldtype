@@ -386,3 +386,7 @@ Huge update, attempting to future proof things
 - `chars` tool
 ### Changed
 - Moved source for glyphs.py to `tools` (as a new tools directory)
+
+## [0.13.5]
+### Fixed
+- `renderer/.coldtype.py` not included in package
