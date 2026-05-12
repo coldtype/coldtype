@@ -58,7 +58,7 @@ def parse_inputs(inputs, defaults, ui=True, positional=True):
         if k in ["w", "h"]:
             out[k] = v
             defaults[k] = [v, int]
-        if k == "font":
+        if k == "font" and v is not None:
             out[k] = v[0]
             out["fonts"] = [v][0]
             out["font_variations"] = v[0].variations()
