@@ -51,17 +51,22 @@ def parse_inputs(inputs, defaults, ui=True, positional=True):
         parsed = {**inputs}
 
     out = {}
+    font_variations = {}
+    out["font_variations"] = {}
+
     for k, v in defaults.items():
         if k in ["w", "h"]:
             out[k] = v
             defaults[k] = [v, int]
+        if k == "font":
+            out[k] = v[0]
+            out["fonts"] = [v][0]
+            out["font_variations"] = v[0].variations()
+            out["fontSize"] = 42
         else:
             out[k] = v[0]
             if k not in parsed and len(v) > 2:
                 raise Exception(v[2])
-    
-    font_variations = {}
-    out["font_variations"] = {}
     
     for k, v in parsed.items():
         if k in defaults:
@@ -81,6 +86,7 @@ def parse_inputs(inputs, defaults, ui=True, positional=True):
                         fnt_idx = 0
                         if len(vs) > 1:
                             fnt_idx = int(vs[1])
+                        
                         fonts = Font.ListAll(vs[0])
                         if len(fonts) == 0:
                             print(f"\n\n‼️ Search \"{v}\" returned no fonts ‼️\n")
