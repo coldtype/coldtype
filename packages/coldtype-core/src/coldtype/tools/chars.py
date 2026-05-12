@@ -28,7 +28,7 @@ def chars_display(f):
 
     return P(
         P(header).f(0),
-        StSt(fnt.names()[0], Font.JBMono(), 50, wght=1).align(header.inset(30), "N").f(1),
+        StSt(fnt.names()[0], Font.JBMono(), 40, wght=1).align(header.inset(30), "N").f(1),
         StSt(path, Font.JBMono(), 20, wght=0.25).align(header.inset(25), "S").f(0.75),
         P().gridlines(grid, sq, sq),
         P().enumerate(chars, lambda x:
