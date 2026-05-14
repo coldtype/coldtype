@@ -92,7 +92,6 @@ class RendererState():
         self.mouse_down = action
 
         if action == 0:
-            
             if on_click := self.renderer.source_reader.program.get("on_click"):
                 arg_count = len(inspect.signature(on_click).parameters)
                 args = [pos, btn, mods][:arg_count]

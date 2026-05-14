@@ -28,6 +28,8 @@ from coldtype.renderable import renderable, animation, Action, Overlay, runnable
 from coldtype.renderer.keyboard import KeyboardShortcut, LAYOUT_REMAPS
 from coldtype.osutil import show_in_finder
 
+from coldtype.img.abstract import AbstractImage
+
 try:
     import skia
     from coldtype.pens.skiapen import SkiaPen
@@ -611,7 +613,8 @@ class Renderer():
                             else:
                                 result = render.run(rp, self.state)
                         
-                        render.last_return = result
+                        if not isinstance(result, AbstractImage):
+                            render.last_return = result
 
                         if not result and not render.direct_draw:
                             #print(">>> No result")

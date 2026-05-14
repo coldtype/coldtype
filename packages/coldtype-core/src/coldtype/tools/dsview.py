@@ -4,7 +4,6 @@ Display available designspace
 
 from coldtype import *
 from coldtype.tool import parse_inputs, fmt_path
-from coldtype.fx.diagram import arrowhead
 from coldtype.osutil import show_in_finder
 
 
@@ -37,9 +36,7 @@ def dsview_display(f):
     else:
         a, b = A, B
 
-    out = P()
-
-    header, grid = f.a.r.divide(h, "N")
+    l = Scaffold(f.a.r).cssgrid("85 a", f"{h} a 85", "h h / a2 g / x a1")
 
     def draw_glyph(x, y):
         r = y.el.inset(4)
@@ -49,28 +46,37 @@ def dsview_display(f):
                 .f(0)
                 .data(font=fnt, position=dict(x=x.e, y=y.e))))
 
-    out = (P(
-        P(header).f(1),
-        StSt(fnt.names()[0], Font.JBMono(), 40, wght=1).align(header.inset(25), "NE").f(0),
-        StSt(path, Font.JBMono(), 22, wght=0.25).align(header.inset(25), "SE").f(0),
+    return (P(
+        P(l["h"].r).f(1),
+        StSt(fnt.names()[0], Font.JBMono(), 40, wght=1).align(l["h"].r.inset(25), "NE").f(0),
+        StSt(path, Font.JBMono(), 22, wght=0.25).align(l["h"].r.inset(25), "SE").f(0),
         
         horizontal:=StSt(fnt.getName(variations[a][1].get("axisNameID")) + f" : “{variations[a][0]}” ", Font.JBMono(), 24, wght=1)
-            .align(grid.drop(165, "W").take(75, "S"), "W")
-            .f(0),
+            .align(l["a1"].r, "W")
+            .f(0)
+            .t(d:=100, 0),
         vertical:=StSt(fnt.getName(variations[b][1].get("axisNameID")) + f" : “{variations[b][0]}” ", Font.JBMono(), 24, wght=1)
             .rotate(90)
             .unframe()
-            .align(grid.drop(165, "S").take(75, "W"), "S")
+            .align(l["a2"], "S")
+            .t(0, d)
             .f(0),
             
-        P().enumerate((g:=grid.drop(75, "W").drop(75, "S").inset(0)).subdivide(args["count"], "W"),
+        P().enumerate((g:=l["g"].r).subdivide(args["count"], "W"),
             lambda x: P().enumerate(x.el.subdivide(args["count"], "S"),
                 lambda y: draw_glyph(x, y))),
         
-        P().line(header.es).ep().fssw(-1, 0.75, 1),
-        P().line([g.pnw, g.psw.project(-90, 70)]).ep().fssw(-1, 0.75, 1),
-        P().line([g.psw.project(-180, 70), g.pse]).ep().fssw(-1, 0.75, 1),
+        P().line(l["h"].r.es).ep().fssw(-1, 0.75, 1),
+        P().line(l["a2+x"].r.ee).ep().fssw(-1, 0.75, 1),
+        P().line(l["a1+x"].r.en).ep().fssw(-1, 0.75, 1),
+        
         P().gridlines(g, args["count"]).fssw(-1, 0.75, 1),
+
+        StSt(str(int(variations[a][1].get("minValue"))), Font.JBMono(), 20, wght=1).align(l["a1"].r, "W").t(d:=20, 0).f(fill:=bw(0.65)),
+        StSt(str(int(variations[a][1].get("maxValue"))), Font.JBMono(), 20, wght=1).align(l["a1"].r, "E").t(-d, 0).f(fill),
+
+        StSt(str(int(variations[b][1].get("minValue"))), Font.JBMono(), 20, wght=1).align(l["a2"].r, "S").t(0, d).f(fill),
+        StSt(str(int(variations[b][1].get("maxValue"))), Font.JBMono(), 20, wght=1).align(l["a2"].r, "N").t(0, -d).f(fill),
         
         P().line([p:=horizontal.ambit().pe.project(0, 30), p2:=p.project(0, ln:=350)]).ep()
             .line([p2, p2.project(45*3, ad:=14)]).ep()
@@ -83,16 +89,13 @@ def dsview_display(f):
             .fssw(-1, 0, 2),
     ).data(fontPath=fnt.path))
 
-    return out
 
-
-#def build(_):
-#    show_in_finder(chars_display.last_return.data("fontPath"))
+def build(_):
+    show_in_finder(dsview_display.last_return[1].data("fontPath"))
 
 
 def on_click(pos):
-    for m in (dsview_display.last_return
-        .find(lambda x: x.data("position") and pos.inside(x.ambit()))):
+    for m in (dsview_display.last_return.find(lambda x: x.data("position") and pos.inside(x.ambit()))):
         variations = list([v[1] for v in m.data("font").variations().items()])
         range_0 = variations[a].get("maxValue") - (min:=variations[a].get("minValue"))
         pos_0 = int(m.data("position").get("x")*range_0 + min)
