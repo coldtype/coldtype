@@ -227,6 +227,12 @@ class Winmans():
         return did_preview
     
     def run_loop(self):
+        from coldtype.renderer.winman.webview import ColdtypeWebViewer
+ 
+        viewer = ColdtypeWebViewer(port=8008)
+        viewer.start()
+        print(viewer.url)   # open in browser
+
         while (not self.renderer.dead
             and not self.should_close()
             ):
@@ -268,7 +274,22 @@ class Winmans():
                     self.cron_start = time.time()
                     self.renderer.action_waiting = Action.PreviewStoryboardReload
                     self.renderer.action_waiting_reason = "cron_interval timer hit"
+
+            def handle_mouse(ev):
+                #print("helloo", ev)
+                pass
             
+            def handle_key(ev):
+                #print("hello", ev)
+                pass
+            
+            for ev in viewer.drain_events():
+                if ev["type"] == "mouse": handle_mouse(ev)
+                elif ev["type"] == "key": handle_key(ev)
+
+            #png = render_current_frame_as_png()
+            #viewer.set_frame(png)
+
             self.poll()
     
         self.renderer.on_exit(restart=False)
