@@ -59,7 +59,7 @@ elif on_linux():
         ".",
         "/usr/share/fonts",
         "~/.local/share/fonts",
-        "~/fonts",
+        "~/.fonts",
     ]
     pass
 
