@@ -104,6 +104,7 @@ function connect(){
   es.onopen = ()=> status.textContent = "";
   es.onmessage = e => {
     const msg = JSON.parse(e.data);
+    console.log(">>>>>>>>>>>>>>", msg);
     if (msg.type === "frame") showFrame(msg.v);
   };
   es.onerror = ()=>{

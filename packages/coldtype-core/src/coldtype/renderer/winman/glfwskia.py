@@ -502,6 +502,15 @@ class WinmanGLFWSkia():
                 paint = skia.Paint()
                 paint.setColorFilter(skfx.Skfi.saturate(self.config.preview_saturation))
                 skiashim.canvas_drawImage(canvas, comp_img, 0, 0, paint)
+
+                if hasattr(self, "webview"):
+                    print("HER HERE")
+                    raster = comp_img.makeRasterImage()
+                    print(">>>", raster)
+                    if raster is not None:
+                        print("ALSO HERE")
+                        png_data = raster.encodeToData()
+                        self.webview.set_frame(bytes(png_data))
                 
                 canvas.restore()
             else:

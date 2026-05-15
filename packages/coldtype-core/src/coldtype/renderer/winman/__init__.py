@@ -1,4 +1,6 @@
 import time, threading, sys
+from pathlib import Path
+
 
 from coldtype.renderer.config import ColdtypeConfig
 from coldtype.renderer.winman.passthrough import WinmanPassthrough
@@ -229,9 +231,12 @@ class Winmans():
     def run_loop(self):
         from coldtype.renderer.winman.webview import ColdtypeWebViewer
  
-        viewer = ColdtypeWebViewer(port=8008)
-        viewer.start()
-        print(viewer.url)   # open in browser
+        webview = ColdtypeWebViewer(port=8008)
+        webview.start()
+        print(">>>", webview.url)
+
+        if self.glsk:
+            self.glsk.webview = webview
 
         while (not self.renderer.dead
             and not self.should_close()
@@ -276,19 +281,16 @@ class Winmans():
                     self.renderer.action_waiting_reason = "cron_interval timer hit"
 
             def handle_mouse(ev):
-                #print("helloo", ev)
+                print("handle_mouse", ev)
                 pass
             
             def handle_key(ev):
-                #print("hello", ev)
+                print("handle_key", ev)
                 pass
             
-            for ev in viewer.drain_events():
+            for ev in webview.drain_events():
                 if ev["type"] == "mouse": handle_mouse(ev)
                 elif ev["type"] == "key": handle_key(ev)
-
-            #png = render_current_frame_as_png()
-            #viewer.set_frame(png)
 
             self.poll()
     
