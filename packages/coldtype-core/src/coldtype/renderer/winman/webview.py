@@ -17,7 +17,7 @@ Usage:
         # Drain any pending input events on the main (render) thread
         for ev in viewer.drain_events():
             if ev["type"] == "mouse": handle_mouse(ev)
-            elif ev["type"] == "key": handle_key(ev)
+            elif ev["type"d] == "key": handle_key(ev)
 
         png = render_current_frame_as_png()
         viewer.set_frame(png)

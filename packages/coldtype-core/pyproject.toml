@@ -17,6 +17,7 @@ dependencies = [
     "defcon>=0.12.0", # for OutlinePen
     "uharfbuzz<0.47.0", # some kind of cached variations/memory bug introduced in 0.47.0
     "show-in-file-manager>=1.1.6",
+    "sourcetypes",
 ]
 
 [project.urls]

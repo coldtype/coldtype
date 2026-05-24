@@ -426,7 +426,6 @@ website = [
     { name = "markdown-captions" },
     { name = "pygments" },
     { name = "python-frontmatter" },
-    { name = "sourcetypes" },
     { name = "tornado" },
 ]
 
@@ -459,7 +458,6 @@ requires-dist = [
     { name = "skia-pathops" },
     { name = "skia-python" },
     { name = "soundfile", marker = "extra == 'audio'" },
-    { name = "sourcetypes", marker = "extra == 'website'" },
     { name = "tornado", marker = "extra == 'website'", specifier = ">=6.5.5" },
     { name = "tqdm" },
     { name = "ufo2ft", specifier = ">=3.2.8" },
@@ -481,6 +479,7 @@ dependencies = [
     { name = "fonttools" },
     { name = "show-in-file-manager" },
     { name = "skia-pathops" },
+    { name = "sourcetypes" },
     { name = "uharfbuzz" },
 ]
 
@@ -538,6 +537,7 @@ requires-dist = [
     { name = "skia-pathops" },
     { name = "skia-pathops", marker = "extra == 'notebook'" },
     { name = "skia-python", marker = "extra == 'notebook'" },
+    { name = "sourcetypes" },
     { name = "tdqm", marker = "extra == 'notebook'" },
     { name = "ufo2ft", marker = "extra == 'more-fonts'", specifier = ">=3.2.8" },
     { name = "uharfbuzz", specifier = "<0.47.0" },

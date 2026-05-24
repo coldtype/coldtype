@@ -50,7 +50,6 @@ website = [
     "brotli>=1.2.0",
     "lxml",
     "pygments",
-    "sourcetypes",
     "favicons",
     "tornado>=6.5.5"
 ]

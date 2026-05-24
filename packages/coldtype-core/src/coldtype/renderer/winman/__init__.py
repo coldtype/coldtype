@@ -8,6 +8,7 @@ from coldtype.renderer.winman.glfwskia import glfw, skia, WinmanGLFWSkia, Winman
 from coldtype.renderer.winman.audio import WinmanAudio
 from coldtype.renderer.winman.midi import MIDIWatcher, rtmidi
 from coldtype.renderer.winman.blender import WinmanBlender
+from coldtype.renderer.winman.http import WinmanHTTPServer
 from coldtype.renderable import Action, Overlay
 
 
@@ -41,6 +42,7 @@ class Winmans():
         self.midi:MIDIWatcher = None
         self.b3d:WinmanBlender = None
         self.audio:WinmanAudio = None
+        self.http:WinmanHTTPServer = None
 
         self.last_title = "coldtype"
         self.last_time = -1
@@ -80,6 +82,9 @@ class Winmans():
     def should_blender(self):
         return self.config.blender_watch
     
+    def should_http(self):
+        return True
+    
     def add_viewers(self):
         if not self.bg:
             monitor_stdin()
@@ -89,6 +94,9 @@ class Winmans():
         
         if self.should_blender():
             self.b3d = WinmanBlender(self.config)
+        
+        if self.should_http():
+            self.http = WinmanHTTPServer(self.config)
         
         if self.should_midi():
             self.midi = MIDIWatcher(self.config,
@@ -107,6 +115,8 @@ class Winmans():
     def did_reload(self, filepath, source_reader):
         if self.b3d:
             self.b3d.reload(filepath, source_reader)
+        if self.http:
+            self.http.reload(filepath, source_reader)
     
     def did_reload_animation(self, rs):
         if self.audio:
@@ -122,7 +132,7 @@ class Winmans():
                 self.b3d.launch(blend_files[0])
     
     def all(self):
-        return [self.pt, self.glsk, self.b3d]
+        return [self.pt, self.glsk, self.b3d, self.http]
     
     def map(self):
         for wm in self.all():
@@ -192,6 +202,8 @@ class Winmans():
                 self.renderer.dead = True
                 self.renderer.on_exit()
                 return
+        
+        # http here?
 
         if self.midi:
             tripped = self.midi.monitor(self.renderer.state.playing)
@@ -229,15 +241,6 @@ class Winmans():
         return did_preview
     
     def run_loop(self):
-        from coldtype.renderer.winman.webview import ColdtypeWebViewer
- 
-        webview = ColdtypeWebViewer(port=8008)
-        webview.start()
-        print(">>>", webview.url)
-
-        if self.glsk:
-            self.glsk.webview = webview
-
         while (not self.renderer.dead
             and not self.should_close()
             ):
@@ -279,18 +282,6 @@ class Winmans():
                     self.cron_start = time.time()
                     self.renderer.action_waiting = Action.PreviewStoryboardReload
                     self.renderer.action_waiting_reason = "cron_interval timer hit"
-
-            def handle_mouse(ev):
-                print("handle_mouse", ev)
-                pass
-            
-            def handle_key(ev):
-                print("handle_key", ev)
-                pass
-            
-            for ev in webview.drain_events():
-                if ev["type"] == "mouse": handle_mouse(ev)
-                elif ev["type"] == "key": handle_key(ev)
 
             self.poll()
     

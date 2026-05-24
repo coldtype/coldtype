@@ -16,10 +16,7 @@ generics_folder = Path(__file__).parent / "templates"
 generics_env = jinja2.Environment(loader=jinja2.FileSystemLoader(generics_folder))
 string_env = jinja2.Environment(loader=jinja2.BaseLoader())
 
-try:
-    from sourcetypes import jinja_html, css, js
-except ImportError:
-    jinja_html = str
+from sourcetypes import jinja_html, css, js
 
 
 nav_template: jinja_html = """

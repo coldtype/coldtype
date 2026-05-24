@@ -400,6 +400,9 @@ class Renderer():
                 if trigger == Action.Initial:
                     if self.winmans.b3d:
                         self.winmans.b3d.launch(self.source_reader.blender_io())
+                    
+                    if self.winmans.http:
+                        self.winmans.http.launch()
             except SystemExit:
                 self.on_exit(restart=False)
                 return True
