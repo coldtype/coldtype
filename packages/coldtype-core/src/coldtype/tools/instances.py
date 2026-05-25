@@ -23,7 +23,7 @@ if len(instances) > 0:
     print("")
 
     vectors = (P().enumerate(instances.keys(), lambda x:
-        StSt(x.el, font, 80, instance=x.el)
+        StSt(x.el, font, args["fontSize"], instance=x.el)
             .data(
                 instanceKey=x.el,
                 instance=instances[x.el],
