@@ -4,10 +4,6 @@ Display all available instances in variable font; click instance to see more inf
 
 from coldtype import *
 from coldtype.tool import parse_inputs
-from pprint import pprint
-
-if __as_config__:
-    raise ColdtypeCeaseConfigException()
 
 args = parse_inputs(ººinputsºº, dict(
     font=[None, str, "Must provide font"]))
