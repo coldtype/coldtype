@@ -551,7 +551,11 @@ class Font():
             regex = re.compile(f".*{regex}.*", re.IGNORECASE)
 
         if on_mac():
-            import AppKit, CoreText
+            try:
+                import AppKit, CoreText
+            except:
+                return []
+
             fonts = [x for x in list(AppKit.NSFontManager.sharedFontManager().availableFonts()) if not x.startswith(".")]
             fonts = list(sorted(fonts, key=lambda x: len(x)))
             fonts = [x for x in fonts if re.search(regex, x)]

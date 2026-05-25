@@ -56,21 +56,21 @@ build-backend = "setuptools.build_meta"
 
 [dependency-groups]
 dev = [
-    "pytest>=8.3.5",
-    "pynput",
-    "pymunk",
-    "pygments",
-    "pyaudio",
-    "soundfile",
-    "opentype-feature-freezer",
-    "fontmake",
-    "measurement",
-    "pillow",
-    "imagehash",
-    "scikit-image",
-    "noise",
-    "mdx-linkify",
-    "ipykernel",
-    "drawbot @ git+https://github.com/typemytype/drawbot",
-    "numpy<2.2"
+    #"pytest>=8.3.5",
+    #"pynput",
+    #"pymunk",
+    #"pygments",
+    #"pyaudio",
+    #"soundfile",
+    #"opentype-feature-freezer",
+    #"fontmake",
+    #"measurement",
+    #"pillow",
+    #"imagehash",
+    #"scikit-image",
+    #"noise",
+    #"mdx-linkify",
+    #"ipykernel",
+    #"drawbot @ git+https://github.com/typemytype/drawbot",
+    #"numpy<2.2"
 ]

@@ -1,3 +1,5 @@
+from subprocess import run
+from sys import version_info
 from pathlib import Path
 
 from coldtype.renderer.utils import path_hash
@@ -18,6 +20,17 @@ class WinmanBlender(WinmanPassthrough):
             self.blender_path = Path(b3d_vars["blender"])
         except:
             raise Exception("NO BLENDER FOUND (via b3denv)")
+
+        result = run([b3d_vars["python"], "--version"], capture_output=True, text=True)
+        
+        try:
+            blender_python_version = result.stdout.strip().split(" ")[0].split(".")
+            if (int(blender_python_version[0]) != version_info.major
+                or int(blender_python_version[0]) != version_info.minor):
+                    print("‼️ VENV PYTHON / BLENDER PYTHON VERSION MISMATCH! ‼️")
+                    print(blender_python_version, version_info)
+        except Exception as e:
+            print(e)
 
         self.reset_factory = config.blender_reset_factory
         self.cli_args = config.blender_command_line_args

@@ -174,6 +174,12 @@ class Renderer():
 
         self.args.file = str(normalized)
 
+        try:
+            embedded_profile = re.search(r"\# coldtype\-embedded\-profile ([^\n]+)\n", Path(self.args.file).read_text()).groups()[0]
+            self.args.profile = embedded_profile
+        except Exception as e:
+            print(e)
+
         if self.on_args_parsed():
             self.dead = True
             return
