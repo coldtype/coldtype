@@ -175,10 +175,12 @@ class Renderer():
         self.args.file = str(normalized)
 
         try:
-            embedded_profile = re.search(r"\# coldtype\-embedded\-profile ([^\n]+)\n", Path(self.args.file).read_text()).groups()[0]
-            self.args.profile = embedded_profile
+            search = re.search(r"\# coldtype\-embedded\-profile ([^\n]+)\n", Path(self.args.file).read_text())
+            if search:
+                embedded_profile = search.groups()[0]
+                self.args.profile = embedded_profile
         except Exception as e:
-            print(e)
+            print("Embedded Profile Error", e)
 
         if self.on_args_parsed():
             self.dead = True
@@ -1590,7 +1592,7 @@ class Renderer():
                     data = json.loads(path.read_text())
                     if "action" in data:
                         action = data.get("action")
-                        if "filepath" in data:
+                        if "filepath" in data and data["filepath"] is not None:
                             path = data.get("filepath")
                             if path != str(self.last_animation.filepath):
                                 print("IGNORING COMMAND")
@@ -1678,7 +1680,7 @@ class Renderer():
             ksc = None
         
         if ksc:
-            self.on_shortcut(KeyboardShortcut(shortcut))
+            self.on_shortcut(ksc)
         else:
             print("No shortcut/action", key, shortcut)
         

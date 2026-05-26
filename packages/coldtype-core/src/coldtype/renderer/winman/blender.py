@@ -1,6 +1,7 @@
 from subprocess import run
 from sys import version_info
 from pathlib import Path
+from time import sleep
 
 from coldtype.renderer.utils import path_hash
 from coldtype.renderer.winman.passthrough import WinmanPassthrough
@@ -24,13 +25,14 @@ class WinmanBlender(WinmanPassthrough):
         result = run([b3d_vars["python"], "--version"], capture_output=True, text=True)
         
         try:
-            blender_python_version = result.stdout.strip().split(" ")[0].split(".")
+            blender_python_version = result.stdout.strip().split(" ")[1].split(".")
             if (int(blender_python_version[0]) != version_info.major
-                or int(blender_python_version[0]) != version_info.minor):
-                    print("‼️ VENV PYTHON / BLENDER PYTHON VERSION MISMATCH! ‼️")
-                    print(blender_python_version, version_info)
+                and int(blender_python_version[0]) != version_info.minor):
+                    print("\n\n\n‼️ VENV PYTHON / BLENDER PYTHON VERSION MISMATCH! ‼️")
+                    print(blender_python_version, version_info, "\n\n\n")
+                    sleep(2)
         except Exception as e:
-            print(e)
+            print("Blender Version Error", e)
 
         self.reset_factory = config.blender_reset_factory
         self.cli_args = config.blender_command_line_args

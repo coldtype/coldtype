@@ -25,7 +25,7 @@ def print_font_results(results, selected=None):
     print("\n")
 
 
-def parse_inputs(inputs, defaults, ui=True, positional=True):
+def parse_inputs(inputs, defaults, ui=True, positional=True, tool=None, blender_ui=False):
     if ui is not None and ui is not False:
         defaults["rect"] = [
             Rect(1080, 1080),

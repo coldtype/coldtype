@@ -313,7 +313,7 @@ class WinmanGLFWSkia():
                 self.renderer.action_waiting = requested_action
                 self.renderer.action_waiting_reason = "mouse_trigger"
         except Exception as e:
-            print(e)
+            print("Action Waiting Error", e)
     
     def on_mouse_move(self, _, xpos, ypos):
         if not self.allow_mouse():

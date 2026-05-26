@@ -1,4 +1,8 @@
-import bpy, json
+try:
+    import bpy, json
+except ImportError as e:
+    print("ImportError", e)
+
 from pathlib import Path
 
 
@@ -8,6 +12,7 @@ def find_sequence():
     rs = bpy.app.driver_namespace.get("_coldtypes", [])
     sq = None
     for r in rs:
+        print(">>>", r)
         if isinstance(r, b3d_sequencer) or isinstance(r, b3d_animation):
             sq = r
     return sq
@@ -23,5 +28,5 @@ def remote(command, args=None, sq=None):
         .write_text(json.dumps(dict(
             action=command if isinstance(command, str) else command.value,
             args=args,
-            filepath=str(sq.filepath)))))
+            filepath=str(sq.filepath) if sq else None))))
     return sq

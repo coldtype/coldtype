@@ -64,6 +64,11 @@ class COLDTYPE_3D_PT_Panel(bpy.types.Panel):
     bl_region_type = 'UI'
     bl_category = 'Tool'
 
+    @classmethod
+    def poll(cls, context):
+        seq = find_sequence()
+        return seq is not None
+
     def draw(self, context):
         layout = self.layout
         layout.operator(Coldtype3DRenderOne.bl_idname, text="Render One", icon="IMAGE_DATA",)

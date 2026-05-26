@@ -30,14 +30,16 @@ def prefix_inline_venv(expr):
             print(e)
             print(">>> could not load direct_url.json for ", direct_url)
     
-    print(">>>", paths)
+    if False:
+        print(">>>", paths)
 
     paths_str = ""
     for src, path in paths:
         paths_str += f"sys.path.append(\"{str(Path(path).as_posix())}\");"
 
     prefix = f"import sys; from pathlib import Path; {paths_str}"
-    print(prefix)
+    if False:
+        print(prefix)
     return prefix + " " + expr
 
 def blender_launch_livecode(blender_path, file:Path, command_file, additional_args=""):
