@@ -1,5 +1,5 @@
 from coldtype import *
-from coldtype.tool import parse_inputs, print_font_results
+from coldtype.tool import parse_inputs, print_font_results, fmt_path
 from coldtype.blender import *
 from coldtype.blender.util import remote
 
@@ -109,6 +109,7 @@ def parse_inputs(inputs, defaults, ui=True, positional=True, name="Coldtype", bl
         try:
             import bpy, bpy.props
             from bpy.types import Panel, PropertyGroup
+            from bpy_extras.io_utils import ImportHelper
 
             def on_change(self, context):
                 props = context.scene.coldtype_tool_props
@@ -119,10 +120,12 @@ def parse_inputs(inputs, defaults, ui=True, positional=True, name="Coldtype", bl
             annotations = {}
             
             for k, v in defaults.items():
-                if k not in ["font", "rect", "preview_only", "log"]:
+                if k not in ["rect", "preview_only", "log"]:
                     value = out[k]
                     field_type = defaults[k][1]
-                    if field_type == str:
+                    if k == "font":
+                        annotations[k] = bpy.props.StringProperty(name=k, description="N/A", default=str(value.path), update=on_change)
+                    elif field_type == str:
                         annotations[k] = bpy.props.StringProperty(name=k, description="N/A", default=value, update=on_change)
                     elif field_type == int:
                         annotations[k] = bpy.props.IntProperty(name=k, description="N/A", default=value, update=on_change)
@@ -131,6 +134,28 @@ def parse_inputs(inputs, defaults, ui=True, positional=True, name="Coldtype", bl
                 "ColdtypeToolProperties",
                 (PropertyGroup,),
                 { "__annotations__": annotations })
+            
+            class WM_OT_ColdtypeChooseFont(bpy.types.Operator, ImportHelper):
+                """Open file dialog to pick a font"""
+                
+                bl_idname = "wm.coldtype_choose_font"
+                bl_label = "Choose font file"
+                bl_options = {"REGISTER","UNDO"}
+                
+                filter_glob: bpy.props.StringProperty(
+                    default='*.ttf;*.otf;*.ufo;*.designspace',
+                    options={'HIDDEN'})
+
+                def invoke(self, context, event):
+                    context.window_manager.fileselect_add(self)
+                    return {'RUNNING_MODAL'}
+
+                def execute(self, context):
+                    path = Path(self.filepath)
+                    props = context.scene.coldtype_tool_props
+                    setattr(props, "font", str(path))
+                    on_change(None, context)
+                    return {'FINISHED'}
 
             class VIEW3D_PT_coldtypetool(Panel):
                 bl_label = name
@@ -143,26 +168,22 @@ def parse_inputs(inputs, defaults, ui=True, positional=True, name="Coldtype", bl
                     layout = self.layout
                     props = context.scene.coldtype_tool_props
                     for k, v in annotations.items():
-                        layout.prop(props, k, text=k)
+                        if k == "font":
+                            row = layout.row()
+                            row.operator("wm.coldtype_choose_font", text="", icon="FONTPREVIEW")
+                            row.label(text="Browse for a font file")
+                            row = layout.row()
+                            row.label(text=f"Dir: {fmt_path(Path(getattr(props, k)).parent)}")
+                            row = layout.row()
+                            row.label(text=f"Font: {Path(getattr(props, k)).name}")
+                        else:
+                            layout.prop(props, k, text=k)
 
-            classes = (Properties, VIEW3D_PT_coldtypetool)
+            classes = (Properties, WM_OT_ColdtypeChooseFont, VIEW3D_PT_coldtypetool)
             
-            def register():
-                for cls in classes:
-                    bpy.utils.register_class(cls)
-                bpy.types.Scene.coldtype_tool_props = bpy.props.PointerProperty(type=Properties)
-            
-            # def unregister():
-            #     del bpy.types.Scene.coldtype_tool_props
-            #     for cls in reversed(classes):
-            #         bpy.utils.unregister_class(cls)
-
-            # try:
-            #     unregister()
-            # except Exception as e:
-            #     print(e)
-            
-            register()
+            for cls in classes:
+                bpy.utils.register_class(cls)
+            bpy.types.Scene.coldtype_tool_props = bpy.props.PointerProperty(type=Properties)
 
         except Exception as e:
             print(e)
