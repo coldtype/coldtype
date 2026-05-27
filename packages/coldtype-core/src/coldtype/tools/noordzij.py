@@ -26,7 +26,7 @@ def setup(bpw:BpyWorld):
             , output=setup.output_folder / "noord1_"))
     
     pivot = (BpyObj.Empty("Center")
-        .locate(x=(d-1)/2, y=(d-1)/2, z=0)
+        .locate(x=0, y=0, z=0)
         .insert_keyframes("rotation_euler",
             (0, lambda bp: bp.rotate()),
             (240, lambda bp: bp.rotate(z=360)))

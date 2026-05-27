@@ -1,13 +1,21 @@
 from coldtype import *
-from coldtype.tool import Tool
+from coldtype.tool import Tool, fmt_path
 
-args = Tool(ººinputsºº, dict(
-    search=[None, str],
-    #font=[None, str, "Must provide search string"],
+tool = Tool(ººinputsºº, dict(
+    font=[None, str, "Must provide search string"],
+    query=["True", str],
+    property=[None, str],
     #dst=["~/Desktop", str]
-    ))
+    )
+    , print_fonts=False)
 
-print(len(Font.ListAll(".*", log=True)))
+fonts = tool.state.get("fonts", [])
+
+for font in fonts:
+    if eval(tool.state["query"]):
+        print("")
+        print(fmt_path(font.path))
+        print("    ", eval(tool.state["property"]))
 
 # results = args["fonts"]
 # results = results[:30]
