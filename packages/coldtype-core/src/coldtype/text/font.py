@@ -502,10 +502,10 @@ class Font():
     
     @staticmethod
     def ListAll(regex, log=False, font_dir=None, expand=True, max_depth=FONT_FIND_DEPTH, bail=False) -> list["Font"]:
-        results = Font.List(regex, expand=True, max_depth=max_depth)
+        results = Font.List(regex, expand=True, max_depth=max_depth, log=log)
         paths = set([r.path for r in results])
 
-        library_results = Font.LibraryList(regex, expand=True)
+        library_results = Font.LibraryList(regex, expand=True, log=log)
         for l in library_results:
             if l.path not in paths:
                 results.append(l)
@@ -539,7 +539,7 @@ class Font():
             raise FontNotFoundException(regex)
     
     @staticmethod
-    def LibraryList(regex, print_list=False, expand=False, copy_to=None):
+    def LibraryList(regex, print_list=False, expand=False, copy_to=None, log=False):
         """pass a compiled re (i.e. re.compile to _not_ ignore case)"""
         regex_dir = None
 

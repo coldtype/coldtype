@@ -5,16 +5,16 @@ Find all fonts on computer matching passed regex
 """
 
 from coldtype import *
-from coldtype.tool import parse_inputs
+from coldtype.tool import Tool
 
 from subprocess import run
 
-args = parse_inputs(__inputs__, dict(
+tool = Tool(ººinputsºº, dict(
     font=[None, str, "Must provide search string"],
     dst=["~/Desktop", str]))
 
 
-results = args["fonts"]
+results = tool.state["fonts"]
 results = results[:30]
 
 if len(results) > 0:
@@ -22,7 +22,7 @@ if len(results) > 0:
         return (P(
             StSt(str(x.i), Font.JBMono(), 30, wght=1)
                 .t(0, 8),
-            StSt(x.el.names()[0], x.el, args["fontSize"])
+            StSt(x.el.names()[0], x.el, tool.state["fontSize"])
                 .t(60, 0),
             P().rect(Rect(50, 2)))
             .data(font=x.el))
@@ -45,7 +45,7 @@ if len(results) > 0:
     
     def build(_):
         for font in results:
-            print(f"  > Duplicated: {font.copy_to(args['dst'], return_dst=True)}")
+            print(f"  > Duplicated: {font.copy_to(tool.state['dst'], return_dst=True)}")
     
     numpad = {
         1: lambda _: run(["open", "-a", "FontGoggles", *[f.path for f in results]])

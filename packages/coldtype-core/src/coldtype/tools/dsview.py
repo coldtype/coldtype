@@ -3,11 +3,11 @@ Display available designspace
 """
 
 from coldtype import *
-from coldtype.tool import parse_inputs, fmt_path
+from coldtype.tool import Tool, fmt_path
 from coldtype.osutil import show_in_finder
 
 
-args = parse_inputs(ººinputsºº, dict(
+tool = Tool(ººinputsºº, dict(
     font=[Font.MutatorSans(), str],
     text=["A", str],
     count=[9, int],
@@ -16,15 +16,15 @@ args = parse_inputs(ººinputsºº, dict(
     , ui=ººuiºº)
 
 
-A, B = [int(x) for x in args["axes"].split(",")]
+A, B = [int(x) for x in tool.state["axes"].split(",")]
 a, b = A, B
 
 
-@animation(Rect(args["rect"].w, args["rect"].h+(h:=120)), bg=1, tl=Timeline(len(args["fonts"])))
+@animation(Rect(tool.state["rect"].w, tool.state["rect"].h+(h:=120)), bg=1, tl=Timeline(len(tool.state["fonts"])))
 def dsview_display(f):
     global a, b
 
-    fnt:Font = args["fonts"][f.i]
+    fnt:Font = tool.state["fonts"][f.i]
     path = fmt_path(fnt.path)
 
     variations = fnt.variations()
@@ -41,7 +41,7 @@ def dsview_display(f):
     def draw_glyph(x, y):
         r = y.el.inset(4)
         return (P(
-            StSt(args["text"], fnt, args["fontSize"], variations={axes[a]:x.e, axes[b]:y.e})
+            StSt(tool.state["text"], fnt, tool.state["fontSize"], variations={axes[a]:x.e, axes[b]:y.e})
                 .align(r)
                 .f(0)
                 .data(font=fnt, position=dict(x=x.e, y=y.e))))
@@ -62,15 +62,15 @@ def dsview_display(f):
             .t(0, d)
             .f(0),
             
-        P().enumerate((g:=l["g"].r).subdivide(args["count"], "W"),
-            lambda x: P().enumerate(x.el.subdivide(args["count"], "S"),
+        P().enumerate((g:=l["g"].r).subdivide(tool.state["count"], "W"),
+            lambda x: P().enumerate(x.el.subdivide(tool.state["count"], "S"),
                 lambda y: draw_glyph(x, y))),
         
         P().line(l["h"].r.es).ep().fssw(-1, 0.75, 1),
         P().line(l["a2+x"].r.ee).ep().fssw(-1, 0.75, 1),
         P().line(l["a1+x"].r.en).ep().fssw(-1, 0.75, 1),
         
-        P().gridlines(g, args["count"]).fssw(-1, 0.75, 1),
+        P().gridlines(g, tool.state["count"]).fssw(-1, 0.75, 1),
 
         StSt(str(int(variations[a][1].get("minValue"))), Font.JBMono(), 20, wght=1).align(l["a1"].r, "W").t(d:=20, 0).f(fill:=bw(0.65)),
         StSt(str(int(variations[a][1].get("maxValue"))), Font.JBMono(), 20, wght=1).align(l["a1"].r, "E").t(-d, 0).f(fill),
