@@ -1,13 +1,12 @@
-from subprocess import run
-
 from coldtype import *
+from coldtype.osutil import show_in_finder
 from coldtype.tool import Tool, fmt_path, open_in_font_goggles
 
 tool = Tool(ººinputsºº, dict(
-    font=[None, str, "Must provide search string"],
-    cond=["True", str],
-    lookup=[None, str],
-    #dst=["~/Desktop", str]
+    font=[None, str, "Must provide search string", "Font search string, format is optional regex for directory, then optional /, then required regex for font name (supply . for wildcard)"],
+    cond=["True", str, None, "Optional conditional python fragment for filtering; `font:Font` is passed as argument"],
+    lookup=[None, str, None, "Optional conditional python fragment to print for each matching result; `font:Font` is passed as argument"],
+    dst=["~/Desktop", str, None, "Optional destination when copying fonts via build command"],
     )
     , print_fonts=False)
 
@@ -16,12 +15,15 @@ fonts = tool.state.get("fonts", [])
 matches = []
 
 for font in fonts:
-    if eval(tool.state["cond"]):
-        matches.append(font)
-        print("")
-        print(len(matches)-1, fmt_path(font.path))
-        if lookup := tool.state.get("lookup"):
-            print("    ", eval(lookup))
+    try:
+        if eval(tool.state["cond"]):
+            matches.append(font)
+            print("")
+            print(len(matches)-1, fmt_path(font.path))
+            if lookup := tool.state.get("lookup"):
+                print("    ", eval(lookup))
+    except Exception as e:
+        print(e)
 
 print("\nFont Matches:", len(matches))
 
@@ -59,14 +61,11 @@ if len(matches) > 0:
     
     def on_click(p):
         for m in (show_results.last_return.find(lambda x: x.data("font") and p.inside(x.ambit()))):
-            open_in_font_goggles([m.data("font")])
+            show_in_finder(m.data("font").path)
+            #open_in_font_goggles([m.data("font")])
 else:
     @renderable(540, bg=0)
     def no_results(r):
         return (StSt("NO\nRESULTS", Font.JBMono(), 72, wdth=1, wght=1)
             .align(r)
             .f("hotpink"))
-
-#def build(_):
-#    from coldtype.osutil import show_in_finder
-#    show_in_finder(fnt.path)

@@ -7,6 +7,16 @@ from coldtype.text.font import Font
 from coldtype.blender import b3d_runnable
 
 
+try:
+    import bpy, bpy.props # type: ignore
+    from bpy.types import Panel, PropertyGroup # type: ignore
+    from bpy_extras.io_utils import ImportHelper # type: ignore
+    from coldtype.blender import BpyWorld
+    has_bpy = True
+except ImportError:
+    has_bpy = False
+
+
 def fmt_path(path: Path) -> str:
     try:
         return "~/" + str(path.relative_to(Path.home()))
@@ -37,6 +47,7 @@ class Tool:
     inputs: dict
     defaults: dict
     name: str = "Coldtype"
+    doc: str = None
     ui: bool = True
     positional: bool = True
     print_fonts: bool = True
@@ -47,17 +58,18 @@ class Tool:
         if self.ui is not None and self.ui is not False:
             self.defaults["rect"] = [
                 Rect(1080, 1080),
-                lambda xs: Rect([int(x) for x in str(xs).split(",")])]
+                lambda xs: Rect([int(x) for x in str(xs).split(",")]), None, "Rectangle for viewer window"]
 
-            self.defaults["preview_only"] = [False, bool]
-            self.defaults["log"] = [False, bool]
+            #self.defaults["preview_only"] = [False, bool]
+            #Aself.defaults["log"] = [False, bool]
 
         parsed = {}
         if not isinstance(self.inputs, dict):
             for idx, input in enumerate(self.inputs):
-                if "=" in input and False:
+                if "=" in input:
                     k, v = input.split("=")
-                    parsed[k] = v
+                    if k in self.defaults:
+                        parsed[k] = v
                 elif input in self.defaults.keys():
                     parsed[input] = True
                 elif self.positional:
@@ -72,19 +84,38 @@ class Tool:
         font_variations = {}
         out["font_variations"] = {}
 
+        if not has_bpy:
+            print(f"\n⚙️  {self.name}")
+            if self.doc:
+                print(f"  {self.doc}\n")
+            #else:
+            #    print("")
+            print("\n🛠️  Command-Line Arguments  🛠️\n")
+
         for k, v in self.defaults.items():
+            try:
+                default_value, var_type, missing_exception, docstring = v
+            except Exception as e:
+                print(k)
+                raise e
+
+            if not has_bpy and k not in ["rect"]:
+                print(f"  • {k}")
+                print(f"    Default: {default_value}")
+                print(f"      Doc: {docstring}")
+
             if k in ["w", "h"]:
                 out[k] = v
                 self.defaults[k] = [v, int]
-            if k == "font" and v[0] is not None:
-                out[k] = v[0]
-                out["fonts"] = [v][0]
-                out["font_variations"] = v[0].variations()
+            if k == "font" and default_value is not None:
+                out[k] = default_value
+                out["fonts"] = default_value
+                out["font_variations"] = default_value.variations()
                 out["fontSize"] = 42
             else:
-                out[k] = v[0]
-                if k not in parsed and len(v) > 2:
-                    raise Exception(v[2])
+                out[k] = default_value
+                if k not in parsed and missing_exception is not None:
+                    raise Exception(missing_exception)
         
         for k, v in parsed.items():
             if k in self.defaults:
@@ -111,7 +142,7 @@ class Tool:
                                 out[k] = Font.ColdtypeObviously()
                             else:
                                 out["fonts"] = fonts
-                                if self.print_fonts:
+                                if not has_bpy and self.print_fonts:
                                     print_font_results(fonts, fnt_idx)
                                 out[k] = fonts[fnt_idx]
                                 font_variations = out[k].variations()
@@ -144,13 +175,7 @@ class Tool:
 
 
     def add_blender(self):
-        try:
-            import bpy, bpy.props # type: ignore
-            from bpy.types import Panel, PropertyGroup # type: ignore
-            from bpy_extras.io_utils import ImportHelper # type: ignore
-
-            from coldtype.blender import BpyWorld
-        except ImportError:
+        if not has_bpy:
             return
 
         _pending_updates = {}
@@ -187,14 +212,15 @@ class Tool:
             if k not in ["rect", "preview_only", "log"]:
                 value = self.state[k]
                 field_type = self.defaults[k][1]
+                docstring = self.defaults[k][-1]
                 if k == "font":
-                    annotations[k] = bpy.props.StringProperty(name=k, description="N/A", default=str(value.path), update=on_change)
+                    annotations[k] = bpy.props.StringProperty(name=k, description=docstring, default=str(value.path), update=on_change)
                 elif field_type == str:
-                    annotations[k] = bpy.props.StringProperty(name=k, description="N/A", default=value, update=debounced_update)
+                    annotations[k] = bpy.props.StringProperty(name=k, description=docstring, default=value, update=debounced_update)
                 elif field_type == int:
-                    annotations[k] = bpy.props.IntProperty(name=k, description="N/A", default=value, update=debounced_update)
+                    annotations[k] = bpy.props.IntProperty(name=k, description=docstring, default=value, update=debounced_update)
                 elif field_type == float:
-                    annotations[k] = bpy.props.FloatProperty(name=k, description="N/A", default=value, update=debounced_update)
+                    annotations[k] = bpy.props.FloatProperty(name=k, description=docstring, default=value, update=debounced_update)
         
         Properties = type(
             "ColdtypeToolProperties",

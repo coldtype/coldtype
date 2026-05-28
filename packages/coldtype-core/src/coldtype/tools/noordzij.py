@@ -1,14 +1,8 @@
-"""
-Noordzij cube, to show 3 axes of font at once
-Can specify -wght to reverse order of axis in axesOrder field
-"""
-
 from coldtype import *
 from coldtype.tool import Tool
 from coldtype.blender import *
 
 # coldtype-embedded-profile b3dlo
-
 
 """
 ala (https://letterror.com/articles/noordzij-cube.html)
@@ -84,12 +78,14 @@ def setup(bpw:BpyWorld):
 
 
 tool = Tool(ººinputsºº, dict(
-    font=[Font.MutatorSans(), str],
-    text=["a", str],
-    axesOrder=["auto", str],
-    count=[3, int],
-    fontScale=[0.5, float],
-    extrude=[0.02, float],
-    outline=[0, int],)
+    font=[Font.MutatorSans(), str, None, "Font search string"],
+    text=["a", str, None, "Letter or letters to display at each node"],
+    axesOrder=["auto", str, None, "Order of the axes (default is 'auto', i.e. how they show up in the font); can prefix axis name with - to reverse its appearance in cube"],
+    count=[3, int, None, "How many letters in x, y, and z dimensions"],
+    fontScale=[0.5, float, None, "How big is each letter"],
+    extrude=[0.02, float, None, "How extruded should each letter be"],
+    outline=[0, int, None, "Should there be an outline?"])
     , ui=ººuiºº
+    , name="NoordzijCube"
+    , doc="Displays a Noordzij cube"
     , blender_runnable=setup)

@@ -1,19 +1,16 @@
-"""
-Display available designspace
-"""
-
 from coldtype import *
 from coldtype.tool import Tool, fmt_path
 from coldtype.osutil import show_in_finder
 
 
 tool = Tool(ººinputsºº, dict(
-    font=[Font.MutatorSans(), str],
-    text=["A", str],
-    count=[9, int],
-    axes=["0,1", str],
+    font=[Font.MutatorSans(), str, None, "Font search string"],
+    text=["A", str, None, "Text to display"],
+    count=[9, int, None, "How many cells in x and y dimensions"],
+    axes=["0,1", str, None, "Which axes to display"],
     )
-    , ui=ººuiºº)
+    , ui=ººuiºº
+    , name="Designspace Viewer")
 
 
 A, B = [int(x) for x in tool.state["axes"].split(",")]

@@ -1,15 +1,11 @@
-"""
-Display characters available in a font
-"""
-
 from coldtype import *
 from coldtype.tool import parse_inputs, fmt_path
 from coldtype.osutil import show_in_finder
 
 
 args = parse_inputs(ººinputsºº, dict(
-    font=[None, str, "Must provide font regex or path"],
-    rect=[Rect(1080), int]), ui=ººuiºº)
+    font=[None, str, "Must provide font regex or path", "Font search string"],
+    rect=[Rect(1080), int, None, "Rect for window"]), ui=ººuiºº)
 
 
 print("👉 Click something to see information printed in the terminal\n")

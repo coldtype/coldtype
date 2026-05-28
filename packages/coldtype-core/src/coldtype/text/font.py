@@ -258,6 +258,11 @@ class Font():
         for record in self.font.ttFont['name'].names:
             if record.nameID == nameID:
                 return str(record)
+        return ""
+    
+    @property
+    def manufacturer(self):
+        return self.getName(8)
 
     def names(self):
         """
