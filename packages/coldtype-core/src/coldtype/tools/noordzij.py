@@ -1,14 +1,17 @@
+"""
+Noordzij cube, to show 3 axes of font at once
+Can specify -wght to reverse order of axis in axesOrder field
+"""
+
 from coldtype import *
 from coldtype.tool import Tool
 from coldtype.blender import *
 
 # coldtype-embedded-profile b3dlo
 
-"""
-A classic 5-by-5 Noordzij Cube, displaying any
-variable font with three axes
 
-(https://letterror.com/articles/noordzij-cube.html)
+"""
+ala (https://letterror.com/articles/noordzij-cube.html)
 """
 
 
@@ -32,25 +35,44 @@ def setup(bpw:BpyWorld):
             (240, lambda bp: bp.rotate(z=360)))
         .make_keyframes_linear("rotation_euler"))
     
-    (BpyObj.Find("Camera").parent(pivot))
+    BpyObj.Find("Camera").parent(pivot)
+
+    font = Font.Cacheable(tool.state["font"])
+    vars = font.variations()
+    vars_keys = list(vars.keys())
+    
+    axes_order = tool.state.get("axesOrder")
+    if axes_order == "auto":
+        axes_order = vars_keys
+    else:
+        axes_order = [x.strip() for x in axes_order.split(",")]
+        vars_keys = [x.replace("-", "") for x in axes_order]
     
     def add_glyph(x, y, z):
+        variations = {}
+        for idx, dim in enumerate([x, y, z]):
+            v = dim/(d-1)
+            if axes_order[idx].startswith("-"):
+                variations[vars_keys[idx]] = 1-v
+            else:
+                variations[vars_keys[idx]] = v
+
         (BpyObj.Curve(f"Glyph_{x}_{y}_{z}")
             .draw(StSt(tool.state["text"]
                 , tool.state["font"]
                 , tool.state["fontScale"]
-                , slnt=x/(d-1)
-                , wdth=(y/(d-1))
-                , wght=1-((z/(d-1))))
+                , variations=variations)
                 .centerZero()
-                .pen())
+                .pen()
+                .cond(tool.state["outline"] > 0,
+                    lambda p: p.removeOverlap().outline(tool.state["outline"]/1000)))
             .rotate(x=90)
             .locate(x=x, y=y, z=z)
             .extrude(tool.state["extrude"])
             .convert_to_mesh()
             .material(f"letter_mat_{y}", lambda m: m
                 .f(1)
-                #.f(hsl(y/(d+1), 1, 0.8))
+                #.f(hsl(y/(d+1), 1, 0.5))
                 .specular(0)
                 .roughness(1)))
     
@@ -63,9 +85,11 @@ def setup(bpw:BpyWorld):
 
 tool = Tool(ººinputsºº, dict(
     font=[Font.MutatorSans(), str],
-    text=["A", str],
+    text=["a", str],
+    axesOrder=["auto", str],
     count=[3, int],
     fontScale=[0.5, float],
-    extrude=[0.1, float])
+    extrude=[0.02, float],
+    outline=[0, int],)
     , ui=ººuiºº
     , blender_runnable=setup)

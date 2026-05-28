@@ -482,7 +482,7 @@ class Font():
 
         if "/" in regex and regex_dir is None:
             regex_dir, regex = regex.rsplit("/", 1)
-            print(">>>", regex_dir, regex)
+            #print(">>>", regex_dir, regex)
         
         font_dirs = ALL_FONT_DIRS
         if font_dir is not None:

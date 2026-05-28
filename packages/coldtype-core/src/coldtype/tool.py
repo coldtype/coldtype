@@ -1,5 +1,6 @@
 from pathlib import Path
 from dataclasses import dataclass
+from subprocess import run
 
 from coldtype.geometry.rect import Rect
 from coldtype.text.font import Font
@@ -25,6 +26,10 @@ def print_font_results(results, selected=None):
         else:
             print(f"   {idx:>{3}} {result.system_name:<{maxsys}} {fmt_path(result.path)}")
     print("\n")
+
+
+def open_in_font_goggles(fonts:list[Font]):
+    return run(["open", "-a", "FontGoggles", *[f.path for f in fonts]])
 
 
 @dataclass
@@ -80,8 +85,6 @@ class Tool:
                 out[k] = v[0]
                 if k not in parsed and len(v) > 2:
                     raise Exception(v[2])
-        
-        print(">", parsed)
         
         for k, v in parsed.items():
             if k in self.defaults:
@@ -236,10 +239,16 @@ class Tool:
                         row = layout.row()
                         row.operator("wm.coldtype_choose_font", text="", icon="FONTPREVIEW")
                         row.label(text="Browse for a font file")
+                        layout.separator(factor=1.0, type='LINE')
                         row = layout.row()
                         row.label(text=f"Dir: {fmt_path(Path(getattr(props, k)).parent)}")
                         row = layout.row()
                         row.label(text=f"Font: {Path(getattr(props, k)).name}")
+                        font = Font.Cacheable(getattr(props, k))
+                        if variations := font.variations():
+                            row = layout.row()
+                            row.label(text=f"Variations: {",".join(list(variations.keys()))}")
+                        layout.separator(factor=1.0, type='LINE')
                     else:
                         layout.prop(props, k, text=k)
 

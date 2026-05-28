@@ -1,5 +1,6 @@
 import math, sys, os, re
 from pathlib import Path
+from functools import partial
 
 # source: https://github.com/PixarAnimationStudios/USD/issues/1372
 

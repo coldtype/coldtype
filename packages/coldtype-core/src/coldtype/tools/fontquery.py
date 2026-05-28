@@ -1,66 +1,72 @@
+from subprocess import run
+
 from coldtype import *
-from coldtype.tool import Tool, fmt_path
+from coldtype.tool import Tool, fmt_path, open_in_font_goggles
 
 tool = Tool(ººinputsºº, dict(
     font=[None, str, "Must provide search string"],
-    query=["True", str],
-    property=[None, str],
+    cond=["True", str],
+    lookup=[None, str],
     #dst=["~/Desktop", str]
     )
     , print_fonts=False)
 
 fonts = tool.state.get("fonts", [])
 
+matches = []
+
 for font in fonts:
-    if eval(tool.state["query"]):
+    if eval(tool.state["cond"]):
+        matches.append(font)
         print("")
-        print(fmt_path(font.path))
-        print("    ", eval(tool.state["property"]))
+        print(len(matches)-1, fmt_path(font.path))
+        if lookup := tool.state.get("lookup"):
+            print("    ", eval(lookup))
 
-# results = args["fonts"]
-# results = results[:30]
+print("\nFont Matches:", len(matches))
 
-# if len(results) > 0:
-#     def build_preview(x):
-#         return (P(
-#             StSt(str(x.i), Font.JBMono(), 30, wght=1)
-#                 .t(0, 8),
-#             StSt(x.el.names()[0], x.el, args["fontSize"])
-#                 .t(60, 0),
-#             P().rect(Rect(50, 2)))
-#             .data(font=x.el))
+if len(matches) > 0:
+    matches = matches[:50]
+    def build_preview(x):
+        return (P(
+            StSt(str(x.i), Font.JBMono(), 30, wght=1)
+                .t(0, 8),
+            StSt(x.el.names()[0], x.el, tool.state["fontSize"])
+                .t(60, 0),
+            P().rect(Rect(50, 2)))
+            .data(font=x.el))
 
-#     previews = P().enumerate(results, build_preview)
+    previews = P().enumerate(matches, build_preview)
 
-#     w = max([p.ambit().w for p in previews])
-#     h = sum([p.ambit().h for p in previews])
+    w = max([p.ambit().w for p in previews])
+    h = sum([p.ambit().h for p in previews])
 
-#     rect = Rect(w+20, h + 20*(len(results)+1))
+    rect = Rect(w+20, h + 20*(len(matches)+1))
 
-#     @renderable(rect, bg=0)
-#     def show_results(r):
-#         return (previews
-#             .copy()
-#             .stack(20)
-#             #.xalign(r)
-#             .align(r)
-#             .f(1))
+    @renderable(rect, bg=0)
+    def show_results(r):
+        return (previews
+            .copy()
+            .stack(20)
+            .align(r)
+            .f(1))
     
-#     def build(_):
-#         for font in results:
-#             print(f"  > Duplicated: {font.copy_to(args['dst'], return_dst=True)}")
+    def build(_):
+        for font in matches:
+            print(f"  > Duplicated: {font.copy_to(tool.state['dst'], return_dst=True)}")
     
-#     numpad = {
-#         1: lambda _: run(["open", "-a", "FontGoggles", *[f.path for f in results]])
-#     }
-        
-# else:
-#     @renderable(540, bg=0)
-#     def no_results(r):
-#         return (StSt("NO\nRESULTS", Font.JBMono(), 72, wdth=1, wght=1)
-#             .align(r)
-#             .f("hotpink"))
+    numpad = { 1: partial(open_in_font_goggles, matches) }
+    
+    def on_click(p):
+        for m in (show_results.last_return.find(lambda x: x.data("font") and p.inside(x.ambit()))):
+            open_in_font_goggles([m.data("font")])
+else:
+    @renderable(540, bg=0)
+    def no_results(r):
+        return (StSt("NO\nRESULTS", Font.JBMono(), 72, wdth=1, wght=1)
+            .align(r)
+            .f("hotpink"))
 
-# #def build(_):
-# #    from coldtype.osutil import show_in_finder
-# #    show_in_finder(fnt.path)
+#def build(_):
+#    from coldtype.osutil import show_in_finder
+#    show_in_finder(fnt.path)
