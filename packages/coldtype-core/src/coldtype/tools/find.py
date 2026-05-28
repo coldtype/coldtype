@@ -5,9 +5,8 @@ Find all fonts on computer matching passed regex
 """
 
 from coldtype import *
-from coldtype.tool import Tool
+from coldtype.tool import Tool, open_in_font_goggles
 
-from subprocess import run
 
 tool = Tool(ººinputsºº, dict(
     font=[None, str, "Must provide search string"],
@@ -48,8 +47,12 @@ if len(results) > 0:
             print(f"  > Duplicated: {font.copy_to(tool.state['dst'], return_dst=True)}")
     
     numpad = {
-        1: lambda _: run(["open", "-a", "FontGoggles", *[f.path for f in results]])
+        1: partial(open_in_font_goggles, results)
     }
+
+    def on_click(p):
+        for m in (show_results.last_return.find(lambda x: x.data("font") and p.inside(x.ambit()))):
+            open_in_font_goggles([m.data("font")])
         
 else:
     @renderable(540, bg=0)
