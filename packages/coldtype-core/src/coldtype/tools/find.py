@@ -25,25 +25,22 @@ for idx, font in enumerate(fonts):
         rep = pformat(eval(lookup))
         indented = "\n".join(" " * 8 + line for line in rep.splitlines())
         print(indented)
-        #_looked_up = eval(lookup)
-        #if len(str(_looked_up)) > 30:
-        #    pprint(_looked_up)
-        #    print("---")
-        #else:
-        #    print("         :", eval(_looked_up))
 
 print("\nFont Matches:", len(fonts))
 
 if len(fonts) > 0:
     matches = fonts[:50]
     def build_preview(x):
-        return (P(
-            StSt(str(x.i), Font.JBMono(), 30, wght=1)
-                .t(0, 8),
-            StSt(x.el.family, x.el, tool.state["fontSize"])
-                .t(60, 0),
-            P().rect(Rect(50, 2)))
-            .data(font=x.el))
+        try:
+            return (P(
+                StSt(str(x.i), Font.JBMono(), 30, wght=1)
+                    .t(0, 8),
+                StSt(x.el.family, x.el, tool.state["fontSize"])
+                    .t(60, 0),
+                P().rect(Rect(50, 2)))
+                .data(font=x.el))
+        except:
+            return (P(StSt("Failed to Render", Font.JBMono(), 20)))
 
     previews = P().enumerate(matches, build_preview)
 
