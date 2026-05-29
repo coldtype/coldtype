@@ -263,6 +263,10 @@ class Font():
     @property
     def manufacturer(self):
         return self.getName(8)
+    
+    @property
+    def family(self):
+        return self.font.ttFont['name'].getBestFamilyName()
 
     def names(self):
         """

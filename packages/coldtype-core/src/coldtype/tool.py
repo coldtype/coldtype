@@ -85,7 +85,7 @@ class Tool:
         out["font_variations"] = {}
 
         if not has_bpy:
-            print(f"\n⚙️  {self.name}")
+            print(f"\n⚙️  {self.name}  ⚙️")
             if self.doc:
                 print(f"  {self.doc}\n")
             #else:
@@ -116,6 +116,10 @@ class Tool:
                 out[k] = default_value
                 if k not in parsed and missing_exception is not None:
                     raise Exception(missing_exception)
+            
+        if not has_bpy:
+            print("")
+            print("---"*30)
         
         for k, v in parsed.items():
             if k in self.defaults:
