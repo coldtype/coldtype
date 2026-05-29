@@ -1,22 +1,41 @@
+import exrex
+
 from coldtype import *
-from coldtype.tool import parse_inputs, fmt_path
+from coldtype.tool import Tool
 from coldtype.osutil import show_in_finder
 
 
-args = parse_inputs(ººinputsºº, dict(
+tool = Tool(ººinputsºº, dict(
     font=[None, str, "Must provide font regex or path", "Font search string"],
-    rect=[Rect(1080), int, None, "Rect for window"]), ui=ººuiºº)
+    scale=[1.25, float, None, "Scale for window (chars will size up to fill)"],
+    variations=["{}", str, None, "Variations, as eval-able python string"],
+    subset=[None, str, None, "Subset the font to only characters represented by this regex; hitting 2 in viewer will run pyftsubset with these characters"],
+    dst=["~/Desktop", str, None, "Folder where subsetted fonts should appear"]
+    )
+    , ui=ººuiºº
+    , name="Character Set Display"
+    , doc="• Click something to see information printed in the terminal\n• Hit 1 in viewer to reveal current font in finder")
 
 
-print("👉 Click something to see information printed in the terminal\n")
+scale = tool.state["scale"]
+r = Rect(1080*scale, 1080*scale + (h:=120))
 
 
-@animation(Rect(args["rect"].w, args["rect"].h+(h:=120)), bg=1, tl=Timeline(len(args["fonts"])))
+if subset := tool.state["subset"]:
+    subset = list(exrex.generate(subset))
+
+fonts = tool.state["fonts"]
+fnt:Font = fonts[0]
+
+@animation(r, bg=1, tl=Timeline(len(fonts)))
 def chars_display(f):
-    fnt = args["fonts"][f.i]
-    path = fmt_path(fnt.path)
-
+    global fnt
+    fnt = fonts[f.i]
     chars = fnt.chars()
+
+    if subset:
+       chars = [(x, None) for x in subset]
+    
     sq = math.ceil(math.sqrt(len(chars)))
 
     header, grid = f.a.r.divide(h, "N")
@@ -24,18 +43,20 @@ def chars_display(f):
 
     return P(
         P(header).f(0),
-        StSt(fnt.names()[0], Font.JBMono(), 40, wght=1).align(header.inset(30), "N").f(1),
-        StSt(path, Font.JBMono(), 20, wght=0.25).align(header.inset(25), "S").f(0.75),
+        StSt(fnt.family, Font.JBMono(), 40, wght=1).align(header.inset(30), "N").f(1),
+        StSt(fnt.fmtpath, Font.JBMono(), 20, wght=0.25).align(header.inset(25), "S").f(0.75),
         P().gridlines(grid, sq, sq),
         P().enumerate(chars, lambda x:
-            StSt(x.el[0], fnt, rs[0].h-10, variations=args["font_variations"])
+            StSt(x.el[0], fnt, rs[0].h-10, variations=eval(tool.state["variations"]))
                 .data(char=x.el[0], gn=x.el[1])
                 .f(0)
                 .align(rs[x.i]))).data(fontPath=fnt.path)
 
 
-def build(_):
-    show_in_finder(chars_display.last_return.data("fontPath"))
+numpad = {
+    1: lambda _: show_in_finder(fnt.path),
+    2: lambda _: fnt.subset((Path(tool.state["dst"]) / (fnt.path.stem + "_subset" + fnt.path.suffix)).expanduser(), text="".join(subset))
+}
 
 
 def on_click(pos):

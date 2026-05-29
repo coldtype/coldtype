@@ -346,6 +346,7 @@ source = { editable = "packages/coldtype" }
 dependencies = [
     { name = "coldtype-core" },
     { name = "coldtype-fontgoggles", extra = ["more-fonts"] },
+    { name = "exrex" },
     { name = "glfw" },
     { name = "mido" },
     { name = "numpy" },
@@ -398,6 +399,7 @@ requires-dist = [
     { name = "coldtype-core", editable = "packages/coldtype-core" },
     { name = "coldtype-fontgoggles", extras = ["more-fonts"], specifier = "==1.8.4.7" },
     { name = "coldtype-fontgoggles", extras = ["more-fonts"], marker = "extra == 'more-fonts'", specifier = "==1.8.4.7" },
+    { name = "exrex" },
     { name = "favicons", marker = "extra == 'website'" },
     { name = "glfw" },
     { name = "jinja2", marker = "extra == 'website'", specifier = ">=3.1.6" },
@@ -552,6 +554,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/5c/ab/84e42f16746e70dae34d5c03eaae44ebf8fef8f84ab31ea484295779e32c/easing_functions-1.0.4.tar.gz", hash = "sha256:e18c7931d445b85f28c4d15ad0a9a47bb65d4e2eefc0db3840448fae25e3f9de", size = 3021 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f6/94/05bc9dae8c32cb2ad359828bf79c7af359eb5e3eeeb1a74f8b1760d0058a/easing_functions-1.0.4-py3-none-any.whl", hash = "sha256:27f2ce64adecde3d2d90d503ad564fc944e8f20221ba2eacf96be37c28c7ae4b", size = 15788 },
+]
+
+[[package]]
+name = "exrex"
+version = "0.12.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/26/9a/580635ea99178aba728de721e88e5a0d18b528805c58e8b26eab87be2a45/exrex-0.12.0.tar.gz", hash = "sha256:3f582add0700d4141e279625252e7a0655f9ad81feab3b8ab9077966668a2c99", size = 19766 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/63/90/89fdfc6f426cc6414cc8e1c599c4333d800f8f3ff05cb6ce69c8d0eaa245/exrex-0.12.0-py3-none-any.whl", hash = "sha256:1228f2e3afb008cacf6adc3ec20b098f1303886f4382b57cdf3b7259fb7c0ad3", size = 23590 },
 ]
 
 [[package]]

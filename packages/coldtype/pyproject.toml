@@ -17,6 +17,7 @@ dependencies = [
     "pyobjc-core",
     "pyobjc-framework-Cocoa",
     "pyobjc-framework-CoreText",
+    "exrex",
 ]
 
 [project.urls]

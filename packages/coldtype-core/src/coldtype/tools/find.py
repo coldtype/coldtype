@@ -1,10 +1,13 @@
+from pprint import pformat
+from textwrap import indent
+
 from coldtype import *
 from coldtype.osutil import show_in_finder
 from coldtype.tool import Tool, fmt_path, open_in_font_goggles
 
 tool = Tool(ººinputsºº, dict(
     font=[None, str, "Must provide search string", "Font search string, format is optional regex for directory, then optional /, then required regex for font name (supply . for wildcard)"],
-    cond=["True", str, None, "Optional conditional python fragment for filtering; `font:Font` is passed as argument"],
+    #cond=["True", str, None, "Optional conditional python fragment for filtering; `font:Font` is passed as argument"],
     lookup=[None, str, None, "Optional conditional python fragment to print for each matching result; `font:Font` is passed as argument"],
     dst=["~/Desktop", str, None, "Optional destination when copying fonts via build command"],
     )
@@ -13,25 +16,26 @@ tool = Tool(ººinputsºº, dict(
 
 fonts = tool.state.get("fonts", [])
 
-matches = []
+for idx, font in enumerate(fonts):
+    print("")
+    print(f"[{idx:3d}] {font.family}")
+    #print(f"         {font.manufacturer}")
+    print(f"       {font.fmtpath}")
+    if lookup := tool.state.get("lookup"):
+        rep = pformat(eval(lookup))
+        indented = "\n".join(" " * 8 + line for line in rep.splitlines())
+        print(indented)
+        #_looked_up = eval(lookup)
+        #if len(str(_looked_up)) > 30:
+        #    pprint(_looked_up)
+        #    print("---")
+        #else:
+        #    print("         :", eval(_looked_up))
 
-for font in fonts:
-    try:
-        if eval(tool.state["cond"]):
-            matches.append(font)
-            print("")
-            print(f"[{len(matches)-1:3d}] {font.family}")
-            #print(f"         {font.manufacturer}")
-            print(f"       {fmt_path(font.path)}")
-            if lookup := tool.state.get("lookup"):
-                print("         :", eval(lookup))
-    except Exception as e:
-        print(e)
+print("\nFont Matches:", len(fonts))
 
-print("\nFont Matches:", len(matches))
-
-if len(matches) > 0:
-    matches = matches[:50]
+if len(fonts) > 0:
+    matches = fonts[:50]
     def build_preview(x):
         return (P(
             StSt(str(x.i), Font.JBMono(), 30, wght=1)

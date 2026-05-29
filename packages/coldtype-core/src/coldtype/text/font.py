@@ -63,6 +63,12 @@ elif on_linux():
     ]
     pass
 
+def fmt_path(path: Path) -> str:
+    try:
+        return "~/" + str(path.relative_to(Path.home()))
+    except ValueError:
+        return str(path)
+
 FONT_FIND_DEPTH = int(os.environ.get("COLDTYPE_FONT_FIND_DEPTH", 3))
 
 class FontNotFoundException(Exception):
@@ -155,6 +161,10 @@ class Font():
         if tmp and delete_tmp:
             os.unlink(tmp.name)
     
+    @property
+    def fmtpath(self):
+        return fmt_path(self.path)
+    
     def __repr__(self):
         return f"<Font:{self.path}>"
 
@@ -167,6 +177,10 @@ class Font():
             self._loaded = True
             return self
     
+    @property
+    def axes(self):
+        return self.variations().keys()
+
     def variations(self):
         axes = {}
         if self._variations:
@@ -267,6 +281,12 @@ class Font():
     @property
     def family(self):
         return self.font.ttFont['name'].getBestFamilyName()
+    
+    def allNames(self):
+        names = []
+        for record in self.font.ttFont['name'].names:
+            names.append([record.nameID, str(record)])
+        return names
 
     def names(self):
         """
@@ -328,11 +348,11 @@ class Font():
                 return all_chars
     
     
-    def subset(self, output_path, *args, unicodes="U+0000-00FF U+2B22 U+201C U+201D U+201D", features={}):
+    def subset(self, output_path, *args, unicodes="U+0000-00FF U+2B22 U+201C U+201D U+201D", text=None, features={}):
         _args = [
             "pyftsubset", str(self.path),
             f"--output-file={str(output_path)}",
-            f"--unicodes={unicodes}",
+            f"--text={text}" if text else f"--unicodes={unicodes}",
             "--ignore-missing-unicodes",
             "--ignore-missing-glyphs",
             "--notdef-outline",

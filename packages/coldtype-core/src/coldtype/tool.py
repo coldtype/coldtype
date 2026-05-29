@@ -1,9 +1,11 @@
+import textwrap
+
 from pathlib import Path
 from dataclasses import dataclass
 from subprocess import run
 
 from coldtype.geometry.rect import Rect
-from coldtype.text.font import Font
+from coldtype.text.font import Font, fmt_path
 from coldtype.blender import b3d_runnable
 
 
@@ -17,24 +19,17 @@ except ImportError:
     has_bpy = False
 
 
-def fmt_path(path: Path) -> str:
-    try:
-        return "~/" + str(path.relative_to(Path.home()))
-    except ValueError:
-        return str(path)
-
-
 def print_font_results(results, selected=None):
     maxsys = max([len(f.system_name) for f in results])
-    maxpat = max([len(fmt_path(f.path)) for f in results])
+    maxpat = max([len(f.fmtpath) for f in results])
     print("")
     print(f"     # {'Name':<{maxsys}} Path")
     print(f"   {'-'*(maxsys+maxpat+7)}")
     for idx, result in enumerate(results):
         if idx == selected:
-            print(f"➡️  {idx:>{3}} {result.system_name:<{maxsys}} {fmt_path(result.path)}")
+            print(f"➡️  {idx:>{3}} {result.system_name:<{maxsys}} {result.fmtpath}")
         else:
-            print(f"   {idx:>{3}} {result.system_name:<{maxsys}} {fmt_path(result.path)}")
+            print(f"   {idx:>{3}} {result.system_name:<{maxsys}} {result.fmtpath}")
     print("\n")
 
 
@@ -66,10 +61,9 @@ class Tool:
         parsed = {}
         if not isinstance(self.inputs, dict):
             for idx, input in enumerate(self.inputs):
-                if "=" in input:
+                if "=" in input and input.split("=")[0] in self.defaults:
                     k, v = input.split("=")
-                    if k in self.defaults:
-                        parsed[k] = v
+                    parsed[k] = v
                 elif input in self.defaults.keys():
                     parsed[input] = True
                 elif self.positional:
@@ -81,16 +75,14 @@ class Tool:
             parsed = {**self.inputs}
 
         out = {}
-        font_variations = {}
-        out["font_variations"] = {}
 
         if not has_bpy:
             print(f"\n⚙️  {self.name}  ⚙️")
             if self.doc:
-                print(f"  {self.doc}\n")
-            #else:
-            #    print("")
-            print("\n🛠️  Command-Line Arguments  🛠️\n")
+                print("")
+                print(textwrap.indent(self.doc, "  "))
+            
+            print("\n  🛠️  Options  🛠️\n")
 
         for k, v in self.defaults.items():
             try:
@@ -100,9 +92,10 @@ class Tool:
                 raise e
 
             if not has_bpy and k not in ["rect"]:
-                print(f"  • {k}")
-                print(f"    Default: {default_value}")
-                print(f"      Doc: {docstring}")
+                print(f"    • {k}")
+                print(f"       Default: {default_value}")
+                print(textwrap.fill(docstring, width=80, initial_indent=" " * 8, subsequent_indent=" " * 8))
+                #print(textwrap.indent(docstring, "        "))
 
             if k in ["w", "h"]:
                 out[k] = v
@@ -110,7 +103,6 @@ class Tool:
             if k == "font" and default_value is not None:
                 out[k] = default_value
                 out["fonts"] = default_value
-                out["font_variations"] = default_value.variations()
                 out["fontSize"] = 42
             else:
                 out[k] = default_value
@@ -118,8 +110,8 @@ class Tool:
                     raise Exception(missing_exception)
             
         if not has_bpy:
-            print("")
-            print("---"*30)
+            print("\n")
+            #print("---"*30)
         
         for k, v in parsed.items():
             if k in self.defaults:
@@ -128,7 +120,13 @@ class Tool:
                 else:
                     if isinstance(v, str):
                         if k == "font":
-                            sized = v.split(":")
+                            filtered = v.split("§")
+                            if len(filtered) > 1:
+                                out["fontCond"] = filtered[-1]
+                            else:
+                                out["fontCond"] = "True"
+                            
+                            sized = filtered[0].split(":")
                             if len(sized) > 1:
                                 out["fontSize"] = int(sized[1])
                             else:
@@ -141,6 +139,14 @@ class Tool:
                                 fnt_idx = int(vs[1])
                             
                             fonts = Font.ListAll(vs[0])
+                                
+                            filtered = []
+                            for font in fonts:
+                                if eval(out["fontCond"]):
+                                    filtered.append(font)
+                            
+                            fonts = filtered
+
                             if len(fonts) == 0:
                                 print(f"\n\n‼️ Search \"{v}\" returned no fonts ‼️\n")
                                 out[k] = Font.ColdtypeObviously()
@@ -149,7 +155,6 @@ class Tool:
                                 if not has_bpy and self.print_fonts:
                                     print_font_results(fonts, fnt_idx)
                                 out[k] = fonts[fnt_idx]
-                                font_variations = out[k].variations()
                         elif k == "rect":
                             if v == "max":
                                 out[k] = self.ui.get("monitor").scale(2).inset(200).square().zero()
@@ -167,10 +172,7 @@ class Tool:
                         else:
                             out[k] = v
             else:
-                if k in font_variations:
-                    out["font_variations"][k] = float(v)
-                else:
-                    print(f"> key {k} not recognized")
+                print(f"> key {k} not recognized")
 
         self.state = out
 

@@ -22,7 +22,7 @@ def dsview_display(f):
     global a, b
 
     fnt:Font = tool.state["fonts"][f.i]
-    path = fmt_path(fnt.path)
+    path = fnt.fmtpath
 
     variations = fnt.variations()
     axes = list(variations.keys())
