@@ -210,11 +210,14 @@ class Tool:
             for k in annotations.keys():
                 self.state[k] = getattr(props, k)
             
-            dropdown_font_path = str(fonts[props["fonts"]].path)
+            try:
+                dropdown_font_path = str(fonts[props["fonts"]].path)
 
-            if dropdown_font_path != self.state["font"]:
-                self.state["font"] = dropdown_font_path
-                props["font"] = dropdown_font_path
+                if dropdown_font_path != self.state["font"]:
+                    self.state["font"] = dropdown_font_path
+                    props["font"] = dropdown_font_path
+            except Exception as e:
+                pass
             
             self.blender_runnable.func(BpyWorld().deselect_all())
 
