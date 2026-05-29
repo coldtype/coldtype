@@ -111,7 +111,6 @@ class Tool:
             
         if not has_bpy:
             print("\n")
-            #print("---"*30)
         
         for k, v in parsed.items():
             if k in self.defaults:
@@ -210,6 +209,13 @@ class Tool:
             props = bpy.context.scene.coldtype_tool_props
             for k in annotations.keys():
                 self.state[k] = getattr(props, k)
+            
+            dropdown_font_path = str(fonts[props["fonts"]].path)
+
+            if dropdown_font_path != self.state["font"]:
+                self.state["font"] = dropdown_font_path
+                props["font"] = dropdown_font_path
+            
             self.blender_runnable.func(BpyWorld().deselect_all())
 
         annotations = {}
@@ -221,13 +227,22 @@ class Tool:
                 docstring = self.defaults[k][-1]
                 if k == "font":
                     annotations[k] = bpy.props.StringProperty(name=k, description=docstring, default=str(value.path), update=on_change)
+
+                    if fonts := self.state.get("fonts"):
+                        items = []
+                        for idx, font in enumerate(fonts):
+                            items.append(tuple([f"FONT_{idx}", font.family, str(font.fmtpath)]))
+                        
+                        annotations["fonts"] = bpy.props.EnumProperty(name="Fonts", items=items, default="FONT_0", update=debounced_update)
+                
                 elif field_type == str:
                     annotations[k] = bpy.props.StringProperty(name=k, description=docstring, default=value, update=debounced_update)
                 elif field_type == int:
                     annotations[k] = bpy.props.IntProperty(name=k, description=docstring, default=value, update=debounced_update)
                 elif field_type == float:
                     annotations[k] = bpy.props.FloatProperty(name=k, description=docstring, default=value, update=debounced_update)
-        
+                
+
         Properties = type(
             "ColdtypeToolProperties",
             (PropertyGroup,),
