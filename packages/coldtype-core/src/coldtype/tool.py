@@ -119,7 +119,13 @@ class Tool:
                 else:
                     if isinstance(v, str):
                         if k == "font":
-                            filtered = v.split("§")
+                            variated = v.split("¶")
+                            if len(variated) > 1:
+                                out["fontVariations"] = eval(f"dict({variated[1]})")
+                            else:
+                                out["fontVariations"] = {}
+                            
+                            filtered = variated[0].split("§")
                             if len(filtered) > 1:
                                 out["fontCond"] = filtered[-1]
                             else:

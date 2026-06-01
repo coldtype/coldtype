@@ -8,8 +8,6 @@ from coldtype.osutil import show_in_finder
 tool = Tool(ººinputsºº, dict(
     font=[Font.RecursiveMono(), str, None, "Font search string"],
     scale=[1.25, float, None, "Scale for window (chars will size up to fill)"],
-    variations=["{}", str, None, "Variations, as eval-able python string"],
-    subset=[None, str, None, "Subset the font to only characters represented by this regex; hitting 2 in viewer will run pyftsubset with these characters"],
     dst=["~/Desktop", str, None, "Folder where subsetted fonts should appear"]
     )
     , ui=ººuiºº
@@ -19,10 +17,6 @@ tool = Tool(ººinputsºº, dict(
 
 scale = tool.state["scale"]
 r = Rect(1080*scale, 1080*scale + (h:=120))
-
-
-if subset := tool.state["subset"]:
-    subset = list(exrex.generate(subset))
 
 fonts = tool.state["fonts"]
 
@@ -62,7 +56,12 @@ def chars_display(f):
     glyphs = sset.values()
     #sq = math.ceil(math.sqrt(len(glyphs)))
 
-    glyphSet = fnt.font.ttFont.getGlyphSet(location={"wght":750,"wdth":110})
+    variations = tool.state["fontVariations"]
+    style = Style(fnt, 24, variations=variations, scaleVariations=variations.get("scale", 1))
+    if tool.state["fontVariations"]:
+        print(style.variations, tool.state["fontVariations"])
+
+    glyphSet = fnt.font.ttFont.getGlyphSet(location=style.variations)
 
     r = f.a.r.drop(h, "N")
     grid = r.grid(sq, sq)
