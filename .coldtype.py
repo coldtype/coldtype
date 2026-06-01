@@ -1,4 +1,4 @@
-import re
+#import re
 
 # try:
 #     from measurement.measures import Distance
@@ -21,8 +21,8 @@ import re
 #    r".*src_macro\.py": imperial_macro
 # }
 
-FONT_DIRS = [
-    "~/Type/fonts/fonts",
-]
+#FONT_DIRS = [
+#    "~/Type/fonts/fonts",
+#]
 
 #FFMPEG_COMMAND = "/Applications/DrawBot.app/Contents/Resources/ffmpeg"

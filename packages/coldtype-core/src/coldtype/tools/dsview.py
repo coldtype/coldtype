@@ -45,7 +45,7 @@ def dsview_display(f):
 
     return (P(
         P(l["h"].r).f(1),
-        StSt(fnt.names()[0], Font.JBMono(), 40, wght=1).align(l["h"].r.inset(25), "NE").f(0),
+        StSt(fnt.family, Font.JBMono(), 40, wght=1).align(l["h"].r.inset(25), "NE").f(0),
         StSt(path, Font.JBMono(), 22, wght=0.25).align(l["h"].r.inset(25), "SE").f(0),
         
         horizontal:=StSt(fnt.getName(variations[a][1].get("axisNameID")) + f" : “{variations[a][0]}” ", Font.JBMono(), 24, wght=1)

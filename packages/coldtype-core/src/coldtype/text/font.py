@@ -280,7 +280,11 @@ class Font():
     
     @property
     def family(self):
-        return self.font.ttFont['name'].getBestFamilyName()
+        try:
+            return self.font.ttFont['name'].getBestFamilyName()
+        except Exception as e:
+            print(e)
+            return self.names()[0]
     
     def allNames(self):
         names = []

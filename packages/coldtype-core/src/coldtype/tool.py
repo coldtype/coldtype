@@ -102,7 +102,7 @@ class Tool:
                 self.defaults[k] = [v, int]
             if k == "font" and default_value is not None:
                 out[k] = default_value
-                out["fonts"] = default_value
+                out["fonts"] = [default_value]
                 out["fontSize"] = 42
             else:
                 out[k] = default_value
