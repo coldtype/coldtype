@@ -56,10 +56,8 @@ def chars_display(f):
     glyphs = sset.values()
     #sq = math.ceil(math.sqrt(len(glyphs)))
 
-    variations = tool.state["fontVariations"]
-    style = Style(fnt, 24, variations=variations, scaleVariations=variations.get("scale", 1))
-    if tool.state["fontVariations"]:
-        print(style.variations, tool.state["fontVariations"])
+    style = Style(fnt, 24, variations=tool.state["fontVariations"])
+    print(style.variations, tool.state["fontVariations"])
 
     glyphSet = fnt.font.ttFont.getGlyphSet(location=style.variations)
 

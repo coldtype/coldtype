@@ -376,6 +376,8 @@ class Style():
     
     def normalizeVariations(self, variations):
         scale = self.scaleVariations
+        if "scale" in variations:
+            scale = variations.get("scale")
         roll = self.rollVariations
 
         for k, v in variations.items():

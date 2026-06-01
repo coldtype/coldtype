@@ -8,7 +8,6 @@ from coldtype.osutil import show_in_finder
 tool = Tool(ººinputsºº, dict(
     font=[None, str, "Must provide font regex or path", "Font search string"],
     scale=[1.25, float, None, "Scale for window (chars will size up to fill)"],
-    variations=["{}", str, None, "Variations, as eval-able python string"],
     subset=[None, str, None, "Subset the font to only characters represented by this regex; hitting 2 in viewer will run pyftsubset with these characters"],
     dst=["~/Desktop", str, None, "Folder where subsetted fonts should appear"]
     )
@@ -47,7 +46,7 @@ def chars_display(f):
         StSt(fnt.fmtpath, Font.JBMono(), 20, wght=0.25).align(header.inset(25), "S").f(0.75),
         P().gridlines(grid, sq, sq),
         P().enumerate(chars, lambda x:
-            StSt(x.el[0], fnt, rs[0].h-10, variations=eval(tool.state["variations"]))
+            StSt(x.el[0], fnt, rs[0].h-10, variations=tool.state["fontVariations"])
                 .data(char=x.el[0], gn=x.el[1])
                 .f(0)
                 .align(rs[x.i]))).data(fontPath=fnt.path)
