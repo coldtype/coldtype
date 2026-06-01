@@ -50,15 +50,19 @@ for fr in gsub.FeatureList.FeatureRecord:
                 for glyph, alt_set in subtable.alternates.items():
                     stylistic_sets[fr.FeatureTag][glyph] = alt_set
 
+
+sq = math.ceil(math.sqrt(max([len(s.values()) for s in stylistic_sets.values()])))
+
+
 @animation(r, bg=1, tl=Timeline(len(stylistic_sets)))
 def chars_display(f):
     set_name = list(stylistic_sets.keys())[f.i]
 
     sset = stylistic_sets[set_name]
     glyphs = sset.values()
-    sq = math.ceil(math.sqrt(len(glyphs)))
+    #sq = math.ceil(math.sqrt(len(glyphs)))
 
-    glyphSet = fnt.font.ttFont.getGlyphSet(location={"wght":750})
+    glyphSet = fnt.font.ttFont.getGlyphSet(location={"wght":750,"wdth":110})
 
     r = f.a.r.drop(h, "N")
     grid = r.grid(sq, sq)
