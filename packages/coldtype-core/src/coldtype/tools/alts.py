@@ -24,58 +24,82 @@ fnt:Font = fonts[0]
 gsub = fnt.font.ttFont["GSUB"].table
 
 style = Style(fnt, 24, variations=tool.state["fontVariations"])
-print(style.variations, tool.state["fontVariations"])
+#print(style.variations, tool.state["fontVariations"])
 
-stylistic_sets = {}
+substitutions = {}
 
 for fr in gsub.FeatureList.FeatureRecord:
-    if not fr.FeatureTag.startswith("ss"):
-        continue
-
-    stylistic_sets[fr.FeatureTag] = {}
-    
-    feature = fr.Feature
-    for lookup_idx in feature.LookupListIndex:
-        lookup = gsub.LookupList.Lookup[lookup_idx]
-        for subtable in lookup.SubTable:
-            # LookupType 1 = Single Substitution
-            if lookup.LookupType == 1:
-                for glyph, sub in subtable.mapping.items():
-                    stylistic_sets[fr.FeatureTag][glyph] = sub
-            # LookupType 3 = Alternate Substitution (multiple alternates per glyph)
-            elif lookup.LookupType == 3:
-                for glyph, alt_set in subtable.alternates.items():
-                    stylistic_sets[fr.FeatureTag][glyph] = alt_set
+    if fr.FeatureTag.startswith("ss") or fr.FeatureTag.startswith("cv") or fr.FeatureTag.startswith("aa"):
+        substitutions[fr.FeatureTag] = {}
+        
+        feature = fr.Feature
+        for lookup_idx in feature.LookupListIndex:
+            lookup = gsub.LookupList.Lookup[lookup_idx]
+            for subtable in lookup.SubTable:
+                # LookupType 1 = Single Substitution
+                if lookup.LookupType == 1:
+                    for glyph, sub in subtable.mapping.items():
+                        substitutions[fr.FeatureTag][glyph] = sub
+                # LookupType 3 = Alternate Substitution (multiple alternates per glyph)
+                elif lookup.LookupType == 3:
+                    for glyph, alt_set in subtable.alternates.items():
+                        substitutions[fr.FeatureTag][glyph] = alt_set
 
 
-sq = math.ceil(math.sqrt(max([len(s.values()) for s in stylistic_sets.values()])))
 
+print(substitutions.keys())
 
-@animation(r, bg=1, tl=Timeline(len(stylistic_sets)))
-def chars_display(f):
-    set_name = list(stylistic_sets.keys())[f.i]
+sq = 1
 
-    sset = stylistic_sets[set_name]
-    glyphs = sset.values()
-    #sq = math.ceil(math.sqrt(len(glyphs)))
-
+def build_view(glyphs):
+    view = P()
     glyphSet = fnt.font.ttFont.getGlyphSet(location=style.variations)
 
+    for g in glyphs:
+        try:
+            view.append(P().glyph(glyphSet[g], glyphSet).f(0))
+        except Exception as e:
+            print(e)
+            pass
+    
+    return view
+
+def align_view(view, grid, _sq):
+    return view.mapv(lambda idx, p: p.scale(1/_sq).align(grid[idx]))
+
+max_glyphs = max([len(s.values()) for s in substitutions.values()])
+
+if "aalt" in substitutions and True:
+    aalt = build_view(substitutions["aalt"].values())
+    max_glyphs = len(aalt)
+
+sq = math.ceil(math.sqrt(max_glyphs))
+
+
+@animation(r, bg=1, tl=Timeline(len(substitutions)))
+def chars_display(f):
+    set_name = list(substitutions.keys())[f.i]
+
     r = f.a.r.drop(h, "N")
-    grid = r.grid(sq, sq)
+
+    view = build_view(substitutions[set_name].values())
+
+    _sq = math.ceil(math.sqrt(len(view)))
+    grid = r.grid(_sq, _sq)
+    align_view(view, grid, _sq)
 
     return (P()
-        .enumerate(glyphs, lambda x: P().glyph(glyphSet[x.el], glyphSet).scale(1/sq).f(0).align(grid[x.i]))
-        .append(P().gridlines(r, sq, sq))
+        .append(view)
+        .append(P().gridlines(r, _sq, _sq))
         .append(P(
             P(r:=f.a.r.take(h, "N")).f(0),
             StSt(fnt.family, Font.JBMono(), 30, wght=0.5).align(r.inset(25), "NW").f(1),
-            StSt(f"{set_name} — {fnt.font.stylisticSetNames[set_name]}", Font.JBMono(), 32, wght=1).align(r.inset(25), "SW").f(1))))
+            StSt(f"{set_name} — {fnt.font.stylisticSetNames.get(set_name, set_name)}", Font.JBMono(), 32, wght=1).align(r.inset(25), "SW").f(1))))
 
 
 numpad = {
     1: lambda _: show_in_finder(fnt.path),
-    2: lambda _: fnt.subset((Path(tool.state["dst"]) / (fnt.path.stem + "_subset" + fnt.path.suffix)).expanduser(), text="".join(subset))
+    #2: lambda _: fnt.subset((Path(tool.state["dst"]) / (fnt.path.stem + "_subset" + fnt.path.suffix)).expanduser(), text="".join(subset))
 }
 
 
