@@ -23,6 +23,9 @@ fonts = tool.state["fonts"]
 fnt:Font = fonts[0]
 gsub = fnt.font.ttFont["GSUB"].table
 
+style = Style(fnt, 24, variations=tool.state["fontVariations"])
+print(style.variations, tool.state["fontVariations"])
+
 stylistic_sets = {}
 
 for fr in gsub.FeatureList.FeatureRecord:
@@ -55,9 +58,6 @@ def chars_display(f):
     sset = stylistic_sets[set_name]
     glyphs = sset.values()
     #sq = math.ceil(math.sqrt(len(glyphs)))
-
-    style = Style(fnt, 24, variations=tool.state["fontVariations"])
-    print(style.variations, tool.state["fontVariations"])
 
     glyphSet = fnt.font.ttFont.getGlyphSet(location=style.variations)
 
