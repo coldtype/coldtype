@@ -35,17 +35,17 @@ if len(fonts) > 0:
             return (P(
                 StSt(str(x.i), Font.JBMono(), 30, wght=1)
                     .t(0, 8),
-                StSt(x.el.family, x.el, tool.state["fontSize"])
+                StSt(x.el.family, x.el, tool.state["fontSize"], variations=tool.state["fontVariations"])
                     .t(60, 0),
                 P().rect(Rect(50, 2)))
                 .data(font=x.el))
         except:
             return (P(StSt("Failed to Render", Font.JBMono(), 20)))
 
-    previews = P().enumerate(matches, build_preview)
+    previews = P().enumerate(matches, build_preview).stack(30)
 
-    w = max([p.ambit().w for p in previews])
-    h = sum([p.ambit().h for p in previews])
+    w = previews.ambit(ty=1).w
+    h = previews.ambit(ty=1).h
 
     rect = Rect(w+20, h + 20*(len(matches)+1))
 
@@ -53,7 +53,7 @@ if len(fonts) > 0:
     def show_results(r):
         return (previews
             .copy()
-            .stack(20)
+            #.stack(20)
             .align(r)
             .f(1))
     
