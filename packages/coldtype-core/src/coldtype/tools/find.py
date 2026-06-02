@@ -9,6 +9,7 @@ tool = Tool(ººinputsºº, dict(
     font=[None, str, "Must provide search string", "Font search string, format is optional regex for directory, then optional /, then required regex for font name (supply . for wildcard)"],
     #cond=["True", str, None, "Optional conditional python fragment for filtering; `font:Font` is passed as argument"],
     lookup=[None, str, None, "Optional conditional python fragment to print for each matching result; `font:Font` is passed as argument"],
+    text=[None, str, None, "String to print in viewer (defaults to font name)"],
     dst=["~/Desktop", str, None, "Optional destination when copying fonts via build command"],
     )
     , name="Find (fonts)"
@@ -31,11 +32,12 @@ print("\nFont Matches:", len(fonts))
 if len(fonts) > 0:
     matches = fonts[:50]
     def build_preview(x):
+        text = tool.state.get("text", x.el.family)
         try:
             return (P(
                 StSt(str(x.i), Font.JBMono(), 30, wght=1)
                     .t(0, 8),
-                StSt(x.el.family, x.el, tool.state["fontSize"], variations=tool.state["fontVariations"])
+                StSt(text, x.el, tool.state["fontSize"], variations=tool.state["fontVariations"])
                     .t(60, 0),
                 P().rect(Rect(50, 2)))
                 .data(font=x.el))

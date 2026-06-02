@@ -78,8 +78,8 @@ def setup(bpw:BpyWorld):
 
 
 tool = Tool(ººinputsºº, dict(
-    font=[Font.MutatorSans(), str, None, "Font search string"],
-    text=["a", str, None, "Letter or letters to display at each node"],
+    font=[Font.NoordzijObviously(), str, None, "Font search string"],
+    text=["e", str, None, "Letter or letters to display at each node"],
     axesOrder=["auto", str, None, "Order of the axes (default is 'auto', i.e. how they show up in the font); can prefix axis name with - to reverse its appearance in cube"],
     count=[3, int, None, "How many letters in x, y, and z dimensions"],
     fontScale=[0.5, float, None, "How big is each letter"],

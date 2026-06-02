@@ -483,10 +483,6 @@ class Font():
 
         try:
             for p in dir.iterdir():
-                #if len(results) > 0:
-                #    print("SKIP")
-                #    return results[0]
-
                 if p.is_dir() and depth < max_depth and p.suffix != ".ufo":
                     try:
                         res = Font._ListDir(p, regex, regex_dir, log, depth=depth+1, bail=bail, max_depth=max_depth)
@@ -497,6 +493,7 @@ class Font():
                     except PermissionError:
                         pass
                 else:
+                    print(regex_dir, p.parent, p.name)
                     if regex_dir and not re.search(regex_dir, str(p.parent), re.IGNORECASE):
                         continue
                     if re.search(regex, p.name, re.IGNORECASE):
@@ -516,6 +513,9 @@ class Font():
         if "/" in regex and regex_dir is None:
             regex_dir, regex = regex.rsplit("/", 1)
             #print(">>>", regex_dir, regex)
+    
+        if font_dir is None and Path(regex_dir).exists() and Path(regex_dir).is_dir():
+            font_dirs = regex_dir
         
         font_dirs = ALL_FONT_DIRS
         if font_dir is not None:
@@ -535,6 +535,9 @@ class Font():
     
     @staticmethod
     def ListAll(regex, log=False, font_dir=None, expand=True, max_depth=FONT_FIND_DEPTH, bail=False) -> list["Font"]:
+        if Path(regex).exists():
+            return [Font.Cacheable(regex)]
+
         results = Font.List(regex, expand=True, max_depth=max_depth, log=log)
         paths = set([r.path for r in results])
 
@@ -727,6 +730,10 @@ class Font():
     @staticmethod
     def ColdtypeObviously():
         return Font.Cacheable(Path(__file__).parent.parent / "demo/ColdtypeObviously-VF.ttf")
+    
+    @staticmethod
+    def NoordzijObviously():
+        return Font.Cacheable(Path(__file__).parent.parent / "demo/ObviouslyVariableNoordzij_e.ttf")
     
     ColdObvi = ColdtypeObviously
 
