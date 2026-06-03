@@ -12,7 +12,7 @@ def find_sequence():
     rs = bpy.app.driver_namespace.get("_coldtypes", [])
     sq = None
     for r in rs:
-        print(">>>", r)
+        #print(">>>", r)
         if isinstance(r, b3d_sequencer) or isinstance(r, b3d_animation):
             sq = r
     return sq

@@ -32,7 +32,10 @@ print("\nFont Matches:", len(fonts))
 if len(fonts) > 0:
     matches = fonts[:50]
     def build_preview(x):
-        text = tool.state.get("text", x.el.family)
+        text = tool.state.get("text")
+        if text is None:
+            text = x.el.family
+        
         try:
             return (P(
                 StSt(str(x.i), Font.JBMono(), 30, wght=1)

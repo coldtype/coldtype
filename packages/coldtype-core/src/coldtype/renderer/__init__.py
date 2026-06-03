@@ -304,7 +304,7 @@ class Renderer():
         self.add_watchee([Watchable.Source, self.source_reader.filepath, None])
 
         ph = path_hash(self.source_reader.filepath)
-        self.add_watchee([Watchable.Generic, Path(f"~/.coldtype/{ph}_input.json").expanduser(), None])
+        self.add_watchee([Watchable.Generic, Path(f"~/.coldtype/blender-inputs/{ph}_input.json").expanduser(), None])
         
         if reload:
             self.reload_and_render(Action.Initial)

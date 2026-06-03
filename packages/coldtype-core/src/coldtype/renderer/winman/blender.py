@@ -53,6 +53,7 @@ class WinmanBlender(WinmanPassthrough):
             cb = self.command_file
             if cb.exists():
                 cb.unlink()
+            #print("WRITING COMMAND", cmd, arg, kwargs)
             cb.write_text(f"{cmd},{str(arg)};{str(kwargs)}")
         except FileNotFoundError:
             pass
@@ -65,7 +66,8 @@ class WinmanBlender(WinmanPassthrough):
     
     def reload(self, filepath, source_reader):
         ph = path_hash(filepath)
-        self.command_file = Path(f"~/.coldtype/{ph}.txt").expanduser()
+        self.command_file = Path(f"~/.coldtype/blender-inputs/{ph}.txt").expanduser()
+        self.command_file.parent.mkdir(parents=True, exist_ok=True)
         self.write_command("import", filepath, source_reader.inputs)
     
     def toggle_playback(self, toggle):
