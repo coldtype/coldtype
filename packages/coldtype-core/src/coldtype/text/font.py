@@ -179,7 +179,7 @@ class Font():
     
     @property
     def axes(self):
-        return self.variations().keys()
+        return list(self.variations().keys())
 
     def variations(self):
         axes = {}

@@ -22,8 +22,6 @@ setUseCocoa(False)
 from fontgoggles.misc.textInfo import TextInfo
 from fontgoggles.font.glyphDrawing import GlyphDrawing
 
-import uharfbuzz as hb
-
 try:
     from blackrenderer.font import BlackRendererFont
     #from blackrenderer.backends.pathCollector import PathCollectorSurface, PathCollectorRecordingPen
@@ -373,6 +371,9 @@ class Style():
             self.variations[k] = v
         for k, v in self.normalizeVariations(limits).items():
             self.variationLimits[k] = v
+        
+        if None in self.variations:
+            del self.variations[None]
     
     def normalizeVariations(self, variations):
         scale = self.scaleVariations

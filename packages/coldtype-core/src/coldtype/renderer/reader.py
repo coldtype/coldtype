@@ -349,7 +349,9 @@ class SourceReader():
     @staticmethod
     def Tools() -> dict[str,Path]:
         # also look in ~/.coldtype?
-        return {p.stem:p for p in sorted((Path(__file__).parent.parent / "tools").glob("*.py"))}
+        local = {p.stem:p for p in sorted(Path("~/.coldtype/tools").expanduser().glob("*.py"))}
+        embedded = {p.stem:p for p in sorted((Path(__file__).parent.parent / "tools").glob("*.py"))}
+        return {**local, **embedded}
 
     @staticmethod
     def Demo(name):
