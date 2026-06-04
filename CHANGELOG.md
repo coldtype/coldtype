@@ -390,3 +390,8 @@ Huge update, attempting to future proof things
 ## [0.13.5]
 ### Fixed
 - `renderer/.coldtype.py` not included in package
+
+## [0.13.7]
+### Updated
+- Latest fontgoggles with updated deps
+- Noordzij tool (and some others)

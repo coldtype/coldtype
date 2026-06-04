@@ -1,8 +1,8 @@
 [project]
 name = "coldtype"
-version = "0.13.6"
+version = "0.13.7"
 dependencies = [
-    "coldtype-core==0.13.6",
+    "coldtype-core==0.13.7",
     "glfw",
     "PyOpenGL",
     "skia-python",
