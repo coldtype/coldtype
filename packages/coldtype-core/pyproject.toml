@@ -12,10 +12,10 @@ dependencies = [
     "fontPens==0.2.4",
     "easing-functions==1.0.4",
     "b3denv>=0.0.22",
-    "coldtype-fontgoggles==1.8.4.7",
+    "coldtype-fontgoggles[more-fonts]==1.9.4.0",
     "skia-pathops",
     "defcon>=0.12.0", # for OutlinePen
-    "uharfbuzz<0.47.0", # some kind of cached variations/memory bug introduced in 0.47.0
+    #"uharfbuzz<0.47.0", # some kind of cached variations/memory bug introduced in 0.47.0
     "show-in-file-manager>=1.1.6",
 ]
 
@@ -27,11 +27,7 @@ Issues = "https://github.com/coldtype/coldtype/issues"
 Changelog = "https://github.com/coldtype/coldtype/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
-more-fonts = [
-    "ufo2ft>=3.2.8", # pin for fg issue
-    "coldtype-fontgoggles[more-fonts]==1.8.4.7"
-]
-drawbot = ["numpy"]
+#drawbot = ["numpy"]
 unicode = ["unicodedata2"]
 notebook = ["skia-pathops", "skia-python", "potracer", "tdqm"]
 
@@ -48,7 +44,7 @@ include-package-data = true
 "coldtype.renderer" = [".coldtype.py"]
 
 #[tool.uv.sources]
-#coldtype-fontgoggles = { path = "../fontgoggles", editable = true }
+#coldtype-fontgoggles = { path = "../../../fontgoggles", editable = true }
 
 [build-system]
 requires = ["setuptools >= 61.0", "wheel", "setuptools-scm >= 8.0"]

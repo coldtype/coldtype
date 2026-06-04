@@ -30,8 +30,9 @@ def prefix_inline_venv(expr):
             print(e)
             print(">>> could not load direct_url.json for ", direct_url)
     
-    if False:
-        print(">>>", paths)
+    if True:
+        from pprint import pprint
+        pprint(paths)
 
     paths_str = ""
     for src, path in paths:
