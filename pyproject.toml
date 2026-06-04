@@ -1,2 +1,10 @@
 [tool.uv.workspace]
 members = ["packages/*"]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "fontmake",
+    "pillow",
+    "imagehash",   
+]
