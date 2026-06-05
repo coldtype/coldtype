@@ -166,7 +166,7 @@ class Font():
         return fmt_path(self.path)
     
     def __repr__(self):
-        return f"<Font:{self.path}>"
+        return f"<Font:{fmt_path(self.path)}>"
 
     def load(self):
         if self._loaded:
