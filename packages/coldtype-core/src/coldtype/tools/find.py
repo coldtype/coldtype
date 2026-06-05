@@ -52,14 +52,14 @@ if len(fonts) > 0:
     w = previews.ambit(ty=1).w
     h = previews.ambit(ty=1).h
 
-    rect = Rect(w+20, h + 20*(len(matches)+1))
+    rect = Rect(w+60, h + 60)
 
     @renderable(rect, bg=0)
     def show_results(r):
         return (previews
             .copy()
-            #.stack(20)
-            .align(r)
+            .align(r, "W")
+            .translate(10, 0)
             .f(1))
     
     def build(_):
