@@ -12,9 +12,9 @@ dependencies = [
     "requests>=2.32.4",
     "mido",
     "tqdm",
-    "pyobjc-core",
-    "pyobjc-framework-Cocoa",
-    "pyobjc-framework-CoreText",
+    "pyobjc-core; sys_platform == 'darwin'",
+    "pyobjc-framework-Cocoa; sys_platform == 'darwin'",
+    "pyobjc-framework-CoreText; sys_platform == 'darwin'",
     "exrex",
 ]
 
