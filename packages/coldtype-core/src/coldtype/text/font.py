@@ -616,7 +616,8 @@ class Font():
                 return expanded
             return fonts
         else:
-            raise Exception("Library not supported on this OS")
+            return []
+            #raise Exception("Library not supported on this OS")
     
     @staticmethod
     def LibraryFind(regex, print_list=False) -> "Font":
