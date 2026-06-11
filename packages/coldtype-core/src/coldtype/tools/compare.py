@@ -1,6 +1,7 @@
-from coldtype import *
-from coldtype.tool import Tool
 from itertools import batched
+
+from coldtype import *
+from coldtype.tool import *
 
 
 tool = Tool(ººinputsºº, dict(
@@ -32,8 +33,10 @@ def view(f):
             .f(1)
             .align(f.a.r.take(header, "S"))))
 
+
 def on_click(pos):
     for m in (view.last_return
         .find(lambda x: x.data("font") and pos.inside(x.ambit()))):
         font = m.data("font")
+        show_in_finder(font)
         print(f"> {font}")

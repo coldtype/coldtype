@@ -7,6 +7,7 @@ from subprocess import run
 from coldtype.geometry.rect import Rect
 from coldtype.text.font import Font, fmt_path
 from coldtype.blender import b3d_runnable
+from coldtype.osutil import show_in_finder
 
 
 try:
@@ -20,16 +21,16 @@ except ImportError:
 
 
 def print_font_results(results, selected=None):
-    maxsys = max([len(f.system_name) for f in results])
+    maxsys = max([len(f.family) for f in results])
     maxpat = max([len(f.fmtpath) for f in results])
     print("")
     print(f"     # {'Name':<{maxsys}} Path")
     print(f"   {'-'*(maxsys+maxpat+7)}")
     for idx, result in enumerate(results):
         if idx == selected:
-            print(f"➡️  {idx:>{3}} {result.system_name:<{maxsys}} {result.fmtpath}")
+            print(f"➡️  {idx:>{3}} {result.family:<{maxsys}} {result.fmtpath}")
         else:
-            print(f"   {idx:>{3}} {result.system_name:<{maxsys}} {result.fmtpath}")
+            print(f"   {idx:>{3}} {result.family:<{maxsys}} {result.fmtpath}")
     print("\n")
 
 
@@ -46,8 +47,10 @@ class Tool:
     ui: bool = True
     positional: bool = True
     print_fonts: bool = True
+    watch_fonts: bool = False
     blender_runnable: b3d_runnable = None
     state: dict = lambda: {}
+    defaultFontSize: float = 72
 
     def __post_init__(self):
         if self.ui is not None and self.ui is not False:
@@ -103,7 +106,7 @@ class Tool:
             if k == "font" and default_value is not None:
                 out[k] = default_value
                 out["fonts"] = [default_value]
-                out["fontSize"] = 42
+                out["fontSize"] = self.defaultFontSize
             else:
                 out[k] = default_value
                 if k not in parsed and missing_exception is not None:
@@ -111,6 +114,8 @@ class Tool:
             
         if not has_bpy:
             print("\n")
+        
+        out["fontVariations"] = {}
         
         for k, v in parsed.items():
             if k in self.defaults:
@@ -135,7 +140,7 @@ class Tool:
                             if len(sized) > 1:
                                 out["fontSize"] = int(sized[1])
                             else:
-                                out["fontSize"] = 72
+                                out["fontSize"] = self.defaultFontSize
                             
                             v = sized[0]
                             vs = v.split("@")

@@ -46,7 +46,6 @@ for fr in gsub.FeatureList.FeatureRecord:
                         substitutions[fr.FeatureTag][glyph] = alt_set
 
 
-
 print(substitutions.keys())
 
 sq = 1
@@ -59,7 +58,7 @@ def build_view(glyphs):
         try:
             view.append(P().glyph(glyphSet[g], glyphSet).f(0))
         except Exception as e:
-            print(e)
+            #print(e)
             pass
     
     return view

@@ -281,10 +281,14 @@ class Font():
     @property
     def family(self):
         try:
-            return self.font.ttFont['name'].getBestFamilyName()
+            return self.font.ttFont['name'].getBestFamilyName() or "N/A"
         except Exception as e:
             print(e)
-            return self.names()[0]
+            family = self.names()[0]
+            if family is None:
+                return "N/A"
+            else:
+                return family
     
     def allNames(self):
         names = []
