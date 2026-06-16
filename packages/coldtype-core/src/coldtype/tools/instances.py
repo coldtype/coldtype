@@ -6,7 +6,7 @@ from coldtype import *
 from coldtype.tool import parse_inputs
 
 args = parse_inputs(ººinputsºº, dict(
-    font=[None, str, "Must provide font"]))
+    font=[Font.JBMono(), str, None, "Must provide font"]))
 
 font = args["font"]
 
