@@ -488,7 +488,6 @@ class Font():
             return
         
         for pattern in FONT_DIR_IGNORE_PATTERNS:
-            print(pattern, str(dir))
             if re.search(pattern, str(dir)):
                 return []
         
