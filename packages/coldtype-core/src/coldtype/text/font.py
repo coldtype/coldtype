@@ -71,6 +71,10 @@ def fmt_path(path: Path) -> str:
 
 FONT_FIND_DEPTH = int(os.environ.get("COLDTYPE_FONT_FIND_DEPTH", 3))
 
+FONT_DIR_IGNORE_PATTERNS = [
+    r"___"
+]
+
 class FontNotFoundException(Exception):
     pass
 
@@ -482,6 +486,11 @@ class Font():
     def _ListDir(dir, regex, regex_dir, log=False, depth=0, max_depth=FONT_FIND_DEPTH, bail=False):
         if dir.name in [".git", "venv", ".venv"]:
             return
+        
+        for pattern in FONT_DIR_IGNORE_PATTERNS:
+            print(pattern, str(dir))
+            if re.search(pattern, str(dir)):
+                return []
         
         results = []
 
