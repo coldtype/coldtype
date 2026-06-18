@@ -2,7 +2,7 @@ from coldtype import *
 from coldtype.tool import Tool
 from coldtype.blender import *
 
-# coldtype-embedded-profile b3dlo
+# coldtype-embedded-profile b3dlo_nofile
 
 """
 ala (https://letterror.com/articles/noordzij-cube.html)
@@ -12,9 +12,6 @@ ala (https://letterror.com/articles/noordzij-cube.html)
 @b3d_runnable()
 def setup(bpw:BpyWorld):
     d = tool.state["count"]
-
-    BpyObj.Find("Cube").delete()
-    BpyObj.Find("Plane").delete()
 
     (bpw.delete_previous()
         .cycles(128)

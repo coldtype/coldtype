@@ -485,8 +485,13 @@ class SourceReader():
         #    return None
 
         bf = self.config.blender_file
+        
         if not bf:
             bf = self.filepath.parent / "blends" / (self.filepath.stem + ".blend")
+        elif bf == "<no-file>":
+            import uuid
+            bf = Path(f"{uuid.uuid4().hex[:8]}.blend")
+        
         return BlenderIO(bf)
     
     def normalize_filepath(self, filepath:Path, dirindex=0):

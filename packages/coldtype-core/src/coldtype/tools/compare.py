@@ -8,7 +8,8 @@ tool = Tool(ººinputsºº, dict(
     font=[Font.MutatorSans(), str, None, "Font search string"],
     text=["A", str, None, "Text to animate"],
     limit=[100, int, None, "How many to show (max)"])
-    , print_fonts=False)
+    , print_fonts=False
+    , name="Compare")
 
 text = tool.state["text"]
 
