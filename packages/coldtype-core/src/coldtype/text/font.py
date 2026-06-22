@@ -560,10 +560,11 @@ class Font():
         results = Font.List(regex, expand=True, max_depth=max_depth, log=log)
         paths = set([r.path for r in results])
 
-        library_results = Font.LibraryList(regex, expand=True, log=log)
-        for l in library_results:
-            if l.path not in paths:
-                results.append(l)
+        if True:
+            library_results = Font.LibraryList(regex, expand=True, log=log)
+            for l in library_results:
+               if l.path not in paths:
+                   results.append(l)
         
         return results #sorted(results, key=lambda p: p.system_name)
 
@@ -613,6 +614,7 @@ class Font():
 
             fonts = [x for x in list(AppKit.NSFontManager.sharedFontManager().availableFonts()) if not x.startswith(".")]
             fonts = list(sorted(fonts, key=lambda x: len(x)))
+
             fonts = [x for x in fonts if re.search(regex, x)]
             if print_list:
                 print("---")
@@ -621,20 +623,20 @@ class Font():
                     print(" >", f)
             
             if expand or copy_to:
+                paths_seen = set()
                 expanded = []
-                for f in fonts:
-                    out = []
 
+                for f in fonts:
                     print(".", end="", flush=True)
-                
                     font = AppKit.NSFont.fontWithName_size_(f, 100)
                     path = Path(CoreText.CTFontDescriptorCopyAttribute(font.fontDescriptor(), CoreText.kCTFontURLAttribute).path())
-                    if not regex_dir or re.search(regex_dir, str(path)):
-                        cacheable = Font.Cacheable(path, system_name=f)
-                        expanded.append(cacheable)
-
-                        if copy_to:
-                            cacheable.copy_to(copy_to)
+                    if path not in paths_seen:
+                        if not regex_dir or re.search(regex_dir, str(path)):
+                            cacheable = Font.Cacheable(path, system_name=f)
+                            expanded.append(cacheable)
+                            if copy_to:
+                                cacheable.copy_to(copy_to)
+                            paths_seen.add(path)
                 
                 print("")
                 return expanded
