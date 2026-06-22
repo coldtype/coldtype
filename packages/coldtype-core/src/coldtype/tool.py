@@ -152,8 +152,12 @@ class Tool:
                                 
                             filtered = []
                             for font in fonts:
-                                if eval(out["fontCond"]):
-                                    filtered.append(font)
+                                try:
+                                    if eval(out["fontCond"]):
+                                        filtered.append(font)
+                                except Exception as e:
+                                    print(e)
+                                    print(font)
                             
                             fonts = filtered
 

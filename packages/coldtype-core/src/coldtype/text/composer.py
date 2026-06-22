@@ -250,7 +250,7 @@ def StSt(text,
         style = Style(font, font_size, **kwargs)
     
     fit = kwargs.get("fit", None)
-    leading = kwargs.get("leading", 10)
+    leading = kwargs.get("leading", style.leading)
 
     if "\n" in text:
         lines = P()

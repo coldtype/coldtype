@@ -133,6 +133,7 @@ class Style():
         annotate=False,
         case=None,
         cluster=False,
+        leading=10,
         **kwargs
         ):
 
@@ -159,6 +160,8 @@ class Style():
         self.rollVariations = kwargs.get("rv", rollVariations)
         self.tag = tag
         self.annotate = annotate
+
+        self.leading = leading
         
         self.metrics = metrics
         self.capHeight = kwargs.get("ch", capHeight)

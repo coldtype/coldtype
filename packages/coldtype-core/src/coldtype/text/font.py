@@ -541,9 +541,16 @@ class Font():
             results.extend(list_dir_results)
         
         results = sorted(results, key=lambda p: p.stem)
+        
         if expand:
-            return [Font.Cacheable(p, system_name=p.stem) for p in results]
-        return results
+            out = []
+            for p in results:
+                print(".", end="", flush=True)
+                out.append(Font.Cacheable(p, system_name=p.stem))
+            print("")
+            return out
+        else:
+            return results
     
     @staticmethod
     def ListAll(regex, log=False, font_dir=None, expand=True, max_depth=FONT_FIND_DEPTH, bail=False) -> list["Font"]:
@@ -616,6 +623,10 @@ class Font():
             if expand or copy_to:
                 expanded = []
                 for f in fonts:
+                    out = []
+
+                    print(".", end="", flush=True)
+                
                     font = AppKit.NSFont.fontWithName_size_(f, 100)
                     path = Path(CoreText.CTFontDescriptorCopyAttribute(font.fontDescriptor(), CoreText.kCTFontURLAttribute).path())
                     if not regex_dir or re.search(regex_dir, str(path)):
@@ -624,7 +635,8 @@ class Font():
 
                         if copy_to:
                             cacheable.copy_to(copy_to)
-                    
+                
+                print("")
                 return expanded
             return fonts
         else:
