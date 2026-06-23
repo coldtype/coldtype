@@ -8,14 +8,13 @@ from random import Random
 #    raise ColdtypeCeaseConfigException()
 
 args = parse_inputs(ººinputsºº, dict(
-    font=[None, str, "Must provide font"],
-    font_size=[None, int],
-    positions=[(0, 1), lambda xs: [float(x) for x in xs.split(",")]],
-    stroke=[False, bool],
-    text=["A", str],
-    seed=[0, int],
-    shuffle=[False, bool],
-    animate=[True, bool]))
+    font=[None, str, "Must provide font", "Font search string"],
+    positions=[(0, 1), lambda xs: [float(x) for x in xs.split(",")], None, ""],
+    stroke=[False, bool, None, ""],
+    text=["A", str, None, ""],
+    seed=[0, int, None, ""],
+    shuffle=[False, bool, None, ""],
+    animate=[True, bool, None, ""]))
 
 rnd = Random()
 rnd.seed(args["seed"])
@@ -27,8 +26,6 @@ dst = args["font"].path
 custom_folder = dst.name + ".vfview/renders"
 
 axes = args["font"].variations()
-if args["log"]:
-    pprint(axes)
 
 possibles = []
 for a in axes.keys():
@@ -67,7 +64,8 @@ if args["shuffle"]:
     custom_folder=custom_folder,
     bg=0,
     render_bg=1,
-    preview_only=args["preview_only"])
+    #preview_only=args["preview_only"]
+    )
 def vf(f):
     if args["animate"]:
         anim_combos = []
@@ -83,7 +81,7 @@ def vf(f):
         #return P(rs[x.i].inset(20))
         return P(
             StSt(args["text"], args["font"],
-                args["font_size"] or rs[x.i].h-50,
+                args["fontSize"] or rs[x.i].h-50,
                 rv=1,
                 **x.el)
                 .align(rs[x.i], tx=0)

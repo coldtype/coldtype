@@ -6,12 +6,12 @@ if __as_config__:
     raise ColdtypeCeaseConfigException()
 
 args = parse_inputs(__inputs__, dict(
-    file=[None, str, "Must provide midi file"],
-    duration=[None, int],
-    bpm=[None, float],
-    fps=[None, float],
-    text=[True, bool],
-    lookup=[None, {}]))
+    file=[None, str, "Must provide midi file", "MIDI file to display graphically"],
+    duration=[None, int, None, "Duration of the MIDI file (override)"],
+    bpm=[None, float, None, "BPM of the MIDI file (override)"],
+    fps=[None, float, None, "FPS of the MIDI file (override)"],
+    text=[True, bool, None, "Text to display"],
+    lookup=[None, {}, None, "Lookup"]))
 
 mr = MidiTimeline(
     Path(args["file"]).expanduser(),
@@ -23,15 +23,16 @@ mr = MidiTimeline(
 dst = Path(args["file"]).parent
 custom_folder = Path(args["file"]).name + ".midiview/renders"
 
-if args["log"]:
-    print("="*20)
-    print("> Path:", mr.midi_path)
-    print(f"> Note Range: {mr.min}-{mr.max}")
-    print("> Duration:", mr.duration)
-    print(f"> BPM/FPS: {mr.bpm}/{mr.fps}")
-    print("="*20)
+# if args["log"]:
+#     print("="*20)
+#     print("> Path:", mr.midi_path)
+#     print(f"> Note Range: {mr.min}-{mr.max}")
+#     print("> Duration:", mr.duration)
+#     print(f"> BPM/FPS: {mr.bpm}/{mr.fps}")
+#     print("="*20)
 
 r = args["rect"]
+r = Rect(1080)
 xo = 47
 
 def build_display():
@@ -76,7 +77,8 @@ rt, rd, static = build_display()
     custom_folder=custom_folder,
     bg=1,
     render_bg=1,
-    preview_only=args["preview_only"])
+    #preview_only=args["preview_only"]
+    )
 def midi(f):
     px = f.e("l", 0, rng=(xo, rd.w))
     if args["text"]:
