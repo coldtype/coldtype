@@ -395,3 +395,7 @@ Huge update, attempting to future proof things
 ### Updated
 - Latest fontgoggles with updated deps
 - Noordzij tool (and some others)
+
+## [0.13.9] - 2026-06-23
+### Updated
+- More tools!
