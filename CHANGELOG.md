@@ -399,3 +399,9 @@ Huge update, attempting to future proof things
 ## [0.13.9] - 2026-06-23
 ### Updated
 - More tools!
+
+## [0.13.10] - 2026-08-03
+### Fixed
+- Ambit should not include Rect(0,0,0,0) for empty P()
+### Added
+- `.data(clip=P())` will clip output of drawing in tree at skia render time

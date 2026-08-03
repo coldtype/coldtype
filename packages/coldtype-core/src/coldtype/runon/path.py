@@ -1159,12 +1159,15 @@ class P(Runon):
         # pass-to-els
         elif len(self._els) > 0:
             try:
-                union = self._els[0].ambit(tx=tx, ty=ty)
-                for p in self._els[1:]:
+                union = None #self._els[0].ambit(tx=tx, ty=ty)
+                for p in self._els:
                     a = p.ambit(tx=tx, ty=ty)
                     if a.x == 0 and a.y == 0 and a.w == 0 and a.h == 0:
                         continue
-                    union = union.union(a)
+                    if union is None:
+                        union = a
+                    else:
+                        union = union.union(a)
                 return union
             except Exception as _:
                 return Rect(0,0,0,0)

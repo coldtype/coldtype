@@ -266,6 +266,14 @@ class SkiaPen(DrawablePenMixin, SkiaPathPen):
             return
         
         def draw(pen, state, data):
+            if state == -1 and "clip" in pen._data: # clip
+                sp = SkiaPathPen(pen.data("clip"), rect.h)
+                pen._data["_canvasClipSaveCount"] = canvas.save()
+                canvas.clipPath(sp.path, doAntiAlias=True)
+            
+            elif state == 1 and "clip" in pen._data: # unclip
+                canvas.restoreToCount(pen._data["_canvasClipSaveCount"])
+
             if state != 0:
                 return
 

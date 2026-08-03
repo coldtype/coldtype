@@ -350,7 +350,7 @@ wheels = [
 
 [[package]]
 name = "coldtype"
-version = "0.13.8"
+version = "0.13.9"
 source = { editable = "packages/coldtype" }
 dependencies = [
     { name = "coldtype-core" },
@@ -432,7 +432,7 @@ provides-extras = ["viewer", "drawbot", "unicode", "audio", "website"]
 
 [[package]]
 name = "coldtype-core"
-version = "0.13.8"
+version = "0.13.9"
 source = { editable = "packages/coldtype-core" }
 dependencies = [
     { name = "b3denv" },
@@ -1756,6 +1756,9 @@ dependencies = [
     { name = "pyxdg", marker = "sys_platform == 'linux'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/86/5e/1092f0054bd939d7ea471b06e2ab7895ebb5d6f7a7c2e736d0d1ce079582/show_in_file_manager-1.1.6.tar.gz", hash = "sha256:559b596e3e563800cf69d734cd236824279a9d820d1d841640c5f13e0058f9b6", size = 37156 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ee/20/e509861b30f1bf30929c964d595efe08a2c63287cdfe0afe73884293cc39/show_in_file_manager-1.1.6-py3-none-any.whl", hash = "sha256:3c0e5287b61e69bbd488e65cdf50999d237ad4305c2e6e9c2e4d333c02b4fd10", size = 32952 },
+]
 
 [[package]]
 name = "six"
