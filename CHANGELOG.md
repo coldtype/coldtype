@@ -405,3 +405,7 @@ Huge update, attempting to future proof things
 - Ambit should not include Rect(0,0,0,0) for empty P()
 ### Added
 - `.data(clip=P())` will clip output of drawing in tree at skia render time
+
+## [0.13.11] - 2026-08-10
+### Added
+- Support 8-digit hex for alpha in Color.from_html

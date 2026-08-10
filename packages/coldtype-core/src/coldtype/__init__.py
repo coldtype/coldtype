@@ -44,7 +44,7 @@ from coldtype.img.blendmode import BlendMode
 from coldtype.grid import Grid
 
 name = "coldtype"
-__version__ = "0.13.10"
+__version__ = "0.13.11"
 
 # these will be redefined contextually
 

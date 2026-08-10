@@ -132,6 +132,7 @@ class Color():
 
     def from_html(html, a=1):
         html = html.strip().lower()
+        
         if html == "r":
             return Color(1,0,0)
         elif html == "g":
@@ -142,12 +143,17 @@ class Color():
             html = html[1:]
         elif html in NAMED_COLORS:
             html = NAMED_COLORS[html][1:]
-        if len(html) == 6:
+        
+        if len(html) == 8:
+            rgb = html[:2], html[2:4], html[4:6]
+            a = int(html[6:8], 16) / 255.0
+        elif len(html) == 6:
             rgb = html[:2], html[2:4], html[4:]
         elif len(html) == 3:
             rgb = ['%c%c' % (v, v) for v in html]
         else:
-            raise ValueError("input #%s is not in #RRGGBB format" % html)
+            print("input #%s is not in #RRGGBB format" % html)
+            return hsl(0.65, 1, 0.5, 1)
         return Color(*[(int(n, 16) / 255.0) for n in rgb], a)
     
     def to_html(self):
